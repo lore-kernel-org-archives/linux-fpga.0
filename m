@@ -1,20 +1,21 @@
-Return-Path: <atull@opensource.altera.com>
-Return-Path: <atull@opensource.altera.com>
-Date: Mon, 21 Nov 2016 20:29:15 -0600
-From: atull <atull@opensource.altera.com>
-Subject: Re: [PATCH 2/2] MAINTAINERS: Add myself as co-maintainer to fpga
- mgr framework.
-In-Reply-To: <1479764942-14321-2-git-send-email-mdf@kernel.org>
-Message-ID: <alpine.DEB.2.20.1611212021050.3633@atull-VirtualBox2>
-References: <1479764942-14321-1-git-send-email-mdf@kernel.org> <1479764942-14321-2-git-send-email-mdf@kernel.org>
+Return-Path: <marex@denx.de>
+Return-Path: <marex@denx.de>
+Subject: Re: [PATCH 2/2] MAINTAINERS: Add myself as co-maintainer to fpga mgr
+ framework.
+References: <1479764942-14321-1-git-send-email-mdf@kernel.org>
+ <1479764942-14321-2-git-send-email-mdf@kernel.org>
+From: Marek Vasut <marex@denx.de>
+Message-ID: <b737d78e-34d5-3fb8-6ccd-34e8a10a0276@denx.de>
+Date: Mon, 21 Nov 2016 23:09:11 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-To: Moritz Fischer <moritz.fischer@ettus.com>
-Cc: linux-kernel@vger.kernel.org, marex@denx.de, mbrugger@suse.com, jgunthorpe@obsidianresearch.com, mike.looijmans@topic.nl, michal.simek@xilinx.com, linux-arm-kernel@lists.infradead.org, "Moritz Fischer  <mdf@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>," <linux-fpga@vger.kernel.org>
+In-Reply-To: <1479764942-14321-2-git-send-email-mdf@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+To: Moritz Fischer <moritz.fischer@ettus.com>, linux-kernel@vger.kernel.org
+Cc: mbrugger@suse.com, jgunthorpe@obsidianresearch.com, mike.looijmans@topic.nl, michal.simek@xilinx.com, linux-arm-kernel@lists.infradead.org, Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@opensource.altera.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, 21 Nov 2016, Moritz Fischer wrote:
-
+On 11/21/2016 10:49 PM, Moritz Fischer wrote:
 > Add myself as co-maintainer to fpga mgr framework.
 > 
 > Signed-off-by: Moritz Fischer <mdf@kernel.org>
@@ -22,22 +23,13 @@ On Mon, 21 Nov 2016, Moritz Fischer wrote:
 > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 > Cc: linux-kernel@vger.kernel.org
 > Cc: linux-fpga@vger.kernel.org
+
+Acked-by: Marek Vasut <marex@denx.de>
+
 > ---
 > Hi all,
 > 
 > Lately we've fallen behind a bit on reviewing patches lately.
-
-Hi Moritz,
-
-drivers/fpga has been in the upstream kernel a year now.  Most of that
-time, traffic has been very slow.  Recently we had more traffic while
-I was travelling and moving to a new office, both cases leaving me
-with bad network connectivity.  Things will probably return to normal.
-I appreciate your passion and all your effort reviewing stuff.  I
-don't see a need for two maintainers at this point.
-
-Alan
-
 > 
 > 'Behind the scenes', Alan has worked on getting a git tree setup
 > for us on kernel.org and I've worked on getting the mailing list setup.
@@ -70,7 +62,9 @@ Alan
 >  L:	linux-fpga@vger.kernel.org
 >  S:	Maintained
 >  F:	drivers/fpga/
-> -- 
-> 2.7.4
 > 
-> 
+
+
+-- 
+Best regards,
+Marek Vasut
