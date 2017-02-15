@@ -1,71 +1,91 @@
 Return-Path: <mdf@kernel.org>
 Return-Path: <mdf@kernel.org>
 From: mdf@kernel.org
-Subject: [PATCH v2 3/3] fpga: region: Add fpga-region property 'encrypted-fpga-config'
-Date: Mon, 20 Feb 2017 12:55:23 -0800
-Message-Id: <1487624123-13579-3-git-send-email-mdf@kernel.org>
-In-Reply-To: <1487624123-13579-1-git-send-email-mdf@kernel.org>
-References: <1487624123-13579-1-git-send-email-mdf@kernel.org>
+Subject: [PATCH 2/2] fpga: zynq: Add support for encrypted bitstreams
+Date: Tue, 14 Feb 2017 16:31:30 -0800
+Message-Id: <1487118690-21166-2-git-send-email-mdf@kernel.org>
+In-Reply-To: <1487118690-21166-1-git-send-email-mdf@kernel.org>
+References: <1487118690-21166-1-git-send-email-mdf@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 To: linux-fpga@vger.kernel.org
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, linux-kernel@vger.kernel.org
+Cc: mdf@kernel.org, Moritz Fischer <moritz.fischer@ettus.com>, Alan Tull <atull@kernel.org>, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Moritz Fischer <mdf@kernel.org>
+From: Moritz Fischer <moritz.fischer@ettus.com>
 
-Add fpga-region property to allow passing the fact that the bitstream is
-encrypted to the fpga-region and ultimately to the low-level driver.
+Add support for encrypted bitstreams. For this to work the system
+must be booted in secure mode.
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
+In order for on-the-fly decryption to work, the PCAP clock rate
+needs to be lowered via the PCAP_RATE_EN bit.
+
+Signed-off-by: Moritz Fischer <moritz.fischer@ettus.com>
 Cc: Alan Tull <atull@kernel.org>
 Cc: Michal Simek <michal.simek@xilinx.com>
 Cc: Sören Brinkmann <soren.brinkmann@xilinx.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-fpga@vger.kernel.org
 ---
- Documentation/devicetree/bindings/fpga/fpga-region.txt | 1 +
- drivers/fpga/fpga-region.c                             | 8 ++++++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/fpga/zynq-fpga.c | 28 +++++++++++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/fpga/fpga-region.txt b/Documentation/devicetree/bindings/fpga/fpga-region.txt
-index 3b32ba1..81bf3ad 100644
---- a/Documentation/devicetree/bindings/fpga/fpga-region.txt
-+++ b/Documentation/devicetree/bindings/fpga/fpga-region.txt
-@@ -186,6 +186,7 @@ Optional properties:
- 	otherwise full reconfiguration is done.
- - external-fpga-config : boolean, set if the FPGA has already been configured
- 	prior to OS boot up.
-+- encrypted-fpga-config : boolean, set if the bitstream is encrypted
- - region-unfreeze-timeout-us : The maximum time in microseconds to wait for
- 	bridges to successfully become enabled after the region has been
- 	programmed.
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 3222fdb..2fe2a52 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -337,8 +337,9 @@ static int child_regions_with_firmware(struct device_node *overlay)
-  * The overlay must add either firmware-name or external-fpga-config property
-  * to the FPGA Region.
-  *
-- *   firmware-name        : program the FPGA
-- *   external-fpga-config : FPGA is already programmed
-+ *   firmware-name         : program the FPGA
-+ *   external-fpga-config  : FPGA is already programmed
-+ *   encrypted-fpga-config : FPGA bitstream is encrypted
-  *
-  * The overlay can add other FPGA regions, but child FPGA regions cannot have a
-  * firmware-name property since those regions don't exist yet.
-@@ -373,6 +374,9 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 	if (of_property_read_bool(nd->overlay, "external-fpga-config"))
- 		info->flags |= FPGA_MGR_EXTERNAL_CONFIG;
+diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
+index cb3caf5..52dabfc 100644
+--- a/drivers/fpga/zynq-fpga.c
++++ b/drivers/fpga/zynq-fpga.c
+@@ -72,6 +72,10 @@
+ #define CTRL_PCAP_PR_MASK		BIT(27)
+ /* Enable PCAP */
+ #define CTRL_PCAP_MODE_MASK		BIT(26)
++/* Lower rate to allow decrypt on the fly */
++#define CTRL_PCAP_RATE_EN_MASK		BIT(25)
++/* System booted in secure mode */
++#define CTRL_SEC_EN_MASK		BIT(7)
  
-+	if (of_property_read_bool(nd->overlay, "encrypted-fpga-config"))
-+		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
+ /* Miscellaneous Control Register bit definitions */
+ /* Internal PCAP loopback */
+@@ -264,6 +268,17 @@ static int zynq_fpga_ops_write_init(struct fpga_manager *mgr,
+ 	if (err)
+ 		return err;
+ 
++	/* check if bitstream is encrypted & and system's still secure */
++	if (info->flags & FPGA_MGR_DECRYPT_BITSTREAM) {
++		ctrl = zynq_fpga_read(priv, CTRL_OFFSET);
++		if (!(ctrl & CTRL_SEC_EN_MASK)) {
++			dev_err(&mgr->dev,
++				"System not secure, can't use crypted bitstreams\n");
++			err = -EINVAL;
++			goto out_err;
++		}
++	}
 +
- 	of_property_read_string(nd->overlay, "firmware-name", &firmware_name);
+ 	/* don't globally reset PL if we're doing partial reconfig */
+ 	if (!(info->flags & FPGA_MGR_PARTIAL_RECONFIG)) {
+ 		if (!zynq_fpga_has_sync(buf, count)) {
+@@ -335,12 +350,19 @@ static int zynq_fpga_ops_write_init(struct fpga_manager *mgr,
  
- 	of_property_read_u32(nd->overlay, "region-unfreeze-timeout-us",
+ 	/* set configuration register with following options:
+ 	 * - enable PCAP interface
+-	 * - set throughput for maximum speed
++	 * - set throughput for maximum speed (if bistream not crypted)
+ 	 * - set CPU in user mode
+ 	 */
+ 	ctrl = zynq_fpga_read(priv, CTRL_OFFSET);
+-	zynq_fpga_write(priv, CTRL_OFFSET,
+-			(CTRL_PCAP_PR_MASK | CTRL_PCAP_MODE_MASK | ctrl));
++	if (info->flags & FPGA_MGR_DECRYPT_BITSTREAM)
++		zynq_fpga_write(priv, CTRL_OFFSET,
++				(CTRL_PCAP_PR_MASK | CTRL_PCAP_MODE_MASK
++				 | CTRL_PCAP_RATE_EN_MASK | ctrl));
++	else
++		zynq_fpga_write(priv, CTRL_OFFSET,
++				(CTRL_PCAP_PR_MASK | CTRL_PCAP_MODE_MASK
++				 | ctrl));
++
+ 
+ 	/* We expect that the command queue is empty right now. */
+ 	status = zynq_fpga_read(priv, STATUS_OFFSET);
 -- 
 2.7.4
