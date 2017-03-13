@@ -1,83 +1,171 @@
-Return-Path: <moritz.fischer.private@gmail.com>
-Date: Thu, 30 Mar 2017 10:17:01 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH 00/16] Intel FPGA Device Drivers
-Message-ID: <20170330171701.GA13590@tyrael.amer.corp.natinst.com>
-References: <1490875696-15145-1-git-send-email-hao.wu@intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
-Content-Disposition: inline
-In-Reply-To: <1490875696-15145-1-git-send-email-hao.wu@intel.com>
-To: Wu Hao <hao.wu@intel.com>
-Cc: atull@kernel.org, moritz.fischer@ettus.com, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 4/5] fpga-mgr: separate getting/locking FPGA manager
+Date: Mon, 13 Mar 2017 16:53:32 -0500
+Message-Id: <20170313215333.3008-5-atull@kernel.org>
+In-Reply-To: <20170313215333.3008-1-atull@kernel.org>
+References: <20170313215333.3008-1-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
+Add fpga_mgr_lock/unlock functions that get a mutex for
+exclusive use.
 
---PEIAKu/WMn1b1Hv9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+of_fpga_mgr_get, fpga_mgr_get, and fpga_mgr_put no longer lock
+the FPGA manager mutex.
 
-On Thu, Mar 30, 2017 at 08:08:00PM +0800, Wu Hao wrote:
-> Hi All,
->=20
-> Here is a patch-series adding drivers for Intel FPGA devices.
->=20
-> The Intel FPGA driver provides interfaces for userspace applications to
-> configure, enumerate, open, and access FPGA accelerators on platforms
-> equipped with Intel(R) FPGA solutions and enables system level management
-> functions such as FPGA partial reconfiguration, power management and
-> virtualization.
->=20
-> This patch series only adds the basic functions for FPGA accelerators and
-> partial reconfiguration. Patches for more functions, e.g power management
-> and virtualization, will be submitted after this series gets reviewed.
->=20
-> Patch 1: add a document for Intel FPGA driver overview, including the HW
-> architecture, driver organization, device enumeration, virtualization and
-> opens.
->=20
-> Patch 2: introduce a fpga-dev class. It's used in below Intel FPGA PCIe
-> device driver, to represent a FPGA device on the system, and all actual
-> feature devices should be registered as child nodes of this container
-> fpga-dev device.
->=20
-> Patch 3-7: implement Intel FPGA PCIe device driver. It walks through the
-> 'Device Feature List' in the PCI Bar, creates the container fpga-dev as
-> parent and platform devices as children for the feature devices it found.
->=20
-> Patch 8-11: implement Intel FPGA Management Engine (FME) driver. It's a
-> platform driver matching with the FME platform device created by above
-> PCIe driver. Sysfs and device file ioctls are exposed as user interfaces
-> to allow partial reconfiguration to Accelerated Function Units (AFUs) from
-> user space applications.
->=20
-> Patch 12-16: implement Intel FPGA Accelerated Function Unit (AFU) driver.
-> It's a platform driver matching with AFU platform device created by above
-> PCIe driver. It provides user interfaces to expose the AFU MMIO region,
-> map/unmap dma buffer, and control the port which AFU connects to.
+This makes it more straightforward to save a reference to
+a FPGA manager and only attempting to lock it when programming
+the FPGA.
 
-This is exciting stuff. It will take some time to review, though. I marked
-the patchset as 'In-Review' in patchwork.
+Signed-off-by: Alan Tull <atull@kernel.org>
+---
+ drivers/fpga/fpga-mgr.c       | 44 +++++++++++++++++++++++++++++++------------
+ drivers/fpga/fpga-region.c    | 13 +++++++++++--
+ include/linux/fpga/fpga-mgr.h |  3 +++
+ 3 files changed, 46 insertions(+), 14 deletions(-)
 
-Cheers,
-
-Moritz
-
-
---PEIAKu/WMn1b1Hv9
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEcBAEBAgAGBQJY3T2LAAoJEL5CEHepFqov6OEIAJYJ5yzI6V3pTWRu+H73in3f
-shFpSVJyq9hR5yRjs40MV81V1+LzzM5w04ecIt3+hhDytMMod06u5WzLtRKFy8pT
-s6QqFz/TpVarM2XWwFvDop7VX2nwayk8s4tuEue7Kdp5MAFnBu9owGVHRJASq1Zz
-qN4X0+8XfIMGtOoIdLWahd3AYhdJYiMdWyccPZrGfCDvw7B2WMurMG/Si6JFFMmi
-h92AzxX6B7t9jZnPAR7u2+OL/SiXMJ+J1QkvZ0cy2jHMWoufDm54ZueOdskaIoHB
-2SUG9xH3Xdmp97ysAUKyRIpxm8gh1hTbP2EXY5S1hf96OuZqqs6Wcu+Mm8a9xqs=
-=vX8X
------END PGP SIGNATURE-----
-
---PEIAKu/WMn1b1Hv9--
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index fde605b..f7c3648 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -376,28 +376,19 @@ ATTRIBUTE_GROUPS(fpga_mgr);
+ struct fpga_manager *__fpga_mgr_get(struct device *dev)
+ {
+ 	struct fpga_manager *mgr;
+-	int ret = -ENODEV;
+ 
+ 	mgr = to_fpga_manager(dev);
+ 	if (!mgr)
+ 		goto err_dev;
+ 
+-	/* Get exclusive use of fpga manager */
+-	if (!mutex_trylock(&mgr->ref_mutex)) {
+-		ret = -EBUSY;
+-		goto err_dev;
+-	}
+-
+ 	if (!try_module_get(dev->parent->driver->owner))
+-		goto err_ll_mod;
++		goto err_dev;
+ 
+ 	return mgr;
+ 
+-err_ll_mod:
+-	mutex_unlock(&mgr->ref_mutex);
+ err_dev:
+ 	put_device(dev);
+-	return ERR_PTR(ret);
++	return ERR_PTR(-ENODEV);
+ }
+ 
+ static int fpga_mgr_dev_match(struct device *dev, const void *data)
+@@ -457,12 +448,41 @@ EXPORT_SYMBOL_GPL(of_fpga_mgr_get);
+ void fpga_mgr_put(struct fpga_manager *mgr)
+ {
+ 	module_put(mgr->dev.parent->driver->owner);
+-	mutex_unlock(&mgr->ref_mutex);
+ 	put_device(&mgr->dev);
+ }
+ EXPORT_SYMBOL_GPL(fpga_mgr_put);
+ 
+ /**
++ * fpga_mgr_lock - Lock FPGA manager for exclusive use
++ * @mgr:	fpga manager
++ *
++ * Given a pointer to FPGA Manager (from fpga_mgr_get() or
++ * of_fpga_mgr_put()) attempt to get the mutex.
++ *
++ * Return: 0 for success or -EBUSY
++ */
++int fpga_mgr_lock(struct fpga_manager *mgr)
++{
++	if (!mutex_trylock(&mgr->ref_mutex)) {
++		dev_err(&mgr->dev, "FPGA manager is in use.\n");
++		return -EBUSY;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(fpga_mgr_lock);
++
++/**
++ * fpga_mgr_unlock - Unlock FPGA manager
++ * @mgr:	fpga manager
++ */
++void fpga_mgr_unlock(struct fpga_manager *mgr)
++{
++	mutex_unlock(&mgr->ref_mutex);
++}
++EXPORT_SYMBOL_GPL(fpga_mgr_unlock);
++
++/**
+  * fpga_mgr_register - register a low level fpga manager driver
+  * @dev:	fpga manager device from pdev
+  * @name:	fpga manager name
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index 294556e..815f178 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -125,7 +125,7 @@ static void fpga_region_put(struct fpga_region *region)
+ }
+ 
+ /**
+- * fpga_region_get_manager - get exclusive reference for FPGA manager
++ * fpga_region_get_manager - get reference for FPGA manager
+  * @region: FPGA region
+  *
+  * Get FPGA Manager from "fpga-mgr" property or from ancestor region.
+@@ -245,10 +245,16 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 		return PTR_ERR(mgr);
+ 	}
+ 
++	ret = fpga_mgr_lock(mgr);
++	if (ret) {
++		pr_err("FPGA manager is busy\n");
++		goto err_put_mgr;
++	}
++
+ 	ret = fpga_region_get_bridges(region, overlay);
+ 	if (ret) {
+ 		pr_err("failed to get fpga region bridges\n");
+-		goto err_put_mgr;
++		goto err_unlock_mgr;
+ 	}
+ 
+ 	ret = fpga_bridges_disable(&region->bridge_list);
+@@ -269,6 +275,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 		goto err_put_br;
+ 	}
+ 
++	fpga_mgr_unlock(mgr);
+ 	fpga_mgr_put(mgr);
+ 	fpga_region_put(region);
+ 
+@@ -276,6 +283,8 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 
+ err_put_br:
+ 	fpga_bridges_put(&region->bridge_list);
++err_unlock_mgr:
++	fpga_mgr_unlock(mgr);
+ err_put_mgr:
+ 	fpga_mgr_put(mgr);
+ 	fpga_region_put(region);
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index 45df05a..ae970ca 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -149,6 +149,9 @@ int fpga_mgr_firmware_load(struct fpga_manager *mgr,
+ 
+ int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info);
+ 
++int fpga_mgr_lock(struct fpga_manager *mgr);
++void fpga_mgr_unlock(struct fpga_manager *mgr);
++
+ struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
+ 
+ struct fpga_manager *fpga_mgr_get(struct device *dev);
+-- 
+2.7.4
