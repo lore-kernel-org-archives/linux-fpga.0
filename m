@@ -1,157 +1,94 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 1/5] fpga-mgr: pass parameters for loading fpga in image info
-Date: Mon, 13 Mar 2017 16:53:29 -0500
-Message-Id: <20170313215333.3008-2-atull@kernel.org>
+Subject: [PATCH 3/5] doc: fpga-mgr: separate getting/locking FPGA manager
+Date: Mon, 13 Mar 2017 16:53:31 -0500
+Message-Id: <20170313215333.3008-4-atull@kernel.org>
 In-Reply-To: <20170313215333.3008-1-atull@kernel.org>
 References: <20170313215333.3008-1-atull@kernel.org>
 To: Moritz Fischer <mdf@kernel.org>
 Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Currently fpga-mgr.c has three methods for loading FPGA's depending on how
-the FPGA image is presented: in a sg table, as a single buffer, or as a
-firmware file.  This commit adds these parameters to the fpga_image_info
-struct and adds a single function that can accept the image as any of these
-three.  This allows code to be written that could use any of the three
-methods.
+Document that getting a reference to a FPGA Manager has been
+separated from locking the FPGA Mangager for use.
+
+fpga_mgr_lock/unlock functions get/release mutex.
+
+of_fpga_mgr_get, fpga_mgr_get, and fpga_mgr_put no longer lock
+the FPGA manager mutex.
+
+This makes it more straigtforward to save a reference to
+a FPGA manager and only attempting to lock it when programming
+the FPGA.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v1: changed order that methods are tried
+v1: fixed some nits
 ---
- drivers/fpga/fpga-mgr.c       | 12 ++++++++++++
- drivers/fpga/fpga-region.c    | 17 +++++++----------
- include/linux/fpga/fpga-mgr.h | 10 ++++++++++
- 3 files changed, 29 insertions(+), 10 deletions(-)
+ Documentation/fpga/fpga-mgr.txt | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 86d2cb2..fde605b 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -309,6 +309,18 @@ int fpga_mgr_firmware_load(struct fpga_manager *mgr,
- }
- EXPORT_SYMBOL_GPL(fpga_mgr_firmware_load);
+diff --git a/Documentation/fpga/fpga-mgr.txt b/Documentation/fpga/fpga-mgr.txt
+index 78f197f..0240caf 100644
+--- a/Documentation/fpga/fpga-mgr.txt
++++ b/Documentation/fpga/fpga-mgr.txt
+@@ -53,13 +53,26 @@ To get/put a reference to a FPGA manager:
+ 	struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
+ 	struct fpga_manager *fpga_mgr_get(struct device *dev);
  
-+int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info)
-+{
-+	if (info->sgt)
-+		return fpga_mgr_buf_load_sg(mgr, info, info->sgt);
-+	if (info->buf && info->count)
-+		return fpga_mgr_buf_load(mgr, info, info->buf, info->count);
-+	if (info->firmware_name)
-+		return fpga_mgr_firmware_load(mgr, info, info->firmware_name);
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL_GPL(fpga_mgr_load);
+-Given a DT node or device, get an exclusive reference to a FPGA manager.
++Given a DT node or device, get a reference to a FPGA manager.  This pointer
++can be saved until you are ready to program the FPGA.
+ 
+ 	void fpga_mgr_put(struct fpga_manager *mgr);
+ 
+ Release the reference.
+ 
+ 
++To get exclusive control of a FPGA manager:
++-------------------------------------------
 +
- static const char * const state_str[] = {
- 	[FPGA_MGR_STATE_UNKNOWN] =		"unknown",
- 	[FPGA_MGR_STATE_POWER_OFF] =		"power off",
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 3222fdb..24f4ed5 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -223,14 +223,11 @@ static int fpga_region_get_bridges(struct fpga_region *region,
- /**
-  * fpga_region_program_fpga - program FPGA
-  * @region: FPGA region
-- * @firmware_name: name of FPGA image firmware file
-  * @overlay: device node of the overlay
-- * Program an FPGA using information in the device tree.
-- * Function assumes that there is a firmware-name property.
-+ * Program an FPGA using information in the region's fpga image info.
-  * Return 0 for success or negative error code.
-  */
- static int fpga_region_program_fpga(struct fpga_region *region,
--				    const char *firmware_name,
- 				    struct device_node *overlay)
- {
- 	struct fpga_manager *mgr;
-@@ -260,7 +257,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_br;
- 	}
- 
--	ret = fpga_mgr_firmware_load(mgr, region->info, firmware_name);
-+	ret = fpga_mgr_load(mgr, region->info);
- 	if (ret) {
- 		pr_err("failed to load fpga image\n");
- 		goto err_put_br;
-@@ -351,7 +348,6 @@ static int child_regions_with_firmware(struct device_node *overlay)
- static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 					struct of_overlay_notify_data *nd)
- {
--	const char *firmware_name = NULL;
- 	struct fpga_image_info *info;
- 	int ret;
- 
-@@ -373,7 +369,8 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 	if (of_property_read_bool(nd->overlay, "external-fpga-config"))
- 		info->flags |= FPGA_MGR_EXTERNAL_CONFIG;
- 
--	of_property_read_string(nd->overlay, "firmware-name", &firmware_name);
-+	of_property_read_string(nd->overlay, "firmware-name",
-+				&info->firmware_name);
- 
- 	of_property_read_u32(nd->overlay, "region-unfreeze-timeout-us",
- 			     &info->enable_timeout_us);
-@@ -382,7 +379,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 			     &info->disable_timeout_us);
- 
- 	/* If FPGA was externally programmed, don't specify firmware */
--	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && firmware_name) {
-+	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
- 		pr_err("error: specified firmware and external-fpga-config");
- 		return -EINVAL;
- 	}
-@@ -392,12 +389,12 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 		return 0;
- 
- 	/* If we got this far, we should be programming the FPGA */
--	if (!firmware_name) {
-+	if (!info->firmware_name) {
- 		pr_err("should specify firmware-name or external-fpga-config\n");
- 		return -EINVAL;
- 	}
- 
--	return fpga_region_program_fpga(region, firmware_name, nd->overlay);
-+	return fpga_region_program_fpga(region, nd->overlay);
- }
- 
- /**
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 57beb5d..45df05a 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -76,11 +76,19 @@ enum fpga_mgr_states {
-  * @flags: boolean flags as defined above
-  * @enable_timeout_us: maximum time to enable traffic through bridge (uSec)
-  * @disable_timeout_us: maximum time to disable traffic through bridge (uSec)
-+ * @firmware_name: name of FPGA image firmware file
-+ * @sgt: scatter/gather table containing FPGA image
-+ * @buf: contiguous buffer containing FPGA image
-+ * @count: size of buf
-  */
- struct fpga_image_info {
- 	u32 flags;
- 	u32 enable_timeout_us;
- 	u32 disable_timeout_us;
-+	const char *firmware_name;
-+	struct sg_table *sgt;
-+	const char *buf;
-+	size_t count;
- };
- 
- /**
-@@ -139,6 +147,8 @@ int fpga_mgr_firmware_load(struct fpga_manager *mgr,
- 			   struct fpga_image_info *info,
- 			   const char *image_name);
- 
-+int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info);
++	int fpga_mgr_lock(struct fpga_magager *mgr);
 +
- struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
++Call fpga_mgr_lock and verify that it returns 0 before attempting to
++program the FPGA.
++
++	void fpga_mgr_unlock(struct fpga_magager *mgr);
++
++Call fpga_mgr_unlock when done programming the FPGA.
++
+ To register or unregister the low level FPGA-specific driver:
+ -------------------------------------------------------------
  
- struct fpga_manager *fpga_mgr_get(struct device *dev);
+@@ -95,11 +108,13 @@ int ret;
+ 
+ /* Get exclusive control of FPGA manager */
+ struct fpga_manager *mgr = of_fpga_mgr_get(mgr_node);
++ret = fpga_mgr_lock(mgr);
+ 
+ /* Load the buffer to the FPGA */
+ ret = fpga_mgr_buf_load(mgr, &info, buf, count);
+ 
+ /* Release the FPGA manager */
++fpga_mgr_unlock(mgr);
+ fpga_mgr_put(mgr);
+ 
+ 
+@@ -124,11 +139,13 @@ int ret;
+ 
+ /* Get exclusive control of FPGA manager */
+ struct fpga_manager *mgr = of_fpga_mgr_get(mgr_node);
++ret = fpga_mgr_lock(mgr);
+ 
+ /* Get the firmware image (path) and load it to the FPGA */
+ ret = fpga_mgr_firmware_load(mgr, &info, path);
+ 
+ /* Release the FPGA manager */
++fpga_mgr_unlock(mgr);
+ fpga_mgr_put(mgr);
+ 
+ 
 -- 
 2.7.4
