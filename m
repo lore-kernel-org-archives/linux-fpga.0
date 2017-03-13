@@ -1,94 +1,71 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 3/5] doc: fpga-mgr: separate getting/locking FPGA manager
-Date: Mon, 13 Mar 2017 16:53:31 -0500
-Message-Id: <20170313215333.3008-4-atull@kernel.org>
-In-Reply-To: <20170313215333.3008-1-atull@kernel.org>
-References: <20170313215333.3008-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=iH/6=2W=xilinx.com=michal.simek@kernel.org>
+Return-Path: <SRS0=iH/6=2W=xilinx.com=michal.simek@kernel.org>
+Subject: Re: [PATCH 1/2] doc: Add bindings document for Xilinx LogiCore PR
+ Decoupler
+References: <1489181435-3151-1-git-send-email-mdf@kernel.org>
+From: Michal Simek <michal.simek@xilinx.com>
+Message-ID: <91f745a9-5ab5-345c-3e46-cac7191012f9@xilinx.com>
+Date: Mon, 13 Mar 2017 11:29:06 +0100
+MIME-Version: 1.0
+In-Reply-To: <1489181435-3151-1-git-send-email-mdf@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?Q?S=c3=b6ren_Brinkmann?= <soren.brinkmann@xilinx.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Document that getting a reference to a FPGA Manager has been
-separated from locking the FPGA Mangager for use.
+On 10.3.2017 22:30, Moritz Fischer wrote:
+> This adds the binding documentation for the Xilinx LogiCORE PR
+> Decoupler soft core.
+> 
+> Signed-off-by: Moritz Fischer <mdf@kernel.org>
+> Cc: Michal Simek <michal.simek@xilinx.com>
+> Cc: Sören Brinkmann <soren.brinkmann@xilinx.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: devicetree@vger.kernel.org
+> ---
+>  .../bindings/fpga/xilinx-pr-decoupler.txt          | 24 ++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
+> new file mode 100644
+> index 0000000..b82b928
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
+> @@ -0,0 +1,24 @@
+> +Xilinx LogiCORE Partial Reconfig Decoupler Softcore
+> +
+> +The Xilinx LogiCORE Partial Reconfig Decoupler  manages one or more
+> +decouplers / fpga bridges.
+> +The controller can decouple/disable the bridges which prevents signal
+> +changes from passing through the bridge.  The controller can also
+> +couple /enable the bridges which allows traffic to pass through the
+> +bridge normally.
+> +
+> +Required properties:
+> +- compatible		: Should contain "xlnx,pr-decoupler-1.00"
+> +- regs			: base address and size for decoupler module
+> +
+> +Optional properties:
+> +- bridge-enable		: 0 if driver should disable bridge at startup
+> +			  1 if driver should enable bridge at startup
+> +			  Default is to leave bridge in current state.
+> +
+> +Example:
+> +	fpga-bridge@100000450 {
+> +		compatible = "xlnx,pr-decoupler-1.00";
+> +		regs = <0x1000 0x10>;
+> +		bridge-enable = <0>;
+> +	};
+> 
 
-fpga_mgr_lock/unlock functions get/release mutex.
+Look at.
+https://github.com/Xilinx/linux-xlnx/blob/master/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
 
-of_fpga_mgr_get, fpga_mgr_get, and fpga_mgr_put no longer lock
-the FPGA manager mutex.
 
-This makes it more straigtforward to save a reference to
-a FPGA manager and only attempting to lock it when programming
-the FPGA.
+And you miss above required clk property. I do use aclk because this is
+what it is shown in vivado.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v1: fixed some nits
----
- Documentation/fpga/fpga-mgr.txt | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/fpga/fpga-mgr.txt b/Documentation/fpga/fpga-mgr.txt
-index 78f197f..0240caf 100644
---- a/Documentation/fpga/fpga-mgr.txt
-+++ b/Documentation/fpga/fpga-mgr.txt
-@@ -53,13 +53,26 @@ To get/put a reference to a FPGA manager:
- 	struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
- 	struct fpga_manager *fpga_mgr_get(struct device *dev);
- 
--Given a DT node or device, get an exclusive reference to a FPGA manager.
-+Given a DT node or device, get a reference to a FPGA manager.  This pointer
-+can be saved until you are ready to program the FPGA.
- 
- 	void fpga_mgr_put(struct fpga_manager *mgr);
- 
- Release the reference.
- 
- 
-+To get exclusive control of a FPGA manager:
-+-------------------------------------------
-+
-+	int fpga_mgr_lock(struct fpga_magager *mgr);
-+
-+Call fpga_mgr_lock and verify that it returns 0 before attempting to
-+program the FPGA.
-+
-+	void fpga_mgr_unlock(struct fpga_magager *mgr);
-+
-+Call fpga_mgr_unlock when done programming the FPGA.
-+
- To register or unregister the low level FPGA-specific driver:
- -------------------------------------------------------------
- 
-@@ -95,11 +108,13 @@ int ret;
- 
- /* Get exclusive control of FPGA manager */
- struct fpga_manager *mgr = of_fpga_mgr_get(mgr_node);
-+ret = fpga_mgr_lock(mgr);
- 
- /* Load the buffer to the FPGA */
- ret = fpga_mgr_buf_load(mgr, &info, buf, count);
- 
- /* Release the FPGA manager */
-+fpga_mgr_unlock(mgr);
- fpga_mgr_put(mgr);
- 
- 
-@@ -124,11 +139,13 @@ int ret;
- 
- /* Get exclusive control of FPGA manager */
- struct fpga_manager *mgr = of_fpga_mgr_get(mgr_node);
-+ret = fpga_mgr_lock(mgr);
- 
- /* Get the firmware image (path) and load it to the FPGA */
- ret = fpga_mgr_firmware_load(mgr, &info, path);
- 
- /* Release the FPGA manager */
-+fpga_mgr_unlock(mgr);
- fpga_mgr_put(mgr);
- 
- 
--- 
-2.7.4
+Thanks,
+Michal
