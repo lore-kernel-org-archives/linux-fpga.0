@@ -1,80 +1,71 @@
-Return-Path: <mdf@kernel.org>
-Return-Path: <mdf@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH v3 1/2] doc: Add bindings document for Xilinx LogiCore PR Decoupler
-Date: Fri, 17 Mar 2017 13:11:12 -0700
-Message-Id: <1489781473-30772-1-git-send-email-mdf@kernel.org>
+Return-Path: <michal.simek@xilinx.com>
+Return-Path: michal.simek@xilinx.com
+Subject: Re: [PATCH 2/2] fpga: Add support for Xilinx LogiCORE PR Decoupler
+References: <1489181435-3151-1-git-send-email-mdf@kernel.org>
+ <1489181435-3151-2-git-send-email-mdf@kernel.org>
+ <CAAtXAHe-AMq9Ux2LZZEWLcg8Dk6jTiHhrot4RhEVrxTBhnLE0g@mail.gmail.com>
+ <2f21aeb3-dd4e-e170-729a-a785077b6f28@xilinx.com>
+ <CAJYdmeM+OkvNHtXR7o7R7s418Q52KGDFH5B-oKWeMq-tkmwW2Q@mail.gmail.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Message-ID: <b9823c9d-ca7e-a420-2a63-fc76a2b3a379@xilinx.com>
+Date: Tue, 14 Mar 2017 07:40:27 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <CAJYdmeM+OkvNHtXR7o7R7s418Q52KGDFH5B-oKWeMq-tkmwW2Q@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, Moritz Fischer <mdf@kernel.org>, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Moritz Fischer <moritz.fischer.private@gmail.com>, Michal Simek <michal.simek@xilinx.com>
+Cc: linux-fpga@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, "Mark Rutland  <mark.rutland@arm.com>, linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>, =?UTF-8?Q?S=c3=b6ren_Brinkmann?= <soren.brinkmann@xilinx.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Devicetree List <devicetree@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This adds the binding documentation for the Xilinx LogiCORE PR
-Decoupler soft core.
+On 13.3.2017 17:18, Moritz Fischer wrote:
+> On Mon, Mar 13, 2017 at 3:27 AM, Michal Simek <michal.simek@xilinx.com> wrote:
+>> Hi Moritz,
+>>
+>> On 10.3.2017 23:42, Moritz Fischer wrote:
+>>> On Fri, Mar 10, 2017 at 1:30 PM, Moritz Fischer <mdf@kernel.org> wrote:
+>>>> This adds support for the Xilinx LogiCORE PR Decoupler
+>>>> soft-ip that does decoupling of PR regions in the FPGA
+>>>> fabric during partial reconfiguration.
+>>>>
+>>>> Signed-off-by: Moritz Fischer <mdf@kernel.org>
+>>>> Cc: Michal Simek <michal.simek@xilinx.com>
+>>>> Cc: Sören Brinkmann <soren.brinkmann@xilinx.com>
+>>>> Cc: linux-kernel@vger.kernel.org
+>>>> Cc: devicetree@vger.kernel.org
+>>>> ---
+>>>>  drivers/fpga/Kconfig               |   9 +++
+>>>>  drivers/fpga/Makefile              |   1 +
+>>>>  drivers/fpga/xilinx-pr-decoupler.c | 156 +++++++++++++++++++++++++++++++++++++
+>>>>  3 files changed, 166 insertions(+)
+>>>>  create mode 100644 drivers/fpga/xilinx-pr-decoupler.c
+>>
+>> I have written very similar driver some week ago but didn't sent it out.
+> 
+> Hah. I'll take a look.
+> 
+>> Here it is.
+>> https://github.com/Xilinx/linux-xlnx/blob/master/drivers/fpga/xilinx-pr-decoupler.c
+>>
+>> Your clk handling is better and my enable_show is better.
+>> You shouldn't rely on setting status before. It is better to read that
+>> reg again. The reason is you can connect status signal from one PR
+>> decoupler to decouple input which can change status
+> 
+> I will just merge them together and add you to author's list if that's
+> fine with you?
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-Cc: Michal Simek <michal.simek@xilinx.com>
-Cc: Sören Brinkmann <soren.brinkmann@xilinx.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org
----
+sure. Go ahead.
 
-Changes from v2:
-- Added refence to generic fpga-region bindings
-- Fixed up reg property in example
-- Added fallback to "xlnx,pr-decoupler" without version
+> 
+>> There is another topic I wanted to open in connection to this. There
+>> should be gpio based bridge because this pr decoupler can be without axi
+>> interface and for that gpio driver would be useful.
+> 
+> That's a good idea. I can look at that. This can be pretty generic
+> code I suppose.
 
-Changes from v1:
-- Added clock names & clock to example
-- Merged some of the description from Michal's version
+yes - it should be. Simple gpio driver with polarity support should be
+enough.
 
----
- .../bindings/fpga/xilinx-pr-decoupler.txt          | 35 ++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
-
-diff --git a/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
-new file mode 100644
-index 0000000..16141bd
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
-@@ -0,0 +1,35 @@
-+Xilinx LogiCORE Partial Reconfig Decoupler Softcore
-+
-+The Xilinx LogiCORE Partial Reconfig Decoupler manages one or more
-+decouplers / fpga bridges.
-+The controller can decouple/disable the bridges which prevents signal
-+changes from passing through the bridge.  The controller can also
-+couple / enable the bridges which allows traffic to pass through the
-+bridge normally.
-+
-+The Driver supports only MMIO handling. A PR region can have multiple
-+PR Decouples which can bhe handled independently or chaines via decouple/
-+decouple_status signals.
-+
-+Required properties:
-+- compatible		: Should contain "xlnx,pr-decoupler-1.00"
-+- regs			: base address and size for decoupler module
-+- clocks		: input clock to IP
-+- clock-names		: should contain "aclk"
-+
-+Optional properties:
-+- bridge-enable		: 0 if driver should disable bridge at startup
-+			  1 if driver should enable bridge at startup
-+			  Default is to leave bridge in current state.
-+
-+See Documentation/devicetree/bindings/fpga/fpga-region.txt for generic bindings.
-+
-+Example:
-+	fpga-bridge@100000450 {
-+		compatible = "xlnx,pr-decoupler-1.00",
-+			     "xlnx-pr-decoupler";
-+		regs = <0x10000045 0x10>;
-+		clocks = <&clkc 15>;
-+		clock-names = "aclk";
-+		bridge-enable = <0>;
-+	};
--- 
-2.7.4
+Thanks,
+Michal
