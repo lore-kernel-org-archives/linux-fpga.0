@@ -1,171 +1,93 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 4/5] fpga-mgr: separate getting/locking FPGA manager
-Date: Mon, 13 Mar 2017 16:53:32 -0500
-Message-Id: <20170313215333.3008-5-atull@kernel.org>
-In-Reply-To: <20170313215333.3008-1-atull@kernel.org>
-References: <20170313215333.3008-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=MxXm=22=xilinx.com=michal.simek@kernel.org>
+Return-Path: <SRS0=MxXm=22=xilinx.com=michal.simek@kernel.org>
+Subject: Re: [PATCH v2 1/2] doc: Add bindings document for Xilinx LogiCore PR
+ Decoupler
+References: <1489711910-17443-1-git-send-email-mdf@kernel.org>
+From: Michal Simek <michal.simek@xilinx.com>
+Message-ID: <9f823c88-ccd5-7534-9999-019c8a9f082a@xilinx.com>
+Date: Fri, 17 Mar 2017 10:57:18 +0100
+MIME-Version: 1.0
+In-Reply-To: <1489711910-17443-1-git-send-email-mdf@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, "Michal Simek  <michal.simek@xilinx.com>, =?UTF-8?Q?S=c3=b6ren_Brinkmann?=" <soren.brinkmann@xilinx.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add fpga_mgr_lock/unlock functions that get a mutex for
-exclusive use.
+On 17.3.2017 01:51, Moritz Fischer wrote:
+> This adds the binding documentation for the Xilinx LogiCORE PR
+> Decoupler soft core.
+> 
+> Signed-off-by: Moritz Fischer <mdf@kernel.org>
+> Cc: Michal Simek <michal.simek@xilinx.com>
+> Cc: Sören Brinkmann <soren.brinkmann@xilinx.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: devicetree@vger.kernel.org
+> ---
+> 
+> Changes from v1:
+> - Added clock names & clock to example
+> - Merged some of the description from Michal's version
+> 
+> ---
+>  .../bindings/fpga/xilinx-pr-decoupler.txt          | 32 ++++++++++++++++++++++
+>  1 file changed, 32 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
+> new file mode 100644
+> index 0000000..2080006
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
+> @@ -0,0 +1,32 @@
+> +Xilinx LogiCORE Partial Reconfig Decoupler Softcore
+> +
+> +The Xilinx LogiCORE Partial Reconfig Decoupler manages one or more
+> +decouplers / fpga bridges.
+> +The controller can decouple/disable the bridges which prevents signal
+> +changes from passing through the bridge.  The controller can also
+> +couple / enable the bridges which allows traffic to pass through the
+> +bridge normally.
+> +
+> +The Driver supports only MMIO handling. A PR region can have multiple
+> +PR Decouples which can bhe handled independently or chaines via decouple/
+> +decouple_status signals.
+> +
+> +Required properties:
+> +- compatible		: Should contain "xlnx,pr-decoupler-1.00"
 
-of_fpga_mgr_get, fpga_mgr_get, and fpga_mgr_put no longer lock
-the FPGA manager mutex.
+should
 
-This makes it more straightforward to save a reference to
-a FPGA manager and only attempting to lock it when programming
-the FPGA.
+I would tend to do this as
+"xlnx,pr-decoupler-1.00" and/or  "xlnx,pr_decoupler"
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
- drivers/fpga/fpga-mgr.c       | 44 +++++++++++++++++++++++++++++++------------
- drivers/fpga/fpga-region.c    | 13 +++++++++++--
- include/linux/fpga/fpga-mgr.h |  3 +++
- 3 files changed, 46 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index fde605b..f7c3648 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -376,28 +376,19 @@ ATTRIBUTE_GROUPS(fpga_mgr);
- struct fpga_manager *__fpga_mgr_get(struct device *dev)
- {
- 	struct fpga_manager *mgr;
--	int ret = -ENODEV;
- 
- 	mgr = to_fpga_manager(dev);
- 	if (!mgr)
- 		goto err_dev;
- 
--	/* Get exclusive use of fpga manager */
--	if (!mutex_trylock(&mgr->ref_mutex)) {
--		ret = -EBUSY;
--		goto err_dev;
--	}
--
- 	if (!try_module_get(dev->parent->driver->owner))
--		goto err_ll_mod;
-+		goto err_dev;
- 
- 	return mgr;
- 
--err_ll_mod:
--	mutex_unlock(&mgr->ref_mutex);
- err_dev:
- 	put_device(dev);
--	return ERR_PTR(ret);
-+	return ERR_PTR(-ENODEV);
- }
- 
- static int fpga_mgr_dev_match(struct device *dev, const void *data)
-@@ -457,12 +448,41 @@ EXPORT_SYMBOL_GPL(of_fpga_mgr_get);
- void fpga_mgr_put(struct fpga_manager *mgr)
- {
- 	module_put(mgr->dev.parent->driver->owner);
--	mutex_unlock(&mgr->ref_mutex);
- 	put_device(&mgr->dev);
- }
- EXPORT_SYMBOL_GPL(fpga_mgr_put);
- 
- /**
-+ * fpga_mgr_lock - Lock FPGA manager for exclusive use
-+ * @mgr:	fpga manager
-+ *
-+ * Given a pointer to FPGA Manager (from fpga_mgr_get() or
-+ * of_fpga_mgr_put()) attempt to get the mutex.
-+ *
-+ * Return: 0 for success or -EBUSY
-+ */
-+int fpga_mgr_lock(struct fpga_manager *mgr)
-+{
-+	if (!mutex_trylock(&mgr->ref_mutex)) {
-+		dev_err(&mgr->dev, "FPGA manager is in use.\n");
-+		return -EBUSY;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(fpga_mgr_lock);
-+
-+/**
-+ * fpga_mgr_unlock - Unlock FPGA manager
-+ * @mgr:	fpga manager
-+ */
-+void fpga_mgr_unlock(struct fpga_manager *mgr)
-+{
-+	mutex_unlock(&mgr->ref_mutex);
-+}
-+EXPORT_SYMBOL_GPL(fpga_mgr_unlock);
-+
-+/**
-  * fpga_mgr_register - register a low level fpga manager driver
-  * @dev:	fpga manager device from pdev
-  * @name:	fpga manager name
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 294556e..815f178 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -125,7 +125,7 @@ static void fpga_region_put(struct fpga_region *region)
- }
- 
- /**
-- * fpga_region_get_manager - get exclusive reference for FPGA manager
-+ * fpga_region_get_manager - get reference for FPGA manager
-  * @region: FPGA region
-  *
-  * Get FPGA Manager from "fpga-mgr" property or from ancestor region.
-@@ -245,10 +245,16 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		return PTR_ERR(mgr);
- 	}
- 
-+	ret = fpga_mgr_lock(mgr);
-+	if (ret) {
-+		pr_err("FPGA manager is busy\n");
-+		goto err_put_mgr;
-+	}
-+
- 	ret = fpga_region_get_bridges(region, overlay);
- 	if (ret) {
- 		pr_err("failed to get fpga region bridges\n");
--		goto err_put_mgr;
-+		goto err_unlock_mgr;
- 	}
- 
- 	ret = fpga_bridges_disable(&region->bridge_list);
-@@ -269,6 +275,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_br;
- 	}
- 
-+	fpga_mgr_unlock(mgr);
- 	fpga_mgr_put(mgr);
- 	fpga_region_put(region);
- 
-@@ -276,6 +283,8 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 
- err_put_br:
- 	fpga_bridges_put(&region->bridge_list);
-+err_unlock_mgr:
-+	fpga_mgr_unlock(mgr);
- err_put_mgr:
- 	fpga_mgr_put(mgr);
- 	fpga_region_put(region);
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 45df05a..ae970ca 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -149,6 +149,9 @@ int fpga_mgr_firmware_load(struct fpga_manager *mgr,
- 
- int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info);
- 
-+int fpga_mgr_lock(struct fpga_manager *mgr);
-+void fpga_mgr_unlock(struct fpga_manager *mgr);
-+
- struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
- 
- struct fpga_manager *fpga_mgr_get(struct device *dev);
--- 
-2.7.4
+> +- regs			: base address and size for decoupler module
+> +- clocks		: input clock to IP
+> +- clock-names		: should contain "aclk"
+> +
+> +Optional properties:
+> +- bridge-enable		: 0 if driver should disable bridge at startup
+> +			  1 if driver should enable bridge at startup
+> +			  Default is to leave bridge in current state.
+
+Interesting that this is not a bool.
+But anyway this should be link to bridge binding because I expect this
+is the same for all.
+
+> +
+> +Example:
+> +	fpga-bridge@100000450 {
+> +		compatible = "xlnx,pr-decoupler-1.00";
+
+"xlnx,pr-decoupler-1.00", "xlnx,pr_decoupler";
+
+> +		regs = <0x1000 0x10>;
+> +		clocks = <&clkc 15>;
+> +		clock-names = "aclk";
+> +		bridge-enable = <0>;
+> +	};
+> 
+
+Thanks,
+Michal
