@@ -1,58 +1,44 @@
-Return-Path: <mdf@kernel.org>
-Return-Path: <mdf@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 1/2] doc: Add bindings document for Xilinx LogiCore PR Decoupler
-Date: Fri, 10 Mar 2017 13:30:34 -0800
-Message-Id: <1489181435-3151-1-git-send-email-mdf@kernel.org>
+Return-Path: <SRS0=kG60=3A=gmail.com=delicious.quinoa@kernel.org>
+Return-Path: <SRS0=kG60=3A=gmail.com=delicious.quinoa@kernel.org>
 MIME-Version: 1.0
+In-Reply-To: <1489781732-31518-1-git-send-email-mdf@kernel.org>
+References: <1489781732-31518-1-git-send-email-mdf@kernel.org>
+From: Alan Tull <delicious.quinoa@gmail.com>
+Date: Thu, 23 Mar 2017 13:29:14 -0500
+Message-ID: <CANk1AXTn3znQ=L-sy3SKMezC9YtMMTGxb3Zc7t+gE4a0MPxNzg@mail.gmail.com>
+Subject: Re: [PATCH] fpga: altera_freeze_bridge: Constify ops
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, Moritz Fischer <mdf@kernel.org>, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Moritz Fischer <mdf@kernel.org>
+Cc: linux-fpga@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This adds the binding documentation for the Xilinx LogiCORE PR
-Decoupler soft core.
+On Fri, Mar 17, 2017 at 3:15 PM, Moritz Fischer <mdf@kernel.org> wrote:
+> The ops are not changing, make them const.
+>
+> Signed-off-by: Moritz Fischer <mdf@kernel.org>
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-Cc: Michal Simek <michal.simek@xilinx.com>
-Cc: Sören Brinkmann <soren.brinkmann@xilinx.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org
----
- .../bindings/fpga/xilinx-pr-decoupler.txt          | 24 ++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
+Acked-by: Alan Tull <atull@kernel.org>
 
-diff --git a/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
-new file mode 100644
-index 0000000..b82b928
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
-@@ -0,0 +1,24 @@
-+Xilinx LogiCORE Partial Reconfig Decoupler Softcore
-+
-+The Xilinx LogiCORE Partial Reconfig Decoupler  manages one or more
-+decouplers / fpga bridges.
-+The controller can decouple/disable the bridges which prevents signal
-+changes from passing through the bridge.  The controller can also
-+couple /enable the bridges which allows traffic to pass through the
-+bridge normally.
-+
-+Required properties:
-+- compatible		: Should contain "xlnx,pr-decoupler-1.00"
-+- regs			: base address and size for decoupler module
-+
-+Optional properties:
-+- bridge-enable		: 0 if driver should disable bridge at startup
-+			  1 if driver should enable bridge at startup
-+			  Default is to leave bridge in current state.
-+
-+Example:
-+	fpga-bridge@100000450 {
-+		compatible = "xlnx,pr-decoupler-1.00";
-+		regs = <0x1000 0x10>;
-+		bridge-enable = <0>;
-+	};
--- 
-2.7.4
+> Cc: Alan Tull <atull@kernel.org>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-fpga@vger.kernel.org
+> ---
+>  drivers/fpga/altera-freeze-bridge.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
+> index 8dcd9fb..8c1bc7e 100644
+> --- a/drivers/fpga/altera-freeze-bridge.c
+> +++ b/drivers/fpga/altera-freeze-bridge.c
+> @@ -203,7 +203,7 @@ static int altera_freeze_br_enable_show(struct fpga_bridge *bridge)
+>         return priv->enable;
+>  }
+>
+> -static struct fpga_bridge_ops altera_freeze_br_br_ops = {
+> +static const struct fpga_bridge_ops altera_freeze_br_br_ops = {
+>         .enable_set = altera_freeze_br_enable_set,
+>         .enable_show = altera_freeze_br_enable_show,
+>  };
+> --
+> 2.7.4
+>
