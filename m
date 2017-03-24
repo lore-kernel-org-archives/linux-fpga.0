@@ -1,40 +1,51 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 1/8] fpga: altera_freeze_bridge: Constify ops
-Date: Thu, 23 Mar 2017 19:34:24 -0500
-Message-Id: <1490315671-5076-2-git-send-email-atull@kernel.org>
-In-Reply-To: <1490315671-5076-1-git-send-email-atull@kernel.org>
-References: <1490315671-5076-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <moritz.fischer@ettus.com>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
+Return-Path: <moritz.fischer.private@gmail.com>
+Date: Fri, 24 Mar 2017 12:11:09 -0700
+From: Moritz Fischer <moritz.fischer.private@gmail.com>
+Subject: Re: [PATCH 0/5] fpga: enhancements to support non-dt code
+Message-ID: <20170324191109.GB4736@tyrael.amer.corp.natinst.com>
+References: <20170313215333.3008-1-atull@kernel.org>
+ <CANk1AXSpNoKdpvpW2ikq6y+0o6JnfBexRkMhHUG+-u7rszoLHg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="CdrF4e02JqNVZeln"
+Content-Disposition: inline
+In-Reply-To: <CANk1AXSpNoKdpvpW2ikq6y+0o6JnfBexRkMhHUG+-u7rszoLHg@mail.gmail.com>
+To: Alan Tull <delicious.quinoa@gmail.com>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Moritz Fischer <mdf@kernel.org>
 
-The ops are not changing, make them const.
+--CdrF4e02JqNVZeln
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-fpga@vger.kernel.org
-Acked-by: Alan Tull <atull@kernel.org>
----
- drivers/fpga/altera-freeze-bridge.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Fri, Mar 24, 2017 at 01:09:22PM -0500, Alan Tull wrote:
+> On Mon, Mar 13, 2017 at 4:53 PM, Alan Tull <atull@kernel.org> wrote:
+> > Set of patches that supports writing code that uses
+> > FPGA regions without Device Tree overlays.
+>=20
+> OK here's where I try to clarify my intention for this code.  And
+> beg for reviews :)
 
-diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
-index 8dcd9fb..8c1bc7e 100644
---- a/drivers/fpga/altera-freeze-bridge.c
-+++ b/drivers/fpga/altera-freeze-bridge.c
-@@ -203,7 +203,7 @@ static int altera_freeze_br_enable_show(struct fpga_bridge *bridge)
- 	return priv->enable;
- }
- 
--static struct fpga_bridge_ops altera_freeze_br_br_ops = {
-+static const struct fpga_bridge_ops altera_freeze_br_br_ops = {
- 	.enable_set = altera_freeze_br_enable_set,
- 	.enable_show = altera_freeze_br_enable_show,
- };
--- 
-2.7.4
+It's on the todo list ;-)
+
+Cheers,
+
+Moritz
+
+--CdrF4e02JqNVZeln
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEcBAEBAgAGBQJY1W9LAAoJEL5CEHepFqovV8wH/RIeLej2uX5ihXPyYfRQYrsJ
+dOddETpAizGSC8L8rhclEe30tsJqEITVdJiMyB5SQRQQbTEr3CXsAwul9QXyPUOk
+93n9Q5PfKwX4NEAd59ZBL55DMqdRH2Gs8SdCfJPJ2uM1Na7cIElCdXTTUgm36ynJ
+E4QCvLbcIZ8CK/DrQylJGj8c9D9nTaQJOPjB9WmVZDbqV0XhrRqjwl/03yXSOmId
+mIL3o6DYL/EXDr5IvU8sR3h2mgjY/i8uv/fVyBUOaY1PVZeZ4XdfJkdecZvBVs96
+kHcpxNrAqdwvt5Y5lHXoAVVMAPZ3AYOEHQ2heiRvmyvbPTinEWNeY+K9+U53Njw=
+=ks+y
+-----END PGP SIGNATURE-----
+
+--CdrF4e02JqNVZeln--
