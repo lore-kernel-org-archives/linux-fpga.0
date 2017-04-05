@@ -1,91 +1,117 @@
-Return-Path: <mdf@kernel.org>
-Return-Path: <mdf@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH v5] dt-bindings: fpga: Add bindings document for Xilinx LogiCore PR Decoupler
-Date: Sun,  9 Apr 2017 10:10:31 -0700
-Message-Id: <1491757831-10510-1-git-send-email-mdf@kernel.org>
+Return-Path: <SRS0=IzCg=3N=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=IzCg=3N=intel.com=hao.wu@kernel.org>
+From: "Wu, Hao" <hao.wu@intel.com>
+Subject: RE: [PATCH 03/16] fpga: intel: add FPGA PCIe device driver
+Date: Wed, 5 Apr 2017 13:14:46 +0000
+Message-ID: <BE8371DA886269458E0220A16DC1F8277D619E1C@SHSMSX101.ccr.corp.intel.com>
+References: <1490875696-15145-1-git-send-email-hao.wu@intel.com>
+ <1490875696-15145-4-git-send-email-hao.wu@intel.com>
+ <20170404021028.GA8866@tyrael.amer.corp.natinst.com>
+In-Reply-To: <20170404021028.GA8866@tyrael.amer.corp.natinst.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, robh+dt@kernel.org, Moritz Fischer <mdf@kernel.org>, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: "atull@kernel.org" <atull@kernel.org>, "moritz.fischer@ettus.com" <moritz.fischer@ettus.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, "Whisonant, Tim" <tim.whisonant@intel.com>, "Luebbers, Enno" <enno.luebbers@intel.com>, Rao,, Christopher  <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>, "Wu, Hao" <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This adds the binding documentation for the Xilinx LogiCORE PR
-Decoupler soft core.
+> > +#include <linux/pci.h>
+> > +#include <linux/types.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/stddef.h>
+> > +#include <linux/errno.h>
+> > +#include <linux/aer.h>
+> > +
+> > +#define DRV_VERSION	"EXPERIMENTAL VERSION"
+>=20
+> Is that a leftover? :)
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Cc: Sören Brinkmann <soren.brinkmann@xilinx.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org
----
+Sorry, will fix this.
 
-Changes from v4:
-- Ssubject line
-- Replaced 'or' by 'followed by' as suggested by Rob
+> > +#define DRV_NAME	"intel-fpga-pci"
+> > +
+> > +/* PCI Device ID */
+> > +#define PCIe_DEVICE_ID_PF_INT_5_X	0xBCBD
+> > +#define PCIe_DEVICE_ID_PF_INT_6_X	0xBCC0
+> > +#define PCIe_DEVICE_ID_PF_DSC_1_X	0x09C4
+> > +/* VF Device */
+> > +#define PCIe_DEVICE_ID_VF_INT_5_X	0xBCBF
+> > +#define PCIe_DEVICE_ID_VF_INT_6_X	0xBCC1
+> > +#define PCIe_DEVICE_ID_VF_DSC_1_X	0x09C5
+> > +
+> > +static struct pci_device_id cci_pcie_id_tbl[] =3D {
+> > +	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_PF_INT_5_X),},
+> > +	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_VF_INT_5_X),},
+> > +	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_PF_INT_6_X),},
+> > +	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_VF_INT_6_X),},
+> > +	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_PF_DSC_1_X),},
+> > +	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_VF_DSC_1_X),},
+> > +	{0,}
+> > +};
+> > +MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
+> > +
+> > +static
+> > +int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *=
+pcidevid)
+> > +{
+> > +	int ret;
+> > +
+> > +	ret =3D pci_enable_device(pcidev);
+> > +	if (ret < 0) {
+> > +		dev_err(&pcidev->dev, "Failed to enable device %d.\n", ret);
+> > +		goto exit;
+> Why not 'return ret' here ?
 
-Changes from v3:
-- Addressed Michal's comments
-- Addressed Alan's Comments
-- Added Alan's Acked-by
+Yes, you are right, will fix this.
 
-Changes from v2:
-- Added refence to generic fpga-region bindings
-- Fixed up reg property in example
-- Added fallback to "xlnx,pr-decoupler" without version
+> > +	}
+> > +
+> > +	ret =3D pci_enable_pcie_error_reporting(pcidev);
+> > +	if (ret && ret !=3D -EINVAL)
+> > +		dev_info(&pcidev->dev, "PCIE AER unavailable %d.\n", ret);
+>=20
+> What if it is EINVAL?
 
-Changes from v1:
-- Added clock names & clock to example
-- Merged some of the description from Michal's version
+pci_enable_pcie_error_reporting is always return -EINVAL when CONFIG_PCIEAE=
+R is not selected.
+Then we don't need this boring message. : )
 
----
- .../bindings/fpga/xilinx-pr-decoupler.txt          | 36 ++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
+>=20
+> > +
+> > +	ret =3D pci_request_regions(pcidev, DRV_NAME);
+> > +	if (ret) {
+> > +		dev_err(&pcidev->dev, "Failed to request regions.\n");
+> > +		goto disable_error_report_exit;
+> > +	}
+> > +
+> > +	pci_set_master(pcidev);
+> > +	pci_save_state(pcidev);
+> > +
+> > +	if (!dma_set_mask(&pcidev->dev, DMA_BIT_MASK(64))) {
+> > +		dma_set_coherent_mask(&pcidev->dev, DMA_BIT_MASK(64));
+> > +	} else if (!dma_set_mask(&pcidev->dev, DMA_BIT_MASK(32))) {
+> > +		dma_set_coherent_mask(&pcidev->dev, DMA_BIT_MASK(32));
+> > +	} else {
+> > +		ret =3D -EIO;
+> > +		dev_err(&pcidev->dev, "No suitable DMA support available.\n");
+> > +		goto release_region_exit;
+> > +	}
+> > +
+> > +	/* TODO: create and add the platform device per feature list */
+> > +	return 0;
+> > +
+> > +release_region_exit:
+> > +	pci_release_regions(pcidev);
+> > +disable_error_report_exit:
+> > +	pci_disable_pcie_error_reporting(pcidev);
+> > +	pci_disable_device(pcidev);
+> > +exit:
+> > +	return ret;
+> If you return as suggested above, this can go away.
 
-diff --git a/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
-new file mode 100644
-index 0000000..b2c58fb
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
-@@ -0,0 +1,36 @@
-+Xilinx LogiCORE Partial Reconfig Decoupler Softcore
-+
-+The Xilinx LogiCORE Partial Reconfig Decoupler manages one or more
-+decouplers / fpga bridges.
-+The controller can decouple/disable the bridges which prevents signal
-+changes from passing through the bridge.  The controller can also
-+couple / enable the bridges which allows traffic to pass through the
-+bridge normally.
-+
-+The Driver supports only MMIO handling. A PR region can have multiple
-+PR Decouplers which can be handled independently or chained via decouple/
-+decouple_status signals.
-+
-+Required properties:
-+- compatible		: Should contain "xlnx,pr-decoupler-1.00" followed by
-+                          "xlnx,pr-decoupler"
-+- regs			: base address and size for decoupler module
-+- clocks		: input clock to IP
-+- clock-names		: should contain "aclk"
-+
-+Optional properties:
-+- bridge-enable		: 0 if driver should disable bridge at startup
-+			  1 if driver should enable bridge at startup
-+			  Default is to leave bridge in current state.
-+
-+See Documentation/devicetree/bindings/fpga/fpga-region.txt for generic bindings.
-+
-+Example:
-+	fpga-bridge@100000450 {
-+		compatible = "xlnx,pr-decoupler-1.00",
-+			     "xlnx-pr-decoupler";
-+		regs = <0x10000045 0x10>;
-+		clocks = <&clkc 15>;
-+		clock-names = "aclk";
-+		bridge-enable = <0>;
-+	};
--- 
-2.7.4
+Yes, you are right. Will fix this in next version.
+Thanks a lot for your review and comments. : )
+
+Hao
