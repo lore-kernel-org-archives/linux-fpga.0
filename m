@@ -1,74 +1,83 @@
-Date: Tue, 11 Apr 2017 07:57:56 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH] fpga altera-hps2fpga: disable/unprepare clock on error
- in alt_fpga_bridge_probe()
-Message-ID: <20170411145756.GA1656@tyrael.amer.corp.natinst.com>
-References: <20170411092254.19712-1-tklauser@distanz.ch>
- <CANk1AXQOH+6sZ-JHuwXviPw6--Qpa4C8xkHg3wu5-1e4ABgRHg@mail.gmail.com>
+Return-Path: <SRS0=6hqy=3N=linux.intel.com=matthew.gerlach@kernel.org>
+Return-Path: <SRS0=6hqy=3N=linux.intel.com=matthew.gerlach@kernel.org>
+Date: Wed, 5 Apr 2017 15:25:24 -0700 (PDT)
+From: matthew.gerlach@linux.intel.com
+Subject: Re: [PATCH] fpga fr br: fix warning for unexpected version number
+In-Reply-To: <CAAtXAHdZwyV2Wx3ZvK37i85zY8cc-rWcA=e74KCmFvgByg+k1Q@mail.gmail.com>
+Message-ID: <alpine.DEB.2.20.1704051521090.2392@mgerlach-VirtualBox>
+References: <1491419155-17440-1-git-send-email-matthew.gerlach@linux.intel.com> <CAAtXAHdZwyV2Wx3ZvK37i85zY8cc-rWcA=e74KCmFvgByg+k1Q@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CANk1AXQOH+6sZ-JHuwXviPw6--Qpa4C8xkHg3wu5-1e4ABgRHg@mail.gmail.com>
-To: Alan Tull <atull@kernel.org>
-Cc: Tobias Klauser <tklauser@distanz.ch>, Moritz Fischer <moritz.fischer@ettus.com>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Apr 11, 2017 at 09:53:38AM -0500, Alan Tull wrote:
-> On Tue, Apr 11, 2017 at 4:22 AM, Tobias Klauser <tklauser@distanz.ch> wrote:
-> 
-> Hi Tobias,
-> 
-> Thanks!
-> 
-> > If either _alt_hps2fpga_enable_set() or fpga_bridge_register() fail in
-> > alt_fpga_bridge_probe(), the clock remains enabled and prepared. Also,
-> > in the error path for _alt_hps2fpga_enable_set() a call to
-> > fpga_bridge_unregister() is made even though the bridge was not
-> > registered yet.
-> >
-> > Remove the unnecessary call to fpga_bridge_unregister() and call
-> > clk_disable_unprepare() in both error paths in order to make sure the
-> > clock gets properly disabled and unprepared.
-> >
-> > Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
-> 
-Acked-by: Moritz Fischer <mdf@kernel.org>
-> Signed-off-by: Alan Tull <atull@kernel.org>
-> 
-> > ---
-> >  drivers/fpga/altera-hps2fpga.c | 15 +++++++++------
-> >  1 file changed, 9 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
-> > index 4b354c79be31..3066b805f2d0 100644
-> > --- a/drivers/fpga/altera-hps2fpga.c
-> > +++ b/drivers/fpga/altera-hps2fpga.c
-> > @@ -181,15 +181,18 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
-> >                                  (enable ? "enabling" : "disabling"));
-> >
-> >                         ret = _alt_hps2fpga_enable_set(priv, enable);
-> > -                       if (ret) {
-> > -                               fpga_bridge_unregister(&pdev->dev);
-> > -                               return ret;
-> > -                       }
-> > +                       if (ret)
-> > +                               goto err;
-> >                 }
-> >         }
-> >
-> > -       return fpga_bridge_register(dev, priv->name, &altera_hps2fpga_br_ops,
-> > -                                   priv);
-> > +       ret = fpga_bridge_register(dev, priv->name, &altera_hps2fpga_br_ops,
-> > +                                  priv);
-> > +err:
-> > +       if (ret)
-> > +               clk_disable_unprepare(priv->clk);
-> > +
-> > +       return ret;
-> >  }
-> >
-> >  static int alt_fpga_bridge_remove(struct platform_device *pdev)
-> > --
-> > 2.12.2
-> >
-> >
+
+
+On Wed, 5 Apr 2017, Moritz Fischer wrote:
+
+> Hi Matthew,
+>
+
+Hi Moritz,
+
+
+> On Wed, Apr 5, 2017 at 12:05 PM,  <matthew.gerlach@linux.intel.com> wrote:
+>> From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+>>
+>> The value in the version register of the altera freeze bridge
+>> controller changed from the beta value of 2 to the
+>> value of 0xad000003 in the official release of the IP.
+>> This patch supports the old and new version numbers
+>> without printing an warning.
+>>
+>> Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+>> ---
+>>  drivers/fpga/altera-freeze-bridge.c | 9 ++++++---
+>>  1 file changed, 6 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
+>> index 8dcd9fb..bdfd5eb 100644
+>> --- a/drivers/fpga/altera-freeze-bridge.c
+>> +++ b/drivers/fpga/altera-freeze-bridge.c
+>> @@ -28,6 +28,7 @@
+>>  #define FREEZE_CSR_REG_VERSION                 12
+>>
+>>  #define FREEZE_CSR_SUPPORTED_VERSION           2
+>> +#define FREEZE_CSR_OFFICIAL_VERSION            0xad000003
+>>
+>>  #define FREEZE_CSR_STATUS_FREEZE_REQ_DONE      BIT(0)
+>>  #define FREEZE_CSR_STATUS_UNFREEZE_REQ_DONE    BIT(1)
+>> @@ -241,10 +242,12 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+>>                 priv->enable = 1;
+>>
+>>         revision = readl(priv->base_addr + FREEZE_CSR_REG_VERSION);
+>> -       if (revision != FREEZE_CSR_SUPPORTED_VERSION)
+>> +       if ((revision != FREEZE_CSR_SUPPORTED_VERSION) &&
+>> +           (revision != FREEZE_CSR_OFFICIAL_VERSION))
+>>                 dev_warn(dev,
+>> -                        "%s Freeze Controller unexpected revision %d != %d\n",
+>> -                        __func__, revision, FREEZE_CSR_SUPPORTED_VERSION);
+>> +                        "%s unexpected revision 0x%x != 0x%x != 0x%x\n",
+>> +                        __func__, revision, FREEZE_CSR_SUPPORTED_VERSION,
+>> +                        FREEZE_CSR_OFFICIAL_VERSION);
+>
+> Maybe you actually wanna bail out if you read a random other value
+> instead of what you
+> expect instead of printing a warning.
+
+I thought about making it an error if the version didn't match, but it was 
+a dev_warn() before and that allowed folks to use the "old" driver with 
+the new IP version.
+
+>>
+>>         return fpga_bridge_register(dev, FREEZE_BRIDGE_NAME,
+>>                                     &altera_freeze_br_br_ops, priv);
+>> --
+>> 2.7.4
+>>
+>
+> Cheers,
+>
+> Moritz
+>
