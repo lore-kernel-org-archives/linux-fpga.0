@@ -1,83 +1,34 @@
-Return-Path: <SRS0=6hqy=3N=linux.intel.com=matthew.gerlach@kernel.org>
-Return-Path: <SRS0=6hqy=3N=linux.intel.com=matthew.gerlach@kernel.org>
-Date: Wed, 5 Apr 2017 15:25:24 -0700 (PDT)
-From: matthew.gerlach@linux.intel.com
-Subject: Re: [PATCH] fpga fr br: fix warning for unexpected version number
-In-Reply-To: <CAAtXAHdZwyV2Wx3ZvK37i85zY8cc-rWcA=e74KCmFvgByg+k1Q@mail.gmail.com>
-Message-ID: <alpine.DEB.2.20.1704051521090.2392@mgerlach-VirtualBox>
-References: <1491419155-17440-1-git-send-email-matthew.gerlach@linux.intel.com> <CAAtXAHdZwyV2Wx3ZvK37i85zY8cc-rWcA=e74KCmFvgByg+k1Q@mail.gmail.com>
+Return-Path: <SRS0=oqDm=3U=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=oqDm=3U=intel.com=hao.wu@kernel.org>
+From: "Wu, Hao" <hao.wu@intel.com>
+Subject: RE: [PATCH 01/16] docs: fpga: add a document for Intel FPGA driver
+ overview
+Date: Wed, 12 Apr 2017 03:22:05 +0000
+Message-ID: <BE8371DA886269458E0220A16DC1F8277D622C9E@SHSMSX101.ccr.corp.intel.com>
+References: <1490875696-15145-1-git-send-email-hao.wu@intel.com>
+ <1490875696-15145-2-git-send-email-hao.wu@intel.com>
+ <alpine.DEB.2.20.1703310907270.2072@mgerlach-VirtualBox>
+ <CANk1AXTPM+9Xdahw2sy4kSJ-Dket3Z5eS83AvW4agwSvvoFSjQ@mail.gmail.com>
+ <20170401111619.GB4804@hao-dev>
+ <20170402144146.GA30775@tyrael.amer.corp.natinst.com>
+ <CANk1AXQNidgYbRpO+3Ap32_DXog9M2BxdW+MK0vM8yZAi=jzhg@mail.gmail.com>
+In-Reply-To: <CANk1AXQNidgYbRpO+3Ap32_DXog9M2BxdW+MK0vM8yZAi=jzhg@mail.gmail.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: "matthew.gerlach@linux.intel.com" <matthew.gerlach@linux.intel.com>, Moritz Fischer <moritz.fischer@ettus.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, "Luebbers, Enno" <enno.luebbers@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-
-
-On Wed, 5 Apr 2017, Moritz Fischer wrote:
-
-> Hi Matthew,
->
-
-Hi Moritz,
-
-
-> On Wed, Apr 5, 2017 at 12:05 PM,  <matthew.gerlach@linux.intel.com> wrote:
->> From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
->>
->> The value in the version register of the altera freeze bridge
->> controller changed from the beta value of 2 to the
->> value of 0xad000003 in the official release of the IP.
->> This patch supports the old and new version numbers
->> without printing an warning.
->>
->> Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
->> ---
->>  drivers/fpga/altera-freeze-bridge.c | 9 ++++++---
->>  1 file changed, 6 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
->> index 8dcd9fb..bdfd5eb 100644
->> --- a/drivers/fpga/altera-freeze-bridge.c
->> +++ b/drivers/fpga/altera-freeze-bridge.c
->> @@ -28,6 +28,7 @@
->>  #define FREEZE_CSR_REG_VERSION                 12
->>
->>  #define FREEZE_CSR_SUPPORTED_VERSION           2
->> +#define FREEZE_CSR_OFFICIAL_VERSION            0xad000003
->>
->>  #define FREEZE_CSR_STATUS_FREEZE_REQ_DONE      BIT(0)
->>  #define FREEZE_CSR_STATUS_UNFREEZE_REQ_DONE    BIT(1)
->> @@ -241,10 +242,12 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
->>                 priv->enable = 1;
->>
->>         revision = readl(priv->base_addr + FREEZE_CSR_REG_VERSION);
->> -       if (revision != FREEZE_CSR_SUPPORTED_VERSION)
->> +       if ((revision != FREEZE_CSR_SUPPORTED_VERSION) &&
->> +           (revision != FREEZE_CSR_OFFICIAL_VERSION))
->>                 dev_warn(dev,
->> -                        "%s Freeze Controller unexpected revision %d != %d\n",
->> -                        __func__, revision, FREEZE_CSR_SUPPORTED_VERSION);
->> +                        "%s unexpected revision 0x%x != 0x%x != 0x%x\n",
->> +                        __func__, revision, FREEZE_CSR_SUPPORTED_VERSION,
->> +                        FREEZE_CSR_OFFICIAL_VERSION);
->
-> Maybe you actually wanna bail out if you read a random other value
-> instead of what you
-> expect instead of printing a warning.
-
-I thought about making it an error if the version didn't match, but it was 
-a dev_warn() before and that allowed folks to use the "old" driver with 
-the new IP version.
-
->>
->>         return fpga_bridge_register(dev, FREEZE_BRIDGE_NAME,
->>                                     &altera_freeze_br_br_ops, priv);
->> --
->> 2.7.4
->>
->
-> Cheers,
->
-> Moritz
->
+PiA+PiA+ID4NCj4gPj4gPiA+DQo+ID4+ID4gPiBEb2VzIHRoaXMgSFcgQXJjaGl0ZWN0dXJlIHJl
+cXVpcmUgYW4gSW50ZWwgRlBHQT8gIENvdWxkbid0IGFueSB2ZW5kb3JzDQo+IEZQR0ENCj4gPj4g
+PiA+IGJlIHVzZWQgYXMgbG9uZyBhcyBpdCBwcmVzZW50ZWQgaXRzZWxmIHRoZSBQQ0llIGJ1cyB0
+aGUgc2FtZSBhbmQgY29udGFpbmVkDQo+ID4+ID4gPiBhbiBhcHByb3ByaWF0ZSBEZXZpY2UgRmVh
+dHVyZSBMaXN0Pw0KPiA+DQo+ID4gSSB0aGluayB0aGlzIGlzIGEgZ29vZCAoYW5kIGltcG9ydGFu
+dCkgcG9pbnQuIEVzcGVjaWFsbHkgd2hlbiBzeXNmcw0KPiA+IGVudHJpZXMgJiBpb2N0bHMgY29u
+c3RpdHV0aW5nIEFCSSBkZXBlbmQgb24gaXQuDQo+IA0KPiBQbGVhc2UgY2MgbGludXgtYXBpQHZn
+ZXIua2VybmVsLm9yZyBvbiB5b3VyIG5leHQgdmVyc2lvbiBvZiB0aGlzIGFzDQo+IGxpbnV4L0Rv
+Y3VtZW50YXRpb24vcHJvY2Vzcy9hZGRpbmctc3lzY2FsbHMucnN0IHNwZWNpZmllcyBmb3IgbmV3
+IHN5c3RlbSBjYWxscy4NCj4gDQoNClN1cmUsIHdpbGwgY2MgbGludXgtYXBpQHZnZXIua2VybmVs
+Lm9yZyBvbiB0aGUgbmV4dCB2ZXJzaW9uIHBhdGNoIHNldC4NCg0KVGhhbmtzDQpIYW8NCg==
