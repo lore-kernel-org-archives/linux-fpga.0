@@ -1,769 +1,610 @@
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 14/22] fpga: intel: fme: add partial reconfiguration sub feature support
-Date: Mon, 26 Jun 2017 09:52:10 +0800
-Message-Id: <1498441938-14046-15-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v2 21/22] fpga: intel: afu: add user afu sub feature support
+Date: Mon, 26 Jun 2017 09:52:17 +0800
+Message-Id: <1498441938-14046-22-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
 References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Xiao Guangrong <guangrong.xiao@linux.intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Kang Luwei <luwei.kang@intel.com>
+From: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 
-Partial Reconfiguration (PR) is the most important function for FME. It
-allows reconfiguration for given Port/Accelerated Function Unit (AFU).
+User Accelerated Function Unit sub feature exposes the MMIO region of
+the AFU. After valid green bitstream (GBS) is programmed and port is
+enabled, then this MMIO region could be accessed.
 
-It creates platform devices for fpga-mgr, fpga-regions and fpga-bridges,
-and invokes fpga-region's interface (fpga_region_program_fpga) for PR
-operation once PR request received via ioctl. Below user space interface
-is exposed by this sub feature.
+This patch adds support to enumerate the AFU MMIO region and expose it
+to userspace via mmap file operation. Below interfaces are exposed to user:
 
-Ioctl interface:
-* FPGA_FME_PORT_PR
-  Do partial reconfiguration per information from userspace, including
-  target port(AFU), buffer size and address info. It returns error code
-  to userspace if failed. For detailed PR error information, user needs
-  to read fpga-mgr's status sysfs interface.
+Sysfs interface:
+* /sys/class/fpga/<fpga.x>/<intel-fpga-port.x>/afu_id
+  Read-only. Indicate which green bitstream is programmed to this AFU.
+
+Ioctl interfaces:
+* FPGA_PORT_GET_INFO
+  Provide info to userspace on the number of supported region.
+  Only UAFU region is supported now.
+
+* FPGA_PORT_GET_REGION_INFO
+  Provide region information, including access permission, region size,
+  offset from the start of device fd.
 
 Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
 Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
 Signed-off-by: Shiva Rao <shiva.rao@intel.com>
 Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Kang Luwei <luwei.kang@intel.com>
 Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ---
 v2: moved the code to drivers/fpga folder as suggested by Alan Tull.
+    add sysfs documentation.
     switched to GPLv2 license.
-    removed status from FPGA_FME_PORT_PR ioctl data structure.
-    added platform devices creation for fpga-mgr/fpga-region/fpga-bridge.
-    switched to fpga-region interface fpga_region_program_fpga for PR.
-    fixed comments from Alan Tull on FPGA_MGR_PARTIAL_RECONFIG flag usage.
-    fixed kbuild warnings.
 ---
- drivers/fpga/Makefile           |   2 +-
- drivers/fpga/intel-fme-main.c   |  44 +++-
- drivers/fpga/intel-fme-pr.c     | 494 ++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/intel-fme.h        |  57 +++++
- include/uapi/linux/intel-fpga.h |  27 +++
- 5 files changed, 622 insertions(+), 2 deletions(-)
- create mode 100644 drivers/fpga/intel-fme-pr.c
- create mode 100644 drivers/fpga/intel-fme.h
+ .../ABI/testing/sysfs-platform-intel-fpga-afu      |   9 +
+ drivers/fpga/Makefile                              |   2 +-
+ drivers/fpga/intel-afu-main.c                      | 204 ++++++++++++++++++++-
+ drivers/fpga/intel-afu-region.c                    | 127 +++++++++++++
+ drivers/fpga/intel-afu.h                           |  52 ++++++
+ include/uapi/linux/intel-fpga.h                    |  47 +++++
+ 6 files changed, 437 insertions(+), 4 deletions(-)
+ create mode 100644 drivers/fpga/intel-afu-region.c
+ create mode 100644 drivers/fpga/intel-afu.h
 
+diff --git a/Documentation/ABI/testing/sysfs-platform-intel-fpga-afu b/Documentation/ABI/testing/sysfs-platform-intel-fpga-afu
+index 8ad22c9..6cd8781 100644
+--- a/Documentation/ABI/testing/sysfs-platform-intel-fpga-afu
++++ b/Documentation/ABI/testing/sysfs-platform-intel-fpga-afu
+@@ -5,3 +5,12 @@ Contact:	Wu Hao <hao.wu@intel.com>
+ Description:	Read-only. It returns id of this port. One Intel FPGA device
+ 		may have more than one port. Userspace could use this id to
+ 		distinguish different ports under same FPGA device.
++
++What:		/sys/bus/platform/devices/intel-fpga-port.0/afu_id
++Date:		June 2017
++KernelVersion:  4.12
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. User can program different green bitstreams (GBS) to
++		FPGA Accelerator Function Unit (AFU) for different functions.
++		It returns uuid which could be used to identify which GBS is
++		programmed in this AFU.
 diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 09bf281..acda5ca 100644
+index ce08833..45c0538 100644
 --- a/drivers/fpga/Makefile
 +++ b/drivers/fpga/Makefile
-@@ -33,4 +33,4 @@ obj-$(CONFIG_INTEL_FPGA_PCI)		+= intel-fpga-pci.o
- obj-$(CONFIG_INTEL_FPGA_FME)		+= intel-fpga-fme.o
+@@ -38,4 +38,4 @@ obj-$(CONFIG_INTEL_FPGA_AFU)		+= intel-fpga-afu.o
  
  intel-fpga-pci-objs := intel-pcie.o intel-feature-dev.o
--intel-fpga-fme-objs := intel-fme-main.o
-+intel-fpga-fme-objs := intel-fme-main.o intel-fme-pr.o
-diff --git a/drivers/fpga/intel-fme-main.c b/drivers/fpga/intel-fme-main.c
-index 9fd0baf..b35bed1 100644
---- a/drivers/fpga/intel-fme-main.c
-+++ b/drivers/fpga/intel-fme-main.c
-@@ -21,6 +21,7 @@
+ intel-fpga-fme-objs := intel-fme-main.o intel-fme-pr.o
+-intel-fpga-afu-objs := intel-afu-main.o
++intel-fpga-afu-objs := intel-afu-main.o intel-afu-region.o
+diff --git a/drivers/fpga/intel-afu-main.c b/drivers/fpga/intel-afu-main.c
+index 22f77f2..8c7aa70 100644
+--- a/drivers/fpga/intel-afu-main.c
++++ b/drivers/fpga/intel-afu-main.c
+@@ -18,9 +18,10 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/uaccess.h>
  #include <linux/intel-fpga.h>
  
- #include "intel-feature-dev.h"
-+#include "intel-fme.h"
+-#include "intel-feature-dev.h"
++#include "intel-afu.h"
  
- static ssize_t ports_num_show(struct device *dev,
- 			      struct device_attribute *attr, char *buf)
-@@ -99,6 +100,10 @@ struct feature_ops fme_hdr_ops = {
- 		.ops = &fme_hdr_ops,
+ static ssize_t
+ id_show(struct device *dev, struct device_attribute *attr, char *buf)
+@@ -80,12 +81,69 @@ struct feature_ops port_hdr_ops = {
+ 	.ioctl = port_hdr_ioctl,
+ };
+ 
++static ssize_t
++afu_id_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct feature_platform_data *pdata = dev_get_platdata(dev);
++	struct feature_port_header *port_hdr =
++			get_feature_ioaddr_by_index(dev, PORT_FEATURE_ID_UAFU);
++	u64 guidl;
++	u64 guidh;
++
++	mutex_lock(&pdata->lock);
++	guidl = readq(&port_hdr->afu_header.guid.b[0]);
++	guidh = readq(&port_hdr->afu_header.guid.b[8]);
++	mutex_unlock(&pdata->lock);
++
++	return scnprintf(buf, PAGE_SIZE, "%016llx%016llx\n", guidh, guidl);
++}
++static DEVICE_ATTR_RO(afu_id);
++
++static const struct attribute *port_uafu_attrs[] = {
++	&dev_attr_afu_id.attr,
++	NULL
++};
++
++static int port_uafu_init(struct platform_device *pdev, struct feature *feature)
++{
++	struct resource *res = &pdev->resource[feature->resource_index];
++	u32 flags = FPGA_REGION_READ | FPGA_REGION_WRITE | FPGA_REGION_MMAP;
++	int ret;
++
++	dev_dbg(&pdev->dev, "PORT AFU Init.\n");
++
++	ret = afu_region_add(dev_get_platdata(&pdev->dev),
++			     FPGA_PORT_INDEX_UAFU, resource_size(res),
++			     res->start, flags);
++	if (ret)
++		return ret;
++
++	return sysfs_create_files(&pdev->dev.kobj, port_uafu_attrs);
++}
++
++static void port_uafu_uinit(struct platform_device *pdev,
++					struct feature *feature)
++{
++	dev_dbg(&pdev->dev, "PORT AFU UInit.\n");
++
++	sysfs_remove_files(&pdev->dev.kobj, port_uafu_attrs);
++}
++
++struct feature_ops port_uafu_ops = {
++	.init = port_uafu_init,
++	.uinit = port_uafu_uinit,
++};
++
+ static struct feature_driver port_feature_drvs[] = {
+ 	{
+ 		.name = PORT_FEATURE_HEADER,
+ 		.ops = &port_hdr_ops,
  	},
  	{
-+		.name = FME_FEATURE_PR_MGMT,
-+		.ops = &pr_mgmt_ops,
++		.name = PORT_FEATURE_UAFU,
++		.ops = &port_uafu_ops,
 +	},
 +	{
  		.ops = NULL,
- 	},
+ 	}
  };
-@@ -180,14 +185,48 @@ static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	.unlocked_ioctl = fme_ioctl,
- };
+@@ -129,6 +187,64 @@ static long afu_ioctl_check_extension(struct feature_platform_data *pdata,
+ 	return 0;
+ }
  
-+static int fme_dev_init(struct platform_device *pdev)
++static long
++afu_ioctl_get_info(struct feature_platform_data *pdata, void __user *arg)
 +{
-+	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct fpga_fme *fme;
++	struct fpga_port_info info;
++	struct fpga_afu *afu;
++	unsigned long minsz;
 +
-+	fme = devm_kzalloc(&pdev->dev, sizeof(*fme), GFP_KERNEL);
-+	if (!fme)
-+		return -ENOMEM;
++	minsz = offsetofend(struct fpga_port_info, num_umsgs);
 +
-+	fme->pdata = pdata;
++	if (copy_from_user(&info, arg, minsz))
++		return -EFAULT;
++
++	if (info.argsz < minsz)
++		return -EINVAL;
 +
 +	mutex_lock(&pdata->lock);
-+	fpga_pdata_set_private(pdata, fme);
++	afu = fpga_pdata_get_private(pdata);
++	info.flags = 0;
++	info.num_regions = afu->num_regions;
++	info.num_umsgs = afu->num_umsgs;
++	mutex_unlock(&pdata->lock);
++
++	if (copy_to_user(arg, &info, sizeof(info)))
++		return -EFAULT;
++
++	return 0;
++}
++
++static long
++afu_ioctl_get_region_info(struct feature_platform_data *pdata, void __user *arg)
++{
++	struct fpga_port_region_info rinfo;
++	struct fpga_afu_region region;
++	unsigned long minsz;
++	long ret;
++
++	minsz = offsetofend(struct fpga_port_region_info, offset);
++
++	if (copy_from_user(&rinfo, arg, minsz))
++		return -EFAULT;
++
++	if (rinfo.argsz < minsz || rinfo.padding)
++		return -EINVAL;
++
++	ret = afu_get_region_by_index(pdata, rinfo.index, &region);
++	if (ret)
++		return ret;
++
++	rinfo.flags = region.flags;
++	rinfo.size = region.size;
++	rinfo.offset = region.offset;
++
++	if (copy_to_user(arg, &rinfo, sizeof(rinfo)))
++		return -EFAULT;
++
++	return 0;
++}
++
+ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ {
+ 	struct platform_device *pdev = filp->private_data;
+@@ -143,6 +259,10 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 		return FPGA_API_VERSION;
+ 	case FPGA_CHECK_EXTENSION:
+ 		return afu_ioctl_check_extension(pdata, arg);
++	case FPGA_PORT_GET_INFO:
++		return afu_ioctl_get_info(pdata, (void __user *)arg);
++	case FPGA_PORT_GET_REGION_INFO:
++		return afu_ioctl_get_region_info(pdata, (void __user *)arg);
+ 	default:
+ 		/*
+ 		 * Let sub-feature's ioctl function to handle the cmd
+@@ -163,27 +283,104 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 	return -EINVAL;
+ }
+ 
++static int afu_mmap(struct file *filp, struct vm_area_struct *vma)
++{
++	struct fpga_afu_region region;
++	struct platform_device *pdev = filp->private_data;
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	u64 size = vma->vm_end - vma->vm_start;
++	u64 offset;
++	int ret;
++
++	if (!(vma->vm_flags & VM_SHARED))
++		return -EINVAL;
++
++	offset = vma->vm_pgoff << PAGE_SHIFT;
++	ret = afu_get_region_by_offset(pdata, offset, size, &region);
++	if (ret)
++		return ret;
++
++	if (!(region.flags & FPGA_REGION_MMAP))
++		return -EINVAL;
++
++	if ((vma->vm_flags & VM_READ) && !(region.flags & FPGA_REGION_READ))
++		return -EPERM;
++
++	if ((vma->vm_flags & VM_WRITE) && !(region.flags & FPGA_REGION_WRITE))
++		return -EPERM;
++
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++	return remap_pfn_range(vma, vma->vm_start,
++			(region.phys + (offset - region.offset)) >> PAGE_SHIFT,
++			size, vma->vm_page_prot);
++}
++
+ static const struct file_operations afu_fops = {
+ 	.owner = THIS_MODULE,
+ 	.open = afu_open,
+ 	.release = afu_release,
+ 	.unlocked_ioctl = afu_ioctl,
++	.mmap = afu_mmap,
+ };
+ 
++static int afu_dev_init(struct platform_device *pdev)
++{
++	struct fpga_afu *afu;
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++
++	afu = devm_kzalloc(&pdev->dev, sizeof(*afu), GFP_KERNEL);
++	if (!afu)
++		return -ENOMEM;
++
++	afu->pdata = pdata;
++
++	mutex_lock(&pdata->lock);
++	fpga_pdata_set_private(pdata, afu);
++	afu_region_init(pdata);
 +	mutex_unlock(&pdata->lock);
 +	return 0;
 +}
 +
-+static void fme_dev_destroy(struct platform_device *pdev)
++static int afu_dev_destroy(struct platform_device *pdev)
 +{
 +	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct fpga_fme *fme;
++	struct fpga_afu *afu;
 +
 +	mutex_lock(&pdata->lock);
-+	fme = fpga_pdata_get_private(pdata);
++	afu = fpga_pdata_get_private(pdata);
++	afu_region_destroy(pdata);
 +	fpga_pdata_set_private(pdata, NULL);
 +	mutex_unlock(&pdata->lock);
 +
-+	devm_kfree(&pdev->dev, fme);
++	devm_kfree(&pdev->dev, afu);
++	return 0;
 +}
 +
- static int fme_probe(struct platform_device *pdev)
+ static int afu_probe(struct platform_device *pdev)
  {
  	int ret;
  
--	ret = fpga_dev_feature_init(pdev, fme_feature_drvs);
-+	ret = fme_dev_init(pdev);
- 	if (ret)
- 		goto exit;
+ 	dev_dbg(&pdev->dev, "%s\n", __func__);
  
-+	ret = fpga_dev_feature_init(pdev, fme_feature_drvs);
++	ret = afu_dev_init(pdev);
 +	if (ret)
-+		goto dev_destroy;
++		goto exit;
 +
- 	ret = fpga_register_dev_ops(pdev, &fme_fops, THIS_MODULE);
+ 	ret = fpga_dev_feature_init(pdev, port_feature_drvs);
  	if (ret)
- 		goto feature_uinit;
-@@ -196,6 +235,8 @@ static int fme_probe(struct platform_device *pdev)
+-		return ret;
++		goto dev_destroy;
  
- feature_uinit:
- 	fpga_dev_feature_uinit(pdev);
+ 	ret = fpga_register_dev_ops(pdev, &afu_fops, THIS_MODULE);
+-	if (ret)
++	if (ret) {
+ 		fpga_dev_feature_uinit(pdev);
++		goto dev_destroy;
++	}
++
++	return 0;
+ 
 +dev_destroy:
-+	fme_dev_destroy(pdev);
- exit:
++	afu_dev_destroy(pdev);
++exit:
  	return ret;
  }
-@@ -204,6 +245,7 @@ static int fme_remove(struct platform_device *pdev)
- {
+ 
+@@ -193,6 +390,7 @@ static int afu_remove(struct platform_device *pdev)
+ 
  	fpga_dev_feature_uinit(pdev);
  	fpga_unregister_dev_ops(pdev);
-+	fme_dev_destroy(pdev);
++	afu_dev_destroy(pdev);
  	return 0;
  }
  
-diff --git a/drivers/fpga/intel-fme-pr.c b/drivers/fpga/intel-fme-pr.c
+diff --git a/drivers/fpga/intel-afu-region.c b/drivers/fpga/intel-afu-region.c
 new file mode 100644
-index 0000000..cc40d2a
+index 0000000..702275b
 --- /dev/null
-+++ b/drivers/fpga/intel-fme-pr.c
-@@ -0,0 +1,494 @@
++++ b/drivers/fpga/intel-afu-region.c
+@@ -0,0 +1,127 @@
 +/*
-+ * Driver for Intel FPGA Management Engine (FME) Partial Reconfiguration
++ * Driver for Intel FPGA Accelerated Function Unit (AFU) Region Management
 + *
 + * Copyright (C) 2017 Intel Corporation, Inc.
 + *
 + * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
 + *   Wu Hao <hao.wu@intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Christopher Rauer <christopher.rauer@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
++ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
 + *
 + * This work is licensed under the terms of the GNU GPL version 2. See
 + * the COPYING file in the top-level directory.
 + */
 +
-+#include <linux/types.h>
-+#include <linux/device.h>
-+#include <linux/vmalloc.h>
-+#include <linux/uaccess.h>
-+#include <linux/fpga/fpga-mgr.h>
-+#include <linux/fpga/fpga-bridge.h>
-+#include <linux/fpga/fpga-region.h>
-+#include <linux/intel-fpga.h>
++#include "intel-afu.h"
 +
-+#include "intel-feature-dev.h"
-+#include "intel-fme.h"
-+
-+static struct fme_region *
-+find_fme_region_by_port_id(struct fpga_fme *fme, int port_id)
++void afu_region_init(struct feature_platform_data *pdata)
 +{
-+	struct fme_region *fme_region;
++	struct fpga_afu *afu = fpga_pdata_get_private(pdata);
 +
-+	list_for_each_entry(fme_region, &fme->region_list, node)
-+		if (fme_region->port_id == port_id)
-+			return fme_region;
++	INIT_LIST_HEAD(&afu->regions);
++}
++
++#define for_each_region(region, afu)	\
++	list_for_each_entry((region), &(afu)->regions, node)
++static struct fpga_afu_region *get_region_by_index(struct fpga_afu *afu,
++						   u32 region_index)
++{
++	struct fpga_afu_region *region;
++
++	for_each_region(region, afu)
++		if (region->index == region_index)
++			return region;
 +
 +	return NULL;
 +}
 +
-+static int fpga_fme_region_match(struct device *dev, const void *data)
++int afu_region_add(struct feature_platform_data *pdata, u32 region_index,
++		   u64 region_size, u64 phys, u32 flags)
 +{
-+	return dev->parent == data;
-+}
-+
-+static struct fpga_region *
-+fpga_fme_region_find(struct fpga_fme *fme, int port_id)
-+{
-+	struct fme_region *fme_region;
-+	struct fpga_region *region;
-+
-+	fme_region = find_fme_region_by_port_id(fme, port_id);
-+	if (!fme_region)
-+		return NULL;
-+
-+	region = fpga_region_class_find(NULL, &fme_region->region->dev,
-+					fpga_fme_region_match);
-+	if (!region)
-+		return NULL;
-+
-+	return region;
-+}
-+
-+static int fme_pr(struct platform_device *pdev, unsigned long arg)
-+{
-+	void __user *argp = (void __user *)arg;
-+	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct fpga_fme *fme;
-+	struct feature_fme_header *fme_hdr;
-+	struct feature_fme_capability fme_capability;
-+	struct fpga_image_info *info;
-+	struct fpga_region *region;
-+	struct fpga_fme_port_pr port_pr;
-+	unsigned long minsz;
-+	void *buf = NULL;
++	struct fpga_afu_region *region;
++	struct fpga_afu *afu;
 +	int ret = 0;
 +
-+	minsz = offsetofend(struct fpga_fme_port_pr, buffer_address);
-+
-+	if (copy_from_user(&port_pr, argp, minsz))
-+		return -EFAULT;
-+
-+	if (port_pr.argsz < minsz || port_pr.flags)
-+		return -EINVAL;
-+
-+	if (!IS_ALIGNED(port_pr.buffer_size, 4))
-+		return -EINVAL;
-+
-+	/* get fme header region */
-+	fme_hdr = get_feature_ioaddr_by_index(&pdev->dev,
-+					FME_FEATURE_ID_HEADER);
-+	if (WARN_ON(!fme_hdr))
-+		return -EINVAL;
-+
-+	/* check port id */
-+	fme_capability.csr = readq(&fme_hdr->capability);
-+	if (port_pr.port_id >= fme_capability.num_ports) {
-+		dev_dbg(&pdev->dev, "port number more than maximum\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!access_ok(VERIFY_READ,
-+		       (void __user *)(unsigned long)port_pr.buffer_address,
-+		       port_pr.buffer_size))
-+		return -EFAULT;
-+
-+	buf = vmalloc(port_pr.buffer_size);
-+	if (!buf)
++	region = devm_kzalloc(&pdata->dev->dev, sizeof(*region), GFP_KERNEL);
++	if (!region)
 +		return -ENOMEM;
 +
-+	if (copy_from_user(buf,
-+			(void __user *)(unsigned long)port_pr.buffer_address,
-+			port_pr.buffer_size)) {
-+		ret = -EFAULT;
-+		goto free_exit;
-+	}
-+
-+	/* prepare fpga_image_info for PR */
-+	info = fpga_image_info_alloc(&pdev->dev);
-+	if (IS_ERR(info)) {
-+		ret = PTR_ERR(info);
-+		goto free_exit;
-+	}
-+
-+	info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
++	region->index = region_index;
++	region->size = region_size;
++	region->phys = phys;
++	region->flags = flags;
 +
 +	mutex_lock(&pdata->lock);
-+	fme = fpga_pdata_get_private(pdata);
-+	/* fme device has been unregistered. */
-+	if (!fme) {
-+		ret = -EINVAL;
-+		goto unlock_exit;
++
++	afu = fpga_pdata_get_private(pdata);
++
++	/* check if @index already exists */
++	if (get_region_by_index(afu, region_index)) {
++		mutex_unlock(&pdata->lock);
++		ret = -EEXIST;
++		goto exit;
 +	}
 +
-+	region = fpga_fme_region_find(fme, port_pr.port_id);
-+	if (!region) {
-+		ret = -EINVAL;
-+		goto unlock_exit;
-+	}
++	region_size = PAGE_ALIGN(region_size);
++	region->offset = afu->region_cur_offset;
++	list_add(&region->node, &afu->regions);
 +
-+	fpga_image_info_free(&pdev->dev, region->info);
-+	region->info = NULL;
-+
-+	info->buf = buf;
-+	info->count = port_pr.buffer_size;
-+	info->region_id = port_pr.port_id;
-+
-+	ret = fpga_region_program_fpga(region, info);
-+
-+	if (region->get_bridges)
-+		fpga_bridges_put(&region->bridge_list);
-+
-+	put_device(&region->dev);
-+unlock_exit:
++	afu->region_cur_offset += region_size;
++	afu->num_regions++;
 +	mutex_unlock(&pdata->lock);
-+free_exit:
-+	vfree(buf);
-+	if (copy_to_user((void __user *)arg, &port_pr, minsz))
-+		return -EFAULT;
-+
-+	return ret;
-+}
-+
-+/**
-+ * fpga_fme_create_mgr - create fpga mgr platform device as child device
-+ *
-+ * @pdata: fme platform_device's pdata
-+ *
-+ * Return: mgr platform device if successful, and error code otherwise.
-+ */
-+static struct platform_device *
-+fpga_fme_create_mgr(struct feature_platform_data *pdata)
-+{
-+	struct platform_device *mgr, *fme = pdata->dev;
-+	struct resource res;
-+	struct resource *pres;
-+	int ret = -ENOMEM;
-+
-+	/*
-+	 * Each FME has only one fpga-mgr, so allocate platform device using
-+	 * the same FME platform device id.
-+	 */
-+	mgr = platform_device_alloc(INTEL_FPGA_FME_MGR, fme->id);
-+	if (!mgr)
-+		return ERR_PTR(ret);
-+
-+	mgr->dev.parent = &fme->dev;
-+
-+	pres = platform_get_resource_byname(fme, IORESOURCE_MEM,
-+					    FME_FEATURE_PR_MGMT);
-+	if (!pres) {
-+		ret = -ENODEV;
-+		goto create_mgr_err;
-+	}
-+
-+	memset(&res, 0, sizeof(struct resource));
-+
-+	res.start = pres->start;
-+	res.end = pres->end;
-+	res.name = pres->name;
-+	res.flags = IORESOURCE_MEM;
-+
-+	ret = platform_device_add_resources(mgr, &res, 1);
-+	if (ret)
-+		goto create_mgr_err;
-+
-+	ret = platform_device_add(mgr);
-+	if (ret)
-+		goto create_mgr_err;
-+
-+	return mgr;
-+
-+create_mgr_err:
-+	platform_device_put(mgr);
-+	return ERR_PTR(ret);
-+}
-+
-+/**
-+ * fpga_fme_destroy_mgr - destroy fpga mgr platform device
-+ *
-+ * @mgr: fpga mgr platform device to be destroy
-+ */
-+static void fpga_fme_destroy_mgr(struct feature_platform_data *pdata)
-+{
-+	struct fpga_fme *priv = fpga_pdata_get_private(pdata);
-+
-+	platform_device_unregister(priv->mgr);
-+}
-+
-+/**
-+ * fpga_fme_create_bridge - create fme fpga bridge platform device as child
-+ *
-+ * @pdata: fme platform device's pdata
-+ * @port_id: port id for the bridge to be created.
-+ *
-+ * Return: bridge platform device if successful, and error code otherwise.
-+ */
-+static struct fme_bridge *
-+fpga_fme_create_bridge(struct feature_platform_data *pdata, int port_id)
-+{
-+	struct device *dev = &pdata->dev->dev;
-+	struct fme_br_pdata br_pdata;
-+	struct fme_bridge *fme_br;
-+	int ret = -ENOMEM;
-+
-+	fme_br = devm_kzalloc(dev, sizeof(*fme_br), GFP_KERNEL);
-+	if (!fme_br)
-+		return ERR_PTR(ret);
-+
-+	br_pdata.port = pdata->fpga_for_each_port(pdata->dev, &port_id,
-+						  fpga_port_check_id);
-+	if (!br_pdata.port)
-+		return ERR_PTR(-ENODEV);
-+
-+	/*
-+	 * Each FPGA device may have more than one port, so allocate platform
-+	 * device using the same port platform device id.
-+	 */
-+	fme_br->br = platform_device_alloc(INTEL_FPGA_FME_BRIDGE,
-+					   br_pdata.port->id);
-+	if (!fme_br->br) {
-+		ret = -ENOMEM;
-+		goto create_br_err;
-+	}
-+
-+	fme_br->br->dev.parent = dev;
-+
-+	ret = platform_device_add_data(fme_br->br, &br_pdata, sizeof(br_pdata));
-+	if (ret)
-+		goto create_br_err;
-+
-+	ret = platform_device_add(fme_br->br);
-+	if (ret)
-+		goto create_br_err;
-+
-+	return fme_br;
-+
-+create_br_err:
-+	platform_device_put(fme_br->br);
-+	put_device(&br_pdata.port->dev);
-+	return ERR_PTR(ret);
-+}
-+
-+/**
-+ * fpga_fme_destroy_bridge - destroy fpga bridge platform device
-+ * @br: fpga bridge platform device to be destroy
-+ */
-+static void fpga_fme_destroy_bridge(struct feature_platform_data *pdata,
-+				    struct fme_bridge *fme_br)
-+{
-+	struct fme_br_pdata *br_pdata = dev_get_platdata(&fme_br->br->dev);
-+
-+	put_device(&br_pdata->port->dev);
-+	platform_device_unregister(fme_br->br);
-+}
-+
-+static void fpga_fme_destroy_bridges(struct feature_platform_data *pdata)
-+{
-+	struct fpga_fme *priv = fpga_pdata_get_private(pdata);
-+	struct fme_bridge *fbridge, *tmp;
-+
-+	list_for_each_entry_safe(fbridge, tmp, &priv->bridge_list, node) {
-+		list_del(&fbridge->node);
-+		fpga_fme_destroy_bridge(pdata, fbridge);
-+	}
-+}
-+
-+/**
-+ * fpga_fme_create_region - create fpga region platform device as child
-+ *
-+ * @pdata: fme platform device's pdata
-+ * @mgr: mgr platform device needed for region
-+ * @br: br platform device needed for region
-+ * @port_id: port id
-+ *
-+ * Return: fme region if successful, and error code otherwise.
-+ */
-+static struct fme_region *
-+fpga_fme_create_region(struct feature_platform_data *pdata,
-+		       struct platform_device *mgr,
-+		       struct platform_device *br, int port_id)
-+{
-+	struct device *dev = &pdata->dev->dev;
-+	struct fme_region_pdata region_pdata;
-+	struct fme_region *fme_region;
-+	int ret = -ENOMEM;
-+
-+	fme_region = devm_kzalloc(dev, sizeof(*fme_region), GFP_KERNEL);
-+	if (!fme_region)
-+		return ERR_PTR(ret);
-+
-+	region_pdata.mgr = mgr;
-+	region_pdata.br = br;
-+
-+	/*
-+	 * Each FPGA device may have more than one port, so allocate platform
-+	 * device using the same port platform device id.
-+	 */
-+	fme_region->region = platform_device_alloc(INTEL_FPGA_FME_REGION,
-+						   br->id);
-+	if (!fme_region->region)
-+		return ERR_PTR(ret);
-+
-+	fme_region->region->dev.parent = dev;
-+
-+	ret = platform_device_add_data(fme_region->region, &region_pdata,
-+				       sizeof(region_pdata));
-+	if (ret)
-+		goto create_region_err;
-+
-+	ret = platform_device_add(fme_region->region);
-+	if (ret)
-+		goto create_region_err;
-+
-+	fme_region->port_id = port_id;
-+
-+	return fme_region;
-+
-+create_region_err:
-+	platform_device_put(fme_region->region);
-+	return ERR_PTR(ret);
-+}
-+
-+/**
-+ * fpga_fme_destroy_region - destroy fme region
-+ * @region: fme region to be destroy
-+ */
-+static void fpga_fme_destroy_region(struct feature_platform_data *pdata,
-+				    struct fme_region *fme_region)
-+{
-+	platform_device_unregister(fme_region->region);
-+}
-+
-+static void fpga_fme_destroy_regions(struct feature_platform_data *pdata)
-+{
-+	struct fpga_fme *priv = fpga_pdata_get_private(pdata);
-+	struct fme_region *fme_region, *tmp;
-+
-+	list_for_each_entry_safe(fme_region, tmp, &priv->region_list, node) {
-+		list_del(&fme_region->node);
-+		fpga_fme_destroy_region(pdata, fme_region);
-+	}
-+}
-+
-+static int pr_mgmt_init(struct platform_device *pdev, struct feature *feature)
-+{
-+	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct feature_fme_capability fme_capability;
-+	struct feature_fme_port port;
-+	struct feature_fme_header *fme_hdr;
-+	struct platform_device *mgr;
-+	struct fme_region *fme_region;
-+	struct fme_bridge *fme_br;
-+	struct fpga_fme *priv;
-+	int ret = -ENODEV, i = 0;
-+
-+	fme_hdr = get_feature_ioaddr_by_index(&pdev->dev,
-+					      FME_FEATURE_ID_HEADER);
-+	if (WARN_ON(!fme_hdr))
-+		return -EINVAL;
-+
-+	mutex_lock(&pdata->lock);
-+	priv = fpga_pdata_get_private(pdata);
-+
-+	/* Initialize the region and bridge sub device list */
-+	INIT_LIST_HEAD(&priv->region_list);
-+	INIT_LIST_HEAD(&priv->bridge_list);
-+
-+	/* Create fpga mgr platform device */
-+	mgr = fpga_fme_create_mgr(pdata);
-+	if (IS_ERR(mgr)) {
-+		dev_err(&pdev->dev, "fail to create fpga mgr pdev\n");
-+		goto unlock;
-+	}
-+
-+	priv->mgr = mgr;
-+
-+	/* Read capability register to check number of regions and bridges */
-+	fme_capability.csr = readq(&fme_hdr->capability);
-+	for (; i < fme_capability.num_ports; i++) {
-+		port.csr = readq(&fme_hdr->port[i]);
-+		if (!port.port_implemented)
-+			continue;
-+
-+		/* Create bridge for each port */
-+		fme_br = fpga_fme_create_bridge(pdata, i);
-+		if (IS_ERR(fme_br)) {
-+			ret = PTR_ERR(fme_br);
-+			goto destroy_region;
-+		}
-+
-+		list_add(&fme_br->node, &priv->bridge_list);
-+
-+		/* Create region for each port */
-+		fme_region = fpga_fme_create_region(pdata, mgr, fme_br->br, i);
-+		if (!fme_region) {
-+			ret = PTR_ERR(fme_region);
-+			goto destroy_region;
-+		}
-+
-+		list_add(&fme_region->node, &priv->region_list);
-+	}
-+	mutex_unlock(&pdata->lock);
-+
 +	return 0;
 +
-+destroy_region:
-+	fpga_fme_destroy_regions(pdata);
-+	fpga_fme_destroy_bridges(pdata);
-+	fpga_fme_destroy_mgr(pdata);
-+unlock:
-+	mutex_unlock(&pdata->lock);
++exit:
++	devm_kfree(&pdata->dev->dev, region);
 +	return ret;
 +}
 +
-+static void pr_mgmt_uinit(struct platform_device *pdev, struct feature *feature)
++void afu_region_destroy(struct feature_platform_data *pdata)
 +{
-+	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct fpga_fme *priv;
++	struct fpga_afu_region *tmp, *region;
++	struct fpga_afu *afu = fpga_pdata_get_private(pdata);
++
++	list_for_each_entry_safe(region, tmp, &afu->regions, node)
++		devm_kfree(&pdata->dev->dev, region);
++}
++
++int afu_get_region_by_index(struct feature_platform_data *pdata,
++			    u32 region_index, struct fpga_afu_region *pregion)
++{
++	struct fpga_afu_region *region;
++	struct fpga_afu *afu;
++	int ret = 0;
 +
 +	mutex_lock(&pdata->lock);
-+	priv = fpga_pdata_get_private(pdata);
-+
-+	fpga_fme_destroy_regions(pdata);
-+	fpga_fme_destroy_bridges(pdata);
-+	fpga_fme_destroy_mgr(pdata);
-+	mutex_unlock(&pdata->lock);
-+}
-+
-+static long fme_pr_ioctl(struct platform_device *pdev, struct feature *feature,
-+	unsigned int cmd, unsigned long arg)
-+{
-+	long ret;
-+
-+	switch (cmd) {
-+	case FPGA_FME_PORT_PR:
-+		ret = fme_pr(pdev, arg);
-+		break;
-+	default:
-+		ret = -ENODEV;
++	afu = fpga_pdata_get_private(pdata);
++	region = get_region_by_index(afu, region_index);
++	if (!region) {
++		ret = -EINVAL;
++		goto exit;
 +	}
-+
++	*pregion = *region;
++exit:
++	mutex_unlock(&pdata->lock);
 +	return ret;
 +}
 +
-+struct feature_ops pr_mgmt_ops = {
-+	.init = pr_mgmt_init,
-+	.uinit = pr_mgmt_uinit,
-+	.ioctl = fme_pr_ioctl,
-+};
-diff --git a/drivers/fpga/intel-fme.h b/drivers/fpga/intel-fme.h
++int afu_get_region_by_offset(struct feature_platform_data *pdata,
++			    u64 offset, u64 size,
++			    struct fpga_afu_region *pregion)
++{
++	struct fpga_afu_region *region;
++	struct fpga_afu *afu;
++	int ret = 0;
++
++	mutex_lock(&pdata->lock);
++	afu = fpga_pdata_get_private(pdata);
++	for_each_region(region, afu)
++		if (region->offset <= offset &&
++		   region->offset + region->size >= offset + size) {
++			*pregion = *region;
++			goto exit;
++		}
++	ret = -EINVAL;
++exit:
++	mutex_unlock(&pdata->lock);
++	return ret;
++}
+diff --git a/drivers/fpga/intel-afu.h b/drivers/fpga/intel-afu.h
 new file mode 100644
-index 0000000..da8cadf
+index 0000000..3417780d
 --- /dev/null
-+++ b/drivers/fpga/intel-fme.h
-@@ -0,0 +1,57 @@
++++ b/drivers/fpga/intel-afu.h
+@@ -0,0 +1,52 @@
 +/*
-+ * Header file for Intel FPGA Management Engine (FME) Driver
++ * Header file for Intel FPGA Accelerated Function Unit (AFU) Driver
 + *
 + * Copyright (C) 2017 Intel Corporation, Inc.
 + *
 + * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
++ *     Wu Hao <hao.wu@intel.com>
++ *     Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *     Joseph Grecco <joe.grecco@intel.com>
++ *     Enno Luebbers <enno.luebbers@intel.com>
++ *     Tim Whisonant <tim.whisonant@intel.com>
++ *     Ananda Ravuri <ananda.ravuri@intel.com>
++ *     Henry Mitchel <henry.mitchel@intel.com>
 + *
 + * This work is licensed under the terms of the GNU GPL version 2. See
 + * the COPYING file in the top-level directory.
 + */
 +
-+#ifndef __INTEL_FME_H
-+#define __INTEL_FME_H
++#ifndef __INTEL_AFU_H
++#define __INTEL_AFU_H
 +
-+#define INTEL_FPGA_FME_MGR		"intel-fpga-fme-mgr"
-+#define INTEL_FPGA_FME_BRIDGE		"intel-fpga-fme-bridge"
-+#define INTEL_FPGA_FME_REGION		"intel-fpga-fme-region"
++#include "intel-feature-dev.h"
 +
-+struct fpga_fme {
-+	struct platform_device *mgr;
-+	struct list_head region_list;
-+	struct list_head bridge_list;
++struct fpga_afu_region {
++	u32 index;
++	u32 flags;
++	u64 size;
++	u64 offset;
++	u64 phys;
++	struct list_head node;
++};
++
++struct fpga_afu {
++	u64 region_cur_offset;
++	int num_regions;
++	u8 num_umsgs;
++	struct list_head regions;
++
 +	struct feature_platform_data *pdata;
 +};
 +
-+struct fme_region {
-+	struct platform_device *region;
-+	struct list_head node;
-+	int port_id;
-+};
-+
-+struct fme_region_pdata {
-+	struct platform_device *mgr;
-+	struct platform_device *br;
-+	int region_id;
-+};
-+
-+struct fme_bridge {
-+	struct platform_device *br;
-+	struct list_head node;
-+};
-+
-+struct fme_br_pdata {
-+	struct platform_device *port;
-+};
-+
-+extern struct feature_ops pr_mgmt_ops;
++void afu_region_init(struct feature_platform_data *pdata);
++int afu_region_add(struct feature_platform_data *pdata, u32 region_index,
++		   u64 region_size, u64 phys, u32 flags);
++void afu_region_destroy(struct feature_platform_data *pdata);
++int afu_get_region_by_index(struct feature_platform_data *pdata,
++			    u32 region_index, struct fpga_afu_region *pregion);
++int afu_get_region_by_offset(struct feature_platform_data *pdata,
++			    u64 offset, u64 size,
++			    struct fpga_afu_region *pregion);
 +
 +#endif
 diff --git a/include/uapi/linux/intel-fpga.h b/include/uapi/linux/intel-fpga.h
-index e340ef9..be295ae 100644
+index be5f813..a2ad332 100644
 --- a/include/uapi/linux/intel-fpga.h
 +++ b/include/uapi/linux/intel-fpga.h
-@@ -16,6 +16,8 @@
- #ifndef _UAPI_LINUX_INTEL_FPGA_H
- #define _UAPI_LINUX_INTEL_FPGA_H
+@@ -64,6 +64,53 @@
  
-+#include <linux/types.h>
-+
- #define FPGA_API_VERSION 0
+ #define FPGA_PORT_RESET		_IO(FPGA_MAGIC, PORT_BASE + 0)
  
- /*
-@@ -28,6 +30,7 @@
- #define FPGA_MAGIC 0xB6
- 
- #define FPGA_BASE 0
-+#define FME_BASE 0x80
- 
- /**
-  * FPGA_GET_API_VERSION - _IO(FPGA_MAGIC, FPGA_BASE + 0)
-@@ -47,4 +50,28 @@
- 
- #define FPGA_CHECK_EXTENSION	_IO(FPGA_MAGIC, FPGA_BASE + 1)
- 
-+/* IOCTLs for FME file descriptor */
-+
 +/**
-+ * FPGA_FME_PORT_PR - _IOW(FPGA_MAGIC, FME_BASE + 0, struct fpga_fme_port_pr)
++ * FPGA_PORT_GET_INFO - _IOR(FPGA_MAGIC, PORT_BASE + 1, struct fpga_port_info)
 + *
-+ * Driver does Partial Reconfiguration based on Port ID and Buffer (Image)
-+ * provided by caller.
++ * Retrieve information about the fpga port.
++ * Driver fills the info in provided struct fpga_port_info.
 + * Return: 0 on success, -errno on failure.
-+ * If FPGA_FME_PORT_PR returns -EIO, that indicates the HW has detected
-+ * some errors during PR, under this case, the user can fetch HW error info
-+ * from the status of FME's fpga manager.
 + */
-+
-+struct fpga_fme_port_pr {
++struct fpga_port_info {
 +	/* Input */
 +	__u32 argsz;		/* Structure length */
++	/* Output */
 +	__u32 flags;		/* Zero for now */
-+	__u32 port_id;
-+	__u32 buffer_size;
-+	__u64 buffer_address;	/* Userspace address to the buffer for PR */
++	__u32 num_regions;	/* The number of supported regions */
++	__u32 num_umsgs;	/* The number of allocated umsgs */
 +};
 +
-+#define FPGA_FME_PORT_PR	_IO(FPGA_MAGIC, FME_BASE + 0)
++#define FPGA_PORT_GET_INFO	_IO(FPGA_MAGIC, PORT_BASE + 1)
 +
- #endif /* _UAPI_INTEL_FPGA_H */
++/**
++ * FPGA_PORT_GET_REGION_INFO - _IOWR(FPGA_MAGIC, PORT_BASE + 2,
++ *						struct fpga_port_region_info)
++ *
++ * Retrieve information about a device region.
++ * Caller provides struct fpga_port_region_info with index value set.
++ * Driver returns the region info in other fields.
++ * Return: 0 on success, -errno on failure.
++ */
++struct fpga_port_region_info {
++	/* input */
++	__u32 argsz;		/* Structure length */
++	/* Output */
++	__u32 flags;		/* Access permission */
++#define FPGA_REGION_READ	(1 << 0)	/* Region is readable */
++#define FPGA_REGION_WRITE	(1 << 1)	/* Region is writable */
++#define FPGA_REGION_MMAP	(1 << 2)	/* Can be mmaped to userspace */
++	/* Input */
++	__u32 index;		/* Region index */
++#define FPGA_PORT_INDEX_UAFU	0		/* User AFU */
++#define FPGA_PORT_INDEX_STP	1		/* Signal Tap */
++	__u32 padding;
++	/* Output */
++	__u64 size;		/* Region size (bytes) */
++	__u64 offset;		/* Region offset from start of device fd */
++};
++
++#define FPGA_PORT_GET_REGION_INFO	_IO(FPGA_MAGIC, PORT_BASE + 2)
++
+ /* IOCTLs for FME file descriptor */
+ 
+ /**
 -- 
 1.8.3.1
