@@ -1,114 +1,238 @@
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 05/22] fpga: mgr: add status for fpga-mgr
-Date: Mon, 26 Jun 2017 09:52:01 +0800
-Message-Id: <1498441938-14046-6-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v2 18/22] fpga: intel: add FPGA Accelerated Function Unit driver basic framework
+Date: Mon, 26 Jun 2017 09:52:14 +0800
+Message-Id: <1498441938-14046-19-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
 References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds status to fpga-manager data structure, to allow
-driver to store full/partial reconfiguration errors and other
-status information.
+On Intel FPGA devices, the Accelerated Function Unit (AFU), can be
+reprogrammed for different functions. It connects to the FPGA
+infrastructure("blue bistream") via a Port. Port CSRs are implemented
+separately from the AFU CSRs to provide control and status of the Port.
+Once valid green bitstream is programmed into the AFU, it allows access
+to the AFU CSRs in the AFU MMIO space.
 
-one sysfs interface created for user space application to read
-fpga-manager status.
+This patch only implements basic driver framework for AFU, including
+device file operation framework.
 
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ---
- Documentation/ABI/testing/sysfs-class-fpga-manager | 10 +++++++++
- drivers/fpga/fpga-mgr.c                            | 24 ++++++++++++++++++++++
- include/linux/fpga/fpga-mgr.h                      |  9 ++++++++
- 3 files changed, 43 insertions(+)
+v2: moved the code to drivers/fpga folder as suggested by Alan Tull.
+    switched to GPLv2 license.
+---
+ drivers/fpga/Kconfig          |   9 +++
+ drivers/fpga/Makefile         |   2 +
+ drivers/fpga/intel-afu-main.c | 159 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 170 insertions(+)
+ create mode 100644 drivers/fpga/intel-afu-main.c
 
-diff --git a/Documentation/ABI/testing/sysfs-class-fpga-manager b/Documentation/ABI/testing/sysfs-class-fpga-manager
-index 23056c5..71b083e 100644
---- a/Documentation/ABI/testing/sysfs-class-fpga-manager
-+++ b/Documentation/ABI/testing/sysfs-class-fpga-manager
-@@ -35,3 +35,13 @@ Description:	Read fpga manager state as a string.
- 		* write complete	= Doing post programming steps
- 		* write complete error	= Error while doing post programming
- 		* operating		= FPGA is programmed and operating
-+
-+What:		/sys/class/fpga_manager/<fpga>/status
-+Date:		June 2017
-+KernelVersion:	4.12
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read fpga manager status as a string.
-+		If FPGA programming operation fails, it could be due to crc
-+		error or incompatible bitstream image. The intent of this
-+		interface is to provide more detailed information for FPGA
-+		programming errors to userspace.
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index be13cce..2485658 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -388,12 +388,36 @@ static ssize_t state_show(struct device *dev,
- 	return sprintf(buf, "%s\n", state_str[mgr->state]);
- }
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index db1a6ea..4658a13 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -172,6 +172,15 @@ config INTEL_FPGA_FME_REGION
+ 	  Say Y to enable FPGA Region driver for Intel FPGA Management
+ 	  Engine.
  
-+static ssize_t status_show(struct device *dev,
-+			   struct device_attribute *attr, char *buf)
++config INTEL_FPGA_AFU
++	tristate "Intel FPGA AFU Driver"
++	depends on INTEL_FPGA_PCI
++	help
++	  This is the driver for FPGA Accelerated Function Unit (AFU) which
++	  implements AFU and Port management features. A User AFU connects
++	  to the FPGA infrastructure via a Port. There may be more than 1
++	  Port/AFU per Intel FPGA.
++
+ endif
+ 
+ endif # FPGA
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index fd0a71f..ce08833 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -34,6 +34,8 @@ obj-$(CONFIG_INTEL_FPGA_FME)		+= intel-fpga-fme.o
+ obj-$(CONFIG_INTEL_FPGA_FME_MGR)	+= intel-fpga-fme-mgr.o
+ obj-$(CONFIG_INTEL_FPGA_FME_BRIDGE)	+= intel-fpga-fme-br.o
+ obj-$(CONFIG_INTEL_FPGA_FME_REGION)	+= intel-fpga-fme-region.o
++obj-$(CONFIG_INTEL_FPGA_AFU)		+= intel-fpga-afu.o
+ 
+ intel-fpga-pci-objs := intel-pcie.o intel-feature-dev.o
+ intel-fpga-fme-objs := intel-fme-main.o intel-fme-pr.o
++intel-fpga-afu-objs := intel-afu-main.o
+diff --git a/drivers/fpga/intel-afu-main.c b/drivers/fpga/intel-afu-main.c
+new file mode 100644
+index 0000000..96d0367
+--- /dev/null
++++ b/drivers/fpga/intel-afu-main.c
+@@ -0,0 +1,159 @@
++/*
++ * Driver for Intel FPGA Accelerated Function Unit (AFU)
++ *
++ * Copyright (C) 2017 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Wu Hao <hao.wu@intel.com>
++ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
++ *
++ * This work is licensed under the terms of the GNU GPL version 2. See
++ * the COPYING file in the top-level directory.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++
++#include "intel-feature-dev.h"
++
++static int port_hdr_init(struct platform_device *pdev, struct feature *feature)
 +{
-+	struct fpga_manager *mgr = to_fpga_manager(dev);
-+	int len = 0;
++	dev_dbg(&pdev->dev, "PORT HDR Init.\n");
 +
-+	if (mgr->status & FPGA_MGR_STATUS_OPERATION_ERR)
-+		len += sprintf(buf + len, "reconfig operation error\n");
-+	if (mgr->status & FPGA_MGR_STATUS_CRC_ERR)
-+		len += sprintf(buf + len, "reconfig crc error\n");
-+	if (mgr->status & FPGA_MGR_STATUS_INCOMPATIBLE_BS_ERR)
-+		len += sprintf(buf + len, "reconfig incompatible BS error\n");
-+	if (mgr->status & FPGA_MGR_STATUS_IP_PROTOCOL_ERR)
-+		len += sprintf(buf + len, "reconfig IP protocol error\n");
-+	if (mgr->status & FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR)
-+		len += sprintf(buf + len, "reconfig fifo overflow error\n");
-+	if (mgr->status & FPGA_MGR_STATUS_SECURE_LOAD_ERR)
-+		len += sprintf(buf + len, "reconfig secure load error\n");
-+
-+	return len;
++	return 0;
 +}
 +
- static DEVICE_ATTR_RO(name);
- static DEVICE_ATTR_RO(state);
-+static DEVICE_ATTR_RO(status);
- 
- static struct attribute *fpga_mgr_attrs[] = {
- 	&dev_attr_name.attr,
- 	&dev_attr_state.attr,
-+	&dev_attr_status.attr,
- 	NULL,
- };
- ATTRIBUTE_GROUPS(fpga_mgr);
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index b222a57..8cb42ac 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -128,6 +128,14 @@ struct fpga_manager_ops {
- 	void (*fpga_remove)(struct fpga_manager *mgr);
- };
- 
-+/* FPGA manager status: Partial/Full Reconfiguration errors */
-+#define FPGA_MGR_STATUS_OPERATION_ERR		BIT(0)
-+#define FPGA_MGR_STATUS_CRC_ERR			BIT(1)
-+#define FPGA_MGR_STATUS_INCOMPATIBLE_BS_ERR	BIT(2)
-+#define FPGA_MGR_STATUS_IP_PROTOCOL_ERR		BIT(3)
-+#define FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR	BIT(4)
-+#define FPGA_MGR_STATUS_SECURE_LOAD_ERR		BIT(5)
++static void port_hdr_uinit(struct platform_device *pdev,
++					struct feature *feature)
++{
++	dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
++}
 +
- /**
-  * struct fpga_manager - fpga manager structure
-  * @name: name of low level fpga manager
-@@ -142,6 +150,7 @@ struct fpga_manager {
- 	struct device dev;
- 	struct mutex ref_mutex;
- 	enum fpga_mgr_states state;
-+	u64 status;
- 	const struct fpga_manager_ops *mops;
- 	void *priv;
- };
++struct feature_ops port_hdr_ops = {
++	.init = port_hdr_init,
++	.uinit = port_hdr_uinit,
++};
++
++static struct feature_driver port_feature_drvs[] = {
++	{
++		.name = PORT_FEATURE_HEADER,
++		.ops = &port_hdr_ops,
++	},
++	{
++		.ops = NULL,
++	}
++};
++
++static int afu_open(struct inode *inode, struct file *filp)
++{
++	struct platform_device *fdev = fpga_inode_to_feature_dev(inode);
++	struct feature_platform_data *pdata;
++	int ret;
++
++	pdata = dev_get_platdata(&fdev->dev);
++	if (WARN_ON(!pdata))
++		return -ENODEV;
++
++	ret = feature_dev_use_begin(pdata);
++	if (ret)
++		return ret;
++
++	dev_dbg(&fdev->dev, "Device File Open\n");
++	filp->private_data = fdev;
++
++	return 0;
++}
++
++static int afu_release(struct inode *inode, struct file *filp)
++{
++	struct platform_device *pdev = filp->private_data;
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++
++	dev_dbg(&pdev->dev, "Device File Release\n");
++
++	feature_dev_use_end(pdata);
++	return 0;
++}
++
++static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
++{
++	struct platform_device *pdev = filp->private_data;
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	struct feature *f;
++	long ret;
++
++	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
++
++	switch (cmd) {
++	default:
++		/*
++		 * Let sub-feature's ioctl function to handle the cmd
++		 * Sub-feature's ioctl returns -ENODEV when cmd is not
++		 * handled in this sub feature, and returns 0 and other
++		 * error code if cmd is handled.
++		 */
++		fpga_dev_for_each_feature(pdata, f)
++			if (f->ops && f->ops->ioctl) {
++				ret = f->ops->ioctl(pdev, f, cmd, arg);
++				if (ret == -ENODEV)
++					continue;
++				else
++					return ret;
++			}
++	}
++
++	return -EINVAL;
++}
++
++static const struct file_operations afu_fops = {
++	.owner = THIS_MODULE,
++	.open = afu_open,
++	.release = afu_release,
++	.unlocked_ioctl = afu_ioctl,
++};
++
++static int afu_probe(struct platform_device *pdev)
++{
++	int ret;
++
++	dev_dbg(&pdev->dev, "%s\n", __func__);
++
++	ret = fpga_dev_feature_init(pdev, port_feature_drvs);
++	if (ret)
++		return ret;
++
++	ret = fpga_register_dev_ops(pdev, &afu_fops, THIS_MODULE);
++	if (ret)
++		fpga_dev_feature_uinit(pdev);
++
++	return ret;
++}
++
++static int afu_remove(struct platform_device *pdev)
++{
++	dev_dbg(&pdev->dev, "%s\n", __func__);
++
++	fpga_dev_feature_uinit(pdev);
++	fpga_unregister_dev_ops(pdev);
++	return 0;
++}
++
++static struct platform_driver afu_driver = {
++	.driver	= {
++		.name    = "intel-fpga-port",
++	},
++	.probe   = afu_probe,
++	.remove  = afu_remove,
++};
++
++module_platform_driver(afu_driver);
++
++MODULE_DESCRIPTION("Intel FPGA Accelerated Function Unit driver");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:intel-fpga-port");
 -- 
 1.8.3.1
