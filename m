@@ -1,240 +1,142 @@
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 10/22] fpga: intel: add feature device infrastructure
-Date: Mon, 26 Jun 2017 09:52:06 +0800
-Message-Id: <1498441938-14046-11-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v2 13/22] fpga: intel: fme: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
+Date: Mon, 26 Jun 2017 09:52:09 +0800
+Message-Id: <1498441938-14046-14-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
 References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Xiao Guangrong <guangrong.xiao@linux.intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+FPGA_GET_API_VERSION and FPGA_CHECK_EXTENSION ioctls are common ones which
+need to be supported by all feature devices drivers including FME and AFU.
+Userspace application can use these ioctl interfaces to get the API info
+and check if specific extension is supported or not in current driver.
 
-This patch abstracts the common operations of the sub features, and defines
-the feature_ops data structure, including init, uinit and ioctl function
-pointers. And this patch adds some common helper functions for FME and AFU
-drivers, e.g feature_dev_use_begin/end which are used to ensure exclusive
-usage of the feature device file.
+This patch implements above 2 ioctls in Intel FPGA Management Engine (FME)
+driver.
 
 Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
 Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
 Signed-off-by: Shiva Rao <shiva.rao@intel.com>
 Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Kang Luwei <luwei.kang@intel.com>
-Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
 Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ---
-v2: rebased
+v2: switched to GPLv2 license.
 ---
- drivers/fpga/intel-feature-dev.c | 66 +++++++++++++++++++++++++++++++++++++
- drivers/fpga/intel-feature-dev.h | 71 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 137 insertions(+)
+ Documentation/ioctl/ioctl-number.txt |  1 +
+ drivers/fpga/intel-fme-main.c        | 12 +++++++++
+ include/uapi/linux/intel-fpga.h      | 50 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 63 insertions(+)
+ create mode 100644 include/uapi/linux/intel-fpga.h
 
-diff --git a/drivers/fpga/intel-feature-dev.c b/drivers/fpga/intel-feature-dev.c
-index 45788fe..833bfa9 100644
---- a/drivers/fpga/intel-feature-dev.c
-+++ b/drivers/fpga/intel-feature-dev.c
-@@ -51,6 +51,72 @@ int port_feature_num(void)
- 	return PORT_FEATURE_ID_MAX;
- }
+diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
+index 1e9fcb4..a0d8be5 100644
+--- a/Documentation/ioctl/ioctl-number.txt
++++ b/Documentation/ioctl/ioctl-number.txt
+@@ -324,6 +324,7 @@ Code  Seq#(hex)	Include File		Comments
+ 0xB3	00	linux/mmc/ioctl.h
+ 0xB4	00-0F	linux/gpio.h		<mailto:linux-gpio@vger.kernel.org>
+ 0xB5	00-0F	uapi/linux/rpmsg.h	<mailto:linux-remoteproc@vger.kernel.org>
++0xB6	all	linux/intel-fpga.h
+ 0xC0	00-0F	linux/usb/iowarrior.h
+ 0xCA	00-0F	uapi/misc/cxl.h
+ 0xCA	80-8F	uapi/scsi/cxlflash_ioctl.h
+diff --git a/drivers/fpga/intel-fme-main.c b/drivers/fpga/intel-fme-main.c
+index dfbb17c..9fd0baf 100644
+--- a/drivers/fpga/intel-fme-main.c
++++ b/drivers/fpga/intel-fme-main.c
+@@ -18,6 +18,7 @@
  
-+int fme_feature_to_resource_index(int feature_id)
-+{
-+	WARN_ON(feature_id >= FME_FEATURE_ID_MAX);
-+	return feature_id;
-+}
-+
-+void fpga_dev_feature_uinit(struct platform_device *pdev)
-+{
-+	struct feature *feature;
-+	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+
-+	fpga_dev_for_each_feature(pdata, feature)
-+		if (feature->ops) {
-+			feature->ops->uinit(pdev, feature);
-+			feature->ops = NULL;
-+		}
-+}
-+EXPORT_SYMBOL_GPL(fpga_dev_feature_uinit);
-+
-+static int
-+feature_instance_init(struct platform_device *pdev,
-+		      struct feature_platform_data *pdata,
-+		      struct feature *feature, struct feature_driver *drv)
-+{
-+	int ret;
-+
-+	WARN_ON(!feature->ioaddr);
-+
-+	ret = drv->ops->init(pdev, feature);
-+	if (ret)
-+		return ret;
-+
-+	feature->ops = drv->ops;
-+	return ret;
-+}
-+
-+int fpga_dev_feature_init(struct platform_device *pdev,
-+			  struct feature_driver *feature_drvs)
-+{
-+	struct feature *feature;
-+	struct feature_driver *drv = feature_drvs;
-+	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	int ret;
-+
-+	while (drv->ops) {
-+		fpga_dev_for_each_feature(pdata, feature) {
-+			/* skip the feature which is not initialized. */
-+			if (!feature->name)
-+				continue;
-+
-+			if (!strcmp(drv->name, feature->name)) {
-+				ret = feature_instance_init(pdev, pdata,
-+							    feature, drv);
-+				if (ret)
-+					goto exit;
-+			}
-+		}
-+		drv++;
-+	}
-+	return 0;
-+exit:
-+	fpga_dev_feature_uinit(pdev);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(fpga_dev_feature_init);
-+
- struct fpga_chardev_info {
- 	const char *name;
- 	dev_t devt;
-diff --git a/drivers/fpga/intel-feature-dev.h b/drivers/fpga/intel-feature-dev.h
-index 06b3fb6..635b857 100644
---- a/drivers/fpga/intel-feature-dev.h
-+++ b/drivers/fpga/intel-feature-dev.h
-@@ -221,12 +221,20 @@ struct feature_port_stp {
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/intel-fpga.h>
  
- #pragma pack()
+ #include "intel-feature-dev.h"
  
-+struct feature_driver {
-+	const char *name;
-+	struct feature_ops *ops;
-+};
-+
- struct feature {
- 	const char *name;
- 	int resource_index;
- 	void __iomem *ioaddr;
-+	struct feature_ops *ops;
+@@ -102,6 +103,13 @@ struct feature_ops fme_hdr_ops = {
+ 	},
  };
  
-+#define DEV_STATUS_IN_USE	0
-+
- struct feature_platform_data {
- 	/* list the feature dev to cci_drvdata->port_dev_list. */
- 	struct list_head node;
-@@ -234,6 +242,9 @@ struct feature_platform_data {
- 	struct cdev cdev;
- 	struct platform_device *dev;
- 	unsigned int disable_count;	/* count for port disable */
-+	unsigned long dev_status;
-+
-+	void *private;			/* ptr to feature dev private data */
- 
- 	struct platform_device *(*fpga_for_each_port)(struct platform_device *,
- 			void *, int (*match)(struct platform_device *, void *));
-@@ -242,6 +253,38 @@ struct feature_platform_data {
- 	struct feature features[0];
- };
- 
-+static inline int feature_dev_use_begin(struct feature_platform_data *pdata)
++static long fme_ioctl_check_extension(struct feature_platform_data *pdata,
++				     unsigned long arg)
 +{
-+	/* Test and set IN_USE flags to ensure file is exclusively used */
-+	if (test_and_set_bit_lock(DEV_STATUS_IN_USE, &pdata->dev_status))
-+		return -EBUSY;
-+
++	/* No extension support for now */
 +	return 0;
 +}
 +
-+static inline void feature_dev_use_end(struct feature_platform_data *pdata)
-+{
-+	clear_bit_unlock(DEV_STATUS_IN_USE, &pdata->dev_status);
-+}
-+
-+static inline void
-+fpga_pdata_set_private(struct feature_platform_data *pdata, void *private)
-+{
-+	pdata->private = private;
-+}
-+
-+static inline void *fpga_pdata_get_private(struct feature_platform_data *pdata)
-+{
-+	return pdata->private;
-+}
-+
-+struct feature_ops {
-+	int (*init)(struct platform_device *pdev, struct feature *feature);
-+	void (*uinit)(struct platform_device *pdev, struct feature *feature);
-+	long (*ioctl)(struct platform_device *pdev, struct feature *feature,
-+				unsigned int cmd, unsigned long arg);
-+};
-+
- enum fme_feature_id {
- 	FME_FEATURE_ID_HEADER = 0x0,
- 	FME_FEATURE_ID_THERMAL_MGMT = 0x1,
-@@ -281,6 +324,10 @@ static inline int feature_platform_data_size(const int num)
- struct feature_platform_data *
- feature_platform_data_alloc_and_init(struct platform_device *dev, int num);
- 
-+void fpga_dev_feature_uinit(struct platform_device *pdev);
-+int fpga_dev_feature_init(struct platform_device *pdev,
-+			  struct feature_driver *feature_drvs);
-+
- enum fpga_devt_type {
- 	FPGA_DEVT_FME,
- 	FPGA_DEVT_PORT,
-@@ -350,6 +397,15 @@ static inline int fpga_port_reset(struct platform_device *pdev)
- 	return ret;
- }
- 
-+static inline
-+struct platform_device *fpga_inode_to_feature_dev(struct inode *inode)
-+{
-+	struct feature_platform_data *pdata;
-+
-+	pdata = container_of(inode->i_cdev, struct feature_platform_data, cdev);
-+	return pdata->dev;
-+}
-+
- static inline void __iomem *
- get_feature_ioaddr_by_index(struct device *dev, int index)
+ static int fme_open(struct inode *inode, struct file *filp)
  {
-@@ -358,9 +414,24 @@ static inline int fpga_port_reset(struct platform_device *pdev)
- 	return pdata->features[index].ioaddr;
- }
+ 	struct platform_device *fdev = fpga_inode_to_feature_dev(inode);
+@@ -140,6 +148,10 @@ static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
  
-+static inline bool is_feature_present(struct device *dev, int index)
-+{
-+	return !!get_feature_ioaddr_by_index(dev, index);
-+}
+ 	switch (cmd) {
++	case FPGA_GET_API_VERSION:
++		return FPGA_API_VERSION;
++	case FPGA_CHECK_EXTENSION:
++		return fme_ioctl_check_extension(pdata, arg);
+ 	default:
+ 		/*
+ 		 * Let sub-feature's ioctl function to handle the cmd
+diff --git a/include/uapi/linux/intel-fpga.h b/include/uapi/linux/intel-fpga.h
+new file mode 100644
+index 0000000..e340ef9
+--- /dev/null
++++ b/include/uapi/linux/intel-fpga.h
+@@ -0,0 +1,50 @@
++/*
++ * Header File for Intel FPGA User API
++ *
++ * Copyright (C) 2017 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Kang Luwei <luwei.kang@intel.com>
++ *   Zhang Yi <yi.z.zhang@intel.com>
++ *   Wu Hao <hao.wu@intel.com>
++ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *
++ * This work is licensed under the terms of the GNU GPL version 2. See
++ * the COPYING file in the top-level directory.
++ */
 +
- static inline struct device *
- fpga_feature_dev_to_pcidev(struct platform_device *dev)
- {
- 	return dev->dev.parent->parent;
- }
++#ifndef _UAPI_LINUX_INTEL_FPGA_H
++#define _UAPI_LINUX_INTEL_FPGA_H
 +
-+static inline struct device *
-+fpga_pdata_to_pcidev(struct feature_platform_data *pdata)
-+{
-+	return fpga_feature_dev_to_pcidev(pdata->dev);
-+}
++#define FPGA_API_VERSION 0
 +
-+#define fpga_dev_for_each_feature(pdata, feature)			    \
-+	for ((feature) = (pdata)->features;				    \
-+	   (feature) < (pdata)->features + (pdata)->num; (feature)++)
- #endif
++/*
++ * The IOCTL interface for Intel FPGA is designed for extensibility by
++ * embedding the structure length (argsz) and flags into structures passed
++ * between kernel and userspace. This design referenced the VFIO IOCTL
++ * interface (include/uapi/linux/vfio.h).
++ */
++
++#define FPGA_MAGIC 0xB6
++
++#define FPGA_BASE 0
++
++/**
++ * FPGA_GET_API_VERSION - _IO(FPGA_MAGIC, FPGA_BASE + 0)
++ *
++ * Report the version of the driver API.
++ * Return: Driver API Version.
++ */
++
++#define FPGA_GET_API_VERSION	_IO(FPGA_MAGIC, FPGA_BASE + 0)
++
++/**
++ * FPGA_CHECK_EXTENSION - _IO(FPGA_MAGIC, FPGA_BASE + 1)
++ *
++ * Check whether an extension is supported.
++ * Return: 0 if not supported, otherwise the extension is supported.
++ */
++
++#define FPGA_CHECK_EXTENSION	_IO(FPGA_MAGIC, FPGA_BASE + 1)
++
++#endif /* _UAPI_INTEL_FPGA_H */
 -- 
 1.8.3.1
