@@ -1,167 +1,240 @@
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 00/22] Intel FPGA Device Drivers
-Date: Mon, 26 Jun 2017 09:51:56 +0800
-Message-Id: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v2 10/22] fpga: intel: add feature device infrastructure
+Date: Mon, 26 Jun 2017 09:52:06 +0800
+Message-Id: <1498441938-14046-11-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
+References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Xiao Guangrong <guangrong.xiao@linux.intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi All,
+From: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 
-Here is v2 patch-series adding drivers for Intel FPGA devices.
+This patch abstracts the common operations of the sub features, and defines
+the feature_ops data structure, including init, uinit and ioctl function
+pointers. And this patch adds some common helper functions for FME and AFU
+drivers, e.g feature_dev_use_begin/end which are used to ensure exclusive
+usage of the feature device file.
 
-The Intel FPGA driver provides interfaces for userspace applications to
-configure, enumerate, open, and access FPGA accelerators on platforms
-equipped with Intel(R) PCIe based FPGA solutions and enables system
-level management functions such as FPGA partial reconfiguration, power
-management and virtualization.
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Kang Luwei <luwei.kang@intel.com>
+Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
+Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+---
+v2: rebased
+---
+ drivers/fpga/intel-feature-dev.c | 66 +++++++++++++++++++++++++++++++++++++
+ drivers/fpga/intel-feature-dev.h | 71 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 137 insertions(+)
 
-This patch series only adds the basic functions for FPGA accelerators and
-partial reconfiguration. Patches for more functions, e.g power management
-and virtualization, will be submitted after this series gets reviewed.
-
-This patch series depends on Alan Tull's patch set v2 on FPGA region
-support w/o device tree (see [1]).
-
-Patch 1: add a document for Intel FPGA driver overview, including the HW
-architecture, driver organization, device enumeration, virtualization and
-opens.
-
-Patch 2: introduce a fpga-dev class. It's used in below Intel FPGA PCIe
-device driver, to represent a FPGA device on the system, and all actual
-feature devices should be registered as child nodes of this container
-fpga-dev device.
-
-Patch 3: remove OF dependency for fpga bridge. allow fpga bridge class to
-be used in non device tree case.
-
-Patch 4: add region_id for fpga_image_info data structure, which allows
-driver to pass region id information to fpga-mgr for FPGA reconfiguration
-function.
-
-Patch 5: add a 'status' sysfs interface to fpga-mgr class, it reflects
-the status of the fpga-mgr including reconfiguration errors.
-
-Patch 6-10: implement Intel FPGA PCIe device driver. It walks through the
-'Device Feature List' in the PCI Bar, creates the container fpga-dev as
-parent and platform devices as children for the feature devices it found.
-
-Patch 11-14: implement Intel FPGA Management Engine (FME) driver. It's a
-platform driver matching with the FME platform device created by above
-PCIe driver. Sysfs and device file ioctls are exposed as user interfaces
-to allow partial reconfiguration to Accelerated Function Units (AFUs) from
-user space applications.
-
-Patch 15-17: implement FPGA manager/bridge/region platform drivers for
-Intel FPGA Management Engine (FME). These platform drivers match with
-platform devices created by above FME driver, they use the generic
-fpga-mgr/bridge/region class infrastructure to implement FPGA partial
-reconfiguration function.
-
-Patch 18-22: implement Intel FPGA Accelerated Function Unit (AFU) driver.
-It's a platform driver matching with AFU platform device created by above
-PCIe driver. It provides user interfaces to expose the AFU MMIO region,
-map/unmap dma buffer, and control the port which AFU connects to.
-
-
-Changes from v1:
-
-- Use GPLv2 license instead of Dual BSD/GPL.
-- Move the code to drivers/fpga folder.
-- Update the intel-fpga.txt documentation for new driver organization.
-- Add documentation for new sysfs interfacesa.
-- Switch to use common fpga-region interface for partial reconfiguration
-  (PR) function in FME. It creates fpga-region/fpga-mgr/fpga-bridge
-  platform devices and leave the implementation to their platform drivers.
-- Add platform drivers for FME fpga-mgr/bridge/region platform devices.
-- Fix kbuild warnings, typos and other comments.
-
-[1] http://marc.info/?l=linux-kernel&m=149269778606030&w=2
-
-Kang Luwei (3):
-  fpga: intel: add FPGA Management Engine driver basic framework
-  fpga: intel: fme: add header sub feature support
-  fpga: intel: fme: add partial reconfiguration sub feature support
-
-Wu Hao (14):
-  docs: fpga: add a document for Intel FPGA driver overview
-  fpga: add FPGA device framework
-  fpga: bridge: remove OF dependency for fpga-bridge
-  fpga: mgr: add region_id to fpga_image_info
-  fpga: mgr: add status for fpga-mgr
-  fpga: intel: pcie: adds fpga_for_each_port callback for fme device
-  fpga: intel: fme: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
-    support
-  fpga: intel: add fpga manager platform driver for FME
-  fpga: intel: add fpga bridge platform driver for FME
-  fpga: intel: add fpga region platform driver for FME
-  fpga: intel: add FPGA Accelerated Function Unit driver basic framework
-  fpga: intel: afu: add header sub feature support
-  fpga: intel: afu add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
-    support
-  fpga: intel: afu: add FPGA_PORT_DMA_MAP/UNMAP ioctls support
-
-Xiao Guangrong (4):
-  fpga: intel: pcie: parse feature list and create platform device for
-    features.
-  fpga: intel: pcie: add chardev support for feature devices
-  fpga: intel: add feature device infrastructure
-  fpga: intel: afu: add user afu sub feature support
-
-Zhang Yi (1):
-  fpga: intel: add FPGA PCIe device driver
-
- Documentation/ABI/testing/sysfs-class-fpga-dev     |    5 +
- Documentation/ABI/testing/sysfs-class-fpga-manager |   10 +
- .../ABI/testing/sysfs-platform-intel-fpga-afu      |   16 +
- .../ABI/testing/sysfs-platform-intel-fpga-fme      |   19 +
- .../ABI/testing/sysfs-platform-intel-fpga-fme-mgr  |    8 +
- Documentation/fpga/intel-fpga.txt                  |  256 +++++
- Documentation/ioctl/ioctl-number.txt               |    1 +
- drivers/fpga/Kconfig                               |   73 +-
- drivers/fpga/Makefile                              |   16 +
- drivers/fpga/fpga-dev.c                            |  118 +++
- drivers/fpga/fpga-mgr.c                            |   24 +
- drivers/fpga/intel-afu-dma-region.c                |  372 ++++++++
- drivers/fpga/intel-afu-main.c                      |  469 +++++++++
- drivers/fpga/intel-afu-region.c                    |  127 +++
- drivers/fpga/intel-afu.h                           |   70 ++
- drivers/fpga/intel-feature-dev.c                   |  272 ++++++
- drivers/fpga/intel-feature-dev.h                   |  515 ++++++++++
- drivers/fpga/intel-fme-main.c                      |  265 ++++++
- drivers/fpga/intel-fme-pr.c                        |  494 ++++++++++
- drivers/fpga/intel-fme.h                           |   57 ++
- drivers/fpga/intel-fpga-fme-br.c                   |   77 ++
- drivers/fpga/intel-fpga-fme-mgr.c                  |  307 ++++++
- drivers/fpga/intel-fpga-fme-region.c               |   91 ++
- drivers/fpga/intel-pcie.c                          | 1003 ++++++++++++++++++++
- include/linux/fpga/fpga-dev.h                      |   31 +
- include/linux/fpga/fpga-mgr.h                      |   10 +
- include/uapi/linux/intel-fpga.h                    |  175 ++++
- 27 files changed, 4880 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-fpga-dev
- create mode 100644 Documentation/ABI/testing/sysfs-platform-intel-fpga-afu
- create mode 100644 Documentation/ABI/testing/sysfs-platform-intel-fpga-fme
- create mode 100644 Documentation/ABI/testing/sysfs-platform-intel-fpga-fme-mgr
- create mode 100644 Documentation/fpga/intel-fpga.txt
- create mode 100644 drivers/fpga/fpga-dev.c
- create mode 100644 drivers/fpga/intel-afu-dma-region.c
- create mode 100644 drivers/fpga/intel-afu-main.c
- create mode 100644 drivers/fpga/intel-afu-region.c
- create mode 100644 drivers/fpga/intel-afu.h
- create mode 100644 drivers/fpga/intel-feature-dev.c
- create mode 100644 drivers/fpga/intel-feature-dev.h
- create mode 100644 drivers/fpga/intel-fme-main.c
- create mode 100644 drivers/fpga/intel-fme-pr.c
- create mode 100644 drivers/fpga/intel-fme.h
- create mode 100644 drivers/fpga/intel-fpga-fme-br.c
- create mode 100644 drivers/fpga/intel-fpga-fme-mgr.c
- create mode 100644 drivers/fpga/intel-fpga-fme-region.c
- create mode 100644 drivers/fpga/intel-pcie.c
- create mode 100644 include/linux/fpga/fpga-dev.h
- create mode 100644 include/uapi/linux/intel-fpga.h
-
+diff --git a/drivers/fpga/intel-feature-dev.c b/drivers/fpga/intel-feature-dev.c
+index 45788fe..833bfa9 100644
+--- a/drivers/fpga/intel-feature-dev.c
++++ b/drivers/fpga/intel-feature-dev.c
+@@ -51,6 +51,72 @@ int port_feature_num(void)
+ 	return PORT_FEATURE_ID_MAX;
+ }
+ 
++int fme_feature_to_resource_index(int feature_id)
++{
++	WARN_ON(feature_id >= FME_FEATURE_ID_MAX);
++	return feature_id;
++}
++
++void fpga_dev_feature_uinit(struct platform_device *pdev)
++{
++	struct feature *feature;
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++
++	fpga_dev_for_each_feature(pdata, feature)
++		if (feature->ops) {
++			feature->ops->uinit(pdev, feature);
++			feature->ops = NULL;
++		}
++}
++EXPORT_SYMBOL_GPL(fpga_dev_feature_uinit);
++
++static int
++feature_instance_init(struct platform_device *pdev,
++		      struct feature_platform_data *pdata,
++		      struct feature *feature, struct feature_driver *drv)
++{
++	int ret;
++
++	WARN_ON(!feature->ioaddr);
++
++	ret = drv->ops->init(pdev, feature);
++	if (ret)
++		return ret;
++
++	feature->ops = drv->ops;
++	return ret;
++}
++
++int fpga_dev_feature_init(struct platform_device *pdev,
++			  struct feature_driver *feature_drvs)
++{
++	struct feature *feature;
++	struct feature_driver *drv = feature_drvs;
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	int ret;
++
++	while (drv->ops) {
++		fpga_dev_for_each_feature(pdata, feature) {
++			/* skip the feature which is not initialized. */
++			if (!feature->name)
++				continue;
++
++			if (!strcmp(drv->name, feature->name)) {
++				ret = feature_instance_init(pdev, pdata,
++							    feature, drv);
++				if (ret)
++					goto exit;
++			}
++		}
++		drv++;
++	}
++	return 0;
++exit:
++	fpga_dev_feature_uinit(pdev);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(fpga_dev_feature_init);
++
+ struct fpga_chardev_info {
+ 	const char *name;
+ 	dev_t devt;
+diff --git a/drivers/fpga/intel-feature-dev.h b/drivers/fpga/intel-feature-dev.h
+index 06b3fb6..635b857 100644
+--- a/drivers/fpga/intel-feature-dev.h
++++ b/drivers/fpga/intel-feature-dev.h
+@@ -221,12 +221,20 @@ struct feature_port_stp {
+ 
+ #pragma pack()
+ 
++struct feature_driver {
++	const char *name;
++	struct feature_ops *ops;
++};
++
+ struct feature {
+ 	const char *name;
+ 	int resource_index;
+ 	void __iomem *ioaddr;
++	struct feature_ops *ops;
+ };
+ 
++#define DEV_STATUS_IN_USE	0
++
+ struct feature_platform_data {
+ 	/* list the feature dev to cci_drvdata->port_dev_list. */
+ 	struct list_head node;
+@@ -234,6 +242,9 @@ struct feature_platform_data {
+ 	struct cdev cdev;
+ 	struct platform_device *dev;
+ 	unsigned int disable_count;	/* count for port disable */
++	unsigned long dev_status;
++
++	void *private;			/* ptr to feature dev private data */
+ 
+ 	struct platform_device *(*fpga_for_each_port)(struct platform_device *,
+ 			void *, int (*match)(struct platform_device *, void *));
+@@ -242,6 +253,38 @@ struct feature_platform_data {
+ 	struct feature features[0];
+ };
+ 
++static inline int feature_dev_use_begin(struct feature_platform_data *pdata)
++{
++	/* Test and set IN_USE flags to ensure file is exclusively used */
++	if (test_and_set_bit_lock(DEV_STATUS_IN_USE, &pdata->dev_status))
++		return -EBUSY;
++
++	return 0;
++}
++
++static inline void feature_dev_use_end(struct feature_platform_data *pdata)
++{
++	clear_bit_unlock(DEV_STATUS_IN_USE, &pdata->dev_status);
++}
++
++static inline void
++fpga_pdata_set_private(struct feature_platform_data *pdata, void *private)
++{
++	pdata->private = private;
++}
++
++static inline void *fpga_pdata_get_private(struct feature_platform_data *pdata)
++{
++	return pdata->private;
++}
++
++struct feature_ops {
++	int (*init)(struct platform_device *pdev, struct feature *feature);
++	void (*uinit)(struct platform_device *pdev, struct feature *feature);
++	long (*ioctl)(struct platform_device *pdev, struct feature *feature,
++				unsigned int cmd, unsigned long arg);
++};
++
+ enum fme_feature_id {
+ 	FME_FEATURE_ID_HEADER = 0x0,
+ 	FME_FEATURE_ID_THERMAL_MGMT = 0x1,
+@@ -281,6 +324,10 @@ static inline int feature_platform_data_size(const int num)
+ struct feature_platform_data *
+ feature_platform_data_alloc_and_init(struct platform_device *dev, int num);
+ 
++void fpga_dev_feature_uinit(struct platform_device *pdev);
++int fpga_dev_feature_init(struct platform_device *pdev,
++			  struct feature_driver *feature_drvs);
++
+ enum fpga_devt_type {
+ 	FPGA_DEVT_FME,
+ 	FPGA_DEVT_PORT,
+@@ -350,6 +397,15 @@ static inline int fpga_port_reset(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
++static inline
++struct platform_device *fpga_inode_to_feature_dev(struct inode *inode)
++{
++	struct feature_platform_data *pdata;
++
++	pdata = container_of(inode->i_cdev, struct feature_platform_data, cdev);
++	return pdata->dev;
++}
++
+ static inline void __iomem *
+ get_feature_ioaddr_by_index(struct device *dev, int index)
+ {
+@@ -358,9 +414,24 @@ static inline int fpga_port_reset(struct platform_device *pdev)
+ 	return pdata->features[index].ioaddr;
+ }
+ 
++static inline bool is_feature_present(struct device *dev, int index)
++{
++	return !!get_feature_ioaddr_by_index(dev, index);
++}
++
+ static inline struct device *
+ fpga_feature_dev_to_pcidev(struct platform_device *dev)
+ {
+ 	return dev->dev.parent->parent;
+ }
++
++static inline struct device *
++fpga_pdata_to_pcidev(struct feature_platform_data *pdata)
++{
++	return fpga_feature_dev_to_pcidev(pdata->dev);
++}
++
++#define fpga_dev_for_each_feature(pdata, feature)			    \
++	for ((feature) = (pdata)->features;				    \
++	   (feature) < (pdata)->features + (pdata)->num; (feature)++)
+ #endif
 -- 
 1.8.3.1
