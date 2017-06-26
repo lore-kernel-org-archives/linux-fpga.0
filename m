@@ -1,142 +1,222 @@
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=SP6n=57=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 13/22] fpga: intel: fme: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
-Date: Mon, 26 Jun 2017 09:52:09 +0800
-Message-Id: <1498441938-14046-14-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v2 06/22] fpga: intel: add FPGA PCIe device driver
+Date: Mon, 26 Jun 2017 09:52:02 +0800
+Message-Id: <1498441938-14046-7-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
 References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-FPGA_GET_API_VERSION and FPGA_CHECK_EXTENSION ioctls are common ones which
-need to be supported by all feature devices drivers including FME and AFU.
-Userspace application can use these ioctl interfaces to get the API info
-and check if specific extension is supported or not in current driver.
+From: Zhang Yi <yi.z.zhang@intel.com>
 
-This patch implements above 2 ioctls in Intel FPGA Management Engine (FME)
-driver.
+The Intel FPGA device appears as a PCIe device on the system. This patch
+implements the basic framework of the driver for Intel PCIe device which
+locates between CPU and Accelerated Function Units (AFUs).
 
 Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
 Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
 Signed-off-by: Shiva Rao <shiva.rao@intel.com>
 Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
 Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ---
-v2: switched to GPLv2 license.
+v2: moved the code to drivers/fpga folder as suggested by Alan Tull.
+    switched to GPLv2 license.
+    fixed comments from Moritz Fischer.
 ---
- Documentation/ioctl/ioctl-number.txt |  1 +
- drivers/fpga/intel-fme-main.c        | 12 +++++++++
- include/uapi/linux/intel-fpga.h      | 50 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 63 insertions(+)
- create mode 100644 include/uapi/linux/intel-fpga.h
+ drivers/fpga/Kconfig      |  28 +++++++++++
+ drivers/fpga/Makefile     |   5 ++
+ drivers/fpga/intel-pcie.c | 126 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 159 insertions(+)
+ create mode 100644 drivers/fpga/intel-pcie.c
 
-diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
-index 1e9fcb4..a0d8be5 100644
---- a/Documentation/ioctl/ioctl-number.txt
-+++ b/Documentation/ioctl/ioctl-number.txt
-@@ -324,6 +324,7 @@ Code  Seq#(hex)	Include File		Comments
- 0xB3	00	linux/mmc/ioctl.h
- 0xB4	00-0F	linux/gpio.h		<mailto:linux-gpio@vger.kernel.org>
- 0xB5	00-0F	uapi/linux/rpmsg.h	<mailto:linux-remoteproc@vger.kernel.org>
-+0xB6	all	linux/intel-fpga.h
- 0xC0	00-0F	linux/usb/iowarrior.h
- 0xCA	00-0F	uapi/misc/cxl.h
- 0xCA	80-8F	uapi/scsi/cxlflash_ioctl.h
-diff --git a/drivers/fpga/intel-fme-main.c b/drivers/fpga/intel-fme-main.c
-index dfbb17c..9fd0baf 100644
---- a/drivers/fpga/intel-fme-main.c
-+++ b/drivers/fpga/intel-fme-main.c
-@@ -18,6 +18,7 @@
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index c1d8f41..3f3b7f4 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -117,6 +117,34 @@ config XILINX_PR_DECOUPLER
+ 	  region of the FPGA from the busses while that region is
+ 	  being reprogrammed during partial reconfig.
  
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/intel-fpga.h>
- 
- #include "intel-feature-dev.h"
- 
-@@ -102,6 +103,13 @@ struct feature_ops fme_hdr_ops = {
- 	},
- };
- 
-+static long fme_ioctl_check_extension(struct feature_platform_data *pdata,
-+				     unsigned long arg)
-+{
-+	/* No extension support for now */
-+	return 0;
-+}
++menuconfig INTEL_FPGA
++	tristate "Intel(R) FPGA support"
++	depends on FPGA_DEVICE
++	help
++	  Select this option to enable driver support for Intel(R)
++	  Field-Programmable Gate Array (FPGA) solutions. This driver
++	  provides interfaces for userspace applications to configure,
++	  enumerate, open, and access FPGA accelerators on platforms
++	  equipped with Intel(R) FPGA solutions and enables system
++	  level management functions such as FPGA reconfiguration,
++	  power management, and virtualization.
 +
- static int fme_open(struct inode *inode, struct file *filp)
- {
- 	struct platform_device *fdev = fpga_inode_to_feature_dev(inode);
-@@ -140,6 +148,10 @@ static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
++	  Say Y if your platform has this technology. Say N if unsure.
++
++if INTEL_FPGA
++
++config INTEL_FPGA_PCI
++	tristate "Intel FPGA PCIe Driver"
++	depends on PCI
++	help
++	  This is the driver for the PCIe device which locates between
++	  CPU and Accelerated Function Units (AFUs) and allows them to
++	  communicate with each other.
++
++	  To compile this as a module, choose M here.
++
++endif
++
+ endif # FPGA
  
- 	switch (cmd) {
-+	case FPGA_GET_API_VERSION:
-+		return FPGA_API_VERSION;
-+	case FPGA_CHECK_EXTENSION:
-+		return fme_ioctl_check_extension(pdata, arg);
- 	default:
- 		/*
- 		 * Let sub-feature's ioctl function to handle the cmd
-diff --git a/include/uapi/linux/intel-fpga.h b/include/uapi/linux/intel-fpga.h
+ endmenu
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index 8950a8f..5613133 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -27,3 +27,8 @@ obj-$(CONFIG_XILINX_PR_DECOUPLER)	+= xilinx-pr-decoupler.o
+ # High Level Interfaces
+ obj-$(CONFIG_FPGA_REGION)		+= fpga-region.o
+ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
++
++# Intel FPGA Support
++obj-$(CONFIG_INTEL_FPGA_PCI)		+= intel-fpga-pci.o
++
++intel-fpga-pci-objs := intel-pcie.o
+diff --git a/drivers/fpga/intel-pcie.c b/drivers/fpga/intel-pcie.c
 new file mode 100644
-index 0000000..e340ef9
+index 0000000..f697de4
 --- /dev/null
-+++ b/include/uapi/linux/intel-fpga.h
-@@ -0,0 +1,50 @@
++++ b/drivers/fpga/intel-pcie.c
+@@ -0,0 +1,126 @@
 +/*
-+ * Header File for Intel FPGA User API
++ * Driver for Intel FPGA PCIe device
 + *
 + * Copyright (C) 2017 Intel Corporation, Inc.
 + *
 + * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Zhang Yi <yi.z.zhang@intel.com>
-+ *   Wu Hao <hao.wu@intel.com>
++ *   Zhang Yi <Yi.Z.Zhang@intel.com>
 + *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
 + *
 + * This work is licensed under the terms of the GNU GPL version 2. See
 + * the COPYING file in the top-level directory.
 + */
 +
-+#ifndef _UAPI_LINUX_INTEL_FPGA_H
-+#define _UAPI_LINUX_INTEL_FPGA_H
++#include <linux/pci.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/stddef.h>
++#include <linux/errno.h>
++#include <linux/aer.h>
 +
-+#define FPGA_API_VERSION 0
++#define DRV_VERSION	"0.8"
++#define DRV_NAME	"intel-fpga-pci"
 +
-+/*
-+ * The IOCTL interface for Intel FPGA is designed for extensibility by
-+ * embedding the structure length (argsz) and flags into structures passed
-+ * between kernel and userspace. This design referenced the VFIO IOCTL
-+ * interface (include/uapi/linux/vfio.h).
-+ */
++/* PCI Device ID */
++#define PCIe_DEVICE_ID_PF_INT_5_X	0xBCBD
++#define PCIe_DEVICE_ID_PF_INT_6_X	0xBCC0
++#define PCIe_DEVICE_ID_PF_DSC_1_X	0x09C4
++/* VF Device */
++#define PCIe_DEVICE_ID_VF_INT_5_X	0xBCBF
++#define PCIe_DEVICE_ID_VF_INT_6_X	0xBCC1
++#define PCIe_DEVICE_ID_VF_DSC_1_X	0x09C5
 +
-+#define FPGA_MAGIC 0xB6
++static struct pci_device_id cci_pcie_id_tbl[] = {
++	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_PF_INT_5_X),},
++	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_VF_INT_5_X),},
++	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_PF_INT_6_X),},
++	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_VF_INT_6_X),},
++	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_PF_DSC_1_X),},
++	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_VF_DSC_1_X),},
++	{0,}
++};
++MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
 +
-+#define FPGA_BASE 0
++static
++int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
++{
++	int ret;
 +
-+/**
-+ * FPGA_GET_API_VERSION - _IO(FPGA_MAGIC, FPGA_BASE + 0)
-+ *
-+ * Report the version of the driver API.
-+ * Return: Driver API Version.
-+ */
++	ret = pci_enable_device(pcidev);
++	if (ret < 0) {
++		dev_err(&pcidev->dev, "Failed to enable device %d.\n", ret);
++		return ret;
++	}
 +
-+#define FPGA_GET_API_VERSION	_IO(FPGA_MAGIC, FPGA_BASE + 0)
++	ret = pci_enable_pcie_error_reporting(pcidev);
++	if (ret && ret != -EINVAL)
++		dev_info(&pcidev->dev, "PCIE AER unavailable %d.\n", ret);
 +
-+/**
-+ * FPGA_CHECK_EXTENSION - _IO(FPGA_MAGIC, FPGA_BASE + 1)
-+ *
-+ * Check whether an extension is supported.
-+ * Return: 0 if not supported, otherwise the extension is supported.
-+ */
++	ret = pci_request_regions(pcidev, DRV_NAME);
++	if (ret) {
++		dev_err(&pcidev->dev, "Failed to request regions.\n");
++		goto disable_error_report_exit;
++	}
 +
-+#define FPGA_CHECK_EXTENSION	_IO(FPGA_MAGIC, FPGA_BASE + 1)
++	pci_set_master(pcidev);
++	pci_save_state(pcidev);
 +
-+#endif /* _UAPI_INTEL_FPGA_H */
++	if (!dma_set_mask(&pcidev->dev, DMA_BIT_MASK(64))) {
++		dma_set_coherent_mask(&pcidev->dev, DMA_BIT_MASK(64));
++	} else if (!dma_set_mask(&pcidev->dev, DMA_BIT_MASK(32))) {
++		dma_set_coherent_mask(&pcidev->dev, DMA_BIT_MASK(32));
++	} else {
++		ret = -EIO;
++		dev_err(&pcidev->dev, "No suitable DMA support available.\n");
++		goto release_region_exit;
++	}
++
++	/* TODO: create and add the platform device per feature list */
++	return 0;
++
++release_region_exit:
++	pci_release_regions(pcidev);
++disable_error_report_exit:
++	pci_disable_pcie_error_reporting(pcidev);
++	pci_disable_device(pcidev);
++	return ret;
++}
++
++static void cci_pci_remove(struct pci_dev *pcidev)
++{
++	pci_release_regions(pcidev);
++	pci_disable_pcie_error_reporting(pcidev);
++	pci_disable_device(pcidev);
++}
++
++static struct pci_driver cci_pci_driver = {
++	.name = DRV_NAME,
++	.id_table = cci_pcie_id_tbl,
++	.probe = cci_pci_probe,
++	.remove = cci_pci_remove,
++};
++
++static int __init ccidrv_init(void)
++{
++	pr_info("Intel(R) FPGA PCIe Driver: Version %s\n", DRV_VERSION);
++
++	return pci_register_driver(&cci_pci_driver);
++}
++
++static void __exit ccidrv_exit(void)
++{
++	pci_unregister_driver(&cci_pci_driver);
++}
++
++module_init(ccidrv_init);
++module_exit(ccidrv_exit);
++
++MODULE_DESCRIPTION("Intel FPGA PCIe Device Driver");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL v2");
 -- 
 1.8.3.1
