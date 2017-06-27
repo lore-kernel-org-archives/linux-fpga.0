@@ -1,76 +1,83 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 01/10] dt-bindings: fpga: Add bindings document for Xilinx LogiCore PR Decoupler
-Date: Mon,  5 Jun 2017 14:07:32 -0500
-Message-Id: <20170605190741.10508-2-atull@kernel.org>
-In-Reply-To: <20170605190741.10508-1-atull@kernel.org>
-References: <20170605190741.10508-1-atull@kernel.org>
+Return-Path: <SRS0=mv5P=6A=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=mv5P=6A=ettus.com=moritz.fischer@kernel.org>
+Date: Tue, 27 Jun 2017 09:36:00 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH] fpga: altera-hps2fpga: fix multiple init of l3_remap_lock
+Message-ID: <20170627163600.GA9914@tyrael.amer.corp.natinst.com>
+References: <20170627151842.15955-1-abbotti@mev.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Moritz Fischer <moritz.fischer@ettus.com>, delicious.quinoa@gmail.com, Moritz Fischer <mdf@kernel.org>, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, devicetree@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
+Content-Disposition: inline
+In-Reply-To: <20170627151842.15955-1-abbotti@mev.co.uk>
+To: Ian Abbott <abbotti@mev.co.uk>
+Cc: linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>, Moritz Fischer <moritz.fischer@ettus.com>, "# 4 . 10+" <stable@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Moritz Fischer <mdf@kernel.org>
 
-This adds the binding documentation for the Xilinx LogiCORE PR
-Decoupler soft core.
+--RnlQjJ0d97Da+TV1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-Cc: Sören Brinkmann <soren.brinkmann@xilinx.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Acked-by: Rob Herring <robh@kernel.org>
-Signed off-by: Alan Tull <atull@kernel.org>
----
- .../bindings/fpga/xilinx-pr-decoupler.txt          | 36 ++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
+On Tue, Jun 27, 2017 at 04:18:42PM +0100, Ian Abbott wrote:
+> The global spinlock `l3_remap_lock` is reinitialized every time the
+> "probe" function `alt_fpga_bridge_probe()` is called.  It should only be
+> initialized once.  Use `DEFINE_SPINLOCK()` to initialize it statically.
+>=20
+> Fixes: e5f8efa5c8bf ("ARM: socfpga: fpga bridge driver support")
+> Cc: <stable@vger.kernel.org> # 4.10+
+> Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
+Reviewed-By: Moritz Fischer <mdf@kernel.org>
 
-diff --git a/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
-new file mode 100644
-index 000000000000..8dcfba926bc7
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xilinx-pr-decoupler.txt
-@@ -0,0 +1,36 @@
-+Xilinx LogiCORE Partial Reconfig Decoupler Softcore
-+
-+The Xilinx LogiCORE Partial Reconfig Decoupler manages one or more
-+decouplers / fpga bridges.
-+The controller can decouple/disable the bridges which prevents signal
-+changes from passing through the bridge.  The controller can also
-+couple / enable the bridges which allows traffic to pass through the
-+bridge normally.
-+
-+The Driver supports only MMIO handling. A PR region can have multiple
-+PR Decouplers which can be handled independently or chained via decouple/
-+decouple_status signals.
-+
-+Required properties:
-+- compatible		: Should contain "xlnx,pr-decoupler-1.00" followed by
-+                          "xlnx,pr-decoupler"
-+- regs			: base address and size for decoupler module
-+- clocks		: input clock to IP
-+- clock-names		: should contain "aclk"
-+
-+Optional properties:
-+- bridge-enable		: 0 if driver should disable bridge at startup
-+			  1 if driver should enable bridge at startup
-+			  Default is to leave bridge in current state.
-+
-+See Documentation/devicetree/bindings/fpga/fpga-region.txt for generic bindings.
-+
-+Example:
-+	fpga-bridge@100000450 {
-+		compatible = "xlnx,pr-decoupler-1.00",
-+			     "xlnx-pr-decoupler";
-+		regs = <0x10000045 0x10>;
-+		clocks = <&clkc 15>;
-+		clock-names = "aclk";
-+		bridge-enable = <0>;
-+	};
--- 
-2.11.0
+Thanks for catching that,
+
+Moritz
+> ---
+>  drivers/fpga/altera-hps2fpga.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpg=
+a.c
+> index 3066b805f2d0..08c0ecb7d109 100644
+> --- a/drivers/fpga/altera-hps2fpga.c
+> +++ b/drivers/fpga/altera-hps2fpga.c
+> @@ -66,7 +66,7 @@ static int alt_hps2fpga_enable_show(struct fpga_bridge =
+*bridge)
+> =20
+>  /* The L3 REMAP register is write only, so keep a cached value. */
+>  static unsigned int l3_remap_shadow;
+> -static spinlock_t l3_remap_lock;
+> +static DEFINE_SPINLOCK(l3_remap_lock);
+> =20
+>  static int _alt_hps2fpga_enable_set(struct altera_hps2fpga_data *priv,
+>  				    bool enable)
+> @@ -171,8 +171,6 @@ static int alt_fpga_bridge_probe(struct platform_devi=
+ce *pdev)
+>  		return -EBUSY;
+>  	}
+> =20
+> -	spin_lock_init(&l3_remap_lock);
+> -
+>  	if (!of_property_read_u32(dev->of_node, "bridge-enable", &enable)) {
+>  		if (enable > 1) {
+>  			dev_warn(dev, "invalid bridge-enable %u > 1\n", enable);
+> --=20
+> 2.11.0
+>=20
+
+--RnlQjJ0d97Da+TV1
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEcBAEBAgAGBQJZUoltAAoJEL5CEHepFqovJjwIAMh3y5wuHA+jGsY08zj5kBF9
+O2mH7VO0vEf1vlf+66tyGeoKiAlZhMLAAPFBK32zABZ1ge8iUJzTSv9XjmMb0b3T
+TMGZvyxDjUzU7KA5UcgXTx9nkJyWFNqHs17UzIz7SwFK/Jl7fcFLTAOyl4Klsgb8
+SjIpTl16yvVzVoge0WZegL4TcLWbM89k+6PyGmEytBJ0szRyS4jqJm8b25/nDxAN
+z7vi7POzQPOAMRT+8swI7CFFEVMXAbSLanEwdDNLGadWUS7jRKSpjRzEWHwTD6ca
+eE+mdIAwQLUWSOUz0u8E0JbyZp2RX5wof738HO+pLT9DnEJ322AjZZfCex0HI5Y=
+=paHL
+-----END PGP SIGNATURE-----
+
+--RnlQjJ0d97Da+TV1--
