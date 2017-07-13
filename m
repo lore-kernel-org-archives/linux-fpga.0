@@ -1,45 +1,164 @@
-Return-Path: <SRS0=+i6n=7C=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=+i6n=7C=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH v2] MAINTAINERS: fpga: Update email and add patchwork URL
-Date: Mon, 31 Jul 2017 09:55:30 -0700
-Message-Id: <1501520130-24707-1-git-send-email-mdf@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: chehab@kernel.org, davem@davemloft.net, gregkh@linuxfoundation.org, Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=ZHn2=6Q=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=ZHn2=6Q=intel.com=hao.wu@kernel.org>
+Date: Thu, 13 Jul 2017 10:31:51 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v2 17/22] fpga: intel: add fpga region platform driver
+ for FME
+Message-ID: <20170713023151.GA28569@hao-dev>
+References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
+ <1498441938-14046-18-git-send-email-hao.wu@intel.com>
+ <CANk1AXRioZsobi9k_VVcRypV+LrviPLjRejb_Og9VwKhCRth5g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXRioZsobi9k_VVcRypV+LrviPLjRejb_Og9VwKhCRth5g@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add Q: entry for patchwork and update my email address.
+On Wed, Jul 12, 2017 at 11:09:46AM -0500, Alan Tull wrote:
+> On Sun, Jun 25, 2017 at 8:52 PM, Wu Hao <hao.wu@intel.com> wrote:
+> 
+> Hi Hao,
+> 
+> Thanks for using the region patchset.  This looks good except for one
+> thing below.
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-Acked-By: Alan Tull <atull@kernel.org>
-Cc: Alan Tull <atull@kernel.org>
-Cc: linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
+Hi Alan
 
-Changes from v1:
-- Don't mess up the email address
+Thank you very much for your review. : )
 
----
- MAINTAINERS | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> > This patch adds fpga region platform driver for Intel FPGA Management
+> > Engine. It register a fpga region with given fpga manager / bridge
+> > device.
+> >
+> > Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+> > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> > Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+> > Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > ---
+> >  drivers/fpga/Kconfig                 |  7 +++
+> >  drivers/fpga/Makefile                |  1 +
+> >  drivers/fpga/intel-fpga-fme-region.c | 91 ++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 99 insertions(+)
+> >  create mode 100644 drivers/fpga/intel-fpga-fme-region.c
+> >
+> > diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+> > index 05e2a8e..db1a6ea 100644
+> > --- a/drivers/fpga/Kconfig
+> > +++ b/drivers/fpga/Kconfig
+> > @@ -165,6 +165,13 @@ config INTEL_FPGA_FME_BRIDGE
+> >           Say Y to enable FPGA Bridge driver for Intel FPGA Management
+> >           Engine.
+> >
+> > +config INTEL_FPGA_FME_REGION
+> > +       tristate "Intel FPGA FME Region Driver"
+> > +       depends on INTEL_FPGA_FME && FPGA_REGION
+> > +       help
+> > +         Say Y to enable FPGA Region driver for Intel FPGA Management
+> > +         Engine.
+> > +
+> >  endif
+> >
+> >  endif # FPGA
+> > diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+> > index 131c105..fd0a71f 100644
+> > --- a/drivers/fpga/Makefile
+> > +++ b/drivers/fpga/Makefile
+> > @@ -33,6 +33,7 @@ obj-$(CONFIG_INTEL_FPGA_PCI)          += intel-fpga-pci.o
+> >  obj-$(CONFIG_INTEL_FPGA_FME)           += intel-fpga-fme.o
+> >  obj-$(CONFIG_INTEL_FPGA_FME_MGR)       += intel-fpga-fme-mgr.o
+> >  obj-$(CONFIG_INTEL_FPGA_FME_BRIDGE)    += intel-fpga-fme-br.o
+> > +obj-$(CONFIG_INTEL_FPGA_FME_REGION)    += intel-fpga-fme-region.o
+> >
+> >  intel-fpga-pci-objs := intel-pcie.o intel-feature-dev.o
+> >  intel-fpga-fme-objs := intel-fme-main.o intel-fme-pr.o
+> > diff --git a/drivers/fpga/intel-fpga-fme-region.c b/drivers/fpga/intel-fpga-fme-region.c
+> > new file mode 100644
+> > index 0000000..2b5ca4d
+> > --- /dev/null
+> > +++ b/drivers/fpga/intel-fpga-fme-region.c
+> > @@ -0,0 +1,91 @@
+> > +/*
+> > + * FPGA Region Driver for Intel FPGA Management Engine (FME)
+> > + *
+> > + * Copyright (C) 2017 Intel Corporation, Inc.
+> > + *
+> > + * Authors:
+> > + *   Wu Hao <hao.wu@intel.com>
+> > + *   Joseph Grecco <joe.grecco@intel.com>
+> > + *   Enno Luebbers <enno.luebbers@intel.com>
+> > + *   Tim Whisonant <tim.whisonant@intel.com>
+> > + *   Ananda Ravuri <ananda.ravuri@intel.com>
+> > + *   Henry Mitchel <henry.mitchel@intel.com>
+> > + *
+> > + * This work is licensed under the terms of the GNU GPL version 2. See
+> > + * the COPYING file in the top-level directory.
+> > + */
+> > +
+> > +#include <linux/module.h>
+> > +#include <linux/fpga/fpga-region.h>
+> > +
+> > +#include "intel-feature-dev.h"
+> > +#include "intel-fme.h"
+> > +
+> > +static int fme_region_get_bridges(struct fpga_region *region,
+> > +                                 struct fpga_image_info *info)
+> > +{
+> > +       struct fme_region_pdata *pdata = region->priv;
+> > +       struct device *dev = &pdata->br->dev;
+> > +
+> > +       return fpga_bridge_get_to_list(dev, info, &region->bridge_list);
+> > +}
+> > +
+> > +static int fme_region_probe(struct platform_device *pdev)
+> > +{
+> > +       struct device *dev = &pdev->dev;
+> > +       struct fme_region_pdata *pdata = dev_get_platdata(dev);
+> > +       struct fpga_region *region;
+> > +       struct fpga_manager *mgr;
+> > +       int ret;
+> > +
+> > +       mgr = fpga_mgr_get(&pdata->mgr->dev);
+> > +       if (IS_ERR(mgr))
+> > +               return -EPROBE_DEFER;
+> > +
+> > +       region = devm_kzalloc(dev, sizeof(*region), GFP_KERNEL);
+> > +       if (!region) {
+> > +               ret = -ENOMEM;
+> > +               goto eprobe_mgr_put;
+> > +       }
+> > +
+> > +       region->mgr = mgr;
+> > +       region->get_bridges = fme_region_get_bridges;
+> > +       region->priv = pdata;
+> > +
+> > +       ret = fpga_region_register(dev, region);
+> > +       if (ret)
+> > +               goto eprobe_mgr_put;
+> > +
+> > +       dev_dbg(dev, "Intel FME FPGA Region probed\n");
+> > +
+> > +       return 0;
+> > +
+> > +eprobe_mgr_put:
+> > +       fpga_mgr_put(mgr);
+> > +       return ret;
+> > +}
+> > +
+> > +static int fme_region_remove(struct platform_device *pdev)
+> > +{
+> > +       struct fpga_region *region = dev_get_drvdata(&pdev->dev);
+> > +
+> > +       fpga_mgr_put(region->mgr);
+> > +       fpga_region_unregister(region);
+> 
+> Please unregister before putting the mgr ;)
+> 
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f42daf7..8f90a3e 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5213,10 +5213,11 @@ K:	fmc_d.*register
- 
- FPGA MANAGER FRAMEWORK
- M:	Alan Tull <atull@kernel.org>
--R:	Moritz Fischer <moritz.fischer@ettus.com>
-+R:	Moritz Fischer <mdf@kernel.org>
- L:	linux-fpga@vger.kernel.org
- S:	Maintained
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/atull/linux-fpga.git
-+Q:	http://patchwork.kernel.org/project/linux-fpga/list/
- F:	Documentation/fpga/
- F:	Documentation/devicetree/bindings/fpga/
- F:	drivers/fpga/
--- 
-2.7.4
+Sure, make sense, I will fix this in the next version.
+
+Thanks
+Hao
