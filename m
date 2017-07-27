@@ -1,37 +1,97 @@
-Return-Path: <SRS0=v4U3=67=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=v4U3=67=intel.com=hao.wu@kernel.org>
-Date: Fri, 28 Jul 2017 15:55:17 +0800
-From: Wu Hao <hao.wu@intel.com>
-Subject: Re: [PATCH v2 02/22] fpga: add FPGA device framework
-Message-ID: <20170728075517.GA6083@hao-dev>
-References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
- <1498441938-14046-3-git-send-email-hao.wu@intel.com>
- <CANk1AXR-nSB-6TKpVyskbvfj_F2=jbSv48hpp+UXtKxkTseLqw@mail.gmail.com>
+Return-Path: <robh+dt@kernel.org>
+Return-Path: <robh+dt@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CANk1AXR-nSB-6TKpVyskbvfj_F2=jbSv48hpp+UXtKxkTseLqw@mail.gmail.com>
+In-Reply-To: <CANk1AXRoxz7nOY--UYfBtg-3kGFy0gqCz0cbF9mOvzU2+EdzpA@mail.gmail.com>
+References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
+ <1498441938-14046-3-git-send-email-hao.wu@intel.com> <CANk1AXRoxz7nOY--UYfBtg-3kGFy0gqCz0cbF9mOvzU2+EdzpA@mail.gmail.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Thu, 27 Jul 2017 14:10:01 -0500
+Message-ID: <CAL_JsqJfGJwDcXtpBs73TsSKTCwfAPywgyTPwzy1GQotJ7DTzw@mail.gmail.com>
+Subject: Re: [PATCH v2 02/22] fpga: add FPGA device framework
+Content-Type: text/plain; charset="UTF-8"
 To: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Thu, Jul 27, 2017 at 11:44:01AM -0500, Alan Tull wrote:
+On Thu, Jul 27, 2017 at 11:35 AM, Alan Tull <atull@kernel.org> wrote:
 > On Sun, Jun 25, 2017 at 8:51 PM, Wu Hao <hao.wu@intel.com> wrote:
-> > During FPGA device (e.g PCI-based) discovery, platform devices are
-> > registered for different FPGA function units. But the device node path
-> > isn't quite friendly to applications.
-> >
-> 
-> Hi Hao,
-> 
-> Please add a document for fpga-dev under Documentation/fpga to help
-> future users.  The header of this patch explains things pretty well
-> and could be used with a little formatting for the document.
+>
+> Hi Rob,
+>
+> I was hoping to pick your brain a bit on a DT question.
+>
+>> During FPGA device (e.g PCI-based) discovery, platform devices are
+>> registered for different FPGA function units. But the device node path
+>> isn't quite friendly to applications.
+>>
+>> Consider this case, applications want to access child device's sysfs file
+>> for some information.
+>>
+>> 1) Access using bus-based path (e.g PCI)
+>>
+>>   /sys/bus/pci/devices/xxxxx/fpga_func_a.0/sysfs_file
+>>
+>>   From the path, it's clear which PCI device is the parent, but not perfect
+>>   solution for applications. PCI device BDF is not fixed, application may
+>>   need to search all PCI device to find the actual FPGA Device.
+>>
+>> 2) Or access using platform device path
+>>
+>>   /sys/bus/platform/devices/fpga_func_a.0/sysfs_file
+>>
+>>   Applications find the actual function by name easily, but no information
+>>   about which fpga device it belongs to. It's quite confusing if multiple
+>>   FPGA devices are in one system.
+>
+> There's a proposal for adding sysfs nodes that correspond to each FPGA
+> device., with the devices located on each FPGA under them.  It makes
+> it easier to see which device is on which FPGA.
 
-Sure, will include one document for fpga-dev in the next version patch set.
+Makes sense.
 
-Thanks
-Hao
+>> 'FPGA Device' class is introduced to resolve this problem. Each node under
+>> this class represents a fpga device, which may have one or more child
+>> devices. Applications only need to search under this FPGA Device class
+>> folder to find the child device node it needs.
+>>
+>> For example, for the platform has 2 fpga devices, each fpga device has
+>> 3 child devices, the hierarchy looks like this.
+>>
+>> Two nodes are under /sys/class/fpga/:
+>> /sys/class/fpga/fpga.0
+>> /sys/class/fpga/fpga.1
+>>
+>> Each node has 1 function A device and 2 function B devices:
+>> /sys/class/fpga/fpga.0/func_a.0
+>> /sys/class/fpga/fpga.0/func_b.0
+>> /sys/class/fpga/fpga.0/func_b.1
+>>
+>> /sys/class/fpga/fpga.1/func_a.1
+>> /sys/class/fpga/fpga.1/func_b.2
+>> /sys/class/fpga/fpga.1/func_b.3
 
-> 
-> Alan
+A class is generally what is the function of the device, not how it is
+attached. Seems like what you want here is a new bus type if the
+existing PCI and platform bus types don't work.
+
+>
+> I can see the value of having sysfs nodes that correspond to fpga
+> devices and being able to find devices under them.  I'm thinking what
+> that would mean for Device Tree when fpga-dev is used on DT enabled
+> systems.  In Device Tree, what is a fpga-dev?
+
+Just properly setting the parent struct device on the functions should
+be enough to figure out which function is in which fpga. I don't see
+why a new class is needed.
+
+> Currently the DT would have a FPGA bridge corresponding to each FPGA's
+> hardware bridge and a heirarchy of bridges, regions and devices under
+> it.  On systems that don't support partial reconfiguration under the
+> OS (so not main bridge that was controlled by the OS), there would be
+> a FPGA region, then its child regions, bridges, and devices.
+
+The FPGA bridges could instantiate fpga bus type devices instead of
+platform devices. That's really up to Linux and outside the scope of
+the bindings.
+
+Rob
