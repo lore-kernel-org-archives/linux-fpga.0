@@ -1,20 +1,42 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-In-Reply-To: <1498441938-14046-4-git-send-email-hao.wu@intel.com>
-References: <1498441938-14046-1-git-send-email-hao.wu@intel.com> <1498441938-14046-4-git-send-email-hao.wu@intel.com>
 From: Alan Tull <atull@kernel.org>
-Date: Wed, 2 Aug 2017 16:21:19 -0500
-Message-ID: <CANk1AXSUtTLVDKFyFB99Z0mjzGtgawkykQg29sRHdfWOFhhO2g@mail.gmail.com>
-Subject: Re: [PATCH v2 03/22] fpga: bridge: remove OF dependency for fpga-bridge
-Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
+Subject: [PATCH 0/5] patches for FPGA
+Date: Tue,  1 Aug 2017 21:20:50 -0500
+Message-Id: <1501640455-2719-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Sun, Jun 25, 2017 at 8:51 PM, Wu Hao <hao.wu@intel.com> wrote:
-> This patch removes OF dependency of fpga-bridge, it allows drivers
-> to use fpga-bridge class without device tree support.
->
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
+Hi Greg,
+
+Please take these patches for FPGA that have been reviewed on the
+mailing lists.  All minor things including two bug fixes, an update to
+MAINTAINERS, and a couple other minor patches.
+
+Thanks,
+Alan
+
+Gustavo A. R. Silva (1):
+  fpga: altera-hps2fpga: add NULL check on of_match_device() return
+    value
+
+Ian Abbott (1):
+  fpga: altera-hps2fpga: fix multiple init of l3_remap_lock
+
+Moritz Fischer (1):
+  MAINTAINERS: fpga: Update email and add patchwork URL
+
+Philipp Zabel (1):
+  ARM: socfpga: explicitly request exclusive reset control
+
+Rob Herring (1):
+  fpga: Convert to using %pOF instead of full_name
+
+ MAINTAINERS                    |  3 ++-
+ drivers/fpga/altera-hps2fpga.c | 12 ++++++++----
+ drivers/fpga/fpga-region.c     |  4 ++--
+ 3 files changed, 12 insertions(+), 7 deletions(-)
+
+-- 
+2.7.4
