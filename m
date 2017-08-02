@@ -4,49 +4,45 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII;
  format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 02 Aug 2017 17:38:47 +0200
+Date: Wed, 02 Aug 2017 17:33:49 +0200
 From: Eric Schwarz <eas@sw-optimization.com>
 Subject: Re: Mailing list archive at marc.info
-In-Reply-To: <CANk1AXQr7W0P_MGbJUCLqWtMv4wV8kOhniVup2cKaGkW49FfzA@mail.gmail.com>
+In-Reply-To: <CANk1AXS+GyMPWW0APO-WL0RNfwgZQ+p=pg5-51xEPpCOxHEZiw@mail.gmail.com>
 References: <20170512163815.GA31364@tyrael.amer.corp.natinst.com>
  <CANk1AXT1EfaA2hd2cuueDrDAdmymPKmj95KgbRjd7a8Uq7H9QQ@mail.gmail.com>
  <24dbc3517add5146553688fd978290cd@sw-optimization.com>
  <CANk1AXS+GyMPWW0APO-WL0RNfwgZQ+p=pg5-51xEPpCOxHEZiw@mail.gmail.com>
- <CANk1AXQr7W0P_MGbJUCLqWtMv4wV8kOhniVup2cKaGkW49FfzA@mail.gmail.com>
-Message-ID: <31e1fd0d90fc072adfff31239a2bfba9@sw-optimization.com>
+Message-ID: <9bdd8f9fa060b2d153195a8154473295@sw-optimization.com>
 To: Alan Tull <atull@kernel.org>
 Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-fpga-owner@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Am 02.08.2017 16:23, schrieb Alan Tull:
+Am 02.08.2017 16:21, schrieb Alan Tull:
 
-> On Wed, Aug 2, 2017 at 9:21 AM, Alan Tull <atull@kernel.org> wrote: On 
-> Wed, Aug 2, 2017 at 6:13 AM, Eric Schwarz <eas@sw-optimization.com> 
-> wrote: Hi all,
+> On Wed, Aug 2, 2017 at 6:13 AM, Eric Schwarz <eas@sw-optimization.com> 
+> wrote:
 > 
-> any news on this topic. Is there a mailinglist archive available 
-> somewhere?
+>> Hi all,
+>> 
+>> any news on this topic. Is there a mailinglist archive available 
+>> somewhere?
+> 
 > marc.info [1] has an archive going back to May 2017.  The linux-fpga
 > list was created in 12/2016, so there's a few months that aren't
 > there.
-
-patchwork [2] goes back to 12/2016, so we are quite well covered
-(thanks Moritz!)
-
+> 
 > Alan
 > 
 > [1] http://marc.info/?l=linux-fpga&r=1&w=2
 
-[2] 
-https://patchwork.kernel.org/project/linux-fpga/list/?state=*&archive=both&page=1
+Well, then this archive might be linked here [2].
 
-Maybe [2] should also be linked here [3].
-
-Cheers
+Many thanks
 Eric
 
-[3] http://vger.kernel.org/vger-lists.html
+[2] http://vger.kernel.org/vger-lists.html
 
+> 
 > Many thanks in advance
 > Eric
 > 
