@@ -1,177 +1,255 @@
-Return-Path: <SRS0=TC/X=7Q=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=TC/X=7Q=intel.com=hao.wu@kernel.org>
-From: "Wu, Hao" <hao.wu@intel.com>
-Subject: RE: [PATCH v2 06/22] fpga: intel: add FPGA PCIe device driver
-Date: Mon, 14 Aug 2017 12:33:31 +0000
-Message-ID: <BE8371DA886269458E0220A16DC1F8277E07D4EC@SHSMSX104.ccr.corp.intel.com>
-References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
- <1498441938-14046-7-git-send-email-hao.wu@intel.com>
- <CANk1AXQ__fFCfv335ySGMxG=8UXReEk8V1=a-3pCw5S-v=sSRQ@mail.gmail.com>
-In-Reply-To: <CANk1AXQ__fFCfv335ySGMxG=8UXReEk8V1=a-3pCw5S-v=sSRQ@mail.gmail.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-To: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Whisonant,, "Enno  <enno.luebbers@intel.com>, Rao, Shiva" <shiva.rao@intel.com>, "Rauer, Christopher" <christopher.rauer@intel.com>
+In-Reply-To: <1498441938-14046-7-git-send-email-hao.wu@intel.com>
+References: <1498441938-14046-1-git-send-email-hao.wu@intel.com> <1498441938-14046-7-git-send-email-hao.wu@intel.com>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 7 Aug 2017 15:43:35 -0500
+Message-ID: <CANk1AXQ__fFCfv335ySGMxG=8UXReEk8V1=a-3pCw5S-v=sSRQ@mail.gmail.com>
+Subject: Re: [PATCH v2 06/22] fpga: intel: add FPGA PCIe device driver
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-PiBPbiBTdW4sIEp1biAyNSwgMjAxNyBhdCA4OjUyIFBNLCBXdSBIYW8gPGhhby53dUBpbnRlbC5j
-b20+IHdyb3RlOg0KPiANCj4gSGkgSGFvLA0KPiANCj4gTWFraW5nIG15IHdheSB0aHJvdWdoIHlv
-dXIgcGF0Y2hzZXQuDQoNCkhpIEFsYW4NCg0KVGhhbmtzIGEgbG90IGZvciB5b3VyIGNvbW1lbnRz
-LiA6KQ0KDQo+IA0KPiA+IEZyb206IFpoYW5nIFlpIDx5aS56LnpoYW5nQGludGVsLmNvbT4NCj4g
-Pg0KPiA+IFRoZSBJbnRlbCBGUEdBIGRldmljZSBhcHBlYXJzIGFzIGEgUENJZSBkZXZpY2Ugb24g
-dGhlIHN5c3RlbS4gVGhpcyBwYXRjaA0KPiA+IGltcGxlbWVudHMgdGhlIGJhc2ljIGZyYW1ld29y
-ayBvZiB0aGUgZHJpdmVyIGZvciBJbnRlbCBQQ0llIGRldmljZSB3aGljaA0KPiA+IGxvY2F0ZXMg
-YmV0d2VlbiBDUFUgYW5kIEFjY2VsZXJhdGVkIEZ1bmN0aW9uIFVuaXRzIChBRlVzKS4NCj4gDQo+
-IC4uLndoaWNoIGlzIGxvY2F0ZWQgYmV0d2VlbiB0aGUgQ1BVIGFuZC4uLg0KDQpXaWxsIGZpeCB0
-aGlzLg0KDQo+IA0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogVGltIFdoaXNvbmFudCA8dGltLndo
-aXNvbmFudEBpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogRW5ubyBMdWViYmVycyA8ZW5u
-by5sdWViYmVyc0BpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogU2hpdmEgUmFvIDxzaGl2
-YS5yYW9AaW50ZWwuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IENocmlzdG9waGVyIFJhdWVyIDxj
-aHJpc3RvcGhlci5yYXVlckBpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogWmhhbmcgWWkg
-PHlpLnouemhhbmdAaW50ZWwuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFhpYW8gR3Vhbmdyb25n
-IDxndWFuZ3JvbmcueGlhb0BsaW51eC5pbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogV3Ug
-SGFvIDxoYW8ud3VAaW50ZWwuY29tPg0KPiA+IC0tLQ0KPiA+IHYyOiBtb3ZlZCB0aGUgY29kZSB0
-byBkcml2ZXJzL2ZwZ2EgZm9sZGVyIGFzIHN1Z2dlc3RlZCBieSBBbGFuIFR1bGwuDQo+ID4gICAg
-IHN3aXRjaGVkIHRvIEdQTHYyIGxpY2Vuc2UuDQo+ID4gICAgIGZpeGVkIGNvbW1lbnRzIGZyb20g
-TW9yaXR6IEZpc2NoZXIuDQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvZnBnYS9LY29uZmlnICAgICAg
-fCAgMjggKysrKysrKysrKysNCj4gPiAgZHJpdmVycy9mcGdhL01ha2VmaWxlICAgICB8ICAgNSAr
-Kw0KPiA+ICBkcml2ZXJzL2ZwZ2EvaW50ZWwtcGNpZS5jIHwgMTI2DQo+ICsrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMyBmaWxlcyBjaGFuZ2VkLCAx
-NTkgaW5zZXJ0aW9ucygrKQ0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9mcGdhL2lu
-dGVsLXBjaWUuYw0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZnBnYS9LY29uZmlnIGIv
-ZHJpdmVycy9mcGdhL0tjb25maWcNCj4gPiBpbmRleCBjMWQ4ZjQxLi4zZjNiN2Y0IDEwMDY0NA0K
-PiA+IC0tLSBhL2RyaXZlcnMvZnBnYS9LY29uZmlnDQo+ID4gKysrIGIvZHJpdmVycy9mcGdhL0tj
-b25maWcNCj4gPiBAQCAtMTE3LDYgKzExNywzNCBAQCBjb25maWcgWElMSU5YX1BSX0RFQ09VUExF
-Ug0KPiA+ICAgICAgICAgICByZWdpb24gb2YgdGhlIEZQR0EgZnJvbSB0aGUgYnVzc2VzIHdoaWxl
-IHRoYXQgcmVnaW9uIGlzDQo+ID4gICAgICAgICAgIGJlaW5nIHJlcHJvZ3JhbW1lZCBkdXJpbmcg
-cGFydGlhbCByZWNvbmZpZy4NCj4gPg0KPiA+ICttZW51Y29uZmlnIElOVEVMX0ZQR0ENCj4gPiAr
-ICAgICAgIHRyaXN0YXRlICJJbnRlbChSKSBGUEdBIHN1cHBvcnQiDQo+ID4gKyAgICAgICBkZXBl
-bmRzIG9uIEZQR0FfREVWSUNFDQo+ID4gKyAgICAgICBoZWxwDQo+ID4gKyAgICAgICAgIFNlbGVj
-dCB0aGlzIG9wdGlvbiB0byBlbmFibGUgZHJpdmVyIHN1cHBvcnQgZm9yIEludGVsKFIpDQo+ID4g
-KyAgICAgICAgIEZpZWxkLVByb2dyYW1tYWJsZSBHYXRlIEFycmF5IChGUEdBKSBzb2x1dGlvbnMu
-IFRoaXMgZHJpdmVyDQo+IA0KPiBUaGlzIGlzIGNvbmZ1c2luZyBzaW5jZSB0aGVyZSBpcyBGUEdB
-IHN1cHBvcnQgZm9yIEludGVsIEZQR0EgZGV2aWNlcw0KPiBpbiB0aGUga2VybmVsIGFscmVhZHkg
-c3VjaCBhcyBhbnkgb2YgdGhlIEFsdGVyYSBzdXBwb3J0IHRoYXQgYWxyZWFkeQ0KPiBpcyBpbiB0
-aGlzIEtjb25maWcuICBUaGlzIGRlc2NyaXB0aW9uIHdpbGwgaGF2ZSB0byBiZSBtb3JlIHNwZWNp
-ZmljDQo+IHRoYXQgdGhpcyBpcyBvbmUgcGFydGljdWxhciBJbnRlbCBzb2x1dGlvbi4NCg0KTWFr
-ZSBzZW5zZSwgd2lsbCBhZGQgbW9yZSBzcGVjaWZpYyBkZXNjcmlwdGlvbiBoZXJlLg0KDQo+IA0K
-PiA+ICsgICAgICAgICBwcm92aWRlcyBpbnRlcmZhY2VzIGZvciB1c2Vyc3BhY2UgYXBwbGljYXRp
-b25zIHRvIGNvbmZpZ3VyZSwNCj4gPiArICAgICAgICAgZW51bWVyYXRlLCBvcGVuLCBhbmQgYWNj
-ZXNzIEZQR0EgYWNjZWxlcmF0b3JzIG9uIHBsYXRmb3Jtcw0KPiA+ICsgICAgICAgICBlcXVpcHBl
-ZCB3aXRoIEludGVsKFIpIEZQR0Egc29sdXRpb25zIGFuZCBlbmFibGVzIHN5c3RlbQ0KPiA+ICsg
-ICAgICAgICBsZXZlbCBtYW5hZ2VtZW50IGZ1bmN0aW9ucyBzdWNoIGFzIEZQR0EgcmVjb25maWd1
-cmF0aW9uLA0KPiA+ICsgICAgICAgICBwb3dlciBtYW5hZ2VtZW50LCBhbmQgdmlydHVhbGl6YXRp
-b24uDQo+ID4gKw0KPiA+ICsgICAgICAgICBTYXkgWSBpZiB5b3VyIHBsYXRmb3JtIGhhcyB0aGlz
-IHRlY2hub2xvZ3kuIFNheSBOIGlmIHVuc3VyZS4NCj4gPiArDQo+ID4gK2lmIElOVEVMX0ZQR0EN
-Cj4gPiArDQo+ID4gK2NvbmZpZyBJTlRFTF9GUEdBX1BDSQ0KPiA+ICsgICAgICAgdHJpc3RhdGUg
-IkludGVsIEZQR0EgUENJZSBEcml2ZXIiDQo+ID4gKyAgICAgICBkZXBlbmRzIG9uIFBDSQ0KPiA+
-ICsgICAgICAgaGVscA0KPiA+ICsgICAgICAgICBUaGlzIGlzIHRoZSBkcml2ZXIgZm9yIHRoZSBQ
-Q0llIGRldmljZSB3aGljaCBsb2NhdGVzIGJldHdlZW4NCj4gDQo+IC4uLndoaWNoIGlzIGxvY2F0
-ZWQgYmV0d2Vlbi4uLg0KDQpXaWxsIGZpeCB0aGlzLg0KDQo+IA0KPiA+ICsgICAgICAgICBDUFUg
-YW5kIEFjY2VsZXJhdGVkIEZ1bmN0aW9uIFVuaXRzIChBRlVzKSBhbmQgYWxsb3dzIHRoZW0gdG8N
-Cj4gPiArICAgICAgICAgY29tbXVuaWNhdGUgd2l0aCBlYWNoIG90aGVyLg0KPiA+ICsNCj4gPiAr
-ICAgICAgICAgVG8gY29tcGlsZSB0aGlzIGFzIGEgbW9kdWxlLCBjaG9vc2UgTSBoZXJlLg0KPiA+
-ICsNCj4gPiArZW5kaWYNCj4gPiArDQo+ID4gIGVuZGlmICMgRlBHQQ0KPiA+DQo+ID4gIGVuZG1l
-bnUNCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9mcGdhL01ha2VmaWxlIGIvZHJpdmVycy9mcGdh
-L01ha2VmaWxlDQo+ID4gaW5kZXggODk1MGE4Zi4uNTYxMzEzMyAxMDA2NDQNCj4gPiAtLS0gYS9k
-cml2ZXJzL2ZwZ2EvTWFrZWZpbGUNCj4gPiArKysgYi9kcml2ZXJzL2ZwZ2EvTWFrZWZpbGUNCj4g
-PiBAQCAtMjcsMyArMjcsOCBAQCBvYmotJChDT05GSUdfWElMSU5YX1BSX0RFQ09VUExFUikgICAg
-ICs9IHhpbGlueC1wci0NCj4gZGVjb3VwbGVyLm8NCj4gPiAgIyBIaWdoIExldmVsIEludGVyZmFj
-ZXMNCj4gPiAgb2JqLSQoQ09ORklHX0ZQR0FfUkVHSU9OKSAgICAgICAgICAgICAgKz0gZnBnYS1y
-ZWdpb24ubw0KPiA+ICBvYmotJChDT05GSUdfT0ZfRlBHQV9SRUdJT04pICAgICAgICAgICArPSBv
-Zi1mcGdhLXJlZ2lvbi5vDQo+ID4gKw0KPiA+ICsjIEludGVsIEZQR0EgU3VwcG9ydA0KPiA+ICtv
-YmotJChDT05GSUdfSU5URUxfRlBHQV9QQ0kpICAgICAgICAgICArPSBpbnRlbC1mcGdhLXBjaS5v
-DQo+ID4gKw0KPiA+ICtpbnRlbC1mcGdhLXBjaS1vYmpzIDo9IGludGVsLXBjaWUubw0KPiA+IGRp
-ZmYgLS1naXQgYS9kcml2ZXJzL2ZwZ2EvaW50ZWwtcGNpZS5jIGIvZHJpdmVycy9mcGdhL2ludGVs
-LXBjaWUuYw0KPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4gaW5kZXggMDAwMDAwMC4uZjY5
-N2RlNA0KPiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysgYi9kcml2ZXJzL2ZwZ2EvaW50ZWwtcGNp
-ZS5jDQo+ID4gQEAgLTAsMCArMSwxMjYgQEANCj4gPiArLyoNCj4gPiArICogRHJpdmVyIGZvciBJ
-bnRlbCBGUEdBIFBDSWUgZGV2aWNlDQo+ID4gKyAqDQo+ID4gKyAqIENvcHlyaWdodCAoQykgMjAx
-NyBJbnRlbCBDb3Jwb3JhdGlvbiwgSW5jLg0KPiA+ICsgKg0KPiA+ICsgKiBBdXRob3JzOg0KPiA+
-ICsgKiAgIFpoYW5nIFlpIDxZaS5aLlpoYW5nQGludGVsLmNvbT4NCj4gPiArICogICBYaWFvIEd1
-YW5ncm9uZyA8Z3Vhbmdyb25nLnhpYW9AbGludXguaW50ZWwuY29tPg0KPiA+ICsgKiAgIEpvc2Vw
-aCBHcmVjY28gPGpvZS5ncmVjY29AaW50ZWwuY29tPg0KPiA+ICsgKiAgIEVubm8gTHVlYmJlcnMg
-PGVubm8ubHVlYmJlcnNAaW50ZWwuY29tPg0KPiA+ICsgKiAgIFRpbSBXaGlzb25hbnQgPHRpbS53
-aGlzb25hbnRAaW50ZWwuY29tPg0KPiA+ICsgKiAgIEFuYW5kYSBSYXZ1cmkgPGFuYW5kYS5yYXZ1
-cmlAaW50ZWwuY29tPg0KPiA+ICsgKiAgIEhlbnJ5IE1pdGNoZWwgPGhlbnJ5Lm1pdGNoZWxAaW50
-ZWwuY29tPg0KPiA+ICsgKg0KPiA+ICsgKiBUaGlzIHdvcmsgaXMgbGljZW5zZWQgdW5kZXIgdGhl
-IHRlcm1zIG9mIHRoZSBHTlUgR1BMIHZlcnNpb24gMi4gU2VlDQo+ID4gKyAqIHRoZSBDT1BZSU5H
-IGZpbGUgaW4gdGhlIHRvcC1sZXZlbCBkaXJlY3RvcnkuDQo+ID4gKyAqLw0KPiA+ICsNCj4gPiAr
-I2luY2x1ZGUgPGxpbnV4L3BjaS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvdHlwZXMuaD4NCj4g
-PiArI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvbW9kdWxl
-Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9zdGRkZWYuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4
-L2Vycm5vLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9hZXIuaD4NCj4gPiArDQo+ID4gKyNkZWZp
-bmUgRFJWX1ZFUlNJT04gICAgIjAuOCINCj4gPiArI2RlZmluZSBEUlZfTkFNRSAgICAgICAiaW50
-ZWwtZnBnYS1wY2kiDQo+ID4gKw0KPiA+ICsvKiBQQ0kgRGV2aWNlIElEICovDQo+ID4gKyNkZWZp
-bmUgUENJZV9ERVZJQ0VfSURfUEZfSU5UXzVfWCAgICAgIDB4QkNCRA0KPiA+ICsjZGVmaW5lIFBD
-SWVfREVWSUNFX0lEX1BGX0lOVF82X1ggICAgICAweEJDQzANCj4gPiArI2RlZmluZSBQQ0llX0RF
-VklDRV9JRF9QRl9EU0NfMV9YICAgICAgMHgwOUM0DQo+ID4gKy8qIFZGIERldmljZSAqLw0KPiA+
-ICsjZGVmaW5lIFBDSWVfREVWSUNFX0lEX1ZGX0lOVF81X1ggICAgICAweEJDQkYNCj4gPiArI2Rl
-ZmluZSBQQ0llX0RFVklDRV9JRF9WRl9JTlRfNl9YICAgICAgMHhCQ0MxDQo+ID4gKyNkZWZpbmUg
-UENJZV9ERVZJQ0VfSURfVkZfRFNDXzFfWCAgICAgIDB4MDlDNQ0KPiA+ICsNCj4gPiArc3RhdGlj
-IHN0cnVjdCBwY2lfZGV2aWNlX2lkIGNjaV9wY2llX2lkX3RibFtdID0gew0KPiA+ICsgICAgICAg
-e1BDSV9ERVZJQ0UoUENJX1ZFTkRPUl9JRF9JTlRFTCwgUENJZV9ERVZJQ0VfSURfUEZfSU5UXzVf
-WCksfSwNCj4gPiArICAgICAgIHtQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSWVf
-REVWSUNFX0lEX1ZGX0lOVF81X1gpLH0sDQo+ID4gKyAgICAgICB7UENJX0RFVklDRShQQ0lfVkVO
-RE9SX0lEX0lOVEVMLCBQQ0llX0RFVklDRV9JRF9QRl9JTlRfNl9YKSx9LA0KPiA+ICsgICAgICAg
-e1BDSV9ERVZJQ0UoUENJX1ZFTkRPUl9JRF9JTlRFTCwgUENJZV9ERVZJQ0VfSURfVkZfSU5UXzZf
-WCksfSwNCj4gPiArICAgICAgIHtQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSWVf
-REVWSUNFX0lEX1BGX0RTQ18xX1gpLH0sDQo+ID4gKyAgICAgICB7UENJX0RFVklDRShQQ0lfVkVO
-RE9SX0lEX0lOVEVMLCBQQ0llX0RFVklDRV9JRF9WRl9EU0NfMV9YKSx9LA0KPiA+ICsgICAgICAg
-ezAsfQ0KPiA+ICt9Ow0KPiA+ICtNT0RVTEVfREVWSUNFX1RBQkxFKHBjaSwgY2NpX3BjaWVfaWRf
-dGJsKTsNCj4gPiArDQo+ID4gK3N0YXRpYw0KPiA+ICtpbnQgY2NpX3BjaV9wcm9iZShzdHJ1Y3Qg
-cGNpX2RldiAqcGNpZGV2LCBjb25zdCBzdHJ1Y3QgcGNpX2RldmljZV9pZCAqcGNpZGV2aWQpDQo+
-ID4gK3sNCj4gPiArICAgICAgIGludCByZXQ7DQo+ID4gKw0KPiA+ICsgICAgICAgcmV0ID0gcGNp
-X2VuYWJsZV9kZXZpY2UocGNpZGV2KTsNCj4gPiArICAgICAgIGlmIChyZXQgPCAwKSB7DQo+ID4g
-KyAgICAgICAgICAgICAgIGRldl9lcnIoJnBjaWRldi0+ZGV2LCAiRmFpbGVkIHRvIGVuYWJsZSBk
-ZXZpY2UgJWQuXG4iLCByZXQpOw0KPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gcmV0Ow0KPiA+
-ICsgICAgICAgfQ0KPiA+ICsNCj4gPiArICAgICAgIHJldCA9IHBjaV9lbmFibGVfcGNpZV9lcnJv
-cl9yZXBvcnRpbmcocGNpZGV2KTsNCj4gPiArICAgICAgIGlmIChyZXQgJiYgcmV0ICE9IC1FSU5W
-QUwpDQo+ID4gKyAgICAgICAgICAgICAgIGRldl9pbmZvKCZwY2lkZXYtPmRldiwgIlBDSUUgQUVS
-IHVuYXZhaWxhYmxlICVkLlxuIiwgcmV0KTsNCj4gPiArDQo+ID4gKyAgICAgICByZXQgPSBwY2lf
-cmVxdWVzdF9yZWdpb25zKHBjaWRldiwgRFJWX05BTUUpOw0KPiA+ICsgICAgICAgaWYgKHJldCkg
-ew0KPiA+ICsgICAgICAgICAgICAgICBkZXZfZXJyKCZwY2lkZXYtPmRldiwgIkZhaWxlZCB0byBy
-ZXF1ZXN0IHJlZ2lvbnMuXG4iKTsNCj4gPiArICAgICAgICAgICAgICAgZ290byBkaXNhYmxlX2Vy
-cm9yX3JlcG9ydF9leGl0Ow0KPiA+ICsgICAgICAgfQ0KPiA+ICsNCj4gPiArICAgICAgIHBjaV9z
-ZXRfbWFzdGVyKHBjaWRldik7DQo+ID4gKyAgICAgICBwY2lfc2F2ZV9zdGF0ZShwY2lkZXYpOw0K
-PiANCj4gSXMgcGNpX3NhdmVfc3RhdGUgbmVlZGVkIGhlcmU/ICBUaG91Z2h0IGl0IHdhcyBmb3Ig
-Z29pbmcgaW50byBzdXNwZW5kLg0KPiANCg0KSSB0aGluayBubywgd2lsbCByZW1vdmUgdGhpcyBp
-biB0aGUgbmV4dCB2ZXJzaW9uLg0KDQo+ID4gKw0KPiA+ICsgICAgICAgaWYgKCFkbWFfc2V0X21h
-c2soJnBjaWRldi0+ZGV2LCBETUFfQklUX01BU0soNjQpKSkgew0KPiANCj4gUGxlYXNlIHVzZSBw
-Y2lfZG1hX3NldF9tYXNrKCkNCg0KV2lsbCBmaXggdGhpcy4NCg0KPiANCj4gPiArICAgICAgICAg
-ICAgICAgZG1hX3NldF9jb2hlcmVudF9tYXNrKCZwY2lkZXYtPmRldiwgRE1BX0JJVF9NQVNLKDY0
-KSk7DQo+IA0KPiBwY2lfc2V0X2NvbnNpc3RlbnRfZG1hX21hc2soKSBhbmQgY2hlY2sgaXRzIHJl
-dHVybiBjb2RlLg0KPiANCg0KV2lsbCBmaXggdGhpcy4NCg0KPiA+ICsgICAgICAgfSBlbHNlIGlm
-ICghZG1hX3NldF9tYXNrKCZwY2lkZXYtPmRldiwgRE1BX0JJVF9NQVNLKDMyKSkpIHsNCj4gPiAr
-ICAgICAgICAgICAgICAgZG1hX3NldF9jb2hlcmVudF9tYXNrKCZwY2lkZXYtPmRldiwgRE1BX0JJ
-VF9NQVNLKDMyKSk7DQo+IA0KPiBTYW1lIGFzIGFib3ZlLg0KPg0KDQpXaWxsIGZpeCB0aGlzLg0K
-DQpUaGFua3MgYWdhaW4gZm9yIHRoZSByZXZpZXcuDQoNCkhhbw0KIA0KPiA+ICsgICAgICAgfSBl
-bHNlIHsNCj4gPiArICAgICAgICAgICAgICAgcmV0ID0gLUVJTzsNCj4gPiArICAgICAgICAgICAg
-ICAgZGV2X2VycigmcGNpZGV2LT5kZXYsICJObyBzdWl0YWJsZSBETUEgc3VwcG9ydCBhdmFpbGFi
-bGUuXG4iKTsNCj4gPiArICAgICAgICAgICAgICAgZ290byByZWxlYXNlX3JlZ2lvbl9leGl0Ow0K
-PiA+ICsgICAgICAgfQ0KPiA+ICsNCj4gPiArICAgICAgIC8qIFRPRE86IGNyZWF0ZSBhbmQgYWRk
-IHRoZSBwbGF0Zm9ybSBkZXZpY2UgcGVyIGZlYXR1cmUgbGlzdCAqLw0KPiA+ICsgICAgICAgcmV0
-dXJuIDA7DQo+ID4gKw0KPiA+ICtyZWxlYXNlX3JlZ2lvbl9leGl0Og0KPiA+ICsgICAgICAgcGNp
-X3JlbGVhc2VfcmVnaW9ucyhwY2lkZXYpOw0KPiA+ICtkaXNhYmxlX2Vycm9yX3JlcG9ydF9leGl0
-Og0KPiA+ICsgICAgICAgcGNpX2Rpc2FibGVfcGNpZV9lcnJvcl9yZXBvcnRpbmcocGNpZGV2KTsN
-Cj4gPiArICAgICAgIHBjaV9kaXNhYmxlX2RldmljZShwY2lkZXYpOw0KPiA+ICsgICAgICAgcmV0
-dXJuIHJldDsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHZvaWQgY2NpX3BjaV9yZW1vdmUo
-c3RydWN0IHBjaV9kZXYgKnBjaWRldikNCj4gPiArew0KPiA+ICsgICAgICAgcGNpX3JlbGVhc2Vf
-cmVnaW9ucyhwY2lkZXYpOw0KPiA+ICsgICAgICAgcGNpX2Rpc2FibGVfcGNpZV9lcnJvcl9yZXBv
-cnRpbmcocGNpZGV2KTsNCj4gPiArICAgICAgIHBjaV9kaXNhYmxlX2RldmljZShwY2lkZXYpOw0K
-PiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgc3RydWN0IHBjaV9kcml2ZXIgY2NpX3BjaV9kcml2
-ZXIgPSB7DQo+ID4gKyAgICAgICAubmFtZSA9IERSVl9OQU1FLA0KPiA+ICsgICAgICAgLmlkX3Rh
-YmxlID0gY2NpX3BjaWVfaWRfdGJsLA0KPiA+ICsgICAgICAgLnByb2JlID0gY2NpX3BjaV9wcm9i
-ZSwNCj4gPiArICAgICAgIC5yZW1vdmUgPSBjY2lfcGNpX3JlbW92ZSwNCj4gPiArfTsNCj4gPiAr
-DQo+ID4gK3N0YXRpYyBpbnQgX19pbml0IGNjaWRydl9pbml0KHZvaWQpDQo+ID4gK3sNCj4gPiAr
-ICAgICAgIHByX2luZm8oIkludGVsKFIpIEZQR0EgUENJZSBEcml2ZXI6IFZlcnNpb24gJXNcbiIs
-IERSVl9WRVJTSU9OKTsNCj4gPiArDQo+ID4gKyAgICAgICByZXR1cm4gcGNpX3JlZ2lzdGVyX2Ry
-aXZlcigmY2NpX3BjaV9kcml2ZXIpOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgdm9pZCBf
-X2V4aXQgY2NpZHJ2X2V4aXQodm9pZCkNCj4gPiArew0KPiA+ICsgICAgICAgcGNpX3VucmVnaXN0
-ZXJfZHJpdmVyKCZjY2lfcGNpX2RyaXZlcik7DQo+ID4gK30NCj4gPiArDQo+ID4gK21vZHVsZV9p
-bml0KGNjaWRydl9pbml0KTsNCj4gPiArbW9kdWxlX2V4aXQoY2NpZHJ2X2V4aXQpOw0KPiA+ICsN
-Cj4gPiArTU9EVUxFX0RFU0NSSVBUSU9OKCJJbnRlbCBGUEdBIFBDSWUgRGV2aWNlIERyaXZlciIp
-Ow0KPiA+ICtNT0RVTEVfQVVUSE9SKCJJbnRlbCBDb3Jwb3JhdGlvbiIpOw0KPiA+ICtNT0RVTEVf
-TElDRU5TRSgiR1BMIHYyIik7DQo+ID4gLS0NCj4gPiAxLjguMy4xDQo+ID4NCg==
+On Sun, Jun 25, 2017 at 8:52 PM, Wu Hao <hao.wu@intel.com> wrote:
+
+Hi Hao,
+
+Making my way through your patchset.
+
+> From: Zhang Yi <yi.z.zhang@intel.com>
+>
+> The Intel FPGA device appears as a PCIe device on the system. This patch
+> implements the basic framework of the driver for Intel PCIe device which
+> locates between CPU and Accelerated Function Units (AFUs).
+
+...which is located between the CPU and...
+
+>
+> Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+> Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+> Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+> Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
+> Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> ---
+> v2: moved the code to drivers/fpga folder as suggested by Alan Tull.
+>     switched to GPLv2 license.
+>     fixed comments from Moritz Fischer.
+> ---
+>  drivers/fpga/Kconfig      |  28 +++++++++++
+>  drivers/fpga/Makefile     |   5 ++
+>  drivers/fpga/intel-pcie.c | 126 ++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 159 insertions(+)
+>  create mode 100644 drivers/fpga/intel-pcie.c
+>
+> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+> index c1d8f41..3f3b7f4 100644
+> --- a/drivers/fpga/Kconfig
+> +++ b/drivers/fpga/Kconfig
+> @@ -117,6 +117,34 @@ config XILINX_PR_DECOUPLER
+>           region of the FPGA from the busses while that region is
+>           being reprogrammed during partial reconfig.
+>
+> +menuconfig INTEL_FPGA
+> +       tristate "Intel(R) FPGA support"
+> +       depends on FPGA_DEVICE
+> +       help
+> +         Select this option to enable driver support for Intel(R)
+> +         Field-Programmable Gate Array (FPGA) solutions. This driver
+
+This is confusing since there is FPGA support for Intel FPGA devices
+in the kernel already such as any of the Altera support that already
+is in this Kconfig.  This description will have to be more specific
+that this is one particular Intel solution.
+
+> +         provides interfaces for userspace applications to configure,
+> +         enumerate, open, and access FPGA accelerators on platforms
+> +         equipped with Intel(R) FPGA solutions and enables system
+> +         level management functions such as FPGA reconfiguration,
+> +         power management, and virtualization.
+> +
+> +         Say Y if your platform has this technology. Say N if unsure.
+> +
+> +if INTEL_FPGA
+> +
+> +config INTEL_FPGA_PCI
+> +       tristate "Intel FPGA PCIe Driver"
+> +       depends on PCI
+> +       help
+> +         This is the driver for the PCIe device which locates between
+
+...which is located between...
+
+> +         CPU and Accelerated Function Units (AFUs) and allows them to
+> +         communicate with each other.
+> +
+> +         To compile this as a module, choose M here.
+> +
+> +endif
+> +
+>  endif # FPGA
+>
+>  endmenu
+> diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+> index 8950a8f..5613133 100644
+> --- a/drivers/fpga/Makefile
+> +++ b/drivers/fpga/Makefile
+> @@ -27,3 +27,8 @@ obj-$(CONFIG_XILINX_PR_DECOUPLER)     += xilinx-pr-decoupler.o
+>  # High Level Interfaces
+>  obj-$(CONFIG_FPGA_REGION)              += fpga-region.o
+>  obj-$(CONFIG_OF_FPGA_REGION)           += of-fpga-region.o
+> +
+> +# Intel FPGA Support
+> +obj-$(CONFIG_INTEL_FPGA_PCI)           += intel-fpga-pci.o
+> +
+> +intel-fpga-pci-objs := intel-pcie.o
+> diff --git a/drivers/fpga/intel-pcie.c b/drivers/fpga/intel-pcie.c
+> new file mode 100644
+> index 0000000..f697de4
+> --- /dev/null
+> +++ b/drivers/fpga/intel-pcie.c
+> @@ -0,0 +1,126 @@
+> +/*
+> + * Driver for Intel FPGA PCIe device
+> + *
+> + * Copyright (C) 2017 Intel Corporation, Inc.
+> + *
+> + * Authors:
+> + *   Zhang Yi <Yi.Z.Zhang@intel.com>
+> + *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> + *   Joseph Grecco <joe.grecco@intel.com>
+> + *   Enno Luebbers <enno.luebbers@intel.com>
+> + *   Tim Whisonant <tim.whisonant@intel.com>
+> + *   Ananda Ravuri <ananda.ravuri@intel.com>
+> + *   Henry Mitchel <henry.mitchel@intel.com>
+> + *
+> + * This work is licensed under the terms of the GNU GPL version 2. See
+> + * the COPYING file in the top-level directory.
+> + */
+> +
+> +#include <linux/pci.h>
+> +#include <linux/types.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/stddef.h>
+> +#include <linux/errno.h>
+> +#include <linux/aer.h>
+> +
+> +#define DRV_VERSION    "0.8"
+> +#define DRV_NAME       "intel-fpga-pci"
+> +
+> +/* PCI Device ID */
+> +#define PCIe_DEVICE_ID_PF_INT_5_X      0xBCBD
+> +#define PCIe_DEVICE_ID_PF_INT_6_X      0xBCC0
+> +#define PCIe_DEVICE_ID_PF_DSC_1_X      0x09C4
+> +/* VF Device */
+> +#define PCIe_DEVICE_ID_VF_INT_5_X      0xBCBF
+> +#define PCIe_DEVICE_ID_VF_INT_6_X      0xBCC1
+> +#define PCIe_DEVICE_ID_VF_DSC_1_X      0x09C5
+> +
+> +static struct pci_device_id cci_pcie_id_tbl[] = {
+> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_PF_INT_5_X),},
+> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_VF_INT_5_X),},
+> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_PF_INT_6_X),},
+> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_VF_INT_6_X),},
+> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_PF_DSC_1_X),},
+> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIe_DEVICE_ID_VF_DSC_1_X),},
+> +       {0,}
+> +};
+> +MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
+> +
+> +static
+> +int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+> +{
+> +       int ret;
+> +
+> +       ret = pci_enable_device(pcidev);
+> +       if (ret < 0) {
+> +               dev_err(&pcidev->dev, "Failed to enable device %d.\n", ret);
+> +               return ret;
+> +       }
+> +
+> +       ret = pci_enable_pcie_error_reporting(pcidev);
+> +       if (ret && ret != -EINVAL)
+> +               dev_info(&pcidev->dev, "PCIE AER unavailable %d.\n", ret);
+> +
+> +       ret = pci_request_regions(pcidev, DRV_NAME);
+> +       if (ret) {
+> +               dev_err(&pcidev->dev, "Failed to request regions.\n");
+> +               goto disable_error_report_exit;
+> +       }
+> +
+> +       pci_set_master(pcidev);
+> +       pci_save_state(pcidev);
+
+Is pci_save_state needed here?  Thought it was for going into suspend.
+
+> +
+> +       if (!dma_set_mask(&pcidev->dev, DMA_BIT_MASK(64))) {
+
+Please use pci_dma_set_mask()
+
+> +               dma_set_coherent_mask(&pcidev->dev, DMA_BIT_MASK(64));
+
+pci_set_consistent_dma_mask() and check its return code.
+
+> +       } else if (!dma_set_mask(&pcidev->dev, DMA_BIT_MASK(32))) {
+> +               dma_set_coherent_mask(&pcidev->dev, DMA_BIT_MASK(32));
+
+Same as above.
+
+> +       } else {
+> +               ret = -EIO;
+> +               dev_err(&pcidev->dev, "No suitable DMA support available.\n");
+> +               goto release_region_exit;
+> +       }
+> +
+> +       /* TODO: create and add the platform device per feature list */
+> +       return 0;
+> +
+> +release_region_exit:
+> +       pci_release_regions(pcidev);
+> +disable_error_report_exit:
+> +       pci_disable_pcie_error_reporting(pcidev);
+> +       pci_disable_device(pcidev);
+> +       return ret;
+> +}
+> +
+> +static void cci_pci_remove(struct pci_dev *pcidev)
+> +{
+> +       pci_release_regions(pcidev);
+> +       pci_disable_pcie_error_reporting(pcidev);
+> +       pci_disable_device(pcidev);
+> +}
+> +
+> +static struct pci_driver cci_pci_driver = {
+> +       .name = DRV_NAME,
+> +       .id_table = cci_pcie_id_tbl,
+> +       .probe = cci_pci_probe,
+> +       .remove = cci_pci_remove,
+> +};
+> +
+> +static int __init ccidrv_init(void)
+> +{
+> +       pr_info("Intel(R) FPGA PCIe Driver: Version %s\n", DRV_VERSION);
+> +
+> +       return pci_register_driver(&cci_pci_driver);
+> +}
+> +
+> +static void __exit ccidrv_exit(void)
+> +{
+> +       pci_unregister_driver(&cci_pci_driver);
+> +}
+> +
+> +module_init(ccidrv_init);
+> +module_exit(ccidrv_exit);
+> +
+> +MODULE_DESCRIPTION("Intel FPGA PCIe Device Driver");
+> +MODULE_AUTHOR("Intel Corporation");
+> +MODULE_LICENSE("GPL v2");
+> --
+> 1.8.3.1
+>
