@@ -1,135 +1,167 @@
-Return-Path: <SRS0=TC/X=7Q=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=TC/X=7Q=intel.com=hao.wu@kernel.org>
-From: "Wu, Hao" <hao.wu@intel.com>
-Subject: RE: [PATCH RFC] fpga: add FPGA Bus device framework
-Date: Mon, 14 Aug 2017 12:59:19 +0000
-Message-ID: <BE8371DA886269458E0220A16DC1F8277E07D5AC@SHSMSX104.ccr.corp.intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <BE8371DA886269458E0220A16DC1F8277E07031A@SHSMSX104.ccr.corp.intel.com>
 References: <1501676385-32551-1-git-send-email-hao.wu@intel.com>
  <CANk1AXQs4bTwV9JeVC2B3HoEd+q39R4i3z4pvcZaRjj0bsLr0g@mail.gmail.com>
- <20170803075335.GA4120@hao-dev>
- <CANk1AXT+aoGuQE_U694r+=yFeeXyRUU99MfV-uTG9T3Wk85VMw@mail.gmail.com>
+ <20170803075335.GA4120@hao-dev> <CANk1AXT+aoGuQE_U694r+=yFeeXyRUU99MfV-uTG9T3Wk85VMw@mail.gmail.com>
  <BE8371DA886269458E0220A16DC1F8277E07031A@SHSMSX104.ccr.corp.intel.com>
- <CANk1AXQOAALsMZR3BfLeLREKA1YcYu8kb2ce4X9q5THK0nkQWw@mail.gmail.com>
-In-Reply-To: <CANk1AXQOAALsMZR3BfLeLREKA1YcYu8kb2ce4X9q5THK0nkQWw@mail.gmail.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-MIME-Version: 1.0
-To: Alan Tull <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Date: Thu, 10 Aug 2017 14:46:41 -0500
+Message-ID: <CANk1AXQOAALsMZR3BfLeLREKA1YcYu8kb2ce4X9q5THK0nkQWw@mail.gmail.com>
+Subject: Re: [PATCH RFC] fpga: add FPGA Bus device framework
+Content-Type: text/plain; charset="UTF-8"
+To: "Wu, Hao" <hao.wu@intel.com>
 Cc: Rob Herring <robh+dt@kernel.org>, Moritz Fischer <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-PiBPbiBUdWUsIEF1ZyA4LCAyMDE3IGF0IDE6MjUgUE0sIFd1LCBIYW8gPGhhby53dUBpbnRlbC5j
-b20+IHdyb3RlOg0KPiA+PiBPbiBUaHUsIEF1ZyAzLCAyMDE3IGF0IDI6NTMgQU0sIFd1IEhhbyA8
-aGFvLnd1QGludGVsLmNvbT4gd3JvdGU6DQo+ID4+ID4gT24gV2VkLCBBdWcgMDIsIDIwMTcgYXQg
-MDQ6MTY6MzJQTSAtMDUwMCwgQWxhbiBUdWxsIHdyb3RlOg0KPiA+PiA+PiBPbiBXZWQsIEF1ZyAy
-LCAyMDE3IGF0IDc6MTkgQU0sIFd1IEhhbyA8aGFvLnd1QGludGVsLmNvbT4gd3JvdGU6DQo+ID4+
-ID4+ID4gVGhpcyBwYXRjaCBpcyBhIFJGQyBwYXRjaCB3aGljaCByZXBsYWNlcyB0aGUgcGF0Y2hb
-MV0gd2hpY2gNCj4gPj4gPj4gPiBjcmVhdGVzICdmcGdhLWRldicgY2xhc3MgYXMgY29udGFpbmVy
-IGRldmljZS4gSXQgaW50cm9kdWNlcw0KPiA+PiA+PiA+IGEgJ2ZwZ2EnIGJ1cyB0eXBlLCBhbmQg
-cHJvdmlkZXMgaW50ZXJmYWNlcyB0byBjcmVhdGUvZGVzdHJveQ0KPiA+PiA+PiA+IGZwZ2EgYnVz
-IGRldmljZXMuIFRoaXMgZnBnYSBidXMgZGV2aWNlIG9ubHkgY291bGQgYmUgdXNlZCBhcw0KPiA+
-PiA+PiA+IGEgY29udGFpbmVyIGRldmljZSwgYW5kIG5vIGRyaXZlcnMgbmVlZGVkIGZvciBpdC4N
-Cj4gPj4gPj4gPg0KPiA+PiA+PiA+IFRoZXJlIGlzIG5vIGludGVyZmFjZSBjaGFuZ2UsIHNvIHRo
-aXMgcGF0Y2ggY291bGQgYmUgdXNlZA0KPiA+PiA+PiA+IHRvZ2V0aGVyIHdpdGggb3RoZXIgcGF0
-Y2hlcyBvZiB0aGUgb3JpZ2luYWwgcGF0Y2ggc2V0WzJdLg0KPiA+PiA+PiA+DQo+ID4+ID4+DQo+
-ID4+ID4+IEkgYW0gd29uZGVyaW5nIHdoZXRoZXIgdGhpcyBjb3VsZCBiZSBhZGRlZCB0byBmcGdh
-LWJyaWRnZS5jIHNvIHRoYXQNCj4gPj4gPj4gZnBnYS1icmlkZ2UgYmVjb21lcyB0aGUgZnBnYSBi
-dXMgYW5kIGZwZ2EgYnVzIGRldmljZXMgYXJlIHVuZGVyIGl0Lg0KPiA+PiA+PiBUaGUgcmVhc29u
-cyBmb3IgZG9pbmcgdGhpcyBhcmUgZGlzY3Vzc2VkIGluIHRoZSBvdGhlciB0aHJlYWQuDQo+ID4+
-ID4+DQo+ID4+ID4+ID4gVGhpcyBmb2xsb3dpbmcgQVBJcyBhcmUgcHJvdmlkZWQgYnkgRlBHQSBC
-dXMgZGV2aWNlIGZyYW1ld29yazoNCj4gPj4gPj4gPiAqIGZwZ2FfZGV2X2NyZWF0ZQ0KPiA+PiA+
-PiA+ICAgQ3JlYXRlIGZwZ2EgYnVzIGRldmljZSB1bmRlciB0aGUgZ2l2ZW4gcGFyZW50IGRldmlj
-ZS4NCj4gPj4gPj4gPiAqIGZwZ2FfZGV2X2Rlc3Ryb3kNCj4gPj4gPj4gPiAgIERlc3Ryb3kgZnBn
-YSBidXMgZGV2aWNlDQo+ID4+ID4+DQo+ID4+ID4+IFRoaXMgaXMgYmVpbmcgdXNlZCBpbiBzdWNo
-IHRoYXQgZWFjaCBmcGdhLWRldiBpcyBhIGNvbnRhaW5lciBmb3INCj4gPj4gPj4gcGxhdGZvcm0g
-ZGV2aWNlcyByYXRoZXIgdGhhbiBmcGdhIGRldmljZXMuICBUaGF0J3Mgbm90IHdoYXQgSSB3YXMN
-Cj4gPj4gPj4gZXhwZWN0aW5nLiA6KQ0KPiA+PiA+DQo+ID4+ID4gSGkgQWxhbg0KPiA+PiA+DQo+
-ID4+ID4gU28gZG9lcyB0aGF0IG1lYW4gaW4gSW50ZWwgRlBHQSBQQ0llIGRyaXZlciwgaXQgbmVl
-ZHMgdG8gY3JlYXRlDQo+ID4+ID4gYSBmcGdhLWJyaWRnZSAoYXMgYmFzZSBicmlkZ2U/KSwNCj4g
-Pj4NCj4gPj4gWWVzDQo+ID4+DQo+ID4+ID4gYW5kIHRoaXMgZnBnYS1icmlkZ2Ugc2hvdWxkIHJl
-Z2lzdGVyDQo+ID4+ID4gYSBmcGdhLWJ1cyBhbmQgaGF2ZSBhIGZwZ2EgYnVzIGRldmljZSBhcyBp
-dHMgY2hpbGQsIGFmdGVyIHRoYXQgd2UgY2FuDQo+ID4+ID4gdXNlIHRoaXMgZnBnYSBidXMgZGV2
-aWNlIGFzIGNvbnRhaW5lciBkZXZpY2UsDQo+ID4+DQo+ID4+IENvdWxkIHRoZSBidXMgY29kZSBi
-ZSBhZGRlZCB0byBmcGdhLWJyaWRnZT8gIFRoZW4gdGhlIGJhc2UgYnJpZGdlIGlzDQo+ID4+IHRo
-ZSBjb250YWluZXIgZGV2aWNlLiAgQSBmcGdhLXJlZ2lvbiB3b3VsZCBiZSB1bmRlciB0aGF0IGFu
-ZCB0aGUgQUZVDQo+ID4+IGFuZCBGTUUgZnBnYSBkZXZpY2VzIHdvdWxkIGJlIHVuZGVyIGl0Lg0K
-PiA+Pg0KPiA+PiA+IGFuZCBjcmVhdGUgc3ViIGZlYXR1cmUNCj4gPj4gPiBkZXZpY2VzIChlLmcg
-QUZVIGFuZCBGTUUgcGxhdGZvcm0gZGV2aWNlKQ0KPiA+Pg0KPiA+PiBXZSdyZSB0YWxraW5nIGFi
-b3V0IGFkZGluZyBhIG5ldyBidXMgdG8gdGhlIGtlcm5lbCBoZXJlLCBub3QgcGxhdGZvcm0gYnVz
-Lg0KPiA+Pg0KPiA+PiA+IHVuZGVyIGl0LCBhbmQgdXNlciBhcHBsaWNhdGlvbg0KPiA+PiA+IGNv
-dWxkIGxvY2F0ZSBpdCBpbiAvc3lzL2J1cy9mcGdhL2RldmljZXMvLiBJcyBteSB1bmRlcnN0YW5k
-aW5nIGNvcnJlY3Q/IDopDQo+ID4+DQo+ID4+ICBTbyBzeXNmcyBtYXkgZW5kIHVwIHNvbWV0aGlu
-ZyBsaWtlIHRoaXMgaW4geW91ciBjYXNlOg0KPiA+Pg0KPiA+PiAvc3lzL2J1cy9mcGdhL2Rldmlj
-ZXMvZnBnYS4wL2ludGVsLWZwZ2EtZm1lLjANCj4gPj4gL3N5cy9idXMvZnBnYS9kZXZpY2VzL2Zw
-Z2EuMC9pbnRlbC1mcGdhLXBvcnQuMA0KPiA+PiAvc3lzL2J1cy9mcGdhL2RldmljZXMvZnBnYS4w
-L2ludGVsLWZwZ2EtcG9ydC4xDQo+ID4+IC9zeXMvYnVzL2ZwZ2EvZGV2aWNlcy9mcGdhLjAvZnBn
-YS1tZ3IwDQo+ID4+IC9zeXMvYnVzL2ZwZ2EvZGV2aWNlcy9mcGdhLjAvZnBnYS1icjENCj4gPj4g
-L3N5cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuMC9mcGdhLWJyMg0KPiA+DQo+ID4gSGkgQWxhbg0K
-PiA+DQo+ID4gSSBhbSBhIGxpdHRsZSBjb25mdXNlZCBvbiB0aGlzLg0KPiA+DQo+ID4gSXQgc2Vl
-bXMgdGhhdCB3ZSBjb3VsZCBub3QgaGF2ZSBtdWx0aXBsZSBmcGdhLWJyL3JlZ2lvbi9tZ3IgdW5k
-ZXIgb25lIGRldmljZS4NCj4gPiBBcyBpbiBwYXRjaCBzZXQyLCBpbnRlbC1mcGdhLWZtZS4wIGNy
-ZWF0ZXMgcGxhdGZvcm0gZGV2aWNlcyBhcyBjaGlsZHJlbiwgYW5kDQo+IHJlZ2lzdGVyDQo+ID4g
-ZnBnYS1icmlkZ2VzL3JlZ2lvbnMvbWdyIHVuZGVyIHRoZXNlIGNoaWxkcmVuIHBsYXRmb3JtIGRl
-dmljZXMuIFRoaXMgaXMgd2h5IDMNCj4gbmV3DQo+ID4gcGxhdGZvcm0gZGV2aWNlIGRyaXZlciBp
-bnRyb2R1Y2VkIGluIHRoaXMgcGF0Y2ggc2V0IDIgdG8gbWF0Y2ggd2l0aCB0aG9zZSBuZXcNCj4g
-Y3JlYXRlZA0KPiA+IGNoaWxkcmVuIHBsYXRmb3JtIGRldmljZXMuDQo+ID4NCj4gPiBTbyBpdCBp
-cyBzb21ldGhpbmcgbGlrZSB0aGlzDQo+ID4gL3N5cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuMC9p
-bnRlbC1mcGdhLWZtZS4wL2ludGVsLWZwZ2EtZm1lLQ0KPiByZWdpb24uMC9mcGdhX3JlZ2lvbi9y
-ZWdpb24wDQo+ID4gL3N5cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuMC9pbnRlbC1mcGdhLWZtZS4w
-L2ludGVsLWZwZ2EtZm1lLQ0KPiByZWdpb24uMS9mcGdhX3JlZ2lvbi9yZWdpb24xDQo+ID4gL3N5
-cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuMC9pbnRlbC1mcGdhLWZtZS4wL2ludGVsLWZwZ2EtZm1l
-LQ0KPiBici4wL2ZwZ2FfYnJpZGdlL2JyMQ0KPiA+IC9zeXMvYnVzL2ZwZ2EvZGV2aWNlcy9mcGdh
-LjAvaW50ZWwtZnBnYS1mbWUuMC9pbnRlbC1mcGdhLWZtZS0NCj4gYnIuMS9mcGdhX3JlZ2lvbi9i
-cjINCj4gPiAvc3lzL2J1cy9mcGdhL2RldmljZXMvZnBnYS4xDQo+ID4gL3N5cy9idXMvZnBnYS9k
-ZXZpY2VzL2ZwZ2EuMg0KPiANCj4gSGkgSGFvLA0KPiANCj4gT0sgSSBzZWUgdGhhdCBub3cuICBC
-ZWNhdXNlIHRoZSByZWdpb25zLCBtZ3IsIGFuZCBicmlkZ2VzIGFyZSBhbGwNCj4gY2hpbGRyZW4g
-b2YgdGhlIGZtZSdzLg0KPiANCj4gPg0KPiA+IGJyMCBzaG91bGQgYmUgdGhlIGJhc2UgYnJpZGdl
-LiBmcGdhLjEgYW5kIDIgYXJlIHRoZSBjaGlsZCBmcGdhIGJ1cyBkZXZpY2Ugb2YNCj4gZnBnYSBi
-cmlkZ2UuDQo+ID4NCj4gPj4NCj4gPj4gL3N5cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuMS9mcGdh
-LXJlZ2lvbjENCj4gPj4gL3N5cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuMi9mcGdhLXJlZ2lvbjIN
-Cj4gPj4NCj4gPj4gL3N5cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuMy9pbnRlbC1mcGdhLWZtZS4x
-DQo+ID4+IC9zeXMvYnVzL2ZwZ2EvZGV2aWNlcy9mcGdhLjMvaW50ZWwtZnBnYS1wb3J0LjINCj4g
-Pj4gL3N5cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuMy9pbnRlbC1mcGdhLXBvcnQuMw0KPiA+PiAv
-c3lzL2J1cy9mcGdhL2RldmljZXMvZnBnYS4wL2ZwZ2EtbWdyMQ0KPiA+PiAvc3lzL2J1cy9mcGdh
-L2RldmljZXMvZnBnYS4zL2ZwZ2EtYnI0DQo+ID4+IC9zeXMvYnVzL2ZwZ2EvZGV2aWNlcy9mcGdh
-LjMvZnBnYS1icjUNCj4gPj4NCj4gPj4gL3N5cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuNC9mcGdh
-LXJlZ2lvbjQNCj4gPj4gL3N5cy9idXMvZnBnYS9kZXZpY2VzL2ZwZ2EuNS9mcGdhLXJlZ2lvbjUN
-Cj4gPj4NCj4gPj4gZnBnYS1icjAgYW5kIDMgYXJlIGJhc2UgYnJpZGdlcyAob24gdG9wIG9mIFBD
-SWUpIHdoaWNoIHNob3cgdXAgYXMNCj4gPj4gZnBnYS4wIGFuZCAzLiAgUmVnaW9ucyAwIGFuZCAz
-IGFyZSBiYXNlIHJlZ2lvbnMuDQo+ID4+DQo+ID4+IGZwZ2EuMCBhbmQgZnBnYS4zIGNvcnJlc3Bv
-bmQgdG8gdGhlIHJlYWwgRlBHQSBkZXZpY2VzLg0KPiA+Pg0KPiA+PiA+DQo+ID4+ID4gQW5kIGlm
-IHdlIGhhdmUgc2Vjb25kIGxldmVsIGZwZ2EtYnJpZGdlIGZvciBQUiByZWdpb25zLCB0aGVuIHRo
-ZXkNCj4gPj4gPiBzaG91bGQgcmVnaXN0ZXIgZnBnYS1idXMgYW5kIGZwZ2EgYnVzIHR5cGUgZGV2
-aWNlIGFzIGNoaWxkIHRvbz8NCj4gPj4gPiBJZiB5ZXMsIHRoZW4gd2UgbmVlZCBhIG1ldGhvZCBm
-b3IgdXNlciBhcHBsaWNhdGlvbiB0byBkaXN0aW5ndWlzaA0KPiA+PiA+IHdoaWNoIG9uZSByZXBy
-ZXNlbnRzIHRoZSBGUEdBIGRldmljZSBpbiAvc3lzL2J1cy9mcGdhL2RldmljZXMvLCByaWdodD8N
-Cj4gPj4NCj4gPj4gVG8gZmluZCBhIGJ1cyB0aGF0IGlzIGEgZnBnYSwgdXNlcnNwYWNlIG9ubHkg
-bmVlZHMgdG8gbG9vayBmb3IgYnVzc2VzDQo+ID4+IHRoYXQgaGF2ZSBhbiBGTUUgKG9yIGEgbWdy
-KS4NCj4gPg0KPiA+IERvIHlvdSBtZWFuIHRoYXQgY2hlY2sgYWxsIGZwZ2EtZGV2LnggZm9sZGVy
-IHRvIHNlZSBpZiBhbnlvbmUgaGFzIEZNRT8NCj4gPg0KPiA+IFRoZW4gaXQgaXMgc3RpbGwgbm90
-IGZyaWVuZGx5IHRvIHVzZXIgc3BhY2UsIGFzIHdlIG1heSBoYXZlIGEgbG90IG9mIGJyaWRnZXMN
-Cj4gPiAoYW5kIHJlZ2lvbnMpIG9uIG9uZSBzeXN0ZW0uDQo+IA0KPiBJdCBkb2Vzbid0IHNvdW5k
-IHRvbyBoYXJkIGZvciB1c2Vyc3BhY2UgY29kZSB0byBnbyB0aHJvdWdoIHN5c2ZzIG9uY2UNCj4g
-YW5kIGZpbmQgdGhlIEZNRSdzLg0KPiANCj4gPg0KPiA+IEFuZCBsb29rcyBsaWtlIG5vIGJpZyBk
-aWZmZXJlbmNlIHRoYXQgd2UgcmV1c2UgYmFzZSBmcGdhLXJlZ2lvbiBhcw0KPiA+IGNvbnRhaW5l
-ci4gU2VhcmNoIGFsbCByZWdpb254IGluIC9zeXMvY2xhc3MvZnBnYV9yZWdpb24vIHRvIHNlZSBp
-ZiBhbnlvbmUNCj4gPiBoYXMgYSBGTUUuDQo+ID4NCj4gPiBIb3cgZG8geW91IHRoaW5rPyA6ICkN
-Cj4gDQo+IFllcywgbG9va2luZyBmb3INCj4gL3N5cy9jbGFzcy9mcGdhX3JlZ2lvbi9yZWdpb24q
-L2RldmljZS9pbnRlbC1mcGdhLWZtZS4qICBUaGF0J3Mgbm90IHNvDQo+IGJhZCwgcmlnaHQ/IDop
-DQo+IA0KPiBUaGVuIHRoZSBmcGdhLWRldiBzdHVmZiBjYW4gZ28gYXdheSBhbmQgd2UgY2FuIHN0
-b3Agd29ycnlpbmcgYWJvdXQgYWxsDQo+IHRoZSBpc3N1ZXMgaW52b2x2ZWQgaW4gaW1wbGVtZW50
-aW5nIGEgZnBnYSBidXMgb3IgY2xhc3MuDQoNCkhpIEFsYW4NCg0KVGhhbmtzIGZvciB5b3VyIGZl
-ZWRiYWNrLg0KDQpJIHRoaW5rIHRoZSBvbmx5IGNvbmNlcm4gaGVyZSBpcyBJJ20gbm90IHN1cmUg
-aWYgd2Ugd2lsbCBoYXZlIHNvbWUgZnBnYSBkZXZpY2VzDQp3aXRoIGEgbGFyZ2UgbnVtYmVyIGZw
-Z2EgcmVnaW9ucyAoZS5nIDEwMCspIGluIHRoZSBmdXR1cmUuIElmIHRoZXJlIGFyZSBtYW55DQpy
-ZWdpb25zIGluIHRoZSBzeXN0ZW0sIHRoZW4gdGhlIGVuZHVzZXIgLyBhcHBsaWNhdGlvbiBuZWVk
-cyB0byBzZWFyY2ggYWxsIHRoZQ0KcmVnaW9ucyBvbmUgYnkgb25lLCB3aGljaCBzZWVtcyBub3Qg
-cGVyZmVjdC4NCg0KSGFvDQoNCj4gDQo+IEFsYW4NCj4gDQo+ID4NCj4gPiBIYW8NCj4gPg0KPiA+
-Pg0KPiA+PiA+IEl0IHNlZW1zIHRvIGJlIGEgc2ltaWxhciBjYXNlIHRoYXQgd2Ugc2VlIGEgbG90
-IG9mIHJlZ2lvbnMgaW4NCj4gPj4gPiAvc3lzL2NsYXNzL2ZwZ2FfcmVnaW9uLyBidXQgbm90IHN1
-cmUgd2hpY2ggb25lIGlzIHRoZSBiYXNlIHJlZ2lvbi4gOikNCj4gPj4NCj4gPj4gSSB1bmRlcnN0
-YW5kIHRoYXQgdGhlIGdvYWwgb2YgZnBnYS1kZXYgd2FzIHRvIGRlc2NyaWJlIHRoZSB0b3BvbG9n
-eQ0KPiA+PiAod2hpY2ggaXMgdGhlIGZ1bmN0aW9uIG9mIGEgYnVzLCBub3QgYSBjbGFzcyBhcyBS
-b2IgZXhwbGFpbmVkKS4gIFRvIGJlDQo+ID4+IGhvbmVzdCwgSSdtIHN0aWxsIHBvbmRlcmluZyB0
-aGUgaW1wbGljYXRpb25zIG9mIGFkZGluZyBhIGZwZ2EgYnVzLg0KPiA+Pg0KPiA+PiBBbGFuDQo=
+On Tue, Aug 8, 2017 at 1:25 PM, Wu, Hao <hao.wu@intel.com> wrote:
+>> On Thu, Aug 3, 2017 at 2:53 AM, Wu Hao <hao.wu@intel.com> wrote:
+>> > On Wed, Aug 02, 2017 at 04:16:32PM -0500, Alan Tull wrote:
+>> >> On Wed, Aug 2, 2017 at 7:19 AM, Wu Hao <hao.wu@intel.com> wrote:
+>> >> > This patch is a RFC patch which replaces the patch[1] which
+>> >> > creates 'fpga-dev' class as container device. It introduces
+>> >> > a 'fpga' bus type, and provides interfaces to create/destroy
+>> >> > fpga bus devices. This fpga bus device only could be used as
+>> >> > a container device, and no drivers needed for it.
+>> >> >
+>> >> > There is no interface change, so this patch could be used
+>> >> > together with other patches of the original patch set[2].
+>> >> >
+>> >>
+>> >> I am wondering whether this could be added to fpga-bridge.c so that
+>> >> fpga-bridge becomes the fpga bus and fpga bus devices are under it.
+>> >> The reasons for doing this are discussed in the other thread.
+>> >>
+>> >> > This following APIs are provided by FPGA Bus device framework:
+>> >> > * fpga_dev_create
+>> >> >   Create fpga bus device under the given parent device.
+>> >> > * fpga_dev_destroy
+>> >> >   Destroy fpga bus device
+>> >>
+>> >> This is being used in such that each fpga-dev is a container for
+>> >> platform devices rather than fpga devices.  That's not what I was
+>> >> expecting. :)
+>> >
+>> > Hi Alan
+>> >
+>> > So does that mean in Intel FPGA PCIe driver, it needs to create
+>> > a fpga-bridge (as base bridge?),
+>>
+>> Yes
+>>
+>> > and this fpga-bridge should register
+>> > a fpga-bus and have a fpga bus device as its child, after that we can
+>> > use this fpga bus device as container device,
+>>
+>> Could the bus code be added to fpga-bridge?  Then the base bridge is
+>> the container device.  A fpga-region would be under that and the AFU
+>> and FME fpga devices would be under it.
+>>
+>> > and create sub feature
+>> > devices (e.g AFU and FME platform device)
+>>
+>> We're talking about adding a new bus to the kernel here, not platform bus.
+>>
+>> > under it, and user application
+>> > could locate it in /sys/bus/fpga/devices/. Is my understanding correct? :)
+>>
+>>  So sysfs may end up something like this in your case:
+>>
+>> /sys/bus/fpga/devices/fpga.0/intel-fpga-fme.0
+>> /sys/bus/fpga/devices/fpga.0/intel-fpga-port.0
+>> /sys/bus/fpga/devices/fpga.0/intel-fpga-port.1
+>> /sys/bus/fpga/devices/fpga.0/fpga-mgr0
+>> /sys/bus/fpga/devices/fpga.0/fpga-br1
+>> /sys/bus/fpga/devices/fpga.0/fpga-br2
+>
+> Hi Alan
+>
+> I am a little confused on this.
+>
+> It seems that we could not have multiple fpga-br/region/mgr under one device.
+> As in patch set2, intel-fpga-fme.0 creates platform devices as children, and register
+> fpga-bridges/regions/mgr under these children platform devices. This is why 3 new
+> platform device driver introduced in this patch set 2 to match with those new created
+> children platform devices.
+>
+> So it is something like this
+> /sys/bus/fpga/devices/fpga.0/intel-fpga-fme.0/intel-fpga-fme-region.0/fpga_region/region0
+> /sys/bus/fpga/devices/fpga.0/intel-fpga-fme.0/intel-fpga-fme-region.1/fpga_region/region1
+> /sys/bus/fpga/devices/fpga.0/intel-fpga-fme.0/intel-fpga-fme-br.0/fpga_bridge/br1
+> /sys/bus/fpga/devices/fpga.0/intel-fpga-fme.0/intel-fpga-fme-br.1/fpga_region/br2
+> /sys/bus/fpga/devices/fpga.1
+> /sys/bus/fpga/devices/fpga.2
+
+Hi Hao,
+
+OK I see that now.  Because the regions, mgr, and bridges are all
+children of the fme's.
+
+>
+> br0 should be the base bridge. fpga.1 and 2 are the child fpga bus device of fpga bridge.
+>
+>>
+>> /sys/bus/fpga/devices/fpga.1/fpga-region1
+>> /sys/bus/fpga/devices/fpga.2/fpga-region2
+>>
+>> /sys/bus/fpga/devices/fpga.3/intel-fpga-fme.1
+>> /sys/bus/fpga/devices/fpga.3/intel-fpga-port.2
+>> /sys/bus/fpga/devices/fpga.3/intel-fpga-port.3
+>> /sys/bus/fpga/devices/fpga.0/fpga-mgr1
+>> /sys/bus/fpga/devices/fpga.3/fpga-br4
+>> /sys/bus/fpga/devices/fpga.3/fpga-br5
+>>
+>> /sys/bus/fpga/devices/fpga.4/fpga-region4
+>> /sys/bus/fpga/devices/fpga.5/fpga-region5
+>>
+>> fpga-br0 and 3 are base bridges (on top of PCIe) which show up as
+>> fpga.0 and 3.  Regions 0 and 3 are base regions.
+>>
+>> fpga.0 and fpga.3 correspond to the real FPGA devices.
+>>
+>> >
+>> > And if we have second level fpga-bridge for PR regions, then they
+>> > should register fpga-bus and fpga bus type device as child too?
+>> > If yes, then we need a method for user application to distinguish
+>> > which one represents the FPGA device in /sys/bus/fpga/devices/, right?
+>>
+>> To find a bus that is a fpga, userspace only needs to look for busses
+>> that have an FME (or a mgr).
+>
+> Do you mean that check all fpga-dev.x folder to see if anyone has FME?
+>
+> Then it is still not friendly to user space, as we may have a lot of bridges
+> (and regions) on one system.
+
+It doesn't sound too hard for userspace code to go through sysfs once
+and find the FME's.
+
+>
+> And looks like no big difference that we reuse base fpga-region as
+> container. Search all regionx in /sys/class/fpga_region/ to see if anyone
+> has a FME.
+>
+> How do you think? : )
+
+Yes, looking for
+/sys/class/fpga_region/region*/device/intel-fpga-fme.*  That's not so
+bad, right? :)
+
+Then the fpga-dev stuff can go away and we can stop worrying about all
+the issues involved in implementing a fpga bus or class.
+
+Alan
+
+>
+> Hao
+>
+>>
+>> > It seems to be a similar case that we see a lot of regions in
+>> > /sys/class/fpga_region/ but not sure which one is the base region. :)
+>>
+>> I understand that the goal of fpga-dev was to describe the topology
+>> (which is the function of a bus, not a class as Rob explained).  To be
+>> honest, I'm still pondering the implications of adding a fpga bus.
+>>
+>> Alan
