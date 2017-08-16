@@ -1,311 +1,209 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-In-Reply-To: <BE8371DA886269458E0220A16DC1F8277E07F3DE@SHSMSX104.ccr.corp.intel.com>
+Return-Path: <SRS0=lk1o=7S=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=lk1o=7S=intel.com=hao.wu@kernel.org>
+From: "Wu, Hao" <hao.wu@intel.com>
+Subject: RE: [PATCH v2 19/22] fpga: intel: afu: add header sub feature
+ support
+Date: Wed, 16 Aug 2017 05:11:40 +0000
+Message-ID: <BE8371DA886269458E0220A16DC1F8277E07F3DE@SHSMSX104.ccr.corp.intel.com>
 References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
- <1498441938-14046-20-git-send-email-hao.wu@intel.com> <CANk1AXSb==KikMjw4PJ4Yx97vT5JxDkHR5k2Cb0cdrQFUOZqQw@mail.gmail.com>
- <BE8371DA886269458E0220A16DC1F8277E07F3DE@SHSMSX104.ccr.corp.intel.com>
-From: Alan Tull <atull@kernel.org>
-Date: Thu, 17 Aug 2017 16:41:00 -0500
-Message-ID: <CANk1AXQiNLgE6fmty=7kMCU1Zh2xrH85koeieAngyLkf0eeDqA@mail.gmail.com>
-Subject: Re: [PATCH v2 19/22] fpga: intel: afu: add header sub feature support
-Content-Type: text/plain; charset="UTF-8"
-To: "Wu, Hao" <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, "Whisonant, Tim" <tim.whisonant@intel.com>, "Luebbers, Enno" <enno.luebbers@intel.com>, "Rao, Shiva" <shiva.rao@intel.com>, "Rauer, Christopher" <christopher.rauer@intel.com>
+ <1498441938-14046-20-git-send-email-hao.wu@intel.com>
+ <CANk1AXSb==KikMjw4PJ4Yx97vT5JxDkHR5k2Cb0cdrQFUOZqQw@mail.gmail.com>
+In-Reply-To: <CANk1AXSb==KikMjw4PJ4Yx97vT5JxDkHR5k2Cb0cdrQFUOZqQw@mail.gmail.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Whisonant,, "Enno  <enno.luebbers@intel.com>, Rao, Shiva" <shiva.rao@intel.com>, "Rauer, Christopher" <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Wed, Aug 16, 2017 at 12:11 AM, Wu, Hao <hao.wu@intel.com> wrote:
->>  On Sun, Jun 25, 2017 at 8:52 PM, Wu Hao <hao.wu@intel.com> wrote:
->>
->> Hi Hao,
->>
->> > The header register set is always present for the Port/AFU, it is mainly
->> > for capability, control and status of the ports that AFU connected to.
->>
->> So just to be clear, the reset function is acting on the Port, not the
->> AFU, right?
->
-> Hi Alan
->
-> AFU will be reset as well. Once port reset is issued, a compliant HW
-> AFU will reset all its state and stop sending requests, and HW will set
-> port reset ack bit when all outstanding requests initiated have been
-> drained.
->
-> Will add some notes here.
->
->>
->> >
->> > This patch implements header sub feature support.
->>
->> Please add a brief reminder here what the 'header' is.  It's defined
->> in patch 7 as being part of the feature list, but hardly mentioned
->> when I grep intel-fpga.txt.
->
-> Sure, will adds some notes here.
->
-> Actually the header sub feature means the registers belong to the
-> feature device (e.g port and FME), not any sub features (e.g PR,
-> Power management).
->
->>
->> > Below user interfaces
->> > are created by this patch.
->> >
->> > Sysfs interface:
->> > * /sys/class/fpga/<fpga.x>/<intel-fpga-port.x>/id
->> >   Read-only. Port ID.
->> >
->> > Ioctl interface:
->> > * FPGA_PORT_RESET
->> >   Reset the FPGA AFU Port.
->> >
->> > Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
->> > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
->> > Signed-off-by: Shiva Rao <shiva.rao@intel.com>
->> > Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
->> > Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
->> > Signed-off-by: Wu Hao <hao.wu@intel.com>
->> > ---
->> > v2: add sysfs documentation.
->> > ---
->> >  .../ABI/testing/sysfs-platform-intel-fpga-afu      |  7 ++++
->> >  drivers/fpga/intel-afu-main.c                      | 44 +++++++++++++++++++++-
->> >  include/uapi/linux/intel-fpga.h                    | 14 +++++++
->> >  3 files changed, 64 insertions(+), 1 deletion(-)
->> >  create mode 100644 Documentation/ABI/testing/sysfs-platform-intel-fpga-
->> afu
->> >
->> > diff --git a/Documentation/ABI/testing/sysfs-platform-intel-fpga-afu
->> b/Documentation/ABI/testing/sysfs-platform-intel-fpga-afu
->> > new file mode 100644
->> > index 0000000..8ad22c9
->> > --- /dev/null
->> > +++ b/Documentation/ABI/testing/sysfs-platform-intel-fpga-afu
->> > @@ -0,0 +1,7 @@
->> > +What:          /sys/bus/platform/devices/intel-fpga-port.0/id
->> > +Date:          June 2017
->> > +KernelVersion:  4.12
->> > +Contact:       Wu Hao <hao.wu@intel.com>
->> > +Description:   Read-only. It returns id of this port. One Intel FPGA device
->> > +               may have more than one port. Userspace could use this id to
->> > +               distinguish different ports under same FPGA device.
->> > diff --git a/drivers/fpga/intel-afu-main.c b/drivers/fpga/intel-afu-main.c
->> > index 96d0367..2a17cde 100644
->> > --- a/drivers/fpga/intel-afu-main.c
->> > +++ b/drivers/fpga/intel-afu-main.c
->> > @@ -18,25 +18,66 @@
->> >
->> >  #include <linux/kernel.h>
->> >  #include <linux/module.h>
->> > +#include <linux/intel-fpga.h>
->> >
->> >  #include "intel-feature-dev.h"
->> >
->> > +static ssize_t
->> > +id_show(struct device *dev, struct device_attribute *attr, char *buf)
->> > +{
->> > +       int id = fpga_port_id(to_platform_device(dev));
->> > +
->> > +       return scnprintf(buf, PAGE_SIZE, "%d\n", id);
->> > +}
->> > +static DEVICE_ATTR_RO(id);
->> > +
->> > +static const struct attribute *port_hdr_attrs[] = {
->> > +       &dev_attr_id.attr,
->> > +       NULL,
->> > +};
->> > +
->> >  static int port_hdr_init(struct platform_device *pdev, struct feature *feature)
->> >  {
->> >         dev_dbg(&pdev->dev, "PORT HDR Init.\n");
->> >
->> > -       return 0;
->> > +       fpga_port_reset(pdev);
->>
->> So the port will be reset here, which happens during fme_probe().
->> IIUC the PR region is empty then, there is just the static region,
->> right?
->
-> port_hdr_init is invoked during afu_probe() function. The fpga_port_reset
-> only resets the AFU's state and not empty the PR region. User doesn't need
-> to program it again after port reset.
->
-> The purpose of this reset in port_hdr_init function, is to make sure that we
-> could have a clean start whenever the port driver module is loaded. And
-> similar as the one added in afu release.
->
->>
->> > +
->> > +       return sysfs_create_files(&pdev->dev.kobj, port_hdr_attrs);
->>
->> Greg wrote an article that there could be a race condition caused by
->> creating sysfs files this late [1] and I see sysfs_create_files() used
->> very sparingly in the kernel.  I'm thinking that fpga-bridge should
->> provide a place to create sysfs files earlier by adding an
->> attribute_group to fpga_bridge_ops (same for fpga-mgr and fpga-region)
->> and then fpga_bridge_register could do bridge->dev.groups =
->> br_ops->groups.  I'll put a patch for that out soon.
->>
->
-> Hm... I understand there could be a race condition if creates sysfs files late.
-> Actually the reasons I prefer to have each sub feature to create its own sysfs
-> files are, 1) if any sub feature is not present, then related init function won't
-> be invoked and related sysfs files won't be created at all. Then end user could
-> know which sub features are present by checking these sysfs nodes easily.
-> 2) Another point of view is about extension of each sub feature, for example,
-> Some new registers introduced when sub feature's revision > n, so each sub
-> feature's init function could check the sub feature's revision to decide which
-> sysfs interfaces are needed. I think this should be a flexible way for extension.
->
->> >  }
->> >
->> >  static void port_hdr_uinit(struct platform_device *pdev,
->> >                                         struct feature *feature)
->> >  {
->> >         dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
->> > +
->> > +       sysfs_remove_files(&pdev->dev.kobj, port_hdr_attrs);
->> > +}
->> > +
->> > +static long
->> > +port_hdr_ioctl(struct platform_device *pdev, struct feature *feature,
->> > +                                       unsigned int cmd, unsigned long arg)
->> > +{
->> > +       long ret;
->> > +
->> > +       switch (cmd) {
->> > +       case FPGA_PORT_RESET:
->> > +               if (!arg)
->> > +                       ret = fpga_port_reset(pdev);
->>
->> fpga_port_reset() disables and reenables traffic on the port.  Is
->> there ever a time when that would be unsafe to do?  Like while DMA is
->> happening?  When I see a function called 'reset' exposed to userspace,
->> I become concerned that hitting that reset at the wrong time could
->> cause problems.  We've discussed this some, but could you please
->> remind me when userspace would need to reset the port?  Please add
->> documentation of what the intended use of this ioctl would be, when it
->> is valid to request a reset from userspace and when userspace should
->> never do that.
->
-> Sure, I will add some more description in uapi header file on this IOCTL.
->
-> Per my understanding, this API could be invoked at any time, even there
-> is some DMA operation or PR operation at the same time. It should not
-> cause any system level problem, but may cause functional failures ( e.g
-> DMA or PR operation failure) and it should be recoverable.
-
-OK that was my biggest concern here with the reset.
-
->
->>
->> The pcie code, the AFU file interface, and the bridge code all do port
->> reset.  This code is spread out over a few patches, but I'll comment
->> here for now.  I'm trying to keep track of everything that resets the
->> port.  The port gets reset in afu_probe, fme_probe, the AFU file
->> release, and intel-pcie.c after parsing the features.  Also the port
->> is esentially reset after doing reprogramming, since that involves a
->> bridge disable/enable.   In the v1 review, the issue raised that the
->> port functionality could be an expansion of fpga-bridge.  If reset
->> were added to the fpga_bridge_ops and a fpga_bridge_reset API added to
->> fpga-bridge, then anything in the kernel that owns the bridge could
->> reset it.  That is of course assuming that this code doesn't need to
->> reset the port before the fpga-bridge is created.
->
-> Actually in the pcie code, it needs to enable fpga port (put it out of reset,
-> as port is in reset by default), otherwise the AFU MMIO region is not
-> accessible. It's only a one time action.
->
-> For the AFU interface, it gives application a way to reset the AFU if
-> anything goes wrong or application wants to make AFU back to
-> default state.
->
-> For the bridge code, it just makes sure port is in reset during PR, which
-> is requested by the PR flow of Intel FPGA device.
->
-> As you know, the fpga-bridge is created under FME module now, and
-> port/AFU is another module which could be turned into a VF and assigned
-> to a virtual machine, even we added a reset ops to fpga-bridge, we still
-> need an interface to do port reset as fpga-bridges (and FME) are always
-> in PF in host.  :)
-
-OK
-
-Alan
-
->
-> Thanks
-> Hao
->
->>
->> Thanks,
->> Alan Tull
->>
->> [1] http://www.kroah.com/log/blog/2013/06/26/how-to-create-a-sysfs-file-
->> correctly/
->>
->> > +               else
->> > +                       ret = -EINVAL;
->> > +               break;
->> > +       default:
->> > +               dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
->> > +               ret = -ENODEV;
->> > +       }
->> > +
->> > +       return ret;
->> >  }
->> >
->> >  struct feature_ops port_hdr_ops = {
->> >         .init = port_hdr_init,
->> >         .uinit = port_hdr_uinit,
->> > +       .ioctl = port_hdr_ioctl,
->> >  };
->> >
->> >  static struct feature_driver port_feature_drvs[] = {
->> > @@ -76,6 +117,7 @@ static int afu_release(struct inode *inode, struct file
->> *filp)
->> >
->> >         dev_dbg(&pdev->dev, "Device File Release\n");
->> >
->> > +       fpga_port_reset(pdev);
->> >         feature_dev_use_end(pdata);
->> >         return 0;
->> >  }
->> > diff --git a/include/uapi/linux/intel-fpga.h b/include/uapi/linux/intel-fpga.h
->> > index be295ae..be5f813 100644
->> > --- a/include/uapi/linux/intel-fpga.h
->> > +++ b/include/uapi/linux/intel-fpga.h
->> > @@ -30,8 +30,11 @@
->> >  #define FPGA_MAGIC 0xB6
->> >
->> >  #define FPGA_BASE 0
->> > +#define PORT_BASE 0x40
->> >  #define FME_BASE 0x80
->> >
->> > +/* Common IOCTLs for both FME and AFU file descriptor */
->> > +
->> >  /**
->> >   * FPGA_GET_API_VERSION - _IO(FPGA_MAGIC, FPGA_BASE + 0)
->> >   *
->> > @@ -50,6 +53,17 @@
->> >
->> >  #define FPGA_CHECK_EXTENSION   _IO(FPGA_MAGIC, FPGA_BASE + 1)
->> >
->> > +/* IOCTLs for AFU file descriptor */
->> > +
->> > +/**
->> > + * FPGA_PORT_RESET - _IO(FPGA_MAGIC, PORT_BASE + 0)
->> > + *
->> > + * Reset the FPGA AFU Port. No parameters are supported.
->> > + * Return: 0 on success, -errno of failure
->> > + */
->> > +
->> > +#define FPGA_PORT_RESET                _IO(FPGA_MAGIC, PORT_BASE + 0)
->> > +
->> >  /* IOCTLs for FME file descriptor */
->> >
->> >  /**
->> > --
->> > 1.8.3.1
->> >
+PiAgT24gU3VuLCBKdW4gMjUsIDIwMTcgYXQgODo1MiBQTSwgV3UgSGFvIDxoYW8ud3VAaW50ZWwu
+Y29tPiB3cm90ZToNCj4gDQo+IEhpIEhhbywNCj4gDQo+ID4gVGhlIGhlYWRlciByZWdpc3RlciBz
+ZXQgaXMgYWx3YXlzIHByZXNlbnQgZm9yIHRoZSBQb3J0L0FGVSwgaXQgaXMgbWFpbmx5DQo+ID4g
+Zm9yIGNhcGFiaWxpdHksIGNvbnRyb2wgYW5kIHN0YXR1cyBvZiB0aGUgcG9ydHMgdGhhdCBBRlUg
+Y29ubmVjdGVkIHRvLg0KPiANCj4gU28ganVzdCB0byBiZSBjbGVhciwgdGhlIHJlc2V0IGZ1bmN0
+aW9uIGlzIGFjdGluZyBvbiB0aGUgUG9ydCwgbm90IHRoZQ0KPiBBRlUsIHJpZ2h0Pw0KDQpIaSBB
+bGFuDQoNCkFGVSB3aWxsIGJlIHJlc2V0IGFzIHdlbGwuIE9uY2UgcG9ydCByZXNldCBpcyBpc3N1
+ZWQsIGEgY29tcGxpYW50IEhXDQpBRlUgd2lsbCByZXNldCBhbGwgaXRzIHN0YXRlIGFuZCBzdG9w
+IHNlbmRpbmcgcmVxdWVzdHMsIGFuZCBIVyB3aWxsIHNldA0KcG9ydCByZXNldCBhY2sgYml0IHdo
+ZW4gYWxsIG91dHN0YW5kaW5nIHJlcXVlc3RzIGluaXRpYXRlZCBoYXZlIGJlZW4NCmRyYWluZWQu
+DQoNCldpbGwgYWRkIHNvbWUgbm90ZXMgaGVyZS4NCg0KPiANCj4gPg0KPiA+IFRoaXMgcGF0Y2gg
+aW1wbGVtZW50cyBoZWFkZXIgc3ViIGZlYXR1cmUgc3VwcG9ydC4NCj4gDQo+IFBsZWFzZSBhZGQg
+YSBicmllZiByZW1pbmRlciBoZXJlIHdoYXQgdGhlICdoZWFkZXInIGlzLiAgSXQncyBkZWZpbmVk
+DQo+IGluIHBhdGNoIDcgYXMgYmVpbmcgcGFydCBvZiB0aGUgZmVhdHVyZSBsaXN0LCBidXQgaGFy
+ZGx5IG1lbnRpb25lZA0KPiB3aGVuIEkgZ3JlcCBpbnRlbC1mcGdhLnR4dC4NCg0KU3VyZSwgd2ls
+bCBhZGRzIHNvbWUgbm90ZXMgaGVyZS4NCg0KQWN0dWFsbHkgdGhlIGhlYWRlciBzdWIgZmVhdHVy
+ZSBtZWFucyB0aGUgcmVnaXN0ZXJzIGJlbG9uZyB0byB0aGUNCmZlYXR1cmUgZGV2aWNlIChlLmcg
+cG9ydCBhbmQgRk1FKSwgbm90IGFueSBzdWIgZmVhdHVyZXMgKGUuZyBQUiwgDQpQb3dlciBtYW5h
+Z2VtZW50KS4NCg0KPiANCj4gPiBCZWxvdyB1c2VyIGludGVyZmFjZXMNCj4gPiBhcmUgY3JlYXRl
+ZCBieSB0aGlzIHBhdGNoLg0KPiA+DQo+ID4gU3lzZnMgaW50ZXJmYWNlOg0KPiA+ICogL3N5cy9j
+bGFzcy9mcGdhLzxmcGdhLng+LzxpbnRlbC1mcGdhLXBvcnQueD4vaWQNCj4gPiAgIFJlYWQtb25s
+eS4gUG9ydCBJRC4NCj4gPg0KPiA+IElvY3RsIGludGVyZmFjZToNCj4gPiAqIEZQR0FfUE9SVF9S
+RVNFVA0KPiA+ICAgUmVzZXQgdGhlIEZQR0EgQUZVIFBvcnQuDQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBUaW0gV2hpc29uYW50IDx0aW0ud2hpc29uYW50QGludGVsLmNvbT4NCj4gPiBTaWduZWQt
+b2ZmLWJ5OiBFbm5vIEx1ZWJiZXJzIDxlbm5vLmx1ZWJiZXJzQGludGVsLmNvbT4NCj4gPiBTaWdu
+ZWQtb2ZmLWJ5OiBTaGl2YSBSYW8gPHNoaXZhLnJhb0BpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9m
+Zi1ieTogQ2hyaXN0b3BoZXIgUmF1ZXIgPGNocmlzdG9waGVyLnJhdWVyQGludGVsLmNvbT4NCj4g
+PiBTaWduZWQtb2ZmLWJ5OiBYaWFvIEd1YW5ncm9uZyA8Z3Vhbmdyb25nLnhpYW9AbGludXguaW50
+ZWwuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFd1IEhhbyA8aGFvLnd1QGludGVsLmNvbT4NCj4g
+PiAtLS0NCj4gPiB2MjogYWRkIHN5c2ZzIGRvY3VtZW50YXRpb24uDQo+ID4gLS0tDQo+ID4gIC4u
+Li9BQkkvdGVzdGluZy9zeXNmcy1wbGF0Zm9ybS1pbnRlbC1mcGdhLWFmdSAgICAgIHwgIDcgKysr
+Kw0KPiA+ICBkcml2ZXJzL2ZwZ2EvaW50ZWwtYWZ1LW1haW4uYyAgICAgICAgICAgICAgICAgICAg
+ICB8IDQ0ICsrKysrKysrKysrKysrKysrKysrKy0NCj4gPiAgaW5jbHVkZS91YXBpL2xpbnV4L2lu
+dGVsLWZwZ2EuaCAgICAgICAgICAgICAgICAgICAgfCAxNCArKysrKysrDQo+ID4gIDMgZmlsZXMg
+Y2hhbmdlZCwgNjQgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiA+ICBjcmVhdGUgbW9k
+ZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9BQkkvdGVzdGluZy9zeXNmcy1wbGF0Zm9ybS1pbnRlbC1m
+cGdhLQ0KPiBhZnUNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL0FCSS90ZXN0
+aW5nL3N5c2ZzLXBsYXRmb3JtLWludGVsLWZwZ2EtYWZ1DQo+IGIvRG9jdW1lbnRhdGlvbi9BQkkv
+dGVzdGluZy9zeXNmcy1wbGF0Zm9ybS1pbnRlbC1mcGdhLWFmdQ0KPiA+IG5ldyBmaWxlIG1vZGUg
+MTAwNjQ0DQo+ID4gaW5kZXggMDAwMDAwMC4uOGFkMjJjOQ0KPiA+IC0tLSAvZGV2L251bGwNCj4g
+PiArKysgYi9Eb2N1bWVudGF0aW9uL0FCSS90ZXN0aW5nL3N5c2ZzLXBsYXRmb3JtLWludGVsLWZw
+Z2EtYWZ1DQo+ID4gQEAgLTAsMCArMSw3IEBADQo+ID4gK1doYXQ6ICAgICAgICAgIC9zeXMvYnVz
+L3BsYXRmb3JtL2RldmljZXMvaW50ZWwtZnBnYS1wb3J0LjAvaWQNCj4gPiArRGF0ZTogICAgICAg
+ICAgSnVuZSAyMDE3DQo+ID4gK0tlcm5lbFZlcnNpb246ICA0LjEyDQo+ID4gK0NvbnRhY3Q6ICAg
+ICAgIFd1IEhhbyA8aGFvLnd1QGludGVsLmNvbT4NCj4gPiArRGVzY3JpcHRpb246ICAgUmVhZC1v
+bmx5LiBJdCByZXR1cm5zIGlkIG9mIHRoaXMgcG9ydC4gT25lIEludGVsIEZQR0EgZGV2aWNlDQo+
+ID4gKyAgICAgICAgICAgICAgIG1heSBoYXZlIG1vcmUgdGhhbiBvbmUgcG9ydC4gVXNlcnNwYWNl
+IGNvdWxkIHVzZSB0aGlzIGlkIHRvDQo+ID4gKyAgICAgICAgICAgICAgIGRpc3Rpbmd1aXNoIGRp
+ZmZlcmVudCBwb3J0cyB1bmRlciBzYW1lIEZQR0EgZGV2aWNlLg0KPiA+IGRpZmYgLS1naXQgYS9k
+cml2ZXJzL2ZwZ2EvaW50ZWwtYWZ1LW1haW4uYyBiL2RyaXZlcnMvZnBnYS9pbnRlbC1hZnUtbWFp
+bi5jDQo+ID4gaW5kZXggOTZkMDM2Ny4uMmExN2NkZSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJz
+L2ZwZ2EvaW50ZWwtYWZ1LW1haW4uYw0KPiA+ICsrKyBiL2RyaXZlcnMvZnBnYS9pbnRlbC1hZnUt
+bWFpbi5jDQo+ID4gQEAgLTE4LDI1ICsxOCw2NiBAQA0KPiA+DQo+ID4gICNpbmNsdWRlIDxsaW51
+eC9rZXJuZWwuaD4NCj4gPiAgI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KPiA+ICsjaW5jbHVk
+ZSA8bGludXgvaW50ZWwtZnBnYS5oPg0KPiA+DQo+ID4gICNpbmNsdWRlICJpbnRlbC1mZWF0dXJl
+LWRldi5oIg0KPiA+DQo+ID4gK3N0YXRpYyBzc2l6ZV90DQo+ID4gK2lkX3Nob3coc3RydWN0IGRl
+dmljZSAqZGV2LCBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVmKQ0KPiA+
+ICt7DQo+ID4gKyAgICAgICBpbnQgaWQgPSBmcGdhX3BvcnRfaWQodG9fcGxhdGZvcm1fZGV2aWNl
+KGRldikpOw0KPiA+ICsNCj4gPiArICAgICAgIHJldHVybiBzY25wcmludGYoYnVmLCBQQUdFX1NJ
+WkUsICIlZFxuIiwgaWQpOw0KPiA+ICt9DQo+ID4gK3N0YXRpYyBERVZJQ0VfQVRUUl9STyhpZCk7
+DQo+ID4gKw0KPiA+ICtzdGF0aWMgY29uc3Qgc3RydWN0IGF0dHJpYnV0ZSAqcG9ydF9oZHJfYXR0
+cnNbXSA9IHsNCj4gPiArICAgICAgICZkZXZfYXR0cl9pZC5hdHRyLA0KPiA+ICsgICAgICAgTlVM
+TCwNCj4gPiArfTsNCj4gPiArDQo+ID4gIHN0YXRpYyBpbnQgcG9ydF9oZHJfaW5pdChzdHJ1Y3Qg
+cGxhdGZvcm1fZGV2aWNlICpwZGV2LCBzdHJ1Y3QgZmVhdHVyZSAqZmVhdHVyZSkNCj4gPiAgew0K
+PiA+ICAgICAgICAgZGV2X2RiZygmcGRldi0+ZGV2LCAiUE9SVCBIRFIgSW5pdC5cbiIpOw0KPiA+
+DQo+ID4gLSAgICAgICByZXR1cm4gMDsNCj4gPiArICAgICAgIGZwZ2FfcG9ydF9yZXNldChwZGV2
+KTsNCj4gDQo+IFNvIHRoZSBwb3J0IHdpbGwgYmUgcmVzZXQgaGVyZSwgd2hpY2ggaGFwcGVucyBk
+dXJpbmcgZm1lX3Byb2JlKCkuDQo+IElJVUMgdGhlIFBSIHJlZ2lvbiBpcyBlbXB0eSB0aGVuLCB0
+aGVyZSBpcyBqdXN0IHRoZSBzdGF0aWMgcmVnaW9uLA0KPiByaWdodD8NCg0KcG9ydF9oZHJfaW5p
+dCBpcyBpbnZva2VkIGR1cmluZyBhZnVfcHJvYmUoKSBmdW5jdGlvbi4gVGhlIGZwZ2FfcG9ydF9y
+ZXNldA0Kb25seSByZXNldHMgdGhlIEFGVSdzIHN0YXRlIGFuZCBub3QgZW1wdHkgdGhlIFBSIHJl
+Z2lvbi4gVXNlciBkb2Vzbid0IG5lZWQNCnRvIHByb2dyYW0gaXQgYWdhaW4gYWZ0ZXIgcG9ydCBy
+ZXNldC4NCg0KVGhlIHB1cnBvc2Ugb2YgdGhpcyByZXNldCBpbiBwb3J0X2hkcl9pbml0IGZ1bmN0
+aW9uLCBpcyB0byBtYWtlIHN1cmUgdGhhdCB3ZSANCmNvdWxkIGhhdmUgYSBjbGVhbiBzdGFydCB3
+aGVuZXZlciB0aGUgcG9ydCBkcml2ZXIgbW9kdWxlIGlzIGxvYWRlZC4gQW5kDQpzaW1pbGFyIGFz
+IHRoZSBvbmUgYWRkZWQgaW4gYWZ1IHJlbGVhc2UuDQoNCj4gDQo+ID4gKw0KPiA+ICsgICAgICAg
+cmV0dXJuIHN5c2ZzX2NyZWF0ZV9maWxlcygmcGRldi0+ZGV2LmtvYmosIHBvcnRfaGRyX2F0dHJz
+KTsNCj4gDQo+IEdyZWcgd3JvdGUgYW4gYXJ0aWNsZSB0aGF0IHRoZXJlIGNvdWxkIGJlIGEgcmFj
+ZSBjb25kaXRpb24gY2F1c2VkIGJ5DQo+IGNyZWF0aW5nIHN5c2ZzIGZpbGVzIHRoaXMgbGF0ZSBb
+MV0gYW5kIEkgc2VlIHN5c2ZzX2NyZWF0ZV9maWxlcygpIHVzZWQNCj4gdmVyeSBzcGFyaW5nbHkg
+aW4gdGhlIGtlcm5lbC4gIEknbSB0aGlua2luZyB0aGF0IGZwZ2EtYnJpZGdlIHNob3VsZA0KPiBw
+cm92aWRlIGEgcGxhY2UgdG8gY3JlYXRlIHN5c2ZzIGZpbGVzIGVhcmxpZXIgYnkgYWRkaW5nIGFu
+DQo+IGF0dHJpYnV0ZV9ncm91cCB0byBmcGdhX2JyaWRnZV9vcHMgKHNhbWUgZm9yIGZwZ2EtbWdy
+IGFuZCBmcGdhLXJlZ2lvbikNCj4gYW5kIHRoZW4gZnBnYV9icmlkZ2VfcmVnaXN0ZXIgY291bGQg
+ZG8gYnJpZGdlLT5kZXYuZ3JvdXBzID0NCj4gYnJfb3BzLT5ncm91cHMuICBJJ2xsIHB1dCBhIHBh
+dGNoIGZvciB0aGF0IG91dCBzb29uLg0KPiANCg0KSG0uLi4gSSB1bmRlcnN0YW5kIHRoZXJlIGNv
+dWxkIGJlIGEgcmFjZSBjb25kaXRpb24gaWYgY3JlYXRlcyBzeXNmcyBmaWxlcyBsYXRlLg0KQWN0
+dWFsbHkgdGhlIHJlYXNvbnMgSSBwcmVmZXIgdG8gaGF2ZSBlYWNoIHN1YiBmZWF0dXJlIHRvIGNy
+ZWF0ZSBpdHMgb3duIHN5c2ZzDQpmaWxlcyBhcmUsIDEpIGlmIGFueSBzdWIgZmVhdHVyZSBpcyBu
+b3QgcHJlc2VudCwgdGhlbiByZWxhdGVkIGluaXQgZnVuY3Rpb24gd29uJ3QgDQpiZSBpbnZva2Vk
+IGFuZCByZWxhdGVkIHN5c2ZzIGZpbGVzIHdvbid0IGJlIGNyZWF0ZWQgYXQgYWxsLiBUaGVuIGVu
+ZCB1c2VyIGNvdWxkDQprbm93IHdoaWNoIHN1YiBmZWF0dXJlcyBhcmUgcHJlc2VudCBieSBjaGVj
+a2luZyB0aGVzZSBzeXNmcyBub2RlcyBlYXNpbHkuIA0KMikgQW5vdGhlciBwb2ludCBvZiB2aWV3
+IGlzIGFib3V0IGV4dGVuc2lvbiBvZiBlYWNoIHN1YiBmZWF0dXJlLCBmb3IgZXhhbXBsZSwNClNv
+bWUgbmV3IHJlZ2lzdGVycyBpbnRyb2R1Y2VkIHdoZW4gc3ViIGZlYXR1cmUncyByZXZpc2lvbiA+
+IG4sIHNvIGVhY2ggc3ViDQpmZWF0dXJlJ3MgaW5pdCBmdW5jdGlvbiBjb3VsZCBjaGVjayB0aGUg
+c3ViIGZlYXR1cmUncyByZXZpc2lvbiB0byBkZWNpZGUgd2hpY2gNCnN5c2ZzIGludGVyZmFjZXMg
+YXJlIG5lZWRlZC4gSSB0aGluayB0aGlzIHNob3VsZCBiZSBhIGZsZXhpYmxlIHdheSBmb3IgZXh0
+ZW5zaW9uLg0KDQo+ID4gIH0NCj4gPg0KPiA+ICBzdGF0aWMgdm9pZCBwb3J0X2hkcl91aW5pdChz
+dHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LA0KPiA+ICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICBzdHJ1Y3QgZmVhdHVyZSAqZmVhdHVyZSkNCj4gPiAgew0KPiA+ICAg
+ICAgICAgZGV2X2RiZygmcGRldi0+ZGV2LCAiUE9SVCBIRFIgVUluaXQuXG4iKTsNCj4gPiArDQo+
+ID4gKyAgICAgICBzeXNmc19yZW1vdmVfZmlsZXMoJnBkZXYtPmRldi5rb2JqLCBwb3J0X2hkcl9h
+dHRycyk7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBsb25nDQo+ID4gK3BvcnRfaGRyX2lv
+Y3RsKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsIHN0cnVjdCBmZWF0dXJlICpmZWF0dXJl
+LA0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB1bnNpZ25lZCBp
+bnQgY21kLCB1bnNpZ25lZCBsb25nIGFyZykNCj4gPiArew0KPiA+ICsgICAgICAgbG9uZyByZXQ7
+DQo+ID4gKw0KPiA+ICsgICAgICAgc3dpdGNoIChjbWQpIHsNCj4gPiArICAgICAgIGNhc2UgRlBH
+QV9QT1JUX1JFU0VUOg0KPiA+ICsgICAgICAgICAgICAgICBpZiAoIWFyZykNCj4gPiArICAgICAg
+ICAgICAgICAgICAgICAgICByZXQgPSBmcGdhX3BvcnRfcmVzZXQocGRldik7DQo+IA0KPiBmcGdh
+X3BvcnRfcmVzZXQoKSBkaXNhYmxlcyBhbmQgcmVlbmFibGVzIHRyYWZmaWMgb24gdGhlIHBvcnQu
+ICBJcw0KPiB0aGVyZSBldmVyIGEgdGltZSB3aGVuIHRoYXQgd291bGQgYmUgdW5zYWZlIHRvIGRv
+PyAgTGlrZSB3aGlsZSBETUEgaXMNCj4gaGFwcGVuaW5nPyAgV2hlbiBJIHNlZSBhIGZ1bmN0aW9u
+IGNhbGxlZCAncmVzZXQnIGV4cG9zZWQgdG8gdXNlcnNwYWNlLA0KPiBJIGJlY29tZSBjb25jZXJu
+ZWQgdGhhdCBoaXR0aW5nIHRoYXQgcmVzZXQgYXQgdGhlIHdyb25nIHRpbWUgY291bGQNCj4gY2F1
+c2UgcHJvYmxlbXMuICBXZSd2ZSBkaXNjdXNzZWQgdGhpcyBzb21lLCBidXQgY291bGQgeW91IHBs
+ZWFzZQ0KPiByZW1pbmQgbWUgd2hlbiB1c2Vyc3BhY2Ugd291bGQgbmVlZCB0byByZXNldCB0aGUg
+cG9ydD8gIFBsZWFzZSBhZGQNCj4gZG9jdW1lbnRhdGlvbiBvZiB3aGF0IHRoZSBpbnRlbmRlZCB1
+c2Ugb2YgdGhpcyBpb2N0bCB3b3VsZCBiZSwgd2hlbiBpdA0KPiBpcyB2YWxpZCB0byByZXF1ZXN0
+IGEgcmVzZXQgZnJvbSB1c2Vyc3BhY2UgYW5kIHdoZW4gdXNlcnNwYWNlIHNob3VsZA0KPiBuZXZl
+ciBkbyB0aGF0Lg0KDQpTdXJlLCBJIHdpbGwgYWRkIHNvbWUgbW9yZSBkZXNjcmlwdGlvbiBpbiB1
+YXBpIGhlYWRlciBmaWxlIG9uIHRoaXMgSU9DVEwuDQoNClBlciBteSB1bmRlcnN0YW5kaW5nLCB0
+aGlzIEFQSSBjb3VsZCBiZSBpbnZva2VkIGF0IGFueSB0aW1lLCBldmVuIHRoZXJlDQppcyBzb21l
+IERNQSBvcGVyYXRpb24gb3IgUFIgb3BlcmF0aW9uIGF0IHRoZSBzYW1lIHRpbWUuIEl0IHNob3Vs
+ZCBub3QNCmNhdXNlIGFueSBzeXN0ZW0gbGV2ZWwgcHJvYmxlbSwgYnV0IG1heSBjYXVzZSBmdW5j
+dGlvbmFsIGZhaWx1cmVzICggZS5nDQpETUEgb3IgUFIgb3BlcmF0aW9uIGZhaWx1cmUpIGFuZCBp
+dCBzaG91bGQgYmUgcmVjb3ZlcmFibGUuDQoNCj4gDQo+IFRoZSBwY2llIGNvZGUsIHRoZSBBRlUg
+ZmlsZSBpbnRlcmZhY2UsIGFuZCB0aGUgYnJpZGdlIGNvZGUgYWxsIGRvIHBvcnQNCj4gcmVzZXQu
+ICBUaGlzIGNvZGUgaXMgc3ByZWFkIG91dCBvdmVyIGEgZmV3IHBhdGNoZXMsIGJ1dCBJJ2xsIGNv
+bW1lbnQNCj4gaGVyZSBmb3Igbm93LiAgSSdtIHRyeWluZyB0byBrZWVwIHRyYWNrIG9mIGV2ZXJ5
+dGhpbmcgdGhhdCByZXNldHMgdGhlDQo+IHBvcnQuICBUaGUgcG9ydCBnZXRzIHJlc2V0IGluIGFm
+dV9wcm9iZSwgZm1lX3Byb2JlLCB0aGUgQUZVIGZpbGUNCj4gcmVsZWFzZSwgYW5kIGludGVsLXBj
+aWUuYyBhZnRlciBwYXJzaW5nIHRoZSBmZWF0dXJlcy4gIEFsc28gdGhlIHBvcnQNCj4gaXMgZXNl
+bnRpYWxseSByZXNldCBhZnRlciBkb2luZyByZXByb2dyYW1taW5nLCBzaW5jZSB0aGF0IGludm9s
+dmVzIGENCj4gYnJpZGdlIGRpc2FibGUvZW5hYmxlLiAgIEluIHRoZSB2MSByZXZpZXcsIHRoZSBp
+c3N1ZSByYWlzZWQgdGhhdCB0aGUNCj4gcG9ydCBmdW5jdGlvbmFsaXR5IGNvdWxkIGJlIGFuIGV4
+cGFuc2lvbiBvZiBmcGdhLWJyaWRnZS4gIElmIHJlc2V0DQo+IHdlcmUgYWRkZWQgdG8gdGhlIGZw
+Z2FfYnJpZGdlX29wcyBhbmQgYSBmcGdhX2JyaWRnZV9yZXNldCBBUEkgYWRkZWQgdG8NCj4gZnBn
+YS1icmlkZ2UsIHRoZW4gYW55dGhpbmcgaW4gdGhlIGtlcm5lbCB0aGF0IG93bnMgdGhlIGJyaWRn
+ZSBjb3VsZA0KPiByZXNldCBpdC4gIFRoYXQgaXMgb2YgY291cnNlIGFzc3VtaW5nIHRoYXQgdGhp
+cyBjb2RlIGRvZXNuJ3QgbmVlZCB0bw0KPiByZXNldCB0aGUgcG9ydCBiZWZvcmUgdGhlIGZwZ2Et
+YnJpZGdlIGlzIGNyZWF0ZWQuDQoNCkFjdHVhbGx5IGluIHRoZSBwY2llIGNvZGUsIGl0IG5lZWRz
+IHRvIGVuYWJsZSBmcGdhIHBvcnQgKHB1dCBpdCBvdXQgb2YgcmVzZXQsDQphcyBwb3J0IGlzIGlu
+IHJlc2V0IGJ5IGRlZmF1bHQpLCBvdGhlcndpc2UgdGhlIEFGVSBNTUlPIHJlZ2lvbiBpcyBub3QN
+CmFjY2Vzc2libGUuIEl0J3Mgb25seSBhIG9uZSB0aW1lIGFjdGlvbi4NCg0KRm9yIHRoZSBBRlUg
+aW50ZXJmYWNlLCBpdCBnaXZlcyBhcHBsaWNhdGlvbiBhIHdheSB0byByZXNldCB0aGUgQUZVIGlm
+DQphbnl0aGluZyBnb2VzIHdyb25nIG9yIGFwcGxpY2F0aW9uIHdhbnRzIHRvIG1ha2UgQUZVIGJh
+Y2sgdG8gDQpkZWZhdWx0IHN0YXRlLg0KDQpGb3IgdGhlIGJyaWRnZSBjb2RlLCBpdCBqdXN0IG1h
+a2VzIHN1cmUgcG9ydCBpcyBpbiByZXNldCBkdXJpbmcgUFIsIHdoaWNoDQppcyByZXF1ZXN0ZWQg
+YnkgdGhlIFBSIGZsb3cgb2YgSW50ZWwgRlBHQSBkZXZpY2UuDQoNCkFzIHlvdSBrbm93LCB0aGUg
+ZnBnYS1icmlkZ2UgaXMgY3JlYXRlZCB1bmRlciBGTUUgbW9kdWxlIG5vdywgYW5kDQpwb3J0L0FG
+VSBpcyBhbm90aGVyIG1vZHVsZSB3aGljaCBjb3VsZCBiZSB0dXJuZWQgaW50byBhIFZGIGFuZCBh
+c3NpZ25lZA0KdG8gYSB2aXJ0dWFsIG1hY2hpbmUsIGV2ZW4gd2UgYWRkZWQgYSByZXNldCBvcHMg
+dG8gZnBnYS1icmlkZ2UsIHdlIHN0aWxsDQpuZWVkIGFuIGludGVyZmFjZSB0byBkbyBwb3J0IHJl
+c2V0IGFzIGZwZ2EtYnJpZGdlcyAoYW5kIEZNRSkgYXJlIGFsd2F5cw0KaW4gUEYgaW4gaG9zdC4g
+IDopDQoNClRoYW5rcw0KSGFvDQoNCj4gDQo+IFRoYW5rcywNCj4gQWxhbiBUdWxsDQo+IA0KPiBb
+MV0gaHR0cDovL3d3dy5rcm9haC5jb20vbG9nL2Jsb2cvMjAxMy8wNi8yNi9ob3ctdG8tY3JlYXRl
+LWEtc3lzZnMtZmlsZS0NCj4gY29ycmVjdGx5Lw0KPiANCj4gPiArICAgICAgICAgICAgICAgZWxz
+ZQ0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHJldCA9IC1FSU5WQUw7DQo+ID4gKyAgICAg
+ICAgICAgICAgIGJyZWFrOw0KPiA+ICsgICAgICAgZGVmYXVsdDoNCj4gPiArICAgICAgICAgICAg
+ICAgZGV2X2RiZygmcGRldi0+ZGV2LCAiJXggY21kIG5vdCBoYW5kbGVkIiwgY21kKTsNCj4gPiAr
+ICAgICAgICAgICAgICAgcmV0ID0gLUVOT0RFVjsNCj4gPiArICAgICAgIH0NCj4gPiArDQo+ID4g
+KyAgICAgICByZXR1cm4gcmV0Ow0KPiA+ICB9DQo+ID4NCj4gPiAgc3RydWN0IGZlYXR1cmVfb3Bz
+IHBvcnRfaGRyX29wcyA9IHsNCj4gPiAgICAgICAgIC5pbml0ID0gcG9ydF9oZHJfaW5pdCwNCj4g
+PiAgICAgICAgIC51aW5pdCA9IHBvcnRfaGRyX3Vpbml0LA0KPiA+ICsgICAgICAgLmlvY3RsID0g
+cG9ydF9oZHJfaW9jdGwsDQo+ID4gIH07DQo+ID4NCj4gPiAgc3RhdGljIHN0cnVjdCBmZWF0dXJl
+X2RyaXZlciBwb3J0X2ZlYXR1cmVfZHJ2c1tdID0gew0KPiA+IEBAIC03Niw2ICsxMTcsNyBAQCBz
+dGF0aWMgaW50IGFmdV9yZWxlYXNlKHN0cnVjdCBpbm9kZSAqaW5vZGUsIHN0cnVjdCBmaWxlDQo+
+ICpmaWxwKQ0KPiA+DQo+ID4gICAgICAgICBkZXZfZGJnKCZwZGV2LT5kZXYsICJEZXZpY2UgRmls
+ZSBSZWxlYXNlXG4iKTsNCj4gPg0KPiA+ICsgICAgICAgZnBnYV9wb3J0X3Jlc2V0KHBkZXYpOw0K
+PiA+ICAgICAgICAgZmVhdHVyZV9kZXZfdXNlX2VuZChwZGF0YSk7DQo+ID4gICAgICAgICByZXR1
+cm4gMDsNCj4gPiAgfQ0KPiA+IGRpZmYgLS1naXQgYS9pbmNsdWRlL3VhcGkvbGludXgvaW50ZWwt
+ZnBnYS5oIGIvaW5jbHVkZS91YXBpL2xpbnV4L2ludGVsLWZwZ2EuaA0KPiA+IGluZGV4IGJlMjk1
+YWUuLmJlNWY4MTMgMTAwNjQ0DQo+ID4gLS0tIGEvaW5jbHVkZS91YXBpL2xpbnV4L2ludGVsLWZw
+Z2EuaA0KPiA+ICsrKyBiL2luY2x1ZGUvdWFwaS9saW51eC9pbnRlbC1mcGdhLmgNCj4gPiBAQCAt
+MzAsOCArMzAsMTEgQEANCj4gPiAgI2RlZmluZSBGUEdBX01BR0lDIDB4QjYNCj4gPg0KPiA+ICAj
+ZGVmaW5lIEZQR0FfQkFTRSAwDQo+ID4gKyNkZWZpbmUgUE9SVF9CQVNFIDB4NDANCj4gPiAgI2Rl
+ZmluZSBGTUVfQkFTRSAweDgwDQo+ID4NCj4gPiArLyogQ29tbW9uIElPQ1RMcyBmb3IgYm90aCBG
+TUUgYW5kIEFGVSBmaWxlIGRlc2NyaXB0b3IgKi8NCj4gPiArDQo+ID4gIC8qKg0KPiA+ICAgKiBG
+UEdBX0dFVF9BUElfVkVSU0lPTiAtIF9JTyhGUEdBX01BR0lDLCBGUEdBX0JBU0UgKyAwKQ0KPiA+
+ICAgKg0KPiA+IEBAIC01MCw2ICs1MywxNyBAQA0KPiA+DQo+ID4gICNkZWZpbmUgRlBHQV9DSEVD
+S19FWFRFTlNJT04gICBfSU8oRlBHQV9NQUdJQywgRlBHQV9CQVNFICsgMSkNCj4gPg0KPiA+ICsv
+KiBJT0NUTHMgZm9yIEFGVSBmaWxlIGRlc2NyaXB0b3IgKi8NCj4gPiArDQo+ID4gKy8qKg0KPiA+
+ICsgKiBGUEdBX1BPUlRfUkVTRVQgLSBfSU8oRlBHQV9NQUdJQywgUE9SVF9CQVNFICsgMCkNCj4g
+PiArICoNCj4gPiArICogUmVzZXQgdGhlIEZQR0EgQUZVIFBvcnQuIE5vIHBhcmFtZXRlcnMgYXJl
+IHN1cHBvcnRlZC4NCj4gPiArICogUmV0dXJuOiAwIG9uIHN1Y2Nlc3MsIC1lcnJubyBvZiBmYWls
+dXJlDQo+ID4gKyAqLw0KPiA+ICsNCj4gPiArI2RlZmluZSBGUEdBX1BPUlRfUkVTRVQgICAgICAg
+ICAgICAgICAgX0lPKEZQR0FfTUFHSUMsIFBPUlRfQkFTRSArIDApDQo+ID4gKw0KPiA+ICAvKiBJ
+T0NUTHMgZm9yIEZNRSBmaWxlIGRlc2NyaXB0b3IgKi8NCj4gPg0KPiA+ICAvKioNCj4gPiAtLQ0K
+PiA+IDEuOC4zLjENCj4gPg0K
