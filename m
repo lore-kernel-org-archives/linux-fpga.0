@@ -1,128 +1,55 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v4 11/18] fpga: region: add fpga-region.h header
-Date: Wed, 13 Sep 2017 15:48:34 -0500
-Message-Id: <20170913204841.2730-12-atull@kernel.org>
+Subject: [PATCH v4 16/18] fpga: of-fpga-region: accept overlays that don't program FPGA
+Date: Wed, 13 Sep 2017 15:48:39 -0500
+Message-Id: <20170913204841.2730-17-atull@kernel.org>
 In-Reply-To: <20170913204841.2730-1-atull@kernel.org>
 References: <20170913204841.2730-1-atull@kernel.org>
 To: Moritz Fischer <mdf@kernel.org>
 Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-* Create fpga-region.h.
-* Export fpga_region_program_fpga.
-* Move struct fpga_region and other things to the header.
-
-This is a step in separating FPGA region common code
-from Device Tree support.
+The FPGA may already have a static image programmed when
+Linux boots.  In that case a DT overlay may be used to add
+the devices that already exist.  This commit allows that
+by shuffling the order of some checks.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
-v2: split out from another patch
-    update author email
-v3: changes due to fpga_region_program_fpga() removed info param
-v4: no change to this patch in this version of patchset
+v4: Patch added to patchset in v4
 ---
- drivers/fpga/fpga-region.c       | 24 ++++--------------------
- include/linux/fpga/fpga-region.h | 28 ++++++++++++++++++++++++++++
- 2 files changed, 32 insertions(+), 20 deletions(-)
- create mode 100644 include/linux/fpga/fpga-region.h
+ drivers/fpga/of-fpga-region.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 2a8621d..402d0b6 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -18,6 +18,7 @@
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index 1797057..d942ae1 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -298,18 +298,19 @@ static int of_fpga_region_notify_pre_apply(struct fpga_region *region,
+ 	struct fpga_image_info *info;
+ 	int ret;
  
- #include <linux/fpga/fpga-bridge.h>
- #include <linux/fpga/fpga-mgr.h>
-+#include <linux/fpga/fpga-region.h>
- #include <linux/idr.h>
- #include <linux/kernel.h>
- #include <linux/list.h>
-@@ -26,24 +27,6 @@
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- 
--/**
-- * struct fpga_region - FPGA Region structure
-- * @dev: FPGA Region device
-- * @mutex: enforces exclusive reference to region
-- * @bridge_list: list of FPGA bridges specified in region
-- * @mgr: FPGA manager
-- * @info: fpga image specific information
-- */
--struct fpga_region {
--	struct device dev;
--	struct mutex mutex; /* for exclusive reference to region */
--	struct list_head bridge_list;
--	struct fpga_manager *mgr;
--	struct fpga_image_info *info;
--};
+-	if (region->info) {
+-		dev_err(dev, "Region already has overlay applied.\n");
+-		return -EINVAL;
+-	}
 -
--#define to_fpga_region(d) container_of(d, struct fpga_region, dev)
--
- static DEFINE_IDA(fpga_region_ida);
- static struct class *fpga_region_class;
+ 	info = of_fpga_region_parse_ov(region, nd->overlay);
+ 	if (IS_ERR(info))
+ 		return PTR_ERR(info);
  
-@@ -226,7 +209,7 @@ static int fpga_region_get_bridges(struct fpga_region *region,
-  * Program an FPGA using fpga image info (region->info).
-  * Return 0 for success or negative error code.
-  */
--static int fpga_region_program_fpga(struct fpga_region *region)
-+int fpga_region_program_fpga(struct fpga_region *region)
- {
- 	struct device *dev = &region->dev;
- 	struct fpga_image_info *info = region->info;
-@@ -282,6 +265,7 @@ static int fpga_region_program_fpga(struct fpga_region *region)
++	/* If overlay doesn't program the FPGA, accept it anyway. */
+ 	if (!info)
+ 		return 0;
  
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(fpga_region_program_fpga);
- 
- /**
-  * child_regions_with_firmware
-@@ -667,5 +651,5 @@ subsys_initcall(fpga_region_init);
- module_exit(fpga_region_exit);
- 
- MODULE_DESCRIPTION("FPGA Region");
--MODULE_AUTHOR("Alan Tull <atull@opensource.altera.com>");
-+MODULE_AUTHOR("Alan Tull <atull@kernel.org>");
- MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
-new file mode 100644
-index 0000000..f84a2e1
---- /dev/null
-+++ b/include/linux/fpga/fpga-region.h
-@@ -0,0 +1,28 @@
-+#include <linux/device.h>
-+#include <linux/fpga/fpga-mgr.h>
-+#include <linux/fpga/fpga-bridge.h>
++	if (region->info) {
++		dev_err(dev, "Region already has overlay applied.\n");
++		return -EINVAL;
++	}
 +
-+#ifndef _FPGA_REGION_H
-+#define _FPGA_REGION_H
-+
-+/**
-+ * struct fpga_region - FPGA Region structure
-+ * @dev: FPGA Region device
-+ * @mutex: enforces exclusive reference to region
-+ * @bridge_list: list of FPGA bridges specified in region
-+ * @mgr: FPGA manager
-+ * @info: FPGA image info
-+ */
-+struct fpga_region {
-+	struct device dev;
-+	struct mutex mutex; /* for exclusive reference to region */
-+	struct list_head bridge_list;
-+	struct fpga_manager *mgr;
-+	struct fpga_image_info *info;
-+};
-+
-+#define to_fpga_region(d) container_of(d, struct fpga_region, dev)
-+
-+int fpga_region_program_fpga(struct fpga_region *region);
-+
-+#endif /* _FPGA_REGION_H */
+ 	region->info = info;
+ 	ret = fpga_region_program_fpga(region);
+ 	if (ret) {
 -- 
 2.7.4
