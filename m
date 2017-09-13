@@ -1,91 +1,167 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v4 00/18]  Enable upper layers using FPGA region w/o device tree
-Date: Wed, 13 Sep 2017 15:48:23 -0500
-Message-Id: <20170913204841.2730-1-atull@kernel.org>
+Subject: [PATCH v4 06/18] fpga: region: get mgr early on
+Date: Wed, 13 Sep 2017 15:48:29 -0500
+Message-Id: <20170913204841.2730-7-atull@kernel.org>
+In-Reply-To: <20170913204841.2730-1-atull@kernel.org>
+References: <20170913204841.2730-1-atull@kernel.org>
 To: Moritz Fischer <mdf@kernel.org>
 Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-* Change the fpga-mgr API to have one fpga_mgr_load function
-  instead of three.
+Get the FPGA manager during region creation.
 
-* Expose API functions for FPGA region
+This is a baby step in refactoring the FPGA region code to
+separate out common FPGA region code from FPGA region
+Device Tree overlay support.
 
-* Separate common FPGA region code from Device Tree support
+Signed-off-by: Alan Tull <atull@kernel.org>
+---
+v2: split out from another patch
+v3: no change to this patch in this version of patchset
+v4: no change to this patch in this version of patchset
+---
+ drivers/fpga/fpga-region.c | 45 +++++++++++++++++++++++----------------------
+ 1 file changed, 23 insertions(+), 22 deletions(-)
 
-* Add API functions for bridges where DT is not used.
-
-This is needed because the current FPGA layer has a couple of problems:
-
-* We now have 3 functions for programming a FPGA, depending on whether
-the image is in a sg list, a buffer, or firmware.  So upper layers
-have to be written assuming where the image will be or will have to
-write extra code to maintain flexibility.
-
-* users who aren't using device tree are left to write their
-own code that is essentially a rewrite of FPGA region.
-
-Mostly this patch set consists of small patches that rework the
-FPGA region support, followed by one big patch that moves the
-device tree FPGA region support to a separate file of-fpga-region.c.
-
-v4 adds 3 patches:
-* patch 16 supports overlays that don't program the fpga, such as
-  an overlay that adds the devices that are in the static region
-  of the FPGA
-* patch 17 that cleans up the drivers/fpga/Kconfig
-* patch 18 allows adding attribute groups when registering a
-  fpga manager, bridge, or region.
-
-v4 changes:
-* Squashed v3's patch 1 (documentation) and patch 3 (api change)
-* Fixes in function that allocates/frees fpga image info.
-* Save the device that owns the image info in the image info struct.
-
-These patches have been pushed to the linux-fpga kernel.org repo as
-branch review-next-20170913-fpga-region-v4 for reviewing
-convenience.
-
-Alan Tull (18):
-  fpga: bridge: support getting bridge from device
-  fpga: mgr: API change to replace fpga load functions with single
-    function
-  fpga: mgr: separate getting/locking FPGA manager
-  fpga: region: use dev_err instead of pr_err
-  fpga: region: remove unneeded of_node_get and put
-  fpga: region: get mgr early on
-  fpga: region: check for child regions before allocing image info
-  fpga: region: fix slow warning with more than one overlay
-  fpga: region: use image info as parameter for programming region
-  fpga: region: separate out code that parses the overlay
-  fpga: region: add fpga-region.h header
-  fpga: region: rename some functions prior to moving
-  fpga: region: add register/unregister functions
-  fpga: region: add fpga_region_class_find
-  fpga: region: move device tree support to of-fpga-region.c
-  fpga: of-fpga-region: accept overlays that don't program FPGA
-  fpga: clean up fpga Kconfig
-  fpga: add attribute groups
-
- Documentation/fpga/fpga-mgr.txt    | 132 +++++-----
- Documentation/fpga/fpga-region.txt |  95 +++++++
- Documentation/fpga/overview.txt    |  23 ++
- drivers/fpga/Kconfig               | 102 ++++----
- drivers/fpga/Makefile              |   1 +
- drivers/fpga/fpga-bridge.c         | 111 +++++++--
- drivers/fpga/fpga-mgr.c            | 121 +++++++--
- drivers/fpga/fpga-region.c         | 464 ++++------------------------------
- drivers/fpga/of-fpga-region.c      | 496 +++++++++++++++++++++++++++++++++++++
- include/linux/fpga/fpga-bridge.h   |   9 +-
- include/linux/fpga/fpga-mgr.h      |  33 ++-
- include/linux/fpga/fpga-region.h   |  40 +++
- 12 files changed, 1036 insertions(+), 591 deletions(-)
- create mode 100644 Documentation/fpga/fpga-region.txt
- create mode 100644 Documentation/fpga/overview.txt
- create mode 100644 drivers/fpga/of-fpga-region.c
- create mode 100644 include/linux/fpga/fpga-region.h
-
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index 352661f..d78f444 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -31,12 +31,14 @@
+  * @dev: FPGA Region device
+  * @mutex: enforces exclusive reference to region
+  * @bridge_list: list of FPGA bridges specified in region
++ * @mgr: FPGA manager
+  * @info: fpga image specific information
+  */
+ struct fpga_region {
+ 	struct device dev;
+ 	struct mutex mutex; /* for exclusive reference to region */
+ 	struct list_head bridge_list;
++	struct fpga_manager *mgr;
+ 	struct fpga_image_info *info;
+ };
+ 
+@@ -123,7 +125,7 @@ static void fpga_region_put(struct fpga_region *region)
+ 
+ /**
+  * fpga_region_get_manager - get reference for FPGA manager
+- * @region: FPGA region
++ * @np: device node of FPGA region
+  *
+  * Get FPGA Manager from "fpga-mgr" property or from ancestor region.
+  *
+@@ -131,10 +133,8 @@ static void fpga_region_put(struct fpga_region *region)
+  *
+  * Return: fpga manager struct or IS_ERR() condition containing error code.
+  */
+-static struct fpga_manager *fpga_region_get_manager(struct fpga_region *region)
++static struct fpga_manager *fpga_region_get_manager(struct device_node *np)
+ {
+-	struct device *dev = &region->dev;
+-	struct device_node *np = dev->of_node;
+ 	struct device_node  *mgr_node;
+ 	struct fpga_manager *mgr;
+ 
+@@ -231,7 +231,6 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 				    struct device_node *overlay)
+ {
+ 	struct device *dev = &region->dev;
+-	struct fpga_manager *mgr;
+ 	int ret;
+ 
+ 	region = fpga_region_get(region);
+@@ -240,17 +239,10 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 		return PTR_ERR(region);
+ 	}
+ 
+-	mgr = fpga_region_get_manager(region);
+-	if (IS_ERR(mgr)) {
+-		dev_err(dev, "failed to get FPGA manager\n");
+-		ret = PTR_ERR(mgr);
+-		goto err_put_region;
+-	}
+-
+-	ret = fpga_mgr_lock(mgr);
++	ret = fpga_mgr_lock(region->mgr);
+ 	if (ret) {
+ 		dev_err(dev, "FPGA manager is busy\n");
+-		goto err_put_mgr;
++		goto err_put_region;
+ 	}
+ 
+ 	ret = fpga_region_get_bridges(region, overlay);
+@@ -265,7 +257,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 		goto err_put_br;
+ 	}
+ 
+-	ret = fpga_mgr_load(mgr, region->info);
++	ret = fpga_mgr_load(region->mgr, region->info);
+ 	if (ret) {
+ 		dev_err(dev, "failed to load FPGA image\n");
+ 		goto err_put_br;
+@@ -277,8 +269,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 		goto err_put_br;
+ 	}
+ 
+-	fpga_mgr_unlock(mgr);
+-	fpga_mgr_put(mgr);
++	fpga_mgr_unlock(region->mgr);
+ 	fpga_region_put(region);
+ 
+ 	return 0;
+@@ -286,9 +277,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ err_put_br:
+ 	fpga_bridges_put(&region->bridge_list);
+ err_unlock_mgr:
+-	fpga_mgr_unlock(mgr);
+-err_put_mgr:
+-	fpga_mgr_put(mgr);
++	fpga_mgr_unlock(region->mgr);
+ err_put_region:
+ 	fpga_region_put(region);
+ 
+@@ -517,11 +506,20 @@ static int fpga_region_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct device_node *np = dev->of_node;
+ 	struct fpga_region *region;
++	struct fpga_manager *mgr;
+ 	int id, ret = 0;
+ 
++	mgr = fpga_region_get_manager(np);
++	if (IS_ERR(mgr))
++		return -EPROBE_DEFER;
++
+ 	region = kzalloc(sizeof(*region), GFP_KERNEL);
+-	if (!region)
+-		return -ENOMEM;
++	if (!region) {
++		ret = -ENOMEM;
++		goto err_put_mgr;
++	}
++
++	region->mgr = mgr;
+ 
+ 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
+ 	if (id < 0) {
+@@ -557,6 +555,8 @@ static int fpga_region_probe(struct platform_device *pdev)
+ 	ida_simple_remove(&fpga_region_ida, id);
+ err_kfree:
+ 	kfree(region);
++err_put_mgr:
++	fpga_mgr_put(mgr);
+ 
+ 	return ret;
+ }
+@@ -566,6 +566,7 @@ static int fpga_region_remove(struct platform_device *pdev)
+ 	struct fpga_region *region = platform_get_drvdata(pdev);
+ 
+ 	device_unregister(&region->dev);
++	fpga_mgr_put(region->mgr);
+ 
+ 	return 0;
+ }
 -- 
 2.7.4
