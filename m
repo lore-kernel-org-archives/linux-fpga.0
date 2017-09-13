@@ -1,113 +1,51 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v4 09/18] fpga: region: use image info as parameter for programming region
-Date: Wed, 13 Sep 2017 15:48:32 -0500
-Message-Id: <20170913204841.2730-10-atull@kernel.org>
+Subject: [PATCH v4 05/18] fpga: region: remove unneeded of_node_get and put
+Date: Wed, 13 Sep 2017 15:48:28 -0500
+Message-Id: <20170913204841.2730-6-atull@kernel.org>
 In-Reply-To: <20170913204841.2730-1-atull@kernel.org>
 References: <20170913204841.2730-1-atull@kernel.org>
 To: Moritz Fischer <mdf@kernel.org>
 Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Use FPGA image info (region->info) when region code is
-programming the FPGA to pass in multiple parameters.
-
-This is a baby step in refactoring the FPGA region code to
-separate out common FPGA region code from FPGA region
-Device Tree overlay support.
+Remove of_node_get/put in fpga_region_get/put.  Not
+needed and will get in the way when I separate out
+the common FPGA region code from Device Tree support
+code.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
 v2: split out from another patch
-v3: change API to use the region->info, remove info param
-    remove check for region->info, not needed
+v3: Add Moritz' ack
 v4: no change to this patch in this version of patchset
 ---
- drivers/fpga/fpga-region.c    | 16 +++++++++-------
- include/linux/fpga/fpga-mgr.h |  4 ++++
- 2 files changed, 13 insertions(+), 7 deletions(-)
+ drivers/fpga/fpga-region.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
 diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 35af952..eaacf50 100644
+index 6b4f9ab..352661f 100644
 --- a/drivers/fpga/fpga-region.c
 +++ b/drivers/fpga/fpga-region.c
-@@ -223,14 +223,13 @@ static int fpga_region_get_bridges(struct fpga_region *region,
- /**
-  * fpga_region_program_fpga - program FPGA
-  * @region: FPGA region
-- * @overlay: device node of the overlay
-- * Program an FPGA using information in the region's fpga image info.
-+ * Program an FPGA using fpga image info (region->info).
-  * Return 0 for success or negative error code.
-  */
--static int fpga_region_program_fpga(struct fpga_region *region,
--				    struct device_node *overlay)
-+static int fpga_region_program_fpga(struct fpga_region *region)
- {
- 	struct device *dev = &region->dev;
-+	struct fpga_image_info *info = region->info;
- 	int ret;
- 
- 	region = fpga_region_get(region);
-@@ -245,7 +244,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_region;
+@@ -94,9 +94,7 @@ static struct fpga_region *fpga_region_get(struct fpga_region *region)
  	}
  
--	ret = fpga_region_get_bridges(region, overlay);
-+	ret = fpga_region_get_bridges(region, info->overlay);
- 	if (ret) {
- 		dev_err(dev, "failed to get FPGA bridges\n");
- 		goto err_unlock_mgr;
-@@ -257,7 +256,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_br;
- 	}
+ 	get_device(dev);
+-	of_node_get(dev->of_node);
+ 	if (!try_module_get(dev->parent->driver->owner)) {
+-		of_node_put(dev->of_node);
+ 		put_device(dev);
+ 		mutex_unlock(&region->mutex);
+ 		return ERR_PTR(-ENODEV);
+@@ -119,7 +117,6 @@ static void fpga_region_put(struct fpga_region *region)
+ 	dev_dbg(dev, "put\n");
  
--	ret = fpga_mgr_load(region->mgr, region->info);
-+	ret = fpga_mgr_load(region->mgr, info);
- 	if (ret) {
- 		dev_err(dev, "failed to load FPGA image\n");
- 		goto err_put_br;
-@@ -373,6 +372,8 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 	if (!info)
- 		return -ENOMEM;
- 
-+	info->overlay = nd->overlay;
-+
- 	/* Read FPGA region properties from the overlay */
- 	if (of_property_read_bool(nd->overlay, "partial-fpga-config"))
- 		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
-@@ -421,7 +422,8 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 	}
- 
- 	region->info = info;
--	ret = fpga_region_program_fpga(region, nd->overlay);
-+
-+	ret = fpga_region_program_fpga(region);
- 	if (ret) {
- 		fpga_image_info_free(info);
- 		region->info = NULL;
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 5e2b36e..6977a6b02 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -89,6 +89,7 @@ enum fpga_mgr_states {
-  * @buf: contiguous buffer containing FPGA image
-  * @count: size of buf
-  * @dev: device that owns this
-+ * @overlay: Device Tree overlay
-  */
- struct fpga_image_info {
- 	u32 flags;
-@@ -100,6 +101,9 @@ struct fpga_image_info {
- 	const char *buf;
- 	size_t count;
- 	struct device *dev;
-+#ifdef CONFIG_OF
-+	struct device_node *overlay;
-+#endif
- };
- 
- /**
+ 	module_put(dev->parent->driver->owner);
+-	of_node_put(dev->of_node);
+ 	put_device(dev);
+ 	mutex_unlock(&region->mutex);
+ }
 -- 
 2.7.4
