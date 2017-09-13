@@ -1,56 +1,126 @@
-Return-Path: <SRS0=iJay=AT=linuxfoundation.org=gregkh@kernel.org>
-Return-Path: <SRS0=iJay=AT=linuxfoundation.org=gregkh@kernel.org>
-Date: Mon, 18 Sep 2017 12:17:36 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 1/2] fpga: altera-cvp: remove DRIVER_ATTR() usage
-Message-ID: <20170918101736.GA30415@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-To: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH v4 18/18] fpga: add attribute groups
+Date: Wed, 13 Sep 2017 15:48:41 -0500
+Message-Id: <20170913204841.2730-19-atull@kernel.org>
+In-Reply-To: <20170913204841.2730-1-atull@kernel.org>
+References: <20170913204841.2730-1-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-It's better to be explicit and use the DRIVER_ATTR_RW() macro when
-defining a driver's sysfs file.
+Make it easy to add attributes to low level FPGA drivers the right
+way.  Add attribute groups pointers to structures that are used when
+registering a manager, bridge, or group.  When the low level driver
+registers, set the device attribute group.  The attributes are
+created in device_add.
 
-This is part of a series to drop DRIVER_ATTR() from the tree entirely.
-
-Cc: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/altera-cvp.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+v4: Patch added to patchset in v4
+---
+ drivers/fpga/fpga-bridge.c       | 1 +
+ drivers/fpga/fpga-mgr.c          | 1 +
+ drivers/fpga/fpga-region.c       | 1 +
+ include/linux/fpga/fpga-bridge.h | 2 ++
+ include/linux/fpga/fpga-mgr.h    | 2 ++
+ include/linux/fpga/fpga-region.h | 2 ++
+ 6 files changed, 9 insertions(+)
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 08629ee69d11..00e73d28077c 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -361,12 +361,12 @@ static const struct fpga_manager_ops altera_cvp_ops = {
- 	.write_complete	= altera_cvp_write_complete,
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index af6d97e..a189638 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -367,6 +367,7 @@ int fpga_bridge_register(struct device *dev, const char *name,
+ 	bridge->priv = priv;
+ 
+ 	device_initialize(&bridge->dev);
++	bridge->dev.groups = br_ops->groups;
+ 	bridge->dev.class = fpga_bridge_class;
+ 	bridge->dev.parent = dev;
+ 	bridge->dev.of_node = dev->of_node;
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index d27e8d2..223f240 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -569,6 +569,7 @@ int fpga_mgr_register(struct device *dev, const char *name,
+ 
+ 	device_initialize(&mgr->dev);
+ 	mgr->dev.class = fpga_mgr_class;
++	mgr->dev.groups = mops->groups;
+ 	mgr->dev.parent = dev;
+ 	mgr->dev.of_node = dev->of_node;
+ 	mgr->dev.id = id;
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index afc6188..edab2a2 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -173,6 +173,7 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
+ 	mutex_init(&region->mutex);
+ 	INIT_LIST_HEAD(&region->bridge_list);
+ 	device_initialize(&region->dev);
++	region->dev.groups = region->groups;
+ 	region->dev.class = fpga_region_class;
+ 	region->dev.parent = dev;
+ 	region->dev.of_node = dev->of_node;
+diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
+index 9f6696b..652160b 100644
+--- a/include/linux/fpga/fpga-bridge.h
++++ b/include/linux/fpga/fpga-bridge.h
+@@ -11,11 +11,13 @@ struct fpga_bridge;
+  * @enable_show: returns the FPGA bridge's status
+  * @enable_set: set a FPGA bridge as enabled or disabled
+  * @fpga_bridge_remove: set FPGA into a specific state during driver remove
++ * @groups: optional attribute groups.
+  */
+ struct fpga_bridge_ops {
+ 	int (*enable_show)(struct fpga_bridge *bridge);
+ 	int (*enable_set)(struct fpga_bridge *bridge, bool enable);
+ 	void (*fpga_bridge_remove)(struct fpga_bridge *bridge);
++	const struct attribute_group **groups;
  };
  
--static ssize_t show_chkcfg(struct device_driver *dev, char *buf)
-+static ssize_t chkcfg_show(struct device_driver *dev, char *buf)
- {
- 	return snprintf(buf, 3, "%d\n", altera_cvp_chkcfg);
- }
+ /**
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index 6977a6b02..be36aea 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -115,6 +115,7 @@ struct fpga_image_info {
+  * @write_sg: write the scatter list of configuration data to the FPGA
+  * @write_complete: set FPGA to operating state after writing is done
+  * @fpga_remove: optional: Set FPGA into a specific state during driver remove
++ * @groups: optional attribute groups.
+  *
+  * fpga_manager_ops are the low level functions implemented by a specific
+  * fpga manager driver.  The optional ones are tested for NULL before being
+@@ -131,6 +132,7 @@ struct fpga_manager_ops {
+ 	int (*write_complete)(struct fpga_manager *mgr,
+ 			      struct fpga_image_info *info);
+ 	void (*fpga_remove)(struct fpga_manager *mgr);
++	const struct attribute_group **groups;
+ };
  
--static ssize_t store_chkcfg(struct device_driver *drv, const char *buf,
-+static ssize_t chkcfg_store(struct device_driver *drv, const char *buf,
- 			    size_t count)
- {
- 	int ret;
-@@ -378,7 +378,7 @@ static ssize_t store_chkcfg(struct device_driver *drv, const char *buf,
- 	return count;
- }
+ /**
+diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+index f2eecdd..4a5562f 100644
+--- a/include/linux/fpga/fpga-region.h
++++ b/include/linux/fpga/fpga-region.h
+@@ -14,6 +14,7 @@
+  * @info: FPGA image info
+  * @priv: private data
+  * @get_bridges: optional function to get bridges to a list
++ * @groups: optional attribute groups.
+  */
+ struct fpga_region {
+ 	struct device dev;
+@@ -23,6 +24,7 @@ struct fpga_region {
+ 	struct fpga_image_info *info;
+ 	void *priv;
+ 	int (*get_bridges)(struct fpga_region *region);
++	const struct attribute_group **groups;
+ };
  
--static DRIVER_ATTR(chkcfg, 0600, show_chkcfg, store_chkcfg);
-+static DRIVER_ATTR_RW(chkcfg);
- 
- static int altera_cvp_probe(struct pci_dev *pdev,
- 			    const struct pci_device_id *dev_id);
+ #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
 -- 
-2.14.1
+2.7.4
