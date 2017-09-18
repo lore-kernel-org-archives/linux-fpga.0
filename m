@@ -1,51 +1,127 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <20170918181723.GB3429@tyrael.ni.corp.natinst.com>
+References: <20170913204841.2730-1-atull@kernel.org> <20170913204841.2730-5-atull@kernel.org>
+ <20170918181723.GB3429@tyrael.ni.corp.natinst.com>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v4 05/18] fpga: region: remove unneeded of_node_get and put
-Date: Wed, 13 Sep 2017 15:48:28 -0500
-Message-Id: <20170913204841.2730-6-atull@kernel.org>
-In-Reply-To: <20170913204841.2730-1-atull@kernel.org>
-References: <20170913204841.2730-1-atull@kernel.org>
+Date: Mon, 18 Sep 2017 15:54:06 -0500
+Message-ID: <CANk1AXTLeKEZcicQeRQ5N0nFWdu7fWVKEEX78XqgGyLnHOmNhw@mail.gmail.com>
+Subject: Re: [PATCH v4 04/18] fpga: region: use dev_err instead of pr_err
+Content-Type: text/plain; charset="UTF-8"
 To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Remove of_node_get/put in fpga_region_get/put.  Not
-needed and will get in the way when I separate out
-the common FPGA region code from Device Tree support
-code.
+On Mon, Sep 18, 2017 at 1:17 PM, Moritz Fischer <mdf@kernel.org> wrote:
+> On Wed, Sep 13, 2017 at 03:48:27PM -0500, Alan Tull wrote:
+>> Use dev_err messages instead of pr_err.
+>>
+>> Also s/&region->dev/dev/ in two places where we already
+>> have dev = &region->dev.
+>>
+>> Signed-off-by: Alan Tull <atull@kernel.org>
+> Acked-by: Moritz Fischer <mdf@kernel.org>
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: split out from another patch
-v3: Add Moritz' ack
-v4: no change to this patch in this version of patchset
----
- drivers/fpga/fpga-region.c | 3 ---
- 1 file changed, 3 deletions(-)
+Hi Moritz,
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 6b4f9ab..352661f 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -94,9 +94,7 @@ static struct fpga_region *fpga_region_get(struct fpga_region *region)
- 	}
- 
- 	get_device(dev);
--	of_node_get(dev->of_node);
- 	if (!try_module_get(dev->parent->driver->owner)) {
--		of_node_put(dev->of_node);
- 		put_device(dev);
- 		mutex_unlock(&region->mutex);
- 		return ERR_PTR(-ENODEV);
-@@ -119,7 +117,6 @@ static void fpga_region_put(struct fpga_region *region)
- 	dev_dbg(dev, "put\n");
- 
- 	module_put(dev->parent->driver->owner);
--	of_node_put(dev->of_node);
- 	put_device(dev);
- 	mutex_unlock(&region->mutex);
- }
--- 
-2.7.4
+Thanks!
+
+Alan
+>> ---
+>> v2: new in this version of the patchset
+>> v3: for bisectability some changes moved to earlier patches
+>> v4: no change to this patch in this version of patchset
+>> ---
+>>  drivers/fpga/fpga-region.c | 20 ++++++++++----------
+>>  1 file changed, 10 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+>> index 1e1640a..6b4f9ab 100644
+>> --- a/drivers/fpga/fpga-region.c
+>> +++ b/drivers/fpga/fpga-region.c
+>> @@ -102,7 +102,7 @@ static struct fpga_region *fpga_region_get(struct fpga_region *region)
+>>               return ERR_PTR(-ENODEV);
+>>       }
+>>
+>> -     dev_dbg(&region->dev, "get\n");
+>> +     dev_dbg(dev, "get\n");
+>>
+>>       return region;
+>>  }
+>> @@ -116,7 +116,7 @@ static void fpga_region_put(struct fpga_region *region)
+>>  {
+>>       struct device *dev = &region->dev;
+>>
+>> -     dev_dbg(&region->dev, "put\n");
+>> +     dev_dbg(dev, "put\n");
+>>
+>>       module_put(dev->parent->driver->owner);
+>>       of_node_put(dev->of_node);
+>> @@ -239,13 +239,13 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+>>
+>>       region = fpga_region_get(region);
+>>       if (IS_ERR(region)) {
+>> -             pr_err("failed to get fpga region\n");
+>> +             dev_err(dev, "failed to get FPGA region\n");
+>>               return PTR_ERR(region);
+>>       }
+>>
+>>       mgr = fpga_region_get_manager(region);
+>>       if (IS_ERR(mgr)) {
+>> -             pr_err("failed to get fpga region manager\n");
+>> +             dev_err(dev, "failed to get FPGA manager\n");
+>>               ret = PTR_ERR(mgr);
+>>               goto err_put_region;
+>>       }
+>> @@ -258,25 +258,25 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+>>
+>>       ret = fpga_region_get_bridges(region, overlay);
+>>       if (ret) {
+>> -             pr_err("failed to get fpga region bridges\n");
+>> +             dev_err(dev, "failed to get FPGA bridges\n");
+>>               goto err_unlock_mgr;
+>>       }
+>>
+>>       ret = fpga_bridges_disable(&region->bridge_list);
+>>       if (ret) {
+>> -             pr_err("failed to disable region bridges\n");
+>> +             dev_err(dev, "failed to disable bridges\n");
+>>               goto err_put_br;
+>>       }
+>>
+>>       ret = fpga_mgr_load(mgr, region->info);
+>>       if (ret) {
+>> -             pr_err("failed to load fpga image\n");
+>> +             dev_err(dev, "failed to load FPGA image\n");
+>>               goto err_put_br;
+>>       }
+>>
+>>       ret = fpga_bridges_enable(&region->bridge_list);
+>>       if (ret) {
+>> -             pr_err("failed to enable region bridges\n");
+>> +             dev_err(dev, "failed to enable region bridges\n");
+>>               goto err_put_br;
+>>       }
+>>
+>> @@ -407,7 +407,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+>>
+>>       /* If FPGA was externally programmed, don't specify firmware */
+>>       if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
+>> -             pr_err("error: specified firmware and external-fpga-config");
+>> +             dev_err(dev, "error: specified firmware and external-fpga-config");
+>>               fpga_image_info_free(info);
+>>               return -EINVAL;
+>>       }
+>> @@ -420,7 +420,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+>>
+>>       /* If we got this far, we should be programming the FPGA */
+>>       if (!info->firmware_name) {
+>> -             pr_err("should specify firmware-name or external-fpga-config\n");
+>> +             dev_err(dev, "should specify firmware-name or external-fpga-config\n");
+>>               fpga_image_info_free(info);
+>>               return -EINVAL;
+>>       }
+>> --
+>> 2.7.4
+>>
