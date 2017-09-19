@@ -2,13 +2,13 @@ Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
 Subject: [PATCH] MAINTAINERS: add backup maintainer
-Date: Tue, 19 Sep 2017 18:25:06 -0500
-Message-Id: <20170919232506.2986-1-atull@kernel.org>
+Date: Tue, 19 Sep 2017 18:24:24 -0500
+Message-Id: <20170919232424.2913-1-atull@kernel.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add Moritz as a maintainer of the kernel FPGA framework.
+Add Moritz as a maintainer of the kernel FGPGA framework.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
