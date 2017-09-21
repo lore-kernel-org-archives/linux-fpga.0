@@ -1,219 +1,40 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v4 10/18] fpga: region: separate out code that parses the overlay
-Date: Wed, 13 Sep 2017 15:48:33 -0500
-Message-Id: <20170913204841.2730-11-atull@kernel.org>
-In-Reply-To: <20170913204841.2730-1-atull@kernel.org>
-References: <20170913204841.2730-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Subject: [PATCH 1/1] fpga: make xlnx_pr_decoupler_br_ops const
+Date: Thu, 21 Sep 2017 09:52:41 -0500
+Message-Id: <20170921145241.2869-2-atull@kernel.org>
+In-Reply-To: <20170921145241.2869-1-atull@kernel.org>
+References: <20170921145241.2869-1-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Bhumika Goyal <bhumirks@gmail.com>, Alan Tull <atull@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-New function of_fpga_region_parse_ov added, moving code
-from fpga_region_notify_pre_apply.  This function
-gets the FPGA image info from the overlay and is able
-to simplify some of the logic involved.
+From: Bhumika Goyal <bhumirks@gmail.com>
 
-This is a baby step in refactoring the FPGA region code to
-separate out common code from Device Tree overlay support.
+Make this const as it is only passed to a const argument of the function
+fpga_bridge_register.
 
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+Acked-by: Michal Simek <michal.simek@xilinx.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
-v2: split out from another patch
-v3: update comments
-    minor changes in flow
-v4: no change to this patch in this version of patchset
----
- drivers/fpga/fpga-region.c | 122 +++++++++++++++++++++++++++------------------
- 1 file changed, 73 insertions(+), 49 deletions(-)
+ drivers/fpga/xilinx-pr-decoupler.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index eaacf50..2a8621d 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -321,33 +321,22 @@ static int child_regions_with_firmware(struct device_node *overlay)
+diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
+index e359930bebc8..0d7743089414 100644
+--- a/drivers/fpga/xilinx-pr-decoupler.c
++++ b/drivers/fpga/xilinx-pr-decoupler.c
+@@ -79,7 +79,7 @@ static int xlnx_pr_decoupler_enable_show(struct fpga_bridge *bridge)
+ 	return !status;
  }
  
- /**
-- * fpga_region_notify_pre_apply - pre-apply overlay notification
-- *
-- * @region: FPGA region that the overlay was applied to
-- * @nd: overlay notification data
-- *
-- * Called after when an overlay targeted to a FPGA Region is about to be
-- * applied.  Function will check the properties that will be added to the FPGA
-- * region.  If the checks pass, it will program the FPGA.
-- *
-- * The checks are:
-- * The overlay must add either firmware-name or external-fpga-config property
-- * to the FPGA Region.
-- *
-- *   firmware-name         : program the FPGA
-- *   external-fpga-config  : FPGA is already programmed
-- *   encrypted-fpga-config : FPGA bitstream is encrypted
-+ * of_fpga_region_parse_ov - parse and check overlay applied to region
-  *
-- * The overlay can add other FPGA regions, but child FPGA regions cannot have a
-- * firmware-name property since those regions don't exist yet.
-+ * @region: FPGA region
-+ * @overlay: overlay applied to the FPGA region
-  *
-- * If the overlay that breaks the rules, notifier returns an error and the
-- * overlay is rejected before it goes into the main tree.
-+ * Given an overlay applied to a FPGA region, parse the FPGA image specific
-+ * info in the overlay and do some checking.
-  *
-- * Returns 0 for success or negative error code for failure.
-+ * Returns:
-+ *   NULL if overlay doesn't direct us to program the FPGA.
-+ *   fpga_image_info struct if there is an image to program.
-+ *   error code for invalid overlay.
-  */
--static int fpga_region_notify_pre_apply(struct fpga_region *region,
--					struct of_overlay_notify_data *nd)
-+static struct fpga_image_info *of_fpga_region_parse_ov(
-+						struct fpga_region *region,
-+						struct device_node *overlay)
- {
- 	struct device *dev = &region->dev;
- 	struct fpga_image_info *info;
-@@ -356,7 +345,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 
- 	if (region->info) {
- 		dev_err(dev, "Region already has overlay applied.\n");
--		return -EINVAL;
-+		return ERR_PTR(-EINVAL);
- 	}
- 
- 	/*
-@@ -364,67 +353,102 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 	 * firmware-name property (would mean that an FPGA region that has
- 	 * not been added to the live tree yet is doing FPGA programming).
- 	 */
--	ret = child_regions_with_firmware(nd->overlay);
-+	ret = child_regions_with_firmware(overlay);
- 	if (ret)
--		return ret;
-+		return ERR_PTR(ret);
- 
- 	info = fpga_image_info_alloc(dev);
- 	if (!info)
--		return -ENOMEM;
-+		return ERR_PTR(-ENOMEM);
- 
--	info->overlay = nd->overlay;
-+	info->overlay = overlay;
- 
- 	/* Read FPGA region properties from the overlay */
--	if (of_property_read_bool(nd->overlay, "partial-fpga-config"))
-+	if (of_property_read_bool(overlay, "partial-fpga-config"))
- 		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
- 
--	if (of_property_read_bool(nd->overlay, "external-fpga-config"))
-+	if (of_property_read_bool(overlay, "external-fpga-config"))
- 		info->flags |= FPGA_MGR_EXTERNAL_CONFIG;
- 
--	if (of_property_read_bool(nd->overlay, "encrypted-fpga-config"))
-+	if (of_property_read_bool(overlay, "encrypted-fpga-config"))
- 		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
- 
--	if (!of_property_read_string(nd->overlay, "firmware-name",
-+	if (!of_property_read_string(overlay, "firmware-name",
- 				     &firmware_name)) {
- 		info->firmware_name = devm_kstrdup(dev, firmware_name,
- 						   GFP_KERNEL);
- 		if (!info->firmware_name)
--			return -ENOMEM;
-+			return ERR_PTR(-ENOMEM);
- 	}
- 
--	of_property_read_u32(nd->overlay, "region-unfreeze-timeout-us",
-+	of_property_read_u32(overlay, "region-unfreeze-timeout-us",
- 			     &info->enable_timeout_us);
- 
--	of_property_read_u32(nd->overlay, "region-freeze-timeout-us",
-+	of_property_read_u32(overlay, "region-freeze-timeout-us",
- 			     &info->disable_timeout_us);
- 
--	of_property_read_u32(nd->overlay, "config-complete-timeout-us",
-+	of_property_read_u32(overlay, "config-complete-timeout-us",
- 			     &info->config_complete_timeout_us);
- 
--	/* If FPGA was externally programmed, don't specify firmware */
--	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
--		dev_err(dev, "error: specified firmware and external-fpga-config");
--		fpga_image_info_free(info);
--		return -EINVAL;
-+	/* If overlay is not programming the FPGA, don't need FPGA image info */
-+	if (!info->firmware_name) {
-+		ret = 0;
-+		goto ret_no_info;
- 	}
- 
--	/* FPGA is already configured externally.  We're done. */
-+	/*
-+	 * If overlay informs us FPGA was externally programmed, specifying
-+	 * firmware here would be ambiguous.
-+	 */
- 	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG) {
--		fpga_image_info_free(info);
--		return 0;
-+		dev_err(dev, "error: specified firmware and external-fpga-config");
-+		ret = -EINVAL;
-+		goto ret_no_info;
- 	}
- 
--	/* If we got this far, we should be programming the FPGA */
--	if (!info->firmware_name) {
--		dev_err(dev, "should specify firmware-name or external-fpga-config\n");
--		fpga_image_info_free(info);
-+	return info;
-+ret_no_info:
-+	fpga_image_info_free(info);
-+	return ERR_PTR(ret);
-+}
-+
-+/**
-+ * fpga_region_notify_pre_apply - pre-apply overlay notification
-+ *
-+ * @region: FPGA region that the overlay was applied to
-+ * @nd: overlay notification data
-+ *
-+ * Called when an overlay targeted to a FPGA Region is about to be applied.
-+ * Parses the overlay for properties that influence how the FPGA will be
-+ * programmed and does some checking. If the checks pass, programs the FPGA.
-+ * If the checks fail, overlay is rejected and does not get added to the
-+ * live tree.
-+ *
-+ * Returns 0 for success or negative error code for failure.
-+ */
-+static int fpga_region_notify_pre_apply(struct fpga_region *region,
-+					struct of_overlay_notify_data *nd)
-+{
-+	struct device *dev = &region->dev;
-+	struct fpga_image_info *info;
-+	int ret;
-+
-+	if (region->info) {
-+		dev_err(dev, "Region already has overlay applied.\n");
- 		return -EINVAL;
- 	}
- 
--	region->info = info;
-+	info = of_fpga_region_parse_ov(region, nd->overlay);
-+	if (IS_ERR(info))
-+		return PTR_ERR(info);
-+
-+	if (!info)
-+		return 0;
- 
-+	region->info = info;
- 	ret = fpga_region_program_fpga(region);
- 	if (ret) {
-+		/* error; reject overlay */
- 		fpga_image_info_free(info);
- 		region->info = NULL;
- 	}
+-static struct fpga_bridge_ops xlnx_pr_decoupler_br_ops = {
++static const struct fpga_bridge_ops xlnx_pr_decoupler_br_ops = {
+ 	.enable_set = xlnx_pr_decoupler_enable_set,
+ 	.enable_show = xlnx_pr_decoupler_enable_show,
+ };
 -- 
-2.7.4
+2.11.0
