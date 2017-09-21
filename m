@@ -1,167 +1,25 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v4 06/18] fpga: region: get mgr early on
-Date: Wed, 13 Sep 2017 15:48:29 -0500
-Message-Id: <20170913204841.2730-7-atull@kernel.org>
-In-Reply-To: <20170913204841.2730-1-atull@kernel.org>
-References: <20170913204841.2730-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Subject: [PATCH 0/1] patch for fpga
+Date: Thu, 21 Sep 2017 09:52:40 -0500
+Message-Id: <20170921145241.2869-1-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Get the FPGA manager during region creation.
+Hi Greg,
 
-This is a baby step in refactoring the FPGA region code to
-separate out common FPGA region code from FPGA region
-Device Tree overlay support.
+Please take this one small fix for fpga.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
-v2: split out from another patch
-v3: no change to this patch in this version of patchset
-v4: no change to this patch in this version of patchset
----
- drivers/fpga/fpga-region.c | 45 +++++++++++++++++++++++----------------------
- 1 file changed, 23 insertions(+), 22 deletions(-)
+Thanks!
+Alan
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 352661f..d78f444 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -31,12 +31,14 @@
-  * @dev: FPGA Region device
-  * @mutex: enforces exclusive reference to region
-  * @bridge_list: list of FPGA bridges specified in region
-+ * @mgr: FPGA manager
-  * @info: fpga image specific information
-  */
- struct fpga_region {
- 	struct device dev;
- 	struct mutex mutex; /* for exclusive reference to region */
- 	struct list_head bridge_list;
-+	struct fpga_manager *mgr;
- 	struct fpga_image_info *info;
- };
- 
-@@ -123,7 +125,7 @@ static void fpga_region_put(struct fpga_region *region)
- 
- /**
-  * fpga_region_get_manager - get reference for FPGA manager
-- * @region: FPGA region
-+ * @np: device node of FPGA region
-  *
-  * Get FPGA Manager from "fpga-mgr" property or from ancestor region.
-  *
-@@ -131,10 +133,8 @@ static void fpga_region_put(struct fpga_region *region)
-  *
-  * Return: fpga manager struct or IS_ERR() condition containing error code.
-  */
--static struct fpga_manager *fpga_region_get_manager(struct fpga_region *region)
-+static struct fpga_manager *fpga_region_get_manager(struct device_node *np)
- {
--	struct device *dev = &region->dev;
--	struct device_node *np = dev->of_node;
- 	struct device_node  *mgr_node;
- 	struct fpga_manager *mgr;
- 
-@@ -231,7 +231,6 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 				    struct device_node *overlay)
- {
- 	struct device *dev = &region->dev;
--	struct fpga_manager *mgr;
- 	int ret;
- 
- 	region = fpga_region_get(region);
-@@ -240,17 +239,10 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		return PTR_ERR(region);
- 	}
- 
--	mgr = fpga_region_get_manager(region);
--	if (IS_ERR(mgr)) {
--		dev_err(dev, "failed to get FPGA manager\n");
--		ret = PTR_ERR(mgr);
--		goto err_put_region;
--	}
--
--	ret = fpga_mgr_lock(mgr);
-+	ret = fpga_mgr_lock(region->mgr);
- 	if (ret) {
- 		dev_err(dev, "FPGA manager is busy\n");
--		goto err_put_mgr;
-+		goto err_put_region;
- 	}
- 
- 	ret = fpga_region_get_bridges(region, overlay);
-@@ -265,7 +257,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_br;
- 	}
- 
--	ret = fpga_mgr_load(mgr, region->info);
-+	ret = fpga_mgr_load(region->mgr, region->info);
- 	if (ret) {
- 		dev_err(dev, "failed to load FPGA image\n");
- 		goto err_put_br;
-@@ -277,8 +269,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_br;
- 	}
- 
--	fpga_mgr_unlock(mgr);
--	fpga_mgr_put(mgr);
-+	fpga_mgr_unlock(region->mgr);
- 	fpga_region_put(region);
- 
- 	return 0;
-@@ -286,9 +277,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- err_put_br:
- 	fpga_bridges_put(&region->bridge_list);
- err_unlock_mgr:
--	fpga_mgr_unlock(mgr);
--err_put_mgr:
--	fpga_mgr_put(mgr);
-+	fpga_mgr_unlock(region->mgr);
- err_put_region:
- 	fpga_region_put(region);
- 
-@@ -517,11 +506,20 @@ static int fpga_region_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct device_node *np = dev->of_node;
- 	struct fpga_region *region;
-+	struct fpga_manager *mgr;
- 	int id, ret = 0;
- 
-+	mgr = fpga_region_get_manager(np);
-+	if (IS_ERR(mgr))
-+		return -EPROBE_DEFER;
-+
- 	region = kzalloc(sizeof(*region), GFP_KERNEL);
--	if (!region)
--		return -ENOMEM;
-+	if (!region) {
-+		ret = -ENOMEM;
-+		goto err_put_mgr;
-+	}
-+
-+	region->mgr = mgr;
- 
- 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
- 	if (id < 0) {
-@@ -557,6 +555,8 @@ static int fpga_region_probe(struct platform_device *pdev)
- 	ida_simple_remove(&fpga_region_ida, id);
- err_kfree:
- 	kfree(region);
-+err_put_mgr:
-+	fpga_mgr_put(mgr);
- 
- 	return ret;
- }
-@@ -566,6 +566,7 @@ static int fpga_region_remove(struct platform_device *pdev)
- 	struct fpga_region *region = platform_get_drvdata(pdev);
- 
- 	device_unregister(&region->dev);
-+	fpga_mgr_put(region->mgr);
- 
- 	return 0;
- }
+Bhumika Goyal (1):
+  fpga: make xlnx_pr_decoupler_br_ops const
+
+ drivers/fpga/xilinx-pr-decoupler.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
 -- 
-2.7.4
+2.11.0
