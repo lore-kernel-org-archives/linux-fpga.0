@@ -1,49 +1,87 @@
-Return-Path: <SRS0=GyBv=A2=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=GyBv=A2=ettus.com=moritz.fischer@kernel.org>
-Date: Mon, 25 Sep 2017 09:34:48 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v2 03/22] fpga: bridge: remove OF dependency for
- fpga-bridge
-Message-ID: <20170925163448.GA14795@tyrael.ni.corp.natinst.com>
-References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
- <1498441938-14046-4-git-send-email-hao.wu@intel.com>
- <CANk1AXSUtTLVDKFyFB99Z0mjzGtgawkykQg29sRHdfWOFhhO2g@mail.gmail.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
-Content-Disposition: inline
-In-Reply-To: <CANk1AXSUtTLVDKFyFB99Z0mjzGtgawkykQg29sRHdfWOFhhO2g@mail.gmail.com>
-To: Alan Tull <atull@kernel.org>
-Cc: Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
+In-Reply-To: <20170922021501.GA15082@hao-dev>
+References: <1498441938-14046-1-git-send-email-hao.wu@intel.com>
+ <1498441938-14046-4-git-send-email-hao.wu@intel.com> <20170921191109.GA7814@tyrael.ni.corp.natinst.com>
+ <CANk1AXRbXybjwq-ha=G6Z7nXwd8fNjPWP5awTz6=23KVXbd=kQ@mail.gmail.com> <20170922021501.GA15082@hao-dev>
+From: Alan Tull <atull@kernel.org>
+Date: Fri, 22 Sep 2017 20:53:05 -0500
+Message-ID: <CANk1AXQb6R9R9gNqBcZrVv4METcVTS-8RZJ79UuMxqADrjdGqQ@mail.gmail.com>
+Subject: Re: [PATCH v2 03/22] fpga: bridge: remove OF dependency for fpga-bridge
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
+On Thu, Sep 21, 2017 at 9:15 PM, Wu Hao <hao.wu@intel.com> wrote:
+> On Thu, Sep 21, 2017 at 02:50:07PM -0500, Alan Tull wrote:
+>> On Thu, Sep 21, 2017 at 2:11 PM, Moritz Fischer <mdf@kernel.org> wrote:
+>>
+>> Hi Moritz,
+>>
+>> > Hi,
+>> >
+>> > On Mon, Jun 26, 2017 at 09:51:59AM +0800, Wu Hao wrote:
+>> >> This patch removes OF dependency of fpga-bridge, it allows drivers
+>> >> to use fpga-bridge class without device tree support.
+>> >>
+>> >> Signed-off-by: Wu Hao <hao.wu@intel.com>
+>> >> ---
+>> >>  drivers/fpga/Kconfig | 1 -
+>> >>  1 file changed, 1 deletion(-)
+>> >>
+>> >> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+>> >> index ed600d5..c1d8f41 100644
+>> >> --- a/drivers/fpga/Kconfig
+>> >> +++ b/drivers/fpga/Kconfig
+>> >> @@ -75,7 +75,6 @@ config FPGA_MGR_ZYNQ_FPGA
+>> >>
+>> >>  config FPGA_BRIDGE
+>> >>       tristate "FPGA Bridge Framework"
+>> >> -     depends on OF
+>> >
+>> > Shouldn't that dependency be removed in the patch that removes the
+>> > dependency, or was the dependency never there in the first place?
+>>
+>> It wasn't dependent on OF in the first place.
+>
+> Hi Alan / Moritz
+>
+> I see this change has been integrated into below patch from Alan.
+>
+> [PATCH v4 15/18] fpga: region: move device tree support to of-fpga-region.c
+>
+> so I think I can drop this patch in my next version patch set. : )
 
---cWoXeonUoKmBZSoM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi Hao,
 
-On Wed, Aug 02, 2017 at 04:21:19PM -0500, Alan Tull wrote:
-> On Sun, Jun 25, 2017 at 8:51 PM, Wu Hao <hao.wu@intel.com> wrote:
-> > This patch removes OF dependency of fpga-bridge, it allows drivers
-> > to use fpga-bridge class without device tree support.
-> >
-> > Signed-off-by: Wu Hao <hao.wu@intel.com>
-> Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
+Yes, I went ahead and pulled it into my patchset so you can drop it.
 
---cWoXeonUoKmBZSoM
-Content-Type: application/pgp-signature; name="signature.asc"
+Thanks for the patch!
 
------BEGIN PGP SIGNATURE-----
+Alan
 
-iQEzBAEBCAAdFiEEWcxjJBP2M15CncZ7vkIQd6kWqi8FAlnJMCEACgkQvkIQd6kW
-qi8Lygf/ZscsU99DV9bPxeZ7AggKhYG4LyCK5VXJANOHg2hRZdm6X/gPnONoYHEo
-dkNHgiOlHPkbZrsG36WB1wt3mhOTrdIhKWuQbHVc0Ba+xOKfakM/hOm2fpVSr8j9
-9w0Eb04VMt2+UubCNc37fNzyTvJAjhnuVj+pgezKMi8XBCWSvnBdS3HdLG6ntius
-3sCdxOE3C85sfnVrlxh6L54s96p+vZbt81ZJnEnIjSWGF3R5YzaSKq9pepWSbRLy
-RgbbQDZvxtXA3W/x0d1Y9M0kY1KUOFS1A25a5ma0h0hOwamuHsqUtHH5I7qGpt/e
-yJPRDvBKm0IGapWE1tANyUnaEvjfPA==
-=l4qk
------END PGP SIGNATURE-----
-
---cWoXeonUoKmBZSoM--
+>
+> Thanks
+> Hao
+>
+>>
+>> Thanks,
+>> Alan
+>>
+>> >
+>> >>       help
+>> >>         Say Y here if you want to support bridges connected between host
+>> >>         processors and FPGAs or between FPGAs.
+>> >> --
+>> >> 1.8.3.1
+>> >>
+>> >
+>> > Thanks,
+>> >
+>> > Moritz
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
