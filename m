@@ -1,220 +1,127 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v5 10/18] fpga: region: separate out code that parses the overlay
-Date: Tue, 17 Oct 2017 16:20:23 -0500
-Message-Id: <20171017212031.3770-11-atull@kernel.org>
+Subject: [PATCH v5 18/18] fpga: add attribute groups
+Date: Tue, 17 Oct 2017 16:20:31 -0500
+Message-Id: <20171017212031.3770-19-atull@kernel.org>
 In-Reply-To: <20171017212031.3770-1-atull@kernel.org>
 References: <20171017212031.3770-1-atull@kernel.org>
 To: Moritz Fischer <mdf@kernel.org>
 Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-New function of_fpga_region_parse_ov added, moving code
-from fpga_region_notify_pre_apply.  This function
-gets the FPGA image info from the overlay and is able
-to simplify some of the logic involved.
-
-This is a baby step in refactoring the FPGA region code to
-separate out common code from Device Tree overlay support.
+Make it easy to add attributes to low level FPGA drivers the right
+way.  Add attribute groups pointers to structures that are used when
+registering a manager, bridge, or group.  When the low level driver
+registers, set the device attribute group.  The attributes are
+created in device_add.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
-v2: split out from another patch
-v3: update comments
-    minor changes in flow
-v4: no change to this patch in this version of patchset
+v4: Patch added to patchset in v4
 v5: no change to this patch in this version of patchset
 ---
- drivers/fpga/fpga-region.c | 122 +++++++++++++++++++++++++++------------------
- 1 file changed, 73 insertions(+), 49 deletions(-)
+ drivers/fpga/fpga-bridge.c       | 1 +
+ drivers/fpga/fpga-mgr.c          | 1 +
+ drivers/fpga/fpga-region.c       | 1 +
+ include/linux/fpga/fpga-bridge.h | 2 ++
+ include/linux/fpga/fpga-mgr.h    | 2 ++
+ include/linux/fpga/fpga-region.h | 2 ++
+ 6 files changed, 9 insertions(+)
 
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index 4cfb632..15ce9f1 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -367,6 +367,7 @@ int fpga_bridge_register(struct device *dev, const char *name,
+ 	bridge->priv = priv;
+ 
+ 	device_initialize(&bridge->dev);
++	bridge->dev.groups = br_ops->groups;
+ 	bridge->dev.class = fpga_bridge_class;
+ 	bridge->dev.parent = dev;
+ 	bridge->dev.of_node = dev->of_node;
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index d27e8d2..223f240 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -569,6 +569,7 @@ int fpga_mgr_register(struct device *dev, const char *name,
+ 
+ 	device_initialize(&mgr->dev);
+ 	mgr->dev.class = fpga_mgr_class;
++	mgr->dev.groups = mops->groups;
+ 	mgr->dev.parent = dev;
+ 	mgr->dev.of_node = dev->of_node;
+ 	mgr->dev.id = id;
 diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index eaacf50..2a8621d 100644
+index afc6188..edab2a2 100644
 --- a/drivers/fpga/fpga-region.c
 +++ b/drivers/fpga/fpga-region.c
-@@ -321,33 +321,22 @@ static int child_regions_with_firmware(struct device_node *overlay)
- }
+@@ -173,6 +173,7 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
+ 	mutex_init(&region->mutex);
+ 	INIT_LIST_HEAD(&region->bridge_list);
+ 	device_initialize(&region->dev);
++	region->dev.groups = region->groups;
+ 	region->dev.class = fpga_region_class;
+ 	region->dev.parent = dev;
+ 	region->dev.of_node = dev->of_node;
+diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
+index d5aa87e..65d3311 100644
+--- a/include/linux/fpga/fpga-bridge.h
++++ b/include/linux/fpga/fpga-bridge.h
+@@ -11,11 +11,13 @@ struct fpga_bridge;
+  * @enable_show: returns the FPGA bridge's status
+  * @enable_set: set a FPGA bridge as enabled or disabled
+  * @fpga_bridge_remove: set FPGA into a specific state during driver remove
++ * @groups: optional attribute groups.
+  */
+ struct fpga_bridge_ops {
+ 	int (*enable_show)(struct fpga_bridge *bridge);
+ 	int (*enable_set)(struct fpga_bridge *bridge, bool enable);
+ 	void (*fpga_bridge_remove)(struct fpga_bridge *bridge);
++	const struct attribute_group **groups;
+ };
  
  /**
-- * fpga_region_notify_pre_apply - pre-apply overlay notification
-- *
-- * @region: FPGA region that the overlay was applied to
-- * @nd: overlay notification data
-- *
-- * Called after when an overlay targeted to a FPGA Region is about to be
-- * applied.  Function will check the properties that will be added to the FPGA
-- * region.  If the checks pass, it will program the FPGA.
-- *
-- * The checks are:
-- * The overlay must add either firmware-name or external-fpga-config property
-- * to the FPGA Region.
-- *
-- *   firmware-name         : program the FPGA
-- *   external-fpga-config  : FPGA is already programmed
-- *   encrypted-fpga-config : FPGA bitstream is encrypted
-+ * of_fpga_region_parse_ov - parse and check overlay applied to region
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index 4fb706b..3c6de23 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -115,6 +115,7 @@ struct fpga_image_info {
+  * @write_sg: write the scatter list of configuration data to the FPGA
+  * @write_complete: set FPGA to operating state after writing is done
+  * @fpga_remove: optional: Set FPGA into a specific state during driver remove
++ * @groups: optional attribute groups.
   *
-- * The overlay can add other FPGA regions, but child FPGA regions cannot have a
-- * firmware-name property since those regions don't exist yet.
-+ * @region: FPGA region
-+ * @overlay: overlay applied to the FPGA region
-  *
-- * If the overlay that breaks the rules, notifier returns an error and the
-- * overlay is rejected before it goes into the main tree.
-+ * Given an overlay applied to a FPGA region, parse the FPGA image specific
-+ * info in the overlay and do some checking.
-  *
-- * Returns 0 for success or negative error code for failure.
-+ * Returns:
-+ *   NULL if overlay doesn't direct us to program the FPGA.
-+ *   fpga_image_info struct if there is an image to program.
-+ *   error code for invalid overlay.
+  * fpga_manager_ops are the low level functions implemented by a specific
+  * fpga manager driver.  The optional ones are tested for NULL before being
+@@ -131,6 +132,7 @@ struct fpga_manager_ops {
+ 	int (*write_complete)(struct fpga_manager *mgr,
+ 			      struct fpga_image_info *info);
+ 	void (*fpga_remove)(struct fpga_manager *mgr);
++	const struct attribute_group **groups;
+ };
+ 
+ /**
+diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+index 7048449..b652031 100644
+--- a/include/linux/fpga/fpga-region.h
++++ b/include/linux/fpga/fpga-region.h
+@@ -14,6 +14,7 @@
+  * @info: FPGA image info
+  * @priv: private data
+  * @get_bridges: optional function to get bridges to a list
++ * @groups: optional attribute groups.
   */
--static int fpga_region_notify_pre_apply(struct fpga_region *region,
--					struct of_overlay_notify_data *nd)
-+static struct fpga_image_info *of_fpga_region_parse_ov(
-+						struct fpga_region *region,
-+						struct device_node *overlay)
- {
- 	struct device *dev = &region->dev;
+ struct fpga_region {
+ 	struct device dev;
+@@ -23,6 +24,7 @@ struct fpga_region {
  	struct fpga_image_info *info;
-@@ -356,7 +345,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 	void *priv;
+ 	int (*get_bridges)(struct fpga_region *region);
++	const struct attribute_group **groups;
+ };
  
- 	if (region->info) {
- 		dev_err(dev, "Region already has overlay applied.\n");
--		return -EINVAL;
-+		return ERR_PTR(-EINVAL);
- 	}
- 
- 	/*
-@@ -364,67 +353,102 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 	 * firmware-name property (would mean that an FPGA region that has
- 	 * not been added to the live tree yet is doing FPGA programming).
- 	 */
--	ret = child_regions_with_firmware(nd->overlay);
-+	ret = child_regions_with_firmware(overlay);
- 	if (ret)
--		return ret;
-+		return ERR_PTR(ret);
- 
- 	info = fpga_image_info_alloc(dev);
- 	if (!info)
--		return -ENOMEM;
-+		return ERR_PTR(-ENOMEM);
- 
--	info->overlay = nd->overlay;
-+	info->overlay = overlay;
- 
- 	/* Read FPGA region properties from the overlay */
--	if (of_property_read_bool(nd->overlay, "partial-fpga-config"))
-+	if (of_property_read_bool(overlay, "partial-fpga-config"))
- 		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
- 
--	if (of_property_read_bool(nd->overlay, "external-fpga-config"))
-+	if (of_property_read_bool(overlay, "external-fpga-config"))
- 		info->flags |= FPGA_MGR_EXTERNAL_CONFIG;
- 
--	if (of_property_read_bool(nd->overlay, "encrypted-fpga-config"))
-+	if (of_property_read_bool(overlay, "encrypted-fpga-config"))
- 		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
- 
--	if (!of_property_read_string(nd->overlay, "firmware-name",
-+	if (!of_property_read_string(overlay, "firmware-name",
- 				     &firmware_name)) {
- 		info->firmware_name = devm_kstrdup(dev, firmware_name,
- 						   GFP_KERNEL);
- 		if (!info->firmware_name)
--			return -ENOMEM;
-+			return ERR_PTR(-ENOMEM);
- 	}
- 
--	of_property_read_u32(nd->overlay, "region-unfreeze-timeout-us",
-+	of_property_read_u32(overlay, "region-unfreeze-timeout-us",
- 			     &info->enable_timeout_us);
- 
--	of_property_read_u32(nd->overlay, "region-freeze-timeout-us",
-+	of_property_read_u32(overlay, "region-freeze-timeout-us",
- 			     &info->disable_timeout_us);
- 
--	of_property_read_u32(nd->overlay, "config-complete-timeout-us",
-+	of_property_read_u32(overlay, "config-complete-timeout-us",
- 			     &info->config_complete_timeout_us);
- 
--	/* If FPGA was externally programmed, don't specify firmware */
--	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
--		dev_err(dev, "error: specified firmware and external-fpga-config");
--		fpga_image_info_free(info);
--		return -EINVAL;
-+	/* If overlay is not programming the FPGA, don't need FPGA image info */
-+	if (!info->firmware_name) {
-+		ret = 0;
-+		goto ret_no_info;
- 	}
- 
--	/* FPGA is already configured externally.  We're done. */
-+	/*
-+	 * If overlay informs us FPGA was externally programmed, specifying
-+	 * firmware here would be ambiguous.
-+	 */
- 	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG) {
--		fpga_image_info_free(info);
--		return 0;
-+		dev_err(dev, "error: specified firmware and external-fpga-config");
-+		ret = -EINVAL;
-+		goto ret_no_info;
- 	}
- 
--	/* If we got this far, we should be programming the FPGA */
--	if (!info->firmware_name) {
--		dev_err(dev, "should specify firmware-name or external-fpga-config\n");
--		fpga_image_info_free(info);
-+	return info;
-+ret_no_info:
-+	fpga_image_info_free(info);
-+	return ERR_PTR(ret);
-+}
-+
-+/**
-+ * fpga_region_notify_pre_apply - pre-apply overlay notification
-+ *
-+ * @region: FPGA region that the overlay was applied to
-+ * @nd: overlay notification data
-+ *
-+ * Called when an overlay targeted to a FPGA Region is about to be applied.
-+ * Parses the overlay for properties that influence how the FPGA will be
-+ * programmed and does some checking. If the checks pass, programs the FPGA.
-+ * If the checks fail, overlay is rejected and does not get added to the
-+ * live tree.
-+ *
-+ * Returns 0 for success or negative error code for failure.
-+ */
-+static int fpga_region_notify_pre_apply(struct fpga_region *region,
-+					struct of_overlay_notify_data *nd)
-+{
-+	struct device *dev = &region->dev;
-+	struct fpga_image_info *info;
-+	int ret;
-+
-+	if (region->info) {
-+		dev_err(dev, "Region already has overlay applied.\n");
- 		return -EINVAL;
- 	}
- 
--	region->info = info;
-+	info = of_fpga_region_parse_ov(region, nd->overlay);
-+	if (IS_ERR(info))
-+		return PTR_ERR(info);
-+
-+	if (!info)
-+		return 0;
- 
-+	region->info = info;
- 	ret = fpga_region_program_fpga(region);
- 	if (ret) {
-+		/* error; reject overlay */
- 		fpga_image_info_free(info);
- 		region->info = NULL;
- 	}
+ #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
 -- 
 2.7.4
