@@ -1,101 +1,116 @@
-Return-Path: <SRS0=atEN=AT=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=atEN=AT=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [RFC] fpga: region: Move spinlock for bridge_list into region
-Date: Mon, 18 Sep 2017 13:34:04 -0700
-Message-Id: <20170918203404.17502-1-mdf@kernel.org>
-To: linux-fpga@vger.kernel.org
-Cc: atull@kernel.org, moritz.fischer@ettus.com, Moritz Fischer <mdf@kernel.org>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH v5 04/18] fpga: region: use dev_err instead of pr_err
+Date: Tue, 17 Oct 2017 16:20:17 -0500
+Message-Id: <20171017212031.3770-5-atull@kernel.org>
+In-Reply-To: <20171017212031.3770-1-atull@kernel.org>
+References: <20171017212031.3770-1-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Instead of using a single (global) spinlock for all bridge lists use a
-spinlock per list inside the containing fpga region.
+Use dev_err messages instead of pr_err.
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Also s/&region->dev/dev/ in two places where we already
+have dev = &region->dev.
+
+Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-
-Hi all,
-
-maybe I do misunderstand something fundamental here ;-) In that case,
-please explain. In my understanding the current version works, because
-it is more defensive, but is there a reason we need to make access to
-any of the bridge lists exclusive?
-
-Cheers,
-Moritz
-
-PS: Not fully happy with this patch, but wanted to figure out first if
-this I'm wrong conceptually
-
+v2: new in this version of the patchset
+v3: for bisectability some changes moved to earlier patches
+v4: no change to this patch in this version of patchset
+v5: Add Moritz' ack
 ---
- drivers/fpga/fpga-bridge.c | 5 ++---
- drivers/fpga/fpga-region.c | 6 ++++++
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ drivers/fpga/fpga-region.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index 9651aa56244a..b03ec59448e2 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -214,6 +214,8 @@ EXPORT_SYMBOL_GPL(fpga_bridges_put);
-  *
-  * Get an exclusive reference to the bridge and and it to the list.
-  *
-+ * Must be called with list lock held.
-+ *
-  * Return 0 for success, error code from of_fpga_bridge_get() othewise.
-  */
- int fpga_bridge_get_to_list(struct device_node *np,
-@@ -221,15 +223,12 @@ int fpga_bridge_get_to_list(struct device_node *np,
- 			    struct list_head *bridge_list)
- {
- 	struct fpga_bridge *bridge;
--	unsigned long flags;
- 
- 	bridge = of_fpga_bridge_get(np, info);
- 	if (IS_ERR(bridge))
- 		return PTR_ERR(bridge);
- 
--	spin_lock_irqsave(&bridge_list_lock, flags);
- 	list_add(&bridge->node, bridge_list);
--	spin_unlock_irqrestore(&bridge_list_lock, flags);
- 
- 	return 0;
- }
 diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 3b6b2f4182a1..c5c958e0e601 100644
+index 1e1640a..6b4f9ab 100644
 --- a/drivers/fpga/fpga-region.c
 +++ b/drivers/fpga/fpga-region.c
-@@ -37,6 +37,7 @@ struct fpga_region {
- 	struct device dev;
- 	struct mutex mutex; /* for exclusive reference to region */
- 	struct list_head bridge_list;
-+	spinlock_t bridge_list_lock; /* protects access to bridge list */
- 	struct fpga_image_info *info;
- };
+@@ -102,7 +102,7 @@ static struct fpga_region *fpga_region_get(struct fpga_region *region)
+ 		return ERR_PTR(-ENODEV);
+ 	}
  
-@@ -180,11 +181,15 @@ static int fpga_region_get_bridges(struct fpga_region *region,
+-	dev_dbg(&region->dev, "get\n");
++	dev_dbg(dev, "get\n");
+ 
+ 	return region;
+ }
+@@ -116,7 +116,7 @@ static void fpga_region_put(struct fpga_region *region)
+ {
  	struct device *dev = &region->dev;
- 	struct device_node *region_np = dev->of_node;
- 	struct device_node *br, *np, *parent_br = NULL;
-+	unsigned long flags;
- 	int i, ret;
  
- 	/* If parent is a bridge, add to list */
-+	spin_lock_irqsave(&region->bridge_list_lock, flags);
- 	ret = fpga_bridge_get_to_list(region_np->parent, region->info,
- 				      &region->bridge_list);
-+	spin_unlock_irqrestore(&region->bridge_list_lock, flags);
-+
- 	if (ret == -EBUSY)
- 		return ret;
+-	dev_dbg(&region->dev, "put\n");
++	dev_dbg(dev, "put\n");
  
-@@ -508,6 +513,7 @@ static int fpga_region_probe(struct platform_device *pdev)
+ 	module_put(dev->parent->driver->owner);
+ 	of_node_put(dev->of_node);
+@@ -239,13 +239,13 @@ static int fpga_region_program_fpga(struct fpga_region *region,
  
- 	mutex_init(&region->mutex);
- 	INIT_LIST_HEAD(&region->bridge_list);
-+	spin_lock_init(&region->bridge_list_lock);
+ 	region = fpga_region_get(region);
+ 	if (IS_ERR(region)) {
+-		pr_err("failed to get fpga region\n");
++		dev_err(dev, "failed to get FPGA region\n");
+ 		return PTR_ERR(region);
+ 	}
  
- 	device_initialize(&region->dev);
- 	region->dev.class = fpga_region_class;
+ 	mgr = fpga_region_get_manager(region);
+ 	if (IS_ERR(mgr)) {
+-		pr_err("failed to get fpga region manager\n");
++		dev_err(dev, "failed to get FPGA manager\n");
+ 		ret = PTR_ERR(mgr);
+ 		goto err_put_region;
+ 	}
+@@ -258,25 +258,25 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 
+ 	ret = fpga_region_get_bridges(region, overlay);
+ 	if (ret) {
+-		pr_err("failed to get fpga region bridges\n");
++		dev_err(dev, "failed to get FPGA bridges\n");
+ 		goto err_unlock_mgr;
+ 	}
+ 
+ 	ret = fpga_bridges_disable(&region->bridge_list);
+ 	if (ret) {
+-		pr_err("failed to disable region bridges\n");
++		dev_err(dev, "failed to disable bridges\n");
+ 		goto err_put_br;
+ 	}
+ 
+ 	ret = fpga_mgr_load(mgr, region->info);
+ 	if (ret) {
+-		pr_err("failed to load fpga image\n");
++		dev_err(dev, "failed to load FPGA image\n");
+ 		goto err_put_br;
+ 	}
+ 
+ 	ret = fpga_bridges_enable(&region->bridge_list);
+ 	if (ret) {
+-		pr_err("failed to enable region bridges\n");
++		dev_err(dev, "failed to enable region bridges\n");
+ 		goto err_put_br;
+ 	}
+ 
+@@ -407,7 +407,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 
+ 	/* If FPGA was externally programmed, don't specify firmware */
+ 	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
+-		pr_err("error: specified firmware and external-fpga-config");
++		dev_err(dev, "error: specified firmware and external-fpga-config");
+ 		fpga_image_info_free(info);
+ 		return -EINVAL;
+ 	}
+@@ -420,7 +420,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 
+ 	/* If we got this far, we should be programming the FPGA */
+ 	if (!info->firmware_name) {
+-		pr_err("should specify firmware-name or external-fpga-config\n");
++		dev_err(dev, "should specify firmware-name or external-fpga-config\n");
+ 		fpga_image_info_free(info);
+ 		return -EINVAL;
+ 	}
 -- 
-2.14.1
+2.7.4
