@@ -1,285 +1,207 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v5 01/18] fpga: bridge: support getting bridge from device
-Date: Tue, 17 Oct 2017 16:20:14 -0500
-Message-Id: <20171017212031.3770-2-atull@kernel.org>
+Subject: [PATCH v5 17/18] fpga: clean up fpga Kconfig
+Date: Tue, 17 Oct 2017 16:20:30 -0500
+Message-Id: <20171017212031.3770-18-atull@kernel.org>
 In-Reply-To: <20171017212031.3770-1-atull@kernel.org>
 References: <20171017212031.3770-1-atull@kernel.org>
 To: Moritz Fischer <mdf@kernel.org>
 Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add two functions for getting the FPGA bridge from the device
-rather than device tree node.  This is to enable writing code
-that will support using FPGA bridges without device tree.
-Rename one old function to make it clear that it is device
-tree-ish.  This leaves us with 3 functions for getting a bridge:
+The fpga menuconfig has gotten messy.  The bridges and managers are
+mixed together.
 
-* fpga_bridge_get
-  Get the bridge given the device.
+* Separate the bridges and things dependent on CONFIG_FPGA_BRIDGE
+  from the managers.
+* Group the managers by vendor in order that they were added
+  to the kernel.
 
-* fpga_bridges_get_to_list
-  Given the device, get the bridge and add it to a list.
+The following is what the menuconfig ends up looking like more or less
+(platform dependencies are hiding some of these on any given
+platform).
 
-* of_fpga_bridges_get_to_list
-  Renamed from priviously existing fpga_bridges_get_to_list.
-  Given the device node, get the bridge and add it to a list.
+    --- FPGA Configuration Framework
+    <*>   Altera SOCFPGA FPGA Manager
+    <*>   Altera SoCFPGA Arria10
+    <*>   Altera Partial Reconfiguration IP Core
+    <*>     Platform support of Altera Partial Reconfiguration IP Core
+    <*>   Altera FPGA Passive Serial over SPI
+    <*>   Altera Arria-V/Cyclone-V/Stratix-V CvP FPGA Manager
+    <*>   Xilinx Zynq FPGA
+    <*>   Xilinx Configuration over Slave Serial (SPI)
+    <*>   Lattice iCE40 SPI
+    <*>   Technologic Systems TS-73xx SBC FPGA Manager
+    <*>   FPGA Bridge Framework
+    <*>     Altera SoCFPGA FPGA Bridges
+    <*>     Altera FPGA Freeze Bridge
+    <*>     Xilinx LogiCORE PR Decoupler
+    <*>     FPGA Region
+    <*>       FPGA Region Device Tree Overlay Support
 
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
-v2: use list_for_each_entry
-    static the bridge_list_lock
-    update copyright and author email
-v3: no change to this patch in this version of patchset
-v4: no change to this patch in this version of patchset
-v5: fpga-bridge.h - move #ifndef before #includes
-    make __fpga_bridge_get static
+v4: Patch added to patchset in v4
+v5: s/mixxed/mixed/
 ---
- drivers/fpga/fpga-bridge.c       | 110 +++++++++++++++++++++++++++++++--------
- drivers/fpga/fpga-region.c       |  11 ++--
- include/linux/fpga/fpga-bridge.h |  13 +++--
- 3 files changed, 103 insertions(+), 31 deletions(-)
+ drivers/fpga/Kconfig | 108 +++++++++++++++++++++++++--------------------------
+ 1 file changed, 54 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index fcd2bd3..4cfb632 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -2,6 +2,7 @@
-  * FPGA Bridge Framework Driver
-  *
-  *  Copyright (C) 2013-2016 Altera Corporation, All Rights Reserved.
-+ *  Copyright (C) 2017 Intel Corporation
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -70,29 +71,12 @@ int fpga_bridge_disable(struct fpga_bridge *bridge)
- }
- EXPORT_SYMBOL_GPL(fpga_bridge_disable);
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 12bd1c7..f47ef84 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -11,33 +11,30 @@ menuconfig FPGA
  
--/**
-- * of_fpga_bridge_get - get an exclusive reference to a fpga bridge
-- *
-- * @np: node pointer of a FPGA bridge
-- * @info: fpga image specific information
-- *
-- * Return fpga_bridge struct if successful.
-- * Return -EBUSY if someone already has a reference to the bridge.
-- * Return -ENODEV if @np is not a FPGA Bridge.
-- */
--struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
--				       struct fpga_image_info *info)
+ if FPGA
+ 
+-config FPGA_REGION
+-	tristate "FPGA Region"
+-	depends on FPGA_BRIDGE
++config FPGA_MGR_SOCFPGA
++	tristate "Altera SOCFPGA FPGA Manager"
++	depends on ARCH_SOCFPGA || COMPILE_TEST
+ 	help
+-	  FPGA Region common code.  A FPGA Region controls a FPGA Manager
+-	  and the FPGA Bridges associated with either a reconfigurable
+-	  region of an FPGA or a whole FPGA.
++	  FPGA manager driver support for Altera SOCFPGA.
+ 
+-config OF_FPGA_REGION
+-	tristate "FPGA Region Device Tree Overlay Support"
+-	depends on OF && FPGA_REGION
++config FPGA_MGR_SOCFPGA_A10
++	tristate "Altera SoCFPGA Arria10"
++	depends on ARCH_SOCFPGA || COMPILE_TEST
++	select REGMAP_MMIO
+ 	help
+-	  Support for loading FPGA images by applying a Device Tree
+-	  overlay.
++	  FPGA manager driver support for Altera Arria10 SoCFPGA.
+ 
+-config FPGA_MGR_ICE40_SPI
+-	tristate "Lattice iCE40 SPI"
+-	depends on OF && SPI
+-	help
+-	  FPGA manager driver support for Lattice iCE40 FPGAs over SPI.
++config ALTERA_PR_IP_CORE
++        tristate "Altera Partial Reconfiguration IP Core"
++        help
++          Core driver support for Altera Partial Reconfiguration IP component
+ 
+-config FPGA_MGR_ALTERA_CVP
+-	tristate "Altera Arria-V/Cyclone-V/Stratix-V CvP FPGA Manager"
+-	depends on PCI
++config ALTERA_PR_IP_CORE_PLAT
++	tristate "Platform support of Altera Partial Reconfiguration IP Core"
++	depends on ALTERA_PR_IP_CORE && OF && HAS_IOMEM
+ 	help
+-	  FPGA manager driver support for Arria-V, Cyclone-V, Stratix-V
+-	  and Arria 10 Altera FPGAs using the CvP interface over PCIe.
++	  Platform driver support for Altera Partial Reconfiguration IP
++	  component
+ 
+ config FPGA_MGR_ALTERA_PS_SPI
+ 	tristate "Altera FPGA Passive Serial over SPI"
+@@ -46,25 +43,19 @@ config FPGA_MGR_ALTERA_PS_SPI
+ 	  FPGA manager driver support for Altera Arria/Cyclone/Stratix
+ 	  using the passive serial interface over SPI.
+ 
+-config FPGA_MGR_SOCFPGA
+-	tristate "Altera SOCFPGA FPGA Manager"
+-	depends on ARCH_SOCFPGA || COMPILE_TEST
+-	help
+-	  FPGA manager driver support for Altera SOCFPGA.
 -
-+static struct fpga_bridge *__fpga_bridge_get(struct device *dev,
-+					     struct fpga_image_info *info)
- {
--	struct device *dev;
- 	struct fpga_bridge *bridge;
- 	int ret = -ENODEV;
+-config FPGA_MGR_SOCFPGA_A10
+-	tristate "Altera SoCFPGA Arria10"
+-	depends on ARCH_SOCFPGA || COMPILE_TEST
+-	select REGMAP_MMIO
++config FPGA_MGR_ALTERA_CVP
++	tristate "Altera Arria-V/Cyclone-V/Stratix-V CvP FPGA Manager"
++	depends on PCI
+ 	help
+-	  FPGA manager driver support for Altera Arria10 SoCFPGA.
++	  FPGA manager driver support for Arria-V, Cyclone-V, Stratix-V
++	  and Arria 10 Altera FPGAs using the CvP interface over PCIe.
  
--	dev = class_find_device(fpga_bridge_class, NULL, np,
--				fpga_bridge_of_node_match);
--	if (!dev)
--		goto err_dev;
+-config FPGA_MGR_TS73XX
+-	tristate "Technologic Systems TS-73xx SBC FPGA Manager"
+-	depends on ARCH_EP93XX && MACH_TS72XX
++config FPGA_MGR_ZYNQ_FPGA
++	tristate "Xilinx Zynq FPGA"
++	depends on ARCH_ZYNQ || COMPILE_TEST
++	depends on HAS_DMA
+ 	help
+-	  FPGA manager driver support for the Altera Cyclone II FPGA
+-	  present on the TS-73xx SBC boards.
++	  FPGA manager driver support for Xilinx Zynq FPGAs.
+ 
+ config FPGA_MGR_XILINX_SPI
+ 	tristate "Xilinx Configuration over Slave Serial (SPI)"
+@@ -73,12 +64,18 @@ config FPGA_MGR_XILINX_SPI
+ 	  FPGA manager driver support for Xilinx FPGA configuration
+ 	  over slave serial interface.
+ 
+-config FPGA_MGR_ZYNQ_FPGA
+-	tristate "Xilinx Zynq FPGA"
+-	depends on ARCH_ZYNQ || COMPILE_TEST
+-	depends on HAS_DMA
++config FPGA_MGR_ICE40_SPI
++	tristate "Lattice iCE40 SPI"
++	depends on OF && SPI
+ 	help
+-	  FPGA manager driver support for Xilinx Zynq FPGAs.
++	  FPGA manager driver support for Lattice iCE40 FPGAs over SPI.
++
++config FPGA_MGR_TS73XX
++	tristate "Technologic Systems TS-73xx SBC FPGA Manager"
++	depends on ARCH_EP93XX && MACH_TS72XX
++	help
++	  FPGA manager driver support for the Altera Cyclone II FPGA
++	  present on the TS-73xx SBC boards.
+ 
+ config FPGA_BRIDGE
+ 	tristate "FPGA Bridge Framework"
+@@ -102,18 +99,6 @@ config ALTERA_FREEZE_BRIDGE
+ 	  isolate one region of the FPGA from the busses while that
+ 	  region is being reprogrammed.
+ 
+-config ALTERA_PR_IP_CORE
+-        tristate "Altera Partial Reconfiguration IP Core"
+-        help
+-          Core driver support for Altera Partial Reconfiguration IP component
 -
- 	bridge = to_fpga_bridge(dev);
- 	if (!bridge)
- 		goto err_dev;
-@@ -117,8 +101,58 @@ struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
- 	put_device(dev);
- 	return ERR_PTR(ret);
- }
-+
-+/**
-+ * of_fpga_bridge_get - get an exclusive reference to a fpga bridge
-+ *
-+ * @np: node pointer of a FPGA bridge
-+ * @info: fpga image specific information
-+ *
-+ * Return fpga_bridge struct if successful.
-+ * Return -EBUSY if someone already has a reference to the bridge.
-+ * Return -ENODEV if @np is not a FPGA Bridge.
-+ */
-+struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
-+				       struct fpga_image_info *info)
-+{
-+	struct device *dev;
-+
-+	dev = class_find_device(fpga_bridge_class, NULL, np,
-+				fpga_bridge_of_node_match);
-+	if (!dev)
-+		return ERR_PTR(-ENODEV);
-+
-+	return __fpga_bridge_get(dev, info);
-+}
- EXPORT_SYMBOL_GPL(of_fpga_bridge_get);
- 
-+static int fpga_bridge_dev_match(struct device *dev, const void *data)
-+{
-+	return dev->parent == data;
-+}
-+
-+/**
-+ * fpga_bridge_get - get an exclusive reference to a fpga bridge
-+ * @dev:	parent device that fpga bridge was registered with
-+ *
-+ * Given a device, get an exclusive reference to a fpga bridge.
-+ *
-+ * Return: fpga manager struct or IS_ERR() condition containing error code.
-+ */
-+struct fpga_bridge *fpga_bridge_get(struct device *dev,
-+				    struct fpga_image_info *info)
-+{
-+	struct device *bridge_dev;
-+
-+	bridge_dev = class_find_device(fpga_bridge_class, NULL, dev,
-+				       fpga_bridge_dev_match);
-+	if (!bridge_dev)
-+		return ERR_PTR(-ENODEV);
-+
-+	return __fpga_bridge_get(bridge_dev, info);
-+}
-+EXPORT_SYMBOL_GPL(fpga_bridge_get);
-+
- /**
-  * fpga_bridge_put - release a reference to a bridge
-  *
-@@ -206,7 +240,7 @@ void fpga_bridges_put(struct list_head *bridge_list)
- EXPORT_SYMBOL_GPL(fpga_bridges_put);
- 
- /**
-- * fpga_bridges_get_to_list - get a bridge, add it to a list
-+ * of_fpga_bridge_get_to_list - get a bridge, add it to a list
-  *
-  * @np: node pointer of a FPGA bridge
-  * @info: fpga image specific information
-@@ -216,14 +250,44 @@ EXPORT_SYMBOL_GPL(fpga_bridges_put);
-  *
-  * Return 0 for success, error code from of_fpga_bridge_get() othewise.
-  */
--int fpga_bridge_get_to_list(struct device_node *np,
-+int of_fpga_bridge_get_to_list(struct device_node *np,
-+			       struct fpga_image_info *info,
-+			       struct list_head *bridge_list)
-+{
-+	struct fpga_bridge *bridge;
-+	unsigned long flags;
-+
-+	bridge = of_fpga_bridge_get(np, info);
-+	if (IS_ERR(bridge))
-+		return PTR_ERR(bridge);
-+
-+	spin_lock_irqsave(&bridge_list_lock, flags);
-+	list_add(&bridge->node, bridge_list);
-+	spin_unlock_irqrestore(&bridge_list_lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_fpga_bridge_get_to_list);
-+
-+/**
-+ * fpga_bridge_get_to_list - given device, get a bridge, add it to a list
-+ *
-+ * @dev: FPGA bridge device
-+ * @info: fpga image specific information
-+ * @bridge_list: list of FPGA bridges
-+ *
-+ * Get an exclusive reference to the bridge and and it to the list.
-+ *
-+ * Return 0 for success, error code from fpga_bridge_get() othewise.
-+ */
-+int fpga_bridge_get_to_list(struct device *dev,
- 			    struct fpga_image_info *info,
- 			    struct list_head *bridge_list)
- {
- 	struct fpga_bridge *bridge;
- 	unsigned long flags;
- 
--	bridge = of_fpga_bridge_get(np, info);
-+	bridge = fpga_bridge_get(dev, info);
- 	if (IS_ERR(bridge))
- 		return PTR_ERR(bridge);
- 
-@@ -381,7 +445,7 @@ static void __exit fpga_bridge_dev_exit(void)
- }
- 
- MODULE_DESCRIPTION("FPGA Bridge Driver");
--MODULE_AUTHOR("Alan Tull <atull@opensource.altera.com>");
-+MODULE_AUTHOR("Alan Tull <atull@kernel.org>");
- MODULE_LICENSE("GPL v2");
- 
- subsys_initcall(fpga_bridge_dev_init);
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index d9ab7c7..91755562 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -183,11 +183,14 @@ static int fpga_region_get_bridges(struct fpga_region *region,
- 	int i, ret;
- 
- 	/* If parent is a bridge, add to list */
--	ret = fpga_bridge_get_to_list(region_np->parent, region->info,
--				      &region->bridge_list);
-+	ret = of_fpga_bridge_get_to_list(region_np->parent, region->info,
-+					 &region->bridge_list);
-+
-+	/* -EBUSY means parent is a bridge that is under use. Give up. */
- 	if (ret == -EBUSY)
- 		return ret;
- 
-+	/* Zero return code means parent was a bridge and was added to list. */
- 	if (!ret)
- 		parent_br = region_np->parent;
- 
-@@ -207,8 +210,8 @@ static int fpga_region_get_bridges(struct fpga_region *region,
- 			continue;
- 
- 		/* If node is a bridge, get it and add to list */
--		ret = fpga_bridge_get_to_list(br, region->info,
--					      &region->bridge_list);
-+		ret = of_fpga_bridge_get_to_list(br, region->info,
-+						 &region->bridge_list);
- 
- 		/* If any of the bridges are in use, give up */
- 		if (ret == -EBUSY) {
-diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
-index dba6e3c..d5aa87e 100644
---- a/include/linux/fpga/fpga-bridge.h
-+++ b/include/linux/fpga/fpga-bridge.h
-@@ -1,9 +1,9 @@
--#include <linux/device.h>
--#include <linux/fpga/fpga-mgr.h>
+-config ALTERA_PR_IP_CORE_PLAT
+-	tristate "Platform support of Altera Partial Reconfiguration IP Core"
+-	depends on ALTERA_PR_IP_CORE && OF && HAS_IOMEM
+-	help
+-	  Platform driver support for Altera Partial Reconfiguration IP
+-	  component
 -
- #ifndef _LINUX_FPGA_BRIDGE_H
- #define _LINUX_FPGA_BRIDGE_H
+ config XILINX_PR_DECOUPLER
+ 	tristate "Xilinx LogiCORE PR Decoupler"
+ 	depends on FPGA_BRIDGE
+@@ -124,4 +109,19 @@ config XILINX_PR_DECOUPLER
+ 	  region of the FPGA from the busses while that region is
+ 	  being reprogrammed during partial reconfig.
  
-+#include <linux/device.h>
-+#include <linux/fpga/fpga-mgr.h>
++config FPGA_REGION
++	tristate "FPGA Region"
++	depends on FPGA_BRIDGE
++	help
++	  FPGA Region common code.  A FPGA Region controls a FPGA Manager
++	  and the FPGA Bridges associated with either a reconfigurable
++	  region of an FPGA or a whole FPGA.
 +
- struct fpga_bridge;
- 
- /**
-@@ -42,6 +42,8 @@ struct fpga_bridge {
- 
- struct fpga_bridge *of_fpga_bridge_get(struct device_node *node,
- 				       struct fpga_image_info *info);
-+struct fpga_bridge *fpga_bridge_get(struct device *dev,
-+				    struct fpga_image_info *info);
- void fpga_bridge_put(struct fpga_bridge *bridge);
- int fpga_bridge_enable(struct fpga_bridge *bridge);
- int fpga_bridge_disable(struct fpga_bridge *bridge);
-@@ -49,9 +51,12 @@ int fpga_bridge_disable(struct fpga_bridge *bridge);
- int fpga_bridges_enable(struct list_head *bridge_list);
- int fpga_bridges_disable(struct list_head *bridge_list);
- void fpga_bridges_put(struct list_head *bridge_list);
--int fpga_bridge_get_to_list(struct device_node *np,
-+int fpga_bridge_get_to_list(struct device *dev,
- 			    struct fpga_image_info *info,
- 			    struct list_head *bridge_list);
-+int of_fpga_bridge_get_to_list(struct device_node *np,
-+			       struct fpga_image_info *info,
-+			       struct list_head *bridge_list);
- 
- int fpga_bridge_register(struct device *dev, const char *name,
- 			 const struct fpga_bridge_ops *br_ops, void *priv);
++config OF_FPGA_REGION
++	tristate "FPGA Region Device Tree Overlay Support"
++	depends on OF && FPGA_REGION
++	help
++	  Support for loading FPGA images by applying a Device Tree
++	  overlay.
++
+ endif # FPGA
 -- 
 2.7.4
