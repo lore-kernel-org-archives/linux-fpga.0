@@ -1,168 +1,259 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v5 06/18] fpga: region: get mgr early on
-Date: Tue, 17 Oct 2017 16:20:19 -0500
-Message-Id: <20171017212031.3770-7-atull@kernel.org>
+Subject: [PATCH v5 12/18] fpga: region: rename some functions prior to moving
+Date: Tue, 17 Oct 2017 16:20:25 -0500
+Message-Id: <20171017212031.3770-13-atull@kernel.org>
 In-Reply-To: <20171017212031.3770-1-atull@kernel.org>
 References: <20171017212031.3770-1-atull@kernel.org>
 To: Moritz Fischer <mdf@kernel.org>
 Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Get the FPGA manager during region creation.
+Rename some functions that will be moved to
+of-fpga-region.c.  Also change some parameters
+and export a function to help with refactoring.
 
-This is a baby step in refactoring the FPGA region code to
-separate out common FPGA region code from FPGA region
-Device Tree overlay support.
+This is a step towards the larger goal of separating
+device tree support from FPGA region common code.
+
+* fpga_region_get_manager -> of_fpga_region_get_mgr
+
+* add 'of_' prefix to the following:
+  * fpga_region_find
+  * fpga_region_get_bridges
+  * fpga_region_notify_pre_apply
+  * fpga_region_notify_post_remove),
+  * fpga_region_probe/remove
+
+Parameter changes:
+* of_fpga_region_find
+  change parameter to be the device node of the region.
+* of_fpga_region_get_bridges
+  change second parameter to FPGA image info.
+
+Export of_fpga_region_find as well.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
 v2: split out from another patch
-v3: no change to this patch in this version of patchset
+v3: no changes in patch for this version of patchset
 v4: no change to this patch in this version of patchset
 v5: no change to this patch in this version of patchset
 ---
- drivers/fpga/fpga-region.c | 45 +++++++++++++++++++++++----------------------
- 1 file changed, 23 insertions(+), 22 deletions(-)
+ drivers/fpga/fpga-region.c | 60 ++++++++++++++++++++++++----------------------
+ 1 file changed, 31 insertions(+), 29 deletions(-)
 
 diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 352661f..d78f444 100644
+index 402d0b6..92ab216 100644
 --- a/drivers/fpga/fpga-region.c
 +++ b/drivers/fpga/fpga-region.c
-@@ -31,12 +31,14 @@
-  * @dev: FPGA Region device
-  * @mutex: enforces exclusive reference to region
-  * @bridge_list: list of FPGA bridges specified in region
-+ * @mgr: FPGA manager
-  * @info: fpga image specific information
-  */
- struct fpga_region {
- 	struct device dev;
- 	struct mutex mutex; /* for exclusive reference to region */
- 	struct list_head bridge_list;
-+	struct fpga_manager *mgr;
- 	struct fpga_image_info *info;
- };
- 
-@@ -123,7 +125,7 @@ static void fpga_region_put(struct fpga_region *region)
+@@ -42,12 +42,14 @@ static int fpga_region_of_node_match(struct device *dev, const void *data)
+ }
  
  /**
-  * fpga_region_get_manager - get reference for FPGA manager
-- * @region: FPGA region
-+ * @np: device node of FPGA region
+- * fpga_region_find - find FPGA region
++ * of_fpga_region_find - find FPGA region
+  * @np: device node of FPGA Region
++ *
+  * Caller will need to put_device(&region->dev) when done.
++ *
+  * Returns FPGA Region struct or NULL
+  */
+-static struct fpga_region *fpga_region_find(struct device_node *np)
++static struct fpga_region *of_fpga_region_find(struct device_node *np)
+ {
+ 	struct device *dev;
+ 
+@@ -107,7 +109,7 @@ static void fpga_region_put(struct fpga_region *region)
+ }
+ 
+ /**
+- * fpga_region_get_manager - get reference for FPGA manager
++ * of_fpga_region_get_mgr - get reference for FPGA manager
+  * @np: device node of FPGA region
   *
   * Get FPGA Manager from "fpga-mgr" property or from ancestor region.
-  *
-@@ -131,10 +133,8 @@ static void fpga_region_put(struct fpga_region *region)
+@@ -116,7 +118,7 @@ static void fpga_region_put(struct fpga_region *region)
   *
   * Return: fpga manager struct or IS_ERR() condition containing error code.
   */
--static struct fpga_manager *fpga_region_get_manager(struct fpga_region *region)
-+static struct fpga_manager *fpga_region_get_manager(struct device_node *np)
+-static struct fpga_manager *fpga_region_get_manager(struct device_node *np)
++static struct fpga_manager *of_fpga_region_get_mgr(struct device_node *np)
  {
--	struct device *dev = &region->dev;
--	struct device_node *np = dev->of_node;
  	struct device_node  *mgr_node;
  	struct fpga_manager *mgr;
+@@ -139,9 +141,9 @@ static struct fpga_manager *fpga_region_get_manager(struct device_node *np)
+ }
  
-@@ -231,7 +231,6 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 				    struct device_node *overlay)
+ /**
+- * fpga_region_get_bridges - create a list of bridges
++ * of_fpga_region_get_bridges - create a list of bridges
+  * @region: FPGA region
+- * @overlay: device node of the overlay
++ * @info: FPGA image info
+  *
+  * Create a list of bridges including the parent bridge and the bridges
+  * specified by "fpga-bridges" property.  Note that the
+@@ -154,8 +156,8 @@ static struct fpga_manager *fpga_region_get_manager(struct device_node *np)
+  * Return 0 for success (even if there are no bridges specified)
+  * or -EBUSY if any of the bridges are in use.
+  */
+-static int fpga_region_get_bridges(struct fpga_region *region,
+-				   struct device_node *overlay)
++static int of_fpga_region_get_bridges(struct fpga_region *region,
++				      struct fpga_image_info *info)
  {
  	struct device *dev = &region->dev;
--	struct fpga_manager *mgr;
- 	int ret;
+ 	struct device_node *region_np = dev->of_node;
+@@ -163,7 +165,7 @@ static int fpga_region_get_bridges(struct fpga_region *region,
+ 	int i, ret;
  
- 	region = fpga_region_get(region);
-@@ -240,17 +239,10 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		return PTR_ERR(region);
+ 	/* If parent is a bridge, add to list */
+-	ret = of_fpga_bridge_get_to_list(region_np->parent, region->info,
++	ret = of_fpga_bridge_get_to_list(region_np->parent, info,
+ 					 &region->bridge_list);
+ 
+ 	/* -EBUSY means parent is a bridge that is under use. Give up. */
+@@ -175,8 +177,8 @@ static int fpga_region_get_bridges(struct fpga_region *region,
+ 		parent_br = region_np->parent;
+ 
+ 	/* If overlay has a list of bridges, use it. */
+-	if (of_parse_phandle(overlay, "fpga-bridges", 0))
+-		np = overlay;
++	if (of_parse_phandle(info->overlay, "fpga-bridges", 0))
++		np = info->overlay;
+ 	else
+ 		np = region_np;
+ 
+@@ -227,7 +229,7 @@ int fpga_region_program_fpga(struct fpga_region *region)
+ 		goto err_put_region;
  	}
  
--	mgr = fpga_region_get_manager(region);
--	if (IS_ERR(mgr)) {
--		dev_err(dev, "failed to get FPGA manager\n");
--		ret = PTR_ERR(mgr);
--		goto err_put_region;
--	}
--
--	ret = fpga_mgr_lock(mgr);
-+	ret = fpga_mgr_lock(region->mgr);
+-	ret = fpga_region_get_bridges(region, info->overlay);
++	ret = of_fpga_region_get_bridges(region, info);
  	if (ret) {
- 		dev_err(dev, "FPGA manager is busy\n");
--		goto err_put_mgr;
-+		goto err_put_region;
- 	}
+ 		dev_err(dev, "failed to get FPGA bridges\n");
+ 		goto err_unlock_mgr;
+@@ -397,7 +399,7 @@ static struct fpga_image_info *of_fpga_region_parse_ov(
+ }
  
- 	ret = fpga_region_get_bridges(region, overlay);
-@@ -265,7 +257,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_br;
- 	}
+ /**
+- * fpga_region_notify_pre_apply - pre-apply overlay notification
++ * of_fpga_region_notify_pre_apply - pre-apply overlay notification
+  *
+  * @region: FPGA region that the overlay was applied to
+  * @nd: overlay notification data
+@@ -410,8 +412,8 @@ static struct fpga_image_info *of_fpga_region_parse_ov(
+  *
+  * Returns 0 for success or negative error code for failure.
+  */
+-static int fpga_region_notify_pre_apply(struct fpga_region *region,
+-					struct of_overlay_notify_data *nd)
++static int of_fpga_region_notify_pre_apply(struct fpga_region *region,
++					   struct of_overlay_notify_data *nd)
+ {
+ 	struct device *dev = &region->dev;
+ 	struct fpga_image_info *info;
+@@ -441,7 +443,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ }
  
--	ret = fpga_mgr_load(mgr, region->info);
-+	ret = fpga_mgr_load(region->mgr, region->info);
- 	if (ret) {
- 		dev_err(dev, "failed to load FPGA image\n");
- 		goto err_put_br;
-@@ -277,8 +269,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_br;
- 	}
- 
--	fpga_mgr_unlock(mgr);
--	fpga_mgr_put(mgr);
-+	fpga_mgr_unlock(region->mgr);
- 	fpga_region_put(region);
- 
- 	return 0;
-@@ -286,9 +277,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- err_put_br:
+ /**
+- * fpga_region_notify_post_remove - post-remove overlay notification
++ * of_fpga_region_notify_post_remove - post-remove overlay notification
+  *
+  * @region: FPGA region that was targeted by the overlay that was removed
+  * @nd: overlay notification data
+@@ -449,8 +451,8 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+  * Called after an overlay has been removed if the overlay's target was a
+  * FPGA region.
+  */
+-static void fpga_region_notify_post_remove(struct fpga_region *region,
+-					   struct of_overlay_notify_data *nd)
++static void of_fpga_region_notify_post_remove(struct fpga_region *region,
++					      struct of_overlay_notify_data *nd)
+ {
+ 	fpga_bridges_disable(&region->bridge_list);
  	fpga_bridges_put(&region->bridge_list);
- err_unlock_mgr:
--	fpga_mgr_unlock(mgr);
--err_put_mgr:
--	fpga_mgr_put(mgr);
-+	fpga_mgr_unlock(region->mgr);
- err_put_region:
- 	fpga_region_put(region);
+@@ -493,18 +495,18 @@ static int of_fpga_region_notify(struct notifier_block *nb,
+ 		return NOTIFY_OK;
+ 	}
  
-@@ -517,11 +506,20 @@ static int fpga_region_probe(struct platform_device *pdev)
+-	region = fpga_region_find(nd->target);
++	region = of_fpga_region_find(nd->target);
+ 	if (!region)
+ 		return NOTIFY_OK;
+ 
+ 	ret = 0;
+ 	switch (action) {
+ 	case OF_OVERLAY_PRE_APPLY:
+-		ret = fpga_region_notify_pre_apply(region, nd);
++		ret = of_fpga_region_notify_pre_apply(region, nd);
+ 		break;
+ 
+ 	case OF_OVERLAY_POST_REMOVE:
+-		fpga_region_notify_post_remove(region, nd);
++		of_fpga_region_notify_post_remove(region, nd);
+ 		break;
+ 	}
+ 
+@@ -520,7 +522,7 @@ static struct notifier_block fpga_region_of_nb = {
+ 	.notifier_call = of_fpga_region_notify,
+ };
+ 
+-static int fpga_region_probe(struct platform_device *pdev)
++static int of_fpga_region_probe(struct platform_device *pdev)
+ {
  	struct device *dev = &pdev->dev;
  	struct device_node *np = dev->of_node;
- 	struct fpga_region *region;
-+	struct fpga_manager *mgr;
+@@ -528,7 +530,7 @@ static int fpga_region_probe(struct platform_device *pdev)
+ 	struct fpga_manager *mgr;
  	int id, ret = 0;
  
-+	mgr = fpga_region_get_manager(np);
-+	if (IS_ERR(mgr))
-+		return -EPROBE_DEFER;
-+
- 	region = kzalloc(sizeof(*region), GFP_KERNEL);
--	if (!region)
--		return -ENOMEM;
-+	if (!region) {
-+		ret = -ENOMEM;
-+		goto err_put_mgr;
-+	}
-+
-+	region->mgr = mgr;
+-	mgr = fpga_region_get_manager(np);
++	mgr = of_fpga_region_get_mgr(np);
+ 	if (IS_ERR(mgr))
+ 		return -EPROBE_DEFER;
  
- 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
- 	if (id < 0) {
-@@ -557,6 +555,8 @@ static int fpga_region_probe(struct platform_device *pdev)
- 	ida_simple_remove(&fpga_region_ida, id);
- err_kfree:
- 	kfree(region);
-+err_put_mgr:
-+	fpga_mgr_put(mgr);
- 
+@@ -580,7 +582,7 @@ static int fpga_region_probe(struct platform_device *pdev)
  	return ret;
  }
-@@ -566,6 +566,7 @@ static int fpga_region_remove(struct platform_device *pdev)
+ 
+-static int fpga_region_remove(struct platform_device *pdev)
++static int of_fpga_region_remove(struct platform_device *pdev)
+ {
  	struct fpga_region *region = platform_get_drvdata(pdev);
  
- 	device_unregister(&region->dev);
-+	fpga_mgr_put(region->mgr);
- 
+@@ -590,9 +592,9 @@ static int fpga_region_remove(struct platform_device *pdev)
  	return 0;
  }
+ 
+-static struct platform_driver fpga_region_driver = {
+-	.probe = fpga_region_probe,
+-	.remove = fpga_region_remove,
++static struct platform_driver of_fpga_region_driver = {
++	.probe = of_fpga_region_probe,
++	.remove = of_fpga_region_remove,
+ 	.driver = {
+ 		.name	= "fpga-region",
+ 		.of_match_table = of_match_ptr(fpga_region_of_match),
+@@ -625,7 +627,7 @@ static int __init fpga_region_init(void)
+ 	if (ret)
+ 		goto err_class;
+ 
+-	ret = platform_driver_register(&fpga_region_driver);
++	ret = platform_driver_register(&of_fpga_region_driver);
+ 	if (ret)
+ 		goto err_plat;
+ 
+@@ -641,7 +643,7 @@ static int __init fpga_region_init(void)
+ 
+ static void __exit fpga_region_exit(void)
+ {
+-	platform_driver_unregister(&fpga_region_driver);
++	platform_driver_unregister(&of_fpga_region_driver);
+ 	of_overlay_notifier_unregister(&fpga_region_of_nb);
+ 	class_destroy(fpga_region_class);
+ 	ida_destroy(&fpga_region_ida);
 -- 
 2.7.4
