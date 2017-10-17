@@ -1,333 +1,689 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 3/3] fpga: bridge: don't use drvdata in common fpga code
-Date: Tue, 31 Oct 2017 15:42:15 -0500
-Message-Id: <1509482535-4921-4-git-send-email-atull@kernel.org>
-In-Reply-To: <1509482535-4921-1-git-send-email-atull@kernel.org>
-References: <1509482535-4921-1-git-send-email-atull@kernel.org>
+Subject: [PATCH v5 02/18] fpga: mgr: API change to replace fpga load functions with single function
+Date: Tue, 17 Oct 2017 16:20:15 -0500
+Message-Id: <20171017212031.3770-3-atull@kernel.org>
+In-Reply-To: <20171017212031.3770-1-atull@kernel.org>
+References: <20171017212031.3770-1-atull@kernel.org>
 To: Moritz Fischer <mdf@kernel.org>
 Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Changes to the fpga bridge code to not use drvdata in common code.
+fpga-mgr has three methods for programming FPGAs, depending on
+whether the image is in a scatter gather list, a contiguous
+buffer, or a firmware file. This makes it difficult to write
+upper layers as the caller has to assume whether the FPGA image
+is in a sg table, as a single buffer, or a firmware file.
+This commit moves these parameters to struct fpga_image_info
+and adds a single function for programming fpgas.
 
-Change fpga_bridge_register to not set drvdata.
+New functions:
+* fpga_mgr_load - given fpga manager and struct fpga_image_info,
+   program the fpga.
 
-Change the register/unregister functions parameters to take the
-bridge struct:
-* int fpga_bridge_register(struct device *dev,
-                           struct fpga_bridge *bridge);
-* void fpga_bridge_unregister(struct fpga_bridge *bridge);
+* fpga_image_info_alloc - alloc a struct fpga_image_info.
 
-Change the drivers that call fpga_bridge_register to alloc the struct
-fpga_bridge (using devm_kzalloc) and partly fill it, adding name,
-ops, and priv.
+* fpga_image_info_free - free a struct fpga_image_info.
 
-The rationale is that setting drvdata is fine for DT based devices
-that will have one manager, bridge, or region per platform device.
-However PCIe based devices may have multiple FPGA mgr/bridge/regions
-under one pcie device.  Without these changes, the PCIe solution has
-to create an extra device for each child mgr/bridge/region to hold
-drvdata.
+These three functions are unexported:
+* fpga_mgr_buf_load_sg
+* fpga_mgr_buf_load
+* fpga_mgr_firmware_load
+
+Also use devm_kstrdup to copy firmware_name so we aren't making
+assumptions about where it comes from when allocing/freeing the
+struct fpga_image_info.
+
+API documentation has been updated and a new document for
+FPGA region has been added.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
-Reported-by: Jiuyue Ma <majiuyue@huawei.com>
 ---
- drivers/fpga/altera-fpga2sdram.c    | 19 +++++++++++++++----
- drivers/fpga/altera-freeze-bridge.c | 17 ++++++++++++++---
- drivers/fpga/altera-hps2fpga.c      | 15 ++++++++++++---
- drivers/fpga/fpga-bridge.c          | 30 +++++++-----------------------
- drivers/fpga/xilinx-pr-decoupler.c  | 14 +++++++++++---
- include/linux/fpga/fpga-bridge.h    |  5 ++---
- 6 files changed, 61 insertions(+), 39 deletions(-)
+v2: add fpga_image_info_alloc/free
+    update copyright and author email
+v3: fix bisectibility
+v4: fix return value of fpga_image_info_alloc()
+    save device in struct fpga_image_info
+    remove device param from fpga_image_info_free()
+    squash in the documentation patch minus stuff about locking
+    which is included in the next patch
+v5: fpga-mgr.h - move #ifndef before #includes
+---
+ Documentation/fpga/fpga-mgr.txt    | 119 ++++++++++++++++---------------------
+ Documentation/fpga/fpga-region.txt |  95 +++++++++++++++++++++++++++++
+ Documentation/fpga/overview.txt    |  23 +++++++
+ drivers/fpga/fpga-mgr.c            |  68 +++++++++++++++++----
+ drivers/fpga/fpga-region.c         |  43 +++++++++-----
+ include/linux/fpga/fpga-mgr.h      |  30 ++++++----
+ 6 files changed, 273 insertions(+), 105 deletions(-)
+ create mode 100644 Documentation/fpga/fpga-region.txt
+ create mode 100644 Documentation/fpga/overview.txt
 
-diff --git a/drivers/fpga/altera-fpga2sdram.c b/drivers/fpga/altera-fpga2sdram.c
-index d4eeb74..73c7bf6 100644
---- a/drivers/fpga/altera-fpga2sdram.c
-+++ b/drivers/fpga/altera-fpga2sdram.c
-@@ -106,10 +106,15 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	struct alt_fpga2sdram_data *priv;
-+	struct fpga_bridge *br;
- 	u32 enable;
- 	struct regmap *sysmgr;
- 	int ret = 0;
+diff --git a/Documentation/fpga/fpga-mgr.txt b/Documentation/fpga/fpga-mgr.txt
+index 78f197f..6ebc714 100644
+--- a/Documentation/fpga/fpga-mgr.txt
++++ b/Documentation/fpga/fpga-mgr.txt
+@@ -11,61 +11,53 @@ hidden away in a low level driver which registers a set of ops with the core.
+ The FPGA image data itself is very manufacturer specific, but for our purposes
+ it's just binary data.  The FPGA manager core won't parse it.
  
-+	br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
-+	if (!br)
++The FPGA image to be programmed can be in a scatter gather list, a single
++contiguous buffer, or a firmware file.  Because allocating contiguous kernel
++memory for the buffer should be avoided, users are encouraged to use a scatter
++gather list instead if possible.
++
++The particulars for programming the image are presented in a structure (struct
++fpga_image_info).  This struct contains parameters such as pointers to the
++FPGA image as well as image-specific particulars such as whether the image was
++built for full or partial reconfiguration.
+ 
+ API Functions:
+ ==============
+ 
+-To program the FPGA from a file or from a buffer:
+--------------------------------------------------
+-
+-	int fpga_mgr_buf_load(struct fpga_manager *mgr,
+-			      struct fpga_image_info *info,
+-		              const char *buf, size_t count);
+-
+-Load the FPGA from an image which exists as a contiguous buffer in
+-memory. Allocating contiguous kernel memory for the buffer should be avoided,
+-users are encouraged to use the _sg interface instead of this.
+-
+-        int fpga_mgr_buf_load_sg(struct fpga_manager *mgr,
+-				 struct fpga_image_info *info,
+-				 struct sg_table *sgt);
++To program the FPGA:
++--------------------
+ 
+-Load the FPGA from an image from non-contiguous in memory. Callers can
+-construct a sg_table using alloc_page backed memory.
++	int fpga_mgr_load(struct fpga_manager *mgr,
++			  struct fpga_image_info *info);
+ 
+-	int fpga_mgr_firmware_load(struct fpga_manager *mgr,
+-				   struct fpga_image_info *info,
+-		                   const char *image_name);
+-
+-Load the FPGA from an image which exists as a file.  The image file must be on
+-the firmware search path (see the firmware class documentation).  If successful,
++Load the FPGA from an image which is indicated in the info.  If successful,
+ the FPGA ends up in operating mode.  Return 0 on success or a negative error
+ code.
+ 
+-A FPGA design contained in a FPGA image file will likely have particulars that
+-affect how the image is programmed to the FPGA.  These are contained in struct
+-fpga_image_info.  Currently the only such particular is a single flag bit
+-indicating whether the image is for full or partial reconfiguration.
++To allocate or free a struct fpga_image_info:
++---------------------------------------------
++
++	struct fpga_image_info *fpga_image_info_alloc(struct device *dev);
++
++	void fpga_image_info_free(struct fpga_image_info *info);
+ 
+ To get/put a reference to a FPGA manager:
+ -----------------------------------------
+ 
+ 	struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
+ 	struct fpga_manager *fpga_mgr_get(struct device *dev);
+-
+-Given a DT node or device, get an exclusive reference to a FPGA manager.
+-
+ 	void fpga_mgr_put(struct fpga_manager *mgr);
+ 
+-Release the reference.
++Given a DT node or device, get an exclusive reference to a FPGA manager.
++fpga_mgr_put releases the reference.
+ 
+ 
+ To register or unregister the low level FPGA-specific driver:
+ -------------------------------------------------------------
+ 
+ 	int fpga_mgr_register(struct device *dev, const char *name,
+-		              const struct fpga_manager_ops *mops,
+-		              void *priv);
++			      const struct fpga_manager_ops *mops,
++			      void *priv);
+ 
+ 	void fpga_mgr_unregister(struct device *dev);
+ 
+@@ -78,59 +70,50 @@ How to write an image buffer to a supported FPGA
+ /* Include to get the API */
+ #include <linux/fpga/fpga-mgr.h>
+ 
+-/* device node that specifies the FPGA manager to use */
+-struct device_node *mgr_node = ...
+-
+-/* FPGA image is in this buffer.  count is size of the buffer. */
+-char *buf = ...
+-int count = ...
++struct fpga_manager *mgr;
++struct fpga_image_info *info;
++int ret;
+ 
+ /* struct with information about the FPGA image to program. */
+-struct fpga_image_info info;
++info = fpga_image_info_alloc(dev);
+ 
+ /* flags indicates whether to do full or partial reconfiguration */
+-info.flags = 0;
+-
+-int ret;
++info->flags = FPGA_MGR_PARTIAL_RECONFIG;
+ 
+-/* Get exclusive control of FPGA manager */
+-struct fpga_manager *mgr = of_fpga_mgr_get(mgr_node);
++/*
++ * At this point, indicate where the image is. This is pseudo-code; you're
++ * going to use one of these three.
++ */
++if (image is in a scatter gather table) {
+ 
+-/* Load the buffer to the FPGA */
+-ret = fpga_mgr_buf_load(mgr, &info, buf, count);
+-
+-/* Release the FPGA manager */
+-fpga_mgr_put(mgr);
++	info->sgt = [your scatter gather table]
+ 
++} else if (image is in a buffer) {
+ 
+-How to write an image file to a supported FPGA
+-==============================================
+-/* Include to get the API */
+-#include <linux/fpga/fpga-mgr.h>
++	info->buf = [your image buffer]
++	info->count = [image buffer size]
+ 
+-/* device node that specifies the FPGA manager to use */
+-struct device_node *mgr_node = ...
++} else if (image is in a firmware file) {
+ 
+-/* FPGA image is in this file which is in the firmware search path */
+-const char *path = "fpga-image-9.rbf"
++	info->firmware_name = devm_kstrdup(dev, firmware_name, GFP_KERNEL);
+ 
+-/* struct with information about the FPGA image to program. */
+-struct fpga_image_info info;
+-
+-/* flags indicates whether to do full or partial reconfiguration */
+-info.flags = 0;
+-
+-int ret;
++}
+ 
+-/* Get exclusive control of FPGA manager */
+-struct fpga_manager *mgr = of_fpga_mgr_get(mgr_node);
++/*
++ * Get a reference to FPGA manager.  This example uses the  device node of the
++ * manager.  You could use fpga_mgr_get() instead if you have the device instead
++ * of the device node.
++ */
++mgr = of_fpga_mgr_get(mgr_node);
+ 
+-/* Get the firmware image (path) and load it to the FPGA */
+-ret = fpga_mgr_firmware_load(mgr, &info, path);
++/* Load the buffer to the FPGA */
++ret = fpga_mgr_buf_load(mgr, &info, buf, count);
+ 
+ /* Release the FPGA manager */
+ fpga_mgr_put(mgr);
+ 
++/* Deallocate the image info if you're done with it */
++fpga_image_info_free(info);
+ 
+ How to support a new FPGA device
+ ================================
+diff --git a/Documentation/fpga/fpga-region.txt b/Documentation/fpga/fpga-region.txt
+new file mode 100644
+index 0000000..139a02b
+--- /dev/null
++++ b/Documentation/fpga/fpga-region.txt
+@@ -0,0 +1,95 @@
++FPGA Regions
++
++Alan Tull 2017
++
++CONTENTS
++ - Introduction
++ - The FPGA region API
++ - Usage example
++
++Introduction
++============
++
++This document is meant to be an brief overview of the FPGA region API usage.  A
++more conceptual look at regions can be found in [1].
++
++For the purposes of this API document, let's just say that a region associates
++an FPGA Manager and a bridge (or bridges) with a reprogrammable region of an
++FPGA or the whole FPGA.  The API provides a way to register a region and to
++program a region.
++
++Currently the only layer above fpga-region.c in the kernel is the Device Tree
++support (of-fpga-region.c) described in [1].  The DT support layer uses regions
++to program the FPGA and then DT to handle enumeration.  The common region code
++is intended to be used by other schemes that have other ways of accomplishing
++enumeration after programming.
++
++An fpga-region can be set up to know the following things:
++* which FPGA manager to use to do the programming
++* which bridges to disable before programming and enable afterwards.
++
++Additional info needed to program the FPGA image is passed in the struct
++fpga_image_info [2] including:
++* pointers to the image as either a scatter-gather buffer, a contiguous
++  buffer, or the name of firmware file
++* flags indicating specifics such as whether the image if for partial
++  reconfiguration.
++
++===================
++The FPGA region API
++===================
++
++To register or unregister a region:
++-----------------------------------
++
++	int fpga_region_register(struct device *dev,
++				 struct fpga_region *region);
++	int fpga_region_unregister(struct fpga_region *region);
++
++An example of usage can be seen in the probe function of [3]
++
++To program an FPGA:
++-------------------
++	int fpga_region_program_fpga(struct fpga_region *region);
++
++This function operates on info passed in the fpga_image_info
++(region->info).
++
++This function will attempt to:
++ * lock the region's mutex
++ * lock the region's FPGA manager
++ * build a list of FPGA bridges if a method has been specified to do so
++ * disable the bridges
++ * program the FPGA
++ * re-enable the bridges
++ * release the locks
++
++=============
++Usage example
++=============
++
++First, allocate the info struct:
++
++	info = fpga_image_info_alloc(dev);
++	if (!info)
 +		return -ENOMEM;
 +
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
-@@ -131,8 +136,12 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 	/* Get f2s bridge configuration saved in handoff register */
- 	regmap_read(sysmgr, SYSMGR_ISWGRP_HANDOFF3, &priv->mask);
- 
--	ret = fpga_bridge_register(dev, F2S_BRIDGE_NAME,
--				   &altera_fpga2sdram_br_ops, priv);
-+	br->name = F2S_BRIDGE_NAME;
-+	br->br_ops = &altera_fpga2sdram_br_ops;
-+	br->priv = priv;
-+	platform_set_drvdata(pdev, br);
++Set flags as needed, i.e.
 +
-+	ret = fpga_bridge_register(dev, br);
- 	if (ret)
- 		return ret;
++	info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
++
++Point to your FPGA image, such as:
++
++	info->sgt = &sgt;
++
++Add info to region and do the programming:
++
++	region->info = info;
++	ret = fpga_region_program_fpga(region);
++
++Then enumerate whatever hardware has appeared in the FPGA.
++
++--
++[1] ../devicetree/bindings/fpga/fpga-region.txt
++[2] ./fpga-mgr.txt
++[3] ../../drivers/fpga/of-fpga-region.c
+diff --git a/Documentation/fpga/overview.txt b/Documentation/fpga/overview.txt
+new file mode 100644
+index 0000000..0f1236e
+--- /dev/null
++++ b/Documentation/fpga/overview.txt
+@@ -0,0 +1,23 @@
++Linux kernel FPGA support
++
++Alan Tull 2017
++
++The main point of this project has been to separate the out the upper layers
++that know when to reprogram a FPGA from the lower layers that know how to
++reprogram a specific FPGA device.  The intention is to make this manufacturer
++agnostic, understanding that of course the FPGA images are very device specific
++themselves.
++
++The framework in the kernel includes:
++* low level FPGA manager drivers that know how to program a specific device
++* the fpga-mgr framework they are registered with
++* low level FPGA bridge drivers for hard/soft bridges which are intended to
++  be disable during FPGA programming
++* the fpga-bridge framework they are registered with
++* the fpga-region framework which associates and controls managers and bridges
++  as reconfigurable regions
++* the of-fpga-region support for reprogramming FPGAs when device tree overlays
++  are applied.
++
++I would encourage you the user to add code that creates FPGA regions rather
++that trying to control managers and bridges separately.
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index 188ffef..a8dd549 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -2,6 +2,7 @@
+  * FPGA Manager Core
+  *
+  *  Copyright (C) 2013-2015 Altera Corporation
++ *  Copyright (C) 2017 Intel Corporation
+  *
+  * With code from the mailing list:
+  * Copyright (C) 2013 Xilinx, Inc.
+@@ -31,6 +32,40 @@
+ static DEFINE_IDA(fpga_mgr_ida);
+ static struct class *fpga_mgr_class;
  
-@@ -146,7 +155,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 				 (enable ? "enabling" : "disabling"));
- 			ret = _alt_fpga2sdram_enable_set(priv, enable);
- 			if (ret) {
--				fpga_bridge_unregister(&pdev->dev);
-+				fpga_bridge_unregister(br);
- 				return ret;
- 			}
- 		}
-@@ -157,7 +166,9 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 
- static int alt_fpga_bridge_remove(struct platform_device *pdev)
++struct fpga_image_info *fpga_image_info_alloc(struct device *dev)
++{
++	struct fpga_image_info *info;
++
++	get_device(dev);
++
++	info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
++	if (!info) {
++		put_device(dev);
++		return NULL;
++	}
++
++	info->dev = dev;
++
++	return info;
++}
++EXPORT_SYMBOL_GPL(fpga_image_info_alloc);
++
++void fpga_image_info_free(struct fpga_image_info *info)
++{
++	struct device *dev;
++
++	if (!info)
++		return;
++
++	dev = info->dev;
++	if (info->firmware_name)
++		devm_kfree(dev, info->firmware_name);
++
++	devm_kfree(dev, info);
++	put_device(dev);
++}
++EXPORT_SYMBOL_GPL(fpga_image_info_free);
++
+ /*
+  * Call the low level driver's write_init function.  This will do the
+  * device-specific things to get the FPGA into the state where it is ready to
+@@ -137,8 +172,9 @@ static int fpga_mgr_write_complete(struct fpga_manager *mgr,
+  *
+  * Return: 0 on success, negative error code otherwise.
+  */
+-int fpga_mgr_buf_load_sg(struct fpga_manager *mgr, struct fpga_image_info *info,
+-			 struct sg_table *sgt)
++static int fpga_mgr_buf_load_sg(struct fpga_manager *mgr,
++				struct fpga_image_info *info,
++				struct sg_table *sgt)
  {
--	fpga_bridge_unregister(&pdev->dev);
-+	struct fpga_bridge *br = platform_get_drvdata(pdev);
-+
-+	fpga_bridge_unregister(br);
- 
- 	return 0;
- }
-diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
-index 6159cfcf..5fd424b 100644
---- a/drivers/fpga/altera-freeze-bridge.c
-+++ b/drivers/fpga/altera-freeze-bridge.c
-@@ -219,6 +219,7 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	struct device_node *np = pdev->dev.of_node;
-+	struct fpga_bridge *br;
- 	void __iomem *base_addr;
- 	struct altera_freeze_br_data *priv;
- 	struct resource *res;
-@@ -227,6 +228,10 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
- 	if (!np)
- 		return -ENODEV;
- 
-+	br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
-+	if (!br)
-+		return -ENOMEM;
-+
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	base_addr = devm_ioremap_resource(dev, res);
- 	if (IS_ERR(base_addr))
-@@ -254,13 +259,19 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
- 
- 	priv->base_addr = base_addr;
- 
--	return fpga_bridge_register(dev, FREEZE_BRIDGE_NAME,
--				    &altera_freeze_br_br_ops, priv);
-+	br->name = FREEZE_BRIDGE_NAME;
-+	br->br_ops = &altera_freeze_br_br_ops;
-+	br->priv = priv;
-+	platform_set_drvdata(pdev, br);
-+
-+	return fpga_bridge_register(dev, br);
- }
- 
- static int altera_freeze_br_remove(struct platform_device *pdev)
- {
--	fpga_bridge_unregister(&pdev->dev);
-+	struct fpga_bridge *br = platform_get_drvdata(pdev);
-+
-+	fpga_bridge_unregister(br);
- 
- 	return 0;
- }
-diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
-index 406d2f1..4539057 100644
---- a/drivers/fpga/altera-hps2fpga.c
-+++ b/drivers/fpga/altera-hps2fpga.c
-@@ -139,6 +139,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct altera_hps2fpga_data *priv;
- 	const struct of_device_id *of_id;
-+	struct fpga_bridge *br;
- 	u32 enable;
  	int ret;
  
-@@ -150,6 +151,10 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+@@ -170,7 +206,6 @@ int fpga_mgr_buf_load_sg(struct fpga_manager *mgr, struct fpga_image_info *info,
  
- 	priv = (struct altera_hps2fpga_data *)of_id->data;
+ 	return fpga_mgr_write_complete(mgr, info);
+ }
+-EXPORT_SYMBOL_GPL(fpga_mgr_buf_load_sg);
  
-+	br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
-+	if (!br)
-+		return -ENOMEM;
-+
- 	priv->bridge_reset = of_reset_control_get_exclusive_by_index(dev->of_node,
- 								     0);
- 	if (IS_ERR(priv->bridge_reset)) {
-@@ -190,8 +195,12 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	ret = fpga_bridge_register(dev, priv->name, &altera_hps2fpga_br_ops,
--				   priv);
-+	br->name = priv->name;
-+	br->br_ops = &altera_hps2fpga_br_ops;
-+	br->priv = priv;
-+	platform_set_drvdata(pdev, br);
-+
-+	ret = fpga_bridge_register(dev, br);
- err:
- 	if (ret)
- 		clk_disable_unprepare(priv->clk);
-@@ -204,7 +213,7 @@ static int alt_fpga_bridge_remove(struct platform_device *pdev)
- 	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
- 	struct altera_hps2fpga_data *priv = bridge->priv;
- 
--	fpga_bridge_unregister(&pdev->dev);
-+	fpga_bridge_unregister(bridge);
- 
- 	clk_disable_unprepare(priv->clk);
- 
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index 15ce9f1..10b582e 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -338,41 +338,30 @@ ATTRIBUTE_GROUPS(fpga_bridge);
+ static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
+ 				    struct fpga_image_info *info,
+@@ -210,8 +245,9 @@ static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
   *
-  * Return: 0 for success, error code otherwise.
+  * Return: 0 on success, negative error code otherwise.
   */
--int fpga_bridge_register(struct device *dev, const char *name,
--			 const struct fpga_bridge_ops *br_ops, void *priv)
-+int fpga_bridge_register(struct device *dev, struct fpga_bridge *bridge)
+-int fpga_mgr_buf_load(struct fpga_manager *mgr, struct fpga_image_info *info,
+-		      const char *buf, size_t count)
++static int fpga_mgr_buf_load(struct fpga_manager *mgr,
++			     struct fpga_image_info *info,
++			     const char *buf, size_t count)
  {
--	struct fpga_bridge *bridge;
-+	const char *name;
- 	int id, ret = 0;
+ 	struct page **pages;
+ 	struct sg_table sgt;
+@@ -266,7 +302,6 @@ int fpga_mgr_buf_load(struct fpga_manager *mgr, struct fpga_image_info *info,
  
-+	name = bridge->name;
- 	if (!name || !strlen(name)) {
- 		dev_err(dev, "Attempt to register with no name!\n");
- 		return -EINVAL;
- 	}
+ 	return rc;
+ }
+-EXPORT_SYMBOL_GPL(fpga_mgr_buf_load);
  
--	bridge = kzalloc(sizeof(*bridge), GFP_KERNEL);
--	if (!bridge)
--		return -ENOMEM;
--
- 	id = ida_simple_get(&fpga_bridge_ida, 0, 0, GFP_KERNEL);
--	if (id < 0) {
--		ret = id;
--		goto error_kfree;
--	}
-+	if (id < 0)
-+		return id;
- 
- 	mutex_init(&bridge->mutex);
- 	INIT_LIST_HEAD(&bridge->node);
- 
--	bridge->name = name;
--	bridge->br_ops = br_ops;
--	bridge->priv = priv;
--
- 	device_initialize(&bridge->dev);
--	bridge->dev.groups = br_ops->groups;
-+	bridge->dev.groups = bridge->br_ops->groups;
- 	bridge->dev.class = fpga_bridge_class;
- 	bridge->dev.parent = dev;
- 	bridge->dev.of_node = dev->of_node;
- 	bridge->dev.id = id;
--	dev_set_drvdata(dev, bridge);
- 
- 	ret = dev_set_name(&bridge->dev, "br%d", id);
- 	if (ret)
-@@ -391,8 +380,6 @@ int fpga_bridge_register(struct device *dev, const char *name,
- 
- error_device:
- 	ida_simple_remove(&fpga_bridge_ida, id);
--error_kfree:
--	kfree(bridge);
+ /**
+  * fpga_mgr_firmware_load - request firmware and load to fpga
+@@ -282,9 +317,9 @@ EXPORT_SYMBOL_GPL(fpga_mgr_buf_load);
+  *
+  * Return: 0 on success, negative error code otherwise.
+  */
+-int fpga_mgr_firmware_load(struct fpga_manager *mgr,
+-			   struct fpga_image_info *info,
+-			   const char *image_name)
++static int fpga_mgr_firmware_load(struct fpga_manager *mgr,
++				  struct fpga_image_info *info,
++				  const char *image_name)
+ {
+ 	struct device *dev = &mgr->dev;
+ 	const struct firmware *fw;
+@@ -307,7 +342,18 @@ int fpga_mgr_firmware_load(struct fpga_manager *mgr,
  
  	return ret;
  }
-@@ -402,10 +389,8 @@ EXPORT_SYMBOL_GPL(fpga_bridge_register);
-  * fpga_bridge_unregister - unregister a fpga bridge driver
-  * @dev: FPGA bridge device from pdev
-  */
--void fpga_bridge_unregister(struct device *dev)
-+void fpga_bridge_unregister(struct fpga_bridge *bridge)
- {
--	struct fpga_bridge *bridge = dev_get_drvdata(dev);
--
- 	/*
- 	 * If the low level driver provides a method for putting bridge into
- 	 * a desired state upon unregister, do it.
-@@ -422,7 +407,6 @@ static void fpga_bridge_dev_release(struct device *dev)
- 	struct fpga_bridge *bridge = to_fpga_bridge(dev);
+-EXPORT_SYMBOL_GPL(fpga_mgr_firmware_load);
++
++int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info)
++{
++	if (info->sgt)
++		return fpga_mgr_buf_load_sg(mgr, info, info->sgt);
++	if (info->buf && info->count)
++		return fpga_mgr_buf_load(mgr, info, info->buf, info->count);
++	if (info->firmware_name)
++		return fpga_mgr_firmware_load(mgr, info, info->firmware_name);
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(fpga_mgr_load);
  
- 	ida_simple_remove(&fpga_bridge_ida, bridge->dev.id);
--	kfree(bridge);
+ static const char * const state_str[] = {
+ 	[FPGA_MGR_STATE_UNKNOWN] =		"unknown",
+@@ -578,7 +624,7 @@ static void __exit fpga_mgr_class_exit(void)
+ 	ida_destroy(&fpga_mgr_ida);
  }
  
- static int __init fpga_bridge_dev_init(void)
-diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
-index e359930..317b2fb 100644
---- a/drivers/fpga/xilinx-pr-decoupler.c
-+++ b/drivers/fpga/xilinx-pr-decoupler.c
-@@ -94,9 +94,14 @@ MODULE_DEVICE_TABLE(of, xlnx_pr_decoupler_of_match);
- static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+-MODULE_AUTHOR("Alan Tull <atull@opensource.altera.com>");
++MODULE_AUTHOR("Alan Tull <atull@kernel.org>");
+ MODULE_DESCRIPTION("FPGA manager framework");
+ MODULE_LICENSE("GPL v2");
+ 
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index 91755562..120c496 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -226,14 +226,11 @@ static int fpga_region_get_bridges(struct fpga_region *region,
+ /**
+  * fpga_region_program_fpga - program FPGA
+  * @region: FPGA region
+- * @firmware_name: name of FPGA image firmware file
+  * @overlay: device node of the overlay
+- * Program an FPGA using information in the device tree.
+- * Function assumes that there is a firmware-name property.
++ * Program an FPGA using information in the region's fpga image info.
+  * Return 0 for success or negative error code.
+  */
+ static int fpga_region_program_fpga(struct fpga_region *region,
+-				    const char *firmware_name,
+ 				    struct device_node *overlay)
  {
- 	struct xlnx_pr_decoupler_data *priv;
-+	struct fpga_bridge *br;
- 	int err;
- 	struct resource *res;
+ 	struct fpga_manager *mgr;
+@@ -264,7 +261,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 		goto err_put_br;
+ 	}
  
-+	br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
-+	if (!br)
-+		return -ENOMEM;
-+
- 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
+-	ret = fpga_mgr_firmware_load(mgr, region->info, firmware_name);
++	ret = fpga_mgr_load(mgr, region->info);
+ 	if (ret) {
+ 		pr_err("failed to load fpga image\n");
+ 		goto err_put_br;
+@@ -357,16 +354,15 @@ static int child_regions_with_firmware(struct device_node *overlay)
+ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 					struct of_overlay_notify_data *nd)
+ {
+-	const char *firmware_name = NULL;
++	struct device *dev = &region->dev;
+ 	struct fpga_image_info *info;
++	const char *firmware_name;
+ 	int ret;
+ 
+-	info = devm_kzalloc(&region->dev, sizeof(*info), GFP_KERNEL);
++	info = fpga_image_info_alloc(dev);
+ 	if (!info)
  		return -ENOMEM;
-@@ -120,9 +125,12 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
  
- 	clk_disable(priv->clk);
+-	region->info = info;
+-
+ 	/* Reject overlay if child FPGA Regions have firmware-name property */
+ 	ret = child_regions_with_firmware(nd->overlay);
+ 	if (ret)
+@@ -382,7 +378,13 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 	if (of_property_read_bool(nd->overlay, "encrypted-fpga-config"))
+ 		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
  
--	err = fpga_bridge_register(&pdev->dev, "Xilinx PR Decoupler",
--				   &xlnx_pr_decoupler_br_ops, priv);
-+	br->name = "Xilinx PR Decoupler";
-+	br->br_ops = &xlnx_pr_decoupler_br_ops;
-+	br->priv = priv;
-+	platform_set_drvdata(pdev, br);
+-	of_property_read_string(nd->overlay, "firmware-name", &firmware_name);
++	if (!of_property_read_string(nd->overlay, "firmware-name",
++				     &firmware_name)) {
++		info->firmware_name = devm_kstrdup(dev, firmware_name,
++						   GFP_KERNEL);
++		if (!info->firmware_name)
++			return -ENOMEM;
++	}
  
-+	err = fpga_bridge_register(&pdev->dev, br);
- 	if (err) {
- 		dev_err(&pdev->dev, "unable to register Xilinx PR Decoupler");
- 		clk_unprepare(priv->clk);
-@@ -137,7 +145,7 @@ static int xlnx_pr_decoupler_remove(struct platform_device *pdev)
- 	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
- 	struct xlnx_pr_decoupler_data *p = bridge->priv;
+ 	of_property_read_u32(nd->overlay, "region-unfreeze-timeout-us",
+ 			     &info->enable_timeout_us);
+@@ -394,22 +396,33 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 			     &info->config_complete_timeout_us);
  
--	fpga_bridge_unregister(&pdev->dev);
-+	fpga_bridge_unregister(bridge);
+ 	/* If FPGA was externally programmed, don't specify firmware */
+-	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && firmware_name) {
++	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
+ 		pr_err("error: specified firmware and external-fpga-config");
++		fpga_image_info_free(info);
+ 		return -EINVAL;
+ 	}
  
- 	clk_unprepare(p->clk);
+ 	/* FPGA is already configured externally.  We're done. */
+-	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG)
++	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG) {
++		fpga_image_info_free(info);
+ 		return 0;
++	}
  
-diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
-index 65d3311..9e80dbf 100644
---- a/include/linux/fpga/fpga-bridge.h
-+++ b/include/linux/fpga/fpga-bridge.h
-@@ -60,8 +60,7 @@ int of_fpga_bridge_get_to_list(struct device_node *np,
- 			       struct fpga_image_info *info,
- 			       struct list_head *bridge_list);
+ 	/* If we got this far, we should be programming the FPGA */
+-	if (!firmware_name) {
++	if (!info->firmware_name) {
+ 		pr_err("should specify firmware-name or external-fpga-config\n");
++		fpga_image_info_free(info);
+ 		return -EINVAL;
+ 	}
  
--int fpga_bridge_register(struct device *dev, const char *name,
--			 const struct fpga_bridge_ops *br_ops, void *priv);
--void fpga_bridge_unregister(struct device *dev);
-+int fpga_bridge_register(struct device *dev, struct fpga_bridge *br);
-+void fpga_bridge_unregister(struct fpga_bridge *br);
+-	return fpga_region_program_fpga(region, firmware_name, nd->overlay);
++	region->info = info;
++	ret = fpga_region_program_fpga(region, nd->overlay);
++	if (ret) {
++		fpga_image_info_free(info);
++		region->info = NULL;
++	}
++
++	return ret;
+ }
  
- #endif /* _LINUX_FPGA_BRIDGE_H */
+ /**
+@@ -426,7 +439,7 @@ static void fpga_region_notify_post_remove(struct fpga_region *region,
+ {
+ 	fpga_bridges_disable(&region->bridge_list);
+ 	fpga_bridges_put(&region->bridge_list);
+-	devm_kfree(&region->dev, region->info);
++	fpga_image_info_free(region->info);
+ 	region->info = NULL;
+ }
+ 
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index bfa14bc..6b79134 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -1,7 +1,8 @@
+ /*
+  * FPGA Framework
+  *
+- *  Copyright (C) 2013-2015 Altera Corporation
++ *  Copyright (C) 2013-2016 Altera Corporation
++ *  Copyright (C) 2017 Intel Corporation
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -15,12 +16,12 @@
+  * You should have received a copy of the GNU General Public License along with
+  * this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+-#include <linux/mutex.h>
+-#include <linux/platform_device.h>
+-
+ #ifndef _LINUX_FPGA_MGR_H
+ #define _LINUX_FPGA_MGR_H
+ 
++#include <linux/mutex.h>
++#include <linux/platform_device.h>
++
+ struct fpga_manager;
+ struct sg_table;
+ 
+@@ -83,12 +84,22 @@ enum fpga_mgr_states {
+  * @disable_timeout_us: maximum time to disable traffic through bridge (uSec)
+  * @config_complete_timeout_us: maximum time for FPGA to switch to operating
+  *	   status in the write_complete op.
++ * @firmware_name: name of FPGA image firmware file
++ * @sgt: scatter/gather table containing FPGA image
++ * @buf: contiguous buffer containing FPGA image
++ * @count: size of buf
++ * @dev: device that owns this
+  */
+ struct fpga_image_info {
+ 	u32 flags;
+ 	u32 enable_timeout_us;
+ 	u32 disable_timeout_us;
+ 	u32 config_complete_timeout_us;
++	char *firmware_name;
++	struct sg_table *sgt;
++	const char *buf;
++	size_t count;
++	struct device *dev;
+ };
+ 
+ /**
+@@ -138,14 +149,11 @@ struct fpga_manager {
+ 
+ #define to_fpga_manager(d) container_of(d, struct fpga_manager, dev)
+ 
+-int fpga_mgr_buf_load(struct fpga_manager *mgr, struct fpga_image_info *info,
+-		      const char *buf, size_t count);
+-int fpga_mgr_buf_load_sg(struct fpga_manager *mgr, struct fpga_image_info *info,
+-			 struct sg_table *sgt);
++struct fpga_image_info *fpga_image_info_alloc(struct device *dev);
++
++void fpga_image_info_free(struct fpga_image_info *info);
+ 
+-int fpga_mgr_firmware_load(struct fpga_manager *mgr,
+-			   struct fpga_image_info *info,
+-			   const char *image_name);
++int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info);
+ 
+ struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
+ 
 -- 
 2.7.4
