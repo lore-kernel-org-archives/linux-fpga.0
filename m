@@ -1,220 +1,90 @@
-Return-Path: <SRS0=xl3R=BS=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=xl3R=BS=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-wr0-f193.google.com ([209.85.128.193]:53935 "EHLO
-        mail-wr0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751823AbdJSIlU (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 19 Oct 2017 04:41:20 -0400
-Received: by mail-wr0-f193.google.com with SMTP id u40so1583365wrf.10
-        for <linux-fpga@vger.kernel.org>; Thu, 19 Oct 2017 01:41:20 -0700 (PDT)
-Content-Type: text/plain; charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 10.3 \(3273\))
-Subject: Re: [PATCH v2 5/5] of/fdt: only store the device node basename in
- full_name
-From: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-In-Reply-To: <59E7CBAF.9080501@gmail.com>
-Date: Thu, 19 Oct 2017 11:41:16 +0300
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <B33ABF00-5967-4137-BDD3-E6D3E2B2EC57@konsulko.com>
-References: <20170821151651.25096-1-robh@kernel.org>
- <20170821151651.25096-6-robh@kernel.org>
- <CANk1AXTLT9gB_f0GZLODpppjkxqDAp1x1RZmQ8O1i+UHckimxw@mail.gmail.com>
- <CABGGisxU2OPZz-rrWYZYgCQ0iGM9w5vL9Ob9BTHALFN8JyxeJQ@mail.gmail.com>
- <59E69786.2030406@gmail.com>
- <CANk1AXStoiNtJfU0iNug1wKASurqH6OrNoaN=UtSh6xxSB088Q@mail.gmail.com>
- <CAL_JsqKR3Jg+tgZr4xGPtcWnZW7ng741YjuyUFaS2SXKXbxGtg@mail.gmail.com>
- <1508341985.25643.12.camel@hp800z>
- <CAL_JsqKJ74y3qHVqbRph5C8=0Ggb+n=JT3TZybu2+mENyZ1VZA@mail.gmail.com>
- <59E7CBAF.9080501@gmail.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Frank Rowand <frowand.list@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Alan Tull <atull@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel <linux-kernel@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@aculab.com>, linux-fpga@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH v5 14/18] fpga: region: add fpga_region_class_find
+Date: Tue, 17 Oct 2017 16:20:27 -0500
+Message-Id: <20171017212031.3770-15-atull@kernel.org>
+In-Reply-To: <20171017212031.3770-1-atull@kernel.org>
+References: <20171017212031.3770-1-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Frank,
+Add a function for searching the fpga-region class.  This
+will be useful when device tree code is no longer in the
+same file that declares the fpga-region class.  Another
+step in separating common FPGA region code from device
+tree support.
 
-> On Oct 19, 2017, at 00:46 , Frank Rowand <frowand.list@gmail.com> =
-wrote:
->=20
-> On 10/18/17 11:30, Rob Herring wrote:
->> On Wed, Oct 18, 2017 at 10:53 AM, Pantelis Antoniou
->> <pantelis.antoniou@konsulko.com> wrote:
->>> On Wed, 2017-10-18 at 10:44 -0500, Rob Herring wrote:
->>>> On Wed, Oct 18, 2017 at 10:12 AM, Alan Tull <atull@kernel.org> =
-wrote:
->>>>> On Tue, Oct 17, 2017 at 6:51 PM, Frank Rowand =
-<frowand.list@gmail.com> wrote:
->>>>>> On 10/17/17 14:46, Rob Herring wrote:
->>>>>>> On Tue, Oct 17, 2017 at 4:32 PM, Alan Tull <atull@kernel.org> =
-wrote:
->>>>>>>> On Mon, Aug 21, 2017 at 10:16 AM, Rob Herring <robh@kernel.org> =
-wrote:
->>>>>>>>=20
->>>>>>>> Hi Rob,
->>>>>>>>=20
->>>>>>>>> With dependencies on a statically allocated full path name =
-converted to
->>>>>>>>> use %pOF format specifier, we can store just the basename of =
-node, and
->>>>>>>>> the unflattening of the FDT can be simplified.
->>>>>>>>>=20
->>>>>>>>> This commit will affect the remaining users of full_name. =
-After
->>>>>>>>> analyzing these users, the remaining cases should only change =
-some print
->>>>>>>>> messages. The main users of full_name are providing a name for =
-struct
->>>>>>>>> resource. The resource names shouldn't be important other than =
-providing
->>>>>>>>> /proc/iomem names.
->>>>>>>>>=20
->>>>>>>>> We no longer distinguish between pre and post 0x10 dtb formats =
-as either
->>>>>>>>> a full path or basename will work. However, less than 0x10 =
-formats have
->>>>>>>>> been broken since the conversion to use libfdt (and no one has =
-cared).
->>>>>>>>> The conversion of the unflattening code to be non-recursive =
-also broke
->>>>>>>>> pre 0x10 formats as the populate_node function would return 0 =
-in that
->>>>>>>>> case.
->>>>>>>>>=20
->>>>>>>>> Signed-off-by: Rob Herring <robh@kernel.org>
->>>>>>>>> ---
->>>>>>>>> v2:
->>>>>>>>> - rebase to linux-next
->>>>>>>>>=20
->>>>>>>>> drivers/of/fdt.c | 69 =
-+++++++++-----------------------------------------------
->>>>>>>>> 1 file changed, 11 insertions(+), 58 deletions(-)
->>>>>>>>=20
->>>>>>>> I've just updated to the latest next branch and am finding =
-problems
->>>>>>>> applying overlays.   Reverting this commit alleviates things.  =
-The
->>>>>>>> errors I get are:
->>>>>>>>=20
->>>>>>>> [   88.498704] OF: overlay: Failed to apply prop =
-@/__symbols__/clk_0
->>>>>>>> [   88.513447] OF: overlay: apply failed '/__symbols__'
->>>>>>>> [   88.518423] create_overlay: Failed to create overlay =
-(err=3D-12)
->>>>>>>=20
->>>>>>> Frank's series with overlay updates should fix this.
->>>>>>=20
->>>>>> Yes, it does:
->>>>>>=20
->>>>>>  [PATCH v3 11/12] of: overlay: remove a dependency on device node =
-full_name
->>>>>=20
->>>>> Thanks for the fast response.  I fetched the dt/next branch to =
-test
->>>>> this but there are sufficient changes that Pantelis' "OF: =
-DT-Overlay
->>>>> configfs interface (v7)" is broken now.  I've been adding that
->>>>> downstream since 4.4.  We're using it as an interface for applying
->>>>> overlays to program FPGAs.  If we fix it again, is there any =
-chance
->>>>> that can go upstream now?
->>>>=20
->>>> With a drive-by posting once every few years, no.
->>>>=20
->>>=20
->>> I take offense to that. There's nothing changed in the patch for =
-years.
->>> Reposting the same patch without changes would achieve nothing.
->>=20
->> Are you still expecting review comments on it or something?
->> Furthermore, If something is posted infrequently, then I'm not
->> inclined to comment or care if the next posting is going to be after =
-I
->> forget what I previously said (which is not very long).
->>=20
->> I'm just saying, don't expect to forward port, post and it will be
->> accepted. Below is minimally one of the issues that needs to be
->> addressed.
->>=20
->=20
->=20
->>>> The issue remains that the kernel is not really setup to deal with =
-any
->>>> random property or node to be changed at any point in run-time. I
->>>> think there needs to be some restrictions around what the overlays =
-can
->>>> touch. We can't have it be wide open and then lock things down =
-later
->>>> and break users.
->=20
-> That paragraph is key to any discussion of accepting code to apply =
-overlays.
-> Solving that issue has been stated to be a gating factor for such code =
-from
-> the beginning of overlay development.
->=20
+Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+---
+v2: split out from another patch
+v3: add Moritz' ack
+v4: no change to this patch in this version of patchset
+v5: no change to this patch in this version of patchset
+---
+ drivers/fpga/fpga-region.c       | 23 +++++++++++++++--------
+ include/linux/fpga/fpga-region.h |  5 ++++-
+ 2 files changed, 19 insertions(+), 9 deletions(-)
 
-Overlays are not only used only for cases where you have external =
-expansion boards, or
-FPGAs where every change is contained under a few designated nodes, so =
-that=E2=80=99s why I=E2=80=99m
-pushing for a in-kernel validator that=E2=80=99s more flexible than a =
-single whitelist.
-
-An eBPF validator would handle a whitelist trivially easy, and would be =
-flexible enough
-for any other more complicated use case.
-
->=20
->>>> One example of what you could do is you can only add
->>>> sub-trees to whitelisted nodes. That's probably acceptable for your
->>>> usecase.
->>>>=20
->>>=20
->>> Defining what can and what cannot be changed is not as trivial as a
->>> list of white-listed nodes.
->>=20
->> No, but we have to start somewhere and we are not starting with any
->> change allowed anywhere at anytime. If that is what people want, then
->> they are going to get to maintain that out of tree.
->>=20
->>> In some cases there is a whole node hierarchy being inserted (like =
-in
->>> a FPGA).
->>=20
->> Yes, so you'd have a target fpga region. That sounds fine to me. =
-Maybe
->> its not a static whitelist, but drivers have to register target
->> nodes/paths.
->>=20
->>> In others, it's merely changing a status property to "okay" and
->>> a few device parameters.
->>=20
->> That seems fine too. Disabled nodes could be allowed. But what if you
->> add/change properties on a node that is not disabled? Once a node is
->> enabled, who is responsible for registering the device?
->>=20
->> What about changing a node from enabled to disabled? The kernel would
->> need to handle that or not allow it.
->>=20
->>> The real issue is that the kernel has no way to verify that a given
->>> device tree, either at boot time or at overlay application time, is
->>> correct.
->>>=20
->>> When the tree is wrong at boot-time you'll hang (if you're lucky).
->>> If the tree is wrong at run-time you'll get some into some =
-unidentified
->>> funky state.
->>=20
->> Or have some security hole or a mechanism for userspace to crash the =
-system.
->>=20
->>> Finally what is, and what is not 'correct' is not for the kernel to
->>> decide arbitrarily, it's a matter of policy, different for each
->>> use-case.
->>=20
->> It is if the kernel will break doing so.
->>=20
->> Rob
->>=20
->=20
-
-
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index 76db81d..5c086957 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -30,6 +30,20 @@
+ static DEFINE_IDA(fpga_region_ida);
+ static struct class *fpga_region_class;
+ 
++struct fpga_region *fpga_region_class_find(
++	struct device *start, const void *data,
++	int (*match)(struct device *, const void *))
++{
++	struct device *dev;
++
++	dev = class_find_device(fpga_region_class, start, data, match);
++	if (!dev)
++		return NULL;
++
++	return to_fpga_region(dev);
++}
++EXPORT_SYMBOL_GPL(fpga_region_class_find);
++
+ static const struct of_device_id fpga_region_of_match[] = {
+ 	{ .compatible = "fpga-region", },
+ 	{},
+@@ -51,14 +65,7 @@ static int fpga_region_of_node_match(struct device *dev, const void *data)
+  */
+ static struct fpga_region *of_fpga_region_find(struct device_node *np)
+ {
+-	struct device *dev;
+-
+-	dev = class_find_device(fpga_region_class, NULL, np,
+-				fpga_region_of_node_match);
+-	if (!dev)
+-		return NULL;
+-
+-	return to_fpga_region(dev);
++	return fpga_region_class_find(NULL, np, fpga_region_of_node_match);
+ }
+ 
+ /**
+diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+index 8c8a3249f..7048449 100644
+--- a/include/linux/fpga/fpga-region.h
++++ b/include/linux/fpga/fpga-region.h
+@@ -27,8 +27,11 @@ struct fpga_region {
+ 
+ #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
+ 
+-int fpga_region_program_fpga(struct fpga_region *region);
++struct fpga_region *fpga_region_class_find(
++	struct device *start, const void *data,
++	int (*match)(struct device *, const void *));
+ 
++int fpga_region_program_fpga(struct fpga_region *region);
+ int fpga_region_register(struct device *dev, struct fpga_region *region);
+ int fpga_region_unregister(struct fpga_region *region);
+ 
+-- 
+2.7.4
