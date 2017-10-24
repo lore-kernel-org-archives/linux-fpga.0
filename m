@@ -1,58 +1,31 @@
-Return-Path: <SRS0=J2mi=BZ=huawei.com=majiuyue@kernel.org>
-Return-Path: <SRS0=J2mi=BZ=huawei.com=majiuyue@kernel.org>
+Return-Path: <SRS0=Qpjf=BX=huawei.com=majiuyue@kernel.org>
+Return-Path: <SRS0=Qpjf=BX=huawei.com=majiuyue@kernel.org>
 From: majiuyue <majiuyue@huawei.com>
 Subject: RE: [PATCH v5 13/18] fpga: region: add register/unregister functions
-Date: Thu, 26 Oct 2017 02:14:56 +0000
-Message-ID: <1F870B2EBF7EE147840708BE00416263C63435@dggemi508-mbs.china.huawei.com>
+Date: Tue, 24 Oct 2017 02:12:07 +0000
+Message-ID: <1F870B2EBF7EE147840708BE00416263C6320C@dggemi508-mbs.china.huawei.com>
 References: <20171017212031.3770-1-atull@kernel.org>
  <20171017212031.3770-14-atull@kernel.org>
  <1F870B2EBF7EE147840708BE00416263C61FD3@dggemi508-mbs.china.huawei.com>
  <20171022094306.GA24055@tyrael.ni.corp.natinst.com>
-In-Reply-To: <20171022094306.GA24055@tyrael.ni.corp.natinst.com>
+ <CANk1AXRbPbtBquO+0ndoT9QzuPXTuq4a5Su8bEeVp_XN9QFPMw@mail.gmail.com>
+In-Reply-To: <CANk1AXRbPbtBquO+0ndoT9QzuPXTuq4a5Su8bEeVp_XN9QFPMw@mail.gmail.com>
 Content-Language: zh-CN
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Moritz,
-
-Sorry for the late reply, because I'm still trying to figure out the differ=
-ences between a device-tree based system and a pcie base system.
-
-In my mind, the main differences between them are:
-
-  - In a of_* based system, the kernel will create platform_device objects =
-for all of_node when system is boot up.
-    Because these platform_device(s) are already there, a driver only need =
-to match them and do the probe/register works.
-
-  - But, for pcie based system, it is the driver's responsibility to discov=
-er all the sub-features/sub-devices for a pci_dev.
-    So the driver have the right to decide how to construct the device hier=
-archy below the parent pci_dev.
-    We (the fpga framework) should not make any restrictions/assumptions on=
- this, such as:
-      * "fpga_mgr/region/bridge are stored in pdev->driver_data" --> the pc=
-i driver may use it to store private data
-      * "try_module_get(dev->parent->driver->owner)" --> the mgr/region/bri=
-dge's parent driver may not exist, because they are registered by parent's =
-parent driver.
-
-So I'm not agree with your point:
-
->
->This step doesn't seem to crazy to me, because most likely you wanna be ab=
-le to have region specific behavior on a per subdevice basis?
->
-
-And surely, we are very glad to share our usecase to the fpga framework and=
- make it better :)
-
-
-Thanks.
-
-----
-Jiuyue
+SGkgQWxhbiwgDQoNCj4gPj4gPiArICAgcmVnaW9uLT5kZXYub2Zfbm9kZSA9IGRldi0+b2Zfbm9k
+ZTsNCj4gPj4gPiAgICAgcmVnaW9uLT5kZXYuaWQgPSBpZDsNCj4gPj4gPiAgICAgZGV2X3NldF9k
+cnZkYXRhKGRldiwgcmVnaW9uKTsNCj4gDQo+IFRoYW5rcyBmb3IgY2F0Y2hpbmcgdGhpcy4gIFRo
+aXMgZGV2X3NldF9kcnZkYXRhIGlzIG9ubHkgbmVlZGVkIGZvciB0aGUNCj4gcGxhdGZvcm1fZ2V0
+X2RydmRhdGEgdGhhdCdzIGluIG9mX2ZwZ2FfcmVnaW9uX3JlbW92ZS4gICBTbyB0aGUNCj4gZGV2
+X3NldF9kcnZkdGEgc2hvdWxkIGJlIHRha2VuIGZyb20gZnBnYV9yZWdpb25fcmVnaXN0ZXIgYW5k
+IG1vdmVkIHRvDQo+IG9mX2ZwZ2FfcmVnaW9uX3Byb2JlLg0KPiANCj4gSG93IGRvZXMgdGhhdCBz
+b3VuZD8NCg0KVGhhdCBsb29rcyBwZXJmZWN0IDopDQpUaGVuIEkgc2hvdWxkIGJlIGFibGUgdG8g
+cmVnaXN0ZXIgYm90aCBmcGdhX21nciBhbmQgZnBnYV9yZWdpb24ocykgdG8gdGhlIHNhbWUgcGFy
+ZW50IGRldmljZSAoZS5nLiBwY2lfZGV2KS4NCg0KVGhhbmsgeW91Lg0KDQotLS0tDQpKaXV5dWUN
+Cg==
