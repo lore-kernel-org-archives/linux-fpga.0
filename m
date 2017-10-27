@@ -1,56 +1,64 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v5 16/18] fpga: of-fpga-region: accept overlays that don't program FPGA
-Date: Tue, 17 Oct 2017 16:20:29 -0500
-Message-Id: <20171017212031.3770-17-atull@kernel.org>
-In-Reply-To: <20171017212031.3770-1-atull@kernel.org>
-References: <20171017212031.3770-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=W+aB=B2=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=W+aB=B2=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from gateway31.websitewelcome.com ([192.185.143.4]:40048 "EHLO
+        gateway31.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750998AbdJ0TzF (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 27 Oct 2017 15:55:05 -0400
+Received: from cm10.websitewelcome.com (cm10.websitewelcome.com [100.42.49.4])
+        by gateway31.websitewelcome.com (Postfix) with ESMTP id F0F3C324221
+        for <linux-fpga@vger.kernel.org>; Fri, 27 Oct 2017 14:55:04 -0500 (CDT)
+Date: Fri, 27 Oct 2017 14:55:04 -0500
+Message-ID: <20171027145504.Horde.VcX25ngHHNNLQOuEV8-B27E@gator4166.hostgator.com>
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Subject: Re: [PATCH] fpga: fpga-mgr: remove unnecessary code in
+ __fpga_mgr_get
+References: <20171026230230.GA4904@embeddedor.com>
+ <CANk1AXQX24U06SBuoBmw=UWeCdnu3OV4BW2ZRBW4t1KirZZ5DA@mail.gmail.com>
+ <20171027140904.Horde.m5O1mdmtNKyY-jthC9ZZmz8@gator4166.hostgator.com>
+ <CANk1AXRzoh8ZsJmzoGJuOJZ=ioTyaMBtaT5y+63Ho26HUzJchA@mail.gmail.com>
+In-Reply-To: <CANk1AXRzoh8ZsJmzoGJuOJZ=ioTyaMBtaT5y+63Ho26HUzJchA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed; DelSp=Yes
+MIME-Version: 1.0
+Content-Disposition: inline
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 
-The FPGA may already have a static image programmed when
-Linux boots.  In that case a DT overlay may be used to add
-the devices that already exist.  This commit allows that
-by shuffling the order of some checks.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
-v4: Patch added to patchset in v4
-v5: no change to this patch in this version of patchset
----
- drivers/fpga/of-fpga-region.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+Quoting Alan Tull <atull@kernel.org>:
 
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 1533506..c6b2119 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -298,18 +298,19 @@ static int of_fpga_region_notify_pre_apply(struct fpga_region *region,
- 	struct fpga_image_info *info;
- 	int ret;
- 
--	if (region->info) {
--		dev_err(dev, "Region already has overlay applied.\n");
--		return -EINVAL;
--	}
--
- 	info = of_fpga_region_parse_ov(region, nd->overlay);
- 	if (IS_ERR(info))
- 		return PTR_ERR(info);
- 
-+	/* If overlay doesn't program the FPGA, accept it anyway. */
- 	if (!info)
- 		return 0;
- 
-+	if (region->info) {
-+		dev_err(dev, "Region already has overlay applied.\n");
-+		return -EINVAL;
-+	}
-+
- 	region->info = info;
- 	ret = fpga_region_program_fpga(region);
- 	if (ret) {
--- 
-2.7.4
+> On Fri, Oct 27, 2017 at 2:09 PM, Gustavo A. R. Silva
+> <garsilva@embeddedor.com> wrote:
+>> Hi Alan,
+>>
+>> Quoting Alan Tull <atull@kernel.org>:
+>>
+>>> On Thu, Oct 26, 2017 at 6:02 PM, Gustavo A. R. Silva
+>>> <garsilva@embeddedor.com> wrote:
+>>>
+>>> Hi Gustavo,
+>>>
+>>> Thanks for pointing that out.  There's also a similar thing in
+>>> fpga-bridge.c that I need to fix.
+>>>
+>>
+>> Can you share with me what exactly are you trying to fix?
+>>
+>> If the issue is similar I might be able to help.
+>
+> Same fix, but in of_fpga_bridge_get.  Checks the output of
+> to_fpga_bridge for NULL.
+>
+
+Oh I see now. I'll send a patch for this shortly.
+
+Thanks!
+--
+Gustavo A. R. Silva
+
+
+
+
+
