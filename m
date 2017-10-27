@@ -1,59 +1,85 @@
-Return-Path: <SRS0=xl3R=BS=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=xl3R=BS=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:53122 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752077AbdJSWPH (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 19 Oct 2017 18:15:07 -0400
-From: matthew.gerlach@linux.intel.com
-Subject: [PATCH v3 1/2] dt-bindings: mtd: Altera ASMI Parallel II IP Core
-Date: Thu, 19 Oct 2017 15:14:49 -0700
-Message-Id: <1508451290-26426-2-git-send-email-matthew.gerlach@linux.intel.com>
-In-Reply-To: <1508451290-26426-1-git-send-email-matthew.gerlach@linux.intel.com>
-References: <1508451290-26426-1-git-send-email-matthew.gerlach@linux.intel.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: vndao@altera.com, dwmw2@infradead.org, computersforpeace@gmail.com, boris.brezillon@free-electrons.com, marek.vasut@gmail.com, richard@nod.at, cyrille.pitchen@wedev4u.fr, robh+dt@kernel.org, mark.rutland@arm.com, linux-mtd@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, davem@davemloft.net, mchehab@kernel.org, linux-fpga@vger.kernel.org, tien.hock.loh@intel.com, hean.loong.ong@intel.com
-Cc: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <20171027165654.12663-1-abbotti@mev.co.uk>
+References: <20171027165654.12663-1-abbotti@mev.co.uk>
+From: Alan Tull <atull@kernel.org>
+Date: Fri, 27 Oct 2017 13:26:31 -0500
+Message-ID: <CANk1AXQXn1GN=zg_0V_H90kiU4SDo1cGp7VuDbgBAzHaXfsD7w@mail.gmail.com>
+Subject: Re: [PATCH] fpga: region: release of_parse_phandle nodes after use
+Content-Type: text/plain; charset="UTF-8"
+To: Ian Abbott <abbotti@mev.co.uk>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "# 4 . 10+" <stable@vger.kernel.org>
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+On Fri, Oct 27, 2017 at 11:56 AM, Ian Abbott <abbotti@mev.co.uk> wrote:
 
-Device Tree bindings for Altera ASMI Parallel II IP Core
-connected to a flash chip.
+Hi Ian,
 
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Acked-by: Rob Herring <robh@kernel.org>
----
-v2:
-    Made substitutions suggested by Rob Herring.
-    Emphasize driver expects controller is connected to spi-nor flash.
+Looks good.  Thanks for catching this!
 
-v3: add Acked-by: Rob Herring <robh@kernel.org>
----
- Documentation/devicetree/bindings/mtd/altera-asmip2.txt | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mtd/altera-asmip2.txt
+Alan
 
-diff --git a/Documentation/devicetree/bindings/mtd/altera-asmip2.txt b/Documentation/devicetree/bindings/mtd/altera-asmip2.txt
-new file mode 100644
-index 0000000..2e58817
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mtd/altera-asmip2.txt
-@@ -0,0 +1,15 @@
-+* Altera ASMI Parallel II IP Core
-+
-+Devicetree bindings for an Altera ASMI Parallel II IP core connected to a
-+spi-nor flash chip.
-+
-+Required properties:
-+- compatible : Should be "altr,asmi-parallel2-spi-nor".
-+- reg : A tuple consisting of a physical address and length.
-+
-+Example:
-+
-+qspi: spi@a0001000 {
-+	compatible = "altr,asmi-parallel2-spi-nor";
-+	reg = <0xa0001000 0x10>;
-+};
--- 
-2.7.4
+> Both fpga_region_get_manager() and fpga_region_get_bridges() call
+> of_parse_phandle(), but nothing calls of_node_put() on the returned
+> struct device_node pointers.  Make sure to do that to stop their
+> reference counters getting out of whack.
+>
+> Fixes: 0fa20cdfcc1f ("fpga: fpga-region: device tree control for FPGA")
+> Cc: <stable@vger.kernel.org> # 4.10+
+> Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
 
+Signed-off-by: Alan Tull <atull@kernel.org>
+
+> ---
+>  drivers/fpga/fpga-region.c | 13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+> index d9ab7c75b14f..e0c73ceba2ed 100644
+> --- a/drivers/fpga/fpga-region.c
+> +++ b/drivers/fpga/fpga-region.c
+> @@ -147,6 +147,7 @@ static struct fpga_manager *fpga_region_get_manager(struct fpga_region *region)
+>                         mgr_node = of_parse_phandle(np, "fpga-mgr", 0);
+>                         if (mgr_node) {
+>                                 mgr = of_fpga_mgr_get(mgr_node);
+> +                               of_node_put(mgr_node);
+>                                 of_node_put(np);
+>                                 return mgr;
+>                         }
+> @@ -192,10 +193,13 @@ static int fpga_region_get_bridges(struct fpga_region *region,
+>                 parent_br = region_np->parent;
+>
+>         /* If overlay has a list of bridges, use it. */
+> -       if (of_parse_phandle(overlay, "fpga-bridges", 0))
+> +       br = of_parse_phandle(overlay, "fpga-bridges", 0);
+> +       if (br) {
+> +               of_node_put(br);
+>                 np = overlay;
+> -       else
+> +       } else {
+>                 np = region_np;
+> +       }
+>
+>         for (i = 0; ; i++) {
+>                 br = of_parse_phandle(np, "fpga-bridges", i);
+> @@ -203,12 +207,15 @@ static int fpga_region_get_bridges(struct fpga_region *region,
+>                         break;
+>
+>                 /* If parent bridge is in list, skip it. */
+> -               if (br == parent_br)
+> +               if (br == parent_br) {
+> +                       of_node_put(br);
+>                         continue;
+> +               }
+>
+>                 /* If node is a bridge, get it and add to list */
+>                 ret = fpga_bridge_get_to_list(br, region->info,
+>                                               &region->bridge_list);
+> +               of_node_put(br);
+>
+>                 /* If any of the bridges are in use, give up */
+>                 if (ret == -EBUSY) {
+> --
+> 2.14.2
+>
