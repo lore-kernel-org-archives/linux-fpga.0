@@ -1,289 +1,342 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <1509482535-4921-4-git-send-email-atull@kernel.org>
+References: <1509482535-4921-1-git-send-email-atull@kernel.org> <1509482535-4921-4-git-send-email-atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v5 03/18] fpga: mgr: separate getting/locking FPGA manager
-Date: Tue, 17 Oct 2017 16:20:16 -0500
-Message-Id: <20171017212031.3770-4-atull@kernel.org>
-In-Reply-To: <20171017212031.3770-1-atull@kernel.org>
-References: <20171017212031.3770-1-atull@kernel.org>
+Date: Tue, 31 Oct 2017 18:29:37 -0500
+Message-ID: <CANk1AXRP5BYjxGK6UBxDnOfdZVKsLexv66FU0BVnqRrOXEgX2A@mail.gmail.com>
+Subject: Re: [PATCH 3/3] fpga: bridge: don't use drvdata in common fpga code
+Content-Type: text/plain; charset="UTF-8"
 To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Cc: Alan Tull <atull@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Previously when the user gets a FPGA manager, it was locked
-and nobody else could use it for programming.
+On Tue, Oct 31, 2017 at 3:42 PM, Alan Tull <atull@kernel.org> wrote:
+> Changes to the fpga bridge code to not use drvdata in common code.
+>
+> Change fpga_bridge_register to not set drvdata.
+>
+> Change the register/unregister functions parameters to take the
+> bridge struct:
+> * int fpga_bridge_register(struct device *dev,
+>                            struct fpga_bridge *bridge);
+> * void fpga_bridge_unregister(struct fpga_bridge *bridge);
+>
+> Change the drivers that call fpga_bridge_register to alloc the struct
+> fpga_bridge (using devm_kzalloc) and partly fill it, adding name,
+> ops, and priv.
+>
+> The rationale is that setting drvdata is fine for DT based devices
+> that will have one manager, bridge, or region per platform device.
+> However PCIe based devices may have multiple FPGA mgr/bridge/regions
+> under one pcie device.  Without these changes, the PCIe solution has
+> to create an extra device for each child mgr/bridge/region to hold
+> drvdata.
+>
+> Signed-off-by: Alan Tull <atull@kernel.org>
+> Reported-by: Jiuyue Ma <majiuyue@huawei.com>
+> ---
+>  drivers/fpga/altera-fpga2sdram.c    | 19 +++++++++++++++----
+>  drivers/fpga/altera-freeze-bridge.c | 17 ++++++++++++++---
+>  drivers/fpga/altera-hps2fpga.c      | 15 ++++++++++++---
+>  drivers/fpga/fpga-bridge.c          | 30 +++++++-----------------------
+>  drivers/fpga/xilinx-pr-decoupler.c  | 14 +++++++++++---
+>  include/linux/fpga/fpga-bridge.h    |  5 ++---
+>  6 files changed, 61 insertions(+), 39 deletions(-)
+>
+> diff --git a/drivers/fpga/altera-fpga2sdram.c b/drivers/fpga/altera-fpga2sdram.c
+> index d4eeb74..73c7bf6 100644
+> --- a/drivers/fpga/altera-fpga2sdram.c
+> +++ b/drivers/fpga/altera-fpga2sdram.c
+> @@ -106,10 +106,15 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>  {
+>         struct device *dev = &pdev->dev;
+>         struct alt_fpga2sdram_data *priv;
+> +       struct fpga_bridge *br;
+>         u32 enable;
+>         struct regmap *sysmgr;
+>         int ret = 0;
+>
+> +       br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
+> +       if (!br)
+> +               return -ENOMEM;
+> +
+>         priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+>         if (!priv)
+>                 return -ENOMEM;
+> @@ -131,8 +136,12 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>         /* Get f2s bridge configuration saved in handoff register */
+>         regmap_read(sysmgr, SYSMGR_ISWGRP_HANDOFF3, &priv->mask);
+>
+> -       ret = fpga_bridge_register(dev, F2S_BRIDGE_NAME,
+> -                                  &altera_fpga2sdram_br_ops, priv);
+> +       br->name = F2S_BRIDGE_NAME;
+> +       br->br_ops = &altera_fpga2sdram_br_ops;
+> +       br->priv = priv;
+> +       platform_set_drvdata(pdev, br);
+> +
+> +       ret = fpga_bridge_register(dev, br);
+>         if (ret)
+>                 return ret;
+>
+> @@ -146,7 +155,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>                                  (enable ? "enabling" : "disabling"));
+>                         ret = _alt_fpga2sdram_enable_set(priv, enable);
+>                         if (ret) {
+> -                               fpga_bridge_unregister(&pdev->dev);
+> +                               fpga_bridge_unregister(br);
+>                                 return ret;
+>                         }
+>                 }
+> @@ -157,7 +166,9 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>
+>  static int alt_fpga_bridge_remove(struct platform_device *pdev)
+>  {
+> -       fpga_bridge_unregister(&pdev->dev);
+> +       struct fpga_bridge *br = platform_get_drvdata(pdev);
+> +
+> +       fpga_bridge_unregister(br);
+>
+>         return 0;
+>  }
+> diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
+> index 6159cfcf..5fd424b 100644
+> --- a/drivers/fpga/altera-freeze-bridge.c
+> +++ b/drivers/fpga/altera-freeze-bridge.c
+> @@ -219,6 +219,7 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+>  {
+>         struct device *dev = &pdev->dev;
+>         struct device_node *np = pdev->dev.of_node;
+> +       struct fpga_bridge *br;
+>         void __iomem *base_addr;
+>         struct altera_freeze_br_data *priv;
+>         struct resource *res;
+> @@ -227,6 +228,10 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+>         if (!np)
+>                 return -ENODEV;
+>
+> +       br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
+> +       if (!br)
+> +               return -ENOMEM;
+> +
+>         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>         base_addr = devm_ioremap_resource(dev, res);
+>         if (IS_ERR(base_addr))
+> @@ -254,13 +259,19 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+>
+>         priv->base_addr = base_addr;
+>
+> -       return fpga_bridge_register(dev, FREEZE_BRIDGE_NAME,
+> -                                   &altera_freeze_br_br_ops, priv);
+> +       br->name = FREEZE_BRIDGE_NAME;
+> +       br->br_ops = &altera_freeze_br_br_ops;
+> +       br->priv = priv;
+> +       platform_set_drvdata(pdev, br);
+> +
+> +       return fpga_bridge_register(dev, br);
+>  }
+>
+>  static int altera_freeze_br_remove(struct platform_device *pdev)
+>  {
+> -       fpga_bridge_unregister(&pdev->dev);
+> +       struct fpga_bridge *br = platform_get_drvdata(pdev);
+> +
+> +       fpga_bridge_unregister(br);
+>
+>         return 0;
+>  }
+> diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
+> index 406d2f1..4539057 100644
+> --- a/drivers/fpga/altera-hps2fpga.c
+> +++ b/drivers/fpga/altera-hps2fpga.c
+> @@ -139,6 +139,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>         struct device *dev = &pdev->dev;
+>         struct altera_hps2fpga_data *priv;
+>         const struct of_device_id *of_id;
+> +       struct fpga_bridge *br;
+>         u32 enable;
+>         int ret;
+>
+> @@ -150,6 +151,10 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>
+>         priv = (struct altera_hps2fpga_data *)of_id->data;
+>
+> +       br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
+> +       if (!br)
+> +               return -ENOMEM;
+> +
+>         priv->bridge_reset = of_reset_control_get_exclusive_by_index(dev->of_node,
+>                                                                      0);
+>         if (IS_ERR(priv->bridge_reset)) {
+> @@ -190,8 +195,12 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>                 }
+>         }
+>
+> -       ret = fpga_bridge_register(dev, priv->name, &altera_hps2fpga_br_ops,
+> -                                  priv);
+> +       br->name = priv->name;
+> +       br->br_ops = &altera_hps2fpga_br_ops;
+> +       br->priv = priv;
+> +       platform_set_drvdata(pdev, br);
+> +
+> +       ret = fpga_bridge_register(dev, br);
+>  err:
+>         if (ret)
+>                 clk_disable_unprepare(priv->clk);
+> @@ -204,7 +213,7 @@ static int alt_fpga_bridge_remove(struct platform_device *pdev)
+>         struct fpga_bridge *bridge = platform_get_drvdata(pdev);
+>         struct altera_hps2fpga_data *priv = bridge->priv;
+>
+> -       fpga_bridge_unregister(&pdev->dev);
+> +       fpga_bridge_unregister(bridge);
+>
+>         clk_disable_unprepare(priv->clk);
+>
+> diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+> index 15ce9f1..10b582e 100644
+> --- a/drivers/fpga/fpga-bridge.c
+> +++ b/drivers/fpga/fpga-bridge.c
+> @@ -338,41 +338,30 @@ ATTRIBUTE_GROUPS(fpga_bridge);
+>   *
+>   * Return: 0 for success, error code otherwise.
+>   */
+> -int fpga_bridge_register(struct device *dev, const char *name,
+> -                        const struct fpga_bridge_ops *br_ops, void *priv)
+> +int fpga_bridge_register(struct device *dev, struct fpga_bridge *bridge)
+>  {
+> -       struct fpga_bridge *bridge;
+> +       const char *name;
+>         int id, ret = 0;
+>
+> +       name = bridge->name;
+>         if (!name || !strlen(name)) {
+>                 dev_err(dev, "Attempt to register with no name!\n");
+>                 return -EINVAL;
+>         }
+>
+> -       bridge = kzalloc(sizeof(*bridge), GFP_KERNEL);
+> -       if (!bridge)
+> -               return -ENOMEM;
+> -
+>         id = ida_simple_get(&fpga_bridge_ida, 0, 0, GFP_KERNEL);
+> -       if (id < 0) {
+> -               ret = id;
+> -               goto error_kfree;
+> -       }
+> +       if (id < 0)
+> +               return id;
+>
+>         mutex_init(&bridge->mutex);
+>         INIT_LIST_HEAD(&bridge->node);
+>
+> -       bridge->name = name;
+> -       bridge->br_ops = br_ops;
+> -       bridge->priv = priv;
+> -
+>         device_initialize(&bridge->dev);
+> -       bridge->dev.groups = br_ops->groups;
+> +       bridge->dev.groups = bridge->br_ops->groups;
+>         bridge->dev.class = fpga_bridge_class;
+>         bridge->dev.parent = dev;
+>         bridge->dev.of_node = dev->of_node;
+>         bridge->dev.id = id;
+> -       dev_set_drvdata(dev, bridge);
+>
+>         ret = dev_set_name(&bridge->dev, "br%d", id);
+>         if (ret)
+> @@ -391,8 +380,6 @@ int fpga_bridge_register(struct device *dev, const char *name,
+>
+>  error_device:
+>         ida_simple_remove(&fpga_bridge_ida, id);
+> -error_kfree:
+> -       kfree(bridge);
+>
+>         return ret;
+>  }
+> @@ -402,10 +389,8 @@ EXPORT_SYMBOL_GPL(fpga_bridge_register);
+>   * fpga_bridge_unregister - unregister a fpga bridge driver
+>   * @dev: FPGA bridge device from pdev
+>   */
+> -void fpga_bridge_unregister(struct device *dev)
+> +void fpga_bridge_unregister(struct fpga_bridge *bridge)
+>  {
+> -       struct fpga_bridge *bridge = dev_get_drvdata(dev);
+> -
+>         /*
+>          * If the low level driver provides a method for putting bridge into
+>          * a desired state upon unregister, do it.
+> @@ -422,7 +407,6 @@ static void fpga_bridge_dev_release(struct device *dev)
+>         struct fpga_bridge *bridge = to_fpga_bridge(dev);
+>
+>         ida_simple_remove(&fpga_bridge_ida, bridge->dev.id);
+> -       kfree(bridge);
+>  }
+>
+>  static int __init fpga_bridge_dev_init(void)
+> diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
+> index e359930..317b2fb 100644
+> --- a/drivers/fpga/xilinx-pr-decoupler.c
+> +++ b/drivers/fpga/xilinx-pr-decoupler.c
+> @@ -94,9 +94,14 @@ MODULE_DEVICE_TABLE(of, xlnx_pr_decoupler_of_match);
+>  static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+>  {
+>         struct xlnx_pr_decoupler_data *priv;
+> +       struct fpga_bridge *br;
+>         int err;
+>         struct resource *res;
+>
+> +       br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
 
-This commit makes it straightforward to save a reference to an
-FPGA manager and only lock it when programming the FPGA.
+Should be &pdev->dev instead of dev.
 
-Add functions that get an FPGA manager's mutex for exclusive use:
-* fpga_mgr_lock
-* fpga_mgr_unlock
+Alan
 
-The following functions no longer lock an FPGA manager's mutex:
-* of_fpga_mgr_get
-* fpga_mgr_get
-* fpga_mgr_put
-
-Signed-off-by: Alan Tull <atull@kernel.org>
----
-v2: add static for __fpga_mgr_get
-    function documentation corrections
-    use dev_err
-v3: bisectibility fix
-v4: add API doc updates that were originally in a separate patch
-v5: no change to this patch in this version of patchset
----
- Documentation/fpga/fpga-mgr.txt | 35 ++++++++++++++++++++-------
- drivers/fpga/fpga-mgr.c         | 52 ++++++++++++++++++++++++++++-------------
- drivers/fpga/fpga-region.c      | 14 +++++++++--
- include/linux/fpga/fpga-mgr.h   |  3 +++
- 4 files changed, 77 insertions(+), 27 deletions(-)
-
-diff --git a/Documentation/fpga/fpga-mgr.txt b/Documentation/fpga/fpga-mgr.txt
-index 6ebc714..cc6413e 100644
---- a/Documentation/fpga/fpga-mgr.txt
-+++ b/Documentation/fpga/fpga-mgr.txt
-@@ -48,8 +48,20 @@ To get/put a reference to a FPGA manager:
- 	struct fpga_manager *fpga_mgr_get(struct device *dev);
- 	void fpga_mgr_put(struct fpga_manager *mgr);
- 
--Given a DT node or device, get an exclusive reference to a FPGA manager.
--fpga_mgr_put releases the reference.
-+Given a DT node or device, get a reference to a FPGA manager.  This pointer
-+can be saved until you are ready to program the FPGA.  fpga_mgr_put releases
-+the reference.
-+
-+
-+To get exclusive control of a FPGA manager:
-+-------------------------------------------
-+
-+	int fpga_mgr_lock(struct fpga_manager *mgr);
-+	void fpga_mgr_unlock(struct fpga_manager *mgr);
-+
-+The user should call fpga_mgr_lock and verify that it returns 0 before
-+attempting to program the FPGA.  Likewise, the user should call
-+fpga_mgr_unlock when done programming the FPGA.
- 
- 
- To register or unregister the low level FPGA-specific driver:
-@@ -67,13 +79,21 @@ device."
- 
- How to write an image buffer to a supported FPGA
- ================================================
--/* Include to get the API */
- #include <linux/fpga/fpga-mgr.h>
- 
- struct fpga_manager *mgr;
- struct fpga_image_info *info;
- int ret;
- 
-+/*
-+ * Get a reference to FPGA manager.  The manager is not locked, so you can
-+ * hold onto this reference without it preventing programming.
-+ *
-+ * This example uses the device node of the manager.  Alternatively, use
-+ * fpga_mgr_get(dev) instead if you have the device.
-+ */
-+mgr = of_fpga_mgr_get(mgr_node);
-+
- /* struct with information about the FPGA image to program. */
- info = fpga_image_info_alloc(dev);
- 
-@@ -99,17 +119,14 @@ if (image is in a scatter gather table) {
- 
- }
- 
--/*
-- * Get a reference to FPGA manager.  This example uses the  device node of the
-- * manager.  You could use fpga_mgr_get() instead if you have the device instead
-- * of the device node.
-- */
--mgr = of_fpga_mgr_get(mgr_node);
-+/* Get exclusive control of FPGA manager */
-+ret = fpga_mgr_lock(mgr);
- 
- /* Load the buffer to the FPGA */
- ret = fpga_mgr_buf_load(mgr, &info, buf, count);
- 
- /* Release the FPGA manager */
-+fpga_mgr_unlock(mgr);
- fpga_mgr_put(mgr);
- 
- /* Deallocate the image info if you're done with it */
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index a8dd549..d27e8d2 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -410,28 +410,19 @@ ATTRIBUTE_GROUPS(fpga_mgr);
- static struct fpga_manager *__fpga_mgr_get(struct device *dev)
- {
- 	struct fpga_manager *mgr;
--	int ret = -ENODEV;
- 
- 	mgr = to_fpga_manager(dev);
- 	if (!mgr)
- 		goto err_dev;
- 
--	/* Get exclusive use of fpga manager */
--	if (!mutex_trylock(&mgr->ref_mutex)) {
--		ret = -EBUSY;
--		goto err_dev;
--	}
--
- 	if (!try_module_get(dev->parent->driver->owner))
--		goto err_ll_mod;
-+		goto err_dev;
- 
- 	return mgr;
- 
--err_ll_mod:
--	mutex_unlock(&mgr->ref_mutex);
- err_dev:
- 	put_device(dev);
--	return ERR_PTR(ret);
-+	return ERR_PTR(-ENODEV);
- }
- 
- static int fpga_mgr_dev_match(struct device *dev, const void *data)
-@@ -440,10 +431,10 @@ static int fpga_mgr_dev_match(struct device *dev, const void *data)
- }
- 
- /**
-- * fpga_mgr_get - get an exclusive reference to a fpga mgr
-+ * fpga_mgr_get - get a reference to a fpga mgr
-  * @dev:	parent device that fpga mgr was registered with
-  *
-- * Given a device, get an exclusive reference to a fpga mgr.
-+ * Given a device, get a reference to a fpga mgr.
-  *
-  * Return: fpga manager struct or IS_ERR() condition containing error code.
-  */
-@@ -464,10 +455,10 @@ static int fpga_mgr_of_node_match(struct device *dev, const void *data)
- }
- 
- /**
-- * of_fpga_mgr_get - get an exclusive reference to a fpga mgr
-+ * of_fpga_mgr_get - get a reference to a fpga mgr
-  * @node:	device node
-  *
-- * Given a device node, get an exclusive reference to a fpga mgr.
-+ * Given a device node, get a reference to a fpga mgr.
-  *
-  * Return: fpga manager struct or IS_ERR() condition containing error code.
-  */
-@@ -491,12 +482,41 @@ EXPORT_SYMBOL_GPL(of_fpga_mgr_get);
- void fpga_mgr_put(struct fpga_manager *mgr)
- {
- 	module_put(mgr->dev.parent->driver->owner);
--	mutex_unlock(&mgr->ref_mutex);
- 	put_device(&mgr->dev);
- }
- EXPORT_SYMBOL_GPL(fpga_mgr_put);
- 
- /**
-+ * fpga_mgr_lock - Lock FPGA manager for exclusive use
-+ * @mgr:	fpga manager
-+ *
-+ * Given a pointer to FPGA Manager (from fpga_mgr_get() or
-+ * of_fpga_mgr_put()) attempt to get the mutex.
-+ *
-+ * Return: 0 for success or -EBUSY
-+ */
-+int fpga_mgr_lock(struct fpga_manager *mgr)
-+{
-+	if (!mutex_trylock(&mgr->ref_mutex)) {
-+		dev_err(&mgr->dev, "FPGA manager is in use.\n");
-+		return -EBUSY;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(fpga_mgr_lock);
-+
-+/**
-+ * fpga_mgr_unlock - Unlock FPGA manager
-+ * @mgr:	fpga manager
-+ */
-+void fpga_mgr_unlock(struct fpga_manager *mgr)
-+{
-+	mutex_unlock(&mgr->ref_mutex);
-+}
-+EXPORT_SYMBOL_GPL(fpga_mgr_unlock);
-+
-+/**
-  * fpga_mgr_register - register a low level fpga manager driver
-  * @dev:	fpga manager device from pdev
-  * @name:	fpga manager name
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 120c496..1e1640a 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -125,7 +125,7 @@ static void fpga_region_put(struct fpga_region *region)
- }
- 
- /**
-- * fpga_region_get_manager - get exclusive reference for FPGA manager
-+ * fpga_region_get_manager - get reference for FPGA manager
-  * @region: FPGA region
-  *
-  * Get FPGA Manager from "fpga-mgr" property or from ancestor region.
-@@ -233,6 +233,7 @@ static int fpga_region_get_bridges(struct fpga_region *region,
- static int fpga_region_program_fpga(struct fpga_region *region,
- 				    struct device_node *overlay)
- {
-+	struct device *dev = &region->dev;
- 	struct fpga_manager *mgr;
- 	int ret;
- 
-@@ -249,10 +250,16 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_region;
- 	}
- 
-+	ret = fpga_mgr_lock(mgr);
-+	if (ret) {
-+		dev_err(dev, "FPGA manager is busy\n");
-+		goto err_put_mgr;
-+	}
-+
- 	ret = fpga_region_get_bridges(region, overlay);
- 	if (ret) {
- 		pr_err("failed to get fpga region bridges\n");
--		goto err_put_mgr;
-+		goto err_unlock_mgr;
- 	}
- 
- 	ret = fpga_bridges_disable(&region->bridge_list);
-@@ -273,6 +280,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_br;
- 	}
- 
-+	fpga_mgr_unlock(mgr);
- 	fpga_mgr_put(mgr);
- 	fpga_region_put(region);
- 
-@@ -280,6 +288,8 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 
- err_put_br:
- 	fpga_bridges_put(&region->bridge_list);
-+err_unlock_mgr:
-+	fpga_mgr_unlock(mgr);
- err_put_mgr:
- 	fpga_mgr_put(mgr);
- err_put_region:
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 6b79134..cb5615c 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -155,6 +155,9 @@ void fpga_image_info_free(struct fpga_image_info *info);
- 
- int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info);
- 
-+int fpga_mgr_lock(struct fpga_manager *mgr);
-+void fpga_mgr_unlock(struct fpga_manager *mgr);
-+
- struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
- 
- struct fpga_manager *fpga_mgr_get(struct device *dev);
--- 
-2.7.4
+> +       if (!br)
+> +               return -ENOMEM;
+> +
+>         priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+>         if (!priv)
+>                 return -ENOMEM;
+> @@ -120,9 +125,12 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+>
+>         clk_disable(priv->clk);
+>
+> -       err = fpga_bridge_register(&pdev->dev, "Xilinx PR Decoupler",
+> -                                  &xlnx_pr_decoupler_br_ops, priv);
+> +       br->name = "Xilinx PR Decoupler";
+> +       br->br_ops = &xlnx_pr_decoupler_br_ops;
+> +       br->priv = priv;
+> +       platform_set_drvdata(pdev, br);
+>
+> +       err = fpga_bridge_register(&pdev->dev, br);
+>         if (err) {
+>                 dev_err(&pdev->dev, "unable to register Xilinx PR Decoupler");
+>                 clk_unprepare(priv->clk);
+> @@ -137,7 +145,7 @@ static int xlnx_pr_decoupler_remove(struct platform_device *pdev)
+>         struct fpga_bridge *bridge = platform_get_drvdata(pdev);
+>         struct xlnx_pr_decoupler_data *p = bridge->priv;
+>
+> -       fpga_bridge_unregister(&pdev->dev);
+> +       fpga_bridge_unregister(bridge);
+>
+>         clk_unprepare(p->clk);
+>
+> diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
+> index 65d3311..9e80dbf 100644
+> --- a/include/linux/fpga/fpga-bridge.h
+> +++ b/include/linux/fpga/fpga-bridge.h
+> @@ -60,8 +60,7 @@ int of_fpga_bridge_get_to_list(struct device_node *np,
+>                                struct fpga_image_info *info,
+>                                struct list_head *bridge_list);
+>
+> -int fpga_bridge_register(struct device *dev, const char *name,
+> -                        const struct fpga_bridge_ops *br_ops, void *priv);
+> -void fpga_bridge_unregister(struct device *dev);
+> +int fpga_bridge_register(struct device *dev, struct fpga_bridge *br);
+> +void fpga_bridge_unregister(struct fpga_bridge *br);
+>
+>  #endif /* _LINUX_FPGA_BRIDGE_H */
+> --
+> 2.7.4
+>
