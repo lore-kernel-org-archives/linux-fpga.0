@@ -1,41 +1,58 @@
-Return-Path: <SRS0=BGzE=BZ=embeddedor.com=garsilva@kernel.org>
-Return-Path: <SRS0=BGzE=BZ=embeddedor.com=garsilva@kernel.org>
-Date: Thu, 26 Oct 2017 18:02:30 -0500
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Subject: [PATCH] fpga: fpga-mgr: remove unnecessary code in __fpga_mgr_get
-Message-ID: <20171026230230.GA4904@embeddedor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-To: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 1/3] fpga: region: don't use drvdata in common fpga code
+Date: Tue, 31 Oct 2017 15:42:13 -0500
+Message-Id: <1509482535-4921-2-git-send-email-atull@kernel.org>
+In-Reply-To: <1509482535-4921-1-git-send-email-atull@kernel.org>
+References: <1509482535-4921-1-git-send-email-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Notice that mgr = to_fpga_manager(dev); expands to:
+Part of patchset that changes the following fpga_*_register
+functions to not set drvdata:
+* fpga_region_register.
+* fpga_mgr_register
+* fpga_bridge_register
 
-mgr = container_of(dev, struct fpga_manager, dev);
+The rationale is that setting drvdata is fine for DT based devices
+that will have one manager, bridge, or region per platform device.
+However PCIe based devices may have multiple FPGA mgr/bridge/regions
+under one PCIe device.  Without these changes, the PCIe solution has
+to create an extra device for each child mgr/bridge/region to hold
+drvdata.
 
-and container_of is never null, so this null check is
-unnecessary.
-
-Addresses-Coverity-ID: 1397916
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+Signed-off-by: Alan Tull <atull@kernel.org>
+Reported-by: Jiuyue Ma <majiuyue@huawei.com>
 ---
- drivers/fpga/fpga-mgr.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/fpga/fpga-region.c    | 1 -
+ drivers/fpga/of-fpga-region.c | 1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 188ffef..33063ca 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -367,8 +367,6 @@ static struct fpga_manager *__fpga_mgr_get(struct device *dev)
- 	int ret = -ENODEV;
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index edab2a2..ebe1f87 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -178,7 +178,6 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
+ 	region->dev.parent = dev;
+ 	region->dev.of_node = dev->of_node;
+ 	region->dev.id = id;
+-	dev_set_drvdata(dev, region);
  
- 	mgr = to_fpga_manager(dev);
--	if (!mgr)
--		goto err_dev;
+ 	ret = dev_set_name(&region->dev, "region%d", id);
+ 	if (ret)
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index c6b2119..3079ed8 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -431,6 +431,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 		goto eprobe_mgr_put;
  
- 	/* Get exclusive use of fpga manager */
- 	if (!mutex_trylock(&mgr->ref_mutex)) {
+ 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
++	dev_set_drvdata(dev, region);
+ 
+ 	dev_info(dev, "FPGA Region probed\n");
+ 
 -- 
 2.7.4
