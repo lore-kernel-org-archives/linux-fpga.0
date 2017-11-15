@@ -1,188 +1,127 @@
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 03/21] fpga: mgr: add status for fpga-manager
-Date: Mon, 27 Nov 2017 14:42:10 +0800
-Message-Id: <1511764948-20972-4-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH v2 4/5] fpga: region: change fpga_region_register to have one param
+Date: Wed, 15 Nov 2017 14:51:51 -0600
+Message-Id: <1510779112-5517-5-git-send-email-atull@kernel.org>
+In-Reply-To: <1510779112-5517-1-git-send-email-atull@kernel.org>
+References: <1510779112-5517-1-git-send-email-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds status to fpga-manager data structure, to allow
-driver to store full/partial reconfiguration errors and other
-status information, and adds one status callback to fpga_manager_ops
-to allow fpga_manager to collect latest status when failures are
-detected.
+Change fpga_region_register to only take one parameter:
 
-The following sysfs file is created:
-* /sys/class/fpga_manager/<fpga>/status
-  Return status of fpga manager, including reconfiguration errors.
+  int fpga_region_register(struct fpga_region *region)
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-----
-v3: add one line description for status
-    add status callback function to fpga_manager_ops
-    update fpga-mgr status if any failure or during initialization
-    s/INCOMPATIBLE_BS_ERR/INCOMPATIBLE_IMAGE_ERR/
+The parent dev is added to struct fpga_region.
+
+This make it similar to fpga_bridge_register and fpga_mgr_register
+which also just take their respective struct as a param.
+
+Signed-off-by: Alan Tull <atull@kernel.org>
 ---
- Documentation/ABI/testing/sysfs-class-fpga-manager | 10 ++++++++
- drivers/fpga/fpga-mgr.c                            | 28 ++++++++++++++++++++++
- include/linux/fpga/fpga-mgr.h                      | 17 +++++++++++++
- 3 files changed, 55 insertions(+)
+v2: This patch added in this version of the patchset
+---
+ Documentation/fpga/fpga-region.txt |  3 +--
+ drivers/fpga/fpga-region.c         | 12 +++++++++---
+ drivers/fpga/of-fpga-region.c      |  3 ++-
+ include/linux/fpga/fpga-region.h   |  4 +++-
+ 4 files changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-fpga-manager b/Documentation/ABI/testing/sysfs-class-fpga-manager
-index 23056c5..01db14d 100644
---- a/Documentation/ABI/testing/sysfs-class-fpga-manager
-+++ b/Documentation/ABI/testing/sysfs-class-fpga-manager
-@@ -35,3 +35,13 @@ Description:	Read fpga manager state as a string.
- 		* write complete	= Doing post programming steps
- 		* write complete error	= Error while doing post programming
- 		* operating		= FPGA is programmed and operating
-+
-+What:		/sys/class/fpga_manager/<fpga>/status
-+Date:		November 2017
-+KernelVersion:	4.15
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read fpga manager status as a string.
-+		If FPGA programming operation fails, it could be due to crc
-+		error or incompatible bitstream image. The intent of this
-+		interface is to provide more detailed information for FPGA
-+		programming errors to userspace.
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 1fd5494..8b583ba 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -88,6 +88,7 @@ static int fpga_mgr_write_init_buf(struct fpga_manager *mgr,
- 	if (ret) {
- 		dev_err(&mgr->dev, "Error preparing FPGA for writing\n");
- 		mgr->state = FPGA_MGR_STATE_WRITE_INIT_ERR;
-+		fpga_mgr_update_status(mgr);
- 		return ret;
- 	}
+diff --git a/Documentation/fpga/fpga-region.txt b/Documentation/fpga/fpga-region.txt
+index 139a02b..d38fa3b 100644
+--- a/Documentation/fpga/fpga-region.txt
++++ b/Documentation/fpga/fpga-region.txt
+@@ -42,8 +42,7 @@ The FPGA region API
+ To register or unregister a region:
+ -----------------------------------
  
-@@ -148,6 +149,7 @@ static int fpga_mgr_write_complete(struct fpga_manager *mgr,
- 	if (ret) {
- 		dev_err(&mgr->dev, "Error after writing image data to FPGA\n");
- 		mgr->state = FPGA_MGR_STATE_WRITE_COMPLETE_ERR;
-+		fpga_mgr_update_status(mgr);
- 		return ret;
- 	}
- 	mgr->state = FPGA_MGR_STATE_OPERATING;
-@@ -225,6 +227,7 @@ static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
- 	if (ret) {
- 		dev_err(&mgr->dev, "Error while writing image data to FPGA\n");
- 		mgr->state = FPGA_MGR_STATE_WRITE_ERR;
-+		fpga_mgr_update_status(mgr);
- 		return ret;
- 	}
+-	int fpga_region_register(struct device *dev,
+-				 struct fpga_region *region);
++	int fpga_region_register(struct fpga_region *region);
+ 	int fpga_region_unregister(struct fpga_region *region);
  
-@@ -397,12 +400,36 @@ static ssize_t state_show(struct device *dev,
- 	return sprintf(buf, "%s\n", state_str[mgr->state]);
+ An example of usage can be seen in the probe function of [3]
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index ebe1f87..84360fd 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -162,10 +162,16 @@ int fpga_region_program_fpga(struct fpga_region *region)
  }
+ EXPORT_SYMBOL_GPL(fpga_region_program_fpga);
  
-+static ssize_t status_show(struct device *dev,
-+			   struct device_attribute *attr, char *buf)
-+{
-+	struct fpga_manager *mgr = to_fpga_manager(dev);
-+	int len = 0;
-+
-+	if (mgr->status & FPGA_MGR_STATUS_OPERATION_ERR)
-+		len += sprintf(buf + len, "reconfig operation error\n");
-+	if (mgr->status & FPGA_MGR_STATUS_CRC_ERR)
-+		len += sprintf(buf + len, "reconfig CRC error\n");
-+	if (mgr->status & FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR)
-+		len += sprintf(buf + len, "reconfig incompatible image\n");
-+	if (mgr->status & FPGA_MGR_STATUS_IP_PROTOCOL_ERR)
-+		len += sprintf(buf + len, "reconfig IP protocol error\n");
-+	if (mgr->status & FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR)
-+		len += sprintf(buf + len, "reconfig fifo overflow error\n");
-+	if (mgr->status & FPGA_MGR_STATUS_SECURE_LOAD_ERR)
-+		len += sprintf(buf + len, "reconfig secure load error\n");
-+
-+	return len;
-+}
-+
- static DEVICE_ATTR_RO(name);
- static DEVICE_ATTR_RO(state);
-+static DEVICE_ATTR_RO(status);
+-int fpga_region_register(struct device *dev, struct fpga_region *region)
++int fpga_region_register(struct fpga_region *region)
+ {
++	struct device *parent = region->parent;
+ 	int id, ret = 0;
  
- static struct attribute *fpga_mgr_attrs[] = {
- 	&dev_attr_name.attr,
- 	&dev_attr_state.attr,
-+	&dev_attr_status.attr,
- 	NULL,
- };
- ATTRIBUTE_GROUPS(fpga_mgr);
-@@ -561,6 +588,7 @@ int fpga_mgr_register(struct fpga_manager *mgr)
- 	 * by bootloader or EEPROM.
- 	 */
- 	mgr->state = mgr->mops->state(mgr);
-+	fpga_mgr_update_status(mgr);
- 
- 	device_initialize(&mgr->dev);
- 	mgr->dev.class = fpga_mgr_class;
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 6e98b66..d4faf3d 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -112,6 +112,7 @@ struct fpga_image_info {
-  * struct fpga_manager_ops - ops for low level fpga manager drivers
-  * @initial_header_size: Maximum number of bytes that should be passed into write_init
-  * @state: returns an enum value of the FPGA's state
-+ * @status: returns status of the FPGA, including reconfiguration error code
-  * @write_init: prepare the FPGA to receive confuration data
-  * @write: write count bytes of configuration data to the FPGA
-  * @write_sg: write the scatter list of configuration data to the FPGA
-@@ -126,6 +127,7 @@ struct fpga_image_info {
- struct fpga_manager_ops {
- 	size_t initial_header_size;
- 	enum fpga_mgr_states (*state)(struct fpga_manager *mgr);
-+	u64 (*status)(struct fpga_manager *mgr);
- 	int (*write_init)(struct fpga_manager *mgr,
- 			  struct fpga_image_info *info,
- 			  const char *buf, size_t count);
-@@ -137,6 +139,14 @@ struct fpga_manager_ops {
- 	const struct attribute_group **groups;
- };
- 
-+/* FPGA manager status: Partial/Full Reconfiguration errors */
-+#define FPGA_MGR_STATUS_OPERATION_ERR		BIT(0)
-+#define FPGA_MGR_STATUS_CRC_ERR			BIT(1)
-+#define FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR	BIT(2)
-+#define FPGA_MGR_STATUS_IP_PROTOCOL_ERR		BIT(3)
-+#define FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR	BIT(4)
-+#define FPGA_MGR_STATUS_SECURE_LOAD_ERR		BIT(5)
++	if (!parent) {
++		pr_err("Attempt to register fpga region without parent\n");
++		return -EINVAL;
++	}
 +
+ 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
+ 	if (id < 0)
+ 		return id;
+@@ -175,8 +181,8 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
+ 	device_initialize(&region->dev);
+ 	region->dev.groups = region->groups;
+ 	region->dev.class = fpga_region_class;
+-	region->dev.parent = dev;
+-	region->dev.of_node = dev->of_node;
++	region->dev.parent = parent;
++	region->dev.of_node = parent->of_node;
+ 	region->dev.id = id;
+ 
+ 	ret = dev_set_name(&region->dev, "region%d", id);
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index 3079ed8..276ffe2 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -422,11 +422,12 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	region->mgr = mgr;
++	region->parent = dev;
+ 
+ 	/* Specify how to get bridges for this type of region. */
+ 	region->get_bridges = of_fpga_region_get_bridges;
+ 
+-	ret = fpga_region_register(dev, region);
++	ret = fpga_region_register(region);
+ 	if (ret)
+ 		goto eprobe_mgr_put;
+ 
+diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+index b652031..423c87e 100644
+--- a/include/linux/fpga/fpga-region.h
++++ b/include/linux/fpga/fpga-region.h
+@@ -8,6 +8,7 @@
  /**
-  * struct fpga_manager - fpga manager structure
-  * @name: name of low level fpga manager
-@@ -144,6 +154,7 @@ struct fpga_manager_ops {
-  * @dev: fpga manager device
-  * @ref_mutex: only allows one reference to fpga manager
-  * @state: state of fpga manager
-+ * @status: status of fpga manager, including reconfiguration error.
-  * @mops: pointer to struct of fpga manager ops
-  * @priv: low level driver private date
+  * struct fpga_region - FPGA Region structure
+  * @dev: FPGA Region device
++ * @parent: parent device
+  * @mutex: enforces exclusive reference to region
+  * @bridge_list: list of FPGA bridges specified in region
+  * @mgr: FPGA manager
+@@ -18,6 +19,7 @@
   */
-@@ -153,6 +164,7 @@ struct fpga_manager {
+ struct fpga_region {
  	struct device dev;
- 	struct mutex ref_mutex;
- 	enum fpga_mgr_states state;
-+	u64 status;
- 	const struct fpga_manager_ops *mops;
- 	void *priv;
- };
-@@ -177,4 +189,9 @@ struct fpga_manager {
- int fpga_mgr_register(struct fpga_manager *mgr);
- void fpga_mgr_unregister(struct fpga_manager *mgr);
++	struct device *parent;
+ 	struct mutex mutex; /* for exclusive reference to region */
+ 	struct list_head bridge_list;
+ 	struct fpga_manager *mgr;
+@@ -34,7 +36,7 @@ struct fpga_region *fpga_region_class_find(
+ 	int (*match)(struct device *, const void *));
  
-+static inline void fpga_mgr_update_status(struct fpga_manager *mgr)
-+{
-+	if (mgr->mops->status)
-+		mgr->status = mgr->mops->status(mgr);
-+}
- #endif /*_LINUX_FPGA_MGR_H */
+ int fpga_region_program_fpga(struct fpga_region *region);
+-int fpga_region_register(struct device *dev, struct fpga_region *region);
++int fpga_region_register(struct fpga_region *region);
+ int fpga_region_unregister(struct fpga_region *region);
+ 
+ #endif /* _FPGA_REGION_H */
 -- 
-1.8.3.1
+2.7.4
