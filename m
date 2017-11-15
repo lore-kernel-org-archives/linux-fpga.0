@@ -1,222 +1,288 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v6 10/18] fpga: region: separate out code that parses the overlay
-Date: Wed, 15 Nov 2017 14:20:20 -0600
-Message-Id: <1510777228-4291-11-git-send-email-atull@kernel.org>
+Subject: [PATCH v6 01/18] fpga: bridge: support getting bridge from device
+Date: Wed, 15 Nov 2017 14:20:11 -0600
+Message-Id: <1510777228-4291-2-git-send-email-atull@kernel.org>
 In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
 References: <1510777228-4291-1-git-send-email-atull@kernel.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-New function of_fpga_region_parse_ov added, moving code
-from fpga_region_notify_pre_apply.  This function
-gets the FPGA image info from the overlay and is able
-to simplify some of the logic involved.
+Add two functions for getting the FPGA bridge from the device
+rather than device tree node.  This is to enable writing code
+that will support using FPGA bridges without device tree.
+Rename one old function to make it clear that it is device
+tree-ish.  This leaves us with 3 functions for getting a bridge:
 
-This is a baby step in refactoring the FPGA region code to
-separate out common code from Device Tree overlay support.
+* fpga_bridge_get
+  Get the bridge given the device.
+
+* fpga_bridges_get_to_list
+  Given the device, get the bridge and add it to a list.
+
+* of_fpga_bridges_get_to_list
+  Renamed from priviously existing fpga_bridges_get_to_list.
+  Given the device node, get the bridge and add it to a list.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
 Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2: split out from another patch
-v3: update comments
-    minor changes in flow
+v2: use list_for_each_entry
+    static the bridge_list_lock
+    update copyright and author email
+v3: no change to this patch in this version of patchset
 v4: no change to this patch in this version of patchset
-v5: no change to this patch in this version of patchset
+v5: fpga-bridge.h - move #ifndef before #includes
+    make __fpga_bridge_get static
 v6: Add Moritz' ack
 ---
- drivers/fpga/fpga-region.c | 122 +++++++++++++++++++++++++++------------------
- 1 file changed, 73 insertions(+), 49 deletions(-)
+ drivers/fpga/fpga-bridge.c       | 110 +++++++++++++++++++++++++++++++--------
+ drivers/fpga/fpga-region.c       |  11 ++--
+ include/linux/fpga/fpga-bridge.h |  12 +++--
+ 3 files changed, 103 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index eaacf50..2a8621d 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -321,33 +321,22 @@ static int child_regions_with_firmware(struct device_node *overlay)
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index 9651aa5..0dfe9d7 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -2,6 +2,7 @@
+  * FPGA Bridge Framework Driver
+  *
+  *  Copyright (C) 2013-2016 Altera Corporation, All Rights Reserved.
++ *  Copyright (C) 2017 Intel Corporation
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -70,29 +71,12 @@ int fpga_bridge_disable(struct fpga_bridge *bridge)
  }
+ EXPORT_SYMBOL_GPL(fpga_bridge_disable);
  
- /**
-- * fpga_region_notify_pre_apply - pre-apply overlay notification
+-/**
+- * of_fpga_bridge_get - get an exclusive reference to a fpga bridge
 - *
-- * @region: FPGA region that the overlay was applied to
-- * @nd: overlay notification data
+- * @np: node pointer of a FPGA bridge
+- * @info: fpga image specific information
 - *
-- * Called after when an overlay targeted to a FPGA Region is about to be
-- * applied.  Function will check the properties that will be added to the FPGA
-- * region.  If the checks pass, it will program the FPGA.
-- *
-- * The checks are:
-- * The overlay must add either firmware-name or external-fpga-config property
-- * to the FPGA Region.
-- *
-- *   firmware-name         : program the FPGA
-- *   external-fpga-config  : FPGA is already programmed
-- *   encrypted-fpga-config : FPGA bitstream is encrypted
-+ * of_fpga_region_parse_ov - parse and check overlay applied to region
-  *
-- * The overlay can add other FPGA regions, but child FPGA regions cannot have a
-- * firmware-name property since those regions don't exist yet.
-+ * @region: FPGA region
-+ * @overlay: overlay applied to the FPGA region
-  *
-- * If the overlay that breaks the rules, notifier returns an error and the
-- * overlay is rejected before it goes into the main tree.
-+ * Given an overlay applied to a FPGA region, parse the FPGA image specific
-+ * info in the overlay and do some checking.
-  *
-- * Returns 0 for success or negative error code for failure.
-+ * Returns:
-+ *   NULL if overlay doesn't direct us to program the FPGA.
-+ *   fpga_image_info struct if there is an image to program.
-+ *   error code for invalid overlay.
-  */
--static int fpga_region_notify_pre_apply(struct fpga_region *region,
--					struct of_overlay_notify_data *nd)
-+static struct fpga_image_info *of_fpga_region_parse_ov(
-+						struct fpga_region *region,
-+						struct device_node *overlay)
+- * Return fpga_bridge struct if successful.
+- * Return -EBUSY if someone already has a reference to the bridge.
+- * Return -ENODEV if @np is not a FPGA Bridge.
+- */
+-struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
+-				       struct fpga_image_info *info)
+-
++static struct fpga_bridge *__fpga_bridge_get(struct device *dev,
++					     struct fpga_image_info *info)
  {
- 	struct device *dev = &region->dev;
- 	struct fpga_image_info *info;
-@@ -356,7 +345,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+-	struct device *dev;
+ 	struct fpga_bridge *bridge;
+ 	int ret = -ENODEV;
  
- 	if (region->info) {
- 		dev_err(dev, "Region already has overlay applied.\n");
--		return -EINVAL;
-+		return ERR_PTR(-EINVAL);
- 	}
+-	dev = class_find_device(fpga_bridge_class, NULL, np,
+-				fpga_bridge_of_node_match);
+-	if (!dev)
+-		goto err_dev;
+-
+ 	bridge = to_fpga_bridge(dev);
+ 	if (!bridge)
+ 		goto err_dev;
+@@ -117,8 +101,58 @@ struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
+ 	put_device(dev);
+ 	return ERR_PTR(ret);
+ }
++
++/**
++ * of_fpga_bridge_get - get an exclusive reference to a fpga bridge
++ *
++ * @np: node pointer of a FPGA bridge
++ * @info: fpga image specific information
++ *
++ * Return fpga_bridge struct if successful.
++ * Return -EBUSY if someone already has a reference to the bridge.
++ * Return -ENODEV if @np is not a FPGA Bridge.
++ */
++struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
++				       struct fpga_image_info *info)
++{
++	struct device *dev;
++
++	dev = class_find_device(fpga_bridge_class, NULL, np,
++				fpga_bridge_of_node_match);
++	if (!dev)
++		return ERR_PTR(-ENODEV);
++
++	return __fpga_bridge_get(dev, info);
++}
+ EXPORT_SYMBOL_GPL(of_fpga_bridge_get);
  
- 	/*
-@@ -364,67 +353,102 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 	 * firmware-name property (would mean that an FPGA region that has
- 	 * not been added to the live tree yet is doing FPGA programming).
- 	 */
--	ret = child_regions_with_firmware(nd->overlay);
-+	ret = child_regions_with_firmware(overlay);
- 	if (ret)
--		return ret;
-+		return ERR_PTR(ret);
- 
- 	info = fpga_image_info_alloc(dev);
- 	if (!info)
--		return -ENOMEM;
-+		return ERR_PTR(-ENOMEM);
- 
--	info->overlay = nd->overlay;
-+	info->overlay = overlay;
- 
- 	/* Read FPGA region properties from the overlay */
--	if (of_property_read_bool(nd->overlay, "partial-fpga-config"))
-+	if (of_property_read_bool(overlay, "partial-fpga-config"))
- 		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
- 
--	if (of_property_read_bool(nd->overlay, "external-fpga-config"))
-+	if (of_property_read_bool(overlay, "external-fpga-config"))
- 		info->flags |= FPGA_MGR_EXTERNAL_CONFIG;
- 
--	if (of_property_read_bool(nd->overlay, "encrypted-fpga-config"))
-+	if (of_property_read_bool(overlay, "encrypted-fpga-config"))
- 		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
- 
--	if (!of_property_read_string(nd->overlay, "firmware-name",
-+	if (!of_property_read_string(overlay, "firmware-name",
- 				     &firmware_name)) {
- 		info->firmware_name = devm_kstrdup(dev, firmware_name,
- 						   GFP_KERNEL);
- 		if (!info->firmware_name)
--			return -ENOMEM;
-+			return ERR_PTR(-ENOMEM);
- 	}
- 
--	of_property_read_u32(nd->overlay, "region-unfreeze-timeout-us",
-+	of_property_read_u32(overlay, "region-unfreeze-timeout-us",
- 			     &info->enable_timeout_us);
- 
--	of_property_read_u32(nd->overlay, "region-freeze-timeout-us",
-+	of_property_read_u32(overlay, "region-freeze-timeout-us",
- 			     &info->disable_timeout_us);
- 
--	of_property_read_u32(nd->overlay, "config-complete-timeout-us",
-+	of_property_read_u32(overlay, "config-complete-timeout-us",
- 			     &info->config_complete_timeout_us);
- 
--	/* If FPGA was externally programmed, don't specify firmware */
--	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
--		dev_err(dev, "error: specified firmware and external-fpga-config");
--		fpga_image_info_free(info);
--		return -EINVAL;
-+	/* If overlay is not programming the FPGA, don't need FPGA image info */
-+	if (!info->firmware_name) {
-+		ret = 0;
-+		goto ret_no_info;
- 	}
- 
--	/* FPGA is already configured externally.  We're done. */
-+	/*
-+	 * If overlay informs us FPGA was externally programmed, specifying
-+	 * firmware here would be ambiguous.
-+	 */
- 	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG) {
--		fpga_image_info_free(info);
--		return 0;
-+		dev_err(dev, "error: specified firmware and external-fpga-config");
-+		ret = -EINVAL;
-+		goto ret_no_info;
- 	}
- 
--	/* If we got this far, we should be programming the FPGA */
--	if (!info->firmware_name) {
--		dev_err(dev, "should specify firmware-name or external-fpga-config\n");
--		fpga_image_info_free(info);
-+	return info;
-+ret_no_info:
-+	fpga_image_info_free(info);
-+	return ERR_PTR(ret);
++static int fpga_bridge_dev_match(struct device *dev, const void *data)
++{
++	return dev->parent == data;
 +}
 +
 +/**
-+ * fpga_region_notify_pre_apply - pre-apply overlay notification
++ * fpga_bridge_get - get an exclusive reference to a fpga bridge
++ * @dev:	parent device that fpga bridge was registered with
 + *
-+ * @region: FPGA region that the overlay was applied to
-+ * @nd: overlay notification data
++ * Given a device, get an exclusive reference to a fpga bridge.
 + *
-+ * Called when an overlay targeted to a FPGA Region is about to be applied.
-+ * Parses the overlay for properties that influence how the FPGA will be
-+ * programmed and does some checking. If the checks pass, programs the FPGA.
-+ * If the checks fail, overlay is rejected and does not get added to the
-+ * live tree.
-+ *
-+ * Returns 0 for success or negative error code for failure.
++ * Return: fpga manager struct or IS_ERR() condition containing error code.
 + */
-+static int fpga_region_notify_pre_apply(struct fpga_region *region,
-+					struct of_overlay_notify_data *nd)
++struct fpga_bridge *fpga_bridge_get(struct device *dev,
++				    struct fpga_image_info *info)
 +{
-+	struct device *dev = &region->dev;
-+	struct fpga_image_info *info;
-+	int ret;
++	struct device *bridge_dev;
 +
-+	if (region->info) {
-+		dev_err(dev, "Region already has overlay applied.\n");
- 		return -EINVAL;
- 	}
- 
--	region->info = info;
-+	info = of_fpga_region_parse_ov(region, nd->overlay);
-+	if (IS_ERR(info))
-+		return PTR_ERR(info);
++	bridge_dev = class_find_device(fpga_bridge_class, NULL, dev,
++				       fpga_bridge_dev_match);
++	if (!bridge_dev)
++		return ERR_PTR(-ENODEV);
 +
-+	if (!info)
-+		return 0;
++	return __fpga_bridge_get(bridge_dev, info);
++}
++EXPORT_SYMBOL_GPL(fpga_bridge_get);
++
+ /**
+  * fpga_bridge_put - release a reference to a bridge
+  *
+@@ -206,7 +240,7 @@ void fpga_bridges_put(struct list_head *bridge_list)
+ EXPORT_SYMBOL_GPL(fpga_bridges_put);
  
-+	region->info = info;
- 	ret = fpga_region_program_fpga(region);
- 	if (ret) {
-+		/* error; reject overlay */
- 		fpga_image_info_free(info);
- 		region->info = NULL;
- 	}
+ /**
+- * fpga_bridges_get_to_list - get a bridge, add it to a list
++ * of_fpga_bridge_get_to_list - get a bridge, add it to a list
+  *
+  * @np: node pointer of a FPGA bridge
+  * @info: fpga image specific information
+@@ -216,14 +250,44 @@ EXPORT_SYMBOL_GPL(fpga_bridges_put);
+  *
+  * Return 0 for success, error code from of_fpga_bridge_get() othewise.
+  */
+-int fpga_bridge_get_to_list(struct device_node *np,
++int of_fpga_bridge_get_to_list(struct device_node *np,
++			       struct fpga_image_info *info,
++			       struct list_head *bridge_list)
++{
++	struct fpga_bridge *bridge;
++	unsigned long flags;
++
++	bridge = of_fpga_bridge_get(np, info);
++	if (IS_ERR(bridge))
++		return PTR_ERR(bridge);
++
++	spin_lock_irqsave(&bridge_list_lock, flags);
++	list_add(&bridge->node, bridge_list);
++	spin_unlock_irqrestore(&bridge_list_lock, flags);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_fpga_bridge_get_to_list);
++
++/**
++ * fpga_bridge_get_to_list - given device, get a bridge, add it to a list
++ *
++ * @dev: FPGA bridge device
++ * @info: fpga image specific information
++ * @bridge_list: list of FPGA bridges
++ *
++ * Get an exclusive reference to the bridge and and it to the list.
++ *
++ * Return 0 for success, error code from fpga_bridge_get() othewise.
++ */
++int fpga_bridge_get_to_list(struct device *dev,
+ 			    struct fpga_image_info *info,
+ 			    struct list_head *bridge_list)
+ {
+ 	struct fpga_bridge *bridge;
+ 	unsigned long flags;
+ 
+-	bridge = of_fpga_bridge_get(np, info);
++	bridge = fpga_bridge_get(dev, info);
+ 	if (IS_ERR(bridge))
+ 		return PTR_ERR(bridge);
+ 
+@@ -381,7 +445,7 @@ static void __exit fpga_bridge_dev_exit(void)
+ }
+ 
+ MODULE_DESCRIPTION("FPGA Bridge Driver");
+-MODULE_AUTHOR("Alan Tull <atull@opensource.altera.com>");
++MODULE_AUTHOR("Alan Tull <atull@kernel.org>");
+ MODULE_LICENSE("GPL v2");
+ 
+ subsys_initcall(fpga_bridge_dev_init);
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index d9ab7c7..91755562 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -183,11 +183,14 @@ static int fpga_region_get_bridges(struct fpga_region *region,
+ 	int i, ret;
+ 
+ 	/* If parent is a bridge, add to list */
+-	ret = fpga_bridge_get_to_list(region_np->parent, region->info,
+-				      &region->bridge_list);
++	ret = of_fpga_bridge_get_to_list(region_np->parent, region->info,
++					 &region->bridge_list);
++
++	/* -EBUSY means parent is a bridge that is under use. Give up. */
+ 	if (ret == -EBUSY)
+ 		return ret;
+ 
++	/* Zero return code means parent was a bridge and was added to list. */
+ 	if (!ret)
+ 		parent_br = region_np->parent;
+ 
+@@ -207,8 +210,8 @@ static int fpga_region_get_bridges(struct fpga_region *region,
+ 			continue;
+ 
+ 		/* If node is a bridge, get it and add to list */
+-		ret = fpga_bridge_get_to_list(br, region->info,
+-					      &region->bridge_list);
++		ret = of_fpga_bridge_get_to_list(br, region->info,
++						 &region->bridge_list);
+ 
+ 		/* If any of the bridges are in use, give up */
+ 		if (ret == -EBUSY) {
+diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
+index aa66c87..6ca41f8 100644
+--- a/include/linux/fpga/fpga-bridge.h
++++ b/include/linux/fpga/fpga-bridge.h
+@@ -1,10 +1,11 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+-#include <linux/device.h>
+-#include <linux/fpga/fpga-mgr.h>
+ 
+ #ifndef _LINUX_FPGA_BRIDGE_H
+ #define _LINUX_FPGA_BRIDGE_H
+ 
++#include <linux/device.h>
++#include <linux/fpga/fpga-mgr.h>
++
+ struct fpga_bridge;
+ 
+ /**
+@@ -43,6 +44,8 @@ struct fpga_bridge {
+ 
+ struct fpga_bridge *of_fpga_bridge_get(struct device_node *node,
+ 				       struct fpga_image_info *info);
++struct fpga_bridge *fpga_bridge_get(struct device *dev,
++				    struct fpga_image_info *info);
+ void fpga_bridge_put(struct fpga_bridge *bridge);
+ int fpga_bridge_enable(struct fpga_bridge *bridge);
+ int fpga_bridge_disable(struct fpga_bridge *bridge);
+@@ -50,9 +53,12 @@ int fpga_bridge_disable(struct fpga_bridge *bridge);
+ int fpga_bridges_enable(struct list_head *bridge_list);
+ int fpga_bridges_disable(struct list_head *bridge_list);
+ void fpga_bridges_put(struct list_head *bridge_list);
+-int fpga_bridge_get_to_list(struct device_node *np,
++int fpga_bridge_get_to_list(struct device *dev,
+ 			    struct fpga_image_info *info,
+ 			    struct list_head *bridge_list);
++int of_fpga_bridge_get_to_list(struct device_node *np,
++			       struct fpga_image_info *info,
++			       struct list_head *bridge_list);
+ 
+ int fpga_bridge_register(struct device *dev, const char *name,
+ 			 const struct fpga_bridge_ops *br_ops, void *priv);
 -- 
 2.7.4
