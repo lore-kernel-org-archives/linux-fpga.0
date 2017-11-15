@@ -1,300 +1,209 @@
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 01/21] docs: fpga: add a document for Intel FPGA driver overview
-Date: Mon, 27 Nov 2017 14:42:08 +0800
-Message-Id: <1511764948-20972-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Enno Luebbers <enno.luebbers@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH v6 17/18] fpga: clean up fpga Kconfig
+Date: Wed, 15 Nov 2017 14:20:27 -0600
+Message-Id: <1510777228-4291-18-git-send-email-atull@kernel.org>
+In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
+References: <1510777228-4291-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add a document for Intel FPGA driver overview.
+The fpga menuconfig has gotten messy.  The bridges and managers are
+mixed together.
 
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-----
-v2: added FME fpga-mgr/bridge/region platform driver to driver organization.
-    updated open discussion per current implementation.
-    fixed some typos.
-v3: use FPGA base region as container device instead of fpga-dev class.
-    split common enumeration code from pcie driver to functions exposed by
-    device feature list framework.
-    update FME performance reporting which supports both integrated (iperf/)
-    and discrete (dperf/) FPGA solutions.
+* Separate the bridges and things dependent on CONFIG_FPGA_BRIDGE
+  from the managers.
+* Group the managers by vendor in order that they were added
+  to the kernel.
+
+The following is what the menuconfig ends up looking like more or less
+(platform dependencies are hiding some of these on any given
+platform).
+
+    --- FPGA Configuration Framework
+    <*>   Altera SOCFPGA FPGA Manager
+    <*>   Altera SoCFPGA Arria10
+    <*>   Altera Partial Reconfiguration IP Core
+    <*>     Platform support of Altera Partial Reconfiguration IP Core
+    <*>   Altera FPGA Passive Serial over SPI
+    <*>   Altera Arria-V/Cyclone-V/Stratix-V CvP FPGA Manager
+    <*>   Xilinx Zynq FPGA
+    <*>   Xilinx Configuration over Slave Serial (SPI)
+    <*>   Lattice iCE40 SPI
+    <*>   Technologic Systems TS-73xx SBC FPGA Manager
+    <*>   FPGA Bridge Framework
+    <*>     Altera SoCFPGA FPGA Bridges
+    <*>     Altera FPGA Freeze Bridge
+    <*>     Xilinx LogiCORE PR Decoupler
+    <*>     FPGA Region
+    <*>       FPGA Region Device Tree Overlay Support
+
+Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- Documentation/fpga/intel-fpga.txt | 261 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 261 insertions(+)
- create mode 100644 Documentation/fpga/intel-fpga.txt
+v4: Patch added to patchset in v4
+v5: s/mixxed/mixed/
+v6: Add Moritz' ack
+---
+ drivers/fpga/Kconfig | 108 +++++++++++++++++++++++++--------------------------
+ 1 file changed, 54 insertions(+), 54 deletions(-)
 
-diff --git a/Documentation/fpga/intel-fpga.txt b/Documentation/fpga/intel-fpga.txt
-new file mode 100644
-index 0000000..0754733
---- /dev/null
-+++ b/Documentation/fpga/intel-fpga.txt
-@@ -0,0 +1,261 @@
-+===============================================================================
-+                    Intel FPGA driver Overview
-+-------------------------------------------------------------------------------
-+                Enno Luebbers <enno.luebbers@intel.com>
-+                Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+                Wu Hao <hao.wu@intel.com>
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 12bd1c7..f47ef84 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -11,33 +11,30 @@ menuconfig FPGA
+ 
+ if FPGA
+ 
+-config FPGA_REGION
+-	tristate "FPGA Region"
+-	depends on FPGA_BRIDGE
++config FPGA_MGR_SOCFPGA
++	tristate "Altera SOCFPGA FPGA Manager"
++	depends on ARCH_SOCFPGA || COMPILE_TEST
+ 	help
+-	  FPGA Region common code.  A FPGA Region controls a FPGA Manager
+-	  and the FPGA Bridges associated with either a reconfigurable
+-	  region of an FPGA or a whole FPGA.
++	  FPGA manager driver support for Altera SOCFPGA.
+ 
+-config OF_FPGA_REGION
+-	tristate "FPGA Region Device Tree Overlay Support"
+-	depends on OF && FPGA_REGION
++config FPGA_MGR_SOCFPGA_A10
++	tristate "Altera SoCFPGA Arria10"
++	depends on ARCH_SOCFPGA || COMPILE_TEST
++	select REGMAP_MMIO
+ 	help
+-	  Support for loading FPGA images by applying a Device Tree
+-	  overlay.
++	  FPGA manager driver support for Altera Arria10 SoCFPGA.
+ 
+-config FPGA_MGR_ICE40_SPI
+-	tristate "Lattice iCE40 SPI"
+-	depends on OF && SPI
+-	help
+-	  FPGA manager driver support for Lattice iCE40 FPGAs over SPI.
++config ALTERA_PR_IP_CORE
++        tristate "Altera Partial Reconfiguration IP Core"
++        help
++          Core driver support for Altera Partial Reconfiguration IP component
+ 
+-config FPGA_MGR_ALTERA_CVP
+-	tristate "Altera Arria-V/Cyclone-V/Stratix-V CvP FPGA Manager"
+-	depends on PCI
++config ALTERA_PR_IP_CORE_PLAT
++	tristate "Platform support of Altera Partial Reconfiguration IP Core"
++	depends on ALTERA_PR_IP_CORE && OF && HAS_IOMEM
+ 	help
+-	  FPGA manager driver support for Arria-V, Cyclone-V, Stratix-V
+-	  and Arria 10 Altera FPGAs using the CvP interface over PCIe.
++	  Platform driver support for Altera Partial Reconfiguration IP
++	  component
+ 
+ config FPGA_MGR_ALTERA_PS_SPI
+ 	tristate "Altera FPGA Passive Serial over SPI"
+@@ -46,25 +43,19 @@ config FPGA_MGR_ALTERA_PS_SPI
+ 	  FPGA manager driver support for Altera Arria/Cyclone/Stratix
+ 	  using the passive serial interface over SPI.
+ 
+-config FPGA_MGR_SOCFPGA
+-	tristate "Altera SOCFPGA FPGA Manager"
+-	depends on ARCH_SOCFPGA || COMPILE_TEST
+-	help
+-	  FPGA manager driver support for Altera SOCFPGA.
+-
+-config FPGA_MGR_SOCFPGA_A10
+-	tristate "Altera SoCFPGA Arria10"
+-	depends on ARCH_SOCFPGA || COMPILE_TEST
+-	select REGMAP_MMIO
++config FPGA_MGR_ALTERA_CVP
++	tristate "Altera Arria-V/Cyclone-V/Stratix-V CvP FPGA Manager"
++	depends on PCI
+ 	help
+-	  FPGA manager driver support for Altera Arria10 SoCFPGA.
++	  FPGA manager driver support for Arria-V, Cyclone-V, Stratix-V
++	  and Arria 10 Altera FPGAs using the CvP interface over PCIe.
+ 
+-config FPGA_MGR_TS73XX
+-	tristate "Technologic Systems TS-73xx SBC FPGA Manager"
+-	depends on ARCH_EP93XX && MACH_TS72XX
++config FPGA_MGR_ZYNQ_FPGA
++	tristate "Xilinx Zynq FPGA"
++	depends on ARCH_ZYNQ || COMPILE_TEST
++	depends on HAS_DMA
+ 	help
+-	  FPGA manager driver support for the Altera Cyclone II FPGA
+-	  present on the TS-73xx SBC boards.
++	  FPGA manager driver support for Xilinx Zynq FPGAs.
+ 
+ config FPGA_MGR_XILINX_SPI
+ 	tristate "Xilinx Configuration over Slave Serial (SPI)"
+@@ -73,12 +64,18 @@ config FPGA_MGR_XILINX_SPI
+ 	  FPGA manager driver support for Xilinx FPGA configuration
+ 	  over slave serial interface.
+ 
+-config FPGA_MGR_ZYNQ_FPGA
+-	tristate "Xilinx Zynq FPGA"
+-	depends on ARCH_ZYNQ || COMPILE_TEST
+-	depends on HAS_DMA
++config FPGA_MGR_ICE40_SPI
++	tristate "Lattice iCE40 SPI"
++	depends on OF && SPI
+ 	help
+-	  FPGA manager driver support for Xilinx Zynq FPGAs.
++	  FPGA manager driver support for Lattice iCE40 FPGAs over SPI.
 +
-+The Intel FPGA driver provides interfaces for userspace applications to
-+configure, enumerate, open, and access FPGA accelerators on platforms equipped
-+with Intel(R) FPGA PCIe based solutions and enables system level management
-+functions such as FPGA reconfiguration, power management, and virtualization.
++config FPGA_MGR_TS73XX
++	tristate "Technologic Systems TS-73xx SBC FPGA Manager"
++	depends on ARCH_EP93XX && MACH_TS72XX
++	help
++	  FPGA manager driver support for the Altera Cyclone II FPGA
++	  present on the TS-73xx SBC boards.
+ 
+ config FPGA_BRIDGE
+ 	tristate "FPGA Bridge Framework"
+@@ -102,18 +99,6 @@ config ALTERA_FREEZE_BRIDGE
+ 	  isolate one region of the FPGA from the busses while that
+ 	  region is being reprogrammed.
+ 
+-config ALTERA_PR_IP_CORE
+-        tristate "Altera Partial Reconfiguration IP Core"
+-        help
+-          Core driver support for Altera Partial Reconfiguration IP component
+-
+-config ALTERA_PR_IP_CORE_PLAT
+-	tristate "Platform support of Altera Partial Reconfiguration IP Core"
+-	depends on ALTERA_PR_IP_CORE && OF && HAS_IOMEM
+-	help
+-	  Platform driver support for Altera Partial Reconfiguration IP
+-	  component
+-
+ config XILINX_PR_DECOUPLER
+ 	tristate "Xilinx LogiCORE PR Decoupler"
+ 	depends on FPGA_BRIDGE
+@@ -124,4 +109,19 @@ config XILINX_PR_DECOUPLER
+ 	  region of the FPGA from the busses while that region is
+ 	  being reprogrammed during partial reconfig.
+ 
++config FPGA_REGION
++	tristate "FPGA Region"
++	depends on FPGA_BRIDGE
++	help
++	  FPGA Region common code.  A FPGA Region controls a FPGA Manager
++	  and the FPGA Bridges associated with either a reconfigurable
++	  region of an FPGA or a whole FPGA.
 +
-+HW Architecture
-+===============
-+From the OS's point of view, the FPGA hardware appears as a regular PCIe device.
-+The FPGA device memory is organized using a predefined data structure (Device
-+Feature List). Features supported by the particular FPGA device are exposed
-+through these data structures, as illustrated below:
++config OF_FPGA_REGION
++	tristate "FPGA Region Device Tree Overlay Support"
++	depends on OF && FPGA_REGION
++	help
++	  Support for loading FPGA images by applying a Device Tree
++	  overlay.
 +
-+  +-------------------------------+  +-------------+
-+  |              PF               |  |     VF      |
-+  +-------------------------------+  +-------------+
-+      ^            ^         ^              ^
-+      |            |         |              |
-++-----|------------|---------|--------------|-------+
-+|     |            |         |              |       |
-+|  +-----+     +-------+ +-------+      +-------+   |
-+|  | FME |     | Port0 | | Port1 |      | Port2 |   |
-+|  +-----+     +-------+ +-------+      +-------+   |
-+|                  ^         ^              ^       |
-+|                  |         |              |       |
-+|              +-------+ +------+       +-------+   |
-+|              |  AFU  | |  AFU |       |  AFU  |   |
-+|              +-------+ +------+       +-------+   |
-+|                                                   |
-+|                 FPGA PCIe Device                  |
-++---------------------------------------------------+
-+
-+The driver supports PCIe SR-IOV to create virtual functions (VFs) which can be
-+used to assign individual accelerators to virtual machines.
-+
-+FME (FPGA Management Engine)
-+============================
-+The FPGA Management Engine performs power and thermal management, error
-+reporting, reconfiguration, performance reporting for integrated and discrete
-+solution, and other infrastructure functions. Each FPGA has one FME, which is
-+always accessed through the physical function (PF).
-+
-+User-space applications can acquire exclusive access to the FME using open(),
-+and release it using close().
-+
-+The following functions are exposed through ioctls:
-+
-+	Get driver API version (FPGA_GET_API_VERSION)
-+	Check for extensions (FPGA_CHECK_EXTENSION)
-+	Assign port to PF (FPGA_FME_PORT_ASSIGN)
-+	Release port from PF (FPGA_FME_PORT_RELEASE)
-+	Program bitstream (FPGA_FME_PORT_PR)
-+
-+More functions are exposed through sysfs
-+(/sys/class/fpga_region/regionX/fpga-dfl-fme.n/):
-+
-+	Read bitstream ID (bitstream_id)
-+	Read bitstream metadata (bitstream_metadata)
-+	Read number of ports (ports_num)
-+	Read socket ID (socket_id)
-+	Read performance counters (iperf/ and dperf/)
-+	Power management (power_mgmt/)
-+	Thermal management (thermal_mgmt/)
-+	Error reporting (errors/)
-+
-+PORT
-+====
-+A port represents the interface between the static FPGA fabric (the "blue
-+bitstream") and a partially reconfigurable region containing an AFU (the "green
-+bitstream"). It controls the communication from SW to the accelerator and
-+exposes features such as reset and debug.
-+
-+A PCIe device may have several ports and each port can be released from PF by
-+FPGA_FME_PORT_RELEASE ioctl on FME, and exposed through a VF via PCIe sriov
-+sysfs interface.
-+
-+AFU
-+===
-+An AFU is attached to a port and exposes a 256k MMIO region to be used for
-+accelerator-specific control registers.
-+
-+User-space applications can acquire exclusive access to an AFU attached to a
-+port by using open() on the port device node, and release it using close().
-+
-+The following functions are exposed through ioctls:
-+
-+	Get driver API version (FPGA_GET_API_VERSION)
-+	Check for extensions (FPGA_CHECK_EXTENSION)
-+	Get port info (FPGA_PORT_GET_INFO)
-+	Get MMIO region info (FPGA_PORT_GET_REGION_INFO)
-+	Map DMA buffer (FPGA_PORT_DMA_MAP)
-+	Unmap DMA buffer (FPGA_PORT_DMA_UNMAP)
-+	Reset AFU (FPGA_PORT_RESET)
-+	Enable UMsg (FPGA_PORT_UMSG_ENABLE)
-+	Disable UMsg (FPGA_PORT_UMSG_DISABLE)
-+	Set UMsg mode (FPGA_PORT_UMSG_SET_MODE)
-+	Set UMsg base address (FPGA_PORT_UMSG_SET_BASE_ADDR)
-+
-+User-space applications can also mmap() accelerator MMIO regions.
-+
-+More functions are exposed through sysfs:
-+(/sys/class/fpga_region/<regionX>/<fpga-dfl-port.m>/):
-+
-+	Read Accelerator GUID (afu_id)
-+	Error reporting (errors/)
-+
-+Partial Reconfiguration
-+=======================
-+As mentioned above, accelerators can be reconfigured through partial
-+reconfiguration of a green bitstream file (GBS). The green bitstream must have
-+been generated for the exact blue bitstream and targeted reconfigurable region
-+(port) of the FPGA; otherwise, the reconfiguration operation will fail and
-+possibly cause system instability. This compatibility can be checked by
-+comparing the interface ID noted in the GBS header against the interface ID
-+exposed by the FME through sysfs (see above). This check is usually done by
-+user-space before calling the reconfiguration IOCTL.
-+
-+FPGA virtualization
-+===================
-+To enable accessing an accelerator from applications running in a VM, the
-+respective AFU's port needs to be assigned to a VF using the following steps:
-+
-+ a) The PF owns all AFU ports by default. Any port that needs to be reassigned
-+ to a VF must first be released through the FPGA_FME_PORT_RELEASE ioctl on the
-+ FME device.
-+
-+ b) Once N ports are released from PF, then user can use command below to
-+ enable SRIOV and VFs. Each VF owns only one Port with AFU.
-+
-+ echo N > $PCI_DEVICE_PATH/sriov_numvfs
-+
-+ c) Pass through the VFs to VMs
-+
-+ d) The AFU under VF is accessible from applications in VM (using the same
-+ driver inside the VF).
-+
-+Note that an FME can't be assigned to a VF, thus PR and other management
-+functions are only available via the PF.
-+
-+
-+Driver organization
-+===================
-+
-+  +-------++------++------+             |
-+  | FME   || FME  || FME  |             |
-+  | FPGA  || FPGA || FPGA |             |
-+  |Manager||Bridge||Region|             |
-+  +-------++------++------+             |
-+  +-----------------------+  +--------+ |             +--------+
-+  |          FME          |  |  AFU   | |             |  AFU   |
-+  |         Module        |  | Module | |             | Module |
-+  +-----------------------+  +--------+ |             +--------+
-+        +-----------------------+       |       +-----------------------+
-+        | FPGA Container Device |       |       | FPGA Container Device |
-+        |  (FPGA Base Region)   |       |       |  (FPGA Base Region)   |
-+        +-----------------------+       |       +-----------------------+
-+          +------------------+          |         +------------------+
-+          | FPGA PCIE Module |          | Virtual | FPGA PCIE Module |
-+          +------------------+   Host   | Machine +------------------+
-+ -------------------------------------- | ------------------------------
-+           +---------------+            |          +---------------+
-+           | PCI PF Device |            |          | PCI VF Device |
-+           +---------------+            |          +---------------+
-+
-+The FPGA devices appear as regular PCIe devices; thus, the FPGA PCIe device
-+driver is always loaded first once a FPGA PCIE PF or VF device is detected. This
-+driver plays an infrastructural role in the driver architecture.  It:
-+
-+	a) locates the Device Feature Lists in PCIE device BAR memory, handles
-+	   them and related resources to common interfaces from DFL framework
-+	   for enumeration.
-+	b) supports SRIOV.
-+
-+The feature device infrastructure provides common interfaces to create container
-+device (FPGA base region), discover feature devices and their sub features from
-+the given Device Feature Lists, and create platform devices for feature devices
-+with related resources under the container device. It also abstracts operations
-+for sub features and exposes common interfaces to feature device drivers.
-+
-+The FPGA Management Engine (FME) driver is a platform driver which is loaded
-+automatically after FME platform device creation from the PCIE driver. It
-+provides the key features for FPGA management, including:
-+
-+	a) Power and thermal management, error reporting, performance reporting
-+	   and other infrastructure functions. Users can access these functions
-+	   via sysfs interfaces exposed by FME driver.
-+	b) Partial Reconfiguration. The FME driver creates FPGA manager, FPGA
-+	   bridges and FPGA regions during PR sub feature initialization; Once
-+	   it receives an FPGA_FME_PORT_PR ioctl from user, it invokes the
-+	   common interface function from FPGA Region to complete the partial
-+	   reconfiguration of the bitstream to the given port.
-+	c) Port management for virtualization. The FME driver introduces two
-+	   ioctls, FPGA_FME_PORT_RELEASE (releases given port from PF) and
-+	   FPGA_FME_PORT_ASSIGN (assigns the port back to PF). Once the port is
-+	   released from the PF, it can be assigned to the VF through the SRIOV
-+	   interfaces provided by PCIE driver. (Refer to "FPGA virtualization"
-+	   for more details).
-+
-+Similar to the the FME driver, the FPGA Accelerated Function Unit (AFU) driver
-+is probed once the AFU platform device is created. The main function of this
-+module is to provide an interface for userspace applications to access the
-+individual accelerators, including basic reset control on port, AFU MMIO region
-+export, dma buffer mapping service, UMsg notification, and remote debug
-+functions (see above).
-+
-+
-+Device enumeration
-+==================
-+This section introduces how applications enumerate the fpga device from
-+the sysfs hierarchy under /sys/class/fpga_region.
-+
-+In the example below, two Intel(R) FPGA devices are installed in the host. Each
-+fpga device has one FME and two ports (AFUs).
-+
-+FPGA regions are created under /sys/class/fpga_region/
-+
-+	/sys/class/fpga_region/region0
-+	/sys/class/fpga_region/region1
-+	/sys/class/fpga_region/region2
-+	...
-+
-+Application needs to search each regionX folder, if feature device is found,
-+(e.g "fpga-dfl-port.n" or "fpga-dfl-fme.m" is found), then it's the base
-+fpga region which represents the FPGA device.
-+
-+Each base region has one FME and two ports (AFUs) as child devices:
-+
-+	/sys/class/fpga_region/region0/fpga-dfl-fme.0
-+	/sys/class/fpga_region/region0/fpga-dfl-port.0
-+	/sys/class/fpga_region/region0/fpga-dfl-port.1
-+	...
-+
-+	/sys/class/fpga_region/region3/fpga-dfl-fme.1
-+	/sys/class/fpga_region/region3/fpga-dfl-port.2
-+	/sys/class/fpga_region/region3/fpga-dfl-port.3
-+	...
-+
-+In general, the FME/AFU sysfs interfaces are named as follows:
-+
-+	/sys/class/fpga_region/<regionX>/<fpga-dfl-fme.n>/
-+	/sys/class/fpga_region/<regionX>/<fpga-dfl-port.m>/
-+
-+with 'n' consecutively numbering all FMEs and 'm' consecutively numbering all
-+ports.
-+
-+The device nodes used for ioctl() or mmap() can be referenced through:
-+
-+	/sys/class/fpga_region/<regionX>/<fpga-dfl-fme.n>/dev
-+	/sys/class/fpga_region/<regionX>/<fpga-dfl-port.n>/dev
-+
-+Open discussion
-+===============
-+FME driver exports one ioctl (FPGA_FME_PORT_PR) for partial reconfiguration to
-+user now. In the future, if unified user interfaces for reconfiguration are
-+added, FME driver should switch to them from ioctl interface.
+ endif # FPGA
 -- 
-1.8.3.1
+2.7.4
