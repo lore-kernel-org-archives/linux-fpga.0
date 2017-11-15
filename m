@@ -1,171 +1,228 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
+Return-Path: <SRS0=zy8y=CN=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=zy8y=CN=ettus.com=moritz.fischer@kernel.org>
+Date: Wed, 15 Nov 2017 07:50:06 -0800
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v5 10/18] fpga: region: separate out code that parses the
+ overlay
+Message-ID: <20171115155006.GF21681@tyrael.ni.corp.natinst.com>
+References: <20171017212031.3770-1-atull@kernel.org>
+ <20171017212031.3770-11-atull@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <CANk1AXTLNFE5mBrNv0kBaOXJt0bT0QEbHh0BOSOg-ZHkanbxpA@mail.gmail.com>
-References: <1509482535-4921-1-git-send-email-atull@kernel.org>
- <1509482535-4921-3-git-send-email-atull@kernel.org> <20171031205924.p37uv6mfsmackhbj@us-sjc-wireless-10-16-34-58.amer.corp.natinst.com>
- <CANk1AXSpp=t71FmwRyX+gqY2r27JLzPKSg0e6yfMe35OsAv3Hw@mail.gmail.com>
- <20171101013428.GA21728@tyrael.ni.corp.natinst.com> <CANk1AXTLNFE5mBrNv0kBaOXJt0bT0QEbHh0BOSOg-ZHkanbxpA@mail.gmail.com>
-From: Alan Tull <atull@kernel.org>
-Date: Mon, 13 Nov 2017 11:51:59 -0600
-Message-ID: <CANk1AXSKQ1A66sTn3KMNN3G6bXm7aifp5yr90-bgWyTYSb=9ww@mail.gmail.com>
-Subject: Re: [PATCH 2/3] fpga: manager: don't use drvdata in common fpga code
-Content-Type: text/plain; charset="UTF-8"
-To: Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20171017212031.3770-11-atull@kernel.org>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Oct 31, 2017 at 9:22 PM, Alan Tull <atull@kernel.org> wrote:
-
-Any further comments on v5?  I'm getting ready to send v6.  If I do it
-today, most of these patches will have no changes (again), the only
-changes will be in the patches that move drvdata out of the common
-code.
-
-I've gone to a lot of trouble to break out functional patches to make
-them easy to review and to keep what I was trying to accomplish clear
-here.  I think this stuff is necessary going forward.  If this stuff
-doesn't have errors, let's move forward and make whatever changes we
-want to make on top of this.
-
-Alan
-
-> On Tue, Oct 31, 2017 at 8:34 PM, Moritz Fischer <mdf@kernel.org> wrote:
->> On Tue, Oct 31, 2017 at 04:45:54PM -0500, Alan Tull wrote:
->>> On Tue, Oct 31, 2017 at 3:59 PM, Moritz Fischer <mdf@kernel.org> wrote:
->>> > On Tue, Oct 31, 2017 at 08:42:14PM +0000, Alan Tull wrote:
->>> >> Changes to the fpga manager code to not use drvdata in common
->>> >> code.
->>> >>
->>> >> Change fpga_mgr_register to not set or use drvdata.
->>> >>
->>> >> Change the register/unregister function parameters to take the mgr
->>> >> struct:
->>> >> * int fpga_mgr_register(struct device *dev,
->>> >>                         struct fpga_manager *mgr);
->>> >> * void fpga_mgr_unregister(struct fpga_manager *mgr);
->>> >>
->>> >> Change the drivers that call fpga_mgr_register to alloc the struct
->>> >> fpga_manager (using devm_kzalloc) and partly fill it, adding name,
->>> >> ops, and priv.
->>> >>
->>> >> The rationale is that setting drvdata is fine for DT based devices
->>> >> that will have one manager, bridge, or region per platform device.
->>> >> However PCIe based devices may have multiple FPGA mgr/bridge/regions
->>> >> under one pcie device.  Without these changes, the PCIe solution has
->>> >> to create an extra device for each child mgr/bridge/region to hold
->>> >> drvdata.
->>> >
->>> > This looks very common, in fact several subsystems provide this two step
->>> > way of registering things.
->>> >
->>> > - Allocate fpga_mgr via fpga_mgr_alloc() where you pass in the size of
->>> >   the private data
->>> > - Fill in some fields
->>> > - fpga_mgr_register() where you pass in the fpga_mgr as suggested
->>> >
->>> > See for example the alloc_etherdev() for ethernet devices.
->>> >
->>>
->>> Yes, I considered it when I was writing this.  I've seen it both ways.
->>> In the case you mention, they've got reasons they absolutely needed to
->>> do it that way.  alloc_etherdev() calls eventually to
->>> alloc_netdev_mqs() which is about 100 lines of alloc'ing and
->>> initializing a network device struct.
->>
->> Yeah, sure. I looked around some more. Other subsystems just alloc
->> manually, seems fine with me.
->>>
->>> > The benefit of the API you proposed is that one could embed the fpga_mgr
->>> > struct inside of another struct and get to the container via
->>> > container_of() I guess ...
->>>
->>> Yes, let's keep it simple for now, as that gives us greater
->>> flexibility.  We can add alloc functions when it becomes clear that it
->>> won't get in the way of someone's use.
->>
->> Agreed.
->>>
->>> Alan
->>>
->>> >
->>> >>
->>> >> Signed-off-by: Alan Tull <atull@kernel.org>
->>> >> Reported-by: Jiuyue Ma <majiuyue@huawei.com>
->>> >> ---
->>> >>  Documentation/fpga/fpga-mgr.txt  | 23 ++++++++++++++++-------
->>> >>  drivers/fpga/altera-cvp.c        | 17 +++++++++++++----
->>> >>  drivers/fpga/altera-pr-ip-core.c | 16 ++++++++++++++--
->>> >>  drivers/fpga/altera-ps-spi.c     | 17 ++++++++++++++---
->>> >>  drivers/fpga/fpga-mgr.c          | 28 +++++++---------------------
->>> >>  drivers/fpga/ice40-spi.c         | 19 +++++++++++++++----
->>> >>  drivers/fpga/socfpga-a10.c       | 15 ++++++++++++---
->>> >>  drivers/fpga/socfpga.c           | 17 ++++++++++++++---
->>> >>  drivers/fpga/ts73xx-fpga.c       | 17 ++++++++++++++---
->>> >>  drivers/fpga/xilinx-spi.c        | 17 ++++++++++++++---
->>> >>  drivers/fpga/zynq-fpga.c         | 15 ++++++++++++---
->>> >>  include/linux/fpga/fpga-mgr.h    |  6 ++----
->>> >>  12 files changed, 147 insertions(+), 60 deletions(-)
->>> >>
->>> >> diff --git a/Documentation/fpga/fpga-mgr.txt b/Documentation/fpga/fpga-mgr.txt
->>> >> index cc6413e..7e5e5c8 100644
->>> >> --- a/Documentation/fpga/fpga-mgr.txt
->>> >> +++ b/Documentation/fpga/fpga-mgr.txt
->>> >> @@ -67,11 +67,9 @@ fpga_mgr_unlock when done programming the FPGA.
->>> >>  To register or unregister the low level FPGA-specific driver:
->>> >>  -------------------------------------------------------------
->>> >>
->>> >> -     int fpga_mgr_register(struct device *dev, const char *name,
->>> >> -                           const struct fpga_manager_ops *mops,
->>> >> -                           void *priv);
->>> >> +     int fpga_mgr_register(struct device *dev, struct fpga_manager *mgr);
->>
->> At that point you could also just give the struct fpga_manager a
->> ->parent or ->dev that you populate with &pdev->dev or &spi->dev etc instead of
->> making it a separate parameter, this makes an odd mix of half and half here.
->
-> Yes, I'd have to call it parent as dev is taken.  I also noticed that
-> I forgot to edit the function parameter documentation in the c file.
->
->>> >>
->>> >> -     void fpga_mgr_unregister(struct device *dev);
->>> >> +     void fpga_mgr_unregister(struct fpga_manager *mgr);
->>> >>
->>> >>  Use of these two functions is described below in "How To Support a new FPGA
->>> >>  device."
->>> >> @@ -148,8 +146,13 @@ static int socfpga_fpga_probe(struct platform_device *pdev)
->>> >>  {
->>> >>       struct device *dev = &pdev->dev;
->>> >>       struct socfpga_fpga_priv *priv;
->>> >> +     struct fpga_manager *mgr;
->>> >>       int ret;
->>> >>
->>> >> +     mgr = devm_kzalloc(dev, sizeof(*mgr), GFP_KERNEL);
->>> >> +     if (!mgr)
->>> >> +             return -ENOMEM;
->>> >> +
->>> >>       priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
->>> >>       if (!priv)
->>> >>               return -ENOMEM;
->>> >> @@ -157,13 +160,19 @@ static int socfpga_fpga_probe(struct platform_device *pdev)
->>> >>       /* ... do ioremaps, get interrupts, etc. and save
->>> >>          them in priv... */
->>> >>
->>> >> -     return fpga_mgr_register(dev, "Altera SOCFPGA FPGA Manager",
->>> >> -                              &socfpga_fpga_ops, priv);
->>> >> +     mgr->name = "Altera SOCFPGA FPGA Manager";
->>> >> +     mgr->mops = &socfpga_fpga_ops;
->>> >> +     mgr->priv = priv;
->> Like here: mgr->dev = &pdev->dev
->
-> Yes, good catch.  By the way, I pushed these patches on a branch to
-> linux-fpga (branch name is review-v4.14-rc7-non-dt-support-v5.1).
->
-> Thanks for reviewing,
-> Alan
->
->>
->>> >> +     platform_set_drvdata(pdev, mgr);
->>> >> +
->>> >> +     return fpga_mgr_register(dev, mgr);
->>> >>  }
+On Tue, Oct 17, 2017 at 04:20:23PM -0500, Alan Tull wrote:
+> New function of_fpga_region_parse_ov added, moving code
+> from fpga_region_notify_pre_apply.  This function
+> gets the FPGA image info from the overlay and is able
+> to simplify some of the logic involved.
+> 
+> This is a baby step in refactoring the FPGA region code to
+> separate out common code from Device Tree overlay support.
+> 
+> Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+> ---
+> v2: split out from another patch
+> v3: update comments
+>     minor changes in flow
+> v4: no change to this patch in this version of patchset
+> v5: no change to this patch in this version of patchset
+> ---
+>  drivers/fpga/fpga-region.c | 122 +++++++++++++++++++++++++++------------------
+>  1 file changed, 73 insertions(+), 49 deletions(-)
+> 
+> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+> index eaacf50..2a8621d 100644
+> --- a/drivers/fpga/fpga-region.c
+> +++ b/drivers/fpga/fpga-region.c
+> @@ -321,33 +321,22 @@ static int child_regions_with_firmware(struct device_node *overlay)
+>  }
+>  
+>  /**
+> - * fpga_region_notify_pre_apply - pre-apply overlay notification
+> - *
+> - * @region: FPGA region that the overlay was applied to
+> - * @nd: overlay notification data
+> - *
+> - * Called after when an overlay targeted to a FPGA Region is about to be
+> - * applied.  Function will check the properties that will be added to the FPGA
+> - * region.  If the checks pass, it will program the FPGA.
+> - *
+> - * The checks are:
+> - * The overlay must add either firmware-name or external-fpga-config property
+> - * to the FPGA Region.
+> - *
+> - *   firmware-name         : program the FPGA
+> - *   external-fpga-config  : FPGA is already programmed
+> - *   encrypted-fpga-config : FPGA bitstream is encrypted
+> + * of_fpga_region_parse_ov - parse and check overlay applied to region
+>   *
+> - * The overlay can add other FPGA regions, but child FPGA regions cannot have a
+> - * firmware-name property since those regions don't exist yet.
+> + * @region: FPGA region
+> + * @overlay: overlay applied to the FPGA region
+>   *
+> - * If the overlay that breaks the rules, notifier returns an error and the
+> - * overlay is rejected before it goes into the main tree.
+> + * Given an overlay applied to a FPGA region, parse the FPGA image specific
+> + * info in the overlay and do some checking.
+>   *
+> - * Returns 0 for success or negative error code for failure.
+> + * Returns:
+> + *   NULL if overlay doesn't direct us to program the FPGA.
+> + *   fpga_image_info struct if there is an image to program.
+> + *   error code for invalid overlay.
+>   */
+> -static int fpga_region_notify_pre_apply(struct fpga_region *region,
+> -					struct of_overlay_notify_data *nd)
+> +static struct fpga_image_info *of_fpga_region_parse_ov(
+> +						struct fpga_region *region,
+> +						struct device_node *overlay)
+>  {
+>  	struct device *dev = &region->dev;
+>  	struct fpga_image_info *info;
+> @@ -356,7 +345,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+>  
+>  	if (region->info) {
+>  		dev_err(dev, "Region already has overlay applied.\n");
+> -		return -EINVAL;
+> +		return ERR_PTR(-EINVAL);
+>  	}
+>  
+>  	/*
+> @@ -364,67 +353,102 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+>  	 * firmware-name property (would mean that an FPGA region that has
+>  	 * not been added to the live tree yet is doing FPGA programming).
+>  	 */
+> -	ret = child_regions_with_firmware(nd->overlay);
+> +	ret = child_regions_with_firmware(overlay);
+>  	if (ret)
+> -		return ret;
+> +		return ERR_PTR(ret);
+>  
+>  	info = fpga_image_info_alloc(dev);
+>  	if (!info)
+> -		return -ENOMEM;
+> +		return ERR_PTR(-ENOMEM);
+>  
+> -	info->overlay = nd->overlay;
+> +	info->overlay = overlay;
+>  
+>  	/* Read FPGA region properties from the overlay */
+> -	if (of_property_read_bool(nd->overlay, "partial-fpga-config"))
+> +	if (of_property_read_bool(overlay, "partial-fpga-config"))
+>  		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
+>  
+> -	if (of_property_read_bool(nd->overlay, "external-fpga-config"))
+> +	if (of_property_read_bool(overlay, "external-fpga-config"))
+>  		info->flags |= FPGA_MGR_EXTERNAL_CONFIG;
+>  
+> -	if (of_property_read_bool(nd->overlay, "encrypted-fpga-config"))
+> +	if (of_property_read_bool(overlay, "encrypted-fpga-config"))
+>  		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
+>  
+> -	if (!of_property_read_string(nd->overlay, "firmware-name",
+> +	if (!of_property_read_string(overlay, "firmware-name",
+>  				     &firmware_name)) {
+>  		info->firmware_name = devm_kstrdup(dev, firmware_name,
+>  						   GFP_KERNEL);
+>  		if (!info->firmware_name)
+> -			return -ENOMEM;
+> +			return ERR_PTR(-ENOMEM);
+>  	}
+>  
+> -	of_property_read_u32(nd->overlay, "region-unfreeze-timeout-us",
+> +	of_property_read_u32(overlay, "region-unfreeze-timeout-us",
+>  			     &info->enable_timeout_us);
+>  
+> -	of_property_read_u32(nd->overlay, "region-freeze-timeout-us",
+> +	of_property_read_u32(overlay, "region-freeze-timeout-us",
+>  			     &info->disable_timeout_us);
+>  
+> -	of_property_read_u32(nd->overlay, "config-complete-timeout-us",
+> +	of_property_read_u32(overlay, "config-complete-timeout-us",
+>  			     &info->config_complete_timeout_us);
+>  
+> -	/* If FPGA was externally programmed, don't specify firmware */
+> -	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
+> -		dev_err(dev, "error: specified firmware and external-fpga-config");
+> -		fpga_image_info_free(info);
+> -		return -EINVAL;
+> +	/* If overlay is not programming the FPGA, don't need FPGA image info */
+> +	if (!info->firmware_name) {
+> +		ret = 0;
+> +		goto ret_no_info;
+>  	}
+>  
+> -	/* FPGA is already configured externally.  We're done. */
+> +	/*
+> +	 * If overlay informs us FPGA was externally programmed, specifying
+> +	 * firmware here would be ambiguous.
+> +	 */
+>  	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG) {
+> -		fpga_image_info_free(info);
+> -		return 0;
+> +		dev_err(dev, "error: specified firmware and external-fpga-config");
+> +		ret = -EINVAL;
+> +		goto ret_no_info;
+>  	}
+>  
+> -	/* If we got this far, we should be programming the FPGA */
+> -	if (!info->firmware_name) {
+> -		dev_err(dev, "should specify firmware-name or external-fpga-config\n");
+> -		fpga_image_info_free(info);
+> +	return info;
+> +ret_no_info:
+> +	fpga_image_info_free(info);
+> +	return ERR_PTR(ret);
+> +}
+> +
+> +/**
+> + * fpga_region_notify_pre_apply - pre-apply overlay notification
+> + *
+> + * @region: FPGA region that the overlay was applied to
+> + * @nd: overlay notification data
+> + *
+> + * Called when an overlay targeted to a FPGA Region is about to be applied.
+> + * Parses the overlay for properties that influence how the FPGA will be
+> + * programmed and does some checking. If the checks pass, programs the FPGA.
+> + * If the checks fail, overlay is rejected and does not get added to the
+> + * live tree.
+> + *
+> + * Returns 0 for success or negative error code for failure.
+> + */
+> +static int fpga_region_notify_pre_apply(struct fpga_region *region,
+> +					struct of_overlay_notify_data *nd)
+> +{
+> +	struct device *dev = &region->dev;
+> +	struct fpga_image_info *info;
+> +	int ret;
+> +
+> +	if (region->info) {
+> +		dev_err(dev, "Region already has overlay applied.\n");
+>  		return -EINVAL;
+>  	}
+>  
+> -	region->info = info;
+> +	info = of_fpga_region_parse_ov(region, nd->overlay);
+> +	if (IS_ERR(info))
+> +		return PTR_ERR(info);
+> +
+> +	if (!info)
+> +		return 0;
+>  
+> +	region->info = info;
+>  	ret = fpga_region_program_fpga(region);
+>  	if (ret) {
+> +		/* error; reject overlay */
+>  		fpga_image_info_free(info);
+>  		region->info = NULL;
+>  	}
+> -- 
+> 2.7.4
+> 
