@@ -1,158 +1,258 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [RFC 1/2] of: overlay: add whitelist
-Date: Mon, 27 Nov 2017 14:58:03 -0600
-Message-Id: <1511816284-12145-2-git-send-email-atull@kernel.org>
-In-Reply-To: <1511816284-12145-1-git-send-email-atull@kernel.org>
-References: <1511816284-12145-1-git-send-email-atull@kernel.org>
-To: Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Subject: [PATCH v6 13/18] fpga: region: add register/unregister functions
+Date: Wed, 15 Nov 2017 14:20:23 -0600
+Message-Id: <1510777228-4291-14-git-send-email-atull@kernel.org>
+In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
+References: <1510777228-4291-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add simple whitelist.  When an overlay is submitted, if any target in
-the overlay is not in the whitelist, the overlay is rejected.  Drivers
-that support dynamic configuration can register their device node with:
+Another step in separating common code from device tree specific
+code for FPGA regions.
 
-  int of_add_whitelist_node(struct device_node *np)
-
-and remove themselves with:
-
-  void of_remove_whitelist_node(struct device_node *np)
+* add FPGA region register/unregister functions.
+* add the register/unregister functions to the header
+* use devm_kzalloc to alloc the region.
+* add a method for getting bridges to the region struct
+* add priv to the region struct
+* use region->info in of_fpga_region_get_bridges
 
 Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/of/overlay.c | 73 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/of.h   | 12 +++++++++
- 2 files changed, 85 insertions(+)
+v2: split out from another patch
+v3: use region->info, remove info param where applicable
+v4: no change to this patch in this version of patchset
+v5: add back in fpga_mgr_put in of_fpga_region_remove
+v6: Add Moritz' ack
+---
+ drivers/fpga/fpga-region.c       | 105 ++++++++++++++++++++++++---------------
+ include/linux/fpga/fpga-region.h |   7 +++
+ 2 files changed, 72 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index c150abb..5f952a1 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -21,6 +21,7 @@
- #include <linux/slab.h>
- #include <linux/err.h>
- #include <linux/idr.h>
-+#include <linux/spinlock.h>
- 
- #include "of_private.h"
- 
-@@ -646,6 +647,74 @@ static void free_overlay_changeset(struct overlay_changeset *ovcs)
- 	kfree(ovcs);
- }
- 
-+/* lock for adding/removing device nodes to the whitelist */
-+static spinlock_t whitelist_lock;
-+
-+static struct list_head whitelist_list = LIST_HEAD_INIT(whitelist_list);
-+
-+struct dt_overlay_whitelist {
-+	struct device_node *np;
-+	struct list_head node;
-+};
-+
-+int of_add_whitelist_node(struct device_node *np)
-+{
-+	unsigned long flags;
-+	struct dt_overlay_whitelist *wln;
-+
-+	wln = kzalloc(sizeof(*wln), GFP_KERNEL);
-+	if (!wln)
-+		return -ENOMEM;
-+
-+	wln->np = np;
-+
-+	spin_lock_irqsave(&whitelist_lock, flags);
-+	list_add(&wln->node, &whitelist_list);
-+	spin_unlock_irqrestore(&whitelist_lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_add_whitelist_node);
-+
-+void of_remove_whitelist_node(struct device_node *np)
-+{
-+	struct dt_overlay_whitelist *wln;
-+	unsigned long flags;
-+
-+	list_for_each_entry(wln, &whitelist_list, node) {
-+		if (np == wln->np) {
-+			spin_lock_irqsave(&whitelist_lock, flags);
-+			list_del(&wln->node);
-+			spin_unlock_irqrestore(&whitelist_lock, flags);
-+			kfree(wln);
-+			return;
-+		}
-+	}
-+}
-+EXPORT_SYMBOL_GPL(of_remove_whitelist_node);
-+
-+static int of_check_whitelist(struct overlay_changeset *ovcs)
-+{
-+	struct dt_overlay_whitelist *wln;
-+	struct device_node *target;
-+	int i;
-+
-+	for (i = 0; i < ovcs->count; i++) {
-+		target = ovcs->fragments[i].target;
-+		if (!of_node_cmp(target->name, "__symbols__"))
-+			continue;
-+
-+		list_for_each_entry(wln, &whitelist_list, node)
-+			if (target == wln->np)
-+				break;
-+
-+		if (target != wln->np)
-+			return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index 92ab216..76db81d 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -143,7 +143,6 @@ static struct fpga_manager *of_fpga_region_get_mgr(struct device_node *np)
  /**
-  * of_overlay_apply() - Create and apply an overlay changeset
-  * @tree:	Expanded overlay device tree
-@@ -717,6 +786,10 @@ int of_overlay_apply(struct device_node *tree, int *ovcs_id)
- 	if (ret)
- 		goto err_free_overlay_changeset;
+  * of_fpga_region_get_bridges - create a list of bridges
+  * @region: FPGA region
+- * @info: FPGA image info
+  *
+  * Create a list of bridges including the parent bridge and the bridges
+  * specified by "fpga-bridges" property.  Note that the
+@@ -156,11 +155,11 @@ static struct fpga_manager *of_fpga_region_get_mgr(struct device_node *np)
+  * Return 0 for success (even if there are no bridges specified)
+  * or -EBUSY if any of the bridges are in use.
+  */
+-static int of_fpga_region_get_bridges(struct fpga_region *region,
+-				      struct fpga_image_info *info)
++static int of_fpga_region_get_bridges(struct fpga_region *region)
+ {
+ 	struct device *dev = &region->dev;
+ 	struct device_node *region_np = dev->of_node;
++	struct fpga_image_info *info = region->info;
+ 	struct device_node *br, *np, *parent_br = NULL;
+ 	int i, ret;
  
-+	ret = of_check_whitelist(ovcs);
-+	if (ret)
-+		goto err_free_overlay_changeset;
-+
- 	ret = overlay_notify(ovcs, OF_OVERLAY_PRE_APPLY);
- 	if (ret) {
- 		pr_err("overlay changeset pre-apply notify error %d\n", ret);
-diff --git a/include/linux/of.h b/include/linux/of.h
-index d3dea1d..5bf652a1 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -1364,6 +1364,9 @@ int of_overlay_remove_all(void);
- int of_overlay_notifier_register(struct notifier_block *nb);
- int of_overlay_notifier_unregister(struct notifier_block *nb);
+@@ -192,7 +191,7 @@ static int of_fpga_region_get_bridges(struct fpga_region *region,
+ 			continue;
  
-+int of_add_whitelist_node(struct device_node *np);
-+void of_remove_whitelist_node(struct device_node *np);
-+
- #else
+ 		/* If node is a bridge, get it and add to list */
+-		ret = of_fpga_bridge_get_to_list(br, region->info,
++		ret = of_fpga_bridge_get_to_list(br, info,
+ 						 &region->bridge_list);
  
- static inline int of_overlay_apply(struct device_node *tree, int *ovcs_id)
-@@ -1391,6 +1394,15 @@ static inline int of_overlay_notifier_unregister(struct notifier_block *nb)
+ 		/* If any of the bridges are in use, give up */
+@@ -229,10 +228,16 @@ int fpga_region_program_fpga(struct fpga_region *region)
+ 		goto err_put_region;
+ 	}
+ 
+-	ret = of_fpga_region_get_bridges(region, info);
+-	if (ret) {
+-		dev_err(dev, "failed to get FPGA bridges\n");
+-		goto err_unlock_mgr;
++	/*
++	 * In some cases, we already have a list of bridges in the
++	 * fpga region struct.  Or we don't have any bridges.
++	 */
++	if (region->get_bridges) {
++		ret = region->get_bridges(region);
++		if (ret) {
++			dev_err(dev, "failed to get fpga region bridges\n");
++			goto err_unlock_mgr;
++		}
+ 	}
+ 
+ 	ret = fpga_bridges_disable(&region->bridge_list);
+@@ -259,7 +264,8 @@ int fpga_region_program_fpga(struct fpga_region *region)
  	return 0;
- }
  
-+static inline int of_add_whitelist_node(struct device_node *np)
+ err_put_br:
+-	fpga_bridges_put(&region->bridge_list);
++	if (region->get_bridges)
++		fpga_bridges_put(&region->bridge_list);
+ err_unlock_mgr:
+ 	fpga_mgr_unlock(region->mgr);
+ err_put_region:
+@@ -522,39 +528,20 @@ static struct notifier_block fpga_region_of_nb = {
+ 	.notifier_call = of_fpga_region_notify,
+ };
+ 
+-static int of_fpga_region_probe(struct platform_device *pdev)
++int fpga_region_register(struct device *dev, struct fpga_region *region)
+ {
+-	struct device *dev = &pdev->dev;
+-	struct device_node *np = dev->of_node;
+-	struct fpga_region *region;
+-	struct fpga_manager *mgr;
+ 	int id, ret = 0;
+ 
+-	mgr = of_fpga_region_get_mgr(np);
+-	if (IS_ERR(mgr))
+-		return -EPROBE_DEFER;
+-
+-	region = kzalloc(sizeof(*region), GFP_KERNEL);
+-	if (!region) {
+-		ret = -ENOMEM;
+-		goto err_put_mgr;
+-	}
+-
+-	region->mgr = mgr;
+-
+ 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
+-	if (id < 0) {
+-		ret = id;
+-		goto err_kfree;
+-	}
++	if (id < 0)
++		return id;
+ 
+ 	mutex_init(&region->mutex);
+ 	INIT_LIST_HEAD(&region->bridge_list);
+-
+ 	device_initialize(&region->dev);
+ 	region->dev.class = fpga_region_class;
+ 	region->dev.parent = dev;
+-	region->dev.of_node = np;
++	region->dev.of_node = dev->of_node;
+ 	region->dev.id = id;
+ 	dev_set_drvdata(dev, region);
+ 
+@@ -566,19 +553,58 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_remove;
+ 
++	return 0;
++
++err_remove:
++	ida_simple_remove(&fpga_region_ida, id);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(fpga_region_register);
++
++int fpga_region_unregister(struct fpga_region *region)
 +{
++	device_unregister(&region->dev);
++
 +	return 0;
 +}
++EXPORT_SYMBOL_GPL(fpga_region_unregister);
 +
-+static inline void of_remove_whitelist_node(struct device_node *np)
++static int of_fpga_region_probe(struct platform_device *pdev)
 +{
-+}
++	struct device *dev = &pdev->dev;
++	struct device_node *np = dev->of_node;
++	struct fpga_region *region;
++	struct fpga_manager *mgr;
++	int ret;
 +
- #endif
++	/* Find the FPGA mgr specified by region or parent region. */
++	mgr = of_fpga_region_get_mgr(np);
++	if (IS_ERR(mgr))
++		return -EPROBE_DEFER;
++
++	region = devm_kzalloc(dev, sizeof(*region), GFP_KERNEL);
++	if (!region) {
++		ret = -ENOMEM;
++		goto eprobe_mgr_put;
++	}
++
++	region->mgr = mgr;
++
++	/* Specify how to get bridges for this type of region. */
++	region->get_bridges = of_fpga_region_get_bridges;
++
++	ret = fpga_region_register(dev, region);
++	if (ret)
++		goto eprobe_mgr_put;
++
+ 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
  
- #endif /* _LINUX_OF_H */
+ 	dev_info(dev, "FPGA Region probed\n");
+ 
+ 	return 0;
+ 
+-err_remove:
+-	ida_simple_remove(&fpga_region_ida, id);
+-err_kfree:
+-	kfree(region);
+-err_put_mgr:
++eprobe_mgr_put:
+ 	fpga_mgr_put(mgr);
+-
+ 	return ret;
+ }
+ 
+@@ -586,7 +612,7 @@ static int of_fpga_region_remove(struct platform_device *pdev)
+ {
+ 	struct fpga_region *region = platform_get_drvdata(pdev);
+ 
+-	device_unregister(&region->dev);
++	fpga_region_unregister(region);
+ 	fpga_mgr_put(region->mgr);
+ 
+ 	return 0;
+@@ -606,7 +632,6 @@ static void fpga_region_dev_release(struct device *dev)
+ 	struct fpga_region *region = to_fpga_region(dev);
+ 
+ 	ida_simple_remove(&fpga_region_ida, region->dev.id);
+-	kfree(region);
+ }
+ 
+ /**
+diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+index 8a35517..8c8a3249f 100644
+--- a/include/linux/fpga/fpga-region.h
++++ b/include/linux/fpga/fpga-region.h
+@@ -12,6 +12,8 @@
+  * @bridge_list: list of FPGA bridges specified in region
+  * @mgr: FPGA manager
+  * @info: FPGA image info
++ * @priv: private data
++ * @get_bridges: optional function to get bridges to a list
+  */
+ struct fpga_region {
+ 	struct device dev;
+@@ -19,10 +21,15 @@ struct fpga_region {
+ 	struct list_head bridge_list;
+ 	struct fpga_manager *mgr;
+ 	struct fpga_image_info *info;
++	void *priv;
++	int (*get_bridges)(struct fpga_region *region);
+ };
+ 
+ #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
+ 
+ int fpga_region_program_fpga(struct fpga_region *region);
+ 
++int fpga_region_register(struct device *dev, struct fpga_region *region);
++int fpga_region_unregister(struct fpga_region *region);
++
+ #endif /* _FPGA_REGION_H */
 -- 
 2.7.4
