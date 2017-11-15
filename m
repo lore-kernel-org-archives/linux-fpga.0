@@ -1,91 +1,55 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v6 14/18] fpga: region: add fpga_region_class_find
-Date: Wed, 15 Nov 2017 14:20:24 -0600
-Message-Id: <1510777228-4291-15-git-send-email-atull@kernel.org>
+Subject: [PATCH v6 08/18] fpga: region: fix slow warning with more than one overlay
+Date: Wed, 15 Nov 2017 14:20:18 -0600
+Message-Id: <1510777228-4291-9-git-send-email-atull@kernel.org>
 In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
 References: <1510777228-4291-1-git-send-email-atull@kernel.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add a function for searching the fpga-region class.  This
-will be useful when device tree code is no longer in the
-same file that declares the fpga-region class.  Another
-step in separating common FPGA region code from device
-tree support.
+When DT overlays are applied, each FPGA region keeps track of the fpga
+image info as region->info.  This pointer is assigned only if an
+overlay causes the FPGA to be programmed.  As it stands, this pointer
+can be overwritten, causing a slow warning later when overlays are
+removed.
+
+This patch fixes this by changing the allowed behaviour.  If a region
+has received an overlay that programmed the FPGA, reject other
+overlays that try to program the FPGA.  To reprogram the FPGA, first
+remove the overlay.  This makes sense as removing the overlay also
+removes the devices cleanly.  Note that overlays that make DT changes
+without reprogramming the FPGA are exempt from this restriction.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
 Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
 v2: split out from another patch
-v3: add Moritz' ack
+v3: better explanation in header
 v4: no change to this patch in this version of patchset
 v5: no change to this patch in this version of patchset
-v6: no change to this patch in this version of patchset
+v6: Add Moritz' ack
 ---
- drivers/fpga/fpga-region.c       | 23 +++++++++++++++--------
- include/linux/fpga/fpga-region.h |  5 ++++-
- 2 files changed, 19 insertions(+), 9 deletions(-)
+ drivers/fpga/fpga-region.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 76db81d..5c086957 100644
+index afac543..35af952 100644
 --- a/drivers/fpga/fpga-region.c
 +++ b/drivers/fpga/fpga-region.c
-@@ -30,6 +30,20 @@
- static DEFINE_IDA(fpga_region_ida);
- static struct class *fpga_region_class;
+@@ -355,6 +355,11 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 	const char *firmware_name;
+ 	int ret;
  
-+struct fpga_region *fpga_region_class_find(
-+	struct device *start, const void *data,
-+	int (*match)(struct device *, const void *))
-+{
-+	struct device *dev;
++	if (region->info) {
++		dev_err(dev, "Region already has overlay applied.\n");
++		return -EINVAL;
++	}
 +
-+	dev = class_find_device(fpga_region_class, start, data, match);
-+	if (!dev)
-+		return NULL;
-+
-+	return to_fpga_region(dev);
-+}
-+EXPORT_SYMBOL_GPL(fpga_region_class_find);
-+
- static const struct of_device_id fpga_region_of_match[] = {
- 	{ .compatible = "fpga-region", },
- 	{},
-@@ -51,14 +65,7 @@ static int fpga_region_of_node_match(struct device *dev, const void *data)
-  */
- static struct fpga_region *of_fpga_region_find(struct device_node *np)
- {
--	struct device *dev;
--
--	dev = class_find_device(fpga_region_class, NULL, np,
--				fpga_region_of_node_match);
--	if (!dev)
--		return NULL;
--
--	return to_fpga_region(dev);
-+	return fpga_region_class_find(NULL, np, fpga_region_of_node_match);
- }
- 
- /**
-diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
-index 8c8a3249f..7048449 100644
---- a/include/linux/fpga/fpga-region.h
-+++ b/include/linux/fpga/fpga-region.h
-@@ -27,8 +27,11 @@ struct fpga_region {
- 
- #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
- 
--int fpga_region_program_fpga(struct fpga_region *region);
-+struct fpga_region *fpga_region_class_find(
-+	struct device *start, const void *data,
-+	int (*match)(struct device *, const void *));
- 
-+int fpga_region_program_fpga(struct fpga_region *region);
- int fpga_region_register(struct device *dev, struct fpga_region *region);
- int fpga_region_unregister(struct fpga_region *region);
- 
+ 	/*
+ 	 * Reject overlay if child FPGA Regions added in the overlay have
+ 	 * firmware-name property (would mean that an FPGA region that has
 -- 
 2.7.4
