@@ -1,45 +1,65 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 2/3] fpga: fpga-bridge: remove unnecessary null check in of_fpga_bridge_get
-Date: Wed, 15 Nov 2017 16:33:11 -0600
-Message-Id: <1510785192-10123-3-git-send-email-atull@kernel.org>
-In-Reply-To: <1510785192-10123-1-git-send-email-atull@kernel.org>
-References: <1510785192-10123-1-git-send-email-atull@kernel.org>
+Subject: [PATCH v6 07/18] fpga: region: check for child regions before allocing image info
+Date: Wed, 15 Nov 2017 14:20:17 -0600
+Message-Id: <1510777228-4291-8-git-send-email-atull@kernel.org>
+In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
+References: <1510777228-4291-1-git-send-email-atull@kernel.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+During a device tree overlay pre-apply notification, the check
+for child FPGA regions can happen slightly earlier.  This saves
+us from allocating the FPGA image info that just gets thrown
+away.
 
-Notice that bridge = to_fpga_bridge(dev); expands to:
+This is a baby step in refactoring the FPGA region code to
+separate out common FPGA region code from FPGA region
+Device Tree overlay support.
 
-bridge = container_of(dev, struct fpga_bridge, dev);
-
-and container_of is never null, so this null check is
-unnecessary.
-
-Addresses-Coverity-ID: 1397912
-Reported-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
-Reviewed-by: Moritz Fischer <mdf@kernel.org>
 Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/fpga-bridge.c | 2 --
- 1 file changed, 2 deletions(-)
+v2: split out from another patch
+v3: s/dev/&region->dev/ in one place
+    add Moritz' ack
+v4: no change to this patch in this version of patchset
+v5: no change to this patch in this version of patchset
+v6: no change to this patch in this version of patchset
+---
+ drivers/fpga/fpga-region.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index 4c48dd6..038b10b 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -78,8 +78,6 @@ static struct fpga_bridge *__fpga_bridge_get(struct device *dev,
- 	int ret = -ENODEV;
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index d78f444..afac543 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -355,15 +355,19 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 	const char *firmware_name;
+ 	int ret;
  
- 	bridge = to_fpga_bridge(dev);
--	if (!bridge)
--		goto err_dev;
+-	info = fpga_image_info_alloc(dev);
+-	if (!info)
+-		return -ENOMEM;
+-
+-	/* Reject overlay if child FPGA Regions have firmware-name property */
++	/*
++	 * Reject overlay if child FPGA Regions added in the overlay have
++	 * firmware-name property (would mean that an FPGA region that has
++	 * not been added to the live tree yet is doing FPGA programming).
++	 */
+ 	ret = child_regions_with_firmware(nd->overlay);
+ 	if (ret)
+ 		return ret;
  
- 	bridge->info = info;
- 
++	info = fpga_image_info_alloc(dev);
++	if (!info)
++		return -ENOMEM;
++
+ 	/* Read FPGA region properties from the overlay */
+ 	if (of_property_read_bool(nd->overlay, "partial-fpga-config"))
+ 		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
 -- 
 2.7.4
