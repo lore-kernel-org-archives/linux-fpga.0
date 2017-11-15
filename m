@@ -1,57 +1,58 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [RFC 2/2] fpga: of region: add of-fpga-region to whitelist
-Date: Mon, 27 Nov 2017 14:58:04 -0600
-Message-Id: <1511816284-12145-3-git-send-email-atull@kernel.org>
-In-Reply-To: <1511816284-12145-1-git-send-email-atull@kernel.org>
-References: <1511816284-12145-1-git-send-email-atull@kernel.org>
-To: Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Subject: [PATCH v6 16/18] fpga: of-fpga-region: accept overlays that don't program FPGA
+Date: Wed, 15 Nov 2017 14:20:26 -0600
+Message-Id: <1510777228-4291-17-git-send-email-atull@kernel.org>
+In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
+References: <1510777228-4291-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-During each FPGA region's probe, add to whitelist.  Remove
-during driver remove.
+The FPGA may already have a static image programmed when
+Linux boots.  In that case a DT overlay may be used to add
+the devices that already exist.  This commit allows that
+by shuffling the order of some checks.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/of-fpga-region.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+v4: Patch added to patchset in v4
+v5: no change to this patch in this version of patchset
+v6: Add Moritz' ack
+---
+ drivers/fpga/of-fpga-region.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 7dfaa95..abb57a9 100644
+index 1533506..c6b2119 100644
 --- a/drivers/fpga/of-fpga-region.c
 +++ b/drivers/fpga/of-fpga-region.c
-@@ -435,6 +435,10 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 	/* Specify how to get bridges for this type of region. */
- 	region->get_bridges = of_fpga_region_get_bridges;
+@@ -298,18 +298,19 @@ static int of_fpga_region_notify_pre_apply(struct fpga_region *region,
+ 	struct fpga_image_info *info;
+ 	int ret;
  
-+	ret = of_add_whitelist_node(np);
-+	if (ret)
-+		goto eprobe_wl_err;
+-	if (region->info) {
+-		dev_err(dev, "Region already has overlay applied.\n");
+-		return -EINVAL;
+-	}
+-
+ 	info = of_fpga_region_parse_ov(region, nd->overlay);
+ 	if (IS_ERR(info))
+ 		return PTR_ERR(info);
+ 
++	/* If overlay doesn't program the FPGA, accept it anyway. */
+ 	if (!info)
+ 		return 0;
+ 
++	if (region->info) {
++		dev_err(dev, "Region already has overlay applied.\n");
++		return -EINVAL;
++	}
 +
- 	ret = fpga_region_register(region);
- 	if (ret)
- 		goto eprobe_mgr_put;
-@@ -447,6 +451,8 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 	return 0;
- 
- eprobe_mgr_put:
-+	of_remove_whitelist_node(np);
-+eprobe_wl_err:
- 	fpga_mgr_put(mgr);
- 	return ret;
- }
-@@ -454,7 +460,10 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- static int of_fpga_region_remove(struct platform_device *pdev)
- {
- 	struct fpga_region *region = platform_get_drvdata(pdev);
-+	struct device *dev = &pdev->dev;
-+	struct device_node *np = dev->of_node;
- 
-+	of_remove_whitelist_node(np);
- 	fpga_region_unregister(region);
- 	fpga_mgr_put(region->mgr);
- 
+ 	region->info = info;
+ 	ret = fpga_region_program_fpga(region);
+ 	if (ret) {
 -- 
 2.7.4
