@@ -1,134 +1,43 @@
-Return-Path: <SRS0=zy8y=CN=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=zy8y=CN=ettus.com=moritz.fischer@kernel.org>
-Date: Wed, 15 Nov 2017 07:46:28 -0800
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v5 18/18] fpga: add attribute groups
-Message-ID: <20171115154628.GA21681@tyrael.ni.corp.natinst.com>
-References: <20171017212031.3770-1-atull@kernel.org>
- <20171017212031.3770-19-atull@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20171017212031.3770-19-atull@kernel.org>
-To: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 1/3] fpga: fpga-mgr: remove unnecessary code in __fpga_mgr_get
+Date: Wed, 15 Nov 2017 16:33:10 -0600
+Message-Id: <1510785192-10123-2-git-send-email-atull@kernel.org>
+In-Reply-To: <1510785192-10123-1-git-send-email-atull@kernel.org>
+References: <1510785192-10123-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Oct 17, 2017 at 04:20:31PM -0500, Alan Tull wrote:
-> Make it easy to add attributes to low level FPGA drivers the right
-> way.  Add attribute groups pointers to structures that are used when
-> registering a manager, bridge, or group.  When the low level driver
-> registers, set the device attribute group.  The attributes are
-> created in device_add.
-> 
-> Signed-off-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-> ---
-> v4: Patch added to patchset in v4
-> v5: no change to this patch in this version of patchset
-> ---
->  drivers/fpga/fpga-bridge.c       | 1 +
->  drivers/fpga/fpga-mgr.c          | 1 +
->  drivers/fpga/fpga-region.c       | 1 +
->  include/linux/fpga/fpga-bridge.h | 2 ++
->  include/linux/fpga/fpga-mgr.h    | 2 ++
->  include/linux/fpga/fpga-region.h | 2 ++
->  6 files changed, 9 insertions(+)
-> 
-> diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-> index 4cfb632..15ce9f1 100644
-> --- a/drivers/fpga/fpga-bridge.c
-> +++ b/drivers/fpga/fpga-bridge.c
-> @@ -367,6 +367,7 @@ int fpga_bridge_register(struct device *dev, const char *name,
->  	bridge->priv = priv;
->  
->  	device_initialize(&bridge->dev);
-> +	bridge->dev.groups = br_ops->groups;
->  	bridge->dev.class = fpga_bridge_class;
->  	bridge->dev.parent = dev;
->  	bridge->dev.of_node = dev->of_node;
-> diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-> index d27e8d2..223f240 100644
-> --- a/drivers/fpga/fpga-mgr.c
-> +++ b/drivers/fpga/fpga-mgr.c
-> @@ -569,6 +569,7 @@ int fpga_mgr_register(struct device *dev, const char *name,
->  
->  	device_initialize(&mgr->dev);
->  	mgr->dev.class = fpga_mgr_class;
-> +	mgr->dev.groups = mops->groups;
->  	mgr->dev.parent = dev;
->  	mgr->dev.of_node = dev->of_node;
->  	mgr->dev.id = id;
-> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-> index afc6188..edab2a2 100644
-> --- a/drivers/fpga/fpga-region.c
-> +++ b/drivers/fpga/fpga-region.c
-> @@ -173,6 +173,7 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
->  	mutex_init(&region->mutex);
->  	INIT_LIST_HEAD(&region->bridge_list);
->  	device_initialize(&region->dev);
-> +	region->dev.groups = region->groups;
->  	region->dev.class = fpga_region_class;
->  	region->dev.parent = dev;
->  	region->dev.of_node = dev->of_node;
-> diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
-> index d5aa87e..65d3311 100644
-> --- a/include/linux/fpga/fpga-bridge.h
-> +++ b/include/linux/fpga/fpga-bridge.h
-> @@ -11,11 +11,13 @@ struct fpga_bridge;
->   * @enable_show: returns the FPGA bridge's status
->   * @enable_set: set a FPGA bridge as enabled or disabled
->   * @fpga_bridge_remove: set FPGA into a specific state during driver remove
-> + * @groups: optional attribute groups.
->   */
->  struct fpga_bridge_ops {
->  	int (*enable_show)(struct fpga_bridge *bridge);
->  	int (*enable_set)(struct fpga_bridge *bridge, bool enable);
->  	void (*fpga_bridge_remove)(struct fpga_bridge *bridge);
-> +	const struct attribute_group **groups;
->  };
->  
->  /**
-> diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-> index 4fb706b..3c6de23 100644
-> --- a/include/linux/fpga/fpga-mgr.h
-> +++ b/include/linux/fpga/fpga-mgr.h
-> @@ -115,6 +115,7 @@ struct fpga_image_info {
->   * @write_sg: write the scatter list of configuration data to the FPGA
->   * @write_complete: set FPGA to operating state after writing is done
->   * @fpga_remove: optional: Set FPGA into a specific state during driver remove
-> + * @groups: optional attribute groups.
->   *
->   * fpga_manager_ops are the low level functions implemented by a specific
->   * fpga manager driver.  The optional ones are tested for NULL before being
-> @@ -131,6 +132,7 @@ struct fpga_manager_ops {
->  	int (*write_complete)(struct fpga_manager *mgr,
->  			      struct fpga_image_info *info);
->  	void (*fpga_remove)(struct fpga_manager *mgr);
-> +	const struct attribute_group **groups;
->  };
->  
->  /**
-> diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
-> index 7048449..b652031 100644
-> --- a/include/linux/fpga/fpga-region.h
-> +++ b/include/linux/fpga/fpga-region.h
-> @@ -14,6 +14,7 @@
->   * @info: FPGA image info
->   * @priv: private data
->   * @get_bridges: optional function to get bridges to a list
-> + * @groups: optional attribute groups.
->   */
->  struct fpga_region {
->  	struct device dev;
-> @@ -23,6 +24,7 @@ struct fpga_region {
->  	struct fpga_image_info *info;
->  	void *priv;
->  	int (*get_bridges)(struct fpga_region *region);
-> +	const struct attribute_group **groups;
->  };
->  
->  #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
-> -- 
-> 2.7.4
-> 
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+
+Notice that mgr = to_fpga_manager(dev); expands to:
+
+mgr = container_of(dev, struct fpga_manager, dev);
+
+and container_of is never null, so this null check is
+unnecessary.
+
+Addresses-Coverity-ID: 1397916
+Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+Signed-off-by: Alan Tull <atull@kernel.org>
+---
+ drivers/fpga/fpga-mgr.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index 1fd5494..0b7664d 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -412,8 +412,6 @@ static struct fpga_manager *__fpga_mgr_get(struct device *dev)
+ 	struct fpga_manager *mgr;
+ 
+ 	mgr = to_fpga_manager(dev);
+-	if (!mgr)
+-		goto err_dev;
+ 
+ 	if (!try_module_get(dev->parent->driver->owner))
+ 		goto err_dev;
+-- 
+2.7.4
