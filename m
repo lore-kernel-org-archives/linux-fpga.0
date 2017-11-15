@@ -1,258 +1,129 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v6 13/18] fpga: region: add register/unregister functions
-Date: Wed, 15 Nov 2017 14:20:23 -0600
-Message-Id: <1510777228-4291-14-git-send-email-atull@kernel.org>
+Subject: [PATCH v6 18/18] fpga: add attribute groups
+Date: Wed, 15 Nov 2017 14:20:28 -0600
+Message-Id: <1510777228-4291-19-git-send-email-atull@kernel.org>
 In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
 References: <1510777228-4291-1-git-send-email-atull@kernel.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Another step in separating common code from device tree specific
-code for FPGA regions.
-
-* add FPGA region register/unregister functions.
-* add the register/unregister functions to the header
-* use devm_kzalloc to alloc the region.
-* add a method for getting bridges to the region struct
-* add priv to the region struct
-* use region->info in of_fpga_region_get_bridges
+Make it easy to add attributes to low level FPGA drivers the right
+way.  Add attribute groups pointers to structures that are used when
+registering a manager, bridge, or group.  When the low level driver
+registers, set the device attribute group.  The attributes are
+created in device_add.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
 Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2: split out from another patch
-v3: use region->info, remove info param where applicable
-v4: no change to this patch in this version of patchset
-v5: add back in fpga_mgr_put in of_fpga_region_remove
+v4: Patch added to patchset in v4
+v5: no change to this patch in this version of patchset
 v6: Add Moritz' ack
 ---
- drivers/fpga/fpga-region.c       | 105 ++++++++++++++++++++++++---------------
- include/linux/fpga/fpga-region.h |   7 +++
- 2 files changed, 72 insertions(+), 40 deletions(-)
+ drivers/fpga/fpga-bridge.c       | 1 +
+ drivers/fpga/fpga-mgr.c          | 1 +
+ drivers/fpga/fpga-region.c       | 1 +
+ include/linux/fpga/fpga-bridge.h | 2 ++
+ include/linux/fpga/fpga-mgr.h    | 2 ++
+ include/linux/fpga/fpga-region.h | 2 ++
+ 6 files changed, 9 insertions(+)
 
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index 0dfe9d7..e693c36 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -367,6 +367,7 @@ int fpga_bridge_register(struct device *dev, const char *name,
+ 	bridge->priv = priv;
+ 
+ 	device_initialize(&bridge->dev);
++	bridge->dev.groups = br_ops->groups;
+ 	bridge->dev.class = fpga_bridge_class;
+ 	bridge->dev.parent = dev;
+ 	bridge->dev.of_node = dev->of_node;
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index d27e8d2..223f240 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -569,6 +569,7 @@ int fpga_mgr_register(struct device *dev, const char *name,
+ 
+ 	device_initialize(&mgr->dev);
+ 	mgr->dev.class = fpga_mgr_class;
++	mgr->dev.groups = mops->groups;
+ 	mgr->dev.parent = dev;
+ 	mgr->dev.of_node = dev->of_node;
+ 	mgr->dev.id = id;
 diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 92ab216..76db81d 100644
+index afc6188..edab2a2 100644
 --- a/drivers/fpga/fpga-region.c
 +++ b/drivers/fpga/fpga-region.c
-@@ -143,7 +143,6 @@ static struct fpga_manager *of_fpga_region_get_mgr(struct device_node *np)
- /**
-  * of_fpga_region_get_bridges - create a list of bridges
-  * @region: FPGA region
-- * @info: FPGA image info
-  *
-  * Create a list of bridges including the parent bridge and the bridges
-  * specified by "fpga-bridges" property.  Note that the
-@@ -156,11 +155,11 @@ static struct fpga_manager *of_fpga_region_get_mgr(struct device_node *np)
-  * Return 0 for success (even if there are no bridges specified)
-  * or -EBUSY if any of the bridges are in use.
-  */
--static int of_fpga_region_get_bridges(struct fpga_region *region,
--				      struct fpga_image_info *info)
-+static int of_fpga_region_get_bridges(struct fpga_region *region)
- {
- 	struct device *dev = &region->dev;
- 	struct device_node *region_np = dev->of_node;
-+	struct fpga_image_info *info = region->info;
- 	struct device_node *br, *np, *parent_br = NULL;
- 	int i, ret;
- 
-@@ -192,7 +191,7 @@ static int of_fpga_region_get_bridges(struct fpga_region *region,
- 			continue;
- 
- 		/* If node is a bridge, get it and add to list */
--		ret = of_fpga_bridge_get_to_list(br, region->info,
-+		ret = of_fpga_bridge_get_to_list(br, info,
- 						 &region->bridge_list);
- 
- 		/* If any of the bridges are in use, give up */
-@@ -229,10 +228,16 @@ int fpga_region_program_fpga(struct fpga_region *region)
- 		goto err_put_region;
- 	}
- 
--	ret = of_fpga_region_get_bridges(region, info);
--	if (ret) {
--		dev_err(dev, "failed to get FPGA bridges\n");
--		goto err_unlock_mgr;
-+	/*
-+	 * In some cases, we already have a list of bridges in the
-+	 * fpga region struct.  Or we don't have any bridges.
-+	 */
-+	if (region->get_bridges) {
-+		ret = region->get_bridges(region);
-+		if (ret) {
-+			dev_err(dev, "failed to get fpga region bridges\n");
-+			goto err_unlock_mgr;
-+		}
- 	}
- 
- 	ret = fpga_bridges_disable(&region->bridge_list);
-@@ -259,7 +264,8 @@ int fpga_region_program_fpga(struct fpga_region *region)
- 	return 0;
- 
- err_put_br:
--	fpga_bridges_put(&region->bridge_list);
-+	if (region->get_bridges)
-+		fpga_bridges_put(&region->bridge_list);
- err_unlock_mgr:
- 	fpga_mgr_unlock(region->mgr);
- err_put_region:
-@@ -522,39 +528,20 @@ static struct notifier_block fpga_region_of_nb = {
- 	.notifier_call = of_fpga_region_notify,
- };
- 
--static int of_fpga_region_probe(struct platform_device *pdev)
-+int fpga_region_register(struct device *dev, struct fpga_region *region)
- {
--	struct device *dev = &pdev->dev;
--	struct device_node *np = dev->of_node;
--	struct fpga_region *region;
--	struct fpga_manager *mgr;
- 	int id, ret = 0;
- 
--	mgr = of_fpga_region_get_mgr(np);
--	if (IS_ERR(mgr))
--		return -EPROBE_DEFER;
--
--	region = kzalloc(sizeof(*region), GFP_KERNEL);
--	if (!region) {
--		ret = -ENOMEM;
--		goto err_put_mgr;
--	}
--
--	region->mgr = mgr;
--
- 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
--	if (id < 0) {
--		ret = id;
--		goto err_kfree;
--	}
-+	if (id < 0)
-+		return id;
- 
+@@ -173,6 +173,7 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
  	mutex_init(&region->mutex);
  	INIT_LIST_HEAD(&region->bridge_list);
--
  	device_initialize(&region->dev);
++	region->dev.groups = region->groups;
  	region->dev.class = fpga_region_class;
  	region->dev.parent = dev;
--	region->dev.of_node = np;
-+	region->dev.of_node = dev->of_node;
- 	region->dev.id = id;
- 	dev_set_drvdata(dev, region);
+ 	region->dev.of_node = dev->of_node;
+diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
+index 6ca41f8..3694821 100644
+--- a/include/linux/fpga/fpga-bridge.h
++++ b/include/linux/fpga/fpga-bridge.h
+@@ -13,11 +13,13 @@ struct fpga_bridge;
+  * @enable_show: returns the FPGA bridge's status
+  * @enable_set: set a FPGA bridge as enabled or disabled
+  * @fpga_bridge_remove: set FPGA into a specific state during driver remove
++ * @groups: optional attribute groups.
+  */
+ struct fpga_bridge_ops {
+ 	int (*enable_show)(struct fpga_bridge *bridge);
+ 	int (*enable_set)(struct fpga_bridge *bridge, bool enable);
+ 	void (*fpga_bridge_remove)(struct fpga_bridge *bridge);
++	const struct attribute_group **groups;
+ };
  
-@@ -566,19 +553,58 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err_remove;
- 
-+	return 0;
-+
-+err_remove:
-+	ida_simple_remove(&fpga_region_ida, id);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(fpga_region_register);
-+
-+int fpga_region_unregister(struct fpga_region *region)
-+{
-+	device_unregister(&region->dev);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(fpga_region_unregister);
-+
-+static int of_fpga_region_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct device_node *np = dev->of_node;
-+	struct fpga_region *region;
-+	struct fpga_manager *mgr;
-+	int ret;
-+
-+	/* Find the FPGA mgr specified by region or parent region. */
-+	mgr = of_fpga_region_get_mgr(np);
-+	if (IS_ERR(mgr))
-+		return -EPROBE_DEFER;
-+
-+	region = devm_kzalloc(dev, sizeof(*region), GFP_KERNEL);
-+	if (!region) {
-+		ret = -ENOMEM;
-+		goto eprobe_mgr_put;
-+	}
-+
-+	region->mgr = mgr;
-+
-+	/* Specify how to get bridges for this type of region. */
-+	region->get_bridges = of_fpga_region_get_bridges;
-+
-+	ret = fpga_region_register(dev, region);
-+	if (ret)
-+		goto eprobe_mgr_put;
-+
- 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
- 
- 	dev_info(dev, "FPGA Region probed\n");
- 
- 	return 0;
- 
--err_remove:
--	ida_simple_remove(&fpga_region_ida, id);
--err_kfree:
--	kfree(region);
--err_put_mgr:
-+eprobe_mgr_put:
- 	fpga_mgr_put(mgr);
--
- 	return ret;
- }
- 
-@@ -586,7 +612,7 @@ static int of_fpga_region_remove(struct platform_device *pdev)
- {
- 	struct fpga_region *region = platform_get_drvdata(pdev);
- 
--	device_unregister(&region->dev);
-+	fpga_region_unregister(region);
- 	fpga_mgr_put(region->mgr);
- 
- 	return 0;
-@@ -606,7 +632,6 @@ static void fpga_region_dev_release(struct device *dev)
- 	struct fpga_region *region = to_fpga_region(dev);
- 
- 	ida_simple_remove(&fpga_region_ida, region->dev.id);
--	kfree(region);
- }
+ /**
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index 4fb706b..3c6de23 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -115,6 +115,7 @@ struct fpga_image_info {
+  * @write_sg: write the scatter list of configuration data to the FPGA
+  * @write_complete: set FPGA to operating state after writing is done
+  * @fpga_remove: optional: Set FPGA into a specific state during driver remove
++ * @groups: optional attribute groups.
+  *
+  * fpga_manager_ops are the low level functions implemented by a specific
+  * fpga manager driver.  The optional ones are tested for NULL before being
+@@ -131,6 +132,7 @@ struct fpga_manager_ops {
+ 	int (*write_complete)(struct fpga_manager *mgr,
+ 			      struct fpga_image_info *info);
+ 	void (*fpga_remove)(struct fpga_manager *mgr);
++	const struct attribute_group **groups;
+ };
  
  /**
 diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
-index 8a35517..8c8a3249f 100644
+index 7048449..b652031 100644
 --- a/include/linux/fpga/fpga-region.h
 +++ b/include/linux/fpga/fpga-region.h
-@@ -12,6 +12,8 @@
-  * @bridge_list: list of FPGA bridges specified in region
-  * @mgr: FPGA manager
+@@ -14,6 +14,7 @@
   * @info: FPGA image info
-+ * @priv: private data
-+ * @get_bridges: optional function to get bridges to a list
+  * @priv: private data
+  * @get_bridges: optional function to get bridges to a list
++ * @groups: optional attribute groups.
   */
  struct fpga_region {
  	struct device dev;
-@@ -19,10 +21,15 @@ struct fpga_region {
- 	struct list_head bridge_list;
- 	struct fpga_manager *mgr;
+@@ -23,6 +24,7 @@ struct fpga_region {
  	struct fpga_image_info *info;
-+	void *priv;
-+	int (*get_bridges)(struct fpga_region *region);
+ 	void *priv;
+ 	int (*get_bridges)(struct fpga_region *region);
++	const struct attribute_group **groups;
  };
  
  #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
- 
- int fpga_region_program_fpga(struct fpga_region *region);
- 
-+int fpga_region_register(struct device *dev, struct fpga_region *region);
-+int fpga_region_unregister(struct fpga_region *region);
-+
- #endif /* _FPGA_REGION_H */
 -- 
 2.7.4
