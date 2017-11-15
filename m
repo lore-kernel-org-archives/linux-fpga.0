@@ -1,117 +1,80 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v6 04/18] fpga: region: use dev_err instead of pr_err
-Date: Wed, 15 Nov 2017 14:20:14 -0600
-Message-Id: <1510777228-4291-5-git-send-email-atull@kernel.org>
-In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
-References: <1510777228-4291-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Subject: [PATCH v2 0/5] fpga: don't use drvdata in common fpga code
+Date: Wed, 15 Nov 2017 14:51:47 -0600
+Message-Id: <1510779112-5517-1-git-send-email-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Use dev_err messages instead of pr_err.
+This patch set goes on top of v6 of the non-dt support patchset that has
+been acked and I've asked Greg KH to send upstream.
 
-Also s/&region->dev/dev/ in two places where we already
-have dev = &region->dev.
+This patchset changes the fpga_*_register functions to not set drvdata,
+and changes parameters for register/unregister functions.  Also a
+bug fix due to changes in the DT overlay code.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: new in this version of the patchset
-v3: for bisectability some changes moved to earlier patches
-v4: no change to this patch in this version of patchset
-v5: Add Moritz' ack
-v6: No change in v6 of patchset
----
- drivers/fpga/fpga-region.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+Setting drvdata is fine for DT based devices, that will have one
+manager, bridge, or region device per platform device.  PCIe based
+devices may have multiple FPGA mgr/bridge/regions under one pcie
+device.  Without these changes, PCIe-based solutions have to create an
+extra device for each child mgr/bridge/region to hold drvdata.
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 1e1640a..6b4f9ab 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -102,7 +102,7 @@ static struct fpga_region *fpga_region_get(struct fpga_region *region)
- 		return ERR_PTR(-ENODEV);
- 	}
- 
--	dev_dbg(&region->dev, "get\n");
-+	dev_dbg(dev, "get\n");
- 
- 	return region;
- }
-@@ -116,7 +116,7 @@ static void fpga_region_put(struct fpga_region *region)
- {
- 	struct device *dev = &region->dev;
- 
--	dev_dbg(&region->dev, "put\n");
-+	dev_dbg(dev, "put\n");
- 
- 	module_put(dev->parent->driver->owner);
- 	of_node_put(dev->of_node);
-@@ -239,13 +239,13 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 
- 	region = fpga_region_get(region);
- 	if (IS_ERR(region)) {
--		pr_err("failed to get fpga region\n");
-+		dev_err(dev, "failed to get FPGA region\n");
- 		return PTR_ERR(region);
- 	}
- 
- 	mgr = fpga_region_get_manager(region);
- 	if (IS_ERR(mgr)) {
--		pr_err("failed to get fpga region manager\n");
-+		dev_err(dev, "failed to get FPGA manager\n");
- 		ret = PTR_ERR(mgr);
- 		goto err_put_region;
- 	}
-@@ -258,25 +258,25 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 
- 	ret = fpga_region_get_bridges(region, overlay);
- 	if (ret) {
--		pr_err("failed to get fpga region bridges\n");
-+		dev_err(dev, "failed to get FPGA bridges\n");
- 		goto err_unlock_mgr;
- 	}
- 
- 	ret = fpga_bridges_disable(&region->bridge_list);
- 	if (ret) {
--		pr_err("failed to disable region bridges\n");
-+		dev_err(dev, "failed to disable bridges\n");
- 		goto err_put_br;
- 	}
- 
- 	ret = fpga_mgr_load(mgr, region->info);
- 	if (ret) {
--		pr_err("failed to load fpga image\n");
-+		dev_err(dev, "failed to load FPGA image\n");
- 		goto err_put_br;
- 	}
- 
- 	ret = fpga_bridges_enable(&region->bridge_list);
- 	if (ret) {
--		pr_err("failed to enable region bridges\n");
-+		dev_err(dev, "failed to enable region bridges\n");
- 		goto err_put_br;
- 	}
- 
-@@ -407,7 +407,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 
- 	/* If FPGA was externally programmed, don't specify firmware */
- 	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
--		pr_err("error: specified firmware and external-fpga-config");
-+		dev_err(dev, "error: specified firmware and external-fpga-config");
- 		fpga_image_info_free(info);
- 		return -EINVAL;
- 	}
-@@ -420,7 +420,7 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 
- 	/* If we got this far, we should be programming the FPGA */
- 	if (!info->firmware_name) {
--		pr_err("should specify firmware-name or external-fpga-config\n");
-+		dev_err(dev, "should specify firmware-name or external-fpga-config\n");
- 		fpga_image_info_free(info);
- 		return -EINVAL;
- 	}
+Also changing the fpga_*_register/unregister functions to take the
+corresponding struct as the only parameter wherever they weren't already.
+
+* int fpga_bridge_register(struct fpga_bridge *br)
+* int fpga_mgr_register(struct fpga_manager *mgr)
+* int fpga_region_register(struct fpga_region *region)
+* void fpga_bridge_unregister(struct fpga_bridge *br)
+* void fpga_mgr_unregister(struct fpga_manager *mgr)
+* int fpga_region_unregister(struct fpga_region *region)
+
+Other changes:
+
+- Callers of fpga_(bridge|mgr)_register, are changed to alloc the
+bridge/mgr struct and partly fill it, adding name, ops and priv.
+- Caller uses devm for allocating the mgr/bridge structures.
+- Change the FPGA Region DT notifier to return NOTIFY_STOP if
+the overlay should be accepted.
+
+I posted a branch to the linux-fpga repo on kernel.org which has both
+the v6 non-DT support patchset and this v2 patchset for convenience.
+Branch name is next-20171113-non-dt-support-v6+v2
+
+Alan
+
+Alan Tull (5):
+  fpga: region: don't use drvdata in common fpga code
+  fpga: manager: don't use drvdata in common fpga code
+  fpga: bridge: don't use drvdata in common fpga code
+  fpga: region: change fpga_region_register to have one param
+  fpga: region: return NOTIFY_STOP if overlay shoud be accepted
+
+ Documentation/fpga/fpga-mgr.txt     | 24 ++++++++++++-----
+ Documentation/fpga/fpga-region.txt  |  3 +--
+ drivers/fpga/altera-cvp.c           | 18 ++++++++++---
+ drivers/fpga/altera-fpga2sdram.c    | 20 +++++++++++---
+ drivers/fpga/altera-freeze-bridge.c | 18 ++++++++++---
+ drivers/fpga/altera-hps2fpga.c      | 16 ++++++++---
+ drivers/fpga/altera-pr-ip-core.c    | 17 ++++++++++--
+ drivers/fpga/altera-ps-spi.c        | 18 ++++++++++---
+ drivers/fpga/fpga-bridge.c          | 53 ++++++++++++++-----------------------
+ drivers/fpga/fpga-mgr.c             | 49 +++++++++++++---------------------
+ drivers/fpga/fpga-region.c          | 13 ++++++---
+ drivers/fpga/ice40-spi.c            | 20 +++++++++++---
+ drivers/fpga/of-fpga-region.c       |  9 ++++---
+ drivers/fpga/socfpga-a10.c          | 16 ++++++++---
+ drivers/fpga/socfpga.c              | 18 ++++++++++---
+ drivers/fpga/ts73xx-fpga.c          | 18 ++++++++++---
+ drivers/fpga/xilinx-pr-decoupler.c  | 15 ++++++++---
+ drivers/fpga/xilinx-spi.c           | 18 ++++++++++---
+ drivers/fpga/zynq-fpga.c            | 16 ++++++++---
+ include/linux/fpga/fpga-bridge.h    |  7 ++---
+ include/linux/fpga/fpga-mgr.h       |  8 +++---
+ include/linux/fpga/fpga-region.h    |  4 ++-
+ 22 files changed, 270 insertions(+), 128 deletions(-)
+
 -- 
 2.7.4
