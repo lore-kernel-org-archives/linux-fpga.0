@@ -1,96 +1,116 @@
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 06/21] fpga: dfl: adds fpga_cdev_find_port
-Date: Mon, 27 Nov 2017 14:42:13 +0800
-Message-Id: <1511764948-20972-7-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH v6 09/18] fpga: region: use image info as parameter for programming region
+Date: Wed, 15 Nov 2017 14:20:19 -0600
+Message-Id: <1510777228-4291-10-git-send-email-atull@kernel.org>
+In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
+References: <1510777228-4291-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-For feature devices, e.g FPGA Management Engine (FME), it may
-require fpga_cdev_find_port function to find dedicate port for
-further actions, so export this function from feature device
-driver module.
+Use FPGA image info (region->info) when region code is
+programming the FPGA to pass in multiple parameters.
 
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-----
-v3: s/fpga_for_each_port/fpga_cdev_find_port/
-    move fpga_cdev_find_port to fpga-dfl module.
+This is a baby step in refactoring the FPGA region code to
+separate out common FPGA region code from FPGA region
+Device Tree overlay support.
+
+Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/fpga-dfl.c | 27 +++++++++++++++++++++++++++
- drivers/fpga/fpga-dfl.h | 16 ++++++++++++++++
- 2 files changed, 43 insertions(+)
+v2: split out from another patch
+v3: change API to use the region->info, remove info param
+    remove check for region->info, not needed
+v4: no change to this patch in this version of patchset
+v5: no change to this patch in this version of patchset
+v6: Add Moritz' ack
+---
+ drivers/fpga/fpga-region.c    | 16 +++++++++-------
+ include/linux/fpga/fpga-mgr.h |  4 ++++
+ 2 files changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/fpga/fpga-dfl.c b/drivers/fpga/fpga-dfl.c
-index 9294c0a..ce03b17 100644
---- a/drivers/fpga/fpga-dfl.c
-+++ b/drivers/fpga/fpga-dfl.c
-@@ -873,6 +873,33 @@ void fpga_remove_feature_devs(struct fpga_cdev *cdev)
- }
- EXPORT_SYMBOL_GPL(fpga_remove_feature_devs);
- 
-+/**
-+ * __fpga_cdev_find_port - find a port under given container device
-+ * @cdev: container device
-+ * @data: data passed to match function
-+ * @match: match function used to find specific port from the port device list
-+ *
-+ * Find a port device under container device. This function needs to be
-+ * invoked with lock held.
-+ */
-+struct platform_device *
-+__fpga_cdev_find_port(struct fpga_cdev *cdev, void *data,
-+		      int (*match)(struct platform_device *, void *))
-+{
-+	struct feature_platform_data *pdata;
-+	struct platform_device *port_dev;
-+
-+	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
-+		port_dev = pdata->dev;
-+
-+		if (match(port_dev, data) && get_device(&port_dev->dev))
-+			return port_dev;
-+	}
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(__fpga_cdev_find_port);
-+
- int fpga_port_id(struct platform_device *pdev)
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index 35af952..eaacf50 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -223,14 +223,13 @@ static int fpga_region_get_bridges(struct fpga_region *region,
+ /**
+  * fpga_region_program_fpga - program FPGA
+  * @region: FPGA region
+- * @overlay: device node of the overlay
+- * Program an FPGA using information in the region's fpga image info.
++ * Program an FPGA using fpga image info (region->info).
+  * Return 0 for success or negative error code.
+  */
+-static int fpga_region_program_fpga(struct fpga_region *region,
+-				    struct device_node *overlay)
++static int fpga_region_program_fpga(struct fpga_region *region)
  {
- 	void __iomem *base;
-diff --git a/drivers/fpga/fpga-dfl.h b/drivers/fpga/fpga-dfl.h
-index e569a13..36e2394 100644
---- a/drivers/fpga/fpga-dfl.h
-+++ b/drivers/fpga/fpga-dfl.h
-@@ -375,4 +375,20 @@ struct fpga_cdev {
- struct fpga_cdev *fpga_enumerate_feature_devs(struct fpga_enum_info *info);
- void fpga_remove_feature_devs(struct fpga_cdev *cdev);
+ 	struct device *dev = &region->dev;
++	struct fpga_image_info *info = region->info;
+ 	int ret;
  
-+struct platform_device *
-+__fpga_cdev_find_port(struct fpga_cdev *cdev, void *data,
-+		      int (*match)(struct platform_device *, void *));
+ 	region = fpga_region_get(region);
+@@ -245,7 +244,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 		goto err_put_region;
+ 	}
+ 
+-	ret = fpga_region_get_bridges(region, overlay);
++	ret = fpga_region_get_bridges(region, info->overlay);
+ 	if (ret) {
+ 		dev_err(dev, "failed to get FPGA bridges\n");
+ 		goto err_unlock_mgr;
+@@ -257,7 +256,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
+ 		goto err_put_br;
+ 	}
+ 
+-	ret = fpga_mgr_load(region->mgr, region->info);
++	ret = fpga_mgr_load(region->mgr, info);
+ 	if (ret) {
+ 		dev_err(dev, "failed to load FPGA image\n");
+ 		goto err_put_br;
+@@ -373,6 +372,8 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 	if (!info)
+ 		return -ENOMEM;
+ 
++	info->overlay = nd->overlay;
 +
-+static inline struct platform_device *
-+fpga_cdev_find_port(struct fpga_cdev *cdev, void *data,
-+		    int (*match)(struct platform_device *, void *))
-+{
-+	struct platform_device *pdev;
+ 	/* Read FPGA region properties from the overlay */
+ 	if (of_property_read_bool(nd->overlay, "partial-fpga-config"))
+ 		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
+@@ -421,7 +422,8 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
+ 	}
+ 
+ 	region->info = info;
+-	ret = fpga_region_program_fpga(region, nd->overlay);
 +
-+	mutex_lock(&cdev->lock);
-+	pdev = __fpga_cdev_find_port(cdev, data, match);
-+	mutex_unlock(&cdev->lock);
-+
-+	return pdev;
-+}
- #endif /* __DFL_FPGA_H */
++	ret = fpga_region_program_fpga(region);
+ 	if (ret) {
+ 		fpga_image_info_free(info);
+ 		region->info = NULL;
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index cb5615c..4fb706b 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -89,6 +89,7 @@ enum fpga_mgr_states {
+  * @buf: contiguous buffer containing FPGA image
+  * @count: size of buf
+  * @dev: device that owns this
++ * @overlay: Device Tree overlay
+  */
+ struct fpga_image_info {
+ 	u32 flags;
+@@ -100,6 +101,9 @@ struct fpga_image_info {
+ 	const char *buf;
+ 	size_t count;
+ 	struct device *dev;
++#ifdef CONFIG_OF
++	struct device_node *overlay;
++#endif
+ };
+ 
+ /**
 -- 
-1.8.3.1
+2.7.4
