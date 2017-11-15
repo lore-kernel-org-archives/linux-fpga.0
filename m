@@ -1,691 +1,1118 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v6 02/18] fpga: mgr: API change to replace fpga load functions with single function
-Date: Wed, 15 Nov 2017 14:20:12 -0600
-Message-Id: <1510777228-4291-3-git-send-email-atull@kernel.org>
-In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
-References: <1510777228-4291-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=zy8y=CN=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=zy8y=CN=ettus.com=moritz.fischer@kernel.org>
+Date: Wed, 15 Nov 2017 07:47:47 -0800
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v5 15/18] fpga: region: move device tree support to
+ of-fpga-region.c
+Message-ID: <20171115154747.GC21681@tyrael.ni.corp.natinst.com>
+References: <20171017212031.3770-1-atull@kernel.org>
+ <20171017212031.3770-16-atull@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20171017212031.3770-16-atull@kernel.org>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-fpga-mgr has three methods for programming FPGAs, depending on
-whether the image is in a scatter gather list, a contiguous
-buffer, or a firmware file. This makes it difficult to write
-upper layers as the caller has to assume whether the FPGA image
-is in a sg table, as a single buffer, or a firmware file.
-This commit moves these parameters to struct fpga_image_info
-and adds a single function for programming fpgas.
-
-New functions:
-* fpga_mgr_load - given fpga manager and struct fpga_image_info,
-   program the fpga.
-
-* fpga_image_info_alloc - alloc a struct fpga_image_info.
-
-* fpga_image_info_free - free a struct fpga_image_info.
-
-These three functions are unexported:
-* fpga_mgr_buf_load_sg
-* fpga_mgr_buf_load
-* fpga_mgr_firmware_load
-
-Also use devm_kstrdup to copy firmware_name so we aren't making
-assumptions about where it comes from when allocing/freeing the
-struct fpga_image_info.
-
-API documentation has been updated and a new document for
-FPGA region has been added.
-
-Signed-off-by: Alan Tull <atull@kernel.org>
+On Tue, Oct 17, 2017 at 04:20:28PM -0500, Alan Tull wrote:
+> Create of-fpga-region.c and move the following functions without
+> modification from fpga-region.c.
+> 
+> * of_fpga_region_find
+> * of_fpga_region_get_mgr
+> * of_fpga_region_get_bridges
+> * child_regions_with_firmware
+> * of_fpga_region_parse_ov
+> * of_fpga_region_notify_pre_apply
+> * of_fpga_region_notify_post_remove
+> * of_fpga_region_notify
+> * of_fpga_region_probe
+> * of_fpga_region_remove
+> 
+> Create two new functions with some code from fpga_region_init/exit.
+> 
+> * of_fpga_region_init
+> * of_fpga_region_exit
+> 
+> Signed-off-by: Alan Tull <atull@kernel.org>
 Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: add fpga_image_info_alloc/free
-    update copyright and author email
-v3: fix bisectibility
-v4: fix return value of fpga_image_info_alloc()
-    save device in struct fpga_image_info
-    remove device param from fpga_image_info_free()
-    squash in the documentation patch minus stuff about locking
-    which is included in the next patch
-v5: fpga-mgr.h - move #ifndef before #includes
-v6: Add Moritz' ack
----
- Documentation/fpga/fpga-mgr.txt    | 119 ++++++++++++++++---------------------
- Documentation/fpga/fpga-region.txt |  95 +++++++++++++++++++++++++++++
- Documentation/fpga/overview.txt    |  23 +++++++
- drivers/fpga/fpga-mgr.c            |  68 +++++++++++++++++----
- drivers/fpga/fpga-region.c         |  43 +++++++++-----
- include/linux/fpga/fpga-mgr.h      |  30 ++++++----
- 6 files changed, 273 insertions(+), 105 deletions(-)
- create mode 100644 Documentation/fpga/fpga-region.txt
- create mode 100644 Documentation/fpga/overview.txt
-
-diff --git a/Documentation/fpga/fpga-mgr.txt b/Documentation/fpga/fpga-mgr.txt
-index 78f197f..6ebc714 100644
---- a/Documentation/fpga/fpga-mgr.txt
-+++ b/Documentation/fpga/fpga-mgr.txt
-@@ -11,61 +11,53 @@ hidden away in a low level driver which registers a set of ops with the core.
- The FPGA image data itself is very manufacturer specific, but for our purposes
- it's just binary data.  The FPGA manager core won't parse it.
- 
-+The FPGA image to be programmed can be in a scatter gather list, a single
-+contiguous buffer, or a firmware file.  Because allocating contiguous kernel
-+memory for the buffer should be avoided, users are encouraged to use a scatter
-+gather list instead if possible.
-+
-+The particulars for programming the image are presented in a structure (struct
-+fpga_image_info).  This struct contains parameters such as pointers to the
-+FPGA image as well as image-specific particulars such as whether the image was
-+built for full or partial reconfiguration.
- 
- API Functions:
- ==============
- 
--To program the FPGA from a file or from a buffer:
---------------------------------------------------
--
--	int fpga_mgr_buf_load(struct fpga_manager *mgr,
--			      struct fpga_image_info *info,
--		              const char *buf, size_t count);
--
--Load the FPGA from an image which exists as a contiguous buffer in
--memory. Allocating contiguous kernel memory for the buffer should be avoided,
--users are encouraged to use the _sg interface instead of this.
--
--        int fpga_mgr_buf_load_sg(struct fpga_manager *mgr,
--				 struct fpga_image_info *info,
--				 struct sg_table *sgt);
-+To program the FPGA:
-+--------------------
- 
--Load the FPGA from an image from non-contiguous in memory. Callers can
--construct a sg_table using alloc_page backed memory.
-+	int fpga_mgr_load(struct fpga_manager *mgr,
-+			  struct fpga_image_info *info);
- 
--	int fpga_mgr_firmware_load(struct fpga_manager *mgr,
--				   struct fpga_image_info *info,
--		                   const char *image_name);
--
--Load the FPGA from an image which exists as a file.  The image file must be on
--the firmware search path (see the firmware class documentation).  If successful,
-+Load the FPGA from an image which is indicated in the info.  If successful,
- the FPGA ends up in operating mode.  Return 0 on success or a negative error
- code.
- 
--A FPGA design contained in a FPGA image file will likely have particulars that
--affect how the image is programmed to the FPGA.  These are contained in struct
--fpga_image_info.  Currently the only such particular is a single flag bit
--indicating whether the image is for full or partial reconfiguration.
-+To allocate or free a struct fpga_image_info:
-+---------------------------------------------
-+
-+	struct fpga_image_info *fpga_image_info_alloc(struct device *dev);
-+
-+	void fpga_image_info_free(struct fpga_image_info *info);
- 
- To get/put a reference to a FPGA manager:
- -----------------------------------------
- 
- 	struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
- 	struct fpga_manager *fpga_mgr_get(struct device *dev);
--
--Given a DT node or device, get an exclusive reference to a FPGA manager.
--
- 	void fpga_mgr_put(struct fpga_manager *mgr);
- 
--Release the reference.
-+Given a DT node or device, get an exclusive reference to a FPGA manager.
-+fpga_mgr_put releases the reference.
- 
- 
- To register or unregister the low level FPGA-specific driver:
- -------------------------------------------------------------
- 
- 	int fpga_mgr_register(struct device *dev, const char *name,
--		              const struct fpga_manager_ops *mops,
--		              void *priv);
-+			      const struct fpga_manager_ops *mops,
-+			      void *priv);
- 
- 	void fpga_mgr_unregister(struct device *dev);
- 
-@@ -78,59 +70,50 @@ How to write an image buffer to a supported FPGA
- /* Include to get the API */
- #include <linux/fpga/fpga-mgr.h>
- 
--/* device node that specifies the FPGA manager to use */
--struct device_node *mgr_node = ...
--
--/* FPGA image is in this buffer.  count is size of the buffer. */
--char *buf = ...
--int count = ...
-+struct fpga_manager *mgr;
-+struct fpga_image_info *info;
-+int ret;
- 
- /* struct with information about the FPGA image to program. */
--struct fpga_image_info info;
-+info = fpga_image_info_alloc(dev);
- 
- /* flags indicates whether to do full or partial reconfiguration */
--info.flags = 0;
--
--int ret;
-+info->flags = FPGA_MGR_PARTIAL_RECONFIG;
- 
--/* Get exclusive control of FPGA manager */
--struct fpga_manager *mgr = of_fpga_mgr_get(mgr_node);
-+/*
-+ * At this point, indicate where the image is. This is pseudo-code; you're
-+ * going to use one of these three.
-+ */
-+if (image is in a scatter gather table) {
- 
--/* Load the buffer to the FPGA */
--ret = fpga_mgr_buf_load(mgr, &info, buf, count);
--
--/* Release the FPGA manager */
--fpga_mgr_put(mgr);
-+	info->sgt = [your scatter gather table]
- 
-+} else if (image is in a buffer) {
- 
--How to write an image file to a supported FPGA
--==============================================
--/* Include to get the API */
--#include <linux/fpga/fpga-mgr.h>
-+	info->buf = [your image buffer]
-+	info->count = [image buffer size]
- 
--/* device node that specifies the FPGA manager to use */
--struct device_node *mgr_node = ...
-+} else if (image is in a firmware file) {
- 
--/* FPGA image is in this file which is in the firmware search path */
--const char *path = "fpga-image-9.rbf"
-+	info->firmware_name = devm_kstrdup(dev, firmware_name, GFP_KERNEL);
- 
--/* struct with information about the FPGA image to program. */
--struct fpga_image_info info;
--
--/* flags indicates whether to do full or partial reconfiguration */
--info.flags = 0;
--
--int ret;
-+}
- 
--/* Get exclusive control of FPGA manager */
--struct fpga_manager *mgr = of_fpga_mgr_get(mgr_node);
-+/*
-+ * Get a reference to FPGA manager.  This example uses the  device node of the
-+ * manager.  You could use fpga_mgr_get() instead if you have the device instead
-+ * of the device node.
-+ */
-+mgr = of_fpga_mgr_get(mgr_node);
- 
--/* Get the firmware image (path) and load it to the FPGA */
--ret = fpga_mgr_firmware_load(mgr, &info, path);
-+/* Load the buffer to the FPGA */
-+ret = fpga_mgr_buf_load(mgr, &info, buf, count);
- 
- /* Release the FPGA manager */
- fpga_mgr_put(mgr);
- 
-+/* Deallocate the image info if you're done with it */
-+fpga_image_info_free(info);
- 
- How to support a new FPGA device
- ================================
-diff --git a/Documentation/fpga/fpga-region.txt b/Documentation/fpga/fpga-region.txt
-new file mode 100644
-index 0000000..139a02b
---- /dev/null
-+++ b/Documentation/fpga/fpga-region.txt
-@@ -0,0 +1,95 @@
-+FPGA Regions
-+
-+Alan Tull 2017
-+
-+CONTENTS
-+ - Introduction
-+ - The FPGA region API
-+ - Usage example
-+
-+Introduction
-+============
-+
-+This document is meant to be an brief overview of the FPGA region API usage.  A
-+more conceptual look at regions can be found in [1].
-+
-+For the purposes of this API document, let's just say that a region associates
-+an FPGA Manager and a bridge (or bridges) with a reprogrammable region of an
-+FPGA or the whole FPGA.  The API provides a way to register a region and to
-+program a region.
-+
-+Currently the only layer above fpga-region.c in the kernel is the Device Tree
-+support (of-fpga-region.c) described in [1].  The DT support layer uses regions
-+to program the FPGA and then DT to handle enumeration.  The common region code
-+is intended to be used by other schemes that have other ways of accomplishing
-+enumeration after programming.
-+
-+An fpga-region can be set up to know the following things:
-+* which FPGA manager to use to do the programming
-+* which bridges to disable before programming and enable afterwards.
-+
-+Additional info needed to program the FPGA image is passed in the struct
-+fpga_image_info [2] including:
-+* pointers to the image as either a scatter-gather buffer, a contiguous
-+  buffer, or the name of firmware file
-+* flags indicating specifics such as whether the image if for partial
-+  reconfiguration.
-+
-+===================
-+The FPGA region API
-+===================
-+
-+To register or unregister a region:
-+-----------------------------------
-+
-+	int fpga_region_register(struct device *dev,
-+				 struct fpga_region *region);
-+	int fpga_region_unregister(struct fpga_region *region);
-+
-+An example of usage can be seen in the probe function of [3]
-+
-+To program an FPGA:
-+-------------------
-+	int fpga_region_program_fpga(struct fpga_region *region);
-+
-+This function operates on info passed in the fpga_image_info
-+(region->info).
-+
-+This function will attempt to:
-+ * lock the region's mutex
-+ * lock the region's FPGA manager
-+ * build a list of FPGA bridges if a method has been specified to do so
-+ * disable the bridges
-+ * program the FPGA
-+ * re-enable the bridges
-+ * release the locks
-+
-+=============
-+Usage example
-+=============
-+
-+First, allocate the info struct:
-+
-+	info = fpga_image_info_alloc(dev);
-+	if (!info)
-+		return -ENOMEM;
-+
-+Set flags as needed, i.e.
-+
-+	info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
-+
-+Point to your FPGA image, such as:
-+
-+	info->sgt = &sgt;
-+
-+Add info to region and do the programming:
-+
-+	region->info = info;
-+	ret = fpga_region_program_fpga(region);
-+
-+Then enumerate whatever hardware has appeared in the FPGA.
-+
-+--
-+[1] ../devicetree/bindings/fpga/fpga-region.txt
-+[2] ./fpga-mgr.txt
-+[3] ../../drivers/fpga/of-fpga-region.c
-diff --git a/Documentation/fpga/overview.txt b/Documentation/fpga/overview.txt
-new file mode 100644
-index 0000000..0f1236e
---- /dev/null
-+++ b/Documentation/fpga/overview.txt
-@@ -0,0 +1,23 @@
-+Linux kernel FPGA support
-+
-+Alan Tull 2017
-+
-+The main point of this project has been to separate the out the upper layers
-+that know when to reprogram a FPGA from the lower layers that know how to
-+reprogram a specific FPGA device.  The intention is to make this manufacturer
-+agnostic, understanding that of course the FPGA images are very device specific
-+themselves.
-+
-+The framework in the kernel includes:
-+* low level FPGA manager drivers that know how to program a specific device
-+* the fpga-mgr framework they are registered with
-+* low level FPGA bridge drivers for hard/soft bridges which are intended to
-+  be disable during FPGA programming
-+* the fpga-bridge framework they are registered with
-+* the fpga-region framework which associates and controls managers and bridges
-+  as reconfigurable regions
-+* the of-fpga-region support for reprogramming FPGAs when device tree overlays
-+  are applied.
-+
-+I would encourage you the user to add code that creates FPGA regions rather
-+that trying to control managers and bridges separately.
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 188ffef..a8dd549 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -2,6 +2,7 @@
-  * FPGA Manager Core
-  *
-  *  Copyright (C) 2013-2015 Altera Corporation
-+ *  Copyright (C) 2017 Intel Corporation
-  *
-  * With code from the mailing list:
-  * Copyright (C) 2013 Xilinx, Inc.
-@@ -31,6 +32,40 @@
- static DEFINE_IDA(fpga_mgr_ida);
- static struct class *fpga_mgr_class;
- 
-+struct fpga_image_info *fpga_image_info_alloc(struct device *dev)
-+{
-+	struct fpga_image_info *info;
-+
-+	get_device(dev);
-+
-+	info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
-+	if (!info) {
-+		put_device(dev);
-+		return NULL;
-+	}
-+
-+	info->dev = dev;
-+
-+	return info;
-+}
-+EXPORT_SYMBOL_GPL(fpga_image_info_alloc);
-+
-+void fpga_image_info_free(struct fpga_image_info *info)
-+{
-+	struct device *dev;
-+
-+	if (!info)
-+		return;
-+
-+	dev = info->dev;
-+	if (info->firmware_name)
-+		devm_kfree(dev, info->firmware_name);
-+
-+	devm_kfree(dev, info);
-+	put_device(dev);
-+}
-+EXPORT_SYMBOL_GPL(fpga_image_info_free);
-+
- /*
-  * Call the low level driver's write_init function.  This will do the
-  * device-specific things to get the FPGA into the state where it is ready to
-@@ -137,8 +172,9 @@ static int fpga_mgr_write_complete(struct fpga_manager *mgr,
-  *
-  * Return: 0 on success, negative error code otherwise.
-  */
--int fpga_mgr_buf_load_sg(struct fpga_manager *mgr, struct fpga_image_info *info,
--			 struct sg_table *sgt)
-+static int fpga_mgr_buf_load_sg(struct fpga_manager *mgr,
-+				struct fpga_image_info *info,
-+				struct sg_table *sgt)
- {
- 	int ret;
- 
-@@ -170,7 +206,6 @@ int fpga_mgr_buf_load_sg(struct fpga_manager *mgr, struct fpga_image_info *info,
- 
- 	return fpga_mgr_write_complete(mgr, info);
- }
--EXPORT_SYMBOL_GPL(fpga_mgr_buf_load_sg);
- 
- static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
- 				    struct fpga_image_info *info,
-@@ -210,8 +245,9 @@ static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
-  *
-  * Return: 0 on success, negative error code otherwise.
-  */
--int fpga_mgr_buf_load(struct fpga_manager *mgr, struct fpga_image_info *info,
--		      const char *buf, size_t count)
-+static int fpga_mgr_buf_load(struct fpga_manager *mgr,
-+			     struct fpga_image_info *info,
-+			     const char *buf, size_t count)
- {
- 	struct page **pages;
- 	struct sg_table sgt;
-@@ -266,7 +302,6 @@ int fpga_mgr_buf_load(struct fpga_manager *mgr, struct fpga_image_info *info,
- 
- 	return rc;
- }
--EXPORT_SYMBOL_GPL(fpga_mgr_buf_load);
- 
- /**
-  * fpga_mgr_firmware_load - request firmware and load to fpga
-@@ -282,9 +317,9 @@ EXPORT_SYMBOL_GPL(fpga_mgr_buf_load);
-  *
-  * Return: 0 on success, negative error code otherwise.
-  */
--int fpga_mgr_firmware_load(struct fpga_manager *mgr,
--			   struct fpga_image_info *info,
--			   const char *image_name)
-+static int fpga_mgr_firmware_load(struct fpga_manager *mgr,
-+				  struct fpga_image_info *info,
-+				  const char *image_name)
- {
- 	struct device *dev = &mgr->dev;
- 	const struct firmware *fw;
-@@ -307,7 +342,18 @@ int fpga_mgr_firmware_load(struct fpga_manager *mgr,
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(fpga_mgr_firmware_load);
-+
-+int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info)
-+{
-+	if (info->sgt)
-+		return fpga_mgr_buf_load_sg(mgr, info, info->sgt);
-+	if (info->buf && info->count)
-+		return fpga_mgr_buf_load(mgr, info, info->buf, info->count);
-+	if (info->firmware_name)
-+		return fpga_mgr_firmware_load(mgr, info, info->firmware_name);
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL_GPL(fpga_mgr_load);
- 
- static const char * const state_str[] = {
- 	[FPGA_MGR_STATE_UNKNOWN] =		"unknown",
-@@ -578,7 +624,7 @@ static void __exit fpga_mgr_class_exit(void)
- 	ida_destroy(&fpga_mgr_ida);
- }
- 
--MODULE_AUTHOR("Alan Tull <atull@opensource.altera.com>");
-+MODULE_AUTHOR("Alan Tull <atull@kernel.org>");
- MODULE_DESCRIPTION("FPGA manager framework");
- MODULE_LICENSE("GPL v2");
- 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 91755562..120c496 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -226,14 +226,11 @@ static int fpga_region_get_bridges(struct fpga_region *region,
- /**
-  * fpga_region_program_fpga - program FPGA
-  * @region: FPGA region
-- * @firmware_name: name of FPGA image firmware file
-  * @overlay: device node of the overlay
-- * Program an FPGA using information in the device tree.
-- * Function assumes that there is a firmware-name property.
-+ * Program an FPGA using information in the region's fpga image info.
-  * Return 0 for success or negative error code.
-  */
- static int fpga_region_program_fpga(struct fpga_region *region,
--				    const char *firmware_name,
- 				    struct device_node *overlay)
- {
- 	struct fpga_manager *mgr;
-@@ -264,7 +261,7 @@ static int fpga_region_program_fpga(struct fpga_region *region,
- 		goto err_put_br;
- 	}
- 
--	ret = fpga_mgr_firmware_load(mgr, region->info, firmware_name);
-+	ret = fpga_mgr_load(mgr, region->info);
- 	if (ret) {
- 		pr_err("failed to load fpga image\n");
- 		goto err_put_br;
-@@ -357,16 +354,15 @@ static int child_regions_with_firmware(struct device_node *overlay)
- static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 					struct of_overlay_notify_data *nd)
- {
--	const char *firmware_name = NULL;
-+	struct device *dev = &region->dev;
- 	struct fpga_image_info *info;
-+	const char *firmware_name;
- 	int ret;
- 
--	info = devm_kzalloc(&region->dev, sizeof(*info), GFP_KERNEL);
-+	info = fpga_image_info_alloc(dev);
- 	if (!info)
- 		return -ENOMEM;
- 
--	region->info = info;
--
- 	/* Reject overlay if child FPGA Regions have firmware-name property */
- 	ret = child_regions_with_firmware(nd->overlay);
- 	if (ret)
-@@ -382,7 +378,13 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 	if (of_property_read_bool(nd->overlay, "encrypted-fpga-config"))
- 		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
- 
--	of_property_read_string(nd->overlay, "firmware-name", &firmware_name);
-+	if (!of_property_read_string(nd->overlay, "firmware-name",
-+				     &firmware_name)) {
-+		info->firmware_name = devm_kstrdup(dev, firmware_name,
-+						   GFP_KERNEL);
-+		if (!info->firmware_name)
-+			return -ENOMEM;
-+	}
- 
- 	of_property_read_u32(nd->overlay, "region-unfreeze-timeout-us",
- 			     &info->enable_timeout_us);
-@@ -394,22 +396,33 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 			     &info->config_complete_timeout_us);
- 
- 	/* If FPGA was externally programmed, don't specify firmware */
--	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && firmware_name) {
-+	if ((info->flags & FPGA_MGR_EXTERNAL_CONFIG) && info->firmware_name) {
- 		pr_err("error: specified firmware and external-fpga-config");
-+		fpga_image_info_free(info);
- 		return -EINVAL;
- 	}
- 
- 	/* FPGA is already configured externally.  We're done. */
--	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG)
-+	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG) {
-+		fpga_image_info_free(info);
- 		return 0;
-+	}
- 
- 	/* If we got this far, we should be programming the FPGA */
--	if (!firmware_name) {
-+	if (!info->firmware_name) {
- 		pr_err("should specify firmware-name or external-fpga-config\n");
-+		fpga_image_info_free(info);
- 		return -EINVAL;
- 	}
- 
--	return fpga_region_program_fpga(region, firmware_name, nd->overlay);
-+	region->info = info;
-+	ret = fpga_region_program_fpga(region, nd->overlay);
-+	if (ret) {
-+		fpga_image_info_free(info);
-+		region->info = NULL;
-+	}
-+
-+	return ret;
- }
- 
- /**
-@@ -426,7 +439,7 @@ static void fpga_region_notify_post_remove(struct fpga_region *region,
- {
- 	fpga_bridges_disable(&region->bridge_list);
- 	fpga_bridges_put(&region->bridge_list);
--	devm_kfree(&region->dev, region->info);
-+	fpga_image_info_free(region->info);
- 	region->info = NULL;
- }
- 
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index bfa14bc..6b79134 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -1,7 +1,8 @@
- /*
-  * FPGA Framework
-  *
-- *  Copyright (C) 2013-2015 Altera Corporation
-+ *  Copyright (C) 2013-2016 Altera Corporation
-+ *  Copyright (C) 2017 Intel Corporation
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -15,12 +16,12 @@
-  * You should have received a copy of the GNU General Public License along with
-  * this program.  If not, see <http://www.gnu.org/licenses/>.
-  */
--#include <linux/mutex.h>
--#include <linux/platform_device.h>
--
- #ifndef _LINUX_FPGA_MGR_H
- #define _LINUX_FPGA_MGR_H
- 
-+#include <linux/mutex.h>
-+#include <linux/platform_device.h>
-+
- struct fpga_manager;
- struct sg_table;
- 
-@@ -83,12 +84,22 @@ enum fpga_mgr_states {
-  * @disable_timeout_us: maximum time to disable traffic through bridge (uSec)
-  * @config_complete_timeout_us: maximum time for FPGA to switch to operating
-  *	   status in the write_complete op.
-+ * @firmware_name: name of FPGA image firmware file
-+ * @sgt: scatter/gather table containing FPGA image
-+ * @buf: contiguous buffer containing FPGA image
-+ * @count: size of buf
-+ * @dev: device that owns this
-  */
- struct fpga_image_info {
- 	u32 flags;
- 	u32 enable_timeout_us;
- 	u32 disable_timeout_us;
- 	u32 config_complete_timeout_us;
-+	char *firmware_name;
-+	struct sg_table *sgt;
-+	const char *buf;
-+	size_t count;
-+	struct device *dev;
- };
- 
- /**
-@@ -138,14 +149,11 @@ struct fpga_manager {
- 
- #define to_fpga_manager(d) container_of(d, struct fpga_manager, dev)
- 
--int fpga_mgr_buf_load(struct fpga_manager *mgr, struct fpga_image_info *info,
--		      const char *buf, size_t count);
--int fpga_mgr_buf_load_sg(struct fpga_manager *mgr, struct fpga_image_info *info,
--			 struct sg_table *sgt);
-+struct fpga_image_info *fpga_image_info_alloc(struct device *dev);
-+
-+void fpga_image_info_free(struct fpga_image_info *info);
- 
--int fpga_mgr_firmware_load(struct fpga_manager *mgr,
--			   struct fpga_image_info *info,
--			   const char *image_name);
-+int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info);
- 
- struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
- 
--- 
-2.7.4
+> ---
+> v2: split out code changes into other patches, only move code here
+> v3: updated to move changed code to of-fpga-region.c
+> v4: rebase on current for-next
+>     remove fpga-bridge dependency on CONFIG_OF
+> v5: fix some nits in the header
+>     reword Kconfig description of OF_FPGA_REGION
+> ---
+>  drivers/fpga/Kconfig          |  15 +-
+>  drivers/fpga/Makefile         |   1 +
+>  drivers/fpga/fpga-region.c    | 452 +-------------------------------------
+>  drivers/fpga/of-fpga-region.c | 496 ++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 509 insertions(+), 455 deletions(-)
+>  create mode 100644 drivers/fpga/of-fpga-region.c
+> 
+> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+> index ad5448f..12bd1c7 100644
+> --- a/drivers/fpga/Kconfig
+> +++ b/drivers/fpga/Kconfig
+> @@ -13,10 +13,18 @@ if FPGA
+>  
+>  config FPGA_REGION
+>  	tristate "FPGA Region"
+> -	depends on OF && FPGA_BRIDGE
+> +	depends on FPGA_BRIDGE
+> +	help
+> +	  FPGA Region common code.  A FPGA Region controls a FPGA Manager
+> +	  and the FPGA Bridges associated with either a reconfigurable
+> +	  region of an FPGA or a whole FPGA.
+> +
+> +config OF_FPGA_REGION
+> +	tristate "FPGA Region Device Tree Overlay Support"
+> +	depends on OF && FPGA_REGION
+>  	help
+> -	  FPGA Regions allow loading FPGA images under control of
+> -	  the Device Tree.
+> +	  Support for loading FPGA images by applying a Device Tree
+> +	  overlay.
+>  
+>  config FPGA_MGR_ICE40_SPI
+>  	tristate "Lattice iCE40 SPI"
+> @@ -74,7 +82,6 @@ config FPGA_MGR_ZYNQ_FPGA
+>  
+>  config FPGA_BRIDGE
+>  	tristate "FPGA Bridge Framework"
+> -	depends on OF
+>  	help
+>  	  Say Y here if you want to support bridges connected between host
+>  	  processors and FPGAs or between FPGAs.
+> diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+> index e09895f..8f56766 100644
+> --- a/drivers/fpga/Makefile
+> +++ b/drivers/fpga/Makefile
+> @@ -25,3 +25,4 @@ obj-$(CONFIG_XILINX_PR_DECOUPLER)	+= xilinx-pr-decoupler.o
+>  
+>  # High Level Interfaces
+>  obj-$(CONFIG_FPGA_REGION)		+= fpga-region.o
+> +obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
+> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+> index 5c086957..afc6188 100644
+> --- a/drivers/fpga/fpga-region.c
+> +++ b/drivers/fpga/fpga-region.c
+> @@ -2,6 +2,7 @@
+>   * FPGA Region - Device Tree support for FPGA programming under Linux
+>   *
+>   *  Copyright (C) 2013-2016 Altera Corporation
+> + *  Copyright (C) 2017 Intel Corporation
+>   *
+>   * This program is free software; you can redistribute it and/or modify it
+>   * under the terms and conditions of the GNU General Public License,
+> @@ -23,7 +24,6 @@
+>  #include <linux/kernel.h>
+>  #include <linux/list.h>
+>  #include <linux/module.h>
+> -#include <linux/of_platform.h>
+>  #include <linux/slab.h>
+>  #include <linux/spinlock.h>
+>  
+> @@ -44,30 +44,6 @@ struct fpga_region *fpga_region_class_find(
+>  }
+>  EXPORT_SYMBOL_GPL(fpga_region_class_find);
+>  
+> -static const struct of_device_id fpga_region_of_match[] = {
+> -	{ .compatible = "fpga-region", },
+> -	{},
+> -};
+> -MODULE_DEVICE_TABLE(of, fpga_region_of_match);
+> -
+> -static int fpga_region_of_node_match(struct device *dev, const void *data)
+> -{
+> -	return dev->of_node == data;
+> -}
+> -
+> -/**
+> - * of_fpga_region_find - find FPGA region
+> - * @np: device node of FPGA Region
+> - *
+> - * Caller will need to put_device(&region->dev) when done.
+> - *
+> - * Returns FPGA Region struct or NULL
+> - */
+> -static struct fpga_region *of_fpga_region_find(struct device_node *np)
+> -{
+> -	return fpga_region_class_find(NULL, np, fpga_region_of_node_match);
+> -}
+> -
+>  /**
+>   * fpga_region_get - get an exclusive reference to a fpga region
+>   * @region: FPGA Region struct
+> @@ -116,102 +92,6 @@ static void fpga_region_put(struct fpga_region *region)
+>  }
+>  
+>  /**
+> - * of_fpga_region_get_mgr - get reference for FPGA manager
+> - * @np: device node of FPGA region
+> - *
+> - * Get FPGA Manager from "fpga-mgr" property or from ancestor region.
+> - *
+> - * Caller should call fpga_mgr_put() when done with manager.
+> - *
+> - * Return: fpga manager struct or IS_ERR() condition containing error code.
+> - */
+> -static struct fpga_manager *of_fpga_region_get_mgr(struct device_node *np)
+> -{
+> -	struct device_node  *mgr_node;
+> -	struct fpga_manager *mgr;
+> -
+> -	of_node_get(np);
+> -	while (np) {
+> -		if (of_device_is_compatible(np, "fpga-region")) {
+> -			mgr_node = of_parse_phandle(np, "fpga-mgr", 0);
+> -			if (mgr_node) {
+> -				mgr = of_fpga_mgr_get(mgr_node);
+> -				of_node_put(np);
+> -				return mgr;
+> -			}
+> -		}
+> -		np = of_get_next_parent(np);
+> -	}
+> -	of_node_put(np);
+> -
+> -	return ERR_PTR(-EINVAL);
+> -}
+> -
+> -/**
+> - * of_fpga_region_get_bridges - create a list of bridges
+> - * @region: FPGA region
+> - *
+> - * Create a list of bridges including the parent bridge and the bridges
+> - * specified by "fpga-bridges" property.  Note that the
+> - * fpga_bridges_enable/disable/put functions are all fine with an empty list
+> - * if that happens.
+> - *
+> - * Caller should call fpga_bridges_put(&region->bridge_list) when
+> - * done with the bridges.
+> - *
+> - * Return 0 for success (even if there are no bridges specified)
+> - * or -EBUSY if any of the bridges are in use.
+> - */
+> -static int of_fpga_region_get_bridges(struct fpga_region *region)
+> -{
+> -	struct device *dev = &region->dev;
+> -	struct device_node *region_np = dev->of_node;
+> -	struct fpga_image_info *info = region->info;
+> -	struct device_node *br, *np, *parent_br = NULL;
+> -	int i, ret;
+> -
+> -	/* If parent is a bridge, add to list */
+> -	ret = of_fpga_bridge_get_to_list(region_np->parent, info,
+> -					 &region->bridge_list);
+> -
+> -	/* -EBUSY means parent is a bridge that is under use. Give up. */
+> -	if (ret == -EBUSY)
+> -		return ret;
+> -
+> -	/* Zero return code means parent was a bridge and was added to list. */
+> -	if (!ret)
+> -		parent_br = region_np->parent;
+> -
+> -	/* If overlay has a list of bridges, use it. */
+> -	if (of_parse_phandle(info->overlay, "fpga-bridges", 0))
+> -		np = info->overlay;
+> -	else
+> -		np = region_np;
+> -
+> -	for (i = 0; ; i++) {
+> -		br = of_parse_phandle(np, "fpga-bridges", i);
+> -		if (!br)
+> -			break;
+> -
+> -		/* If parent bridge is in list, skip it. */
+> -		if (br == parent_br)
+> -			continue;
+> -
+> -		/* If node is a bridge, get it and add to list */
+> -		ret = of_fpga_bridge_get_to_list(br, info,
+> -						 &region->bridge_list);
+> -
+> -		/* If any of the bridges are in use, give up */
+> -		if (ret == -EBUSY) {
+> -			fpga_bridges_put(&region->bridge_list);
+> -			return -EBUSY;
+> -		}
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -/**
+>   * fpga_region_program_fpga - program FPGA
+>   * @region: FPGA region
+>   * Program an FPGA using fpga image info (region->info).
+> @@ -282,259 +162,6 @@ int fpga_region_program_fpga(struct fpga_region *region)
+>  }
+>  EXPORT_SYMBOL_GPL(fpga_region_program_fpga);
+>  
+> -/**
+> - * child_regions_with_firmware
+> - * @overlay: device node of the overlay
+> - *
+> - * If the overlay adds child FPGA regions, they are not allowed to have
+> - * firmware-name property.
+> - *
+> - * Return 0 for OK or -EINVAL if child FPGA region adds firmware-name.
+> - */
+> -static int child_regions_with_firmware(struct device_node *overlay)
+> -{
+> -	struct device_node *child_region;
+> -	const char *child_firmware_name;
+> -	int ret = 0;
+> -
+> -	of_node_get(overlay);
+> -
+> -	child_region = of_find_matching_node(overlay, fpga_region_of_match);
+> -	while (child_region) {
+> -		if (!of_property_read_string(child_region, "firmware-name",
+> -					     &child_firmware_name)) {
+> -			ret = -EINVAL;
+> -			break;
+> -		}
+> -		child_region = of_find_matching_node(child_region,
+> -						     fpga_region_of_match);
+> -	}
+> -
+> -	of_node_put(child_region);
+> -
+> -	if (ret)
+> -		pr_err("firmware-name not allowed in child FPGA region: %pOF",
+> -		       child_region);
+> -
+> -	return ret;
+> -}
+> -
+> -/**
+> - * of_fpga_region_parse_ov - parse and check overlay applied to region
+> - *
+> - * @region: FPGA region
+> - * @overlay: overlay applied to the FPGA region
+> - *
+> - * Given an overlay applied to a FPGA region, parse the FPGA image specific
+> - * info in the overlay and do some checking.
+> - *
+> - * Returns:
+> - *   NULL if overlay doesn't direct us to program the FPGA.
+> - *   fpga_image_info struct if there is an image to program.
+> - *   error code for invalid overlay.
+> - */
+> -static struct fpga_image_info *of_fpga_region_parse_ov(
+> -						struct fpga_region *region,
+> -						struct device_node *overlay)
+> -{
+> -	struct device *dev = &region->dev;
+> -	struct fpga_image_info *info;
+> -	const char *firmware_name;
+> -	int ret;
+> -
+> -	if (region->info) {
+> -		dev_err(dev, "Region already has overlay applied.\n");
+> -		return ERR_PTR(-EINVAL);
+> -	}
+> -
+> -	/*
+> -	 * Reject overlay if child FPGA Regions added in the overlay have
+> -	 * firmware-name property (would mean that an FPGA region that has
+> -	 * not been added to the live tree yet is doing FPGA programming).
+> -	 */
+> -	ret = child_regions_with_firmware(overlay);
+> -	if (ret)
+> -		return ERR_PTR(ret);
+> -
+> -	info = fpga_image_info_alloc(dev);
+> -	if (!info)
+> -		return ERR_PTR(-ENOMEM);
+> -
+> -	info->overlay = overlay;
+> -
+> -	/* Read FPGA region properties from the overlay */
+> -	if (of_property_read_bool(overlay, "partial-fpga-config"))
+> -		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
+> -
+> -	if (of_property_read_bool(overlay, "external-fpga-config"))
+> -		info->flags |= FPGA_MGR_EXTERNAL_CONFIG;
+> -
+> -	if (of_property_read_bool(overlay, "encrypted-fpga-config"))
+> -		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
+> -
+> -	if (!of_property_read_string(overlay, "firmware-name",
+> -				     &firmware_name)) {
+> -		info->firmware_name = devm_kstrdup(dev, firmware_name,
+> -						   GFP_KERNEL);
+> -		if (!info->firmware_name)
+> -			return ERR_PTR(-ENOMEM);
+> -	}
+> -
+> -	of_property_read_u32(overlay, "region-unfreeze-timeout-us",
+> -			     &info->enable_timeout_us);
+> -
+> -	of_property_read_u32(overlay, "region-freeze-timeout-us",
+> -			     &info->disable_timeout_us);
+> -
+> -	of_property_read_u32(overlay, "config-complete-timeout-us",
+> -			     &info->config_complete_timeout_us);
+> -
+> -	/* If overlay is not programming the FPGA, don't need FPGA image info */
+> -	if (!info->firmware_name) {
+> -		ret = 0;
+> -		goto ret_no_info;
+> -	}
+> -
+> -	/*
+> -	 * If overlay informs us FPGA was externally programmed, specifying
+> -	 * firmware here would be ambiguous.
+> -	 */
+> -	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG) {
+> -		dev_err(dev, "error: specified firmware and external-fpga-config");
+> -		ret = -EINVAL;
+> -		goto ret_no_info;
+> -	}
+> -
+> -	return info;
+> -ret_no_info:
+> -	fpga_image_info_free(info);
+> -	return ERR_PTR(ret);
+> -}
+> -
+> -/**
+> - * of_fpga_region_notify_pre_apply - pre-apply overlay notification
+> - *
+> - * @region: FPGA region that the overlay was applied to
+> - * @nd: overlay notification data
+> - *
+> - * Called when an overlay targeted to a FPGA Region is about to be applied.
+> - * Parses the overlay for properties that influence how the FPGA will be
+> - * programmed and does some checking. If the checks pass, programs the FPGA.
+> - * If the checks fail, overlay is rejected and does not get added to the
+> - * live tree.
+> - *
+> - * Returns 0 for success or negative error code for failure.
+> - */
+> -static int of_fpga_region_notify_pre_apply(struct fpga_region *region,
+> -					   struct of_overlay_notify_data *nd)
+> -{
+> -	struct device *dev = &region->dev;
+> -	struct fpga_image_info *info;
+> -	int ret;
+> -
+> -	if (region->info) {
+> -		dev_err(dev, "Region already has overlay applied.\n");
+> -		return -EINVAL;
+> -	}
+> -
+> -	info = of_fpga_region_parse_ov(region, nd->overlay);
+> -	if (IS_ERR(info))
+> -		return PTR_ERR(info);
+> -
+> -	if (!info)
+> -		return 0;
+> -
+> -	region->info = info;
+> -	ret = fpga_region_program_fpga(region);
+> -	if (ret) {
+> -		/* error; reject overlay */
+> -		fpga_image_info_free(info);
+> -		region->info = NULL;
+> -	}
+> -
+> -	return ret;
+> -}
+> -
+> -/**
+> - * of_fpga_region_notify_post_remove - post-remove overlay notification
+> - *
+> - * @region: FPGA region that was targeted by the overlay that was removed
+> - * @nd: overlay notification data
+> - *
+> - * Called after an overlay has been removed if the overlay's target was a
+> - * FPGA region.
+> - */
+> -static void of_fpga_region_notify_post_remove(struct fpga_region *region,
+> -					      struct of_overlay_notify_data *nd)
+> -{
+> -	fpga_bridges_disable(&region->bridge_list);
+> -	fpga_bridges_put(&region->bridge_list);
+> -	fpga_image_info_free(region->info);
+> -	region->info = NULL;
+> -}
+> -
+> -/**
+> - * of_fpga_region_notify - reconfig notifier for dynamic DT changes
+> - * @nb:		notifier block
+> - * @action:	notifier action
+> - * @arg:	reconfig data
+> - *
+> - * This notifier handles programming a FPGA when a "firmware-name" property is
+> - * added to a fpga-region.
+> - *
+> - * Returns NOTIFY_OK or error if FPGA programming fails.
+> - */
+> -static int of_fpga_region_notify(struct notifier_block *nb,
+> -				 unsigned long action, void *arg)
+> -{
+> -	struct of_overlay_notify_data *nd = arg;
+> -	struct fpga_region *region;
+> -	int ret;
+> -
+> -	switch (action) {
+> -	case OF_OVERLAY_PRE_APPLY:
+> -		pr_debug("%s OF_OVERLAY_PRE_APPLY\n", __func__);
+> -		break;
+> -	case OF_OVERLAY_POST_APPLY:
+> -		pr_debug("%s OF_OVERLAY_POST_APPLY\n", __func__);
+> -		return NOTIFY_OK;       /* not for us */
+> -	case OF_OVERLAY_PRE_REMOVE:
+> -		pr_debug("%s OF_OVERLAY_PRE_REMOVE\n", __func__);
+> -		return NOTIFY_OK;       /* not for us */
+> -	case OF_OVERLAY_POST_REMOVE:
+> -		pr_debug("%s OF_OVERLAY_POST_REMOVE\n", __func__);
+> -		break;
+> -	default:			/* should not happen */
+> -		return NOTIFY_OK;
+> -	}
+> -
+> -	region = of_fpga_region_find(nd->target);
+> -	if (!region)
+> -		return NOTIFY_OK;
+> -
+> -	ret = 0;
+> -	switch (action) {
+> -	case OF_OVERLAY_PRE_APPLY:
+> -		ret = of_fpga_region_notify_pre_apply(region, nd);
+> -		break;
+> -
+> -	case OF_OVERLAY_POST_REMOVE:
+> -		of_fpga_region_notify_post_remove(region, nd);
+> -		break;
+> -	}
+> -
+> -	put_device(&region->dev);
+> -
+> -	if (ret)
+> -		return notifier_from_errno(ret);
+> -
+> -	return NOTIFY_OK;
+> -}
+> -
+> -static struct notifier_block fpga_region_of_nb = {
+> -	.notifier_call = of_fpga_region_notify,
+> -};
+> -
+>  int fpga_region_register(struct device *dev, struct fpga_region *region)
+>  {
+>  	int id, ret = 0;
+> @@ -576,64 +203,6 @@ int fpga_region_unregister(struct fpga_region *region)
+>  }
+>  EXPORT_SYMBOL_GPL(fpga_region_unregister);
+>  
+> -static int of_fpga_region_probe(struct platform_device *pdev)
+> -{
+> -	struct device *dev = &pdev->dev;
+> -	struct device_node *np = dev->of_node;
+> -	struct fpga_region *region;
+> -	struct fpga_manager *mgr;
+> -	int ret;
+> -
+> -	/* Find the FPGA mgr specified by region or parent region. */
+> -	mgr = of_fpga_region_get_mgr(np);
+> -	if (IS_ERR(mgr))
+> -		return -EPROBE_DEFER;
+> -
+> -	region = devm_kzalloc(dev, sizeof(*region), GFP_KERNEL);
+> -	if (!region) {
+> -		ret = -ENOMEM;
+> -		goto eprobe_mgr_put;
+> -	}
+> -
+> -	region->mgr = mgr;
+> -
+> -	/* Specify how to get bridges for this type of region. */
+> -	region->get_bridges = of_fpga_region_get_bridges;
+> -
+> -	ret = fpga_region_register(dev, region);
+> -	if (ret)
+> -		goto eprobe_mgr_put;
+> -
+> -	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
+> -
+> -	dev_info(dev, "FPGA Region probed\n");
+> -
+> -	return 0;
+> -
+> -eprobe_mgr_put:
+> -	fpga_mgr_put(mgr);
+> -	return ret;
+> -}
+> -
+> -static int of_fpga_region_remove(struct platform_device *pdev)
+> -{
+> -	struct fpga_region *region = platform_get_drvdata(pdev);
+> -
+> -	fpga_region_unregister(region);
+> -	fpga_mgr_put(region->mgr);
+> -
+> -	return 0;
+> -}
+> -
+> -static struct platform_driver of_fpga_region_driver = {
+> -	.probe = of_fpga_region_probe,
+> -	.remove = of_fpga_region_remove,
+> -	.driver = {
+> -		.name	= "fpga-region",
+> -		.of_match_table = of_match_ptr(fpga_region_of_match),
+> -	},
+> -};
+> -
+>  static void fpga_region_dev_release(struct device *dev)
+>  {
+>  	struct fpga_region *region = to_fpga_region(dev);
+> @@ -647,36 +216,17 @@ static void fpga_region_dev_release(struct device *dev)
+>   */
+>  static int __init fpga_region_init(void)
+>  {
+> -	int ret;
+> -
+>  	fpga_region_class = class_create(THIS_MODULE, "fpga_region");
+>  	if (IS_ERR(fpga_region_class))
+>  		return PTR_ERR(fpga_region_class);
+>  
+>  	fpga_region_class->dev_release = fpga_region_dev_release;
+>  
+> -	ret = of_overlay_notifier_register(&fpga_region_of_nb);
+> -	if (ret)
+> -		goto err_class;
+> -
+> -	ret = platform_driver_register(&of_fpga_region_driver);
+> -	if (ret)
+> -		goto err_plat;
+> -
+>  	return 0;
+> -
+> -err_plat:
+> -	of_overlay_notifier_unregister(&fpga_region_of_nb);
+> -err_class:
+> -	class_destroy(fpga_region_class);
+> -	ida_destroy(&fpga_region_ida);
+> -	return ret;
+>  }
+>  
+>  static void __exit fpga_region_exit(void)
+>  {
+> -	platform_driver_unregister(&of_fpga_region_driver);
+> -	of_overlay_notifier_unregister(&fpga_region_of_nb);
+>  	class_destroy(fpga_region_class);
+>  	ida_destroy(&fpga_region_ida);
+>  }
+> diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+> new file mode 100644
+> index 0000000..1533506
+> --- /dev/null
+> +++ b/drivers/fpga/of-fpga-region.c
+> @@ -0,0 +1,496 @@
+> +/*
+> + * FPGA Region - Device Tree support for FPGA programming under Linux
+> + *
+> + *  Copyright (C) 2013-2016 Altera Corporation
+> + *  Copyright (C) 2017 Intel Corporation
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms and conditions of the GNU General Public License,
+> + * version 2, as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> + * more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along with
+> + * this program.  If not, see <http://www.gnu.org/licenses/>.
+> + */
+> +
+> +#include <linux/fpga/fpga-bridge.h>
+> +#include <linux/fpga/fpga-mgr.h>
+> +#include <linux/fpga/fpga-region.h>
+> +#include <linux/idr.h>
+> +#include <linux/kernel.h>
+> +#include <linux/list.h>
+> +#include <linux/module.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/slab.h>
+> +#include <linux/spinlock.h>
+> +
+> +static const struct of_device_id fpga_region_of_match[] = {
+> +	{ .compatible = "fpga-region", },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, fpga_region_of_match);
+> +
+> +static int fpga_region_of_node_match(struct device *dev, const void *data)
+> +{
+> +	return dev->of_node == data;
+> +}
+> +
+> +/**
+> + * of_fpga_region_find - find FPGA region
+> + * @np: device node of FPGA Region
+> + *
+> + * Caller will need to put_device(&region->dev) when done.
+> + *
+> + * Returns FPGA Region struct or NULL
+> + */
+> +static struct fpga_region *of_fpga_region_find(struct device_node *np)
+> +{
+> +	return fpga_region_class_find(NULL, np, fpga_region_of_node_match);
+> +}
+> +
+> +/**
+> + * of_fpga_region_get_mgr - get reference for FPGA manager
+> + * @np: device node of FPGA region
+> + *
+> + * Get FPGA Manager from "fpga-mgr" property or from ancestor region.
+> + *
+> + * Caller should call fpga_mgr_put() when done with manager.
+> + *
+> + * Return: fpga manager struct or IS_ERR() condition containing error code.
+> + */
+> +static struct fpga_manager *of_fpga_region_get_mgr(struct device_node *np)
+> +{
+> +	struct device_node  *mgr_node;
+> +	struct fpga_manager *mgr;
+> +
+> +	of_node_get(np);
+> +	while (np) {
+> +		if (of_device_is_compatible(np, "fpga-region")) {
+> +			mgr_node = of_parse_phandle(np, "fpga-mgr", 0);
+> +			if (mgr_node) {
+> +				mgr = of_fpga_mgr_get(mgr_node);
+> +				of_node_put(np);
+> +				return mgr;
+> +			}
+> +		}
+> +		np = of_get_next_parent(np);
+> +	}
+> +	of_node_put(np);
+> +
+> +	return ERR_PTR(-EINVAL);
+> +}
+> +
+> +/**
+> + * of_fpga_region_get_bridges - create a list of bridges
+> + * @region: FPGA region
+> + *
+> + * Create a list of bridges including the parent bridge and the bridges
+> + * specified by "fpga-bridges" property.  Note that the
+> + * fpga_bridges_enable/disable/put functions are all fine with an empty list
+> + * if that happens.
+> + *
+> + * Caller should call fpga_bridges_put(&region->bridge_list) when
+> + * done with the bridges.
+> + *
+> + * Return 0 for success (even if there are no bridges specified)
+> + * or -EBUSY if any of the bridges are in use.
+> + */
+> +static int of_fpga_region_get_bridges(struct fpga_region *region)
+> +{
+> +	struct device *dev = &region->dev;
+> +	struct device_node *region_np = dev->of_node;
+> +	struct fpga_image_info *info = region->info;
+> +	struct device_node *br, *np, *parent_br = NULL;
+> +	int i, ret;
+> +
+> +	/* If parent is a bridge, add to list */
+> +	ret = of_fpga_bridge_get_to_list(region_np->parent, info,
+> +					 &region->bridge_list);
+> +
+> +	/* -EBUSY means parent is a bridge that is under use. Give up. */
+> +	if (ret == -EBUSY)
+> +		return ret;
+> +
+> +	/* Zero return code means parent was a bridge and was added to list. */
+> +	if (!ret)
+> +		parent_br = region_np->parent;
+> +
+> +	/* If overlay has a list of bridges, use it. */
+> +	if (of_parse_phandle(info->overlay, "fpga-bridges", 0))
+> +		np = info->overlay;
+> +	else
+> +		np = region_np;
+> +
+> +	for (i = 0; ; i++) {
+> +		br = of_parse_phandle(np, "fpga-bridges", i);
+> +		if (!br)
+> +			break;
+> +
+> +		/* If parent bridge is in list, skip it. */
+> +		if (br == parent_br)
+> +			continue;
+> +
+> +		/* If node is a bridge, get it and add to list */
+> +		ret = of_fpga_bridge_get_to_list(br, info,
+> +						 &region->bridge_list);
+> +
+> +		/* If any of the bridges are in use, give up */
+> +		if (ret == -EBUSY) {
+> +			fpga_bridges_put(&region->bridge_list);
+> +			return -EBUSY;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * child_regions_with_firmware
+> + * @overlay: device node of the overlay
+> + *
+> + * If the overlay adds child FPGA regions, they are not allowed to have
+> + * firmware-name property.
+> + *
+> + * Return 0 for OK or -EINVAL if child FPGA region adds firmware-name.
+> + */
+> +static int child_regions_with_firmware(struct device_node *overlay)
+> +{
+> +	struct device_node *child_region;
+> +	const char *child_firmware_name;
+> +	int ret = 0;
+> +
+> +	of_node_get(overlay);
+> +
+> +	child_region = of_find_matching_node(overlay, fpga_region_of_match);
+> +	while (child_region) {
+> +		if (!of_property_read_string(child_region, "firmware-name",
+> +					     &child_firmware_name)) {
+> +			ret = -EINVAL;
+> +			break;
+> +		}
+> +		child_region = of_find_matching_node(child_region,
+> +						     fpga_region_of_match);
+> +	}
+> +
+> +	of_node_put(child_region);
+> +
+> +	if (ret)
+> +		pr_err("firmware-name not allowed in child FPGA region: %pOF",
+> +		       child_region);
+> +
+> +	return ret;
+> +}
+> +
+> +/**
+> + * of_fpga_region_parse_ov - parse and check overlay applied to region
+> + *
+> + * @region: FPGA region
+> + * @overlay: overlay applied to the FPGA region
+> + *
+> + * Given an overlay applied to a FPGA region, parse the FPGA image specific
+> + * info in the overlay and do some checking.
+> + *
+> + * Returns:
+> + *   NULL if overlay doesn't direct us to program the FPGA.
+> + *   fpga_image_info struct if there is an image to program.
+> + *   error code for invalid overlay.
+> + */
+> +static struct fpga_image_info *of_fpga_region_parse_ov(
+> +						struct fpga_region *region,
+> +						struct device_node *overlay)
+> +{
+> +	struct device *dev = &region->dev;
+> +	struct fpga_image_info *info;
+> +	const char *firmware_name;
+> +	int ret;
+> +
+> +	if (region->info) {
+> +		dev_err(dev, "Region already has overlay applied.\n");
+> +		return ERR_PTR(-EINVAL);
+> +	}
+> +
+> +	/*
+> +	 * Reject overlay if child FPGA Regions added in the overlay have
+> +	 * firmware-name property (would mean that an FPGA region that has
+> +	 * not been added to the live tree yet is doing FPGA programming).
+> +	 */
+> +	ret = child_regions_with_firmware(overlay);
+> +	if (ret)
+> +		return ERR_PTR(ret);
+> +
+> +	info = fpga_image_info_alloc(dev);
+> +	if (!info)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	info->overlay = overlay;
+> +
+> +	/* Read FPGA region properties from the overlay */
+> +	if (of_property_read_bool(overlay, "partial-fpga-config"))
+> +		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
+> +
+> +	if (of_property_read_bool(overlay, "external-fpga-config"))
+> +		info->flags |= FPGA_MGR_EXTERNAL_CONFIG;
+> +
+> +	if (of_property_read_bool(overlay, "encrypted-fpga-config"))
+> +		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
+> +
+> +	if (!of_property_read_string(overlay, "firmware-name",
+> +				     &firmware_name)) {
+> +		info->firmware_name = devm_kstrdup(dev, firmware_name,
+> +						   GFP_KERNEL);
+> +		if (!info->firmware_name)
+> +			return ERR_PTR(-ENOMEM);
+> +	}
+> +
+> +	of_property_read_u32(overlay, "region-unfreeze-timeout-us",
+> +			     &info->enable_timeout_us);
+> +
+> +	of_property_read_u32(overlay, "region-freeze-timeout-us",
+> +			     &info->disable_timeout_us);
+> +
+> +	of_property_read_u32(overlay, "config-complete-timeout-us",
+> +			     &info->config_complete_timeout_us);
+> +
+> +	/* If overlay is not programming the FPGA, don't need FPGA image info */
+> +	if (!info->firmware_name) {
+> +		ret = 0;
+> +		goto ret_no_info;
+> +	}
+> +
+> +	/*
+> +	 * If overlay informs us FPGA was externally programmed, specifying
+> +	 * firmware here would be ambiguous.
+> +	 */
+> +	if (info->flags & FPGA_MGR_EXTERNAL_CONFIG) {
+> +		dev_err(dev, "error: specified firmware and external-fpga-config");
+> +		ret = -EINVAL;
+> +		goto ret_no_info;
+> +	}
+> +
+> +	return info;
+> +ret_no_info:
+> +	fpga_image_info_free(info);
+> +	return ERR_PTR(ret);
+> +}
+> +
+> +/**
+> + * of_fpga_region_notify_pre_apply - pre-apply overlay notification
+> + *
+> + * @region: FPGA region that the overlay was applied to
+> + * @nd: overlay notification data
+> + *
+> + * Called when an overlay targeted to a FPGA Region is about to be applied.
+> + * Parses the overlay for properties that influence how the FPGA will be
+> + * programmed and does some checking. If the checks pass, programs the FPGA.
+> + * If the checks fail, overlay is rejected and does not get added to the
+> + * live tree.
+> + *
+> + * Returns 0 for success or negative error code for failure.
+> + */
+> +static int of_fpga_region_notify_pre_apply(struct fpga_region *region,
+> +					   struct of_overlay_notify_data *nd)
+> +{
+> +	struct device *dev = &region->dev;
+> +	struct fpga_image_info *info;
+> +	int ret;
+> +
+> +	if (region->info) {
+> +		dev_err(dev, "Region already has overlay applied.\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	info = of_fpga_region_parse_ov(region, nd->overlay);
+> +	if (IS_ERR(info))
+> +		return PTR_ERR(info);
+> +
+> +	if (!info)
+> +		return 0;
+> +
+> +	region->info = info;
+> +	ret = fpga_region_program_fpga(region);
+> +	if (ret) {
+> +		/* error; reject overlay */
+> +		fpga_image_info_free(info);
+> +		region->info = NULL;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +/**
+> + * of_fpga_region_notify_post_remove - post-remove overlay notification
+> + *
+> + * @region: FPGA region that was targeted by the overlay that was removed
+> + * @nd: overlay notification data
+> + *
+> + * Called after an overlay has been removed if the overlay's target was a
+> + * FPGA region.
+> + */
+> +static void of_fpga_region_notify_post_remove(struct fpga_region *region,
+> +					      struct of_overlay_notify_data *nd)
+> +{
+> +	fpga_bridges_disable(&region->bridge_list);
+> +	fpga_bridges_put(&region->bridge_list);
+> +	fpga_image_info_free(region->info);
+> +	region->info = NULL;
+> +}
+> +
+> +/**
+> + * of_fpga_region_notify - reconfig notifier for dynamic DT changes
+> + * @nb:		notifier block
+> + * @action:	notifier action
+> + * @arg:	reconfig data
+> + *
+> + * This notifier handles programming a FPGA when a "firmware-name" property is
+> + * added to a fpga-region.
+> + *
+> + * Returns NOTIFY_OK or error if FPGA programming fails.
+> + */
+> +static int of_fpga_region_notify(struct notifier_block *nb,
+> +				 unsigned long action, void *arg)
+> +{
+> +	struct of_overlay_notify_data *nd = arg;
+> +	struct fpga_region *region;
+> +	int ret;
+> +
+> +	switch (action) {
+> +	case OF_OVERLAY_PRE_APPLY:
+> +		pr_debug("%s OF_OVERLAY_PRE_APPLY\n", __func__);
+> +		break;
+> +	case OF_OVERLAY_POST_APPLY:
+> +		pr_debug("%s OF_OVERLAY_POST_APPLY\n", __func__);
+> +		return NOTIFY_OK;       /* not for us */
+> +	case OF_OVERLAY_PRE_REMOVE:
+> +		pr_debug("%s OF_OVERLAY_PRE_REMOVE\n", __func__);
+> +		return NOTIFY_OK;       /* not for us */
+> +	case OF_OVERLAY_POST_REMOVE:
+> +		pr_debug("%s OF_OVERLAY_POST_REMOVE\n", __func__);
+> +		break;
+> +	default:			/* should not happen */
+> +		return NOTIFY_OK;
+> +	}
+> +
+> +	region = of_fpga_region_find(nd->target);
+> +	if (!region)
+> +		return NOTIFY_OK;
+> +
+> +	ret = 0;
+> +	switch (action) {
+> +	case OF_OVERLAY_PRE_APPLY:
+> +		ret = of_fpga_region_notify_pre_apply(region, nd);
+> +		break;
+> +
+> +	case OF_OVERLAY_POST_REMOVE:
+> +		of_fpga_region_notify_post_remove(region, nd);
+> +		break;
+> +	}
+> +
+> +	put_device(&region->dev);
+> +
+> +	if (ret)
+> +		return notifier_from_errno(ret);
+> +
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block fpga_region_of_nb = {
+> +	.notifier_call = of_fpga_region_notify,
+> +};
+> +
+> +static int of_fpga_region_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct device_node *np = dev->of_node;
+> +	struct fpga_region *region;
+> +	struct fpga_manager *mgr;
+> +	int ret;
+> +
+> +	/* Find the FPGA mgr specified by region or parent region. */
+> +	mgr = of_fpga_region_get_mgr(np);
+> +	if (IS_ERR(mgr))
+> +		return -EPROBE_DEFER;
+> +
+> +	region = devm_kzalloc(dev, sizeof(*region), GFP_KERNEL);
+> +	if (!region) {
+> +		ret = -ENOMEM;
+> +		goto eprobe_mgr_put;
+> +	}
+> +
+> +	region->mgr = mgr;
+> +
+> +	/* Specify how to get bridges for this type of region. */
+> +	region->get_bridges = of_fpga_region_get_bridges;
+> +
+> +	ret = fpga_region_register(dev, region);
+> +	if (ret)
+> +		goto eprobe_mgr_put;
+> +
+> +	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
+> +
+> +	dev_info(dev, "FPGA Region probed\n");
+> +
+> +	return 0;
+> +
+> +eprobe_mgr_put:
+> +	fpga_mgr_put(mgr);
+> +	return ret;
+> +}
+> +
+> +static int of_fpga_region_remove(struct platform_device *pdev)
+> +{
+> +	struct fpga_region *region = platform_get_drvdata(pdev);
+> +
+> +	fpga_region_unregister(region);
+> +	fpga_mgr_put(region->mgr);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver of_fpga_region_driver = {
+> +	.probe = of_fpga_region_probe,
+> +	.remove = of_fpga_region_remove,
+> +	.driver = {
+> +		.name	= "of-fpga-region",
+> +		.of_match_table = of_match_ptr(fpga_region_of_match),
+> +	},
+> +};
+> +
+> +/**
+> + * fpga_region_init - init function for fpga_region class
+> + * Creates the fpga_region class and registers a reconfig notifier.
+> + */
+> +static int __init of_fpga_region_init(void)
+> +{
+> +	int ret;
+> +
+> +	ret = of_overlay_notifier_register(&fpga_region_of_nb);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = platform_driver_register(&of_fpga_region_driver);
+> +	if (ret)
+> +		goto err_plat;
+> +
+> +	return 0;
+> +
+> +err_plat:
+> +	of_overlay_notifier_unregister(&fpga_region_of_nb);
+> +	return ret;
+> +}
+> +
+> +static void __exit of_fpga_region_exit(void)
+> +{
+> +	platform_driver_unregister(&of_fpga_region_driver);
+> +	of_overlay_notifier_unregister(&fpga_region_of_nb);
+> +}
+> +
+> +subsys_initcall(of_fpga_region_init);
+> +module_exit(of_fpga_region_exit);
+> +
+> +MODULE_DESCRIPTION("FPGA Region");
+> +MODULE_AUTHOR("Alan Tull <atull@kernel.org>");
+> +MODULE_LICENSE("GPL v2");
+> -- 
+> 2.7.4
+> 
