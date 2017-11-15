@@ -1,143 +1,60 @@
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 12/21] fpga: dfl: fme: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
-Date: Mon, 27 Nov 2017 14:42:19 +0800
-Message-Id: <1511764948-20972-13-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH v2 1/5] fpga: region: don't use drvdata in common fpga code
+Date: Wed, 15 Nov 2017 14:51:48 -0600
+Message-Id: <1510779112-5517-2-git-send-email-atull@kernel.org>
+In-Reply-To: <1510779112-5517-1-git-send-email-atull@kernel.org>
+References: <1510779112-5517-1-git-send-email-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-FPGA_GET_API_VERSION and FPGA_CHECK_EXTENSION ioctls are common ones which
-need to be supported by all feature devices drivers including FME and AFU.
-Userspace application can use these ioctl interfaces to get the API info
-and check if specific extension is supported or not in current driver.
+Part of patchset that changes the following fpga_*_register
+functions to not set drvdata:
+* fpga_region_register.
+* fpga_mgr_register
+* fpga_bridge_register
 
-This patch implements above 2 ioctls in FPGA Management Engine (FME)
-driver.
+The rationale is that setting drvdata is fine for DT based devices
+that will have one manager, bridge, or region per platform device.
+However PCIe based devices may have multiple FPGA mgr/bridge/regions
+under one PCIe device.  Without these changes, the PCIe solution has
+to create an extra device for each child mgr/bridge/region to hold
+drvdata.
 
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-----
-v2: switched to GPLv2 license.
-v3: rename intel-fpga.h to fpga-dfl.h and rebased.
+Signed-off-by: Alan Tull <atull@kernel.org>
+Reported-by: Jiuyue Ma <majiuyue@huawei.com>
 ---
- Documentation/ioctl/ioctl-number.txt |  1 +
- drivers/fpga/dfl-fme-main.c          | 12 +++++++++
- include/uapi/linux/fpga-dfl.h        | 50 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 63 insertions(+)
- create mode 100644 include/uapi/linux/fpga-dfl.h
+v2: No change to this patch in v2 of patchset
+---
+ drivers/fpga/fpga-region.c    | 1 -
+ drivers/fpga/of-fpga-region.c | 1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
-index 3e3fdae..91ad573 100644
---- a/Documentation/ioctl/ioctl-number.txt
-+++ b/Documentation/ioctl/ioctl-number.txt
-@@ -324,6 +324,7 @@ Code  Seq#(hex)	Include File		Comments
- 0xB3	00	linux/mmc/ioctl.h
- 0xB4	00-0F	linux/gpio.h		<mailto:linux-gpio@vger.kernel.org>
- 0xB5	00-0F	uapi/linux/rpmsg.h	<mailto:linux-remoteproc@vger.kernel.org>
-+0xB6	all	linux/fpga-dfl.h
- 0xC0	00-0F	linux/usb/iowarrior.h
- 0xCA	00-0F	uapi/misc/cxl.h
- 0xCA	80-BF	uapi/scsi/cxlflash_ioctl.h
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index d17c66a..b4e0b54 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -18,6 +18,7 @@
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index edab2a2..ebe1f87 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -178,7 +178,6 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
+ 	region->dev.parent = dev;
+ 	region->dev.of_node = dev->of_node;
+ 	region->dev.id = id;
+-	dev_set_drvdata(dev, region);
  
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/fpga-dfl.h>
+ 	ret = dev_set_name(&region->dev, "region%d", id);
+ 	if (ret)
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index c6b2119..3079ed8 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -431,6 +431,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 		goto eprobe_mgr_put;
  
- #include "fpga-dfl.h"
+ 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
++	dev_set_drvdata(dev, region);
  
-@@ -108,6 +109,13 @@ static void fme_hdr_uinit(struct platform_device *pdev, struct feature *feature)
- 	},
- };
+ 	dev_info(dev, "FPGA Region probed\n");
  
-+static long fme_ioctl_check_extension(struct feature_platform_data *pdata,
-+				      unsigned long arg)
-+{
-+	/* No extension support for now */
-+	return 0;
-+}
-+
- static int fme_open(struct inode *inode, struct file *filp)
- {
- 	struct platform_device *fdev = fpga_inode_to_feature_dev(inode);
-@@ -148,6 +156,10 @@ static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
- 
- 	switch (cmd) {
-+	case FPGA_GET_API_VERSION:
-+		return FPGA_API_VERSION;
-+	case FPGA_CHECK_EXTENSION:
-+		return fme_ioctl_check_extension(pdata, arg);
- 	default:
- 		/*
- 		 * Let sub-feature's ioctl function to handle the cmd
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-new file mode 100644
-index 0000000..b46d124
---- /dev/null
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -0,0 +1,50 @@
-+/*
-+ * Header File for FPGA DFL User API
-+ *
-+ * Copyright (C) 2017 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Zhang Yi <yi.z.zhang@intel.com>
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *
-+ * This work is licensed under the terms of the GNU GPL version 2.
-+ * SPDX-License-Identifier: GPL-2.0
-+ */
-+
-+#ifndef _UAPI_LINUX_FPGA_DFL_H
-+#define _UAPI_LINUX_FPGA_DFL_H
-+
-+#define FPGA_API_VERSION 0
-+
-+/*
-+ * The IOCTL interface for DFL based FPGA is designed for extensibility by
-+ * embedding the structure length (argsz) and flags into structures passed
-+ * between kernel and userspace. This design referenced the VFIO IOCTL
-+ * interface (include/uapi/linux/vfio.h).
-+ */
-+
-+#define FPGA_MAGIC 0xB6
-+
-+#define FPGA_BASE 0
-+
-+/**
-+ * FPGA_GET_API_VERSION - _IO(FPGA_MAGIC, FPGA_BASE + 0)
-+ *
-+ * Report the version of the driver API.
-+ * Return: Driver API Version.
-+ */
-+
-+#define FPGA_GET_API_VERSION	_IO(FPGA_MAGIC, FPGA_BASE + 0)
-+
-+/**
-+ * FPGA_CHECK_EXTENSION - _IO(FPGA_MAGIC, FPGA_BASE + 1)
-+ *
-+ * Check whether an extension is supported.
-+ * Return: 0 if not supported, otherwise the extension is supported.
-+ */
-+
-+#define FPGA_CHECK_EXTENSION	_IO(FPGA_MAGIC, FPGA_BASE + 1)
-+
-+#endif /* _UAPI_LINUX_FPGA_DFL_H */
 -- 
-1.8.3.1
+2.7.4
