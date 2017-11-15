@@ -1,62 +1,45 @@
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 19/21] fpga: dfl: afu: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
-Date: Mon, 27 Nov 2017 14:42:26 +0800
-Message-Id: <1511764948-20972-20-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 2/3] fpga: fpga-bridge: remove unnecessary null check in of_fpga_bridge_get
+Date: Wed, 15 Nov 2017 16:33:11 -0600
+Message-Id: <1510785192-10123-3-git-send-email-atull@kernel.org>
+In-Reply-To: <1510785192-10123-1-git-send-email-atull@kernel.org>
+References: <1510785192-10123-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-FPGA_GET_API_VERSION and FPGA_CHECK_EXTENSION ioctls are common ones which
-need to be supported by all feature devices drivers including FME and AFU.
-This patch implements above 2 ioctls in FPGA Accelerated Function Unit
-(AFU) driver.
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-----
-v2: rebased
-v3: rebased as driver renamed to fpga-dfl-afu
-    fix one checkpatch issue
+Notice that bridge = to_fpga_bridge(dev); expands to:
+
+bridge = container_of(dev, struct fpga_bridge, dev);
+
+and container_of is never null, so this null check is
+unnecessary.
+
+Addresses-Coverity-ID: 1397912
+Reported-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+Reviewed-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/dfl-afu-main.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/fpga/fpga-bridge.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index b01376c..d3d534c 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -123,6 +123,13 @@ static int afu_release(struct inode *inode, struct file *filp)
- 	return 0;
- }
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index 4c48dd6..038b10b 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -78,8 +78,6 @@ static struct fpga_bridge *__fpga_bridge_get(struct device *dev,
+ 	int ret = -ENODEV;
  
-+static long afu_ioctl_check_extension(struct feature_platform_data *pdata,
-+				      unsigned long arg)
-+{
-+	/* No extension support for now */
-+	return 0;
-+}
-+
- static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- {
- 	struct platform_device *pdev = filp->private_data;
-@@ -133,6 +140,10 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
+ 	bridge = to_fpga_bridge(dev);
+-	if (!bridge)
+-		goto err_dev;
  
- 	switch (cmd) {
-+	case FPGA_GET_API_VERSION:
-+		return FPGA_API_VERSION;
-+	case FPGA_CHECK_EXTENSION:
-+		return afu_ioctl_check_extension(pdata, arg);
- 	default:
- 		/*
- 		 * Let sub-feature's ioctl function to handle the cmd
+ 	bridge->info = info;
+ 
 -- 
-1.8.3.1
+2.7.4
