@@ -1,9 +1,9 @@
 Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 10/21] fpga: dfl: add FPGA Management Engine driver basic framework
-Date: Mon, 27 Nov 2017 14:42:17 +0800
-Message-Id: <1511764948-20972-11-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v3 11/21] fpga: dfl: fme: add header sub feature support
+Date: Mon, 27 Nov 2017 14:42:18 +0800
+Message-Id: <1511764948-20972-12-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
 References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -12,15 +12,19 @@ List-ID: <linux-fpga@vger.kernel.org>
 
 From: Kang Luwei <luwei.kang@intel.com>
 
-The FPGA Management Engine (FME) provides power, thermal management,
-performance counters, partial reconfiguration and other functions. For each
-function, it is packaged into a private feature linked to the FME feature
-device in the 'Device Feature List'. It's a platform device created by
-DFL framework.
+The header register set is always present for FPGA Management Engine (FME),
+this patch implements init and uinit function for header sub feature and
+introduce several read-only sysfs interfaces for the capability and status.
 
-This patch adds the basic framework of FME platform driver. It defines
-sub feature drivers to handle the different sub features, including init,
-uinit and ioctl. It also registers the file operations for the device file.
+Sysfs interfaces:
+* /sys/class/fpga_region/<regionX>/<fpga-dfl-fme.x>/ports_num
+  Read-only. Number of ports implemented
+
+* /sys/class/fpga_region/<regionX>/<fpga-dfl-fme.x>/bitstream_id
+  Read-only. Blue Bitstream (static FPGA region) identifier number
+
+* /sys/class/fpga_region/<regionX>/<fpga-dfl-fme.x>/bitstream_metadata
+  Read-only. Blue Bitstream (static FPGA region) meta data
 
 Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
 Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
@@ -30,215 +34,123 @@ Signed-off-by: Kang Luwei <luwei.kang@intel.com>
 Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ----
-v3: rename driver from intel-fpga-fme to dfl-fme
-    rename Kconfig from INTEL_FPGA_FME to FPGA_DFL_FME
+v2: add sysfs documentation
+v3: rename driver to fpga-dfl-fme.
+    improve sysfs doc and commit description.
+    replace bitfield.
 ---
- drivers/fpga/Kconfig        |  10 +++
- drivers/fpga/Makefile       |   3 +
- drivers/fpga/dfl-fme-main.c | 160 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 173 insertions(+)
- create mode 100644 drivers/fpga/dfl-fme-main.c
+ .../ABI/testing/sysfs-platform-fpga-dfl-fme        | 21 ++++++++
+ drivers/fpga/dfl-fme-main.c                        | 60 ++++++++++++++++++++++
+ 2 files changed, 81 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index cc35d12..57da904 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -140,6 +140,16 @@ config FPGA_DFL
- 	  Gate Array (FPGA) solutions which implement Device Feature List.
- 	  It provides enumeration APIs, and feature device infrastructure.
- 
-+config FPGA_DFL_FME
-+	tristate "FPGA DFL FME Driver"
-+	depends on FPGA_DFL
-+	help
-+	  The FPGA Management Engine (FME) is a feature device implemented
-+	  under Device Feature List (DFL) framework. Select this option to
-+	  enable the platform device driver for FME which implements all
-+	  FPGA platform level management features. There shall be 1 FME
-+	  per DFL based FPGA device.
-+
- config INTEL_FPGA_DFL_PCI
- 	tristate "Intel FPGA DFL PCIe Device Driver"
- 	depends on PCI && FPGA_DFL
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index d39a431..e5ba158 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -30,6 +30,9 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
- 
- # FPGA Device Feature List Support
- obj-$(CONFIG_FPGA_DFL)			+= fpga-dfl.o
-+obj-$(CONFIG_FPGA_DFL_FME)		+= fpga-dfl-fme.o
-+
-+fpga-dfl-fme-objs := dfl-fme-main.o
- 
- # Drivers for FPGAs which implement DFL
- obj-$(CONFIG_INTEL_FPGA_DFL_PCI)	+= intel-dfl-pci.o
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+diff --git a/Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme b/Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme
 new file mode 100644
-index 0000000..f7b5f7d
+index 0000000..6b32799
 --- /dev/null
++++ b/Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme
+@@ -0,0 +1,21 @@
++What:		/sys/bus/platform/devices/fpga-dfl-fme.0/ports_num
++Date:		November 2017
++KernelVersion:  4.15
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. One DFL FPGA device may have more than 1
++		port/Accelerator Function Unit (AFU). It returns the
++		number of ports on the FPGA device when read it.
++
++What:		/sys/bus/platform/devices/fpga-dfl-fme.0/bitstream_id
++Date:		November 2017
++KernelVersion:  4.15
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns Blue Bitstream (static FPGA region)
++		identifier number.
++
++What:		/sys/bus/platform/devices/fpga-dfl-fme.0/bitstream_meta
++Date:		November 2017
++KernelVersion:  4.15
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns Blue Bitstream (static FPGA region)
++		meta data.
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index f7b5f7d..d17c66a 100644
+--- a/drivers/fpga/dfl-fme-main.c
 +++ b/drivers/fpga/dfl-fme-main.c
-@@ -0,0 +1,160 @@
-+/*
-+ * Driver for FPGA Management Engine (FME)
-+ *
-+ * Copyright (C) 2017 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
-+ *
-+ * This work is licensed under the terms of the GNU GPL version 2.
-+ * SPDX-License-Identifier: GPL-2.0
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+
-+#include "fpga-dfl.h"
-+
-+static int fme_hdr_init(struct platform_device *pdev, struct feature *feature)
+@@ -21,9 +21,68 @@
+ 
+ #include "fpga-dfl.h"
+ 
++static ssize_t ports_num_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
 +{
-+	dev_dbg(&pdev->dev, "FME HDR Init.\n");
++	void __iomem *base;
++	u64 v;
 +
-+	return 0;
++	base = get_feature_ioaddr_by_index(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_CAP_NUM_PORTS, v));
 +}
++static DEVICE_ATTR_RO(ports_num);
 +
-+static void fme_hdr_uinit(struct platform_device *pdev, struct feature *feature)
++static ssize_t bitstream_id_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
 +{
-+	dev_dbg(&pdev->dev, "FME HDR UInit.\n");
-+}
++	void __iomem *base;
++	u64 v;
 +
-+static const struct feature_ops fme_hdr_ops = {
-+	.init = fme_hdr_init,
-+	.uinit = fme_hdr_uinit,
++	base = get_feature_ioaddr_by_index(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_BITSTREAM_ID);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n", (unsigned long long)v);
++}
++static DEVICE_ATTR_RO(bitstream_id);
++
++static ssize_t bitstream_metadata_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = get_feature_ioaddr_by_index(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_BITSTREAM_MD);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n", (unsigned long long)v);
++}
++static DEVICE_ATTR_RO(bitstream_metadata);
++
++static const struct attribute *fme_hdr_attrs[] = {
++	&dev_attr_ports_num.attr,
++	&dev_attr_bitstream_id.attr,
++	&dev_attr_bitstream_metadata.attr,
++	NULL,
 +};
 +
-+static struct feature_driver fme_feature_drvs[] = {
-+	{
-+		.name = FME_FEATURE_HEADER,
-+		.ops = &fme_hdr_ops,
-+	},
-+	{
-+		.ops = NULL,
-+	},
-+};
-+
-+static int fme_open(struct inode *inode, struct file *filp)
-+{
-+	struct platform_device *fdev = fpga_inode_to_feature_dev(inode);
-+	struct feature_platform_data *pdata = dev_get_platdata(&fdev->dev);
+ static int fme_hdr_init(struct platform_device *pdev, struct feature *feature)
+ {
++	void __iomem *base = feature->ioaddr;
 +	int ret;
 +
-+	if (WARN_ON(!pdata))
-+		return -ENODEV;
+ 	dev_dbg(&pdev->dev, "FME HDR Init.\n");
++	dev_dbg(&pdev->dev, "FME cap %llx.\n",
++		(unsigned long long)readq(base + FME_HDR_CAP));
 +
-+	ret = feature_dev_use_begin(pdata);
++	ret = sysfs_create_files(&pdev->dev.kobj, fme_hdr_attrs);
 +	if (ret)
 +		return ret;
-+
-+	dev_dbg(&fdev->dev, "Device File Open\n");
-+	filp->private_data = pdata;
-+
-+	return 0;
-+}
-+
-+static int fme_release(struct inode *inode, struct file *filp)
-+{
-+	struct feature_platform_data *pdata = filp->private_data;
-+	struct platform_device *pdev = pdata->dev;
-+
-+	dev_dbg(&pdev->dev, "Device File Release\n");
-+	feature_dev_use_end(pdata);
-+
-+	return 0;
-+}
-+
-+static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
-+{
-+	struct feature_platform_data *pdata = filp->private_data;
-+	struct platform_device *pdev = pdata->dev;
-+	struct feature *f;
-+	long ret;
-+
-+	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
-+
-+	switch (cmd) {
-+	default:
-+		/*
-+		 * Let sub-feature's ioctl function to handle the cmd
-+		 * Sub-feature's ioctl returns -ENODEV when cmd is not
-+		 * handled in this sub feature, and returns 0 and other
-+		 * error code if cmd is handled.
-+		 */
-+		fpga_dev_for_each_feature(pdata, f) {
-+			if (f->ops && f->ops->ioctl) {
-+				ret = f->ops->ioctl(pdev, f, cmd, arg);
-+				if (ret == -ENODEV)
-+					continue;
-+				else
-+					return ret;
-+			}
-+		}
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static const struct file_operations fme_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= fme_open,
-+	.release	= fme_release,
-+	.unlocked_ioctl = fme_ioctl,
-+};
-+
-+static int fme_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+
-+	ret = fpga_dev_feature_init(pdev, fme_feature_drvs);
-+	if (ret)
-+		goto exit;
-+
-+	ret = fpga_register_dev_ops(pdev, &fme_fops, THIS_MODULE);
-+	if (ret)
-+		goto feature_uinit;
-+
-+	return 0;
-+
-+feature_uinit:
-+	fpga_dev_feature_uinit(pdev);
-+exit:
-+	return ret;
-+}
-+
-+static int fme_remove(struct platform_device *pdev)
-+{
-+	fpga_dev_feature_uinit(pdev);
-+	fpga_unregister_dev_ops(pdev);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver fme_driver = {
-+	.driver	= {
-+		.name    = FPGA_FEATURE_DEV_FME,
-+	},
-+	.probe   = fme_probe,
-+	.remove  = fme_remove,
-+};
-+
-+module_platform_driver(fme_driver);
-+
-+MODULE_DESCRIPTION("FPGA Management Engine driver");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:fpga-dfl-fme");
+ 
+ 	return 0;
+ }
+@@ -31,6 +90,7 @@ static int fme_hdr_init(struct platform_device *pdev, struct feature *feature)
+ static void fme_hdr_uinit(struct platform_device *pdev, struct feature *feature)
+ {
+ 	dev_dbg(&pdev->dev, "FME HDR UInit.\n");
++	sysfs_remove_files(&pdev->dev.kobj, fme_hdr_attrs);
+ }
+ 
+ static const struct feature_ops fme_hdr_ops = {
 -- 
 1.8.3.1
