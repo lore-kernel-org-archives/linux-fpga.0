@@ -1,74 +1,96 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 3/3] fpga: region: release of_parse_phandle nodes after use
-Date: Wed, 15 Nov 2017 16:33:12 -0600
-Message-Id: <1510785192-10123-4-git-send-email-atull@kernel.org>
-In-Reply-To: <1510785192-10123-1-git-send-email-atull@kernel.org>
-References: <1510785192-10123-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Ian Abbott <abbotti@mev.co.uk>, "# 4 . 10+" <stable@vger.kernel.org>
+Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v3 06/21] fpga: dfl: adds fpga_cdev_find_port
+Date: Mon, 27 Nov 2017 14:42:13 +0800
+Message-Id: <1511764948-20972-7-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
+References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Ian Abbott <abbotti@mev.co.uk>
+For feature devices, e.g FPGA Management Engine (FME), it may
+require fpga_cdev_find_port function to find dedicate port for
+further actions, so export this function from feature device
+driver module.
 
-Both fpga_region_get_manager() and fpga_region_get_bridges() call
-of_parse_phandle(), but nothing calls of_node_put() on the returned
-struct device_node pointers.  Make sure to do that to stop their
-reference counters getting out of whack.
-
-Fixes: 0fa20cdfcc1f ("fpga: fpga-region: device tree control for FPGA")
-Cc: <stable@vger.kernel.org> # 4.10+
-Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
-Signed-off-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+----
+v3: s/fpga_for_each_port/fpga_cdev_find_port/
+    move fpga_cdev_find_port to fpga-dfl module.
 ---
- drivers/fpga/of-fpga-region.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ drivers/fpga/fpga-dfl.c | 27 +++++++++++++++++++++++++++
+ drivers/fpga/fpga-dfl.h | 16 ++++++++++++++++
+ 2 files changed, 43 insertions(+)
 
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index a0c13cb..7dfaa95 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -73,6 +73,7 @@ static struct fpga_manager *of_fpga_region_get_mgr(struct device_node *np)
- 			mgr_node = of_parse_phandle(np, "fpga-mgr", 0);
- 			if (mgr_node) {
- 				mgr = of_fpga_mgr_get(mgr_node);
-+				of_node_put(mgr_node);
- 				of_node_put(np);
- 				return mgr;
- 			}
-@@ -120,10 +121,13 @@ static int of_fpga_region_get_bridges(struct fpga_region *region)
- 		parent_br = region_np->parent;
+diff --git a/drivers/fpga/fpga-dfl.c b/drivers/fpga/fpga-dfl.c
+index 9294c0a..ce03b17 100644
+--- a/drivers/fpga/fpga-dfl.c
++++ b/drivers/fpga/fpga-dfl.c
+@@ -873,6 +873,33 @@ void fpga_remove_feature_devs(struct fpga_cdev *cdev)
+ }
+ EXPORT_SYMBOL_GPL(fpga_remove_feature_devs);
  
- 	/* If overlay has a list of bridges, use it. */
--	if (of_parse_phandle(info->overlay, "fpga-bridges", 0))
-+	br = of_parse_phandle(info->overlay, "fpga-bridges", 0);
-+	if (br) {
-+		of_node_put(br);
- 		np = info->overlay;
--	else
-+	} else {
- 		np = region_np;
++/**
++ * __fpga_cdev_find_port - find a port under given container device
++ * @cdev: container device
++ * @data: data passed to match function
++ * @match: match function used to find specific port from the port device list
++ *
++ * Find a port device under container device. This function needs to be
++ * invoked with lock held.
++ */
++struct platform_device *
++__fpga_cdev_find_port(struct fpga_cdev *cdev, void *data,
++		      int (*match)(struct platform_device *, void *))
++{
++	struct feature_platform_data *pdata;
++	struct platform_device *port_dev;
++
++	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
++		port_dev = pdata->dev;
++
++		if (match(port_dev, data) && get_device(&port_dev->dev))
++			return port_dev;
 +	}
++
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(__fpga_cdev_find_port);
++
+ int fpga_port_id(struct platform_device *pdev)
+ {
+ 	void __iomem *base;
+diff --git a/drivers/fpga/fpga-dfl.h b/drivers/fpga/fpga-dfl.h
+index e569a13..36e2394 100644
+--- a/drivers/fpga/fpga-dfl.h
++++ b/drivers/fpga/fpga-dfl.h
+@@ -375,4 +375,20 @@ struct fpga_cdev {
+ struct fpga_cdev *fpga_enumerate_feature_devs(struct fpga_enum_info *info);
+ void fpga_remove_feature_devs(struct fpga_cdev *cdev);
  
- 	for (i = 0; ; i++) {
- 		br = of_parse_phandle(np, "fpga-bridges", i);
-@@ -131,12 +135,15 @@ static int of_fpga_region_get_bridges(struct fpga_region *region)
- 			break;
- 
- 		/* If parent bridge is in list, skip it. */
--		if (br == parent_br)
-+		if (br == parent_br) {
-+			of_node_put(br);
- 			continue;
-+		}
- 
- 		/* If node is a bridge, get it and add to list */
- 		ret = of_fpga_bridge_get_to_list(br, info,
- 						 &region->bridge_list);
-+		of_node_put(br);
- 
- 		/* If any of the bridges are in use, give up */
- 		if (ret == -EBUSY) {
++struct platform_device *
++__fpga_cdev_find_port(struct fpga_cdev *cdev, void *data,
++		      int (*match)(struct platform_device *, void *));
++
++static inline struct platform_device *
++fpga_cdev_find_port(struct fpga_cdev *cdev, void *data,
++		    int (*match)(struct platform_device *, void *))
++{
++	struct platform_device *pdev;
++
++	mutex_lock(&cdev->lock);
++	pdev = __fpga_cdev_find_port(cdev, data, match);
++	mutex_unlock(&cdev->lock);
++
++	return pdev;
++}
+ #endif /* __DFL_FPGA_H */
 -- 
-2.7.4
+1.8.3.1
