@@ -1,241 +1,253 @@
 Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 17/21] fpga: dfl: add FPGA Accelerated Function Unit driver basic framework
-Date: Mon, 27 Nov 2017 14:42:24 +0800
-Message-Id: <1511764948-20972-18-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v3 07/21] fpga: dfl: add feature device infrastructure
+Date: Mon, 27 Nov 2017 14:42:14 +0800
+Message-Id: <1511764948-20972-8-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
 References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Xiao Guangrong <guangrong.xiao@linux.intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On DFL FPGA devices, the Accelerated Function Unit (AFU), can be
-reprogrammed for different functions. It connects to the FPGA
-infrastructure("blue bistream") via a Port. Port CSRs are implemented
-separately from the AFU CSRs to provide control and status of the Port.
-Once valid green bitstream is programmed into the AFU, it allows access
-to the AFU CSRs in the AFU MMIO space.
+From: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 
-This patch only implements basic driver framework for AFU, including
-device file operation framework.
+This patch abstracts the common operations of the sub features, and defines
+the feature_ops data structure, including init, uinit and ioctl function
+pointers. And this patch adds some common helper functions for FME and AFU
+drivers, e.g feature_dev_use_begin/end which are used to ensure exclusive
+usage of the feature device file.
 
 Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
 Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
 Signed-off-by: Shiva Rao <shiva.rao@intel.com>
 Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Kang Luwei <luwei.kang@intel.com>
+Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
 Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ----
-v3: rename driver to dfl-afu-main
+v2: rebased
+v3: use const for feature_ops.
+    replace pci related function.
 ---
- drivers/fpga/Kconfig        |   9 +++
- drivers/fpga/Makefile       |   2 +
- drivers/fpga/dfl-afu-main.c | 161 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 172 insertions(+)
- create mode 100644 drivers/fpga/dfl-afu-main.c
+ drivers/fpga/fpga-dfl.c | 68 +++++++++++++++++++++++++++++++++++++++++
+ drivers/fpga/fpga-dfl.h | 80 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 148 insertions(+)
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 2df9dfd..fa1905b 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -168,6 +168,15 @@ config FPGA_DFL_FME_REGION
- 	help
- 	  Say Y to enable FPGA Region driver for FPGA Management Engine.
+diff --git a/drivers/fpga/fpga-dfl.c b/drivers/fpga/fpga-dfl.c
+index ce03b17..1714803 100644
+--- a/drivers/fpga/fpga-dfl.c
++++ b/drivers/fpga/fpga-dfl.c
+@@ -76,6 +76,74 @@ static enum fpga_id_type feature_dev_id_type(struct platform_device *pdev)
+ 	return FPGA_ID_MAX;
+ }
  
-+config FPGA_DFL_AFU
-+	tristate "FPGA DFL AFU Driver"
-+	depends on FPGA_DFL
-+	help
-+	  This is the driver for FPGA Accelerated Function Unit (AFU) which
-+	  implements AFU and Port management features. A User AFU connects
-+	  to the FPGA infrastructure via a Port. There may be more than 1
-+	  Port/AFU per DFL based FPGA device.
-+
- config INTEL_FPGA_DFL_PCI
- 	tristate "Intel FPGA DFL PCIe Device Driver"
- 	depends on PCI && FPGA_DFL
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 11777d3..e234fa8 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -34,8 +34,10 @@ obj-$(CONFIG_FPGA_DFL_FME)		+= fpga-dfl-fme.o
- obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= fpga-dfl-fme-mgr.o
- obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= fpga-dfl-fme-br.o
- obj-$(CONFIG_FPGA_DFL_FME_REGION)	+= fpga-dfl-fme-region.o
-+obj-$(CONFIG_FPGA_DFL_AFU)		+= fpga-dfl-afu.o
- 
- fpga-dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
-+fpga-dfl-afu-objs := dfl-afu-main.o
- 
- # Drivers for FPGAs which implement DFL
- obj-$(CONFIG_INTEL_FPGA_DFL_PCI)	+= intel-dfl-pci.o
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-new file mode 100644
-index 0000000..d9f4b81
---- /dev/null
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -0,0 +1,161 @@
-+/*
-+ * Driver for FPGA Accelerated Function Unit (AFU)
-+ *
-+ * Copyright (C) 2017 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
-+ *
-+ * This work is licensed under the terms of the GNU GPL version 2.
-+ * SPDX-License-Identifier: GPL-2.0
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+
-+#include "fpga-dfl.h"
-+
-+static int port_hdr_init(struct platform_device *pdev, struct feature *feature)
++int fme_feature_to_resource_index(int feature_id)
 +{
-+	dev_dbg(&pdev->dev, "PORT HDR Init.\n");
-+
-+	return 0;
++	WARN_ON(feature_id >= FME_FEATURE_ID_MAX);
++	return feature_id;
 +}
 +
-+static void port_hdr_uinit(struct platform_device *pdev,
-+			   struct feature *feature)
++void fpga_dev_feature_uinit(struct platform_device *pdev)
 +{
-+	dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
-+}
-+
-+static const struct feature_ops port_hdr_ops = {
-+	.init = port_hdr_init,
-+	.uinit = port_hdr_uinit,
-+};
-+
-+static struct feature_driver port_feature_drvs[] = {
-+	{
-+		.name = PORT_FEATURE_HEADER,
-+		.ops = &port_hdr_ops,
-+	},
-+	{
-+		.ops = NULL,
-+	}
-+};
-+
-+static int afu_open(struct inode *inode, struct file *filp)
-+{
-+	struct platform_device *fdev = fpga_inode_to_feature_dev(inode);
-+	struct feature_platform_data *pdata;
-+	int ret;
-+
-+	pdata = dev_get_platdata(&fdev->dev);
-+	if (WARN_ON(!pdata))
-+		return -ENODEV;
-+
-+	ret = feature_dev_use_begin(pdata);
-+	if (ret)
-+		return ret;
-+
-+	dev_dbg(&fdev->dev, "Device File Open\n");
-+	filp->private_data = fdev;
-+
-+	return 0;
-+}
-+
-+static int afu_release(struct inode *inode, struct file *filp)
-+{
-+	struct platform_device *pdev = filp->private_data;
++	struct feature *feature;
 +	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
 +
-+	dev_dbg(&pdev->dev, "Device File Release\n");
-+
-+	feature_dev_use_end(pdata);
-+
-+	return 0;
++	fpga_dev_for_each_feature(pdata, feature)
++		if (feature->ops) {
++			feature->ops->uinit(pdev, feature);
++			feature->ops = NULL;
++		}
 +}
++EXPORT_SYMBOL_GPL(fpga_dev_feature_uinit);
 +
-+static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
-+{
-+	struct platform_device *pdev = filp->private_data;
-+	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct feature *f;
-+	long ret;
-+
-+	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
-+
-+	switch (cmd) {
-+	default:
-+		/*
-+		 * Let sub-feature's ioctl function to handle the cmd
-+		 * Sub-feature's ioctl returns -ENODEV when cmd is not
-+		 * handled in this sub feature, and returns 0 and other
-+		 * error code if cmd is handled.
-+		 */
-+		fpga_dev_for_each_feature(pdata, f)
-+			if (f->ops && f->ops->ioctl) {
-+				ret = f->ops->ioctl(pdev, f, cmd, arg);
-+				if (ret == -ENODEV)
-+					continue;
-+				else
-+					return ret;
-+			}
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static const struct file_operations afu_fops = {
-+	.owner = THIS_MODULE,
-+	.open = afu_open,
-+	.release = afu_release,
-+	.unlocked_ioctl = afu_ioctl,
-+};
-+
-+static int afu_probe(struct platform_device *pdev)
++static int
++feature_instance_init(struct platform_device *pdev,
++		      struct feature_platform_data *pdata,
++		      struct feature *feature, struct feature_driver *drv)
 +{
 +	int ret;
 +
-+	dev_dbg(&pdev->dev, "%s\n", __func__);
++	WARN_ON(!feature->ioaddr);
 +
-+	ret = fpga_dev_feature_init(pdev, port_feature_drvs);
++	ret = drv->ops->init(pdev, feature);
 +	if (ret)
 +		return ret;
 +
-+	ret = fpga_register_dev_ops(pdev, &afu_fops, THIS_MODULE);
-+	if (ret)
-+		fpga_dev_feature_uinit(pdev);
++	feature->ops = drv->ops;
 +
 +	return ret;
 +}
 +
-+static int afu_remove(struct platform_device *pdev)
++int fpga_dev_feature_init(struct platform_device *pdev,
++			  struct feature_driver *feature_drvs)
 +{
-+	dev_dbg(&pdev->dev, "%s\n", __func__);
++	struct feature *feature;
++	struct feature_driver *drv = feature_drvs;
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	int ret;
 +
++	while (drv->ops) {
++		fpga_dev_for_each_feature(pdata, feature) {
++			/* skip the feature which is not initialized. */
++			if (!feature->name)
++				continue;
++
++			if (!strcmp(drv->name, feature->name)) {
++				ret = feature_instance_init(pdev, pdata,
++							    feature, drv);
++				if (ret)
++					goto exit;
++			}
++		}
++		drv++;
++	}
++
++	return 0;
++exit:
 +	fpga_dev_feature_uinit(pdev);
-+	fpga_unregister_dev_ops(pdev);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(fpga_dev_feature_init);
++
+ struct fpga_chardev_info {
+ 	const char *name;
+ 	dev_t devt;
+diff --git a/drivers/fpga/fpga-dfl.h b/drivers/fpga/fpga-dfl.h
+index 36e2394..e5a1094 100644
+--- a/drivers/fpga/fpga-dfl.h
++++ b/drivers/fpga/fpga-dfl.h
+@@ -176,12 +176,20 @@
+ #define PORT_UAFU_DFH		DFH
+ #define PORT_UAFU_SIZE		DFH_SIZE
+ 
++struct feature_driver {
++	const char *name;
++	const struct feature_ops *ops;
++};
++
+ struct feature {
+ 	const char *name;
+ 	int resource_index;
+ 	void __iomem *ioaddr;
++	const struct feature_ops *ops;
+ };
+ 
++#define DEV_STATUS_IN_USE	0
++
+ struct feature_platform_data {
+ 	/* list the feature dev to cci_drvdata->port_dev_list. */
+ 	struct list_head node;
+@@ -189,11 +197,46 @@ struct feature_platform_data {
+ 	struct cdev cdev;
+ 	struct platform_device *dev;
+ 	unsigned int disable_count;	/* count for port disable */
++	unsigned long dev_status;
++
++	void *private;			/* ptr to feature dev private data */
+ 
+ 	int num;			/* number of features */
+ 	struct feature features[0];
+ };
+ 
++static inline int feature_dev_use_begin(struct feature_platform_data *pdata)
++{
++	/* Test and set IN_USE flags to ensure file is exclusively used */
++	if (test_and_set_bit_lock(DEV_STATUS_IN_USE, &pdata->dev_status))
++		return -EBUSY;
 +
 +	return 0;
 +}
 +
-+static struct platform_driver afu_driver = {
-+	.driver	= {
-+		.name    = FPGA_FEATURE_DEV_PORT,
-+	},
-+	.probe   = afu_probe,
-+	.remove  = afu_remove,
++static inline void feature_dev_use_end(struct feature_platform_data *pdata)
++{
++	clear_bit_unlock(DEV_STATUS_IN_USE, &pdata->dev_status);
++}
++
++static inline void
++fpga_pdata_set_private(struct feature_platform_data *pdata, void *private)
++{
++	pdata->private = private;
++}
++
++static inline void *fpga_pdata_get_private(struct feature_platform_data *pdata)
++{
++	return pdata->private;
++}
++
++struct feature_ops {
++	int (*init)(struct platform_device *pdev, struct feature *feature);
++	void (*uinit)(struct platform_device *pdev, struct feature *feature);
++	long (*ioctl)(struct platform_device *pdev, struct feature *feature,
++		      unsigned int cmd, unsigned long arg);
 +};
 +
-+module_platform_driver(afu_driver);
+ enum fme_feature_id {
+ 	FME_FEATURE_ID_HEADER = 0x0,
+ 	FME_FEATURE_ID_THERMAL_MGMT = 0x1,
+@@ -228,6 +271,10 @@ static inline int feature_platform_data_size(const int num)
+ 		num * sizeof(struct feature);
+ }
+ 
++void fpga_dev_feature_uinit(struct platform_device *pdev);
++int fpga_dev_feature_init(struct platform_device *pdev,
++			  struct feature_driver *feature_drvs);
 +
-+MODULE_DESCRIPTION("FPGA Accelerated Function Unit driver");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:fpga-dfl-port");
+ enum fpga_devt_type {
+ 	FPGA_DEVT_FME,
+ 	FPGA_DEVT_PORT,
+@@ -296,6 +343,15 @@ static inline int fpga_port_reset(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
++static inline
++struct platform_device *fpga_inode_to_feature_dev(struct inode *inode)
++{
++	struct feature_platform_data *pdata;
++
++	pdata = container_of(inode->i_cdev, struct feature_platform_data, cdev);
++	return pdata->dev;
++}
++
+ static inline void __iomem *
+ get_feature_ioaddr_by_index(struct device *dev, int index)
+ {
+@@ -304,6 +360,21 @@ static inline int fpga_port_reset(struct platform_device *pdev)
+ 	return pdata->features[index].ioaddr;
+ }
+ 
++static inline bool is_feature_present(struct device *dev, int index)
++{
++	return !!get_feature_ioaddr_by_index(dev, index);
++}
++
++static inline struct device *
++fpga_pdata_to_parent(struct feature_platform_data *pdata)
++{
++	return pdata->dev->dev.parent->parent;
++}
++
++#define fpga_dev_for_each_feature(pdata, feature)			    \
++	for ((feature) = (pdata)->features;				    \
++	   (feature) < (pdata)->features + (pdata)->num; (feature)++)
++
+ static inline bool feature_is_fme(void __iomem *base)
+ {
+ 	u64 v = readq(base + DFH);
+@@ -391,4 +462,13 @@ struct platform_device *
+ 
+ 	return pdev;
+ }
++
++static inline struct fpga_cdev *
++fpga_pdata_to_fpga_cdev(struct feature_platform_data *pdata)
++{
++	struct device *dev = pdata->dev->dev.parent;
++	struct fpga_region *region = to_fpga_region(dev);
++
++	return container_of(region, struct fpga_cdev, region);
++}
+ #endif /* __DFL_FPGA_H */
 -- 
 1.8.3.1
