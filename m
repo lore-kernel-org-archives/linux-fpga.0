@@ -1,96 +1,155 @@
-Return-Path: <SRS0=zy8y=CN=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=zy8y=CN=ettus.com=moritz.fischer@kernel.org>
-Date: Wed, 15 Nov 2017 07:53:24 -0800
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v5 00/18] Enable upper layers using FPGA region w/o
- device tree
-Message-ID: <20171115155324.GG21681@tyrael.ni.corp.natinst.com>
-References: <20171017212031.3770-1-atull@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20171017212031.3770-1-atull@kernel.org>
-To: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v3 15/21] fpga: dfl: add fpga bridge platform driver for FME
+Date: Mon, 27 Nov 2017 14:42:22 +0800
+Message-Id: <1511764948-20972-16-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
+References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Oct 17, 2017 at 04:20:13PM -0500, Alan Tull wrote:
-> * Change the fpga-mgr API to have one fpga_mgr_load function
->   instead of three.
-> 
-> * Separate common FPGA region code from Device Tree support
-> 
-> * Expose API functions for FPGA regions
-> 
-> * Add API functions for bridges where DT is not used.
-> 
-> * clean up drivers/fpga/Kconfig
-> 
-> * add attribute groups when registering a fpga manager, bridge, or region.
-> 
-> Needed because the current FPGA layer has a couple of problems:
-> 
-> * We now have 3 functions for programming a FPGA, depending on whether
-> the image is in a sg list, a buffer, or firmware.  So upper layers
-> have to be written assuming where the image will be or will have to
-> write extra code to maintain flexibility.
-> 
-> * users who aren't using device tree are left to write their
-> own code that is essentially a rewrite of FPGA region.
-> 
-> v5 changes are small:
-> * add back in fpga_mgr_put in of_fpga_region_remove
-> * make __fpga_bridge_get static
-> * move #ifndef before #includes in headers
-> * Spelling fixes and other nits
-> 
-> Alan Tull (18):
->   fpga: bridge: support getting bridge from device
->   fpga: mgr: API change to replace fpga load functions with single
->     function
->   fpga: mgr: separate getting/locking FPGA manager
->   fpga: region: use dev_err instead of pr_err
->   fpga: region: remove unneeded of_node_get and put
->   fpga: region: get mgr early on
->   fpga: region: check for child regions before allocing image info
->   fpga: region: fix slow warning with more than one overlay
->   fpga: region: use image info as parameter for programming region
->   fpga: region: separate out code that parses the overlay
->   fpga: region: add fpga-region.h header
->   fpga: region: rename some functions prior to moving
->   fpga: region: add register/unregister functions
->   fpga: region: add fpga_region_class_find
->   fpga: region: move device tree support to of-fpga-region.c
->   fpga: of-fpga-region: accept overlays that don't program FPGA
->   fpga: clean up fpga Kconfig
->   fpga: add attribute groups
+This patch adds fpga bridge platform driver for FPGA Management Engine.
+It implements the enable_set call back for fpga bridge.
 
-Anyways, feel free to add my Acked-by's to the series. I have tried to /
-done my change with bridge locking on top of this, but it became quickly
-ugly. Let's get this stuff merged, and I'll try with a follow up patch.
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+----
+v3: rename driver to fpga-dfl-fme-br
+    remove useless dev_dbg in probe function.
+    rebased due to fpga api change.
+---
+ drivers/fpga/Kconfig           |  6 +++
+ drivers/fpga/Makefile          |  1 +
+ drivers/fpga/fpga-dfl-fme-br.c | 87 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 94 insertions(+)
+ create mode 100644 drivers/fpga/fpga-dfl-fme-br.c
 
-> 
->  Documentation/fpga/fpga-mgr.txt    | 132 +++++-----
->  Documentation/fpga/fpga-region.txt |  95 +++++++
->  Documentation/fpga/overview.txt    |  23 ++
->  drivers/fpga/Kconfig               | 103 ++++----
->  drivers/fpga/Makefile              |   1 +
->  drivers/fpga/fpga-bridge.c         | 111 +++++++--
->  drivers/fpga/fpga-mgr.c            | 121 +++++++--
->  drivers/fpga/fpga-region.c         | 464 ++++------------------------------
->  drivers/fpga/of-fpga-region.c      | 497 +++++++++++++++++++++++++++++++++++++
->  include/linux/fpga/fpga-bridge.h   |  15 +-
->  include/linux/fpga/fpga-mgr.h      |  39 ++-
->  include/linux/fpga/fpga-region.h   |  40 +++
->  12 files changed, 1044 insertions(+), 597 deletions(-)
->  create mode 100644 Documentation/fpga/fpga-region.txt
->  create mode 100644 Documentation/fpga/overview.txt
->  create mode 100644 drivers/fpga/of-fpga-region.c
->  create mode 100644 include/linux/fpga/fpga-region.h
-> 
-> -- 
-> 2.7.4
-> 
-Thanks,
-
-Moritz
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 0171ecb..3804064 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -156,6 +156,12 @@ config FPGA_DFL_FME_MGR
+ 	help
+ 	  Say Y to enable FPGA Manager driver for FPGA Management Engine.
+ 
++config FPGA_DFL_FME_BRIDGE
++	tristate "FPGA DFL FME Bridge Driver"
++	depends on FPGA_DFL_FME
++	help
++	  Say Y to enable FPGA Bridge driver for FPGA Management Engine.
++
+ config INTEL_FPGA_DFL_PCI
+ 	tristate "Intel FPGA DFL PCIe Device Driver"
+ 	depends on PCI && FPGA_DFL
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index 6378580..3c8c4c7 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -32,6 +32,7 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
+ obj-$(CONFIG_FPGA_DFL)			+= fpga-dfl.o
+ obj-$(CONFIG_FPGA_DFL_FME)		+= fpga-dfl-fme.o
+ obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= fpga-dfl-fme-mgr.o
++obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= fpga-dfl-fme-br.o
+ 
+ fpga-dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
+ 
+diff --git a/drivers/fpga/fpga-dfl-fme-br.c b/drivers/fpga/fpga-dfl-fme-br.c
+new file mode 100644
+index 0000000..db2603b
+--- /dev/null
++++ b/drivers/fpga/fpga-dfl-fme-br.c
+@@ -0,0 +1,87 @@
++/*
++ * FPGA Bridge Driver for FPGA Management Engine (FME)
++ *
++ * Copyright (C) 2017 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Wu Hao <hao.wu@intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
++ *
++ * This work is licensed under the terms of the GNU GPL version 2.
++ * SPDX-License-Identifier: GPL-2.0
++ */
++
++#include <linux/module.h>
++#include <linux/fpga/fpga-bridge.h>
++
++#include "fpga-dfl.h"
++#include "dfl-fme.h"
++
++static int fme_bridge_enable_set(struct fpga_bridge *bridge, bool enable)
++{
++	struct fme_br_pdata *pdata = bridge->priv;
++	int ret = 0;
++
++	if (enable)
++		fpga_port_enable(pdata->port);
++	else
++		ret = fpga_port_disable(pdata->port);
++
++	return ret;
++}
++
++static const struct fpga_bridge_ops fme_bridge_ops = {
++	.enable_set = fme_bridge_enable_set,
++};
++
++static int fme_br_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct fme_br_pdata *pdata = dev_get_platdata(dev);
++	struct fpga_bridge *br;
++	int ret;
++
++	br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
++	if (!br)
++		return -ENOMEM;
++
++	br->name = "Intel FPGA FME Bridge";
++	br->br_ops = &fme_bridge_ops;
++	br->priv = pdata;
++	br->parent = dev;
++	platform_set_drvdata(pdev, br);
++
++	ret = fpga_bridge_register(br);
++	if (ret)
++		dev_err(dev, "unable to register FPGA Bridge\n");
++
++	return ret;
++}
++
++static int fme_br_remove(struct platform_device *pdev)
++{
++	struct fpga_bridge *br = platform_get_drvdata(pdev);
++
++	fpga_bridge_unregister(br);
++
++	return 0;
++}
++
++static struct platform_driver fme_br_driver = {
++	.driver	= {
++		.name    = FPGA_DFL_FME_BRIDGE,
++	},
++	.probe   = fme_br_probe,
++	.remove  = fme_br_remove,
++};
++
++module_platform_driver(fme_br_driver);
++
++MODULE_DESCRIPTION("FPGA Bridge for FPGA Management Engine");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:fpga-dfl-fme-bridge");
+-- 
+1.8.3.1
