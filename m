@@ -1,65 +1,47 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v6 07/18] fpga: region: check for child regions before allocing image info
-Date: Wed, 15 Nov 2017 14:20:17 -0600
-Message-Id: <1510777228-4291-8-git-send-email-atull@kernel.org>
-In-Reply-To: <1510777228-4291-1-git-send-email-atull@kernel.org>
-References: <1510777228-4291-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=hv0d=C2=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=hv0d=C2=intel.com=hao.wu@kernel.org>
+Date: Tue, 28 Nov 2017 11:15:19 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v3 08/21] fpga: add Intel FPGA DFL PCIe device
+Message-ID: <20171128031519.GA25705@hao-dev>
+References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
+ <1511764948-20972-9-git-send-email-hao.wu@intel.com>
+ <f5ae8e5edf88420e89cfbe754407b92e@AcuMS.aculab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f5ae8e5edf88420e89cfbe754407b92e@AcuMS.aculab.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: "atull@kernel.org" <atull@kernel.org>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "luwei.kang@intel.com" <luwei.kang@intel.com>, "yi.z.zhang@intel.com" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-During a device tree overlay pre-apply notification, the check
-for child FPGA regions can happen slightly earlier.  This saves
-us from allocating the FPGA image info that just gets thrown
-away.
+On Mon, Nov 27, 2017 at 10:28:04AM +0000, David Laight wrote:
+> From: Wu Hao
+> > Sent: 27 November 2017 06:42
+> > From: Zhang Yi <yi.z.zhang@intel.com>
+> > 
+> > The Intel FPGA device appears as a PCIe device on the system. This patch
+> > implements the basic framework of the driver for Intel PCIe device which
+> > is located between CPU and Accelerated Function Units (AFUs), and has
+> > the Device Feature List (DFL) implemented in its MMIO space.
+> 
+> This ought to have a better name than 'Intel FPGA'.
+> An fpga can be used for all sorts of things, this looks like
+> a very specific architecture using a common VHDL environment to
+> allow certain types of user VHDL be accessed over PCIe.
 
-This is a baby step in refactoring the FPGA region code to
-separate out common FPGA region code from FPGA region
-Device Tree overlay support.
+Hi David
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: split out from another patch
-v3: s/dev/&region->dev/ in one place
-    add Moritz' ack
-v4: no change to this patch in this version of patchset
-v5: no change to this patch in this version of patchset
-v6: no change to this patch in this version of patchset
----
- drivers/fpga/fpga-region.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+This patch adds a pcie device driver for Intel FPGA devices which implements
+the DFL, e.g Intel Server Platform with In-package FPGA and Intel FPGA PCIe
+Acceleration Cards. They are pcie devices, and all have DFL implemented in
+the MMIO space, so we would like to use one kernel driver to handle them.
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index d78f444..afac543 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -355,15 +355,19 @@ static int fpga_region_notify_pre_apply(struct fpga_region *region,
- 	const char *firmware_name;
- 	int ret;
- 
--	info = fpga_image_info_alloc(dev);
--	if (!info)
--		return -ENOMEM;
--
--	/* Reject overlay if child FPGA Regions have firmware-name property */
-+	/*
-+	 * Reject overlay if child FPGA Regions added in the overlay have
-+	 * firmware-name property (would mean that an FPGA region that has
-+	 * not been added to the live tree yet is doing FPGA programming).
-+	 */
- 	ret = child_regions_with_firmware(nd->overlay);
- 	if (ret)
- 		return ret;
- 
-+	info = fpga_image_info_alloc(dev);
-+	if (!info)
-+		return -ENOMEM;
-+
- 	/* Read FPGA region properties from the overlay */
- 	if (of_property_read_bool(nd->overlay, "partial-fpga-config"))
- 		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
--- 
-2.7.4
+With this full patchset, it just provides user the interfaces to configure
+and access the FPGA accelerators on Intel DFL based FPGA devices. For sure,
+users can develop and build their own logics via tools provided by Intel,
+program them to accelerators on these Intel FPGA devices, and access them
+for their workloads.
+
+Thanks
+Hao
