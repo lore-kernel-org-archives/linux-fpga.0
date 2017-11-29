@@ -1,169 +1,168 @@
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=bsEf=CZ=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 00/21] Intel FPGA Device Drivers
-Date: Mon, 27 Nov 2017 14:42:07 +0800
-Message-Id: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Return-Path: <SRS0=IVTg=C3=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=IVTg=C3=gmail.com=frowand.list@kernel.org>
+Subject: Re: [RFC 1/2] of: overlay: add whitelist
+References: <1511816284-12145-1-git-send-email-atull@kernel.org>
+ <1511816284-12145-2-git-send-email-atull@kernel.org>
+ <20171128151538.2w6fjcib6my6wt5n@rob-hp-laptop>
+ <CANk1AXQ756EeKDDWXT5W6T8CJqqoFR7pGNkL5BGPN8gYBneRfw@mail.gmail.com>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <791d0e87-c3c4-faa6-6a55-9141be2ca0ac@gmail.com>
+Date: Wed, 29 Nov 2017 04:25:59 -0500
+MIME-Version: 1.0
+In-Reply-To: <CANk1AXQ756EeKDDWXT5W6T8CJqqoFR7pGNkL5BGPN8gYBneRfw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Alan Tull <atull@kernel.org>, Rob Herring <robh@kernel.org>
+Cc: Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Moritz Fischer <mdf@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi All,
+On 11/28/17 14:26, Alan Tull wrote:
+> On Tue, Nov 28, 2017 at 9:15 AM, Rob Herring <robh@kernel.org> wrote:
+>> On Mon, Nov 27, 2017 at 02:58:03PM -0600, Alan Tull wrote:
+>>> Add simple whitelist.  When an overlay is submitted, if any target in
+>>> the overlay is not in the whitelist, the overlay is rejected.  Drivers
+>>> that support dynamic configuration can register their device node with:
+>>>
+>>>   int of_add_whitelist_node(struct device_node *np)
+>>>
+>>> and remove themselves with:
+>>>
+>>>   void of_remove_whitelist_node(struct device_node *np)
+>>
+>> I think these should be named for what they do, not how it is
+>> implemented.
+> 
+> Sure, such as of_node_overlay_enable and of_node_overlay_disable?
+of_allow_overlay_on_node(), of_disallow_overlay_on_node()?
 
-Here is v3 patch-series adding drivers for Intel FPGA devices.
 
-The Intel FPGA driver provides interfaces for userspace applications to
-configure, enumerate, open, and access FPGA accelerators on platforms
-equipped with Intel(R) PCIe based FPGA solutions and enables system
-level management functions such as FPGA partial reconfiguration, power
-management and virtualization. It also provides a common framework to
-support FPGA devices which implement Device Feature List (DFL) and feature
-devices under DFL for better code reuse.
-
-This patch series only adds the basic functions for FPGA accelerators and
-partial reconfiguration. Patches for more functions, e.g power management
-and virtualization, will be submitted after this series gets reviewed.
-
-Patch 1: add a document for Intel FPGA driver overview, including the HW
-architecture, driver organization, device enumeration, virtualization and
-opens.
-
-Patch 2: add region_id for fpga_image_info data structure, which allows
-driver to pass region id information to fpga-mgr for FPGA reconfiguration
-function. (Used by Patch 13)
-
-Patch 3: add a 'status' sysfs interface to fpga-mgr class, it reflects
-the status of the fpga-mgr including reconfiguration errors. (Used by
-Patch 14)
-
-Patch 4-7: add FPGA device feature list support, it provides common
-enumeration interfaces which creates container device (FPGA base region)
-and all feature devices by walking through all the 'Device Feature Lists'
-provided low level drivers.
-
-Patch 8-9: implement Intel FPGA PCIe device driver. It locates all 'Device
-Feature Lists' in PCIe device memory and invokes common interfaces from
-above device feature list framework to finish the enumeration.
-
-Patch 10-13: implement FPGA Management Engine (FME) driver. It's a
-platform driver matching with the FME platform device created by above
-device feature list framework during enumeration. Sysfs and device file
-ioctls are exposed as user interfaces to allow partial reconfiguration
-to Accelerated Function Units (AFUs) from user space applications.
-
-Patch 14-16: implement FPGA manager/bridge/region platform drivers for
-Intel FPGA Management Engine (FME). These platform drivers match with
-platform devices created by above FME driver, they use the generic
-fpga-mgr/bridge/region class infrastructure to implement FPGA partial
-reconfiguration function.
-
-Patch 17-21: implement FPGA Accelerated Function Unit (AFU) driver.
-It's a platform driver matching with AFU platform device created by above
-device feature list framework during enumeration. It provides user
-interfaces to expose the AFU MMIO region, map/unmap dma buffer, and
-control the port which AFU connects to.
-
-Changes from v2:
-- Split common enumeration code from pcie driver to a separated module
-  which for device feature list support.
-- Drop fpga-dev class and switch to use fpga base region as container.
-- Update the intel-fpga.txt documentation for new driver organization.
-- Rename feature device drivers for future code reuse.
-- Rebase code due to fpga APIs changes
-- replace bitfields with marco and shift.
-- fix typos, checkpatch issue and other comments.
-
-Changes from v1:
-
-- Use GPLv2 license instead of Dual BSD/GPL.
-- Move the code to drivers/fpga folder.
-- Update the intel-fpga.txt documentation for new driver organization.
-- Add documentation for new sysfs interfaces.
-- Switch to use common fpga-region interface for partial reconfiguration
-  (PR) function in FME. It creates fpga-region/fpga-mgr/fpga-bridge
-  platform devices and leave the implementation to their platform drivers.
-- Add platform drivers for FME fpga-mgr/bridge/region platform devices.
-- Fix kbuild warnings, typos and other comments.
-
-This patch series depends on the below patchset from Alan Tull.
-[PATCH v2 0/5] fpga: don't use drvdata in common fpga code[1]
-
-[1] https://marc.info/?l=linux-fpga&m=151077942606263&w=2
-
-Kang Luwei (3):
-  fpga: dfl: add FPGA Management Engine driver basic framework
-  fpga: dfl: fme: add header sub feature support
-  fpga: dfl: fme: add partial reconfiguration sub feature support
-
-Wu Hao (15):
-  docs: fpga: add a document for Intel FPGA driver overview
-  fpga: mgr: add region_id to fpga_image_info
-  fpga: mgr: add status for fpga-manager
-  fpga: add device feature list support
-  fpga: dfl: add chardev support for feature devices
-  fpga: dfl: adds fpga_cdev_find_port
-  fpga: intel-dfl-pci: add enumeration for feature devices
-  fpga: dfl: fme: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
-    support
-  fpga: dfl: add fpga manager platform driver for FME
-  fpga: dfl: add fpga bridge platform driver for FME
-  fpga: dfl: add fpga region platform driver for FME
-  fpga: dfl: add FPGA Accelerated Function Unit driver basic framework
-  fpga: dfl: afu: add header sub feature support
-  fpga: dfl: afu: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
-    support
-  fpga: dfl: afu: add FPGA_PORT_DMA_MAP/UNMAP ioctls support
-
-Xiao Guangrong (2):
-  fpga: dfl: add feature device infrastructure
-  fpga: dfl: afu: add user afu sub feature support
-
-Zhang Yi (1):
-  fpga: add Intel FPGA DFL PCIe device
-
- Documentation/ABI/testing/sysfs-class-fpga-manager |   10 +
- .../ABI/testing/sysfs-platform-fpga-dfl-afu        |   16 +
- .../ABI/testing/sysfs-platform-fpga-dfl-fme        |   21 +
- .../ABI/testing/sysfs-platform-fpga-dfl-fme-mgr    |    8 +
- Documentation/fpga/intel-fpga.txt                  |  261 +++++
- Documentation/ioctl/ioctl-number.txt               |    1 +
- drivers/fpga/Kconfig                               |   71 ++
- drivers/fpga/Makefile                              |   14 +
- drivers/fpga/dfl-afu-dma-region.c                  |  465 +++++++++
- drivers/fpga/dfl-afu-main.c                        |  478 +++++++++
- drivers/fpga/dfl-afu-region.c                      |  127 +++
- drivers/fpga/dfl-afu.h                             |   72 ++
- drivers/fpga/dfl-fme-main.c                        |  275 +++++
- drivers/fpga/dfl-fme-pr.c                          |  492 +++++++++
- drivers/fpga/dfl-fme.h                             |   57 ++
- drivers/fpga/fpga-dfl-fme-br.c                     |   87 ++
- drivers/fpga/fpga-dfl-fme-mgr.c                    |  318 ++++++
- drivers/fpga/fpga-dfl-fme-region.c                 |   92 ++
- drivers/fpga/fpga-dfl.c                            | 1068 ++++++++++++++++++++
- drivers/fpga/fpga-dfl.h                            |  511 ++++++++++
- drivers/fpga/fpga-mgr.c                            |   28 +
- drivers/fpga/intel-dfl-pci.c                       |  324 ++++++
- include/linux/fpga/fpga-mgr.h                      |   19 +
- include/uapi/linux/fpga-dfl.h                      |  178 ++++
- 24 files changed, 4993 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-platform-fpga-dfl-afu
- create mode 100644 Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme
- create mode 100644 Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme-mgr
- create mode 100644 Documentation/fpga/intel-fpga.txt
- create mode 100644 drivers/fpga/dfl-afu-dma-region.c
- create mode 100644 drivers/fpga/dfl-afu-main.c
- create mode 100644 drivers/fpga/dfl-afu-region.c
- create mode 100644 drivers/fpga/dfl-afu.h
- create mode 100644 drivers/fpga/dfl-fme-main.c
- create mode 100644 drivers/fpga/dfl-fme-pr.c
- create mode 100644 drivers/fpga/dfl-fme.h
- create mode 100644 drivers/fpga/fpga-dfl-fme-br.c
- create mode 100644 drivers/fpga/fpga-dfl-fme-mgr.c
- create mode 100644 drivers/fpga/fpga-dfl-fme-region.c
- create mode 100644 drivers/fpga/fpga-dfl.c
- create mode 100644 drivers/fpga/fpga-dfl.h
- create mode 100644 drivers/fpga/intel-dfl-pci.c
- create mode 100644 include/uapi/linux/fpga-dfl.h
-
--- 
-1.8.3.1
+> 
+>>
+>>>
+>>> Signed-off-by: Alan Tull <atull@kernel.org>
+>>> ---
+>>>  drivers/of/overlay.c | 73 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+>>>  include/linux/of.h   | 12 +++++++++
+>>>  2 files changed, 85 insertions(+)
+>>>
+>>> diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+>>> index c150abb..5f952a1 100644
+>>> --- a/drivers/of/overlay.c
+>>> +++ b/drivers/of/overlay.c
+>>> @@ -21,6 +21,7 @@
+>>>  #include <linux/slab.h>
+>>>  #include <linux/err.h>
+>>>  #include <linux/idr.h>
+>>> +#include <linux/spinlock.h>
+>>>
+>>>  #include "of_private.h"
+>>>
+>>> @@ -646,6 +647,74 @@ static void free_overlay_changeset(struct overlay_changeset *ovcs)
+>>>       kfree(ovcs);
+>>>  }
+>>>
+>>> +/* lock for adding/removing device nodes to the whitelist */
+>>> +static spinlock_t whitelist_lock;
+>>> +
+>>> +static struct list_head whitelist_list = LIST_HEAD_INIT(whitelist_list);
+>>> +
+>>> +struct dt_overlay_whitelist {
+>>> +     struct device_node *np;
+>>> +     struct list_head node;
+>>> +};
+>>
+>> Can't we just add a flags bit in device_node.flags? That would be much
+>> simpler.
+> 
+> Yes, much simpler.  Such as:
+> 
+> #define OF_OVERLAY_ENABLED     5 /* allow DT overlay targeting this node */
+> 
+>>
+>>> +
+>>> +int of_add_whitelist_node(struct device_node *np)
+>>> +{
+>>> +     unsigned long flags;
+>>> +     struct dt_overlay_whitelist *wln;
+>>> +
+>>> +     wln = kzalloc(sizeof(*wln), GFP_KERNEL);
+>>> +     if (!wln)
+>>> +             return -ENOMEM;
+>>> +
+>>> +     wln->np = np;
+>>> +
+>>> +     spin_lock_irqsave(&whitelist_lock, flags);
+>>> +     list_add(&wln->node, &whitelist_list);
+>>> +     spin_unlock_irqrestore(&whitelist_lock, flags);
+>>> +
+>>> +     return 0;
+>>> +}
+>>> +EXPORT_SYMBOL_GPL(of_add_whitelist_node);
+>>> +
+>>> +void of_remove_whitelist_node(struct device_node *np)
+>>> +{
+>>> +     struct dt_overlay_whitelist *wln;
+>>> +     unsigned long flags;
+>>> +
+>>> +     list_for_each_entry(wln, &whitelist_list, node) {
+>>> +             if (np == wln->np) {
+>>> +                     spin_lock_irqsave(&whitelist_lock, flags);
+>>> +                     list_del(&wln->node);
+>>> +                     spin_unlock_irqrestore(&whitelist_lock, flags);
+>>> +                     kfree(wln);
+>>> +                     return;
+>>> +             }
+>>> +     }
+>>> +}
+>>> +EXPORT_SYMBOL_GPL(of_remove_whitelist_node);
+>>> +
+>>> +static int of_check_whitelist(struct overlay_changeset *ovcs)
+>>> +{
+>>> +     struct dt_overlay_whitelist *wln;
+>>> +     struct device_node *target;
+>>> +     int i;
+>>> +
+>>> +     for (i = 0; i < ovcs->count; i++) {
+>>> +             target = ovcs->fragments[i].target;
+>>> +             if (!of_node_cmp(target->name, "__symbols__"))
+>>> +                     continue;
+>>> +
+>>> +             list_for_each_entry(wln, &whitelist_list, node)
+>>> +                     if (target == wln->np)
+>>> +                             break;
+>>> +
+>>> +             if (target != wln->np)
+>>> +                     return -ENODEV;
+>>> +     }
+>>> +
+>>> +     return 0;
+>>> +}
+>>> +
+>>>  /**
+>>>   * of_overlay_apply() - Create and apply an overlay changeset
+>>>   * @tree:    Expanded overlay device tree
+>>> @@ -717,6 +786,10 @@ int of_overlay_apply(struct device_node *tree, int *ovcs_id)
+>>>       if (ret)
+>>>               goto err_free_overlay_changeset;
+>>>
+>>> +     ret = of_check_whitelist(ovcs);
+>>> +     if (ret)
+>>> +             goto err_free_overlay_changeset;
+>>
+>> This will break you until the next patch and breaks any other users. I
+>> think this is now just the unittest as tilcdc overlay is getting
+>> removed.
+>>
+>> You have to make this chunk the last patch in the series.
+> 
+> I'd rather squash the two patches.  In either case, the contents of
+> second patch are dependent on stuff in char-misc-testing today, so it
+> won't be able to apply yet on linux-next or anywhere else.
+> 
+> Thanks
+> Alan
+> 
+>>
+>> Rob
+> 
