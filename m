@@ -1,47 +1,34 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <CAL_Jsq+f4q=8rvxndbJNkp5KNMYRoKHs-zKOL1zwXfS0T2A3mA@mail.gmail.com>
+References: <20171204191357.3211-1-atull@kernel.org> <20171204191357.3211-3-atull@kernel.org>
+ <CAL_Jsq+f4q=8rvxndbJNkp5KNMYRoKHs-zKOL1zwXfS0T2A3mA@mail.gmail.com>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH] fpga: socfpga-a10: disable clk on error in socfpga_a10_fpga_probe()
-Date: Fri,  8 Dec 2017 11:37:00 -0600
-Message-Id: <1512754620-3723-2-git-send-email-atull@kernel.org>
-In-Reply-To: <1512754620-3723-1-git-send-email-atull@kernel.org>
-References: <1512754620-3723-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alexey Khoroshilov <khoroshilov@ispras.ru>
+Date: Mon, 4 Dec 2017 14:12:16 -0600
+Message-ID: <CANk1AXQ0KuzFucbTQ1LtF8F-XMqTw4y2xmVA-rqHcMAQH7hsnw@mail.gmail.com>
+Subject: Re: [PATCH 2/2] of: dynamic: add overlay-allowed DT property
+Content-Type: text/plain; charset="UTF-8"
+To: Rob Herring <robh+dt@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alexey Khoroshilov <khoroshilov@ispras.ru>
+On Mon, Dec 4, 2017 at 2:04 PM, Rob Herring <robh+dt@kernel.org> wrote:
+> On Mon, Dec 4, 2017 at 1:13 PM, Alan Tull <atull@kernel.org> wrote:
+>> Allow DT nodes to be marked as valid targets for DT
+>> overlays by the added "overlay-allowed" property.
+>
+> Why do you need a property for this? I'm not all that keen on putting
+> this policy into the DT. It can change over time in the kernel. For
+> example, as we define use cases that work, then we can loosen
+> restrictions in the kernel.
 
-If fpga_mgr_register() fails, a clock is left undisabled.
+For FPGA regions, I don't need it.  Yes, if the other patch is
+accepted, I'm sure we will hear more from people who will need some
+specific loosening.  I was trying to anticipate that, but I don't have
+a specific need.
 
-Found by Linux Driver Verification project (linuxtesting.org).
+Alan
 
-Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
-Reviewed-by: Moritz Fischer <mdf@kernel.org>
-Signed-off-by: Alan Tull <atull@kernel.org>
----
- drivers/fpga/socfpga-a10.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/fpga/socfpga-a10.c b/drivers/fpga/socfpga-a10.c
-index f8770af..a46e343 100644
---- a/drivers/fpga/socfpga-a10.c
-+++ b/drivers/fpga/socfpga-a10.c
-@@ -519,8 +519,14 @@ static int socfpga_a10_fpga_probe(struct platform_device *pdev)
- 		return -EBUSY;
- 	}
- 
--	return fpga_mgr_register(dev, "SoCFPGA Arria10 FPGA Manager",
-+	ret = fpga_mgr_register(dev, "SoCFPGA Arria10 FPGA Manager",
- 				 &socfpga_a10_fpga_mgr_ops, priv);
-+	if (ret) {
-+		clk_disable_unprepare(priv->clk);
-+		return ret;
-+	}
-+
-+	return 0;
- }
- 
- static int socfpga_a10_fpga_remove(struct platform_device *pdev)
--- 
-2.7.4
+>
+> Rob
