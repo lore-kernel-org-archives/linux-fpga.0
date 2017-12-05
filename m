@@ -1,25 +1,22 @@
-Return-Path: <SRS0=Rhvk=DC=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=Rhvk=DC=gmail.com=frowand.list@kernel.org>
-Subject: Re: [RFC 0/2] of: Add whitelist
-References: <1511816284-12145-1-git-send-email-atull@kernel.org>
- <da4c9b29-eccc-6a67-291a-73a36c1598b5@gmail.com>
- <6a620530-2fac-480f-5c38-6b2b5257c9e9@gmail.com>
- <CABGGisyiG3mV9s+ksgNFVgoOk=dJrFn4PGj6Ny-O7=o9kmpRTw@mail.gmail.com>
-From: Frank Rowand <frowand.list@gmail.com>
-Message-ID: <e3db9adc-477d-2358-ac52-8b78f6d38b58@gmail.com>
-Date: Wed, 6 Dec 2017 06:44:32 -0500
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <CABGGisyiG3mV9s+ksgNFVgoOk=dJrFn4PGj6Ny-O7=o9kmpRTw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Moritz Fischer <mdf@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
+In-Reply-To: <157eebaf-89a9-a230-e56b-d98a8e1e26bf@gmail.com>
+References: <1511816284-12145-1-git-send-email-atull@kernel.org>
+ <da4c9b29-eccc-6a67-291a-73a36c1598b5@gmail.com> <CAL_JsqL5gYh_++1wDLMYjO7MXKOHpzr315FZ1tuN9o5tOe7TYA@mail.gmail.com>
+ <157eebaf-89a9-a230-e56b-d98a8e1e26bf@gmail.com>
+From: Alan Tull <atull@kernel.org>
+Date: Tue, 5 Dec 2017 10:55:05 -0600
+Message-ID: <CANk1AXSAdRT8WWg+xqCWGNYwO=4ke-74ETs+HNObcswEBmKz4g@mail.gmail.com>
+Subject: Re: [RFC 0/2] of: Add whitelist
+Content-Type: text/plain; charset="UTF-8"
+To: Frank Rowand <frowand.list@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Moritz Fischer <mdf@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On 11/30/17 09:39, Rob Herring wrote:
-> On Wed, Nov 29, 2017 at 4:47 PM, Frank Rowand <frowand.list@gmail.com> wrote:
->> On 11/29/17 04:20, Frank Rowand wrote:
+On Thu, Nov 30, 2017 at 6:18 AM, Frank Rowand <frowand.list@gmail.com> wrote:
+> On 11/29/17 08:31, Rob Herring wrote:
+>> On Wed, Nov 29, 2017 at 3:20 AM, Frank Rowand <frowand.list@gmail.com> wrote:
 >>> On 11/27/17 15:58, Alan Tull wrote:
 >>>> Here's a proposal for a whitelist to lock down the dynamic device tree.
 >>>>
@@ -49,62 +46,28 @@ On 11/30/17 09:39, Rob Herring wrote:
 >>> I would prefer not to have multiple methods for accomplishing the same thing
 >>> unless there is a compelling reason to do so.
 >>
->> Going back one level in my thinking, I don't think that having a driver mark
->> a node as a location where an overlay fragment can be applied is serving a
->> useful purpose.  Any driver, including any driver loaded as a module,
->> could mark a node as ok.  I don't see how this is providing any meaningful
->> restriction on where an overlay fragment can be applied.
-> 
-> It serves to separate the setting of which nodes overlays can be
-> applied to and the mechanism to apply them (checking permissions). The
-> former can't be centralized
+>> Connector nodes need a mechanism to enable themselves, too. I don't
+>> think connector nodes are going to solve every usecase.
+>>
+>> Rob
+>>
+>
+> The overlay code related to connectors does not exist yet, so my comment
+> is going to be theoretical.
+>
+> I would expect the overlay code to check that the target of the overlay
+> fragment is a connector node, so there is no need to explicitly "enable"
+> applying an overlay to a connector node.
 
-My expectation is that determining which nodes overlays can be applied
-to can and _should_ be centralized, at least to begin with.  If we
-loosen the restrictions on valid overlay application nodes then we
-_might_ find that we have to provide additional non-centralized permission
-granting.
+This will depend on how connectors are implemented.  My proposal in v1
+is that device nodes can have a flag bit.  If its not set, then an
+overlay that contains fragments that target that node can't be
+applied.  There's probably other ways a connector node could be marked
+as different from other nodes, but a flag bit seems simple.  The
+advantage to this scheme is that it gives me something I can use while
+connectors don't exist yet and it will still will be useful later for
+the implementation of connectors (giving connector drivers a way of
+marking their device nodes as valid targets).
 
-I think that the core devicetree code is the place (for initial implementation)
-that determining which nodes an overlay can be applied to.  My expectation
-is that it will be implicitly obvious to the core devicetree code which
-nodes are connector nodes.  Given that there have been several different
-proposals for connector implementation, my expectation may be completely
-wrong.  So I am sure I will revisit my expectations the actual
-implementation of connectors arrives.
-
-Since the architecture and implementation of connectors is still so
-uncertain, I think it is premature to accept the changes proposed in
-the patch set, and the next patch set that has been proposed in
-response to the conversation in this thread.
-
-
-> and the latter can be. For example,
-> something in the kernel enables overlays on a node or nodes, then the
-> overlay is applied with configfs interface and no board specific code
-> involved.
-
-I agree that the permission checking should not need to involve board
-specific code.
-
-
-> My concern is not whether any kernel component can enable applying of
-> overlays, but userspace. If it is a kernel component, then it is
-> explicit. And an OOT kernel module doesn't count because there's no
-> ABI guarantee there.
-> 
-> I agree that this patch series alone is not all that useful with only
-> in kernel users. It is only really interesting when we have a
-> userspace interface. However, an implementation with a flag bit is so
-> little code, I'm fine taking it now and not having to update all in
-> kernel users when adding a userspace interface.
-
-I think the concept of an API called by a driver, instead of the
-devicetree core code determining which nodes an overlay can be
-applied to is premature, since there is no direct need for it,
-and given that it is little code it can easily be added when it
-is needed, and we better understand how it will be used.
-
-> 
-> Rob
-> 
+>
+> -Frank
