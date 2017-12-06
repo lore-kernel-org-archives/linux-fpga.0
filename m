@@ -2,17 +2,15 @@ Return-Path: <SRS0=g7z4=DC=ACULAB.COM=David.Laight@kernel.org>
 Return-Path: <SRS0=g7z4=DC=ACULAB.COM=David.Laight@kernel.org>
 From: David Laight <David.Laight@ACULAB.COM>
 Subject: RE: [PATCH v3 08/21] fpga: add Intel FPGA DFL PCIe device
-Date: Wed, 6 Dec 2017 09:44:42 +0000
-Message-ID: <e73f5bc9bfc54efcb7b7c43c66379452@AcuMS.aculab.com>
+Date: Wed, 6 Dec 2017 09:34:14 +0000
+Message-ID: <391be54799604c1fb3d7b80c7ad6d111@AcuMS.aculab.com>
 References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
  <1511764948-20972-9-git-send-email-hao.wu@intel.com>
  <f5ae8e5edf88420e89cfbe754407b92e@AcuMS.aculab.com>
  <20171128031519.GA25705@hao-dev>
  <CANk1AXRBEcz5_j+v0oTAXfH10hrPbHGabdR8Pqt07exYxYgfCw@mail.gmail.com>
  <20171205033330.GA19730@hao-dev>
- <CANk1AXRdU6usqtsCUjjSC8Fk2SS8iKn+Ow4PvCiRpSBAcDwWjw@mail.gmail.com>
- <20171206053015.GA19023@hao-dev>
-In-Reply-To: <20171206053015.GA19023@hao-dev>
+In-Reply-To: <20171205033330.GA19730@hao-dev>
 Content-Language: en-US
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -22,13 +20,16 @@ Cc: "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Wu Hao
-> Sent: 06 December 2017 05:30
+> Sent: 05 December 2017 03:34
 ...
-> > Regarding file names, it seems like the files added to drivers/fpga
-> > could be uniformly named dfl-*.[ch].  Some are fpga-dfl-*.[ch] while
-> > other are currently dfl-*.[ch] currently.
+> > I don't see anything Intel specific here.  This could all be named dfl-=
+*
+>=20
+> The maybe some device specific things, e.g Intel FPGA devices supported b=
+y this
+> driver always have FME DFL at the beginning on the BAR0 for PF device.
 
-They don't even want to do into a drivers/fgpa directory.
-Maybe drivers/dfl or drivers/dfl/intel
+Since when has that been a method for specifying what the card does?
+You need to allocate a PCI-id for your DFL accelerator.
 
 	David
