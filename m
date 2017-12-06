@@ -1,156 +1,81 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 1/2] of: overlay: add flag enabling overlays and enable fpga-region overlays
-Date: Mon,  4 Dec 2017 13:13:56 -0600
-Message-Id: <20171204191357.3211-2-atull@kernel.org>
-In-Reply-To: <20171204191357.3211-1-atull@kernel.org>
+Return-Path: <SRS0=Rhvk=DC=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=Rhvk=DC=gmail.com=frowand.list@kernel.org>
+Subject: Re: [PATCH 0/2] of: dynamic: restrict overlay by targets
 References: <20171204191357.3211-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-Cc: Alan Tull <atull@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+ <edb604fa-4810-0de9-ce51-c90aa2442cb4@gmail.com>
+ <CANk1AXQ4HV9YAO_p1wrY66nnWY1n2WnR0JoCbAKU6RfrWqf9sQ@mail.gmail.com>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <bd2e3192-fb06-53c3-15da-59b6a2fba2e4@gmail.com>
+Date: Wed, 6 Dec 2017 06:58:23 -0500
+MIME-Version: 1.0
+In-Reply-To: <CANk1AXQ4HV9YAO_p1wrY66nnWY1n2WnR0JoCbAKU6RfrWqf9sQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add a flag to struct device_node marking the node as a valid target
-for device tree overlays.  When an overlay is submitted, if any target
-in the overlay is not enabled for overlays, the overlay is rejected.
-Drivers that support dynamic configuration can enable/disable their
-device node with:
+On 12/05/17 12:07, Alan Tull wrote:
+> On Mon, Dec 4, 2017 at 7:14 PM, Frank Rowand <frowand.list@gmail.com> wrote:
+>> Hi Alan,
+>>
+>> In the RFC thread "of: Add whitelist", I did not understand the use case and
+>> asked you some questions (30 Nov 2017 07:46:36 -0500), that you seem to have
+>> overlooked (or my mail server failed to deliver your answer to me).  Can you
+>> please answer that question so I can better understand this patch set is
+>> needed for.
+> 
+> Hi Frank,
+> 
+> Sorry I missed those, I've replied to the original questions now.
 
-  void of_node_overlay_enable(struct device_node *np)
-  void of_node_overlay_disable(struct device_node *np)
+Thanks!  I have now replied to several comments in that thread, hoping to keep
+the conversation in one thread instead of split across two threads.
 
-During each FPGA region's probe, enable its node for overlays.
+-Frank
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
-v1: (changes from the rfc)
-    Add a flag instead of implementing a list
-    rename functions for what they do, not how they're implemented
-    squash with patch that enables fpga-region nodes
-    add a helpful error message
----
- drivers/fpga/of-fpga-region.c |  4 ++++
- drivers/of/overlay.c          | 26 ++++++++++++++++++++++++++
- include/linux/of.h            | 19 +++++++++++++++++++
- 3 files changed, 49 insertions(+)
-
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 119ff75..8633eea 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -438,6 +438,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 		goto eprobe_mgr_put;
- 
- 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
-+	of_node_overlay_enable(np);
- 
- 	dev_info(dev, "FPGA Region probed\n");
- 
-@@ -451,7 +452,10 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- static int of_fpga_region_remove(struct platform_device *pdev)
- {
- 	struct fpga_region *region = platform_get_drvdata(pdev);
-+	struct device *dev = &pdev->dev;
-+	struct device_node *np = dev->of_node;
- 
-+	of_node_overlay_disable(np);
- 	fpga_region_unregister(region);
- 	fpga_mgr_put(region->mgr);
- 
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 53bc9e3..a9758d6 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -21,6 +21,7 @@
- #include <linux/slab.h>
- #include <linux/err.h>
- #include <linux/idr.h>
-+#include <linux/spinlock.h>
- 
- #include "of_private.h"
- 
-@@ -646,6 +647,27 @@ static void free_overlay_changeset(struct overlay_changeset *ovcs)
- 	kfree(ovcs);
- }
- 
-+static int of_overlay_check_targets(struct overlay_changeset *ovcs)
-+{
-+	struct device_node *target;
-+	int i;
-+
-+	for (i = 0; i < ovcs->count; i++) {
-+		target = ovcs->fragments[i].target;
-+
-+		if (!of_node_cmp(target->name, "__symbols__"))
-+			continue;
-+
-+		if (!of_node_check_flag(target, OF_OVERLAY_ENABLED)) {
-+			pr_err("Overlays not enabled for target %pOF\n",
-+			       target);
-+			return -EPERM;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * of_overlay_apply() - Create and apply an overlay changeset
-  * @tree:	Expanded overlay device tree
-@@ -717,6 +739,10 @@ int of_overlay_apply(struct device_node *tree, int *ovcs_id)
- 	if (ret)
- 		goto err_free_overlay_changeset;
- 
-+	ret = of_overlay_check_targets(ovcs);
-+	if (ret)
-+		goto err_free_overlay_changeset;
-+
- 	ret = overlay_notify(ovcs, OF_OVERLAY_PRE_APPLY);
- 	if (ret) {
- 		pr_err("overlay changeset pre-apply notify error %d\n", ret);
-diff --git a/include/linux/of.h b/include/linux/of.h
-index d3dea1d..16a2cae 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -147,6 +147,7 @@ extern raw_spinlock_t devtree_lock;
- #define OF_DETACHED	2 /* node has been detached from the device tree */
- #define OF_POPULATED	3 /* device already created for the node */
- #define OF_POPULATED_BUS	4 /* of_platform_populate recursed to children of this node */
-+#define OF_OVERLAY_ENABLED	5 /* allow DT overlay targeting this node */
- 
- #define OF_BAD_ADDR	((u64)-1)
- 
-@@ -1364,6 +1365,16 @@ int of_overlay_remove_all(void);
- int of_overlay_notifier_register(struct notifier_block *nb);
- int of_overlay_notifier_unregister(struct notifier_block *nb);
- 
-+static inline void of_node_overlay_enable(struct device_node *np)
-+{
-+	of_node_set_flag(np, OF_OVERLAY_ENABLED);
-+}
-+
-+static inline void of_node_overlay_disable(struct device_node *np)
-+{
-+	of_node_clear_flag(np, OF_OVERLAY_ENABLED);
-+}
-+
- #else
- 
- static inline int of_overlay_apply(struct device_node *tree, int *ovcs_id)
-@@ -1391,6 +1402,14 @@ static inline int of_overlay_notifier_unregister(struct notifier_block *nb)
- 	return 0;
- }
- 
-+static inline void of_node_overlay_enable(struct device_node *np)
-+{
-+}
-+
-+static inline void of_node_overlay_disable(struct device_node *np)
-+{
-+}
-+
- #endif
- 
- #endif /* _LINUX_OF_H */
--- 
-2.7.4
+> 
+> Alan
+> 
+>>
+>> Thanks,
+>>
+>> Frank
+>>
+>>
+>> On 12/04/17 14:13, Alan Tull wrote:
+>>> Restrict which nodes are valid targets for a DT overlay.
+>>>
+>>> Add a flag bit to struct device_node allowing nodes to be marked as
+>>> valid target for overlays.
+>>>
+>>> A driver that is always intended to handle DT overlays can
+>>> enable overlays by calling a function for its DT node.
+>>>
+>>> For individual nodes that need to be opened up for a specific use,
+>>> adding the property "overlay-allowed" enables overlays targeting
+>>> that node.  I'll need to document the DT property, not sure where
+>>> specifically.  New file bindings/overlay.txt?
+>>>
+>>> This patchset differs from the RFC:
+>>> * Added a flag bit and got rid of the whitelist
+>>> * Renamed the functions that enable a node
+>>> * Added a DT property
+>>>
+>>> Alan Tull (2):
+>>>   of: overlay: add flag enabling overlays and enable fpga-region
+>>>     overlays
+>>>   of: dynamic: add overlay-allowed DT property
+>>>
+>>>  drivers/fpga/of-fpga-region.c |  4 ++++
+>>>  drivers/of/base.c             |  4 ++--
+>>>  drivers/of/dynamic.c          |  3 +++
+>>>  drivers/of/fdt.c              |  3 +++
+>>>  drivers/of/of_private.h       |  2 ++
+>>>  drivers/of/overlay.c          | 26 ++++++++++++++++++++++++++
+>>>  include/linux/of.h            | 19 +++++++++++++++++++
+>>>  7 files changed, 59 insertions(+), 2 deletions(-)
+>>>
+>>
+> 
