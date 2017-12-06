@@ -1,55 +1,79 @@
-Return-Path: <SRS0=g7z4=DC=ACULAB.COM=David.Laight@kernel.org>
-Return-Path: <SRS0=g7z4=DC=ACULAB.COM=David.Laight@kernel.org>
-From: David Laight <David.Laight@ACULAB.COM>
-Subject: RE: [PATCH v3 08/21] fpga: add Intel FPGA DFL PCIe device
-Date: Wed, 6 Dec 2017 09:31:57 +0000
-Message-ID: <4c45380a630b4927b4de97114b508f1a@AcuMS.aculab.com>
+Return-Path: <SRS0=qMKR=DC=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=qMKR=DC=intel.com=hao.wu@kernel.org>
+Date: Wed, 6 Dec 2017 13:30:15 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v3 08/21] fpga: add Intel FPGA DFL PCIe device
+Message-ID: <20171206053015.GA19023@hao-dev>
 References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
  <1511764948-20972-9-git-send-email-hao.wu@intel.com>
  <f5ae8e5edf88420e89cfbe754407b92e@AcuMS.aculab.com>
  <20171128031519.GA25705@hao-dev>
  <CANk1AXRBEcz5_j+v0oTAXfH10hrPbHGabdR8Pqt07exYxYgfCw@mail.gmail.com>
-In-Reply-To: <CANk1AXRBEcz5_j+v0oTAXfH10hrPbHGabdR8Pqt07exYxYgfCw@mail.gmail.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ <20171205033330.GA19730@hao-dev>
+ <CANk1AXRdU6usqtsCUjjSC8Fk2SS8iKn+Ow4PvCiRpSBAcDwWjw@mail.gmail.com>
 MIME-Version: 1.0
-To: 'Alan Tull' <atull@kernel.org>, Wu Hao <hao.wu@intel.com>
-Cc: "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "luwei.kang@intel.com" <luwei.kang@intel.com>, "yi.z.zhang@intel.com" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXRdU6usqtsCUjjSC8Fk2SS8iKn+Ow4PvCiRpSBAcDwWjw@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: David Laight <David.Laight@aculab.com>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "luwei.kang@intel.com" <luwei.kang@intel.com>, "yi.z.zhang@intel.com" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-RnJvbTogQWxhbiBUdWxsDQo+IFNlbnQ6IDA0IERlY2VtYmVyIDIwMTcgMTk6NDcNCj4gDQo+IE9u
-IE1vbiwgTm92IDI3LCAyMDE3IGF0IDk6MTUgUE0sIFd1IEhhbyA8aGFvLnd1QGludGVsLmNvbT4g
-d3JvdGU6DQo+ID4gT24gTW9uLCBOb3YgMjcsIDIwMTcgYXQgMTA6Mjg6MDRBTSArMDAwMCwgRGF2
-aWQgTGFpZ2h0IHdyb3RlOg0KPiA+PiBGcm9tOiBXdSBIYW8NCj4gPj4gPiBTZW50OiAyNyBOb3Zl
-bWJlciAyMDE3IDA2OjQyDQo+ID4+ID4gRnJvbTogWmhhbmcgWWkgPHlpLnouemhhbmdAaW50ZWwu
-Y29tPg0KPiA+PiA+DQo+ID4+ID4gVGhlIEludGVsIEZQR0EgZGV2aWNlIGFwcGVhcnMgYXMgYSBQ
-Q0llIGRldmljZSBvbiB0aGUgc3lzdGVtLiBUaGlzIHBhdGNoDQo+ID4+ID4gaW1wbGVtZW50cyB0
-aGUgYmFzaWMgZnJhbWV3b3JrIG9mIHRoZSBkcml2ZXIgZm9yIEludGVsIFBDSWUgZGV2aWNlIHdo
-aWNoDQo+ID4+ID4gaXMgbG9jYXRlZCBiZXR3ZWVuIENQVSBhbmQgQWNjZWxlcmF0ZWQgRnVuY3Rp
-b24gVW5pdHMgKEFGVXMpLCBhbmQgaGFzDQo+ID4+ID4gdGhlIERldmljZSBGZWF0dXJlIExpc3Qg
-KERGTCkgaW1wbGVtZW50ZWQgaW4gaXRzIE1NSU8gc3BhY2UuDQo+ID4+DQo+ID4+IFRoaXMgb3Vn
-aHQgdG8gaGF2ZSBhIGJldHRlciBuYW1lIHRoYW4gJ0ludGVsIEZQR0EnLg0KPiA+PiBBbiBmcGdh
-IGNhbiBiZSB1c2VkIGZvciBhbGwgc29ydHMgb2YgdGhpbmdzLCB0aGlzIGxvb2tzIGxpa2UNCj4g
-Pj4gYSB2ZXJ5IHNwZWNpZmljIGFyY2hpdGVjdHVyZSB1c2luZyBhIGNvbW1vbiBWSERMIGVudmly
-b25tZW50IHRvDQo+ID4+IGFsbG93IGNlcnRhaW4gdHlwZXMgb2YgdXNlciBWSERMIGJlIGFjY2Vz
-c2VkIG92ZXIgUENJZS4NCj4gPg0KPiA+IEhpIERhdmlkDQo+ID4NCj4gPiBUaGlzIHBhdGNoIGFk
-ZHMgYSBwY2llIGRldmljZSBkcml2ZXIgZm9yIEludGVsIEZQR0EgZGV2aWNlcyB3aGljaCBpbXBs
-ZW1lbnRzDQo+ID4gdGhlIERGTCwgZS5nIEludGVsIFNlcnZlciBQbGF0Zm9ybSB3aXRoIEluLXBh
-Y2thZ2UgRlBHQSBhbmQgSW50ZWwgRlBHQSBQQ0llDQo+ID4gQWNjZWxlcmF0aW9uIENhcmRzLiBU
-aGV5IGFyZSBwY2llIGRldmljZXMsIGFuZCBhbGwgaGF2ZSBERkwgaW1wbGVtZW50ZWQgaW4NCj4g
-PiB0aGUgTU1JTyBzcGFjZSwgc28gd2Ugd291bGQgbGlrZSB0byB1c2Ugb25lIGtlcm5lbCBkcml2
-ZXIgdG8gaGFuZGxlIHRoZW0uDQo+ID4NCj4gPiBXaXRoIHRoaXMgZnVsbCBwYXRjaHNldCwgaXQg
-anVzdCBwcm92aWRlcyB1c2VyIHRoZSBpbnRlcmZhY2VzIHRvIGNvbmZpZ3VyZQ0KPiA+IGFuZCBh
-Y2Nlc3MgdGhlIEZQR0EgYWNjZWxlcmF0b3JzIG9uIEludGVsIERGTCBiYXNlZCBGUEdBIGRldmlj
-ZXMuIEZvciBzdXJlLA0KPiA+IHVzZXJzIGNhbiBkZXZlbG9wIGFuZCBidWlsZCB0aGVpciBvd24g
-bG9naWNzIHZpYSB0b29scyBwcm92aWRlZCBieSBJbnRlbCwNCj4gPiBwcm9ncmFtIHRoZW0gdG8g
-YWNjZWxlcmF0b3JzIG9uIHRoZXNlIEludGVsIEZQR0EgZGV2aWNlcywgYW5kIGFjY2VzcyB0aGVt
-DQo+ID4gZm9yIHRoZWlyIHdvcmtsb2Fkcy4NCj4gDQo+IEkgZG9uJ3Qgc2VlIGFueXRoaW5nIElu
-dGVsIHNwZWNpZmljIGhlcmUuICBUaGlzIGNvdWxkIGFsbCBiZSBuYW1lZCBkZmwtKg0KDQpJbmRl
-ZWQsIGRvZXNuJ3QgZXZlbiBzZWVtIHRvIGhhdmUgdG8gYmUgaW1wbGVtZW50ZWQgaW4gYW4gZnBn
-YS4NCkl0IG1pZ2h0IGFsc28gbm90IGJlIHRoZSBvbmx5IGRldmljZSB0aGF0IGltcGxlbWVudHMg
-REZMLg0KWW91IHJlYWxseSBuZWVkIGEgbmFtZSBmb3IgeW91ciBERkwgYWNjZWxlcmF0aW9uIGlt
-cGxlbWVudGF0aW9uL2ludGVyZmFjZS4NCg0KV2UgbWFrZSBhIGJvYXJkIHRoYXQgdXNlcyBhbiBJ
-bnRlbC9BbHRlcmEgZnBnYSBhcyBhIFBDSWUgZGV2aWNlLCB3b24ndCBsb29rDQphbnl0aGluZyBs
-aWtlIHlvdXIgb25lIQ0KDQoJRGF2aWQNCg0K
+On Tue, Dec 05, 2017 at 11:00:22AM -0600, Alan Tull wrote:
+> On Mon, Dec 4, 2017 at 9:33 PM, Wu Hao <hao.wu@intel.com> wrote:
+> > On Mon, Dec 04, 2017 at 01:46:59PM -0600, Alan Tull wrote:
+> >> On Mon, Nov 27, 2017 at 9:15 PM, Wu Hao <hao.wu@intel.com> wrote:
+> >> > On Mon, Nov 27, 2017 at 10:28:04AM +0000, David Laight wrote:
+> >> >> From: Wu Hao
+> >> >> > Sent: 27 November 2017 06:42
+> >> >> > From: Zhang Yi <yi.z.zhang@intel.com>
+> >> >> >
+> >> >> > The Intel FPGA device appears as a PCIe device on the system. This patch
+> >> >> > implements the basic framework of the driver for Intel PCIe device which
+> >> >> > is located between CPU and Accelerated Function Units (AFUs), and has
+> >> >> > the Device Feature List (DFL) implemented in its MMIO space.
+> >> >>
+> >> >> This ought to have a better name than 'Intel FPGA'.
+> >> >> An fpga can be used for all sorts of things, this looks like
+> >> >> a very specific architecture using a common VHDL environment to
+> >> >> allow certain types of user VHDL be accessed over PCIe.
+> >> >
+> >> > Hi David
+> >> >
+> >> > This patch adds a pcie device driver for Intel FPGA devices which implements
+> >> > the DFL, e.g Intel Server Platform with In-package FPGA and Intel FPGA PCIe
+> >> > Acceleration Cards. They are pcie devices, and all have DFL implemented in
+> >> > the MMIO space, so we would like to use one kernel driver to handle them.
+> >> >
+> >> > With this full patchset, it just provides user the interfaces to configure
+> >> > and access the FPGA accelerators on Intel DFL based FPGA devices. For sure,
+> >> > users can develop and build their own logics via tools provided by Intel,
+> >> > program them to accelerators on these Intel FPGA devices, and access them
+> >> > for their workloads.
+> >>
+> >> I don't see anything Intel specific here.  This could all be named dfl-*
+> >
+> > The maybe some device specific things, e.g Intel FPGA devices supported by this
+> > driver always have FME DFL at the beginning on the BAR0 for PF device.
+> >
+> > But I think this should be the right direction for better code reuse, it could
+> > save efforts for other vendors who want to use DFL and follow the same way.
+> >
+> > Thanks for the comments. I will rename this driver in the next version.
+> 
+> Thanks!
+> 
+> Regarding file names, it seems like the files added to drivers/fpga
+> could be uniformly named dfl-*.[ch].  Some are fpga-dfl-*.[ch] while
+> other are currently dfl-*.[ch] currently.
+
+Sure, will have all related drivers files renamed to dfl-*.[ch].
+
+Thanks
+Hao
+
+> 
+> Alan
+> 
+> >
+> > Hao
