@@ -1,81 +1,45 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 2/2] of: dynamic: add overlay-allowed DT property
-Date: Mon,  4 Dec 2017 13:13:57 -0600
-Message-Id: <20171204191357.3211-3-atull@kernel.org>
-In-Reply-To: <20171204191357.3211-1-atull@kernel.org>
-References: <20171204191357.3211-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-Cc: Alan Tull <atull@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=uIlv=DD=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=uIlv=DD=intel.com=hao.wu@kernel.org>
+Date: Thu, 7 Dec 2017 11:47:49 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v3 08/21] fpga: add Intel FPGA DFL PCIe device
+Message-ID: <20171207034749.GA23924@hao-dev>
+References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
+ <1511764948-20972-9-git-send-email-hao.wu@intel.com>
+ <f5ae8e5edf88420e89cfbe754407b92e@AcuMS.aculab.com>
+ <20171128031519.GA25705@hao-dev>
+ <CANk1AXRBEcz5_j+v0oTAXfH10hrPbHGabdR8Pqt07exYxYgfCw@mail.gmail.com>
+ <20171205033330.GA19730@hao-dev>
+ <391be54799604c1fb3d7b80c7ad6d111@AcuMS.aculab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <391be54799604c1fb3d7b80c7ad6d111@AcuMS.aculab.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: Alan Tull <atull@kernel.org>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "luwei.kang@intel.com" <luwei.kang@intel.com>, "yi.z.zhang@intel.com" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Allow DT nodes to be marked as valid targets for DT
-overlays by the added "overlay-allowed" property.
+On Wed, Dec 06, 2017 at 09:34:14AM +0000, David Laight wrote:
+> From: Wu Hao
+> > Sent: 05 December 2017 03:34
+> ...
+> > > I don't see anything Intel specific here.  This could all be named dfl-*
+> > 
+> > The maybe some device specific things, e.g Intel FPGA devices supported by this
+> > driver always have FME DFL at the beginning on the BAR0 for PF device.
+> 
+> Since when has that been a method for specifying what the card does?
+> You need to allocate a PCI-id for your DFL accelerator.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
- drivers/of/base.c       | 4 ++--
- drivers/of/dynamic.c    | 3 +++
- drivers/of/fdt.c        | 3 +++
- drivers/of/of_private.h | 2 ++
- 4 files changed, 10 insertions(+), 2 deletions(-)
+This driver only supports Intel FPGA devices (see PCI Device Ids table
+in this patch) as mentioned above now, per my current understanding, if
+other vendors follow the same hardware design on using DFL for their PCIe
+based devices, then it's possible for them to fully reuse this code,
+otherwise they need to develop new drivers for their own designs or extend
+this driver in some ways (it depends on actual hardware implementation).
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 26618ba..ac6b326 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -116,8 +116,8 @@ void __init of_core_init(void)
- 		proc_symlink("device-tree", NULL, "/sys/firmware/devicetree/base");
- }
- 
--static struct property *__of_find_property(const struct device_node *np,
--					   const char *name, int *lenp)
-+struct property *__of_find_property(const struct device_node *np,
-+				    const char *name, int *lenp)
- {
- 	struct property *pp;
- 
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index ab988d8..fae9b85 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -207,6 +207,9 @@ static void __of_attach_node(struct device_node *np)
- 	np->name = __of_get_property(np, "name", NULL) ? : "<NULL>";
- 	np->type = __of_get_property(np, "device_type", NULL) ? : "<NULL>";
- 
-+	if (__of_find_property(np, "overlay-allowed", NULL))
-+		of_node_set_flag(np, OF_OVERLAY_ENABLED);
-+
- 	phandle = __of_get_property(np, "phandle", &sz);
- 	if (!phandle)
- 		phandle = __of_get_property(np, "linux,phandle", &sz);
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 4675e5a..9237f30 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -323,6 +323,9 @@ static bool populate_node(const void *blob,
- 			np->name = "<NULL>";
- 		if (!np->type)
- 			np->type = "<NULL>";
-+
-+		if (of_find_property(np, "overlay-allowed", NULL))
-+			of_node_set_flag(np, OF_OVERLAY_ENABLED);
- 	}
- 
- 	*pnp = np;
-diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
-index 92a9a36..75fcba3 100644
---- a/drivers/of/of_private.h
-+++ b/drivers/of/of_private.h
-@@ -115,6 +115,8 @@ struct device_node *__of_find_node_by_path(struct device_node *parent,
- struct device_node *__of_find_node_by_full_path(struct device_node *node,
- 						const char *path);
- 
-+extern struct property *__of_find_property(const struct device_node *np,
-+					   const char *name, int *lenp);
- extern const void *__of_get_property(const struct device_node *np,
- 				     const char *name, int *lenp);
- extern int __of_add_property(struct device_node *np, struct property *prop);
--- 
-2.7.4
+Thanks
+Hao
+
+> 
+> 	David
