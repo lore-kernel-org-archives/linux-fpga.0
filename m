@@ -1,96 +1,58 @@
 Return-Path: <SRS0=Witp=DD=vger.kernel.org=linux-fpga-owner@kernel.org>
 Return-Path: <SRS0=Witp=DD=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:53932 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750828AbdLGTUe (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 7 Dec 2017 14:20:34 -0500
-Received: from mail-ua0-f172.google.com (mail-ua0-f172.google.com [209.85.217.172])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id DA830219AD
-        for <linux-fpga@vger.kernel.org>; Thu,  7 Dec 2017 19:20:33 +0000 (UTC)
-Received: by mail-ua0-f172.google.com with SMTP id p33so6016619uag.9
-        for <linux-fpga@vger.kernel.org>; Thu, 07 Dec 2017 11:20:33 -0800 (PST)
-MIME-Version: 1.0
+Received: from mailout.pepperl-fuchs.com ([212.21.166.229]:58800 "EHLO
+        mailout.pepperl-fuchs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754074AbdLGOHC (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 7 Dec 2017 09:07:02 -0500
+From: Goldschmidt Simon <sgoldschmidt@de.pepperl-fuchs.com>
+Subject: AW: Linux hang
+Date: Thu, 7 Dec 2017 14:01:03 +0000
+Message-ID: <FD897F46D140444CAB8DC80B08F0742B0185ACFB62@PFDE-MX11.EU.P-F.BIZ>
+References: <4d6911ffa53349b0881ff4d4845bc101@hm.edu>
+ <71bcb4759caa437dba81be27fc611239@hm.edu>
 In-Reply-To: <71bcb4759caa437dba81be27fc611239@hm.edu>
-References: <4d6911ffa53349b0881ff4d4845bc101@hm.edu> <71bcb4759caa437dba81be27fc611239@hm.edu>
-From: Alan Tull <atull@kernel.org>
-Date: Thu, 7 Dec 2017 13:19:52 -0600
-Message-ID: <CANk1AXSJc88PcVpDsipDr+1PMjJkCxdnyPfsOGqfuzz2zEWb5Q@mail.gmail.com>
-Subject: Re: Linux hang
-Content-Type: text/plain; charset="UTF-8"
+Content-Language: de-DE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: "Siegmund, Jan" <jan.siegmund0@hm.edu>
-Cc: "u-boot@lists.denx.de" <u-boot@lists.denx.de>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, matthew.gerlach@linux.intel.com
+To: "Siegmund, Jan" <jan.siegmund0@hm.edu>, "u-boot@lists.denx.de" <u-boot@lists.denx.de>
+Cc: "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
 
-On Thu, Dec 7, 2017 at 5:00 AM, Siegmund, Jan <jan.siegmund0@hm.edu> wrote:
-
-Hi SIegmund,
-
-> Hi all,
-> does anybody have an idea for the following problem?
->
-> * FPGA is programmed using an overlay
-> * FPGA writes to SDRAM via the FPGA2SDRAM-bridge
-> * Linux hangs and the watchdog resets the board (the FPGA stays programmed)
-> * After the reset and boot, the FPGA is reprogrammed using the same overlay
-> * Now, the FPGA can write to the SDRAM without a problem
->
-> The environment:
->
-> *Board:   DE0-NANO-SoC
-> *U-Boot: 2017.11
-> *Kernel:  4.14.0-rc7 (review-v4.14-rc7-non-dt-support-v5.1 branch)
->
-> The overlay:
->
-> /dts-v1/;
-> /plugin/;
->
-> / {
->         fragment@0 {
->                 target-path = "/soc/base_fpga_region";
->                 #address-cells = <1>;
->                 #size-cells = <1>;
->                 __overlay__ {
->                         #address-cells = <1>;
->                         #size-cells = <1>;
->                         fpga-bridges = <&fpga_bridge0 &fpga_bridge1>;
->                         firmware-name = "foo_base.rbf";
->
->                         fpga-bridge@ffc25080 {
->                                 compatible = "altr,socfpga-fpga2sdram-bridge";
->                                 reg = <0xffc25080 0x4>;
->                                 bridge-enable = <1>;
->                         };
-
-It's been a while since I've touched that bridge, but here's what I
-can think of, hope it helps.
-
-This overlay will add the bridge after programming.  It looks like it
-should enable it since you have bridge-enable = <1>, so I'm not sure
-why that's not working.
-
-Would it make sense to add the f2s bridge before doing the fpga
-programming?  You could add the f2s bridge in the base device tree and
-add it to your fpga-bridges list so that that bridge is enabled after
-the fpga is programmed.
-
-Alan
-
->
->                         foo@ff200000 {
->                                 compatible= "altr,bar";
->                                 interrupt-parent = <&intc>;
->                                 interrupts = <0 40 4>;
->                         };
->
->                 };
->         };
-> };
->
-> Thanks--
-> To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+DQpQZXBwZXJsK0Z1Y2hzIEdtYkgsIE1hbm5oZWltDQpHZXNjaGFlZnRzZnVlaHJlci9NYW5hZ2lu
+ZyBEaXJlY3RvcnM6IERyLi1JbmcuIEd1bnRoZXIgS2VnZWwgKFZvcnMuL0NFTyksIFdlcm5lciBH
+dXRoaWVyLCBNZWhtZXQgSGF0aWJvZ2x1DQpWb3JzaXR6ZW5kZXIgZGVzIEF1ZnNpY2h0c3JhdHMv
+Q2hhaXJtYW4gb2YgdGhlIHN1cGVydmlzb3J5IGJvYXJkOiBDbGF1cyBNaWNoYWVsDQpSZWdpc3Rl
+cmdlcmljaHQvUmVnaXN0ZXIgQ291cnQ6IEFHIE1hbm5oZWltIEhSQiA0NzEzDQpPbiAyMDE3LTEy
+LTA3IDEyOjAxLCBTaWVnbXVuZCwgSmFuIHdyb3RlOg0KPiBIaSBhbGwsDQo+IGRvZXMgYW55Ym9k
+eSBoYXZlIGFuIGlkZWEgZm9yIHRoZSBmb2xsb3dpbmcgcHJvYmxlbT8NCj4NCj4gKiBGUEdBIGlz
+IHByb2dyYW1tZWQgdXNpbmcgYW4gb3ZlcmxheQ0KPiAqIEZQR0Egd3JpdGVzIHRvIFNEUkFNIHZp
+YSB0aGUgRlBHQTJTRFJBTS1icmlkZ2UNCj4gKiBMaW51eCBoYW5ncyBhbmQgdGhlIHdhdGNoZG9n
+IHJlc2V0cyB0aGUgYm9hcmQgKHRoZSBGUEdBIHN0YXlzIHByb2dyYW1tZWQpDQo+ICogQWZ0ZXIg
+dGhlIHJlc2V0IGFuZCBib290LCB0aGUgRlBHQSBpcyByZXByb2dyYW1tZWQgdXNpbmcgdGhlIHNh
+bWUgb3ZlcmxheQ0KPiAqIE5vdywgdGhlIEZQR0EgY2FuIHdyaXRlIHRvIHRoZSBTRFJBTSB3aXRo
+b3V0IGEgcHJvYmxlbQ0KPiBbLi5dDQoNCkkgaGF2ZW4ndCB0cmllZCB0aGlzIG1ldGhvZCBvZiBw
+cm9ncmFtbWluZyB0aGUgZnBnYSB5ZXQgKG9ubHkNCnByb2dyYW1tZWQgZnJvbSBVLUJvb3QgZm9y
+IG5vdykuIEJ1dCByZWFkaW5nIHRoZSBTUEwgc291cmNlIGNvZGUsIGl0DQpzZWVtcyBhcyB0aGUg
+YnJpZGdlcyBhcmUgdGFrZW4gb3V0IG9mIHJlc2V0IGlmIHRoZSBmcGdhIGlzIHByb2dyYW1tZWQN
+CndoZW4gdGhlIFNQTCBydW5zLiBUaGF0J3MgYSBkaWZmZXJlbmNlLiBBbmQgaXQgd291bGQgbWVh
+biB1c2luZyB5b3VyDQp3YXkgb2YgcHJvZ3JhbW1pbmcgdGhlIGZwZ2EsIHRoZSBicmlkZ2VzIG1p
+Z2h0IHN0aWxsIGJlIGluIHJlc2V0Lg0KDQpSZWdhcmRzLA0KU2ltb24NCg0KV2ljaHRpZ2VyIEhp
+bndlaXM6DQpEaWVzZSBFLU1haWwgZWluc2NobGllc3NsaWNoIGlocmVyIEFuaGFlbmdlIGVudGhh
+ZWx0IHZlcnRyYXVsaWNoZSB1bmQgcmVjaHRsaWNoIGdlc2NodWV0enRlIEluZm9ybWF0aW9uZW4s
+IGRpZSBudXIgZnVlciBkZW4gQWRyZXNzYXRlbiBiZXN0aW1tdCBzaW5kLg0KU29sbHRlbiBTaWUg
+bmljaHQgZGVyIGJlemVpY2huZXRlIEFkcmVzc2F0IHNlaW4sIHNvIHRlaWxlbiBTaWUgZGllcyBi
+aXR0ZSBkZW0gQWJzZW5kZXIgdW1nZWhlbmQgbWl0IHVuZCBsb2VzY2hlbiBTaWUgZGllc2UgTmFj
+aHJpY2h0IHVuZCBpaHJlIEFuaGFlbmdlLiBEaWUgdW5iZWZ1Z3RlIFdlaXRlcmdhYmUsIGRhcyBB
+bmZlcnRpZ2VuIHZvbiBLb3BpZW4gdW5kIGplZGUgVmVyYWVuZGVydW5nIGRlciBFLU1haWwgaXN0
+IHVudGVyc2FndC4gRGVyIEFic2VuZGVyIGhhZnRldCBuaWNodCBmdWVyIEluaGFsdGUgdm9uIHZl
+cmFlbmRlcnRlbiBFLU1haWxzLg0KDQoNCkltcG9ydGFudCBJbmZvcm1hdGlvbjoNClRoaXMgZS1t
+YWlsIG1lc3NhZ2UgaW5jbHVkaW5nIGl0cyBhdHRhY2htZW50cyBjb250YWlucyBjb25maWRlbnRp
+YWwgYW5kIGxlZ2FsbHkgcHJvdGVjdGVkIGluZm9ybWF0aW9uIHNvbGVseSBpbnRlbmRlZCBmb3Ig
+dGhlIGFkZHJlc3NlZS4gSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVkIGFkZHJlc3NlZSBvZiB0
+aGlzIG1lc3NhZ2UsIHBsZWFzZSBjb250YWN0IHRoZSBhZGRyZXNzZXIgaW1tZWRpYXRlbHkgYW5k
+IGRlbGV0ZSB0aGlzIG1lc3NhZ2UgaW5jbHVkaW5nIGl0cyBhdHRhY2htZW50cy4gVGhlIHVuYXV0
+aG9yaXplZCBkaXNzZW1pbmF0aW9uLCBjb3B5aW5nIGFuZCBjaGFuZ2Ugb2YgdGhpcyBlLW1haWwg
+YXJlIHN0cmljdGx5IGZvcmJpZGRlbi4gVGhlIGFkZHJlc3NlciBzaGFsbCBub3QgYmUgbGlhYmxl
+IGZvciB0aGUgY29udGVudCBvZiBzdWNoIGNoYW5nZWQgZS1tYWlscy4NCg==
