@@ -1,47 +1,36 @@
-Return-Path: <SRS0=1xIF=C5=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=1xIF=C5=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.ispras.ru ([83.149.199.45]:54310 "EHLO mail.ispras.ru"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750968AbdLAU0g (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 1 Dec 2017 15:26:36 -0500
-From: Alexey Khoroshilov <khoroshilov@ispras.ru>
-Subject: [PATCH] fpga: socfpga-a10: disable clk on error in socfpga_a10_fpga_probe()
-Date: Fri,  1 Dec 2017 23:26:24 +0300
-Message-Id: <1512159984-23948-1-git-send-email-khoroshilov@ispras.ru>
+Return-Path: <SRS0=YrFZ=DE=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=YrFZ=DE=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-out.m-online.net ([212.18.0.10]:51205 "EHLO
+        mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753863AbdLHN5T (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 8 Dec 2017 08:57:19 -0500
+Date: Fri, 8 Dec 2017 14:57:17 +0100
+From: Anatolij Gustschin <agust@denx.de>
+Subject: Re: RFC: FT232H based FPGA configuration adapter drivers
+Message-ID: <20171208145717.67b23e48@crub>
+In-Reply-To: <CAMuHMdUAXv_s8Lw1qwORew8RydKRKhFq7tMccU7jCa63_Otp0w@mail.gmail.com>
+References: <20171207153150.6f33f2e7@crub>
+        <CAMuHMdUAXv_s8Lw1qwORew8RydKRKhFq7tMccU7jCa63_Otp0w@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: Alexey Khoroshilov <khoroshilov@ispras.ru>, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fpga@vger.kernel.org, USB list <linux-usb@vger.kernel.org>, linux-spi <linux-spi@vger.kernel.org>
 
-If fpga_mgr_register() fails, a clock is left undisabled.
+Hi Geert,
 
-Found by Linux Driver Verification project (linuxtesting.org).
+On Fri, 8 Dec 2017 10:27:46 +0100
+Geert Uytterhoeven geert@linux-m68k.org wrote:
 
-Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
----
- drivers/fpga/socfpga-a10.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+[...]
+>A quick Google shows the FT232H chip in MPSSE mode can also support i2c.
+>I guess your design can be extended for that, too, using another VID/PID
+>pair?
 
-diff --git a/drivers/fpga/socfpga-a10.c b/drivers/fpga/socfpga-a10.c
-index f8770af0f6b5..a46e343a5b72 100644
---- a/drivers/fpga/socfpga-a10.c
-+++ b/drivers/fpga/socfpga-a10.c
-@@ -519,8 +519,14 @@ static int socfpga_a10_fpga_probe(struct platform_device *pdev)
- 		return -EBUSY;
- 	}
- 
--	return fpga_mgr_register(dev, "SoCFPGA Arria10 FPGA Manager",
-+	ret = fpga_mgr_register(dev, "SoCFPGA Arria10 FPGA Manager",
- 				 &socfpga_a10_fpga_mgr_ops, priv);
-+	if (ret) {
-+		clk_disable_unprepare(priv->clk);
-+		return ret;
-+	}
-+
-+	return 0;
- }
- 
- static int socfpga_a10_fpga_remove(struct platform_device *pdev)
--- 
-2.7.4
+Yes, this should be doable.
 
+Thanks,
+
+Anatolij
