@@ -1,52 +1,115 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-In-Reply-To: <20171128031519.GA25705@hao-dev>
+Return-Path: <SRS0=xYMS=DE=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=xYMS=DE=intel.com=hao.wu@kernel.org>
+Date: Fri, 8 Dec 2017 17:25:11 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v3 09/21] fpga: intel-dfl-pci: add enumeration for
+ feature devices
+Message-ID: <20171208092511.GA513@hao-dev>
 References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
- <1511764948-20972-9-git-send-email-hao.wu@intel.com> <f5ae8e5edf88420e89cfbe754407b92e@AcuMS.aculab.com>
- <20171128031519.GA25705@hao-dev>
-From: Alan Tull <atull@kernel.org>
-Date: Mon, 4 Dec 2017 13:46:59 -0600
-Message-ID: <CANk1AXRBEcz5_j+v0oTAXfH10hrPbHGabdR8Pqt07exYxYgfCw@mail.gmail.com>
-Subject: Re: [PATCH v3 08/21] fpga: add Intel FPGA DFL PCIe device
-Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: David Laight <David.Laight@aculab.com>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "luwei.kang@intel.com" <luwei.kang@intel.com>, "yi.z.zhang@intel.com" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+ <1511764948-20972-10-git-send-email-hao.wu@intel.com>
+ <CANk1AXQ3+Y6De1i6i0YacUxS+vBzhEfRX_jJ_wQKJOCWmYetxw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXQ3+Y6De1i6i0YacUxS+vBzhEfRX_jJ_wQKJOCWmYetxw@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Nov 27, 2017 at 9:15 PM, Wu Hao <hao.wu@intel.com> wrote:
-> On Mon, Nov 27, 2017 at 10:28:04AM +0000, David Laight wrote:
->> From: Wu Hao
->> > Sent: 27 November 2017 06:42
->> > From: Zhang Yi <yi.z.zhang@intel.com>
->> >
->> > The Intel FPGA device appears as a PCIe device on the system. This patch
->> > implements the basic framework of the driver for Intel PCIe device which
->> > is located between CPU and Accelerated Function Units (AFUs), and has
->> > the Device Feature List (DFL) implemented in its MMIO space.
->>
->> This ought to have a better name than 'Intel FPGA'.
->> An fpga can be used for all sorts of things, this looks like
->> a very specific architecture using a common VHDL environment to
->> allow certain types of user VHDL be accessed over PCIe.
->
-> Hi David
->
-> This patch adds a pcie device driver for Intel FPGA devices which implements
-> the DFL, e.g Intel Server Platform with In-package FPGA and Intel FPGA PCIe
-> Acceleration Cards. They are pcie devices, and all have DFL implemented in
-> the MMIO space, so we would like to use one kernel driver to handle them.
->
-> With this full patchset, it just provides user the interfaces to configure
-> and access the FPGA accelerators on Intel DFL based FPGA devices. For sure,
-> users can develop and build their own logics via tools provided by Intel,
-> program them to accelerators on these Intel FPGA devices, and access them
-> for their workloads.
+On Thu, Dec 07, 2017 at 03:41:41PM -0600, Alan Tull wrote:
+> On Mon, Nov 27, 2017 at 12:42 AM, Wu Hao <hao.wu@intel.com> wrote:
+> 
+> > +/* enumerate feature devices under pci device */
+> > +static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+> > +{
+> > +       struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
+> > +       struct fpga_cdev *cdev;
+> > +       struct fpga_enum_info *info;
+> > +       resource_size_t start, len;
+> > +       void __iomem *base;
+> > +       int port_num, bar, i, ret = 0;
+> > +       u32 offset;
+> > +       u64 v;
+> > +
+> > +       /* allocate enumeration info via pci_dev */
+> > +       info = fpga_enum_info_alloc(&pcidev->dev);
+> > +       if (!info)
+> > +               return -ENOMEM;
+> > +
+> > +       /* start to find Device Feature List from Bar 0 */
+> > +       base = cci_pci_ioremap_bar(pcidev, 0);
+> > +       if (!base) {
+> > +               ret = -ENOMEM;
+> > +               goto enum_info_free_exit;
+> > +       }
+> > +
+> > +       /*
+> > +        * PF device has FME and Ports/AFUs, and VF device only has 1 Port/AFU.
+> > +        * check them and add related "Device Feature List" info for the next
+> > +        * step enumeration.
+> > +        */
+> > +       if (feature_is_fme(base)) {
+> > +               start = pci_resource_start(pcidev, 0);
+> > +               len = pci_resource_len(pcidev, 0);
+> > +
+> > +               fpga_enum_info_add_dfl(info, start, len, base);
+> > +
+> > +               /*
+> > +                * find more Device Feature Lists (e.g Ports) per information
+> > +                * indicated by FME module.
+> > +                */
+> > +               v = readq(base + FME_HDR_CAP);
+> > +               port_num = FIELD_GET(FME_CAP_NUM_PORTS, v);
+> > +
+> > +               WARN_ON(port_num > MAX_FPGA_PORT_NUM);
+> > +
+> > +               for (i = 0; i < port_num; i++) {
+> > +                       v = readq(base + FME_HDR_PORT_OFST(i));
+> > +
+> > +                       /* skip ports which are not implemented. */
+> > +                       if (!(v & FME_PORT_OFST_IMP))
+> > +                               continue;
+> > +
+> > +                       /*
+> > +                        * add Port's Device Feature List information for next
+> > +                        * step enumeration.
+> > +                        */
+> > +                       bar = FIELD_GET(FME_PORT_OFST_BAR_ID, v);
+> > +                       offset = FIELD_GET(FME_PORT_OFST_DFH_OFST, v);
+> > +                       base = cci_pci_ioremap_bar(pcidev, bar);
+> > +                       if (!base)
+> > +                               continue;
+> > +
+> > +                       start = pci_resource_start(pcidev, bar) + offset;
+> > +                       len = pci_resource_len(pcidev, bar) - offset;
+> > +
+> > +                       fpga_enum_info_add_dfl(info, start, len, base + offset);
+> > +               }
+> > +       } else if (feature_is_port(base)) {
+> > +               start = pci_resource_start(pcidev, 0);
+> > +               len = pci_resource_len(pcidev, 0);
+> > +
+> > +               fpga_enum_info_add_dfl(info, start, len, base);
+> > +       } else {
+> > +               ret = -ENODEV;
+> > +               goto enum_info_free_exit;
+> > +       }
+> > +
+> > +       /* start enumeration with prepared enumeration information */
+> > +       cdev = fpga_enumerate_feature_devs(info);
+> 
+> Hi Hao,
+> 
+> I appreciate you separating the DFL enumeration code from this PCIe
+> module.  This made the pcie part quite small.  It should work for
+> embedded platforms just by adding a platform device whose function is
+> to find the DFL structures at some address and then call these same
+> fpga_enum_info_add_dfl adn fpga_enumerate_feature_devs functions.
 
-I don't see anything Intel specific here.  This could all be named dfl-*
+Yes, I think this is the right direction as you suggested. : )
 
-Alan
+Thanks
+Hao
 
->
-> Thanks
-> Hao
+> 
+> Alan
