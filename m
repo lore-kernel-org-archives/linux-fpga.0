@@ -1,159 +1,29 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <1511764948-20972-10-git-send-email-hao.wu@intel.com>
-References: <1511764948-20972-1-git-send-email-hao.wu@intel.com> <1511764948-20972-10-git-send-email-hao.wu@intel.com>
+In-Reply-To: <20171207232728.GC17574@tyrael.ni.corp.natinst.com>
+References: <1510779112-5517-1-git-send-email-atull@kernel.org>
+ <1510779112-5517-6-git-send-email-atull@kernel.org> <20171207232728.GC17574@tyrael.ni.corp.natinst.com>
 From: Alan Tull <atull@kernel.org>
-Date: Thu, 7 Dec 2017 15:41:41 -0600
-Message-ID: <CANk1AXQ3+Y6De1i6i0YacUxS+vBzhEfRX_jJ_wQKJOCWmYetxw@mail.gmail.com>
-Subject: Re: [PATCH v3 09/21] fpga: intel-dfl-pci: add enumeration for feature devices
+Date: Fri, 8 Dec 2017 11:30:22 -0600
+Message-ID: <CANk1AXSCS2tyE=-kuJLzsUqatysVYqyi2iZahi5v_cWV1bOguw@mail.gmail.com>
+Subject: Re: [PATCH v2 5/5] fpga: region: return NOTIFY_STOP if overlay shoud
+ be accepted
 Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Nov 27, 2017 at 12:42 AM, Wu Hao <hao.wu@intel.com> wrote:
+On Thu, Dec 7, 2017 at 5:27 PM, Moritz Fischer <mdf@kernel.org> wrote:
+> On Wed, Nov 15, 2017 at 02:51:52PM -0600, Alan Tull wrote:
+>> Recent changes to the Device Tree overlay notifier code have changed
+>> how notifier return codes are interpreted, requiring a NOTIFY_STOP to
+>> signal that the overlay should be accepted.  This commit makes the
+>> appropriate change to the FPGA region's Device Tree overlay notifier.
+>>
+>> Fixes: 24789c5ce5a3 ("of: overlay: detect cases where device tree may become corrupt")
+>> Signed-off-by: Alan Tull <atull@kernel.org>
+> Reviewed-by: Moritz Fischer <mdf@kernel.org>
 
-> +/* enumerate feature devices under pci device */
-> +static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
-> +{
-> +       struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-> +       struct fpga_cdev *cdev;
-> +       struct fpga_enum_info *info;
-> +       resource_size_t start, len;
-> +       void __iomem *base;
-> +       int port_num, bar, i, ret = 0;
-> +       u32 offset;
-> +       u64 v;
-> +
-> +       /* allocate enumeration info via pci_dev */
-> +       info = fpga_enum_info_alloc(&pcidev->dev);
-> +       if (!info)
-> +               return -ENOMEM;
-> +
-> +       /* start to find Device Feature List from Bar 0 */
-> +       base = cci_pci_ioremap_bar(pcidev, 0);
-> +       if (!base) {
-> +               ret = -ENOMEM;
-> +               goto enum_info_free_exit;
-> +       }
-> +
-> +       /*
-> +        * PF device has FME and Ports/AFUs, and VF device only has 1 Port/AFU.
-> +        * check them and add related "Device Feature List" info for the next
-> +        * step enumeration.
-> +        */
-> +       if (feature_is_fme(base)) {
-> +               start = pci_resource_start(pcidev, 0);
-> +               len = pci_resource_len(pcidev, 0);
-> +
-> +               fpga_enum_info_add_dfl(info, start, len, base);
-> +
-> +               /*
-> +                * find more Device Feature Lists (e.g Ports) per information
-> +                * indicated by FME module.
-> +                */
-> +               v = readq(base + FME_HDR_CAP);
-> +               port_num = FIELD_GET(FME_CAP_NUM_PORTS, v);
-> +
-> +               WARN_ON(port_num > MAX_FPGA_PORT_NUM);
-> +
-> +               for (i = 0; i < port_num; i++) {
-> +                       v = readq(base + FME_HDR_PORT_OFST(i));
-> +
-> +                       /* skip ports which are not implemented. */
-> +                       if (!(v & FME_PORT_OFST_IMP))
-> +                               continue;
-> +
-> +                       /*
-> +                        * add Port's Device Feature List information for next
-> +                        * step enumeration.
-> +                        */
-> +                       bar = FIELD_GET(FME_PORT_OFST_BAR_ID, v);
-> +                       offset = FIELD_GET(FME_PORT_OFST_DFH_OFST, v);
-> +                       base = cci_pci_ioremap_bar(pcidev, bar);
-> +                       if (!base)
-> +                               continue;
-> +
-> +                       start = pci_resource_start(pcidev, bar) + offset;
-> +                       len = pci_resource_len(pcidev, bar) - offset;
-> +
-> +                       fpga_enum_info_add_dfl(info, start, len, base + offset);
-> +               }
-> +       } else if (feature_is_port(base)) {
-> +               start = pci_resource_start(pcidev, 0);
-> +               len = pci_resource_len(pcidev, 0);
-> +
-> +               fpga_enum_info_add_dfl(info, start, len, base);
-> +       } else {
-> +               ret = -ENODEV;
-> +               goto enum_info_free_exit;
-> +       }
-> +
-> +       /* start enumeration with prepared enumeration information */
-> +       cdev = fpga_enumerate_feature_devs(info);
-
-Hi Hao,
-
-I appreciate you separating the DFL enumeration code from this PCIe
-module.  This made the pcie part quite small.  It should work for
-embedded platforms just by adding a platform device whose function is
-to find the DFL structures at some address and then call these same
-fpga_enum_info_add_dfl adn fpga_enumerate_feature_devs functions.
-
+Thanks!
 Alan
-
-> +       if (IS_ERR(cdev)) {
-> +               dev_err(&pcidev->dev, "Enumeration failure\n");
-> +               ret = PTR_ERR(cdev);
-> +               goto enum_info_free_exit;
-> +       }
-> +
-> +       drvdata->cdev = cdev;
-> +
-> +enum_info_free_exit:
-> +       fpga_enum_info_free(info);
-> +
-> +       return ret;
-> +}
-> +
->  static
->  int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
->  {
-> @@ -84,9 +264,22 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
->                 goto release_region_exit;
->         }
->
-> -       /* TODO: create and add the platform device per feature list */
-> -       return 0;
-> +       ret = cci_init_drvdata(pcidev);
-> +       if (ret) {
-> +               dev_err(&pcidev->dev, "Fail to init drvdata %d.\n", ret);
-> +               goto release_region_exit;
-> +       }
-> +
-> +       ret = cci_enumerate_feature_devs(pcidev);
-> +       if (ret) {
-> +               dev_err(&pcidev->dev, "enumeration failure %d.\n", ret);
-> +               goto remove_drvdata_exit;
-> +       }
-> +
-> +       return ret;
->
-> +remove_drvdata_exit:
-> +       cci_remove_drvdata(pcidev);
->  release_region_exit:
->         pci_release_regions(pcidev);
->  disable_error_report_exit:
-> @@ -97,6 +290,8 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
->
->  static void cci_pci_remove(struct pci_dev *pcidev)
->  {
-> +       cci_remove_feature_devs(pcidev);
-> +       cci_remove_drvdata(pcidev);
->         pci_release_regions(pcidev);
->         pci_disable_pcie_error_reporting(pcidev);
->         pci_disable_device(pcidev);
-> --
-> 1.8.3.1
->
