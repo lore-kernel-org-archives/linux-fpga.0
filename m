@@ -1,79 +1,81 @@
-Return-Path: <SRS0=iDbC=DC=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=iDbC=DC=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from postout2.mail.lrz.de ([129.187.255.138]:35807 "EHLO
-        postout2.mail.lrz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751788AbdLFRHs (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 6 Dec 2017 12:07:48 -0500
-Received: from lxmhs52.srv.lrz.de (localhost [127.0.0.1])
-        by postout2.mail.lrz.de (Postfix) with ESMTP id 3ysPzh4K87zyTD
-        for <linux-fpga@vger.kernel.org>; Wed,  6 Dec 2017 18:02:08 +0100 (CET)
-Received: from postout2.mail.lrz.de ([127.0.0.1])
-        by lxmhs52.srv.lrz.de (lxmhs52.srv.lrz.de [127.0.0.1]) (amavisd-new, port 20024)
-        with LMTP id sAL29OHFxlBM for <linux-fpga@vger.kernel.org>;
-        Wed,  6 Dec 2017 18:02:08 +0100 (CET)
-Received: from BADWLRZ-SWMBX10.ads.mwn.de (BADWLRZ-SWMBX10.ads.mwn.de [IPv6:2001:4ca0:0:108::166])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (Client CN "BADWLRZ-SWMBX10", Issuer "BADWLRZ-SWMBX10" (not verified))
-        by postout2.mail.lrz.de (Postfix) with ESMTPS id 3ysPzh1cQ1zyTj
-        for <linux-fpga@vger.kernel.org>; Wed,  6 Dec 2017 18:02:08 +0100 (CET)
-From: "Siegmund, Jan" <jan.siegmund0@hm.edu>
-Subject: Linux hang
-Date: Wed, 6 Dec 2017 17:02:07 +0000
-Message-ID: <4d6911ffa53349b0881ff4d4845bc101@hm.edu>
-Content-Language: de-DE
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Return-Path: <SRS0=bpQk=DQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=bpQk=DQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-out.m-online.net ([212.18.0.9]:38683 "EHLO
+        mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754380AbdLTQhA (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 20 Dec 2017 11:37:00 -0500
+Subject: Re: Socfpga: configure FPGA to SDRAM interface without reprogramming
+ the FPGA
+References: <db4aae59-d3fa-4904-c4ac-e96668667f3f@hm.edu>
+ <cff49ca7-ce8b-d7f9-e2a8-b2149bfea756@denx.de>
+ <05469a8c-cd1b-184a-024e-b6d0dc4e17f8@hm.edu>
+ <7082fb57-aaae-c2f7-10d3-a7863929578c@denx.de>
+ <231101b7-30ee-6d13-0fec-6485e84e8d77@hm.edu>
+From: Marek Vasut <marex@denx.de>
+Message-ID: <9ac9473f-f561-7737-afff-d6cadeba8dfc@denx.de>
+Date: Wed, 20 Dec 2017 16:06:21 +0100
 MIME-Version: 1.0
+In-Reply-To: <231101b7-30ee-6d13-0fec-6485e84e8d77@hm.edu>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
+To: Jan Siegmund <jan.siegmund0@hm.edu>, "u-boot@lists.denx.de" <u-boot@lists.denx.de>
+Cc: Anatolij Gustschin <agust@denx.de>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, "See, Chin Liang" <chin.liang.see@intel.com>
 
+On 12/20/2017 12:51 PM, Jan Siegmund wrote:
+[...]
+>>> My preferred usecase would be configuring the registers in the table below in
+>>> SPL and configuring the FPGA in Linux, with a design using the FPGA-to-HPS SDRAM
+>>> interface.
+>>>
+>>> For example, the last bits in the portcfg register define whether the
+>>> FPGA-to-HPS SDRAM interface's protocol is AXI or Avalon MM. The problem is, that
+>>> this register can't be written to in U-Boot, even though it is specified as rw
+>>> [3]. Can this register just be set by programming the FPGA?
+>>
+>> You might need to regenerate the SPL if you changed those kinds of
+>> settings. The SPL programs these based on the handoff files IIRC.
+> 
+> I generated the headers using the bsp-editor from Quartus 17 and converted them
+> using the qts-filter.sh script in U-Boot. Since then, I did not change any settings.
+> 
+> sdram.h in board/.../qts and mach-socfpga/
+> 
+> 	#define CONFIG_HPS_SDR_CTRLCFG_PORTCFG_AUTOPCHEN	0
+> 
+> 	#define SDR_CTRLGRP_PORTCFG_AUTOPCHEN_LSB		10
+> 
+> wrap_sdram_config.c
+> 	.port_cfg =
+> 		(CONFIG_HPS_SDR_CTRLCFG_PORTCFG_AUTOPCHEN <<
+> 			SDR_CTRLGRP_PORTCFG_AUTOPCHEN_LSB),
+> 
+> sdram.c
+> 	debug("Configuring PORTCFG\n");
+> 	writel(cfg->port_cfg, &sdr_ctrl->port_cfg);
+> 
+> When I add some debug printing around the code shown above, SPL console shows this:
+> 
+> U-Boot SPL 2018.01-rc1-00129-ga8548b9-dirty (Dec 18 2017 - 14:13:21)
+> Content of ffc2507c is 3f
+> Wrote 0 to ffc2507c
+> Content of ffc2507c is 3f
+> drivers/ddr/altera/sequencer.c: Preparing to start memory calibration
+> drivers/ddr/altera/sequencer.c: CALIBRATION PASSED
+> drivers/ddr/altera/sequencer.c: Calibration complete
+> Trying to boot from MMC1
+> 
+> Maybe the portprotocol part of portcfg is just a status register. But then
+> again, why would it be specified as rw?
 
-Hi all,
-does anybody have an idea for the following problem.
+It should be RW actually.
 
-* FPGA is programmed using an overlay
-* FPGA writes to SDRAM via the FPGA2SDRAM-bridge
-* Linux hangs and the watchdog resets the board (the FPGA stays programmed)
-* After the reset and boot the FPGA is reprogrammed using the same overlay
-* Now, the FPGA can write to the SDRAM without a problem
+> Do you have any idea what I might be missing, to get the f2s running without
+> programming the FPGA?
+CCing Dinh and Chin.
 
-The environment:
-
-*Board:   DE0-NANO-SoC
-*U-Boot: 2017.11
-*Kernel:  4.14.0-rc7 (review-v4.14-rc7-non-dt-support-v5.1 branch)
-
-The overlay:
-
-/dts-v1/;
-/plugin/;
-
-/ {
-	fragment@0 {
-		target-path = "/soc/base_fpga_region";
-		#address-cells = <1>;
-		#size-cells = <1>;
-		__overlay__ {
-			#address-cells = <1>;
-			#size-cells = <1>;
-			fpga-bridges = <&fpga_bridge0 &fpga_bridge1>;
-			firmware-name = "foo_base.rbf";
-
-			fpga-bridge@ffc25080 {
-				compatible = "altr,socfpga-fpga2sdram-bridge";
-				reg = <0xffc25080 0x4>;
-				bridge-enable = <1>;
-			};
-
-			foo@ff200000 {
-				compatible= "altr,bar";
-				interrupt-parent = <&intc>;
-				interrupts = <0 40 4>;
-			};
-
-		};
-	};
-};
-
-Thanks
+-- 
+Best regards,
+Marek Vasut
