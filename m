@@ -1,36 +1,50 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH] fpga: fpga-region: comment on fpga_region_program_fpga locking
-Date: Thu, 25 Jan 2018 09:39:22 -0600
-Message-Id: <20180125153922.3119-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=jQu1=E3=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=jQu1=E3=intel.com=hao.wu@kernel.org>
+Date: Thu, 1 Feb 2018 13:16:25 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v3 19/21] fpga: dfl: afu: add
+ FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
+Message-ID: <20180201051625.GD10273@hao-dev>
+References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
+ <1511764948-20972-20-git-send-email-hao.wu@intel.com>
+ <CANk1AXSfUfVbtbuREwG5Ck8TNZrqBg1fO5AuDDdFk-x=UjRTiw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXSfUfVbtbuREwG5Ck8TNZrqBg1fO5AuDDdFk-x=UjRTiw@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add a comment to the header of fpga_region_program_fpga()
-regarding locking of the bridges.
+On Wed, Jan 31, 2018 at 08:52:36AM -0600, Alan Tull wrote:
+> On Mon, Nov 27, 2017 at 12:42 AM, Wu Hao <hao.wu@intel.com> wrote:
+> 
+> Hi Hao,
+> 
+> I'm adding my "Acked-by' below.  When you post v4, please add it so
+> that we can keep track of what got acked.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
- drivers/fpga/fpga-region.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Sure, thanks a lot for the code review. :)
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index edab2a2..cb0603e 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -95,6 +95,11 @@ static void fpga_region_put(struct fpga_region *region)
-  * fpga_region_program_fpga - program FPGA
-  * @region: FPGA region
-  * Program an FPGA using fpga image info (region->info).
-+ * If the region has a get_bridges function, the exclusive reference for the
-+ * bridges will be held if programming succeeds.  This is intended to prevent
-+ * reprogramming the region until the caller considers it safe to do so.
-+ * The caller will need to call fpga_bridges_put() before attempting to
-+ * reprogram the region.
-  * Return 0 for success or negative error code.
-  */
- int fpga_region_program_fpga(struct fpga_region *region)
--- 
-2.7.4
+Hao
+
+> 
+> Thanks,
+> Alan
+> 
+> > FPGA_GET_API_VERSION and FPGA_CHECK_EXTENSION ioctls are common ones which
+> > need to be supported by all feature devices drivers including FME and AFU.
+> > This patch implements above 2 ioctls in FPGA Accelerated Function Unit
+> > (AFU) driver.
+> >
+> > Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+> > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> > Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+> > Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+> > Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Acked-by: Alan Tull <atull@kernel.org>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
