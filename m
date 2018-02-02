@@ -1,122 +1,64 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v3 4/4] fpga: region: change fpga_region_register to have one param
-Date: Wed,  7 Feb 2018 15:05:30 -0600
-Message-Id: <20180207210530.3099-5-atull@kernel.org>
-In-Reply-To: <20180207210530.3099-1-atull@kernel.org>
-References: <20180207210530.3099-1-atull@kernel.org>
+Return-Path: <SRS0=mpib=E4=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=mpib=E4=intel.com=hao.wu@kernel.org>
+Date: Fri, 2 Feb 2018 17:08:22 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v3 19/21] fpga: dfl: afu: add
+ FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
+Message-ID: <20180202090822.GA17015@hao-dev>
+References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
+ <1511764948-20972-20-git-send-email-hao.wu@intel.com>
+ <CANk1AXSfUfVbtbuREwG5Ck8TNZrqBg1fO5AuDDdFk-x=UjRTiw@mail.gmail.com>
+ <20180201051625.GD10273@hao-dev>
+ <20180201151309.q3jjx42y6ldcrhc6@insfl13.etec.uni-karlsruhe.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20180201151309.q3jjx42y6ldcrhc6@insfl13.etec.uni-karlsruhe.de>
 To: Moritz Fischer <mdf@kernel.org>
-Cc: Anatolij Gustschin <agust@denx.de>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Joel Holdsworth <joel@airwebreathe.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Cc: Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Change fpga_region_register to only take one parameter:
+On Thu, Feb 01, 2018 at 04:13:09PM +0100, Moritz Fischer wrote:
+> On Thu, Feb 01, 2018 at 01:16:25PM +0800, Wu Hao wrote:
+> > On Wed, Jan 31, 2018 at 08:52:36AM -0600, Alan Tull wrote:
+> > > On Mon, Nov 27, 2017 at 12:42 AM, Wu Hao <hao.wu@intel.com> wrote:
+> > > 
+> > > Hi Hao,
+> > > 
+> > > I'm adding my "Acked-by' below.  When you post v4, please add it so
+> > > that we can keep track of what got acked.
+> > 
+> > Sure, thanks a lot for the code review. :)
+> > 
+> > Hao
+> > 
+> > > 
+> > > Thanks,
+> > > Alan
+> > > 
+> > > > FPGA_GET_API_VERSION and FPGA_CHECK_EXTENSION ioctls are common ones which
+> > > > need to be supported by all feature devices drivers including FME and AFU.
+> > > > This patch implements above 2 ioctls in FPGA Accelerated Function Unit
+> > > > (AFU) driver.
+> > > >
+> > > > Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+> > > > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> > > > Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+> > > > Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+> > > > Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> > > > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > > Acked-by: Alan Tull <atull@kernel.org>
+> Acked-by: Moritz Fischer <mdf@kernel.org>
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> Looks good,
 
-  int fpga_region_register(struct fpga_region *region)
+Thanks a lot for the code review. :)
 
-The parent dev is added to struct fpga_region.
+Hao
 
-This make it similar to fpga_bridge_register and fpga_mgr_register
-which also just take their respective struct.
-
-The one caller of fpga_region_register is changed to alloc the
-fpga_region struct, fill it in, and pass it to the register
-function.
-
-Signed-off-by: Alan Tull <atull@kernel.org>
----
-v2: This patch added in this version of the patchset
-v3: minor changes to make diffs smaller and more obviously correct
----
- Documentation/fpga/fpga-region.txt | 3 +--
- drivers/fpga/fpga-region.c         | 8 +++++++-
- drivers/fpga/of-fpga-region.c      | 3 ++-
- include/linux/fpga/fpga-region.h   | 4 +++-
- 4 files changed, 13 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/fpga/fpga-region.txt b/Documentation/fpga/fpga-region.txt
-index 139a02b..d38fa3b 100644
---- a/Documentation/fpga/fpga-region.txt
-+++ b/Documentation/fpga/fpga-region.txt
-@@ -42,8 +42,7 @@ The FPGA region API
- To register or unregister a region:
- -----------------------------------
- 
--	int fpga_region_register(struct device *dev,
--				 struct fpga_region *region);
-+	int fpga_region_register(struct fpga_region *region);
- 	int fpga_region_unregister(struct fpga_region *region);
- 
- An example of usage can be seen in the probe function of [3]
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index ebe1f87..660a91b 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -162,10 +162,16 @@ int fpga_region_program_fpga(struct fpga_region *region)
- }
- EXPORT_SYMBOL_GPL(fpga_region_program_fpga);
- 
--int fpga_region_register(struct device *dev, struct fpga_region *region)
-+int fpga_region_register(struct fpga_region *region)
- {
-+	struct device *dev = region->parent;
- 	int id, ret = 0;
- 
-+	if (!dev) {
-+		pr_err("Attempt to register fpga region without parent\n");
-+		return -EINVAL;
-+	}
-+
- 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
- 	if (id < 0)
- 		return id;
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 35e7e8c..a7b38aa 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -428,12 +428,13 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 		goto eprobe_mgr_put;
- 	}
- 
-+	region->parent = dev;
- 	region->mgr = mgr;
- 
- 	/* Specify how to get bridges for this type of region. */
- 	region->get_bridges = of_fpga_region_get_bridges;
- 
--	ret = fpga_region_register(dev, region);
-+	ret = fpga_region_register(region);
- 	if (ret)
- 		goto eprobe_mgr_put;
- 
-diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
-index b652031..423c87e 100644
---- a/include/linux/fpga/fpga-region.h
-+++ b/include/linux/fpga/fpga-region.h
-@@ -8,6 +8,7 @@
- /**
-  * struct fpga_region - FPGA Region structure
-  * @dev: FPGA Region device
-+ * @parent: parent device
-  * @mutex: enforces exclusive reference to region
-  * @bridge_list: list of FPGA bridges specified in region
-  * @mgr: FPGA manager
-@@ -18,6 +19,7 @@
-  */
- struct fpga_region {
- 	struct device dev;
-+	struct device *parent;
- 	struct mutex mutex; /* for exclusive reference to region */
- 	struct list_head bridge_list;
- 	struct fpga_manager *mgr;
-@@ -34,7 +36,7 @@ struct fpga_region *fpga_region_class_find(
- 	int (*match)(struct device *, const void *));
- 
- int fpga_region_program_fpga(struct fpga_region *region);
--int fpga_region_register(struct device *dev, struct fpga_region *region);
-+int fpga_region_register(struct fpga_region *region);
- int fpga_region_unregister(struct fpga_region *region);
- 
- #endif /* _FPGA_REGION_H */
--- 
-2.7.4
+> 
+> Moritz
