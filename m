@@ -1,36 +1,47 @@
-Return-Path: <SRS0=AWXS=E6=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=AWXS=E6=intel.com=hao.wu@kernel.org>
-Date: Sun, 4 Feb 2018 17:37:06 +0800
-From: Wu Hao <hao.wu@intel.com>
+Return-Path: <SRS0=axzl=E5=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=axzl=E5=ettus.com=moritz.fischer@kernel.org>
+Date: Sat, 3 Feb 2018 11:41:24 +0100
+From: Moritz Fischer <mdf@kernel.org>
 Subject: Re: [PATCH v3 14/21] fpga: dfl: add fpga manager platform driver for
  FME
-Message-ID: <20180204093706.GA26184@hao-dev>
+Message-ID: <20180203104124.luniynyrr6iwxozd@derp-derp.local>
 References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
  <1511764948-20972-15-git-send-email-hao.wu@intel.com>
  <CANk1AXS-ON+Pcxtk-AY1XxH8Paw2aFBjiqhuCz7cA4cyuAQMUA@mail.gmail.com>
  <20180202094213.GB17015@hao-dev>
  <20180203002626.GA51125@eluebber-mac02.jf.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="baaqpsedxowg56qp"
 Content-Disposition: inline
 In-Reply-To: <20180203002626.GA51125@eluebber-mac02.jf.intel.com>
 To: "Luebbers, Enno" <enno.luebbers@intel.com>
-Cc: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
+
+
+--baaqpsedxowg56qp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Hao,
 
 On Fri, Feb 02, 2018 at 04:26:26PM -0800, Luebbers, Enno wrote:
 > Hi Hao, Alan,
-> 
+>=20
 > On Fri, Feb 02, 2018 at 05:42:13PM +0800, Wu Hao wrote:
 > > On Thu, Feb 01, 2018 at 04:00:36PM -0600, Alan Tull wrote:
 > > > On Mon, Nov 27, 2017 at 12:42 AM, Wu Hao <hao.wu@intel.com> wrote:
-> > > 
+> > >=20
 > > > Hi Hao,
-> > > 
+> > >=20
 > > > A few comments below.   Besides that, looks good.
-> > > 
-> > > > This patch adds fpga manager driver for FPGA Management Engine (FME). It
-> > > > implements fpga_manager_ops for FPGA Partial Reconfiguration function.
+> > >=20
+> > > > This patch adds fpga manager driver for FPGA Management Engine (FME=
+). It
+> > > > implements fpga_manager_ops for FPGA Partial Reconfiguration functi=
+on.
 > > > >
 > > > > Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
 > > > > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
@@ -47,83 +58,85 @@ On Fri, Feb 02, 2018 at 04:26:26PM -0800, Luebbers, Enno wrote:
 > > > >  .../ABI/testing/sysfs-platform-fpga-dfl-fme-mgr    |   8 +
 > > > >  drivers/fpga/Kconfig                               |   6 +
 > > > >  drivers/fpga/Makefile                              |   1 +
-> > > >  drivers/fpga/fpga-dfl-fme-mgr.c                    | 318 +++++++++++++++++++++
+> > > >  drivers/fpga/fpga-dfl-fme-mgr.c                    | 318 +++++++++=
+++++++++++++
 > > > >  drivers/fpga/fpga-dfl.h                            |  39 ++-
 > > > >  5 files changed, 371 insertions(+), 1 deletion(-)
-> > > >  create mode 100644 Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme-mgr
+> > > >  create mode 100644 Documentation/ABI/testing/sysfs-platform-fpga-d=
+fl-fme-mgr
 > > > >  create mode 100644 drivers/fpga/fpga-dfl-fme-mgr.c
 > > > >
-> > > > diff --git a/Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme-mgr b/Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme-mgr
+> > > > diff --git a/Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme-=
+mgr b/Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme-mgr
 > > > > new file mode 100644
 > > > > index 0000000..2d4f917
 > > > > --- /dev/null
 > > > > +++ b/Documentation/ABI/testing/sysfs-platform-fpga-dfl-fme-mgr
 > > > > @@ -0,0 +1,8 @@
-> > > > +What:          /sys/bus/platform/devices/fpga-dfl-fme-mgr.0/interface_id
+> > > > +What:          /sys/bus/platform/devices/fpga-dfl-fme-mgr.0/interf=
+ace_id
 > > > > +Date:          November 2017
 > > > > +KernelVersion:  4.15
 > > > > +Contact:       Wu Hao <hao.wu@intel.com>
-> > > > +Description:   Read-only. It returns interface id of partial reconfiguration
-> > > > +               hardware. Userspace could use this information to check if
-> > > > +               current hardware is compatible with given image before FPGA
+> > > > +Description:   Read-only. It returns interface id of partial recon=
+figuration
+> > > > +               hardware. Userspace could use this information to c=
+heck if
+> > > > +               current hardware is compatible with given image bef=
+ore FPGA
 > > > > +               programming.
-> > > 
+> > >=20
 > > > I'm a little confused by this.  I can understand that the PR bitstream
 > > > has a dependency on the FPGA's static image, but I don't understand
 > > > the dependency of the bistream on the hardware that is used to program
 > > > the bitstream to the FPGA.
-> > 
-> > Sorry for the confusion, the interface_id is used to indicate the version of
-> > the hardware for partial reconfiguration (it's part of the static image of
+> >=20
+> > Sorry for the confusion, the interface_id is used to indicate the versi=
+on of
+> > the hardware for partial reconfiguration (it's part of the static image=
+ of
 > > the FPGA device). Will improve the description on this.
-> > 
-> 
+
+I'm not sure userland should be making the call on whether what you're
+trying to load is compatible or not. Isn't there a way to check this in
+your PR reconfiguration handler in-kernel?
+
+> >=20
+>=20
 > The interface_id expresses the compatibility of the static region with PR
 > bitstreams generated for it. It changes every time a new static region is
 > generated.
-> 
-> Would it make more sense to have the interface_id exposed as part of the FME
-> device (which represents the static region)? I'm not sure - it kind of also
-> makes sense here, where you would have all the information in one place (if the
+>=20
+> Would it make more sense to have the interface_id exposed as part of the =
+FME
+> device (which represents the static region)? I'm not sure - it kind of al=
+so
+> makes sense here, where you would have all the information in one place (=
+if the
 > interface_id matches, I can use this component to program a bitstream).
-
-Hi Enno
-
-Yes, this interface is under fpga-dfl-fme-mgr.0, and fpga-dfl-fme-mgr.0 is
-under fpga-dfl-fme.0. It's part of the FME device for sure. From another
-point of view, it means if anyone wants to do PR on this Intel FPGA device,
-he needs to find the FME device firstly, and then check if any fpga manager
-created under this FME device, if yes, check the interface_id before PR via
-the FME device node ioctl.
-
-> 
+>=20
 > Sorry for my limited understanding of the infrastructure - would this same
-> "fpga-dfl-fme-mgr.0" be used for PR if we had multiple PR regions? In that case
+> "fpga-dfl-fme-mgr.0" be used for PR if we had multiple PR regions? In tha=
+t case
 > it would need to expose multiple interface_ids (or we'd have to track both
 > interface IDs and an identifier for the target PR region).
-
-Yes, the fpga manager could be shared with different PR regions.
-
-Sorry, I'm not sure where we need to expose multiple interface_ids and why.
-
-Thanks
-Hao
-
-> 
-> > > 
+>=20
+> > >=20
 > > > > diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
 > > > > index 57da904..0171ecb 100644
 > > > > --- a/drivers/fpga/Kconfig
 > > > > +++ b/drivers/fpga/Kconfig
 > > > > @@ -150,6 +150,12 @@ config FPGA_DFL_FME
-> > > >           FPGA platform level management features. There shall be 1 FME
+> > > >           FPGA platform level management features. There shall be 1=
+ FME
 > > > >           per DFL based FPGA device.
 > > > >
 > > > > +config FPGA_DFL_FME_MGR
 > > > > +       tristate "FPGA DFL FME Manager Driver"
 > > > > +       depends on FPGA_DFL_FME
 > > > > +       help
-> > > > +         Say Y to enable FPGA Manager driver for FPGA Management Engine.
+> > > > +         Say Y to enable FPGA Manager driver for FPGA Management E=
+ngine.
 > > > > +
 > > > >  config INTEL_FPGA_DFL_PCI
 > > > >         tristate "Intel FPGA DFL PCIe Device Driver"
@@ -132,15 +145,17 @@ Hao
 > > > > index cc75bb3..6378580 100644
 > > > > --- a/drivers/fpga/Makefile
 > > > > +++ b/drivers/fpga/Makefile
-> > > > @@ -31,6 +31,7 @@ obj-$(CONFIG_OF_FPGA_REGION)          += of-fpga-region.o
+> > > > @@ -31,6 +31,7 @@ obj-$(CONFIG_OF_FPGA_REGION)          +=3D of-fpg=
+a-region.o
 > > > >  # FPGA Device Feature List Support
-> > > >  obj-$(CONFIG_FPGA_DFL)                 += fpga-dfl.o
-> > > >  obj-$(CONFIG_FPGA_DFL_FME)             += fpga-dfl-fme.o
-> > > > +obj-$(CONFIG_FPGA_DFL_FME_MGR)         += fpga-dfl-fme-mgr.o
+> > > >  obj-$(CONFIG_FPGA_DFL)                 +=3D fpga-dfl.o
+> > > >  obj-$(CONFIG_FPGA_DFL_FME)             +=3D fpga-dfl-fme.o
+> > > > +obj-$(CONFIG_FPGA_DFL_FME_MGR)         +=3D fpga-dfl-fme-mgr.o
 > > > >
-> > > >  fpga-dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
+> > > >  fpga-dfl-fme-objs :=3D dfl-fme-main.o dfl-fme-pr.o
 > > > >
-> > > > diff --git a/drivers/fpga/fpga-dfl-fme-mgr.c b/drivers/fpga/fpga-dfl-fme-mgr.c
+> > > > diff --git a/drivers/fpga/fpga-dfl-fme-mgr.c b/drivers/fpga/fpga-df=
+l-fme-mgr.c
 > > > > new file mode 100644
 > > > > index 0000000..70356ce
 > > > > --- /dev/null
@@ -182,14 +197,15 @@ Hao
 > > > > +};
 > > > > +
 > > > > +static ssize_t interface_id_show(struct device *dev,
-> > > > +                                struct device_attribute *attr, char *buf)
+> > > > +                                struct device_attribute *attr, cha=
+r *buf)
 > > > > +{
-> > > > +       struct fpga_manager *mgr = dev_get_drvdata(dev);
-> > > > +       struct fme_mgr_priv *priv = mgr->priv;
+> > > > +       struct fpga_manager *mgr =3D dev_get_drvdata(dev);
+> > > > +       struct fme_mgr_priv *priv =3D mgr->priv;
 > > > > +       u64 intfc_id_l, intfc_id_h;
 > > > > +
-> > > > +       intfc_id_l = readq(priv->ioaddr + FME_PR_INTFC_ID_L);
-> > > > +       intfc_id_h = readq(priv->ioaddr + FME_PR_INTFC_ID_H);
+> > > > +       intfc_id_l =3D readq(priv->ioaddr + FME_PR_INTFC_ID_L);
+> > > > +       intfc_id_h =3D readq(priv->ioaddr + FME_PR_INTFC_ID_H);
 > > > > +
 > > > > +       return scnprintf(buf, PAGE_SIZE, "%016llx%016llx\n",
 > > > > +                       (unsigned long long)intfc_id_h,
@@ -197,25 +213,25 @@ Hao
 > > > > +}
 > > > > +static DEVICE_ATTR_RO(interface_id);
 > > > > +
-> > > > +static const struct attribute *fme_mgr_attrs[] = {
+> > > > +static const struct attribute *fme_mgr_attrs[] =3D {
 > > > > +       &dev_attr_interface_id.attr,
 > > > > +       NULL,
 > > > > +};
 > > > > +
 > > > > +static u64 pr_error_to_mgr_status(u64 err)
 > > > > +{
-> > > > +       u64 status = 0;
+> > > > +       u64 status =3D 0;
 > > > > +
 > > > > +       if (err & FME_PR_ERR_OPERATION_ERR)
-> > > > +               status |= FPGA_MGR_STATUS_OPERATION_ERR;
+> > > > +               status |=3D FPGA_MGR_STATUS_OPERATION_ERR;
 > > > > +       if (err & FME_PR_ERR_CRC_ERR)
-> > > > +               status |= FPGA_MGR_STATUS_CRC_ERR;
+> > > > +               status |=3D FPGA_MGR_STATUS_CRC_ERR;
 > > > > +       if (err & FME_PR_ERR_INCOMPATIBLE_BS)
-> > > > +               status |= FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR;
+> > > > +               status |=3D FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR;
 > > > > +       if (err & FME_PR_ERR_PROTOCOL_ERR)
-> > > > +               status |= FPGA_MGR_STATUS_IP_PROTOCOL_ERR;
+> > > > +               status |=3D FPGA_MGR_STATUS_IP_PROTOCOL_ERR;
 > > > > +       if (err & FME_PR_ERR_FIFO_OVERFLOW)
-> > > > +               status |= FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR;
+> > > > +               status |=3D FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR;
 > > > > +
 > > > > +       return status;
 > > > > +}
@@ -224,11 +240,11 @@ Hao
 > > > > +{
 > > > > +       u64 pr_status, pr_error;
 > > > > +
-> > > > +       pr_status = readq(fme_pr + FME_PR_STS);
+> > > > +       pr_status =3D readq(fme_pr + FME_PR_STS);
 > > > > +       if (!(pr_status & FME_PR_STS_PR_STS))
 > > > > +               return 0;
 > > > > +
-> > > > +       pr_error = readq(fme_pr + FME_PR_ERR);
+> > > > +       pr_error =3D readq(fme_pr + FME_PR_ERR);
 > > > > +       writeq(pr_error, fme_pr + FME_PR_ERR);
 > > > > +
 > > > > +       return pr_error;
@@ -238,71 +254,77 @@ Hao
 > > > > +                             struct fpga_image_info *info,
 > > > > +                             const char *buf, size_t count)
 > > > > +{
-> > > > +       struct device *dev = &mgr->dev;
-> > > > +       struct fme_mgr_priv *priv = mgr->priv;
-> > > > +       void __iomem *fme_pr = priv->ioaddr;
+> > > > +       struct device *dev =3D &mgr->dev;
+> > > > +       struct fme_mgr_priv *priv =3D mgr->priv;
+> > > > +       void __iomem *fme_pr =3D priv->ioaddr;
 > > > > +       u64 pr_ctrl, pr_status;
 > > > > +
 > > > > +       if (!(info->flags & FPGA_MGR_PARTIAL_RECONFIG)) {
-> > > > +               dev_err(dev, "only support partial reconfiguration.\n");
-> > > 
+> > > > +               dev_err(dev, "only support partial reconfiguration.=
+\n");
+> > >=20
 > > > supports
-> > > 
+> > >=20
 > > > > +               return -EINVAL;
 > > > > +       }
 > > > > +
 > > > > +       dev_dbg(dev, "resetting PR before initiated PR\n");
 > > > > +
-> > > > +       pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-> > > > +       pr_ctrl |= FME_PR_CTRL_PR_RST;
+> > > > +       pr_ctrl =3D readq(fme_pr + FME_PR_CTRL);
+> > > > +       pr_ctrl |=3D FME_PR_CTRL_PR_RST;
 > > > > +       writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
 > > > > +
 > > > > +       if (readq_poll_timeout(fme_pr + FME_PR_CTRL, pr_ctrl,
 > > > > +                              pr_ctrl & FME_PR_CTRL_PR_RSTACK, 1,
 > > > > +                              PR_WAIT_TIMEOUT)) {
 > > > > +               dev_err(dev, "maximum PR timeout\n");
-> > > 
+> > >=20
 > > > We have two dev_err's with the same "maximum PR timeout" so the user
 > > > would not be able to see at which point the timeout occurred.
-> > > 
+> > >=20
 > > > I suggest to get rid of the word 'maximum' for both.  This one could
 > > > be 'reset ack timeout" or something similar.
-> > 
-> > Sure, will switch to a more specific message per your suggestion. Thanks.
-> > 
-> > > 
+> >=20
+> > Sure, will switch to a more specific message per your suggestion. Thank=
+s.
+> >=20
+> > >=20
 > > > > +               return -ETIMEDOUT;
 > > > > +       }
 > > > > +
-> > > > +       pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-> > > > +       pr_ctrl &= ~FME_PR_CTRL_PR_RST;
+> > > > +       pr_ctrl =3D readq(fme_pr + FME_PR_CTRL);
+> > > > +       pr_ctrl &=3D ~FME_PR_CTRL_PR_RST;
 > > > > +       writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
 > > > > +
 > > > > +       dev_dbg(dev,
-> > > > +               "waiting for PR resource in HW to be initialized and ready\n");
+> > > > +               "waiting for PR resource in HW to be initialized an=
+d ready\n");
 > > > > +
 > > > > +       if (readq_poll_timeout(fme_pr + FME_PR_STS, pr_status,
-> > > > +                              (pr_status & FME_PR_STS_PR_STS) ==
-> > > > +                              FME_PR_STS_PR_STS_IDLE, 1, PR_WAIT_TIMEOUT)) {
+> > > > +                              (pr_status & FME_PR_STS_PR_STS) =3D=
+=3D
+> > > > +                              FME_PR_STS_PR_STS_IDLE, 1, PR_WAIT_T=
+IMEOUT)) {
 > > > > +               dev_err(dev, "maximum PR timeout\n");
-> > > 
+> > >=20
 > > > "PR_STS timeout"?  Or something better.
-> > > 
-> > > > +               priv->pr_error = fme_mgr_pr_error_handle(fme_pr);
+> > >=20
+> > > > +               priv->pr_error =3D fme_mgr_pr_error_handle(fme_pr);
 > > > > +               return -ETIMEDOUT;
 > > > > +       }
 > > > > +
 > > > > +       dev_dbg(dev, "check and clear previous PR error\n");
-> > > > +       priv->pr_error = fme_mgr_pr_error_handle(fme_pr);
+> > > > +       priv->pr_error =3D fme_mgr_pr_error_handle(fme_pr);
 > > > > +       if (priv->pr_error)
 > > > > +               dev_dbg(dev, "previous PR error detected %llx\n",
 > > > > +                       (unsigned long long)priv->pr_error);
 > > > > +
 > > > > +       dev_dbg(dev, "set PR port ID\n");
 > > > > +
-> > > > +       pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-> > > > +       pr_ctrl &= ~FME_PR_CTRL_PR_RGN_ID;
-> > > > +       pr_ctrl |= FIELD_PREP(FME_PR_CTRL_PR_RGN_ID, info->region_id);
+> > > > +       pr_ctrl =3D readq(fme_pr + FME_PR_CTRL);
+> > > > +       pr_ctrl &=3D ~FME_PR_CTRL_PR_RGN_ID;
+> > > > +       pr_ctrl |=3D FIELD_PREP(FME_PR_CTRL_PR_RGN_ID, info->region=
+_id);
 > > > > +       writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
 > > > > +
 > > > > +       return 0;
@@ -311,51 +333,53 @@ Hao
 > > > > +static int fme_mgr_write(struct fpga_manager *mgr,
 > > > > +                        const char *buf, size_t count)
 > > > > +{
-> > > > +       struct device *dev = &mgr->dev;
-> > > > +       struct fme_mgr_priv *priv = mgr->priv;
-> > > > +       void __iomem *fme_pr = priv->ioaddr;
+> > > > +       struct device *dev =3D &mgr->dev;
+> > > > +       struct fme_mgr_priv *priv =3D mgr->priv;
+> > > > +       void __iomem *fme_pr =3D priv->ioaddr;
 > > > > +       u64 pr_ctrl, pr_status, pr_data;
-> > > > +       int delay = 0, pr_credit, i = 0;
+> > > > +       int delay =3D 0, pr_credit, i =3D 0;
 > > > > +
 > > > > +       dev_dbg(dev, "start request\n");
 > > > > +
-> > > > +       pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-> > > > +       pr_ctrl |= FME_PR_CTRL_PR_START;
+> > > > +       pr_ctrl =3D readq(fme_pr + FME_PR_CTRL);
+> > > > +       pr_ctrl |=3D FME_PR_CTRL_PR_START;
 > > > > +       writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
 > > > > +
 > > > > +       dev_dbg(dev, "pushing data from bitstream to HW\n");
 > > > > +
-> > > > +       pr_status = readq(fme_pr + FME_PR_STS);
-> > > > +       pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
+> > > > +       pr_status =3D readq(fme_pr + FME_PR_STS);
+> > > > +       pr_credit =3D FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
 > > > > +
 > > > > +       while (count > 0) {
-> > > > +               while (pr_credit <= 1) {
+> > > > +               while (pr_credit <=3D 1) {
 > > > > +                       if (delay++ > PR_WAIT_TIMEOUT) {
 > > > > +                               dev_err(dev, "maximum try\n");
-> > > 
+> > >=20
 > > > It looks like this is waiting for an entry in a queue and timing out
 > > > here.  Could you add a some comments for pr_credit above and this
 > > > loop?  Also a better error message, perhaps "PR credit timeout"?
-> > 
+> >=20
 > > Driver needs to read the PR credit to know if it could push PR data
 > > to hardware or not. I will add more description here on this PR credit,
 > > and use "PR credit timeout" as error message.
-> > 
-> > > 
+> >=20
+> > >=20
 > > > > +                               return -ETIMEDOUT;
 > > > > +                       }
 > > > > +                       udelay(1);
 > > > > +
-> > > > +                       pr_status = readq(fme_pr + FME_PR_STS);
-> > > > +                       pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
+> > > > +                       pr_status =3D readq(fme_pr + FME_PR_STS);
+> > > > +                       pr_credit =3D FIELD_GET(FME_PR_STS_PR_CREDI=
+T, pr_status);
 > > > > +               }
 > > > > +
-> > > > +               if (count >= 4) {
-> > > > +                       pr_data = 0;
-> > > > +                       pr_data |= FIELD_PREP(FME_PR_DATA_PR_DATA_RAW,
+> > > > +               if (count >=3D 4) {
+> > > > +                       pr_data =3D 0;
+> > > > +                       pr_data |=3D FIELD_PREP(FME_PR_DATA_PR_DATA=
+_RAW,
 > > > > +                                             *(((u32 *)buf) + i));
 > > > > +                       writeq(pr_data, fme_pr + FME_PR_DATA);
-> > > > +                       count -= 4;
+> > > > +                       count -=3D 4;
 > > > > +                       pr_credit--;
 > > > > +                       i++;
 > > > > +               } else {
@@ -370,13 +394,13 @@ Hao
 > > > > +static int fme_mgr_write_complete(struct fpga_manager *mgr,
 > > > > +                                 struct fpga_image_info *info)
 > > > > +{
-> > > > +       struct device *dev = &mgr->dev;
-> > > > +       struct fme_mgr_priv *priv = mgr->priv;
-> > > > +       void __iomem *fme_pr = priv->ioaddr;
+> > > > +       struct device *dev =3D &mgr->dev;
+> > > > +       struct fme_mgr_priv *priv =3D mgr->priv;
+> > > > +       void __iomem *fme_pr =3D priv->ioaddr;
 > > > > +       u64 pr_ctrl;
 > > > > +
-> > > > +       pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-> > > > +       pr_ctrl |= FME_PR_CTRL_PR_COMPLETE;
+> > > > +       pr_ctrl =3D readq(fme_pr + FME_PR_CTRL);
+> > > > +       pr_ctrl |=3D FME_PR_CTRL_PR_COMPLETE;
 > > > > +       writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
 > > > > +
 > > > > +       dev_dbg(dev, "green bitstream push complete\n");
@@ -386,14 +410,14 @@ Hao
 > > > > +                              !(pr_ctrl & FME_PR_CTRL_PR_START), 1,
 > > > > +                              PR_WAIT_TIMEOUT)) {
 > > > > +               dev_err(dev, "maximum try.\n");
-> > > 
+> > >=20
 > > > Some message specific to here also, please.
-> > > 
+> > >=20
 > > > > +               return -ETIMEDOUT;
 > > > > +       }
 > > > > +
 > > > > +       dev_dbg(dev, "PR operation complete, checking status\n");
-> > > > +       priv->pr_error = fme_mgr_pr_error_handle(fme_pr);
+> > > > +       priv->pr_error =3D fme_mgr_pr_error_handle(fme_pr);
 > > > > +       if (priv->pr_error) {
 > > > > +               dev_dbg(dev, "PR error detected %llx\n",
 > > > > +                       (unsigned long long)priv->pr_error);
@@ -412,51 +436,52 @@ Hao
 > > > > +
 > > > > +static u64 fme_mgr_status(struct fpga_manager *mgr)
 > > > > +{
-> > > > +       struct fme_mgr_priv *priv = mgr->priv;
+> > > > +       struct fme_mgr_priv *priv =3D mgr->priv;
 > > > > +
 > > > > +       return pr_error_to_mgr_status(priv->pr_error);
 > > > > +}
 > > > > +
-> > > > +static const struct fpga_manager_ops fme_mgr_ops = {
-> > > > +       .write_init = fme_mgr_write_init,
-> > > > +       .write = fme_mgr_write,
-> > > > +       .write_complete = fme_mgr_write_complete,
-> > > > +       .state = fme_mgr_state,
-> > > > +       .status = fme_mgr_status,
+> > > > +static const struct fpga_manager_ops fme_mgr_ops =3D {
+> > > > +       .write_init =3D fme_mgr_write_init,
+> > > > +       .write =3D fme_mgr_write,
+> > > > +       .write_complete =3D fme_mgr_write_complete,
+> > > > +       .state =3D fme_mgr_state,
+> > > > +       .status =3D fme_mgr_status,
 > > > > +};
 > > > > +
 > > > > +static int fme_mgr_probe(struct platform_device *pdev)
 > > > > +{
-> > > > +       struct device *dev = &pdev->dev;
+> > > > +       struct device *dev =3D &pdev->dev;
 > > > > +       struct fme_mgr_priv *priv;
 > > > > +       struct fpga_manager *mgr;
 > > > > +       struct resource *res;
 > > > > +       int ret;
 > > > > +
-> > > > +       priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> > > > +       priv =3D devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 > > > > +       if (!priv)
 > > > > +               return -ENOMEM;
 > > > > +
-> > > > +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > > > +       priv->ioaddr = devm_ioremap(dev, res->start, resource_size(res));
+> > > > +       res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > > > +       priv->ioaddr =3D devm_ioremap(dev, res->start, resource_siz=
+e(res));
 > > > > +       if (IS_ERR(priv->ioaddr))
 > > > > +               return PTR_ERR(priv->ioaddr);
 > > > > +
-> > > > +       ret = sysfs_create_files(&pdev->dev.kobj, fme_mgr_attrs);
+> > > > +       ret =3D sysfs_create_files(&pdev->dev.kobj, fme_mgr_attrs);
 > > > > +       if (ret)
 > > > > +               return ret;
 > > > > +
-> > > > +       mgr = devm_kzalloc(dev, sizeof(*mgr), GFP_KERNEL);
+> > > > +       mgr =3D devm_kzalloc(dev, sizeof(*mgr), GFP_KERNEL);
 > > > > +       if (!mgr)
 > > > > +               goto sysfs_remove_exit;
 > > > > +
-> > > > +       mgr->name = "DFL FPGA Manager";
-> > > > +       mgr->mops = &fme_mgr_ops;
-> > > > +       mgr->priv = priv;
-> > > > +       mgr->parent = dev;
+> > > > +       mgr->name =3D "DFL FPGA Manager";
+> > > > +       mgr->mops =3D &fme_mgr_ops;
+> > > > +       mgr->priv =3D priv;
+> > > > +       mgr->parent =3D dev;
 > > > > +       platform_set_drvdata(pdev, mgr);
 > > > > +
-> > > > +       ret = fpga_mgr_register(mgr);
+> > > > +       ret =3D fpga_mgr_register(mgr);
 > > > > +       if (ret) {
 > > > > +               dev_err(dev, "unable to register FPGA manager\n");
 > > > > +               goto sysfs_remove_exit;
@@ -471,7 +496,7 @@ Hao
 > > > > +
 > > > > +static int fme_mgr_remove(struct platform_device *pdev)
 > > > > +{
-> > > > +       struct fpga_manager *mgr = platform_get_drvdata(pdev);
+> > > > +       struct fpga_manager *mgr =3D platform_get_drvdata(pdev);
 > > > > +
 > > > > +       fpga_mgr_unregister(mgr);
 > > > > +       sysfs_remove_files(&pdev->dev.kobj, fme_mgr_attrs);
@@ -479,12 +504,12 @@ Hao
 > > > > +       return 0;
 > > > > +}
 > > > > +
-> > > > +static struct platform_driver fme_mgr_driver = {
-> > > > +       .driver = {
-> > > > +               .name    = FPGA_DFL_FME_MGR,
+> > > > +static struct platform_driver fme_mgr_driver =3D {
+> > > > +       .driver =3D {
+> > > > +               .name    =3D FPGA_DFL_FME_MGR,
 > > > > +       },
-> > > > +       .probe   = fme_mgr_probe,
-> > > > +       .remove  = fme_mgr_remove,
+> > > > +       .probe   =3D fme_mgr_probe,
+> > > > +       .remove  =3D fme_mgr_remove,
 > > > > +};
 > > > > +
 > > > > +module_platform_driver(fme_mgr_driver);
@@ -512,18 +537,24 @@ Hao
 > > > > +
 > > > > +/* FME PR Control Register Bitfield */
 > > > > +#define FME_PR_CTRL_PR_RST     BIT(0)  /* Reset PR engine */
-> > > > +#define FME_PR_CTRL_PR_RSTACK  BIT(4)  /* Ack for PR engine reset */
-> > > > +#define FME_PR_CTRL_PR_RGN_ID  GENMASK_ULL(9, 7)       /* PR Region ID */
-> > > > +#define FME_PR_CTRL_PR_START   BIT(12) /* Start to request for PR service */
-> > > > +#define FME_PR_CTRL_PR_COMPLETE        BIT(13) /* PR data push complete notification */
+> > > > +#define FME_PR_CTRL_PR_RSTACK  BIT(4)  /* Ack for PR engine reset =
+*/
+> > > > +#define FME_PR_CTRL_PR_RGN_ID  GENMASK_ULL(9, 7)       /* PR Regio=
+n ID */
+> > > > +#define FME_PR_CTRL_PR_START   BIT(12) /* Start to request for PR =
+service */
+> > > > +#define FME_PR_CTRL_PR_COMPLETE        BIT(13) /* PR data push com=
+plete notification */
 > > > > +
 > > > > +/* FME PR Status Register Bitfield */
 > > > > +/* Number of available entries in HW queue inside the PR engine. */
 > > > > +#define FME_PR_STS_PR_CREDIT   GENMASK_ULL(8, 0)
 > > > > +#define FME_PR_STS_PR_STS      BIT(16) /* PR operation status */
 > > > > +#define FME_PR_STS_PR_STS_IDLE 0
-> > > > +#define FME_PR_STS_PR_CTRLR_STS        GENMASK_ULL(22, 20)     /* Controller status */
-> > > > +#define FME_PR_STS_PR_HOST_STS GENMASK_ULL(27, 24)     /* PR host status */
+> > > > +#define FME_PR_STS_PR_CTRLR_STS        GENMASK_ULL(22, 20)     /* =
+Controller status */
+> > > > +#define FME_PR_STS_PR_HOST_STS GENMASK_ULL(27, 24)     /* PR host =
+status */
 > > > > +
 > > > > +/* FME PR Data Register Bitfield */
 > > > > +/* PR data from the raw-binary file. */
@@ -543,7 +574,7 @@ Hao
 > > > >
 > > > >  /* FME HSSI Sub Feature Register Set */
 > > > >  #define FME_HSSI_DFH           DFH
-> > > 
+> > >=20
 > > > I see fpga-dfl.h as enumeration code which is separate from any driver
 > > > implementation specifics other than what's required for the DFL
 > > > enumeration scheme.    These PR engine #defines should move to a .h
@@ -551,17 +582,37 @@ Hao
 > > > adds a different PR device to the framework, their PR driver would
 > > > also have its own .h.  Same for any other modules that aren't central
 > > > to DFL enumeration.
-> > 
+> >=20
 > > Sure, will move PR related register to a separated header file.
 > > DFL enumeration related registers, will still be kept in fpga-dfl.h.
-> > 
+> >=20
 > > Thanks
 > > Hao
-> > 
-> > > 
+> >=20
+> > >=20
 > > > Thanks,
 > > > Alan
-> > > 
+> > >=20
 > > > > --
 > > > > 1.8.3.1
 > > > >
+
+Thanks,
+Moritz
+
+--baaqpsedxowg56qp
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEowQ4eJSlIZpNWnl2UVwKRFcJcNgFAlp1kdAACgkQUVwKRFcJ
+cNhgvggAxmGY16qldCFyq7Pbn8/0EX9Xrxo7iK2Qk+kQ4ppwV3yh8u5fwl6I8DCX
+YF7EDUzgRqzvOb30GRg/kkpjBnhSmyosi24RCxIZZ4/V7+8Iq9VdeODjym+Z7YAK
+XIy8klDBPcazumjtNxRMHJlN87F/e84R2xlPM7kjf//J1/dtaqHQAOM0d1ljkQU4
+bMuNvtnHN8XTOh2buJGPf7KqgYoCRuWhEkrD3ersXqWR3uokrbqtFEh8uSV5OiAI
+9kmoAaVs9eoD3uhCbnvDbXt25GeNKHbPJw8BSINccAI0ku4Wgu7fjSh/uXIWGtJG
+B9lftVO42501jkX2zUJxpU15fP94Yw==
+=REsw
+-----END PGP SIGNATURE-----
+
+--baaqpsedxowg56qp--
