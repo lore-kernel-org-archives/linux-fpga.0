@@ -1,10 +1,10 @@
-Return-Path: <SRS0=Xfr8=FA=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=Xfr8=FA=ettus.com=moritz.fischer@kernel.org>
-Date: Tue, 6 Feb 2018 07:44:21 +0100
-From: Moritz Fischer <mdf@kernel.org>
+Return-Path: <SRS0=BdK1=FA=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=BdK1=FA=intel.com=hao.wu@kernel.org>
+Date: Tue, 6 Feb 2018 13:23:15 +0800
+From: Wu Hao <hao.wu@intel.com>
 Subject: Re: [PATCH v3 14/21] fpga: dfl: add fpga manager platform driver for
  FME
-Message-ID: <20180206064421.awx26yvsqk4gmqby@derp-derp.local>
+Message-ID: <20180206052315.GA4882@hao-dev>
 References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
  <1511764948-20972-15-git-send-email-hao.wu@intel.com>
  <CANk1AXS-ON+Pcxtk-AY1XxH8Paw2aFBjiqhuCz7cA4cyuAQMUA@mail.gmail.com>
@@ -20,7 +20,7 @@ Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <CANk1AXTYtLu_cnKG75FjBRCf5FAoHFj6saNRncYPjQpJoXd1eg@mail.gmail.com>
 To: Alan Tull <atull@kernel.org>
-Cc: Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>, "Luebbers, Enno" <enno.luebbers@intel.com>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, "Luebbers, Enno" <enno.luebbers@intel.com>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
 On Mon, Feb 05, 2018 at 10:25:27PM -0600, Alan Tull wrote:
@@ -91,16 +91,6 @@ On Mon, Feb 05, 2018 at 10:25:27PM -0600, Alan Tull wrote:
 > >> >>
 > >> >> I'm not sure userland should be making the call on whether what you're
 > >> >> trying to load is compatible or not.
-
-I guess I was worried that you might take down a PR region that you
-could've avoided. On second thought unless the kernel could extract that
-info somehow from the bitstream before programming this is probably
-anyway not possible, since the only one that knows the id -> bitstream
-mapping is userland.
-
-Hao's comments further down outline well enough that the hardware can
-deal with incompatible bitstreams. So ignore my comments ;-)
-
 > >>
 > >> Could you explain more about what your concern was about this (unless
 > >> Hao has covered it below)?
@@ -158,7 +148,8 @@ deal with incompatible bitstreams. So ignore my comments ;-)
 > 
 > OK, thanks for that explanation.  That makes sense but could have
 > easily been different.  Please document this somewhere.
-> 
-> Alan
 
-Moritz
+Sure, will do.
+
+Thanks
+Hao
