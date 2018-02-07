@@ -1,70 +1,62 @@
-Return-Path: <SRS0=ps2+=FO=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=ps2+=FO=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-dm3nam03on0082.outbound.protection.outlook.com ([104.47.41.82]:4313
-        "EHLO NAM03-DM3-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1750732AbeBTIdi (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 20 Feb 2018 03:33:38 -0500
-From: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
-Subject: [PATCH 1/2] doc: fpga: Add reset bridge support
-Date: Tue, 20 Feb 2018 14:10:02 +0530
-Message-ID: <1519116003-6967-1-git-send-email-shubhrajyoti.datta@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-fpga@vger.kernel.org
-Cc: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, michal.simek@xilinx.com, devicetree@vger.kernel.org, shubhrajyoti.datta@gmail.com, Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH v3 1/4] fpga: region: don't use drvdata in common fpga code
+Date: Wed,  7 Feb 2018 15:05:27 -0600
+Message-Id: <20180207210530.3099-2-atull@kernel.org>
+In-Reply-To: <20180207210530.3099-1-atull@kernel.org>
+References: <20180207210530.3099-1-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Anatolij Gustschin <agust@denx.de>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Joel Holdsworth <joel@airwebreathe.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-Add reset bridge support. Once this bridge is enabled.
-The reset line(s) will be toggled. Generally it will be
-called after the bitstream load to reset the PL.
+Part of patchset that changes the following fpga_*_register
+functions to not set drvdata:
+* fpga_region_register.
+* fpga_mgr_register
+* fpga_bridge_register
 
-Signed-off-by: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
+The rationale is that setting drvdata is fine for DT based devices
+that will have one manager, bridge, or region per platform device.
+However PCIe based devices may have multiple FPGA mgr/bridge/regions
+under one PCIe device.  Without these changes, the PCIe solution has
+to create an extra device for each child mgr/bridge/region to hold
+drvdata.
+
+Signed-off-by: Alan Tull <atull@kernel.org>
+Reported-by: Jiuyue Ma <majiuyue@huawei.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- .../devicetree/bindings/fpga/xlnx,rst-bridge.txt   | 22 ++++++++++++++++++=
-++++
- 1 file changed, 22 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,rst-bridge.=
-txt
+v2: No change to this patch in v2 of patchset
+v3: Add Moritz' ack
+---
+ drivers/fpga/fpga-region.c    | 1 -
+ drivers/fpga/of-fpga-region.c | 1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/fpga/xlnx,rst-bridge.txt b/D=
-ocumentation/devicetree/bindings/fpga/xlnx,rst-bridge.txt
-new file mode 100644
-index 0000000..6f1bfc2
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xlnx,rst-bridge.txt
-@@ -0,0 +1,22 @@
-+Xilinx fpga reset bridge
-+
-+The Xilinx reset bridge toggles the reset line to the PL
-+in Zynqmp Ultrascale plus.
-+
-+
-+Required properties:
-+- compatible   : Should contain "xlnx,rst-bridge"
-+- reset                : reset phandles
-+
-+Optional properties:
-+- bridge-enable                : 0 if driver should disable bridge at star=
-tup
-+                         1 if driver should enable bridge at startup
-+                         Default is to leave bridge in current state.
-+
-+See Documentation/devicetree/bindings/fpga/fpga-region.txt for generic bin=
-dings.
-+
-+Example:
-+fpga_rst_bridge: fpga_rst_bridge {
-+       compatible =3D "xlnx,rst-bridge";
-+       resets =3D <&rst 115>;
-+};
---
-2.1.1
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index edab2a2..ebe1f87 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -178,7 +178,6 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
+ 	region->dev.parent = dev;
+ 	region->dev.of_node = dev->of_node;
+ 	region->dev.id = id;
+-	dev_set_drvdata(dev, region);
+ 
+ 	ret = dev_set_name(&region->dev, "region%d", id);
+ 	if (ret)
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index 119ff75..35e7e8c 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -438,6 +438,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 		goto eprobe_mgr_put;
+ 
+ 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
++	dev_set_drvdata(dev, region);
+ 
+ 	dev_info(dev, "FPGA Region probed\n");
+ 
+-- 
+2.7.4
