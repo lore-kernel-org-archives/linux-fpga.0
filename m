@@ -1,215 +1,196 @@
 Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 08/24] fpga: add FPGA DFL PCIe device driver
-Date: Tue, 13 Feb 2018 17:24:37 +0800
-Message-Id: <1518513893-4719-9-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
-References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v4 00/24] FPGA Device Feature List (DFL) Device Drivers
+Date: Tue, 13 Feb 2018 17:24:29 +0800
+Message-Id: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Zhang Yi <yi.z.zhang@intel.com>
+Hi All,
 
-This patch implements the basic framework of the driver for FPGA PCIe
-device which implements the Device Feature List (DFL) in its MMIO space.
-This driver is verified on Intel(R) PCIe based FPGA DFL devices, including
-both integrated (e.g Intel Server Platform with In-package FPGA) and
-discrete (e.g Intel FPGA PCIe Acceleration Cards) solutions.
+Here is v4 patch-series adding drivers for FPGA DFL devices.
+(This is the new version of [PATCH v3 00/21] Intel FPGA Device Drivers[1])
 
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
-v2: move the code to drivers/fpga folder as suggested by Alan Tull.
-    switch to GPLv2 license.
-    fix comments from Moritz Fischer.
-v3: switch to pci_set_dma_mask/consistent_dma_mask() function.
-    remove pci_save_state() in probe function.
-    rename driver to INTEL_FPGA_DFL_PCI and intel-dfl-pci.c to indicate
-    this driver supports Intel FPGA PCI devices which implement DFL.
-    improve Kconfig description for INTEL_FPGA_DFL_PCI
-v4: rename to FPGA_DFL_PCI (dfl-pci.c) for better reuse.
-    fix SPDX license issue.
----
- drivers/fpga/Kconfig   |  15 ++++++
- drivers/fpga/Makefile  |   3 ++
- drivers/fpga/dfl-pci.c | 127 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 145 insertions(+)
+This patch series provides a common framework to support FPGA Device Feature
+List (DFL), and also feature dev drivers under this DFL framework to provide
+interfaces for userspace applications to configure, enumerate, open, and
+access FPGA accelerators on DFL based FPGA device and enables system level
+management functions such as FPGA partial reconfiguration, power management
+and virtualization.
+
+This patch series only adds the basic functions for FPGA accelerators and
+partial reconfiguration. Patches for more functions, e.g power management
+and virtualization, will be submitted after this series gets reviewed.
+
+Note this patch series is only verified on DFL based Intel(R) FPGA PCIe
+devices (e.g Intel Server Platform with In-package FPGA and Intel FPGA PCIe
+Acceleration Cards).
+
+Patch 1: add a document for FPGA DFL framework driver overview, including
+Device Feature List (DFL) introduction, the HW architecture, driver
+organization, device enumeration, virtualization and opens.
+
+Patch 2: add region_id for fpga_image_info data structure, which allows
+driver to pass region id information to fpga-mgr for FPGA reconfiguration
+function. (Used by Patch 14)
+
+Patch 3: add a 'status' sysfs interface to fpga-mgr class, it reflects
+the status of the fpga-mgr including reconfiguration errors. (Used by
+Patch 16)
+
+Patch 4-7: add FPGA device feature list support, it provides common
+enumeration interfaces which creates container device (FPGA base region)
+and all feature devices by walking through all the 'Device Feature Lists'
+provided low level drivers.
+
+Patch 8-9: implement FPGA PCIe device driver. It locates all 'Device
+Feature Lists' in PCIe device memory and invokes common interfaces from
+above device feature list framework to finish the enumeration.
+
+Patch 10-15: implement FPGA Management Engine (FME) driver. It's a
+platform driver matching with the FME platform device created by above
+device feature list framework during enumeration. Sysfs and device file
+ioctls are exposed as user interfaces to allow partial reconfiguration
+to Accelerated Function Units (AFUs) from user space applications.
+
+Patch 16-19: implement FPGA manager/bridge/region platform drivers for
+Intel FPGA Management Engine (FME). These platform drivers match with
+platform devices created by above FME driver, they use the generic
+fpga-mgr/bridge/region class infrastructure to implement FPGA partial
+reconfiguration function.
+
+Patch 20-24: implement FPGA Accelerated Function Unit (AFU) driver.
+It's a platform driver matching with AFU platform device created by above
+device feature list framework during enumeration. It provides user
+interfaces to expose the AFU MMIO region, map/unmap dma buffer, and
+control the port which AFU connects to.
+
+Changes from v3:
+- Fix SPDX license issue.
+- Rename documentation to dfl.txt, add introduction for Device Feature List
+  (DFL) and re-organize the content.
+- Rename to FPGA Device Feature List (DFL) drivers from Intel FPGA device
+  drivers for better reuse purposes. Unified driver and files to dfl-*.*
+- Remove static feature_info table from common enumeration code, and switch
+  to use feature id for sub feature driver matching.
+- Remove next_afu register checking for AFU from common enumeration code.
+- Remove interface_id sysfs for dfl-fme-mgr and use per fpga-region
+  compat_id instead. (new patch 13, 15, 19).
+- Add more comments for driver data structures and functions.
+- Fix typos, issues in debug message/commit message and other places.
+
+Changes from v2:
+- Split common enumeration code from pcie driver to a separated module
+  which for device feature list support.
+- Drop fpga-dev class and switch to use fpga base region as container.
+- Update the intel-fpga.txt documentation for new driver organization.
+- Rename feature device drivers for future code reuse.
+- Rebase code due to fpga APIs changes
+- replace bitfields with marco and shift.
+- fix typos, checkpatch issue and other comments.
+
+Changes from v1:
+- Use GPLv2 license instead of Dual BSD/GPL.
+- Move the code to drivers/fpga folder.
+- Update the intel-fpga.txt documentation for new driver organization.
+- Add documentation for new sysfs interfaces.
+- Switch to use common fpga-region interface for partial reconfiguration
+  (PR) function in FME. It creates fpga-region/fpga-mgr/fpga-bridge
+  platform devices and leave the implementation to their platform drivers.
+- Add platform drivers for FME fpga-mgr/bridge/region platform devices.
+- Fix kbuild warnings, typos and other comments.
+
+This patch series depends on the below patchset from Alan Tull.
+[PATCH v3 0/5] fpga: don't use drvdata in common fpga code[2]
+
+[1] https://marc.info/?l=linux-api&m=151176589114857&w=2
+[2] https://marc.info/?l=linux-fpga&m=151803761521039&w=2
+
+Kang Luwei (3):
+  fpga: dfl: add FPGA Management Engine driver basic framework
+  fpga: dfl: fme: add header sub feature support
+  fpga: dfl: fme: add partial reconfiguration sub feature support
+
+Wu Hao (18):
+  docs: fpga: add a document for FPGA Device Feature List (DFL)
+    Framework Overview
+  fpga: mgr: add region_id to fpga_image_info
+  fpga: mgr: add status for fpga-manager
+  fpga: add device feature list support
+  fpga: dfl: add chardev support for feature devices
+  fpga: dfl: adds fpga_cdev_find_port
+  fpga: dfl-pci: add enumeration for feature devices
+  fpga: dfl: fme: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
+    support
+  fpga: region: add compat_id support
+  fpga: dfl-fme-pr: add compat_id support for dfl-fme-region platform
+    device.
+  fpga: dfl: add fpga manager platform driver for FME
+  fpga: dfl: add fpga bridge platform driver for FME
+  fpga: dfl: add fpga region platform driver for FME
+  fpga: dfl-fme-region: add compat_id support
+  fpga: dfl: add FPGA Accelerated Function Unit driver basic framework
+  fpga: dfl: afu: add header sub feature support
+  fpga: dfl: afu: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
+    support
+  fpga: dfl: afu: add FPGA_PORT_DMA_MAP/UNMAP ioctls support
+
+Xiao Guangrong (2):
+  fpga: dfl: add feature device infrastructure
+  fpga: dfl: afu: add user afu sub feature support
+
+Zhang Yi (1):
+  fpga: add FPGA DFL PCIe device driver
+
+ Documentation/ABI/testing/sysfs-class-fpga-manager |  24 +
+ Documentation/ABI/testing/sysfs-class-fpga-region  |   5 +
+ Documentation/ABI/testing/sysfs-platform-dfl-fme   |  23 +
+ Documentation/ABI/testing/sysfs-platform-dfl-port  |  16 +
+ Documentation/fpga/dfl.txt                         | 382 ++++++++
+ Documentation/ioctl/ioctl-number.txt               |   1 +
+ drivers/fpga/Kconfig                               |  68 ++
+ drivers/fpga/Makefile                              |  14 +
+ drivers/fpga/dfl-afu-dma-region.c                  | 463 ++++++++++
+ drivers/fpga/dfl-afu-main.c                        | 476 ++++++++++
+ drivers/fpga/dfl-afu-region.c                      | 165 ++++
+ drivers/fpga/dfl-afu.h                             | 100 +++
+ drivers/fpga/dfl-fme-br.c                          |  85 ++
+ drivers/fpga/dfl-fme-main.c                        | 281 ++++++
+ drivers/fpga/dfl-fme-mgr.c                         | 290 ++++++
+ drivers/fpga/dfl-fme-pr.c                          | 517 +++++++++++
+ drivers/fpga/dfl-fme-pr.h                          | 115 +++
+ drivers/fpga/dfl-fme-region.c                      |  90 ++
+ drivers/fpga/dfl-fme.h                             |  38 +
+ drivers/fpga/dfl-pci.c                             | 322 +++++++
+ drivers/fpga/dfl.c                                 | 982 +++++++++++++++++++++
+ drivers/fpga/dfl.h                                 | 462 ++++++++++
+ drivers/fpga/fpga-mgr.c                            |  28 +
+ drivers/fpga/fpga-region.c                         |  19 +
+ include/linux/fpga/fpga-mgr.h                      |  11 +
+ include/linux/fpga/fpga-region.h                   |  13 +
+ include/uapi/linux/fpga-dfl.h                      | 176 ++++
+ 27 files changed, 5166 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-fpga-region
+ create mode 100644 Documentation/ABI/testing/sysfs-platform-dfl-fme
+ create mode 100644 Documentation/ABI/testing/sysfs-platform-dfl-port
+ create mode 100644 Documentation/fpga/dfl.txt
+ create mode 100644 drivers/fpga/dfl-afu-dma-region.c
+ create mode 100644 drivers/fpga/dfl-afu-main.c
+ create mode 100644 drivers/fpga/dfl-afu-region.c
+ create mode 100644 drivers/fpga/dfl-afu.h
+ create mode 100644 drivers/fpga/dfl-fme-br.c
+ create mode 100644 drivers/fpga/dfl-fme-main.c
+ create mode 100644 drivers/fpga/dfl-fme-mgr.c
+ create mode 100644 drivers/fpga/dfl-fme-pr.c
+ create mode 100644 drivers/fpga/dfl-fme-pr.h
+ create mode 100644 drivers/fpga/dfl-fme-region.c
+ create mode 100644 drivers/fpga/dfl-fme.h
  create mode 100644 drivers/fpga/dfl-pci.c
+ create mode 100644 drivers/fpga/dfl.c
+ create mode 100644 drivers/fpga/dfl.h
+ create mode 100644 include/uapi/linux/fpga-dfl.h
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 01ad31f..87f3d44 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -140,4 +140,19 @@ config FPGA_DFL
- 	  Gate Array (FPGA) solutions which implement Device Feature List.
- 	  It provides enumeration APIs, and feature device infrastructure.
- 
-+config FPGA_DFL_PCI
-+	tristate "FPGA Device Feature List (DFL) PCIe Device Driver"
-+	depends on PCI && FPGA_DFL
-+	help
-+	  Select this option to enable PCIe driver for PCIe based
-+	  Field-Programmable Gate Array (FPGA) solutions which implemented
-+	  the Device Feature List (DFL). This driver provides interfaces
-+	  for userspace applications to configure, enumerate, open and access
-+	  FPGA accelerators on the FPGA DFL devices, enables system level
-+	  management functions such as FPGA partial reconfiguration, power
-+	  management, and virtualization with DFL framework and DFL feature
-+	  device drivers.
-+
-+	  To compile this as a module, choose M here.
-+
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index c4c62b9..4375630 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -30,3 +30,6 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
- 
- # FPGA Device Feature List Support
- obj-$(CONFIG_FPGA_DFL)			+= dfl.o
-+
-+# Drivers for FPGAs which implement DFL
-+obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-new file mode 100644
-index 0000000..d91ea42
---- /dev/null
-+++ b/drivers/fpga/dfl-pci.c
-@@ -0,0 +1,127 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Driver for FPGA Device Feature List (DFL) PCIe device
-+ *
-+ * Copyright (C) 2017 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Zhang Yi <Yi.Z.Zhang@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
-+ */
-+
-+#include <linux/pci.h>
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/stddef.h>
-+#include <linux/errno.h>
-+#include <linux/aer.h>
-+
-+#define DRV_VERSION	"0.8"
-+#define DRV_NAME	"dfl-pci"
-+
-+/* PCI Device ID */
-+#define PCIE_DEVICE_ID_PF_INT_5_X	0xBCBD
-+#define PCIE_DEVICE_ID_PF_INT_6_X	0xBCC0
-+#define PCIE_DEVICE_ID_PF_DSC_1_X	0x09C4
-+/* VF Device */
-+#define PCIE_DEVICE_ID_VF_INT_5_X	0xBCBF
-+#define PCIE_DEVICE_ID_VF_INT_6_X	0xBCC1
-+#define PCIE_DEVICE_ID_VF_DSC_1_X	0x09C5
-+
-+static struct pci_device_id cci_pcie_id_tbl[] = {
-+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_PF_INT_5_X),},
-+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_VF_INT_5_X),},
-+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_PF_INT_6_X),},
-+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_VF_INT_6_X),},
-+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_PF_DSC_1_X),},
-+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_VF_DSC_1_X),},
-+	{0,}
-+};
-+MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
-+
-+static
-+int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
-+{
-+	int ret;
-+
-+	ret = pci_enable_device(pcidev);
-+	if (ret < 0) {
-+		dev_err(&pcidev->dev, "Failed to enable device %d.\n", ret);
-+		return ret;
-+	}
-+
-+	ret = pci_enable_pcie_error_reporting(pcidev);
-+	if (ret && ret != -EINVAL)
-+		dev_info(&pcidev->dev, "PCIE AER unavailable %d.\n", ret);
-+
-+	ret = pci_request_regions(pcidev, DRV_NAME);
-+	if (ret) {
-+		dev_err(&pcidev->dev, "Failed to request regions.\n");
-+		goto disable_error_report_exit;
-+	}
-+
-+	pci_set_master(pcidev);
-+
-+	if (!pci_set_dma_mask(pcidev, DMA_BIT_MASK(64))) {
-+		ret = pci_set_consistent_dma_mask(pcidev, DMA_BIT_MASK(64));
-+		if (ret)
-+			goto release_region_exit;
-+	} else if (!pci_set_dma_mask(pcidev, DMA_BIT_MASK(32))) {
-+		ret = pci_set_consistent_dma_mask(pcidev, DMA_BIT_MASK(32));
-+		if (ret)
-+			goto release_region_exit;
-+	} else {
-+		ret = -EIO;
-+		dev_err(&pcidev->dev, "No suitable DMA support available.\n");
-+		goto release_region_exit;
-+	}
-+
-+	/* TODO: create and add the platform device per feature list */
-+	return 0;
-+
-+release_region_exit:
-+	pci_release_regions(pcidev);
-+disable_error_report_exit:
-+	pci_disable_pcie_error_reporting(pcidev);
-+	pci_disable_device(pcidev);
-+	return ret;
-+}
-+
-+static void cci_pci_remove(struct pci_dev *pcidev)
-+{
-+	pci_release_regions(pcidev);
-+	pci_disable_pcie_error_reporting(pcidev);
-+	pci_disable_device(pcidev);
-+}
-+
-+static struct pci_driver cci_pci_driver = {
-+	.name = DRV_NAME,
-+	.id_table = cci_pcie_id_tbl,
-+	.probe = cci_pci_probe,
-+	.remove = cci_pci_remove,
-+};
-+
-+static int __init ccidrv_init(void)
-+{
-+	pr_info("FPGA DFL PCIe Driver: Version %s\n", DRV_VERSION);
-+
-+	return pci_register_driver(&cci_pci_driver);
-+}
-+
-+static void __exit ccidrv_exit(void)
-+{
-+	pci_unregister_driver(&cci_pci_driver);
-+}
-+
-+module_init(ccidrv_init);
-+module_exit(ccidrv_exit);
-+
-+MODULE_DESCRIPTION("FPGA DFL PCIe Device Driver");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
 -- 
 2.7.4
