@@ -1,83 +1,103 @@
-Return-Path: <SRS0=ujza=E3=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=ujza=E3=ettus.com=moritz.fischer@kernel.org>
-Date: Thu, 1 Feb 2018 16:13:09 +0100
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v3 19/21] fpga: dfl: afu: add
- FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
-Message-ID: <20180201151309.q3jjx42y6ldcrhc6@insfl13.etec.uni-karlsruhe.de>
+Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
+Date: Tue, 13 Feb 2018 17:36:08 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v3 08/21] fpga: add Intel FPGA DFL PCIe device
+Message-ID: <20180213093608.GA4809@hao-dev>
 References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
- <1511764948-20972-20-git-send-email-hao.wu@intel.com>
- <CANk1AXSfUfVbtbuREwG5Ck8TNZrqBg1fO5AuDDdFk-x=UjRTiw@mail.gmail.com>
- <20180201051625.GD10273@hao-dev>
+ <1511764948-20972-9-git-send-email-hao.wu@intel.com>
+ <f5ae8e5edf88420e89cfbe754407b92e@AcuMS.aculab.com>
+ <20171128031519.GA25705@hao-dev>
+ <CANk1AXRBEcz5_j+v0oTAXfH10hrPbHGabdR8Pqt07exYxYgfCw@mail.gmail.com>
+ <20171205033330.GA19730@hao-dev>
+ <CANk1AXRdU6usqtsCUjjSC8Fk2SS8iKn+Ow4PvCiRpSBAcDwWjw@mail.gmail.com>
+ <20171206053015.GA19023@hao-dev>
+ <CANk1AXS6xa8FTBTk5Q2PWcijb1Uuy=XFAFFin-R2dU2y-iruvw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="lrqoflovbpuksoed"
-Content-Disposition: inline
-In-Reply-To: <20180201051625.GD10273@hao-dev>
-To: Wu Hao <hao.wu@intel.com>
-Cc: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
-
-
---lrqoflovbpuksoed
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <CANk1AXS6xa8FTBTk5Q2PWcijb1Uuy=XFAFFin-R2dU2y-iruvw@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: David Laight <David.Laight@aculab.com>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "luwei.kang@intel.com" <luwei.kang@intel.com>, "yi.z.zhang@intel.com" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-On Thu, Feb 01, 2018 at 01:16:25PM +0800, Wu Hao wrote:
-> On Wed, Jan 31, 2018 at 08:52:36AM -0600, Alan Tull wrote:
-> > On Mon, Nov 27, 2017 at 12:42 AM, Wu Hao <hao.wu@intel.com> wrote:
-> >=20
-> > Hi Hao,
-> >=20
-> > I'm adding my "Acked-by' below.  When you post v4, please add it so
-> > that we can keep track of what got acked.
->=20
-> Sure, thanks a lot for the code review. :)
->=20
-> Hao
->=20
-> >=20
-> > Thanks,
-> > Alan
-> >=20
-> > > FPGA_GET_API_VERSION and FPGA_CHECK_EXTENSION ioctls are common ones =
-which
-> > > need to be supported by all feature devices drivers including FME and=
- AFU.
-> > > This patch implements above 2 ioctls in FPGA Accelerated Function Unit
-> > > (AFU) driver.
-> > >
-> > > Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-> > > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-> > > Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-> > > Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-> > > Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-> > > Signed-off-by: Wu Hao <hao.wu@intel.com>
-> > Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Thu, Feb 01, 2018 at 03:59:21PM -0600, Alan Tull wrote:
+> On Tue, Dec 5, 2017 at 11:30 PM, Wu Hao <hao.wu@intel.com> wrote:
+> > On Tue, Dec 05, 2017 at 11:00:22AM -0600, Alan Tull wrote:
+> >> On Mon, Dec 4, 2017 at 9:33 PM, Wu Hao <hao.wu@intel.com> wrote:
+> >> > On Mon, Dec 04, 2017 at 01:46:59PM -0600, Alan Tull wrote:
+> >> >> On Mon, Nov 27, 2017 at 9:15 PM, Wu Hao <hao.wu@intel.com> wrote:
+> >> >> > On Mon, Nov 27, 2017 at 10:28:04AM +0000, David Laight wrote:
+> >> >> >> From: Wu Hao
+> >> >> >> > Sent: 27 November 2017 06:42
+> >> >> >> > From: Zhang Yi <yi.z.zhang@intel.com>
+> >> >> >> >
+> >> >> >> > The Intel FPGA device appears as a PCIe device on the system. This patch
+> >> >> >> > implements the basic framework of the driver for Intel PCIe device which
+> >> >> >> > is located between CPU and Accelerated Function Units (AFUs), and has
+> >> >> >> > the Device Feature List (DFL) implemented in its MMIO space.
+> >> >> >>
+> >> >> >> This ought to have a better name than 'Intel FPGA'.
+> >> >> >> An fpga can be used for all sorts of things, this looks like
+> >> >> >> a very specific architecture using a common VHDL environment to
+> >> >> >> allow certain types of user VHDL be accessed over PCIe.
+> >> >> >
+> >> >> > Hi David
+> >> >> >
+> >> >> > This patch adds a pcie device driver for Intel FPGA devices which implements
+> >> >> > the DFL, e.g Intel Server Platform with In-package FPGA and Intel FPGA PCIe
+> >> >> > Acceleration Cards. They are pcie devices, and all have DFL implemented in
+> >> >> > the MMIO space, so we would like to use one kernel driver to handle them.
+> >> >> >
+> >> >> > With this full patchset, it just provides user the interfaces to configure
+> >> >> > and access the FPGA accelerators on Intel DFL based FPGA devices. For sure,
+> >> >> > users can develop and build their own logics via tools provided by Intel,
+> >> >> > program them to accelerators on these Intel FPGA devices, and access them
+> >> >> > for their workloads.
+> >> >>
+> >> >> I don't see anything Intel specific here.  This could all be named dfl-*
+> >> >
+> >> > The maybe some device specific things, e.g Intel FPGA devices supported by this
+> >> > driver always have FME DFL at the beginning on the BAR0 for PF device.
+> 
+> I'm thinking that another user could add their PCI id's and a static
+> FPGA image that has a DFL in the right place for this to work for
+> them.
+> 
+> >> >
+> >> > But I think this should be the right direction for better code reuse, it could
+> >> > save efforts for other vendors who want to use DFL and follow the same way.
+> 
+> I appreciate your understanding here.
+> 
+> >> >
+> >> > Thanks for the comments. I will rename this driver in the next version.
+> >>
+> >> Thanks!
+> >>
+> >> Regarding file names, it seems like the files added to drivers/fpga
+> >> could be uniformly named dfl-*.[ch].  Some are fpga-dfl-*.[ch] while
+> >> other are currently dfl-*.[ch] currently.
+> >
+> > Sure, will have all related drivers files renamed to dfl-*.[ch].
+> 
+> Actually, I'll reverse that a bit.  The enumeration code, including
+> the pcie part is all sufficiently general to run on anything that has
+> a DFL struct located in the right place.  But individual feature
+> drivers (currently only the fme-mgr) will be vendor specific and could
+> be named intel-*.
 
-Looks good,
+Hi Alan,
 
-Moritz
+I unified all the drivers to use dfl-* in the v4 patchset, including fme-mgr.
+As I feel it's hard to say which FME functions (sub features, registers) are
+vendor specific and which FME functions are not, from the spec, they all belong
+to FME, and people can be reused for sure. So I didn't rename it back to Intel
+driver in the v4 patchset. :)
 
---lrqoflovbpuksoed
-Content-Type: application/pgp-signature; name="signature.asc"
+Thanks
+Hao
 
------BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCAAdFiEEowQ4eJSlIZpNWnl2UVwKRFcJcNgFAlpzLoIACgkQUVwKRFcJ
-cNiaKQgAxTIN45BIdHFBxrE4KKy+VhjXDUAAX/MfKSUieGYwJKRDfQu4xrc1VEKj
-J64u1Ajahp1dleg5hZGdPZgfvjwmW4HPWVL+qPFBp3COqusmBdM90hPhpsMCaUEA
-Kd4+QsGINKFreP1S3FprehjBt3k0/Yhut+B8uXxiLvAsR4My0/A2ih7gA4ZkUnPI
-68rRWUC4EItMagUVxGC9u6JzWk1d18Fn2VKs7RjeRnp15ieN8OaTfZhjt2m6K5z4
-Tn7Eb+j9wb/WOIo3pgUDqBLIS28/6H9mTl2wQdPNPgRiQXB0otrW8rmhcw2hzky4
-XA/h7gpr7ODi8uWfcLdlTZ0LD2H/UA==
-=fXxH
------END PGP SIGNATURE-----
-
---lrqoflovbpuksoed--
+> 
+> Alan
