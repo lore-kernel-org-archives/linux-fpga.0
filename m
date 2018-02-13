@@ -1,424 +1,886 @@
 Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 01/24] docs: fpga: add a document for FPGA Device Feature List (DFL) Framework Overview
-Date: Tue, 13 Feb 2018 17:24:30 +0800
-Message-Id: <1518513893-4719-2-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v4 14/24] fpga: dfl: fme: add partial reconfiguration sub feature support
+Date: Tue, 13 Feb 2018 17:24:43 +0800
+Message-Id: <1518513893-4719-15-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
 References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Enno Luebbers <enno.luebbers@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add a document for FPGA Device Feature List (DFL) Framework Overview.
+From: Kang Luwei <luwei.kang@intel.com>
 
+Partial Reconfiguration (PR) is the most important function for FME. It
+allows reconfiguration for given Port/Accelerated Function Unit (AFU).
+
+It creates platform devices for fpga-mgr, fpga-regions and fpga-bridges,
+and invokes fpga-region's interface (fpga_region_program_fpga) for PR
+operation once PR request received via ioctl. Below user space interface
+is exposed by this sub feature.
+
+Ioctl interface:
+* FPGA_FME_PORT_PR
+  Do partial reconfiguration per information from userspace, including
+  target port(AFU), buffer size and address info. It returns error code
+  to userspace if failed. For detailed PR error information, user needs
+  to read fpga-mgr's status sysfs interface.
+
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
 Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Kang Luwei <luwei.kang@intel.com>
 Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ---
-v2: added FME fpga-mgr/bridge/region platform driver to driver organization.
-    updated open discussion per current implementation.
-    fixed some typos.
-v3: use FPGA base region as container device instead of fpga-dev class.
-    split common enumeration code from pcie driver to functions exposed by
-    device feature list framework.
-    update FME performance reporting which supports both integrated (iperf/)
-    and discrete (dperf/) FPGA solutions.
-v4: rename this doc to Device Feature List (DFL) Framework Overview (dfl.txt)
-    add Device Feature List introduction and re-organize the content.
-    add description for port reset, bitstream_id/metadata and etc.
+v2: moved the code to drivers/fpga folder as suggested by Alan Tull.
+    switched to GPLv2 license.
+    removed status from FPGA_FME_PORT_PR ioctl data structure.
+    added platform devices creation for fpga-mgr/fpga-region/fpga-bridge.
+    switched to fpga-region interface fpga_region_program_fpga for PR.
+    fixed comments from Alan Tull on FPGA_MGR_PARTIAL_RECONFIG flag usage.
+    fixed kbuild warnings.
+v3: rename driver files to dfl-fme-*.
+    rebase due to fpga APIs change.
+    replace bitfields.
+    switch to fpga_cdev_find_port to find port device.
+v4: rebase and correct comments for some function.
+    fix SPDX license issue.
+    remove unnecessary input parameter for destroy_bridge/region function.
+    add dfl-fme-pr.h for PR sub feature data structure and registers.
 ---
- Documentation/fpga/dfl.txt | 382 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 382 insertions(+)
- create mode 100644 Documentation/fpga/dfl.txt
+ drivers/fpga/Makefile         |   2 +-
+ drivers/fpga/dfl-fme-main.c   |  45 +++-
+ drivers/fpga/dfl-fme-pr.c     | 497 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/fpga/dfl-fme-pr.h     | 113 ++++++++++
+ drivers/fpga/dfl-fme.h        |  38 ++++
+ include/uapi/linux/fpga-dfl.h |  27 +++
+ 6 files changed, 720 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/fpga/dfl-fme-pr.c
+ create mode 100644 drivers/fpga/dfl-fme-pr.h
+ create mode 100644 drivers/fpga/dfl-fme.h
 
-diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index fbd1c85..3c44fc9 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -32,7 +32,7 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
+ obj-$(CONFIG_FPGA_DFL)			+= dfl.o
+ obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
+ 
+-dfl-fme-objs := dfl-fme-main.o
++dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
+ 
+ # Drivers for FPGAs which implement DFL
+ obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 1a9929c..967a44c 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -19,6 +19,7 @@
+ #include <linux/fpga-dfl.h>
+ 
+ #include "dfl.h"
++#include "dfl-fme.h"
+ 
+ static ssize_t ports_num_show(struct device *dev,
+ 			      struct device_attribute *attr, char *buf)
+@@ -111,6 +112,10 @@ static struct feature_driver fme_feature_drvs[] = {
+ 		.ops = &fme_hdr_ops,
+ 	},
+ 	{
++		.id = FME_FEATURE_ID_PR_MGMT,
++		.ops = &pr_mgmt_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	},
+ };
+@@ -194,14 +199,49 @@ static const struct file_operations fme_fops = {
+ 	.unlocked_ioctl = fme_ioctl,
+ };
+ 
++static int fme_dev_init(struct platform_device *pdev)
++{
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	struct fpga_fme *fme;
++
++	fme = devm_kzalloc(&pdev->dev, sizeof(*fme), GFP_KERNEL);
++	if (!fme)
++		return -ENOMEM;
++
++	fme->pdata = pdata;
++
++	mutex_lock(&pdata->lock);
++	fpga_pdata_set_private(pdata, fme);
++	mutex_unlock(&pdata->lock);
++
++	return 0;
++}
++
++static void fme_dev_destroy(struct platform_device *pdev)
++{
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	struct fpga_fme *fme;
++
++	mutex_lock(&pdata->lock);
++	fme = fpga_pdata_get_private(pdata);
++	fpga_pdata_set_private(pdata, NULL);
++	mutex_unlock(&pdata->lock);
++
++	devm_kfree(&pdev->dev, fme);
++}
++
+ static int fme_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+ 
+-	ret = fpga_dev_feature_init(pdev, fme_feature_drvs);
++	ret = fme_dev_init(pdev);
+ 	if (ret)
+ 		goto exit;
+ 
++	ret = fpga_dev_feature_init(pdev, fme_feature_drvs);
++	if (ret)
++		goto dev_destroy;
++
+ 	ret = fpga_register_dev_ops(pdev, &fme_fops, THIS_MODULE);
+ 	if (ret)
+ 		goto feature_uinit;
+@@ -210,6 +250,8 @@ static int fme_probe(struct platform_device *pdev)
+ 
+ feature_uinit:
+ 	fpga_dev_feature_uinit(pdev);
++dev_destroy:
++	fme_dev_destroy(pdev);
+ exit:
+ 	return ret;
+ }
+@@ -218,6 +260,7 @@ static int fme_remove(struct platform_device *pdev)
+ {
+ 	fpga_dev_feature_uinit(pdev);
+ 	fpga_unregister_dev_ops(pdev);
++	fme_dev_destroy(pdev);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
 new file mode 100644
-index 0000000..28e4e22
+index 0000000..526e90b
 --- /dev/null
-+++ b/Documentation/fpga/dfl.txt
-@@ -0,0 +1,382 @@
-+===============================================================================
-+              FPGA Device Feature List (DFL) Framework Overview
-+-------------------------------------------------------------------------------
-+                Enno Luebbers <enno.luebbers@intel.com>
-+                Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+                Wu Hao <hao.wu@intel.com>
-+
-+The Device Feature List (DFL) FPGA framework (and drivers according to this
-+this framework) hides the very details of low layer hardwares and provides
-+unified interfaces for userspace applications to configure, enumerate, open
-+and access FPGA accelerators on platforms implemented the DFL in the device
-+memory, and enables system level management functions such as FPGA
-+reconfiguration, power management and virtualization.
-+
-+Device Feature List (DFL) Overview
-+==================================
-+Device Feature List (DFL) defines a link list of feature headers within the
-+device MMIO space to provide an extensible way of adding features. Software can
-+walk through these predefined data structures to enumerate FPGA features:
-+FPGA Interface Unit (FIU), Accelerated Function Unit (AFU) and Private Features,
-+as illustrated below:
-+
-+    Header            Header            Header            Header
-+ +----------+  +-->+----------+  +-->+----------+  +-->+----------+
-+ |   Type   |  |   |  Type    |  |   |  Type    |  |   |  Type    |
-+ |   FIU    |  |   | Private  |  |   | Private  |  |   | Private  |
-+ +----------+  |   | Feature  |  |   | Feature  |  |   | Feature  |
-+ | Next_DFH |--+   +----------+  |   +----------+  |   +----------+
-+ +----------+      | Next_DFH |--+   | Next_DFH |--+   | Next_DFH |--> NULL
-+ |    ID    |      +----------+      +----------+      +----------+
-+ +----------+      |    ID    |      |    ID    |      |    ID    |
-+ | Next_AFU |--+   +----------+      +----------+      +----------+
-+ +----------+  |   | Feature  |      | Feature  |      | Feature  |
-+ | Feature  |  |   | Region   |      | Region   |      | Region   |
-+ | Region   |  |   +----------+      +----------+      +----------+
-+ +----------+  |      Header
-+               +-->+----------+
-+                   |   Type   |
-+                   |   AFU    |
-+                   +----------+
-+                   |   GUID   |
-+                   +----------+
-+                   |  Feature |
-+                   |  Region  |
-+                   +----------+
-+
-+FPGA Interface Unit (FIU) represents a standalone functional unit for the
-+interface to FPGA, e.g the FPGA Management Engine (FME) and Port. (more
-+descriptions on FME and Port in later sections). Accelerated Function Unit (AFU)
-+represents a FPGA programmable region, and usually connects to a FIU as its
-+child as illustrated above. Private Features are sub features of the FIUs/AFUs,
-+they could be various function blocks with different ID, but they are linked to
-+one list via the Next Device Feature Header (DFH) pointer as children. The
-+registers for actual functions are grouped as feature regions which always
-+follow the common header registers. The feature region located after the FIU
-+header, is named as header register set for given FIU type. e.g FME Header
-+Register Set.
-+
-+This Device Feature List provides a way of linking features together, it's
-+convenient for software to locate each feature by walking through this list,
-+and can be implemented in register regions of any FPGA device.
-+
-+FIU - FME (FPGA Management Engine)
-+==================================
-+The FPGA Management Engine performs power and thermal management, error
-+reporting, reconfiguration, performance reporting for integrated and discrete
-+solution, and other infrastructure functions. Each FPGA device only has one FME.
-+
-+User-space applications can acquire exclusive access to the FME using open(),
-+and release it using close().
-+
-+The following functions are exposed through ioctls:
-+
-+ Get driver API version (FPGA_GET_API_VERSION)
-+ Check for extensions (FPGA_CHECK_EXTENSION)
-+ Assign port to PF (*FPGA_FME_PORT_ASSIGN)
-+ Release port from PF (*FPGA_FME_PORT_RELEASE)
-+ Program bitstream (FPGA_FME_PORT_PR)
-+
-+*FPGA_FME_PORT_ASSIGN/RELEASE are only used for FPGA virtualization. Please
-+refer to later section "FPGA Virtualization - PCIe" for more details.
-+
-+More functions are exposed through sysfs
-+(/sys/class/fpga_region/regionX/dfl-fme.n/):
-+
-+ Read bitstream ID (bitstream_id)
-+     bitstream_id indicates version of the blue bitstream (static FPGA region).
-+
-+ Read bitstream metadata (bitstream_metadata)
-+     bistream_metadata includes more detailed information of the blue bitstream
-+     (static FPGA region), e.g synthesis date and seed.
-+
-+ Read number of ports (ports_num)
-+     one FPGA device may have more than 1 port, this sysfs interface indicates
-+     how many ports the FPGA device has.
-+
-+ Read socket ID (socket_id)
-+     socket_id is only used in integrated solution, to indicate which socket
-+     the FPGA device belongs to.
-+
-+ Read performance counters (iperf/ and dperf/)
-+ Power management (power_mgmt/)
-+ Thermal management (thermal_mgmt/)
-+ Error reporting (errors/)
-+
-+FIU - PORT
-+==========
-+A port represents the interface between the static FPGA fabric (the "blue
-+bitstream") and a partially reconfigurable region containing an AFU (the "green
-+bitstream"). It controls the communication from SW to the accelerator and
-+exposes features such as reset and debug. Each FPGA device may have more than
-+1 port.
-+
-+AFU
-+===
-+An AFU is attached to a port FIU and exposes a fixed length MMIO region to be
-+used for accelerator-specific control registers.
-+
-+User-space applications can acquire exclusive access to an AFU attached to a
-+port by using open() on the port device node, and release it using close().
-+
-+The following functions are exposed through ioctls:
-+
-+ Get driver API version (FPGA_GET_API_VERSION)
-+ Check for extensions (FPGA_CHECK_EXTENSION)
-+ Get port info (FPGA_PORT_GET_INFO)
-+ Get MMIO region info (FPGA_PORT_GET_REGION_INFO)
-+ Map DMA buffer (FPGA_PORT_DMA_MAP)
-+ Unmap DMA buffer (FPGA_PORT_DMA_UNMAP)
-+ Reset AFU (*FPGA_PORT_RESET)
-+ Enable UMsg (FPGA_PORT_UMSG_ENABLE)
-+ Disable UMsg (FPGA_PORT_UMSG_DISABLE)
-+ Set UMsg mode (FPGA_PORT_UMSG_SET_MODE)
-+ Set UMsg base address (FPGA_PORT_UMSG_SET_BASE_ADDR)
-+
-+*FPGA_PORT_RESET: reset the FPGA Port and its AFU. Userspace can do Port reset
-+at any time, e.g during DMA or Partial Reconfiguration. But it should never
-+cause any system level issue, only functional failure (e.g DMA or PR operation
-+failure) and be recoverable from the failure.
-+
-+User-space applications can also mmap() accelerator MMIO regions.
-+
-+More functions are exposed through sysfs:
-+(/sys/class/fpga_region/<regionX>/<dfl-port.m>/):
-+
-+ Read Accelerator GUID (afu_id)
-+ Error reporting (errors/)
-+
-+DFL Framework Overview
-+======================
-+
-+         +----------+    +--------+ +--------+ +--------+
-+         |   FME    |    |  AFU   | |  AFU   | |  AFU   |
-+         |  Module  |    | Module | | Module | | Module |
-+         +----------+    +--------+ +--------+ +--------+
-+                 +-----------------------+
-+                 | FPGA Container Device |    Device Feature List
-+                 |  (FPGA Base Region)   |         Framework
-+                 +-----------------------+
-+--------------------------------------------------------------------
-+               +----------------------------+
-+               |   FPGA Bus Device Module   |
-+               | (e.g PCIE/Platform Device) |
-+               +----------------------------+
-+                 +------------------------+
-+                 |  FPGA Hardware Device  |
-+                 +------------------------+
-+
-+DFL Framework in kernel provides common interfaces to create container device
-+(FPGA base region), discover feature devices and their private features from the
-+given Device Feature Lists, and create platform devices for feature devices
-+(e.g FME, Port and AFU) with related resources under the container device. It
-+also abstracts operations for the private features and exposes common ops to
-+feature device drivers.
-+
-+The FPGA Bus Device could be different devices e.g PCIe device, platform device
-+and etc. Its driver is always loaded first once the device is detected on its
-+own bus. This driver plays an infrastructural role in the driver architecture.
-+It locates the DFLs in the device memory, handles them and related resources
-+to common interfaces from DFL framework for enumeration. (Please refer to
-+drivers/fpga/dfl.c for detailed enumeration APIs).
-+
-+The FPGA Management Engine (FME) driver is a platform driver which is loaded
-+automatically after FME platform device creation from the PCIE driver. It
-+provides the key features for FPGA management, including:
-+
-+	a) Power and thermal management, error reporting, performance reporting
-+	   and other infrastructure functions. Users can access these functions
-+	   via sysfs interfaces exposed by FME driver.
-+	b) Partial Reconfiguration. The FME driver creates FPGA manager, FPGA
-+	   bridges and FPGA regions during PR sub feature initialization; Once
-+	   it receives an FPGA_FME_PORT_PR ioctl from user, it invokes the
-+	   common interface function from FPGA Region to complete the partial
-+	   reconfiguration of the bitstream to the given port.
-+	c) Port management for virtualization. The FME driver introduces two
-+	   ioctls, FPGA_FME_PORT_RELEASE (releases given port from PF) and
-+	   FPGA_FME_PORT_ASSIGN (assigns the port back to PF). Once the port is
-+	   released from the PF, it can be assigned to the VF through the SRIOV
-+	   interfaces provided by PCIE driver. (Refer to "FPGA virtualization"
-+	   for more details).
-+
-+Similar to the the FME driver, the FPGA Accelerated Function Unit (AFU) driver
-+is probed once the AFU platform device is created. The main function of this
-+module is to provide an interface for userspace applications to access the
-+individual accelerators, including basic reset control on port, AFU MMIO region
-+export, dma buffer mapping service, UMsg notification, and remote debug
-+functions (see above).
-+
-+After feature platform devices creation, matched platform drivers will be loaded
-+automatically to handle different functionalities. Please refer to next sections
-+for detailed information on functional units which has been already implemented
-+under this DFL framework.
-+
-+Partial Reconfiguration
-+=======================
-+As mentioned above, accelerators can be reconfigured through partial
-+reconfiguration of a green bitstream file (GBS). The green bitstream must have
-+been generated for the exact blue bitstream and targeted reconfigurable region
-+(port) of the FPGA; otherwise, the reconfiguration operation will fail and
-+possibly cause system instability. This compatibility can be checked by
-+comparing the interface ID noted in the GBS header against the interface ID
-+exposed by the FME through sysfs (see above). This check is usually done by
-+user-space before calling the reconfiguration IOCTL.
-+
-+FPGA virtualization - PCIe
-+==========================
-+This section describes the virtualization support on DFL based FPGA device to
-+enable accessing an accelerator from applications running in a virtual machine
-+(VM). This section only describes the PCIe based FPGA device with SRIOV support.
-+
-+Features supported by the particular FPGA device are exposed through Device
-+Feature Lists, as illustrated below:
-+
-+  +-------------------------------+  +-------------+
-+  |              PF               |  |     VF      |
-+  +-------------------------------+  +-------------+
-+      ^            ^         ^              ^
-+      |            |         |              |
-++-----|------------|---------|--------------|-------+
-+|     |            |         |              |       |
-+|  +-----+     +-------+ +-------+      +-------+   |
-+|  | FME |     | Port0 | | Port1 |      | Port2 |   |
-+|  +-----+     +-------+ +-------+      +-------+   |
-+|                  ^         ^              ^       |
-+|                  |         |              |       |
-+|              +-------+ +------+       +-------+   |
-+|              |  AFU  | |  AFU |       |  AFU  |   |
-+|              +-------+ +------+       +-------+   |
-+|                                                   |
-+|                 FPGA PCIe Device                  |
-++---------------------------------------------------+
-+
-+FME is always accessed through the physical function (PF).
-+
-+Ports (and related AFUs) are accessed via PF by default, but could be exposed
-+through virtual function (VF) devices via PCIe SRIOV. Each VF only contains
-+1 Port and 1 AFU for isolation. Users could assign individual VFs (accelerators)
-+created via PCIe SRIOV interface, to virtual machines.
-+
-+The driver organization in virtualization case is illustrated below:
-+
-+  +-------++------++------+             |
-+  | FME   || FME  || FME  |             |
-+  | FPGA  || FPGA || FPGA |             |
-+  |Manager||Bridge||Region|             |
-+  +-------++------++------+             |
-+  +-----------------------+  +--------+ |             +--------+
-+  |          FME          |  |  AFU   | |             |  AFU   |
-+  |         Module        |  | Module | |             | Module |
-+  +-----------------------+  +--------+ |             +--------+
-+        +-----------------------+       |       +-----------------------+
-+        | FPGA Container Device |       |       | FPGA Container Device |
-+        |  (FPGA Base Region)   |       |       |  (FPGA Base Region)   |
-+        +-----------------------+       |       +-----------------------+
-+          +------------------+          |         +------------------+
-+          | FPGA PCIE Module |          | Virtual | FPGA PCIE Module |
-+          +------------------+   Host   | Machine +------------------+
-+ -------------------------------------- | ------------------------------
-+           +---------------+            |          +---------------+
-+           | PCI PF Device |            |          | PCI VF Device |
-+           +---------------+            |          +---------------+
-+
-+FPGA PCIe device driver is always loaded first once a FPGA PCIe PF or VF device
-+is detected. It:
-+
-+	a) finish enumeration on both FPGA PCIe PF and VF device using common
-+	   interfaces from DFL framework.
-+	b) supports SRIOV.
-+
-+The FME device driver plays a management role in this driver architecture, it
-+provides ioctls to release Port from PF and assign Port to PF. After release
-+a port from PF, then it's safe to expose this port through a VF via PCIe SRIOV
-+sysfs interface.
-+
-+To enable accessing an accelerator from applications running in a VM, the
-+respective AFU's port needs to be assigned to a VF using the following steps:
-+
-+	a) The PF owns all AFU ports by default. Any port that needs to be
-+	   reassigned to a VF must first be released through the
-+	   FPGA_FME_PORT_RELEASE ioctl on the FME device.
-+
-+	b) Once N ports are released from PF, then user can use command below
-+	   to enable SRIOV and VFs. Each VF owns only one Port with AFU.
-+
-+	   echo N > $PCI_DEVICE_PATH/sriov_numvfs
-+
-+	c) Pass through the VFs to VMs
-+
-+	d) The AFU under VF is accessible from applications in VM (using the
-+	   same driver inside the VF).
-+
-+Note that an FME can't be assigned to a VF, thus PR and other management
-+functions are only available via the PF.
-+
-+Device enumeration
-+==================
-+This section introduces how applications enumerate the fpga device from
-+the sysfs hierarchy under /sys/class/fpga_region.
-+
-+In the example below, two DFL based FPGA devices are installed in the host. Each
-+fpga device has one FME and two ports (AFUs).
-+
-+FPGA regions are created under /sys/class/fpga_region/
-+
-+	/sys/class/fpga_region/region0
-+	/sys/class/fpga_region/region1
-+	/sys/class/fpga_region/region2
-+	...
-+
-+Application needs to search each regionX folder, if feature device is found,
-+(e.g "dfl-port.n" or "dfl-fme.m" is found), then it's the base
-+fpga region which represents the FPGA device.
-+
-+Each base region has one FME and two ports (AFUs) as child devices:
-+
-+	/sys/class/fpga_region/region0/dfl-fme.0
-+	/sys/class/fpga_region/region0/dfl-port.0
-+	/sys/class/fpga_region/region0/dfl-port.1
-+	...
-+
-+	/sys/class/fpga_region/region3/dfl-fme.1
-+	/sys/class/fpga_region/region3/dfl-port.2
-+	/sys/class/fpga_region/region3/dfl-port.3
-+	...
-+
-+In general, the FME/AFU sysfs interfaces are named as follows:
-+
-+	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/
-+	/sys/class/fpga_region/<regionX>/<dfl-port.m>/
-+
-+with 'n' consecutively numbering all FMEs and 'm' consecutively numbering all
-+ports.
-+
-+The device nodes used for ioctl() or mmap() can be referenced through:
-+
-+	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/dev
-+	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
-+
-+Add new FIUs support
-+====================
-+It's possible that developers made some new function blocks (FIUs) under this
-+DFL framework, then new platform device driver needs to be developed for the
-+new feature dev (FIU) following the same way as existing feature dev drivers
-+(e.g FME and Port/AFU platform device driver). Besides that, it requires
-+modification on DFL framework enumeration code too, for new FIU type detection
-+and related platform devices creation.
-+
-+Add new private features support
-+================================
-+In some cases, we may need to add some new private features to existing FIUs
-+(e.g FME or Port). Developers don't need to touch enumeration code in DFL
-+framework, as each private feature will be parsed automatically, and related
-+mmio resources can be found under FIU platform device created by DFL framework.
-+Developer only needs to provide a sub feature driver with matched feature id.
-+FME Partial Reconfiguration Sub Feature driver (see drivers/fpga/dfl-fme-pr.c)
-+could be a reference.
-+
-+Open discussion
-+===============
-+FME driver exports one ioctl (FPGA_FME_PORT_PR) for partial reconfiguration to
-+user now. In the future, if unified user interfaces for reconfiguration are
-+added, FME driver should switch to them from ioctl interface.
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -0,0 +1,497 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Driver for FPGA Management Engine (FME) Partial Reconfiguration
++ *
++ * Copyright (C) 2017 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Kang Luwei <luwei.kang@intel.com>
++ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *   Wu Hao <hao.wu@intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Christopher Rauer <christopher.rauer@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
++ */
++
++#include <linux/types.h>
++#include <linux/device.h>
++#include <linux/vmalloc.h>
++#include <linux/uaccess.h>
++#include <linux/fpga/fpga-mgr.h>
++#include <linux/fpga/fpga-bridge.h>
++#include <linux/fpga/fpga-region.h>
++#include <linux/fpga-dfl.h>
++
++#include "dfl.h"
++#include "dfl-fme.h"
++#include "dfl-fme-pr.h"
++
++static struct fme_region *
++find_fme_region_by_port_id(struct fpga_fme *fme, int port_id)
++{
++	struct fme_region *fme_region;
++
++	list_for_each_entry(fme_region, &fme->region_list, node)
++		if (fme_region->port_id == port_id)
++			return fme_region;
++
++	return NULL;
++}
++
++static int fpga_fme_region_match(struct device *dev, const void *data)
++{
++	return dev->parent == data;
++}
++
++static struct fpga_region *
++fpga_fme_region_find(struct fpga_fme *fme, int port_id)
++{
++	struct fme_region *fme_region;
++	struct fpga_region *region;
++
++	fme_region = find_fme_region_by_port_id(fme, port_id);
++	if (!fme_region)
++		return NULL;
++
++	region = fpga_region_class_find(NULL, &fme_region->region->dev,
++					fpga_fme_region_match);
++	if (!region)
++		return NULL;
++
++	return region;
++}
++
++static int fme_pr(struct platform_device *pdev, unsigned long arg)
++{
++	void __user *argp = (void __user *)arg;
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	struct fpga_fme *fme;
++	struct fpga_image_info *info;
++	struct fpga_region *region;
++	struct fpga_fme_port_pr port_pr;
++	unsigned long minsz;
++	void __iomem *fme_hdr;
++	void *buf = NULL;
++	int ret = 0;
++	u64 v;
++
++	minsz = offsetofend(struct fpga_fme_port_pr, buffer_address);
++
++	if (copy_from_user(&port_pr, argp, minsz))
++		return -EFAULT;
++
++	if (port_pr.argsz < minsz || port_pr.flags)
++		return -EINVAL;
++
++	if (!IS_ALIGNED(port_pr.buffer_size, 4))
++		return -EINVAL;
++
++	/* get fme header region */
++	fme_hdr = get_feature_ioaddr_by_id(&pdev->dev,
++					   FME_FEATURE_ID_HEADER);
++
++	/* check port id */
++	v = readq(fme_hdr + FME_HDR_CAP);
++	if (port_pr.port_id >= FIELD_GET(FME_CAP_NUM_PORTS, v)) {
++		dev_dbg(&pdev->dev, "port number more than maximum\n");
++		return -EINVAL;
++	}
++
++	if (!access_ok(VERIFY_READ,
++		       (void __user *)(unsigned long)port_pr.buffer_address,
++		       port_pr.buffer_size))
++		return -EFAULT;
++
++	buf = vmalloc(port_pr.buffer_size);
++	if (!buf)
++		return -ENOMEM;
++
++	if (copy_from_user(buf,
++			   (void __user *)(unsigned long)port_pr.buffer_address,
++			   port_pr.buffer_size)) {
++		ret = -EFAULT;
++		goto free_exit;
++	}
++
++	/* prepare fpga_image_info for PR */
++	info = fpga_image_info_alloc(&pdev->dev);
++	if (!info) {
++		ret = -ENOMEM;
++		goto free_exit;
++	}
++
++	info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
++
++	mutex_lock(&pdata->lock);
++	fme = fpga_pdata_get_private(pdata);
++	/* fme device has been unregistered. */
++	if (!fme) {
++		ret = -EINVAL;
++		goto unlock_exit;
++	}
++
++	region = fpga_fme_region_find(fme, port_pr.port_id);
++	if (!region) {
++		ret = -EINVAL;
++		goto unlock_exit;
++	}
++
++	fpga_image_info_free(region->info);
++
++	info->buf = buf;
++	info->count = port_pr.buffer_size;
++	info->region_id = port_pr.port_id;
++	region->info = info;
++
++	ret = fpga_region_program_fpga(region);
++
++	if (region->get_bridges)
++		fpga_bridges_put(&region->bridge_list);
++
++	put_device(&region->dev);
++unlock_exit:
++	mutex_unlock(&pdata->lock);
++free_exit:
++	vfree(buf);
++	if (copy_to_user((void __user *)arg, &port_pr, minsz))
++		return -EFAULT;
++
++	return ret;
++}
++
++/**
++ * fpga_fme_create_mgr - create fpga mgr platform device as child device
++ *
++ * @pdata: fme platform_device's pdata
++ *
++ * Return: mgr platform device if successful, and error code otherwise.
++ */
++static struct platform_device *
++fpga_fme_create_mgr(struct feature_platform_data *pdata)
++{
++	struct platform_device *mgr, *fme = pdata->dev;
++	struct feature *feature;
++	struct resource res;
++	struct resource *pres;
++	int ret = -ENOMEM;
++
++	feature = get_feature_by_id(&pdata->dev->dev, FME_FEATURE_ID_PR_MGMT);
++	if (!feature)
++		return ERR_PTR(-ENODEV);
++
++	/*
++	 * Each FME has only one fpga-mgr, so allocate platform device using
++	 * the same FME platform device id.
++	 */
++	mgr = platform_device_alloc(FPGA_DFL_FME_MGR, fme->id);
++	if (!mgr)
++		return ERR_PTR(ret);
++
++	mgr->dev.parent = &fme->dev;
++
++	pres = platform_get_resource(fme, IORESOURCE_MEM,
++				     feature->resource_index);
++	if (!pres) {
++		ret = -ENODEV;
++		goto create_mgr_err;
++	}
++
++	memset(&res, 0, sizeof(struct resource));
++
++	res.start = pres->start;
++	res.end = pres->end;
++	res.name = pres->name;
++	res.flags = IORESOURCE_MEM;
++
++	ret = platform_device_add_resources(mgr, &res, 1);
++	if (ret)
++		goto create_mgr_err;
++
++	ret = platform_device_add(mgr);
++	if (ret)
++		goto create_mgr_err;
++
++	return mgr;
++
++create_mgr_err:
++	platform_device_put(mgr);
++	return ERR_PTR(ret);
++}
++
++/**
++ * fpga_fme_destroy_mgr - destroy fpga mgr platform device
++ * @pdata: fme platform device's pdata
++ */
++static void fpga_fme_destroy_mgr(struct feature_platform_data *pdata)
++{
++	struct fpga_fme *priv = fpga_pdata_get_private(pdata);
++
++	platform_device_unregister(priv->mgr);
++}
++
++/**
++ * fpga_fme_create_bridge - create fme fpga bridge platform device as child
++ *
++ * @pdata: fme platform device's pdata
++ * @port_id: port id for the bridge to be created.
++ *
++ * Return: bridge platform device if successful, and error code otherwise.
++ */
++static struct fme_bridge *
++fpga_fme_create_bridge(struct feature_platform_data *pdata, int port_id)
++{
++	struct device *dev = &pdata->dev->dev;
++	struct fme_br_pdata br_pdata;
++	struct fme_bridge *fme_br;
++	int ret = -ENOMEM;
++
++	fme_br = devm_kzalloc(dev, sizeof(*fme_br), GFP_KERNEL);
++	if (!fme_br)
++		return ERR_PTR(ret);
++
++	br_pdata.port = fpga_cdev_find_port(fpga_pdata_to_fpga_cdev(pdata),
++					    &port_id, fpga_port_check_id);
++	if (!br_pdata.port)
++		return ERR_PTR(-ENODEV);
++
++	/*
++	 * Each FPGA device may have more than one port, so allocate platform
++	 * device using the same port platform device id.
++	 */
++	fme_br->br = platform_device_alloc(FPGA_DFL_FME_BRIDGE,
++					   br_pdata.port->id);
++	if (!fme_br->br) {
++		ret = -ENOMEM;
++		goto create_br_err;
++	}
++
++	fme_br->br->dev.parent = dev;
++
++	ret = platform_device_add_data(fme_br->br, &br_pdata, sizeof(br_pdata));
++	if (ret)
++		goto create_br_err;
++
++	ret = platform_device_add(fme_br->br);
++	if (ret)
++		goto create_br_err;
++
++	return fme_br;
++
++create_br_err:
++	platform_device_put(fme_br->br);
++	put_device(&br_pdata.port->dev);
++	return ERR_PTR(ret);
++}
++
++/**
++ * fpga_fme_destroy_bridge - destroy fpga bridge platform device
++ * @fme_br: fme bridge to destroy
++ */
++static void fpga_fme_destroy_bridge(struct fme_bridge *fme_br)
++{
++	struct fme_br_pdata *br_pdata = dev_get_platdata(&fme_br->br->dev);
++
++	put_device(&br_pdata->port->dev);
++	platform_device_unregister(fme_br->br);
++}
++
++/**
++ * fpga_fme_destroy_bridge - destroy all fpga bridge platform device
++ * @pdata: fme platform device's pdata
++ */
++static void fpga_fme_destroy_bridges(struct feature_platform_data *pdata)
++{
++	struct fpga_fme *priv = fpga_pdata_get_private(pdata);
++	struct fme_bridge *fbridge, *tmp;
++
++	list_for_each_entry_safe(fbridge, tmp, &priv->bridge_list, node) {
++		list_del(&fbridge->node);
++		fpga_fme_destroy_bridge(fbridge);
++	}
++}
++
++/**
++ * fpga_fme_create_region - create fpga region platform device as child
++ *
++ * @pdata: fme platform device's pdata
++ * @mgr: mgr platform device needed for region
++ * @br: br platform device needed for region
++ * @port_id: port id
++ *
++ * Return: fme region if successful, and error code otherwise.
++ */
++static struct fme_region *
++fpga_fme_create_region(struct feature_platform_data *pdata,
++		       struct platform_device *mgr,
++		       struct platform_device *br, int port_id)
++{
++	struct device *dev = &pdata->dev->dev;
++	struct fme_region_pdata region_pdata;
++	struct fme_region *fme_region;
++	int ret = -ENOMEM;
++
++	fme_region = devm_kzalloc(dev, sizeof(*fme_region), GFP_KERNEL);
++	if (!fme_region)
++		return ERR_PTR(ret);
++
++	region_pdata.mgr = mgr;
++	region_pdata.br = br;
++
++	/*
++	 * Each FPGA device may have more than one port, so allocate platform
++	 * device using the same port platform device id.
++	 */
++	fme_region->region = platform_device_alloc(FPGA_DFL_FME_REGION, br->id);
++	if (!fme_region->region)
++		return ERR_PTR(ret);
++
++	fme_region->region->dev.parent = dev;
++
++	ret = platform_device_add_data(fme_region->region, &region_pdata,
++				       sizeof(region_pdata));
++	if (ret)
++		goto create_region_err;
++
++	ret = platform_device_add(fme_region->region);
++	if (ret)
++		goto create_region_err;
++
++	fme_region->port_id = port_id;
++
++	return fme_region;
++
++create_region_err:
++	platform_device_put(fme_region->region);
++	return ERR_PTR(ret);
++}
++
++/**
++ * fpga_fme_destroy_region - destroy fme region
++ * @fme_region: fme region to destroy
++ */
++static void fpga_fme_destroy_region(struct fme_region *fme_region)
++{
++	platform_device_unregister(fme_region->region);
++}
++
++/**
++ * fpga_fme_destroy_regions - destroy all fme regions
++ * @pdata: fme platform device's pdata
++ */
++static void fpga_fme_destroy_regions(struct feature_platform_data *pdata)
++{
++	struct fpga_fme *priv = fpga_pdata_get_private(pdata);
++	struct fme_region *fme_region, *tmp;
++
++	list_for_each_entry_safe(fme_region, tmp, &priv->region_list, node) {
++		list_del(&fme_region->node);
++		fpga_fme_destroy_region(fme_region);
++	}
++}
++
++static int pr_mgmt_init(struct platform_device *pdev, struct feature *feature)
++{
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	void __iomem *fme_hdr;
++	struct platform_device *mgr;
++	struct fme_region *fme_region;
++	struct fme_bridge *fme_br;
++	struct fpga_fme *priv;
++	int ret = -ENODEV, i = 0;
++	u64 fme_cap, port_offset;
++
++	fme_hdr = get_feature_ioaddr_by_id(&pdev->dev,
++					   FME_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	priv = fpga_pdata_get_private(pdata);
++
++	/* Initialize the region and bridge sub device list */
++	INIT_LIST_HEAD(&priv->region_list);
++	INIT_LIST_HEAD(&priv->bridge_list);
++
++	/* Create fpga mgr platform device */
++	mgr = fpga_fme_create_mgr(pdata);
++	if (IS_ERR(mgr)) {
++		dev_err(&pdev->dev, "fail to create fpga mgr pdev\n");
++		goto unlock;
++	}
++
++	priv->mgr = mgr;
++
++	/* Read capability register to check number of regions and bridges */
++	fme_cap = readq(fme_hdr + FME_HDR_CAP);
++	for (; i < FIELD_GET(FME_CAP_NUM_PORTS, fme_cap); i++) {
++		port_offset = readq(fme_hdr + FME_HDR_PORT_OFST(i));
++		if (!(port_offset & FME_PORT_OFST_IMP))
++			continue;
++
++		/* Create bridge for each port */
++		fme_br = fpga_fme_create_bridge(pdata, i);
++		if (IS_ERR(fme_br)) {
++			ret = PTR_ERR(fme_br);
++			goto destroy_region;
++		}
++
++		list_add(&fme_br->node, &priv->bridge_list);
++
++		/* Create region for each port */
++		fme_region = fpga_fme_create_region(pdata, mgr, fme_br->br, i);
++		if (!fme_region) {
++			ret = PTR_ERR(fme_region);
++			goto destroy_region;
++		}
++
++		list_add(&fme_region->node, &priv->region_list);
++	}
++	mutex_unlock(&pdata->lock);
++
++	return 0;
++
++destroy_region:
++	fpga_fme_destroy_regions(pdata);
++	fpga_fme_destroy_bridges(pdata);
++	fpga_fme_destroy_mgr(pdata);
++unlock:
++	mutex_unlock(&pdata->lock);
++	return ret;
++}
++
++static void pr_mgmt_uinit(struct platform_device *pdev, struct feature *feature)
++{
++	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	struct fpga_fme *priv;
++
++	mutex_lock(&pdata->lock);
++	priv = fpga_pdata_get_private(pdata);
++
++	fpga_fme_destroy_regions(pdata);
++	fpga_fme_destroy_bridges(pdata);
++	fpga_fme_destroy_mgr(pdata);
++	mutex_unlock(&pdata->lock);
++}
++
++static long fme_pr_ioctl(struct platform_device *pdev, struct feature *feature,
++			 unsigned int cmd, unsigned long arg)
++{
++	long ret;
++
++	switch (cmd) {
++	case FPGA_FME_PORT_PR:
++		ret = fme_pr(pdev, arg);
++		break;
++	default:
++		ret = -ENODEV;
++	}
++
++	return ret;
++}
++
++const struct feature_ops pr_mgmt_ops = {
++	.init = pr_mgmt_init,
++	.uinit = pr_mgmt_uinit,
++	.ioctl = fme_pr_ioctl,
++};
+diff --git a/drivers/fpga/dfl-fme-pr.h b/drivers/fpga/dfl-fme-pr.h
+new file mode 100644
+index 0000000..11bd001
+--- /dev/null
++++ b/drivers/fpga/dfl-fme-pr.h
+@@ -0,0 +1,113 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Header file for FPGA Management Engine (FME) Partial Reconfiguration Driver
++ *
++ * Copyright (C) 2017 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Kang Luwei <luwei.kang@intel.com>
++ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *   Wu Hao <hao.wu@intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
++ */
++
++#ifndef __DFL_FME_PR_H
++#define __DFL_FME_PR_H
++
++#include <linux/platform_device.h>
++
++/**
++ * struct fme_region - FME fpga region data structure
++ *
++ * @region: platform device of the FPGA region.
++ * @node: used to link fme_region to a list.
++ * @port_id: indicate which port this region connected to.
++ */
++struct fme_region {
++	struct platform_device *region;
++	struct list_head node;
++	int port_id;
++};
++
++/**
++ * struct fme_region_pdata - platform data for FME region platform device.
++ *
++ * @mgr: platform device of the FPGA manager.
++ * @br: platform device of the FPGA bridge.
++ * @region_id: region id (same as port_id).
++ */
++struct fme_region_pdata {
++	struct platform_device *mgr;
++	struct platform_device *br;
++	int region_id;
++};
++
++/**
++ * struct fme_bridge - FME fpga bridge data structure
++ *
++ * @br: platform device of the FPGA bridge.
++ * @node: used to link fme_bridge to a list.
++ */
++struct fme_bridge {
++	struct platform_device *br;
++	struct list_head node;
++};
++
++/**
++ * struct fme_bridge_pdata - platform data for FME bridge platform device.
++ *
++ * @port: platform device of the port feature dev.
++ */
++struct fme_br_pdata {
++	struct platform_device *port;
++};
++
++#define FPGA_DFL_FME_MGR	"dfl-fme-mgr"
++#define FPGA_DFL_FME_BRIDGE	"dfl-fme-bridge"
++#define FPGA_DFL_FME_REGION	"dfl-fme-region"
++
++/* FME Partial Reconfiguration Sub Feature Register Set */
++#define FME_PR_DFH		0x0
++#define FME_PR_CTRL		0x8
++#define FME_PR_STS		0x10
++#define FME_PR_DATA		0x18
++#define FME_PR_ERR		0x20
++#define FME_PR_INTFC_ID_H	0xA8
++#define FME_PR_INTFC_ID_L	0xB0
++
++/* FME PR Control Register Bitfield */
++#define FME_PR_CTRL_PR_RST	BIT(0)  /* Reset PR engine */
++#define FME_PR_CTRL_PR_RSTACK	BIT(4)  /* Ack for PR engine reset */
++#define FME_PR_CTRL_PR_RGN_ID	GENMASK_ULL(9, 7)       /* PR Region ID */
++#define FME_PR_CTRL_PR_START	BIT(12) /* Start to request for PR service */
++#define FME_PR_CTRL_PR_COMPLETE	BIT(13) /* PR data push complete notification */
++
++/* FME PR Status Register Bitfield */
++/* Number of available entries in HW queue inside the PR engine. */
++#define FME_PR_STS_PR_CREDIT	GENMASK_ULL(8, 0)
++#define FME_PR_STS_PR_STS	BIT(16) /* PR operation status */
++#define FME_PR_STS_PR_STS_IDLE	0
++#define FME_PR_STS_PR_CTRLR_STS	GENMASK_ULL(22, 20)     /* Controller status */
++#define FME_PR_STS_PR_HOST_STS	GENMASK_ULL(27, 24)     /* PR host status */
++
++/* FME PR Data Register Bitfield */
++/* PR data from the raw-binary file. */
++#define FME_PR_DATA_PR_DATA_RAW	GENMASK_ULL(32, 0)
++
++/* FME PR Error Register */
++/* PR Operation errors detected. */
++#define FME_PR_ERR_OPERATION_ERR	BIT(0)
++/* CRC error detected. */
++#define FME_PR_ERR_CRC_ERR		BIT(1)
++/* Incompatible PR bitstream detected. */
++#define FME_PR_ERR_INCOMPATIBLE_BS	BIT(2)
++/* PR data push protocol violated. */
++#define FME_PR_ERR_PROTOCOL_ERR		BIT(3)
++/* PR data fifo overflow error detected */
++#define FME_PR_ERR_FIFO_OVERFLOW	BIT(4)
++
++#endif /* __DFL_FME_PR_H */
+diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
+new file mode 100644
+index 0000000..c8bd48a
+--- /dev/null
++++ b/drivers/fpga/dfl-fme.h
+@@ -0,0 +1,38 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Header file for FPGA Management Engine (FME) Driver
++ *
++ * Copyright (C) 2017 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Kang Luwei <luwei.kang@intel.com>
++ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *   Wu Hao <hao.wu@intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
++ */
++
++#ifndef __DFL_FME_H
++#define __DFL_FME_H
++
++/**
++ * struct fpga_fme - fpga fme private data
++ *
++ * @mgr: FME's FPGA manager platform device.
++ * @region_list: link list of FME's FPGA regions.
++ * @bridge_list: link list of FME's FPGA bridges.
++ * @pdata: fme platform device's pdata.
++ */
++struct fpga_fme {
++	struct platform_device *mgr;
++	struct list_head region_list;
++	struct list_head bridge_list;
++	struct feature_platform_data *pdata;
++};
++
++extern const struct feature_ops pr_mgmt_ops;
++
++#endif /* __DFL_FME_H */
+diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+index 9321ee9..50ee831 100644
+--- a/include/uapi/linux/fpga-dfl.h
++++ b/include/uapi/linux/fpga-dfl.h
+@@ -14,6 +14,8 @@
+ #ifndef _UAPI_LINUX_FPGA_DFL_H
+ #define _UAPI_LINUX_FPGA_DFL_H
+ 
++#include <linux/types.h>
++
+ #define FPGA_API_VERSION 0
+ 
+ /*
+@@ -26,6 +28,7 @@
+ #define FPGA_MAGIC 0xB6
+ 
+ #define FPGA_BASE 0
++#define FME_BASE 0x80
+ 
+ /**
+  * FPGA_GET_API_VERSION - _IO(FPGA_MAGIC, FPGA_BASE + 0)
+@@ -45,4 +48,28 @@
+ 
+ #define FPGA_CHECK_EXTENSION	_IO(FPGA_MAGIC, FPGA_BASE + 1)
+ 
++/* IOCTLs for FME file descriptor */
++
++/**
++ * FPGA_FME_PORT_PR - _IOW(FPGA_MAGIC, FME_BASE + 0, struct fpga_fme_port_pr)
++ *
++ * Driver does Partial Reconfiguration based on Port ID and Buffer (Image)
++ * provided by caller.
++ * Return: 0 on success, -errno on failure.
++ * If FPGA_FME_PORT_PR returns -EIO, that indicates the HW has detected
++ * some errors during PR, under this case, the user can fetch HW error info
++ * from the status of FME's fpga manager.
++ */
++
++struct fpga_fme_port_pr {
++	/* Input */
++	__u32 argsz;		/* Structure length */
++	__u32 flags;		/* Zero for now */
++	__u32 port_id;
++	__u32 buffer_size;
++	__u64 buffer_address;	/* Userspace address to the buffer for PR */
++};
++
++#define FPGA_FME_PORT_PR	_IO(FPGA_MAGIC, FME_BASE + 0)
++
+ #endif /* _UAPI_LINUX_FPGA_DFL_H */
 -- 
 2.7.4
