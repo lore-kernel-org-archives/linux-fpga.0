@@ -1,196 +1,158 @@
 Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 00/24] FPGA Device Feature List (DFL) Device Drivers
-Date: Tue, 13 Feb 2018 17:24:29 +0800
-Message-Id: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v4 17/24] fpga: dfl: add fpga bridge platform driver for FME
+Date: Tue, 13 Feb 2018 17:24:46 +0800
+Message-Id: <1518513893-4719-18-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi All,
+This patch adds fpga bridge platform driver for FPGA Management Engine.
+It implements the enable_set call back for fpga bridge.
 
-Here is v4 patch-series adding drivers for FPGA DFL devices.
-(This is the new version of [PATCH v3 00/21] Intel FPGA Device Drivers[1])
-
-This patch series provides a common framework to support FPGA Device Feature
-List (DFL), and also feature dev drivers under this DFL framework to provide
-interfaces for userspace applications to configure, enumerate, open, and
-access FPGA accelerators on DFL based FPGA device and enables system level
-management functions such as FPGA partial reconfiguration, power management
-and virtualization.
-
-This patch series only adds the basic functions for FPGA accelerators and
-partial reconfiguration. Patches for more functions, e.g power management
-and virtualization, will be submitted after this series gets reviewed.
-
-Note this patch series is only verified on DFL based Intel(R) FPGA PCIe
-devices (e.g Intel Server Platform with In-package FPGA and Intel FPGA PCIe
-Acceleration Cards).
-
-Patch 1: add a document for FPGA DFL framework driver overview, including
-Device Feature List (DFL) introduction, the HW architecture, driver
-organization, device enumeration, virtualization and opens.
-
-Patch 2: add region_id for fpga_image_info data structure, which allows
-driver to pass region id information to fpga-mgr for FPGA reconfiguration
-function. (Used by Patch 14)
-
-Patch 3: add a 'status' sysfs interface to fpga-mgr class, it reflects
-the status of the fpga-mgr including reconfiguration errors. (Used by
-Patch 16)
-
-Patch 4-7: add FPGA device feature list support, it provides common
-enumeration interfaces which creates container device (FPGA base region)
-and all feature devices by walking through all the 'Device Feature Lists'
-provided low level drivers.
-
-Patch 8-9: implement FPGA PCIe device driver. It locates all 'Device
-Feature Lists' in PCIe device memory and invokes common interfaces from
-above device feature list framework to finish the enumeration.
-
-Patch 10-15: implement FPGA Management Engine (FME) driver. It's a
-platform driver matching with the FME platform device created by above
-device feature list framework during enumeration. Sysfs and device file
-ioctls are exposed as user interfaces to allow partial reconfiguration
-to Accelerated Function Units (AFUs) from user space applications.
-
-Patch 16-19: implement FPGA manager/bridge/region platform drivers for
-Intel FPGA Management Engine (FME). These platform drivers match with
-platform devices created by above FME driver, they use the generic
-fpga-mgr/bridge/region class infrastructure to implement FPGA partial
-reconfiguration function.
-
-Patch 20-24: implement FPGA Accelerated Function Unit (AFU) driver.
-It's a platform driver matching with AFU platform device created by above
-device feature list framework during enumeration. It provides user
-interfaces to expose the AFU MMIO region, map/unmap dma buffer, and
-control the port which AFU connects to.
-
-Changes from v3:
-- Fix SPDX license issue.
-- Rename documentation to dfl.txt, add introduction for Device Feature List
-  (DFL) and re-organize the content.
-- Rename to FPGA Device Feature List (DFL) drivers from Intel FPGA device
-  drivers for better reuse purposes. Unified driver and files to dfl-*.*
-- Remove static feature_info table from common enumeration code, and switch
-  to use feature id for sub feature driver matching.
-- Remove next_afu register checking for AFU from common enumeration code.
-- Remove interface_id sysfs for dfl-fme-mgr and use per fpga-region
-  compat_id instead. (new patch 13, 15, 19).
-- Add more comments for driver data structures and functions.
-- Fix typos, issues in debug message/commit message and other places.
-
-Changes from v2:
-- Split common enumeration code from pcie driver to a separated module
-  which for device feature list support.
-- Drop fpga-dev class and switch to use fpga base region as container.
-- Update the intel-fpga.txt documentation for new driver organization.
-- Rename feature device drivers for future code reuse.
-- Rebase code due to fpga APIs changes
-- replace bitfields with marco and shift.
-- fix typos, checkpatch issue and other comments.
-
-Changes from v1:
-- Use GPLv2 license instead of Dual BSD/GPL.
-- Move the code to drivers/fpga folder.
-- Update the intel-fpga.txt documentation for new driver organization.
-- Add documentation for new sysfs interfaces.
-- Switch to use common fpga-region interface for partial reconfiguration
-  (PR) function in FME. It creates fpga-region/fpga-mgr/fpga-bridge
-  platform devices and leave the implementation to their platform drivers.
-- Add platform drivers for FME fpga-mgr/bridge/region platform devices.
-- Fix kbuild warnings, typos and other comments.
-
-This patch series depends on the below patchset from Alan Tull.
-[PATCH v3 0/5] fpga: don't use drvdata in common fpga code[2]
-
-[1] https://marc.info/?l=linux-api&m=151176589114857&w=2
-[2] https://marc.info/?l=linux-fpga&m=151803761521039&w=2
-
-Kang Luwei (3):
-  fpga: dfl: add FPGA Management Engine driver basic framework
-  fpga: dfl: fme: add header sub feature support
-  fpga: dfl: fme: add partial reconfiguration sub feature support
-
-Wu Hao (18):
-  docs: fpga: add a document for FPGA Device Feature List (DFL)
-    Framework Overview
-  fpga: mgr: add region_id to fpga_image_info
-  fpga: mgr: add status for fpga-manager
-  fpga: add device feature list support
-  fpga: dfl: add chardev support for feature devices
-  fpga: dfl: adds fpga_cdev_find_port
-  fpga: dfl-pci: add enumeration for feature devices
-  fpga: dfl: fme: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
-    support
-  fpga: region: add compat_id support
-  fpga: dfl-fme-pr: add compat_id support for dfl-fme-region platform
-    device.
-  fpga: dfl: add fpga manager platform driver for FME
-  fpga: dfl: add fpga bridge platform driver for FME
-  fpga: dfl: add fpga region platform driver for FME
-  fpga: dfl-fme-region: add compat_id support
-  fpga: dfl: add FPGA Accelerated Function Unit driver basic framework
-  fpga: dfl: afu: add header sub feature support
-  fpga: dfl: afu: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
-    support
-  fpga: dfl: afu: add FPGA_PORT_DMA_MAP/UNMAP ioctls support
-
-Xiao Guangrong (2):
-  fpga: dfl: add feature device infrastructure
-  fpga: dfl: afu: add user afu sub feature support
-
-Zhang Yi (1):
-  fpga: add FPGA DFL PCIe device driver
-
- Documentation/ABI/testing/sysfs-class-fpga-manager |  24 +
- Documentation/ABI/testing/sysfs-class-fpga-region  |   5 +
- Documentation/ABI/testing/sysfs-platform-dfl-fme   |  23 +
- Documentation/ABI/testing/sysfs-platform-dfl-port  |  16 +
- Documentation/fpga/dfl.txt                         | 382 ++++++++
- Documentation/ioctl/ioctl-number.txt               |   1 +
- drivers/fpga/Kconfig                               |  68 ++
- drivers/fpga/Makefile                              |  14 +
- drivers/fpga/dfl-afu-dma-region.c                  | 463 ++++++++++
- drivers/fpga/dfl-afu-main.c                        | 476 ++++++++++
- drivers/fpga/dfl-afu-region.c                      | 165 ++++
- drivers/fpga/dfl-afu.h                             | 100 +++
- drivers/fpga/dfl-fme-br.c                          |  85 ++
- drivers/fpga/dfl-fme-main.c                        | 281 ++++++
- drivers/fpga/dfl-fme-mgr.c                         | 290 ++++++
- drivers/fpga/dfl-fme-pr.c                          | 517 +++++++++++
- drivers/fpga/dfl-fme-pr.h                          | 115 +++
- drivers/fpga/dfl-fme-region.c                      |  90 ++
- drivers/fpga/dfl-fme.h                             |  38 +
- drivers/fpga/dfl-pci.c                             | 322 +++++++
- drivers/fpga/dfl.c                                 | 982 +++++++++++++++++++++
- drivers/fpga/dfl.h                                 | 462 ++++++++++
- drivers/fpga/fpga-mgr.c                            |  28 +
- drivers/fpga/fpga-region.c                         |  19 +
- include/linux/fpga/fpga-mgr.h                      |  11 +
- include/linux/fpga/fpga-region.h                   |  13 +
- include/uapi/linux/fpga-dfl.h                      | 176 ++++
- 27 files changed, 5166 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-fpga-region
- create mode 100644 Documentation/ABI/testing/sysfs-platform-dfl-fme
- create mode 100644 Documentation/ABI/testing/sysfs-platform-dfl-port
- create mode 100644 Documentation/fpga/dfl.txt
- create mode 100644 drivers/fpga/dfl-afu-dma-region.c
- create mode 100644 drivers/fpga/dfl-afu-main.c
- create mode 100644 drivers/fpga/dfl-afu-region.c
- create mode 100644 drivers/fpga/dfl-afu.h
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+---
+v3: rename driver to fpga-dfl-fme-br
+    remove useless dev_dbg in probe function.
+    rebased due to fpga api change.
+v4: rename to dfl-fme-br and fix SPDX license issue
+    include dfl-fme-pr.h instead of dfl-fme.h
+    add Acked-by from Alan and Moritz
+---
+ drivers/fpga/Kconfig      |  6 ++++
+ drivers/fpga/Makefile     |  1 +
+ drivers/fpga/dfl-fme-br.c | 85 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 92 insertions(+)
  create mode 100644 drivers/fpga/dfl-fme-br.c
- create mode 100644 drivers/fpga/dfl-fme-main.c
- create mode 100644 drivers/fpga/dfl-fme-mgr.c
- create mode 100644 drivers/fpga/dfl-fme-pr.c
- create mode 100644 drivers/fpga/dfl-fme-pr.h
- create mode 100644 drivers/fpga/dfl-fme-region.c
- create mode 100644 drivers/fpga/dfl-fme.h
- create mode 100644 drivers/fpga/dfl-pci.c
- create mode 100644 drivers/fpga/dfl.c
- create mode 100644 drivers/fpga/dfl.h
- create mode 100644 include/uapi/linux/fpga-dfl.h
 
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 89f76e8..a8f939a 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -156,6 +156,12 @@ config FPGA_DFL_FME_MGR
+ 	help
+ 	  Say Y to enable FPGA Manager driver for FPGA Management Engine.
+ 
++config FPGA_DFL_FME_BRIDGE
++	tristate "FPGA DFL FME Bridge Driver"
++	depends on FPGA_DFL_FME
++	help
++	  Say Y to enable FPGA Bridge driver for FPGA Management Engine.
++
+ config FPGA_DFL_PCI
+ 	tristate "FPGA Device Feature List (DFL) PCIe Device Driver"
+ 	depends on PCI && FPGA_DFL
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index f82814a..75096e9 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -32,6 +32,7 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
+ obj-$(CONFIG_FPGA_DFL)			+= dfl.o
+ obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
+ obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= dfl-fme-mgr.o
++obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= dfl-fme-br.o
+ 
+ dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
+ 
+diff --git a/drivers/fpga/dfl-fme-br.c b/drivers/fpga/dfl-fme-br.c
+new file mode 100644
+index 0000000..46cee30
+--- /dev/null
++++ b/drivers/fpga/dfl-fme-br.c
+@@ -0,0 +1,85 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * FPGA Bridge Driver for FPGA Management Engine (FME)
++ *
++ * Copyright (C) 2017 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Wu Hao <hao.wu@intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
++ */
++
++#include <linux/module.h>
++#include <linux/fpga/fpga-bridge.h>
++
++#include "dfl.h"
++#include "dfl-fme-pr.h"
++
++static int fme_bridge_enable_set(struct fpga_bridge *bridge, bool enable)
++{
++	struct fme_br_pdata *pdata = bridge->priv;
++	int ret = 0;
++
++	if (enable)
++		fpga_port_enable(pdata->port);
++	else
++		ret = fpga_port_disable(pdata->port);
++
++	return ret;
++}
++
++static const struct fpga_bridge_ops fme_bridge_ops = {
++	.enable_set = fme_bridge_enable_set,
++};
++
++static int fme_br_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct fme_br_pdata *pdata = dev_get_platdata(dev);
++	struct fpga_bridge *br;
++	int ret;
++
++	br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
++	if (!br)
++		return -ENOMEM;
++
++	br->name = "FPGA FME Bridge";
++	br->br_ops = &fme_bridge_ops;
++	br->priv = pdata;
++	br->parent = dev;
++	platform_set_drvdata(pdev, br);
++
++	ret = fpga_bridge_register(br);
++	if (ret)
++		dev_err(dev, "unable to register FPGA Bridge\n");
++
++	return ret;
++}
++
++static int fme_br_remove(struct platform_device *pdev)
++{
++	struct fpga_bridge *br = platform_get_drvdata(pdev);
++
++	fpga_bridge_unregister(br);
++
++	return 0;
++}
++
++static struct platform_driver fme_br_driver = {
++	.driver	= {
++		.name    = FPGA_DFL_FME_BRIDGE,
++	},
++	.probe   = fme_br_probe,
++	.remove  = fme_br_remove,
++};
++
++module_platform_driver(fme_br_driver);
++
++MODULE_DESCRIPTION("FPGA Bridge for DFL FPGA Management Engine");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:dfl-fme-bridge");
 -- 
 2.7.4
