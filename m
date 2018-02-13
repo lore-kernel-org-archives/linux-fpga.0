@@ -1,145 +1,162 @@
 Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 12/24] fpga: dfl: fme: add FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
-Date: Tue, 13 Feb 2018 17:24:41 +0800
-Message-Id: <1518513893-4719-13-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v4 18/24] fpga: dfl: add fpga region platform driver for FME
+Date: Tue, 13 Feb 2018 17:24:47 +0800
+Message-Id: <1518513893-4719-19-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
 References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-FPGA_GET_API_VERSION and FPGA_CHECK_EXTENSION ioctls are common ones which
-need to be supported by all feature devices drivers including FME and AFU.
-Userspace application can use these ioctl interfaces to get the API info
-and check if specific extension is supported or not in current driver.
-
-This patch implements above 2 ioctls in FPGA Management Engine (FME)
-driver.
+This patch adds fpga region platform driver for FPGA Management Engine.
+It register an fpga region with given fpga manager / bridge device.
 
 Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
 Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
 Signed-off-by: Shiva Rao <shiva.rao@intel.com>
 Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
 Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2: switched to GPLv2 license.
-v3: rename intel-fpga.h to fpga-dfl.h and rebased.
-v4: fix SPDX license issue.
-    add Acked-by from Alan and Moritz.
+v3: rename driver to fpga-dfl-fme-region
+    fix fpga_mgr_put order problem in remove function.
+    rebased due to fpga api changes.
+v4: rename to dfl-fme-region, fix SPDX license issue
+    include dfl-fme-pr.h instead of dfl-fme.h and dfl.h
+    add Acked-by from Alan and Moritz
 ---
- Documentation/ioctl/ioctl-number.txt |  1 +
- drivers/fpga/dfl-fme-main.c          | 12 +++++++++
- include/uapi/linux/fpga-dfl.h        | 48 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 61 insertions(+)
- create mode 100644 include/uapi/linux/fpga-dfl.h
+ drivers/fpga/Kconfig          |  6 +++
+ drivers/fpga/Makefile         |  1 +
+ drivers/fpga/dfl-fme-region.c | 89 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 96 insertions(+)
+ create mode 100644 drivers/fpga/dfl-fme-region.c
 
-diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
-index 6501389..f1e7baa 100644
---- a/Documentation/ioctl/ioctl-number.txt
-+++ b/Documentation/ioctl/ioctl-number.txt
-@@ -324,6 +324,7 @@ Code  Seq#(hex)	Include File		Comments
- 0xB3	00	linux/mmc/ioctl.h
- 0xB4	00-0F	linux/gpio.h		<mailto:linux-gpio@vger.kernel.org>
- 0xB5	00-0F	uapi/linux/rpmsg.h	<mailto:linux-remoteproc@vger.kernel.org>
-+0xB6	all	linux/fpga-dfl.h
- 0xC0	00-0F	linux/usb/iowarrior.h
- 0xCA	00-0F	uapi/misc/cxl.h
- 0xCA	10-2F	uapi/misc/ocxl.h
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 056ae24..1a9929c 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -16,6 +16,7 @@
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index a8f939a..65d54a4 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -162,6 +162,12 @@ config FPGA_DFL_FME_BRIDGE
+ 	help
+ 	  Say Y to enable FPGA Bridge driver for FPGA Management Engine.
  
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/fpga-dfl.h>
- 
- #include "dfl.h"
- 
-@@ -114,6 +115,13 @@ static struct feature_driver fme_feature_drvs[] = {
- 	},
- };
- 
-+static long fme_ioctl_check_extension(struct feature_platform_data *pdata,
-+				      unsigned long arg)
-+{
-+	/* No extension support for now */
-+	return 0;
-+}
++config FPGA_DFL_FME_REGION
++	tristate "FPGA DFL FME Region Driver"
++	depends on FPGA_DFL_FME
++	help
++	  Say Y to enable FPGA Region driver for FPGA Management Engine.
 +
- static int fme_open(struct inode *inode, struct file *filp)
- {
- 	struct platform_device *fdev = fpga_inode_to_feature_dev(inode);
-@@ -154,6 +162,10 @@ static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
+ config FPGA_DFL_PCI
+ 	tristate "FPGA Device Feature List (DFL) PCIe Device Driver"
+ 	depends on PCI && FPGA_DFL
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index 75096e9..163894e 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -33,6 +33,7 @@ obj-$(CONFIG_FPGA_DFL)			+= dfl.o
+ obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
+ obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= dfl-fme-mgr.o
+ obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= dfl-fme-br.o
++obj-$(CONFIG_FPGA_DFL_FME_REGION)	+= dfl-fme-region.o
  
- 	switch (cmd) {
-+	case FPGA_GET_API_VERSION:
-+		return FPGA_API_VERSION;
-+	case FPGA_CHECK_EXTENSION:
-+		return fme_ioctl_check_extension(pdata, arg);
- 	default:
- 		/*
- 		 * Let sub-feature's ioctl function to handle the cmd
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+ dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
+ 
+diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
 new file mode 100644
-index 0000000..9321ee9
+index 0000000..1f5f33d
 --- /dev/null
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -0,0 +1,48 @@
-+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++++ b/drivers/fpga/dfl-fme-region.c
+@@ -0,0 +1,89 @@
++// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Header File for FPGA DFL User API
++ * FPGA Region Driver for FPGA Management Engine (FME)
 + *
 + * Copyright (C) 2017 Intel Corporation, Inc.
 + *
 + * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Zhang Yi <yi.z.zhang@intel.com>
 + *   Wu Hao <hao.wu@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
 + */
 +
-+#ifndef _UAPI_LINUX_FPGA_DFL_H
-+#define _UAPI_LINUX_FPGA_DFL_H
++#include <linux/module.h>
++#include <linux/fpga/fpga-region.h>
 +
-+#define FPGA_API_VERSION 0
++#include "dfl-fme-pr.h"
 +
-+/*
-+ * The IOCTL interface for DFL based FPGA is designed for extensibility by
-+ * embedding the structure length (argsz) and flags into structures passed
-+ * between kernel and userspace. This design referenced the VFIO IOCTL
-+ * interface (include/uapi/linux/vfio.h).
-+ */
++static int fme_region_get_bridges(struct fpga_region *region)
++{
++	struct fme_region_pdata *pdata = region->priv;
++	struct device *dev = &pdata->br->dev;
 +
-+#define FPGA_MAGIC 0xB6
++	return fpga_bridge_get_to_list(dev, region->info, &region->bridge_list);
++}
 +
-+#define FPGA_BASE 0
++static int fme_region_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct fme_region_pdata *pdata = dev_get_platdata(dev);
++	struct fpga_region *region;
++	struct fpga_manager *mgr;
++	int ret;
 +
-+/**
-+ * FPGA_GET_API_VERSION - _IO(FPGA_MAGIC, FPGA_BASE + 0)
-+ *
-+ * Report the version of the driver API.
-+ * Return: Driver API Version.
-+ */
++	mgr = fpga_mgr_get(&pdata->mgr->dev);
++	if (IS_ERR(mgr))
++		return -EPROBE_DEFER;
 +
-+#define FPGA_GET_API_VERSION	_IO(FPGA_MAGIC, FPGA_BASE + 0)
++	region = devm_kzalloc(dev, sizeof(*region), GFP_KERNEL);
++	if (!region) {
++		ret = -ENOMEM;
++		goto eprobe_mgr_put;
++	}
 +
-+/**
-+ * FPGA_CHECK_EXTENSION - _IO(FPGA_MAGIC, FPGA_BASE + 1)
-+ *
-+ * Check whether an extension is supported.
-+ * Return: 0 if not supported, otherwise the extension is supported.
-+ */
++	region->mgr = mgr;
++	region->get_bridges = fme_region_get_bridges;
++	region->priv = pdata;
++	region->parent = dev;
++	platform_set_drvdata(pdev, region);
 +
-+#define FPGA_CHECK_EXTENSION	_IO(FPGA_MAGIC, FPGA_BASE + 1)
++	ret = fpga_region_register(region);
++	if (ret)
++		goto eprobe_mgr_put;
 +
-+#endif /* _UAPI_LINUX_FPGA_DFL_H */
++	dev_dbg(dev, "DFL FME FPGA Region probed\n");
++
++	return 0;
++
++eprobe_mgr_put:
++	fpga_mgr_put(mgr);
++	return ret;
++}
++
++static int fme_region_remove(struct platform_device *pdev)
++{
++	struct fpga_region *region = dev_get_drvdata(&pdev->dev);
++
++	fpga_region_unregister(region);
++	fpga_mgr_put(region->mgr);
++
++	return 0;
++}
++
++static struct platform_driver fme_region_driver = {
++	.driver	= {
++		.name    = FPGA_DFL_FME_REGION,
++	},
++	.probe   = fme_region_probe,
++	.remove  = fme_region_remove,
++};
++
++module_platform_driver(fme_region_driver);
++
++MODULE_DESCRIPTION("FPGA Region for DFL FPGA Management Engine");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:dfl-fme-region");
 -- 
 2.7.4
