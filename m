@@ -1,84 +1,35 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
+Return-Path: <SRS0=HPOe=FJ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=HPOe=FJ=intel.com=hao.wu@kernel.org>
+From: "Wu, Hao" <hao.wu@intel.com>
+Subject: RE: [PATCH v4 03/24] fpga: mgr: add status for fpga-manager
+Date: Thu, 15 Feb 2018 09:42:30 +0000
+Message-ID: <BE8371DA886269458E0220A16DC1F8277E154E27@SHSMSX104.ccr.corp.intel.com>
+References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+ <1518513893-4719-4-git-send-email-hao.wu@intel.com>
+ <CANk1AXT4hSSa8j0A2Q=M91jjxDzkNayHZaftnOYSdZoppTMEAA@mail.gmail.com>
+In-Reply-To: <CANk1AXT4hSSa8j0A2Q=M91jjxDzkNayHZaftnOYSdZoppTMEAA@mail.gmail.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-In-Reply-To: <1511764948-20972-7-git-send-email-hao.wu@intel.com>
-References: <1511764948-20972-1-git-send-email-hao.wu@intel.com> <1511764948-20972-7-git-send-email-hao.wu@intel.com>
-From: Alan Tull <atull@kernel.org>
-Date: Mon, 5 Feb 2018 16:08:19 -0600
-Message-ID: <CANk1AXSNEX_pUTdWDOsXFsgogU2xbBBZwoLJFssqzF+q=hBssA@mail.gmail.com>
-Subject: Re: [PATCH v3 06/21] fpga: dfl: adds fpga_cdev_find_port
-Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Nov 27, 2017 at 12:42 AM, Wu Hao <hao.wu@intel.com> wrote:
-
-Hi Hao,
-
-A couple comments below.
-
-> For feature devices, e.g FPGA Management Engine (FME),
-
-The first use I see of this function in this patchset is the FME PR,
-not the FME, or am I misunderstanding?
-
-> it may
-> require fpga_cdev_find_port function to find dedicate port for
-> further actions, so export this function from feature device
-> driver module.
-
-I understand the need for this function, but I'm having a hard time
-following this explanation here.   Suggestion: "For feature devices,
-we need a method to find the port dedicated to the device.  Add a
-function fpga_cdev_find_port to do that"
-
->
-> Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-> Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-> Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-> Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-> Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-> ----
-> v3: s/fpga_for_each_port/fpga_cdev_find_port/
->     move fpga_cdev_find_port to fpga-dfl module.
-> ---
->  drivers/fpga/fpga-dfl.c | 27 +++++++++++++++++++++++++++
->  drivers/fpga/fpga-dfl.h | 16 ++++++++++++++++
->  2 files changed, 43 insertions(+)
->
-> diff --git a/drivers/fpga/fpga-dfl.c b/drivers/fpga/fpga-dfl.c
-> index 9294c0a..ce03b17 100644
-> --- a/drivers/fpga/fpga-dfl.c
-> +++ b/drivers/fpga/fpga-dfl.c
-> @@ -873,6 +873,33 @@ void fpga_remove_feature_devs(struct fpga_cdev *cdev)
->  }
->  EXPORT_SYMBOL_GPL(fpga_remove_feature_devs);
->
-> +/**
-> + * __fpga_cdev_find_port - find a port under given container device
-> + * @cdev: container device
-> + * @data: data passed to match function
-> + * @match: match function used to find specific port from the port device list
-> + *
-> + * Find a port device under container device. This function needs to be
-> + * invoked with lock held.
-> + */
-> +struct platform_device *
-> +__fpga_cdev_find_port(struct fpga_cdev *cdev, void *data,
-> +                     int (*match)(struct platform_device *, void *))
-> +{
-> +       struct feature_platform_data *pdata;
-> +       struct platform_device *port_dev;
-> +
-> +       list_for_each_entry(pdata, &cdev->port_dev_list, node) {
-> +               port_dev = pdata->dev;
-> +
-> +               if (match(port_dev, data) && get_device(&port_dev->dev))
-> +                       return port_dev;
-
-The caller will need to put the port_dev->dev.  Please document that
-in the function header.  I mentioned that in v2.
-
-Alan
+PiBPbiBUdWUsIEZlYiAxMywgMjAxOCBhdCAzOjI0IEFNLCBXdSBIYW8gPGhhby53dUBpbnRlbC5j
+b20+IHdyb3RlOg0KPiANCj4gSGkgSGFvLA0KPiANCj4gPiBUaGlzIHBhdGNoIGFkZHMgc3RhdHVz
+IHRvIGZwZ2EtbWFuYWdlciBkYXRhIHN0cnVjdHVyZSwNCj4gDQo+IFBsZWFzZSB1cGRhdGUgdGhl
+IGhlYWRlciB0byBiZXR0ZXIgZGVzY3JpYmUgdGhlIGN1cnJlbnQgY2hhbmdlcywgdGhpcw0KPiBw
+YXRjaCBubyBsb25nZXIgYWRkcyBzdGF0dXMgdG8gdGhlIGZwZ2EgbWdyIGRhdGEgc3RydWN0Lg0K
+DQpTb3JyeSwgd2lsbCBmaXggaXQuIFRoYW5rcyBhIGxvdCENCg0KSGFvDQoNCj4gDQo+ID4gdG8g
+YWxsb3cNCj4gPiBkcml2ZXIgdG8gc3RvcmUgZnVsbC9wYXJ0aWFsIHJlY29uZmlndXJhdGlvbiBl
+cnJvcnMgYW5kIG90aGVyDQo+ID4gc3RhdHVzIGluZm9ybWF0aW9uLCBhbmQgYWRkcyBvbmUgc3Rh
+dHVzIGNhbGxiYWNrIHRvIGZwZ2FfbWFuYWdlcl9vcHMNCj4gPiB0byBhbGxvdyBmcGdhX21hbmFn
+ZXIgdG8gY29sbGVjdCBsYXRlc3Qgc3RhdHVzIHdoZW4gZmFpbHVyZXMgYXJlDQo+ID4gZGV0ZWN0
+ZWQuDQo+IA0KPiBPdGhlciB0aGFuIHRoYXQsIGxvb2tzIGdvb2QgdG8gbWUhICBUaGFua3MgZm9y
+IHRha2luZyBteSBmZWVkYmFjay4NCj4gQWxhbg0KPiANCj4gPg0KPiA+IFRoZSBmb2xsb3dpbmcg
+c3lzZnMgZmlsZSBpcyBjcmVhdGVkOg0KPiA+ICogL3N5cy9jbGFzcy9mcGdhX21hbmFnZXIvPGZw
+Z2E+L3N0YXR1cw0KPiA+ICAgUmV0dXJuIHN0YXR1cyBvZiBmcGdhIG1hbmFnZXIsIGluY2x1ZGlu
+ZyByZWNvbmZpZ3VyYXRpb24gZXJyb3JzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogV3UgSGFv
+IDxoYW8ud3VAaW50ZWwuY29tPg0KPiBBY2tlZC1ieTogQWxhbiBUdWxsIDxhdHVsbEBrZXJuZWwu
+b3JnPg0K
