@@ -1,240 +1,104 @@
-Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 20/24] fpga: dfl: add FPGA Accelerated Function Unit driver basic framework
-Date: Tue, 13 Feb 2018 17:24:49 +0800
-Message-Id: <1518513893-4719-21-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+Return-Path: <SRS0=HPOe=FJ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=HPOe=FJ=intel.com=hao.wu@kernel.org>
+From: "Wu, Hao" <hao.wu@intel.com>
+Subject: RE: [PATCH v4 06/24] fpga: dfl: adds fpga_cdev_find_port
+Date: Thu, 15 Feb 2018 09:46:42 +0000
+Message-ID: <BE8371DA886269458E0220A16DC1F8277E154E4F@SHSMSX104.ccr.corp.intel.com>
 References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+ <1518513893-4719-7-git-send-email-hao.wu@intel.com>
+ <CANk1AXQgeeQm_ncn+17nrjr+YTCKvpc=PVZEsaZVOjRb3aHTQQ@mail.gmail.com>
+In-Reply-To: <CANk1AXQgeeQm_ncn+17nrjr+YTCKvpc=PVZEsaZVOjRb3aHTQQ@mail.gmail.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Whisonant,, "Enno  <enno.luebbers@intel.com>, Rao, Shiva" <shiva.rao@intel.com>, "Rauer, Christopher" <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On DFL FPGA devices, the Accelerated Function Unit (AFU), can be
-reprogrammed for different functions. It connects to the FPGA
-infrastructure("blue bistream") via a Port. Port CSRs are implemented
-separately from the AFU CSRs to provide control and status of the Port.
-Once valid green bitstream is programmed into the AFU, it allows access
-to the AFU CSRs in the AFU MMIO space.
-
-This patch only implements basic driver framework for AFU, including
-device file operation framework.
-
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
-v3: rename driver to dfl-afu-main.c
-v4: rename to dfl-port and fix SPDX license issue.
----
- drivers/fpga/Kconfig        |   9 +++
- drivers/fpga/Makefile       |   2 +
- drivers/fpga/dfl-afu-main.c | 159 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 170 insertions(+)
- create mode 100644 drivers/fpga/dfl-afu-main.c
-
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 65d54a4..4c6b45f 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -168,6 +168,15 @@ config FPGA_DFL_FME_REGION
- 	help
- 	  Say Y to enable FPGA Region driver for FPGA Management Engine.
- 
-+config FPGA_DFL_AFU
-+	tristate "FPGA DFL AFU Driver"
-+	depends on FPGA_DFL
-+	help
-+	  This is the driver for FPGA Accelerated Function Unit (AFU) which
-+	  implements AFU and Port management features. A User AFU connects
-+	  to the FPGA infrastructure via a Port. There may be more than 1
-+	  Port/AFU per DFL based FPGA device.
-+
- config FPGA_DFL_PCI
- 	tristate "FPGA Device Feature List (DFL) PCIe Device Driver"
- 	depends on PCI && FPGA_DFL
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 163894e..5c9607b 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -34,8 +34,10 @@ obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
- obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= dfl-fme-mgr.o
- obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= dfl-fme-br.o
- obj-$(CONFIG_FPGA_DFL_FME_REGION)	+= dfl-fme-region.o
-+obj-$(CONFIG_FPGA_DFL_AFU)		+= dfl-afu.o
- 
- dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
-+dfl-afu-objs := dfl-afu-main.o
- 
- # Drivers for FPGAs which implement DFL
- obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-new file mode 100644
-index 0000000..70db28c
---- /dev/null
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -0,0 +1,159 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Driver for FPGA Accelerated Function Unit (AFU)
-+ *
-+ * Copyright (C) 2017 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+
-+#include "dfl.h"
-+
-+static int port_hdr_init(struct platform_device *pdev, struct feature *feature)
-+{
-+	dev_dbg(&pdev->dev, "PORT HDR Init.\n");
-+
-+	return 0;
-+}
-+
-+static void port_hdr_uinit(struct platform_device *pdev,
-+			   struct feature *feature)
-+{
-+	dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
-+}
-+
-+static const struct feature_ops port_hdr_ops = {
-+	.init = port_hdr_init,
-+	.uinit = port_hdr_uinit,
-+};
-+
-+static struct feature_driver port_feature_drvs[] = {
-+	{
-+		.id = PORT_FEATURE_ID_HEADER,
-+		.ops = &port_hdr_ops,
-+	},
-+	{
-+		.ops = NULL,
-+	}
-+};
-+
-+static int afu_open(struct inode *inode, struct file *filp)
-+{
-+	struct platform_device *fdev = fpga_inode_to_feature_dev(inode);
-+	struct feature_platform_data *pdata;
-+	int ret;
-+
-+	pdata = dev_get_platdata(&fdev->dev);
-+	if (WARN_ON(!pdata))
-+		return -ENODEV;
-+
-+	ret = feature_dev_use_begin(pdata);
-+	if (ret)
-+		return ret;
-+
-+	dev_dbg(&fdev->dev, "Device File Open\n");
-+	filp->private_data = fdev;
-+
-+	return 0;
-+}
-+
-+static int afu_release(struct inode *inode, struct file *filp)
-+{
-+	struct platform_device *pdev = filp->private_data;
-+	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+
-+	dev_dbg(&pdev->dev, "Device File Release\n");
-+
-+	feature_dev_use_end(pdata);
-+
-+	return 0;
-+}
-+
-+static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
-+{
-+	struct platform_device *pdev = filp->private_data;
-+	struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct feature *f;
-+	long ret;
-+
-+	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
-+
-+	switch (cmd) {
-+	default:
-+		/*
-+		 * Let sub-feature's ioctl function to handle the cmd
-+		 * Sub-feature's ioctl returns -ENODEV when cmd is not
-+		 * handled in this sub feature, and returns 0 and other
-+		 * error code if cmd is handled.
-+		 */
-+		fpga_dev_for_each_feature(pdata, f)
-+			if (f->ops && f->ops->ioctl) {
-+				ret = f->ops->ioctl(pdev, f, cmd, arg);
-+				if (ret == -ENODEV)
-+					continue;
-+				else
-+					return ret;
-+			}
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static const struct file_operations afu_fops = {
-+	.owner = THIS_MODULE,
-+	.open = afu_open,
-+	.release = afu_release,
-+	.unlocked_ioctl = afu_ioctl,
-+};
-+
-+static int afu_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+
-+	dev_dbg(&pdev->dev, "%s\n", __func__);
-+
-+	ret = fpga_dev_feature_init(pdev, port_feature_drvs);
-+	if (ret)
-+		return ret;
-+
-+	ret = fpga_register_dev_ops(pdev, &afu_fops, THIS_MODULE);
-+	if (ret)
-+		fpga_dev_feature_uinit(pdev);
-+
-+	return ret;
-+}
-+
-+static int afu_remove(struct platform_device *pdev)
-+{
-+	dev_dbg(&pdev->dev, "%s\n", __func__);
-+
-+	fpga_dev_feature_uinit(pdev);
-+	fpga_unregister_dev_ops(pdev);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver afu_driver = {
-+	.driver	= {
-+		.name    = FPGA_FEATURE_DEV_PORT,
-+	},
-+	.probe   = afu_probe,
-+	.remove  = afu_remove,
-+};
-+
-+module_platform_driver(afu_driver);
-+
-+MODULE_DESCRIPTION("FPGA Accelerated Function Unit driver");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:dfl-port");
--- 
-2.7.4
+PiBPbiBUdWUsIEZlYiAxMywgMjAxOCBhdCAzOjI0IEFNLCBXdSBIYW8gPGhhby53dUBpbnRlbC5j
+b20+IHdyb3RlOg0KPiANCj4gSGkgSGFvLA0KPiANCj4gPiBGb3IgZmVhdHVyZSBkZXZpY2VzLCB3
+ZSBuZWVkIGEgbWV0aG9kIHRvIGZpbmQgdGhlIHBvcnQgZGVkaWNhdGVkDQo+ID4gdG8gdGhlIGRl
+dmljZS4gVGhpcyBwYXRjaCBhZGRzIGEgZnVuY3Rpb24gZnBnYV9jZGV2X2ZpbmRfcG9ydA0KPiA+
+IGZvciB0aGlzIHB1cnBvc2UuIGUuZyBGUEdBIE1hbmFnZW1lbnQgRW5naW5lIChGTUUpIFBhcnRp
+YWwNCj4gPiBSZWNvbmZpZ3VyYXRpb24gc3ViIGZlYXR1cmUsIGl0IHVzZXMgdGhpcyBmdW5jdGlv
+biB0byBmaW5kDQo+ID4gZGVkaWNhdGVkIHBvcnQgb24gdGhlIGRldmljZSBmb3IgUFIgZnVuY3Rp
+b24gaW1wbGVtZW50YXRpb24uDQo+IA0KPiBPSywgdGhhdCBpcyB2ZXJ5IGNsZWFyIG5vdywgdGhh
+bmtzISAgQWNrIHdpdGggdGhlIG1pbm9yIGRvYyBjaGFuZ2VzIGJlbG93Lg0KPiANCj4gPg0KPiA+
+IFNpZ25lZC1vZmYtYnk6IFRpbSBXaGlzb25hbnQgPHRpbS53aGlzb25hbnRAaW50ZWwuY29tPg0K
+PiA+IFNpZ25lZC1vZmYtYnk6IEVubm8gTHVlYmJlcnMgPGVubm8ubHVlYmJlcnNAaW50ZWwuY29t
+Pg0KPiA+IFNpZ25lZC1vZmYtYnk6IFNoaXZhIFJhbyA8c2hpdmEucmFvQGludGVsLmNvbT4NCj4g
+PiBTaWduZWQtb2ZmLWJ5OiBDaHJpc3RvcGhlciBSYXVlciA8Y2hyaXN0b3BoZXIucmF1ZXJAaW50
+ZWwuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFhpYW8gR3Vhbmdyb25nIDxndWFuZ3JvbmcueGlh
+b0BsaW51eC5pbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogV3UgSGFvIDxoYW8ud3VAaW50
+ZWwuY29tPg0KPiBBY2tlZC1ieTogQWxhbiBUdWxsIDxhdHVsbEBrZXJuZWwub3JnPg0KPiANCj4g
+PiAtLS0NCj4gPiB2Mzogcy9mcGdhX2Zvcl9lYWNoX3BvcnQvZnBnYV9jZGV2X2ZpbmRfcG9ydC8N
+Cj4gPiAgICAgbW92ZSBmcGdhX2NkZXZfZmluZF9wb3J0IHRvIGZwZ2EtZGZsIG1vZHVsZS4NCj4g
+PiB2NDogaW1wcm92ZSBkZXNjcmlwdGlvbiBpbiBjb21taXQgbWVzc2FnZS4NCj4gPiAgICAgYWRk
+IGNvbW1lbnRzIHRvIHJlbWluZCB1c2VyIHRvIHB1dF9kZXZpY2UgYWZ0ZXIgdXNlIHRoaXMgZnVu
+Y3Rpb24uDQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvZnBnYS9kZmwuYyB8IDM0ICsrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysNCj4gPiAgZHJpdmVycy9mcGdhL2RmbC5oIHwgMjAgKysr
+KysrKysrKysrKysrKysrKysNCj4gPiAgMiBmaWxlcyBjaGFuZ2VkLCA1NCBpbnNlcnRpb25zKCsp
+DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9mcGdhL2RmbC5jIGIvZHJpdmVycy9mcGdh
+L2RmbC5jDQo+ID4gaW5kZXggZGNmZTVhYi4uMzhkYzgxOSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2
+ZXJzL2ZwZ2EvZGZsLmMNCj4gPiArKysgYi9kcml2ZXJzL2ZwZ2EvZGZsLmMNCj4gPiBAQCAtNzgz
+LDYgKzc4Myw0MCBAQCB2b2lkIGZwZ2FfcmVtb3ZlX2ZlYXR1cmVfZGV2cyhzdHJ1Y3QgZnBnYV9j
+ZGV2DQo+ICpjZGV2KQ0KPiA+ICB9DQo+ID4gIEVYUE9SVF9TWU1CT0xfR1BMKGZwZ2FfcmVtb3Zl
+X2ZlYXR1cmVfZGV2cyk7DQo+ID4NCj4gPiArLyoqDQo+ID4gKyAqIF9fZnBnYV9jZGV2X2ZpbmRf
+cG9ydCAtIGZpbmQgYSBwb3J0IHVuZGVyIGdpdmVuIGNvbnRhaW5lciBkZXZpY2UNCj4gPiArICoN
+Cj4gPiArICogQGNkZXY6IGNvbnRhaW5lciBkZXZpY2UNCj4gPiArICogQGRhdGE6IGRhdGEgcGFz
+c2VkIHRvIG1hdGNoIGZ1bmN0aW9uDQo+ID4gKyAqIEBtYXRjaDogbWF0Y2ggZnVuY3Rpb24gdXNl
+ZCB0byBmaW5kIHNwZWNpZmljIHBvcnQgZnJvbSB0aGUgcG9ydCBkZXZpY2UgbGlzdA0KPiA+ICsg
+Kg0KPiA+ICsgKiBGaW5kIGEgcG9ydCBkZXZpY2UgdW5kZXIgY29udGFpbmVyIGRldmljZS4gVGhp
+cyBmdW5jdGlvbiBuZWVkcyB0byBiZQ0KPiA+ICsgKiBpbnZva2VkIHdpdGggbG9jayBoZWxkLg0K
+PiA+ICsgKg0KPiA+ICsgKiBUaGlzIGZ1bmN0aW9uIHJldHVybnMgTlVMTCBpZiB0aGUgZGV2aWNl
+IGRvZXNuJ3QgbWF0Y2ggYW5kIG5vbi16ZXJvIGlmIGl0DQo+ID4gKyAqIGRvZXMuDQo+IA0KPiBH
+b29kIGJ1dCB0aGlzIHdvdWxkIGJlIG1vcmUgYnJpZWYgYW5kIG1vcmUgc3BlY2lmaWMgYW5kIG1v
+cmUgaW4gbGluZQ0KPiB3aXRoIHJlY29tbWVuZGVkIGZvcm1hdCBpbiBEb2N1bWVudGF0aW9uL2tl
+cm5lbC1kb2MtbmFuby1IT1dUTy50eHQ6DQo+IA0KPiAgKiBSZXR1cm46IHBvaW50ZXIgdG8gcG9y
+dCdzIHBsYXRmb3JtIGRldmljZSBpZiBzdWNjZXNzZnVsLCBOVUxMIG90aGVyd2lzZS4NCj4gDQo+
+ID4gSWYgdGhpcyBmdW5jdGlvbiByZXR1cm5zIG5vbi16ZXJvIGFuZCBhIHJlZmVyZW5jZSB0byB0
+aGUgcGxhdGZvcm0NCj4gPiArICogZGV2aWNlIG9mIHBvcnQgY2FuIGJlIG9idGFpbmVkLg0KPiAN
+Cj4gVGhpcyBpZi4udGhlbiB0eXBlIHNlbnRlbmNlIGlzIG5vdCBjb21wbGV0ZSAobWlzc2luZyB0
+aGUgJ3RoZW4nIHBhcnQpLg0KPiBJIHNlZSB3aGVyZSB5b3UgbWlnaHQgaGF2ZSBnb3R0ZW4gaW5z
+cGlyYXRpb24gZm9yIGl0IGZyb20gY29yZS5jLg0KPiBQcm9iYWJseSB5b3UgY291bGQganVzdCBk
+ZWxldGUgdGhlIHNlbnRlbmNlIGFuZCBhbGwgd291bGQgYmUgY2xlYXIuDQoNClRoYW5rcyBmb3Ig
+dGhlIHJldmlldyBhbmQgdGhlIHN1Z2dlc3Rpb24gb24gdGhpcywgd2lsbCB1cGRhdGUgdGhlDQpj
+b21tZW50cyB0byBmaXggaXQuDQoNCkhhbw0KDQo+IA0KPiA+ICsgKg0KPiA+ICsgKiBOT1RFOiB5
+b3Ugd2lsbCBuZWVkIHRvIGRyb3AgdGhlIGRldmljZSByZWZlcmVuY2Ugd2l0aCBwdXRfZGV2aWNl
+KCkgYWZ0ZXINCj4gdXNlLg0KPiA+ICsgKi8NCj4gDQo+IEdvb2QNCj4gDQo+IFRoYW5rcywNCj4g
+QWxhbg0KPiANCj4gPiArc3RydWN0IHBsYXRmb3JtX2RldmljZSAqDQo+ID4gK19fZnBnYV9jZGV2
+X2ZpbmRfcG9ydChzdHJ1Y3QgZnBnYV9jZGV2ICpjZGV2LCB2b2lkICpkYXRhLA0KPiA+ICsgICAg
+ICAgICAgICAgICAgICAgICBpbnQgKCptYXRjaCkoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqLCB2
+b2lkICopKQ0KPiA+ICt7DQo+ID4gKyAgICAgICBzdHJ1Y3QgZmVhdHVyZV9wbGF0Zm9ybV9kYXRh
+ICpwZGF0YTsNCj4gPiArICAgICAgIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBvcnRfZGV2Ow0K
+PiA+ICsNCj4gPiArICAgICAgIGxpc3RfZm9yX2VhY2hfZW50cnkocGRhdGEsICZjZGV2LT5wb3J0
+X2Rldl9saXN0LCBub2RlKSB7DQo+ID4gKyAgICAgICAgICAgICAgIHBvcnRfZGV2ID0gcGRhdGEt
+PmRldjsNCj4gPiArDQo+ID4gKyAgICAgICAgICAgICAgIGlmIChtYXRjaChwb3J0X2RldiwgZGF0
+YSkgJiYgZ2V0X2RldmljZSgmcG9ydF9kZXYtPmRldikpDQo+ID4gKyAgICAgICAgICAgICAgICAg
+ICAgICAgcmV0dXJuIHBvcnRfZGV2Ow0KPiA+ICsgICAgICAgfQ0KPiA+ICsNCj4gPiArICAgICAg
+IHJldHVybiBOVUxMOw0KPiA+ICt9DQo+ID4gK0VYUE9SVF9TWU1CT0xfR1BMKF9fZnBnYV9jZGV2
+X2ZpbmRfcG9ydCk7DQo+ID4gKw0KPiA+ICBpbnQgZnBnYV9wb3J0X2lkKHN0cnVjdCBwbGF0Zm9y
+bV9kZXZpY2UgKnBkZXYpDQo+ID4gIHsNCj4gPiAgICAgICAgIHZvaWQgX19pb21lbSAqYmFzZSA9
+IGdldF9mZWF0dXJlX2lvYWRkcl9ieV9pZCgmcGRldi0+ZGV2LA0KPiA+IGRpZmYgLS1naXQgYS9k
+cml2ZXJzL2ZwZ2EvZGZsLmggYi9kcml2ZXJzL2ZwZ2EvZGZsLmgNCj4gPiBpbmRleCA5YjE5Mzk5
+Li5kNmVjZGExIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvZnBnYS9kZmwuaA0KPiA+ICsrKyBi
+L2RyaXZlcnMvZnBnYS9kZmwuaA0KPiA+IEBAIC0zNTYsNCArMzU2LDI0IEBAIHN0cnVjdCBmcGdh
+X2NkZXYgew0KPiA+ICBzdHJ1Y3QgZnBnYV9jZGV2ICpmcGdhX2VudW1lcmF0ZV9mZWF0dXJlX2Rl
+dnMoc3RydWN0IGZwZ2FfZW51bV9pbmZvDQo+ICppbmZvKTsNCj4gPiAgdm9pZCBmcGdhX3JlbW92
+ZV9mZWF0dXJlX2RldnMoc3RydWN0IGZwZ2FfY2RldiAqY2Rldik7DQo+ID4NCj4gPiArLyoNCj4g
+PiArICogbmVlZCB0byBkcm9wIHRoZSBkZXZpY2UgcmVmZXJlbmNlIHdpdGggcHV0X2RldmljZSgp
+IGFmdGVyIHVzZSBwb3J0DQo+IHBsYXRmb3JtDQo+ID4gKyAqIGRldmljZSByZXR1cm5lZCBieSBf
+X2ZwZ2FfY2Rldl9maW5kX3BvcnQgYW5kIGZwZ2FfY2Rldl9maW5kX3BvcnQNCj4gZnVuY3Rpb25z
+Lg0KPiA+ICsgKi8NCj4gPiArc3RydWN0IHBsYXRmb3JtX2RldmljZSAqDQo+ID4gK19fZnBnYV9j
+ZGV2X2ZpbmRfcG9ydChzdHJ1Y3QgZnBnYV9jZGV2ICpjZGV2LCB2b2lkICpkYXRhLA0KPiA+ICsg
+ICAgICAgICAgICAgICAgICAgICBpbnQgKCptYXRjaCkoc3RydWN0IHBsYXRmb3JtX2RldmljZSAq
+LCB2b2lkICopKTsNCj4gPiArDQo+ID4gK3N0YXRpYyBpbmxpbmUgc3RydWN0IHBsYXRmb3JtX2Rl
+dmljZSAqDQo+ID4gK2ZwZ2FfY2Rldl9maW5kX3BvcnQoc3RydWN0IGZwZ2FfY2RldiAqY2Rldiwg
+dm9pZCAqZGF0YSwNCj4gPiArICAgICAgICAgICAgICAgICAgIGludCAoKm1hdGNoKShzdHJ1Y3Qg
+cGxhdGZvcm1fZGV2aWNlICosIHZvaWQgKikpDQo+ID4gK3sNCj4gPiArICAgICAgIHN0cnVjdCBw
+bGF0Zm9ybV9kZXZpY2UgKnBkZXY7DQo+ID4gKw0KPiA+ICsgICAgICAgbXV0ZXhfbG9jaygmY2Rl
+di0+bG9jayk7DQo+ID4gKyAgICAgICBwZGV2ID0gX19mcGdhX2NkZXZfZmluZF9wb3J0KGNkZXYs
+IGRhdGEsIG1hdGNoKTsNCj4gPiArICAgICAgIG11dGV4X3VubG9jaygmY2Rldi0+bG9jayk7DQo+
+ID4gKw0KPiA+ICsgICAgICAgcmV0dXJuIHBkZXY7DQo+ID4gK30NCj4gPiAgI2VuZGlmIC8qIF9f
+RlBHQV9ERkxfSCAqLw0KPiA+IC0tDQo+ID4gMi43LjQNCj4gPg0K
