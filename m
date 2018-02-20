@@ -1,23 +1,23 @@
 Return-Path: <SRS0=ps2+=FO=vger.kernel.org=linux-fpga-owner@kernel.org>
 Return-Path: <SRS0=ps2+=FO=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-co1nam03on0042.outbound.protection.outlook.com ([104.47.40.42]:33376
-        "EHLO NAM03-CO1-obe.outbound.protection.outlook.com"
+Received: from mail-bn3nam01on0078.outbound.protection.outlook.com ([104.47.33.78]:16512
+        "EHLO NAM01-BN3-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1750703AbeBTIga (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 20 Feb 2018 03:36:30 -0500
+        id S1750858AbeBTIdi (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 20 Feb 2018 03:33:38 -0500
 From: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
 Subject: [PATCH 2/2] fpga: reset bridge: Add the reset bridge
-Date: Tue, 20 Feb 2018 14:12:51 +0530
-Message-ID: <1519116171-7182-2-git-send-email-shubhrajyoti.datta@xilinx.com>
-In-Reply-To: <1519116171-7182-1-git-send-email-shubhrajyoti.datta@xilinx.com>
-References: <1519116171-7182-1-git-send-email-shubhrajyoti.datta@xilinx.com>
+Date: Tue, 20 Feb 2018 14:10:03 +0530
+Message-ID: <1519116003-6967-2-git-send-email-shubhrajyoti.datta@xilinx.com>
+In-Reply-To: <1519116003-6967-1-git-send-email-shubhrajyoti.datta@xilinx.com>
+References: <1519116003-6967-1-git-send-email-shubhrajyoti.datta@xilinx.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
 To: linux-fpga@vger.kernel.org
-Cc: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, michal.simek@xilinx.com, devicetree@vger.kernel.org, shubhrajyoti.datta@gmail.com, nofooter@xilinx.com, Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
+Cc: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, michal.simek@xilinx.com, devicetree@vger.kernel.org, shubhrajyoti.datta@gmail.com, Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
 
 Adds the reset bridge. After the bitstream load the reset
 bridge helps in reseting the programable logic. The
