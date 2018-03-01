@@ -1,50 +1,32 @@
-Return-Path: <SRS0=zGHA=GR=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=zGHA=GR=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv3 4/7] dt-bindings: fpga: add Stratix10 SoC FPGA manager binding
-Date: Tue, 27 Mar 2018 15:20:11 -0500
-Message-Id: <1522182014-7338-5-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1522182014-7338-1-git-send-email-richard.gong@linux.intel.com>
-References: <1522182014-7338-1-git-send-email-richard.gong@linux.intel.com>
-To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
+Return-Path: <SRS0=c7M9=FX=gmail.com=robherring2@kernel.org>
+Return-Path: <SRS0=c7M9=FX=gmail.com=robherring2@kernel.org>
+Date: Thu, 1 Mar 2018 16:41:01 -0600
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH] dt-bindings: fpga: Consolidate bridge properties
+Message-ID: <20180301224101.ob4bdmh7nne5zgvf@rob-hp-laptop>
+References: <20180221173306.17265-1-mdf@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20180221173306.17265-1-mdf@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, atull@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, devicetree@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alan Tull <atull@kernel.org>
+On Wed, Feb 21, 2018 at 09:33:06AM -0800, Moritz Fischer wrote:
+> Consolidate bridge properties in a single file, instead of duplicating
+> the same optional property over and over again.
+> 
+> Signed-off-by: Moritz Fischer <mdf@kernel.org>
+> Cc: Alan Tull <atull@kernel.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> ---
+>  .../devicetree/bindings/fpga/altera-fpga2sdram-bridge.txt |  5 +----
+>  .../devicetree/bindings/fpga/altera-freeze-bridge.txt     |  5 +----
+>  .../devicetree/bindings/fpga/altera-hps2fpga-bridge.txt   |  5 +----
+>  Documentation/devicetree/bindings/fpga/fpga-bridge.txt    | 15 +++++++++++++++
+>  .../devicetree/bindings/fpga/xilinx-pr-decoupler.txt      |  8 ++------
+>  5 files changed, 20 insertions(+), 18 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/fpga/fpga-bridge.txt
 
-Add a Device Tree binding for the Intel Stratix10 SoC FPGA manager.
-
-Signed-off-by: Alan Tull <atull@kernel.org>
----
-v2: this patch is added in patch set version 2
-v3: change to put fpga_mgr node under firmware/svc node
----
- .../bindings/fpga/intel-stratix10-soc-fpga-mgr.txt      | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-
-diff --git a/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-new file mode 100644
-index 0000000..be7cd96
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-@@ -0,0 +1,17 @@
-+Intel Stratix10 SoC FPGA Manager
-+
-+Required properties:
-+The fpga_mgr node has the following mandatory property, must be located under
-+firmware/svc node.
-+
-+- compatible : should contain "intel,stratix10-soc-fpga-mgr"
-+
-+Example:
-+
-+	firmware {
-+		svc {
-+			fpga_mgr: fpga-mgr@0 {
-+				compatible = "intel,stratix10-soc-fpga-mgr";
-+			};
-+		};
-+	};
--- 
-2.7.4
+Reviewed-by: Rob Herring <robh@kernel.org>
