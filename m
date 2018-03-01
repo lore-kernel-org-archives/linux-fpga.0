@@ -1,114 +1,71 @@
-Return-Path: <SRS0=ujza=E3=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=ujza=E3=ettus.com=moritz.fischer@kernel.org>
-Date: Thu, 1 Feb 2018 16:11:08 +0100
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v3 15/21] fpga: dfl: add fpga bridge platform driver for
- FME
-Message-ID: <20180201151108.dyxzcpjagfmxgjgb@insfl13.etec.uni-karlsruhe.de>
-References: <1511764948-20972-1-git-send-email-hao.wu@intel.com>
- <1511764948-20972-16-git-send-email-hao.wu@intel.com>
- <CANk1AXS-ioW2svMS3QwrQCF5TiHp_nwaongC=d2Z2MfT8BEMMw@mail.gmail.com>
- <20180201051543.GC10273@hao-dev>
+Return-Path: <SRS0=/RR5=FX=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=/RR5=FX=intel.com=hao.wu@kernel.org>
+Date: Thu, 1 Mar 2018 13:49:35 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v4 15/24] fpga: dfl-fme-pr: add compat_id support for
+ dfl-fme-region platform device.
+Message-ID: <20180301054935.GA8999@hao-dev>
+References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+ <1518513893-4719-16-git-send-email-hao.wu@intel.com>
+ <CANk1AXR9473+QqjF=R2JqqJGPB_XH9k+2qDhh68hN=5Fq4E7uw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="aq7qqyqrth4x3dwg"
-Content-Disposition: inline
-In-Reply-To: <20180201051543.GC10273@hao-dev>
-To: Wu Hao <hao.wu@intel.com>
-Cc: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
-
-
---aq7qqyqrth4x3dwg
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <CANk1AXR9473+QqjF=R2JqqJGPB_XH9k+2qDhh68hN=5Fq4E7uw@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Hao,
+On Wed, Feb 28, 2018 at 05:06:57PM -0600, Alan Tull wrote:
+> On Tue, Feb 13, 2018 at 3:24 AM, Wu Hao <hao.wu@intel.com> wrote:
+> 
+> Hi Hao,
+> 
+> > This patch adds compat_id support when driver creates the platform
+> > device for dfl-fme-region. It allows dfl-fme-region platform driver
+> > to create fpga-region with correct compat_id.
+> >
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > ---
+> >  drivers/fpga/dfl-fme-pr.c | 20 ++++++++++++++++++++
+> >  drivers/fpga/dfl-fme-pr.h |  3 +++
+> >  2 files changed, 23 insertions(+)
+> >
+> > diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+> > index 526e90b..c17170b 100644
+> > --- a/drivers/fpga/dfl-fme-pr.c
+> > +++ b/drivers/fpga/dfl-fme-pr.c
+> > @@ -314,6 +314,25 @@ static void fpga_fme_destroy_bridges(struct feature_platform_data *pdata)
+> >  }
+> >
+> >  /**
+> > + * fpga_fme_get_region_compat_id - read region compat_id from hardware
+> > + *
+> > + * @dev: fme device.
+> > + */
+> > +static struct fpga_region_compat_id
+> > +fpga_fme_get_region_compat_id(struct device *dev)
+> > +{
+> > +       struct fpga_region_compat_id compat_id;
+> > +       void __iomem *fme_pr;
+> > +
+> > +       fme_pr = get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_PR_MGMT);
+> > +
+> > +       compat_id.id_l = readq(fme_pr + FME_PR_INTFC_ID_L);
+> > +       compat_id.id_h = readq(fme_pr + FME_PR_INTFC_ID_H);
+> 
+> I tried building for 32 bit ARM and ran into readq and writeq not
+> being defined.  v2 had proper '#indef readq/writeq', so looks like we
+> need that after all.
 
-On Thu, Feb 01, 2018 at 01:15:43PM +0800, Wu Hao wrote:
-> On Wed, Jan 31, 2018 at 09:16:58AM -0600, Alan Tull wrote:
-> > On Mon, Nov 27, 2017 at 12:42 AM, Wu Hao <hao.wu@intel.com> wrote:
-> >=20
-> > Hi Hao,
-> >=20
-> > One fix below.  Besides that, please add my ack.
-> >=20
-> > > This patch adds fpga bridge platform driver for FPGA Management Engin=
-e.
-> > > It implements the enable_set call back for fpga bridge.
-> > >
-> > > Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-> > > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-> > > Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-> > > Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-> > > Signed-off-by: Wu Hao <hao.wu@intel.com>
-> >=20
-> > Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-> >=20
-> > > diff --git a/drivers/fpga/fpga-dfl-fme-br.c b/drivers/fpga/fpga-dfl-f=
-me-br.c
-> > > new file mode 100644
-> > > index 0000000..db2603b
-> > > --- /dev/null
-> > > +++ b/drivers/fpga/fpga-dfl-fme-br.c
-> > > @@ -0,0 +1,87 @@
-> > > +/*
-> > > + * FPGA Bridge Driver for FPGA Management Engine (FME)
-> > > + *
-> > > + * Copyright (C) 2017 Intel Corporation, Inc.
-> > > + *
-> > > + * Authors:
-> > > + *   Wu Hao <hao.wu@intel.com>
-> > > + *   Joseph Grecco <joe.grecco@intel.com>
-> > > + *   Enno Luebbers <enno.luebbers@intel.com>
-> > > + *   Tim Whisonant <tim.whisonant@intel.com>
-> > > + *   Ananda Ravuri <ananda.ravuri@intel.com>
-> > > + *   Henry Mitchel <henry.mitchel@intel.com>
-> > > + *
-> > > + * This work is licensed under the terms of the GNU GPL version 2.
-> >=20
-> > If we're using the SPDX, then please get rid of the above line.
-> >=20
-> > > + * SPDX-License-Identifier: GPL-2.0
-> > > + */
-> >=20
-> > The SPDX line should be the first line of the file with a // (for .c
-> > files), please see:
-> >=20
-> > https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tre=
-e/Documentation/process/license-rules.rst
-> >=20
-> > Same thing for other files.
->=20
-> Thanks for the review.
->=20
-> Sure, will fix this for all driver files in the next version.
->=20
-> Thanks
-> Hao
->=20
-> >=20
-> > Alan
+Sorry, it's missing a header file for dfl-fme-pr.h, as some files don't include
+dfl.h at this version. That header file has definitions for readq/writeq.
 
-Looks good, feel free to add my Acked-by: with fixes Alan requested,
++#include <linux/io-64-nonatomic-lo-hi.h>
 
-Moritz
+will fix it.
 
---aq7qqyqrth4x3dwg
-Content-Type: application/pgp-signature; name="signature.asc"
+Thanks
+Hao
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEEowQ4eJSlIZpNWnl2UVwKRFcJcNgFAlpzLgcACgkQUVwKRFcJ
-cNjcmQf+OkmCQynZ0YYYDWjRGrfCVrI6Sa7ULCpgQnVNZoGaOfDRQQLZ8vguOgF0
-UhX9SiH7bcykBPxJV8hefpdw29/iVP3+xCVO2TFlx/7N18TYmJZIjbWmBok20kLI
-WJwU875j0gcJPkAuhPjWSlz50lxrsuH+o8Wp2l42EWaWbqHCIVvZks7zbb4ofZc9
-TlHPvvgS7WLLAUrT9oVI2Uz17MOe+iGl4Xr9jDnS+xJ+Pbsn3Ob+ULDpn7lc6BLS
-r4HuIzSWTAE2swMMUKt7/U1JhbAUKrwYrg8SNSZP/I75PBw1xMuO43Bxav/7+WJc
-vVM4BWVM1TrB/2sfXi/9D11D+9r4Jw==
-=ysIw
------END PGP SIGNATURE-----
-
---aq7qqyqrth4x3dwg--
+> Alan
