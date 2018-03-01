@@ -1,125 +1,107 @@
-Return-Path: <SRS0=39c5=GG=linux-m68k.org=geert@kernel.org>
-Return-Path: <SRS0=39c5=GG=linux-m68k.org=geert@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v2 01/21] ASoC: Remove depends on HAS_DMA in case of platform dependency
-Date: Fri, 16 Mar 2018 14:51:34 +0100
-Message-Id: <1521208314-4783-2-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
-Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Return-Path: <SRS0=/RR5=FX=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=/RR5=FX=intel.com=hao.wu@kernel.org>
+Date: Thu, 1 Mar 2018 23:55:06 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v4 15/24] fpga: dfl-fme-pr: add compat_id support for
+ dfl-fme-region platform device.
+Message-ID: <20180301155506.GA13141@hao-dev>
+References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+ <1518513893-4719-16-git-send-email-hao.wu@intel.com>
+ <CANk1AXR9473+QqjF=R2JqqJGPB_XH9k+2qDhh68hN=5Fq4E7uw@mail.gmail.com>
+ <20180301054935.GA8999@hao-dev>
+ <CANk1AXRp_oKnLemFS4C7MgJwyFsjOUxgbYN0=S5wdSiUP9iM0g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXRp_oKnLemFS4C7MgJwyFsjOUxgbYN0=S5wdSiUP9iM0g@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+On Thu, Mar 01, 2018 at 09:59:16AM -0600, Alan Tull wrote:
+> On Wed, Feb 28, 2018 at 11:49 PM, Wu Hao <hao.wu@intel.com> wrote:
+> > On Wed, Feb 28, 2018 at 05:06:57PM -0600, Alan Tull wrote:
+> >> On Tue, Feb 13, 2018 at 3:24 AM, Wu Hao <hao.wu@intel.com> wrote:
+> 
+> >> > +
+> >> > +       compat_id.id_l = readq(fme_pr + FME_PR_INTFC_ID_L);
+> >> > +       compat_id.id_h = readq(fme_pr + FME_PR_INTFC_ID_H);
+> >>
+> >> I tried building for 32 bit ARM and ran into readq and writeq not
+> >> being defined.  v2 had proper '#indef readq/writeq', so looks like we
+> >> need that after all.
+> >
+> > Sorry, it's missing a header file for dfl-fme-pr.h, as some files don't include
+> > dfl.h at this version. That header file has definitions for readq/writeq.
+> >
+> > +#include <linux/io-64-nonatomic-lo-hi.h>
+> >
+> > will fix it.
+> 
+> Hi Hao,
+> 
+> That sounds good.  I was able to build if I added it.  There are a
+> couple issues in the enumeration code:
+> 
+> In file included from
+> /home/atull/repos/linux-socfpga/include/linux/kernel.h:11:0,
+>                  from /home/atull/repos/linux-socfpga/include/linux/list.h:9,
+>                  from /home/atull/repos/linux-socfpga/include/linux/module.h:9,
+>                  from /home/atull/repos/linux-socfpga/drivers/fpga/dfl.c:13:
+> /home/atull/repos/linux-socfpga/drivers/fpga/dfl.c: In function
+> 'parse_feature_list':
+> /home/atull/repos/linux-socfpga/include/linux/bitops.h:7:24: warning:
+> left shift count >= width of type [-Wshift-count-overflow]
+>  #define BIT(nr)   (1UL << (nr))
+>                         ^
+> /home/atull/repos/linux-socfpga/drivers/fpga/dfl.h:73:19: note: in
+> expansion of macro 'BIT'
+>  #define DFH_EOL   BIT(40)   /* End of list */
+>                    ^
+> /home/atull/repos/linux-socfpga/drivers/fpga/dfl.c:643:12: note: in
+> expansion of macro 'DFH_EOL'
+>    if ((v & DFH_EOL) || !ofst)
+>             ^
+> 
+> and
+> 
+>   CC      drivers/fpga/dfl-fme-mgr.o
+> In file included from
+> /home/atull/repos/linux-socfpga/include/linux/kernel.h:11:0,
+>                  from /home/atull/repos/linux-socfpga/include/linux/list.h:9,
+>                  from
+> /home/atull/repos/linux-socfpga/include/linux/kobject.h:19,
+>                  from /home/atull/repos/linux-socfpga/include/linux/device.h:16,
+>                  from
+> /home/atull/repos/linux-socfpga/drivers/fpga/dfl-fme-pr.c:20:
+> /home/atull/repos/linux-socfpga/drivers/fpga/dfl-fme-pr.c: In function
+> 'pr_mgmt_init':
+> /home/atull/repos/linux-socfpga/include/linux/bitops.h:7:24: warning:
+> left shift count >= width of type [-Wshift-count-overflow]
+>  #define BIT(nr)   (1UL << (nr))
+>                         ^
+> /home/atull/repos/linux-socfpga/drivers/fpga/dfl.h:113:27: note: in
+> expansion of macro 'BIT'
+>  #define FME_PORT_OFST_IMP BIT(60)
+>                            ^
+> /home/atull/repos/linux-socfpga/drivers/fpga/dfl-fme-pr.c:449:23:
+> note: in expansion of macro 'FME_PORT_OFST_IMP'
+>    if (!(port_offset & FME_PORT_OFST_IMP))
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Hi Alan
 
-This simplifies the dependencies, and allows to improve compile-testing.
+I think it needs to use BIT_ULL instead of BIT.
+will fix them in the next version.
 
-Note:
-  - The various SND_SOC_LPASS_* symbols had to loose their dependencies
-    on HAS_DMA, as they are selected by SND_SOC_STORM and/or
-    SND_SOC_APQ8016_SBC.
+Thanks
+Hao
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
----
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Drop dependency of SND_SOC_LPASS_IPQ806X on HAS_DMA,
-  - Split per subsystem.
----
- sound/soc/bcm/Kconfig      | 3 +--
- sound/soc/kirkwood/Kconfig | 1 -
- sound/soc/pxa/Kconfig      | 1 -
- sound/soc/qcom/Kconfig     | 7 ++-----
- 4 files changed, 3 insertions(+), 9 deletions(-)
-
-diff --git a/sound/soc/bcm/Kconfig b/sound/soc/bcm/Kconfig
-index edf367100ebd2f17..02f50b7a966ff262 100644
---- a/sound/soc/bcm/Kconfig
-+++ b/sound/soc/bcm/Kconfig
-@@ -11,9 +11,8 @@ config SND_BCM2835_SOC_I2S
- config SND_SOC_CYGNUS
- 	tristate "SoC platform audio for Broadcom Cygnus chips"
- 	depends on ARCH_BCM_CYGNUS || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  Say Y if you want to add support for ASoC audio on Broadcom
- 	  Cygnus chips (bcm958300, bcm958305, bcm911360)
- 
--	  If you don't know what to do here, say N.
-\ No newline at end of file
-+	  If you don't know what to do here, say N.
-diff --git a/sound/soc/kirkwood/Kconfig b/sound/soc/kirkwood/Kconfig
-index bc3c7b5ac752e471..132bb83f8e99aff3 100644
---- a/sound/soc/kirkwood/Kconfig
-+++ b/sound/soc/kirkwood/Kconfig
-@@ -1,7 +1,6 @@
- config SND_KIRKWOOD_SOC
- 	tristate "SoC Audio for the Marvell Kirkwood and Dove chips"
- 	depends on ARCH_DOVE || ARCH_MVEBU || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  Say Y or M if you want to add support for codecs attached to
- 	  the Kirkwood I2S interface. You will also need to select the
-diff --git a/sound/soc/pxa/Kconfig b/sound/soc/pxa/Kconfig
-index 484ab3c2ad672fc8..960744e46edc0549 100644
---- a/sound/soc/pxa/Kconfig
-+++ b/sound/soc/pxa/Kconfig
-@@ -1,7 +1,6 @@
- config SND_PXA2XX_SOC
- 	tristate "SoC Audio for the Intel PXA2xx chip"
- 	depends on ARCH_PXA || COMPILE_TEST
--	depends on HAS_DMA
- 	select SND_PXA2XX_LIB
- 	help
- 	  Say Y or M if you want to add support for codecs attached to
-diff --git a/sound/soc/qcom/Kconfig b/sound/soc/qcom/Kconfig
-index 8ec9a074b38bd702..3cc252e55468eaab 100644
---- a/sound/soc/qcom/Kconfig
-+++ b/sound/soc/qcom/Kconfig
-@@ -11,24 +11,21 @@ config SND_SOC_LPASS_CPU
- 
- config SND_SOC_LPASS_PLATFORM
- 	tristate
--	depends on HAS_DMA
- 	select REGMAP_MMIO
- 
- config SND_SOC_LPASS_IPQ806X
- 	tristate
--	depends on HAS_DMA
- 	select SND_SOC_LPASS_CPU
- 	select SND_SOC_LPASS_PLATFORM
- 
- config SND_SOC_LPASS_APQ8016
- 	tristate
--	depends on HAS_DMA
- 	select SND_SOC_LPASS_CPU
- 	select SND_SOC_LPASS_PLATFORM
- 
- config SND_SOC_STORM
- 	tristate "ASoC I2S support for Storm boards"
--	depends on SND_SOC_QCOM && HAS_DMA
-+	depends on SND_SOC_QCOM
- 	select SND_SOC_LPASS_IPQ806X
- 	select SND_SOC_MAX98357A
- 	help
-@@ -37,7 +34,7 @@ config SND_SOC_STORM
- 
- config SND_SOC_APQ8016_SBC
- 	tristate "SoC Audio support for APQ8016 SBC platforms"
--	depends on SND_SOC_QCOM && HAS_DMA
-+	depends on SND_SOC_QCOM
- 	select SND_SOC_LPASS_APQ8016
- 	help
-           Support for Qualcomm Technologies LPASS audio block in
--- 
-2.7.4
+>                        ^
+> Alan
+> 
+> 
+> >
+> > Thanks
+> > Hao
+> >
+> >> Alan
