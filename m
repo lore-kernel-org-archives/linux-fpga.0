@@ -1,1486 +1,569 @@
-Return-Path: <SRS0=zGHA=GR=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=zGHA=GR=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=ZSq7=FY=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=ZSq7=FY=linux.intel.com=richard.gong@kernel.org>
 From: richard.gong@linux.intel.com
-Subject: [PATCHv3 3/7] driver, misc: add Intel Stratix10 service layer driver
-Date: Tue, 27 Mar 2018 15:20:10 -0500
-Message-Id: <1522182014-7338-4-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1522182014-7338-1-git-send-email-richard.gong@linux.intel.com>
-References: <1522182014-7338-1-git-send-email-richard.gong@linux.intel.com>
+Subject: [PATCHv2 6/7] fpga: add intel stratix10 soc fpga manager driver
+Date: Thu,  1 Mar 2018 18:19:34 -0600
+Message-Id: <1519949975-13548-7-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1519949975-13548-1-git-send-email-richard.gong@linux.intel.com>
+References: <1519949975-13548-1-git-send-email-richard.gong@linux.intel.com>
 To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+From: Alan Tull <atull@kernel.org>
 
-Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
-processor system (HPS) and Secure Device Manager (SDM). SDM is the
-hardware which does the FPGA configuration, QSPI, Crypto and warm reset.
+Add driver for reconfiguring Intel Stratix10 SoC FPGA devices.
+This driver communicates through the Intel Service Driver which
+does communication with privileged hardware (that does the
+FPGA programming) through a secure mailbox.
 
-In order to configure the FPGA from HPS, there needs to be a way for HPS to
-notify SDM the location and size of the configuration data. Then SDM will
-get the configuration data from that location and perform the FPGA
-configuration.
-
-To meet the whole system security needs and support virtual machine
-requesting communication with SDM, only the secure world of software (EL3,
-Exception Level 3) can interface with SDM. All software entities running
-on other exception levels must channel through the EL3 software whenever
-it needs service from SDM.
-
-Intel Stratix10 service layer driver is added to provide the service for
-FPGA configuration. Running at privileged exception level (EL1, Exception
-Level 1), Intel Stratix10 service layer driver interfaces with the service
-provider at EL1 (Intel Stratix10 FPGA Manager) and manages secure monitor
-call (SMC) to communicate with secure monitor software at secure monitor
-exception level (EL3).
-
-Header file intel-service-client.h defines the interface between service
-providers (FPGA manager is one of them) and service layer.
-
-Header file intel-smc.h defines the secure monitor call (SMC)
-message protocols used for service layer driver in normal world
-(EL1) to communicate with secure monitor SW in secure monitor exception
-level 3 (EL3). This file is shared with secure firmware (FW) which is
-out of kernel tree.
-
-Signed-off-by: Richard Gong <richard.gong@intel.com>
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
-v2: Remove intel-service subdirectory and intel-service.h, move
-    intel-smc.h and intel-service.c to driver/misc subdirectory
-    Correct SPDX markers
-    Change service layer driver be 'default n'
-    Remove global variables
-    Add timeout for do..while() loop
-    Add kernel-doc for the functions and structs, correct multiline comments
-    Replace kfifo_in/kfifo_out with kfifo_in_spinlocked/kfifo_out_spinlocked
-    rename struct intel_svc_data (at client header) to intel_svc_client_msg
-    rename struct intel_svc_private_mem to intel_svc_data
-    Other corrections/changes from Intel internal code reviews
-v3: Change all exported functions with "intel_svc_" as the prefix
-    Increase timeout values for claiming back submitted buffer(s)
-    Rename struct intel_command_reconfig_payload to
-    struct intel_svc_command_reconfig_payload
-    Add pr_err() to provide the error return value
-    Other corrections/changes
+v2: this patch is added in patch set version 2
 ---
- drivers/misc/Kconfig                 |  12 +
- drivers/misc/Makefile                |   1 +
- drivers/misc/intel-service.c         | 962 +++++++++++++++++++++++++++++++++++
- drivers/misc/intel-smc.h             | 205 ++++++++
- include/linux/intel-service-client.h | 188 +++++++
- 5 files changed, 1368 insertions(+)
- create mode 100644 drivers/misc/intel-service.c
- create mode 100644 drivers/misc/intel-smc.h
- create mode 100644 include/linux/intel-service-client.h
+ drivers/fpga/Kconfig         |   6 +
+ drivers/fpga/Makefile        |   1 +
+ drivers/fpga/stratix10-soc.c | 503 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 510 insertions(+)
+ create mode 100644 drivers/fpga/stratix10-soc.c
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 03605f8..ec225fa7 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -139,6 +139,18 @@ config INTEL_MID_PTI
- 	  an Intel Atom (non-netbook) mobile device containing a MIPI
- 	  P1149.7 standard implementation.
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index f47ef84..cbcbced 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -57,6 +57,12 @@ config FPGA_MGR_ZYNQ_FPGA
+ 	help
+ 	  FPGA manager driver support for Xilinx Zynq FPGAs.
  
-+config INTEL_SERVICE
-+	tristate "Intel Service Layer"
-+	depends on HAVE_ARM_SMCCC
-+	default n
++config FPGA_MGR_STRATIX10_SOC
++	tristate "Intel Stratix10 SoC FPGA Manager"
++	depends on (ARCH_STRATIX10 && INTEL_SERVICE)
 +	help
-+	 Intel service layer runs at privileged exception level, interfaces with
-+	 the service providers (FPGA manager is one of them) and manages secure
-+	 monitor call to communicate with secure monitor software at secure monitor
-+	 exception level.
++	  FPGA manager driver support for the Intel Stratix10 SoC.
 +
-+	 Say Y here if you want Intel service layer support.
-+
- config SGI_IOC4
- 	tristate "SGI IOC4 Base IO support"
- 	depends on PCI
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index c3c8624..3857fc2 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -8,6 +8,7 @@ obj-$(CONFIG_AD525X_DPOT)	+= ad525x_dpot.o
- obj-$(CONFIG_AD525X_DPOT_I2C)	+= ad525x_dpot-i2c.o
- obj-$(CONFIG_AD525X_DPOT_SPI)	+= ad525x_dpot-spi.o
- obj-$(CONFIG_INTEL_MID_PTI)	+= pti.o
-+obj-$(CONFIG_INTEL_SERVICE)     += intel-service.o
- obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
- obj-$(CONFIG_ATMEL_TCLIB)	+= atmel_tclib.o
- obj-$(CONFIG_DUMMY_IRQ)		+= dummy-irq.o
-diff --git a/drivers/misc/intel-service.c b/drivers/misc/intel-service.c
+ config FPGA_MGR_XILINX_SPI
+ 	tristate "Xilinx Configuration over Slave Serial (SPI)"
+ 	depends on SPI
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index 3cb276a..6eef670 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_FPGA_MGR_ALTERA_PS_SPI)	+= altera-ps-spi.o
+ obj-$(CONFIG_FPGA_MGR_ICE40_SPI)	+= ice40-spi.o
+ obj-$(CONFIG_FPGA_MGR_SOCFPGA)		+= socfpga.o
+ obj-$(CONFIG_FPGA_MGR_SOCFPGA_A10)	+= socfpga-a10.o
++obj-$(CONFIG_FPGA_MGR_STRATIX10_SOC)	+= stratix10-soc.o
+ obj-$(CONFIG_FPGA_MGR_TS73XX)		+= ts73xx-fpga.o
+ obj-$(CONFIG_FPGA_MGR_XILINX_SPI)	+= xilinx-spi.o
+ obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+= zynq-fpga.o
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
 new file mode 100644
-index 0000000..8cf6f9b
+index 0000000..e132372
 --- /dev/null
-+++ b/drivers/misc/intel-service.c
-@@ -0,0 +1,962 @@
++++ b/drivers/fpga/stratix10-soc.c
+@@ -0,0 +1,503 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Copyright (C) 2017-2018, Intel Corporation
++ * FPGA Manager Driver for Intel Stratix10 SoC
++ *
++ *  Copyright (C) 2018 Intel Corporation
 + */
-+
-+/*
-+ *  Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
-+ *  processor system (HPS) and Secure Device Manager (SDM). SDM is the
-+ *  hardware which does the FPGA configuration, QSPI, Crypto and warm reset.
-+ *
-+ *  When the FPGA is configured from HPS, there needs to be a way for HPS to
-+ *  notify SDM the location and size of the configuration data. Then SDM will
-+ *  get the configuration data from that location and perform the FPGA
-+ *  configuration.
-+ *
-+ *  To meet the whole system security needs and support virtual machine
-+ *  requesting communication with SDM, only the secure world of software (EL3,
-+ *  Exception Level 3) can interface with SDM. All software entities running
-+ *  on other exception levels must channel through the EL3 software whenever
-+ *  it needs service from SDM.
-+ *
-+ *  Intel Stratix10 service layer driver is added to provide the service for
-+ *  FPGA configuration. Running at privileged exception level (EL1, Exception
-+ *  Level 1), Intel Stratix10 service layer driver interfaces with the service
-+ *  client at EL1 (Intel Stratix10 FPGA Manager) and manages secure monitor
-+ *  call (SMC) to communicate with secure monitor software at secure monitor
-+ *  exception level (EL3).
-+ */
-+
-+#include <linux/arm-smccc.h>
 +#include <linux/completion.h>
-+#include <linux/delay.h>
-+#include <linux/genalloc.h>
++#include <linux/fpga/fpga-mgr.h>
 +#include <linux/intel-service-client.h>
-+#include <linux/io.h>
-+#include <linux/kfifo.h>
-+#include <linux/kthread.h>
 +#include <linux/module.h>
-+#include <linux/mutex.h>
 +#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/types.h>
 +
-+#include "intel-smc.h"
-+
-+/* SVC_NUM_DATA_IN_FIFO - number of struct intel_svc_data in the FIFO */
-+#define SVC_NUM_DATA_IN_FIFO			32
-+/* SVC_NUM_CHANNEL - number of channel supported by service layer driver */
-+#define SVC_NUM_CHANNEL				2
 +/*
-+ * FPGA_CONFIG_DATA_CLAIM_TIMEOUT_MS - claim back the submitted buffer(s)
-+ * from the secure world for FPGA manager to reuse, or to free the buffer(s)
-+ * when all bit-stream data had be send.
++ * FPGA programming requires a higher level of privilege (EL3), per the SoC
++ * design.
 + */
-+#define FPGA_CONFIG_DATA_CLAIM_TIMEOUT_MS	200
-+/*
-+ * FPGA_CONFIG_STATUS_TIMEOUT_SEC - poll the FPGA configuration status,
-+ * service layer will return error to FPGA manager when timeout occurs,
-+ * timeout is set to 30 seconds (30 * 1000) at Intel Stratix10 SoC.
-+ */
-+#define FPGA_CONFIG_STATUS_TIMEOUT_SEC		30
++#define NUM_SVC_BUFS	4
++#define SVC_BUF_SIZE	SZ_512K
 +
-+typedef void (svc_invoke_fn)(unsigned long, unsigned long, unsigned long,
-+			     unsigned long, unsigned long, unsigned long,
-+			     unsigned long, unsigned long,
-+			     struct arm_smccc_res *);
-+
-+struct intel_svc_chan;
++/* Indicates buffer is in use if set */
++#define SVC_BUF_LOCK	0
 +
 +/**
-+ * struct intel_svc_sh_memory - service shared memory structure
-+ * @sync_complete: state for a completion
-+ * @addr: physical address of shared memory block
-+ * @size: size of shared memory block
-+ * @invoke_fn: function to issue secure monitor or hypervisor call
-+ *
-+ * This struct is used to save physical address and size of shared memory
-+ * block. The shared memory blocked is allocated by secure monitor software
-+ * at secure world.
-+ *
-+ * Service layer driver uses the physical address and size to create a memory
-+ * pool, then allocates data buffer from that memory pool for service client.
++ * struct s10_svc_buf
++ * @buf: virtual address of buf provided by service layer
++ * @lock: locked if buffer is in use
 + */
-+struct intel_svc_sh_memory {
-+	struct completion sync_complete;
-+	unsigned long addr;
-+	unsigned long size;
-+	svc_invoke_fn *invoke_fn;
++struct s10_svc_buf {
++	char *buf;
++	unsigned long lock;
 +};
 +
-+/**
-+ * struct intel_svc_data_mem - service memory structure
-+ * @vaddr: virtual address
-+ * @paddr: physical address
-+ * @size: size of memory
-+ * @node: link list head node
-+ *
-+ * This struct is used in a list that keeps track of buffers which have
-+ * been allocated or freed from the memory pool. Service layer driver also
-+ * uses this struct to transfer physical address to virtual address.
-+ */
-+struct intel_svc_data_mem {
-+	void *vaddr;
-+	phys_addr_t paddr;
-+	size_t size;
-+	struct list_head node;
-+};
-+
-+/**
-+ * struct intel_svc_data - service data structure
-+ * @chan: service channel
-+ * @paddr: playload physical address
-+ * @size: playload size
-+ * @command: service command requested by client
-+ *
-+ * This struct is used in service FIFO for inter-process communication.
-+ */
-+struct intel_svc_data {
++struct s10_priv {
 +	struct intel_svc_chan *chan;
-+	phys_addr_t paddr;
-+	size_t size;
-+	u32 command;
++	struct intel_svc_client client;
++	struct completion status_return_completion;
++	struct s10_svc_buf svc_bufs[NUM_SVC_BUFS];
++	unsigned long status;
 +};
 +
-+/**
-+ * struct intel_svc_controller - service controller
-+ * @dev: device
-+ * @chans: array of service channels
-+ * $num_chans: number of channels in 'chans' array
-+ * @node: list management
-+ * @genpool: memory pool pointing to the memory region
-+ * @task: pointer to the thread task which handles SMC or HVC call
-+ * @svc_fifo: a queue for storing service message data
-+ * @complete_status: state for completion
-+ * @svc_fifo_lock: protect access to service message data queue
-+ * @invoke_fn: function to issue secure monitor call or hypervisor call
-+ *
-+ * This struct is used to create communication channels for service clients, to
-+ * handle secure monitor or hypervisor call.
-+ */
-+struct intel_svc_controller {
-+	struct device *dev;
-+	struct intel_svc_chan *chans;
-+	int num_chans;
-+	struct list_head node;
-+	struct gen_pool *genpool;
-+	struct task_struct *task;
-+	struct kfifo svc_fifo;
-+	struct completion complete_status;
-+	spinlock_t svc_fifo_lock;
-+	svc_invoke_fn *invoke_fn;
-+};
-+
-+/**
-+ * struct intel_svc_chan - service communication channel
-+ * @ctrl: pointer to service controller which is the provider of this channel
-+ * @scl: pointer to service client which owns the channel
-+ * @name: service client name associated with the channel
-+ * @lock: protect access to the channel
-+ *
-+ * This struct is used by service client to communicate with service layer, each
-+ * service client has its own channel created by service controller.
-+ */
-+struct intel_svc_chan {
-+	struct intel_svc_controller *ctrl;
-+	struct intel_svc_client *scl;
-+	char *name;
-+	spinlock_t lock;
-+};
-+
-+static LIST_HEAD(svc_ctrl);
-+static LIST_HEAD(svc_data_mem);
-+
-+/**
-+ * intel_svc_request_channel_byname() - request a service channel
-+ * @client: pointer to service client
-+ * @name: service client name
-+ *
-+ * This function is used by service client to request a service channel.
-+ *
-+ * Return: a pointer to channel assigned to the client on success,
-+ * or ERR_PTR() on error.
-+ */
-+struct intel_svc_chan *intel_svc_request_channel_byname(
-+	struct intel_svc_client *client, const char *name)
++static int s10_svc_send_msg(struct s10_priv *priv,
++			    enum intel_svc_command_code command,
++			    void *payload, u32 payload_length)
 +{
-+	struct device *dev = client->dev;
-+	struct intel_svc_controller *controller;
-+	struct intel_svc_chan *chan;
-+	unsigned long flag;
-+	int i;
-+
-+	chan = ERR_PTR(-EPROBE_DEFER);
-+	if (list_empty(&svc_ctrl))
-+		return ERR_PTR(-ENODEV);
-+
-+	controller = list_first_entry(&svc_ctrl,
-+				      struct intel_svc_controller, node);
-+	for (i = 0; i < SVC_NUM_CHANNEL; i++) {
-+		if (!strcmp(controller->chans[i].name, name)) {
-+			chan = &controller->chans[i];
-+			break;
-+		}
-+	}
-+
-+	if (chan->scl || !try_module_get(controller->dev->driver->owner)) {
-+		dev_dbg(dev, "%s: svc not free\n", __func__);
-+		return ERR_PTR(-EBUSY);
-+	}
-+
-+	spin_lock_irqsave(&chan->lock, flag);
-+	chan->scl = client;
-+	spin_unlock_irqrestore(&chan->lock, flag);
-+
-+	return chan;
-+}
-+EXPORT_SYMBOL_GPL(intel_svc_request_channel_byname);
-+
-+/**
-+ * intel_svc_free_channel() - free service channel
-+ * @chan: service channel to be freed
-+ *
-+ * This function is used by service client to free a service channel.
-+ */
-+void intel_svc_free_channel(struct intel_svc_chan *chan)
-+{
-+	unsigned long flag;
-+
-+	spin_lock_irqsave(&chan->lock, flag);
-+	chan->scl = NULL;
-+	module_put(chan->ctrl->dev->driver->owner);
-+	spin_unlock_irqrestore(&chan->lock, flag);
-+}
-+EXPORT_SYMBOL_GPL(intel_svc_free_channel);
-+
-+/**
-+ * intel_svc_send() - send a message data to the remote
-+ * @chan: service channel assigned to the client
-+ * @msg: message data to be sent, in the format of "struct intel_svc_client_msg"
-+ *
-+ * This function is used by service client to add a message to the service
-+ * layer driver's queue for being sent to the secure world.
-+ *
-+ * Return: 0 for success, -ENOMEM or -ENOBUFS on error.
-+ */
-+int intel_svc_send(struct intel_svc_chan *chan, void *msg)
-+{
-+	struct intel_svc_client_msg *p_msg = (struct intel_svc_client_msg *)msg;
-+	struct intel_svc_data_mem *p_mem;
-+	struct intel_svc_data *p_data;
-+	int ret = 0;
-+
-+	p_data = kmalloc(sizeof(*p_data), GFP_KERNEL);
-+	if (!p_data)
-+		return -ENOMEM;
-+
-+	pr_debug("%s: sent P-va=%p, P-com=%x, P-size=%u\n", __func__,
-+		 p_msg->payload, p_msg->command,
-+		 (unsigned int)p_msg->payload_length);
-+
-+	list_for_each_entry(p_mem, &svc_data_mem, node) {
-+		if (p_mem->vaddr == p_msg->payload) {
-+			p_data->paddr = p_mem->paddr;
-+			break;
-+		}
-+	}
-+
-+	p_data->command = p_msg->command;
-+	p_data->size = p_msg->payload_length;
-+	p_data->chan = chan;
-+	pr_debug("%s: put to FIFO pa=0x%016x, cmd=%x, size=%u\n", __func__,
-+	       (unsigned int)p_data->paddr, p_data->command,
-+	       (unsigned int)p_data->size);
-+	ret = kfifo_in_spinlocked(&chan->ctrl->svc_fifo, p_data,
-+				  sizeof(*p_data),
-+				  &chan->ctrl->svc_fifo_lock);
-+
-+	kfree(p_data);
-+
-+	if (!ret)
-+		return -ENOBUFS;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(intel_svc_send);
-+
-+/**
-+ * intel_svc_allocate_memory() - allocate memory
-+ * @chan: service channel assigned to the client
-+ * @size: memory size requested by a specific service client
-+ *
-+ * Service layer allocates the requested number of bytes buffer from the
-+ * memory pool, service client uses this function to get allocated buffers.
-+ *
-+ * Return: address of allocated memory on success, or ERR_PTR() on error.
-+ */
-+void *intel_svc_allocate_memory(struct intel_svc_chan *chan, size_t size)
-+{
-+	struct intel_svc_data_mem *pmem;
-+	unsigned long va;
-+	phys_addr_t pa;
-+	struct gen_pool *genpool = chan->ctrl->genpool;
-+	size_t s = roundup(size, 1 << genpool->min_alloc_order);
-+
-+	pmem = devm_kzalloc(chan->ctrl->dev, sizeof(*pmem), GFP_KERNEL);
-+	if (!pmem)
-+		return ERR_PTR(-ENOMEM);
-+
-+	va = gen_pool_alloc(genpool, s);
-+	if (!va)
-+		return ERR_PTR(-ENOMEM);
-+
-+	memset((void *)va, 0, s);
-+	pa = gen_pool_virt_to_phys(genpool, va);
-+
-+	pmem->vaddr = (void *)va;
-+	pmem->paddr = pa;
-+	pmem->size = s;
-+	list_add_tail(&pmem->node, &svc_data_mem);
-+	pr_debug("%s: va=%p, pa=0x%016x\n", __func__,
-+		 pmem->vaddr, (unsigned int)pmem->paddr);
-+
-+	return (void *)va;
-+}
-+EXPORT_SYMBOL_GPL(intel_svc_allocate_memory);
-+
-+/**
-+ * intel_svc_free_memory() - free allocated memory
-+ * @chan: service channel assigned to the client
-+ * @kaddr: memory to be freed
-+ *
-+ * This function is used by service client to free allocated buffers.
-+ */
-+void intel_svc_free_memory(struct intel_svc_chan *chan, void *kaddr)
-+{
-+	struct intel_svc_data_mem *pmem;
-+	size_t size = 0;
-+
-+	list_for_each_entry(pmem, &svc_data_mem, node)
-+		if (pmem->vaddr == kaddr) {
-+			size = pmem->size;
-+			break;
-+		}
-+
-+	gen_pool_free(chan->ctrl->genpool, (unsigned long)kaddr, size);
-+	pmem->vaddr = NULL;
-+	list_del(&pmem->node);
-+}
-+EXPORT_SYMBOL_GPL(intel_svc_free_memory);
-+
-+/**
-+ * svc_pa_to_va() - translate physical address to virtual address
-+ * @addr: to be translated physical address
-+ *
-+ * Return: valid virtual address or NULL if the provided physical
-+ * address doesn't exist.
-+ */
-+static void *svc_pa_to_va(unsigned long addr)
-+{
-+	struct intel_svc_data_mem *pmem;
-+
-+	pr_debug("claim back P-addr=0x%016x\n", (unsigned int)addr);
-+	list_for_each_entry(pmem, &svc_data_mem, node) {
-+		if (pmem->paddr == addr)
-+			return pmem->vaddr;
-+	}
-+
-+	/* physical address is not found */
-+	return NULL;
-+}
-+
-+/**
-+ * svc_thread_cmd_data_claim() - claim back buffer from the secure world
-+ * @addr: pointer to service layer controller
-+ * @p_data: pointer to service data structure
-+ * @cb_data: pointer to callback data structure to service client
-+ *
-+ * Claim back the submitted buffers from the secure world and pass buffer
-+ * back to service client (FPGA manager, etc) for reuse.
-+ */
-+static void svc_thread_cmd_data_claim(struct intel_svc_controller *ctrl,
-+				      struct intel_svc_data *p_data,
-+				      struct intel_svc_cb_data *cb_data)
-+{
-+	struct arm_smccc_res res;
-+	unsigned long timeout;
-+
-+	reinit_completion(&ctrl->complete_status);
-+	timeout = msecs_to_jiffies(FPGA_CONFIG_DATA_CLAIM_TIMEOUT_MS);
-+
-+	pr_debug("%s: claim back the submitted buffer\n", __func__);
-+	do {
-+		ctrl->invoke_fn(INTEL_SIP_SMC_FPGA_CONFIG_COMPLETED_WRITE,
-+				0, 0, 0, 0, 0, 0, 0, &res);
-+
-+		if (res.a0 == INTEL_SIP_SMC_STATUS_OK) {
-+			if (!res.a1) {
-+				complete(&ctrl->complete_status);
-+				break;
-+			}
-+			cb_data->status = BIT(SVC_STATUS_RECONFIG_BUFFER_DONE);
-+			cb_data->kaddr1 = svc_pa_to_va(res.a1);
-+			cb_data->kaddr2 = (res.a2) ?
-+					  svc_pa_to_va(res.a2) : NULL;
-+			cb_data->kaddr3 = (res.a3) ?
-+					  svc_pa_to_va(res.a3) : NULL;
-+			p_data->chan->scl->receive_cb(p_data->chan->scl,
-+						      cb_data);
-+		} else {
-+			pr_debug("%s: secure world busy, polling again\n",
-+				 __func__);
-+		}
-+	} while (res.a0 == INTEL_SIP_SMC_STATUS_OK ||
-+		 res.a0 == INTEL_SIP_SMC_FPGA_CONFIG_STATUS_BUSY ||
-+		 wait_for_completion_timeout(&ctrl->complete_status, timeout));
-+}
-+
-+/**
-+ * svc_thread_cmd_config_status() - check configuration status
-+ * @ctrl: pointer to service layer controller
-+ * @p_data: pointer to service data structure
-+ * @cb_data: pointer to callback data structure to service client
-+ *
-+ * Check whether the secure firmware at secure world has finished the FPGA
-+ * configuration, and then inform FPGA manager the configuration status.
-+ */
-+static void svc_thread_cmd_config_status(struct intel_svc_controller *ctrl,
-+					   struct intel_svc_data *p_data,
-+					   struct intel_svc_cb_data *cb_data)
-+{
-+	struct arm_smccc_res res;
-+	int count_in_sec;
-+
-+	cb_data->kaddr1 = NULL;
-+	cb_data->kaddr2 = NULL;
-+	cb_data->kaddr3 = NULL;
-+	cb_data->status = BIT(SVC_STATUS_RECONFIG_ERROR);
-+
-+	pr_debug("%s: polling config status\n", __func__);
-+
-+	count_in_sec = FPGA_CONFIG_STATUS_TIMEOUT_SEC;
-+	while (count_in_sec) {
-+		ctrl->invoke_fn(INTEL_SIP_SMC_FPGA_CONFIG_ISDONE,
-+				0, 0, 0, 0, 0, 0, 0, &res);
-+		if ((res.a0 == INTEL_SIP_SMC_STATUS_OK) ||
-+		    (res.a0 == INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR))
-+			break;
-+
-+		/*
-+		 * configuration is still in progress, wait one second then
-+		 * poll again
-+		 */
-+		msleep(1000);
-+		count_in_sec--;
-+	};
-+
-+	if (res.a0 == INTEL_SIP_SMC_STATUS_OK && count_in_sec)
-+		cb_data->status = BIT(SVC_STATUS_RECONFIG_COMPLETED);
-+
-+	p_data->chan->scl->receive_cb(p_data->chan->scl, cb_data);
-+}
-+
-+/**
-+ * svc_thread_recv_status_ok() - handle the successful status
-+ * @p_data: pointer to service data structure
-+ * @cb_data: pointer to callback data structure to service client
-+ * @res: result from SMC or HVC call
-+ *
-+ * Send back the correspond status to the service client (FPGA manager etc).
-+ */
-+static void svc_thread_recv_status_ok(struct intel_svc_data *p_data,
-+				      struct intel_svc_cb_data *cb_data,
-+				      struct arm_smccc_res res)
-+{
-+	cb_data->kaddr1 = NULL;
-+	cb_data->kaddr2 = NULL;
-+	cb_data->kaddr3 = NULL;
-+
-+	switch (p_data->command) {
-+	case COMMAND_RECONFIG:
-+		cb_data->status = BIT(SVC_STATUS_RECONFIG_REQUEST_OK);
-+		break;
-+	case COMMAND_RECONFIG_DATA_SUBMIT:
-+		cb_data->status = BIT(SVC_STATUS_RECONFIG_BUFFER_SUBMITTED);
-+		break;
-+	case COMMAND_NOOP:
-+		cb_data->status = BIT(SVC_STATUS_RECONFIG_BUFFER_SUBMITTED);
-+		cb_data->kaddr1 = svc_pa_to_va(res.a1);
-+		break;
-+	case COMMAND_RECONFIG_STATUS:
-+		cb_data->status = BIT(SVC_STATUS_RECONFIG_COMPLETED);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	pr_debug("%s: call receive_cb\n", __func__);
-+	p_data->chan->scl->receive_cb(p_data->chan->scl, cb_data);
-+}
-+
-+/**
-+ * svc_normal_to_secure_thread() - the function to run in the kthread
-+ * @data: data pointer for kthread function
-+ *
-+ * Service layer driver creates intel_svc_smc_hvc_call kthread on CPU
-+ * node 0, its function intel_svc_secure_call_thread is used to handle
-+ * SMC or HVC calls between kernel driver and secure monitor software.
-+ *
-+ * Return: 0 for success or -ENOMEM on error.
-+ */
-+static int svc_normal_to_secure_thread(void *data)
-+{
-+	struct intel_svc_controller *ctrl = (struct intel_svc_controller *)data;
-+	struct intel_svc_data *pdata;
-+	struct intel_svc_cb_data *cbdata;
-+	struct arm_smccc_res res;
-+	unsigned long a0, a1, a2;
-+	int ret_fifo = 0;
-+
-+	pdata =  kmalloc(sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata)
-+		return -ENOMEM;
-+
-+	cbdata = kmalloc(sizeof(*cbdata), GFP_KERNEL);
-+	if (!cbdata)
-+		return -ENOMEM;
-+
-+	/* default set, to remove build warning */
-+	a0 = INTEL_SIP_SMC_FPGA_CONFIG_LOOPBACK;
-+	a1 = 0;
-+	a2 = 0;
-+
-+	while (!kthread_should_stop()) {
-+		ret_fifo = kfifo_out_spinlocked(&ctrl->svc_fifo,
-+						pdata, sizeof(*pdata),
-+						&ctrl->svc_fifo_lock);
-+
-+		if (!ret_fifo)
-+			continue;
-+
-+		pr_debug("get from FIFO pa=0x%016x, command=%u, size=%u\n",
-+			 (unsigned int)pdata->paddr, pdata->command,
-+			 (unsigned int)pdata->size);
-+
-+		switch (pdata->command) {
-+		case COMMAND_RECONFIG_DATA_CLAIM:
-+			svc_thread_cmd_data_claim(ctrl, pdata, cbdata);
-+			continue;
-+		case COMMAND_RECONFIG:
-+			a0 = INTEL_SIP_SMC_FPGA_CONFIG_START;
-+			a1 = 0;
-+			a2 = 0;
-+			break;
-+		case COMMAND_RECONFIG_DATA_SUBMIT:
-+			a0 = INTEL_SIP_SMC_FPGA_CONFIG_WRITE;
-+			a1 = (unsigned long)pdata->paddr;
-+			a2 = (unsigned long)pdata->size;
-+			break;
-+		case COMMAND_RECONFIG_STATUS:
-+			a0 = INTEL_SIP_SMC_FPGA_CONFIG_ISDONE;
-+			a1 = 0;
-+			a2 = 0;
-+			break;
-+		default:
-+			/* it shouldn't happen */
-+			break;
-+		}
-+		pr_debug("%s: before SMC call -- a0=0x%016x a1=0x%016x",
-+			 __func__, (unsigned int)a0, (unsigned int)a1);
-+		pr_debug(" a2=0x%016x\n", (unsigned int)a2);
-+
-+		ctrl->invoke_fn(a0, a1, a2, 0, 0, 0, 0, 0, &res);
-+
-+		pr_debug("%s: after SMC call -- res.a0=0x%016x",
-+			 __func__, (unsigned int)res.a0);
-+		pr_debug(" res.a1=0x%016x, res.a2=0x%016x",
-+			 (unsigned int)res.a1, (unsigned int)res.a2);
-+		pr_debug(" res.a3=0x%016x\n", (unsigned int)res.a3);
-+
-+		switch (res.a0) {
-+		case INTEL_SIP_SMC_STATUS_OK:
-+			svc_thread_recv_status_ok(pdata, cbdata, res);
-+			break;
-+		case INTEL_SIP_SMC_FPGA_CONFIG_STATUS_BUSY:
-+			switch (pdata->command) {
-+			case COMMAND_RECONFIG_DATA_SUBMIT:
-+				svc_thread_cmd_data_claim(ctrl,
-+							  pdata, cbdata);
-+				break;
-+			case COMMAND_RECONFIG_STATUS:
-+				svc_thread_cmd_config_status(ctrl,
-+							     pdata, cbdata);
-+				break;
-+			default:
-+				break;
-+			}
-+			break;
-+		case INTEL_SIP_SMC_FPGA_CONFIG_STATUS_REJECTED:
-+			pr_debug("%s: STATUS_REJECTED\n", __func__);
-+			break;
-+		case INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR:
-+			pr_err("%s: STATUS_ERROR\n", __func__);
-+			cbdata->status = BIT(SVC_STATUS_RECONFIG_ERROR);
-+			cbdata->kaddr1 = NULL;
-+			cbdata->kaddr2 = NULL;
-+			cbdata->kaddr3 = NULL;
-+			pdata->chan->scl->receive_cb(pdata->chan->scl, cbdata);
-+			break;
-+		default:
-+			break;
-+		}
-+	};
-+
-+	kfree(cbdata);
-+	kfree(pdata);
-+
-+	return 0;
-+}
-+
-+/**
-+ * svc_normal_to_secure_shm_thread() - the function to run in the kthread
-+ * @data: data pointer for kthread function
-+ *
-+ * Service layer driver creates intel_svc_smc_hvc_shm kthread on CPU
-+ * node 0, its function intel_svc_secure_shm_thread is used to query the
-+ * physical address of memory block reserved by secure monitor software at
-+ * secure world.
-+ *
-+ * svc_normal_to_secure_shm_thread() calls do_exit() directly since it is a
-+ * standlone thread for which no one will call kthread_stop() or return when
-+ * 'kthread_should_stop()' is true.
-+ */
-+static int svc_normal_to_secure_shm_thread(void *data)
-+{
-+	struct intel_svc_sh_memory *sh_mem = (struct intel_svc_sh_memory *)data;
-+	struct arm_smccc_res res;
-+
-+	/* SMC or HVC call to get shared memory info from secure world */
-+	sh_mem->invoke_fn(INTEL_SIP_SMC_FPGA_CONFIG_GET_MEM,
-+			  0, 0, 0, 0, 0, 0, 0, &res);
-+	if (res.a0 == INTEL_SIP_SMC_STATUS_OK) {
-+		sh_mem->addr = res.a1;
-+		sh_mem->size = res.a2;
-+	} else {
-+		pr_err("%s: after SMC call -- res.a0=0x%016x",  __func__,
-+		       (unsigned int)res.a0);
-+		sh_mem->addr = 0;
-+		sh_mem->size = 0;
-+	}
-+
-+	complete(&sh_mem->sync_complete);
-+	do_exit(0);
-+}
-+
-+/**
-+ * svc_get_sh_memory() - get memory block reserved by secure monitor SW
-+ * @pdev: pointer to service layer device
-+ * @sh_memory pointer to service shared memory structure
-+ *
-+ * Return: zero for successfully getting the physical address of memory block
-+ * reserved by secure monitor software, or negative value on error.
-+ */
-+static int svc_get_sh_memory(struct platform_device *pdev,
-+				    struct intel_svc_sh_memory *sh_memory)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct task_struct *sh_memory_task;
-+
-+	init_completion(&sh_memory->sync_complete);
-+
-+	/* smc/hvc call happens on cpu 0 bound kthread */
-+	sh_memory_task = kthread_create_on_cpu(svc_normal_to_secure_shm_thread,
-+					       (void *)sh_memory,
-+						0, "svc_smc_hvc_shm_thread");
-+	if (IS_ERR(sh_memory_task)) {
-+		dev_err(dev, "fail to create intel_svc_smc_shm_thread\n");
-+		return -EINVAL;
-+	}
-+
-+	wake_up_process(sh_memory_task);
-+
-+	if (!wait_for_completion_timeout(&sh_memory->sync_complete, 10 * HZ)) {
-+		dev_err(dev,
-+			"timeout to get sh-memory paras from secure world\n");
-+		return -ETIMEDOUT;
-+	}
-+
-+	if (!sh_memory->addr || !sh_memory->size) {
-+		dev_err(dev,
-+			"fails to get shared memory info from secure world\n");
-+		return -ENOMEM;
-+	}
-+
-+	dev_dbg(dev, "SM software provides paddr: 0x%016x, size: 0x%08x\n",
-+		(unsigned int)sh_memory->addr,
-+		(unsigned int)sh_memory->size);
-+
-+	return 0;
-+}
-+
-+/**
-+ * svc_create_memory_pool() - create a memory pool from reserved memory block
-+ * @pdev: pointer to service layer device
-+ * @sh_memory: pointer to service shared memory structure
-+ *
-+ * Return: pool allocated from reserved memory block or ERR_PTR() on error.
-+ */
-+static struct gen_pool *
-+svc_create_memory_pool(struct platform_device *pdev,
-+		       struct intel_svc_sh_memory *sh_memory)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct gen_pool *genpool;
-+	unsigned long vaddr;
-+	phys_addr_t paddr;
-+	size_t size;
-+	phys_addr_t begin;
-+	phys_addr_t end;
-+	void *va;
-+	size_t page_mask = PAGE_SIZE - 1;
-+	int min_alloc_order = 3;
++	struct intel_svc_chan *chan = priv->chan;
++	struct intel_svc_client_msg msg;
 +	int ret;
 +
-+	begin = roundup(sh_memory->addr, PAGE_SIZE);
-+	end = rounddown(sh_memory->addr + sh_memory->size, PAGE_SIZE);
-+	paddr = begin;
-+	size = end - begin;
-+	va = memremap(paddr, size, MEMREMAP_WC);
-+	if (!va) {
-+		dev_err(dev, "fail to remap shared memory\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+	vaddr = (unsigned long)va;
-+	dev_dbg(dev,
-+		"reserved memory vaddr: %p, paddr: 0x%16x size: 0x%8x\n",
-+		va, (unsigned int)paddr, (unsigned int)size);
-+	if ((vaddr & page_mask) || (paddr & page_mask) ||
-+	    (size & page_mask)) {
-+		dev_err(dev, "page is not aligned\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+	genpool = gen_pool_create(min_alloc_order, -1);
-+	if (!genpool) {
-+		dev_err(dev, "fail to create genpool\n");
-+		return ERR_PTR(-ENOMEM);
-+	}
-+	gen_pool_set_algo(genpool, gen_pool_best_fit, NULL);
-+	ret = gen_pool_add_virt(genpool, vaddr, paddr, size, -1);
-+	if (ret) {
-+		dev_err(dev, "fail to add memory chunk to the pool\n");
-+		gen_pool_destroy(genpool);
-+		return ERR_PTR(ret);
-+	}
++	pr_debug("%s cmd=%d payload=%p legnth=%d\n",
++		 __func__, command, payload, payload_length);
 +
-+	return genpool;
-+}
++	msg.command = command;
++	msg.payload = payload;
++	msg.payload_length = payload_length;
 +
-+/**
-+ * svc_smccc_smc() - secure monitor call between normal and secure world
-+ * @a0-a7: arguments passed in registers 0 to 7
-+ * @res: result values from register 0 to 3
-+ */
-+static void svc_smccc_smc(unsigned long a0, unsigned long a1,
-+			  unsigned long a2, unsigned long a3,
-+			  unsigned long a4, unsigned long a5,
-+			  unsigned long a6, unsigned long a7,
-+			  struct arm_smccc_res *res)
-+{
-+	arm_smccc_smc(a0, a1, a2, a3, a4, a5, a6, a7, res);
-+}
-+
-+/**
-+ * svc_smccc_hvc() - hypervisor call between normal and secure world
-+ * @a0-a7: arguments passed in registers 0 to 7
-+ * @res: result values from register 0 to 3
-+ */
-+static void svc_smccc_hvc(unsigned long a0, unsigned long a1,
-+			  unsigned long a2, unsigned long a3,
-+			  unsigned long a4, unsigned long a5,
-+			  unsigned long a6, unsigned long a7,
-+			  struct arm_smccc_res *res)
-+{
-+	arm_smccc_hvc(a0, a1, a2, a3, a4, a5, a6, a7, res);
-+}
-+
-+/**
-+ * get_invoke_func() - invoke SMC or HVC call
-+ * @dev: pointer to device
-+ *
-+ * Return: function pointer to svc_smccc_smc or svc_smccc_hvc.
-+ */
-+static svc_invoke_fn *get_invoke_func(struct device *dev)
-+{
-+	const char *method;
-+
-+	if (of_property_read_string(dev->of_node, "method", &method)) {
-+		dev_warn(dev, "missing \"method\" property\n");
-+		return ERR_PTR(-ENXIO);
-+	}
-+
-+	if (!strcmp(method, "smc"))
-+		return svc_smccc_smc;
-+	if (!strcmp(method, "hvc"))
-+		return svc_smccc_hvc;
-+
-+	dev_warn(dev, "invalid \"method\" property: %s\n", method);
-+
-+	return ERR_PTR(-EINVAL);
-+}
-+
-+static const struct of_device_id intel_svc_drv_match[] = {
-+	{.compatible = "intel,stratix10-svc"},
-+	{},
-+};
-+
-+static int intel_svc_drv_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct intel_svc_controller *controller;
-+	struct intel_svc_chan *chans;
-+	struct gen_pool *genpool;
-+	struct intel_svc_sh_memory *sh_memory;
-+	struct task_struct *task;
-+	svc_invoke_fn *invoke_fn;
-+	size_t fifo_size;
-+	int ret;
-+
-+	/* get SMC or HVC function */
-+	invoke_fn = get_invoke_func(dev);
-+	if (IS_ERR(invoke_fn))
-+		return -EINVAL;
-+
-+	sh_memory = devm_kzalloc(dev, sizeof(*sh_memory), GFP_KERNEL);
-+	if (!sh_memory)
-+		return -ENOMEM;
-+
-+	sh_memory->invoke_fn = invoke_fn;
-+	ret = svc_get_sh_memory(pdev, sh_memory);
-+	if (ret)
-+		return ret;
-+
-+	genpool = svc_create_memory_pool(pdev, sh_memory);
-+	if (!genpool)
-+		return -ENOMEM;
-+
-+	/* allocate service controller and supporting channel */
-+	controller = devm_kzalloc(dev, sizeof(*controller), GFP_KERNEL);
-+	if (!controller)
-+		return -ENOMEM;
-+
-+	chans = devm_kmalloc_array(dev, SVC_NUM_CHANNEL,
-+				   sizeof(*chans), GFP_KERNEL | __GFP_ZERO);
-+	if (!chans)
-+		return -ENOMEM;
-+
-+	/* smc or hvc call happens on cpu 0 bound kthread */
-+	task = kthread_create_on_cpu(svc_normal_to_secure_thread,
-+				     (void *)controller, 0,
-+				     "svc_smc_hvc_thread");
-+	if (IS_ERR(task)) {
-+		dev_err(dev, "fails to create svc_smc_hvc_thread\n");
-+		return -EINVAL;
-+	}
-+
-+	controller->dev = dev;
-+	controller->num_chans = SVC_NUM_CHANNEL;
-+	controller->chans = chans;
-+	controller->genpool = genpool;
-+	controller->task = task;
-+	controller->invoke_fn = invoke_fn;
-+	init_completion(&controller->complete_status);
-+
-+	fifo_size = sizeof(struct intel_svc_data) * SVC_NUM_DATA_IN_FIFO;
-+	ret = kfifo_alloc(&controller->svc_fifo, fifo_size, GFP_KERNEL);
-+	if (ret) {
-+		dev_err(dev, "fails to allocate FIFO\n");
-+		return ret;
-+	}
-+	spin_lock_init(&controller->svc_fifo_lock);
-+
-+	chans[0].scl = NULL;
-+	chans[0].ctrl = controller;
-+	chans[0].name = SVC_CLIENT_FPGA;
-+	spin_lock_init(&chans[0].lock);
-+
-+	chans[1].scl = NULL;
-+	chans[1].ctrl = controller;
-+	chans[1].name = SVC_CLIENT_DUMMY;
-+	spin_lock_init(&chans[1].lock);
-+
-+	wake_up_process(controller->task);
-+
-+	list_add_tail(&controller->node, &svc_ctrl);
-+	platform_set_drvdata(pdev, controller);
-+
-+	pr_info("Intel Service Layer Driver Initialized\n");
++	ret = intel_svc_send(chan, &msg);
++	pr_debug("intel_svc_send returned status %d\n", ret);
 +
 +	return ret;
 +}
 +
-+static int intel_svc_drv_remove(struct platform_device *pdev)
++/**
++ * s10_free_buffers
++ * Free buffers allocated from the service layer's pool that are not in use.
++ * @mgr: fpga manager struct
++ * Free all buffers that are not in use.
++ * Return true when all buffers are freed.
++ */
++static bool s10_free_buffers(struct fpga_manager *mgr)
 +{
-+	struct intel_svc_controller *ctrl = platform_get_drvdata(pdev);
++	struct s10_priv *priv = mgr->priv;
++	uint num_free = 0;
++	uint i;
 +
-+	kfifo_free(&ctrl->svc_fifo);
-+	kthread_stop(ctrl->task);
-+	if (ctrl->genpool)
-+		gen_pool_destroy(ctrl->genpool);
-+	list_del(&ctrl->node);
++	for (i = 0; i < NUM_SVC_BUFS; i++) {
++		if (!priv->svc_bufs[i].buf) {
++			num_free++;
++			continue;
++		}
++
++		if (!test_and_set_bit_lock(SVC_BUF_LOCK,
++					   &priv->svc_bufs[i].lock)) {
++			intel_svc_free_memory(priv->chan,
++					      priv->svc_bufs[i].buf);
++			priv->svc_bufs[i].buf = NULL;
++			num_free++;
++		}
++	}
++
++	return num_free == NUM_SVC_BUFS;
++}
++
++/**
++ * s10_free_buffer_count
++ * Count how many buffers are not in use.
++ * @mgr: fpga manager struct
++ * Return # of buffers that are not in use.
++ */
++static uint s10_free_buffer_count(struct fpga_manager *mgr)
++{
++	struct s10_priv *priv = mgr->priv;
++	uint num_free = 0;
++	uint i;
++
++	for (i = 0; i < NUM_SVC_BUFS; i++)
++		if (!priv->svc_bufs[i].buf)
++			num_free++;
++
++	return num_free;
++}
++
++/**
++ * s10_unlock_bufs
++ * Given the returned buffer address, match that address to our buffer struct
++ * and unlock that buffer.  This marks it as available to be refilled and sent
++ * (or freed).
++ * @priv: private data
++ * @kaddr: kernel address of buffer that was returned from service layer
++ */
++static void s10_unlock_bufs(struct s10_priv *priv, void *kaddr)
++{
++	uint i;
++
++	if (!kaddr)
++		return;
++
++	for (i = 0; i < NUM_SVC_BUFS; i++)
++		if (priv->svc_bufs[i].buf == kaddr) {
++			clear_bit_unlock(SVC_BUF_LOCK,
++					 &priv->svc_bufs[i].lock);
++			return;
++		}
++
++	WARN(1, "Unknown buffer returned from service layer %p\n", kaddr);
++}
++
++/**
++ * s10_receive_callback
++ * Callback for service layer to use to provide client (this driver) messages
++ * received through the mailbox.
++ * @client: service layer client struct
++ * @data: message
++ */
++static void s10_receive_callback(struct intel_svc_client *client,
++				 struct intel_svc_cb_data *data)
++{
++	struct s10_priv *priv = client->priv;
++	u32 status;
++	int i;
++
++	WARN_ONCE(!data, "%s: intel_svc_rc_data = NULL", __func__);
++
++	status = data->status;
++
++	/*
++	 * Here we set status bits as we receive them.  Elsewhere, we always use
++	 * test_and_clear_bit() to check status in priv->status
++	 */
++	for (i = 0; i <= SVC_STATUS_RECONFIG_ERROR; i++)
++		if (status & (1 << i))
++			set_bit(i, &priv->status);
++
++	if (status & BIT(SVC_STATUS_RECONFIG_BUFFER_DONE)) {
++		s10_unlock_bufs(priv, data->kaddr1);
++		s10_unlock_bufs(priv, data->kaddr2);
++		s10_unlock_bufs(priv, data->kaddr3);
++	}
++
++	complete(&priv->status_return_completion);
++}
++
++/**
++ * s10_ops_write_init
++ * Prepare for FPGA reconfiguration by requesting partial reconfig and
++ * allocating buffers from the service layer.
++ * @mgr: fpga manager
++ * @info: fpga image info
++ * @buf: fpga image buffer
++ * @count: size of buf in bytes
++ */
++static int s10_ops_write_init(struct fpga_manager *mgr,
++			      struct fpga_image_info *info,
++			      const char *buf, size_t count)
++{
++	struct s10_priv *priv = mgr->priv;
++	struct device *dev = priv->client.dev;
++	unsigned long timeout;
++	struct intel_command_reconfig_payload payload;
++	char *kbuf;
++	uint i;
++	int ret;
++
++	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
++		dev_info(dev, "Requesting partial reconfiguration.\n");
++		payload.flags |= BIT(COMMAND_RECONFIG_FLAG_PARTIAL);
++	} else {
++		dev_info(dev, "Requesting full reconfiguration.\n");
++	}
++
++	reinit_completion(&priv->status_return_completion);
++	ret = s10_svc_send_msg(priv, COMMAND_RECONFIG,
++			       &payload, sizeof(payload));
++	if (ret)
++		return ret;
++
++	timeout = msecs_to_jiffies(SVC_RECONFIG_REQUEST_TIMEOUT_MS);
++	ret = wait_for_completion_interruptible_timeout(
++		&priv->status_return_completion, timeout);
++	if (!ret) {
++		dev_err(dev, "timeout waiting for RECONFIG_REQUEST\n");
++		return -ETIMEDOUT;
++	}
++	if (ret < 0) {
++		dev_err(dev, "error (%d) waiting for RECONFIG_REQUEST\n", ret);
++		return ret;
++	}
++
++	if (!test_and_clear_bit(SVC_STATUS_RECONFIG_REQUEST_OK,
++				&priv->status))
++		return -ETIMEDOUT;
++
++	/* Allocate buffers from the service layer's pool. */
++	for (i = 0; i < NUM_SVC_BUFS; i++) {
++		kbuf = intel_svc_allocate_memory(priv->chan, SVC_BUF_SIZE);
++		if (!kbuf) {
++			s10_free_buffers(mgr);
++			return -ENOMEM;
++		}
++
++		priv->svc_bufs[i].buf = kbuf;
++		priv->svc_bufs[i].lock = 0;
++	}
 +
 +	return 0;
 +}
 +
-+static struct platform_driver intel_svc_driver = {
-+	.probe = intel_svc_drv_probe,
-+	.remove = intel_svc_drv_remove,
++/**
++ * s10_send_buf
++ * Send a buffer to the service layer queue
++ * @mgr: fpga manager struct
++ * @buf_num: index of buffer in svc_bufs array
++ * @buf: fpga image buffer
++ * @count: size of buf in bytes
++ * Returns # of bytes transferred or -errno, never 0
++ */
++static int s10_send_buf(struct fpga_manager *mgr, uint buf_num,
++			const char *buf, size_t count)
++
++{
++	struct s10_priv *priv = mgr->priv;
++	struct device *dev = priv->client.dev;
++	void *svc_buf;
++	size_t xfer_sz;
++	int ret;
++
++	xfer_sz = count < SVC_BUF_SIZE ? count : SVC_BUF_SIZE;
++
++	svc_buf = priv->svc_bufs[buf_num].buf;
++	memcpy(svc_buf, buf, xfer_sz);
++	ret = s10_svc_send_msg(priv, COMMAND_RECONFIG_DATA_SUBMIT,
++			       svc_buf, xfer_sz);
++	if (ret) {
++		dev_err(dev,
++			"Error while sending data to service layer (%d)", ret);
++		return ret;
++	}
++
++	return xfer_sz;
++}
++
++/**
++ * s10_ops_write
++ * Send a FPGA image to privileged layers to write to the FPGA.  When done
++ * sending, free all service layer buffers we allocated in write_init.
++ * @mgr: fpga manager
++ * @buf: fpga image buffer
++ * @count: size of buf in bytes
++ * Returns 0 for success or negative errno.
++ */
++static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
++			 size_t count)
++{
++	struct s10_priv *priv = mgr->priv;
++	struct device *dev = priv->client.dev;
++	unsigned long timeout;
++	size_t sent = 0;
++	int ret = 0;
++	uint i;
++
++	timeout = msecs_to_jiffies(SVC_RECONFIG_BUFFER_TIMEOUT_MS);
++
++	/* Buffer loop: either send buffers or free them. */
++	while (1) {
++		reinit_completion(&priv->status_return_completion);
++
++		if (count > 0) {
++			for (i = 0; i < NUM_SVC_BUFS; i++)
++				if (!test_and_set_bit_lock(
++					 SVC_BUF_LOCK, &priv->svc_bufs[i].lock))
++					break;
++
++			if (i == NUM_SVC_BUFS)
++				/* wait for a free buffer */
++				continue;
++
++			sent = s10_send_buf(mgr, i, buf, count);
++			/*
++			 * If service queue was full, we won't get a callback.
++			 * Wait and try again
++			 */
++			if (sent < 0)
++				continue;
++
++			count -= sent;
++			buf += sent;
++		} else {
++			s10_free_buffers(mgr);
++			if (s10_free_buffer_count(mgr) == NUM_SVC_BUFS)
++				return 0;
++
++			ret = s10_svc_send_msg(
++				priv, COMMAND_RECONFIG_DATA_CLAIM,
++				NULL, 0);
++			if (ret)
++				break;
++		}
++
++		/*
++		 * If callback hasn't already happened, wait for buffers to be
++		 * returned from service layer
++		 */
++		if (priv->status)
++			ret = 0;
++		else
++			ret = wait_for_completion_interruptible_timeout(
++				&priv->status_return_completion, timeout);
++
++		if (test_and_clear_bit(
++				SVC_STATUS_RECONFIG_BUFFER_DONE, &priv->status))
++			continue;
++
++		if (test_and_clear_bit(SVC_STATUS_RECONFIG_BUFFER_SUBMITTED,
++				       &priv->status))
++			continue;
++
++		if (test_and_clear_bit(SVC_STATUS_RECONFIG_ERROR,
++				       &priv->status)) {
++			dev_err(dev, "ERROR - giving up - SVC_STATUS_RECONFIG_ERROR\n");
++			ret = -EFAULT;
++			break;
++		}
++
++		if (!ret) {
++			dev_err(dev, "timeout waiting for svc layer buffers\n");
++			ret = -ETIMEDOUT;
++			break;
++		}
++		if (ret < 0) {
++			dev_err(dev,
++				"error (%d) waiting for svc layer buffers\n",
++				ret);
++			break;
++		}
++	}
++
++	s10_free_buffers(mgr);
++	if (s10_free_buffer_count(mgr) != NUM_SVC_BUFS)
++		dev_err(dev, "%s not all buffers were freed\n", __func__);
++
++	return ret;
++}
++
++/**
++ * s10_ops_write_complete
++ * Wait for FPGA configuration to be done
++ * @mgr: fpga manager
++ * @info: fpga image info
++ * Returns 0 for success negative errno.
++ */
++static int s10_ops_write_complete(struct fpga_manager *mgr,
++				  struct fpga_image_info *info)
++{
++	struct s10_priv *priv = mgr->priv;
++	struct device *dev = priv->client.dev;
++	unsigned long timeout;
++	int ret;
++
++	timeout = usecs_to_jiffies(info->config_complete_timeout_us);
++
++	do {
++		reinit_completion(&priv->status_return_completion);
++
++		ret = s10_svc_send_msg(priv, COMMAND_RECONFIG_STATUS, NULL, 0);
++		if (ret)
++			return ret;
++
++		ret = wait_for_completion_interruptible_timeout(
++			&priv->status_return_completion, timeout);
++		if (!ret) {
++			dev_err(dev,
++				"timeout waiting for RECONFIG_COMPLETED\n");
++			return -ETIMEDOUT;
++		}
++		if (ret < 0) {
++			dev_err(dev,
++				"error (%d) waiting for RECONFIG_COMPLETED\n",
++				ret);
++			return ret;
++		}
++		/* Not error or timeout, so ret is # of jiffies until timeout */
++		timeout = ret;
++
++		if (test_and_clear_bit(SVC_STATUS_RECONFIG_COMPLETED,
++				       &priv->status))
++			break;
++
++		if (test_and_clear_bit(SVC_STATUS_RECONFIG_ERROR,
++				       &priv->status)) {
++			dev_err(dev, "ERROR - giving up - SVC_STATUS_RECONFIG_ERROR\n");
++			return -EFAULT;
++		}
++	} while (1);
++
++	return 0;
++}
++
++static enum fpga_mgr_states s10_ops_state(struct fpga_manager *mgr)
++{
++	return FPGA_MGR_STATE_UNKNOWN;
++}
++
++static const struct fpga_manager_ops s10_ops = {
++	.state = s10_ops_state,
++	.write_init = s10_ops_write_init,
++	.write = s10_ops_write,
++	.write_complete = s10_ops_write_complete,
++};
++
++static int s10_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct s10_priv *priv;
++	int ret;
++
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->client.dev = dev;
++	priv->client.receive_cb = s10_receive_callback;
++	priv->client.priv = priv;
++
++	priv->chan = request_svc_channel_byname(&priv->client,
++						SVC_CLIENT_FPGA);
++	if (IS_ERR(priv->chan)) {
++		dev_err(dev, "couldn't get service channel (%s)\n",
++			SVC_CLIENT_FPGA);
++		return PTR_ERR(priv->chan);
++	}
++
++	init_completion(&priv->status_return_completion);
++
++	ret = fpga_mgr_register(dev, "Stratix10 SOC FPGA Manager",
++				&s10_ops, priv);
++
++	if (ret)
++		free_svc_channel(priv->chan);
++
++	return ret;
++}
++
++static int s10_remove(struct platform_device *pdev)
++{
++	struct fpga_manager *mgr = platform_get_drvdata(pdev);
++	struct s10_priv *priv = mgr->priv;
++
++	fpga_mgr_unregister(&pdev->dev);
++	free_svc_channel(priv->chan);
++
++	return 0;
++}
++
++static const struct of_device_id s10_of_match[] = {
++	{ .compatible = "intel,stratix10-soc-fpga-mgr", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, s10_of_match);
++
++static struct platform_driver s10_driver = {
++	.probe = s10_probe,
++	.remove = s10_remove,
 +	.driver = {
-+		.name = "intel-svc",
-+		.of_match_table = intel_svc_drv_match,
++		.name	= "Stratix10 SoC FPGA manager",
++		.of_match_table = of_match_ptr(s10_of_match),
 +	},
 +};
 +
-+static int __init intel_svc_init(void)
-+{
-+	struct device_node *fw_np;
-+	struct device_node *np;
-+	int ret;
++module_platform_driver(s10_driver);
 +
-+	fw_np = of_find_node_by_name(NULL, "firmware");
-+	if (!fw_np)
-+		return -ENODEV;
-+
-+	np = of_find_matching_node(fw_np, intel_svc_drv_match);
-+	if (!np) {
-+		of_node_put(fw_np);
-+		return -ENODEV;
-+	}
-+
-+	of_node_put(np);
-+	ret = of_platform_populate(fw_np, intel_svc_drv_match, NULL, NULL);
-+	of_node_put(fw_np);
-+	if (ret)
-+		return ret;
-+
-+	return platform_driver_register(&intel_svc_driver);
-+}
-+
-+static void __exit intel_svc_exit(void)
-+{
-+	return platform_driver_unregister(&intel_svc_driver);
-+}
-+
-+subsys_initcall(intel_svc_init);
-+module_exit(intel_svc_exit);
-+
++MODULE_AUTHOR("Alan Tull <atull@kernel.org>");
++MODULE_DESCRIPTION("Intel Stratix 10 SOC FPGA Manager");
 +MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("Intel Stratix10 Service Layer Driver");
-+MODULE_AUTHOR("Richard Gong <richard.gong@intel.com>");
-+MODULE_ALIAS("platform:intel-svc");
-diff --git a/drivers/misc/intel-smc.h b/drivers/misc/intel-smc.h
-new file mode 100644
-index 0000000..0b92560
---- /dev/null
-+++ b/drivers/misc/intel-smc.h
-@@ -0,0 +1,205 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2017-2018, Intel Corporation
-+ */
-+
-+#ifndef __INTEL_SMC_H
-+#define __INTEL_SMC_H
-+
-+#include <linux/arm-smccc.h>
-+#include <linux/bitops.h>
-+
-+/*
-+ * This file defines the Secure Monitor Call (SMC) message protocol used for
-+ * service layer driver in normal world (EL1) to communicate with secure
-+ * monitor software in Secure Monitor Exception Level 3 (EL3).
-+ *
-+ * This file is shared with secure firmware (FW) which is out of kernel tree.
-+ *
-+ * An ARM SMC instruction takes a function identifier and up to 6 64-bit
-+ * register values as arguments, and can return up to 4 64-bit register
-+ * value. The operation of the secure monitor is determined by the parameter
-+ * values passed in through registers.
-+
-+ * EL1 and EL3 communicates pointer as physical address rather than the
-+ * virtual address.
-+ */
-+
-+/*
-+ * Functions specified by ARM SMC Calling convention:
-+ *
-+ * FAST call executes atomic operations, returns when the requested operation
-+ * has completed.
-+ * STD call starts a operation which can be preempted by a non-secure
-+ * interrupt. The call can return before the requested operation has
-+ * completed.
-+ *
-+ * a0..a7 is used as register names in the descriptions below, on arm32
-+ * that translates to r0..r7 and on arm64 to w0..w7.
-+ */
-+
-+#define INTEL_SIP_SMC_STD_CALL_VAL(func_num) \
-+	ARM_SMCCC_CALL_VAL(ARM_SMCCC_STD_CALL, ARM_SMCCC_SMC_64, \
-+	ARM_SMCCC_OWNER_SIP, (func_num))
-+
-+#define INTEL_SIP_SMC_FAST_CALL_VAL(func_num) \
-+	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, ARM_SMCCC_SMC_64, \
-+	ARM_SMCCC_OWNER_SIP, (func_num))
-+
-+/*
-+ * Return values in INTEL_SIP_SMC_* call
-+ *
-+ * INTEL_SIP_SMC_RETURN_UNKNOWN_FUNCTION:
-+ * Secure monitor software doesn't recognize the request.
-+ *
-+ * INTEL_SIP_SMC_STATUS_OK:
-+ * FPGA configuration completed successfully,
-+ * In case of FPGA configuration write operation, it means secure monitor
-+ * software can accept the next chunk of FPGA configuration data.
-+ *
-+ * INTEL_SIP_SMC_FPGA_CONFIG_STATUS_BUSY:
-+ * In case of FPGA configuration write operation, it means secure monitor
-+ * software is still processing previous data & can't accept the next chunk
-+ * of data. Service driver needs to issue
-+ * INTEL_SIP_SMC_FPGA_CONFIG_COMPLETED_WRITE call to query the
-+ * completed block(s).
-+ *
-+ * INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR:
-+ * There is error during the FPGA configuration process.
-+ */
-+#define INTEL_SIP_SMC_RETURN_UNKNOWN_FUNCTION		0xFFFFFFFF
-+#define INTEL_SIP_SMC_STATUS_OK				0x0
-+#define INTEL_SIP_SMC_FPGA_CONFIG_STATUS_BUSY		0x1
-+#define INTEL_SIP_SMC_FPGA_CONFIG_STATUS_REJECTED       0x2
-+#define INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR		0x4
-+
-+/*
-+ * Request INTEL_SIP_SMC_FPGA_CONFIG_START
-+ *
-+ * Sync call used by service driver at EL1 to request the FPGA in EL3 to
-+ * be prepare to receive a new configuration.
-+ *
-+ * Call register usage:
-+ * a0: INTEL_SIP_SMC_FPGA_CONFIG_START.
-+ * a1: flag for full or partial configuration
-+ *    0 full reconfiguration.
-+ *    1 partial reconfiguration.
-+ * a2-7: not used.
-+ *
-+ * Return status:
-+ * a0: INTEL_SIP_SMC_STATUS_OK, or INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR.
-+ * a1-3: not used.
-+ */
-+#define INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_START 1
-+#define INTEL_SIP_SMC_FPGA_CONFIG_START \
-+	INTEL_SIP_SMC_FAST_CALL_VAL(INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_START)
-+
-+/*
-+ * Request INTEL_SIP_SMC_FPGA_CONFIG_WRITE
-+ *
-+ * Async call used by service driver at EL1 to provide FPGA configuration data
-+ * to secure world.
-+ *
-+ * Call register usage:
-+ * a0: INTEL_SIP_SMC_FPGA_CONFIG_WRITE.
-+ * a1: 64bit physical address of the configuration data memory block
-+ * a2: Size of configuration data block.
-+ * a3-7: not used.
-+ *
-+ * Return status:
-+ * a0: INTEL_SIP_SMC_STATUS_OK, INTEL_SIP_SMC_FPGA_CONFIG_STATUS_BUSY or
-+ * INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR.
-+ * a1: 64bit physical address of 1st completed memory block if any completed
-+ * block, otherwise zero value.
-+ * a2: 64bit physical address of 2nd completed memory block if any completed
-+ * block, otherwise zero value.
-+ * a3: 64bit physical address of 3rd completed memory block if any completed
-+ * block, otherwise zero value.
-+ */
-+#define INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_WRITE 2
-+#define INTEL_SIP_SMC_FPGA_CONFIG_WRITE \
-+	INTEL_SIP_SMC_STD_CALL_VAL(INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_WRITE)
-+
-+/*
-+ * Request INTEL_SIP_SMC_FPGA_CONFIG_COMPLETED_WRITE
-+ *
-+ * Sync call used by service driver at EL1 to track the completed write
-+ * transactions. This request is called after INTEL_SIP_SMC_FPGA_CONFIG_WRITE
-+ * call returns INTEL_SIP_SMC_FPGA_CONFIG_STATUS_BUSY.
-+ *
-+ * Call register usage:
-+ * a0: INTEL_SIP_SMC_FPGA_CONFIG_COMPLETED_WRITE.
-+ * a1-7: not used.
-+ *
-+ * Return status:
-+ * a0: INTEL_SIP_SMC_STATUS_OK, INTEL_SIP_SMC_FPGA_CONFIG_STATUS_BUSY or
-+ * INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR.
-+ * a1: 64bit physical address of 1st completed memory block.
-+ * a2: 64bit physical address of 2nd completed memory block if
-+ * any completed block, otherwise zero value.
-+ * a3: 64bit physical address of 3rd completed memory block if
-+ * any completed block, otherwise zero value.
-+ */
-+#define INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_COMPLETED_WRITE 3
-+#define INTEL_SIP_SMC_FPGA_CONFIG_COMPLETED_WRITE \
-+INTEL_SIP_SMC_FAST_CALL_VAL(INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_COMPLETED_WRITE)
-+
-+/*
-+ * Request INTEL_SIP_SMC_FPGA_CONFIG_ISDONE
-+ *
-+ * Sync call used by service driver at EL1 to inform secure world that all
-+ * data are sent, to check whether or not the secure world had completed
-+ * the FPGA configuration process.
-+ *
-+ * Call register usage:
-+ * a0: INTEL_SIP_SMC_FPGA_CONFIG_ISDONE.
-+ * a1-7: not used.
-+ *
-+ * Return status:
-+ * a0: INTEL_SIP_SMC_STATUS_OK, INTEL_SIP_SMC_FPGA_CONFIG_STATUS_BUSY or
-+ * INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR.
-+ * a1-3: not used.
-+ */
-+#define INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_ISDONE 4
-+#define INTEL_SIP_SMC_FPGA_CONFIG_ISDONE \
-+	INTEL_SIP_SMC_FAST_CALL_VAL(INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_ISDONE)
-+
-+/*
-+ * Request INTEL_SIP_SMC_FPGA_CONFIG_GET_MEM
-+ *
-+ * Sync call used by service driver at EL1 to query the physical address of
-+ * memory block reserved by secure monitor software.
-+ *
-+ * Call register usage:
-+ * a0:INTEL_SIP_SMC_FPGA_CONFIG_GET_MEM.
-+ * a1-7: not used.
-+ *
-+ * Return status:
-+ * a0: INTEL_SIP_SMC_STATUS_OK or INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR.
-+ * a1: start of physical address of reserved memory block.
-+ * a2: size of reserved memory block.
-+ * a3: not used.
-+ */
-+#define INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_GET_MEM 5
-+#define INTEL_SIP_SMC_FPGA_CONFIG_GET_MEM \
-+	INTEL_SIP_SMC_FAST_CALL_VAL(INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_GET_MEM)
-+
-+/*
-+ * Request INTEL_SIP_SMC_FPGA_CONFIG_LOOPBACK
-+ *
-+ * For SMC loop-back mode only, used for internal integration, debugging
-+ * or troubleshooting.
-+ *
-+ * Call register usage:
-+ * a0: INTEL_SIP_SMC_FPGA_CONFIG_LOOPBACK.
-+ * a1-7: not used.
-+ *
-+ * Return status:
-+ * a0: INTEL_SIP_SMC_STATUS_OK or INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR.
-+ * a1-3: not used.
-+ */
-+#define INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_LOOPBACK 6
-+#define INTEL_SIP_SMC_FPGA_CONFIG_LOOPBACK \
-+	INTEL_SIP_SMC_FAST_CALL_VAL(INTEL_SIP_SMC_FUNCID_FPGA_CONFIG_LOOPBACK)
-+
-+#endif
-diff --git a/include/linux/intel-service-client.h b/include/linux/intel-service-client.h
-new file mode 100644
-index 0000000..5a247b8
---- /dev/null
-+++ b/include/linux/intel-service-client.h
-@@ -0,0 +1,188 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2017-2018, Intel Corporation
-+ */
-+
-+#ifndef __INTEL_SERVICE_CLIENT_H
-+#define __INTEL_SERVICE_CLIENT_H
-+
-+/*
-+ * Service layer driver supports client names
-+ *
-+ * fpga: for FPGA configuration
-+ * dummy: for integration/debug/trouble-shooting
-+ */
-+#define SVC_CLIENT_FPGA		"fpga"
-+#define SVC_CLIENT_DUMMY	"dummy"
-+
-+/*
-+ * Status of the sent command, in bit number
-+ *
-+ * SVC_COMMAND_STATUS_RECONFIG_REQUEST_OK:
-+ * Secure firmware accepts the request of FPGA reconfiguration.
-+ *
-+ * SVC_STATUS_RECONFIG_BUFFER_SUBMITTED:
-+ * Service client successfully submits FPGA configuration
-+ * data buffer to secure firmware.
-+ *
-+ * SVC_COMMAND_STATUS_RECONFIG_BUFFER_DONE:
-+ * Secure firmware completes data process, ready to accept the
-+ * next WRITE transaction.
-+ *
-+ * SVC_COMMAND_STATUS_RECONFIG_COMPLETED:
-+ * Secure firmware completes FPGA configuration successfully, FPGA should
-+ * be in user mode.
-+ *
-+ * SVC_COMMAND_STATUS_RECONFIG_BUSY:
-+ * FPGA configuration is still in process.
-+ *
-+ * SVC_COMMAND_STATUS_RECONFIG_ERROR:
-+ * Error encountered during FPGA configuration.
-+ */
-+#define SVC_STATUS_RECONFIG_REQUEST_OK		0
-+#define SVC_STATUS_RECONFIG_BUFFER_SUBMITTED	1
-+#define SVC_STATUS_RECONFIG_BUFFER_DONE		2
-+#define SVC_STATUS_RECONFIG_COMPLETED		3
-+#define SVC_STATUS_RECONFIG_BUSY		4
-+#define SVC_STATUS_RECONFIG_ERROR		5
-+
-+/*
-+ * Flag bit for COMMAND_RECONFIG
-+ *
-+ * COMMAND_RECONFIG_FLAG_PARTIAL:
-+ * Set to FPGA configuration type (full or partial), the default
-+ * is full reconfig.
-+ */
-+#define COMMAND_RECONFIG_FLAG_PARTIAL   0
-+
-+/* Timeout settings for FPGA manager driver */
-+#define SVC_RECONFIG_REQUEST_TIMEOUT_MS         100
-+#define SVC_RECONFIG_BUFFER_TIMEOUT_MS          240
-+
-+struct intel_svc_chan;
-+
-+/**
-+ * enum intel_svc_command_code - supporting service commands
-+ *
-+ * @COMMAND_NOOP: do 'dummy' request for integration/debug/trouble-shootings
-+ *
-+ * @COMMAND_RECONFIG: ask for FPGA configuration preparation, return status
-+ * is SVC_STATUS_RECONFIG_REQUEST_OK
-+ *
-+ * @COMMAND_RECONFIG_DATA_SUBMIT: submit buffer(s) of bit-stream data for the
-+ * FPGA configuration, return status is SVC_STATUS_RECONFIG_BUFFER_SUBMITTED,
-+ * or SVC_STATUS_RECONFIG_ERROR
-+ *
-+ * @COMMAND_RECONFIG_DATA_CLAIM: check the status of the configuration, return
-+ * status is SVC_STATUS_RECONFIG_COMPLETED, or SVC_STATUS_RECONFIG_BUSY, or
-+ * SVC_STATUS_RECONFIG_ERROR
-+
-+ * @COMMAND_RECONFIG_STATUS: check the status of the configuration, return
-+ * status is SVC_STATUS_RECONFIG_COMPLETED, or  SVC_STATUS_RECONFIG_BUSY, or
-+ * SVC_STATUS_RECONFIG_ERROR
-+ */
-+enum intel_svc_command_code {
-+	COMMAND_NOOP = 0,
-+	COMMAND_RECONFIG,
-+	COMMAND_RECONFIG_DATA_SUBMIT,
-+	COMMAND_RECONFIG_DATA_CLAIM,
-+	COMMAND_RECONFIG_STATUS
-+};
-+
-+/**
-+ * struct intel_svc_client_msg - message sent by client to service
-+ * @command: service command
-+ * @payload: starting address of data need be processed
-+ * @payload_length: data size in bytes
-+ */
-+struct intel_svc_client_msg {
-+	void *payload;
-+	size_t payload_length;
-+	enum intel_svc_command_code command;
-+};
-+
-+/**
-+ * struct intel_svc_command_reconfig_payload - reconfig payload
-+ * @flags: flag bit for the type of FPGA configuration
-+ */
-+struct intel_svc_command_reconfig_payload {
-+	u32 flags;
-+};
-+
-+/**
-+ * struct intel_svc_cb_data - callback data structure from service layer
-+ * @status: the status of sent command
-+ * @kaddr1-3: used when status is SVC_COMMAND_STATUS_RECONFIG_BUFFER_DONE
-+ *
-+ * kaddr1 - address of 1st completed data block.
-+ * kaddr2 - address of 2nd completed data block.
-+ * kaddr3 - address of 3rd completed data block.
-+ */
-+struct intel_svc_cb_data {
-+	u32 status;
-+	void *kaddr1;
-+	void *kaddr2;
-+	void *kaddr3;
-+};
-+
-+/**
-+ * struct intel_svc_client - service client structure
-+ * @dev: the client device
-+ * @receive_callback: callback to provide service client the received data
-+ * @priv: client private data
-+ */
-+struct intel_svc_client {
-+	struct device *dev;
-+	void (*receive_cb)(struct intel_svc_client *client,
-+			   struct intel_svc_cb_data *cb_data);
-+	void *priv;
-+};
-+
-+/**
-+ * intel_svc_request_channel_byname() - request service channel
-+ * @client: identity of the client requesting the channel
-+ * @name: supporting client name defined above
-+ *
-+ * Return: a pointer to channel assigned to the client on success,
-+ * or ERR_PTR() on error.
-+ */
-+struct intel_svc_chan
-+*intel_svc_request_channel_byname(struct intel_svc_client *client,
-+	const char *name);
-+
-+/**
-+ * intel_svc_free_channel() - free service channel.
-+ * @chan: service channel to be freed
-+ */
-+void intel_svc_free_channel(struct intel_svc_chan *chan);
-+
-+/**
-+ * intel_svc_allocate_memory() - allocate the momory
-+ * @chan: service channel assigned to the client
-+ * @size: number of bytes client requests
-+ *
-+ * Service layer allocates the requested number of bytes from the memory
-+ * pool for the client.
-+ *
-+ * Return: the starting address of allocated memory on success, or
-+ * ERR_PTR() on error.
-+ */
-+void *intel_svc_allocate_memory(struct intel_svc_chan *chan, size_t size);
-+
-+/**
-+ * intel_svc_free_memory() - free allocated memory
-+ * @chan: service channel assigned to the client
-+ * @kaddr: starting address of memory to be free back to pool
-+ */
-+void intel_svc_free_memory(struct intel_svc_chan *chan, void *kaddr);
-+
-+/**
-+ * intel_svc_send() - send a message to the remote
-+ * @chan: service channel assigned to the client
-+ * @msg: message data to be sent, in the format of struct intel_svc_client_msg
-+ *
-+ * Return: 0 for success, -ENOMEM or -ENOBUFS on error.
-+ */
-+int intel_svc_send(struct intel_svc_chan *chan, void *msg);
-+#endif
-+
 -- 
 2.7.4
