@@ -1,88 +1,38 @@
-Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=DkGj=FH=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 15/24] fpga: dfl-fme-pr: add compat_id support for dfl-fme-region platform device.
-Date: Tue, 13 Feb 2018 17:24:44 +0800
-Message-Id: <1518513893-4719-16-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
-References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Return-Path: <SRS0=k2mn=GG=gondor.apana.org.au=herbert@kernel.org>
+Return-Path: <SRS0=k2mn=GG=gondor.apana.org.au=herbert@kernel.org>
+Date: Fri, 16 Mar 2018 23:52:14 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH v2 03/21] crypto: Remove depends on HAS_DMA in case of
+ platform dependency
+Message-ID: <20180316155214.GA7250@gondor.apana.org.au>
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+ <1521208314-4783-4-git-send-email-geert@linux-m68k.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1521208314-4783-4-git-send-email-geert@linux-m68k.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds compat_id support when driver creates the platform
-device for dfl-fme-region. It allows dfl-fme-region platform driver
-to create fpga-region with correct compat_id.
+On Fri, Mar 16, 2018 at 02:51:36PM +0100, Geert Uytterhoeven wrote:
+> Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+> symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+> In most cases this other symbol is an architecture or platform specific
+> symbol, or PCI.
+> 
+> Generic symbols and drivers without platform dependencies keep their
+> dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+> cannot work anyway.
+> 
+> This simplifies the dependencies, and allows to improve compile-testing.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Reviewed-by: Mark Brown <broonie@kernel.org>
+> Acked-by: Robin Murphy <robin.murphy@arm.com>
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
- drivers/fpga/dfl-fme-pr.c | 20 ++++++++++++++++++++
- drivers/fpga/dfl-fme-pr.h |  3 +++
- 2 files changed, 23 insertions(+)
-
-diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-index 526e90b..c17170b 100644
---- a/drivers/fpga/dfl-fme-pr.c
-+++ b/drivers/fpga/dfl-fme-pr.c
-@@ -314,6 +314,25 @@ static void fpga_fme_destroy_bridges(struct feature_platform_data *pdata)
- }
- 
- /**
-+ * fpga_fme_get_region_compat_id - read region compat_id from hardware
-+ *
-+ * @dev: fme device.
-+ */
-+static struct fpga_region_compat_id
-+fpga_fme_get_region_compat_id(struct device *dev)
-+{
-+	struct fpga_region_compat_id compat_id;
-+	void __iomem *fme_pr;
-+
-+	fme_pr = get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_PR_MGMT);
-+
-+	compat_id.id_l = readq(fme_pr + FME_PR_INTFC_ID_L);
-+	compat_id.id_h = readq(fme_pr + FME_PR_INTFC_ID_H);
-+
-+	return compat_id;
-+}
-+
-+/**
-  * fpga_fme_create_region - create fpga region platform device as child
-  *
-  * @pdata: fme platform device's pdata
-@@ -339,6 +358,7 @@ fpga_fme_create_region(struct feature_platform_data *pdata,
- 
- 	region_pdata.mgr = mgr;
- 	region_pdata.br = br;
-+	region_pdata.compat_id = fpga_fme_get_region_compat_id(dev);
- 
- 	/*
- 	 * Each FPGA device may have more than one port, so allocate platform
-diff --git a/drivers/fpga/dfl-fme-pr.h b/drivers/fpga/dfl-fme-pr.h
-index 11bd001..ef6c95a 100644
---- a/drivers/fpga/dfl-fme-pr.h
-+++ b/drivers/fpga/dfl-fme-pr.h
-@@ -19,6 +19,7 @@
- #define __DFL_FME_PR_H
- 
- #include <linux/platform_device.h>
-+#include <linux/fpga/fpga-region.h>
- 
- /**
-  * struct fme_region - FME fpga region data structure
-@@ -39,11 +40,13 @@ struct fme_region {
-  * @mgr: platform device of the FPGA manager.
-  * @br: platform device of the FPGA bridge.
-  * @region_id: region id (same as port_id).
-+ * @compat_id: compat id of the FPGA region.
-  */
- struct fme_region_pdata {
- 	struct platform_device *mgr;
- 	struct platform_device *br;
- 	int region_id;
-+	struct fpga_region_compat_id compat_id;
- };
- 
- /**
+Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
 -- 
-2.7.4
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
