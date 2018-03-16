@@ -1,62 +1,41 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [RESEND PATCH v3 1/4] fpga: region: don't use drvdata in common fpga code
-Date: Tue, 27 Mar 2018 14:59:54 -0500
-Message-Id: <20180327195957.3878-2-atull@kernel.org>
-In-Reply-To: <20180327195957.3878-1-atull@kernel.org>
-References: <20180327195957.3878-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Anatolij Gustschin <agust@denx.de>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Joel Holdsworth <joel@airwebreathe.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=Wqou=GG=samsung.com=b.zolnierkie@kernel.org>
+Return-Path: <SRS0=Wqou=GG=samsung.com=b.zolnierkie@kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 04/21] fbdev: Remove depends on HAS_DMA in case of
+ platform dependency
+Date: Fri, 16 Mar 2018 17:01:13 +0100
+Message-id: <1863306.fWLBGQtWhd@amdc3058>
+In-reply-to: <1521208314-4783-5-git-send-email-geert@linux-m68k.org>
+MIME-version: 1.0
+Content-transfer-encoding: 7Bit
+Content-type: text/plain; charset="us-ascii"
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+	<CGME20180316152138epcas1p3e0e107cd14fd6fb4aeb595e0e7661ab7@epcas1p3.samsung.com>
+	<1521208314-4783-5-git-send-email-geert@linux-m68k.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller  <davem@davemloft.net>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull" <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Part of patchset that changes the following fpga_*_register
-functions to not set drvdata:
-* fpga_region_register.
-* fpga_mgr_register
-* fpga_bridge_register
+On Friday, March 16, 2018 02:51:37 PM Geert Uytterhoeven wrote:
+> Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+> symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+> In most cases this other symbol is an architecture or platform specific
+> symbol, or PCI.
+> 
+> Generic symbols and drivers without platform dependencies keep their
+> dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+> cannot work anyway.
+> 
+> This simplifies the dependencies, and allows to improve compile-testing.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Reviewed-by: Mark Brown <broonie@kernel.org>
+> Acked-by: Robin Murphy <robin.murphy@arm.com>
 
-The rationale is that setting drvdata is fine for DT based devices
-that will have one manager, bridge, or region per platform device.
-However PCIe based devices may have multiple FPGA mgr/bridge/regions
-under one PCIe device.  Without these changes, the PCIe solution has
-to create an extra device for each child mgr/bridge/region to hold
-drvdata.
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Reported-by: Jiuyue Ma <majiuyue@huawei.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: No change to this patch in v2 of patchset
-v3: Add Moritz' ack
----
- drivers/fpga/fpga-region.c    | 1 -
- drivers/fpga/of-fpga-region.c | 1 +
- 2 files changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index edab2a2e03ef..ebe1f872810d 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -178,7 +178,6 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
- 	region->dev.parent = dev;
- 	region->dev.of_node = dev->of_node;
- 	region->dev.id = id;
--	dev_set_drvdata(dev, region);
- 
- 	ret = dev_set_name(&region->dev, "region%d", id);
- 	if (ret)
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 119ff75522f1..35e7e8c4a0cb 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -438,6 +438,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 		goto eprobe_mgr_put;
- 
- 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
-+	dev_set_drvdata(dev, region);
- 
- 	dev_info(dev, "FPGA Region probed\n");
- 
--- 
-2.14.2
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
