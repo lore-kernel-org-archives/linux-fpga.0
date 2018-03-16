@@ -1,633 +1,261 @@
-Return-Path: <SRS0=aM/a=GT=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=aM/a=GT=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 2/6] fpga: manager: don't use drvdata in common fpga code
-Date: Thu, 29 Mar 2018 08:36:54 -0700
-Message-Id: <20180329153658.11614-3-mdf@kernel.org>
-In-Reply-To: <20180329153658.11614-1-mdf@kernel.org>
-References: <20180329153658.11614-1-mdf@kernel.org>
-To: gregkh@linuxfoundation.org
-Cc: atull@kernel.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=eAfy=GG=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=eAfy=GG=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from albert.telenet-ops.be ([195.130.137.90]:46648 "EHLO
+        albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752853AbeCPNwr (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 16 Mar 2018 09:52:47 -0400
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH v2 15/21] net: Remove depends on HAS_DMA in case of platform dependency
+Date: Fri, 16 Mar 2018 14:51:48 +0100
+Message-Id: <1521208314-4783-16-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
+Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-From: Alan Tull <atull@kernel.org>
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-Change fpga_mgr_register to not set or use drvdata.
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-Change the register/unregister function parameters to take the mgr
-struct:
-* int fpga_mgr_register(struct fpga_manager *mgr);
-* void fpga_mgr_unregister(struct fpga_manager *mgr);
+This simplifies the dependencies, and allows to improve compile-testing.
 
-Change the drivers that call fpga_mgr_register to alloc the struct
-fpga_manager (using devm_kzalloc) and partly fill it, adding name,
-ops, parent device, and priv.
+Note:
+  - FSL_FMAN keeps its dependency on HAS_DMA, as it calls set_dma_ops().
+    set_dma_ops() does not exist if NO_DMA=y, and its use in this driver
+    is questionable.
 
-The rationale is that setting drvdata is fine for DT based devices
-that will have one manager, bridge, or region per platform device.
-However PCIe based devices may have multiple FPGA mgr/bridge/regions
-under one PCIe device.  Without these changes, the PCIe solution has
-to create an extra device for each child mgr/bridge/region to hold
-drvdata.
-
-Signed-off-by: Alan Tull <atull@kernel.org>
-Reported-by: Jiuyue Ma <majiuyue@huawei.com>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
 ---
- Documentation/fpga/fpga-mgr.txt  | 24 +++++++++++++++++-------
- drivers/fpga/altera-cvp.c        | 18 ++++++++++++++----
- drivers/fpga/altera-pr-ip-core.c | 17 +++++++++++++++--
- drivers/fpga/altera-ps-spi.c     | 18 +++++++++++++++---
- drivers/fpga/fpga-mgr.c          | 39 ++++++++++++++-------------------------
- drivers/fpga/ice40-spi.c         | 20 ++++++++++++++++----
- drivers/fpga/socfpga-a10.c       | 16 +++++++++++++---
- drivers/fpga/socfpga.c           | 18 +++++++++++++++---
- drivers/fpga/ts73xx-fpga.c       | 18 +++++++++++++++---
- drivers/fpga/xilinx-spi.c        | 18 +++++++++++++++---
- drivers/fpga/zynq-fpga.c         | 16 +++++++++++++---
- include/linux/fpga/fpga-mgr.h    |  8 ++++----
- 12 files changed, 166 insertions(+), 64 deletions(-)
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/net/ethernet/amd/Kconfig                | 2 +-
+ drivers/net/ethernet/apm/xgene-v2/Kconfig       | 1 -
+ drivers/net/ethernet/apm/xgene/Kconfig          | 1 -
+ drivers/net/ethernet/arc/Kconfig                | 6 ++++--
+ drivers/net/ethernet/broadcom/Kconfig           | 2 --
+ drivers/net/ethernet/calxeda/Kconfig            | 2 +-
+ drivers/net/ethernet/hisilicon/Kconfig          | 2 +-
+ drivers/net/ethernet/marvell/Kconfig            | 8 +++-----
+ drivers/net/ethernet/mellanox/mlxsw/Kconfig     | 2 +-
+ drivers/net/ethernet/renesas/Kconfig            | 2 --
+ drivers/net/wireless/broadcom/brcm80211/Kconfig | 1 -
+ drivers/net/wireless/quantenna/qtnfmac/Kconfig  | 2 +-
+ 12 files changed, 12 insertions(+), 19 deletions(-)
 
-diff --git a/Documentation/fpga/fpga-mgr.txt b/Documentation/fpga/fpga-mgr.txt
-index cc6413ed6fc9..3cea6b57c156 100644
---- a/Documentation/fpga/fpga-mgr.txt
-+++ b/Documentation/fpga/fpga-mgr.txt
-@@ -67,11 +67,9 @@ fpga_mgr_unlock when done programming the FPGA.
- To register or unregister the low level FPGA-specific driver:
- -------------------------------------------------------------
+diff --git a/drivers/net/ethernet/amd/Kconfig b/drivers/net/ethernet/amd/Kconfig
+index d5c15e8bb3de706b..f273af136fc7c995 100644
+--- a/drivers/net/ethernet/amd/Kconfig
++++ b/drivers/net/ethernet/amd/Kconfig
+@@ -173,7 +173,7 @@ config SUNLANCE
  
--	int fpga_mgr_register(struct device *dev, const char *name,
--			      const struct fpga_manager_ops *mops,
--			      void *priv);
-+	int fpga_mgr_register(struct fpga_manager *mgr);
+ config AMD_XGBE
+ 	tristate "AMD 10GbE Ethernet driver"
+-	depends on ((OF_NET && OF_ADDRESS) || ACPI || PCI) && HAS_IOMEM && HAS_DMA
++	depends on ((OF_NET && OF_ADDRESS) || ACPI || PCI) && HAS_IOMEM
+ 	depends on X86 || ARM64 || COMPILE_TEST
+ 	select BITREVERSE
+ 	select CRC32
+diff --git a/drivers/net/ethernet/apm/xgene-v2/Kconfig b/drivers/net/ethernet/apm/xgene-v2/Kconfig
+index 1205861b631896a0..eedd3f3dd22e2201 100644
+--- a/drivers/net/ethernet/apm/xgene-v2/Kconfig
++++ b/drivers/net/ethernet/apm/xgene-v2/Kconfig
+@@ -1,6 +1,5 @@
+ config NET_XGENE_V2
+ 	tristate "APM X-Gene SoC Ethernet-v2 Driver"
+-	depends on HAS_DMA
+ 	depends on ARCH_XGENE || COMPILE_TEST
+ 	help
+ 	  This is the Ethernet driver for the on-chip ethernet interface
+diff --git a/drivers/net/ethernet/apm/xgene/Kconfig b/drivers/net/ethernet/apm/xgene/Kconfig
+index afccb033177b3923..e4e33c900b577161 100644
+--- a/drivers/net/ethernet/apm/xgene/Kconfig
++++ b/drivers/net/ethernet/apm/xgene/Kconfig
+@@ -1,6 +1,5 @@
+ config NET_XGENE
+ 	tristate "APM X-Gene SoC Ethernet Driver"
+-	depends on HAS_DMA
+ 	depends on ARCH_XGENE || COMPILE_TEST
+ 	select PHYLIB
+ 	select MDIO_XGENE
+diff --git a/drivers/net/ethernet/arc/Kconfig b/drivers/net/ethernet/arc/Kconfig
+index e743ddf46343302f..5d0ab8e74b680cc6 100644
+--- a/drivers/net/ethernet/arc/Kconfig
++++ b/drivers/net/ethernet/arc/Kconfig
+@@ -24,7 +24,8 @@ config ARC_EMAC_CORE
+ config ARC_EMAC
+ 	tristate "ARC EMAC support"
+ 	select ARC_EMAC_CORE
+-	depends on OF_IRQ && OF_NET && HAS_DMA && (ARC || COMPILE_TEST)
++	depends on OF_IRQ && OF_NET
++	depends on ARC || COMPILE_TEST
+ 	---help---
+ 	  On some legacy ARC (Synopsys) FPGA boards such as ARCAngel4/ML50x
+ 	  non-standard on-chip ethernet device ARC EMAC 10/100 is used.
+@@ -33,7 +34,8 @@ config ARC_EMAC
+ config EMAC_ROCKCHIP
+ 	tristate "Rockchip EMAC support"
+ 	select ARC_EMAC_CORE
+-	depends on OF_IRQ && OF_NET && REGULATOR && HAS_DMA && (ARCH_ROCKCHIP || COMPILE_TEST)
++	depends on OF_IRQ && OF_NET && REGULATOR
++	depends on ARCH_ROCKCHIP || COMPILE_TEST
+ 	---help---
+ 	  Support for Rockchip RK3036/RK3066/RK3188 EMAC ethernet controllers.
+ 	  This selects Rockchip SoC glue layer support for the
+diff --git a/drivers/net/ethernet/broadcom/Kconfig b/drivers/net/ethernet/broadcom/Kconfig
+index af75156919edfead..4c3bfde6e8de00f2 100644
+--- a/drivers/net/ethernet/broadcom/Kconfig
++++ b/drivers/net/ethernet/broadcom/Kconfig
+@@ -157,7 +157,6 @@ config BGMAC
+ config BGMAC_BCMA
+ 	tristate "Broadcom iProc GBit BCMA support"
+ 	depends on BCMA && BCMA_HOST_SOC
+-	depends on HAS_DMA
+ 	depends on BCM47XX || ARCH_BCM_5301X || COMPILE_TEST
+ 	select BGMAC
+ 	select PHYLIB
+@@ -170,7 +169,6 @@ config BGMAC_BCMA
  
--	void fpga_mgr_unregister(struct device *dev);
-+	void fpga_mgr_unregister(struct fpga_manager *mgr);
+ config BGMAC_PLATFORM
+ 	tristate "Broadcom iProc GBit platform support"
+-	depends on HAS_DMA
+ 	depends on ARCH_BCM_IPROC || COMPILE_TEST
+ 	depends on OF
+ 	select BGMAC
+diff --git a/drivers/net/ethernet/calxeda/Kconfig b/drivers/net/ethernet/calxeda/Kconfig
+index 07d2201530d26c85..9fdd496b90ff47cb 100644
+--- a/drivers/net/ethernet/calxeda/Kconfig
++++ b/drivers/net/ethernet/calxeda/Kconfig
+@@ -1,6 +1,6 @@
+ config NET_CALXEDA_XGMAC
+ 	tristate "Calxeda 1G/10G XGMAC Ethernet driver"
+-	depends on HAS_IOMEM && HAS_DMA
++	depends on HAS_IOMEM
+ 	depends on ARCH_HIGHBANK || COMPILE_TEST
+ 	select CRC32
+ 	help
+diff --git a/drivers/net/ethernet/hisilicon/Kconfig b/drivers/net/ethernet/hisilicon/Kconfig
+index 8bcf470ff5f38a4e..fb1a7251f45d3369 100644
+--- a/drivers/net/ethernet/hisilicon/Kconfig
++++ b/drivers/net/ethernet/hisilicon/Kconfig
+@@ -5,7 +5,7 @@
+ config NET_VENDOR_HISILICON
+ 	bool "Hisilicon devices"
+ 	default y
+-	depends on (OF || ACPI) && HAS_DMA
++	depends on OF || ACPI
+ 	depends on ARM || ARM64 || COMPILE_TEST
+ 	---help---
+ 	  If you have a network (Ethernet) card belonging to this class, say Y.
+diff --git a/drivers/net/ethernet/marvell/Kconfig b/drivers/net/ethernet/marvell/Kconfig
+index ebe5c91489355c9e..0704a1900bbca444 100644
+--- a/drivers/net/ethernet/marvell/Kconfig
++++ b/drivers/net/ethernet/marvell/Kconfig
+@@ -18,8 +18,8 @@ if NET_VENDOR_MARVELL
  
- Use of these two functions is described below in "How To Support a new FPGA
- device."
-@@ -148,8 +146,13 @@ static int socfpga_fpga_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	struct socfpga_fpga_priv *priv;
-+	struct fpga_manager *mgr;
- 	int ret;
+ config MV643XX_ETH
+ 	tristate "Marvell Discovery (643XX) and Orion ethernet support"
+-	depends on (MV64X60 || PPC32 || PLAT_ORION || COMPILE_TEST) && INET
+-	depends on HAS_DMA
++	depends on MV64X60 || PPC32 || PLAT_ORION || COMPILE_TEST
++	depends on INET
+ 	select PHYLIB
+ 	select MVMDIO
+ 	---help---
+@@ -58,7 +58,6 @@ config MVNETA_BM_ENABLE
+ config MVNETA
+ 	tristate "Marvell Armada 370/38x/XP/37xx network interface support"
+ 	depends on ARCH_MVEBU || COMPILE_TEST
+-	depends on HAS_DMA
+ 	select MVMDIO
+ 	select PHYLINK
+ 	---help---
+@@ -84,7 +83,6 @@ config MVNETA_BM
+ config MVPP2
+ 	tristate "Marvell Armada 375/7K/8K network interface support"
+ 	depends on ARCH_MVEBU || COMPILE_TEST
+-	depends on HAS_DMA
+ 	select MVMDIO
+ 	---help---
+ 	  This driver supports the network interface units in the
+@@ -92,7 +90,7 @@ config MVPP2
  
-+	mgr = devm_kzalloc(dev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
-+
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
-@@ -157,13 +160,20 @@ static int socfpga_fpga_probe(struct platform_device *pdev)
- 	/* ... do ioremaps, get interrupts, etc. and save
- 	   them in priv... */
+ config PXA168_ETH
+ 	tristate "Marvell pxa168 ethernet support"
+-	depends on HAS_IOMEM && HAS_DMA
++	depends on HAS_IOMEM
+ 	depends on CPU_PXA168 || ARCH_BERLIN || COMPILE_TEST
+ 	select PHYLIB
+ 	---help---
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/Kconfig b/drivers/net/ethernet/mellanox/mlxsw/Kconfig
+index d56eea3105090051..b591c8cc9896ccb7 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/Kconfig
++++ b/drivers/net/ethernet/mellanox/mlxsw/Kconfig
+@@ -30,7 +30,7 @@ config MLXSW_CORE_THERMAL
  
--	return fpga_mgr_register(dev, "Altera SOCFPGA FPGA Manager",
--				 &socfpga_fpga_ops, priv);
-+	mgr->parent = dev;
-+	mgr->name = "Altera SOCFPGA FPGA Manager";
-+	mgr->mops = &socfpga_fpga_ops;
-+	mgr->priv = priv;
-+	platform_set_drvdata(pdev, mgr);
-+
-+	return fpga_mgr_register(mgr);
- }
+ config MLXSW_PCI
+ 	tristate "PCI bus implementation for Mellanox Technologies Switch ASICs"
+-	depends on PCI && HAS_DMA && HAS_IOMEM && MLXSW_CORE
++	depends on PCI && HAS_IOMEM && MLXSW_CORE
+ 	default m
+ 	---help---
+ 	  This is PCI bus implementation for Mellanox Technologies Switch ASICs.
+diff --git a/drivers/net/ethernet/renesas/Kconfig b/drivers/net/ethernet/renesas/Kconfig
+index 27be51f0a421b43e..f3f7477043ce1061 100644
+--- a/drivers/net/ethernet/renesas/Kconfig
++++ b/drivers/net/ethernet/renesas/Kconfig
+@@ -17,7 +17,6 @@ if NET_VENDOR_RENESAS
  
- static int socfpga_fpga_remove(struct platform_device *pdev)
- {
--	fpga_mgr_unregister(&pdev->dev);
-+	struct fpga_manager *mgr = platform_get_drvdata(pdev);
-+
-+	fpga_mgr_unregister(mgr);
+ config SH_ETH
+ 	tristate "Renesas SuperH Ethernet support"
+-	depends on HAS_DMA
+ 	depends on ARCH_RENESAS || SUPERH || COMPILE_TEST
+ 	select CRC32
+ 	select MII
+@@ -31,7 +30,6 @@ config SH_ETH
  
- 	return 0;
- }
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 00e73d28077c..f02a1a88609a 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -403,6 +403,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 			    const struct pci_device_id *dev_id)
- {
- 	struct altera_cvp_conf *conf;
-+	struct fpga_manager *mgr;
- 	u16 cmd, val;
- 	int ret;
- 
-@@ -421,6 +422,10 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	if (!conf)
- 		return -ENOMEM;
- 
-+	mgr = devm_kzalloc(&pdev->dev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
-+
- 	/*
- 	 * Enable memory BAR access. We cannot use pci_enable_device() here
- 	 * because it will make the driver unusable with FPGA devices that
-@@ -454,8 +459,13 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	snprintf(conf->mgr_name, sizeof(conf->mgr_name), "%s @%s",
- 		 ALTERA_CVP_MGR_NAME, pci_name(pdev));
- 
--	ret = fpga_mgr_register(&pdev->dev, conf->mgr_name,
--				&altera_cvp_ops, conf);
-+	mgr->parent = &pdev->dev;
-+	mgr->name = conf->mgr_name;
-+	mgr->mops = &altera_cvp_ops;
-+	mgr->priv = conf;
-+	pci_set_drvdata(pdev, mgr);
-+
-+	ret = fpga_mgr_register(mgr);
- 	if (ret)
- 		goto err_unmap;
- 
-@@ -463,7 +473,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 				 &driver_attr_chkcfg);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
--		fpga_mgr_unregister(&pdev->dev);
-+		fpga_mgr_unregister(mgr);
- 		goto err_unmap;
- 	}
- 
-@@ -485,7 +495,7 @@ static void altera_cvp_remove(struct pci_dev *pdev)
- 	u16 cmd;
- 
- 	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
--	fpga_mgr_unregister(&pdev->dev);
-+	fpga_mgr_unregister(mgr);
- 	pci_iounmap(pdev, conf->map);
- 	pci_release_region(pdev, CVP_BAR);
- 	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
-diff --git a/drivers/fpga/altera-pr-ip-core.c b/drivers/fpga/altera-pr-ip-core.c
-index a7b31f9797ce..9d60cdc39c55 100644
---- a/drivers/fpga/altera-pr-ip-core.c
-+++ b/drivers/fpga/altera-pr-ip-core.c
-@@ -187,8 +187,13 @@ static const struct fpga_manager_ops alt_pr_ops = {
- int alt_pr_register(struct device *dev, void __iomem *reg_base)
- {
- 	struct alt_pr_priv *priv;
-+	struct fpga_manager *mgr;
- 	u32 val;
- 
-+	mgr = devm_kzalloc(dev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
-+
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
-@@ -201,15 +206,23 @@ int alt_pr_register(struct device *dev, void __iomem *reg_base)
- 		(val & ALT_PR_CSR_STATUS_MSK) >> ALT_PR_CSR_STATUS_SFT,
- 		(int)(val & ALT_PR_CSR_PR_START));
- 
--	return fpga_mgr_register(dev, dev_name(dev), &alt_pr_ops, priv);
-+	mgr->parent = dev;
-+	mgr->name = dev_name(dev);
-+	mgr->mops = &alt_pr_ops;
-+	mgr->priv = priv;
-+	dev_set_drvdata(dev, mgr);
-+
-+	return fpga_mgr_register(mgr);
- }
- EXPORT_SYMBOL_GPL(alt_pr_register);
- 
- int alt_pr_unregister(struct device *dev)
- {
-+	struct fpga_manager *mgr = dev_get_drvdata(dev);
-+
- 	dev_dbg(dev, "%s\n", __func__);
- 
--	fpga_mgr_unregister(dev);
-+	fpga_mgr_unregister(mgr);
- 
- 	return 0;
- }
-diff --git a/drivers/fpga/altera-ps-spi.c b/drivers/fpga/altera-ps-spi.c
-index 14f14efdf0d5..b061408bf0ae 100644
---- a/drivers/fpga/altera-ps-spi.c
-+++ b/drivers/fpga/altera-ps-spi.c
-@@ -238,6 +238,11 @@ static int altera_ps_probe(struct spi_device *spi)
- {
- 	struct altera_ps_conf *conf;
- 	const struct of_device_id *of_id;
-+	struct fpga_manager *mgr;
-+
-+	mgr = devm_kzalloc(&spi->dev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
- 
- 	conf = devm_kzalloc(&spi->dev, sizeof(*conf), GFP_KERNEL);
- 	if (!conf)
-@@ -273,13 +278,20 @@ static int altera_ps_probe(struct spi_device *spi)
- 	snprintf(conf->mgr_name, sizeof(conf->mgr_name), "%s %s",
- 		 dev_driver_string(&spi->dev), dev_name(&spi->dev));
- 
--	return fpga_mgr_register(&spi->dev, conf->mgr_name,
--				 &altera_ps_ops, conf);
-+	mgr->parent = &spi->dev;
-+	mgr->name = conf->mgr_name;
-+	mgr->mops = &altera_ps_ops;
-+	mgr->priv = conf;
-+	spi_set_drvdata(spi, mgr);
-+
-+	return fpga_mgr_register(mgr);
- }
- 
- static int altera_ps_remove(struct spi_device *spi)
- {
--	fpga_mgr_unregister(&spi->dev);
-+	struct fpga_manager *mgr = spi_get_drvdata(spi);
-+
-+	fpga_mgr_unregister(mgr);
- 
- 	return 0;
- }
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 9939d2cbc9a6..245e7a6efb6a 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -516,20 +516,24 @@ EXPORT_SYMBOL_GPL(fpga_mgr_unlock);
- 
- /**
-  * fpga_mgr_register - register a low level fpga manager driver
-- * @dev:	fpga manager device from pdev
-- * @name:	fpga manager name
-- * @mops:	pointer to structure of fpga manager ops
-- * @priv:	fpga manager private data
-+ * @mgr:	fpga manager struct
-+ *
-+ * The following fields of mgr must be set: name, mops, and parent.
-  *
-  * Return: 0 on success, negative error code otherwise.
-  */
--int fpga_mgr_register(struct device *dev, const char *name,
--		      const struct fpga_manager_ops *mops,
--		      void *priv)
-+int fpga_mgr_register(struct fpga_manager *mgr)
- {
--	struct fpga_manager *mgr;
-+	struct device *dev = mgr->parent;
-+	const struct fpga_manager_ops *mops = mgr->mops;
-+	const char *name = mgr->name;
- 	int id, ret;
- 
-+	if (!dev) {
-+		pr_err("Attempt to register fpga manager without parent\n");
-+		return -EINVAL;
-+	}
-+
- 	if (!mops || !mops->write_complete || !mops->state ||
- 	    !mops->write_init || (!mops->write && !mops->write_sg) ||
- 	    (mops->write && mops->write_sg)) {
-@@ -542,22 +546,13 @@ int fpga_mgr_register(struct device *dev, const char *name,
- 		return -EINVAL;
- 	}
- 
--	mgr = kzalloc(sizeof(*mgr), GFP_KERNEL);
--	if (!mgr)
--		return -ENOMEM;
--
- 	id = ida_simple_get(&fpga_mgr_ida, 0, 0, GFP_KERNEL);
- 	if (id < 0) {
--		ret = id;
--		goto error_kfree;
-+		return id;
- 	}
- 
- 	mutex_init(&mgr->ref_mutex);
- 
--	mgr->name = name;
--	mgr->mops = mops;
--	mgr->priv = priv;
--
- 	/*
- 	 * Initialize framework state by requesting low level driver read state
- 	 * from device.  FPGA may be in reset mode or may have been programmed
-@@ -571,7 +566,6 @@ int fpga_mgr_register(struct device *dev, const char *name,
- 	mgr->dev.parent = dev;
- 	mgr->dev.of_node = dev->of_node;
- 	mgr->dev.id = id;
--	dev_set_drvdata(dev, mgr);
- 
- 	ret = dev_set_name(&mgr->dev, "fpga%d", id);
- 	if (ret)
-@@ -587,8 +581,6 @@ int fpga_mgr_register(struct device *dev, const char *name,
- 
- error_device:
- 	ida_simple_remove(&fpga_mgr_ida, id);
--error_kfree:
--	kfree(mgr);
- 
- 	return ret;
- }
-@@ -598,10 +590,8 @@ EXPORT_SYMBOL_GPL(fpga_mgr_register);
-  * fpga_mgr_unregister - unregister a low level fpga manager driver
-  * @dev:	fpga manager device from pdev
-  */
--void fpga_mgr_unregister(struct device *dev)
-+void fpga_mgr_unregister(struct fpga_manager *mgr)
- {
--	struct fpga_manager *mgr = dev_get_drvdata(dev);
--
- 	dev_info(&mgr->dev, "%s %s\n", __func__, mgr->name);
- 
- 	/*
-@@ -620,7 +610,6 @@ static void fpga_mgr_dev_release(struct device *dev)
- 	struct fpga_manager *mgr = to_fpga_manager(dev);
- 
- 	ida_simple_remove(&fpga_mgr_ida, mgr->dev.id);
--	kfree(mgr);
- }
- 
- static int __init fpga_mgr_class_init(void)
-diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
-index 7fca82023062..912746735c71 100644
---- a/drivers/fpga/ice40-spi.c
-+++ b/drivers/fpga/ice40-spi.c
-@@ -133,8 +133,13 @@ static int ice40_fpga_probe(struct spi_device *spi)
- {
- 	struct device *dev = &spi->dev;
- 	struct ice40_fpga_priv *priv;
-+	struct fpga_manager *mgr;
- 	int ret;
- 
-+	mgr = devm_kzalloc(dev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
-+
- 	priv = devm_kzalloc(&spi->dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
-@@ -174,14 +179,21 @@ static int ice40_fpga_probe(struct spi_device *spi)
- 		return ret;
- 	}
- 
--	/* Register with the FPGA manager */
--	return fpga_mgr_register(dev, "Lattice iCE40 FPGA Manager",
--				 &ice40_fpga_ops, priv);
-+	mgr->parent = dev;
-+	mgr->name = "Lattice iCE40 FPGA Manager";
-+	mgr->mops = &ice40_fpga_ops;
-+	mgr->priv = priv;
-+	spi_set_drvdata(spi, mgr);
-+
-+	return fpga_mgr_register(mgr);
- }
- 
- static int ice40_fpga_remove(struct spi_device *spi)
- {
--	fpga_mgr_unregister(&spi->dev);
-+	struct fpga_manager *mgr = spi_get_drvdata(spi);
-+
-+	fpga_mgr_unregister(mgr);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/fpga/socfpga-a10.c b/drivers/fpga/socfpga-a10.c
-index a46e343a5b72..16f642a5e40e 100644
---- a/drivers/fpga/socfpga-a10.c
-+++ b/drivers/fpga/socfpga-a10.c
-@@ -482,6 +482,7 @@ static int socfpga_a10_fpga_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct a10_fpga_priv *priv;
- 	void __iomem *reg_base;
-+	struct fpga_manager *mgr;
- 	struct resource *res;
- 	int ret;
- 
-@@ -519,8 +520,17 @@ static int socfpga_a10_fpga_probe(struct platform_device *pdev)
- 		return -EBUSY;
- 	}
- 
--	ret = fpga_mgr_register(dev, "SoCFPGA Arria10 FPGA Manager",
--				 &socfpga_a10_fpga_mgr_ops, priv);
-+	mgr = devm_kzalloc(dev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
-+
-+	mgr->parent = dev;
-+	mgr->name = "SoCFPGA Arria10 FPGA Manager";
-+	mgr->mops = &socfpga_a10_fpga_mgr_ops;
-+	mgr->priv = priv;
-+	platform_set_drvdata(pdev, mgr);
-+
-+	ret = fpga_mgr_register(mgr);
- 	if (ret) {
- 		clk_disable_unprepare(priv->clk);
- 		return ret;
-@@ -534,7 +544,7 @@ static int socfpga_a10_fpga_remove(struct platform_device *pdev)
- 	struct fpga_manager *mgr = platform_get_drvdata(pdev);
- 	struct a10_fpga_priv *priv = mgr->priv;
- 
--	fpga_mgr_unregister(&pdev->dev);
-+	fpga_mgr_unregister(mgr);
- 	clk_disable_unprepare(priv->clk);
- 
- 	return 0;
-diff --git a/drivers/fpga/socfpga.c b/drivers/fpga/socfpga.c
-index b6672e66cda6..2e764f5393fb 100644
---- a/drivers/fpga/socfpga.c
-+++ b/drivers/fpga/socfpga.c
-@@ -555,9 +555,14 @@ static int socfpga_fpga_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	struct socfpga_fpga_priv *priv;
-+	struct fpga_manager *mgr;
- 	struct resource *res;
- 	int ret;
- 
-+	mgr = devm_kzalloc(dev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
-+
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
-@@ -581,13 +586,20 @@ static int socfpga_fpga_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
--	return fpga_mgr_register(dev, "Altera SOCFPGA FPGA Manager",
--				 &socfpga_fpga_ops, priv);
-+	mgr->parent = dev;
-+	mgr->name = "Altera SOCFPGA FPGA Manager";
-+	mgr->mops = &socfpga_fpga_ops;
-+	mgr->priv = priv;
-+	platform_set_drvdata(pdev, mgr);
-+
-+	return fpga_mgr_register(mgr);
- }
- 
- static int socfpga_fpga_remove(struct platform_device *pdev)
- {
--	fpga_mgr_unregister(&pdev->dev);
-+	struct fpga_manager *mgr = platform_get_drvdata(pdev);
-+
-+	fpga_mgr_unregister(mgr);
- 
- 	return 0;
- }
-diff --git a/drivers/fpga/ts73xx-fpga.c b/drivers/fpga/ts73xx-fpga.c
-index f6a96b42e2ca..33dd92626ea1 100644
---- a/drivers/fpga/ts73xx-fpga.c
-+++ b/drivers/fpga/ts73xx-fpga.c
-@@ -116,8 +116,13 @@ static int ts73xx_fpga_probe(struct platform_device *pdev)
- {
- 	struct device *kdev = &pdev->dev;
- 	struct ts73xx_fpga_priv *priv;
-+	struct fpga_manager *mgr;
- 	struct resource *res;
- 
-+	mgr = devm_kzalloc(kdev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
-+
- 	priv = devm_kzalloc(kdev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
-@@ -131,13 +136,20 @@ static int ts73xx_fpga_probe(struct platform_device *pdev)
- 		return PTR_ERR(priv->io_base);
- 	}
- 
--	return fpga_mgr_register(kdev, "TS-73xx FPGA Manager",
--				 &ts73xx_fpga_ops, priv);
-+	mgr->parent = kdev;
-+	mgr->name = "TS-73xx FPGA Manager";
-+	mgr->mops = &ts73xx_fpga_ops;
-+	mgr->priv = priv;
-+	platform_set_drvdata(pdev, mgr);
-+
-+	return fpga_mgr_register(mgr);
- }
- 
- static int ts73xx_fpga_remove(struct platform_device *pdev)
- {
--	fpga_mgr_unregister(&pdev->dev);
-+	struct fpga_manager *mgr = platform_get_drvdata(pdev);
-+
-+	fpga_mgr_unregister(mgr);
- 
- 	return 0;
- }
-diff --git a/drivers/fpga/xilinx-spi.c b/drivers/fpga/xilinx-spi.c
-index 9b62a4c2a3df..4775480ab3bd 100644
---- a/drivers/fpga/xilinx-spi.c
-+++ b/drivers/fpga/xilinx-spi.c
-@@ -143,6 +143,11 @@ static const struct fpga_manager_ops xilinx_spi_ops = {
- static int xilinx_spi_probe(struct spi_device *spi)
- {
- 	struct xilinx_spi_conf *conf;
-+	struct fpga_manager *mgr;
-+
-+	mgr = devm_kzalloc(&spi->dev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
- 
- 	conf = devm_kzalloc(&spi->dev, sizeof(*conf), GFP_KERNEL);
- 	if (!conf)
-@@ -165,13 +170,20 @@ static int xilinx_spi_probe(struct spi_device *spi)
- 		return PTR_ERR(conf->done);
- 	}
- 
--	return fpga_mgr_register(&spi->dev, "Xilinx Slave Serial FPGA Manager",
--				 &xilinx_spi_ops, conf);
-+	mgr->parent = &spi->dev;
-+	mgr->name = "Xilinx Slave Serial FPGA Manager";
-+	mgr->mops = &xilinx_spi_ops;
-+	mgr->priv = conf;
-+	spi_set_drvdata(spi, mgr);
-+
-+	return fpga_mgr_register(mgr);
- }
- 
- static int xilinx_spi_remove(struct spi_device *spi)
- {
--	fpga_mgr_unregister(&spi->dev);
-+	struct fpga_manager *mgr = spi_get_drvdata(spi);
-+
-+	fpga_mgr_unregister(mgr);
- 
- 	return 0;
- }
-diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
-index 70b15b303471..2f9da8b2a354 100644
---- a/drivers/fpga/zynq-fpga.c
-+++ b/drivers/fpga/zynq-fpga.c
-@@ -558,9 +558,14 @@ static int zynq_fpga_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	struct zynq_fpga_priv *priv;
-+	struct fpga_manager *mgr;
- 	struct resource *res;
- 	int err;
- 
-+	mgr = devm_kzalloc(dev, sizeof(*mgr), GFP_KERNEL);
-+	if (!mgr)
-+		return -ENOMEM;
-+
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
-@@ -613,8 +618,13 @@ static int zynq_fpga_probe(struct platform_device *pdev)
- 
- 	clk_disable(priv->clk);
- 
--	err = fpga_mgr_register(dev, "Xilinx Zynq FPGA Manager",
--				&zynq_fpga_ops, priv);
-+	mgr->parent = dev;
-+	mgr->name = "Xilinx Zynq FPGA Manager";
-+	mgr->mops = &zynq_fpga_ops;
-+	mgr->priv = priv;
-+	platform_set_drvdata(pdev, mgr);
-+
-+	err = fpga_mgr_register(mgr);
- 	if (err) {
- 		dev_err(dev, "unable to register FPGA manager\n");
- 		clk_unprepare(priv->clk);
-@@ -632,7 +642,7 @@ static int zynq_fpga_remove(struct platform_device *pdev)
- 	mgr = platform_get_drvdata(pdev);
- 	priv = mgr->priv;
- 
--	fpga_mgr_unregister(&pdev->dev);
-+	fpga_mgr_unregister(mgr);
- 
- 	clk_unprepare(priv->clk);
- 
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 3c6de23aabdf..1ad482286b40 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -138,6 +138,7 @@ struct fpga_manager_ops {
- /**
-  * struct fpga_manager - fpga manager structure
-  * @name: name of low level fpga manager
-+ * @parent: parent device
-  * @dev: fpga manager device
-  * @ref_mutex: only allows one reference to fpga manager
-  * @state: state of fpga manager
-@@ -146,6 +147,7 @@ struct fpga_manager_ops {
-  */
- struct fpga_manager {
- 	const char *name;
-+	struct device *parent;
- 	struct device dev;
- 	struct mutex ref_mutex;
- 	enum fpga_mgr_states state;
-@@ -170,9 +172,7 @@ struct fpga_manager *fpga_mgr_get(struct device *dev);
- 
- void fpga_mgr_put(struct fpga_manager *mgr);
- 
--int fpga_mgr_register(struct device *dev, const char *name,
--		      const struct fpga_manager_ops *mops, void *priv);
--
--void fpga_mgr_unregister(struct device *dev);
-+int fpga_mgr_register(struct fpga_manager *mgr);
-+void fpga_mgr_unregister(struct fpga_manager *mgr);
- 
- #endif /*_LINUX_FPGA_MGR_H */
+ config RAVB
+ 	tristate "Renesas Ethernet AVB support"
+-	depends on HAS_DMA
+ 	depends on ARCH_RENESAS || COMPILE_TEST
+ 	select CRC32
+ 	select MII
+diff --git a/drivers/net/wireless/broadcom/brcm80211/Kconfig b/drivers/net/wireless/broadcom/brcm80211/Kconfig
+index 9d99eb42d9176f0f..6acba67bca07abd7 100644
+--- a/drivers/net/wireless/broadcom/brcm80211/Kconfig
++++ b/drivers/net/wireless/broadcom/brcm80211/Kconfig
+@@ -60,7 +60,6 @@ config BRCMFMAC_PCIE
+ 	bool "PCIE bus interface support for FullMAC driver"
+ 	depends on BRCMFMAC
+ 	depends on PCI
+-	depends on HAS_DMA
+ 	select BRCMFMAC_PROTO_MSGBUF
+ 	select FW_LOADER
+ 	---help---
+diff --git a/drivers/net/wireless/quantenna/qtnfmac/Kconfig b/drivers/net/wireless/quantenna/qtnfmac/Kconfig
+index 025fa6018550895a..8d1492a90bd135c0 100644
+--- a/drivers/net/wireless/quantenna/qtnfmac/Kconfig
++++ b/drivers/net/wireless/quantenna/qtnfmac/Kconfig
+@@ -7,7 +7,7 @@ config QTNFMAC
+ config QTNFMAC_PEARL_PCIE
+ 	tristate "Quantenna QSR10g PCIe support"
+ 	default n
+-	depends on HAS_DMA && PCI && CFG80211
++	depends on PCI && CFG80211
+ 	select QTNFMAC
+ 	select FW_LOADER
+ 	select CRC32
 -- 
-2.16.2
+2.7.4
+
