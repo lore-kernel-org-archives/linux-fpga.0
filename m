@@ -1,49 +1,155 @@
-Return-Path: <SRS0=39c5=GG=linux-m68k.org=geert@kernel.org>
-Return-Path: <SRS0=39c5=GG=linux-m68k.org=geert@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v2 06/21] fpga: Remove depends on HAS_DMA in case of platform dependency
-Date: Fri, 16 Mar 2018 14:51:39 +0100
-Message-Id: <1521208314-4783-7-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
-Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Return-Path: <SRS0=z0JQ=GG=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=z0JQ=GG=linux.intel.com=richard.gong@kernel.org>
+From: Richard Gong <richard.gong@linux.intel.com>
+Subject: Re: [PATCHv2 3/7] driver, misc: add Intel Stratix10 service layer
+ driver
+References: <1519949975-13548-1-git-send-email-richard.gong@linux.intel.com>
+ <1519949975-13548-4-git-send-email-richard.gong@linux.intel.com>
+ <20180315164836.GB4060@kroah.com>
+Message-ID: <cf21af1f-e445-bd37-b5d6-f92c7aa00479@linux.intel.com>
+Date: Fri, 16 Mar 2018 12:39:49 -0500
+MIME-Version: 1.0
+In-Reply-To: <20180315164836.GB4060@kroah.com>
+Content-Type: multipart/alternative;
+ boundary="------------771345B80174378AC29F04CD"
+Content-Language: en-US
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, Richard Gong <richard.gong@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+This is a multi-part message in MIME format.
+--------------771345B80174378AC29F04CD
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Hi Greg,
 
-This simplifies the dependencies, and allows to improve compile-testing.
+Thanks for review.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
----
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/fpga/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index f47ef848bcd056d5..fd539132542e30ee 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -53,7 +53,6 @@ config FPGA_MGR_ALTERA_CVP
- config FPGA_MGR_ZYNQ_FPGA
- 	tristate "Xilinx Zynq FPGA"
- 	depends on ARCH_ZYNQ || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  FPGA manager driver support for Xilinx Zynq FPGAs.
- 
--- 
-2.7.4
+On 03/15/2018 11:48 AM, Greg KH wrote:
+> On Thu, Mar 01, 2018 at 06:19:31PM -0600,richard.gong@linux.intel.com  wrote:
+>> +EXPORT_SYMBOL_GPL(request_svc_channel_byname);
+> All of your global symbols should have the same prefix, not a verb.  So
+> this should be:
+> 	svc_channel_request_by_name(), right?
+>
+>> +EXPORT_SYMBOL_GPL(free_svc_channel);
+> svc_channel_free()?
+>
+>> +EXPORT_SYMBOL_GPL(intel_svc_send);
+> Wait, why doesn't the first ones have "intel_svc" in them?
+>
+> What is the difference here?
+>
+> Should they all just have "intel_svc_" as the prefix?
+>
+> Stick to one thing for all exported functions/variables please, it's the
+> only way we can attempt to keep our namespace "sane".
+Sure, I will make changes so that all exported functions will have 
+"intel_svc_" as the prefix.
+> Also, why would a 'misc' driver be exporting things that something else
+> uses?  Why not just put this in the fpga directory next to the users of
+> this code?
+Intel Stratix10 service layer driver, running at privileged exception 
+level (EL1), interfaces with
+the service providers and providers the services for FPGA configuration, 
+QSPI, Crypto, ECC,
+and warm reset. Service layer driver also manages secure monitor call to 
+communicate
+with secure monitor code running at EL3.
+
+FPGA manager is the first service provider. Later we will add several 
+service providers, and extend
+service layer driver to provide the services for QSPI, Crypto, ECC and 
+warm reset.
+
+Regards,
+Richard
+> thanks,
+>
+> greg k-h
+
+
+--------------771345B80174378AC29F04CD
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </head>
+  <body text="#000000" bgcolor="#FFFFFF">
+    <p>Hi Greg,</p>
+    <p>Thanks for review.<br>
+    </p>
+    <br>
+    <div class="moz-cite-prefix">On 03/15/2018 11:48 AM, Greg KH wrote:<br>
+    </div>
+    <blockquote type="cite" cite="mid:20180315164836.GB4060@kroah.com">
+      <pre wrap="">On Thu, Mar 01, 2018 at 06:19:31PM -0600, <a class="moz-txt-link-abbreviated" href="mailto:richard.gong@linux.intel.com">richard.gong@linux.intel.com</a> wrote:
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+EXPORT_SYMBOL_GPL(request_svc_channel_byname);
+</pre>
+      </blockquote>
+      <pre wrap="">All of your global symbols should have the same prefix, not a verb.  So
+this should be:
+	svc_channel_request_by_name(), right?
+
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+EXPORT_SYMBOL_GPL(free_svc_channel);
+</pre>
+      </blockquote>
+      <pre wrap="">svc_channel_free()?
+
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+EXPORT_SYMBOL_GPL(intel_svc_send);
+</pre>
+      </blockquote>
+      <pre wrap="">Wait, why doesn't the first ones have "intel_svc" in them?
+
+What is the difference here?
+
+Should they all just have "intel_svc_" as the prefix?
+
+Stick to one thing for all exported functions/variables please, it's the
+only way we can attempt to keep our namespace "sane".
+</pre>
+    </blockquote>
+    Sure, I will make changes so that all exported functions will have
+    "intel_svc_" as the prefix.<br>
+    <blockquote type="cite" cite="mid:20180315164836.GB4060@kroah.com">
+      <pre wrap="">Also, why would a 'misc' driver be exporting things that something else
+uses?  Why not just put this in the fpga directory next to the users of
+this code?
+</pre>
+    </blockquote>
+    Intel Stratix10 service layer driver, running at privileged
+    exception level (EL1), interfaces with<br>
+    the service providers and providers the services for FPGA
+    configuration, QSPI, Crypto, ECC,<br>
+    and warm reset. Service layer driver also manages secure monitor
+    call to communicate<br>
+    with secure monitor code running at EL3. <br>
+    <br>
+    FPGA manager is the first service provider. Later we will add
+    several service providers, and extend<br>
+    service layer driver to provide the services for QSPI, Crypto, ECC
+    and warm reset.<br>
+    <br>
+    Regards,<br>
+    Richard <br>
+    <blockquote type="cite" cite="mid:20180315164836.GB4060@kroah.com">
+      <pre wrap="">thanks,
+
+greg k-h
+</pre>
+    </blockquote>
+    <br>
+  </body>
+</html>
+
+--------------771345B80174378AC29F04CD--
