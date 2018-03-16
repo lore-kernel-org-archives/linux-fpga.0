@@ -1,47 +1,116 @@
-Return-Path: <SRS0=Nsqs=GJ=sirena.org.uk=broonie@kernel.org>
-Return-Path: <SRS0=Nsqs=GJ=sirena.org.uk=broonie@kernel.org>
-Date: Sun, 18 Mar 2018 17:54:34 -0700
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2 19/21] spi: Remove depends on HAS_DMA in case of
- platform dependency
-Message-ID: <20180319005434.GZ2186@sirena.org.uk>
+Return-Path: <SRS0=39c5=GG=linux-m68k.org=geert@kernel.org>
+Return-Path: <SRS0=39c5=GG=linux-m68k.org=geert@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH v2 19/21] spi: Remove depends on HAS_DMA in case of platform dependency
+Date: Fri, 16 Mar 2018 14:51:52 +0100
+Message-Id: <1521208314-4783-20-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
 References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
- <1521208314-4783-20-git-send-email-geert@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="rYRijwbmzeJBcrGE"
-Content-Disposition: inline
-In-Reply-To: <1521208314-4783-20-git-send-email-geert@linux-m68k.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
+Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
---rYRijwbmzeJBcrGE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-On Fri, Mar 16, 2018 at 02:51:52PM +0100, Geert Uytterhoeven wrote:
-> Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-> symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-> In most cases this other symbol is an architecture or platform specific
-> symbol, or PCI.
+This simplifies the dependencies, and allows to improve compile-testing.
 
-Acked-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+---
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/spi/Kconfig | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
---rYRijwbmzeJBcrGE
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlqvCkoACgkQJNaLcl1U
-h9BMigf9GUiHnb+8UvcX70O+PBqRtvv8ENPWuJqF1yPy6LrCjn3P3iOQCW8q7Xa1
-d06amrO7NytpkLP5/ubGHCmQ+IeET/5pneEyPrRxwwT0mjGNnxfjw4g8JUMHM5Lr
-kfeBhpFWCkvffVxFQdE89iCYTYvScqDzXqe3rPepUE2o635Ptf7AdhUAYtqp4Ym7
-7Q5VJmJKN8cyzyIfvnmz2FMMJtWxHfW7DjyE1+bcNKhGHdJAh2bM9jCiXALMJ+Sg
-9yMqTzY5D5xE27zy1L/5ZkN0iKt/1+xx5xVV1t87RJwqNoEW6IG5RZbwbPYKNv4/
-9x+b1IRk+1OTqCZbHgO+4OzYqk638g==
-=KKog
------END PGP SIGNATURE-----
-
---rYRijwbmzeJBcrGE--
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 603783976b8152d4..7bd3a94f58511c41 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -71,7 +71,6 @@ config SPI_ARMADA_3700
+ 
+ config SPI_ATMEL
+ 	tristate "Atmel SPI Controller"
+-	depends on HAS_DMA
+ 	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
+ 	help
+ 	  This selects a driver for the Atmel SPI Controller, present on
+@@ -252,7 +251,6 @@ config SPI_EFM32
+ 
+ config SPI_EP93XX
+ 	tristate "Cirrus Logic EP93xx SPI controller"
+-	depends on HAS_DMA
+ 	depends on ARCH_EP93XX || COMPILE_TEST
+ 	help
+ 	  This enables using the Cirrus EP93xx SPI controller in master
+@@ -374,7 +372,6 @@ config SPI_FSL_SPI
+ config SPI_FSL_DSPI
+ 	tristate "Freescale DSPI controller"
+ 	select REGMAP_MMIO
+-	depends on HAS_DMA
+ 	depends on SOC_VF610 || SOC_LS1021A || ARCH_LAYERSCAPE || M5441x || COMPILE_TEST
+ 	help
+ 	  This enables support for the Freescale DSPI controller in master
+@@ -450,7 +447,6 @@ config SPI_OMAP_UWIRE
+ 
+ config SPI_OMAP24XX
+ 	tristate "McSPI driver for OMAP"
+-	depends on HAS_DMA
+ 	depends on ARCH_OMAP2PLUS || COMPILE_TEST
+ 	select SG_SPLIT
+ 	help
+@@ -459,7 +455,6 @@ config SPI_OMAP24XX
+ 
+ config SPI_TI_QSPI
+ 	tristate "DRA7xxx QSPI controller support"
+-	depends on HAS_DMA
+ 	depends on ARCH_OMAP2PLUS || COMPILE_TEST
+ 	help
+ 	  QSPI master controller for DRA7xxx used for flash devices.
+@@ -488,7 +483,6 @@ config SPI_PIC32
+ config SPI_PIC32_SQI
+ 	tristate "Microchip PIC32 Quad SPI driver"
+ 	depends on MACH_PIC32 || COMPILE_TEST
+-	depends on HAS_DMA
+ 	help
+ 	  SPI driver for PIC32 Quad SPI controller.
+ 
+@@ -591,7 +585,7 @@ config SPI_SC18IS602
+ 
+ config SPI_SH_MSIOF
+ 	tristate "SuperH MSIOF SPI controller"
+-	depends on HAVE_CLK && HAS_DMA
++	depends on HAVE_CLK
+ 	depends on ARCH_SHMOBILE || ARCH_RENESAS || COMPILE_TEST
+ 	help
+ 	  SPI driver for SuperH and SH Mobile MSIOF blocks.
+@@ -669,7 +663,7 @@ config SPI_MXS
+ config SPI_TEGRA114
+ 	tristate "NVIDIA Tegra114 SPI Controller"
+ 	depends on (ARCH_TEGRA && TEGRA20_APB_DMA) || COMPILE_TEST
+-	depends on RESET_CONTROLLER && HAS_DMA
++	depends on RESET_CONTROLLER
+ 	help
+ 	  SPI driver for NVIDIA Tegra114 SPI Controller interface. This controller
+ 	  is different than the older SoCs SPI controller and also register interface
+@@ -687,7 +681,7 @@ config SPI_TEGRA20_SFLASH
+ config SPI_TEGRA20_SLINK
+ 	tristate "Nvidia Tegra20/Tegra30 SLINK Controller"
+ 	depends on (ARCH_TEGRA && TEGRA20_APB_DMA) || COMPILE_TEST
+-	depends on RESET_CONTROLLER && HAS_DMA
++	depends on RESET_CONTROLLER
+ 	help
+ 	  SPI driver for Nvidia Tegra20/Tegra30 SLINK Controller interface.
+ 
+-- 
+2.7.4
