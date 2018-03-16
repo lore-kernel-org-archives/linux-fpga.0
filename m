@@ -1,61 +1,71 @@
-Return-Path: <SRS0=aM/a=GT=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=aM/a=GT=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 1/6] fpga: region: don't use drvdata in common fpga code
-Date: Thu, 29 Mar 2018 08:36:53 -0700
-Message-Id: <20180329153658.11614-2-mdf@kernel.org>
-In-Reply-To: <20180329153658.11614-1-mdf@kernel.org>
-References: <20180329153658.11614-1-mdf@kernel.org>
-To: gregkh@linuxfoundation.org
-Cc: atull@kernel.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=eAfy=GG=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=eAfy=GG=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from andre.telenet-ops.be ([195.130.132.53]:58554 "EHLO
+        andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752977AbeCPNwz (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 16 Mar 2018 09:52:55 -0400
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH v2 11/21] mailbox: Remove depends on HAS_DMA in case of platform dependency
+Date: Fri, 16 Mar 2018 14:51:44 +0100
+Message-Id: <1521208314-4783-12-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
+Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-From: Alan Tull <atull@kernel.org>
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-Part of patchset that changes the following fpga_*_register
-functions to not set drvdata:
-* fpga_region_register.
-* fpga_mgr_register
-* fpga_bridge_register
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-The rationale is that setting drvdata is fine for DT based devices
-that will have one manager, bridge, or region per platform device.
-However PCIe based devices may have multiple FPGA mgr/bridge/regions
-under one PCIe device.  Without these changes, the PCIe solution has
-to create an extra device for each child mgr/bridge/region to hold
-drvdata.
+This simplifies the dependencies, and allows to improve compile-testing.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Reported-by: Jiuyue Ma <majiuyue@huawei.com>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Notes:
+  - FSL_FMAN keeps its dependency on HAS_DMA, as it calls set_dma_ops(),
+    which does not exist if HAS_DMA=n (Do we need a dummy? The use of
+    set_dma_ops() in this driver is questionable),
+  - SND_SOC_LPASS_IPQ806X and SND_SOC_LPASS_PLATFORM loose their
+    dependency on HAS_DMA, as they are selected from
+    SND_SOC_APQ8016_SBC.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
 ---
- drivers/fpga/fpga-region.c    | 1 -
- drivers/fpga/of-fpga-region.c | 1 +
- 2 files changed, 1 insertion(+), 1 deletion(-)
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/mailbox/Kconfig | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index edab2a2e03ef..ebe1f872810d 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -178,7 +178,6 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
- 	region->dev.parent = dev;
- 	region->dev.of_node = dev->of_node;
- 	region->dev.id = id;
--	dev_set_drvdata(dev, region);
- 
- 	ret = dev_set_name(&region->dev, "region%d", id);
- 	if (ret)
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 119ff75522f1..35e7e8c4a0cb 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -438,6 +438,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 		goto eprobe_mgr_put;
- 
- 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
-+	dev_set_drvdata(dev, region);
- 
- 	dev_info(dev, "FPGA Region probed\n");
- 
+diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
+index ba2f1525f4eef454..f3c68fe15180d035 100644
+--- a/drivers/mailbox/Kconfig
++++ b/drivers/mailbox/Kconfig
+@@ -154,7 +154,6 @@ config XGENE_SLIMPRO_MBOX
+ config BCM_PDC_MBOX
+ 	tristate "Broadcom FlexSparx DMA Mailbox"
+ 	depends on ARCH_BCM_IPROC || COMPILE_TEST
+-	depends on HAS_DMA
+ 	help
+ 	  Mailbox implementation for the Broadcom FlexSparx DMA ring manager,
+ 	  which provides access to various offload engines on Broadcom
+@@ -164,7 +163,6 @@ config BCM_FLEXRM_MBOX
+ 	tristate "Broadcom FlexRM Mailbox"
+ 	depends on ARM64
+ 	depends on ARCH_BCM_IPROC || COMPILE_TEST
+-	depends on HAS_DMA
+ 	select GENERIC_MSI_IRQ_DOMAIN
+ 	default m if ARCH_BCM_IPROC
+ 	help
 -- 
-2.16.2
+2.7.4
+
