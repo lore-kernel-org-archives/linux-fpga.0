@@ -1,58 +1,132 @@
-Return-Path: <SRS0=ztfD=GK=gmail.com=geert.uytterhoeven@kernel.org>
-Return-Path: <SRS0=ztfD=GK=gmail.com=geert.uytterhoeven@kernel.org>
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20180318230410.382f69a1@bbrezillon>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
- <1521208314-4783-15-git-send-email-geert@linux-m68k.org> <20180318230410.382f69a1@bbrezillon>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 20 Mar 2018 11:06:48 +0100
-Message-ID: <CAMuHMdW2ohqEC2QZ8p7d9cN08a14pV19VcyWMKLS-egzc5JLMA@mail.gmail.com>
+Return-Path: <SRS0=JwQN=GI=bootlin.com=boris.brezillon@kernel.org>
+Return-Path: <SRS0=JwQN=GI=bootlin.com=boris.brezillon@kernel.org>
+Date: Sun, 18 Mar 2018 23:04:10 +0100
+From: Boris Brezillon <boris.brezillon@bootlin.com>
 Subject: Re: [PATCH v2 14/21] mtd: Remove depends on HAS_DMA in case of
  platform dependency
-Content-Type: text/plain; charset="UTF-8"
-To: Boris Brezillon <boris.brezillon@bootlin.com>
-Cc: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, iommu@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>, ALSA Development Mailing List <alsa-devel@alsa-project.org>, linux-ide@vger.kernel.org, Linux Crypto Mailing List <linux-crypto@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, Linux I2C <linux-i2c@vger.kernel.org>, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>, Linux MMC List <linux-mmc@vger.kernel.org>, MTD Maling List <linux-mtd@lists.infradead.org>, netdev <netdev@vger.kernel.org>, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi <linux-spi@vger.kernel.org>, driverdevel <devel@driverdev.osuosl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-ID: <20180318230410.382f69a1@bbrezillon>
+In-Reply-To: <1521208314-4783-15-git-send-email-geert@linux-m68k.org>
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+	<1521208314-4783-15-git-send-email-geert@linux-m68k.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller  <davem@davemloft.net>, Bartlomiej Zolnierkiewicz" <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Boris,
+Hi Geert,
 
-On Sun, Mar 18, 2018 at 11:04 PM, Boris Brezillon
-<boris.brezillon@bootlin.com> wrote:
-> On Fri, 16 Mar 2018 14:51:47 +0100
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
->> Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
->> symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
->> In most cases this other symbol is an architecture or platform specific
->> symbol, or PCI.
->>
->> Generic symbols and drivers without platform dependencies keep their
->> dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
->> cannot work anyway.
->>
->> This simplifies the dependencies, and allows to improve compile-testing.
->>
->
-> Don't know which release you're targeting but it's likely to conflict
-> with the change I have in my nand/next branch. Is this a problem if I
-> take this patch through the mtd tree after [1] has reached Linus' tree?
+On Fri, 16 Mar 2018 14:51:47 +0100
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-No problem, I will rebase and resubmit after v4.17-rc1.
+> Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+> symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+> In most cases this other symbol is an architecture or platform specific
+> symbol, or PCI.
+> 
+> Generic symbols and drivers without platform dependencies keep their
+> dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+> cannot work anyway.
+> 
+> This simplifies the dependencies, and allows to improve compile-testing.
+> 
 
-> [1]https://lkml.org/lkml/2018/3/16/435
->
->> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->> Reviewed-by: Mark Brown <broonie@kernel.org>
->> Acked-by: Robin Murphy <robin.murphy@arm.com>
+Don't know which release you're targeting but it's likely to conflict
+with the change I have in my nand/next branch. Is this a problem if I
+take this patch through the mtd tree after [1] has reached Linus' tree?
 
-Gr{oetje,eeting}s,
+Regards,
 
-                        Geert
+Boris
+
+[1]https://lkml.org/lkml/2018/3/16/435
+
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Reviewed-by: Mark Brown <broonie@kernel.org>
+> Acked-by: Robin Murphy <robin.murphy@arm.com>
+> ---
+> v2:
+>   - Add Reviewed-by, Acked-by,
+>   - Drop RFC state,
+>   - Drop new dependency of MTD_NAND_MARVELL on HAS_DMA,
+>   - Split per subsystem.
+> ---
+>  drivers/mtd/nand/Kconfig    | 8 ++------
+>  drivers/mtd/spi-nor/Kconfig | 2 +-
+>  2 files changed, 3 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+> index 736ac887303c88ba..55a2f8a2fa90cd87 100644
+> --- a/drivers/mtd/nand/Kconfig
+> +++ b/drivers/mtd/nand/Kconfig
+> @@ -46,7 +46,7 @@ config MTD_NAND_DENALI
+>  config MTD_NAND_DENALI_PCI
+>          tristate "Support Denali NAND controller on Intel Moorestown"
+>  	select MTD_NAND_DENALI
+> -	depends on HAS_DMA && PCI
+> +	depends on PCI
+>          help
+>            Enable the driver for NAND flash on Intel Moorestown, using the
+>            Denali NAND controller core.
+> @@ -184,7 +184,6 @@ config MTD_NAND_S3C2410_CLKSTOP
+>  config MTD_NAND_TANGO
+>  	tristate "NAND Flash support for Tango chips"
+>  	depends on ARCH_TANGO || COMPILE_TEST
+> -	depends on HAS_DMA
+>  	help
+>  	  Enables the NAND Flash controller on Tango chips.
+>  
+> @@ -328,7 +327,7 @@ config MTD_NAND_MARVELL
+>  	tristate "NAND controller support on Marvell boards"
+>  	depends on PXA3xx || ARCH_MMP || PLAT_ORION || ARCH_MVEBU || \
+>  		   COMPILE_TEST
+> -	depends on HAS_IOMEM && HAS_DMA
+> +	depends on HAS_IOMEM
+>  	help
+>  	  This enables the NAND flash controller driver for Marvell boards,
+>  	  including:
+> @@ -490,7 +489,6 @@ config MTD_NAND_SH_FLCTL
+>  	tristate "Support for NAND on Renesas SuperH FLCTL"
+>  	depends on SUPERH || COMPILE_TEST
+>  	depends on HAS_IOMEM
+> -	depends on HAS_DMA
+>  	help
+>  	  Several Renesas SuperH CPU has FLCTL. This option enables support
+>  	  for NAND Flash using FLCTL.
+> @@ -558,7 +556,6 @@ config MTD_NAND_SUNXI
+>  config MTD_NAND_HISI504
+>  	tristate "Support for NAND controller on Hisilicon SoC Hip04"
+>  	depends on ARCH_HISI || COMPILE_TEST
+> -	depends on HAS_DMA
+>  	help
+>  	  Enables support for NAND controller on Hisilicon SoC Hip04.
+>  
+> @@ -572,7 +569,6 @@ config MTD_NAND_QCOM
+>  config MTD_NAND_MTK
+>  	tristate "Support for NAND controller on MTK SoCs"
+>  	depends on ARCH_MEDIATEK || COMPILE_TEST
+> -	depends on HAS_DMA
+>  	help
+>  	  Enables support for NAND controller on MTK SoCs.
+>  	  This controller is found on mt27xx, mt81xx, mt65xx SoCs.
+> diff --git a/drivers/mtd/spi-nor/Kconfig b/drivers/mtd/spi-nor/Kconfig
+> index 89da88e591215db1..c493b8230a38c059 100644
+> --- a/drivers/mtd/spi-nor/Kconfig
+> +++ b/drivers/mtd/spi-nor/Kconfig
+> @@ -71,7 +71,7 @@ config SPI_FSL_QUADSPI
+>  config SPI_HISI_SFC
+>  	tristate "Hisilicon SPI-NOR Flash Controller(SFC)"
+>  	depends on ARCH_HISI || COMPILE_TEST
+> -	depends on HAS_IOMEM && HAS_DMA
+> +	depends on HAS_IOMEM
+>  	help
+>  	  This enables support for hisilicon SPI-NOR flash controller.
+>  
+
+
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Boris Brezillon, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+https://bootlin.com
