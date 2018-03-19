@@ -1,42 +1,39 @@
-Return-Path: <SRS0=ZSq7=FY=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=ZSq7=FY=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv2 4/7] dt-bindings: fpga: add Stratix10 SoC FPGA manager binding
-Date: Thu,  1 Mar 2018 18:19:32 -0600
-Message-Id: <1519949975-13548-5-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1519949975-13548-1-git-send-email-richard.gong@linux.intel.com>
-References: <1519949975-13548-1-git-send-email-richard.gong@linux.intel.com>
-To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com
+Return-Path: <SRS0=FZEQ=GJ=gmail.com=p.pisati@kernel.org>
+Return-Path: <SRS0=FZEQ=GJ=gmail.com=p.pisati@kernel.org>
+Date: Mon, 19 Mar 2018 19:09:50 +0100
+From: Paolo Pisati <p.pisati@gmail.com>
+Subject: Re: [PATCH 2/2] fpga: lattice machxo2: Add Lattice MachXO2 support
+Message-ID: <20180319180950.GA15921@harukaze>
+References: <1521215669-23874-1-git-send-email-p.pisati@gmail.com>
+ <1521215669-23874-3-git-send-email-p.pisati@gmail.com>
+ <20180316162654.bcr7d46om2tnhm7l@us-sjc-wireless-10-16-34-48.amer.corp.natinst.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20180316162654.bcr7d46om2tnhm7l@us-sjc-wireless-10-16-34-48.amer.corp.natinst.com>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Paolo Pisati <p.pisati@gmail.com>, Alan Tull <atull@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alan Tull <atull@kernel.org>
+On Fri, Mar 16, 2018 at 09:26:54AM -0700, Moritz Fischer wrote:
+> >
+> > +static enum fpga_mgr_states machxo2_spi_state(struct fpga_manager *mgr)
+> > +{
+> > +	return FPGA_MGR_STATE_UNKNOWN;
+> > +}
+> 
+> To understand this correctly: Further up you have a way to determine the
+> state you're in, but then you only use that for debug printout, while
+> here where you should provide the status you say FPGA_MGR_STATE_UNKNOWN?
+> 
+> Am I missing something here?
 
-Add a Device Tree binding for the Intel Stratix10 SoC FPGA manager.
+This is more of a generic function ('What's the state of the FPGA now?') while
+dump_status_reg() is invoked after a specific SPI command is sent to the FPGA to
+keep track of the status of the chip and check that it adhere to the state
+machine.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
-v2: this patch is added in patch set version 2
----
- .../devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt  | 10 ++++++++++
- 1 file changed, 10 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-
-diff --git a/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-new file mode 100644
-index 0000000..78de689
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-@@ -0,0 +1,10 @@
-+Intel Stratix10 SoC FPGA Manager
-+
-+Required properties:
-+- compatible : should contain "intel,stratix10-soc-fpga-mgr"
-+
-+Example:
-+
-+	fpga_mgr: fpga-mgr@0 {
-+		compatible = "intel,stratix10-soc-fpga-mgr";
-+	};
+I'll send a v7.
 -- 
-2.7.4
+bye,
+p.
