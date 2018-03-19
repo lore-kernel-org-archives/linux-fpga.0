@@ -1,73 +1,40 @@
-Return-Path: <SRS0=39c5=GG=linux-m68k.org=geert@kernel.org>
-Return-Path: <SRS0=39c5=GG=linux-m68k.org=geert@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v2 18/21] serial: Remove depends on HAS_DMA in case of platform dependency
-Date: Fri, 16 Mar 2018 14:51:51 +0100
-Message-Id: <1521208314-4783-19-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
-Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <1518513893-4719-21-git-send-email-hao.wu@intel.com>
+References: <1518513893-4719-1-git-send-email-hao.wu@intel.com> <1518513893-4719-21-git-send-email-hao.wu@intel.com>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 19 Mar 2018 13:40:05 -0500
+Message-ID: <CANk1AXRA81cSJchjzHmzG8QZMZETEppTw7BW3of++20VFcQ3Qw@mail.gmail.com>
+Subject: Re: [PATCH v4 20/24] fpga: dfl: add FPGA Accelerated Function Unit
+ driver basic framework
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+On Tue, Feb 13, 2018 at 3:24 AM, Wu Hao <hao.wu@intel.com> wrote:
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Hi Hao,
 
-This simplifies the dependencies, and allows to improve compile-testing.
+I acked this back in v2.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
----
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/tty/serial/Kconfig | 4 ----
- 1 file changed, 4 deletions(-)
+> On DFL FPGA devices, the Accelerated Function Unit (AFU), can be
+> reprogrammed for different functions. It connects to the FPGA
+> infrastructure("blue bistream") via a Port. Port CSRs are implemented
+> separately from the AFU CSRs to provide control and status of the Port.
+> Once valid green bitstream is programmed into the AFU, it allows access
+> to the AFU CSRs in the AFU MMIO space.
+>
+> This patch only implements basic driver framework for AFU, including
+> device file operation framework.
+>
+> Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+> Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+> Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+> Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
 
-diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-index 3682fd3e960cbd64..a0ea146a2ef5af53 100644
---- a/drivers/tty/serial/Kconfig
-+++ b/drivers/tty/serial/Kconfig
-@@ -115,7 +115,6 @@ config SERIAL_SB1250_DUART_CONSOLE
- 
- config SERIAL_ATMEL
- 	bool "AT91 on-chip serial port support"
--	depends on HAS_DMA
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	select SERIAL_CORE
- 	select SERIAL_MCTRL_GPIO if GPIOLIB
-@@ -586,7 +585,6 @@ config BFIN_UART3_CTSRTS
- 
- config SERIAL_IMX
- 	tristate "IMX serial port support"
--	depends on HAS_DMA
- 	depends on ARCH_MXC || COMPILE_TEST
- 	select SERIAL_CORE
- 	select RATIONAL
-@@ -1436,7 +1434,6 @@ config SERIAL_PCH_UART_CONSOLE
- 
- config SERIAL_MXS_AUART
- 	tristate "MXS AUART support"
--	depends on HAS_DMA
- 	depends on ARCH_MXS || MACH_ASM9260 || COMPILE_TEST
- 	select SERIAL_CORE
- 	select SERIAL_MCTRL_GPIO if GPIOLIB
-@@ -1656,7 +1653,6 @@ config SERIAL_SPRD_CONSOLE
- config SERIAL_STM32
- 	tristate "STMicroelectronics STM32 serial port support"
- 	select SERIAL_CORE
--	depends on HAS_DMA
- 	depends on ARCH_STM32 || COMPILE_TEST
- 	help
- 	  This driver is for the on-chip Serial Controller on
--- 
-2.7.4
+Alan
