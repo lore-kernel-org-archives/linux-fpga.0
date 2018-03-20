@@ -1,88 +1,198 @@
-Return-Path: <SRS0=ZSq7=FY=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=ZSq7=FY=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv2 0/7] Add Intel Stratix10 FPGA manager and service layer
-Date: Thu,  1 Mar 2018 18:19:28 -0600
-Message-Id: <1519949975-13548-1-git-send-email-richard.gong@linux.intel.com>
-To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, Richard Gong <richard.gong@intel.com>
+Return-Path: <SRS0=lFuN=GK=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=lFuN=GK=intel.com=hao.wu@kernel.org>
+Date: Tue, 20 Mar 2018 14:46:59 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v4 12/24] fpga: dfl: fme: add
+ FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
+Message-ID: <20180320064659.GA31239@hao-dev>
+References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+ <1518513893-4719-13-git-send-email-hao.wu@intel.com>
+ <CANk1AXQ79CvNECJav6bvs+XZHSD=1ai=kg55W4zTYvSn7GRwKQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXQ79CvNECJav6bvs+XZHSD=1ai=kg55W4zTYvSn7GRwKQ@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+On Mon, Mar 19, 2018 at 01:29:52PM -0500, Alan Tull wrote:
+> On Tue, Feb 13, 2018 at 3:24 AM, Wu Hao <hao.wu@intel.com> wrote:
+> 
+> Hi Hao,
+> 
+> Looking at fpga-dfl.h again, there's a lot of things that start with
+> FPGA_.  Don't you think this is too general?  There are other FPGA_
+> things in the kernel.  Not just the things added by this patch, but
+> the whole file.
 
-This is the 2nd submission of Intel service layer patches. Intel Stratix10
-FPGA manager, which is 1st service layer client, is included in this submission.
+Hi Alan
 
-Service layer patches have been reviewed internally by Alan Tull and other
-colleagues at Intel.
+Thanks for the comments, I got your point here. FPGA_ things should be 
+reserved for more generic things for FPGA. I will search and replace
+the FPGA_xxx things used here and in other files.
 
-Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
-processor system (HPS) and Secure Device Manager (SDM). SDM is the hardware
-which does the FPGA configuration, QSPI, Crypto and warm reset.
+> 
+> > FPGA_GET_API_VERSION and FPGA_CHECK_EXTENSION ioctls are common ones which
+> 
+> Maybe DFL_FPGA_GET_API_VERSION?
 
-When the FPGA is configured from HPS, there needs to be a way for HPS to
-notify SDM the location and size of the configuration data. Then SDM will
-get the configuration data from that location and perform the FPGA configuration.
+Yes, DFL_FPGA_GET_API_VERSION looks good.
 
-To meet the whole system security needs and support virtual machine
-requesting communication with SDM, only the secure world of software (EL3,
-Exception Level 3) can interface with SDM. All software entities running
-on other exception levels must channel through the EL3 software whenever it
-needs service from SDM.
+> 
+> > need to be supported by all feature devices drivers including FME and AFU.
+> > Userspace application can use these ioctl interfaces to get the API info
+> > and check if specific extension is supported or not in current driver.
+> >
+> > This patch implements above 2 ioctls in FPGA Management Engine (FME)
+> > driver.
+> >
+> > Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+> > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> > Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+> > Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+> > Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > Acked-by: Alan Tull <atull@kernel.org>
+> > Acked-by: Moritz Fischer <mdf@kernel.org>
+> > ---
+> > v2: switched to GPLv2 license.
+> > v3: rename intel-fpga.h to fpga-dfl.h and rebased.
+> > v4: fix SPDX license issue.
+> >     add Acked-by from Alan and Moritz.
+> > ---
+> >  Documentation/ioctl/ioctl-number.txt |  1 +
+> >  drivers/fpga/dfl-fme-main.c          | 12 +++++++++
+> >  include/uapi/linux/fpga-dfl.h        | 48 ++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 61 insertions(+)
+> >  create mode 100644 include/uapi/linux/fpga-dfl.h
+> >
+> > diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
+> > index 6501389..f1e7baa 100644
+> > --- a/Documentation/ioctl/ioctl-number.txt
+> > +++ b/Documentation/ioctl/ioctl-number.txt
+> > @@ -324,6 +324,7 @@ Code  Seq#(hex)     Include File            Comments
+> >  0xB3   00      linux/mmc/ioctl.h
+> >  0xB4   00-0F   linux/gpio.h            <mailto:linux-gpio@vger.kernel.org>
+> >  0xB5   00-0F   uapi/linux/rpmsg.h      <mailto:linux-remoteproc@vger.kernel.org>
+> > +0xB6   all     linux/fpga-dfl.h
+> >  0xC0   00-0F   linux/usb/iowarrior.h
+> >  0xCA   00-0F   uapi/misc/cxl.h
+> >  0xCA   10-2F   uapi/misc/ocxl.h
+> > diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+> > index 056ae24..1a9929c 100644
+> > --- a/drivers/fpga/dfl-fme-main.c
+> > +++ b/drivers/fpga/dfl-fme-main.c
+> > @@ -16,6 +16,7 @@
+> >
+> >  #include <linux/kernel.h>
+> >  #include <linux/module.h>
+> > +#include <linux/fpga-dfl.h>
+> >
+> >  #include "dfl.h"
+> >
+> > @@ -114,6 +115,13 @@ static struct feature_driver fme_feature_drvs[] = {
+> >         },
+> >  };
+> >
+> > +static long fme_ioctl_check_extension(struct feature_platform_data *pdata,
+> > +                                     unsigned long arg)
+> > +{
+> > +       /* No extension support for now */
+> > +       return 0;
+> > +}
+> > +
+> >  static int fme_open(struct inode *inode, struct file *filp)
+> >  {
+> >         struct platform_device *fdev = fpga_inode_to_feature_dev(inode);
+> > @@ -154,6 +162,10 @@ static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+> >         dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
+> >
+> >         switch (cmd) {
+> > +       case FPGA_GET_API_VERSION:
+> > +               return FPGA_API_VERSION;
+> > +       case FPGA_CHECK_EXTENSION:
+> > +               return fme_ioctl_check_extension(pdata, arg);
+> >         default:
+> >                 /*
+> >                  * Let sub-feature's ioctl function to handle the cmd
+> > diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+> > new file mode 100644
+> > index 0000000..9321ee9
+> > --- /dev/null
+> > +++ b/include/uapi/linux/fpga-dfl.h
+> > @@ -0,0 +1,48 @@
+> > +/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+> > +/*
+> > + * Header File for FPGA DFL User API
+> > + *
+> > + * Copyright (C) 2017 Intel Corporation, Inc.
+> > + *
+> > + * Authors:
+> > + *   Kang Luwei <luwei.kang@intel.com>
+> > + *   Zhang Yi <yi.z.zhang@intel.com>
+> > + *   Wu Hao <hao.wu@intel.com>
+> > + *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> > + */
+> > +
+> > +#ifndef _UAPI_LINUX_FPGA_DFL_H
+> > +#define _UAPI_LINUX_FPGA_DFL_H
+> > +
+> > +#define FPGA_API_VERSION 0
+> 
+> There will be other FPGA API's.  Maybe DFL_FPGA_... or FME_FPGA_...
 
-Intel Stratix10 service layer driver is added to provide the service for
-FPGA configuration. Running at privileged exception level (EL1, Exception
-Level 1), Intel Stratix10 service layer driver interfaces with the service
-provider at EL1 (Intel Stratix10 FPGA Manager) and manages secure monitor
-call (SMC) to communicate with secure monitor software at secure monitor
-exception level (EL3).
+I will pick DFL_FPGA_... here and below places. :)
 
-Later the Intel Stratix10 service layer driver will be extended to provide
-services for QSPI, Crypto and warm reset.
+> 
+> > +
+> > +/*
+> > + * The IOCTL interface for DFL based FPGA is designed for extensibility by
+> > + * embedding the structure length (argsz) and flags into structures passed
+> > + * between kernel and userspace. This design referenced the VFIO IOCTL
+> > + * interface (include/uapi/linux/vfio.h).
+> > + */
+> > +
+> > +#define FPGA_MAGIC 0xB6
+> 
+> Same here.
+> 
+> > +
+> > +#define FPGA_BASE 0
+> 
+> And here.
+> 
+> > +
+> > +/**
+> > + * FPGA_GET_API_VERSION - _IO(FPGA_MAGIC, FPGA_BASE + 0)
+> > + *
+> > + * Report the version of the driver API.
+> > + * Return: Driver API Version.
+> > + */
+> > +
+> > +#define FPGA_GET_API_VERSION   _IO(FPGA_MAGIC, FPGA_BASE + 0)
+> > +
+> > +/**
+> > + * FPGA_CHECK_EXTENSION - _IO(FPGA_MAGIC, FPGA_BASE + 1)
+> > + *
+> > + * Check whether an extension is supported.
+> > + * Return: 0 if not supported, otherwise the extension is supported.
+> > + */
+> > +
+> > +#define FPGA_CHECK_EXTENSION   _IO(FPGA_MAGIC, FPGA_BASE + 1)
+> 
+> Basically all the FPGA_* stuff here is specific to this particular DFL
+> FPGA API and should have a better name.
 
-v2: add patches for FPGA manager, FPGA manager binding, dts and defconfig
-    remove intel-service subdirectory and intel-service.h, move intel-smc.h
-    and intel-service.c to driver/misc subdirectory
-    remove global variables
-    change service layer driver be 'default n'
-    correct SPDX markers
-    add timeout for do..while() loop
-    add kernel-doc for the functions and structs, correct multiline comments
-    replace kfifo_in/kfifo_out with kfifo_in_spinlocked/kfifo_out_spinlocked
-    rename struct intel_svc_data (at client header) to intel_svc_client_msg
-    rename struct intel_svc_private_mem to intel_svc_data
-    other corrections/changes from Intel internal code reviews
+Will update them in the next version, thanks again for the comments.
 
-Alan Tull (3):
-  dt-bindings: fpga: add Stratix10 SoC FPGA manager binding
-  arm64: dts: stratix10: add fpga manager and region
-  fpga: add intel stratix10 soc fpga manager driver
+Hao
 
-Richard Gong (4):
-  dt-bindings, firmware: add Intel Stratix10 service layer binding
-  arm64: dts: stratix10: add service driver binding to base dtsi
-  driver, misc: add Intel Stratix10 service layer driver
-  defconfig: enable fpga and service layer
-
- .../bindings/firmware/intel,stratix10-svc.txt      |  57 ++
- .../bindings/fpga/intel-stratix10-soc-fpga-mgr.txt |  10 +
- arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi  |  34 +
- arch/arm64/configs/defconfig                       |   5 +
- drivers/fpga/Kconfig                               |   6 +
- drivers/fpga/Makefile                              |   1 +
- drivers/fpga/stratix10-soc.c                       | 503 +++++++++++
- drivers/misc/Kconfig                               |  12 +
- drivers/misc/Makefile                              |   1 +
- drivers/misc/intel-service.c                       | 960 +++++++++++++++++++++
- drivers/misc/intel-smc.h                           | 205 +++++
- include/linux/intel-service-client.h               | 188 ++++
- 12 files changed, 1982 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
- create mode 100644 Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
- create mode 100644 drivers/fpga/stratix10-soc.c
- create mode 100644 drivers/misc/intel-service.c
- create mode 100644 drivers/misc/intel-smc.h
- create mode 100644 include/linux/intel-service-client.h
-
--- 
-2.7.4
+> 
+> Alan
+> 
+> > +
+> > +#endif /* _UAPI_LINUX_FPGA_DFL_H */
+> > --
+> > 2.7.4
+> >
