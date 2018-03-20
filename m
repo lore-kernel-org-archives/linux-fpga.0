@@ -1,66 +1,58 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [RESEND PATCH v3 0/4] fpga: don't use drvdata in common code
-Date: Tue, 27 Mar 2018 14:59:53 -0500
-Message-Id: <20180327195957.3878-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Anatolij Gustschin <agust@denx.de>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Joel Holdsworth <joel@airwebreathe.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=ztfD=GK=gmail.com=geert.uytterhoeven@kernel.org>
+Return-Path: <SRS0=ztfD=GK=gmail.com=geert.uytterhoeven@kernel.org>
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20180318230410.382f69a1@bbrezillon>
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+ <1521208314-4783-15-git-send-email-geert@linux-m68k.org> <20180318230410.382f69a1@bbrezillon>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 20 Mar 2018 11:06:48 +0100
+Message-ID: <CAMuHMdW2ohqEC2QZ8p7d9cN08a14pV19VcyWMKLS-egzc5JLMA@mail.gmail.com>
+Subject: Re: [PATCH v2 14/21] mtd: Remove depends on HAS_DMA in case of
+ platform dependency
+Content-Type: text/plain; charset="UTF-8"
+To: Boris Brezillon <boris.brezillon@bootlin.com>
+Cc: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, iommu@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>, ALSA Development Mailing List <alsa-devel@alsa-project.org>, linux-ide@vger.kernel.org, Linux Crypto Mailing List <linux-crypto@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, Linux I2C <linux-i2c@vger.kernel.org>, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>, Linux MMC List <linux-mmc@vger.kernel.org>, MTD Maling List <linux-mtd@lists.infradead.org>, netdev <netdev@vger.kernel.org>, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi <linux-spi@vger.kernel.org>, driverdevel <devel@driverdev.osuosl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Setting drvdata is fine for DT based devices which have one manager,
-bridge, or region device per platform device.  However, PCIe based
-devices may have multiple FPGA mgr/bridge/regions under one PCIe
-device.  Without these changes, PCIe-based solutions have to create an
-extra device for each child mgr/bridge/region to hold drvdata.
+Hi Boris,
 
-Also changing the fpga_*_register/unregister functions to take the
-corresponding struct as the only parameter wherever they weren't already.
+On Sun, Mar 18, 2018 at 11:04 PM, Boris Brezillon
+<boris.brezillon@bootlin.com> wrote:
+> On Fri, 16 Mar 2018 14:51:47 +0100
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+>> Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+>> symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+>> In most cases this other symbol is an architecture or platform specific
+>> symbol, or PCI.
+>>
+>> Generic symbols and drivers without platform dependencies keep their
+>> dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+>> cannot work anyway.
+>>
+>> This simplifies the dependencies, and allows to improve compile-testing.
+>>
+>
+> Don't know which release you're targeting but it's likely to conflict
+> with the change I have in my nand/next branch. Is this a problem if I
+> take this patch through the mtd tree after [1] has reached Linus' tree?
 
-* int fpga_bridge_register(struct fpga_bridge *br)
-* int fpga_mgr_register(struct fpga_manager *mgr)
-* int fpga_region_register(struct fpga_region *region)
+No problem, I will rebase and resubmit after v4.17-rc1.
 
-* void fpga_bridge_unregister(struct fpga_bridge *br)
-* void fpga_mgr_unregister(struct fpga_manager *mgr)
-* int fpga_region_unregister(struct fpga_region *region)
+> [1]https://lkml.org/lkml/2018/3/16/435
+>
+>> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>> Reviewed-by: Mark Brown <broonie@kernel.org>
+>> Acked-by: Robin Murphy <robin.murphy@arm.com>
 
-Changes from v2:
-* Drop patch 5 which fixed a DT overlay issue.  The underlying
-  issue was fixed in the main DT overlay code.
-* Minor code cleanup to make it more obvious that the changes
-  were not breaking anything
-* Added Moritz' ack on patch 1
+Gr{oetje,eeting}s,
 
-Alan Tull (4):
-  fpga: region: don't use drvdata in common fpga code
-  fpga: manager: don't use drvdata in common fpga code
-  fpga: bridge: don't use drvdata in common fpga code
-  fpga: region: change fpga_region_register to have one param
-
- Documentation/fpga/fpga-mgr.txt     | 24 +++++++++++++++------
- Documentation/fpga/fpga-region.txt  |  3 +--
- drivers/fpga/altera-cvp.c           | 18 ++++++++++++----
- drivers/fpga/altera-fpga2sdram.c    | 20 +++++++++++++----
- drivers/fpga/altera-freeze-bridge.c | 18 +++++++++++++---
- drivers/fpga/altera-hps2fpga.c      | 16 +++++++++++---
- drivers/fpga/altera-pr-ip-core.c    | 17 +++++++++++++--
- drivers/fpga/altera-ps-spi.c        | 18 +++++++++++++---
- drivers/fpga/fpga-bridge.c          | 43 ++++++++++++++-----------------------
- drivers/fpga/fpga-mgr.c             | 39 ++++++++++++---------------------
- drivers/fpga/fpga-region.c          |  9 ++++++--
- drivers/fpga/ice40-spi.c            | 20 +++++++++++++----
- drivers/fpga/of-fpga-region.c       |  4 +++-
- drivers/fpga/socfpga-a10.c          | 16 +++++++++++---
- drivers/fpga/socfpga.c              | 18 +++++++++++++---
- drivers/fpga/ts73xx-fpga.c          | 18 +++++++++++++---
- drivers/fpga/xilinx-pr-decoupler.c  | 15 ++++++++++---
- drivers/fpga/xilinx-spi.c           | 18 +++++++++++++---
- drivers/fpga/zynq-fpga.c            | 16 +++++++++++---
- include/linux/fpga/fpga-bridge.h    |  7 +++---
- include/linux/fpga/fpga-mgr.h       |  8 +++----
- include/linux/fpga/fpga-region.h    |  4 +++-
- 22 files changed, 256 insertions(+), 113 deletions(-)
+                        Geert
 
 -- 
-2.14.2
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
