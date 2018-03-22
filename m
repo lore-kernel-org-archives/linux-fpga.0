@@ -1,295 +1,42 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-In-Reply-To: <1518513893-4719-10-git-send-email-hao.wu@intel.com>
-References: <1518513893-4719-1-git-send-email-hao.wu@intel.com> <1518513893-4719-10-git-send-email-hao.wu@intel.com>
-From: Alan Tull <atull@kernel.org>
-Date: Tue, 13 Mar 2018 13:30:24 -0500
-Message-ID: <CANk1AXSfXBXj_NH4Qcj6EDXEzAD_+T1sVudJdMbbgKK7hk13Mg@mail.gmail.com>
-Subject: Re: [PATCH v4 09/24] fpga: dfl-pci: add enumeration for feature devices
+Return-Path: <SRS0=45aN=GM=perches.com=joe@kernel.org>
+Return-Path: <SRS0=45aN=GM=perches.com=joe@kernel.org>
+Message-ID: <1521754493.7999.49.camel@perches.com>
+Subject: Re: [PATCH 2/2] fpga: lattice machxo2: Add Lattice MachXO2 support
+From: Joe Perches <joe@perches.com>
+Date: Thu, 22 Mar 2018 14:34:53 -0700
+In-Reply-To: <CANk1AXT6TY5N+gR=tBNuvhQMnOpuaWKWVoUSjB+Vfof2=GAM6w@mail.gmail.com>
+References: <1521653726-24625-1-git-send-email-p.pisati@gmail.com>
+	 <1521653726-24625-3-git-send-email-p.pisati@gmail.com>
+	 <1521655492.7999.13.camel@perches.com>
+	 <CANk1AXT6TY5N+gR=tBNuvhQMnOpuaWKWVoUSjB+Vfof2=GAM6w@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: Alan Tull <atull@kernel.org>
+Cc: Paolo Pisati <p.pisati@gmail.com>, Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-fpga@vger.kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS  <devicetree@vger.kernel.org>, linux-kernel" <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Feb 13, 2018 at 3:24 AM, Wu Hao <hao.wu@intel.com> wrote:
+On Thu, 2018-03-22 at 16:32 -0500, Alan Tull wrote:
+> On Wed, Mar 21, 2018 at 1:04 PM, Joe Perches <joe@perches.com> wrote:
+> > On Wed, 2018-03-21 at 18:35 +0100, Paolo Pisati wrote:
+> > > This patch adds support to the FPGA manager for programming
+> > > MachXO2 device’s internal flash memory, via slave SPI.
+> > 
+> > style trivia:
+> > 
+> > > diff --git a/drivers/fpga/machxo2-spi.c b/drivers/fpga/machxo2-spi.c
+> > 
+> > []
+> > > +static int get_status(struct spi_device *spi, unsigned long *status)
+> > > +{
+> > > +     struct spi_message msg;
+> > > +     struct spi_transfer rx, tx;
+> > > +     u8 cmd[] = LSC_READ_STATUS;
+> > 
+> > static const u8 cmd[]
+> > here and everywhere else as all the tx_buf assignments
+> > of cmd are to const void *
+> 
+> Why *static* const u8 cmd[]?
 
-Hi Hao,
-
-Thanks again for splitting the pci part of the code from enumeration
-and everything else.
-
-One thing that may need to be fixed below, so with that fixed, adding my ack.
-
-> The Device Feature List (DFL) is implemented in MMIO, and features
-> are linked via the DFLs. This patch enables pcie driver to prepare
-> enumeration information (e.g locations of all device feature lists
-> in MMIO) and use common APIs provided by the Device Feature List
-> framework to enumerate each feature device linked.
->
-> Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-> Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-> Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-> Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-> Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
-> Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-
-> ---
-> v3: split from another patch
->     use common functions from DFL framework for enumeration.
-> v4: rebase
-> ---
->  drivers/fpga/dfl-pci.c | 199 ++++++++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 197 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-> index d91ea42..8ce8a94 100644
-> --- a/drivers/fpga/dfl-pci.c
-> +++ b/drivers/fpga/dfl-pci.c
-> @@ -22,9 +22,52 @@
->  #include <linux/errno.h>
->  #include <linux/aer.h>
->
-> +#include "dfl.h"
-> +
->  #define DRV_VERSION    "0.8"
->  #define DRV_NAME       "dfl-pci"
->
-> +struct cci_drvdata {
-> +       struct fpga_cdev *cdev; /* container device */
-> +       struct list_head regions; /* list of pci bar mapping region */
-> +};
-> +
-> +/* pci bar mapping info */
-> +struct cci_region {
-> +       int bar;
-> +       void __iomem *ioaddr;   /* pointer to mapped bar region */
-> +       struct list_head node;
-> +};
-> +
-> +static void __iomem *cci_pci_ioremap_bar(struct pci_dev *pcidev, int bar)
-> +{
-> +       struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-> +       struct cci_region *region;
-> +
-> +       list_for_each_entry(region, &drvdata->regions, node)
-> +               if (region->bar == bar) {
-> +                       dev_dbg(&pcidev->dev, "BAR %d region exists\n", bar);
-> +                       return region->ioaddr;
-> +               }
-> +
-> +       region = devm_kzalloc(&pcidev->dev, sizeof(*region), GFP_KERNEL);
-> +       if (!region)
-> +               return NULL;
-> +
-> +       region->bar = bar;
-> +       region->ioaddr = pci_ioremap_bar(pcidev, bar);
-> +       if (!region->ioaddr) {
-> +               dev_err(&pcidev->dev, "can't ioremap memory from BAR %d.\n",
-> +                       bar);
-> +               devm_kfree(&pcidev->dev, region);
-> +               return NULL;
-> +       }
-> +
-> +       list_add(&region->node, &drvdata->regions);
-> +
-> +       return region->ioaddr;
-> +}
-> +
->  /* PCI Device ID */
->  #define PCIE_DEVICE_ID_PF_INT_5_X      0xBCBD
->  #define PCIE_DEVICE_ID_PF_INT_6_X      0xBCC0
-> @@ -45,6 +88,143 @@ static struct pci_device_id cci_pcie_id_tbl[] = {
->  };
->  MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
->
-> +static int cci_init_drvdata(struct pci_dev *pcidev)
-> +{
-> +       struct cci_drvdata *drvdata;
-> +
-> +       drvdata = devm_kzalloc(&pcidev->dev, sizeof(*drvdata), GFP_KERNEL);
-> +       if (!drvdata)
-> +               return -ENOMEM;
-> +
-> +       INIT_LIST_HEAD(&drvdata->regions);
-> +
-> +       pci_set_drvdata(pcidev, drvdata);
-> +
-> +       return 0;
-> +}
-> +
-> +static void cci_pci_release_regions(struct pci_dev *pcidev)
-> +{
-> +       struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-> +       struct cci_region *tmp, *region;
-> +
-> +       list_for_each_entry_safe(region, tmp, &drvdata->regions, node) {
-> +               list_del(&region->node);
-> +               if (region->ioaddr)
-> +                       pci_iounmap(pcidev, region->ioaddr);
-> +               devm_kfree(&pcidev->dev, region);
-> +       }
-> +}
-> +
-> +static void cci_remove_drvdata(struct pci_dev *pcidev)
-> +{
-> +       struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-> +
-> +       cci_pci_release_regions(pcidev);
-
-Would it make sense to call fpga_enum_info_free here?  I understand
-fpga_enum_info_alloc uses devm, but it does a get_device which needs
-to be put.
-
-> +       pci_set_drvdata(pcidev, NULL);
-> +       devm_kfree(&pcidev->dev, drvdata);
-> +}
-> +
-> +static void cci_remove_feature_devs(struct pci_dev *pcidev)
-> +{
-> +       struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-> +
-> +       /* remove all children feature devices */
-> +       fpga_remove_feature_devs(drvdata->cdev);
-> +}
-> +
-> +/* enumerate feature devices under pci device */
-> +static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
-> +{
-> +       struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-> +       struct fpga_cdev *cdev;
-> +       struct fpga_enum_info *info;
-> +       resource_size_t start, len;
-> +       void __iomem *base;
-> +       int port_num, bar, i, ret = 0;
-> +       u32 offset;
-> +       u64 v;
-> +
-> +       /* allocate enumeration info via pci_dev */
-> +       info = fpga_enum_info_alloc(&pcidev->dev);
-> +       if (!info)
-> +               return -ENOMEM;
-> +
-> +       /* start to find Device Feature List from Bar 0 */
-> +       base = cci_pci_ioremap_bar(pcidev, 0);
-> +       if (!base) {
-> +               ret = -ENOMEM;
-> +               goto enum_info_free_exit;
-> +       }
-> +
-> +       /*
-> +        * PF device has FME and Ports/AFUs, and VF device only has 1 Port/AFU.
-> +        * check them and add related "Device Feature List" info for the next
-> +        * step enumeration.
-> +        */
-> +       if (feature_is_fme(base)) {
-> +               start = pci_resource_start(pcidev, 0);
-> +               len = pci_resource_len(pcidev, 0);
-> +
-> +               fpga_enum_info_add_dfl(info, start, len, base);
-> +
-> +               /*
-> +                * find more Device Feature Lists (e.g Ports) per information
-> +                * indicated by FME module.
-> +                */
-> +               v = readq(base + FME_HDR_CAP);
-> +               port_num = FIELD_GET(FME_CAP_NUM_PORTS, v);
-> +
-> +               WARN_ON(port_num > MAX_FPGA_PORT_NUM);
-> +
-> +               for (i = 0; i < port_num; i++) {
-> +                       v = readq(base + FME_HDR_PORT_OFST(i));
-> +
-> +                       /* skip ports which are not implemented. */
-> +                       if (!(v & FME_PORT_OFST_IMP))
-> +                               continue;
-> +
-> +                       /*
-> +                        * add Port's Device Feature List information for next
-> +                        * step enumeration.
-> +                        */
-> +                       bar = FIELD_GET(FME_PORT_OFST_BAR_ID, v);
-> +                       offset = FIELD_GET(FME_PORT_OFST_DFH_OFST, v);
-> +                       base = cci_pci_ioremap_bar(pcidev, bar);
-> +                       if (!base)
-> +                               continue;
-> +
-> +                       start = pci_resource_start(pcidev, bar) + offset;
-> +                       len = pci_resource_len(pcidev, bar) - offset;
-> +
-> +                       fpga_enum_info_add_dfl(info, start, len, base + offset);
-> +               }
-> +       } else if (feature_is_port(base)) {
-> +               start = pci_resource_start(pcidev, 0);
-> +               len = pci_resource_len(pcidev, 0);
-> +
-> +               fpga_enum_info_add_dfl(info, start, len, base);
-> +       } else {
-> +               ret = -ENODEV;
-> +               goto enum_info_free_exit;
-> +       }
-> +
-> +       /* start enumeration with prepared enumeration information */
-> +       cdev = fpga_enumerate_feature_devs(info);
-> +       if (IS_ERR(cdev)) {
-> +               dev_err(&pcidev->dev, "Enumeration failure\n");
-> +               ret = PTR_ERR(cdev);
-> +               goto enum_info_free_exit;
-> +       }
-> +
-> +       drvdata->cdev = cdev;
-> +
-> +enum_info_free_exit:
-> +       fpga_enum_info_free(info);
-
-This is the only place I saw fpga_enum_info_free being called.
-
-Thanks,
-Alan
-
-> +
-> +       return ret;
-> +}
-> +
->  static
->  int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
->  {
-> @@ -82,9 +262,22 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
->                 goto release_region_exit;
->         }
->
-> -       /* TODO: create and add the platform device per feature list */
-> -       return 0;
-> +       ret = cci_init_drvdata(pcidev);
-> +       if (ret) {
-> +               dev_err(&pcidev->dev, "Fail to init drvdata %d.\n", ret);
-> +               goto release_region_exit;
-> +       }
-> +
-> +       ret = cci_enumerate_feature_devs(pcidev);
-> +       if (ret) {
-> +               dev_err(&pcidev->dev, "enumeration failure %d.\n", ret);
-> +               goto remove_drvdata_exit;
-> +       }
-> +
-> +       return ret;
->
-> +remove_drvdata_exit:
-> +       cci_remove_drvdata(pcidev);
->  release_region_exit:
->         pci_release_regions(pcidev);
->  disable_error_report_exit:
-> @@ -95,6 +288,8 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
->
->  static void cci_pci_remove(struct pci_dev *pcidev)
->  {
-> +       cci_remove_feature_devs(pcidev);
-> +       cci_remove_drvdata(pcidev);
->         pci_release_regions(pcidev);
->         pci_disable_pcie_error_reporting(pcidev);
->         pci_disable_device(pcidev);
-> --
-> 2.7.4
->
+So various compilers don't reload it on each call.
