@@ -1,54 +1,43 @@
-Return-Path: <SRS0=eAfy=GG=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=eAfy=GG=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from baptiste.telenet-ops.be ([195.130.132.51]:49234 "EHLO
-        baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753283AbeCPNwz (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 16 Mar 2018 09:52:55 -0400
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v2 20/21] staging: vc04_services: Remove depends on HAS_DMA in case of platform dependency
-Date: Fri, 16 Mar 2018 14:51:53 +0100
-Message-Id: <1521208314-4783-21-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
-Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Return-Path: <SRS0=KqQ5=GM=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=KqQ5=GM=intel.com=hao.wu@kernel.org>
+Date: Thu, 22 Mar 2018 12:41:56 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v4 23/24] fpga: dfl: afu: add user afu sub feature support
+Message-ID: <20180322044156.GB8305@hao-dev>
+References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+ <1518513893-4719-24-git-send-email-hao.wu@intel.com>
+ <CANk1AXQpPXhNoPt1Uj=YvbtO+jun7e2Yzvyp+wuR1ZXx6+-i8Q@mail.gmail.com>
+ <20180320071037.GB31239@hao-dev>
+ <CANk1AXSyh1ZcbgVbj3DxjULEeYKMfq_4CA6P0DK6+_z-pnBMUw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXSyh1ZcbgVbj3DxjULEeYKMfq_4CA6P0DK6+_z-pnBMUw@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+On Wed, Mar 21, 2018 at 06:50:54PM -0500, Alan Tull wrote:
+> On Tue, Mar 20, 2018 at 2:10 AM, Wu Hao <hao.wu@intel.com> wrote:
+> 
+> >> > +static int afu_mmap(struct file *filp, struct vm_area_struct *vma)
+> >> > +{
+> >> > +       struct fpga_afu_region region;
+> >> > +       struct platform_device *pdev = filp->private_data;
+> >> > +       struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+> >> > +       u64 size = vma->vm_end - vma->vm_start;
+> >> > +       u64 offset;
+> >> > +       int ret;
+> >> > +
+> >> > +       if (!(vma->vm_flags & VM_SHARED))
+> >> > +               return -EINVAL;
+> >> > +
+> >> > +       offset = vma->vm_pgoff << PAGE_SHIFT;
+> >> > +       ret = afu_get_region_by_offset(pdata, offset, size, &region);
+> 
+> Most of the functions here are afu_region_*, but there's also
+> afu_get_region_by_*.  Better if afu_region_get_by_* to be consistent.
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Agree, will fix it in the next version, thanks a lot for the comments.
 
-This simplifies the dependencies, and allows to improve compile-testing.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
----
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/staging/vc04_services/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/staging/vc04_services/Kconfig b/drivers/staging/vc04_services/Kconfig
-index f5aaf7d629f0fae9..98064ce2c2b47c7f 100644
---- a/drivers/staging/vc04_services/Kconfig
-+++ b/drivers/staging/vc04_services/Kconfig
-@@ -1,6 +1,5 @@
- menuconfig BCM_VIDEOCORE
- 	tristate "Broadcom VideoCore support"
--	depends on HAS_DMA
- 	depends on OF
- 	depends on RASPBERRYPI_FIRMWARE || (COMPILE_TEST && !RASPBERRYPI_FIRMWARE)
- 	default y
--- 
-2.7.4
-
+Hao
