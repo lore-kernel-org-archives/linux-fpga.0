@@ -1,228 +1,391 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
+Return-Path: <SRS0=kXu+=GR=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=kXu+=GR=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:33339 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751121AbeC0UKV (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 27 Mar 2018 16:10:21 -0400
+Received: by mail-io0-f195.google.com with SMTP id l3so785672iog.0
+        for <linux-fpga@vger.kernel.org>; Tue, 27 Mar 2018 13:10:21 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1518513893-4719-9-git-send-email-hao.wu@intel.com>
-References: <1518513893-4719-1-git-send-email-hao.wu@intel.com> <1518513893-4719-9-git-send-email-hao.wu@intel.com>
-From: Alan Tull <atull@kernel.org>
-Date: Tue, 13 Mar 2018 11:05:26 -0500
-Message-ID: <CANk1AXR8+-aRMAPa0=E4+Cz9UeVp0EYSFbw8YPDyQR3xw1xRFQ@mail.gmail.com>
-Subject: Re: [PATCH v4 08/24] fpga: add FPGA DFL PCIe device driver
+In-Reply-To: <20180327195957.3878-4-atull@kernel.org>
+References: <20180327195957.3878-1-atull@kernel.org> <20180327195957.3878-4-atull@kernel.org>
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Date: Tue, 27 Mar 2018 13:10:20 -0700
+Message-ID: <CAAtXAHeW50R2Mu+4+qUv0fZh5=CxJ5oiS71H_o6nGu6mpxVqwA@mail.gmail.com>
+Subject: Re: [RESEND PATCH v3 3/4] fpga: bridge: don't use drvdata in common
+ fpga code
 Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: Anatolij Gustschin <agust@denx.de>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Joel Holdsworth <joel@airwebreathe.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 
-On Tue, Feb 13, 2018 at 3:24 AM, Wu Hao <hao.wu@intel.com> wrote:
-
-Hi Hao,
-
-> From: Zhang Yi <yi.z.zhang@intel.com>
+On Tue, Mar 27, 2018 at 12:59 PM, Alan Tull <atull@kernel.org> wrote:
+> Change fpga_bridge_register to not set drvdata.
 >
-> This patch implements the basic framework of the driver for FPGA PCIe
-> device which implements the Device Feature List (DFL) in its MMIO space.
-> This driver is verified on Intel(R) PCIe based FPGA DFL devices, including
-> both integrated (e.g Intel Server Platform with In-package FPGA) and
-> discrete (e.g Intel FPGA PCIe Acceleration Cards) solutions.
+> Change the register/unregister functions parameters to take the
+> bridge struct:
+> * int fpga_bridge_register(struct fpga_bridge *bridge);
+> * void fpga_bridge_unregister(struct fpga_bridge *bridge);
 >
-> Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-> Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-> Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-> Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-> Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
-> Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Change the drivers that call fpga_bridge_register to alloc the struct
+> fpga_bridge (using devm_kzalloc) and partly fill it, adding name,
+> ops, parent device, and priv.
+>
+> The rationale is that setting drvdata is fine for DT based devices
+> that will have one manager, bridge, or region per platform device.
+> However PCIe based devices may have multiple FPGA mgr/bridge/regions
+> under one pcie device.  Without these changes, the PCIe solution has
+> to create an extra device for each child mgr/bridge/region to hold
+> drvdata.
+>
+> Signed-off-by: Alan Tull <atull@kernel.org>
+> Reported-by: Jiuyue Ma <majiuyue@huawei.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 
- Acked-by: Alan Tull <atull@kernel.org>
+> ---
+> v2: change fpga_bridge_register to not need parent device param
+>     fix undeclared - s/dev/&pdev->dev/
+> v3: minor changes to make diffs smaller and more obviously correct
+> ---
+>  drivers/fpga/altera-fpga2sdram.c    | 20 +++++++++++++----
+>  drivers/fpga/altera-freeze-bridge.c | 18 +++++++++++++---
+>  drivers/fpga/altera-hps2fpga.c      | 16 +++++++++++---
+>  drivers/fpga/fpga-bridge.c          | 43 ++++++++++++++-----------------------
+>  drivers/fpga/xilinx-pr-decoupler.c  | 15 ++++++++++---
+>  include/linux/fpga/fpga-bridge.h    |  7 +++---
+>  6 files changed, 76 insertions(+), 43 deletions(-)
+>
+> diff --git a/drivers/fpga/altera-fpga2sdram.c b/drivers/fpga/altera-fpga2sdram.c
+> index d4eeb74388da..a4593c0f5e42 100644
+> --- a/drivers/fpga/altera-fpga2sdram.c
+> +++ b/drivers/fpga/altera-fpga2sdram.c
+> @@ -106,10 +106,15 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>  {
+>         struct device *dev = &pdev->dev;
+>         struct alt_fpga2sdram_data *priv;
+> +       struct fpga_bridge *br;
+>         u32 enable;
+>         struct regmap *sysmgr;
+>         int ret = 0;
+>
+> +       br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
+> +       if (!br)
+> +               return -ENOMEM;
+> +
+>         priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+>         if (!priv)
+>                 return -ENOMEM;
+> @@ -131,8 +136,13 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>         /* Get f2s bridge configuration saved in handoff register */
+>         regmap_read(sysmgr, SYSMGR_ISWGRP_HANDOFF3, &priv->mask);
+>
+> -       ret = fpga_bridge_register(dev, F2S_BRIDGE_NAME,
+> -                                  &altera_fpga2sdram_br_ops, priv);
+> +       br->parent = dev;
+> +       br->name = F2S_BRIDGE_NAME;
+> +       br->br_ops = &altera_fpga2sdram_br_ops;
+> +       br->priv = priv;
+> +       platform_set_drvdata(pdev, br);
+> +
+> +       ret = fpga_bridge_register(br);
+>         if (ret)
+>                 return ret;
+>
+> @@ -146,7 +156,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>                                  (enable ? "enabling" : "disabling"));
+>                         ret = _alt_fpga2sdram_enable_set(priv, enable);
+>                         if (ret) {
+> -                               fpga_bridge_unregister(&pdev->dev);
+> +                               fpga_bridge_unregister(br);
+>                                 return ret;
+>                         }
+>                 }
+> @@ -157,7 +167,9 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>
+>  static int alt_fpga_bridge_remove(struct platform_device *pdev)
+>  {
+> -       fpga_bridge_unregister(&pdev->dev);
+> +       struct fpga_bridge *br = platform_get_drvdata(pdev);
+> +
+> +       fpga_bridge_unregister(br);
+>
+>         return 0;
+>  }
+> diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
+> index 6159cfcf78a2..498bc6c1d533 100644
+> --- a/drivers/fpga/altera-freeze-bridge.c
+> +++ b/drivers/fpga/altera-freeze-bridge.c
+> @@ -219,6 +219,7 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+>  {
+>         struct device *dev = &pdev->dev;
+>         struct device_node *np = pdev->dev.of_node;
+> +       struct fpga_bridge *br;
+>         void __iomem *base_addr;
+>         struct altera_freeze_br_data *priv;
+>         struct resource *res;
+> @@ -227,6 +228,10 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+>         if (!np)
+>                 return -ENODEV;
+>
+> +       br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
+> +       if (!br)
+> +               return -ENOMEM;
+> +
+>         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>         base_addr = devm_ioremap_resource(dev, res);
+>         if (IS_ERR(base_addr))
+> @@ -254,13 +259,20 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+>
+>         priv->base_addr = base_addr;
+>
+> -       return fpga_bridge_register(dev, FREEZE_BRIDGE_NAME,
+> -                                   &altera_freeze_br_br_ops, priv);
+> +       br->parent = dev;
+> +       br->name = FREEZE_BRIDGE_NAME;
+> +       br->br_ops = &altera_freeze_br_br_ops;
+> +       br->priv = priv;
+> +       platform_set_drvdata(pdev, br);
+> +
+> +       return fpga_bridge_register(br);
+>  }
+>
+>  static int altera_freeze_br_remove(struct platform_device *pdev)
+>  {
+> -       fpga_bridge_unregister(&pdev->dev);
+> +       struct fpga_bridge *br = platform_get_drvdata(pdev);
+> +
+> +       fpga_bridge_unregister(br);
+>
+>         return 0;
+>  }
+> diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
+> index 406d2f10741f..2a695f53962d 100644
+> --- a/drivers/fpga/altera-hps2fpga.c
+> +++ b/drivers/fpga/altera-hps2fpga.c
+> @@ -139,6 +139,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>         struct device *dev = &pdev->dev;
+>         struct altera_hps2fpga_data *priv;
+>         const struct of_device_id *of_id;
+> +       struct fpga_bridge *br;
+>         u32 enable;
+>         int ret;
+>
+> @@ -150,6 +151,10 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>
+>         priv = (struct altera_hps2fpga_data *)of_id->data;
+>
+> +       br = devm_kzalloc(dev, sizeof(*br), GFP_KERNEL);
+> +       if (!br)
+> +               return -ENOMEM;
+> +
+>         priv->bridge_reset = of_reset_control_get_exclusive_by_index(dev->of_node,
+>                                                                      0);
+>         if (IS_ERR(priv->bridge_reset)) {
+> @@ -190,8 +195,13 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+>                 }
+>         }
+>
+> -       ret = fpga_bridge_register(dev, priv->name, &altera_hps2fpga_br_ops,
+> -                                  priv);
+> +       br->parent = dev;
+> +       br->name = priv->name;
+> +       br->br_ops = &altera_hps2fpga_br_ops;
+> +       br->priv = priv;
+> +       platform_set_drvdata(pdev, br);
+> +
+> +       ret = fpga_bridge_register(br);
+>  err:
+>         if (ret)
+>                 clk_disable_unprepare(priv->clk);
+> @@ -204,7 +214,7 @@ static int alt_fpga_bridge_remove(struct platform_device *pdev)
+>         struct fpga_bridge *bridge = platform_get_drvdata(pdev);
+>         struct altera_hps2fpga_data *priv = bridge->priv;
+>
+> -       fpga_bridge_unregister(&pdev->dev);
+> +       fpga_bridge_unregister(bridge);
+>
+>         clk_disable_unprepare(priv->clk);
+>
+> diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+> index 31bd2c59c305..ac40e3ae8921 100644
+> --- a/drivers/fpga/fpga-bridge.c
+> +++ b/drivers/fpga/fpga-bridge.c
+> @@ -329,48 +329,42 @@ ATTRIBUTE_GROUPS(fpga_bridge);
+>
+>  /**
+>   * fpga_bridge_register - register a fpga bridge driver
+> - * @dev:       FPGA bridge device from pdev
+> - * @name:      FPGA bridge name
+> - * @br_ops:    pointer to structure of fpga bridge ops
+> - * @priv:      FPGA bridge private data
+> + * @bridge:    FPGA bridge struct
+> + *
+> + * The following fields must be set in the bridge struct:
+> + * name, br_ops, and parent.
+>   *
+>   * Return: 0 for success, error code otherwise.
+>   */
+> -int fpga_bridge_register(struct device *dev, const char *name,
+> -                        const struct fpga_bridge_ops *br_ops, void *priv)
+> +int fpga_bridge_register(struct fpga_bridge *bridge)
+>  {
+> -       struct fpga_bridge *bridge;
+> +       struct device *dev = bridge->parent;
+> +       const char *name = bridge->name;
+>         int id, ret = 0;
+>
+> +       if (!dev) {
+> +               pr_err("Attempt to register fpga bridge without parent\n");
+> +               return -EINVAL;
+> +       }
+> +
+>         if (!name || !strlen(name)) {
+>                 dev_err(dev, "Attempt to register with no name!\n");
+>                 return -EINVAL;
+>         }
+>
+> -       bridge = kzalloc(sizeof(*bridge), GFP_KERNEL);
+> -       if (!bridge)
+> -               return -ENOMEM;
+> -
+>         id = ida_simple_get(&fpga_bridge_ida, 0, 0, GFP_KERNEL);
+> -       if (id < 0) {
+> -               ret = id;
+> -               goto error_kfree;
+> -       }
+> +       if (id < 0)
+> +               return id;
+>
+>         mutex_init(&bridge->mutex);
+>         INIT_LIST_HEAD(&bridge->node);
+>
+> -       bridge->name = name;
+> -       bridge->br_ops = br_ops;
+> -       bridge->priv = priv;
+> -
+>         device_initialize(&bridge->dev);
+> -       bridge->dev.groups = br_ops->groups;
+> +       bridge->dev.groups = bridge->br_ops->groups;
+>         bridge->dev.class = fpga_bridge_class;
+>         bridge->dev.parent = dev;
+>         bridge->dev.of_node = dev->of_node;
+>         bridge->dev.id = id;
+> -       dev_set_drvdata(dev, bridge);
+>
+>         ret = dev_set_name(&bridge->dev, "br%d", id);
+>         if (ret)
+> @@ -389,8 +383,6 @@ int fpga_bridge_register(struct device *dev, const char *name,
+>
+>  error_device:
+>         ida_simple_remove(&fpga_bridge_ida, id);
+> -error_kfree:
+> -       kfree(bridge);
+>
+>         return ret;
+>  }
+> @@ -400,10 +392,8 @@ EXPORT_SYMBOL_GPL(fpga_bridge_register);
+>   * fpga_bridge_unregister - unregister a fpga bridge driver
+>   * @dev: FPGA bridge device from pdev
+>   */
+> -void fpga_bridge_unregister(struct device *dev)
+> +void fpga_bridge_unregister(struct fpga_bridge *bridge)
+>  {
+> -       struct fpga_bridge *bridge = dev_get_drvdata(dev);
+> -
+>         /*
+>          * If the low level driver provides a method for putting bridge into
+>          * a desired state upon unregister, do it.
+> @@ -420,7 +410,6 @@ static void fpga_bridge_dev_release(struct device *dev)
+>         struct fpga_bridge *bridge = to_fpga_bridge(dev);
+>
+>         ida_simple_remove(&fpga_bridge_ida, bridge->dev.id);
+> -       kfree(bridge);
+>  }
+>
+>  static int __init fpga_bridge_dev_init(void)
+> diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
+> index 0d7743089414..629337bd3768 100644
+> --- a/drivers/fpga/xilinx-pr-decoupler.c
+> +++ b/drivers/fpga/xilinx-pr-decoupler.c
+> @@ -94,9 +94,14 @@ MODULE_DEVICE_TABLE(of, xlnx_pr_decoupler_of_match);
+>  static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+>  {
+>         struct xlnx_pr_decoupler_data *priv;
+> +       struct fpga_bridge *br;
+>         int err;
+>         struct resource *res;
+>
+> +       br = devm_kzalloc(&pdev->dev, sizeof(*br), GFP_KERNEL);
+> +       if (!br)
+> +               return -ENOMEM;
+> +
+>         priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+>         if (!priv)
+>                 return -ENOMEM;
+> @@ -120,9 +125,13 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+>
+>         clk_disable(priv->clk);
+>
+> -       err = fpga_bridge_register(&pdev->dev, "Xilinx PR Decoupler",
+> -                                  &xlnx_pr_decoupler_br_ops, priv);
+> +       br->parent = &pdev->dev;
+> +       br->name = "Xilinx PR Decoupler";
+> +       br->br_ops = &xlnx_pr_decoupler_br_ops;
+> +       br->priv = priv;
+> +       platform_set_drvdata(pdev, br);
+>
+> +       err = fpga_bridge_register(br);
+>         if (err) {
+>                 dev_err(&pdev->dev, "unable to register Xilinx PR Decoupler");
+>                 clk_unprepare(priv->clk);
+> @@ -137,7 +146,7 @@ static int xlnx_pr_decoupler_remove(struct platform_device *pdev)
+>         struct fpga_bridge *bridge = platform_get_drvdata(pdev);
+>         struct xlnx_pr_decoupler_data *p = bridge->priv;
+>
+> -       fpga_bridge_unregister(&pdev->dev);
+> +       fpga_bridge_unregister(bridge);
+>
+>         clk_unprepare(p->clk);
+>
+> diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
+> index 3694821a6d2d..c46b7ac0a4bd 100644
+> --- a/include/linux/fpga/fpga-bridge.h
+> +++ b/include/linux/fpga/fpga-bridge.h
+> @@ -26,6 +26,7 @@ struct fpga_bridge_ops {
+>   * struct fpga_bridge - FPGA bridge structure
+>   * @name: name of low level FPGA bridge
+>   * @dev: FPGA bridge device
+> + * @parent: parent device
+>   * @mutex: enforces exclusive reference to bridge
+>   * @br_ops: pointer to struct of FPGA bridge ops
+>   * @info: fpga image specific information
+> @@ -35,6 +36,7 @@ struct fpga_bridge_ops {
+>  struct fpga_bridge {
+>         const char *name;
+>         struct device dev;
+> +       struct device *parent;
+>         struct mutex mutex; /* for exclusive reference to bridge */
+>         const struct fpga_bridge_ops *br_ops;
+>         struct fpga_image_info *info;
+> @@ -62,8 +64,7 @@ int of_fpga_bridge_get_to_list(struct device_node *np,
+>                                struct fpga_image_info *info,
+>                                struct list_head *bridge_list);
+>
+> -int fpga_bridge_register(struct device *dev, const char *name,
+> -                        const struct fpga_bridge_ops *br_ops, void *priv);
+> -void fpga_bridge_unregister(struct device *dev);
+> +int fpga_bridge_register(struct fpga_bridge *br);
+> +void fpga_bridge_unregister(struct fpga_bridge *br);
+>
+>  #endif /* _LINUX_FPGA_BRIDGE_H */
+> --
+> 2.14.2
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 Thanks,
-Alan
-
-> ---
-> v2: move the code to drivers/fpga folder as suggested by Alan Tull.
->     switch to GPLv2 license.
->     fix comments from Moritz Fischer.
-> v3: switch to pci_set_dma_mask/consistent_dma_mask() function.
->     remove pci_save_state() in probe function.
->     rename driver to INTEL_FPGA_DFL_PCI and intel-dfl-pci.c to indicate
->     this driver supports Intel FPGA PCI devices which implement DFL.
->     improve Kconfig description for INTEL_FPGA_DFL_PCI
-> v4: rename to FPGA_DFL_PCI (dfl-pci.c) for better reuse.
->     fix SPDX license issue.
-> ---
->  drivers/fpga/Kconfig   |  15 ++++++
->  drivers/fpga/Makefile  |   3 ++
->  drivers/fpga/dfl-pci.c | 127 +++++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 145 insertions(+)
->  create mode 100644 drivers/fpga/dfl-pci.c
->
-> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-> index 01ad31f..87f3d44 100644
-> --- a/drivers/fpga/Kconfig
-> +++ b/drivers/fpga/Kconfig
-> @@ -140,4 +140,19 @@ config FPGA_DFL
->           Gate Array (FPGA) solutions which implement Device Feature List.
->           It provides enumeration APIs, and feature device infrastructure.
->
-> +config FPGA_DFL_PCI
-> +       tristate "FPGA Device Feature List (DFL) PCIe Device Driver"
-> +       depends on PCI && FPGA_DFL
-> +       help
-> +         Select this option to enable PCIe driver for PCIe based
-> +         Field-Programmable Gate Array (FPGA) solutions which implemented
-> +         the Device Feature List (DFL). This driver provides interfaces
-> +         for userspace applications to configure, enumerate, open and access
-> +         FPGA accelerators on the FPGA DFL devices, enables system level
-> +         management functions such as FPGA partial reconfiguration, power
-> +         management, and virtualization with DFL framework and DFL feature
-> +         device drivers.
-> +
-> +         To compile this as a module, choose M here.
-> +
->  endif # FPGA
-> diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-> index c4c62b9..4375630 100644
-> --- a/drivers/fpga/Makefile
-> +++ b/drivers/fpga/Makefile
-> @@ -30,3 +30,6 @@ obj-$(CONFIG_OF_FPGA_REGION)          += of-fpga-region.o
->
->  # FPGA Device Feature List Support
->  obj-$(CONFIG_FPGA_DFL)                 += dfl.o
-> +
-> +# Drivers for FPGAs which implement DFL
-> +obj-$(CONFIG_FPGA_DFL_PCI)             += dfl-pci.o
-> diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-> new file mode 100644
-> index 0000000..d91ea42
-> --- /dev/null
-> +++ b/drivers/fpga/dfl-pci.c
-> @@ -0,0 +1,127 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Driver for FPGA Device Feature List (DFL) PCIe device
-> + *
-> + * Copyright (C) 2017 Intel Corporation, Inc.
-> + *
-> + * Authors:
-> + *   Zhang Yi <Yi.Z.Zhang@intel.com>
-> + *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-> + *   Joseph Grecco <joe.grecco@intel.com>
-> + *   Enno Luebbers <enno.luebbers@intel.com>
-> + *   Tim Whisonant <tim.whisonant@intel.com>
-> + *   Ananda Ravuri <ananda.ravuri@intel.com>
-> + *   Henry Mitchel <henry.mitchel@intel.com>
-> + */
-> +
-> +#include <linux/pci.h>
-> +#include <linux/types.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/stddef.h>
-> +#include <linux/errno.h>
-> +#include <linux/aer.h>
-> +
-> +#define DRV_VERSION    "0.8"
-> +#define DRV_NAME       "dfl-pci"
-> +
-> +/* PCI Device ID */
-> +#define PCIE_DEVICE_ID_PF_INT_5_X      0xBCBD
-> +#define PCIE_DEVICE_ID_PF_INT_6_X      0xBCC0
-> +#define PCIE_DEVICE_ID_PF_DSC_1_X      0x09C4
-> +/* VF Device */
-> +#define PCIE_DEVICE_ID_VF_INT_5_X      0xBCBF
-> +#define PCIE_DEVICE_ID_VF_INT_6_X      0xBCC1
-> +#define PCIE_DEVICE_ID_VF_DSC_1_X      0x09C5
-> +
-> +static struct pci_device_id cci_pcie_id_tbl[] = {
-> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_PF_INT_5_X),},
-> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_VF_INT_5_X),},
-> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_PF_INT_6_X),},
-> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_VF_INT_6_X),},
-> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_PF_DSC_1_X),},
-> +       {PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_VF_DSC_1_X),},
-> +       {0,}
-> +};
-> +MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
-> +
-> +static
-> +int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
-> +{
-> +       int ret;
-> +
-> +       ret = pci_enable_device(pcidev);
-> +       if (ret < 0) {
-> +               dev_err(&pcidev->dev, "Failed to enable device %d.\n", ret);
-> +               return ret;
-> +       }
-> +
-> +       ret = pci_enable_pcie_error_reporting(pcidev);
-> +       if (ret && ret != -EINVAL)
-> +               dev_info(&pcidev->dev, "PCIE AER unavailable %d.\n", ret);
-> +
-> +       ret = pci_request_regions(pcidev, DRV_NAME);
-> +       if (ret) {
-> +               dev_err(&pcidev->dev, "Failed to request regions.\n");
-> +               goto disable_error_report_exit;
-> +       }
-> +
-> +       pci_set_master(pcidev);
-> +
-> +       if (!pci_set_dma_mask(pcidev, DMA_BIT_MASK(64))) {
-> +               ret = pci_set_consistent_dma_mask(pcidev, DMA_BIT_MASK(64));
-> +               if (ret)
-> +                       goto release_region_exit;
-> +       } else if (!pci_set_dma_mask(pcidev, DMA_BIT_MASK(32))) {
-> +               ret = pci_set_consistent_dma_mask(pcidev, DMA_BIT_MASK(32));
-> +               if (ret)
-> +                       goto release_region_exit;
-> +       } else {
-> +               ret = -EIO;
-> +               dev_err(&pcidev->dev, "No suitable DMA support available.\n");
-> +               goto release_region_exit;
-> +       }
-> +
-> +       /* TODO: create and add the platform device per feature list */
-> +       return 0;
-> +
-> +release_region_exit:
-> +       pci_release_regions(pcidev);
-> +disable_error_report_exit:
-> +       pci_disable_pcie_error_reporting(pcidev);
-> +       pci_disable_device(pcidev);
-> +       return ret;
-> +}
-> +
-> +static void cci_pci_remove(struct pci_dev *pcidev)
-> +{
-> +       pci_release_regions(pcidev);
-> +       pci_disable_pcie_error_reporting(pcidev);
-> +       pci_disable_device(pcidev);
-> +}
-> +
-> +static struct pci_driver cci_pci_driver = {
-> +       .name = DRV_NAME,
-> +       .id_table = cci_pcie_id_tbl,
-> +       .probe = cci_pci_probe,
-> +       .remove = cci_pci_remove,
-> +};
-> +
-> +static int __init ccidrv_init(void)
-> +{
-> +       pr_info("FPGA DFL PCIe Driver: Version %s\n", DRV_VERSION);
-> +
-> +       return pci_register_driver(&cci_pci_driver);
-> +}
-> +
-> +static void __exit ccidrv_exit(void)
-> +{
-> +       pci_unregister_driver(&cci_pci_driver);
-> +}
-> +
-> +module_init(ccidrv_init);
-> +module_exit(ccidrv_exit);
-> +
-> +MODULE_DESCRIPTION("FPGA DFL PCIe Device Driver");
-> +MODULE_AUTHOR("Intel Corporation");
-> +MODULE_LICENSE("GPL v2");
-> --
-> 2.7.4
->
+Moritz
