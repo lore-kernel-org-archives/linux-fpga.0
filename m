@@ -1,69 +1,144 @@
-Return-Path: <SRS0=aM/a=GT=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=aM/a=GT=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 0/6] FPGA Manager Patches for 4.17
-Date: Thu, 29 Mar 2018 08:36:52 -0700
-Message-Id: <20180329153658.11614-1-mdf@kernel.org>
-To: gregkh@linuxfoundation.org
-Cc: atull@kernel.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=kXu+=GR=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=kXu+=GR=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:37702 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750948AbeC0UJ2 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 27 Mar 2018 16:09:28 -0400
+Received: by mail-it0-f65.google.com with SMTP id p67-v6so782297itc.2
+        for <linux-fpga@vger.kernel.org>; Tue, 27 Mar 2018 13:09:28 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20180327195957.3878-5-atull@kernel.org>
+References: <20180327195957.3878-1-atull@kernel.org> <20180327195957.3878-5-atull@kernel.org>
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Date: Tue, 27 Mar 2018 13:09:26 -0700
+Message-ID: <CAAtXAHeGoDY66U=t6WF++=kgh5kCyNgi_rmVLOTzCRKum0weXA@mail.gmail.com>
+Subject: Re: [RESEND PATCH v3 4/4] fpga: region: change fpga_region_register
+ to have one param
+Content-Type: text/plain; charset="UTF-8"
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: Anatolij Gustschin <agust@denx.de>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Joel Holdsworth <joel@airwebreathe.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 
-Hi Greg,
+Hi Alan,
 
-can you please take the following patches for 4.17.
-
-Alan's changes are mostly refactoring in preparation for non-dt based
-FPGA regions.
-
-Anatolij's changes fix a small issue with altera-ps-spi FPGAs,
-where the FPGA is being reset unnessesarily on driver load.
-
-All patches have been reviewed on the list.
-
-I'm sending the patches this time instead of Alan so I can get more
-familiar with the process.
-
-If you prefer to pull instead there's also a signed tag:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux.git tags/fpga-for-greg-4.17
+On Tue, Mar 27, 2018 at 12:59 PM, Alan Tull <atull@kernel.org> wrote:
+> Change fpga_region_register to only take one parameter:
+>
+>   int fpga_region_register(struct fpga_region *region)
+>
+> The parent dev is added to struct fpga_region.
+>
+> This make it similar to fpga_bridge_register and fpga_mgr_register
+> which also just take their respective struct.
+>
+> The one caller of fpga_region_register is changed to alloc the
+> fpga_region struct, fill it in, and pass it to the register
+> function.
+>
+> Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+> ---
+> v2: This patch added in this version of the patchset
+> v3: minor changes to make diffs smaller and more obviously correct
+> ---
+>  Documentation/fpga/fpga-region.txt | 3 +--
+>  drivers/fpga/fpga-region.c         | 8 +++++++-
+>  drivers/fpga/of-fpga-region.c      | 3 ++-
+>  include/linux/fpga/fpga-region.h   | 4 +++-
+>  4 files changed, 13 insertions(+), 5 deletions(-)
+>
+> diff --git a/Documentation/fpga/fpga-region.txt b/Documentation/fpga/fpga-region.txt
+> index 139a02ba1ff6..d38fa3b4154a 100644
+> --- a/Documentation/fpga/fpga-region.txt
+> +++ b/Documentation/fpga/fpga-region.txt
+> @@ -42,8 +42,7 @@ The FPGA region API
+>  To register or unregister a region:
+>  -----------------------------------
+>
+> -       int fpga_region_register(struct device *dev,
+> -                                struct fpga_region *region);
+> +       int fpga_region_register(struct fpga_region *region);
+>         int fpga_region_unregister(struct fpga_region *region);
+>
+>  An example of usage can be seen in the probe function of [3]
+> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+> index ebe1f872810d..660a91b9e246 100644
+> --- a/drivers/fpga/fpga-region.c
+> +++ b/drivers/fpga/fpga-region.c
+> @@ -162,10 +162,16 @@ int fpga_region_program_fpga(struct fpga_region *region)
+>  }
+>  EXPORT_SYMBOL_GPL(fpga_region_program_fpga);
+>
+> -int fpga_region_register(struct device *dev, struct fpga_region *region)
+> +int fpga_region_register(struct fpga_region *region)
+>  {
+> +       struct device *dev = region->parent;
+>         int id, ret = 0;
+>
+> +       if (!dev) {
+> +               pr_err("Attempt to register fpga region without parent\n");
+> +               return -EINVAL;
+> +       }
+> +
+>         id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
+>         if (id < 0)
+>                 return id;
+> diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+> index 35e7e8c4a0cb..a7b38aafeaa7 100644
+> --- a/drivers/fpga/of-fpga-region.c
+> +++ b/drivers/fpga/of-fpga-region.c
+> @@ -428,12 +428,13 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+>                 goto eprobe_mgr_put;
+>         }
+>
+> +       region->parent = dev;
+>         region->mgr = mgr;
+>
+>         /* Specify how to get bridges for this type of region. */
+>         region->get_bridges = of_fpga_region_get_bridges;
+>
+> -       ret = fpga_region_register(dev, region);
+> +       ret = fpga_region_register(region);
+>         if (ret)
+>                 goto eprobe_mgr_put;
+>
+> diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+> index b6520318ab9c..423c87e3e29a 100644
+> --- a/include/linux/fpga/fpga-region.h
+> +++ b/include/linux/fpga/fpga-region.h
+> @@ -8,6 +8,7 @@
+>  /**
+>   * struct fpga_region - FPGA Region structure
+>   * @dev: FPGA Region device
+> + * @parent: parent device
+>   * @mutex: enforces exclusive reference to region
+>   * @bridge_list: list of FPGA bridges specified in region
+>   * @mgr: FPGA manager
+> @@ -18,6 +19,7 @@
+>   */
+>  struct fpga_region {
+>         struct device dev;
+> +       struct device *parent;
+>         struct mutex mutex; /* for exclusive reference to region */
+>         struct list_head bridge_list;
+>         struct fpga_manager *mgr;
+> @@ -34,7 +36,7 @@ struct fpga_region *fpga_region_class_find(
+>         int (*match)(struct device *, const void *));
+>
+>  int fpga_region_program_fpga(struct fpga_region *region);
+> -int fpga_region_register(struct device *dev, struct fpga_region *region);
+> +int fpga_region_register(struct fpga_region *region);
+>  int fpga_region_unregister(struct fpga_region *region);
+>
+>  #endif /* _FPGA_REGION_H */
+> --
+> 2.14.2
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 Thanks,
-
 Moritz
-
-Alan Tull (5):
-  fpga: region: don't use drvdata in common fpga code
-  fpga: manager: don't use drvdata in common fpga code
-  fpga: bridge: don't use drvdata in common fpga code
-  fpga: region: change fpga_region_register to have one param
-  fpga: fpga-region: comment on fpga_region_program_fpga locking
-
-Anatolij Gustschin (1):
-  fpga-manager: altera-ps-spi: preserve nCONFIG state
-
- Documentation/fpga/fpga-mgr.txt     | 24 +++++++++++++++------
- Documentation/fpga/fpga-region.txt  |  3 +--
- drivers/fpga/altera-cvp.c           | 18 ++++++++++++----
- drivers/fpga/altera-fpga2sdram.c    | 20 +++++++++++++----
- drivers/fpga/altera-freeze-bridge.c | 18 +++++++++++++---
- drivers/fpga/altera-hps2fpga.c      | 16 +++++++++++---
- drivers/fpga/altera-pr-ip-core.c    | 17 +++++++++++++--
- drivers/fpga/altera-ps-spi.c        | 20 +++++++++++++----
- drivers/fpga/fpga-bridge.c          | 43 ++++++++++++++-----------------------
- drivers/fpga/fpga-mgr.c             | 39 ++++++++++++---------------------
- drivers/fpga/fpga-region.c          | 14 ++++++++++--
- drivers/fpga/ice40-spi.c            | 20 +++++++++++++----
- drivers/fpga/of-fpga-region.c       |  4 +++-
- drivers/fpga/socfpga-a10.c          | 16 +++++++++++---
- drivers/fpga/socfpga.c              | 18 +++++++++++++---
- drivers/fpga/ts73xx-fpga.c          | 18 +++++++++++++---
- drivers/fpga/xilinx-pr-decoupler.c  | 15 ++++++++++---
- drivers/fpga/xilinx-spi.c           | 18 +++++++++++++---
- drivers/fpga/zynq-fpga.c            | 16 +++++++++++---
- include/linux/fpga/fpga-bridge.h    |  7 +++---
- include/linux/fpga/fpga-mgr.h       |  8 +++----
- include/linux/fpga/fpga-region.h    |  4 +++-
- 22 files changed, 262 insertions(+), 114 deletions(-)
-
--- 
-2.16.2
