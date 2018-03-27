@@ -1,240 +1,97 @@
-Return-Path: <SRS0=m4Yk=FX=gmail.com=shubhrajyoti.datta@kernel.org>
-Return-Path: <SRS0=m4Yk=FX=gmail.com=shubhrajyoti.datta@kernel.org>
-MIME-Version: 1.0
-In-Reply-To: <CANk1AXR6aSwyQTW=NeYrRUQo2Oe8BysyOzf6VHvBuXaxKwNp-g@mail.gmail.com>
-References: <1519188826-2047-1-git-send-email-shubhrajyoti.datta@gmail.com>
- <1519188826-2047-2-git-send-email-shubhrajyoti.datta@gmail.com>
- <CANk1AXQ1R4dbgDJrUC4pgKtmoCaJhryTnD=bxwwWbEJn0BQcaA@mail.gmail.com>
- <20180227002832.GA24387@tyrael.ni.corp.natinst.com> <CAKfKVtGPhb6Mg4UcX58iknEHAvRhp7NzisEONz8Cj+k9OYcu7A@mail.gmail.com>
- <CANk1AXR6aSwyQTW=NeYrRUQo2Oe8BysyOzf6VHvBuXaxKwNp-g@mail.gmail.com>
-From: Shubhrajyoti Datta <shubhrajyoti.datta@gmail.com>
-Date: Thu, 1 Mar 2018 16:19:48 +0530
-Message-ID: <CAKfKVtE5u7z_ASmw_f6t6MAybAnoPm+rKm5LQZ_MaYmUEYuOhg@mail.gmail.com>
-Subject: Re: [PATCH 2/2] fpga: reset bridge: Add the reset bridge
-Content-Type: text/plain; charset="UTF-8"
-To: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Michal Simek <michal.simek@xilinx.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, nofooter@xilinx.com, Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
+Return-Path: <SRS0=zGHA=GR=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=zGHA=GR=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv3 0/7] Add Intel Stratix10 FPGA manager and service layer 
+Date: Tue, 27 Mar 2018 15:20:07 -0500
+Message-Id: <1522182014-7338-1-git-send-email-richard.gong@linux.intel.com>
+To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Feb 27, 2018 at 10:30 PM, Alan Tull <atull@kernel.org> wrote:
-> On Mon, Feb 26, 2018 at 10:46 PM, Shubhrajyoti Datta
-> <shubhrajyoti.datta@gmail.com> wrote:
->> Hi  Moritz,
->>
->> On Tue, Feb 27, 2018 at 5:58 AM, Moritz Fischer <mdf@kernel.org> wrote:
->>> Hi Shubhrajyoti, Alan
->>>
->>> On Mon, Feb 26, 2018 at 04:53:59PM -0600, Alan Tull wrote:
->>>> On Tue, Feb 20, 2018 at 10:53 PM,  <shubhrajyoti.datta@gmail.com> wrote:
->>>> > From: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
->>>> >
->>>> > Adds the reset bridge. After the bitstream load the reset
->>>> > bridge helps in reseting the programable logic. The
->>>> > reset lines depends on the design.
->>>>
->>>> Hi Shubhrajyoti,
->>>>
->>>> OK so adding this 'bridge' will get a reset line to be toggled after
->>>> programming is done.  It looks like it might be generally usable.
->>>> This doesn't look very xilinx specific (i.e. no specific device
->>>> registers, just using a reset), so maybe it is just a 'rst-brige'.
->>>> How is it used?  To hit a reset line on a whole FPGA?
->>>
->>> In zynq-fpga we have the fpga-mgr hit on the reset, which to some
->>> extend I suppose makes sense, since after reload you wanna reset the
->>> entire FPGA space (unless you do PR, where you don't hit on the resets).
->>>
->>> Shubhrajyoti's solution seems more modular I guess, however I don't
->>> really see a good usecase for only hitting a single reset.
->>>
->>> IP that's in the FPGA and needs reset should have their dedicated resets
->>> via normal reset API bindings imho and not rely on bridges to do the
->>> right thing.
->>>
->>> The ZynqMP is fairly complex and I might be missing something here,
->>> so maybe you (Shubhrajyoti) can elaborate a bit more. The paragraph in
->>> the TRM seemed fairly short, and didn't enlighten me as to why it is
->>> required.
->>
->> The FPGA supports both the PR case and independent execution
->> Like  a design can have 2 parts that can have independent execution.
->
-> I want to understand you better here.  What do you mean by
-> 'independent execution'?  Like 2 partial reconfiguration regions that
-> each have a single reset to reset the hardware in their region?  Or
-> something else?
-Yes.
+From: Richard Gong <richard.gong@intel.com>
 
->
->> In that case they have to have independent resets.
->>
->> There are 4 PS-PL lines that could be used by designs.
->> So in that case we should have  multiple resets.
->
-> Normally, as Moritz is saying, the reset would be handled by the
-> driver for the fabric-based hardware.
-I didnt understand you mean the  platform-fpga.c ?
+This is the 3rd submission of Intel service layer patches. Intel Stratix10
+FPGA manager, which is 1st service layer client, is included in this submission.
 
->
-> Alan
->
->>
->>
->>>
->>> Cheers,
->>>
->>> Moritz
->>>>
->>>> Alan
->>>>
->>>> >
->>>> > Signed-off-by: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
->>>> > ---
->>>> >  drivers/fpga/Kconfig             |   8 ++++
->>>> >  drivers/fpga/Makefile            |   1 +
->>>> >  drivers/fpga/xilinx-rst-bridge.c | 100 +++++++++++++++++++++++++++++++++++++++
->>>> >  3 files changed, 109 insertions(+)
->>>> >  create mode 100644 drivers/fpga/xilinx-rst-bridge.c
->>>> >
->>>> > diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
->>>> > index ad5448f..752a907 100644
->>>> > --- a/drivers/fpga/Kconfig
->>>> > +++ b/drivers/fpga/Kconfig
->>>> > @@ -117,4 +117,12 @@ config XILINX_PR_DECOUPLER
->>>> >           region of the FPGA from the busses while that region is
->>>> >           being reprogrammed during partial reconfig.
->>>> >
->>>> > +config XILINX_RST_BRIDGE
->>>> > +       tristate "Xilinx Reset bridge"
->>>> > +       depends on FPGA_BRIDGE
->>>> > +       help
->>>> > +         Say Y to enable drivers for Xilinx Reset bridge.
->>>> > +         After writing the bitstream there has to be a reset.
->>>> > +         The reset lines are design specific.
->>>> > +
->>>> >  endif # FPGA
->>>> > diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
->>>> > index f98dcf1..c1b0d13 100644
->>>> > --- a/drivers/fpga/Makefile
->>>> > +++ b/drivers/fpga/Makefile
->>>> > @@ -23,6 +23,7 @@ obj-$(CONFIG_FPGA_BRIDGE)             += fpga-bridge.o
->>>> >  obj-$(CONFIG_SOCFPGA_FPGA_BRIDGE)      += altera-hps2fpga.o altera-fpga2sdram.o
->>>> >  obj-$(CONFIG_ALTERA_FREEZE_BRIDGE)     += altera-freeze-bridge.o
->>>> >  obj-$(CONFIG_XILINX_PR_DECOUPLER)      += xilinx-pr-decoupler.o
->>>> > +obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)     += xilinx-rst-bridge.o
->>>> >
->>>> >  # High Level Interfaces
->>>> >  obj-$(CONFIG_FPGA_REGION)              += fpga-region.o
->>>> > diff --git a/drivers/fpga/xilinx-rst-bridge.c b/drivers/fpga/xilinx-rst-bridge.c
->>>> > new file mode 100644
->>>> > index 0000000..8062283
->>>> > --- /dev/null
->>>> > +++ b/drivers/fpga/xilinx-rst-bridge.c
->>>> > @@ -0,0 +1,100 @@
->>>> > +// SPDX-License-Identifier: GPL-2.0
->>>> > +/*
->>>> > + * Xilinx FPGA reset bridge.
->>>> > + * Copyright (c) 2018 Xilinx Inc.
->>>> > + *
->>>> > + */
->>>> > +
->>>> > +#include <linux/kernel.h>
->>>> > +#include <linux/module.h>
->>>> > +#include <linux/of_device.h>
->>>> > +#include <linux/fpga/fpga-bridge.h>
->>>> > +#include <linux/reset.h>
->>>> > +
->>>> > +struct xlnx_rst_bridge_priv {
->>>> > +       struct device *dev;
->>>> > +       bool enable;
->>>> > +};
->>>> > +
->>>> > +static int xlnx_rst_bridge_enable_set(struct fpga_bridge *bridge, bool enable)
->>>> > +{
->>>> > +       struct xlnx_rst_bridge_priv *priv = bridge->priv;
->>>> > +       struct device *dev = priv->dev;
->>>> > +       struct reset_control *rstc;
->>>> > +       int ret = 0;
->>>> > +
->>>> > +       if (enable) {
->>>> > +               rstc = of_reset_control_array_get(dev->of_node, false, false);
->>>> > +               if (IS_ERR(rstc))
->>>> > +                       return PTR_ERR(rstc);
->>>> > +
->>>> > +               ret = reset_control_reset(rstc);
->>>> > +
->>>> > +               reset_control_put(rstc);
->>>> > +
->>>> > +               if (ret)
->>>> > +                       dev_err(dev, "Reset failed\n");
->>>> > +       } else {
->>>> > +               dev_dbg(dev, "Bridge disabled\n");
->>>> > +       }
->>>> > +
->>>> > +       if (!ret)
->>>> > +               priv->enable = enable;
->>>> > +
->>>> > +       return ret;
->>>> > +}
->>>> > +
->>>> > +static int xlnx_rst_bridge_enable_show(struct fpga_bridge *bridge)
->>>> > +{
->>>> > +       struct xlnx_rst_bridge_priv *priv = bridge->priv;
->>>> > +
->>>> > +       return priv->enable;
->>>> > +}
->>>> > +
->>>> > +static struct fpga_bridge_ops xlnx_rst_bridge_ops = {
->>>> > +       .enable_set = xlnx_rst_bridge_enable_set,
->>>> > +       .enable_show = xlnx_rst_bridge_enable_show,
->>>> > +};
->>>> > +
->>>> > +static int xlnx_rst_bridge_probe(struct platform_device *pdev)
->>>> > +{
->>>> > +       struct xlnx_rst_bridge_priv *priv;
->>>> > +       struct device *dev = &pdev->dev;
->>>> > +
->>>> > +       priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
->>>> > +       if (!priv)
->>>> > +               return -ENOMEM;
->>>> > +
->>>> > +       priv->dev = dev;
->>>> > +
->>>> > +       return fpga_bridge_register(dev, "xlnx_rst_bridge",
->>>> > +                                   &xlnx_rst_bridge_ops, priv);
->>>> > +}
->>>> > +
->>>> > +static int xlnx_rst_bridge_remove(struct platform_device *pdev)
->>>> > +{
->>>> > +       fpga_bridge_unregister(&pdev->dev);
->>>> > +
->>>> > +       return 0;
->>>> > +}
->>>> > +
->>>> > +static const struct of_device_id xlnx_rst_bridge_of_match[] = {
->>>> > +       { .compatible = "xlnx,rst-bridge", },
->>>> > +       {},
->>>> > +};
->>>> > +MODULE_DEVICE_TABLE(of, xlnx_rst_bridge_of_match);
->>>> > +
->>>> > +static struct platform_driver xlnx_rst_bridge_driver = {
->>>> > +       .probe = xlnx_rst_bridge_probe,
->>>> > +       .remove = xlnx_rst_bridge_remove,
->>>> > +       .driver = {
->>>> > +               .name   = "xlnx_rst_bridge",
->>>> > +               .of_match_table = of_match_ptr(xlnx_rst_bridge_of_match),
->>>> > +       },
->>>> > +};
->>>> > +
->>>> > +module_platform_driver(xlnx_rst_bridge_driver);
->>>> > +
->>>> > +MODULE_DESCRIPTION("Xilinx reset Bridge");
->>>> > +MODULE_AUTHOR("Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>");
->>>> > +MODULE_LICENSE("GPL v2");
->>>> > --
->>>> > 2.1.1
->>>> >
->>>> > --
->>>> > To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
->>>> > the body of a message to majordomo@vger.kernel.org
->>>> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Service layer patches have been reviewed internally by Alan Tull and other
+colleagues at Intel.
+
+Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
+processor system (HPS) and Secure Device Manager (SDM). SDM is the hardware
+which does the FPGA configuration, QSPI, Crypto and warm reset.
+
+In order to configure the FPGA from HPS, there needs to be a way for HPS to
+notify SDM the location and size of the configuration data. Then SDM will
+get the configuration data from that location and perform the FPGA configuration.
+
+To meet the whole system security needs and support virtual machine
+requesting communication with SDM, only the secure world of software (EL3,
+Exception Level 3) can interface with SDM. All software entities running
+on other exception levels must channel through the EL3 software whenever it
+needs service from SDM.
+
+Intel Stratix10 service layer driver is added to provide the service for
+FPGA configuration. Running at privileged exception level (EL1, Exception
+Level 1), Intel Stratix10 service layer driver interfaces with the service
+provider at EL1 (Intel Stratix10 FPGA Manager) and manages secure monitor
+call (SMC) to communicate with secure monitor software at secure monitor
+exception level (EL3).
+
+Later the Intel Stratix10 service layer driver will be extended to provide
+services for QSPI, Crypto and warm reset.
+
+v2: add patches for FPGA manager, FPGA manager binding, dts and defconfig
+    remove intel-service subdirectory and intel-service.h, move intel-smc.h
+    and intel-service.c to driver/misc subdirectory
+    remove global variables
+    change service layer driver be 'default n'
+    correct SPDX markers
+    add timeout for do..while() loop
+    add kernel-doc for the functions and structs, correct multiline comments
+    replace kfifo_in/kfifo_out with kfifo_in_spinlocked/kfifo_out_spinlocked
+    rename struct intel_svc_data (at client header) to intel_svc_client_msg
+    rename struct intel_svc_private_mem to intel_svc_data
+    other corrections/changes from Intel internal code reviews
+v3: change all exported functions with "intel_svc_" as the prefix
+    Increase timeout values for claiming back submitted buffer(s)
+    Rename struct intel_command_reconfig_payload to
+    struct intel_svc_command_reconfig_payload
+    Add pr_err() to provide the error return value
+    change to put fpga_mgr node under firmware/svc node
+    change to FPGA manager to align the update of service client APIs, and the
+    update of fpga_mgr device node
+    Other corrections/changes
+
+Alan Tull (3):
+  dt-bindings: fpga: add Stratix10 SoC FPGA manager binding
+  arm64: dts: stratix10: add fpga manager and region
+  fpga: add intel stratix10 soc fpga manager driver
+
+Richard Gong (4):
+  dt-bindings, firmware: add Intel Stratix10 service layer binding
+  arm64: dts: stratix10: add service driver binding to base dtsi
+  driver, misc: add Intel Stratix10 service layer driver
+  defconfig: enable fpga and service layer
+
+ .../bindings/firmware/intel,stratix10-svc.txt      |  57 ++
+ .../bindings/fpga/intel-stratix10-soc-fpga-mgr.txt |  17 +
+ arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi  |  34 +
+ arch/arm64/configs/defconfig                       |   5 +
+ drivers/fpga/Kconfig                               |   6 +
+ drivers/fpga/Makefile                              |   1 +
+ drivers/fpga/stratix10-soc.c                       | 534 ++++++++++++
+ drivers/misc/Kconfig                               |  12 +
+ drivers/misc/Makefile                              |   1 +
+ drivers/misc/intel-service.c                       | 962 +++++++++++++++++++++
+ drivers/misc/intel-smc.h                           | 205 +++++
+ include/linux/intel-service-client.h               | 188 ++++
+ 12 files changed, 2022 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+ create mode 100644 Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
+ create mode 100644 drivers/fpga/stratix10-soc.c
+ create mode 100644 drivers/misc/intel-service.c
+ create mode 100644 drivers/misc/intel-smc.h
+ create mode 100644 include/linux/intel-service-client.h
+
+-- 
+2.7.4
