@@ -1,94 +1,41 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-In-Reply-To: <20180301054935.GA8999@hao-dev>
-References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
- <1518513893-4719-16-git-send-email-hao.wu@intel.com> <CANk1AXR9473+QqjF=R2JqqJGPB_XH9k+2qDhh68hN=5Fq4E7uw@mail.gmail.com>
- <20180301054935.GA8999@hao-dev>
-From: Alan Tull <atull@kernel.org>
-Date: Thu, 1 Mar 2018 09:59:16 -0600
-Message-ID: <CANk1AXRp_oKnLemFS4C7MgJwyFsjOUxgbYN0=S5wdSiUP9iM0g@mail.gmail.com>
-Subject: Re: [PATCH v4 15/24] fpga: dfl-fme-pr: add compat_id support for
- dfl-fme-region platform device.
-Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
+Return-Path: <SRS0=aM/a=GT=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=aM/a=GT=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 5/6] fpga: fpga-region: comment on fpga_region_program_fpga locking
+Date: Thu, 29 Mar 2018 08:36:57 -0700
+Message-Id: <20180329153658.11614-6-mdf@kernel.org>
+In-Reply-To: <20180329153658.11614-1-mdf@kernel.org>
+References: <20180329153658.11614-1-mdf@kernel.org>
+To: gregkh@linuxfoundation.org
+Cc: atull@kernel.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Wed, Feb 28, 2018 at 11:49 PM, Wu Hao <hao.wu@intel.com> wrote:
-> On Wed, Feb 28, 2018 at 05:06:57PM -0600, Alan Tull wrote:
->> On Tue, Feb 13, 2018 at 3:24 AM, Wu Hao <hao.wu@intel.com> wrote:
+From: Alan Tull <atull@kernel.org>
 
->> > +
->> > +       compat_id.id_l = readq(fme_pr + FME_PR_INTFC_ID_L);
->> > +       compat_id.id_h = readq(fme_pr + FME_PR_INTFC_ID_H);
->>
->> I tried building for 32 bit ARM and ran into readq and writeq not
->> being defined.  v2 had proper '#indef readq/writeq', so looks like we
->> need that after all.
->
-> Sorry, it's missing a header file for dfl-fme-pr.h, as some files don't include
-> dfl.h at this version. That header file has definitions for readq/writeq.
->
-> +#include <linux/io-64-nonatomic-lo-hi.h>
->
-> will fix it.
+Add a comment to the header of fpga_region_program_fpga()
+regarding locking of the bridges.
 
-Hi Hao,
+Signed-off-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+---
+ drivers/fpga/fpga-region.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-That sounds good.  I was able to build if I added it.  There are a
-couple issues in the enumeration code:
-
-In file included from
-/home/atull/repos/linux-socfpga/include/linux/kernel.h:11:0,
-                 from /home/atull/repos/linux-socfpga/include/linux/list.h:9,
-                 from /home/atull/repos/linux-socfpga/include/linux/module.h:9,
-                 from /home/atull/repos/linux-socfpga/drivers/fpga/dfl.c:13:
-/home/atull/repos/linux-socfpga/drivers/fpga/dfl.c: In function
-'parse_feature_list':
-/home/atull/repos/linux-socfpga/include/linux/bitops.h:7:24: warning:
-left shift count >= width of type [-Wshift-count-overflow]
- #define BIT(nr)   (1UL << (nr))
-                        ^
-/home/atull/repos/linux-socfpga/drivers/fpga/dfl.h:73:19: note: in
-expansion of macro 'BIT'
- #define DFH_EOL   BIT(40)   /* End of list */
-                   ^
-/home/atull/repos/linux-socfpga/drivers/fpga/dfl.c:643:12: note: in
-expansion of macro 'DFH_EOL'
-   if ((v & DFH_EOL) || !ofst)
-            ^
-
-and
-
-  CC      drivers/fpga/dfl-fme-mgr.o
-In file included from
-/home/atull/repos/linux-socfpga/include/linux/kernel.h:11:0,
-                 from /home/atull/repos/linux-socfpga/include/linux/list.h:9,
-                 from
-/home/atull/repos/linux-socfpga/include/linux/kobject.h:19,
-                 from /home/atull/repos/linux-socfpga/include/linux/device.h:16,
-                 from
-/home/atull/repos/linux-socfpga/drivers/fpga/dfl-fme-pr.c:20:
-/home/atull/repos/linux-socfpga/drivers/fpga/dfl-fme-pr.c: In function
-'pr_mgmt_init':
-/home/atull/repos/linux-socfpga/include/linux/bitops.h:7:24: warning:
-left shift count >= width of type [-Wshift-count-overflow]
- #define BIT(nr)   (1UL << (nr))
-                        ^
-/home/atull/repos/linux-socfpga/drivers/fpga/dfl.h:113:27: note: in
-expansion of macro 'BIT'
- #define FME_PORT_OFST_IMP BIT(60)
-                           ^
-/home/atull/repos/linux-socfpga/drivers/fpga/dfl-fme-pr.c:449:23:
-note: in expansion of macro 'FME_PORT_OFST_IMP'
-   if (!(port_offset & FME_PORT_OFST_IMP))
-                       ^
-Alan
-
-
->
-> Thanks
-> Hao
->
->> Alan
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index 660a91b9e246..3af960e24558 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -95,6 +95,11 @@ static void fpga_region_put(struct fpga_region *region)
+  * fpga_region_program_fpga - program FPGA
+  * @region: FPGA region
+  * Program an FPGA using fpga image info (region->info).
++ * If the region has a get_bridges function, the exclusive reference for the
++ * bridges will be held if programming succeeds.  This is intended to prevent
++ * reprogramming the region until the caller considers it safe to do so.
++ * The caller will need to call fpga_bridges_put() before attempting to
++ * reprogram the region.
+  * Return 0 for success or negative error code.
+  */
+ int fpga_region_program_fpga(struct fpga_region *region)
+-- 
+2.16.2
