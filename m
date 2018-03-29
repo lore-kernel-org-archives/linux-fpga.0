@@ -1,276 +1,264 @@
-Return-Path: <SRS0=XHVm=F6=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=XHVm=F6=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-wr0-f180.google.com ([209.85.128.180]:39449 "EHLO
-        mail-wr0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754837AbeCHOFA (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 8 Mar 2018 09:05:00 -0500
-Received: by mail-wr0-f180.google.com with SMTP id w77so5800734wrc.6
-        for <linux-fpga@vger.kernel.org>; Thu, 08 Mar 2018 06:04:59 -0800 (PST)
-Reply-To: monstr@monstr.eu
-Subject: clk-fixed-rate clock driver usage with fpgas was: Re: Fpga manager
- help
-References: <CAKfKVtH-HRa2Z5Ff_wss9oK2tN2taSLU6gAfgus=Z1KkhZwMBg@mail.gmail.com>
- <CANk1AXRm9ME1Yu3y2WRMxG1o9BZq+6pg9T8CWaqKy2v+LwK9RA@mail.gmail.com>
- <CAKfKVtFkYjwe0JH+f1Bdt7p+o2b_TsKYE0fD6HNs_syXn8D82Q@mail.gmail.com>
- <be42ac6b-0209-6f90-3802-8be6cd9baac9@monstr.eu>
- <CANk1AXSkryS-KxczSfen41VvoTVafZcuSLDUhcq-kuiqhYjknQ@mail.gmail.com>
-From: Michal Simek <monstr@monstr.eu>
-Message-ID: <295f64ae-a049-010a-fd68-3fcd46a5d8a1@monstr.eu>
-Date: Thu, 8 Mar 2018 15:04:50 +0100
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <CANk1AXSkryS-KxczSfen41VvoTVafZcuSLDUhcq-kuiqhYjknQ@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="C0kJsjzclDrTrWEm35iZPKWbgrK97652p"
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Alan Tull <atull@kernel.org>
-Cc: Shubhrajyoti Datta <shubhrajyoti.datta@gmail.com>, linux-fpga@vger.kernel.org, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Grant Likely <grant.likely@secretlab.ca>, linux-clk@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Maxime Ripard <maxime.ripard@bootlin.com>
+In-Reply-To: <20180327023549.GA15476@hao-dev>
+References: <1518513893-4719-1-git-send-email-hao.wu@intel.com>
+ <1518513893-4719-5-git-send-email-hao.wu@intel.com> <CANk1AXSaE3wQ7jnBkB0TR3kLKnG1XUeHk+LbDSxyRtBxbMNGPw@mail.gmail.com>
+ <20180323043304.GA14733@hao-dev> <CANk1AXRbBonnop6Q3=kdXHdZEBoO9cGa6sON7e0GvFwd_TnYfw@mail.gmail.com>
+ <20180327023549.GA15476@hao-dev>
+From: Alan Tull <atull@kernel.org>
+Date: Thu, 29 Mar 2018 16:57:22 -0500
+Message-ID: <CANk1AXQVMCySDjG1_aCxyot612Xg+Vf=vLqk3QY2wpruOAjfpw@mail.gmail.com>
+Subject: Re: [PATCH v4 04/24] fpga: add device feature list support
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---C0kJsjzclDrTrWEm35iZPKWbgrK97652p
-Content-Type: multipart/mixed; boundary="MF07sNqwjhPuuP86OW1rpz9TelnNmWuKp";
- protected-headers="v1"
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-To: Alan Tull <atull@kernel.org>
-Cc: Shubhrajyoti Datta <shubhrajyoti.datta@gmail.com>,
- linux-fpga@vger.kernel.org,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- Grant Likely <grant.likely@secretlab.ca>, linux-clk@vger.kernel.org,
- Michael Turquette <mturquette@baylibre.com>,
- Stephen Boyd <sboyd@codeaurora.org>,
- Maxime Ripard <maxime.ripard@bootlin.com>
-Message-ID: <295f64ae-a049-010a-fd68-3fcd46a5d8a1@monstr.eu>
-Subject: clk-fixed-rate clock driver usage with fpgas was: Re: Fpga manager
- help
-References: <CAKfKVtH-HRa2Z5Ff_wss9oK2tN2taSLU6gAfgus=Z1KkhZwMBg@mail.gmail.com>
- <CANk1AXRm9ME1Yu3y2WRMxG1o9BZq+6pg9T8CWaqKy2v+LwK9RA@mail.gmail.com>
- <CAKfKVtFkYjwe0JH+f1Bdt7p+o2b_TsKYE0fD6HNs_syXn8D82Q@mail.gmail.com>
- <be42ac6b-0209-6f90-3802-8be6cd9baac9@monstr.eu>
- <CANk1AXSkryS-KxczSfen41VvoTVafZcuSLDUhcq-kuiqhYjknQ@mail.gmail.com>
-In-Reply-To: <CANk1AXSkryS-KxczSfen41VvoTVafZcuSLDUhcq-kuiqhYjknQ@mail.gmail.com>
+On Mon, Mar 26, 2018 at 9:35 PM, Wu Hao <hao.wu@intel.com> wrote:
 
---MF07sNqwjhPuuP86OW1rpz9TelnNmWuKp
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+Hi Hao,
 
-Hi, +linux-clk
+Currently there is one set of functions that handles port enable,
+disable, and reset and it's in dfl.c and dfl.h, so that's not in any
+driver module that can be switched out if necessary for a different
+implementation of the port.  Finding a way for this patchset to be
+structured for DFL to control what low level manager/port drivers are
+used is the current challenge that I've got a lot of my attention on.
 
-On 21.2.2018 20:25, Alan Tull wrote:
-> On Wed, Feb 21, 2018 at 6:33 AM, Michal Simek <monstr@monstr.eu> wrote:=
+Thanks for the explanations on how virtualization affects how this can
+be implemented.
 
->> Hi, +Grant and Pantelis,
->=20
-> Hi Shubhrajyoti,
->=20
-> I want to make sure I understand your situation here.  So I'll ask
-> some questions, please let me know if I'm misunderstanding.
->=20
+> On Mon, Mar 26, 2018 at 12:21:23PM -0500, Alan Tull wrote:
+>> On Thu, Mar 22, 2018 at 11:33 PM, Wu Hao <hao.wu@intel.com> wrote:
 >>
->> On 21.2.2018 06:36, Shubhrajyoti Datta wrote:
->>> Hi Alan,
->>> Thanks for the help.
->>>
->>>
->>> On Tue, Feb 20, 2018 at 9:54 PM, Alan Tull <atull@kernel.org> wrote:
->>>> On Mon, Feb 19, 2018 at 1:09 AM, Shubhrajyoti Datta
->>>> <shubhrajyoti.datta@gmail.com> wrote:
->>>>
->>>> Hi Shubhrajyoti,
->>>>
->>>>> Hi ,
->>>>>
->>>>> Some of the FPGA has a  clock  rate that it needs to operate.
->=20
-> The FPGA device needs a clock, right?  This isn't dependent on what
-> FPGA image is loaded; this is the clock that makes the FPGA device
-> happy, right?
-
-There are several scenarios how to use these clocks but let me describe
-HW. Xilinx fpgas have some clock lines coming from fixed part(PS) to
-programmable logic(PL). Clock rate is setup by initial device
-programming (bootloader) but that's just fixed for the whole live cycle.
-
-To be more flexible there is a need to have an option to change clock
-rate depending on bitstream you want to program (It doesn't matter if
-this is full bitstream or partial bitstream).
-For example: That means one set of bitstreams with dt overlay where one
-require 25MHz on clock line and another 50MHz.
-
-
-> If that is the case, this is platform specific setup, which can be
-> done by adding an overlay or it could have been in the base device
-> tree, right?  The second overlay can do the FPGA programming.
-
-I don't think that make sense to have more overlays and mess up things
-just because of setting up proper clock rate for specific PL.
-
-Anyway concept which I am talking about looks like this in DT description=
-=2E
-
-/dts-v1/;
-/plugin/;
-
-/ {
-  fragment {
-    target =3D <&fpga_full>;
-    __overlay__ {
-      #address-cells =3D <1>;
-      #size-cells =3D <1>;
-      firmware-name =3D "download.bin"; /* bitstream */
-      fpga-bridges =3D <&... &...>; /* some bridges */
-
-      pl1: clock {
-	compatible =3D "fixed-factor-clock";
-	clocks =3D <&clk 71>;
-	#clock-cells =3D <0>;
-	clock-frequency =3D <25000000>; /* missing property */
-	clock-div =3D <1>;
-	clock-mult =3D <1>;
-	clock-output-names =3D "pl1"
-      };
-
-      /* The same as above but with different driver */
-      pl1-alt: clock {
-	compatible =3D "fixed-clock";
-	clocks =3D <&clk 71>; /* missing property */
-	#clock-cells =3D <0>;
-	clock-frequency =3D <25000000>;
-	clock-output-names =3D "pl1";
-      };
-      /* or completely new driver based on above two. */
-
-      gpio_on: gpio@XXX {
-	compatible =3D "xlnx,xps-gpio-1.00.a";
-	gpio-controller ;
-	clocks =3D <&pl1>; /* or pl1-alt or new driver */
-      };
-    };
-  };
-};
-
-It means download.bit is loaded and overlay applied. clock driver is
-probed and gpio driver is waiting for it (-EDEFER if not ready).
-
-This concept should ensure that no driver is probed without setting up
-proper clock rate which bitstream was built for.
-
-As you see above I have added pl1 or pl1-alt nodes which are using
-current drivers but we are missing functionality there.
-
-1) In fixed-factor-clock we are missing option to setup clock rate
-directly. That the driver will ask parent for setting up rate. Driver
-contain support added with "allwinner,sun4i-a10-pll3-2x-clk"
-(e6cbf9984ee73) by Maxime Ripard which enables changing rate from childs
-but that's different functionality than we need.
-
-2) in fixed-clock driver we are missing connection with parent to ask
-for setting up described clock.
-
-There is also an option to write new driver. Based on my look the driver
-would be almost the same as above with just small difference. That's why
-I think that will be the best to add this functionality to current
-driver instead of creating similar one.
-
-fixed-factor-clk seems to be better because there is already patch from
-Maxime for passing setting up rate from childs but I would like hear
-your opinion.
-The patch would like just like this
-
-clock-frequency - DT optional parameter.
-
-And in driver:
-
-of_property_read_u32(node, "clock-frequency", &rate);
-if (rate)
-	clk_set_rate(..., rate);
-
-Please let me what you think.
-
-Thanks,
-Michal
-
->=20
->>>>> Wanted some help in having suggestions as to  how should this be do=
-ne.
->>>>>
->>>>>
->>>>> I tried the bridge approach.
->>>>> It worked however since having the possible rate have precompiled i=
-s difficult
->>>>> because of the wide range of possible frequency.
->>>>>
->>>>> So i have a first overlay that updates the rate and second overlay
->>>>> actually apply.
->>>>
->>>> IIUC, that sounds right to me.  The base overlay sets up bridges and=
-
->>>> fpga regions.  The overlay after that does the programming.  That's
->>>> consistent with the fpga-region device tree binding documentation.
->>>
->>> My options were
->>> 1) a first overlay that updates the rate and second overlay
->>>  actually apply.
->=20
-> So that's what I'm saying above, IIUC
->=20
->>> 2) overlay has a pseudo clock driver that sets the rate and acts
->>> as a provider of clocks so that other drivers are EPROBE_DEFERED.
->>>
->>> Do you think I should prefer option 1)
->> I would prefer option too.
->=20
-> Option two?
->=20
-> What does option 2 give us that option 1 doesn't?  Seems like more
-> work, unless there's something in this setup I don't know about, which
-> seems pretty likely right now.
->=20
->> If you want to use option 1 then still
->> devices in second overlay should reference clock setup in the first.
->=20
-> Now that makes it sound like we're talking about clocks for the
-> hardware that is in FPGA fabric?
->=20
+>> >> > +
+>> >> > +/*
+>> >> > + * This function resets the FPGA Port and its accelerator (AFU) by function
+>> >> > + * __fpga_port_disable and __fpga_port_enable (set port soft reset bit and
+>> >> > + * then clear it). Userspace can do Port reset at any time, e.g during DMA
+>> >> > + * or Partial Reconfiguration. But it should never cause any system level
+>> >> > + * issue, only functional failure (e.g DMA or PR operation failure) and be
+>> >> > + * recoverable from the failure.
+>> >> > + *
+>> >> > + * Note: the accelerator (AFU) is not accessible when its port is in reset
+>> >> > + * (disabled). Any attempts on MMIO access to AFU while in reset, will
+>> >> > + * result errors reported via port error reporting sub feature (if present).
+>> >> > + */
+>> >> > +static inline int __fpga_port_reset(struct platform_device *pdev)
+>> >> > +{
+>> >> > +       int ret;
+>> >> > +
+>> >> > +       ret = __fpga_port_disable(pdev);
+>> >> > +       if (ret)
+>> >> > +               return ret;
+>> >> > +
+>> >> > +       __fpga_port_enable(pdev);
+>> >> > +
+>> >> > +       return 0;
+>> >> > +}
+>> >> > +
+>> >> > +static inline int fpga_port_reset(struct platform_device *pdev)
+>> >> > +{
+>> >> > +       struct feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+>> >> > +       int ret;
+>> >> > +
+>> >> > +       mutex_lock(&pdata->lock);
+>> >> > +       ret = __fpga_port_reset(pdev);
+>> >> > +       mutex_unlock(&pdata->lock);
+>> >> > +
+>> >> > +       return ret;
+>> >> > +}
+>> >>
+>> >> I'm still scratching my head about how the enumeration code also has
+>> >> code that handles resetting the PL in a FPGA region and
+>> >> enabling/disabling the bridge.  We've discussed this before [1] and I
+>> >> know you've looked into it, I'm still trying to figure out how this
+>> >> can be made modular, so when someone needs to support a different port
+>> >> in the future, it isn't a complete rewrite.
+>> >>
+>> >> Speaking of resets, one way forward would be to create a reset
+>> >> controller for the port (and if possible move the port code to the
+>> >> bridge platform driver).  The current linux-next repo adds support for
+>> >> reset lookups, so that reset controllers are supported for non-DT
+>> >> platforms [2].
+>> >>
+>> >> So the bridge driver would implement the enable/disable functions and
+>> >> create a reset controller, the fpga-region (or whoever else needs it)
+>> >> could look the reset controller and use the reset.  By using the
+>> >> kernel reset framework, we don't have to have that piece of code
+>> >> shared around by having a reset function in a .h file.  And it avoids
+>> >> adding extra dependencies between modules.  Also, where necessary, I'd
+>> >> rather add functionality to the existing bridge/mgr/region frameworks,
+>> >> adding common interfaces at that level to allow reuse (like adding
+>> >> status to fpga-mgr).  Ideally, this DFL framework would sit on top of
+>> >> mgr and bridge and allow those to be swapped out for reuse of the DFL
+>> >> framework on other devices.  Also it will save future headaches as mgr
+>> >> or port implementations evolve.
+>> >
+>> > Thanks a lot for the suggestion. I really really appreciate this.
 >>
->> Thanks,
->> Michal
+>> Yes, this is a good discussion, thanks.
 >>
+>> >
+>> > Actually if we consider the virutalization case as I mentioned in [1] below,
+>> > that means AFU and its Port will be turned into a PCI VF and assigned (passed
+>> > through) to a virtual machine. There is no FME block on that PCI VF device,
+>> > (the FME is always kept in PCI PF device in the host) and currently the bridge
+>> > is created by FME module for PR functionatily. So in the guest virtual machine,
+>> > nobody creates the reset controller actually.
+>> >
+>> > As I mentioned in [1], one possible method is, put these port reset functions to
+>> > AFU (Port) module, and share those functions with FME bridge module.
 >>
->> --
->> Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
->> w: www.monstr.eu p: +42-0-721842854
->> Maintainer of Linux kernel - Xilinx Microblaze
->> Maintainer of Linux kernel - Xilinx Zynq ARM and ZynqMP ARM64 SoCs
->> U-Boot custodian - Xilinx Microblaze/Zynq/ZynqMP SoCs
+>> Yes, the port reset functions could move into an AFU driver, and then
+>> also the AFU driver could also create a reset controller and register
+>> a lookup [2] for the reset.  That would be just a few lines of code.
+>> The reset controller would control enabling/disabling the port.  The
+>> bridge driver could get the reset controller to use during FPGA
+>> programming.  That is instead of sharing a reset function with the
+>> bridge driver.   It decouples the FPGA bridge driver and simplifies it
+>> to be something that just needs to control a reset instead of needing
+>> to include a specific .h file that makes  a port reset function
+>> available.
+>
+> Hi Alan
+>
+> Thanks a lot for the feedback. :)
+>
+> The major concern here is, for virtualization case, after we enable the SRIOV
+> to create VFs, AFUs(and ports) are turned into VFs from PF. Once AFUs are moved
+> from PF to VFs, then we should remove all related user interfaces exported by
+> the afu platform device under PF by unregistering these platform devices from
+> the system. So in this case the reset controller created by the AFU platform
+> driver, should be removed when the AFU platform devices are deleted from the
+> system in this case, but we still have FME and FME bridge present on PF, then
+> FME bridge can't find the reset controller any longer to do port enable/disable.
+
+OK
+
+>
+> Sorry, I found my previous description is not accurate.
+>
+> VFs could be passed through to a virtual machine, if we let AFU/Port create
+> reset controller, then the reset controllers are created in the virtual machine.
+> And FME is always in PF in the host, so FME bridge in host have no access to the
+> reset controllers in the virtual machine.
+
+Thanks for the explanation.  Does the current implementation allows
+the port's PORT_CTRL_SFTRST reset bit to be controlled by PF and VF at
+the same time?  Or is the idea that the VF has to be given up in order
+to allow the FME PF to be able to reprogram?  After the AFU and port
+is turned into a VF, is the port's memory range is mapped in both the
+PF and the VF?
+
+>
 >>
+>> > I think
+>> > that will make the code in the common DFL framework a little more clean,
 >>
+>> Yes, IIUC that may also make it easier as the port/AFU gets added
+>> functionality that is intended to be controlled by the VF anyway
+>> (while the only port-related thing that is needed by the FME is port
+>> enable/disable).
+>>
+>> > but it
+>> > will introduce some module dependency here for sure, (e.g FME modules can't
+>> > finish PR without AFU (Port) Module loaded).
+>>
+>> That sounds like an OK type of dependency, i.e. if the modules are not
+>> all loaded, it doesn't work. :-)
+>
+> Find a reset controller by lookup, if not found, return error code. It seems
+> not a really hard module dependency between port/afu and FME bridge modules.
 
+That was what I was hoping would work here.  But if the module isn't
+loaded because it failed due to the reset controller in the AFU driver
+went away, then, yes, that won't work.
 
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Xilinx Microblaze
-Maintainer of Linux kernel - Xilinx Zynq ARM and ZynqMP ARM64 SoCs
-U-Boot custodian - Xilinx Microblaze/Zynq/ZynqMP SoCs
+> But if in FME bridge, it uses functions exposed by port/afu module, that's a
+> hard dependency. : )
 
+Yes I'm trying to find ways to get away from that kind of hard
+dependency.  So when someone uses this with a different port, it won't
+be a huge rewrite of dfl.c and dfl.h.  I understand that the port is
+used by both the AFU and the PR code, that's why it's in a file that
+is included by both of them.  That's going to be a problem as soon as
+this is used with a different port.
 
+>
+> I can try to move related code to afu/port driver instead in the next version
+> for sure, but I can't create the reset controller per the reason above. Please
+> let me know if more thoughts on this. : )
 
---MF07sNqwjhPuuP86OW1rpz9TelnNmWuKp--
+Maybe that is the way forward.  I'm still thinking about this.  So the
+DFL will create a AFU driver that includes the port.  If someone
+implements a different port, there would be a different id to cause
+that AFU driver to be loaded instead.  It seems a shame that more of
+the AFU code couldn't be reused. That was the original idea of
+fpga-bridge.  Unfortunately it seems that the bridge is needed by both
+the VF and PF so it's complicated by that.
 
---C0kJsjzclDrTrWEm35iZPKWbgrK97652p
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+>
+>>
+>> > But anyway it may be still
+>> > acceptable for users as all these modules could be loaded automatically. How do
+>> > you think? :)
+>>
+>> The other thing I want to get right now is if there is a different
+>> AFU/port that needs a different driver.  Can the DFL be changed to
+>> specify what AFU/port to load?  I really really want to avoid large
+>> code rewrites in the future that we can anticipate now.  Such as
+>> someone implements their own static image, it has DFL, but the port is
+>> somewhat different.  Instead of seeing features as just something that
+>> gets added, the DFL also specifies what port driver and mgr driver to
+>> load.  The stuff we discussed above is a good step towards that, but
+>> not all of it.
+>
+> I'm not sure if any vendor
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Since this is open source, it's important to remember that vendors
+aren't the only ones driving development of Linux.  Any user of FPGA
+under Linux can (and has) come along and add to this subsystem.  This
+code should not discourage that.
 
-iEYEARECAAYFAlqhQwIACgkQykllyylKDCFXLwCgizl/zLMuR0R62e1roD/mA2gH
-0KsAn2MaJfL/9xp5rwxGoG5BnplYPTVe
-=q9IP
------END PGP SIGNATURE-----
+> wants to create a totally different port here, if
+> yes, then it could have a different feature id in Device Feature Header (DFH).
+> I think it's possible to use that feature id to decide which driver to load
+> (or which platform device to create).
 
---C0kJsjzclDrTrWEm35iZPKWbgrK97652p--
+I think it's what we need.
+
+> But vendors don't have to do that, as it
+> could reuse current port driver and private features added already, or even
+> add some new vendor specific private feature under the port to save cost.
+
+They would have to implement a static image with port registers that
+function the same way for at least port enable/disable/reset.  If they
+need to tweak the driver implementation for their hardware then that's
+not possible or it's ugly at least.  This is also the case if you have
+some newer version of you port while keeping legacy support for your
+original port.
+
+I understand that virtualization is making this hard.  Thanks for
+thinking about how this can move forward on this issue.
+
+Alan
+
+>
+> Thanks
+> Hao
+>
+>>
+>> Alan
+>>
+>> >
+>> > Thanks
+>> > Hao
+>> >
+>> >
+>> >>
+>> >> Alan
+>> >>
+>> >> [1] https://lkml.org/lkml/2017/12/22/398
+>> >> [2] https://patchwork.kernel.org/patch/10247475/
