@@ -1,56 +1,40 @@
-Return-Path: <SRS0=R8gc=HQ=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=R8gc=HQ=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 1/4] fpga: region: don't use drvdata in common fpga code
-Date: Thu, 26 Apr 2018 18:26:02 -0700
-Message-Id: <20180427012605.28981-2-mdf@kernel.org>
-In-Reply-To: <20180427012605.28981-1-mdf@kernel.org>
-References: <20180427012605.28981-1-mdf@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-fpga@vger.kernel.org, michal.simek@xilinx.com, corbet@lwn.net, atull@kernel.org, Moritz Fischer <mdf@kernel.org>
+Return-Path: <SRS0=ELSG=GX=gmail.com=p.pisati@kernel.org>
+Return-Path: <SRS0=ELSG=GX=gmail.com=p.pisati@kernel.org>
+From: Paolo Pisati <p.pisati@gmail.com>
+Subject: [PATCH v9 0/2] fpga: Lattice MachXO2 Slave SPI FPGA Manager support
+Date: Mon,  2 Apr 2018 17:13:44 +0200
+Message-Id: <1522682026-11395-1-git-send-email-p.pisati@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+To: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alan Tull <atull@kernel.org>
+Hi all,
+this series adds support for the Lattice MachXO2 FPGA chip, programmed
+over slave SPI.
 
-Changes to fpga_region_register function to not set drvdata.
+Tested on a raspberry pi3, beaglebone black (little endian mode) and imx6
+hummingboard (big endian mode) + bugblat's pif2 fpga hat (machxo2 7000HC) or
+tinyfpga A1/A2 (machxo2 256HC / 1200HC), in SPI slave mode with varying bus
+speed.
 
-Setting drvdata is fine for DT based devices that will have one region
-per platform device.  However PCIe based devices may have multiple
-FPGA regions under one PCIe device.  Without these changes, the PCIe
-solution has to create an extra device for each child region to hold
-drvdata.
+Changes since v8:
+* style fixes pointed out by Alan
+* rebase on the new fpga_mgr_register() API
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Reported-by: Jiuyue Ma <majiuyue@huawei.com>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
- drivers/fpga/fpga-region.c    | 1 -
- drivers/fpga/of-fpga-region.c | 1 +
- 2 files changed, 1 insertion(+), 1 deletion(-)
+Paolo Pisati (2):
+  dt: bindings: fpga: add lattice machxo2 slave spi binding description
+  fpga: lattice machxo2: Add Lattice MachXO2 support
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index cb0603e07ff8..f634a8ed5e2c 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -183,7 +183,6 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
- 	region->dev.parent = dev;
- 	region->dev.of_node = dev->of_node;
- 	region->dev.id = id;
--	dev_set_drvdata(dev, region);
- 
- 	ret = dev_set_name(&region->dev, "region%d", id);
- 	if (ret)
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 119ff75522f1..35e7e8c4a0cb 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -438,6 +438,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 		goto eprobe_mgr_put;
- 
- 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
-+	dev_set_drvdata(dev, region);
- 
- 	dev_info(dev, "FPGA Region probed\n");
- 
+ .../bindings/fpga/lattice-machxo2-spi.txt          |  29 ++
+ drivers/fpga/Kconfig                               |   7 +
+ drivers/fpga/Makefile                              |   1 +
+ drivers/fpga/machxo2-spi.c                         | 405 +++++++++++++++++++++
+ 4 files changed, 442 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/lattice-machxo2-spi.txt
+ create mode 100644 drivers/fpga/machxo2-spi.c
+
 -- 
-2.17.0
+2.7.4
