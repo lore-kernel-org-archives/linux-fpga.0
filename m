@@ -1,78 +1,241 @@
-Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
-Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v3 17/20] serial: Remove depends on HAS_DMA in case of platform dependency
-Date: Tue, 17 Apr 2018 19:49:17 +0200
-Message-Id: <1523987360-18760-18-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
-Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH v4 4/4] fpga: region: change api, add fpga_region_create/free
+Date: Thu, 12 Apr 2018 15:30:43 -0500
+Message-Id: <20180412203043.3001-5-atull@kernel.org>
+In-Reply-To: <20180412203043.3001-1-atull@kernel.org>
+References: <20180412203043.3001-1-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+Add fpga_region_create/free API functions.
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Change fpga_region_register to take FPGA region struct as the only
+parameter.  Change fpga_region_unregister to return void.
 
-This simplifies the dependencies, and allows to improve compile-testing.
+  struct fpga_region *fpga_region_create(struct device *dev,
+                        struct fpga_manager *mgr,
+                        int (*get_bridges)(struct fpga_region *));
+  void fpga_region_free(struct fpga_region *region);
+  int fpga_region_register(struct fpga_region *region);
+  void fpga_region_unregister(struct fpga_region *region);
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Remove groups storage from struct fpga_region, it's not
+needed.  Callers can just "region->dev.groups = groups;"
+after calling fpga_region_create.
+
+Update the drivers that call fpga_region_register with the new API.
+
+Signed-off-by: Alan Tull <atull@kernel.org>
 ---
-v3:
-  - Add Acked-by,
-  - Rebase to v4.17-rc1,
-
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
+v2: This patch added in this version of the patchset
+v3: minor changes to make diffs smaller and more obviously correct
+v4: reworked for different API
+    remove groups from struct fpga_region
 ---
- drivers/tty/serial/Kconfig | 4 ----
- 1 file changed, 4 deletions(-)
+ Documentation/fpga/fpga-region.txt |  3 +-
+ drivers/fpga/fpga-region.c         | 68 ++++++++++++++++++++++++++++++--------
+ drivers/fpga/of-fpga-region.c      | 13 +++-----
+ include/linux/fpga/fpga-region.h   | 11 +++---
+ 4 files changed, 68 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-index 0f058df0b0701fe2..25b8c0a8a50397d6 100644
---- a/drivers/tty/serial/Kconfig
-+++ b/drivers/tty/serial/Kconfig
-@@ -115,7 +115,6 @@ config SERIAL_SB1250_DUART_CONSOLE
+diff --git a/Documentation/fpga/fpga-region.txt b/Documentation/fpga/fpga-region.txt
+index 139a02b..d38fa3b 100644
+--- a/Documentation/fpga/fpga-region.txt
++++ b/Documentation/fpga/fpga-region.txt
+@@ -42,8 +42,7 @@ The FPGA region API
+ To register or unregister a region:
+ -----------------------------------
  
- config SERIAL_ATMEL
- 	bool "AT91 on-chip serial port support"
--	depends on HAS_DMA
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	select SERIAL_CORE
- 	select SERIAL_MCTRL_GPIO if GPIOLIB
-@@ -500,7 +499,6 @@ config SERIAL_SA1100_CONSOLE
+-	int fpga_region_register(struct device *dev,
+-				 struct fpga_region *region);
++	int fpga_region_register(struct fpga_region *region);
+ 	int fpga_region_unregister(struct fpga_region *region);
  
- config SERIAL_IMX
- 	tristate "IMX serial port support"
--	depends on HAS_DMA
- 	depends on ARCH_MXC || COMPILE_TEST
- 	select SERIAL_CORE
- 	select RATIONAL
-@@ -1262,7 +1260,6 @@ config SERIAL_PCH_UART_CONSOLE
+ An example of usage can be seen in the probe function of [3]
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index ebe1f87..d6a9dd2 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -162,18 +162,36 @@ int fpga_region_program_fpga(struct fpga_region *region)
+ }
+ EXPORT_SYMBOL_GPL(fpga_region_program_fpga);
  
- config SERIAL_MXS_AUART
- 	tristate "MXS AUART support"
--	depends on HAS_DMA
- 	depends on ARCH_MXS || MACH_ASM9260 || COMPILE_TEST
- 	select SERIAL_CORE
- 	select SERIAL_MCTRL_GPIO if GPIOLIB
-@@ -1473,7 +1470,6 @@ config SERIAL_SPRD_CONSOLE
- config SERIAL_STM32
- 	tristate "STMicroelectronics STM32 serial port support"
- 	select SERIAL_CORE
--	depends on HAS_DMA
- 	depends on ARCH_STM32 || COMPILE_TEST
- 	help
- 	  This driver is for the on-chip Serial Controller on
+-int fpga_region_register(struct device *dev, struct fpga_region *region)
++/**
++ * fpga_region_create - alloc and init a struct fpga_region
++ * @dev: device parent
++ * @mgr: manager that programs this region
++ * @get_bridges: optional function to get bridges to a list
++ *
++ * Return: struct fpga_region or NULL
++ */
++struct fpga_region
++*fpga_region_create(struct device *dev,
++		    struct fpga_manager *mgr,
++		    int (*get_bridges)(struct fpga_region *))
+ {
++	struct fpga_region *region;
+ 	int id, ret = 0;
+ 
++	region = kzalloc(sizeof(*region), GFP_KERNEL);
++	if (!region)
++		return NULL;
++
+ 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
+ 	if (id < 0)
+-		return id;
++		goto err_free;
+ 
++	region->mgr = mgr;
++	region->get_bridges = get_bridges;
+ 	mutex_init(&region->mutex);
+ 	INIT_LIST_HEAD(&region->bridge_list);
++
+ 	device_initialize(&region->dev);
+-	region->dev.groups = region->groups;
+ 	region->dev.class = fpga_region_class;
+ 	region->dev.parent = dev;
+ 	region->dev.of_node = dev->of_node;
+@@ -183,23 +201,47 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
+ 	if (ret)
+ 		goto err_remove;
+ 
+-	ret = device_add(&region->dev);
+-	if (ret)
+-		goto err_remove;
+-
+-	return 0;
++	return region;
+ 
+ err_remove:
+ 	ida_simple_remove(&fpga_region_ida, id);
+-	return ret;
++err_free:
++	kfree(region);
++
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(fpga_region_create);
++
++/**
++ * fpga_region_free - free a struct fpga_region
++ * @region: FPGA region created by fpga_region_create
++ */
++void fpga_region_free(struct fpga_region *region)
++{
++	ida_simple_remove(&fpga_region_ida, region->dev.id);
++	kfree(region);
++}
++EXPORT_SYMBOL_GPL(fpga_region_free);
++
++/*
++ * fpga_region_register - register a FPGA region
++ * @region: FPGA region created by fpga_region_create
++ * Return: 0 or -errno
++ */
++int fpga_region_register(struct fpga_region *region)
++{
++	return device_add(&region->dev);
++
+ }
+ EXPORT_SYMBOL_GPL(fpga_region_register);
+ 
+-int fpga_region_unregister(struct fpga_region *region)
++/*
++ * fpga_region_unregister - unregister a FPGA region
++ * @region: FPGA region
++ */
++void fpga_region_unregister(struct fpga_region *region)
+ {
+ 	device_unregister(&region->dev);
+-
+-	return 0;
+ }
+ EXPORT_SYMBOL_GPL(fpga_region_unregister);
+ 
+@@ -207,7 +249,7 @@ static void fpga_region_dev_release(struct device *dev)
+ {
+ 	struct fpga_region *region = to_fpga_region(dev);
+ 
+-	ida_simple_remove(&fpga_region_ida, region->dev.id);
++	fpga_region_free(region);
+ }
+ 
+ /**
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index 35e7e8c..9d681a1 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -422,20 +422,15 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 	if (IS_ERR(mgr))
+ 		return -EPROBE_DEFER;
+ 
+-	region = devm_kzalloc(dev, sizeof(*region), GFP_KERNEL);
++	region = fpga_region_create(dev, mgr, of_fpga_region_get_bridges);
+ 	if (!region) {
+ 		ret = -ENOMEM;
+ 		goto eprobe_mgr_put;
+ 	}
+ 
+-	region->mgr = mgr;
+-
+-	/* Specify how to get bridges for this type of region. */
+-	region->get_bridges = of_fpga_region_get_bridges;
+-
+-	ret = fpga_region_register(dev, region);
++	ret = fpga_region_register(region);
+ 	if (ret)
+-		goto eprobe_mgr_put;
++		goto eprobe_free;
+ 
+ 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
+ 	dev_set_drvdata(dev, region);
+@@ -444,6 +439,8 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++eprobe_free:
++	fpga_region_free(region);
+ eprobe_mgr_put:
+ 	fpga_mgr_put(mgr);
+ 	return ret;
+diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+index b652031..f2e215b 100644
+--- a/include/linux/fpga/fpga-region.h
++++ b/include/linux/fpga/fpga-region.h
+@@ -14,7 +14,6 @@
+  * @info: FPGA image info
+  * @priv: private data
+  * @get_bridges: optional function to get bridges to a list
+- * @groups: optional attribute groups.
+  */
+ struct fpga_region {
+ 	struct device dev;
+@@ -24,7 +23,6 @@ struct fpga_region {
+ 	struct fpga_image_info *info;
+ 	void *priv;
+ 	int (*get_bridges)(struct fpga_region *region);
+-	const struct attribute_group **groups;
+ };
+ 
+ #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
+@@ -34,7 +32,12 @@ struct fpga_region *fpga_region_class_find(
+ 	int (*match)(struct device *, const void *));
+ 
+ int fpga_region_program_fpga(struct fpga_region *region);
+-int fpga_region_register(struct device *dev, struct fpga_region *region);
+-int fpga_region_unregister(struct fpga_region *region);
++
++struct fpga_region
++*fpga_region_create(struct device *dev, struct fpga_manager *mgr,
++		    int (*get_bridges)(struct fpga_region *));
++void fpga_region_free(struct fpga_region *region);
++int fpga_region_register(struct fpga_region *region);
++void fpga_region_unregister(struct fpga_region *region);
+ 
+ #endif /* _FPGA_REGION_H */
 -- 
 2.7.4
