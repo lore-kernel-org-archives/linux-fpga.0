@@ -1,9 +1,9 @@
 Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
 Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v3 19/20] staging: vc04_services: Remove depends on HAS_DMA in case of platform dependency
-Date: Tue, 17 Apr 2018 19:49:19 +0200
-Message-Id: <1523987360-18760-20-git-send-email-geert@linux-m68k.org>
+Subject: [PATCH v3 02/20] ata: Remove depends on HAS_DMA in case of platform dependency
+Date: Tue, 17 Apr 2018 19:49:02 +0200
+Message-Id: <1523987360-18760-3-git-send-email-geert@linux-m68k.org>
 In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
 References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
 To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
@@ -24,10 +24,8 @@ This simplifies the dependencies, and allows to improve compile-testing.
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Reviewed-by: Mark Brown <broonie@kernel.org>
 Acked-by: Robin Murphy <robin.murphy@arm.com>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
 v3:
-  - Add Acked-by,
   - Rebase to v4.17-rc1,
 
 v2:
@@ -35,19 +33,28 @@ v2:
   - Drop RFC state,
   - Split per subsystem.
 ---
- drivers/staging/vc04_services/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/ata/Kconfig | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/staging/vc04_services/Kconfig b/drivers/staging/vc04_services/Kconfig
-index f5aaf7d629f0fae9..98064ce2c2b47c7f 100644
---- a/drivers/staging/vc04_services/Kconfig
-+++ b/drivers/staging/vc04_services/Kconfig
-@@ -1,6 +1,5 @@
- menuconfig BCM_VIDEOCORE
- 	tristate "Broadcom VideoCore support"
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index 2b16e7c8fff35764..39b181d6bd0d8cf2 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -398,7 +398,6 @@ config SATA_DWC_VDEBUG
+ 
+ config SATA_HIGHBANK
+ 	tristate "Calxeda Highbank SATA support"
 -	depends on HAS_DMA
- 	depends on OF
- 	depends on RASPBERRYPI_FIRMWARE || (COMPILE_TEST && !RASPBERRYPI_FIRMWARE)
- 	default y
+ 	depends on ARCH_HIGHBANK || COMPILE_TEST
+ 	help
+ 	  This option enables support for the Calxeda Highbank SoC's
+@@ -408,7 +407,6 @@ config SATA_HIGHBANK
+ 
+ config SATA_MV
+ 	tristate "Marvell SATA support"
+-	depends on HAS_DMA
+ 	depends on PCI || ARCH_DOVE || ARCH_MV78XX0 || \
+ 		   ARCH_MVEBU || ARCH_ORION5X || COMPILE_TEST
+ 	select GENERIC_PHY
 -- 
 2.7.4
