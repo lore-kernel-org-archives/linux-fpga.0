@@ -1,56 +1,130 @@
-Return-Path: <SRS0=I4wK=HG=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=I4wK=HG=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:44507 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750744AbeDQERK (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 17 Apr 2018 00:17:10 -0400
-Received: by mail-pf0-f194.google.com with SMTP id p15so11554197pff.11
-        for <linux-fpga@vger.kernel.org>; Mon, 16 Apr 2018 21:17:09 -0700 (PDT)
-Received: from localhost (c-107-3-165-230.hsd1.ca.comcast.net. [107.3.165.230])
-        by smtp.gmail.com with ESMTPSA id n83sm9540578pfi.183.2018.04.16.21.17.08
-        for <linux-fpga@vger.kernel.org>
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Mon, 16 Apr 2018 21:17:08 -0700 (PDT)
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 0/3] FPGA Manager Patches for 4.18
-Date: Mon, 16 Apr 2018 21:17:04 -0700
-Message-Id: <20180417041707.11417-1-mdf@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-fpga@vger.kernel.org
+Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
+Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH v3 01/20] ASoC: Remove depends on HAS_DMA in case of platform dependency
+Date: Tue, 17 Apr 2018 19:49:01 +0200
+Message-Id: <1523987360-18760-2-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
+Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Greg,
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-Please queue the following patches for v4.18.
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-Alan's Patch clarifies the locking in the fpga-region code.
+This simplifies the dependencies, and allows to improve compile-testing.
 
-Paolo's patches add a new driver with corresponding bindings for a
-Lattice FPGA part.
+Note:
+  - The various SND_SOC_LPASS_* symbols had to loose their dependencies
+    on HAS_DMA, as they are selected by SND_SOC_STORM and/or
+    SND_SOC_APQ8016_SBC.
 
-Thanks,
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+Acked-by: Mark Brown <broonie@kernel.org>
+---
+v3:
+  - Add Acked-by,
+  - Rebase to v4.17-rc1,
 
-Moritz
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Drop dependency of SND_SOC_LPASS_IPQ806X on HAS_DMA,
+  - Split per subsystem.
+---
+ sound/soc/bcm/Kconfig      | 3 +--
+ sound/soc/kirkwood/Kconfig | 1 -
+ sound/soc/pxa/Kconfig      | 1 -
+ sound/soc/qcom/Kconfig     | 7 ++-----
+ 4 files changed, 3 insertions(+), 9 deletions(-)
 
-Alan Tull (1):
-  fpga: fpga-region: comment on fpga_region_program_fpga locking
-
-Paolo Pisati (2):
-  dt: bindings: fpga: add lattice machxo2 slave spi binding description
-  fpga: lattice machxo2: Add Lattice MachXO2 support
-
- .../bindings/fpga/lattice-machxo2-spi.txt     |  29 ++
- drivers/fpga/Kconfig                          |   7 +
- drivers/fpga/Makefile                         |   1 +
- drivers/fpga/fpga-region.c                    |   5 +
- drivers/fpga/machxo2-spi.c                    | 403 ++++++++++++++++++
- 5 files changed, 445 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/lattice-machxo2-spi.txt
- create mode 100644 drivers/fpga/machxo2-spi.c
-
+diff --git a/sound/soc/bcm/Kconfig b/sound/soc/bcm/Kconfig
+index edf367100ebd2f17..02f50b7a966ff262 100644
+--- a/sound/soc/bcm/Kconfig
++++ b/sound/soc/bcm/Kconfig
+@@ -11,9 +11,8 @@ config SND_BCM2835_SOC_I2S
+ config SND_SOC_CYGNUS
+ 	tristate "SoC platform audio for Broadcom Cygnus chips"
+ 	depends on ARCH_BCM_CYGNUS || COMPILE_TEST
+-	depends on HAS_DMA
+ 	help
+ 	  Say Y if you want to add support for ASoC audio on Broadcom
+ 	  Cygnus chips (bcm958300, bcm958305, bcm911360)
+ 
+-	  If you don't know what to do here, say N.
+\ No newline at end of file
++	  If you don't know what to do here, say N.
+diff --git a/sound/soc/kirkwood/Kconfig b/sound/soc/kirkwood/Kconfig
+index bc3c7b5ac752e471..132bb83f8e99aff3 100644
+--- a/sound/soc/kirkwood/Kconfig
++++ b/sound/soc/kirkwood/Kconfig
+@@ -1,7 +1,6 @@
+ config SND_KIRKWOOD_SOC
+ 	tristate "SoC Audio for the Marvell Kirkwood and Dove chips"
+ 	depends on ARCH_DOVE || ARCH_MVEBU || COMPILE_TEST
+-	depends on HAS_DMA
+ 	help
+ 	  Say Y or M if you want to add support for codecs attached to
+ 	  the Kirkwood I2S interface. You will also need to select the
+diff --git a/sound/soc/pxa/Kconfig b/sound/soc/pxa/Kconfig
+index 484ab3c2ad672fc8..960744e46edc0549 100644
+--- a/sound/soc/pxa/Kconfig
++++ b/sound/soc/pxa/Kconfig
+@@ -1,7 +1,6 @@
+ config SND_PXA2XX_SOC
+ 	tristate "SoC Audio for the Intel PXA2xx chip"
+ 	depends on ARCH_PXA || COMPILE_TEST
+-	depends on HAS_DMA
+ 	select SND_PXA2XX_LIB
+ 	help
+ 	  Say Y or M if you want to add support for codecs attached to
+diff --git a/sound/soc/qcom/Kconfig b/sound/soc/qcom/Kconfig
+index 8ec9a074b38bd702..3cc252e55468eaab 100644
+--- a/sound/soc/qcom/Kconfig
++++ b/sound/soc/qcom/Kconfig
+@@ -11,24 +11,21 @@ config SND_SOC_LPASS_CPU
+ 
+ config SND_SOC_LPASS_PLATFORM
+ 	tristate
+-	depends on HAS_DMA
+ 	select REGMAP_MMIO
+ 
+ config SND_SOC_LPASS_IPQ806X
+ 	tristate
+-	depends on HAS_DMA
+ 	select SND_SOC_LPASS_CPU
+ 	select SND_SOC_LPASS_PLATFORM
+ 
+ config SND_SOC_LPASS_APQ8016
+ 	tristate
+-	depends on HAS_DMA
+ 	select SND_SOC_LPASS_CPU
+ 	select SND_SOC_LPASS_PLATFORM
+ 
+ config SND_SOC_STORM
+ 	tristate "ASoC I2S support for Storm boards"
+-	depends on SND_SOC_QCOM && HAS_DMA
++	depends on SND_SOC_QCOM
+ 	select SND_SOC_LPASS_IPQ806X
+ 	select SND_SOC_MAX98357A
+ 	help
+@@ -37,7 +34,7 @@ config SND_SOC_STORM
+ 
+ config SND_SOC_APQ8016_SBC
+ 	tristate "SoC Audio support for APQ8016 SBC platforms"
+-	depends on SND_SOC_QCOM && HAS_DMA
++	depends on SND_SOC_QCOM
+ 	select SND_SOC_LPASS_APQ8016
+ 	help
+           Support for Qualcomm Technologies LPASS audio block in
 -- 
-2.17.0
-
+2.7.4
