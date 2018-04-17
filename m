@@ -1,59 +1,56 @@
-Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
-Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v3 10/20] lightnvm: Remove depends on HAS_DMA in case of platform dependency
-Date: Tue, 17 Apr 2018 19:49:10 +0200
-Message-Id: <1523987360-18760-11-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+Return-Path: <SRS0=I4wK=HG=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=I4wK=HG=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:44507 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750744AbeDQERK (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 17 Apr 2018 00:17:10 -0400
+Received: by mail-pf0-f194.google.com with SMTP id p15so11554197pff.11
+        for <linux-fpga@vger.kernel.org>; Mon, 16 Apr 2018 21:17:09 -0700 (PDT)
+Received: from localhost (c-107-3-165-230.hsd1.ca.comcast.net. [107.3.165.230])
+        by smtp.gmail.com with ESMTPSA id n83sm9540578pfi.183.2018.04.16.21.17.08
+        for <linux-fpga@vger.kernel.org>
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Mon, 16 Apr 2018 21:17:08 -0700 (PDT)
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 0/3] FPGA Manager Patches for 4.18
+Date: Mon, 16 Apr 2018 21:17:04 -0700
+Message-Id: <20180417041707.11417-1-mdf@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
-Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
-List-ID: <linux-fpga@vger.kernel.org>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: linux-fpga@vger.kernel.org
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+Hi Greg,
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Please queue the following patches for v4.18.
 
-This simplifies the dependencies, and allows to improve compile-testing.
+Alan's Patch clarifies the locking in the fpga-region code.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
-Reviewed-by: Matias Bjørling <mb@lightnvm.io>
----
-v3:
-  - Add Reviewed-by,
-  - Rebase to v4.17-rc1,
-  - Removed bogus notes,
+Paolo's patches add a new driver with corresponding bindings for a
+Lattice FPGA part.
 
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/lightnvm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks,
 
-diff --git a/drivers/lightnvm/Kconfig b/drivers/lightnvm/Kconfig
-index 10c08982185a572f..9c03f35d9df113c6 100644
---- a/drivers/lightnvm/Kconfig
-+++ b/drivers/lightnvm/Kconfig
-@@ -4,7 +4,7 @@
- 
- menuconfig NVM
- 	bool "Open-Channel SSD target support"
--	depends on BLOCK && HAS_DMA && PCI
-+	depends on BLOCK && PCI
- 	select BLK_DEV_NVME
- 	help
- 	  Say Y here to get to enable Open-channel SSDs.
+Moritz
+
+Alan Tull (1):
+  fpga: fpga-region: comment on fpga_region_program_fpga locking
+
+Paolo Pisati (2):
+  dt: bindings: fpga: add lattice machxo2 slave spi binding description
+  fpga: lattice machxo2: Add Lattice MachXO2 support
+
+ .../bindings/fpga/lattice-machxo2-spi.txt     |  29 ++
+ drivers/fpga/Kconfig                          |   7 +
+ drivers/fpga/Makefile                         |   1 +
+ drivers/fpga/fpga-region.c                    |   5 +
+ drivers/fpga/machxo2-spi.c                    | 403 ++++++++++++++++++
+ 5 files changed, 445 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/lattice-machxo2-spi.txt
+ create mode 100644 drivers/fpga/machxo2-spi.c
+
 -- 
-2.7.4
+2.17.0
+
