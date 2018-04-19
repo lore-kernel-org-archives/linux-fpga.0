@@ -1,36 +1,92 @@
-Return-Path: <SRS0=SzW4=G2=gmail.com=robherring2@kernel.org>
-Return-Path: <SRS0=SzW4=G2=gmail.com=robherring2@kernel.org>
-Date: Thu, 5 Apr 2018 08:16:53 -0500
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCHv3 1/7] dt-bindings, firmware: add Intel Stratix10 service
- layer binding
-Message-ID: <20180405131653.2rso2ta74w663pdx@rob-hp-laptop>
-References: <1522182014-7338-1-git-send-email-richard.gong@linux.intel.com>
- <1522182014-7338-2-git-send-email-richard.gong@linux.intel.com>
+Return-Path: <SRS0=XHJf=HI=codeaurora.org=kvalo@kernel.org>
+Return-Path: <SRS0=XHJf=HI=codeaurora.org=kvalo@kernel.org>
+From: Kalle Valo <kvalo@codeaurora.org>
+Subject: Re: [PATCH v3 15/20] net: Remove depends on HAS_DMA in case of platform dependency
+In-Reply-To: <1523987360-18760-16-git-send-email-geert@linux-m68k.org> (Geert
+	Uytterhoeven's message of "Tue, 17 Apr 2018 19:49:15 +0200")
+References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+	<1523987360-18760-16-git-send-email-geert@linux-m68k.org>
+Date: Thu, 19 Apr 2018 19:41:15 +0300
+Message-ID: <87wox3i1xw.fsf@kamboji.qca.qualcomm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1522182014-7338-2-git-send-email-richard.gong@linux.intel.com>
-To: richard.gong@linux.intel.com
-Cc: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+Content-Type: text/plain
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pi tchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Mar 27, 2018 at 03:20:08PM -0500, richard.gong@linux.intel.com wrote:
-> From: Richard Gong <richard.gong@intel.com>
-> 
-> Add a device tree binding for the Intel Stratix10 service layer driver
-> 
-> Signed-off-by: Richard Gong <richard.gong@intel.com>
-> Signed-off-by: Alan Tull <atull@kernel.org>
-> ---
-> v2: Change to put service layer driver node under the firmware node
->     Change compatible to "intel, stratix10-svc"
-> v3: No change
-> ---
->  .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
->  1 file changed, 57 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+(adding linux-wireless)
 
-Please add acks/reviewed-by's when posting new versions.
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-Rob
+> Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+> symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+> In most cases this other symbol is an architecture or platform specific
+> symbol, or PCI.
+>
+> Generic symbols and drivers without platform dependencies keep their
+> dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+> cannot work anyway.
+>
+> This simplifies the dependencies, and allows to improve compile-testing.
+>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Reviewed-by: Mark Brown <broonie@kernel.org>
+> Acked-by: Robin Murphy <robin.murphy@arm.com>
+> ---
+> v3:
+>   - Rebase to v4.17-rc1,
+>   - Drop obsolete note about FSL_FMAN,
+>
+> v2:
+>   - Add Reviewed-by, Acked-by,
+>   - Drop RFC state,
+>   - Split per subsystem.
+> ---
+>  drivers/net/ethernet/amd/Kconfig                | 2 +-
+>  drivers/net/ethernet/apm/xgene-v2/Kconfig       | 1 -
+>  drivers/net/ethernet/apm/xgene/Kconfig          | 1 -
+>  drivers/net/ethernet/arc/Kconfig                | 6 ++++--
+>  drivers/net/ethernet/broadcom/Kconfig           | 2 --
+>  drivers/net/ethernet/calxeda/Kconfig            | 2 +-
+>  drivers/net/ethernet/hisilicon/Kconfig          | 2 +-
+>  drivers/net/ethernet/marvell/Kconfig            | 8 +++-----
+>  drivers/net/ethernet/mellanox/mlxsw/Kconfig     | 2 +-
+>  drivers/net/ethernet/renesas/Kconfig            | 2 --
+>  drivers/net/wireless/broadcom/brcm80211/Kconfig | 1 -
+>  drivers/net/wireless/quantenna/qtnfmac/Kconfig  | 2 +-
+>  12 files changed, 12 insertions(+), 19 deletions(-)
+
+For wireless:
+
+Acked-by: Kalle Valo <kvalo@codeaurora.org>
+
+Leaving the hunks for linux-wireless list to see:
+
+> diff --git a/drivers/net/wireless/broadcom/brcm80211/Kconfig b/drivers/net/wireless/broadcom/brcm80211/Kconfig
+> index 9d99eb42d9176f0f..6acba67bca07abd7 100644
+> --- a/drivers/net/wireless/broadcom/brcm80211/Kconfig
+> +++ b/drivers/net/wireless/broadcom/brcm80211/Kconfig
+> @@ -60,7 +60,6 @@ config BRCMFMAC_PCIE
+>  	bool "PCIE bus interface support for FullMAC driver"
+>  	depends on BRCMFMAC
+>  	depends on PCI
+> -	depends on HAS_DMA
+>  	select BRCMFMAC_PROTO_MSGBUF
+>  	select FW_LOADER
+>  	---help---
+> diff --git a/drivers/net/wireless/quantenna/qtnfmac/Kconfig b/drivers/net/wireless/quantenna/qtnfmac/Kconfig
+> index 025fa6018550895a..8d1492a90bd135c0 100644
+> --- a/drivers/net/wireless/quantenna/qtnfmac/Kconfig
+> +++ b/drivers/net/wireless/quantenna/qtnfmac/Kconfig
+> @@ -7,7 +7,7 @@ config QTNFMAC
+>  config QTNFMAC_PEARL_PCIE
+>  	tristate "Quantenna QSR10g PCIe support"
+>  	default n
+> -	depends on HAS_DMA && PCI && CFG80211
+> +	depends on PCI && CFG80211
+>  	select QTNFMAC
+>  	select FW_LOADER
+>  	select CRC32
+
+-- 
+Kalle Valo
