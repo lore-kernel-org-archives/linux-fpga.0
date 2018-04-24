@@ -1,40 +1,43 @@
-Return-Path: <SRS0=ELSG=GX=gmail.com=p.pisati@kernel.org>
-Return-Path: <SRS0=ELSG=GX=gmail.com=p.pisati@kernel.org>
-From: Paolo Pisati <p.pisati@gmail.com>
-Subject: [PATCH v9 0/2] fpga: Lattice MachXO2 Slave SPI FPGA Manager support
-Date: Mon,  2 Apr 2018 17:13:44 +0200
-Message-Id: <1522682026-11395-1-git-send-email-p.pisati@gmail.com>
+Return-Path: <SRS0=jUA1=HN=ACULAB.COM=David.Laight@kernel.org>
+Return-Path: <SRS0=jUA1=HN=ACULAB.COM=David.Laight@kernel.org>
+From: David Laight <David.Laight@ACULAB.COM>
+Subject: RE: [PATCHv3 3/7] driver, misc: add Intel Stratix10 service layer
+ driver
+Date: Tue, 24 Apr 2018 11:24:52 +0000
+Message-ID: <9498165854b84321801d8186d3040b1e@AcuMS.aculab.com>
+References: <1522182014-7338-1-git-send-email-richard.gong@linux.intel.com>
+ <1522182014-7338-4-git-send-email-richard.gong@linux.intel.com>
+ <20180423120300.GC7951@kroah.com>
+In-Reply-To: <20180423120300.GC7951@kroah.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: 'Greg KH' <gregkh@linuxfoundation.org>, "richard.gong@linux.intel.com" <richard.gong@linux.intel.com>
+Cc: "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "dinguyen@kernel.org" <dinguyen@kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "atull@kernel.org" <atull@kernel.org>, "mdf@kernel.org" <mdf@kernel.org>, "arnd@arndb.de" <arnd@arndb.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "yves.vandervennet@linux.intel.com" <yves.vandervennet@linux.intel.com>, "richard.gong@intel.com" <richard.gong@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi all,
-this series adds support for the Lattice MachXO2 FPGA chip, programmed
-over slave SPI.
+From: Greg KH
+> Sent: 23 April 2018 13:03
+> On Tue, Mar 27, 2018 at 03:20:10PM -0500, richard.gong@linux.intel.com wr=
+ote:
+> > +config INTEL_SERVICE
+>=20
+> Naming is hard, but this is a _very_ generic name, don't you agree?
+>=20
+> > +	tristate "Intel Service Layer"
+>=20
+> As is this.  Can you make this a bit more specific to what hardware is
+> being controlled here?
+>=20
+> > +++ b/drivers/misc/intel-service.c
+>=20
+> Same for the file name, why not stratix10.c?
+>=20
+> or intel_svc.c?  That makes it a _bit_ more generic.  Well, not really,
+> but it does hide the "genericness" a bit more, right?
 
-Tested on a raspberry pi3, beaglebone black (little endian mode) and imx6
-hummingboard (big endian mode) + bugblat's pif2 fpga hat (machxo2 7000HC) or
-tinyfpga A1/A2 (machxo2 256HC / 1200HC), in SPI slave mode with varying bus
-speed.
+It'll all be even worse if (when) Intel decide to sell Altera to
+someone else.
 
-Changes since v8:
-* style fixes pointed out by Alan
-* rebase on the new fpga_mgr_register() API
-
-Paolo Pisati (2):
-  dt: bindings: fpga: add lattice machxo2 slave spi binding description
-  fpga: lattice machxo2: Add Lattice MachXO2 support
-
- .../bindings/fpga/lattice-machxo2-spi.txt          |  29 ++
- drivers/fpga/Kconfig                               |   7 +
- drivers/fpga/Makefile                              |   1 +
- drivers/fpga/machxo2-spi.c                         | 405 +++++++++++++++++++++
- 4 files changed, 442 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/lattice-machxo2-spi.txt
- create mode 100644 drivers/fpga/machxo2-spi.c
-
--- 
-2.7.4
+	David
