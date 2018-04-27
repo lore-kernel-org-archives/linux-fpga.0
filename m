@@ -1,62 +1,396 @@
-Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
-Return-Path: <SRS0=NYNp=HG=linux-m68k.org=geert@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v3 08/20] iio: adc: Remove depends on HAS_DMA in case of platform dependency
-Date: Tue, 17 Apr 2018 19:49:08 +0200
-Message-Id: <1523987360-18760-9-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
-Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Return-Path: <SRS0=R8gc=HQ=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=R8gc=HQ=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 3/4] fpga: bridge: change api, don't use drvdata
+Date: Thu, 26 Apr 2018 18:26:04 -0700
+Message-Id: <20180427012605.28981-4-mdf@kernel.org>
+In-Reply-To: <20180427012605.28981-1-mdf@kernel.org>
+References: <20180427012605.28981-1-mdf@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-fpga@vger.kernel.org, michal.simek@xilinx.com, corbet@lwn.net, atull@kernel.org, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+From: Alan Tull <atull@kernel.org>
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Change fpga_bridge_register to not set drvdata.  This is to support
+the case where a PCIe device can have more than one bridge.
 
-This simplifies the dependencies, and allows to improve compile-testing.
+Add API functions to create/free the fpga bridge struct. Change
+fpga_bridge_register/unregister to take FPGA bridge struct as
+the only parameter.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
-Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+  struct fpga_bridge
+  *fpga_bridge_create(struct device *dev, const char *name,
+                      const struct fpga_bridge_ops *br_ops,
+                      void *priv);
+  void fpga_bridge_free(struct fpga_bridge *br);
+  int fpga_bridge_register(struct fpga_bridge *br);
+  void fpga_bridge_unregister(struct fpga_bridge *br);
+
+Update the drivers that call fpga_bridge_register with the new API.
+
+Signed-off-by: Alan Tull <atull@kernel.org>
+Reported-by: Jiuyue Ma <majiuyue@huawei.com>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
-v3:
-  - Add Acked-by,
-  - Rebase to v4.17-rc1,
+ drivers/fpga/altera-fpga2sdram.c    | 21 ++++++---
+ drivers/fpga/altera-freeze-bridge.c | 22 +++++++--
+ drivers/fpga/altera-hps2fpga.c      | 24 +++++++---
+ drivers/fpga/fpga-bridge.c          | 70 +++++++++++++++++++----------
+ drivers/fpga/xilinx-pr-decoupler.c  | 22 ++++++---
+ include/linux/fpga/fpga-bridge.h    |  9 ++--
+ 6 files changed, 123 insertions(+), 45 deletions(-)
 
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/iio/adc/Kconfig | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-index 15606f237480dacb..88bbcd0e98632273 100644
---- a/drivers/iio/adc/Kconfig
-+++ b/drivers/iio/adc/Kconfig
-@@ -157,7 +157,6 @@ config AT91_SAMA5D2_ADC
- 	tristate "Atmel AT91 SAMA5D2 ADC"
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	depends on HAS_IOMEM
--	depends on HAS_DMA
- 	select IIO_TRIGGERED_BUFFER
- 	help
- 	  Say yes here to build support for Atmel SAMA5D2 ADC which is
-@@ -646,7 +645,6 @@ config SD_ADC_MODULATOR
- config STM32_ADC_CORE
- 	tristate "STMicroelectronics STM32 adc core"
- 	depends on ARCH_STM32 || COMPILE_TEST
--	depends on HAS_DMA
- 	depends on OF
- 	depends on REGULATOR
- 	select IIO_BUFFER
+diff --git a/drivers/fpga/altera-fpga2sdram.c b/drivers/fpga/altera-fpga2sdram.c
+index d4eeb74388da..5a29ab6e3b28 100644
+--- a/drivers/fpga/altera-fpga2sdram.c
++++ b/drivers/fpga/altera-fpga2sdram.c
+@@ -106,6 +106,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct alt_fpga2sdram_data *priv;
++	struct fpga_bridge *br;
+ 	u32 enable;
+ 	struct regmap *sysmgr;
+ 	int ret = 0;
+@@ -131,10 +132,18 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+ 	/* Get f2s bridge configuration saved in handoff register */
+ 	regmap_read(sysmgr, SYSMGR_ISWGRP_HANDOFF3, &priv->mask);
+ 
+-	ret = fpga_bridge_register(dev, F2S_BRIDGE_NAME,
+-				   &altera_fpga2sdram_br_ops, priv);
+-	if (ret)
++	br = fpga_bridge_create(dev, F2S_BRIDGE_NAME,
++				&altera_fpga2sdram_br_ops, priv);
++	if (!br)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, br);
++
++	ret = fpga_bridge_register(br);
++	if (ret) {
++		fpga_bridge_free(br);
+ 		return ret;
++	}
+ 
+ 	dev_info(dev, "driver initialized with handoff %08x\n", priv->mask);
+ 
+@@ -146,7 +155,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+ 				 (enable ? "enabling" : "disabling"));
+ 			ret = _alt_fpga2sdram_enable_set(priv, enable);
+ 			if (ret) {
+-				fpga_bridge_unregister(&pdev->dev);
++				fpga_bridge_unregister(br);
+ 				return ret;
+ 			}
+ 		}
+@@ -157,7 +166,9 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+ 
+ static int alt_fpga_bridge_remove(struct platform_device *pdev)
+ {
+-	fpga_bridge_unregister(&pdev->dev);
++	struct fpga_bridge *br = platform_get_drvdata(pdev);
++
++	fpga_bridge_unregister(br);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
+index 6159cfcf78a2..fa4b693cf4be 100644
+--- a/drivers/fpga/altera-freeze-bridge.c
++++ b/drivers/fpga/altera-freeze-bridge.c
+@@ -221,8 +221,10 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+ 	struct device_node *np = pdev->dev.of_node;
+ 	void __iomem *base_addr;
+ 	struct altera_freeze_br_data *priv;
++	struct fpga_bridge *br;
+ 	struct resource *res;
+ 	u32 status, revision;
++	int ret;
+ 
+ 	if (!np)
+ 		return -ENODEV;
+@@ -254,13 +256,27 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+ 
+ 	priv->base_addr = base_addr;
+ 
+-	return fpga_bridge_register(dev, FREEZE_BRIDGE_NAME,
+-				    &altera_freeze_br_br_ops, priv);
++	br = fpga_bridge_create(dev, FREEZE_BRIDGE_NAME,
++				&altera_freeze_br_br_ops, priv);
++	if (!br)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, br);
++
++	ret = fpga_bridge_register(br);
++	if (ret) {
++		fpga_bridge_free(br);
++		return ret;
++	}
++
++	return 0;
+ }
+ 
+ static int altera_freeze_br_remove(struct platform_device *pdev)
+ {
+-	fpga_bridge_unregister(&pdev->dev);
++	struct fpga_bridge *br = platform_get_drvdata(pdev);
++
++	fpga_bridge_unregister(br);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
+index 406d2f10741f..e4d39f0a7572 100644
+--- a/drivers/fpga/altera-hps2fpga.c
++++ b/drivers/fpga/altera-hps2fpga.c
+@@ -139,6 +139,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct altera_hps2fpga_data *priv;
+ 	const struct of_device_id *of_id;
++	struct fpga_bridge *br;
+ 	u32 enable;
+ 	int ret;
+ 
+@@ -190,11 +191,24 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	ret = fpga_bridge_register(dev, priv->name, &altera_hps2fpga_br_ops,
+-				   priv);
+-err:
++	br = fpga_bridge_create(dev, priv->name, &altera_hps2fpga_br_ops, priv);
++	if (!br) {
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	platform_set_drvdata(pdev, br);
++
++	ret = fpga_bridge_register(br);
+ 	if (ret)
+-		clk_disable_unprepare(priv->clk);
++		goto err_free;
++
++	return 0;
++
++err_free:
++	fpga_bridge_free(br);
++err:
++	clk_disable_unprepare(priv->clk);
+ 
+ 	return ret;
+ }
+@@ -204,7 +218,7 @@ static int alt_fpga_bridge_remove(struct platform_device *pdev)
+ 	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
+ 	struct altera_hps2fpga_data *priv = bridge->priv;
+ 
+-	fpga_bridge_unregister(&pdev->dev);
++	fpga_bridge_unregister(bridge);
+ 
+ 	clk_disable_unprepare(priv->clk);
+ 
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index 31bd2c59c305..2db1573507eb 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -328,28 +328,29 @@ static struct attribute *fpga_bridge_attrs[] = {
+ ATTRIBUTE_GROUPS(fpga_bridge);
+ 
+ /**
+- * fpga_bridge_register - register a fpga bridge driver
++ * fpga_bridge_create - create and initialize a struct fpga_bridge
+  * @dev:	FPGA bridge device from pdev
+  * @name:	FPGA bridge name
+  * @br_ops:	pointer to structure of fpga bridge ops
+  * @priv:	FPGA bridge private data
+  *
+- * Return: 0 for success, error code otherwise.
++ * Return: struct fpga_bridge or NULL
+  */
+-int fpga_bridge_register(struct device *dev, const char *name,
+-			 const struct fpga_bridge_ops *br_ops, void *priv)
++struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
++				       const struct fpga_bridge_ops *br_ops,
++				       void *priv)
+ {
+ 	struct fpga_bridge *bridge;
+ 	int id, ret = 0;
+ 
+ 	if (!name || !strlen(name)) {
+ 		dev_err(dev, "Attempt to register with no name!\n");
+-		return -EINVAL;
++		return NULL;
+ 	}
+ 
+ 	bridge = kzalloc(sizeof(*bridge), GFP_KERNEL);
+ 	if (!bridge)
+-		return -ENOMEM;
++		return NULL;
+ 
+ 	id = ida_simple_get(&fpga_bridge_ida, 0, 0, GFP_KERNEL);
+ 	if (id < 0) {
+@@ -370,40 +371,62 @@ int fpga_bridge_register(struct device *dev, const char *name,
+ 	bridge->dev.parent = dev;
+ 	bridge->dev.of_node = dev->of_node;
+ 	bridge->dev.id = id;
+-	dev_set_drvdata(dev, bridge);
+ 
+ 	ret = dev_set_name(&bridge->dev, "br%d", id);
+ 	if (ret)
+ 		goto error_device;
+ 
+-	ret = device_add(&bridge->dev);
+-	if (ret)
+-		goto error_device;
+-
+-	of_platform_populate(dev->of_node, NULL, NULL, dev);
+-
+-	dev_info(bridge->dev.parent, "fpga bridge [%s] registered\n",
+-		 bridge->name);
+-
+-	return 0;
++	return bridge;
+ 
+ error_device:
+ 	ida_simple_remove(&fpga_bridge_ida, id);
+ error_kfree:
+ 	kfree(bridge);
+ 
+-	return ret;
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(fpga_bridge_create);
++
++/**
++ * fpga_bridge_free - free a fpga bridge and its id
++ * @bridge:	FPGA bridge struct created by fpga_bridge_create
++ */
++void fpga_bridge_free(struct fpga_bridge *bridge)
++{
++	ida_simple_remove(&fpga_bridge_ida, bridge->dev.id);
++	kfree(bridge);
++}
++EXPORT_SYMBOL_GPL(fpga_bridge_free);
++
++/**
++ * fpga_bridge_register - register a fpga bridge
++ * @bridge:	FPGA bridge struct created by fpga_bridge_create
++ *
++ * Return: 0 for success, error code otherwise.
++ */
++int fpga_bridge_register(struct fpga_bridge *bridge)
++{
++	struct device *dev = &bridge->dev;
++	int ret;
++
++	ret = device_add(dev);
++	if (ret)
++		return ret;
++
++	of_platform_populate(dev->of_node, NULL, NULL, dev);
++
++	dev_info(dev->parent, "fpga bridge [%s] registered\n", bridge->name);
++
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(fpga_bridge_register);
+ 
+ /**
+  * fpga_bridge_unregister - unregister a fpga bridge driver
+- * @dev: FPGA bridge device from pdev
++ * @bridge:	FPGA bridge struct created by fpga_bridge_create
+  */
+-void fpga_bridge_unregister(struct device *dev)
++void fpga_bridge_unregister(struct fpga_bridge *bridge)
+ {
+-	struct fpga_bridge *bridge = dev_get_drvdata(dev);
+-
+ 	/*
+ 	 * If the low level driver provides a method for putting bridge into
+ 	 * a desired state upon unregister, do it.
+@@ -419,8 +442,7 @@ static void fpga_bridge_dev_release(struct device *dev)
+ {
+ 	struct fpga_bridge *bridge = to_fpga_bridge(dev);
+ 
+-	ida_simple_remove(&fpga_bridge_ida, bridge->dev.id);
+-	kfree(bridge);
++	fpga_bridge_free(bridge);
+ }
+ 
+ static int __init fpga_bridge_dev_init(void)
+diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
+index 0d7743089414..07ba1539e82c 100644
+--- a/drivers/fpga/xilinx-pr-decoupler.c
++++ b/drivers/fpga/xilinx-pr-decoupler.c
+@@ -94,6 +94,7 @@ MODULE_DEVICE_TABLE(of, xlnx_pr_decoupler_of_match);
+ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+ {
+ 	struct xlnx_pr_decoupler_data *priv;
++	struct fpga_bridge *br;
+ 	int err;
+ 	struct resource *res;
+ 
+@@ -120,16 +121,27 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+ 
+ 	clk_disable(priv->clk);
+ 
+-	err = fpga_bridge_register(&pdev->dev, "Xilinx PR Decoupler",
+-				   &xlnx_pr_decoupler_br_ops, priv);
++	br = fpga_bridge_create(&pdev->dev, "Xilinx PR Decoupler",
++				&xlnx_pr_decoupler_br_ops, priv);
++	if (!br) {
++		err = -ENOMEM;
++		goto err_clk;
++	}
++
++	platform_set_drvdata(pdev, br);
+ 
++	err = fpga_bridge_register(br);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "unable to register Xilinx PR Decoupler");
+-		clk_unprepare(priv->clk);
+-		return err;
++		goto err_clk;
+ 	}
+ 
+ 	return 0;
++
++err_clk:
++	clk_unprepare(priv->clk);
++
++	return err;
+ }
+ 
+ static int xlnx_pr_decoupler_remove(struct platform_device *pdev)
+@@ -137,7 +149,7 @@ static int xlnx_pr_decoupler_remove(struct platform_device *pdev)
+ 	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
+ 	struct xlnx_pr_decoupler_data *p = bridge->priv;
+ 
+-	fpga_bridge_unregister(&pdev->dev);
++	fpga_bridge_unregister(bridge);
+ 
+ 	clk_unprepare(p->clk);
+ 
+diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
+index 3694821a6d2d..ce550fcf6360 100644
+--- a/include/linux/fpga/fpga-bridge.h
++++ b/include/linux/fpga/fpga-bridge.h
+@@ -62,8 +62,11 @@ int of_fpga_bridge_get_to_list(struct device_node *np,
+ 			       struct fpga_image_info *info,
+ 			       struct list_head *bridge_list);
+ 
+-int fpga_bridge_register(struct device *dev, const char *name,
+-			 const struct fpga_bridge_ops *br_ops, void *priv);
+-void fpga_bridge_unregister(struct device *dev);
++struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
++				       const struct fpga_bridge_ops *br_ops,
++				       void *priv);
++void fpga_bridge_free(struct fpga_bridge *br);
++int fpga_bridge_register(struct fpga_bridge *br);
++void fpga_bridge_unregister(struct fpga_bridge *br);
+ 
+ #endif /* _LINUX_FPGA_BRIDGE_H */
 -- 
-2.7.4
+2.17.0
