@@ -1,54 +1,48 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 01/14] fpga: region: don't use drvdata in common fpga code
-Date: Wed, 16 May 2018 18:49:54 -0500
-Message-Id: <20180516235007.3951-2-atull@kernel.org>
-In-Reply-To: <20180516235007.3951-1-atull@kernel.org>
-References: <20180516235007.3951-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
+Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v5 02/28] fpga: mgr: add region_id to fpga_image_info
+Date: Wed,  2 May 2018 10:50:05 +0800
+Message-Id: <1525229431-3087-3-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-Changes to fpga_region_register function to not set drvdata.
+This patch adds region_id to fpga_image_info data structure, it
+allows driver to pass region id information to fpga-mgr via
+fpga_image_info for fpga reconfiguration function.
 
-Setting drvdata is fine for DT based devices that will have one region
-per platform device.  However PCIe based devices may have multiple
-FPGA regions under one PCIe device.  Without these changes, the PCIe
-solution has to create an extra device for each child region to hold
-drvdata.
-
-Signed-off-by: Alan Tull <atull@kernel.org>
-Reported-by: Jiuyue Ma <majiuyue@huawei.com>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/fpga-region.c    | 1 -
- drivers/fpga/of-fpga-region.c | 1 +
- 2 files changed, 1 insertion(+), 1 deletion(-)
+v3: add one line comment for region_id
+v4: add Acked-by from Moritz and Alan.
+---
+ include/linux/fpga/fpga-mgr.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index cb0603e..f634a8e 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -183,7 +183,6 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
- 	region->dev.parent = dev;
- 	region->dev.of_node = dev->of_node;
- 	region->dev.id = id;
--	dev_set_drvdata(dev, region);
- 
- 	ret = dev_set_name(&region->dev, "region%d", id);
- 	if (ret)
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 119ff75..35e7e8c 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -438,6 +438,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 		goto eprobe_mgr_put;
- 
- 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
-+	dev_set_drvdata(dev, region);
- 
- 	dev_info(dev, "FPGA Region probed\n");
- 
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index 1266c11..eecfca5 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -88,6 +88,7 @@ enum fpga_mgr_states {
+  * @sgt: scatter/gather table containing FPGA image
+  * @buf: contiguous buffer containing FPGA image
+  * @count: size of buf
++ * @region_id: id of target region
+  * @dev: device that owns this
+  * @overlay: Device Tree overlay
+  */
+@@ -100,6 +101,7 @@ struct fpga_image_info {
+ 	struct sg_table *sgt;
+ 	const char *buf;
+ 	size_t count;
++	int region_id;
+ 	struct device *dev;
+ #ifdef CONFIG_OF
+ 	struct device_node *overlay;
 -- 
-2.7.4
+1.8.3.1
