@@ -1,93 +1,246 @@
-Return-Path: <mchehab+samsung@kernel.org>
-Return-Path: <mchehab+samsung@kernel.org>
-Date: Sat, 5 May 2018 09:47:43 -0300
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Subject: Re: [PATCH v3 12/20] media: Remove depends on HAS_DMA in case of
- platform dependency
-Message-ID: <20180505094743.4d201ba0@vento.lan>
-In-Reply-To: <1523987360-18760-13-git-send-email-geert@linux-m68k.org>
-References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-	<1523987360-18760-13-git-send-email-geert@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v5 23/28] fpga: dfl: add FPGA Accelerated Function Unit driver basic framework
+Date: Wed,  2 May 2018 10:50:26 +0800
+Message-Id: <1525229431-3087-24-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Geert,
+On DFL FPGA devices, the Accelerated Function Unit (AFU), can be
+reprogrammed for different functions. It connects to the FPGA
+infrastructure (static FPGA region) via a Port. Port CSRs are
+implemented separately from the AFU CSRs to provide control and
+status of the Port. Once valid PR bitstream is programmed into
+the AFU, it allows access to the AFU CSRs in the AFU MMIO space.
 
-Em Tue, 17 Apr 2018 19:49:12 +0200
-Geert Uytterhoeven <geert@linux-m68k.org> escreveu:
+This patch only implements basic driver framework for AFU, including
+device file operation framework.
 
-> Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-> symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+---
+v3: rename driver to dfl-afu-main.c
+v4: rename to dfl-port and fix SPDX license issue.
+v5: rebase, and add Acked-by from Alan.
+    fix uinit order in remove function.
+---
+ drivers/fpga/Kconfig        |   9 +++
+ drivers/fpga/Makefile       |   2 +
+ drivers/fpga/dfl-afu-main.c | 162 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 173 insertions(+)
+ create mode 100644 drivers/fpga/dfl-afu-main.c
 
-Applying a patch like that is hard, as there are lots of churn at
-the code. That's against latest media upstream:
-
-checking file drivers/media/pci/intel/ipu3/Kconfig
-Hunk #1 FAILED at 4.
-1 out of 1 hunk FAILED
-checking file drivers/media/pci/solo6x10/Kconfig
-checking file drivers/media/pci/sta2x11/Kconfig
-Hunk #1 FAILED at 1.
-1 out of 1 hunk FAILED
-checking file drivers/media/pci/tw5864/Kconfig
-checking file drivers/media/pci/tw686x/Kconfig
-checking file drivers/media/platform/Kconfig
-Hunk #2 FAILED at 63.
-Hunk #3 succeeded at 81 (offset 1 line).
-Hunk #4 succeeded at 91 (offset 1 line).
-Hunk #5 succeeded at 101 (offset 1 line).
-Hunk #6 succeeded at 111 (offset 1 line).
-Hunk #7 succeeded at 124 (offset 1 line).
-Hunk #8 succeeded at 142 (offset 1 line).
-Hunk #9 succeeded at 169 (offset 1 line).
-Hunk #10 succeeded at 186 (offset 1 line).
-Hunk #11 succeeded at 197 (offset 1 line).
-Hunk #12 succeeded at 213 (offset 1 line).
-Hunk #13 succeeded at 227 (offset 1 line).
-Hunk #14 succeeded at 254 (offset 1 line).
-Hunk #15 succeeded at 265 (offset 1 line).
-Hunk #16 succeeded at 275 (offset 1 line).
-Hunk #17 succeeded at 284 (offset 1 line).
-Hunk #18 succeeded at 295 (offset 1 line).
-Hunk #19 succeeded at 303 (offset 1 line).
-Hunk #20 succeeded at 312 (offset 1 line).
-Hunk #21 succeeded at 338 (offset 1 line).
-Hunk #22 succeeded at 383 (offset 1 line).
-Hunk #23 succeeded at 397 (offset 1 line).
-Hunk #24 succeeded at 422 (offset 1 line).
-Hunk #25 succeeded at 435 (offset 1 line).
-Hunk #26 succeeded at 452 (offset 1 line).
-Hunk #27 succeeded at 470 (offset 1 line).
-Hunk #28 succeeded at 612 (offset 1 line).
-1 out of 28 hunks FAILED
-
-> In most cases this other symbol is an architecture or platform specific
-> symbol, or PCI.
-> 
-> Generic symbols and drivers without platform dependencies keep their
-> dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-> cannot work anyway.
-
-Actually, depends on HAS_DMA was introduced on media because builds
-were failing otherwise. We started adding it before the addition 
-of COMPILE_TEST.
-
-Can we just remove all HAS_DMA Kconfig dependencies as a hole from the
-entire media subsystem, with something like:
-
-	$ for i in $(find drivers/media -name Kconfig) $(find drivers/staging/media -name Kconfig); do sed '/depends on HAS_DMA/d;s/ && HAS_DMA//g' -i $i; done
-
-Or would it cause build issues?
-
-Regards,
-Mauro
-
-
-
-
-Thanks,
-Mauro
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 65d54a4..4c6b45f 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -168,6 +168,15 @@ config FPGA_DFL_FME_REGION
+ 	help
+ 	  Say Y to enable FPGA Region driver for FPGA Management Engine.
+ 
++config FPGA_DFL_AFU
++	tristate "FPGA DFL AFU Driver"
++	depends on FPGA_DFL
++	help
++	  This is the driver for FPGA Accelerated Function Unit (AFU) which
++	  implements AFU and Port management features. A User AFU connects
++	  to the FPGA infrastructure via a Port. There may be more than 1
++	  Port/AFU per DFL based FPGA device.
++
+ config FPGA_DFL_PCI
+ 	tristate "FPGA Device Feature List (DFL) PCIe Device Driver"
+ 	depends on PCI && FPGA_DFL
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index 163894e..5c9607b 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -34,8 +34,10 @@ obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
+ obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= dfl-fme-mgr.o
+ obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= dfl-fme-br.o
+ obj-$(CONFIG_FPGA_DFL_FME_REGION)	+= dfl-fme-region.o
++obj-$(CONFIG_FPGA_DFL_AFU)		+= dfl-afu.o
+ 
+ dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
++dfl-afu-objs := dfl-afu-main.o
+ 
+ # Drivers for FPGAs which implement DFL
+ obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+new file mode 100644
+index 0000000..35bec47
+--- /dev/null
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -0,0 +1,162 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Driver for FPGA Accelerated Function Unit (AFU)
++ *
++ * Copyright (C) 2017 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Wu Hao <hao.wu@intel.com>
++ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++
++#include "dfl.h"
++
++static int port_hdr_init(struct platform_device *pdev,
++			 struct dfl_feature *feature)
++{
++	dev_dbg(&pdev->dev, "PORT HDR Init.\n");
++
++	return 0;
++}
++
++static void port_hdr_uinit(struct platform_device *pdev,
++			   struct dfl_feature *feature)
++{
++	dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
++}
++
++static const struct dfl_feature_ops port_hdr_ops = {
++	.init = port_hdr_init,
++	.uinit = port_hdr_uinit,
++};
++
++static struct dfl_feature_driver port_feature_drvs[] = {
++	{
++		.id = PORT_FEATURE_ID_HEADER,
++		.ops = &port_hdr_ops,
++	},
++	{
++		.ops = NULL,
++	}
++};
++
++static int afu_open(struct inode *inode, struct file *filp)
++{
++	struct platform_device *fdev = dfl_fpga_inode_to_feature_dev(inode);
++	struct dfl_feature_platform_data *pdata;
++	int ret;
++
++	pdata = dev_get_platdata(&fdev->dev);
++	if (WARN_ON(!pdata))
++		return -ENODEV;
++
++	ret = dfl_feature_dev_use_begin(pdata);
++	if (ret)
++		return ret;
++
++	dev_dbg(&fdev->dev, "Device File Open\n");
++	filp->private_data = fdev;
++
++	return 0;
++}
++
++static int afu_release(struct inode *inode, struct file *filp)
++{
++	struct platform_device *pdev = filp->private_data;
++	struct dfl_feature_platform_data *pdata;
++
++	dev_dbg(&pdev->dev, "Device File Release\n");
++
++	pdata = dev_get_platdata(&pdev->dev);
++
++	dfl_feature_dev_use_end(pdata);
++
++	return 0;
++}
++
++static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
++{
++	struct platform_device *pdev = filp->private_data;
++	struct dfl_feature_platform_data *pdata;
++	struct dfl_feature *f;
++	long ret;
++
++	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
++
++	pdata = dev_get_platdata(&pdev->dev);
++
++	switch (cmd) {
++	default:
++		/*
++		 * Let sub-feature's ioctl function to handle the cmd
++		 * Sub-feature's ioctl returns -ENODEV when cmd is not
++		 * handled in this sub feature, and returns 0 and other
++		 * error code if cmd is handled.
++		 */
++		dfl_fpga_dev_for_each_feature(pdata, f)
++			if (f->ops && f->ops->ioctl) {
++				ret = f->ops->ioctl(pdev, f, cmd, arg);
++				if (ret != -ENODEV)
++					return ret;
++			}
++	}
++
++	return -EINVAL;
++}
++
++static const struct file_operations afu_fops = {
++	.owner = THIS_MODULE,
++	.open = afu_open,
++	.release = afu_release,
++	.unlocked_ioctl = afu_ioctl,
++};
++
++static int afu_probe(struct platform_device *pdev)
++{
++	int ret;
++
++	dev_dbg(&pdev->dev, "%s\n", __func__);
++
++	ret = dfl_fpga_dev_feature_init(pdev, port_feature_drvs);
++	if (ret)
++		return ret;
++
++	ret = dfl_fpga_register_dev_ops(pdev, &afu_fops, THIS_MODULE);
++	if (ret)
++		dfl_fpga_dev_feature_uinit(pdev);
++
++	return ret;
++}
++
++static int afu_remove(struct platform_device *pdev)
++{
++	dev_dbg(&pdev->dev, "%s\n", __func__);
++
++	dfl_fpga_unregister_dev_ops(pdev);
++	dfl_fpga_dev_feature_uinit(pdev);
++
++	return 0;
++}
++
++static struct platform_driver afu_driver = {
++	.driver	= {
++		.name    = DFL_FPGA_FEATURE_DEV_PORT,
++	},
++	.probe   = afu_probe,
++	.remove  = afu_remove,
++};
++
++module_platform_driver(afu_driver);
++
++MODULE_DESCRIPTION("FPGA Accelerated Function Unit driver");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:dfl-port");
+-- 
+1.8.3.1
