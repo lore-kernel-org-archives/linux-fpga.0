@@ -1,150 +1,176 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 09/14] Documentation: fpga: move fpga overview to driver-api
-Date: Wed, 16 May 2018 18:50:02 -0500
-Message-Id: <20180516235007.3951-10-atull@kernel.org>
-In-Reply-To: <20180516235007.3951-1-atull@kernel.org>
-References: <20180516235007.3951-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
+Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v5 15/28] fpga: dfl: fme: add header sub feature support
+Date: Wed,  2 May 2018 10:50:18 +0800
+Message-Id: <1525229431-3087-16-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Start of moving Documentation/fpga/*.txt to driver-api, including:
- - Add new directory driver-api/fpga
- - Add new file driver-api/fpga/index.rst
- - Add driver-api/fpga to driver-api/index.rst
- - Move Documentation/fpga/overview.txt to driver-api/fpga/intro.rst
- - Formatting and rewrites so that intro.rst will build cleanly
-   and form a good introduction to the rest of the docs to be added.
+From: Kang Luwei <luwei.kang@intel.com>
 
-Signed-off-by: Alan Tull <atull@kernel.org>
+The Header Register set is always present for FPGA Management Engine (FME),
+this patch implements init and uinit function for header sub feature and
+introduces several read-only sysfs interfaces for the capability and
+status.
+
+Sysfs interfaces:
+* /sys/class/fpga_region/<regionX>/<dfl-fme.x>/ports_num
+  Read-only. Number of ports implemented
+
+* /sys/class/fpga_region/<regionX>/<dfl-fme.x>/bitstream_id
+  Read-only. Bitstream (static FPGA region) identifier number. It contains
+  the detailed version and other information of this static FPGA region.
+
+* /sys/class/fpga_region/<regionX>/<dfl-fme.x>/bitstream_metadata
+  Read-only. Bitstream (static FPGA region) meta data. It contains the
+  synthesis date, seed and other information of this static FPGA region.
+
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Kang Luwei <luwei.kang@intel.com>
+Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
 ---
- Documentation/driver-api/fpga/index.rst | 10 ++++++
- Documentation/driver-api/fpga/intro.rst | 54 +++++++++++++++++++++++++++++++++
- Documentation/driver-api/index.rst      |  1 +
- Documentation/fpga/overview.txt         | 23 --------------
- 4 files changed, 65 insertions(+), 23 deletions(-)
- create mode 100644 Documentation/driver-api/fpga/index.rst
- create mode 100644 Documentation/driver-api/fpga/intro.rst
- delete mode 100644 Documentation/fpga/overview.txt
+v2: add sysfs documentation
+v3: rename driver to fpga-dfl-fme.
+    improve sysfs doc and commit description.
+    replace bitfield.
+v4: rebase and switch to use id for sub feature matching.
+    add more description for bitstream_id/metadata.
+v5: rebase due to DFL framework API naming changes.
+    replace "blue bitstream" terminology.
+    fix one typo in sysfs doc and add acked-by from Alan.
+---
+ Documentation/ABI/testing/sysfs-platform-dfl-fme | 23 ++++++++
+ drivers/fpga/dfl-fme-main.c                      | 68 ++++++++++++++++++++++++
+ 2 files changed, 91 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-platform-dfl-fme
 
-diff --git a/Documentation/driver-api/fpga/index.rst b/Documentation/driver-api/fpga/index.rst
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
 new file mode 100644
-index 0000000..71e568a
+index 0000000..2dbfba7
 --- /dev/null
-+++ b/Documentation/driver-api/fpga/index.rst
-@@ -0,0 +1,10 @@
-+==============
-+FPGA Subsystem
-+==============
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+@@ -0,0 +1,23 @@
++What:		/sys/bus/platform/devices/dfl-fme.0/ports_num
++Date:		May 2018
++KernelVersion:  4.18
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. One DFL FPGA device may have more than 1
++		port/Accelerator Function Unit (AFU). It returns the
++		number of ports on the FPGA device when read it.
 +
-+:Author: Alan Tull
++What:		/sys/bus/platform/devices/dfl-fme.0/bitstream_id
++Date:		May 2018
++KernelVersion:  4.18
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns Bitstream (static FPGA region)
++		identifier number, which includes the detailed version
++		and other information of this static FPGA region.
 +
-+.. toctree::
-+   :maxdepth: 2
-+
-+   intro
-diff --git a/Documentation/driver-api/fpga/intro.rst b/Documentation/driver-api/fpga/intro.rst
-new file mode 100644
-index 0000000..51cd81d
---- /dev/null
-+++ b/Documentation/driver-api/fpga/intro.rst
-@@ -0,0 +1,54 @@
-+Introduction
-+============
-+
-+The FPGA subsystem supports reprogramming FPGAs dynamically under
-+Linux.  Some of the core intentions of the FPGA subsystems are:
-+
-+* The FPGA subsystem is vendor agnostic.
-+
-+* The FPGA subsystem separates upper layers (userspace interfaces and
-+  enumeration) from lower layers that know how to program a specific
-+  FPGA.
-+
-+* Code should not be shared between upper and lower layers.  This
-+  should go without saying.  If that seems necessary, there's probably
-+  framework functionality that that can be added that will benefit
-+  other users.  Write the linux-fpga mailing list and maintainers and
-+  seek out a solution that expands the framework for broad reuse.
-+
-+* Generally, when adding code, think of the future.  Plan for re-use.
-+
-+The framework in the kernel is divided into:
-+
-+FPGA Manager
-+------------
-+
-+If you are adding a new FPGA or a new method of programming a FPGA,
-+this is the subsystem for you.  Low level FPGA manager drivers contain
-+the knowledge of how to program a specific device.  This subsystem
-+includes the framework in fpga-mgr.c and the low level drivers that
-+are registered with it.
-+
-+FPGA Bridge
-+-----------
-+
-+FPGA Bridges prevent spurious signals from going out of a FPGA or a
-+region of a FPGA during programming.  They are disabled before
-+programming begins and re-enabled afterwards.  An FPGA bridge may be
-+actual hard hardware that gates a bus to a cpu or a soft ("freeze")
-+bridge in FPGA fabric that surrounds a partial reconfiguration region
-+of an FPGA.  This subsystem includes fpga-bridge.c and the low level
-+drivers that are registered with it.
-+
-+FPGA Region
-+-----------
-+
-+If you are adding a new interface to the FPGA framework, add it on top
-+of a FPGA region to allow the most reuse of your interface.
-+
-+The FPGA Region framework (fpga-region.c) associates managers and
-+bridges as reconfigurable regions.  A region may refer to the whole
-+FPGA in full reconfiguration or to a partial reconfiguration region.
-+
-+The Device Tree FPGA Region support (of-fpga-region.c) handles
-+reprogramming FPGAs when device tree overlays are applied.
-diff --git a/Documentation/driver-api/index.rst b/Documentation/driver-api/index.rst
-index 7b12b6b..6d9f2f9 100644
---- a/Documentation/driver-api/index.rst
-+++ b/Documentation/driver-api/index.rst
-@@ -52,6 +52,7 @@ available subsections can be seen below.
-    dmaengine/index
-    slimbus
-    soundwire/index
-+   fpga/index
++What:		/sys/bus/platform/devices/dfl-fme.0/bitstream_metadata
++Date:		May 2018
++KernelVersion:  4.18
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns Bitstream (static FPGA region) meta
++		data, which includes the synthesis date, seed and other
++		information of this static FPGA region.
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 000651f..368f1fc 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -19,10 +19,77 @@
  
- .. only::  subproject and html
+ #include "dfl.h"
  
-diff --git a/Documentation/fpga/overview.txt b/Documentation/fpga/overview.txt
-deleted file mode 100644
-index 0f1236e..0000000
---- a/Documentation/fpga/overview.txt
-+++ /dev/null
-@@ -1,23 +0,0 @@
--Linux kernel FPGA support
--
--Alan Tull 2017
--
--The main point of this project has been to separate the out the upper layers
--that know when to reprogram a FPGA from the lower layers that know how to
--reprogram a specific FPGA device.  The intention is to make this manufacturer
--agnostic, understanding that of course the FPGA images are very device specific
--themselves.
--
--The framework in the kernel includes:
--* low level FPGA manager drivers that know how to program a specific device
--* the fpga-mgr framework they are registered with
--* low level FPGA bridge drivers for hard/soft bridges which are intended to
--  be disable during FPGA programming
--* the fpga-bridge framework they are registered with
--* the fpga-region framework which associates and controls managers and bridges
--  as reconfigurable regions
--* the of-fpga-region support for reprogramming FPGAs when device tree overlays
--  are applied.
--
--I would encourage you the user to add code that creates FPGA regions rather
--that trying to control managers and bridges separately.
++static ssize_t ports_num_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_CAP_NUM_PORTS, v));
++}
++static DEVICE_ATTR_RO(ports_num);
++
++/*
++ * Bitstream (static FPGA region) identifier number. It contains the
++ * detailed version and other information of this static FPGA region.
++ */
++static ssize_t bitstream_id_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_BITSTREAM_ID);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n", (unsigned long long)v);
++}
++static DEVICE_ATTR_RO(bitstream_id);
++
++/*
++ * Bitstream (static FPGA region) meta data. It contains the synthesis
++ * date, seed and other information of this static FPGA region.
++ */
++static ssize_t bitstream_metadata_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_BITSTREAM_MD);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n", (unsigned long long)v);
++}
++static DEVICE_ATTR_RO(bitstream_metadata);
++
++static const struct attribute *fme_hdr_attrs[] = {
++	&dev_attr_ports_num.attr,
++	&dev_attr_bitstream_id.attr,
++	&dev_attr_bitstream_metadata.attr,
++	NULL,
++};
++
+ static int
+ fme_hdr_init(struct platform_device *pdev, struct dfl_feature *feature)
+ {
++	void __iomem *base = feature->ioaddr;
++	int ret;
++
+ 	dev_dbg(&pdev->dev, "FME HDR Init.\n");
++	dev_dbg(&pdev->dev, "FME cap %llx.\n",
++		(unsigned long long)readq(base + FME_HDR_CAP));
++
++	ret = sysfs_create_files(&pdev->dev.kobj, fme_hdr_attrs);
++	if (ret)
++		return ret;
+ 
+ 	return 0;
+ }
+@@ -31,6 +98,7 @@
+ fme_hdr_uinit(struct platform_device *pdev, struct dfl_feature *feature)
+ {
+ 	dev_dbg(&pdev->dev, "FME HDR UInit.\n");
++	sysfs_remove_files(&pdev->dev.kobj, fme_hdr_attrs);
+ }
+ 
+ static const struct dfl_feature_ops fme_hdr_ops = {
 -- 
-2.7.4
+1.8.3.1
