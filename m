@@ -1,61 +1,35 @@
-Return-Path: <SRS0=XHe7=IL=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=XHe7=IL=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv5 5/8] arm64: dts: stratix10: add fpga manager and region
-Date: Thu, 24 May 2018 11:33:17 -0500
-Message-Id: <1527179600-26441-6-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1527179600-26441-1-git-send-email-richard.gong@linux.intel.com>
-References: <1527179600-26441-1-git-send-email-richard.gong@linux.intel.com>
-To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
+Return-Path: <SRS0=cuKp=HW=8bytes.org=joro@kernel.org>
+Return-Path: <SRS0=cuKp=HW=8bytes.org=joro@kernel.org>
+Date: Thu, 3 May 2018 15:02:44 +0200
+From: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH v3 09/20] iommu: Remove depends on HAS_DMA in case of
+ platform dependency
+Message-ID: <20180503130244.ifal7n4tyxvekjnj@8bytes.org>
+References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+ <1523987360-18760-10-git-send-email-geert@linux-m68k.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1523987360-18760-10-git-send-email-geert@linux-m68k.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, Kalle Valo <kvalo@codeaurora.org>, Ohad Ben-Cohen <ohad@wizery.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alan Tull <atull@kernel.org>
+On Tue, Apr 17, 2018 at 07:49:09PM +0200, Geert Uytterhoeven wrote:
+> Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+> symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+> In most cases this other symbol is an architecture or platform specific
+> symbol, or PCI.
+> 
+> Generic symbols and drivers without platform dependencies keep their
+> dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+> cannot work anyway.
+> 
+> This simplifies the dependencies, and allows to improve compile-testing.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Reviewed-by: Mark Brown <broonie@kernel.org>
+> Acked-by: Robin Murphy <robin.murphy@arm.com>
+> Acked-by: Joerg Roedel <jroedel@suse.de>
 
-Add the Stratix10 FPGA manager and a FPGA region to the
-device tree.
-
-Signed-off-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Richard Gong <richard.gong@intel.com>
----
-v2: this patch is added in patch set version 2
-v3: change to put fpga_mgr node under firmware/svc node
-v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
-    add Richard's signed-off-by
-v5: no change
----
- arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-index c257287..8f8f409 100644
---- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-+++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-@@ -106,6 +106,14 @@
- 		interrupt-parent = <&intc>;
- 		ranges = <0 0 0 0xffffffff>;
- 
-+		base_fpga_region {
-+			#address-cells = <0x1>;
-+			#size-cells = <0x1>;
-+
-+			compatible = "fpga-region";
-+			fpga-mgr = <&fpga_mgr>;
-+		};
-+
- 		clkmgr: clock-controller@ffd10000 {
- 			compatible = "intel,stratix10-clkmgr";
- 			reg = <0xffd10000 0x1000>;
-@@ -506,6 +514,10 @@
- 				compatible = "intel,stratix10-svc";
- 				method = "smc";
- 				memory-region = <&service_reserved>;
-+
-+				fpga_mgr: fpga-mgr {
-+					compatible = "intel,stratix10-soc-fpga-mgr";
-+				};
- 			};
- 		};
- 	};
--- 
-2.7.4
+Applied, thanks.
