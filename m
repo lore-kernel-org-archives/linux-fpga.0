@@ -1,257 +1,96 @@
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=JJZa=HX=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=JJZa=HX=intel.com=hao.wu@kernel.org>
+Date: Fri, 4 May 2018 08:15:28 +0800
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 09/28] fpga: dfl: add feature device infrastructure
-Date: Wed,  2 May 2018 10:50:12 +0800
-Message-Id: <1525229431-3087-10-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+Subject: Re: [PATCH v5 00/28] FPGA Device Feature List (DFL) Device Drivers
+Message-ID: <20180504001528.GA31101@hao-dev>
 References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Xiao Guangrong <guangrong.xiao@linux.intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
+ <CANk1AXSFQzBoZWQu4R9aYQSXFbr76UQ_-39ENe5hSOncKuDq+A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXSFQzBoZWQu4R9aYQSXFbr76UQ_-39ENe5hSOncKuDq+A@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+On Thu, May 03, 2018 at 04:14:48PM -0500, Alan Tull wrote:
+> On Tue, May 1, 2018 at 9:50 PM, Wu Hao <hao.wu@intel.com> wrote:
+> > Hi All,
+> >
+> > Here is v5 patch-series adding drivers for FPGA DFL devices.
+> >
+> > This patch series provides a common framework to support FPGA Device Feature
+> > List (DFL), and also feature dev drivers under this DFL framework to provide
+> > interfaces for userspace applications to configure, enumerate, open, and
+> > access FPGA accelerators on DFL based FPGA device and enables system level
+> > management functions such as FPGA partial reconfiguration, power management
+> > and virtualization.
+> 
+> Hi Hao,
+> 
 
-This patch abstracts the common operations of the sub features, and defines
-the feature_ops data structure, including init, uinit and ioctl function
-pointers. And this patch adds some common helper functions for FME and AFU
-drivers, e.g dfl_feature_dev_use_begin/end which are used to ensure
-exclusive usage of the feature device file.
+Hi Alan,
 
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Kang Luwei <luwei.kang@intel.com>
-Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
-v2: rebased
-v3: use const for feature_ops.
-    replace pci related function.
-v4: rebase and add more comments in code.
-v5: remove useless WARN_ON().
-    reorder declarations in functions per suggestion from Moritz.
-    add "dfl_" prefix to functions and data structure.
----
- drivers/fpga/dfl.c | 57 +++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl.h | 82 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 138 insertions(+), 1 deletion(-)
+Thanks for your review on this patch set.
 
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 1e06efb..c4c47d6 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -74,6 +74,63 @@ static enum dfl_id_type feature_dev_id_type(struct platform_device *pdev)
- 	return DFL_ID_MAX;
- }
- 
-+void dfl_fpga_dev_feature_uinit(struct platform_device *pdev)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct dfl_feature *feature;
-+
-+	dfl_fpga_dev_for_each_feature(pdata, feature)
-+		if (feature->ops) {
-+			feature->ops->uinit(pdev, feature);
-+			feature->ops = NULL;
-+		}
-+}
-+EXPORT_SYMBOL_GPL(dfl_fpga_dev_feature_uinit);
-+
-+static int dfl_feature_instance_init(struct platform_device *pdev,
-+				     struct dfl_feature_platform_data *pdata,
-+				     struct dfl_feature *feature,
-+				     struct dfl_feature_driver *drv)
-+{
-+	int ret;
-+
-+	ret = drv->ops->init(pdev, feature);
-+	if (ret)
-+		return ret;
-+
-+	feature->ops = drv->ops;
-+
-+	return ret;
-+}
-+
-+int dfl_fpga_dev_feature_init(struct platform_device *pdev,
-+			      struct dfl_feature_driver *feature_drvs)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct dfl_feature_driver *drv = feature_drvs;
-+	struct dfl_feature *feature;
-+	int ret;
-+
-+	while (drv->ops) {
-+		dfl_fpga_dev_for_each_feature(pdata, feature) {
-+			/* match feature and drv using id */
-+			if (feature->id == drv->id) {
-+				ret = dfl_feature_instance_init(pdev, pdata,
-+								feature, drv);
-+				if (ret)
-+					goto exit;
-+			}
-+		}
-+		drv++;
-+	}
-+
-+	return 0;
-+exit:
-+	dfl_fpga_dev_feature_uinit(pdev);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dfl_fpga_dev_feature_init);
-+
- struct dfl_chardev_info {
- 	const char *name;
- 	dev_t devt;
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 2b6aaef..27f7a74 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -132,6 +132,17 @@
- #define PORT_CTRL_SFTRST_ACK	BIT_ULL(4)		/* HW ack for reset */
- 
- /**
-+ * struct dfl_feature_driver - sub feature's driver
-+ *
-+ * @id: sub feature id.
-+ * @ops: ops of this sub feature.
-+ */
-+struct dfl_feature_driver {
-+	u64 id;
-+	const struct dfl_feature_ops *ops;
-+};
-+
-+/**
-  * struct dfl_feature - sub feature of the feature devices
-  *
-  * @id: sub feature id.
-@@ -139,13 +150,17 @@
-  *		    this index is used to find its mmio resource from the
-  *		    feature dev (platform device)'s reources.
-  * @ioaddr: mapped mmio resource address.
-+ * @ops: ops of this sub feature.
-  */
- struct dfl_feature {
- 	u64 id;
- 	int resource_index;
- 	void __iomem *ioaddr;
-+	const struct dfl_feature_ops *ops;
- };
- 
-+#define DEV_STATUS_IN_USE	0
-+
- /**
-  * struct dfl_feature_platform_data - platform data for feature devices
-  *
-@@ -156,6 +171,8 @@ struct dfl_feature {
-  * @dfl_cdev: ptr to container device.
-  * @disable_count: count for port disable.
-  * @num: number for sub features.
-+ * @dev_status: dev status (e.g DEV_STATUS_IN_USE).
-+ * @private: ptr to feature dev private data.
-  * @features: sub features of this feature dev.
-  */
- struct dfl_feature_platform_data {
-@@ -165,11 +182,49 @@ struct dfl_feature_platform_data {
- 	struct platform_device *dev;
- 	struct dfl_fpga_cdev *dfl_cdev;
- 	unsigned int disable_count;
--
-+	unsigned long dev_status;
-+	void *private;
- 	int num;
- 	struct dfl_feature features[0];
- };
- 
-+static inline
-+int dfl_feature_dev_use_begin(struct dfl_feature_platform_data *pdata)
-+{
-+	/* Test and set IN_USE flags to ensure file is exclusively used */
-+	if (test_and_set_bit_lock(DEV_STATUS_IN_USE, &pdata->dev_status))
-+		return -EBUSY;
-+
-+	return 0;
-+}
-+
-+static inline
-+void dfl_feature_dev_use_end(struct dfl_feature_platform_data *pdata)
-+{
-+	clear_bit_unlock(DEV_STATUS_IN_USE, &pdata->dev_status);
-+}
-+
-+static inline
-+void dfl_fpga_pdata_set_private(struct dfl_feature_platform_data *pdata,
-+				void *private)
-+{
-+	pdata->private = private;
-+}
-+
-+static inline
-+void *dfl_fpga_pdata_get_private(struct dfl_feature_platform_data *pdata)
-+{
-+	return pdata->private;
-+}
-+
-+struct dfl_feature_ops {
-+	int (*init)(struct platform_device *pdev, struct dfl_feature *feature);
-+	void (*uinit)(struct platform_device *pdev,
-+		      struct dfl_feature *feature);
-+	long (*ioctl)(struct platform_device *pdev, struct dfl_feature *feature,
-+		      unsigned int cmd, unsigned long arg);
-+};
-+
- #define DFL_FPGA_FEATURE_DEV_FME		"dfl-fme"
- #define DFL_FPGA_FEATURE_DEV_PORT		"dfl-port"
- 
-@@ -179,6 +234,10 @@ static inline int dfl_feature_platform_data_size(const int num)
- 		num * sizeof(struct dfl_feature);
- }
- 
-+void dfl_fpga_dev_feature_uinit(struct platform_device *pdev);
-+int dfl_fpga_dev_feature_init(struct platform_device *pdev,
-+			      struct dfl_feature_driver *feature_drvs);
-+
- enum dfl_fpga_devt_type {
- 	DFL_FPGA_DEVT_FME,
- 	DFL_FPGA_DEVT_PORT,
-@@ -190,6 +249,16 @@ int dfl_fpga_register_dev_ops(struct platform_device *pdev,
- 			      struct module *owner);
- void dfl_fpga_unregister_dev_ops(struct platform_device *pdev);
- 
-+static inline
-+struct platform_device *dfl_fpga_inode_to_feature_dev(struct inode *inode)
-+{
-+	struct dfl_feature_platform_data *pdata;
-+
-+	pdata = container_of(inode->i_cdev, struct dfl_feature_platform_data,
-+			     cdev);
-+	return pdata->dev;
-+}
-+
- #define dfl_fpga_dev_for_each_feature(pdata, feature)			    \
- 	for ((feature) = (pdata)->features;				    \
- 	   (feature) < (pdata)->features + (pdata)->num; (feature)++)
-@@ -219,6 +288,17 @@ void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u64 id)
- 	return NULL;
- }
- 
-+static inline bool is_dfl_feature_present(struct device *dev, u64 id)
-+{
-+	return !!dfl_get_feature_ioaddr_by_id(dev, id);
-+}
-+
-+static inline
-+struct device *dfl_fpga_pdata_to_parent(struct dfl_feature_platform_data *pdata)
-+{
-+	return pdata->dev->dev.parent->parent;
-+}
-+
- static inline bool dfl_feature_is_fme(void __iomem *base)
- {
- 	u64 v = readq(base + DFH);
--- 
-1.8.3.1
+> I've started looking at your v5 here.  It's 5212 lines of code, so
+> it's not tiny.
+> 
+> I see a lot of renaming from 'fpga' to 'dfl', thanks for doing that.
+> 
+> The main thing that stands out at first look is a new method of
+> registering port ops.  It would be better if the fpga bridge framework
+> were expanded or changed somehow to do that.  It's like we have two
+> bridge frameworks now.
+
+I only limit this change in DFL framework, because introduce a port ops
+here to DFL framework is to resolve the hard dependency between DFL
+driver modules (e.g DFL FME and port), this sounds like a DFL specific
+thing, and I am not sure if there is some real need or benefit for other
+non-DFL module, so i didn't modify the common fpga bridge code.
+
+> 
+> I see that there isn't a way of specifying which FPGA mgr driver to
+> use, so dfl-fme-mgr.c is tied to dfl-fme-pr.c.  It would be better if
+> the DFL could specify which fpga manager driver to use.
+
+Hm.. I think we discussed this against v4. It could be a different sub
+feature with different id to support different PR hardware.  In that
+case, we could still reuse sub feature driver provided by dfl-fme-pr.c
+(specify a new id which reuses the same pr_mgmt_ops)
+
+        {
+                 .id = FME_FEATURE_ID_PR_MGMT,
+                 .ops = &pr_mgmt_ops,
+        },
+
+Inside dfl-fme-pr.c, it could parse the different id to create different
+platform devices for different FPGA mgrs.
+
+Could we leave this a later change? as i don't have a different hardware
+like this at this moment (maybe future) and I don't see current framework
+block us on reusing these code.
+
+> 
+> Maybe I'm repeating myself here, the biggest question I'm asking
+> region, how much of this code can be reused?  I would hope that all of
+> it could except for the fpga manager/bridge drivers.  That was the
+> intent of the original FPGA framework.  
+
+I fully understand that it's better to make code reusable, this is what
+we are trying to do in these patchsets. But it's still not very clear that
+who others or which products will use this DFL framework and how, what's
+the difficulty they will face and what kind of help or changes we could
+provide. so maybe we could defer some work when people really need it, if
+there is no hard blocking issue on architecture level.
+
+> I'll have more time next week to look in more depth.
+
+Looking forward to your feedback. Thanks again for your review. :)
+
+Hao
+
+> 
+> Alan
+> 
