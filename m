@@ -1,114 +1,55 @@
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 08/28] fpga: dfl: add dfl_fpga_cdev_find_port
-Date: Wed,  2 May 2018 10:50:11 +0800
-Message-Id: <1525229431-3087-9-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Return-Path: <SRS0=h1EM=HX=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=h1EM=HX=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv4 7/7] defconfig: enable fpga and service layer
+Date: Fri,  4 May 2018 09:21:37 -0500
+Message-Id: <1525443697-31009-8-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1525443697-31009-1-git-send-email-richard.gong@linux.intel.com>
+References: <1525443697-31009-1-git-send-email-richard.gong@linux.intel.com>
+To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-For feature devices, we need a method to find the port dedicated
-to the device. This patch adds a function dfl_fpga_cdev_find_port
-for this purpose. e.g FPGA Management Engine (FME) Partial
-Reconfiguration sub feature, it uses this function to find
-dedicated port on the device for PR function implementation.
+From: Richard Gong <richard.gong@intel.com>
 
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v3: s/fpga_for_each_port/fpga_cdev_find_port/
-    move fpga_cdev_find_port to fpga-dfl module.
-v4: improve description in commit message.
-    add comments to remind user to put_device after use this function.
-v5: add "dfl_" prefix to functions.
-    improve function comments per suggestion from Alan Tull.
-    add Acked-by from Alan and Moritz.
----
- drivers/fpga/dfl.c | 32 ++++++++++++++++++++++++++++++++
- drivers/fpga/dfl.h | 21 +++++++++++++++++++++
- 2 files changed, 53 insertions(+)
+Enable fpga framework, Stratix 10 SoC FPGA manager and Stratix10
+Service Layer
 
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 18aba02..1e06efb 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -795,6 +795,38 @@ void dfl_fpga_remove_feature_devs(struct dfl_fpga_cdev *cdev)
- }
- EXPORT_SYMBOL_GPL(dfl_fpga_remove_feature_devs);
- 
-+/**
-+ * __dfl_fpga_cdev_find_port - find a port under given container device
-+ *
-+ * @cdev: container device
-+ * @data: data passed to match function
-+ * @match: match function used to find specific port from the port device list
-+ *
-+ * Find a port device under container device. This function needs to be
-+ * invoked with lock held.
-+ *
-+ * Return: pointer to port's platform device if successful, NULL otherwise.
-+ *
-+ * NOTE: you will need to drop the device reference with put_device() after use.
-+ */
-+struct platform_device *
-+__dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
-+			  int (*match)(struct platform_device *, void *))
-+{
-+	struct dfl_feature_platform_data *pdata;
-+	struct platform_device *port_dev;
-+
-+	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
-+		port_dev = pdata->dev;
-+
-+		if (match(port_dev, data) && get_device(&port_dev->dev))
-+			return port_dev;
-+	}
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_find_port);
-+
- static int __init dfl_fpga_init(void)
- {
- 	int ret;
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 5fcb1a1..2b6aaef 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -290,4 +290,25 @@ struct dfl_fpga_cdev *
- dfl_fpga_enumerate_feature_devs(struct dfl_fpga_enum_info *info);
- void dfl_fpga_remove_feature_devs(struct dfl_fpga_cdev *cdev);
- 
-+/*
-+ * need to drop the device reference with put_device() after use port platform
-+ * device returned by __dfl_fpga_cdev_find_port and dfl_fpga_cdev_find_port
-+ * functions.
-+ */
-+struct platform_device *
-+__dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
-+			  int (*match)(struct platform_device *, void *));
-+
-+static inline struct platform_device *
-+dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
-+			int (*match)(struct platform_device *, void *))
-+{
-+	struct platform_device *pdev;
-+
-+	mutex_lock(&cdev->lock);
-+	pdev = __dfl_fpga_cdev_find_port(cdev, data, match);
-+	mutex_unlock(&cdev->lock);
-+
-+	return pdev;
-+}
- #endif /* __FPGA_DFL_H */
+Signed-off-by: Richard Gong <richard.gong@intel.com>
+Signed-off-by: Alan Tull <atull@kernel.org>
+---
+v2: this patch is added in patch set version 2
+v3: no change
+v4: s/CONFIG_INTEL_SERVICE/CONFIG_STRATIX10_SERVICE/
+    Add CONFIG_OF_FPGA_REGION=y
+    s/Intel/Stratix10/ in subject line
+---
+ arch/arm64/configs/defconfig | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index ecf6137..5f7a9b7 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -180,6 +180,7 @@ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_VIRTIO_BLK=y
+ CONFIG_BLK_DEV_NVME=m
++CONFIG_STRATIX10_SERVICE=y
+ CONFIG_SRAM=y
+ CONFIG_EEPROM_AT25=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -595,6 +596,11 @@ CONFIG_PHY_TEGRA_XUSB=y
+ CONFIG_QCOM_L2_PMU=y
+ CONFIG_QCOM_L3_PMU=y
+ CONFIG_MESON_EFUSE=m
++CONFIG_FPGA=y
++CONFIG_FPGA_MGR_STRATIX10_SOC=y
++CONFIG_FPGA_REGION=y
++CONFIG_FPGA_BRIDGE=y
++CONFIG_OF_FPGA_REGION=y
+ CONFIG_QCOM_QFPROM=y
+ CONFIG_UNIPHIER_EFUSE=y
+ CONFIG_TEE=y
 -- 
-1.8.3.1
+2.7.4
