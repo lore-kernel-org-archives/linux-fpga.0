@@ -1,171 +1,100 @@
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 24/28] fpga: dfl: afu: add port ops support
-Date: Wed,  2 May 2018 10:50:27 +0800
-Message-Id: <1525229431-3087-25-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Return-Path: <SRS0=h1EM=HX=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=h1EM=HX=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv4 0/7] Add Intel Stratix10 FPGA manager and service layer
+Date: Fri,  4 May 2018 09:21:30 -0500
+Message-Id: <1525443697-31009-1-git-send-email-richard.gong@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch registers the port ops into the global list in the DFL
-framework, and it allows other modules to use the port ops. And
-This patch includes the implementation of the get_id and enable_set
-ops too.
+From: Richard Gong <richard.gong@intel.com>
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
- drivers/fpga/dfl-afu-main.c | 122 +++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 121 insertions(+), 1 deletion(-)
+This is the 4th submission of Intel stratix10 service layer patches. Intel
+Stratix10 FPGA manager, which is 1st Stratix10 service layer client, is
+included in this submission.
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 35bec47..4bdbe3d 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -19,6 +19,83 @@
- 
- #include "dfl.h"
- 
-+/**
-+ * port_enable - enable a port
-+ * @pdev: port platform device.
-+ *
-+ * Enable Port by clear the port soft reset bit, which is set by default.
-+ * The User AFU is unable to respond to any MMIO access while in reset.
-+ * port_enable function should only be used after port_disable
-+ * function.
-+ */
-+static void port_enable(struct platform_device *pdev)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	WARN_ON(!pdata->disable_count);
-+
-+	if (--pdata->disable_count != 0)
-+		return;
-+
-+	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
-+
-+	/* Clear port soft reset */
-+	v = readq(base + PORT_HDR_CTRL);
-+	v &= ~PORT_CTRL_SFTRST;
-+	writeq(v, base + PORT_HDR_CTRL);
-+}
-+
-+#define RST_POLL_INVL 10 /* us */
-+#define RST_POLL_TIMEOUT 1000 /* us */
-+
-+/**
-+ * port_disable - disable a port
-+ * @pdev: port platform device.
-+ *
-+ * Disable Port by setting the port soft reset bit, it puts the port into
-+ * reset.
-+ */
-+static int port_disable(struct platform_device *pdev)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	if (pdata->disable_count++ != 0)
-+		return 0;
-+
-+	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
-+
-+	/* Set port soft reset */
-+	v = readq(base + PORT_HDR_CTRL);
-+	v |= PORT_CTRL_SFTRST;
-+	writeq(v, base + PORT_HDR_CTRL);
-+
-+	/*
-+	 * HW sets ack bit to 1 when all outstanding requests have been drained
-+	 * on this port and minimum soft reset pulse width has elapsed.
-+	 * Driver polls port_soft_reset_ack to determine if reset done by HW.
-+	 */
-+	if (readq_poll_timeout(base + PORT_HDR_CTRL, v, v & PORT_CTRL_SFTRST,
-+			       RST_POLL_INVL, RST_POLL_TIMEOUT)) {
-+		dev_err(&pdev->dev, "timeout, fail to reset device\n");
-+		return -ETIMEDOUT;
-+	}
-+
-+	return 0;
-+}
-+
-+static int port_get_id(struct platform_device *pdev)
-+{
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
-+
-+	return FIELD_GET(PORT_CAP_PORT_NUM, readq(base + PORT_HDR_CAP));
-+}
-+
- static int port_hdr_init(struct platform_device *pdev,
- 			 struct dfl_feature *feature)
- {
-@@ -119,6 +196,28 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	.unlocked_ioctl = afu_ioctl,
- };
- 
-+static int port_enable_set(struct platform_device *pdev, bool enable)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	int ret = 0;
-+
-+	mutex_lock(&pdata->lock);
-+	if (enable)
-+		port_enable(pdev);
-+	else
-+		ret = port_disable(pdev);
-+	mutex_unlock(&pdata->lock);
-+
-+	return ret;
-+}
-+
-+static struct dfl_fpga_port_ops afu_port_ops = {
-+	.name = DFL_FPGA_FEATURE_DEV_PORT,
-+	.owner = THIS_MODULE,
-+	.get_id = port_get_id,
-+	.enable_set = port_enable_set,
-+};
-+
- static int afu_probe(struct platform_device *pdev)
- {
- 	int ret;
-@@ -154,7 +253,28 @@ static int afu_remove(struct platform_device *pdev)
- 	.remove  = afu_remove,
- };
- 
--module_platform_driver(afu_driver);
-+static int __init afu_init(void)
-+{
-+	int ret;
-+
-+	dfl_fpga_add_port_ops(&afu_port_ops);
-+
-+	ret = platform_driver_register(&afu_driver);
-+	if (ret)
-+		dfl_fpga_del_port_ops(&afu_port_ops);
-+
-+	return ret;
-+}
-+
-+static void __exit afu_exit(void)
-+{
-+	platform_driver_unregister(&afu_driver);
-+
-+	dfl_fpga_del_port_ops(&afu_port_ops);
-+}
-+
-+module_init(afu_init);
-+module_exit(afu_exit);
- 
- MODULE_DESCRIPTION("FPGA Accelerated Function Unit driver");
- MODULE_AUTHOR("Intel Corporation");
+Stratix10 service layer patches have been reviewed internally by Alan Tull
+and other colleagues at Intel.
+
+Some features of the Intel Stratix10 SoC require a level of privilege
+higher than the kernel is granted. Such secure features include
+FPGA programming. In terms of the ARMv8 architecture, the kernel runs
+at Exception Level 1 (EL1), access to the features requires
+Exception Level 3 (EL3).
+
+The Intel Stratix10 service layer provides an in kernel API for drivers to
+request access to the secure features. The requests are queued and
+processed one by one. ARM’s SMCCC is used to pass the execution of the
+requests on to a secure monitor (EL3).
+
+Later the Intel Stratix10 service layer driver will be extended to provide
+services for QSPI, Crypto and warm reset.
+
+v2: add patches for FPGA manager, FPGA manager binding, dts and defconfig
+    remove intel-service subdirectory and intel-service.h, move intel-smc.h
+    and intel-service.c to driver/misc subdirectory
+    remove global variables
+    change service layer driver be 'default n'
+    correct SPDX markers
+    add timeout for do..while() loop
+    add kernel-doc for the functions and structs, correct multiline comments
+    replace kfifo_in/kfifo_out with kfifo_in_spinlocked/kfifo_out_spinlocked
+    rename struct intel_svc_data (at client header) to intel_svc_client_msg
+    rename struct intel_svc_private_mem to intel_svc_data
+    other corrections/changes from Intel internal code reviews
+v3: change all exported functions with "intel_svc_" as the prefix
+    increase timeout values for claiming back submitted buffer(s)
+    rename struct intel_command_reconfig_payload to
+    struct intel_svc_command_reconfig_payload
+    add pr_err() to provide the error return value
+    change to put fpga_mgr node under firmware/svc node
+    change to FPGA manager to align the update of service client APIs, and the
+    update of fpga_mgr device node
+    Other corrections/changes
+v4: s/intel/stratix10/ on some variables, structs, functions, and file names
+    intel-service.c -> stratix10-svc.c
+    intel-smc.h -> stratix10-smc.h
+    intel-service-client.h -> stratix10-svc-client.h
+    remove non-kernel-doc formatting
+    s/fpga-mgr@0/fpga-mgr/ to remove unit_address at fpga_mgr node
+    add Rob's Reviewed-by
+    add Richard's signed-off-by
+
+Alan Tull (3):
+  dt-bindings: fpga: add Stratix10 SoC FPGA manager binding
+  arm64: dts: stratix10: add fpga manager and region
+  fpga: add intel stratix10 soc fpga manager driver
+
+Richard Gong (4):
+  dt-bindings, firmware: add Intel Stratix10 service layer binding
+  arm64: dts: stratix10: add stratix10 service driver binding to base
+    dtsi
+  driver, misc: add Intel Stratix10 service layer driver
+  defconfig: enable fpga and service layer
+
+ .../bindings/firmware/intel,stratix10-svc.txt      |  57 ++
+ .../bindings/fpga/intel-stratix10-soc-fpga-mgr.txt |  17 +
+ arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi  |  33 +
+ arch/arm64/configs/defconfig                       |   6 +
+ drivers/fpga/Kconfig                               |   6 +
+ drivers/fpga/Makefile                              |   1 +
+ drivers/fpga/stratix10-soc.c                       | 534 ++++++++++++
+ drivers/misc/Kconfig                               |  12 +
+ drivers/misc/Makefile                              |   1 +
+ drivers/misc/stratix10-smc.h                       | 203 +++++
+ drivers/misc/stratix10-svc.c                       | 945 +++++++++++++++++++++
+ include/linux/stratix10-svc-client.h               | 190 +++++
+ 12 files changed, 2005 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+ create mode 100644 Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
+ create mode 100644 drivers/fpga/stratix10-soc.c
+ create mode 100644 drivers/misc/stratix10-smc.h
+ create mode 100644 drivers/misc/stratix10-svc.c
+ create mode 100644 include/linux/stratix10-svc-client.h
+
 -- 
-1.8.3.1
+2.7.4
