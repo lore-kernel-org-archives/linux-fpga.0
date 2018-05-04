@@ -1,129 +1,67 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 06/14] fpga: mgr: kernel-doc fixes
-Date: Wed, 16 May 2018 18:49:59 -0500
-Message-Id: <20180516235007.3951-7-atull@kernel.org>
-In-Reply-To: <20180516235007.3951-1-atull@kernel.org>
-References: <20180516235007.3951-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
+Return-Path: <SRS0=h1EM=HX=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=h1EM=HX=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv4 2/7] arm64: dts: stratix10: add stratix10 service driver binding to base dtsi
+Date: Fri,  4 May 2018 09:21:32 -0500
+Message-Id: <1525443697-31009-3-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1525443697-31009-1-git-send-email-richard.gong@linux.intel.com>
+References: <1525443697-31009-1-git-send-email-richard.gong@linux.intel.com>
+To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-Clean up the kernel-doc documentation in fpga-mgr.c and fix the
-following warnings when documentation is built:
+From: Richard Gong <richard.gong@intel.com>
 
-./drivers/fpga/fpga-mgr.c:252: warning: Function parameter or member
-'info' not described in 'fpga_mgr_buf_load'
+Add Intel Stratix10 service layer to the device tree
 
-./drivers/fpga/fpga-mgr.c:252: warning: Excess function parameter
-'flags' description in 'fpga_mgr_buf_load'
-
+Signed-off-by: Richard Gong <richard.gong@intel.com>
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/fpga-mgr.c | 38 +++++++++++++++++++++++++++++---------
- 1 file changed, 29 insertions(+), 9 deletions(-)
+v2: Change to put service layer driver node under the firmware node
+    Change compatible to "intel, stratix10-svc"
+v3: No change
+v4: s/service driver/stratix10 service driver/ in subject line
+---
+ arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 151ac36..5fffeef 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -21,6 +21,12 @@
- static DEFINE_IDA(fpga_mgr_ida);
- static struct class *fpga_mgr_class;
+diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+index 0b28f1f..985b9e5 100644
+--- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
++++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+@@ -24,6 +24,19 @@
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
  
-+/**
-+ * fpga_image_info_alloc - Allocate a FPGA image info struct
-+ * @dev: owning device
-+ *
-+ * Return: struct fpga_image_info or NULL
-+ */
- struct fpga_image_info *fpga_image_info_alloc(struct device *dev)
- {
- 	struct fpga_image_info *info;
-@@ -39,6 +45,10 @@ struct fpga_image_info *fpga_image_info_alloc(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(fpga_image_info_alloc);
- 
-+/**
-+ * fpga_image_info_free - Free a FPGA image info struct
-+ * @info: FPGA image info struct to free
-+ */
- void fpga_image_info_free(struct fpga_image_info *info)
- {
- 	struct device *dev;
-@@ -223,7 +233,7 @@ static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
- /**
-  * fpga_mgr_buf_load - load fpga from image in buffer
-  * @mgr:	fpga manager
-- * @flags:	flags setting fpga confuration modes
-+ * @info:	fpga image info
-  * @buf:	buffer contain fpga image
-  * @count:	byte count of buf
-  *
-@@ -332,6 +342,16 @@ static int fpga_mgr_firmware_load(struct fpga_manager *mgr,
- 	return ret;
- }
- 
-+/**
-+ * fpga_mgr_load - load FPGA from scatter/gather table, buffer, or firmware
-+ * @mgr:	fpga manager
-+ * @info:	fpga image information.
-+ *
-+ * Load the FPGA from an image which is indicated in @info.  If successful, the
-+ * FPGA ends up in operating mode.
-+ *
-+ * Return: 0 on success, negative error code otherwise.
-+ */
- int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info)
- {
- 	if (info->sgt)
-@@ -418,11 +438,9 @@ static int fpga_mgr_dev_match(struct device *dev, const void *data)
- }
- 
- /**
-- * fpga_mgr_get - get a reference to a fpga mgr
-+ * fpga_mgr_get - Given a device, get a reference to a fpga mgr.
-  * @dev:	parent device that fpga mgr was registered with
-  *
-- * Given a device, get a reference to a fpga mgr.
-- *
-  * Return: fpga manager struct or IS_ERR() condition containing error code.
-  */
- struct fpga_manager *fpga_mgr_get(struct device *dev)
-@@ -442,10 +460,9 @@ static int fpga_mgr_of_node_match(struct device *dev, const void *data)
- }
- 
- /**
-- * of_fpga_mgr_get - get a reference to a fpga mgr
-- * @node:	device node
-+ * of_fpga_mgr_get - Given a device node, get a reference to a fpga mgr.
-  *
-- * Given a device node, get a reference to a fpga mgr.
-+ * @node:	device node
-  *
-  * Return: fpga manager struct or IS_ERR() condition containing error code.
-  */
-@@ -478,7 +495,10 @@ EXPORT_SYMBOL_GPL(fpga_mgr_put);
-  * @mgr:	fpga manager
-  *
-  * Given a pointer to FPGA Manager (from fpga_mgr_get() or
-- * of_fpga_mgr_put()) attempt to get the mutex.
-+ * of_fpga_mgr_put()) attempt to get the mutex. The user should call
-+ * fpga_mgr_lock() and verify that it returns 0 before attempting to
-+ * program the FPGA.  Likewise, the user should call fpga_mgr_unlock
-+ * when done programming the FPGA.
-  *
-  * Return: 0 for success or -EBUSY
-  */
-@@ -494,7 +514,7 @@ int fpga_mgr_lock(struct fpga_manager *mgr)
- EXPORT_SYMBOL_GPL(fpga_mgr_lock);
- 
- /**
-- * fpga_mgr_unlock - Unlock FPGA manager
-+ * fpga_mgr_unlock - Unlock FPGA manager after done programming
-  * @mgr:	fpga manager
-  */
- void fpga_mgr_unlock(struct fpga_manager *mgr)
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		service_reserved: svcbuffer@0 {
++			compatible = "shared-dma-pool";
++			reg = <0x0 0x0 0x0 0x1000000>;
++			alignment = <0x1000>;
++			no-map;
++		};
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -454,5 +467,13 @@
+ 			resets = <&rst WATCHDOG3_RESET>;
+ 			status = "disabled";
+ 		};
++
++		firmware {
++			svc {
++				compatible = "intel,stratix10-svc";
++				method = "smc";
++				memory-region = <&service_reserved>;
++			};
++		};
+ 	};
+ };
 -- 
 2.7.4
