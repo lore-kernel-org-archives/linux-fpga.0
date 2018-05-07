@@ -1,88 +1,46 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <1525229431-3087-23-git-send-email-hao.wu@intel.com>
+References: <1525229431-3087-1-git-send-email-hao.wu@intel.com> <1525229431-3087-23-git-send-email-hao.wu@intel.com>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 11/14] documentation: fpga: add bridge document to driver-api
-Date: Wed, 16 May 2018 18:50:04 -0500
-Message-Id: <20180516235007.3951-12-atull@kernel.org>
-In-Reply-To: <20180516235007.3951-1-atull@kernel.org>
-References: <20180516235007.3951-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
+Date: Mon, 7 May 2018 16:12:53 -0500
+Message-ID: <CANk1AXRzjFibdiO=kxDNOkUyrwQ9ASo1h=aHdMRNMXuGd7iW3g@mail.gmail.com>
+Subject: Re: [PATCH v5 22/28] fpga: dfl: fme-region: add support for compat_id
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add a new document to driver-api/fpga that documents the
-fpga bridge API and add it to driver-api/fpga/index.rst
+On Tue, May 1, 2018 at 9:50 PM, Wu Hao <hao.wu@intel.com> wrote:
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
- Documentation/driver-api/fpga/fpga-bridge.rst | 49 +++++++++++++++++++++++++++
- Documentation/driver-api/fpga/index.rst       |  1 +
- 2 files changed, 50 insertions(+)
- create mode 100644 Documentation/driver-api/fpga/fpga-bridge.rst
+Hi Hao,
 
-diff --git a/Documentation/driver-api/fpga/fpga-bridge.rst b/Documentation/driver-api/fpga/fpga-bridge.rst
-new file mode 100644
-index 0000000..2c2aaca
---- /dev/null
-+++ b/Documentation/driver-api/fpga/fpga-bridge.rst
-@@ -0,0 +1,49 @@
-+FPGA Bridge
-+===========
-+
-+API to implement a new FPGA bridge
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+
-+.. kernel-doc:: include/linux/fpga/fpga-bridge.h
-+   :functions: fpga_bridge
-+
-+.. kernel-doc:: include/linux/fpga/fpga-bridge.h
-+   :functions: fpga_bridge_ops
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: fpga_bridge_create
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: fpga_bridge_free
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: fpga_bridge_register
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: fpga_bridge_unregister
-+
-+API to control an FPGA bridge
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+
-+You probably won't need these directly.  FPGA regions should handle this.
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: of_fpga_bridge_get
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: fpga_bridge_get
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: fpga_bridge_put
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: fpga_bridge_get_to_list
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: of_fpga_bridge_get_to_list
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: fpga_bridge_enable
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: fpga_bridge_disable
-diff --git a/Documentation/driver-api/fpga/index.rst b/Documentation/driver-api/fpga/index.rst
-index 34b2075..968bbbf 100644
---- a/Documentation/driver-api/fpga/index.rst
-+++ b/Documentation/driver-api/fpga/index.rst
-@@ -9,3 +9,4 @@ FPGA Subsystem
- 
-    intro
-    fpga-mgr
-+   fpga-bridge
--- 
-2.7.4
+> This patch adds compat_id support, it reuses fme manager's
+> compat id, as the per region compat id is actually from the
+> fme manager's register.
+>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+
+> ---
+> v5: reuse fme manager's compat_id as per region compat_id
+> ---
+>  drivers/fpga/dfl-fme-region.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
+> index 696b313..b82a381 100644
+> --- a/drivers/fpga/dfl-fme-region.c
+> +++ b/drivers/fpga/dfl-fme-region.c
+> @@ -45,6 +45,7 @@ static int fme_region_probe(struct platform_device *pdev)
+>         }
+>
+>         region->priv = pdata;
+> +       region->compat_id = mgr->compat_id;
+>         platform_set_drvdata(pdev, region);
+>
+>         ret = fpga_region_register(region);
+> --
+> 1.8.3.1
+>
