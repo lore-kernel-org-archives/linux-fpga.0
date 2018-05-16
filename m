@@ -1,64 +1,237 @@
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 19/28] fpga: dfl: fme-mgr: add compat_id support
-Date: Wed,  2 May 2018 10:50:22 +0800
-Message-Id: <1525229431-3087-20-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 04/14] fpga: region: change api, add fpga_region_create/free
+Date: Wed, 16 May 2018 18:49:57 -0500
+Message-Id: <20180516235007.3951-5-atull@kernel.org>
+In-Reply-To: <20180516235007.3951-1-atull@kernel.org>
+References: <20180516235007.3951-1-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds compat_id support to fme manager driver, it
-reads the ID from the hardware register. And it could be used
-for compatibility check before partial reconfiguration.
+Add fpga_region_create/free API functions.
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+Change fpga_region_register to take FPGA region struct as the only
+parameter.  Change fpga_region_unregister to return void.
+
+  struct fpga_region *fpga_region_create(struct device *dev,
+                        struct fpga_manager *mgr,
+                        int (*get_bridges)(struct fpga_region *));
+  void fpga_region_free(struct fpga_region *region);
+  int fpga_region_register(struct fpga_region *region);
+  void fpga_region_unregister(struct fpga_region *region);
+
+Remove groups storage from struct fpga_region, it's not
+needed.  Callers can just "region->dev.groups = groups;"
+after calling fpga_region_create.
+
+Update the drivers that call fpga_region_register with the new API.
+
+Signed-off-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/dfl-fme-mgr.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ Documentation/fpga/fpga-region.txt |  3 +-
+ drivers/fpga/fpga-region.c         | 68 ++++++++++++++++++++++++++++++--------
+ drivers/fpga/of-fpga-region.c      | 13 +++-----
+ include/linux/fpga/fpga-region.h   | 11 +++---
+ 4 files changed, 68 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
-index 1c5bc5a..afcdb39 100644
---- a/drivers/fpga/dfl-fme-mgr.c
-+++ b/drivers/fpga/dfl-fme-mgr.c
-@@ -272,9 +272,17 @@ static u64 fme_mgr_status(struct fpga_manager *mgr)
- 	.status = fme_mgr_status,
- };
+diff --git a/Documentation/fpga/fpga-region.txt b/Documentation/fpga/fpga-region.txt
+index 139a02b..d38fa3b 100644
+--- a/Documentation/fpga/fpga-region.txt
++++ b/Documentation/fpga/fpga-region.txt
+@@ -42,8 +42,7 @@ The FPGA region API
+ To register or unregister a region:
+ -----------------------------------
  
-+static void fme_mgr_get_compat_id(void __iomem *fme_pr,
-+				  struct fpga_compat_id *id)
-+{
-+	id->id_l = readq(fme_pr + FME_PR_INTFC_ID_L);
-+	id->id_h = readq(fme_pr + FME_PR_INTFC_ID_H);
-+}
-+
- static int fme_mgr_probe(struct platform_device *pdev)
+-	int fpga_region_register(struct device *dev,
+-				 struct fpga_region *region);
++	int fpga_region_register(struct fpga_region *region);
+ 	int fpga_region_unregister(struct fpga_region *region);
+ 
+ An example of usage can be seen in the probe function of [3]
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index f634a8e..b3ba3e40 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -167,18 +167,36 @@ int fpga_region_program_fpga(struct fpga_region *region)
+ }
+ EXPORT_SYMBOL_GPL(fpga_region_program_fpga);
+ 
+-int fpga_region_register(struct device *dev, struct fpga_region *region)
++/**
++ * fpga_region_create - alloc and init a struct fpga_region
++ * @dev: device parent
++ * @mgr: manager that programs this region
++ * @get_bridges: optional function to get bridges to a list
++ *
++ * Return: struct fpga_region or NULL
++ */
++struct fpga_region
++*fpga_region_create(struct device *dev,
++		    struct fpga_manager *mgr,
++		    int (*get_bridges)(struct fpga_region *))
  {
- 	struct dfl_fme_mgr_pdata *pdata = dev_get_platdata(&pdev->dev);
-+	struct fpga_compat_id *compat_id;
- 	struct device *dev = &pdev->dev;
- 	struct fme_mgr_priv *priv;
- 	struct fpga_manager *mgr;
-@@ -295,11 +303,18 @@ static int fme_mgr_probe(struct platform_device *pdev)
- 			return PTR_ERR(priv->ioaddr);
++	struct fpga_region *region;
+ 	int id, ret = 0;
+ 
++	region = kzalloc(sizeof(*region), GFP_KERNEL);
++	if (!region)
++		return NULL;
++
+ 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
+ 	if (id < 0)
+-		return id;
++		goto err_free;
+ 
++	region->mgr = mgr;
++	region->get_bridges = get_bridges;
+ 	mutex_init(&region->mutex);
+ 	INIT_LIST_HEAD(&region->bridge_list);
++
+ 	device_initialize(&region->dev);
+-	region->dev.groups = region->groups;
+ 	region->dev.class = fpga_region_class;
+ 	region->dev.parent = dev;
+ 	region->dev.of_node = dev->of_node;
+@@ -188,23 +206,47 @@ int fpga_region_register(struct device *dev, struct fpga_region *region)
+ 	if (ret)
+ 		goto err_remove;
+ 
+-	ret = device_add(&region->dev);
+-	if (ret)
+-		goto err_remove;
+-
+-	return 0;
++	return region;
+ 
+ err_remove:
+ 	ida_simple_remove(&fpga_region_ida, id);
+-	return ret;
++err_free:
++	kfree(region);
++
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(fpga_region_create);
++
++/**
++ * fpga_region_free - free a struct fpga_region
++ * @region: FPGA region created by fpga_region_create
++ */
++void fpga_region_free(struct fpga_region *region)
++{
++	ida_simple_remove(&fpga_region_ida, region->dev.id);
++	kfree(region);
++}
++EXPORT_SYMBOL_GPL(fpga_region_free);
++
++/*
++ * fpga_region_register - register a FPGA region
++ * @region: FPGA region created by fpga_region_create
++ * Return: 0 or -errno
++ */
++int fpga_region_register(struct fpga_region *region)
++{
++	return device_add(&region->dev);
++
+ }
+ EXPORT_SYMBOL_GPL(fpga_region_register);
+ 
+-int fpga_region_unregister(struct fpga_region *region)
++/*
++ * fpga_region_unregister - unregister a FPGA region
++ * @region: FPGA region
++ */
++void fpga_region_unregister(struct fpga_region *region)
+ {
+ 	device_unregister(&region->dev);
+-
+-	return 0;
+ }
+ EXPORT_SYMBOL_GPL(fpga_region_unregister);
+ 
+@@ -212,7 +254,7 @@ static void fpga_region_dev_release(struct device *dev)
+ {
+ 	struct fpga_region *region = to_fpga_region(dev);
+ 
+-	ida_simple_remove(&fpga_region_ida, region->dev.id);
++	fpga_region_free(region);
+ }
+ 
+ /**
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index 35e7e8c..9d681a1 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -422,20 +422,15 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 	if (IS_ERR(mgr))
+ 		return -EPROBE_DEFER;
+ 
+-	region = devm_kzalloc(dev, sizeof(*region), GFP_KERNEL);
++	region = fpga_region_create(dev, mgr, of_fpga_region_get_bridges);
+ 	if (!region) {
+ 		ret = -ENOMEM;
+ 		goto eprobe_mgr_put;
  	}
  
-+	compat_id = devm_kzalloc(dev, sizeof(*compat_id), GFP_KERNEL);
-+	if (!compat_id)
-+		return -ENOMEM;
-+
-+	fme_mgr_get_compat_id(priv->ioaddr, compat_id);
-+
- 	mgr = fpga_mgr_create(dev, "DFL FME FPGA Manager",
- 			      &fme_mgr_ops, priv);
- 	if (!mgr)
- 		return -ENOMEM;
+-	region->mgr = mgr;
+-
+-	/* Specify how to get bridges for this type of region. */
+-	region->get_bridges = of_fpga_region_get_bridges;
+-
+-	ret = fpga_region_register(dev, region);
++	ret = fpga_region_register(region);
+ 	if (ret)
+-		goto eprobe_mgr_put;
++		goto eprobe_free;
  
-+	mgr->compat_id = compat_id;
- 	platform_set_drvdata(pdev, mgr);
+ 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
+ 	dev_set_drvdata(dev, region);
+@@ -444,6 +439,8 @@ static int of_fpga_region_probe(struct platform_device *pdev)
  
- 	ret = fpga_mgr_register(mgr);
+ 	return 0;
+ 
++eprobe_free:
++	fpga_region_free(region);
+ eprobe_mgr_put:
+ 	fpga_mgr_put(mgr);
+ 	return ret;
+diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+index b652031..f2e215b 100644
+--- a/include/linux/fpga/fpga-region.h
++++ b/include/linux/fpga/fpga-region.h
+@@ -14,7 +14,6 @@
+  * @info: FPGA image info
+  * @priv: private data
+  * @get_bridges: optional function to get bridges to a list
+- * @groups: optional attribute groups.
+  */
+ struct fpga_region {
+ 	struct device dev;
+@@ -24,7 +23,6 @@ struct fpga_region {
+ 	struct fpga_image_info *info;
+ 	void *priv;
+ 	int (*get_bridges)(struct fpga_region *region);
+-	const struct attribute_group **groups;
+ };
+ 
+ #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
+@@ -34,7 +32,12 @@ struct fpga_region *fpga_region_class_find(
+ 	int (*match)(struct device *, const void *));
+ 
+ int fpga_region_program_fpga(struct fpga_region *region);
+-int fpga_region_register(struct device *dev, struct fpga_region *region);
+-int fpga_region_unregister(struct fpga_region *region);
++
++struct fpga_region
++*fpga_region_create(struct device *dev, struct fpga_manager *mgr,
++		    int (*get_bridges)(struct fpga_region *));
++void fpga_region_free(struct fpga_region *region);
++int fpga_region_register(struct fpga_region *region);
++void fpga_region_unregister(struct fpga_region *region);
+ 
+ #endif /* _FPGA_REGION_H */
 -- 
-1.8.3.1
+2.7.4
