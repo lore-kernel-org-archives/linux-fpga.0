@@ -1,491 +1,135 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 10/14] documentation: fpga: move fpga-mgr.txt to driver-api
-Date: Wed, 16 May 2018 18:50:03 -0500
-Message-Id: <20180516235007.3951-11-atull@kernel.org>
-In-Reply-To: <20180516235007.3951-1-atull@kernel.org>
-References: <20180516235007.3951-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
+Return-Path: <SRS0=HGMN=IJ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=HGMN=IJ=intel.com=hao.wu@kernel.org>
+Date: Tue, 22 May 2018 17:39:50 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v5 04/28] fpga: mgr: add compat_id support
+Message-ID: <20180522093950.GA27322@hao-dev>
+References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+ <1525229431-3087-5-git-send-email-hao.wu@intel.com>
+ <CANk1AXRsWsd++wjWH44CCWN+cmscy_WjLJhaGGgxmmNe-u1OLw@mail.gmail.com>
+ <20180521030307.GA26500@hao-dev>
+ <CANk1AXTDgVONiaECNOnwj26vCxJSi7ixvD_QcB4VmEo7P_cUMA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXTDgVONiaECNOnwj26vCxJSi7ixvD_QcB4VmEo7P_cUMA@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, "Liu, Song" <song.liu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Move Documentation/fpga/fpga-mgr.txt to driver-api/fpga/fpga-mgr.rst
-and:
- - Add to driver-api/fpga/index.rst
- - Format changes so documentation builds cleanly.
- - Minor rewrites that make the doc flow better as ReST documentation.
-   - Such as moving API reference to end of doc
- - Change API reference section to refer to kernel-doc documentation in
-   fpga-mgr.c driver code rather than statically defining each function.
+On Mon, May 21, 2018 at 12:33:05PM -0500, Alan Tull wrote:
+> On Sun, May 20, 2018 at 10:03 PM, Wu Hao <hao.wu@intel.com> wrote:
+> > On Mon, May 07, 2018 at 04:09:06PM -0500, Alan Tull wrote:
+> >> On Tue, May 1, 2018 at 9:50 PM, Wu Hao <hao.wu@intel.com> wrote:
+> >>
+> >> Hi Hao,
+> >>
+> >> Looks good!
+> >>
+> >> > This patch introduces compat_id support to fpga manager, it adds
+> >> > a fpga_compat_id pointer to fpga manager data structure to allow
+> >> > fpga manager drivers to save the compatibility id. This compat_id
+> >> > could be used for compatibility checking before doing partial
+> >> > reconfiguration to associated fpga regions.
+> >> >
+> >> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> >> Acked-by: Alan Tull <atull@kernel.org>
+> >
+> > Hi Alan
+> >
+> > Thanks a lot for the acked-by.
+> >
+> > Did you get a chance to look into other patches?
+> 
+> What I'm looking for mostly is: is it clear that this code was written
+> to be reused.  What do you think?  Was it?  Is there a way that intent
+> could be made clear in the code? 
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
- Documentation/driver-api/fpga/fpga-mgr.rst | 220 +++++++++++++++++++++++++++++
- Documentation/driver-api/fpga/index.rst    |   1 +
- Documentation/fpga/fpga-mgr.txt            | 218 ----------------------------
- 3 files changed, 221 insertions(+), 218 deletions(-)
- create mode 100644 Documentation/driver-api/fpga/fpga-mgr.rst
- delete mode 100644 Documentation/fpga/fpga-mgr.txt
+Hi Alan,
 
-diff --git a/Documentation/driver-api/fpga/fpga-mgr.rst b/Documentation/driver-api/fpga/fpga-mgr.rst
-new file mode 100644
-index 0000000..bcf2dd2
---- /dev/null
-+++ b/Documentation/driver-api/fpga/fpga-mgr.rst
-@@ -0,0 +1,220 @@
-+FPGA Manager
-+============
-+
-+Overview
-+--------
-+
-+The FPGA manager core exports a set of functions for programming an FPGA with
-+an image.  The API is manufacturer agnostic.  All manufacturer specifics are
-+hidden away in a low level driver which registers a set of ops with the core.
-+The FPGA image data itself is very manufacturer specific, but for our purposes
-+it's just binary data.  The FPGA manager core won't parse it.
-+
-+The FPGA image to be programmed can be in a scatter gather list, a single
-+contiguous buffer, or a firmware file.  Because allocating contiguous kernel
-+memory for the buffer should be avoided, users are encouraged to use a scatter
-+gather list instead if possible.
-+
-+The particulars for programming the image are presented in a structure (struct
-+fpga_image_info).  This struct contains parameters such as pointers to the
-+FPGA image as well as image-specific particulars such as whether the image was
-+built for full or partial reconfiguration.
-+
-+How to support a new FPGA device
-+--------------------------------
-+
-+To add another FPGA manager, write a driver that implements a set of ops.  The
-+probe function calls fpga_mgr_register(), such as::
-+
-+	static const struct fpga_manager_ops socfpga_fpga_ops = {
-+		.write_init = socfpga_fpga_ops_configure_init,
-+		.write = socfpga_fpga_ops_configure_write,
-+		.write_complete = socfpga_fpga_ops_configure_complete,
-+		.state = socfpga_fpga_ops_state,
-+	};
-+
-+	static int socfpga_fpga_probe(struct platform_device *pdev)
-+	{
-+		struct device *dev = &pdev->dev;
-+		struct socfpga_fpga_priv *priv;
-+		struct fpga_manager *mgr;
-+		int ret;
-+
-+		priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+		if (!priv)
-+			return -ENOMEM;
-+
-+		/*
-+		 * do ioremaps, get interrupts, etc. and save
-+		 * them in priv
-+		 */
-+
-+		mgr = fpga_mgr_create(dev, "Altera SOCFPGA FPGA Manager",
-+				      &socfpga_fpga_ops, priv);
-+		if (!mgr)
-+			return -ENOMEM;
-+
-+		platform_set_drvdata(pdev, mgr);
-+
-+		ret = fpga_mgr_register(mgr);
-+		if (ret)
-+			fpga_mgr_free(mgr);
-+
-+		return ret;
-+	}
-+
-+	static int socfpga_fpga_remove(struct platform_device *pdev)
-+	{
-+		struct fpga_manager *mgr = platform_get_drvdata(pdev);
-+
-+		fpga_mgr_unregister(mgr);
-+
-+		return 0;
-+	}
-+
-+
-+The ops will implement whatever device specific register writes are needed to
-+do the programming sequence for this particular FPGA.  These ops return 0 for
-+success or negative error codes otherwise.
-+
-+The programming sequence is::
-+ 1. .write_init
-+ 2. .write or .write_sg (may be called once or multiple times)
-+ 3. .write_complete
-+
-+The .write_init function will prepare the FPGA to receive the image data.  The
-+buffer passed into .write_init will be atmost .initial_header_size bytes long,
-+if the whole bitstream is not immediately available then the core code will
-+buffer up at least this much before starting.
-+
-+The .write function writes a buffer to the FPGA. The buffer may be contain the
-+whole FPGA image or may be a smaller chunk of an FPGA image.  In the latter
-+case, this function is called multiple times for successive chunks. This interface
-+is suitable for drivers which use PIO.
-+
-+The .write_sg version behaves the same as .write except the input is a sg_table
-+scatter list. This interface is suitable for drivers which use DMA.
-+
-+The .write_complete function is called after all the image has been written
-+to put the FPGA into operating mode.
-+
-+The ops include a .state function which will read the hardware FPGA manager and
-+return a code of type enum fpga_mgr_states.  It doesn't result in a change in
-+hardware state.
-+
-+How to write an image buffer to a supported FPGA
-+------------------------------------------------
-+
-+Some sample code::
-+
-+	#include <linux/fpga/fpga-mgr.h>
-+
-+	struct fpga_manager *mgr;
-+	struct fpga_image_info *info;
-+	int ret;
-+
-+	/*
-+	 * Get a reference to FPGA manager.  The manager is not locked, so you can
-+	 * hold onto this reference without it preventing programming.
-+	 *
-+	 * This example uses the device node of the manager.  Alternatively, use
-+	 * fpga_mgr_get(dev) instead if you have the device.
-+	 */
-+	mgr = of_fpga_mgr_get(mgr_node);
-+
-+	/* struct with information about the FPGA image to program. */
-+	info = fpga_image_info_alloc(dev);
-+
-+	/* flags indicates whether to do full or partial reconfiguration */
-+	info->flags = FPGA_MGR_PARTIAL_RECONFIG;
-+
-+	/*
-+	 * At this point, indicate where the image is. This is pseudo-code; you're
-+	 * going to use one of these three.
-+	 */
-+	if (image is in a scatter gather table) {
-+
-+		info->sgt = [your scatter gather table]
-+
-+	} else if (image is in a buffer) {
-+
-+		info->buf = [your image buffer]
-+		info->count = [image buffer size]
-+
-+	} else if (image is in a firmware file) {
-+
-+		info->firmware_name = devm_kstrdup(dev, firmware_name, GFP_KERNEL);
-+
-+	}
-+
-+	/* Get exclusive control of FPGA manager */
-+	ret = fpga_mgr_lock(mgr);
-+
-+	/* Load the buffer to the FPGA */
-+	ret = fpga_mgr_buf_load(mgr, &info, buf, count);
-+
-+	/* Release the FPGA manager */
-+	fpga_mgr_unlock(mgr);
-+	fpga_mgr_put(mgr);
-+
-+	/* Deallocate the image info if you're done with it */
-+	fpga_image_info_free(info);
-+
-+API for implementing a new FPGA Manager driver
-+----------------------------------------------
-+
-+.. kernel-doc:: include/linux/fpga/fpga-mgr.h
-+   :functions: fpga_manager
-+
-+.. kernel-doc:: include/linux/fpga/fpga-mgr.h
-+   :functions: fpga_manager_ops
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_create
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_free
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_register
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_unregister
-+
-+API for programming a FPGA
-+--------------------------
-+
-+.. kernel-doc:: include/linux/fpga/fpga-mgr.h
-+   :functions: fpga_image_info
-+
-+.. kernel-doc:: include/linux/fpga/fpga-mgr.h
-+   :functions: fpga_mgr_states
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_image_info_alloc
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_image_info_free
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: of_fpga_mgr_get
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_get
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_put
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_lock
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_unlock
-+
-+.. kernel-doc:: include/linux/fpga/fpga-mgr.h
-+   :functions: fpga_mgr_states
-+
-+Note - use :c:func:`fpga_region_program_fpga()` instead of :c:func:`fpga_mgr_load()`
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_load
-diff --git a/Documentation/driver-api/fpga/index.rst b/Documentation/driver-api/fpga/index.rst
-index 71e568a..34b2075 100644
---- a/Documentation/driver-api/fpga/index.rst
-+++ b/Documentation/driver-api/fpga/index.rst
-@@ -8,3 +8,4 @@ FPGA Subsystem
-    :maxdepth: 2
- 
-    intro
-+   fpga-mgr
-diff --git a/Documentation/fpga/fpga-mgr.txt b/Documentation/fpga/fpga-mgr.txt
-deleted file mode 100644
-index 86b6df6..0000000
---- a/Documentation/fpga/fpga-mgr.txt
-+++ /dev/null
-@@ -1,218 +0,0 @@
--FPGA Manager Core
--
--Alan Tull 2015
--
--Overview
--========
--
--The FPGA manager core exports a set of functions for programming an FPGA with
--an image.  The API is manufacturer agnostic.  All manufacturer specifics are
--hidden away in a low level driver which registers a set of ops with the core.
--The FPGA image data itself is very manufacturer specific, but for our purposes
--it's just binary data.  The FPGA manager core won't parse it.
--
--The FPGA image to be programmed can be in a scatter gather list, a single
--contiguous buffer, or a firmware file.  Because allocating contiguous kernel
--memory for the buffer should be avoided, users are encouraged to use a scatter
--gather list instead if possible.
--
--The particulars for programming the image are presented in a structure (struct
--fpga_image_info).  This struct contains parameters such as pointers to the
--FPGA image as well as image-specific particulars such as whether the image was
--built for full or partial reconfiguration.
--
--API Functions:
--==============
--
--To program the FPGA:
----------------------
--
--	int fpga_mgr_load(struct fpga_manager *mgr,
--			  struct fpga_image_info *info);
--
--Load the FPGA from an image which is indicated in the info.  If successful,
--the FPGA ends up in operating mode.  Return 0 on success or a negative error
--code.
--
--To allocate or free a struct fpga_image_info:
-----------------------------------------------
--
--	struct fpga_image_info *fpga_image_info_alloc(struct device *dev);
--
--	void fpga_image_info_free(struct fpga_image_info *info);
--
--To get/put a reference to a FPGA manager:
-------------------------------------------
--
--	struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
--	struct fpga_manager *fpga_mgr_get(struct device *dev);
--	void fpga_mgr_put(struct fpga_manager *mgr);
--
--Given a DT node or device, get a reference to a FPGA manager.  This pointer
--can be saved until you are ready to program the FPGA.  fpga_mgr_put releases
--the reference.
--
--
--To get exclusive control of a FPGA manager:
---------------------------------------------
--
--	int fpga_mgr_lock(struct fpga_manager *mgr);
--	void fpga_mgr_unlock(struct fpga_manager *mgr);
--
--The user should call fpga_mgr_lock and verify that it returns 0 before
--attempting to program the FPGA.  Likewise, the user should call
--fpga_mgr_unlock when done programming the FPGA.
--
--To alloc/free a FPGA manager struct:
--------------------------------------
--
--	struct fpga_manager *fpga_mgr_create(struct device *dev,
--					     const char *name,
--					     const struct fpga_manager_ops *mops,
--					     void *priv);
--	void fpga_mgr_free(struct fpga_manager *mgr);
--
--To register or unregister the low level FPGA-specific driver:
---------------------------------------------------------------
--
--	int fpga_mgr_register(struct fpga_manager *mgr);
--
--	void fpga_mgr_unregister(struct fpga_manager *mgr);
--
--Use of these functions is described below in "How To Support a new FPGA
--device."
--
--
--How to write an image buffer to a supported FPGA
--================================================
--#include <linux/fpga/fpga-mgr.h>
--
--struct fpga_manager *mgr;
--struct fpga_image_info *info;
--int ret;
--
--/*
-- * Get a reference to FPGA manager.  The manager is not locked, so you can
-- * hold onto this reference without it preventing programming.
-- *
-- * This example uses the device node of the manager.  Alternatively, use
-- * fpga_mgr_get(dev) instead if you have the device.
-- */
--mgr = of_fpga_mgr_get(mgr_node);
--
--/* struct with information about the FPGA image to program. */
--info = fpga_image_info_alloc(dev);
--
--/* flags indicates whether to do full or partial reconfiguration */
--info->flags = FPGA_MGR_PARTIAL_RECONFIG;
--
--/*
-- * At this point, indicate where the image is. This is pseudo-code; you're
-- * going to use one of these three.
-- */
--if (image is in a scatter gather table) {
--
--	info->sgt = [your scatter gather table]
--
--} else if (image is in a buffer) {
--
--	info->buf = [your image buffer]
--	info->count = [image buffer size]
--
--} else if (image is in a firmware file) {
--
--	info->firmware_name = devm_kstrdup(dev, firmware_name, GFP_KERNEL);
--
--}
--
--/* Get exclusive control of FPGA manager */
--ret = fpga_mgr_lock(mgr);
--
--/* Load the buffer to the FPGA */
--ret = fpga_mgr_buf_load(mgr, &info, buf, count);
--
--/* Release the FPGA manager */
--fpga_mgr_unlock(mgr);
--fpga_mgr_put(mgr);
--
--/* Deallocate the image info if you're done with it */
--fpga_image_info_free(info);
--
--How to support a new FPGA device
--================================
--To add another FPGA manager, write a driver that implements a set of ops.  The
--probe function calls fpga_mgr_register(), such as:
--
--static const struct fpga_manager_ops socfpga_fpga_ops = {
--       .write_init = socfpga_fpga_ops_configure_init,
--       .write = socfpga_fpga_ops_configure_write,
--       .write_complete = socfpga_fpga_ops_configure_complete,
--       .state = socfpga_fpga_ops_state,
--};
--
--static int socfpga_fpga_probe(struct platform_device *pdev)
--{
--	struct device *dev = &pdev->dev;
--	struct socfpga_fpga_priv *priv;
--	struct fpga_manager *mgr;
--	int ret;
--
--	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
--	if (!priv)
--		return -ENOMEM;
--
--	/* ... do ioremaps, get interrupts, etc. and save
--	   them in priv... */
--
--	mgr = fpga_mgr_create(dev, "Altera SOCFPGA FPGA Manager",
--			      &socfpga_fpga_ops, priv);
--	if (!mgr)
--		return -ENOMEM;
--
--	platform_set_drvdata(pdev, mgr);
--
--	ret = fpga_mgr_register(mgr);
--	if (ret)
--		fpga_mgr_free(mgr);
--
--	return ret;
--}
--
--static int socfpga_fpga_remove(struct platform_device *pdev)
--{
--	struct fpga_manager *mgr = platform_get_drvdata(pdev);
--
--	fpga_mgr_unregister(mgr);
--
--	return 0;
--}
--
--
--The ops will implement whatever device specific register writes are needed to
--do the programming sequence for this particular FPGA.  These ops return 0 for
--success or negative error codes otherwise.
--
--The programming sequence is:
-- 1. .write_init
-- 2. .write or .write_sg (may be called once or multiple times)
-- 3. .write_complete
--
--The .write_init function will prepare the FPGA to receive the image data.  The
--buffer passed into .write_init will be atmost .initial_header_size bytes long,
--if the whole bitstream is not immediately available then the core code will
--buffer up at least this much before starting.
--
--The .write function writes a buffer to the FPGA. The buffer may be contain the
--whole FPGA image or may be a smaller chunk of an FPGA image.  In the latter
--case, this function is called multiple times for successive chunks. This interface
--is suitable for drivers which use PIO.
--
--The .write_sg version behaves the same as .write except the input is a sg_table
--scatter list. This interface is suitable for drivers which use DMA.
--
--The .write_complete function is called after all the image has been written
--to put the FPGA into operating mode.
--
--The ops include a .state function which will read the hardware FPGA manager and
--return a code of type enum fpga_mgr_states.  It doesn't result in a change in
--hardware state.
--- 
-2.7.4
+I am a little confused, so I guess I need to clarify several things here
+to avoid misunderstanding.
+
+Actualy we are submitting this patchset to enable Intel FPGA products
+(e.g Intel Programmable Acceleration Card (PAC) with Intel Arria 10 GX
+FPGA[1]). Once this device driver is accepted by upstream, then people
+could use them with standard linux kernel. So the major purpose of the
+patchset is just a device driver for Intel specific FPGA device enabling.
+
+The Device Feature List (DFL) is one concept used in the Intel PAC A10
+FPGA device, it's a linked list of device features with predefined data
+structures. The DFL is defined in the FPGA device spec from Intel, but we
+all think it would be great if more people coud reuse it in their devices
+too, so some code could be reused. I think it may not be a problem for
+some of other Intel FPGA products to reuse these driver code, because they
+probably follow the same DFL spec to have Port and FME implemented. It's
+the same for other developers/vendors to reuse DFL to create their own
+products. They have to implement the Port and FME in device memory per
+spec, otherwise it may not be able to reuse current patchset. Please note
+that current DFL spec doesn't provide a method to customize the Port or
+FME, or even have a totally new Port or FME, but it's possible in the
+future version of DFL.
+
+So to me, it's conditional reusable for current patchset. It requires the
+FPGA device to follow the same DFL spec with Port and FME defined (and
+their private features too).
+
+> This patchset has a history of being
+> a one-off solution for a single platform, doing things to work around
+> the FPGA framework instead of doing what the framework was intended to
+> do.  The FPGA framework was written so that any FPGA could be used
+> with interface.  Currently in the upstream that means any of the
+> supported FPGAs can be programmed with the same of-fpga-region code.
+> It didn't have to get rewritten for each fpga.
+
+Per your suggestion, we already have a separated layer for enumeration,
+different platform devices/drivers for different functional blocks (e.g
+Port and FME), it also creates fpga region, manager, bridge to keep aligned
+with current FPGA framework. Thanks again for your valuable suggestions.
+
+> 
+> This patchset adds 5000 lines and I understand that another 4000 is
+> coming to add to this.  
+
+This is because there are a lot of features implemented by Intel FPGA
+products (e.g Intel PAC Card). Most code after this patchset is to add
+private features support to Port and FME.
+
+> Has that been written so that the upper layer
+> can be reused?  Or will the 'reusable' version be another huge
+> patchset?  Do you see my point?  
+
+I think current code is conditional reusable per explaination above, do
+you agree? or you have other concerns on current driver architecture?
+
+> Up to this point I've been trying to
+> help figure out what changes could make this reusable.  If you could
+> get with someone to take responsibility for architecting this patchset
+> to be clearly reusable, that could speed things up.
+
+Please let me know which part is unclear to you. I see you use "clear"
+for several times in your response, I do feel you have some concerns
+somewhere, may I know which part is not clear to you? If you're not clear
+about how DFL could support the customization. e.g if someone introduced
+a totally new Port, then how it's going to reuse our current driver. I
+would like to say, the behavior is not defined by DFL spec at all, so
+current code may not be able to reused at all. Actually there are a lot
+of similar open questions which are also unclear to me (e.g if spec will
+allow to introduce a totally new port, if yes, then how to handle the
+reset code with existing FME) as spec says nothing about these cases, at
+least for current version. As no related description in DFL spec, then
+we don't have to consider these cases for now.
+
+Thanks
+Hao
+
+> 
+> If there are improvements to the current FPGA framework that can help
+> this work, I'm interested and open to suggestions/code in that
+> direction..
+> 
+> Alan
+> 
+> >
+> > Thanks
+> > Hao
