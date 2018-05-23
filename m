@@ -1,9 +1,7 @@
-Return-Path: <SRS0=5V+a=IL=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=5V+a=IL=ettus.com=moritz.fischer@kernel.org>
-Date: Thu, 24 May 2018 10:07:44 -0700
+Date: Wed, 23 May 2018 10:15:26 -0700
 From: Moritz Fischer <mdf@kernel.org>
 Subject: Re: [PATCH 06/14] fpga: mgr: kernel-doc fixes
-Message-ID: <20180524170744.GC4051@archbook>
+Message-ID: <20180523171526.GA3915@archbook>
 References: <20180516235007.3951-1-atull@kernel.org>
  <20180516235007.3951-7-atull@kernel.org>
 MIME-Version: 1.0
