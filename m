@@ -1,7 +1,7 @@
-Date: Wed, 23 May 2018 10:15:26 -0700
+Date: Wed, 23 May 2018 10:14:25 -0700
 From: Moritz Fischer <mdf@kernel.org>
 Subject: Re: [PATCH 06/14] fpga: mgr: kernel-doc fixes
-Message-ID: <20180523171526.GA3915@archbook>
+Message-ID: <20180523171425.GA3784@archbook>
 References: <20180516235007.3951-1-atull@kernel.org>
  <20180516235007.3951-7-atull@kernel.org>
 MIME-Version: 1.0
