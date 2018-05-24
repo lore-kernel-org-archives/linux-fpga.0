@@ -1,246 +1,71 @@
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 14/28] fpga: dfl: add FPGA Management Engine driver basic framework
-Date: Wed,  2 May 2018 10:50:17 +0800
-Message-Id: <1525229431-3087-15-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Return-Path: <SRS0=5V+a=IL=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=5V+a=IL=ettus.com=moritz.fischer@kernel.org>
+Date: Thu, 24 May 2018 10:09:08 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH 08/14] fpga: region: kernel-doc fixes
+Message-ID: <20180524170908.GE4051@archbook>
+References: <20180516235007.3951-1-atull@kernel.org>
+ <20180516235007.3951-9-atull@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20180516235007.3951-9-atull@kernel.org>
+To: Alan Tull <atull@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Kang Luwei <luwei.kang@intel.com>
+On Wed, May 16, 2018 at 06:50:01PM -0500, Alan Tull wrote:
+> Fix formatting and some cleanup for the kernel-doc documentation in
+> fpga-region.c
+> 
+> Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+> ---
+>  drivers/fpga/fpga-region.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+> index 0878f62..112fa3a 100644
+> --- a/drivers/fpga/fpga-region.c
+> +++ b/drivers/fpga/fpga-region.c
+> @@ -81,13 +81,16 @@ static void fpga_region_put(struct fpga_region *region)
+>  
+>  /**
+>   * fpga_region_program_fpga - program FPGA
+> + *
+>   * @region: FPGA region
+> + *
+>   * Program an FPGA using fpga image info (region->info).
+>   * If the region has a get_bridges function, the exclusive reference for the
+>   * bridges will be held if programming succeeds.  This is intended to prevent
+>   * reprogramming the region until the caller considers it safe to do so.
+>   * The caller will need to call fpga_bridges_put() before attempting to
+>   * reprogram the region.
+> + *
+>   * Return 0 for success or negative error code.
+>   */
+>  int fpga_region_program_fpga(struct fpga_region *region)
+> @@ -216,7 +219,7 @@ void fpga_region_free(struct fpga_region *region)
+>  }
+>  EXPORT_SYMBOL_GPL(fpga_region_free);
+>  
+> -/*
+> +/**
+>   * fpga_region_register - register a FPGA region
+>   * @region: FPGA region created by fpga_region_create
+>   * Return: 0 or -errno
+> @@ -228,7 +231,7 @@ int fpga_region_register(struct fpga_region *region)
+>  }
+>  EXPORT_SYMBOL_GPL(fpga_region_register);
+>  
+> -/*
+> +/**
+>   * fpga_region_unregister - unregister a FPGA region
+>   * @region: FPGA region
+>   */
+> -- 
+> 2.7.4
+> 
 
-The FPGA Management Engine (FME) provides power, thermal management,
-performance counters, partial reconfiguration and other functions. For each
-function, it is packaged into a private feature linked to the FME feature
-device in the 'Device Feature List'. It's a platform device created by
-DFL framework.
-
-This patch adds the basic framework of FME platform driver. It defines
-sub feature drivers to handle the different sub features, including init,
-uinit and ioctl. It also registers the file operations for the device file.
-
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Kang Luwei <luwei.kang@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
-v3: rename driver from intel-fpga-fme to dfl-fme
-    rename Kconfig from INTEL_FPGA_FME to FPGA_DFL_FME
-v4: fix SPDX license issue, use dfl-fme as module name
-v5: rebase, due to DFL framework naming changes on functions and data structures.
-    fix uinit order in remove function.
-    remove else block in fme_ioctl function per suggestion from Alan.
----
- drivers/fpga/Kconfig        |  10 +++
- drivers/fpga/Makefile       |   3 +
- drivers/fpga/dfl-fme-main.c | 158 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 171 insertions(+)
- create mode 100644 drivers/fpga/dfl-fme-main.c
-
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 87f3d44..103d5e2 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -140,6 +140,16 @@ config FPGA_DFL
- 	  Gate Array (FPGA) solutions which implement Device Feature List.
- 	  It provides enumeration APIs, and feature device infrastructure.
- 
-+config FPGA_DFL_FME
-+	tristate "FPGA DFL FME Driver"
-+	depends on FPGA_DFL
-+	help
-+	  The FPGA Management Engine (FME) is a feature device implemented
-+	  under Device Feature List (DFL) framework. Select this option to
-+	  enable the platform device driver for FME which implements all
-+	  FPGA platform level management features. There shall be 1 FME
-+	  per DFL based FPGA device.
-+
- config FPGA_DFL_PCI
- 	tristate "FPGA Device Feature List (DFL) PCIe Device Driver"
- 	depends on PCI && FPGA_DFL
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 4375630..fbd1c85 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -30,6 +30,9 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
- 
- # FPGA Device Feature List Support
- obj-$(CONFIG_FPGA_DFL)			+= dfl.o
-+obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
-+
-+dfl-fme-objs := dfl-fme-main.o
- 
- # Drivers for FPGAs which implement DFL
- obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-new file mode 100644
-index 0000000..000651f
---- /dev/null
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -0,0 +1,158 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Driver for FPGA Management Engine (FME)
-+ *
-+ * Copyright (C) 2017 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+
-+#include "dfl.h"
-+
-+static int
-+fme_hdr_init(struct platform_device *pdev, struct dfl_feature *feature)
-+{
-+	dev_dbg(&pdev->dev, "FME HDR Init.\n");
-+
-+	return 0;
-+}
-+
-+static void
-+fme_hdr_uinit(struct platform_device *pdev, struct dfl_feature *feature)
-+{
-+	dev_dbg(&pdev->dev, "FME HDR UInit.\n");
-+}
-+
-+static const struct dfl_feature_ops fme_hdr_ops = {
-+	.init = fme_hdr_init,
-+	.uinit = fme_hdr_uinit,
-+};
-+
-+static struct dfl_feature_driver fme_feature_drvs[] = {
-+	{
-+		.id = FME_FEATURE_ID_HEADER,
-+		.ops = &fme_hdr_ops,
-+	},
-+	{
-+		.ops = NULL,
-+	},
-+};
-+
-+static int fme_open(struct inode *inode, struct file *filp)
-+{
-+	struct platform_device *fdev = dfl_fpga_inode_to_feature_dev(inode);
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&fdev->dev);
-+	int ret;
-+
-+	if (WARN_ON(!pdata))
-+		return -ENODEV;
-+
-+	ret = dfl_feature_dev_use_begin(pdata);
-+	if (ret)
-+		return ret;
-+
-+	dev_dbg(&fdev->dev, "Device File Open\n");
-+	filp->private_data = pdata;
-+
-+	return 0;
-+}
-+
-+static int fme_release(struct inode *inode, struct file *filp)
-+{
-+	struct dfl_feature_platform_data *pdata = filp->private_data;
-+	struct platform_device *pdev = pdata->dev;
-+
-+	dev_dbg(&pdev->dev, "Device File Release\n");
-+	dfl_feature_dev_use_end(pdata);
-+
-+	return 0;
-+}
-+
-+static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
-+{
-+	struct dfl_feature_platform_data *pdata = filp->private_data;
-+	struct platform_device *pdev = pdata->dev;
-+	struct dfl_feature *f;
-+	long ret;
-+
-+	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
-+
-+	switch (cmd) {
-+	default:
-+		/*
-+		 * Let sub-feature's ioctl function to handle the cmd
-+		 * Sub-feature's ioctl returns -ENODEV when cmd is not
-+		 * handled in this sub feature, and returns 0 and other
-+		 * error code if cmd is handled.
-+		 */
-+		dfl_fpga_dev_for_each_feature(pdata, f) {
-+			if (f->ops && f->ops->ioctl) {
-+				ret = f->ops->ioctl(pdev, f, cmd, arg);
-+				if (ret != -ENODEV)
-+					return ret;
-+			}
-+		}
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static const struct file_operations fme_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= fme_open,
-+	.release	= fme_release,
-+	.unlocked_ioctl = fme_ioctl,
-+};
-+
-+static int fme_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+
-+	ret = dfl_fpga_dev_feature_init(pdev, fme_feature_drvs);
-+	if (ret)
-+		goto exit;
-+
-+	ret = dfl_fpga_register_dev_ops(pdev, &fme_fops, THIS_MODULE);
-+	if (ret)
-+		goto feature_uinit;
-+
-+	return 0;
-+
-+feature_uinit:
-+	dfl_fpga_dev_feature_uinit(pdev);
-+exit:
-+	return ret;
-+}
-+
-+static int fme_remove(struct platform_device *pdev)
-+{
-+	dfl_fpga_unregister_dev_ops(pdev);
-+	dfl_fpga_dev_feature_uinit(pdev);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver fme_driver = {
-+	.driver	= {
-+		.name    = DFL_FPGA_FEATURE_DEV_FME,
-+	},
-+	.probe   = fme_probe,
-+	.remove  = fme_remove,
-+};
-+
-+module_platform_driver(fme_driver);
-+
-+MODULE_DESCRIPTION("FPGA Management Engine driver");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:dfl-fme");
--- 
-1.8.3.1
+Thanks,
+Moritz
