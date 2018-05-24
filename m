@@ -1,66 +1,107 @@
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 26/28] fpga: dfl: afu: add DFL_FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
-Date: Wed,  2 May 2018 10:50:29 +0800
-Message-Id: <1525229431-3087-27-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Return-Path: <SRS0=5V+a=IL=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=5V+a=IL=ettus.com=moritz.fischer@kernel.org>
+Date: Thu, 24 May 2018 10:04:09 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCHv5 1/8] dt-bindings, firmware: add Intel Stratix10 service
+ layer binding
+Message-ID: <20180524170409.GA4051@archbook>
+References: <1527179600-26441-1-git-send-email-richard.gong@linux.intel.com>
+ <1527179600-26441-2-git-send-email-richard.gong@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1527179600-26441-2-git-send-email-richard.gong@linux.intel.com>
+To: richard.gong@linux.intel.com
+Cc: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org, corbet@lwn.net, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-DFL_FPGA_GET_API_VERSION and DFL_FPGA_CHECK_EXTENSION ioctls are common
-ones which need to be supported by all feature devices drivers including
-FME and AFU. This patch implements above 2 ioctls in FPGA Accelerated
-Function Unit (AFU) driver.
-
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
+On Thu, May 24, 2018 at 11:33:13AM -0500, richard.gong@linux.intel.com wrote:
+> From: Richard Gong <richard.gong@intel.com>
+> 
+> Add a device tree binding for the Intel Stratix10 service layer driver
+> 
+> Signed-off-by: Richard Gong <richard.gong@intel.com>
+> Signed-off-by: Alan Tull <atull@kernel.org>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: rebased
-v3: rebased as driver renamed to fpga-dfl-afu
-    fix one checkpatch issue
-v4: add Acked-by from Alan and Moritz.
-v5: rebase, and add DFL_ prefix to APIs.
----
- drivers/fpga/dfl-afu-main.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 6f846b7..57bb726 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -236,6 +236,13 @@ static int afu_release(struct inode *inode, struct file *filp)
- 	return 0;
- }
- 
-+static long afu_ioctl_check_extension(struct dfl_feature_platform_data *pdata,
-+				      unsigned long arg)
-+{
-+	/* No extension support for now */
-+	return 0;
-+}
-+
- static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- {
- 	struct platform_device *pdev = filp->private_data;
-@@ -248,6 +255,10 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	pdata = dev_get_platdata(&pdev->dev);
- 
- 	switch (cmd) {
-+	case DFL_FPGA_GET_API_VERSION:
-+		return DFL_FPGA_API_VERSION;
-+	case DFL_FPGA_CHECK_EXTENSION:
-+		return afu_ioctl_check_extension(pdata, arg);
- 	default:
- 		/*
- 		 * Let sub-feature's ioctl function to handle the cmd
--- 
-1.8.3.1
+> ---
+> v2: Change to put service layer driver node under the firmware node
+>     Change compatible to "intel, stratix10-svc"
+> v3: No change
+> v4: Add Rob's Reviewed-by
+> v5: No change
+> ---
+>  .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
+>  1 file changed, 57 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+> new file mode 100644
+> index 0000000..1fa6606
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+> @@ -0,0 +1,57 @@
+> +Intel Service Layer Driver for Stratix10 SoC
+> +============================================
+> +Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
+> +processor system (HPS) and Secure Device Manager (SDM). When the FPGA is
+> +configured from HPS, there needs to be a way for HPS to notify SDM the
+> +location and size of the configuration data. Then SDM will get the
+> +configuration data from that location and perform the FPGA configuration.
+> +
+> +To meet the whole system security needs and support virtual machine requesting
+> +communication with SDM, only the secure world of software (EL3, Exception
+> +Layer 3) can interface with SDM. All software entities running on other
+> +exception layers must channel through the EL3 software whenever it needs
+> +service from SDM.
+> +
+> +Intel Stratix10 service layer driver, running at privileged exception level
+> +(EL1, Exception Layer 1), interfaces with the service providers and provides
+> +the services for FPGA configuration, QSPI, Crypto and warm reset. Service layer
+> +driver also manages secure monitor call (SMC) to communicate with secure monitor
+> +code running in EL3.
+> +
+> +Required properties:
+> +-------------------
+> +The svc node has the following mandatory properties, must be located under
+> +the firmware node.
+> +
+> +- compatible: "intel,stratix10-svc"
+> +- method: smc or hvc
+> +        smc - Secure Monitor Call
+> +        hvc - Hypervisor Call
+> +- memory-region:
+> +	phandle to the reserved memory node. See
+> +	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
+> +	for details
+> +
+> +Example:
+> +-------
+> +
+> +	reserved-memory {
+> +                #address-cells = <2>;
+> +                #size-cells = <2>;
+> +                ranges;
+> +
+> +                service_reserved: svcbuffer@0 {
+> +                        compatible = "shared-dma-pool";
+> +                        reg = <0x0 0x0 0x0 0x1000000>;
+> +                        alignment = <0x1000>;
+> +                        no-map;
+> +                };
+> +        };
+> +
+> +	firmware {
+> +		svc {
+> +			compatible = "intel,stratix10-svc";
+> +			method = "smc";
+> +			memory-region = <&service_reserved>;
+> +		};
+> +	};
+> -- 
+> 2.7.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
