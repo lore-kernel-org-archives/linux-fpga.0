@@ -1,61 +1,61 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 08/14] fpga: region: kernel-doc fixes
-Date: Wed, 16 May 2018 18:50:01 -0500
-Message-Id: <20180516235007.3951-9-atull@kernel.org>
-In-Reply-To: <20180516235007.3951-1-atull@kernel.org>
-References: <20180516235007.3951-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
+Return-Path: <SRS0=XHe7=IL=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=XHe7=IL=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv5 5/8] arm64: dts: stratix10: add fpga manager and region
+Date: Thu, 24 May 2018 11:33:17 -0500
+Message-Id: <1527179600-26441-6-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1527179600-26441-1-git-send-email-richard.gong@linux.intel.com>
+References: <1527179600-26441-1-git-send-email-richard.gong@linux.intel.com>
+To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-Fix formatting and some cleanup for the kernel-doc documentation in
-fpga-region.c
+From: Alan Tull <atull@kernel.org>
+
+Add the Stratix10 FPGA manager and a FPGA region to the
+device tree.
 
 Signed-off-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Richard Gong <richard.gong@intel.com>
 ---
- drivers/fpga/fpga-region.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+v2: this patch is added in patch set version 2
+v3: change to put fpga_mgr node under firmware/svc node
+v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
+    add Richard's signed-off-by
+v5: no change
+---
+ arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 0878f62..112fa3a 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -81,13 +81,16 @@ static void fpga_region_put(struct fpga_region *region)
+diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+index c257287..8f8f409 100644
+--- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
++++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+@@ -106,6 +106,14 @@
+ 		interrupt-parent = <&intc>;
+ 		ranges = <0 0 0 0xffffffff>;
  
- /**
-  * fpga_region_program_fpga - program FPGA
-+ *
-  * @region: FPGA region
-+ *
-  * Program an FPGA using fpga image info (region->info).
-  * If the region has a get_bridges function, the exclusive reference for the
-  * bridges will be held if programming succeeds.  This is intended to prevent
-  * reprogramming the region until the caller considers it safe to do so.
-  * The caller will need to call fpga_bridges_put() before attempting to
-  * reprogram the region.
-+ *
-  * Return 0 for success or negative error code.
-  */
- int fpga_region_program_fpga(struct fpga_region *region)
-@@ -216,7 +219,7 @@ void fpga_region_free(struct fpga_region *region)
- }
- EXPORT_SYMBOL_GPL(fpga_region_free);
- 
--/*
-+/**
-  * fpga_region_register - register a FPGA region
-  * @region: FPGA region created by fpga_region_create
-  * Return: 0 or -errno
-@@ -228,7 +231,7 @@ int fpga_region_register(struct fpga_region *region)
- }
- EXPORT_SYMBOL_GPL(fpga_region_register);
- 
--/*
-+/**
-  * fpga_region_unregister - unregister a FPGA region
-  * @region: FPGA region
-  */
++		base_fpga_region {
++			#address-cells = <0x1>;
++			#size-cells = <0x1>;
++
++			compatible = "fpga-region";
++			fpga-mgr = <&fpga_mgr>;
++		};
++
+ 		clkmgr: clock-controller@ffd10000 {
+ 			compatible = "intel,stratix10-clkmgr";
+ 			reg = <0xffd10000 0x1000>;
+@@ -506,6 +514,10 @@
+ 				compatible = "intel,stratix10-svc";
+ 				method = "smc";
+ 				memory-region = <&service_reserved>;
++
++				fpga_mgr: fpga-mgr {
++					compatible = "intel,stratix10-soc-fpga-mgr";
++				};
+ 			};
+ 		};
+ 	};
 -- 
 2.7.4
