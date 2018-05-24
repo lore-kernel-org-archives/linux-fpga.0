@@ -1,61 +1,45 @@
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 04/28] fpga: mgr: add compat_id support
-Date: Wed,  2 May 2018 10:50:07 +0800
-Message-Id: <1525229431-3087-5-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Return-Path: <SRS0=5V+a=IL=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=5V+a=IL=ettus.com=moritz.fischer@kernel.org>
+Date: Thu, 24 May 2018 10:08:13 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH 07/14] fpga: bridge: kernel-doc fixes
+Message-ID: <20180524170813.GD4051@archbook>
+References: <20180516235007.3951-1-atull@kernel.org>
+ <20180516235007.3951-8-atull@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20180516235007.3951-8-atull@kernel.org>
+To: Alan Tull <atull@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch introduces compat_id support to fpga manager, it adds
-a fpga_compat_id pointer to fpga manager data structure to allow
-fpga manager drivers to save the compatibility id. This compat_id
-could be used for compatibility checking before doing partial
-reconfiguration to associated fpga regions.
-
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
- include/linux/fpga/fpga-mgr.h | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 802eac8..f163f22 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -147,11 +147,23 @@ struct fpga_manager_ops {
- #define FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR	BIT(4)
- 
- /**
-+ * struct fpga_compat_id - id for compatibility check
-+ *
-+ * @id_h: high 64bit of the compat_id
-+ * @id_l: low 64bit of the compat_id
-+ */
-+struct fpga_compat_id {
-+	u64 id_h;
-+	u64 id_l;
-+};
-+
-+/**
-  * struct fpga_manager - fpga manager structure
-  * @name: name of low level fpga manager
-  * @dev: fpga manager device
-  * @ref_mutex: only allows one reference to fpga manager
-  * @state: state of fpga manager
-+ * @compat_id: FPGA manager id for compatibility check.
-  * @mops: pointer to struct of fpga manager ops
-  * @priv: low level driver private date
-  */
-@@ -160,6 +172,7 @@ struct fpga_manager {
- 	struct device dev;
- 	struct mutex ref_mutex;
- 	enum fpga_mgr_states state;
-+	struct fpga_compat_id *compat_id;
- 	const struct fpga_manager_ops *mops;
- 	void *priv;
- };
--- 
-1.8.3.1
+On Wed, May 16, 2018 at 06:50:00PM -0500, Alan Tull wrote:
+> Fix the following warnings when documentation is built:
+> 
+> ./drivers/fpga/fpga-bridge.c:143: warning: Function parameter or
+> member 'info' not described in 'fpga_bridge_get'
+> 
+> ./drivers/fpga/fpga-bridge.c:1: warning: no structured comments found
+> 
+> Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+> ---
+>  drivers/fpga/fpga-bridge.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+> index 164eb55..4b207a7 100644
+> --- a/drivers/fpga/fpga-bridge.c
+> +++ b/drivers/fpga/fpga-bridge.c
+> @@ -121,6 +121,7 @@ static int fpga_bridge_dev_match(struct device *dev, const void *data)
+>  /**
+>   * fpga_bridge_get - get an exclusive reference to a fpga bridge
+>   * @dev:	parent device that fpga bridge was registered with
+> + * @info:	fpga manager info
+>   *
+>   * Given a device, get an exclusive reference to a fpga bridge.
+>   *
+> -- 
+> 2.7.4
+> 
