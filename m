@@ -1,412 +1,123 @@
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=eTr/=HV=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 18/28] fpga: dfl: add fpga manager platform driver for FME
-Date: Wed,  2 May 2018 10:50:21 +0800
-Message-Id: <1525229431-3087-19-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Return-Path: <SRS0=FIJW=IN=infradead.org=rdunlap@kernel.org>
+Return-Path: <SRS0=FIJW=IN=infradead.org=rdunlap@kernel.org>
+Subject: Re: [PATCH 09/14] Documentation: fpga: move fpga overview to
+ driver-api
+References: <20180516235007.3951-1-atull@kernel.org>
+ <20180516235007.3951-10-atull@kernel.org>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <4799501f-bca4-0a56-6d93-6cae844d7973@infradead.org>
+Date: Fri, 25 May 2018 19:21:17 -0700
+MIME-Version: 1.0
+In-Reply-To: <20180516235007.3951-10-atull@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Alan Tull <atull@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds fpga manager driver for FPGA Management Engine (FME). It
-implements fpga_manager_ops for FPGA Partial Reconfiguration function.
+On 05/16/2018 04:50 PM, Alan Tull wrote:
+> Start of moving Documentation/fpga/*.txt to driver-api, including:
+>  - Add new directory driver-api/fpga
+>  - Add new file driver-api/fpga/index.rst
+>  - Add driver-api/fpga to driver-api/index.rst
+>  - Move Documentation/fpga/overview.txt to driver-api/fpga/intro.rst
+>  - Formatting and rewrites so that intro.rst will build cleanly
+>    and form a good introduction to the rest of the docs to be added.
+> 
+> Signed-off-by: Alan Tull <atull@kernel.org>
+> ---
+>  Documentation/driver-api/fpga/index.rst | 10 ++++++
+>  Documentation/driver-api/fpga/intro.rst | 54 +++++++++++++++++++++++++++++++++
+>  Documentation/driver-api/index.rst      |  1 +
+>  Documentation/fpga/overview.txt         | 23 --------------
+>  4 files changed, 65 insertions(+), 23 deletions(-)
+>  create mode 100644 Documentation/driver-api/fpga/index.rst
+>  create mode 100644 Documentation/driver-api/fpga/intro.rst
+>  delete mode 100644 Documentation/fpga/overview.txt
 
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Kang Luwei <luwei.kang@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
-v3: rename driver to dfl-fpga-fme-mgr
-    implemented status callback for fpga manager
-    rebased due to fpga api changes
-v4: rename to dfl-fme-mgr, and fix SPDX license issue
-    add pr_credit comments and improve dev_err message
-    remove interface_id sysfs interface
-    include dfl-fme-pr.h instead of dfl.h
-v5: move related register definition from dfl-fme-pr.h to dfl-fme-mgr.c
-    use mapped ioaddr passed via pdata for register access.
-    rebase due to fpga manager API changes.
-    include header file for readq/writeq.
----
- drivers/fpga/Kconfig       |   6 +
- drivers/fpga/Makefile      |   1 +
- drivers/fpga/dfl-fme-mgr.c | 334 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 341 insertions(+)
- create mode 100644 drivers/fpga/dfl-fme-mgr.c
+Hi,
+Just a few comments for you.
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 103d5e2..89f76e8 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -150,6 +150,12 @@ config FPGA_DFL_FME
- 	  FPGA platform level management features. There shall be 1 FME
- 	  per DFL based FPGA device.
- 
-+config FPGA_DFL_FME_MGR
-+	tristate "FPGA DFL FME Manager Driver"
-+	depends on FPGA_DFL_FME
-+	help
-+	  Say Y to enable FPGA Manager driver for FPGA Management Engine.
-+
- config FPGA_DFL_PCI
- 	tristate "FPGA Device Feature List (DFL) PCIe Device Driver"
- 	depends on PCI && FPGA_DFL
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 3c44fc9..f82814a 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -31,6 +31,7 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
- # FPGA Device Feature List Support
- obj-$(CONFIG_FPGA_DFL)			+= dfl.o
- obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
-+obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= dfl-fme-mgr.o
- 
- dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
- 
-diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
-new file mode 100644
-index 0000000..1c5bc5a
---- /dev/null
-+++ b/drivers/fpga/dfl-fme-mgr.c
-@@ -0,0 +1,334 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * FPGA Manager Driver for FPGA Management Engine (FME)
-+ *
-+ * Copyright (C) 2017 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Christopher Rauer <christopher.rauer@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
-+ */
-+
-+#include <linux/bitfield.h>
-+#include <linux/module.h>
-+#include <linux/iopoll.h>
-+#include <linux/io-64-nonatomic-lo-hi.h>
-+#include <linux/fpga/fpga-mgr.h>
-+
-+#include "dfl-fme-pr.h"
-+
-+/* FME Partial Reconfiguration Sub Feature Register Set */
-+#define FME_PR_DFH		0x0
-+#define FME_PR_CTRL		0x8
-+#define FME_PR_STS		0x10
-+#define FME_PR_DATA		0x18
-+#define FME_PR_ERR		0x20
-+#define FME_PR_INTFC_ID_H	0xA8
-+#define FME_PR_INTFC_ID_L	0xB0
-+
-+/* FME PR Control Register Bitfield */
-+#define FME_PR_CTRL_PR_RST	BIT_ULL(0)  /* Reset PR engine */
-+#define FME_PR_CTRL_PR_RSTACK	BIT_ULL(4)  /* Ack for PR engine reset */
-+#define FME_PR_CTRL_PR_RGN_ID	GENMASK_ULL(9, 7)       /* PR Region ID */
-+#define FME_PR_CTRL_PR_START	BIT_ULL(12) /* Start to request PR service */
-+#define FME_PR_CTRL_PR_COMPLETE	BIT_ULL(13) /* PR data push completion */
-+
-+/* FME PR Status Register Bitfield */
-+/* Number of available entries in HW queue inside the PR engine. */
-+#define FME_PR_STS_PR_CREDIT	GENMASK_ULL(8, 0)
-+#define FME_PR_STS_PR_STS	BIT_ULL(16) /* PR operation status */
-+#define FME_PR_STS_PR_STS_IDLE	0
-+#define FME_PR_STS_PR_CTRLR_STS	GENMASK_ULL(22, 20)     /* Controller status */
-+#define FME_PR_STS_PR_HOST_STS	GENMASK_ULL(27, 24)     /* PR host status */
-+
-+/* FME PR Data Register Bitfield */
-+/* PR data from the raw-binary file. */
-+#define FME_PR_DATA_PR_DATA_RAW	GENMASK_ULL(32, 0)
-+
-+/* FME PR Error Register */
-+/* PR Operation errors detected. */
-+#define FME_PR_ERR_OPERATION_ERR	BIT_ULL(0)
-+/* CRC error detected. */
-+#define FME_PR_ERR_CRC_ERR		BIT_ULL(1)
-+/* Incompatible PR bitstream detected. */
-+#define FME_PR_ERR_INCOMPATIBLE_BS	BIT_ULL(2)
-+/* PR data push protocol violated. */
-+#define FME_PR_ERR_PROTOCOL_ERR		BIT_ULL(3)
-+/* PR data fifo overflow error detected */
-+#define FME_PR_ERR_FIFO_OVERFLOW	BIT_ULL(4)
-+
-+#define PR_WAIT_TIMEOUT   8000000
-+#define PR_HOST_STATUS_IDLE	0
-+
-+struct fme_mgr_priv {
-+	void __iomem *ioaddr;
-+	u64 pr_error;
-+};
-+
-+static u64 pr_error_to_mgr_status(u64 err)
-+{
-+	u64 status = 0;
-+
-+	if (err & FME_PR_ERR_OPERATION_ERR)
-+		status |= FPGA_MGR_STATUS_OPERATION_ERR;
-+	if (err & FME_PR_ERR_CRC_ERR)
-+		status |= FPGA_MGR_STATUS_CRC_ERR;
-+	if (err & FME_PR_ERR_INCOMPATIBLE_BS)
-+		status |= FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR;
-+	if (err & FME_PR_ERR_PROTOCOL_ERR)
-+		status |= FPGA_MGR_STATUS_IP_PROTOCOL_ERR;
-+	if (err & FME_PR_ERR_FIFO_OVERFLOW)
-+		status |= FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR;
-+
-+	return status;
-+}
-+
-+static u64 fme_mgr_pr_error_handle(void __iomem *fme_pr)
-+{
-+	u64 pr_status, pr_error;
-+
-+	pr_status = readq(fme_pr + FME_PR_STS);
-+	if (!(pr_status & FME_PR_STS_PR_STS))
-+		return 0;
-+
-+	pr_error = readq(fme_pr + FME_PR_ERR);
-+	writeq(pr_error, fme_pr + FME_PR_ERR);
-+
-+	return pr_error;
-+}
-+
-+static int fme_mgr_write_init(struct fpga_manager *mgr,
-+			      struct fpga_image_info *info,
-+			      const char *buf, size_t count)
-+{
-+	struct device *dev = &mgr->dev;
-+	struct fme_mgr_priv *priv = mgr->priv;
-+	void __iomem *fme_pr = priv->ioaddr;
-+	u64 pr_ctrl, pr_status;
-+
-+	if (!(info->flags & FPGA_MGR_PARTIAL_RECONFIG)) {
-+		dev_err(dev, "only supports partial reconfiguration.\n");
-+		return -EINVAL;
-+	}
-+
-+	dev_dbg(dev, "resetting PR before initiated PR\n");
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl |= FME_PR_CTRL_PR_RST;
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	if (readq_poll_timeout(fme_pr + FME_PR_CTRL, pr_ctrl,
-+			       pr_ctrl & FME_PR_CTRL_PR_RSTACK, 1,
-+			       PR_WAIT_TIMEOUT)) {
-+		dev_err(dev, "PR Reset ACK timeout\n");
-+		return -ETIMEDOUT;
-+	}
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl &= ~FME_PR_CTRL_PR_RST;
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	dev_dbg(dev,
-+		"waiting for PR resource in HW to be initialized and ready\n");
-+
-+	if (readq_poll_timeout(fme_pr + FME_PR_STS, pr_status,
-+			       (pr_status & FME_PR_STS_PR_STS) ==
-+			       FME_PR_STS_PR_STS_IDLE, 1, PR_WAIT_TIMEOUT)) {
-+		dev_err(dev, "PR Status timeout\n");
-+		priv->pr_error = fme_mgr_pr_error_handle(fme_pr);
-+		return -ETIMEDOUT;
-+	}
-+
-+	dev_dbg(dev, "check and clear previous PR error\n");
-+	priv->pr_error = fme_mgr_pr_error_handle(fme_pr);
-+	if (priv->pr_error)
-+		dev_dbg(dev, "previous PR error detected %llx\n",
-+			(unsigned long long)priv->pr_error);
-+
-+	dev_dbg(dev, "set PR port ID\n");
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl &= ~FME_PR_CTRL_PR_RGN_ID;
-+	pr_ctrl |= FIELD_PREP(FME_PR_CTRL_PR_RGN_ID, info->region_id);
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	return 0;
-+}
-+
-+static int fme_mgr_write(struct fpga_manager *mgr,
-+			 const char *buf, size_t count)
-+{
-+	struct device *dev = &mgr->dev;
-+	struct fme_mgr_priv *priv = mgr->priv;
-+	void __iomem *fme_pr = priv->ioaddr;
-+	u64 pr_ctrl, pr_status, pr_data;
-+	int delay = 0, pr_credit, i = 0;
-+
-+	dev_dbg(dev, "start request\n");
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl |= FME_PR_CTRL_PR_START;
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	dev_dbg(dev, "pushing data from bitstream to HW\n");
-+
-+	/*
-+	 * driver can push data to PR hardware using PR_DATA register once HW
-+	 * has enough pr_credit (> 1), pr_credit reduces one for every 32bit
-+	 * pr data write to PR_DATA register. If pr_credit <= 1, driver needs
-+	 * to wait for enough pr_credit from hardware by polling.
-+	 */
-+	pr_status = readq(fme_pr + FME_PR_STS);
-+	pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
-+
-+	while (count > 0) {
-+		while (pr_credit <= 1) {
-+			if (delay++ > PR_WAIT_TIMEOUT) {
-+				dev_err(dev, "PR_CREDIT timeout\n");
-+				return -ETIMEDOUT;
-+			}
-+			udelay(1);
-+
-+			pr_status = readq(fme_pr + FME_PR_STS);
-+			pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
-+		}
-+
-+		if (count < 4) {
-+			WARN_ON(1);
-+			return -EINVAL;
-+		}
-+
-+		pr_data = 0;
-+		pr_data |= FIELD_PREP(FME_PR_DATA_PR_DATA_RAW,
-+				      *(((u32 *)buf) + i));
-+		writeq(pr_data, fme_pr + FME_PR_DATA);
-+		count -= 4;
-+		pr_credit--;
-+		i++;
-+	}
-+
-+	return 0;
-+}
-+
-+static int fme_mgr_write_complete(struct fpga_manager *mgr,
-+				  struct fpga_image_info *info)
-+{
-+	struct device *dev = &mgr->dev;
-+	struct fme_mgr_priv *priv = mgr->priv;
-+	void __iomem *fme_pr = priv->ioaddr;
-+	u64 pr_ctrl;
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl |= FME_PR_CTRL_PR_COMPLETE;
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	dev_dbg(dev, "green bitstream push complete\n");
-+	dev_dbg(dev, "waiting for HW to release PR resource\n");
-+
-+	if (readq_poll_timeout(fme_pr + FME_PR_CTRL, pr_ctrl,
-+			       !(pr_ctrl & FME_PR_CTRL_PR_START), 1,
-+			       PR_WAIT_TIMEOUT)) {
-+		dev_err(dev, "PR Completion ACK timeout.\n");
-+		return -ETIMEDOUT;
-+	}
-+
-+	dev_dbg(dev, "PR operation complete, checking status\n");
-+	priv->pr_error = fme_mgr_pr_error_handle(fme_pr);
-+	if (priv->pr_error) {
-+		dev_dbg(dev, "PR error detected %llx\n",
-+			(unsigned long long)priv->pr_error);
-+		return -EIO;
-+	}
-+
-+	dev_dbg(dev, "PR done successfully\n");
-+
-+	return 0;
-+}
-+
-+static enum fpga_mgr_states fme_mgr_state(struct fpga_manager *mgr)
-+{
-+	return FPGA_MGR_STATE_UNKNOWN;
-+}
-+
-+static u64 fme_mgr_status(struct fpga_manager *mgr)
-+{
-+	struct fme_mgr_priv *priv = mgr->priv;
-+
-+	return pr_error_to_mgr_status(priv->pr_error);
-+}
-+
-+static const struct fpga_manager_ops fme_mgr_ops = {
-+	.write_init = fme_mgr_write_init,
-+	.write = fme_mgr_write,
-+	.write_complete = fme_mgr_write_complete,
-+	.state = fme_mgr_state,
-+	.status = fme_mgr_status,
-+};
-+
-+static int fme_mgr_probe(struct platform_device *pdev)
-+{
-+	struct dfl_fme_mgr_pdata *pdata = dev_get_platdata(&pdev->dev);
-+	struct device *dev = &pdev->dev;
-+	struct fme_mgr_priv *priv;
-+	struct fpga_manager *mgr;
-+	struct resource *res;
-+	int ret;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	if (pdata->ioaddr)
-+		priv->ioaddr = pdata->ioaddr;
-+
-+	if (!priv->ioaddr) {
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+		priv->ioaddr = devm_ioremap_resource(dev, res);
-+		if (IS_ERR(priv->ioaddr))
-+			return PTR_ERR(priv->ioaddr);
-+	}
-+
-+	mgr = fpga_mgr_create(dev, "DFL FME FPGA Manager",
-+			      &fme_mgr_ops, priv);
-+	if (!mgr)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, mgr);
-+
-+	ret = fpga_mgr_register(mgr);
-+	if (ret)
-+		fpga_mgr_free(mgr);
-+
-+	return ret;
-+}
-+
-+static int fme_mgr_remove(struct platform_device *pdev)
-+{
-+	struct fpga_manager *mgr = platform_get_drvdata(pdev);
-+
-+	fpga_mgr_unregister(mgr);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver fme_mgr_driver = {
-+	.driver	= {
-+		.name    = DFL_FPGA_FME_MGR,
-+	},
-+	.probe   = fme_mgr_probe,
-+	.remove  = fme_mgr_remove,
-+};
-+
-+module_platform_driver(fme_mgr_driver);
-+
-+MODULE_DESCRIPTION("FPGA Manager for DFL FPGA Management Engine");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:dfl-fme-mgr");
+> diff --git a/Documentation/driver-api/fpga/intro.rst b/Documentation/driver-api/fpga/intro.rst
+> new file mode 100644
+> index 0000000..51cd81d
+> --- /dev/null
+> +++ b/Documentation/driver-api/fpga/intro.rst
+> @@ -0,0 +1,54 @@
+> +Introduction
+> +============
+> +
+> +The FPGA subsystem supports reprogramming FPGAs dynamically under
+> +Linux.  Some of the core intentions of the FPGA subsystems are:
+> +
+> +* The FPGA subsystem is vendor agnostic.
+> +
+> +* The FPGA subsystem separates upper layers (userspace interfaces and
+> +  enumeration) from lower layers that know how to program a specific
+> +  FPGA.
+> +
+> +* Code should not be shared between upper and lower layers.  This
+> +  should go without saying.  If that seems necessary, there's probably
+> +  framework functionality that that can be added that will benefit
+
+                             that      can be
+
+> +  other users.  Write the linux-fpga mailing list and maintainers and
+> +  seek out a solution that expands the framework for broad reuse.
+
+                          choose one spelling:                ^^^^vvvvv
+
+> +* Generally, when adding code, think of the future.  Plan for re-use.
+> +
+> +The framework in the kernel is divided into:
+> +
+> +FPGA Manager
+> +------------
+> +
+> +If you are adding a new FPGA or a new method of programming a FPGA,
+> +this is the subsystem for you.  Low level FPGA manager drivers contain
+> +the knowledge of how to program a specific device.  This subsystem
+> +includes the framework in fpga-mgr.c and the low level drivers that
+> +are registered with it.
+> +
+> +FPGA Bridge
+> +-----------
+> +
+> +FPGA Bridges prevent spurious signals from going out of a FPGA or a
+
+                                                        of an
+
+> +region of a FPGA during programming.  They are disabled before
+
+          of an 
+
+> +programming begins and re-enabled afterwards.  An FPGA bridge may be
+> +actual hard hardware that gates a bus to a cpu or a soft ("freeze")
+
+                                              CPU
+
+> +bridge in FPGA fabric that surrounds a partial reconfiguration region
+> +of an FPGA.  This subsystem includes fpga-bridge.c and the low level
+> +drivers that are registered with it.
+> +
+> +FPGA Region
+> +-----------
+> +
+> +If you are adding a new interface to the FPGA framework, add it on top
+> +of a FPGA region to allow the most reuse of your interface.
+
+   of an
+
+> +
+> +The FPGA Region framework (fpga-region.c) associates managers and
+> +bridges as reconfigurable regions.  A region may refer to the whole
+> +FPGA in full reconfiguration or to a partial reconfiguration region.
+> +
+> +The Device Tree FPGA Region support (of-fpga-region.c) handles
+> +reprogramming FPGAs when device tree overlays are applied.
+
+
+
 -- 
-1.8.3.1
+~Randy
