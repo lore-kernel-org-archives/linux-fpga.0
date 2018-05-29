@@ -1,34 +1,35 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <bdfe3a0a-923d-aa1d-420a-c627dfe1fd8a@infradead.org>
+References: <20180529175600.3672-1-atull@kernel.org> <20180529175600.3672-2-atull@kernel.org>
+ <bdfe3a0a-923d-aa1d-420a-c627dfe1fd8a@infradead.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 14/14] MAINTAINERS: Add driver-api/fpga path
-Date: Wed, 16 May 2018 18:50:07 -0500
-Message-Id: <20180516235007.3951-15-atull@kernel.org>
-In-Reply-To: <20180516235007.3951-1-atull@kernel.org>
-References: <20180516235007.3951-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
+Date: Tue, 29 May 2018 15:53:55 -0500
+Message-ID: <CANk1AXTVspHM=s97gupPYz6EkMFPhq4VT7GEnTXhSM9=ta=9yw@mail.gmail.com>
+Subject: Re: [PATCH] Documentation: fpga: cleanup
+Content-Type: text/plain; charset="UTF-8"
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add Documentation/driver-api/fpga path to MAINTAINERS file
-for fpga.
+On Tue, May 29, 2018 at 3:12 PM, Randy Dunlap <rdunlap@infradead.org> wrote:
+> On 05/29/2018 10:56 AM, Alan Tull wrote:
+>> Minor fixes including:
+>>
+>> * fix some typos
+>> * correct use of a/an
+>> * rephrase explanation of .state ops function
+>> * s/re-use/reuse/ (use only one spelling of 'reuse' in these docs)
+>> * s/cpu/CPU/
+>>
+>> Signed-off-by: Alan Tull <atull@kernel.org>
+>
+> Thanks.  Looks good.
+> Acked-by: Randy Dunlap <rdunlap@infradead.org>
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
+Hi Randy,
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 9ce5062..febeecd 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5612,6 +5612,7 @@ S:	Maintained
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/atull/linux-fpga.git
- Q:	http://patchwork.kernel.org/project/linux-fpga/list/
- F:	Documentation/fpga/
-+F:	Documentation/driver-api/fpga/
- F:	Documentation/devicetree/bindings/fpga/
- F:	drivers/fpga/
- F:	include/linux/fpga/
--- 
-2.7.4
+Thanks!
+
+Alan
