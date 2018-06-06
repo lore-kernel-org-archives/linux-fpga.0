@@ -1,415 +1,643 @@
-Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=XPI5=IY=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=XPI5=IY=intel.com=hao.wu@kernel.org>
+Date: Wed, 6 Jun 2018 20:22:04 +0800
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v7 18/29] fpga: dfl: add fpga manager platform driver for FME
-Date: Sat, 30 Jun 2018 08:53:25 +0800
-Message-Id: <1530320016-24712-19-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
-References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Subject: Re: [PATCH v5 06/28] fpga: add device feature list support
+Message-ID: <20180606122204.GA7681@hao-dev>
+References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+ <1525229431-3087-7-git-send-email-hao.wu@intel.com>
+ <CANk1AXQcq4ozNA6_Ad5S1_dJHsT7OLb73xmJ9Fhjhbx1qnwa4Q@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXQcq4ozNA6_Ad5S1_dJHsT7OLb73xmJ9Fhjhbx1qnwa4Q@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds fpga manager driver for FPGA Management Engine (FME). It
-implements fpga_manager_ops for FPGA Partial Reconfiguration function.
+On Tue, Jun 05, 2018 at 03:21:31PM -0500, Alan Tull wrote:
+> On Tue, May 1, 2018 at 9:50 PM, Wu Hao <hao.wu@intel.com> wrote:
+> 
+> Hi Hao,
+> 
+> I understand that you are implementing support for something that
+> already has been defined and already exists.  With that, I have some
+> minor suggestions below.  I have some questions below about how new
+> features are added and suggestions for where some comments could be
+> added to guide anyone who is adding feature devices or sub-features so
+> they will do it cleanly in the way that you intend.  Also some
+> suggestions so that when a new feature is added, less places in code
+> have to be touched.
 
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Kang Luwei <luwei.kang@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
----
-v3: rename driver to dfl-fpga-fme-mgr
-    implemented status callback for fpga manager
-    rebased due to fpga api changes
-v4: rename to dfl-fme-mgr and fix SPDX license issue
-    add pr_credit comments and improve dev_err message
-    remove interface_id sysfs interface
-    include dfl-fme-pr.h instead of dfl.h
-v5: move related register definition from dfl-fme-pr.h to dfl-fme-mgr.c
-    use mapped ioaddr passed via pdata for register access.
-    rebase due to fpga manager API changes.
-    include header file for readq/writeq.
-v6: rebase, fix copyright time and add Acked-by from Alan.
-v7: fix kbuild issue and use dev_err instead WARN_ON.
----
- drivers/fpga/Kconfig       |   6 +
- drivers/fpga/Makefile      |   1 +
- drivers/fpga/dfl-fme-mgr.c | 334 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 341 insertions(+)
- create mode 100644 drivers/fpga/dfl-fme-mgr.c
+Hi Alan,
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 43803a1..46b48e5 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -156,6 +156,12 @@ config FPGA_DFL_FME
- 	  FPGA platform level management features. There shall be one FME
- 	  per DFL based FPGA device.
- 
-+config FPGA_DFL_FME_MGR
-+	tristate "FPGA DFL FME Manager Driver"
-+	depends on FPGA_DFL_FME && HAS_IOMEM
-+	help
-+	  Say Y to enable FPGA Manager driver for FPGA Management Engine.
-+
- config FPGA_DFL_PCI
- 	tristate "FPGA DFL PCIe Device Driver"
- 	depends on PCI && FPGA_DFL
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index fd334d40..23f41b0 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -32,6 +32,7 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
- # FPGA Device Feature List Support
- obj-$(CONFIG_FPGA_DFL)			+= dfl.o
- obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
-+obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= dfl-fme-mgr.o
- 
- dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
- 
-diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
-new file mode 100644
-index 0000000..df843b5
---- /dev/null
-+++ b/drivers/fpga/dfl-fme-mgr.c
-@@ -0,0 +1,334 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * FPGA Manager Driver for FPGA Management Engine (FME)
-+ *
-+ * Copyright (C) 2017-2018 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Christopher Rauer <christopher.rauer@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
-+ */
-+
-+#include <linux/bitfield.h>
-+#include <linux/module.h>
-+#include <linux/iopoll.h>
-+#include <linux/io-64-nonatomic-lo-hi.h>
-+#include <linux/fpga/fpga-mgr.h>
-+
-+#include "dfl-fme-pr.h"
-+
-+/* FME Partial Reconfiguration Sub Feature Register Set */
-+#define FME_PR_DFH		0x0
-+#define FME_PR_CTRL		0x8
-+#define FME_PR_STS		0x10
-+#define FME_PR_DATA		0x18
-+#define FME_PR_ERR		0x20
-+#define FME_PR_INTFC_ID_H	0xA8
-+#define FME_PR_INTFC_ID_L	0xB0
-+
-+/* FME PR Control Register Bitfield */
-+#define FME_PR_CTRL_PR_RST	BIT_ULL(0)  /* Reset PR engine */
-+#define FME_PR_CTRL_PR_RSTACK	BIT_ULL(4)  /* Ack for PR engine reset */
-+#define FME_PR_CTRL_PR_RGN_ID	GENMASK_ULL(9, 7)       /* PR Region ID */
-+#define FME_PR_CTRL_PR_START	BIT_ULL(12) /* Start to request PR service */
-+#define FME_PR_CTRL_PR_COMPLETE	BIT_ULL(13) /* PR data push completion */
-+
-+/* FME PR Status Register Bitfield */
-+/* Number of available entries in HW queue inside the PR engine. */
-+#define FME_PR_STS_PR_CREDIT	GENMASK_ULL(8, 0)
-+#define FME_PR_STS_PR_STS	BIT_ULL(16) /* PR operation status */
-+#define FME_PR_STS_PR_STS_IDLE	0
-+#define FME_PR_STS_PR_CTRLR_STS	GENMASK_ULL(22, 20)     /* Controller status */
-+#define FME_PR_STS_PR_HOST_STS	GENMASK_ULL(27, 24)     /* PR host status */
-+
-+/* FME PR Data Register Bitfield */
-+/* PR data from the raw-binary file. */
-+#define FME_PR_DATA_PR_DATA_RAW	GENMASK_ULL(32, 0)
-+
-+/* FME PR Error Register */
-+/* PR Operation errors detected. */
-+#define FME_PR_ERR_OPERATION_ERR	BIT_ULL(0)
-+/* CRC error detected. */
-+#define FME_PR_ERR_CRC_ERR		BIT_ULL(1)
-+/* Incompatible PR bitstream detected. */
-+#define FME_PR_ERR_INCOMPATIBLE_BS	BIT_ULL(2)
-+/* PR data push protocol violated. */
-+#define FME_PR_ERR_PROTOCOL_ERR		BIT_ULL(3)
-+/* PR data fifo overflow error detected */
-+#define FME_PR_ERR_FIFO_OVERFLOW	BIT_ULL(4)
-+
-+#define PR_WAIT_TIMEOUT   8000000
-+#define PR_HOST_STATUS_IDLE	0
-+
-+struct fme_mgr_priv {
-+	void __iomem *ioaddr;
-+	u64 pr_error;
-+};
-+
-+static u64 pr_error_to_mgr_status(u64 err)
-+{
-+	u64 status = 0;
-+
-+	if (err & FME_PR_ERR_OPERATION_ERR)
-+		status |= FPGA_MGR_STATUS_OPERATION_ERR;
-+	if (err & FME_PR_ERR_CRC_ERR)
-+		status |= FPGA_MGR_STATUS_CRC_ERR;
-+	if (err & FME_PR_ERR_INCOMPATIBLE_BS)
-+		status |= FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR;
-+	if (err & FME_PR_ERR_PROTOCOL_ERR)
-+		status |= FPGA_MGR_STATUS_IP_PROTOCOL_ERR;
-+	if (err & FME_PR_ERR_FIFO_OVERFLOW)
-+		status |= FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR;
-+
-+	return status;
-+}
-+
-+static u64 fme_mgr_pr_error_handle(void __iomem *fme_pr)
-+{
-+	u64 pr_status, pr_error;
-+
-+	pr_status = readq(fme_pr + FME_PR_STS);
-+	if (!(pr_status & FME_PR_STS_PR_STS))
-+		return 0;
-+
-+	pr_error = readq(fme_pr + FME_PR_ERR);
-+	writeq(pr_error, fme_pr + FME_PR_ERR);
-+
-+	return pr_error;
-+}
-+
-+static int fme_mgr_write_init(struct fpga_manager *mgr,
-+			      struct fpga_image_info *info,
-+			      const char *buf, size_t count)
-+{
-+	struct device *dev = &mgr->dev;
-+	struct fme_mgr_priv *priv = mgr->priv;
-+	void __iomem *fme_pr = priv->ioaddr;
-+	u64 pr_ctrl, pr_status;
-+
-+	if (!(info->flags & FPGA_MGR_PARTIAL_RECONFIG)) {
-+		dev_err(dev, "only supports partial reconfiguration.\n");
-+		return -EINVAL;
-+	}
-+
-+	dev_dbg(dev, "resetting PR before initiated PR\n");
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl |= FME_PR_CTRL_PR_RST;
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	if (readq_poll_timeout(fme_pr + FME_PR_CTRL, pr_ctrl,
-+			       pr_ctrl & FME_PR_CTRL_PR_RSTACK, 1,
-+			       PR_WAIT_TIMEOUT)) {
-+		dev_err(dev, "PR Reset ACK timeout\n");
-+		return -ETIMEDOUT;
-+	}
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl &= ~FME_PR_CTRL_PR_RST;
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	dev_dbg(dev,
-+		"waiting for PR resource in HW to be initialized and ready\n");
-+
-+	if (readq_poll_timeout(fme_pr + FME_PR_STS, pr_status,
-+			       (pr_status & FME_PR_STS_PR_STS) ==
-+			       FME_PR_STS_PR_STS_IDLE, 1, PR_WAIT_TIMEOUT)) {
-+		dev_err(dev, "PR Status timeout\n");
-+		priv->pr_error = fme_mgr_pr_error_handle(fme_pr);
-+		return -ETIMEDOUT;
-+	}
-+
-+	dev_dbg(dev, "check and clear previous PR error\n");
-+	priv->pr_error = fme_mgr_pr_error_handle(fme_pr);
-+	if (priv->pr_error)
-+		dev_dbg(dev, "previous PR error detected %llx\n",
-+			(unsigned long long)priv->pr_error);
-+
-+	dev_dbg(dev, "set PR port ID\n");
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl &= ~FME_PR_CTRL_PR_RGN_ID;
-+	pr_ctrl |= FIELD_PREP(FME_PR_CTRL_PR_RGN_ID, info->region_id);
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	return 0;
-+}
-+
-+static int fme_mgr_write(struct fpga_manager *mgr,
-+			 const char *buf, size_t count)
-+{
-+	struct device *dev = &mgr->dev;
-+	struct fme_mgr_priv *priv = mgr->priv;
-+	void __iomem *fme_pr = priv->ioaddr;
-+	u64 pr_ctrl, pr_status, pr_data;
-+	int delay = 0, pr_credit, i = 0;
-+
-+	dev_dbg(dev, "start request\n");
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl |= FME_PR_CTRL_PR_START;
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	dev_dbg(dev, "pushing data from bitstream to HW\n");
-+
-+	/*
-+	 * driver can push data to PR hardware using PR_DATA register once HW
-+	 * has enough pr_credit (> 1), pr_credit reduces one for every 32bit
-+	 * pr data write to PR_DATA register. If pr_credit <= 1, driver needs
-+	 * to wait for enough pr_credit from hardware by polling.
-+	 */
-+	pr_status = readq(fme_pr + FME_PR_STS);
-+	pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
-+
-+	while (count > 0) {
-+		while (pr_credit <= 1) {
-+			if (delay++ > PR_WAIT_TIMEOUT) {
-+				dev_err(dev, "PR_CREDIT timeout\n");
-+				return -ETIMEDOUT;
-+			}
-+			udelay(1);
-+
-+			pr_status = readq(fme_pr + FME_PR_STS);
-+			pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
-+		}
-+
-+		if (count < 4) {
-+			dev_err(dev, "Invaild PR bitstream size\n");
-+			return -EINVAL;
-+		}
-+
-+		pr_data = 0;
-+		pr_data |= FIELD_PREP(FME_PR_DATA_PR_DATA_RAW,
-+				      *(((u32 *)buf) + i));
-+		writeq(pr_data, fme_pr + FME_PR_DATA);
-+		count -= 4;
-+		pr_credit--;
-+		i++;
-+	}
-+
-+	return 0;
-+}
-+
-+static int fme_mgr_write_complete(struct fpga_manager *mgr,
-+				  struct fpga_image_info *info)
-+{
-+	struct device *dev = &mgr->dev;
-+	struct fme_mgr_priv *priv = mgr->priv;
-+	void __iomem *fme_pr = priv->ioaddr;
-+	u64 pr_ctrl;
-+
-+	pr_ctrl = readq(fme_pr + FME_PR_CTRL);
-+	pr_ctrl |= FME_PR_CTRL_PR_COMPLETE;
-+	writeq(pr_ctrl, fme_pr + FME_PR_CTRL);
-+
-+	dev_dbg(dev, "green bitstream push complete\n");
-+	dev_dbg(dev, "waiting for HW to release PR resource\n");
-+
-+	if (readq_poll_timeout(fme_pr + FME_PR_CTRL, pr_ctrl,
-+			       !(pr_ctrl & FME_PR_CTRL_PR_START), 1,
-+			       PR_WAIT_TIMEOUT)) {
-+		dev_err(dev, "PR Completion ACK timeout.\n");
-+		return -ETIMEDOUT;
-+	}
-+
-+	dev_dbg(dev, "PR operation complete, checking status\n");
-+	priv->pr_error = fme_mgr_pr_error_handle(fme_pr);
-+	if (priv->pr_error) {
-+		dev_dbg(dev, "PR error detected %llx\n",
-+			(unsigned long long)priv->pr_error);
-+		return -EIO;
-+	}
-+
-+	dev_dbg(dev, "PR done successfully\n");
-+
-+	return 0;
-+}
-+
-+static enum fpga_mgr_states fme_mgr_state(struct fpga_manager *mgr)
-+{
-+	return FPGA_MGR_STATE_UNKNOWN;
-+}
-+
-+static u64 fme_mgr_status(struct fpga_manager *mgr)
-+{
-+	struct fme_mgr_priv *priv = mgr->priv;
-+
-+	return pr_error_to_mgr_status(priv->pr_error);
-+}
-+
-+static const struct fpga_manager_ops fme_mgr_ops = {
-+	.write_init = fme_mgr_write_init,
-+	.write = fme_mgr_write,
-+	.write_complete = fme_mgr_write_complete,
-+	.state = fme_mgr_state,
-+	.status = fme_mgr_status,
-+};
-+
-+static int fme_mgr_probe(struct platform_device *pdev)
-+{
-+	struct dfl_fme_mgr_pdata *pdata = dev_get_platdata(&pdev->dev);
-+	struct device *dev = &pdev->dev;
-+	struct fme_mgr_priv *priv;
-+	struct fpga_manager *mgr;
-+	struct resource *res;
-+	int ret;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	if (pdata->ioaddr)
-+		priv->ioaddr = pdata->ioaddr;
-+
-+	if (!priv->ioaddr) {
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+		priv->ioaddr = devm_ioremap_resource(dev, res);
-+		if (IS_ERR(priv->ioaddr))
-+			return PTR_ERR(priv->ioaddr);
-+	}
-+
-+	mgr = fpga_mgr_create(dev, "DFL FME FPGA Manager",
-+			      &fme_mgr_ops, priv);
-+	if (!mgr)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, mgr);
-+
-+	ret = fpga_mgr_register(mgr);
-+	if (ret)
-+		fpga_mgr_free(mgr);
-+
-+	return ret;
-+}
-+
-+static int fme_mgr_remove(struct platform_device *pdev)
-+{
-+	struct fpga_manager *mgr = platform_get_drvdata(pdev);
-+
-+	fpga_mgr_unregister(mgr);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver fme_mgr_driver = {
-+	.driver	= {
-+		.name    = DFL_FPGA_FME_MGR,
-+	},
-+	.probe   = fme_mgr_probe,
-+	.remove  = fme_mgr_remove,
-+};
-+
-+module_platform_driver(fme_mgr_driver);
-+
-+MODULE_DESCRIPTION("FPGA Manager for DFL FPGA Management Engine");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:dfl-fme-mgr");
--- 
-1.8.3.1
+I fully understand your point, thanks a lot for the review. Please see
+my response below.
+
+> 
+> > Device Feature List (DFL) defines a feature list structure that creates
+> > a link list of feature headers within the MMIO space to provide an
+> > extensible way of adding features. This patch introduces a kernel module
+> > to provide basic infrastructure to support FPGA devices which implement
+> > the Device Feature List.
+> >
+> > Usually there will be different features and their sub features linked into
+> > the DFL. This code provides common APIs for feature enumeration, it creates
+> > a container device (FPGA base region), walks through the DFLs and creates
+> > platform devices for feature devices (Currently it only supports two
+> > different feature devices, FPGA Management Engine (FME) and Port which
+> > the Accelerator Function Unit (AFU) connected to). In order to enumerate
+> > the DFLs, the common APIs required low level driver to provide necessary
+> > enumeration information (e.g address for each device feature list for
+> > given device) and fill it to the dfl_fpga_enum_info data structure. Please
+> > refer to below description for APIs added for enumeration.
+> >
+> > Functions for enumeration information preparation:
+> >  *dfl_fpga_enum_info_alloc
+> >    allocate enumeration information data structure.
+> >
+> >  *dfl_fpga_enum_info_add_dfl
+> >    add a device feature list to dfl_fpga_enum_info data structure.
+> >
+> >  *dfl_fpga_enum_info_free
+> >    free dfl_fpga_enum_info data structure and related resources.
+> >
+> > Functions for feature device enumeration:
+> >  *dfl_fpga_enumerate_feature_devs
+> >    enumerate feature devices and return container device.
+> >
+> >  *dfl_fpga_remove_feature_devs
+> >    remove feature devices under given container device.
+> 
+> How about dfl_fpga_feature_devs_enumerate/remove?
+
+Sure, will rename it in v6.
+
+> 
+> >
+> > Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+> > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> > Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+> > Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+> > Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
+> > Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > ---
+> > v3: split from another patch.
+> >     separate dfl enumeration code from original pcie driver.
+> >     provide common data structures and APIs for enumeration.
+> >     update device feature list parsing process according to latest hw.
+> >     add dperf/iperf/hssi sub feature placeholder according to latest hw.
+> >     remove build_info_add_sub_feature and other small functions.
+> >     replace *_feature_num function with macro.
+> >     remove writeq/readq.
+> > v4: fix SPDX license issue
+> >     rename files to dfl.[ch], fix typo and add more comments.
+> >     remove static feature_info tables for FME and Port.
+> >     remove check on next_afu link list as only FIU has next_afu ptr.
+> >     remove unused macro in header file.
+> >     add more comments for functions.
+> > v5: add "dfl_" prefix to functions and data structures.
+> >     remove port related functions from DFL framework.
+> >     use BIT_ULL for 64bit register definition.
+> >     save dfl_fpga_cdev in pdata for feature platform devices.
+> >     rebase due to fpga region api changes.
+> > ---
+> >  drivers/fpga/Kconfig  |  16 ++
+> >  drivers/fpga/Makefile |   3 +
+> >  drivers/fpga/dfl.c    | 720 ++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  drivers/fpga/dfl.h    | 279 +++++++++++++++++++
+> >  4 files changed, 1018 insertions(+)
+> >  create mode 100644 drivers/fpga/dfl.c
+> >  create mode 100644 drivers/fpga/dfl.h
+> >
+> > diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+> > index f47ef84..01ad31f 100644
+> > --- a/drivers/fpga/Kconfig
+> > +++ b/drivers/fpga/Kconfig
+> > @@ -124,4 +124,20 @@ config OF_FPGA_REGION
+> >           Support for loading FPGA images by applying a Device Tree
+> >           overlay.
+> >
+> > +config FPGA_DFL
+> > +       tristate "FPGA Device Feature List (DFL) support"
+> > +       select FPGA_BRIDGE
+> > +       select FPGA_REGION
+> > +       help
+> > +         Device Feature List (DFL) defines a feature list structure that
+> > +         creates a link list of feature headers within the MMIO space
+> > +         to provide an extensible way of adding features for FPGA.
+> > +         Driver can walk through the feature headers to enumerate feature
+> > +         devices (e.g FPGA Management Engine, Port and Accelerator
+> > +         Function Unit) and their private features for target FPGA devices.
+> > +
+> > +         Select this option to enable common support for Field-Programmable
+> > +         Gate Array (FPGA) solutions which implement Device Feature List.
+> > +         It provides enumeration APIs, and feature device infrastructure.
+> > +
+> >  endif # FPGA
+> > diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+> > index 3cb276a..c4c62b9 100644
+> > --- a/drivers/fpga/Makefile
+> > +++ b/drivers/fpga/Makefile
+> > @@ -27,3 +27,6 @@ obj-$(CONFIG_XILINX_PR_DECOUPLER)     += xilinx-pr-decoupler.o
+> >  # High Level Interfaces
+> >  obj-$(CONFIG_FPGA_REGION)              += fpga-region.o
+> >  obj-$(CONFIG_OF_FPGA_REGION)           += of-fpga-region.o
+> > +
+> > +# FPGA Device Feature List Support
+> > +obj-$(CONFIG_FPGA_DFL)                 += dfl.o
+> > diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+> > new file mode 100644
+> > index 0000000..c1462e9
+> > --- /dev/null
+> > +++ b/drivers/fpga/dfl.c
+> > @@ -0,0 +1,720 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Driver for FPGA Device Feature List (DFL) Support
+> > + *
+> > + * Copyright (C) 2017 Intel Corporation, Inc.
+> 
+> 2017-2018
+
+I will fix this in all driver files in v6.
+
+> 
+> > + *
+> > + * Authors:
+> > + *   Kang Luwei <luwei.kang@intel.com>
+> > + *   Zhang Yi <yi.z.zhang@intel.com>
+> > + *   Wu Hao <hao.wu@intel.com>
+> > + *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> > + */
+> > +#include <linux/module.h>
+> > +
+> > +#include "dfl.h"
+> > +
+> > +static DEFINE_MUTEX(dfl_id_mutex);
+> > +
+> > +enum dfl_id_type {
+> > +       FME_ID,         /* fme id allocation and mapping */
+> > +       PORT_ID,        /* port id allocation and mapping */
+> > +       DFL_ID_MAX,
+> > +};
+> 
+> Please add a comment that new values of DFL_ID need to be added to this enum.
+> 
+> It may make sense to add dfl_chrdevs[] (from patch 7) here and add the
+> DFH_ID id to that struct.  That would give you one struct that has all
+> that info together in one place and new feature drivers would be added
+> to it.  Any translations between dfl_id, char dev name, and
+> dfl_fpga_devt_type could use that one table, and it could cut down on
+> the number of if statements and special cases involved in parsing.  I
+> give a few examples of usage below.
+
+Sure, understand your point on this. Will try to fix this, and also provide
+clear comments on how to add new ones.
+
+Actually dfl_id maps to platform device name, and dfl_fpga_dev_type to char
+device name. will try to find a way to do translations or just combine them
+as currently each feature device (platform device) only need one chardev.
+
+> 
+> > +
+> > +/* it is protected by dfl_id_mutex */
+> > +static struct idr dfl_ids[DFL_ID_MAX];
+> > +
+> > +static void dfl_ids_init(void)
+> > +{
+> > +       int i;
+> > +
+> > +       for (i = 0; i < ARRAY_SIZE(dfl_ids); i++)
+> > +               idr_init(dfl_ids + i);
+> > +}
+> > +
+> > +static void dfl_ids_destroy(void)
+> > +{
+> > +       int i;
+> > +
+> > +       for (i = 0; i < ARRAY_SIZE(dfl_ids); i++)
+> > +               idr_destroy(dfl_ids + i);
+> > +}
+> > +
+> > +static int alloc_dfl_id(enum dfl_id_type type, struct device *dev)
+> > +{
+> > +       int id;
+> > +
+> > +       WARN_ON(type >= DFL_ID_MAX);
+> > +       mutex_lock(&dfl_id_mutex);
+> > +       id = idr_alloc(dfl_ids + type, dev, 0, 0, GFP_KERNEL);
+> > +       mutex_unlock(&dfl_id_mutex);
+> > +
+> > +       return id;
+> > +}
+> > +
+> > +static void free_dfl_id(enum dfl_id_type type, int id)
+> > +{
+> > +       WARN_ON(type >= DFL_ID_MAX);
+> > +       mutex_lock(&dfl_id_mutex);
+> > +       idr_remove(dfl_ids + type, id);
+> > +       mutex_unlock(&dfl_id_mutex);
+> > +}
+> 
+> We discussed function name groups having a matching prefix on another
+> thread for another patch.  Same thing here, please, such as
+> dfl_id_alloc/free.
+
+Yes, will fix this in v6.
+
+> 
+> > +
+> > +static enum dfl_id_type feature_dev_id_type(struct platform_device *pdev)
+> > +{
+> > +       if (!strcmp(pdev->name, DFL_FPGA_FEATURE_DEV_FME))
+> > +               return FME_ID;
+> > +
+> > +       if (!strcmp(pdev->name, DFL_FPGA_FEATURE_DEV_PORT))
+> > +               return PORT_ID;
+> 
+> Will a new if statement need to be added to this function for each
+> added DFH_ID?  IIUC, at the point this function is called, the feature
+> device exists and has private data.  Perhaps it is worth saving the ID
+> in its private data so you don't have to do this reverse lookup (and
+> won't have to change this function for each new feature).
+> 
+> Alternatively, if dfl_chrdevs[] is added in this patch, you could use
+> it here, using a loop that goes through and does the lookup from that
+> struct and you won't ever have to touch this function again.
+> 
+> In either case, if you add the names of your devices to a table like
+> dfl_chrdevs[], hopefully things can be coded such that words like
+> DFL_FPGA_FEATURE_DEV_FME/PORT only have to show up in that table (and
+> in the individual drivers).
+
+Understand your point, will fix this.
+
+> 
+> > +
+> > +       WARN_ON(1);
+> > +
+> > +       return DFL_ID_MAX;
+> > +}
+> > +
+> > +/**
+> > + * struct build_feature_devs_info - info collected during feature dev build.
+> > + *
+> > + * @dev: device to enumerate.
+> > + * @cdev: the container device for all feature devices.
+> > + * @feature_dev: current feature device.
+> > + * @ioaddr: header register region address of feature device in enumeration.
+> > + * @sub_features: a sub features link list for feature device in enumeration.
+> > + * @feature_num: number of sub features for feature device in enumeration.
+> > + */
+> > +struct build_feature_devs_info {
+> > +       struct device *dev;
+> > +       struct dfl_fpga_cdev *cdev;
+> > +       struct platform_device *feature_dev;
+> > +       void __iomem *ioaddr;
+> > +       struct list_head sub_features;
+> > +       int feature_num;
+> > +};
+> > +
+> > +/**
+> > + * struct dfl_feature_info - sub feature info collected during feature dev build
+> > + *
+> > + * @fid: id of this sub feature.
+> > + * @mmio_res: mmio resource of this sub feature.
+> > + * @ioaddr: mapped base address of mmio resource.
+> > + * @node: node in sub_features link list.
+> > + */
+> > +struct dfl_feature_info {
+> > +       u64 fid;
+> > +       struct resource mmio_res;
+> > +       void __iomem *ioaddr;
+> > +       struct list_head node;
+> > +};
+> > +
+> > +static void dfl_fpga_cdev_add_port_dev(struct dfl_fpga_cdev *cdev,
+> > +                                      struct platform_device *port)
+> > +{
+> > +       struct dfl_feature_platform_data *pdata = dev_get_platdata(&port->dev);
+> > +
+> > +       mutex_lock(&cdev->lock);
+> > +       list_add(&pdata->node, &cdev->port_dev_list);
+> > +       get_device(&pdata->dev->dev);
+> > +       mutex_unlock(&cdev->lock);
+> > +}
+> > +
+> > +/*
+> > + * register current feature device, it is called when we need to switch to
+> > + * another feature parsing or we have parsed all features on given device
+> > + * feature list.
+> > + */
+> > +static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+> > +{
+> > +       struct platform_device *fdev = binfo->feature_dev;
+> > +       struct dfl_feature_platform_data *pdata;
+> > +       struct dfl_feature_info *finfo, *p;
+> > +       int ret, index = 0;
+> > +
+> > +       if (!fdev)
+> > +               return 0;
+> > +
+> > +       /*
+> > +        * we do not need to care for the memory which is associated with
+> > +        * the platform device. After calling platform_device_unregister(),
+> > +        * it will be automatically freed by device's release() callback,
+> > +        * platform_device_release().
+> > +        */
+> > +       pdata = kzalloc(dfl_feature_platform_data_size(binfo->feature_num),
+> > +                       GFP_KERNEL);
+> > +       if (pdata) {
+> > +               pdata->dev = fdev;
+> > +               pdata->num = binfo->feature_num;
+> > +               pdata->dfl_cdev = binfo->cdev;
+> > +               mutex_init(&pdata->lock);
+> > +       } else {
+> > +               return -ENOMEM;
+> > +       }
+> 
+> if (!pdata)
+>         return -ENOMEM;
+> 
+> pdata->dev = fdev; so on
+
+will fix this.
+
+> 
+> > +
+> > +       /*
+> > +        * the count should be initialized to 0 to make sure
+> > +        *__fpga_port_enable() following __fpga_port_disable()
+> > +        * works properly for port device.
+> > +        * and it should always be 0 for fme device.
+> > +        */
+> > +       WARN_ON(pdata->disable_count);
+> > +
+> > +       fdev->dev.platform_data = pdata;
+> > +
+> > +       /* each sub feature has one MMIO resource */
+> > +       fdev->num_resources = binfo->feature_num;
+> > +       fdev->resource = kcalloc(binfo->feature_num, sizeof(*fdev->resource),
+> > +                                GFP_KERNEL);
+> > +       if (!fdev->resource)
+> > +               return -ENOMEM;
+> > +
+> > +       /* fill features and resource information for feature dev */
+> > +       list_for_each_entry_safe(finfo, p, &binfo->sub_features, node) {
+> > +               struct dfl_feature *feature = &pdata->features[index];
+> > +
+> > +               /* save resource information for each feature */
+> > +               feature->id = finfo->fid;
+> > +               feature->resource_index = index;
+> > +               feature->ioaddr = finfo->ioaddr;
+> > +               fdev->resource[index++] = finfo->mmio_res;
+> > +
+> > +               list_del(&finfo->node);
+> > +               kfree(finfo);
+> > +       }
+> > +
+> > +       ret = platform_device_add(binfo->feature_dev);
+> > +       if (!ret) {
+> > +               if (feature_dev_id_type(binfo->feature_dev) == PORT_ID)
+> > +                       dfl_fpga_cdev_add_port_dev(binfo->cdev,
+> > +                                                  binfo->feature_dev);
+> > +               else
+> > +                       binfo->cdev->fme_dev =
+> > +                                       get_device(&binfo->feature_dev->dev);
+> > +               /*
+> > +                * reset it to avoid build_info_free() freeing their resource.
+> > +                *
+> > +                * The resource of successfully registered feature devices
+> > +                * will be freed by platform_device_unregister(). See the
+> > +                * comments in build_info_create_dev().
+> > +                */
+> > +               binfo->feature_dev = NULL;
+> > +       }
+> > +
+> > +       return ret;
+> > +}
+> > +
+> > +static int
+> > +build_info_create_dev(struct build_feature_devs_info *binfo,
+> > +                     enum dfl_id_type type, const char *name,
+> 
+> If dfl_chrdevs[] were moved to this patch, build_info_create_dev could
+> use it to look up the name.  That way you won't have to have separate
+> functions for parse_feature_fme and parse_feature_port.
+
+Yes, if we have the mapping table, then we don't need to pass the
+related platform device name to this function. will fix this in v6.
+
+> 
+> > +                     void __iomem *ioaddr)
+> > +{
+> > +       struct platform_device *fdev;
+> > +       int ret;
+> > +
+> > +       /* we will create a new device, commit current device first */
+> > +       ret = build_info_commit_dev(binfo);
+> > +       if (ret)
+> > +               return ret;
+> > +
+> > +       /*
+> > +        * we use -ENODEV as the initialization indicator which indicates
+> > +        * whether the id need to be reclaimed
+> > +        */
+> > +       fdev = platform_device_alloc(name, -ENODEV);
+> > +       if (!fdev)
+> > +               return -ENOMEM;
+> > +
+> > +       binfo->feature_dev = fdev;
+> > +       binfo->feature_num = 0;
+> > +       binfo->ioaddr = ioaddr;
+> > +       INIT_LIST_HEAD(&binfo->sub_features);
+> > +
+> > +       fdev->id = alloc_dfl_id(type, &fdev->dev);
+> > +       if (fdev->id < 0)
+> > +               return fdev->id;
+> > +
+> > +       fdev->dev.parent = &binfo->cdev->region->dev;
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static void build_info_free(struct build_feature_devs_info *binfo)
+> > +{
+> > +       struct dfl_feature_info *finfo, *p;
+> > +
+> > +       /*
+> > +        * it is a valid id, free it. See comments in
+> > +        * build_info_create_dev()
+> > +        */
+> > +       if (binfo->feature_dev && binfo->feature_dev->id >= 0) {
+> > +               free_dfl_id(feature_dev_id_type(binfo->feature_dev),
+> > +                           binfo->feature_dev->id);
+> > +
+> > +               list_for_each_entry_safe(finfo, p, &binfo->sub_features, node) {
+> > +                       list_del(&finfo->node);
+> > +                       kfree(finfo);
+> > +               }
+> > +       }
+> > +
+> > +       platform_device_put(binfo->feature_dev);
+> > +
+> > +       devm_kfree(binfo->dev, binfo);
+> > +}
+> > +
+> > +static inline u32 feature_size(void __iomem *start)
+> > +{
+> > +       u64 v = readq(start + DFH);
+> > +       u32 ofst = FIELD_GET(DFH_NEXT_HDR_OFST, v);
+> > +       /* workaround for private features with invalid size, use 4K instead */
+> > +       return ofst ? ofst : 4096;
+> > +}
+> > +
+> > +static u64 feature_id(void __iomem *start)
+> > +{
+> > +       u64 v = readq(start + DFH);
+> > +       u16 id = FIELD_GET(DFH_ID, v);
+> > +       u8 type = FIELD_GET(DFH_TYPE, v);
+> > +
+> > +       if (type == DFH_TYPE_FIU)
+> > +               return FEATURE_ID_FIU_HEADER;
+> > +       else if (type == DFH_TYPE_PRIVATE)
+> > +               return id;
+> > +       else if (type == DFH_TYPE_AFU)
+> > +               return FEATURE_ID_AFU;
+> > +
+> > +       WARN_ON(1);
+> > +       return 0;
+> > +}
+> > +
+> > +/*
+> > + * when create sub feature instances, for private features, it doesn't need
+> > + * to provide resource size and feature id as they could be read from DFH
+> > + * register. For afu sub feature, its register region only contains user
+> > + * defined registers, so never trust any information from it, just use the
+> > + * resource size information provided by its parent FIU.
+> > + */
+> > +static int
+> > +create_feature_instance(struct build_feature_devs_info *binfo,
+> > +                       struct dfl_fpga_enum_dfl *dfl, resource_size_t ofst,
+> > +                       resource_size_t size, u64 fid)
+> > +{
+> > +       struct dfl_feature_info *finfo;
+> > +
+> > +       /* read feature size and id if inputs are invalid */
+> > +       size = size ? size : feature_size(dfl->ioaddr + ofst);
+> > +       fid = fid ? fid : feature_id(dfl->ioaddr + ofst);
+> > +
+> > +       if (dfl->len - ofst < size)
+> > +               return -EINVAL;
+> > +
+> > +       finfo = kzalloc(sizeof(*finfo), GFP_KERNEL);
+> > +       if (!finfo)
+> > +               return -ENOMEM;
+> > +
+> > +       finfo->fid = fid;
+> > +       finfo->mmio_res.start = dfl->start + ofst;
+> > +       finfo->mmio_res.end = finfo->mmio_res.start + size - 1;
+> > +       finfo->mmio_res.flags = IORESOURCE_MEM;
+> > +       finfo->ioaddr = dfl->ioaddr + ofst;
+> > +
+> > +       list_add_tail(&finfo->node, &binfo->sub_features);
+> > +       binfo->feature_num++;
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static int parse_feature_fme(struct build_feature_devs_info *binfo,
+> > +                            struct dfl_fpga_enum_dfl *dfl,
+> > +                            resource_size_t ofst)
+> > +{
+> > +       int ret;
+> > +
+> > +       ret = build_info_create_dev(binfo, FME_ID, DFL_FPGA_FEATURE_DEV_FME,
+> > +                                   dfl->ioaddr + ofst);
+> > +       if (ret)
+> > +               return ret;
+> > +
+> > +       return create_feature_instance(binfo, dfl, ofst, 0, 0);
+> > +}
+> > +
+> > +static int parse_feature_port(struct build_feature_devs_info *binfo,
+> > +                             struct dfl_fpga_enum_dfl *dfl,
+> > +                             resource_size_t ofst)
+> > +{
+> > +       int ret;
+> > +
+> > +       ret = build_info_create_dev(binfo, PORT_ID, DFL_FPGA_FEATURE_DEV_PORT,
+> > +                                   dfl->ioaddr + ofst);
+> > +       if (ret)
+> > +               return ret;
+> > +
+> > +       return create_feature_instance(binfo, dfl, ofst, 0, 0);
+> > +}
+> > +
+> > +static int parse_feature_port_afu(struct build_feature_devs_info *binfo,
+> > +                                 struct dfl_fpga_enum_dfl *dfl,
+> > +                                 resource_size_t ofst)
+> > +{
+> > +       u64 v = readq(binfo->ioaddr + PORT_HDR_CAP);
+> > +       u32 size = FIELD_GET(PORT_CAP_MMIO_SIZE, v) << 10;
+> > +
+> > +       WARN_ON(!size);
+> > +
+> > +       return create_feature_instance(binfo, dfl, ofst, size, FEATURE_ID_AFU);
+> > +}
+> > +
+> > +static int parse_feature_afu(struct build_feature_devs_info *binfo,
+> > +                            struct dfl_fpga_enum_dfl *dfl,
+> > +                            resource_size_t ofst)
+> > +{
+> > +       if (!binfo->feature_dev) {
+> > +               dev_err(binfo->dev, "this AFU does not belong to any FIU.\n");
+> > +               return -EINVAL;
+> > +       }
+> > +
+> > +       switch (feature_dev_id_type(binfo->feature_dev)) {
+> > +       case PORT_ID:
+> > +               return parse_feature_port_afu(binfo, dfl, ofst);
+> > +       default:
+> > +               dev_info(binfo->dev, "AFU belonging to FIU %s is not supported yet.\n",
+> > +                        binfo->feature_dev->name);
+> > +       }
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static int parse_feature_fiu(struct build_feature_devs_info *binfo,
+> > +                            struct dfl_fpga_enum_dfl *dfl,
+> > +                            resource_size_t ofst)
+> > +{
+> > +       u32 id, offset;
+> > +       u64 v;
+> > +       int ret = 0;
+> > +
+> > +       v = readq(dfl->ioaddr + ofst + DFH);
+> > +       id = FIELD_GET(DFH_ID, v);
+> > +
+> > +       switch (id) {
+> > +       case DFH_ID_FIU_FME:
+> > +               ret = parse_feature_fme(binfo, dfl, ofst);
+> > +               break;
+> > +       case DFH_ID_FIU_PORT:
+> > +               ret = parse_feature_port(binfo, dfl, ofst);
+> > +               break;
+> > +       default:
+> > +               dev_info(binfo->dev, "FIU TYPE %d is not supported yet.\n",
+> > +                        id);
+> > +       }
+> 
+> If the name lookup is added to build_info_create_dev(), then this
+> switch statement goes away and the contents of parse_feature_fme/port
+> are identical and trivial enough to be included here.  My reason for
+> looking for these things is to reduce, where possible, the places
+> where a function needs to be added or changed to parse each new ID.
+
+I see, will improve this.
+
+Thanks
+Hao
