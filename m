@@ -1,155 +1,44 @@
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v6 03/29] fpga: mgr: add status for fpga-manager
-Date: Tue, 12 Jun 2018 18:10:17 +0800
-Message-Id: <1528798243-2029-4-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-References: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <1525229431-3087-29-git-send-email-hao.wu@intel.com>
+References: <1525229431-3087-1-git-send-email-hao.wu@intel.com> <1525229431-3087-29-git-send-email-hao.wu@intel.com>
+From: Alan Tull <atull@kernel.org>
+Date: Wed, 6 Jun 2018 11:09:23 -0500
+Message-ID: <CANk1AXQnvRW9JpRs3w5uBq+hJW3sBTv0FP080uX_+u7VYy-ofw@mail.gmail.com>
+Subject: Re: [PATCH v5 28/28] fpga: dfl: afu: add DFL_FPGA_PORT_DMA_MAP/UNMAP
+ ioctls support
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds status sysfs interface for fpga manager, it's a
-read only interface which allows user to get fpga manager status,
-including full/partial reconfiguration error and other status
-information. It adds a status callback to fpga_manager_ops too,
-allows each fpga_manager driver to define its own method to
-collect latest status from hardware.
+On Tue, May 1, 2018 at 9:50 PM, Wu Hao <hao.wu@intel.com> wrote:
 
-The following sysfs file is created:
-* /sys/class/fpga_manager/<fpga>/status
-  Return status of fpga manager, including reconfiguration errors.
+Hi Hao,
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+> DMA memory regions are required for Accelerated Function Unit (AFU) usage.
+> These two ioctls allow user space applications to map user memory regions
+> for dma, and unmap them after use. Iova is returned from driver to user
+> space application via DFL_FPGA_PORT_DMA_MAP ioctl. Application needs to unmap
+> it after use, otherwise, driver will unmap them in device file release
+> operation.
+>
+> Each AFU has its own rb tree to keep track of its mapped DMA regions.
+>
+> Ioctl interfaces:
+> * DFL_FPGA_PORT_DMA_MAP
+>   Do the dma mapping per user_addr and length which provided by user.
+>   Return iova in provided struct dfl_fpga_port_dma_map.
+>
+> * DFL_FPGA_PORT_DMA_UNMAP
+>   Unmap the dma region per iova provided by user.
+>
+> Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+> Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+> Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+> Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+
 Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v3: add one line description for status
-    add status callback function to fpga_manager_ops
-    update fpga-mgr status if any failure or during initialization
-    s/INCOMPATIBLE_BS_ERR/INCOMPATIBLE_IMAGE_ERR/
-v4: simply code per suggestion from Alan.
-    add supported status strings (and descriptions) in sysfs document.
-    remove unused error code (SECURE_LOAD_ERR).
-v5: fix the wrong commit message and add Acked-by from Alan and Moritz.
-v6: rebase.
----
- Documentation/ABI/testing/sysfs-class-fpga-manager | 24 +++++++++++++++++++
- drivers/fpga/fpga-mgr.c                            | 28 ++++++++++++++++++++++
- include/linux/fpga/fpga-mgr.h                      |  9 +++++++
- 3 files changed, 61 insertions(+)
-
-diff --git a/Documentation/ABI/testing/sysfs-class-fpga-manager b/Documentation/ABI/testing/sysfs-class-fpga-manager
-index 23056c5..2aadf59 100644
---- a/Documentation/ABI/testing/sysfs-class-fpga-manager
-+++ b/Documentation/ABI/testing/sysfs-class-fpga-manager
-@@ -35,3 +35,27 @@ Description:	Read fpga manager state as a string.
- 		* write complete	= Doing post programming steps
- 		* write complete error	= Error while doing post programming
- 		* operating		= FPGA is programmed and operating
-+
-+What:		/sys/class/fpga_manager/<fpga>/status
-+Date:		June 2018
-+KernelVersion:	4.18
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read fpga manager status as a string.
-+		If FPGA programming operation fails, it could be caused by crc
-+		error or incompatible bitstream image. The intent of this
-+		interface is to provide more detailed information for FPGA
-+		programming errors to userspace. This is a list of strings for
-+		the supported status.
-+
-+		* reconfig operation error 	- invalid operations detected by
-+						  reconfiguration hardware.
-+						  e.g start reconfiguration
-+						  with errors not cleared
-+		* reconfig CRC error		- CRC error detected by
-+						  reconfiguration hardware.
-+		* reconfig incompatible image	- reconfiguration image is
-+						  incompatible with hardware
-+		* reconfig IP protocol error	- protocol errors detected by
-+						  reconfiguration hardware
-+		* reconfig fifo overflow error	- FIFO overflow detected by
-+						  reconfiguration hardware
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index c1564cf..a41b07e 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -406,12 +406,40 @@ static ssize_t state_show(struct device *dev,
- 	return sprintf(buf, "%s\n", state_str[mgr->state]);
- }
- 
-+static ssize_t status_show(struct device *dev,
-+			   struct device_attribute *attr, char *buf)
-+{
-+	struct fpga_manager *mgr = to_fpga_manager(dev);
-+	u64 status;
-+	int len = 0;
-+
-+	if (!mgr->mops->status)
-+		return -ENOENT;
-+
-+	status = mgr->mops->status(mgr);
-+
-+	if (status & FPGA_MGR_STATUS_OPERATION_ERR)
-+		len += sprintf(buf + len, "reconfig operation error\n");
-+	if (status & FPGA_MGR_STATUS_CRC_ERR)
-+		len += sprintf(buf + len, "reconfig CRC error\n");
-+	if (status & FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR)
-+		len += sprintf(buf + len, "reconfig incompatible image\n");
-+	if (status & FPGA_MGR_STATUS_IP_PROTOCOL_ERR)
-+		len += sprintf(buf + len, "reconfig IP protocol error\n");
-+	if (status & FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR)
-+		len += sprintf(buf + len, "reconfig fifo overflow error\n");
-+
-+	return len;
-+}
-+
- static DEVICE_ATTR_RO(name);
- static DEVICE_ATTR_RO(state);
-+static DEVICE_ATTR_RO(status);
- 
- static struct attribute *fpga_mgr_attrs[] = {
- 	&dev_attr_name.attr,
- 	&dev_attr_state.attr,
-+	&dev_attr_status.attr,
- 	NULL,
- };
- ATTRIBUTE_GROUPS(fpga_mgr);
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 3eb6b9d..e249b72 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -101,6 +101,7 @@ struct fpga_image_info {
-  * struct fpga_manager_ops - ops for low level fpga manager drivers
-  * @initial_header_size: Maximum number of bytes that should be passed into write_init
-  * @state: returns an enum value of the FPGA's state
-+ * @status: returns status of the FPGA, including reconfiguration error code
-  * @write_init: prepare the FPGA to receive confuration data
-  * @write: write count bytes of configuration data to the FPGA
-  * @write_sg: write the scatter list of configuration data to the FPGA
-@@ -115,6 +116,7 @@ struct fpga_image_info {
- struct fpga_manager_ops {
- 	size_t initial_header_size;
- 	enum fpga_mgr_states (*state)(struct fpga_manager *mgr);
-+	u64 (*status)(struct fpga_manager *mgr);
- 	int (*write_init)(struct fpga_manager *mgr,
- 			  struct fpga_image_info *info,
- 			  const char *buf, size_t count);
-@@ -126,6 +128,13 @@ struct fpga_manager_ops {
- 	const struct attribute_group **groups;
- };
- 
-+/* FPGA manager status: Partial/Full Reconfiguration errors */
-+#define FPGA_MGR_STATUS_OPERATION_ERR		BIT(0)
-+#define FPGA_MGR_STATUS_CRC_ERR			BIT(1)
-+#define FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR	BIT(2)
-+#define FPGA_MGR_STATUS_IP_PROTOCOL_ERR		BIT(3)
-+#define FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR	BIT(4)
-+
- /**
-  * struct fpga_manager - fpga manager structure
-  * @name: name of low level fpga manager
--- 
-1.8.3.1
