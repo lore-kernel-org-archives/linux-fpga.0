@@ -1,40 +1,43 @@
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=6uOa=IZ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=6uOa=IZ=intel.com=hao.wu@kernel.org>
+Date: Thu, 7 Jun 2018 10:00:01 +0800
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v6 29/29] MAINTAINERS: add entry for FPGA DFL drivers
-Date: Tue, 12 Jun 2018 18:10:43 +0800
-Message-Id: <1528798243-2029-30-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-References: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Subject: Re: [PATCH v5 01/28] docs: fpga: add a document for FPGA Device
+ Feature List (DFL) Framework Overview
+Message-ID: <20180607020001.GA9260@hao-dev>
+References: <1525229431-3087-1-git-send-email-hao.wu@intel.com>
+ <1525229431-3087-2-git-send-email-hao.wu@intel.com>
+ <CANk1AXRAsSE2oMrAiTsmScPUk1vD9L_Yfjy8p4jivSm0VYrbxw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXRAsSE2oMrAiTsmScPUk1vD9L_Yfjy8p4jivSm0VYrbxw@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add entry for FPGA Device Feature List (DFL) drivers.
+On Wed, Jun 06, 2018 at 11:16:03AM -0500, Alan Tull wrote:
+> On Tue, May 1, 2018 at 9:50 PM, Wu Hao <hao.wu@intel.com> wrote:
+> 
+> Hi Hao,
+> 
+> I've acked the remaining patches with some changes requested.  In your
+> v6, please add a patch to add yourself to the MAINTAINERS file or
+> whoever is planning on maintaining fpga/drivers/*dfl*
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Hi Alan,
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 448957c..98fc5ea 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5619,6 +5619,14 @@ F:	drivers/fpga/
- F:	include/linux/fpga/
- W:	http://www.rocketboards.org
- 
-+FPGA DFL DRIVERS
-+M:	Wu Hao <hao.wu@intel.com>
-+L:	linux-fpga@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/fpga/dfl.txt
-+F:	include/uapi/linux/fpga-dfl.h
-+F:	drivers/fpga/dfl*
-+
- FPU EMULATOR
- M:	Bill Metzenthen <billm@melbpc.org.au>
- W:	http://floatingpoint.sourceforge.net/emulator/index.html
--- 
-1.8.3.1
+Sure, I will fix these in the next version. Thanks a lot for the review.
+
+Hao
+
+> 
+> > Add a document for FPGA Device Feature List (DFL) Framework Overview.
+> >
+> > Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> > Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Acked-by: Alan Tull <atull@kernel.org>
+> 
+> Thanks,
+> Alan
