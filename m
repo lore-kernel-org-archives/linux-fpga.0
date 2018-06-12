@@ -1,64 +1,42 @@
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v6 04/29] fpga: mgr: add compat_id support
-Date: Tue, 12 Jun 2018 18:10:18 +0800
-Message-Id: <1528798243-2029-5-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-References: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <1528798243-2029-4-git-send-email-hao.wu@intel.com>
+References: <1528798243-2029-1-git-send-email-hao.wu@intel.com> <1528798243-2029-4-git-send-email-hao.wu@intel.com>
+From: Alan Tull <atull@kernel.org>
+Date: Tue, 12 Jun 2018 10:57:16 -0500
+Message-ID: <CANk1AXQqix_eK1XRtSVGWNe-9wQm+OGOFr61MhqOY1_fzKNXRA@mail.gmail.com>
+Subject: Re: [PATCH v6 03/29] fpga: mgr: add status for fpga-manager
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch introduces compat_id support to fpga manager, it adds
-a fpga_compat_id pointer to fpga manager data structure to allow
-fpga manager drivers to save the compatibility id. This compat_id
-could be used for compatibility checking before doing partial
-reconfiguration to associated fpga regions.
+On Tue, Jun 12, 2018 at 5:10 AM, Wu Hao <hao.wu@intel.com> wrote:
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
----
-v6: add Acked-by from Alan.
----
- include/linux/fpga/fpga-mgr.h | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+Hi Hao,
 
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index e249b72..8942e61 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -136,11 +136,23 @@ struct fpga_manager_ops {
- #define FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR	BIT(4)
- 
- /**
-+ * struct fpga_compat_id - id for compatibility check
-+ *
-+ * @id_h: high 64bit of the compat_id
-+ * @id_l: low 64bit of the compat_id
-+ */
-+struct fpga_compat_id {
-+	u64 id_h;
-+	u64 id_l;
-+};
-+
-+/**
-  * struct fpga_manager - fpga manager structure
-  * @name: name of low level fpga manager
-  * @dev: fpga manager device
-  * @ref_mutex: only allows one reference to fpga manager
-  * @state: state of fpga manager
-+ * @compat_id: FPGA manager id for compatibility check.
-  * @mops: pointer to struct of fpga manager ops
-  * @priv: low level driver private date
-  */
-@@ -149,6 +161,7 @@ struct fpga_manager {
- 	struct device dev;
- 	struct mutex ref_mutex;
- 	enum fpga_mgr_states state;
-+	struct fpga_compat_id *compat_id;
- 	const struct fpga_manager_ops *mops;
- 	void *priv;
- };
--- 
-1.8.3.1
+>  Documentation/ABI/testing/sysfs-class-fpga-manager | 24 +++++++++++++++++++
+>  drivers/fpga/fpga-mgr.c                            | 28 ++++++++++++++++++++++
+>  include/linux/fpga/fpga-mgr.h                      |  9 +++++++
+>  3 files changed, 61 insertions(+)
+>
+> diff --git a/Documentation/ABI/testing/sysfs-class-fpga-manager b/Documentation/ABI/testing/sysfs-class-fpga-manager
+> index 23056c5..2aadf59 100644
+> --- a/Documentation/ABI/testing/sysfs-class-fpga-manager
+> +++ b/Documentation/ABI/testing/sysfs-class-fpga-manager
+> @@ -35,3 +35,27 @@ Description: Read fpga manager state as a string.
+>                 * write complete        = Doing post programming steps
+>                 * write complete error  = Error while doing post programming
+>                 * operating             = FPGA is programmed and operating
+> +
+> +What:          /sys/class/fpga_manager/<fpga>/status
+> +Date:          June 2018
+> +KernelVersion: 4.18
+
+4.19
+
+Greg is queuing new functionality for 4.19 after 4.18-rc1 is done.
+
+> +Contact:       Wu Hao <hao.wu@intel.com>
+> +Description:   Read fpga manager status as a string.
