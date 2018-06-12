@@ -1,47 +1,177 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-In-Reply-To: <1525229431-3087-28-git-send-email-hao.wu@intel.com>
-References: <1525229431-3087-1-git-send-email-hao.wu@intel.com> <1525229431-3087-28-git-send-email-hao.wu@intel.com>
-From: Alan Tull <atull@kernel.org>
-Date: Wed, 6 Jun 2018 11:04:15 -0500
-Message-ID: <CANk1AXRVdZp7zCfY+YCBVubQa1iWYNq00xv=aQ=G3nwR-_vePg@mail.gmail.com>
-Subject: Re: [PATCH v5 27/28] fpga: dfl: afu: add afu sub feature support
-Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
+Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v6 15/29] fpga: dfl: fme: add header sub feature support
+Date: Tue, 12 Jun 2018 18:10:29 +0800
+Message-Id: <1528798243-2029-16-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
+References: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, May 1, 2018 at 9:50 PM, Wu Hao <hao.wu@intel.com> wrote:
+From: Kang Luwei <luwei.kang@intel.com>
 
-Hi Hao,
+The Header Register set is always present for FPGA Management Engine (FME),
+this patch implements init and uinit function for header sub feature and
+introduces several read-only sysfs interfaces for the capability and
+status.
 
-> From: Xiao Guangrong <guangrong.xiao@linux.intel.com>
->
-> User Accelerated Function Unit sub feature exposes the MMIO region of
-> the AFU. After valid PR bitstream is programmed and the port is enabled,
-> then this MMIO region could be accessed.
->
-> This patch adds support to enumerate the AFU MMIO region and expose it
-> to userspace via mmap file operation. Below interfaces are exposed to user:
->
-> Sysfs interface:
-> * /sys/class/fpga_region/<regionX>/<dfl-port.x>/afu_id
->   Read-only. Indicate which PR bitstream is programmed to this AFU.
->
-> Ioctl interfaces:
-> * DFL_FPGA_PORT_GET_INFO
->   Provide info to userspace on the number of supported region.
->   Only UAFU region is supported now.
->
-> * DFL_FPGA_PORT_GET_REGION_INFO
->   Provide region information, including access permission, region size,
->   offset from the start of device fd.
->
-> Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-> Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-> Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-> Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-> Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
+Sysfs interfaces:
+* /sys/class/fpga_region/<regionX>/<dfl-fme.x>/ports_num
+  Read-only. Number of ports implemented
+
+* /sys/class/fpga_region/<regionX>/<dfl-fme.x>/bitstream_id
+  Read-only. Bitstream (static FPGA region) identifier number. It contains
+  the detailed version and other information of this static FPGA region.
+
+* /sys/class/fpga_region/<regionX>/<dfl-fme.x>/bitstream_metadata
+  Read-only. Bitstream (static FPGA region) meta data. It contains the
+  synthesis date, seed and other information of this static FPGA region.
+
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Kang Luwei <luwei.kang@intel.com>
+Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
+---
+v2: add sysfs documentation
+v3: rename driver to fpga-dfl-fme.
+    improve sysfs doc and commit description.
+    replace bitfield.
+v4: rebase and switch to use id for sub feature matching.
+    add more description for bitstream_id/metadata.
+v5: rebase due to DFL framework API naming changes.
+    replace "blue bitstream" terminology.
+    fix one typo in sysfs doc and add acked-by from Alan.
+v6: reabse
+---
+ Documentation/ABI/testing/sysfs-platform-dfl-fme | 23 ++++++++
+ drivers/fpga/dfl-fme-main.c                      | 68 ++++++++++++++++++++++++
+ 2 files changed, 91 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-platform-dfl-fme
+
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+new file mode 100644
+index 0000000..1bd03fe
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+@@ -0,0 +1,23 @@
++What:		/sys/bus/platform/devices/dfl-fme.0/ports_num
++Date:		June 2018
++KernelVersion:  4.18
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. One DFL FPGA device may have more than 1
++		port/Accelerator Function Unit (AFU). It returns the
++		number of ports on the FPGA device when read it.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/bitstream_id
++Date:		June 2018
++KernelVersion:  4.18
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns Bitstream (static FPGA region)
++		identifier number, which includes the detailed version
++		and other information of this static FPGA region.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/bitstream_metadata
++Date:		June 2018
++KernelVersion:  4.18
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns Bitstream (static FPGA region) meta
++		data, which includes the synthesis date, seed and other
++		information of this static FPGA region.
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index a2ae9b3..77d9ffc 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -19,10 +19,77 @@
+ 
+ #include "dfl.h"
+ 
++static ssize_t ports_num_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_CAP_NUM_PORTS, v));
++}
++static DEVICE_ATTR_RO(ports_num);
++
++/*
++ * Bitstream (static FPGA region) identifier number. It contains the
++ * detailed version and other information of this static FPGA region.
++ */
++static ssize_t bitstream_id_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_BITSTREAM_ID);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n", (unsigned long long)v);
++}
++static DEVICE_ATTR_RO(bitstream_id);
++
++/*
++ * Bitstream (static FPGA region) meta data. It contains the synthesis
++ * date, seed and other information of this static FPGA region.
++ */
++static ssize_t bitstream_metadata_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_BITSTREAM_MD);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n", (unsigned long long)v);
++}
++static DEVICE_ATTR_RO(bitstream_metadata);
++
++static const struct attribute *fme_hdr_attrs[] = {
++	&dev_attr_ports_num.attr,
++	&dev_attr_bitstream_id.attr,
++	&dev_attr_bitstream_metadata.attr,
++	NULL,
++};
++
+ static int fme_hdr_init(struct platform_device *pdev,
+ 			struct dfl_feature *feature)
+ {
++	void __iomem *base = feature->ioaddr;
++	int ret;
++
+ 	dev_dbg(&pdev->dev, "FME HDR Init.\n");
++	dev_dbg(&pdev->dev, "FME cap %llx.\n",
++		(unsigned long long)readq(base + FME_HDR_CAP));
++
++	ret = sysfs_create_files(&pdev->dev.kobj, fme_hdr_attrs);
++	if (ret)
++		return ret;
+ 
+ 	return 0;
+ }
+@@ -31,6 +98,7 @@ static void fme_hdr_uinit(struct platform_device *pdev,
+ 			  struct dfl_feature *feature)
+ {
+ 	dev_dbg(&pdev->dev, "FME HDR UInit.\n");
++	sysfs_remove_files(&pdev->dev.kobj, fme_hdr_attrs);
+ }
+ 
+ static const struct dfl_feature_ops fme_hdr_ops = {
+-- 
+1.8.3.1
