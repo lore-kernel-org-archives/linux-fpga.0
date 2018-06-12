@@ -1,232 +1,703 @@
 Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v6 00/29] FPGA Device Feature List (DFL) Device Drivers
-Date: Tue, 12 Jun 2018 18:10:14 +0800
-Message-Id: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v6 27/29] fpga: dfl: afu: add afu sub feature support
+Date: Tue, 12 Jun 2018 18:10:41 +0800
+Message-Id: <1528798243-2029-28-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
+References: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Xiao Guangrong <guangrong.xiao@linux.intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi All,
+From: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 
-Here is v6 patch-series adding drivers for FPGA DFL devices.
+User Accelerated Function Unit sub feature exposes the MMIO region of
+the AFU. After valid PR bitstream is programmed and the port is enabled,
+then this MMIO region could be accessed.
 
-This patch series provides a common framework to support FPGA Device Feature
-List (DFL), and also feature dev drivers under this DFL framework to provide
-interfaces for userspace applications to configure, enumerate, open, and
-access FPGA accelerators on DFL based FPGA device and enables system level
-management functions such as FPGA partial reconfiguration, power management
-and virtualization.
+This patch adds support to enumerate the AFU MMIO region and expose it
+to userspace via mmap file operation. Below interfaces are exposed to user:
 
-This patch series only adds the basic functions for FPGA accelerators and
-partial reconfiguration. Patches for more functions, e.g power management
-and virtualization, will be submitted after this series gets reviewed.
+Sysfs interface:
+* /sys/class/fpga_region/<regionX>/<dfl-port.x>/afu_id
+  Read-only. Indicate which PR bitstream is programmed to this AFU.
 
-Note this patch series is only verified on DFL based Intel(R) FPGA PCIe
-devices (e.g Intel Server Platform with In-package FPGA and Intel FPGA PCIe
-Acceleration Cards).
+Ioctl interfaces:
+* DFL_FPGA_PORT_GET_INFO
+  Provide info to userspace on the number of supported region.
+  Only UAFU region is supported now.
 
-Patch 1: add a document for FPGA DFL framework driver overview, including
-Device Feature List (DFL) introduction, the HW architecture, driver
-organization, device enumeration and opens.
+* DFL_FPGA_PORT_GET_REGION_INFO
+  Provide region information, including access permission, region size,
+  offset from the start of device fd.
 
-Patch 2: add region_id for fpga_image_info data structure, which allows
-driver to pass region id information to fpga-mgr for FPGA reconfiguration
-function. (Used by Patch 17)
-
-Patch 3: add a 'status' sysfs interface to fpga-mgr class, it reflects
-the status of the fpga-mgr including reconfiguration errors. (Used by
-Patch 18)
-
-Patch 4-5: add compat_id support in fpga manager and region, this compat
-id is used for compatibility check before further actions (e.g partial
-reconfiguration). (Used by Patch 19 and 22)
-
-Patch 6-11: add FPGA device feature list support, it provides common
-enumeration interfaces which creates container device (FPGA base region)
-and all feature devices by walking through all the 'Device Feature Lists'
-provided low level drivers. A global list is added to DFL framework to
-manage port ops from different ports.
-
-Patch 12-13: implement FPGA PCIe device driver. It locates all 'Device
-Feature Lists' in PCIe device memory and invokes common interfaces from
-above device feature list framework to finish the enumeration.
-
-Patch 14-17: implement FPGA Management Engine (FME) driver. It's a
-platform driver matching with the FME platform device created by above
-device feature list framework during enumeration. Sysfs and device file
-ioctls are exposed as user interfaces to allow partial reconfiguration
-to Accelerated Function Units (AFUs) from user space applications.
-
-Patch 18-22: implement FPGA manager/bridge/region platform drivers for
-Intel FPGA Management Engine (FME). These platform drivers match with
-platform devices created by above FME driver, they use the generic
-fpga-mgr/bridge/region class infrastructure to implement FPGA partial
-reconfiguration function.
-
-Patch 23-28: implement FPGA Accelerated Function Unit (AFU) driver.
-It's a platform driver matching with AFU platform device created by above
-device feature list framework during enumeration. It provides user
-interfaces to expose the AFU MMIO region, map/unmap dma buffer, and
-control the port which AFU connects to.
-
-Patch 29: add a entry in MAINTAINERS for this FPGA DFL drivers patchset.
-
-Changes from v5:
-- Improve functions/APIs naming per suggestion from Alan Tull.
-- Improve DFL framework code and comments to simply the work for adding
-  a new feature device support.
-- Correct the time in copyright, and fix other comments from Alan Tull.
-- Add a entry in MAINTAINERS for this FPGA DFL drivers patchset.
-
-Changes from v4:
-- Update the dfl.txt documentation, remove descriptions for the APIs and
-  features which are not implemented in this patch series.
-- Add DFL_ / dfl_ prefix for APIs and data structure, to avoid directly
-  using fpga_xxx as definition.
-- Use "static region" and "PR bistream" instead of "blue bitstream" and
-  "green bistream" in description to avoid misunderstanding.
-- Fix building issues caused by BIT() on 64bit register definition and
-  missing correct header file for readq and writeq.
-- Remove port specific code in DFL framework, and introduce port ops support
-  to resolve the dependency issue between FME driver module and Port driver
-  module. (more details in Patch 8).
-- Add compat id to fpga manager, as in case some hardware implements the
-  compat id in fpga manager's register, not register belongs to fpga region,
-  and it's value is shared by all related fpga regions.
-- Pass mapped ioaddr to fme manager platform device from dfl-fme-pr via pdata.
-- Fix other comments from Alan and Moritze, including description improvement,
-  coding style issue and etc.
-
-Changes from v3:
-- Fix SPDX license issue.
-- Rename documentation to dfl.txt, add introduction for Device Feature List
-  (DFL) and re-organize the content.
-- Rename to FPGA Device Feature List (DFL) drivers from Intel FPGA device
-  drivers for better reuse purposes. Unified driver and files to dfl-*.*
-- Remove static feature_info table from common enumeration code, and switch
-  to use feature id for sub feature driver matching.
-- Remove next_afu register checking for AFU from common enumeration code.
-- Remove interface_id sysfs for dfl-fme-mgr and use per fpga-region
-  compat_id instead. (new patch 13, 15, 19).
-- Add more comments for driver data structures and functions.
-- Fix typos, issues in debug message/commit message and other places.
-
-Changes from v2:
-- Split common enumeration code from pcie driver to a separated module
-  which for device feature list support.
-- Drop fpga-dev class and switch to use fpga base region as container.
-- Update the intel-fpga.txt documentation for new driver organization.
-- Rename feature device drivers for future code reuse.
-- Rebase code due to fpga APIs changes
-- replace bitfields with marco and shift.
-- fix typos, checkpatch issue and other comments.
-
-Changes from v1:
-- Use GPLv2 license instead of Dual BSD/GPL.
-- Move the code to drivers/fpga folder.
-- Update the intel-fpga.txt documentation for new driver organization.
-- Add documentation for new sysfs interfaces.
-- Switch to use common fpga-region interface for partial reconfiguration
-  (PR) function in FME. It creates fpga-region/fpga-mgr/fpga-bridge
-  platform devices and leave the implementation to their platform drivers.
-- Add platform drivers for FME fpga-mgr/bridge/region platform devices.
-- Fix kbuild warnings, typos and other comments.
-
-This patch series depends on the below patchset from Alan Tull.
-[PATCH 00/14] fpga api changes and kernel-doc fixup[1]
-
-[1]https://marc.info/?l=linux-kernel&m=152651462215380&w=2
-
-Kang Luwei (3):
-  fpga: dfl: add FPGA Management Engine driver basic framework
-  fpga: dfl: fme: add header sub feature support
-  fpga: dfl: fme: add partial reconfiguration sub feature support
-
-Wu Hao (23):
-  docs: fpga: add a document for FPGA Device Feature List (DFL)
-    Framework Overview
-  fpga: mgr: add region_id to fpga_image_info
-  fpga: mgr: add status for fpga-manager
-  fpga: mgr: add compat_id support
-  fpga: region: add compat_id support
-  fpga: add device feature list support
-  fpga: dfl: add chardev support for feature devices
-  fpga: dfl: add dfl_fpga_cdev_find_port
-  fpga: dfl: add dfl_fpga_port_ops support.
-  fpga: dfl: add dfl_fpga_check_port_id function.
-  fpga: dfl-pci: add enumeration for feature devices
-  fpga: dfl: fme: add DFL_FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
-    support
-  fpga: dfl: add fpga manager platform driver for FME
-  fpga: dfl: fme-mgr: add compat_id support
-  fpga: dfl: add fpga bridge platform driver for FME
-  fpga: dfl: add fpga region platform driver for FME
-  fpga: dfl: fme-region: add support for compat_id
-  fpga: dfl: add FPGA Accelerated Function Unit driver basic framework
-  fpga: dfl: afu: add port ops support
-  fpga: dfl: afu: add header sub feature support
-  fpga: dfl: afu: add DFL_FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls
-    support
-  fpga: dfl: afu: add DFL_FPGA_PORT_DMA_MAP/UNMAP ioctls support
-  MAINTAINERS: add entry for FPGA DFL drivers
-
-Xiao Guangrong (2):
-  fpga: dfl: add feature device infrastructure
-  fpga: dfl: afu: add afu sub feature support
-
-Zhang Yi (1):
-  fpga: add FPGA DFL PCIe device driver
-
- Documentation/ABI/testing/sysfs-class-fpga-manager |   24 +
- Documentation/ABI/testing/sysfs-class-fpga-region  |    9 +
- Documentation/ABI/testing/sysfs-platform-dfl-fme   |   23 +
- Documentation/ABI/testing/sysfs-platform-dfl-port  |   16 +
- Documentation/fpga/dfl.txt                         |  285 ++++++
- Documentation/ioctl/ioctl-number.txt               |    1 +
- MAINTAINERS                                        |    8 +
- drivers/fpga/Kconfig                               |   68 ++
- drivers/fpga/Makefile                              |   14 +
- drivers/fpga/dfl-afu-dma-region.c                  |  463 +++++++++
- drivers/fpga/dfl-afu-main.c                        |  636 ++++++++++++
- drivers/fpga/dfl-afu-region.c                      |  166 ++++
- drivers/fpga/dfl-afu.h                             |  100 ++
- drivers/fpga/dfl-fme-br.c                          |  114 +++
- drivers/fpga/dfl-fme-main.c                        |  279 ++++++
- drivers/fpga/dfl-fme-mgr.c                         |  349 +++++++
- drivers/fpga/dfl-fme-pr.c                          |  474 +++++++++
- drivers/fpga/dfl-fme-pr.h                          |   84 ++
- drivers/fpga/dfl-fme-region.c                      |   89 ++
- drivers/fpga/dfl-fme.h                             |   38 +
- drivers/fpga/dfl-pci.c                             |  310 ++++++
- drivers/fpga/dfl.c                                 | 1042 ++++++++++++++++++++
- drivers/fpga/dfl.h                                 |  410 ++++++++
- drivers/fpga/fpga-mgr.c                            |   28 +
- drivers/fpga/fpga-region.c                         |   22 +
- include/linux/fpga/fpga-mgr.h                      |   24 +
- include/linux/fpga/fpga-region.h                   |    2 +
- include/uapi/linux/fpga-dfl.h                      |  178 ++++
- 28 files changed, 5256 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-fpga-region
- create mode 100644 Documentation/ABI/testing/sysfs-platform-dfl-fme
- create mode 100644 Documentation/ABI/testing/sysfs-platform-dfl-port
- create mode 100644 Documentation/fpga/dfl.txt
- create mode 100644 drivers/fpga/dfl-afu-dma-region.c
- create mode 100644 drivers/fpga/dfl-afu-main.c
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+---
+v2: moved the code to drivers/fpga folder as suggested by Alan Tull.
+    switched to GPLv2 license.
+    fixed kbuild warnings.
+v3: improved commit description and fixed coding style issues.
+    replaced fpga_pdata_to_pcidev with fpga_pdata_to_fpga_cdev
+v4: rebase and fix SPDX license issue
+v5: rebase, due to DFL framework naming changes.
+    add DFL_ prefix to IOCTL API.
+    remove "user" afu, and replace "green bitstream" terminology.
+    add "mmio" to afu region functions and data structures.
+v6: rebase, fix copyright time and add Acked-by Alan.
+---
+ Documentation/ABI/testing/sysfs-platform-dfl-port |   9 +
+ drivers/fpga/Makefile                             |   2 +-
+ drivers/fpga/dfl-afu-main.c                       | 219 +++++++++++++++++++++-
+ drivers/fpga/dfl-afu-region.c                     | 166 ++++++++++++++++
+ drivers/fpga/dfl-afu.h                            |  71 +++++++
+ include/uapi/linux/fpga-dfl.h                     |  48 +++++
+ 6 files changed, 508 insertions(+), 7 deletions(-)
  create mode 100644 drivers/fpga/dfl-afu-region.c
  create mode 100644 drivers/fpga/dfl-afu.h
- create mode 100644 drivers/fpga/dfl-fme-br.c
- create mode 100644 drivers/fpga/dfl-fme-main.c
- create mode 100644 drivers/fpga/dfl-fme-mgr.c
- create mode 100644 drivers/fpga/dfl-fme-pr.c
- create mode 100644 drivers/fpga/dfl-fme-pr.h
- create mode 100644 drivers/fpga/dfl-fme-region.c
- create mode 100644 drivers/fpga/dfl-fme.h
- create mode 100644 drivers/fpga/dfl-pci.c
- create mode 100644 drivers/fpga/dfl.c
- create mode 100644 drivers/fpga/dfl.h
- create mode 100644 include/uapi/linux/fpga-dfl.h
 
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
+index 17c72d5..3c74c89 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-port
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
+@@ -5,3 +5,12 @@ Contact:	Wu Hao <hao.wu@intel.com>
+ Description:	Read-only. It returns id of this port. One DFL FPGA device
+ 		may have more than one port. Userspace could use this id to
+ 		distinguish different ports under same FPGA device.
++
++What:		/sys/bus/platform/devices/dfl-port.0/afu_id
++Date:		June 2018
++KernelVersion:	4.18
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. User can program different PR bitstreams to FPGA
++		Accelerator Function Unit (AFU) for different functions. It
++		returns uuid which could be used to identify which PR bitstream
++		is programmed in this AFU.
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index 1ac7749..a44d50d 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -38,7 +38,7 @@ obj-$(CONFIG_FPGA_DFL_FME_REGION)	+= dfl-fme-region.o
+ obj-$(CONFIG_FPGA_DFL_AFU)		+= dfl-afu.o
+ 
+ dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
+-dfl-afu-objs := dfl-afu-main.o
++dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o
+ 
+ # Drivers for FPGAs which implement DFL
+ obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 1f22423..6ea40c8 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -16,18 +16,18 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/uaccess.h>
+ #include <linux/fpga-dfl.h>
+ 
+-#include "dfl.h"
++#include "dfl-afu.h"
+ 
+ /**
+  * port_enable - enable a port
+  * @pdev: port platform device.
+  *
+  * Enable Port by clear the port soft reset bit, which is set by default.
+- * The User AFU is unable to respond to any MMIO access while in reset.
+- * port_enable function should only be used after port_disable
+- * function.
++ * The AFU is unable to respond to any MMIO access while in reset.
++ * port_enable function should only be used after port_disable function.
+  */
+ static void port_enable(struct platform_device *pdev)
+ {
+@@ -191,12 +191,75 @@ static void port_hdr_uinit(struct platform_device *pdev,
+ 	.ioctl = port_hdr_ioctl,
+ };
+ 
++static ssize_t
++afu_id_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u64 guidl, guidh;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_AFU);
++
++	mutex_lock(&pdata->lock);
++	if (pdata->disable_count) {
++		mutex_unlock(&pdata->lock);
++		return -EBUSY;
++	}
++
++	guidl = readq(base + GUID_L);
++	guidh = readq(base + GUID_H);
++	mutex_unlock(&pdata->lock);
++
++	return scnprintf(buf, PAGE_SIZE, "%016llx%016llx\n", guidh, guidl);
++}
++static DEVICE_ATTR_RO(afu_id);
++
++static const struct attribute *port_afu_attrs[] = {
++	&dev_attr_afu_id.attr,
++	NULL
++};
++
++static int port_afu_init(struct platform_device *pdev,
++			 struct dfl_feature *feature)
++{
++	struct resource *res = &pdev->resource[feature->resource_index];
++	int ret;
++
++	dev_dbg(&pdev->dev, "PORT AFU Init.\n");
++
++	ret = afu_mmio_region_add(dev_get_platdata(&pdev->dev),
++				  DFL_PORT_REGION_INDEX_AFU, resource_size(res),
++				  res->start, DFL_PORT_REGION_READ |
++				  DFL_PORT_REGION_WRITE | DFL_PORT_REGION_MMAP);
++	if (ret)
++		return ret;
++
++	return sysfs_create_files(&pdev->dev.kobj, port_afu_attrs);
++}
++
++static void port_afu_uinit(struct platform_device *pdev,
++			   struct dfl_feature *feature)
++{
++	dev_dbg(&pdev->dev, "PORT AFU UInit.\n");
++
++	sysfs_remove_files(&pdev->dev.kobj, port_afu_attrs);
++}
++
++static const struct dfl_feature_ops port_afu_ops = {
++	.init = port_afu_init,
++	.uinit = port_afu_uinit,
++};
++
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+ 		.id = PORT_FEATURE_ID_HEADER,
+ 		.ops = &port_hdr_ops,
+ 	},
+ 	{
++		.id = PORT_FEATURE_ID_AFU,
++		.ops = &port_afu_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	}
+ };
+@@ -243,6 +306,64 @@ static long afu_ioctl_check_extension(struct dfl_feature_platform_data *pdata,
+ 	return 0;
+ }
+ 
++static long
++afu_ioctl_get_info(struct dfl_feature_platform_data *pdata, void __user *arg)
++{
++	struct dfl_fpga_port_info info;
++	struct dfl_afu *afu;
++	unsigned long minsz;
++
++	minsz = offsetofend(struct dfl_fpga_port_info, num_umsgs);
++
++	if (copy_from_user(&info, arg, minsz))
++		return -EFAULT;
++
++	if (info.argsz < minsz)
++		return -EINVAL;
++
++	mutex_lock(&pdata->lock);
++	afu = dfl_fpga_pdata_get_private(pdata);
++	info.flags = 0;
++	info.num_regions = afu->num_regions;
++	info.num_umsgs = afu->num_umsgs;
++	mutex_unlock(&pdata->lock);
++
++	if (copy_to_user(arg, &info, sizeof(info)))
++		return -EFAULT;
++
++	return 0;
++}
++
++static long afu_ioctl_get_region_info(struct dfl_feature_platform_data *pdata,
++				      void __user *arg)
++{
++	struct dfl_fpga_port_region_info rinfo;
++	struct dfl_afu_mmio_region region;
++	unsigned long minsz;
++	long ret;
++
++	minsz = offsetofend(struct dfl_fpga_port_region_info, offset);
++
++	if (copy_from_user(&rinfo, arg, minsz))
++		return -EFAULT;
++
++	if (rinfo.argsz < minsz || rinfo.padding)
++		return -EINVAL;
++
++	ret = afu_mmio_region_get_by_index(pdata, rinfo.index, &region);
++	if (ret)
++		return ret;
++
++	rinfo.flags = region.flags;
++	rinfo.size = region.size;
++	rinfo.offset = region.offset;
++
++	if (copy_to_user(arg, &rinfo, sizeof(rinfo)))
++		return -EFAULT;
++
++	return 0;
++}
++
+ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ {
+ 	struct platform_device *pdev = filp->private_data;
+@@ -259,6 +380,10 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 		return DFL_FPGA_API_VERSION;
+ 	case DFL_FPGA_CHECK_EXTENSION:
+ 		return afu_ioctl_check_extension(pdata, arg);
++	case DFL_FPGA_PORT_GET_INFO:
++		return afu_ioctl_get_info(pdata, (void __user *)arg);
++	case DFL_FPGA_PORT_GET_REGION_INFO:
++		return afu_ioctl_get_region_info(pdata, (void __user *)arg);
+ 	default:
+ 		/*
+ 		 * Let sub-feature's ioctl function to handle the cmd
+@@ -277,13 +402,83 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 	return -EINVAL;
+ }
+ 
++static int afu_mmap(struct file *filp, struct vm_area_struct *vma)
++{
++	struct platform_device *pdev = filp->private_data;
++	struct dfl_feature_platform_data *pdata;
++	u64 size = vma->vm_end - vma->vm_start;
++	struct dfl_afu_mmio_region region;
++	u64 offset;
++	int ret;
++
++	if (!(vma->vm_flags & VM_SHARED))
++		return -EINVAL;
++
++	pdata = dev_get_platdata(&pdev->dev);
++
++	offset = vma->vm_pgoff << PAGE_SHIFT;
++	ret = afu_mmio_region_get_by_offset(pdata, offset, size, &region);
++	if (ret)
++		return ret;
++
++	if (!(region.flags & DFL_PORT_REGION_MMAP))
++		return -EINVAL;
++
++	if ((vma->vm_flags & VM_READ) && !(region.flags & DFL_PORT_REGION_READ))
++		return -EPERM;
++
++	if ((vma->vm_flags & VM_WRITE) &&
++	    !(region.flags & DFL_PORT_REGION_WRITE))
++		return -EPERM;
++
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++
++	return remap_pfn_range(vma, vma->vm_start,
++			(region.phys + (offset - region.offset)) >> PAGE_SHIFT,
++			size, vma->vm_page_prot);
++}
++
+ static const struct file_operations afu_fops = {
+ 	.owner = THIS_MODULE,
+ 	.open = afu_open,
+ 	.release = afu_release,
+ 	.unlocked_ioctl = afu_ioctl,
++	.mmap = afu_mmap,
+ };
+ 
++static int afu_dev_init(struct platform_device *pdev)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	struct dfl_afu *afu;
++
++	afu = devm_kzalloc(&pdev->dev, sizeof(*afu), GFP_KERNEL);
++	if (!afu)
++		return -ENOMEM;
++
++	afu->pdata = pdata;
++
++	mutex_lock(&pdata->lock);
++	dfl_fpga_pdata_set_private(pdata, afu);
++	afu_mmio_region_init(pdata);
++	mutex_unlock(&pdata->lock);
++
++	return 0;
++}
++
++static int afu_dev_destroy(struct platform_device *pdev)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	struct dfl_afu *afu;
++
++	mutex_lock(&pdata->lock);
++	afu = dfl_fpga_pdata_get_private(pdata);
++	afu_mmio_region_destroy(pdata);
++	dfl_fpga_pdata_set_private(pdata, NULL);
++	mutex_unlock(&pdata->lock);
++
++	return 0;
++}
++
+ static int port_enable_set(struct platform_device *pdev, bool enable)
+ {
+ 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+@@ -312,14 +507,25 @@ static int afu_probe(struct platform_device *pdev)
+ 
+ 	dev_dbg(&pdev->dev, "%s\n", __func__);
+ 
++	ret = afu_dev_init(pdev);
++	if (ret)
++		goto exit;
++
+ 	ret = dfl_fpga_dev_feature_init(pdev, port_feature_drvs);
+ 	if (ret)
+-		return ret;
++		goto dev_destroy;
+ 
+ 	ret = dfl_fpga_dev_ops_register(pdev, &afu_fops, THIS_MODULE);
+-	if (ret)
++	if (ret) {
+ 		dfl_fpga_dev_feature_uinit(pdev);
++		goto dev_destroy;
++	}
++
++	return 0;
+ 
++dev_destroy:
++	afu_dev_destroy(pdev);
++exit:
+ 	return ret;
+ }
+ 
+@@ -329,6 +535,7 @@ static int afu_remove(struct platform_device *pdev)
+ 
+ 	dfl_fpga_dev_ops_unregister(pdev);
+ 	dfl_fpga_dev_feature_uinit(pdev);
++	afu_dev_destroy(pdev);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/fpga/dfl-afu-region.c b/drivers/fpga/dfl-afu-region.c
+new file mode 100644
+index 0000000..d5cd981
+--- /dev/null
++++ b/drivers/fpga/dfl-afu-region.c
+@@ -0,0 +1,166 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Driver for FPGA Accelerated Function Unit (AFU) MMIO Region Management
++ *
++ * Copyright (C) 2017-2018 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Wu Hao <hao.wu@intel.com>
++ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ */
++#include "dfl-afu.h"
++
++/**
++ * afu_mmio_region_init - init function for afu mmio region support
++ * @pdata: afu platform device's pdata.
++ */
++void afu_mmio_region_init(struct dfl_feature_platform_data *pdata)
++{
++	struct dfl_afu *afu = dfl_fpga_pdata_get_private(pdata);
++
++	INIT_LIST_HEAD(&afu->regions);
++}
++
++#define for_each_region(region, afu)	\
++	list_for_each_entry((region), &(afu)->regions, node)
++
++static struct dfl_afu_mmio_region *get_region_by_index(struct dfl_afu *afu,
++						       u32 region_index)
++{
++	struct dfl_afu_mmio_region *region;
++
++	for_each_region(region, afu)
++		if (region->index == region_index)
++			return region;
++
++	return NULL;
++}
++
++/**
++ * afu_mmio_region_add - add a mmio region to given feature dev.
++ *
++ * @region_index: region index.
++ * @region_size: region size.
++ * @phys: region's physical address of this region.
++ * @flags: region flags (access permission).
++ *
++ * Return: 0 on success, negative error code otherwise.
++ */
++int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
++			u32 region_index, u64 region_size, u64 phys, u32 flags)
++{
++	struct dfl_afu_mmio_region *region;
++	struct dfl_afu *afu;
++	int ret = 0;
++
++	region = devm_kzalloc(&pdata->dev->dev, sizeof(*region), GFP_KERNEL);
++	if (!region)
++		return -ENOMEM;
++
++	region->index = region_index;
++	region->size = region_size;
++	region->phys = phys;
++	region->flags = flags;
++
++	mutex_lock(&pdata->lock);
++
++	afu = dfl_fpga_pdata_get_private(pdata);
++
++	/* check if @index already exists */
++	if (get_region_by_index(afu, region_index)) {
++		mutex_unlock(&pdata->lock);
++		ret = -EEXIST;
++		goto exit;
++	}
++
++	region_size = PAGE_ALIGN(region_size);
++	region->offset = afu->region_cur_offset;
++	list_add(&region->node, &afu->regions);
++
++	afu->region_cur_offset += region_size;
++	afu->num_regions++;
++	mutex_unlock(&pdata->lock);
++
++	return 0;
++
++exit:
++	devm_kfree(&pdata->dev->dev, region);
++	return ret;
++}
++
++/**
++ * afu_mmio_region_destroy - destroy all mmio regions under given feature dev.
++ * @pdata: afu platform device's pdata.
++ */
++void afu_mmio_region_destroy(struct dfl_feature_platform_data *pdata)
++{
++	struct dfl_afu *afu = dfl_fpga_pdata_get_private(pdata);
++	struct dfl_afu_mmio_region *tmp, *region;
++
++	list_for_each_entry_safe(region, tmp, &afu->regions, node)
++		devm_kfree(&pdata->dev->dev, region);
++}
++
++/**
++ * afu_mmio_region_get_by_index - find an afu region by index.
++ * @pdata: afu platform device's pdata.
++ * @region_index: region index.
++ * @pregion: ptr to region for result.
++ *
++ * Return: 0 on success, negative error code otherwise.
++ */
++int afu_mmio_region_get_by_index(struct dfl_feature_platform_data *pdata,
++				 u32 region_index,
++				 struct dfl_afu_mmio_region *pregion)
++{
++	struct dfl_afu_mmio_region *region;
++	struct dfl_afu *afu;
++	int ret = 0;
++
++	mutex_lock(&pdata->lock);
++	afu = dfl_fpga_pdata_get_private(pdata);
++	region = get_region_by_index(afu, region_index);
++	if (!region) {
++		ret = -EINVAL;
++		goto exit;
++	}
++	*pregion = *region;
++exit:
++	mutex_unlock(&pdata->lock);
++	return ret;
++}
++
++/**
++ * afu_mmio_region_get_by_offset - find an afu mmio region by offset and size
++ *
++ * @pdata: afu platform device's pdata.
++ * @offset: region offset from start of the device fd.
++ * @size: region size.
++ * @pregion: ptr to region for result.
++ *
++ * Find the region which fully contains the region described by input
++ * parameters (offset and size) from the feature dev's region link list.
++ *
++ * Return: 0 on success, negative error code otherwise.
++ */
++int afu_mmio_region_get_by_offset(struct dfl_feature_platform_data *pdata,
++				  u64 offset, u64 size,
++				  struct dfl_afu_mmio_region *pregion)
++{
++	struct dfl_afu_mmio_region *region;
++	struct dfl_afu *afu;
++	int ret = 0;
++
++	mutex_lock(&pdata->lock);
++	afu = dfl_fpga_pdata_get_private(pdata);
++	for_each_region(region, afu)
++		if (region->offset <= offset &&
++		    region->offset + region->size >= offset + size) {
++			*pregion = *region;
++			goto exit;
++		}
++	ret = -EINVAL;
++exit:
++	mutex_unlock(&pdata->lock);
++	return ret;
++}
+diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
+new file mode 100644
+index 0000000..afe8e4c
+--- /dev/null
++++ b/drivers/fpga/dfl-afu.h
+@@ -0,0 +1,71 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Header file for FPGA Accelerated Function Unit (AFU) Driver
++ *
++ * Copyright (C) 2017-2018 Intel Corporation, Inc.
++ *
++ * Authors:
++ *     Wu Hao <hao.wu@intel.com>
++ *     Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *     Joseph Grecco <joe.grecco@intel.com>
++ *     Enno Luebbers <enno.luebbers@intel.com>
++ *     Tim Whisonant <tim.whisonant@intel.com>
++ *     Ananda Ravuri <ananda.ravuri@intel.com>
++ *     Henry Mitchel <henry.mitchel@intel.com>
++ */
++
++#ifndef __DFL_AFU_H
++#define __DFL_AFU_H
++
++#include <linux/mm.h>
++
++#include "dfl.h"
++
++/**
++ * struct dfl_afu_mmio_region - afu mmio region data structure
++ *
++ * @index: region index.
++ * @flags: region flags (access permission).
++ * @size: region size.
++ * @offset: region offset from start of the device fd.
++ * @phys: region's physical address.
++ * @node: node to add to afu feature dev's region list.
++ */
++struct dfl_afu_mmio_region {
++	u32 index;
++	u32 flags;
++	u64 size;
++	u64 offset;
++	u64 phys;
++	struct list_head node;
++};
++
++/**
++ * struct dfl_afu - afu device data structure
++ *
++ * @region_cur_offset: current region offset from start to the device fd.
++ * @num_regions: num of mmio regions.
++ * @regions: the mmio region link list of this afu feature device.
++ * @num_umsgs: num of umsgs.
++ * @pdata: afu platform device's pdata.
++ */
++struct dfl_afu {
++	u64 region_cur_offset;
++	int num_regions;
++	u8 num_umsgs;
++	struct list_head regions;
++
++	struct dfl_feature_platform_data *pdata;
++};
++
++void afu_mmio_region_init(struct dfl_feature_platform_data *pdata);
++int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
++			u32 region_index, u64 region_size, u64 phys, u32 flags);
++void afu_mmio_region_destroy(struct dfl_feature_platform_data *pdata);
++int afu_mmio_region_get_by_index(struct dfl_feature_platform_data *pdata,
++				 u32 region_index,
++				 struct dfl_afu_mmio_region *pregion);
++int afu_mmio_region_get_by_offset(struct dfl_feature_platform_data *pdata,
++				  u64 offset, u64 size,
++				  struct dfl_afu_mmio_region *pregion);
++#endif
+diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+index 542f093..fff20d2a 100644
+--- a/include/uapi/linux/fpga-dfl.h
++++ b/include/uapi/linux/fpga-dfl.h
+@@ -65,6 +65,54 @@
+ 
+ #define DFL_FPGA_PORT_RESET		_IO(DFL_FPGA_MAGIC, DFL_PORT_BASE + 0)
+ 
++/**
++ * DFL_FPGA_PORT_GET_INFO - _IOR(DFL_FPGA_MAGIC, DFL_PORT_BASE + 1,
++ *						struct dfl_fpga_port_info)
++ *
++ * Retrieve information about the fpga port.
++ * Driver fills the info in provided struct dfl_fpga_port_info.
++ * Return: 0 on success, -errno on failure.
++ */
++struct dfl_fpga_port_info {
++	/* Input */
++	__u32 argsz;		/* Structure length */
++	/* Output */
++	__u32 flags;		/* Zero for now */
++	__u32 num_regions;	/* The number of supported regions */
++	__u32 num_umsgs;	/* The number of allocated umsgs */
++};
++
++#define DFL_FPGA_PORT_GET_INFO		_IO(DFL_FPGA_MAGIC, DFL_PORT_BASE + 1)
++
++/**
++ * FPGA_PORT_GET_REGION_INFO - _IOWR(FPGA_MAGIC, PORT_BASE + 2,
++ *					struct dfl_fpga_port_region_info)
++ *
++ * Retrieve information about a device memory region.
++ * Caller provides struct dfl_fpga_port_region_info with index value set.
++ * Driver returns the region info in other fields.
++ * Return: 0 on success, -errno on failure.
++ */
++struct dfl_fpga_port_region_info {
++	/* input */
++	__u32 argsz;		/* Structure length */
++	/* Output */
++	__u32 flags;		/* Access permission */
++#define DFL_PORT_REGION_READ	(1 << 0)	/* Region is readable */
++#define DFL_PORT_REGION_WRITE	(1 << 1)	/* Region is writable */
++#define DFL_PORT_REGION_MMAP	(1 << 2)	/* Can be mmaped to userspace */
++	/* Input */
++	__u32 index;		/* Region index */
++#define DFL_PORT_REGION_INDEX_AFU	0	/* AFU */
++#define DFL_PORT_REGION_INDEX_STP	1	/* Signal Tap */
++	__u32 padding;
++	/* Output */
++	__u64 size;		/* Region size (bytes) */
++	__u64 offset;		/* Region offset from start of device fd */
++};
++
++#define DFL_FPGA_PORT_GET_REGION_INFO	_IO(DFL_FPGA_MAGIC, DFL_PORT_BASE + 2)
++
+ /* IOCTLs for FME file descriptor */
+ 
+ /**
 -- 
 1.8.3.1
