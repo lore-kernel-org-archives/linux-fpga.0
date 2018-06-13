@@ -1,170 +1,70 @@
-Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v7 10/29] fpga: dfl: add dfl_fpga_port_ops support.
-Date: Sat, 30 Jun 2018 08:53:17 +0800
-Message-Id: <1530320016-24712-11-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
-References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=ymNJ=I7=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=ymNJ=I7=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:42148 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S935692AbeFMO2K (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 13 Jun 2018 10:28:10 -0400
+MIME-Version: 1.0
+In-Reply-To: <CAAtXAHdF_AEcohGW=yoUgoe1OWcxLeCYgp2u3pjsmUn=-z-_bg@mail.gmail.com>
+References: <20180611172049.26630-1-christophe.jaillet@wanadoo.fr> <CAAtXAHdF_AEcohGW=yoUgoe1OWcxLeCYgp2u3pjsmUn=-z-_bg@mail.gmail.com>
+From: Alan Tull <atull@kernel.org>
+Date: Wed, 13 Jun 2018 09:27:28 -0500
+Message-ID: <CANk1AXTWfgaJJvni3e8t9ViOs0GccV=zkc1kX-Yi4jhSwWneVQ@mail.gmail.com>
+Subject: Re: [PATCH] fpga: altera-cvp: Fix an error handling path in 'altera_cvp_probe()'
+Content-Type: text/plain; charset="UTF-8"
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Moritz Fischer <moritz.fischer@ettus.com>
+Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, linux-fpga@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-In some cases, other DFL driver modules may need to access some port
-operations, e.g. disable / enable port for partial reconfiguration in
-FME module. In order to avoid dependency between port and FME modules,
-this patch introduces the dfl_fpga_port_ops support in DFL framework.
-A global dfl_fpga_port_ops list is added in the DFL framework, and
-it allows other DFL modules to use these port operations registered
-to this list, even in virtualization case, the port platform device
-is turned into VF / guest VM and hidden in host, the registered
-port_ops is still usable. It resolves the dependency issues between
-modules, but once get port ops API returns a valid port ops, that
-means related port driver module has been module_get to prevent from
-unexpected unload, and put port ops API must be invoked after use.
+On Wed, Jun 13, 2018 at 7:42 AM, Moritz Fischer
+<moritz.fischer@ettus.com> wrote:
+> Hi Christophe,
+>
+> good catch!
 
-These APIs introduced by this patch is listed below:
- * dfl_fpga_port_ops_add
-   add one port ops to the global list.
+Yes, thanks!
 
- * dfl_fpga_port_ops_del
-   del one port ops from the global list.
-
- * dfl_fpga_port_ops_get / dfl_fpga_port_ops_put
-   get/put the port ops before/after use.
-
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+>
+> On Mon, Jun 11, 2018 at 12:20 PM, Christophe JAILLET
+> <christophe.jaillet@wanadoo.fr> wrote:
+>> If 'fpga_mgr_create()' fails, we should release some resources, as done
+>> in the other error handling path of the function.
+>>
+>> Fixes: 7085e2a94f7d ("fpga: manager: change api, don't use drvdata")
+>> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> Reviewed-by: Moritz Fischer <mdf@kernel.org>
 Acked-by: Alan Tull <atull@kernel.org>
----
-v6: add more comments and improve API naming to dfl_fpga_port_xxx.
-    add Acked-by from Alan.
-v7: fix kbuild issue and typos.
----
- drivers/fpga/dfl.c | 79 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl.h | 21 +++++++++++++++
- 2 files changed, 100 insertions(+)
 
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index e2c72c5..421668a 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -136,6 +136,85 @@ static enum dfl_id_type dfh_id_to_type(u32 id)
- 	return DFL_ID_MAX;
- }
- 
-+/*
-+ * introduce a global port_ops list, it allows port drivers to register ops
-+ * in such list, then other feature devices (e.g. FME), could use the port
-+ * functions even related port platform device is hidden. Below is one example,
-+ * in virtualization case of PCIe-based FPGA DFL device, when SRIOV is
-+ * enabled, port (and it's AFU) is turned into VF and port platform device
-+ * is hidden from system but it's still required to access port to finish FPGA
-+ * reconfiguration function in FME.
-+ */
-+
-+static DEFINE_MUTEX(dfl_port_ops_mutex);
-+static LIST_HEAD(dfl_port_ops_list);
-+
-+/**
-+ * dfl_fpga_port_ops_get - get matched port ops from the global list
-+ * @pdev: platform device to match with associated port ops.
-+ * Return: matched port ops on success, NULL otherwise.
-+ *
-+ * Please note that must dfl_fpga_port_ops_put after use the port_ops.
-+ */
-+struct dfl_fpga_port_ops *dfl_fpga_port_ops_get(struct platform_device *pdev)
-+{
-+	struct dfl_fpga_port_ops *ops = NULL;
-+
-+	mutex_lock(&dfl_port_ops_mutex);
-+	if (list_empty(&dfl_port_ops_list))
-+		goto done;
-+
-+	list_for_each_entry(ops, &dfl_port_ops_list, node) {
-+		/* match port_ops using the name of platform device */
-+		if (!strcmp(pdev->name, ops->name)) {
-+			if (!try_module_get(ops->owner))
-+				ops = NULL;
-+			goto done;
-+		}
-+	}
-+
-+	ops = NULL;
-+done:
-+	mutex_unlock(&dfl_port_ops_mutex);
-+	return ops;
-+}
-+EXPORT_SYMBOL_GPL(dfl_fpga_port_ops_get);
-+
-+/**
-+ * dfl_fpga_port_ops_put - put port ops
-+ * @ops: port ops.
-+ */
-+void dfl_fpga_port_ops_put(struct dfl_fpga_port_ops *ops)
-+{
-+	if (ops && ops->owner)
-+		module_put(ops->owner);
-+}
-+EXPORT_SYMBOL_GPL(dfl_fpga_port_ops_put);
-+
-+/**
-+ * dfl_fpga_port_ops_add - add port_ops to global list
-+ * @ops: port ops to add.
-+ */
-+void dfl_fpga_port_ops_add(struct dfl_fpga_port_ops *ops)
-+{
-+	mutex_lock(&dfl_port_ops_mutex);
-+	list_add_tail(&ops->node, &dfl_port_ops_list);
-+	mutex_unlock(&dfl_port_ops_mutex);
-+}
-+EXPORT_SYMBOL_GPL(dfl_fpga_port_ops_add);
-+
-+/**
-+ * dfl_fpga_port_ops_del - remove port_ops from global list
-+ * @ops: port ops to del.
-+ */
-+void dfl_fpga_port_ops_del(struct dfl_fpga_port_ops *ops)
-+{
-+	mutex_lock(&dfl_port_ops_mutex);
-+	list_del(&ops->node);
-+	mutex_unlock(&dfl_port_ops_mutex);
-+}
-+EXPORT_SYMBOL_GPL(dfl_fpga_port_ops_del);
-+
- /**
-  * dfl_fpga_dev_feature_uinit - uinit for sub features of dfl feature device
-  * @pdev: feature device.
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 14d4731..654e0f6 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -130,6 +130,27 @@
- /* Latency tolerance reporting. '1' >= 40us, '0' < 40us.*/
- #define PORT_CTRL_LATENCY	BIT_ULL(2)
- #define PORT_CTRL_SFTRST_ACK	BIT_ULL(4)		/* HW ack for reset */
-+/**
-+ * struct dfl_fpga_port_ops - port ops
-+ *
-+ * @name: name of this port ops, to match with port platform device.
-+ * @owner: pointer to the module which owns this port ops.
-+ * @node: node to link port ops to global list.
-+ * @get_id: get port id from hardware.
-+ * @enable_set: enable/disable the port.
-+ */
-+struct dfl_fpga_port_ops {
-+	const char *name;
-+	struct module *owner;
-+	struct list_head node;
-+	int (*get_id)(struct platform_device *pdev);
-+	int (*enable_set)(struct platform_device *pdev, bool enable);
-+};
-+
-+void dfl_fpga_port_ops_add(struct dfl_fpga_port_ops *ops);
-+void dfl_fpga_port_ops_del(struct dfl_fpga_port_ops *ops);
-+struct dfl_fpga_port_ops *dfl_fpga_port_ops_get(struct platform_device *pdev);
-+void dfl_fpga_port_ops_put(struct dfl_fpga_port_ops *ops);
- 
- /**
-  * struct dfl_feature_driver - sub feature's driver
--- 
-1.8.3.1
+>> ---
+>>  drivers/fpga/altera-cvp.c | 6 ++++--
+>>  1 file changed, 4 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+>> index dd4edd8f22ce..7fa793672a7a 100644
+>> --- a/drivers/fpga/altera-cvp.c
+>> +++ b/drivers/fpga/altera-cvp.c
+>> @@ -455,8 +455,10 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+>>
+>>         mgr = fpga_mgr_create(&pdev->dev, conf->mgr_name,
+>>                               &altera_cvp_ops, conf);
+>> -       if (!mgr)
+>> -               return -ENOMEM;
+>> +       if (!mgr) {
+>> +               ret = -ENOMEM;
+>> +               goto err_unmap;
+>> +       }
+>>
+>>         pci_set_drvdata(pdev, mgr);
+>>
+>> --
+>> 2.17.0
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+> Thanks,
+>
+> Moritz
