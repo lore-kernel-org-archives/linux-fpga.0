@@ -1,275 +1,258 @@
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v6 13/29] fpga: dfl-pci: add enumeration for feature devices
-Date: Tue, 12 Jun 2018 18:10:27 +0800
-Message-Id: <1528798243-2029-14-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
+Return-Path: <SRS0=2/AD=I7=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=2/AD=I7=ettus.com=moritz.fischer@kernel.org>
+Date: Wed, 13 Jun 2018 07:13:04 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v6 14/29] fpga: dfl: add FPGA Management Engine driver
+ basic framework
+Message-ID: <20180613141304.GC3866@archbook>
 References: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+ <1528798243-2029-15-git-send-email-hao.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1528798243-2029-15-git-send-email-hao.wu@intel.com>
+To: Wu Hao <hao.wu@intel.com>
+Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-The Device Feature List (DFL) is implemented in MMIO, and features
-are linked via the DFLs. This patch enables pcie driver to prepare
-enumeration information (e.g locations of all device feature lists
-in MMIO) and use common APIs provided by the Device Feature List
-framework to enumerate each feature device linked.
-
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
----
-v3: split from another patch
-    use common functions from DFL framework for enumeration.
-v4: rebase
-v5: rebase due to naming changes on DFL framework APIs.
-    add acked-by from Alan.
-v6: reabse
----
- drivers/fpga/dfl-pci.c | 200 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 198 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index 5824c5e..1e6e4ee 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -22,9 +22,52 @@
- #include <linux/errno.h>
- #include <linux/aer.h>
- 
-+#include "dfl.h"
-+
- #define DRV_VERSION	"0.8"
- #define DRV_NAME	"dfl-pci"
- 
-+struct cci_drvdata {
-+	struct dfl_fpga_cdev *cdev;	/* container device */
-+	struct list_head regions;	/* list of pci bar mapping region */
-+};
-+
-+/* pci bar mapping info */
-+struct cci_region {
-+	int bar;
-+	void __iomem *ioaddr;	/* pointer to mapped bar region */
-+	struct list_head node;
-+};
-+
-+static void __iomem *cci_pci_ioremap_bar(struct pci_dev *pcidev, int bar)
-+{
-+	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-+	struct cci_region *region;
-+
-+	list_for_each_entry(region, &drvdata->regions, node)
-+		if (region->bar == bar) {
-+			dev_dbg(&pcidev->dev, "BAR %d region exists\n", bar);
-+			return region->ioaddr;
-+		}
-+
-+	region = devm_kzalloc(&pcidev->dev, sizeof(*region), GFP_KERNEL);
-+	if (!region)
-+		return NULL;
-+
-+	region->bar = bar;
-+	region->ioaddr = pci_ioremap_bar(pcidev, bar);
-+	if (!region->ioaddr) {
-+		dev_err(&pcidev->dev, "can't ioremap memory from BAR %d.\n",
-+			bar);
-+		devm_kfree(&pcidev->dev, region);
-+		return NULL;
-+	}
-+
-+	list_add(&region->node, &drvdata->regions);
-+
-+	return region->ioaddr;
-+}
-+
- /* PCI Device ID */
- #define PCIE_DEVICE_ID_PF_INT_5_X	0xBCBD
- #define PCIE_DEVICE_ID_PF_INT_6_X	0xBCC0
-@@ -45,6 +88,144 @@
- };
- MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
- 
-+static int cci_init_drvdata(struct pci_dev *pcidev)
-+{
-+	struct cci_drvdata *drvdata;
-+
-+	drvdata = devm_kzalloc(&pcidev->dev, sizeof(*drvdata), GFP_KERNEL);
-+	if (!drvdata)
-+		return -ENOMEM;
-+
-+	INIT_LIST_HEAD(&drvdata->regions);
-+
-+	pci_set_drvdata(pcidev, drvdata);
-+
-+	return 0;
-+}
-+
-+static void cci_pci_release_regions(struct pci_dev *pcidev)
-+{
-+	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-+	struct cci_region *tmp, *region;
-+
-+	list_for_each_entry_safe(region, tmp, &drvdata->regions, node) {
-+		list_del(&region->node);
-+		if (region->ioaddr)
-+			pci_iounmap(pcidev, region->ioaddr);
-+		devm_kfree(&pcidev->dev, region);
-+	}
-+}
-+
-+static void cci_remove_drvdata(struct pci_dev *pcidev)
-+{
-+	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-+
-+	cci_pci_release_regions(pcidev);
-+	pci_set_drvdata(pcidev, NULL);
-+	devm_kfree(&pcidev->dev, drvdata);
-+}
-+
-+static void cci_remove_feature_devs(struct pci_dev *pcidev)
-+{
-+	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-+
-+	/* remove all children feature devices */
-+	dfl_fpga_feature_devs_remove(drvdata->cdev);
-+}
-+
-+/* enumerate feature devices under pci device */
-+static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
-+{
-+	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-+	struct dfl_fpga_enum_info *info;
-+	struct dfl_fpga_cdev *cdev;
-+	resource_size_t start, len;
-+	int port_num, bar, i, ret = 0;
-+	void __iomem *base;
-+	u32 offset;
-+	u64 v;
-+
-+	/* allocate enumeration info via pci_dev */
-+	info = dfl_fpga_enum_info_alloc(&pcidev->dev);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	/* start to find Device Feature List from Bar 0 */
-+	base = cci_pci_ioremap_bar(pcidev, 0);
-+	if (!base) {
-+		ret = -ENOMEM;
-+		goto enum_info_free_exit;
-+	}
-+
-+	/*
-+	 * PF device has FME and Ports/AFUs, and VF device only has 1 Port/AFU.
-+	 * check them and add related "Device Feature List" info for the next
-+	 * step enumeration.
-+	 */
-+	if (dfl_feature_is_fme(base)) {
-+		start = pci_resource_start(pcidev, 0);
-+		len = pci_resource_len(pcidev, 0);
-+
-+		dfl_fpga_enum_info_add_dfl(info, start, len, base);
-+
-+		/*
-+		 * find more Device Feature Lists (e.g Ports) per information
-+		 * indicated by FME module.
-+		 */
-+		v = readq(base + FME_HDR_CAP);
-+		port_num = FIELD_GET(FME_CAP_NUM_PORTS, v);
-+
-+		WARN_ON(port_num > MAX_DFL_FPGA_PORT_NUM);
-+
-+		for (i = 0; i < port_num; i++) {
-+			v = readq(base + FME_HDR_PORT_OFST(i));
-+
-+			/* skip ports which are not implemented. */
-+			if (!(v & FME_PORT_OFST_IMP))
-+				continue;
-+
-+			/*
-+			 * add Port's Device Feature List information for next
-+			 * step enumeration.
-+			 */
-+			bar = FIELD_GET(FME_PORT_OFST_BAR_ID, v);
-+			offset = FIELD_GET(FME_PORT_OFST_DFH_OFST, v);
-+			base = cci_pci_ioremap_bar(pcidev, bar);
-+			if (!base)
-+				continue;
-+
-+			start = pci_resource_start(pcidev, bar) + offset;
-+			len = pci_resource_len(pcidev, bar) - offset;
-+
-+			dfl_fpga_enum_info_add_dfl(info, start, len,
-+						   base + offset);
-+		}
-+	} else if (dfl_feature_is_port(base)) {
-+		start = pci_resource_start(pcidev, 0);
-+		len = pci_resource_len(pcidev, 0);
-+
-+		dfl_fpga_enum_info_add_dfl(info, start, len, base);
-+	} else {
-+		ret = -ENODEV;
-+		goto enum_info_free_exit;
-+	}
-+
-+	/* start enumeration with prepared enumeration information */
-+	cdev = dfl_fpga_feature_devs_enumerate(info);
-+	if (IS_ERR(cdev)) {
-+		dev_err(&pcidev->dev, "Enumeration failure\n");
-+		ret = PTR_ERR(cdev);
-+		goto enum_info_free_exit;
-+	}
-+
-+	drvdata->cdev = cdev;
-+
-+enum_info_free_exit:
-+	dfl_fpga_enum_info_free(info);
-+
-+	return ret;
-+}
-+
- static
- int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
- {
-@@ -82,9 +263,22 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
- 		goto release_region_exit;
- 	}
- 
--	/* TODO: create and add the platform device per feature list */
--	return 0;
-+	ret = cci_init_drvdata(pcidev);
-+	if (ret) {
-+		dev_err(&pcidev->dev, "Fail to init drvdata %d.\n", ret);
-+		goto release_region_exit;
-+	}
-+
-+	ret = cci_enumerate_feature_devs(pcidev);
-+	if (ret) {
-+		dev_err(&pcidev->dev, "enumeration failure %d.\n", ret);
-+		goto remove_drvdata_exit;
-+	}
-+
-+	return ret;
- 
-+remove_drvdata_exit:
-+	cci_remove_drvdata(pcidev);
- release_region_exit:
- 	pci_release_regions(pcidev);
- disable_error_report_exit:
-@@ -95,6 +289,8 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
- 
- static void cci_pci_remove(struct pci_dev *pcidev)
- {
-+	cci_remove_feature_devs(pcidev);
-+	cci_remove_drvdata(pcidev);
- 	pci_release_regions(pcidev);
- 	pci_disable_pcie_error_reporting(pcidev);
- 	pci_disable_device(pcidev);
--- 
-1.8.3.1
+On Tue, Jun 12, 2018 at 06:10:28PM +0800, Wu Hao wrote:
+> From: Kang Luwei <luwei.kang@intel.com>
+> 
+> The FPGA Management Engine (FME) provides power, thermal management,
+> performance counters, partial reconfiguration and other functions. For each
+> function, it is packaged into a private feature linked to the FME feature
+> device in the 'Device Feature List'. It's a platform device created by
+> DFL framework.
+> 
+> This patch adds the basic framework of FME platform driver. It defines
+> sub feature drivers to handle the different sub features, including init,
+> uinit and ioctl. It also registers the file operations for the device file.
+> 
+> Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+> Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+> Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+> Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+> Signed-off-by: Kang Luwei <luwei.kang@intel.com>
+> Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+> ---
+> v3: rename driver from intel-fpga-fme to dfl-fme
+>     rename Kconfig from INTEL_FPGA_FME to FPGA_DFL_FME
+> v4: fix SPDX license issue, use dfl-fme as module name
+> v5: rebase, due to DFL framework naming changes on functions and data structures.
+>     fix uinit order in remove function.
+>     remove else block in fme_ioctl function per suggestion from Alan.
+> v6: fix copyright time, rebase and add Acked-by from Alan.
+> ---
+>  drivers/fpga/Kconfig        |  10 +++
+>  drivers/fpga/Makefile       |   3 +
+>  drivers/fpga/dfl-fme-main.c | 158 ++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 171 insertions(+)
+>  create mode 100644 drivers/fpga/dfl-fme-main.c
+> 
+> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+> index 5faab48..45e9220 100644
+> --- a/drivers/fpga/Kconfig
+> +++ b/drivers/fpga/Kconfig
+> @@ -146,6 +146,16 @@ config FPGA_DFL
+>  	  Gate Array (FPGA) solutions which implement Device Feature List.
+>  	  It provides enumeration APIs, and feature device infrastructure.
+>  
+> +config FPGA_DFL_FME
+> +	tristate "FPGA DFL FME Driver"
+> +	depends on FPGA_DFL
+> +	help
+> +	  The FPGA Management Engine (FME) is a feature device implemented
+> +	  under Device Feature List (DFL) framework. Select this option to
+> +	  enable the platform device driver for FME which implements all
+> +	  FPGA platform level management features. There shall be 1 FME
+> +	  per DFL based FPGA device.
+> +
+>  config FPGA_DFL_PCI
+>  	tristate "FPGA DFL PCIe Device Driver"
+>  	depends on PCI && FPGA_DFL
+> diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+> index 02e0253..db11f34 100644
+> --- a/drivers/fpga/Makefile
+> +++ b/drivers/fpga/Makefile
+> @@ -31,6 +31,9 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
+>  
+>  # FPGA Device Feature List Support
+>  obj-$(CONFIG_FPGA_DFL)			+= dfl.o
+> +obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
+> +
+> +dfl-fme-objs := dfl-fme-main.o
+>  
+>  # Drivers for FPGAs which implement DFL
+>  obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
+> diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+> new file mode 100644
+> index 0000000..a2ae9b3
+> --- /dev/null
+> +++ b/drivers/fpga/dfl-fme-main.c
+> @@ -0,0 +1,158 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Driver for FPGA Management Engine (FME)
+> + *
+> + * Copyright (C) 2017-2018 Intel Corporation, Inc.
+> + *
+> + * Authors:
+> + *   Kang Luwei <luwei.kang@intel.com>
+> + *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> + *   Joseph Grecco <joe.grecco@intel.com>
+> + *   Enno Luebbers <enno.luebbers@intel.com>
+> + *   Tim Whisonant <tim.whisonant@intel.com>
+> + *   Ananda Ravuri <ananda.ravuri@intel.com>
+> + *   Henry Mitchel <henry.mitchel@intel.com>
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +
+> +#include "dfl.h"
+> +
+> +static int fme_hdr_init(struct platform_device *pdev,
+> +			struct dfl_feature *feature)
+> +{
+> +	dev_dbg(&pdev->dev, "FME HDR Init.\n");
+> +
+> +	return 0;
+> +}
+> +
+> +static void fme_hdr_uinit(struct platform_device *pdev,
+> +			  struct dfl_feature *feature)
+> +{
+> +	dev_dbg(&pdev->dev, "FME HDR UInit.\n");
+> +}
+> +
+> +static const struct dfl_feature_ops fme_hdr_ops = {
+> +	.init = fme_hdr_init,
+> +	.uinit = fme_hdr_uinit,
+> +};
+> +
+> +static struct dfl_feature_driver fme_feature_drvs[] = {
+> +	{
+> +		.id = FME_FEATURE_ID_HEADER,
+> +		.ops = &fme_hdr_ops,
+> +	},
+> +	{
+> +		.ops = NULL,
+> +	},
+> +};
+> +
+> +static int fme_open(struct inode *inode, struct file *filp)
+> +{
+> +	struct platform_device *fdev = dfl_fpga_inode_to_feature_dev(inode);
+> +	struct dfl_feature_platform_data *pdata = dev_get_platdata(&fdev->dev);
+> +	int ret;
+> +
+> +	if (WARN_ON(!pdata))
+> +		return -ENODEV;
+> +
+> +	ret = dfl_feature_dev_use_begin(pdata);
+> +	if (ret)
+> +		return ret;
+> +
+> +	dev_dbg(&fdev->dev, "Device File Open\n");
+> +	filp->private_data = pdata;
+> +
+> +	return 0;
+> +}
+> +
+> +static int fme_release(struct inode *inode, struct file *filp)
+> +{
+> +	struct dfl_feature_platform_data *pdata = filp->private_data;
+> +	struct platform_device *pdev = pdata->dev;
+> +
+> +	dev_dbg(&pdev->dev, "Device File Release\n");
+> +	dfl_feature_dev_use_end(pdata);
+> +
+> +	return 0;
+> +}
+> +
+> +static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+> +{
+> +	struct dfl_feature_platform_data *pdata = filp->private_data;
+> +	struct platform_device *pdev = pdata->dev;
+> +	struct dfl_feature *f;
+> +	long ret;
+> +
+> +	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
+> +
+> +	switch (cmd) {
+> +	default:
+> +		/*
+> +		 * Let sub-feature's ioctl function to handle the cmd
+> +		 * Sub-feature's ioctl returns -ENODEV when cmd is not
+> +		 * handled in this sub feature, and returns 0 and other
+> +		 * error code if cmd is handled.
+> +		 */
+> +		dfl_fpga_dev_for_each_feature(pdata, f) {
+> +			if (f->ops && f->ops->ioctl) {
+> +				ret = f->ops->ioctl(pdev, f, cmd, arg);
+> +				if (ret != -ENODEV)
+> +					return ret;
+> +			}
+> +		}
+> +	}
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +static const struct file_operations fme_fops = {
+> +	.owner		= THIS_MODULE,
+> +	.open		= fme_open,
+> +	.release	= fme_release,
+> +	.unlocked_ioctl = fme_ioctl,
+> +};
+> +
+> +static int fme_probe(struct platform_device *pdev)
+> +{
+> +	int ret;
+> +
+> +	ret = dfl_fpga_dev_feature_init(pdev, fme_feature_drvs);
+> +	if (ret)
+> +		goto exit;
+> +
+> +	ret = dfl_fpga_dev_ops_register(pdev, &fme_fops, THIS_MODULE);
+> +	if (ret)
+> +		goto feature_uinit;
+> +
+> +	return 0;
+> +
+> +feature_uinit:
+> +	dfl_fpga_dev_feature_uinit(pdev);
+> +exit:
+> +	return ret;
+> +}
+> +
+> +static int fme_remove(struct platform_device *pdev)
+> +{
+> +	dfl_fpga_dev_ops_unregister(pdev);
+> +	dfl_fpga_dev_feature_uinit(pdev);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver fme_driver = {
+> +	.driver	= {
+> +		.name    = DFL_FPGA_FEATURE_DEV_FME,
+> +	},
+> +	.probe   = fme_probe,
+> +	.remove  = fme_remove,
+> +};
+> +
+> +module_platform_driver(fme_driver);
+> +
+> +MODULE_DESCRIPTION("FPGA Management Engine driver");
+> +MODULE_AUTHOR("Intel Corporation");
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_ALIAS("platform:dfl-fme");
+> -- 
+> 1.8.3.1
+> 
+Thanks,
+Moritz
