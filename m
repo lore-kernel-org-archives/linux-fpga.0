@@ -1,152 +1,64 @@
 Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v7 16/29] fpga: dfl: fme: add DFL_FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
-Date: Sat, 30 Jun 2018 08:53:23 +0800
-Message-Id: <1530320016-24712-17-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v7 04/29] fpga: mgr: add compat_id support
+Date: Sat, 30 Jun 2018 08:53:11 +0800
+Message-Id: <1530320016-24712-5-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
 References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-DFL_FPGA_GET_API_VERSION and DFL_FPGA_CHECK_EXTENSION ioctls are common
-ones which need to be supported by all feature devices drivers including
-FME and AFU. Userspace application can use these ioctl interfaces to get
-the API info and check if specific extension is supported or not in
-current driver.
+This patch introduces compat_id support to fpga manager, it adds
+a fpga_compat_id pointer to fpga manager data structure to allow
+fpga manager drivers to save the compatibility id. This compat_id
+could be used for compatibility checking before doing partial
+reconfiguration to associated fpga regions.
 
-This patch implements above 2 ioctls in FPGA Management Engine (FME)
-driver.
-
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2: switched to GPLv2 license.
-v3: rename intel-fpga.h to fpga-dfl.h and rebased.
-v4: fix SPDX license issue.
-    add Acked-by from Alan and Moritz.
-v5: rebase due to DFL framework API naming changes.
-    add DFL_ prefix to IOCTL APIs.
-v6: rebase and fix copyright time.
-v7: include ioctl.h in uapi header file.
+v6: add Acked-by from Alan.
 ---
- Documentation/ioctl/ioctl-number.txt |  1 +
- drivers/fpga/dfl-fme-main.c          | 12 +++++++++
- include/uapi/linux/fpga-dfl.h        | 50 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 63 insertions(+)
- create mode 100644 include/uapi/linux/fpga-dfl.h
+ include/linux/fpga/fpga-mgr.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
-index 480c860..db9afea 100644
---- a/Documentation/ioctl/ioctl-number.txt
-+++ b/Documentation/ioctl/ioctl-number.txt
-@@ -322,6 +322,7 @@ Code  Seq#(hex)	Include File		Comments
- 0xB3	00	linux/mmc/ioctl.h
- 0xB4	00-0F	linux/gpio.h		<mailto:linux-gpio@vger.kernel.org>
- 0xB5	00-0F	uapi/linux/rpmsg.h	<mailto:linux-remoteproc@vger.kernel.org>
-+0xB6	all	linux/fpga-dfl.h
- 0xC0	00-0F	linux/usb/iowarrior.h
- 0xCA	00-0F	uapi/misc/cxl.h
- 0xCA	10-2F	uapi/misc/ocxl.h
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index c23c56f..c83ff88 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -16,6 +16,7 @@
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index e249b72..8942e61 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -136,11 +136,23 @@ struct fpga_manager_ops {
+ #define FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR	BIT(4)
  
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/fpga-dfl.h>
- 
- #include "dfl.h"
- 
-@@ -116,6 +117,13 @@ static void fme_hdr_uinit(struct platform_device *pdev,
- 	},
+ /**
++ * struct fpga_compat_id - id for compatibility check
++ *
++ * @id_h: high 64bit of the compat_id
++ * @id_l: low 64bit of the compat_id
++ */
++struct fpga_compat_id {
++	u64 id_h;
++	u64 id_l;
++};
++
++/**
+  * struct fpga_manager - fpga manager structure
+  * @name: name of low level fpga manager
+  * @dev: fpga manager device
+  * @ref_mutex: only allows one reference to fpga manager
+  * @state: state of fpga manager
++ * @compat_id: FPGA manager id for compatibility check.
+  * @mops: pointer to struct of fpga manager ops
+  * @priv: low level driver private date
+  */
+@@ -149,6 +161,7 @@ struct fpga_manager {
+ 	struct device dev;
+ 	struct mutex ref_mutex;
+ 	enum fpga_mgr_states state;
++	struct fpga_compat_id *compat_id;
+ 	const struct fpga_manager_ops *mops;
+ 	void *priv;
  };
- 
-+static long fme_ioctl_check_extension(struct dfl_feature_platform_data *pdata,
-+				      unsigned long arg)
-+{
-+	/* No extension support for now */
-+	return 0;
-+}
-+
- static int fme_open(struct inode *inode, struct file *filp)
- {
- 	struct platform_device *fdev = dfl_fpga_inode_to_feature_dev(inode);
-@@ -156,6 +164,10 @@ static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
- 
- 	switch (cmd) {
-+	case DFL_FPGA_GET_API_VERSION:
-+		return DFL_FPGA_API_VERSION;
-+	case DFL_FPGA_CHECK_EXTENSION:
-+		return fme_ioctl_check_extension(pdata, arg);
- 	default:
- 		/*
- 		 * Let sub-feature's ioctl function to handle the cmd.
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-new file mode 100644
-index 0000000..858e443
---- /dev/null
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -0,0 +1,50 @@
-+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-+/*
-+ * Header File for FPGA DFL User API
-+ *
-+ * Copyright (C) 2017-2018 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Zhang Yi <yi.z.zhang@intel.com>
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ */
-+
-+#ifndef _UAPI_LINUX_FPGA_DFL_H
-+#define _UAPI_LINUX_FPGA_DFL_H
-+
-+#include <linux/ioctl.h>
-+
-+#define DFL_FPGA_API_VERSION 0
-+
-+/*
-+ * The IOCTL interface for DFL based FPGA is designed for extensibility by
-+ * embedding the structure length (argsz) and flags into structures passed
-+ * between kernel and userspace. This design referenced the VFIO IOCTL
-+ * interface (include/uapi/linux/vfio.h).
-+ */
-+
-+#define DFL_FPGA_MAGIC 0xB6
-+
-+#define DFL_FPGA_BASE 0
-+
-+/**
-+ * DFL_FPGA_GET_API_VERSION - _IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 0)
-+ *
-+ * Report the version of the driver API.
-+ * Return: Driver API Version.
-+ */
-+
-+#define DFL_FPGA_GET_API_VERSION	_IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 0)
-+
-+/**
-+ * DFL_FPGA_CHECK_EXTENSION - _IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 1)
-+ *
-+ * Check whether an extension is supported.
-+ * Return: 0 if not supported, otherwise the extension is supported.
-+ */
-+
-+#define DFL_FPGA_CHECK_EXTENSION	_IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 1)
-+
-+#endif /* _UAPI_LINUX_FPGA_DFL_H */
 -- 
 1.8.3.1
