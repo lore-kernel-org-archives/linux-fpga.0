@@ -1,44 +1,73 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-In-Reply-To: <1525229431-3087-29-git-send-email-hao.wu@intel.com>
-References: <1525229431-3087-1-git-send-email-hao.wu@intel.com> <1525229431-3087-29-git-send-email-hao.wu@intel.com>
-From: Alan Tull <atull@kernel.org>
-Date: Wed, 6 Jun 2018 11:09:23 -0500
-Message-ID: <CANk1AXQnvRW9JpRs3w5uBq+hJW3sBTv0FP080uX_+u7VYy-ofw@mail.gmail.com>
-Subject: Re: [PATCH v5 28/28] fpga: dfl: afu: add DFL_FPGA_PORT_DMA_MAP/UNMAP
- ioctls support
-Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, "Kang, Luwei" <luwei.kang@intel.com>, "Zhang, Yi Z" <yi.z.zhang@intel.com>, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v7 11/29] fpga: dfl: add dfl_fpga_check_port_id function.
+Date: Sat, 30 Jun 2018 08:53:18 +0800
+Message-Id: <1530320016-24712-12-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
+References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, May 1, 2018 at 9:50 PM, Wu Hao <hao.wu@intel.com> wrote:
+This patch adds one common function in DFL framework. It uses
+port_ops get_id callback to get port id and compare it with given
+value. This function could be used as match function of the
+dfl_fpga_cdev_find_port function.
 
-Hi Hao,
-
-> DMA memory regions are required for Accelerated Function Unit (AFU) usage.
-> These two ioctls allow user space applications to map user memory regions
-> for dma, and unmap them after use. Iova is returned from driver to user
-> space application via DFL_FPGA_PORT_DMA_MAP ioctl. Application needs to unmap
-> it after use, otherwise, driver will unmap them in device file release
-> operation.
->
-> Each AFU has its own rb tree to keep track of its mapped DMA regions.
->
-> Ioctl interfaces:
-> * DFL_FPGA_PORT_DMA_MAP
->   Do the dma mapping per user_addr and length which provided by user.
->   Return iova in provided struct dfl_fpga_port_dma_map.
->
-> * DFL_FPGA_PORT_DMA_UNMAP
->   Unmap the dma region per iova provided by user.
->
-> Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-> Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-> Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-> Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-> Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-
+Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
+---
+v6: reabse and add Acked-by from Alan.
+---
+ drivers/fpga/dfl.c | 22 ++++++++++++++++++++++
+ drivers/fpga/dfl.h |  1 +
+ 2 files changed, 23 insertions(+)
+
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 421668a..a9b521b 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -216,6 +216,28 @@ void dfl_fpga_port_ops_del(struct dfl_fpga_port_ops *ops)
+ EXPORT_SYMBOL_GPL(dfl_fpga_port_ops_del);
+ 
+ /**
++ * dfl_fpga_check_port_id - check the port id
++ * @pdev: port platform device.
++ * @pport_id: port id to compare.
++ *
++ * Return: 1 if port device matches with given port id, otherwise 0.
++ */
++int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id)
++{
++	struct dfl_fpga_port_ops *port_ops = dfl_fpga_port_ops_get(pdev);
++	int port_id;
++
++	if (!port_ops || !port_ops->get_id)
++		return 0;
++
++	port_id = port_ops->get_id(pdev);
++	dfl_fpga_port_ops_put(port_ops);
++
++	return port_id == *(int *)pport_id;
++}
++EXPORT_SYMBOL_GPL(dfl_fpga_check_port_id);
++
++/**
+  * dfl_fpga_dev_feature_uinit - uinit for sub features of dfl feature device
+  * @pdev: feature device.
+  */
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 654e0f6..a8b869e 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -151,6 +151,7 @@ struct dfl_fpga_port_ops {
+ void dfl_fpga_port_ops_del(struct dfl_fpga_port_ops *ops);
+ struct dfl_fpga_port_ops *dfl_fpga_port_ops_get(struct platform_device *pdev);
+ void dfl_fpga_port_ops_put(struct dfl_fpga_port_ops *ops);
++int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id);
+ 
+ /**
+  * struct dfl_feature_driver - sub feature's driver
+-- 
+1.8.3.1
