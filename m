@@ -1,149 +1,174 @@
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v6 16/29] fpga: dfl: fme: add DFL_FPGA_GET_API_VERSION/CHECK_EXTENSION ioctls support
-Date: Tue, 12 Jun 2018 18:10:30 +0800
-Message-Id: <1528798243-2029-17-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-References: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v7 24/29] fpga: dfl: afu: add port ops support
+Date: Sat, 30 Jun 2018 08:53:31 +0800
+Message-Id: <1530320016-24712-25-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
+References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-DFL_FPGA_GET_API_VERSION and DFL_FPGA_CHECK_EXTENSION ioctls are common
-ones which need to be supported by all feature devices drivers including
-FME and AFU. Userspace application can use these ioctl interfaces to get
-the API info and check if specific extension is supported or not in
-current driver.
+This patch registers the port ops into the global list in the DFL
+framework, and it allows other modules to use the port ops. And
+This patch includes the implementation of the get_id and enable_set
+ops too.
 
-This patch implements above 2 ioctls in FPGA Management Engine (FME)
-driver.
-
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2: switched to GPLv2 license.
-v3: rename intel-fpga.h to fpga-dfl.h and rebased.
-v4: fix SPDX license issue.
-    add Acked-by from Alan and Moritz.
-v5: rebase due to DFL framework API naming changes.
-    add DFL_ prefix to IOCTL APIs.
-v6: rebase and fix copyright time.
+v6: rebase, fix copyright time and add Acked-by from Alan.
 ---
- Documentation/ioctl/ioctl-number.txt |  1 +
- drivers/fpga/dfl-fme-main.c          | 12 +++++++++
- include/uapi/linux/fpga-dfl.h        | 48 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 61 insertions(+)
- create mode 100644 include/uapi/linux/fpga-dfl.h
+ drivers/fpga/dfl-afu-main.c | 122 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 121 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
-index a12488d..4b9afe4 100644
---- a/Documentation/ioctl/ioctl-number.txt
-+++ b/Documentation/ioctl/ioctl-number.txt
-@@ -322,6 +322,7 @@ Code  Seq#(hex)	Include File		Comments
- 0xB3	00	linux/mmc/ioctl.h
- 0xB4	00-0F	linux/gpio.h		<mailto:linux-gpio@vger.kernel.org>
- 0xB5	00-0F	uapi/linux/rpmsg.h	<mailto:linux-remoteproc@vger.kernel.org>
-+0xB6	all	linux/fpga-dfl.h
- 0xC0	00-0F	linux/usb/iowarrior.h
- 0xCA	00-0F	uapi/misc/cxl.h
- 0xCA	10-2F	uapi/misc/ocxl.h
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 77d9ffc..889d669 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -16,6 +16,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/fpga-dfl.h>
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 08f88cd..a38d6a8 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -19,6 +19,83 @@
  
  #include "dfl.h"
  
-@@ -116,6 +117,13 @@ static void fme_hdr_uinit(struct platform_device *pdev,
- 	},
- };
- 
-+static long fme_ioctl_check_extension(struct dfl_feature_platform_data *pdata,
-+				      unsigned long arg)
++/**
++ * port_enable - enable a port
++ * @pdev: port platform device.
++ *
++ * Enable Port by clear the port soft reset bit, which is set by default.
++ * The User AFU is unable to respond to any MMIO access while in reset.
++ * port_enable function should only be used after port_disable
++ * function.
++ */
++static void port_enable(struct platform_device *pdev)
 +{
-+	/* No extension support for now */
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	void __iomem *base;
++	u64 v;
++
++	WARN_ON(!pdata->disable_count);
++
++	if (--pdata->disable_count != 0)
++		return;
++
++	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
++
++	/* Clear port soft reset */
++	v = readq(base + PORT_HDR_CTRL);
++	v &= ~PORT_CTRL_SFTRST;
++	writeq(v, base + PORT_HDR_CTRL);
++}
++
++#define RST_POLL_INVL 10 /* us */
++#define RST_POLL_TIMEOUT 1000 /* us */
++
++/**
++ * port_disable - disable a port
++ * @pdev: port platform device.
++ *
++ * Disable Port by setting the port soft reset bit, it puts the port into
++ * reset.
++ */
++static int port_disable(struct platform_device *pdev)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	void __iomem *base;
++	u64 v;
++
++	if (pdata->disable_count++ != 0)
++		return 0;
++
++	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
++
++	/* Set port soft reset */
++	v = readq(base + PORT_HDR_CTRL);
++	v |= PORT_CTRL_SFTRST;
++	writeq(v, base + PORT_HDR_CTRL);
++
++	/*
++	 * HW sets ack bit to 1 when all outstanding requests have been drained
++	 * on this port and minimum soft reset pulse width has elapsed.
++	 * Driver polls port_soft_reset_ack to determine if reset done by HW.
++	 */
++	if (readq_poll_timeout(base + PORT_HDR_CTRL, v, v & PORT_CTRL_SFTRST,
++			       RST_POLL_INVL, RST_POLL_TIMEOUT)) {
++		dev_err(&pdev->dev, "timeout, fail to reset device\n");
++		return -ETIMEDOUT;
++	}
++
 +	return 0;
 +}
 +
- static int fme_open(struct inode *inode, struct file *filp)
++static int port_get_id(struct platform_device *pdev)
++{
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
++
++	return FIELD_GET(PORT_CAP_PORT_NUM, readq(base + PORT_HDR_CAP));
++}
++
+ static int port_hdr_init(struct platform_device *pdev,
+ 			 struct dfl_feature *feature)
  {
- 	struct platform_device *fdev = dfl_fpga_inode_to_feature_dev(inode);
-@@ -156,6 +164,10 @@ static long fme_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	dev_dbg(&pdev->dev, "%s cmd 0x%x\n", __func__, cmd);
+@@ -119,6 +196,28 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 	.unlocked_ioctl = afu_ioctl,
+ };
  
- 	switch (cmd) {
-+	case DFL_FPGA_GET_API_VERSION:
-+		return DFL_FPGA_API_VERSION;
-+	case DFL_FPGA_CHECK_EXTENSION:
-+		return fme_ioctl_check_extension(pdata, arg);
- 	default:
- 		/*
- 		 * Let sub-feature's ioctl function to handle the cmd
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-new file mode 100644
-index 0000000..9ff26cb
---- /dev/null
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -0,0 +1,48 @@
-+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-+/*
-+ * Header File for FPGA DFL User API
-+ *
-+ * Copyright (C) 2017-2018 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Zhang Yi <yi.z.zhang@intel.com>
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ */
++static int port_enable_set(struct platform_device *pdev, bool enable)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	int ret = 0;
 +
-+#ifndef _UAPI_LINUX_FPGA_DFL_H
-+#define _UAPI_LINUX_FPGA_DFL_H
++	mutex_lock(&pdata->lock);
++	if (enable)
++		port_enable(pdev);
++	else
++		ret = port_disable(pdev);
++	mutex_unlock(&pdata->lock);
 +
-+#define DFL_FPGA_API_VERSION 0
++	return ret;
++}
 +
-+/*
-+ * The IOCTL interface for DFL based FPGA is designed for extensibility by
-+ * embedding the structure length (argsz) and flags into structures passed
-+ * between kernel and userspace. This design referenced the VFIO IOCTL
-+ * interface (include/uapi/linux/vfio.h).
-+ */
++static struct dfl_fpga_port_ops afu_port_ops = {
++	.name = DFL_FPGA_FEATURE_DEV_PORT,
++	.owner = THIS_MODULE,
++	.get_id = port_get_id,
++	.enable_set = port_enable_set,
++};
 +
-+#define DFL_FPGA_MAGIC 0xB6
+ static int afu_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+@@ -154,7 +253,28 @@ static int afu_remove(struct platform_device *pdev)
+ 	.remove  = afu_remove,
+ };
+ 
+-module_platform_driver(afu_driver);
++static int __init afu_init(void)
++{
++	int ret;
 +
-+#define DFL_FPGA_BASE 0
++	dfl_fpga_port_ops_add(&afu_port_ops);
 +
-+/**
-+ * DFL_FPGA_GET_API_VERSION - _IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 0)
-+ *
-+ * Report the version of the driver API.
-+ * Return: Driver API Version.
-+ */
++	ret = platform_driver_register(&afu_driver);
++	if (ret)
++		dfl_fpga_port_ops_del(&afu_port_ops);
 +
-+#define DFL_FPGA_GET_API_VERSION	_IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 0)
++	return ret;
++}
 +
-+/**
-+ * DFL_FPGA_CHECK_EXTENSION - _IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 1)
-+ *
-+ * Check whether an extension is supported.
-+ * Return: 0 if not supported, otherwise the extension is supported.
-+ */
++static void __exit afu_exit(void)
++{
++	platform_driver_unregister(&afu_driver);
 +
-+#define DFL_FPGA_CHECK_EXTENSION	_IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 1)
++	dfl_fpga_port_ops_del(&afu_port_ops);
++}
 +
-+#endif /* _UAPI_LINUX_FPGA_DFL_H */
++module_init(afu_init);
++module_exit(afu_exit);
+ 
+ MODULE_DESCRIPTION("FPGA Accelerated Function Unit driver");
+ MODULE_AUTHOR("Intel Corporation");
 -- 
 1.8.3.1
