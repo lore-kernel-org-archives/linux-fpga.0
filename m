@@ -1,44 +1,156 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 1/2] fpga: altera-cvp: Fix an error handling path in 'altera_cvp_probe()'
-Date: Wed, 27 Jun 2018 20:56:18 -0500
-Message-Id: <1530150979-5693-2-git-send-email-atull@kernel.org>
-In-Reply-To: <1530150979-5693-1-git-send-email-atull@kernel.org>
-References: <1530150979-5693-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>, Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v7 03/29] fpga: mgr: add status for fpga-manager
+Date: Sat, 30 Jun 2018 08:53:10 +0800
+Message-Id: <1530320016-24712-4-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
+References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+This patch adds status sysfs interface for fpga manager, it's a
+read only interface which allows user to get fpga manager status,
+including full/partial reconfiguration error and other status
+information. It adds a status callback to fpga_manager_ops too,
+allows each fpga_manager driver to define its own method to
+collect latest status from hardware.
 
-If 'fpga_mgr_create()' fails, we should release some resources, as done
-in the other error handling path of the function.
+The following sysfs file is created:
+* /sys/class/fpga_manager/<fpga>/status
+  Return status of fpga manager, including reconfiguration errors.
 
-Fixes: 7085e2a94f7d ("fpga: manager: change api, don't use drvdata")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Reviewed-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/altera-cvp.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+v3: add one line description for status
+    add status callback function to fpga_manager_ops
+    update fpga-mgr status if any failure or during initialization
+    s/INCOMPATIBLE_BS_ERR/INCOMPATIBLE_IMAGE_ERR/
+v4: simply code per suggestion from Alan.
+    add supported status strings (and descriptions) in sysfs document.
+    remove unused error code (SECURE_LOAD_ERR).
+v5: fix the wrong commit message and add Acked-by from Alan and Moritz.
+v6: rebase.
+v7: update kernelversion in sysfs doc.
+---
+ Documentation/ABI/testing/sysfs-class-fpga-manager | 24 +++++++++++++++++++
+ drivers/fpga/fpga-mgr.c                            | 28 ++++++++++++++++++++++
+ include/linux/fpga/fpga-mgr.h                      |  9 +++++++
+ 3 files changed, 61 insertions(+)
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index dd4edd8..7fa7936 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -455,8 +455,10 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+diff --git a/Documentation/ABI/testing/sysfs-class-fpga-manager b/Documentation/ABI/testing/sysfs-class-fpga-manager
+index 23056c5..5284fa3 100644
+--- a/Documentation/ABI/testing/sysfs-class-fpga-manager
++++ b/Documentation/ABI/testing/sysfs-class-fpga-manager
+@@ -35,3 +35,27 @@ Description:	Read fpga manager state as a string.
+ 		* write complete	= Doing post programming steps
+ 		* write complete error	= Error while doing post programming
+ 		* operating		= FPGA is programmed and operating
++
++What:		/sys/class/fpga_manager/<fpga>/status
++Date:		June 2018
++KernelVersion:	4.19
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read fpga manager status as a string.
++		If FPGA programming operation fails, it could be caused by crc
++		error or incompatible bitstream image. The intent of this
++		interface is to provide more detailed information for FPGA
++		programming errors to userspace. This is a list of strings for
++		the supported status.
++
++		* reconfig operation error 	- invalid operations detected by
++						  reconfiguration hardware.
++						  e.g. start reconfiguration
++						  with errors not cleared
++		* reconfig CRC error		- CRC error detected by
++						  reconfiguration hardware.
++		* reconfig incompatible image	- reconfiguration image is
++						  incompatible with hardware
++		* reconfig IP protocol error	- protocol errors detected by
++						  reconfiguration hardware
++		* reconfig fifo overflow error	- FIFO overflow detected by
++						  reconfiguration hardware
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index c1564cf..a41b07e 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -406,12 +406,40 @@ static ssize_t state_show(struct device *dev,
+ 	return sprintf(buf, "%s\n", state_str[mgr->state]);
+ }
  
- 	mgr = fpga_mgr_create(&pdev->dev, conf->mgr_name,
- 			      &altera_cvp_ops, conf);
--	if (!mgr)
--		return -ENOMEM;
-+	if (!mgr) {
-+		ret = -ENOMEM;
-+		goto err_unmap;
-+	}
++static ssize_t status_show(struct device *dev,
++			   struct device_attribute *attr, char *buf)
++{
++	struct fpga_manager *mgr = to_fpga_manager(dev);
++	u64 status;
++	int len = 0;
++
++	if (!mgr->mops->status)
++		return -ENOENT;
++
++	status = mgr->mops->status(mgr);
++
++	if (status & FPGA_MGR_STATUS_OPERATION_ERR)
++		len += sprintf(buf + len, "reconfig operation error\n");
++	if (status & FPGA_MGR_STATUS_CRC_ERR)
++		len += sprintf(buf + len, "reconfig CRC error\n");
++	if (status & FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR)
++		len += sprintf(buf + len, "reconfig incompatible image\n");
++	if (status & FPGA_MGR_STATUS_IP_PROTOCOL_ERR)
++		len += sprintf(buf + len, "reconfig IP protocol error\n");
++	if (status & FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR)
++		len += sprintf(buf + len, "reconfig fifo overflow error\n");
++
++	return len;
++}
++
+ static DEVICE_ATTR_RO(name);
+ static DEVICE_ATTR_RO(state);
++static DEVICE_ATTR_RO(status);
  
- 	pci_set_drvdata(pdev, mgr);
+ static struct attribute *fpga_mgr_attrs[] = {
+ 	&dev_attr_name.attr,
+ 	&dev_attr_state.attr,
++	&dev_attr_status.attr,
+ 	NULL,
+ };
+ ATTRIBUTE_GROUPS(fpga_mgr);
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index 3eb6b9d..e249b72 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -101,6 +101,7 @@ struct fpga_image_info {
+  * struct fpga_manager_ops - ops for low level fpga manager drivers
+  * @initial_header_size: Maximum number of bytes that should be passed into write_init
+  * @state: returns an enum value of the FPGA's state
++ * @status: returns status of the FPGA, including reconfiguration error code
+  * @write_init: prepare the FPGA to receive confuration data
+  * @write: write count bytes of configuration data to the FPGA
+  * @write_sg: write the scatter list of configuration data to the FPGA
+@@ -115,6 +116,7 @@ struct fpga_image_info {
+ struct fpga_manager_ops {
+ 	size_t initial_header_size;
+ 	enum fpga_mgr_states (*state)(struct fpga_manager *mgr);
++	u64 (*status)(struct fpga_manager *mgr);
+ 	int (*write_init)(struct fpga_manager *mgr,
+ 			  struct fpga_image_info *info,
+ 			  const char *buf, size_t count);
+@@ -126,6 +128,13 @@ struct fpga_manager_ops {
+ 	const struct attribute_group **groups;
+ };
  
++/* FPGA manager status: Partial/Full Reconfiguration errors */
++#define FPGA_MGR_STATUS_OPERATION_ERR		BIT(0)
++#define FPGA_MGR_STATUS_CRC_ERR			BIT(1)
++#define FPGA_MGR_STATUS_INCOMPATIBLE_IMAGE_ERR	BIT(2)
++#define FPGA_MGR_STATUS_IP_PROTOCOL_ERR		BIT(3)
++#define FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR	BIT(4)
++
+ /**
+  * struct fpga_manager - fpga manager structure
+  * @name: name of low level fpga manager
 -- 
-2.7.4
+1.8.3.1
