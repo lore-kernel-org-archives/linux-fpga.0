@@ -1,155 +1,164 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 2/2] Documentation: fpga: cleanup
-Date: Wed, 27 Jun 2018 20:56:19 -0500
-Message-Id: <1530150979-5693-3-git-send-email-atull@kernel.org>
-In-Reply-To: <1530150979-5693-1-git-send-email-atull@kernel.org>
-References: <1530150979-5693-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, Moritz Fischer <mdf@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-fpga@vger.kernel.org, Alan Tull <atull@kernel.org>
+Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v7 21/29] fpga: dfl: add fpga region platform driver for FME
+Date: Sat, 30 Jun 2018 08:53:28 +0800
+Message-Id: <1530320016-24712-22-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
+References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Minor fixes including:
+This patch adds fpga region platform driver for FPGA Management Engine.
+It register an fpga region with given fpga manager / bridge device.
 
-* fix some typos
-* correct use of a/an
-* rephrase explanation of .state ops function
-* s/re-use/reuse/ (use only one spelling of 'reuse' in these docs)
-* s/cpu/CPU/
-
-Signed-off-by: Alan Tull <atull@kernel.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- Documentation/driver-api/fpga/fpga-mgr.rst    | 12 ++++++------
- Documentation/driver-api/fpga/fpga-region.rst | 12 ++++++------
- Documentation/driver-api/fpga/intro.rst       | 14 +++++++-------
- 3 files changed, 19 insertions(+), 19 deletions(-)
+v3: rename driver to fpga-dfl-fme-region
+    fix fpga_mgr_put order problem in remove function.
+    rebased due to fpga api changes.
+v4: rename to dfl-fme-region, fix SPDX license issue
+    include dfl-fme-pr.h instead of dfl-fme.h and dfl.h
+    add Acked-by from Alan and Moritz
+v5: rebase, due to fpga region api changes.
+v6: rebase and fix copyright time.
+v7: fix kbuild issue.
+---
+ drivers/fpga/Kconfig          |  6 +++
+ drivers/fpga/Makefile         |  1 +
+ drivers/fpga/dfl-fme-region.c | 88 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 95 insertions(+)
+ create mode 100644 drivers/fpga/dfl-fme-region.c
 
-diff --git a/Documentation/driver-api/fpga/fpga-mgr.rst b/Documentation/driver-api/fpga/fpga-mgr.rst
-index bcf2dd2..4b3825d 100644
---- a/Documentation/driver-api/fpga/fpga-mgr.rst
-+++ b/Documentation/driver-api/fpga/fpga-mgr.rst
-@@ -83,7 +83,7 @@ The programming sequence is::
-  3. .write_complete
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 11d1943..f99f422 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -168,6 +168,12 @@ config FPGA_DFL_FME_BRIDGE
+ 	help
+ 	  Say Y to enable FPGA Bridge driver for FPGA Management Engine.
  
- The .write_init function will prepare the FPGA to receive the image data.  The
--buffer passed into .write_init will be atmost .initial_header_size bytes long,
-+buffer passed into .write_init will be at most .initial_header_size bytes long;
- if the whole bitstream is not immediately available then the core code will
- buffer up at least this much before starting.
++config FPGA_DFL_FME_REGION
++	tristate "FPGA DFL FME Region Driver"
++	depends on FPGA_DFL_FME && HAS_IOMEM
++	help
++	  Say Y to enable FPGA Region driver for FPGA Management Engine.
++
+ config FPGA_DFL_PCI
+ 	tristate "FPGA DFL PCIe Device Driver"
+ 	depends on PCI && FPGA_DFL
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index cda0551..637c275 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -34,6 +34,7 @@ obj-$(CONFIG_FPGA_DFL)			+= dfl.o
+ obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
+ obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= dfl-fme-mgr.o
+ obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= dfl-fme-br.o
++obj-$(CONFIG_FPGA_DFL_FME_REGION)	+= dfl-fme-region.o
  
-@@ -98,9 +98,9 @@ scatter list. This interface is suitable for drivers which use DMA.
- The .write_complete function is called after all the image has been written
- to put the FPGA into operating mode.
+ dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
  
--The ops include a .state function which will read the hardware FPGA manager and
--return a code of type enum fpga_mgr_states.  It doesn't result in a change in
--hardware state.
-+The ops include a .state function which will determine the state the FPGA is in
-+and return a code of type enum fpga_mgr_states.  It doesn't result in a change
-+in state.
- 
- How to write an image buffer to a supported FPGA
- ------------------------------------------------
-@@ -181,8 +181,8 @@ API for implementing a new FPGA Manager driver
- .. kernel-doc:: drivers/fpga/fpga-mgr.c
-    :functions: fpga_mgr_unregister
- 
--API for programming a FPGA
----------------------------
-+API for programming an FPGA
-+---------------------------
- 
- .. kernel-doc:: include/linux/fpga/fpga-mgr.h
-    :functions: fpga_image_info
-diff --git a/Documentation/driver-api/fpga/fpga-region.rst b/Documentation/driver-api/fpga/fpga-region.rst
-index f89e4a3..f30333c 100644
---- a/Documentation/driver-api/fpga/fpga-region.rst
-+++ b/Documentation/driver-api/fpga/fpga-region.rst
-@@ -4,7 +4,7 @@ FPGA Region
- Overview
- --------
- 
--This document is meant to be an brief overview of the FPGA region API usage.  A
-+This document is meant to be a brief overview of the FPGA region API usage.  A
- more conceptual look at regions can be found in the Device Tree binding
- document [#f1]_.
- 
-@@ -31,11 +31,11 @@ fpga_image_info including:
-  * pointers to the image as either a scatter-gather buffer, a contiguous
-    buffer, or the name of firmware file
- 
-- * flags indicating specifics such as whether the image if for partial
-+ * flags indicating specifics such as whether the image is for partial
-    reconfiguration.
- 
--How to program a FPGA using a region
--------------------------------------
-+How to program an FPGA using a region
-+-------------------------------------
- 
- First, allocate the info struct::
- 
-@@ -77,8 +77,8 @@ An example of usage can be seen in the probe function of [#f2]_.
- .. [#f1] ../devicetree/bindings/fpga/fpga-region.txt
- .. [#f2] ../../drivers/fpga/of-fpga-region.c
- 
--API to program a FGPA
-----------------------
-+API to program an FPGA
-+----------------------
- 
- .. kernel-doc:: drivers/fpga/fpga-region.c
-    :functions: fpga_region_program_fpga
-diff --git a/Documentation/driver-api/fpga/intro.rst b/Documentation/driver-api/fpga/intro.rst
-index 51cd81d..50d1cab 100644
---- a/Documentation/driver-api/fpga/intro.rst
-+++ b/Documentation/driver-api/fpga/intro.rst
-@@ -12,18 +12,18 @@ Linux.  Some of the core intentions of the FPGA subsystems are:
- 
- * Code should not be shared between upper and lower layers.  This
-   should go without saying.  If that seems necessary, there's probably
--  framework functionality that that can be added that will benefit
-+  framework functionality that can be added that will benefit
-   other users.  Write the linux-fpga mailing list and maintainers and
-   seek out a solution that expands the framework for broad reuse.
- 
--* Generally, when adding code, think of the future.  Plan for re-use.
-+* Generally, when adding code, think of the future.  Plan for reuse.
- 
- The framework in the kernel is divided into:
- 
- FPGA Manager
- ------------
- 
--If you are adding a new FPGA or a new method of programming a FPGA,
-+If you are adding a new FPGA or a new method of programming an FPGA,
- this is the subsystem for you.  Low level FPGA manager drivers contain
- the knowledge of how to program a specific device.  This subsystem
- includes the framework in fpga-mgr.c and the low level drivers that
-@@ -32,10 +32,10 @@ are registered with it.
- FPGA Bridge
- -----------
- 
--FPGA Bridges prevent spurious signals from going out of a FPGA or a
--region of a FPGA during programming.  They are disabled before
-+FPGA Bridges prevent spurious signals from going out of an FPGA or a
-+region of an FPGA during programming.  They are disabled before
- programming begins and re-enabled afterwards.  An FPGA bridge may be
--actual hard hardware that gates a bus to a cpu or a soft ("freeze")
-+actual hard hardware that gates a bus to a CPU or a soft ("freeze")
- bridge in FPGA fabric that surrounds a partial reconfiguration region
- of an FPGA.  This subsystem includes fpga-bridge.c and the low level
- drivers that are registered with it.
-@@ -44,7 +44,7 @@ FPGA Region
- -----------
- 
- If you are adding a new interface to the FPGA framework, add it on top
--of a FPGA region to allow the most reuse of your interface.
-+of an FPGA region to allow the most reuse of your interface.
- 
- The FPGA Region framework (fpga-region.c) associates managers and
- bridges as reconfigurable regions.  A region may refer to the whole
+diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
+new file mode 100644
+index 0000000..a6e0bde
+--- /dev/null
++++ b/drivers/fpga/dfl-fme-region.c
+@@ -0,0 +1,88 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * FPGA Region Driver for FPGA Management Engine (FME)
++ *
++ * Copyright (C) 2017-2018 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Wu Hao <hao.wu@intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Henry Mitchel <henry.mitchel@intel.com>
++ */
++
++#include <linux/module.h>
++#include <linux/fpga/fpga-region.h>
++
++#include "dfl-fme-pr.h"
++
++static int fme_region_get_bridges(struct fpga_region *region)
++{
++	struct dfl_fme_region_pdata *pdata = region->priv;
++	struct device *dev = &pdata->br->dev;
++
++	return fpga_bridge_get_to_list(dev, region->info, &region->bridge_list);
++}
++
++static int fme_region_probe(struct platform_device *pdev)
++{
++	struct dfl_fme_region_pdata *pdata = dev_get_platdata(&pdev->dev);
++	struct device *dev = &pdev->dev;
++	struct fpga_region *region;
++	struct fpga_manager *mgr;
++	int ret;
++
++	mgr = fpga_mgr_get(&pdata->mgr->dev);
++	if (IS_ERR(mgr))
++		return -EPROBE_DEFER;
++
++	region = fpga_region_create(dev, mgr, fme_region_get_bridges);
++	if (!region) {
++		ret = -ENOMEM;
++		goto eprobe_mgr_put;
++	}
++
++	region->priv = pdata;
++	platform_set_drvdata(pdev, region);
++
++	ret = fpga_region_register(region);
++	if (ret)
++		goto region_free;
++
++	dev_dbg(dev, "DFL FME FPGA Region probed\n");
++
++	return 0;
++
++region_free:
++	fpga_region_free(region);
++eprobe_mgr_put:
++	fpga_mgr_put(mgr);
++	return ret;
++}
++
++static int fme_region_remove(struct platform_device *pdev)
++{
++	struct fpga_region *region = dev_get_drvdata(&pdev->dev);
++
++	fpga_region_unregister(region);
++	fpga_mgr_put(region->mgr);
++
++	return 0;
++}
++
++static struct platform_driver fme_region_driver = {
++	.driver	= {
++		.name    = DFL_FPGA_FME_REGION,
++	},
++	.probe   = fme_region_probe,
++	.remove  = fme_region_remove,
++};
++
++module_platform_driver(fme_region_driver);
++
++MODULE_DESCRIPTION("FPGA Region for DFL FPGA Management Engine");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:dfl-fme-region");
 -- 
-2.7.4
+1.8.3.1
