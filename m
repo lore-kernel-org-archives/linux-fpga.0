@@ -1,28 +1,20 @@
 Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v7 25/29] fpga: dfl: afu: add header sub feature support
-Date: Sat, 30 Jun 2018 08:53:32 +0800
-Message-Id: <1530320016-24712-26-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v7 08/29] fpga: dfl: add dfl_fpga_cdev_find_port
+Date: Sat, 30 Jun 2018 08:53:15 +0800
+Message-Id: <1530320016-24712-9-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
 References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-The port header register set is always present for port, it is mainly
-for capability, control and status of the ports that AFU connected to.
-
-This patch implements header sub feature support. Below user interfaces
-are created by this patch.
-
-Sysfs interface:
-* /sys/class/fpga_region/<regionX>/<dfl-port.x>/id
-  Read-only. Port ID.
-
-Ioctl interface:
-* DFL_FPGA_PORT_RESET
-  Reset the FPGA Port and its AFU.
+For feature devices, we need a method to find the port dedicated
+to the device. This patch adds a function dfl_fpga_cdev_find_port
+for this purpose. e.g. FPGA Management Engine (FME) Partial
+Reconfiguration sub feature, it uses this function to find
+dedicated port on the device for PR function implementation.
 
 Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
 Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
@@ -31,199 +23,93 @@ Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
 Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v3: rename driver name to fpga-dfl-afu
-    add more description for reset ioctl.
-    fix some checkpatch issues.
-v4: rebase.
-    add Acked-by from Alan.
-v5: rebase and merge port functions from DFL framework code.
-    add DFL_ prefix to APIs.
-v6: rebase.
-v7: update kernelversion in sysfs doc and fix typos.
+v3: s/fpga_for_each_port/fpga_cdev_find_port/
+    move fpga_cdev_find_port to fpga-dfl module.
+v4: improve description in commit message.
+    add comments to remind user to put_device after use this function.
+v5: add "dfl_" prefix to functions.
+    improve function comments per suggestion from Alan Tull.
+    add Acked-by from Alan and Moritz.
+v6: reabse.
 ---
- Documentation/ABI/testing/sysfs-platform-dfl-port |  7 ++
- drivers/fpga/dfl-afu-main.c                       | 79 ++++++++++++++++++++++-
- include/uapi/linux/fpga-dfl.h                     | 17 +++++
- 3 files changed, 102 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/ABI/testing/sysfs-platform-dfl-port
+ drivers/fpga/dfl.c | 32 ++++++++++++++++++++++++++++++++
+ drivers/fpga/dfl.h | 21 +++++++++++++++++++++
+ 2 files changed, 53 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
-new file mode 100644
-index 0000000..cb91165
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
-@@ -0,0 +1,7 @@
-+What:		/sys/bus/platform/devices/dfl-port.0/id
-+Date:		June 2018
-+KernelVersion:	4.19
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns id of this port. One DFL FPGA device
-+		may have more than one port. Userspace could use this id to
-+		distinguish different ports under same FPGA device.
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index a38d6a8..d36b3e9 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -16,6 +16,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/fpga-dfl.h>
- 
- #include "dfl.h"
- 
-@@ -87,6 +88,41 @@ static int port_disable(struct platform_device *pdev)
- 	return 0;
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index b56933c..68e0b45 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -813,6 +813,38 @@ void dfl_fpga_feature_devs_remove(struct dfl_fpga_cdev *cdev)
  }
+ EXPORT_SYMBOL_GPL(dfl_fpga_feature_devs_remove);
  
-+/*
-+ * This function resets the FPGA Port and its accelerator (AFU) by function
-+ * __port_disable and __port_enable (set port soft reset bit and then clear
-+ * it). Userspace can do Port reset at any time, e.g. during DMA or Partial
-+ * Reconfiguration. But it should never cause any system level issue, only
-+ * functional failure (e.g. DMA or PR operation failure) and be recoverable
-+ * from the failure.
++/**
++ * __dfl_fpga_cdev_find_port - find a port under given container device
 + *
-+ * Note: the accelerator (AFU) is not accessible when its port is in reset
-+ * (disabled). Any attempts on MMIO access to AFU while in reset, will
-+ * result errors reported via port error reporting sub feature (if present).
++ * @cdev: container device
++ * @data: data passed to match function
++ * @match: match function used to find specific port from the port device list
++ *
++ * Find a port device under container device. This function needs to be
++ * invoked with lock held.
++ *
++ * Return: pointer to port's platform device if successful, NULL otherwise.
++ *
++ * NOTE: you will need to drop the device reference with put_device() after use.
 + */
-+static int __port_reset(struct platform_device *pdev)
++struct platform_device *
++__dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
++			  int (*match)(struct platform_device *, void *))
 +{
-+	int ret;
++	struct dfl_feature_platform_data *pdata;
++	struct platform_device *port_dev;
 +
-+	ret = port_disable(pdev);
-+	if (!ret)
-+		port_enable(pdev);
++	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
++		port_dev = pdata->dev;
 +
-+	return ret;
-+}
-+
-+static int port_reset(struct platform_device *pdev)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	int ret;
-+
-+	mutex_lock(&pdata->lock);
-+	ret = __port_reset(pdev);
-+	mutex_unlock(&pdata->lock);
-+
-+	return ret;
-+}
-+
- static int port_get_id(struct platform_device *pdev)
- {
- 	void __iomem *base;
-@@ -96,23 +132,63 @@ static int port_get_id(struct platform_device *pdev)
- 	return FIELD_GET(PORT_CAP_PORT_NUM, readq(base + PORT_HDR_CAP));
- }
- 
-+static ssize_t
-+id_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	int id = port_get_id(to_platform_device(dev));
-+
-+	return scnprintf(buf, PAGE_SIZE, "%d\n", id);
-+}
-+static DEVICE_ATTR_RO(id);
-+
-+static const struct attribute *port_hdr_attrs[] = {
-+	&dev_attr_id.attr,
-+	NULL,
-+};
-+
- static int port_hdr_init(struct platform_device *pdev,
- 			 struct dfl_feature *feature)
- {
- 	dev_dbg(&pdev->dev, "PORT HDR Init.\n");
- 
--	return 0;
-+	port_reset(pdev);
-+
-+	return sysfs_create_files(&pdev->dev.kobj, port_hdr_attrs);
- }
- 
- static void port_hdr_uinit(struct platform_device *pdev,
- 			   struct dfl_feature *feature)
- {
- 	dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
-+
-+	sysfs_remove_files(&pdev->dev.kobj, port_hdr_attrs);
-+}
-+
-+static long
-+port_hdr_ioctl(struct platform_device *pdev, struct dfl_feature *feature,
-+	       unsigned int cmd, unsigned long arg)
-+{
-+	long ret;
-+
-+	switch (cmd) {
-+	case DFL_FPGA_PORT_RESET:
-+		if (!arg)
-+			ret = port_reset(pdev);
-+		else
-+			ret = -EINVAL;
-+		break;
-+	default:
-+		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
-+		ret = -ENODEV;
++		if (match(port_dev, data) && get_device(&port_dev->dev))
++			return port_dev;
 +	}
 +
-+	return ret;
- }
- 
- static const struct dfl_feature_ops port_hdr_ops = {
- 	.init = port_hdr_init,
- 	.uinit = port_hdr_uinit,
-+	.ioctl = port_hdr_ioctl,
- };
- 
- static struct dfl_feature_driver port_feature_drvs[] = {
-@@ -154,6 +230,7 @@ static int afu_release(struct inode *inode, struct file *filp)
- 
- 	pdata = dev_get_platdata(&pdev->dev);
- 
-+	port_reset(pdev);
- 	dfl_feature_dev_use_end(pdata);
- 
- 	return 0;
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-index 9666af8..e6b4dd2 100644
---- a/include/uapi/linux/fpga-dfl.h
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -29,8 +29,11 @@
- #define DFL_FPGA_MAGIC 0xB6
- 
- #define DFL_FPGA_BASE 0
-+#define DFL_PORT_BASE 0x40
- #define DFL_FME_BASE 0x80
- 
-+/* Common IOCTLs for both FME and AFU file descriptor */
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_find_port);
 +
- /**
-  * DFL_FPGA_GET_API_VERSION - _IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 0)
-  *
-@@ -49,6 +52,20 @@
+ static int __init dfl_fpga_init(void)
+ {
+ 	int ret;
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 66c2ade..b4f6525 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -284,4 +284,25 @@ struct dfl_fpga_cdev *
+ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info);
+ void dfl_fpga_feature_devs_remove(struct dfl_fpga_cdev *cdev);
  
- #define DFL_FPGA_CHECK_EXTENSION	_IO(DFL_FPGA_MAGIC, DFL_FPGA_BASE + 1)
- 
-+/* IOCTLs for AFU file descriptor */
-+
-+/**
-+ * DFL_FPGA_PORT_RESET - _IO(DFL_FPGA_MAGIC, DFL_PORT_BASE + 0)
-+ *
-+ * Reset the FPGA Port and its AFU. No parameters are supported.
-+ * Userspace can do Port reset at any time, e.g. during DMA or PR. But
-+ * it should never cause any system level issue, only functional failure
-+ * (e.g. DMA or PR operation failure) and be recoverable from the failure.
-+ * Return: 0 on success, -errno of failure
++/*
++ * need to drop the device reference with put_device() after use port platform
++ * device returned by __dfl_fpga_cdev_find_port and dfl_fpga_cdev_find_port
++ * functions.
 + */
++struct platform_device *
++__dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
++			  int (*match)(struct platform_device *, void *));
 +
-+#define DFL_FPGA_PORT_RESET		_IO(DFL_FPGA_MAGIC, DFL_PORT_BASE + 0)
++static inline struct platform_device *
++dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
++			int (*match)(struct platform_device *, void *))
++{
++	struct platform_device *pdev;
 +
- /* IOCTLs for FME file descriptor */
- 
- /**
++	mutex_lock(&cdev->lock);
++	pdev = __dfl_fpga_cdev_find_port(cdev, data, match);
++	mutex_unlock(&cdev->lock);
++
++	return pdev;
++}
+ #endif /* __FPGA_DFL_H */
 -- 
 1.8.3.1
