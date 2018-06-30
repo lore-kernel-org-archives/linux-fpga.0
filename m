@@ -1,174 +1,268 @@
 Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v7 24/29] fpga: dfl: afu: add port ops support
-Date: Sat, 30 Jun 2018 08:53:31 +0800
-Message-Id: <1530320016-24712-25-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v7 07/29] fpga: dfl: add chardev support for feature devices
+Date: Sat, 30 Jun 2018 08:53:14 +0800
+Message-Id: <1530320016-24712-8-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
 References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
+Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>, Xiao Guangrong <guangrong.xiao@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch registers the port ops into the global list in the DFL
-framework, and it allows other modules to use the port ops. And
-This patch includes the implementation of the get_id and enable_set
-ops too.
+For feature devices drivers, both the FPGA Management Engine (FME) and
+Accelerated Function Unit (AFU) driver need to expose user interfaces via
+the device file, for example, mmap and ioctls.
 
+This patch adds chardev support in the dfl driver for feature devices,
+FME and AFU. It reserves the chardev regions for FME and AFU and provide
+interfaces for FME and AFU driver to register their device file operations.
+
+Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
+Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
+Signed-off-by: Shiva Rao <shiva.rao@intel.com>
+Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
+Signed-off-by: Zhang Yi <yi.z.zhang@intel.com>
+Signed-off-by: Xiao Guangrong <guangrong.xiao@linux.intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
 ---
-v6: rebase, fix copyright time and add Acked-by from Alan.
+v2: rebased
+v3: move chardev support to fpga-dfl framework
+v4: rebase and add more comments in code.
+v5: rebase and add dfl_ prefix to APIs and data structures.
+v6: add index in dfl_devs to link to dfl_chrdevs.
+    improve naming on APIs.
+v7: make dfl_chrdevs table static.
+    fix typos and add Acked-by from Alan.
 ---
- drivers/fpga/dfl-afu-main.c | 122 +++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 121 insertions(+), 1 deletion(-)
+ drivers/fpga/dfl.c | 125 +++++++++++++++++++++++++++++++++++++++++++++++++++--
+ drivers/fpga/dfl.h |   8 ++++
+ 2 files changed, 130 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 08f88cd..a38d6a8 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -19,6 +19,83 @@
- 
- #include "dfl.h"
- 
-+/**
-+ * port_enable - enable a port
-+ * @pdev: port platform device.
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index d1dff36..b56933c 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -22,6 +22,11 @@
+  * dfl_devs table which is indexed by dfl_id_type, e.g. name string used for
+  * platform device creation (define name strings in dfl.h, as they could be
+  * reused by platform device drivers).
 + *
-+ * Enable Port by clear the port soft reset bit, which is set by default.
-+ * The User AFU is unable to respond to any MMIO access while in reset.
-+ * port_enable function should only be used after port_disable
-+ * function.
++ * if the new feature dev needs chardev support, then it's required to add
++ * a new item in dfl_chardevs table and configure dfl_devs[i].devt_type as
++ * index to dfl_chardevs table. If no chardev support just set devt_type
++ * as one invalid index (DFL_FPGA_DEVT_MAX).
+  */
+ enum dfl_id_type {
+ 	FME_ID,		/* fme id allocation and mapping */
+@@ -29,22 +34,48 @@ enum dfl_id_type {
+ 	DFL_ID_MAX,
+ };
+ 
++enum dfl_fpga_devt_type {
++	DFL_FPGA_DEVT_FME,
++	DFL_FPGA_DEVT_PORT,
++	DFL_FPGA_DEVT_MAX,
++};
++
+ /**
+  * dfl_dev_info - dfl feature device information.
+  * @name: name string of the feature platform device.
+  * @dfh_id: id value in Device Feature Header (DFH) register by DFL spec.
+  * @id: idr id of the feature dev.
++ * @devt_type: index to dfl_chrdevs[].
+  */
+ struct dfl_dev_info {
+ 	const char *name;
+ 	u32 dfh_id;
+ 	struct idr id;
++	enum dfl_fpga_devt_type devt_type;
+ };
+ 
+ /* it is indexed by dfl_id_type */
+ static struct dfl_dev_info dfl_devs[] = {
+-	{.name = DFL_FPGA_FEATURE_DEV_FME, .dfh_id = DFH_ID_FIU_FME},
+-	{.name = DFL_FPGA_FEATURE_DEV_PORT, .dfh_id = DFH_ID_FIU_PORT},
++	{.name = DFL_FPGA_FEATURE_DEV_FME, .dfh_id = DFH_ID_FIU_FME,
++	 .devt_type = DFL_FPGA_DEVT_FME},
++	{.name = DFL_FPGA_FEATURE_DEV_PORT, .dfh_id = DFH_ID_FIU_PORT,
++	 .devt_type = DFL_FPGA_DEVT_PORT},
++};
++
++/**
++ * dfl_chardev_info - chardev information of dfl feature device
++ * @name: nmae string of the char device.
++ * @devt: devt of the char device.
 + */
-+static void port_enable(struct platform_device *pdev)
++struct dfl_chardev_info {
++	const char *name;
++	dev_t devt;
++};
++
++/* indexed by enum dfl_fpga_devt_type */
++static struct dfl_chardev_info dfl_chrdevs[] = {
++	{.name = DFL_FPGA_FEATURE_DEV_FME},
++	{.name = DFL_FPGA_FEATURE_DEV_PORT},
+ };
+ 
+ static void dfl_ids_init(void)
+@@ -105,6 +136,86 @@ static enum dfl_id_type dfh_id_to_type(u32 id)
+ 	return DFL_ID_MAX;
+ }
+ 
++static void dfl_chardev_uinit(void)
 +{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	void __iomem *base;
-+	u64 v;
++	int i;
 +
-+	WARN_ON(!pdata->disable_count);
-+
-+	if (--pdata->disable_count != 0)
-+		return;
-+
-+	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
-+
-+	/* Clear port soft reset */
-+	v = readq(base + PORT_HDR_CTRL);
-+	v &= ~PORT_CTRL_SFTRST;
-+	writeq(v, base + PORT_HDR_CTRL);
++	for (i = 0; i < DFL_FPGA_DEVT_MAX; i++)
++		if (MAJOR(dfl_chrdevs[i].devt)) {
++			unregister_chrdev_region(dfl_chrdevs[i].devt,
++						 MINORMASK);
++			dfl_chrdevs[i].devt = MKDEV(0, 0);
++		}
 +}
 +
-+#define RST_POLL_INVL 10 /* us */
-+#define RST_POLL_TIMEOUT 1000 /* us */
-+
-+/**
-+ * port_disable - disable a port
-+ * @pdev: port platform device.
-+ *
-+ * Disable Port by setting the port soft reset bit, it puts the port into
-+ * reset.
-+ */
-+static int port_disable(struct platform_device *pdev)
++static int dfl_chardev_init(void)
 +{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	void __iomem *base;
-+	u64 v;
++	int i, ret;
 +
-+	if (pdata->disable_count++ != 0)
-+		return 0;
-+
-+	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
-+
-+	/* Set port soft reset */
-+	v = readq(base + PORT_HDR_CTRL);
-+	v |= PORT_CTRL_SFTRST;
-+	writeq(v, base + PORT_HDR_CTRL);
-+
-+	/*
-+	 * HW sets ack bit to 1 when all outstanding requests have been drained
-+	 * on this port and minimum soft reset pulse width has elapsed.
-+	 * Driver polls port_soft_reset_ack to determine if reset done by HW.
-+	 */
-+	if (readq_poll_timeout(base + PORT_HDR_CTRL, v, v & PORT_CTRL_SFTRST,
-+			       RST_POLL_INVL, RST_POLL_TIMEOUT)) {
-+		dev_err(&pdev->dev, "timeout, fail to reset device\n");
-+		return -ETIMEDOUT;
++	for (i = 0; i < DFL_FPGA_DEVT_MAX; i++) {
++		ret = alloc_chrdev_region(&dfl_chrdevs[i].devt, 0, MINORMASK,
++					  dfl_chrdevs[i].name);
++		if (ret)
++			goto exit;
 +	}
 +
 +	return 0;
++
++exit:
++	dfl_chardev_uinit();
++	return ret;
 +}
 +
-+static int port_get_id(struct platform_device *pdev)
++static dev_t dfl_get_devt(enum dfl_fpga_devt_type type, int id)
 +{
-+	void __iomem *base;
++	if (type >= DFL_FPGA_DEVT_MAX)
++		return 0;
 +
-+	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
-+
-+	return FIELD_GET(PORT_CAP_PORT_NUM, readq(base + PORT_HDR_CAP));
++	return MKDEV(MAJOR(dfl_chrdevs[type].devt), id);
 +}
 +
- static int port_hdr_init(struct platform_device *pdev,
- 			 struct dfl_feature *feature)
- {
-@@ -119,6 +196,28 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	.unlocked_ioctl = afu_ioctl,
- };
- 
-+static int port_enable_set(struct platform_device *pdev, bool enable)
++/**
++ * dfl_fpga_dev_ops_register - register cdev ops for feature dev
++ *
++ * @pdev: feature dev.
++ * @fops: file operations for feature dev's cdev.
++ * @owner: owning module/driver.
++ *
++ * Return: 0 on success, negative error code otherwise.
++ */
++int dfl_fpga_dev_ops_register(struct platform_device *pdev,
++			      const struct file_operations *fops,
++			      struct module *owner)
 +{
 +	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	int ret = 0;
 +
-+	mutex_lock(&pdata->lock);
-+	if (enable)
-+		port_enable(pdev);
-+	else
-+		ret = port_disable(pdev);
-+	mutex_unlock(&pdata->lock);
++	cdev_init(&pdata->cdev, fops);
++	pdata->cdev.owner = owner;
 +
-+	return ret;
++	/*
++	 * set parent to the feature device so that its refcount is
++	 * decreased after the last refcount of cdev is gone, that
++	 * makes sure the feature device is valid during device
++	 * file's life-cycle.
++	 */
++	pdata->cdev.kobj.parent = &pdev->dev.kobj;
++
++	return cdev_add(&pdata->cdev, pdev->dev.devt, 1);
 +}
++EXPORT_SYMBOL_GPL(dfl_fpga_dev_ops_register);
 +
-+static struct dfl_fpga_port_ops afu_port_ops = {
-+	.name = DFL_FPGA_FEATURE_DEV_PORT,
-+	.owner = THIS_MODULE,
-+	.get_id = port_get_id,
-+	.enable_set = port_enable_set,
-+};
-+
- static int afu_probe(struct platform_device *pdev)
- {
- 	int ret;
-@@ -154,7 +253,28 @@ static int afu_remove(struct platform_device *pdev)
- 	.remove  = afu_remove,
- };
- 
--module_platform_driver(afu_driver);
-+static int __init afu_init(void)
++/**
++ * dfl_fpga_dev_ops_unregister - unregister cdev ops for feature dev
++ * @pdev: feature dev.
++ */
++void dfl_fpga_dev_ops_unregister(struct platform_device *pdev)
 +{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++
++	cdev_del(&pdata->cdev);
++}
++EXPORT_SYMBOL_GPL(dfl_fpga_dev_ops_unregister);
++
+ /**
+  * struct build_feature_devs_info - info collected during feature dev build.
+  *
+@@ -266,6 +377,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 		return fdev->id;
+ 
+ 	fdev->dev.parent = &binfo->cdev->region->dev;
++	fdev->dev.devt = dfl_get_devt(dfl_devs[type].devt_type, fdev->id);
+ 
+ 	return 0;
+ }
+@@ -703,13 +815,20 @@ void dfl_fpga_feature_devs_remove(struct dfl_fpga_cdev *cdev)
+ 
+ static int __init dfl_fpga_init(void)
+ {
 +	int ret;
 +
-+	dfl_fpga_port_ops_add(&afu_port_ops);
-+
-+	ret = platform_driver_register(&afu_driver);
+ 	dfl_ids_init();
+ 
+-	return 0;
++	ret = dfl_chardev_init();
 +	if (ret)
-+		dfl_fpga_port_ops_del(&afu_port_ops);
++		dfl_ids_destroy();
 +
 +	return ret;
-+}
-+
-+static void __exit afu_exit(void)
-+{
-+	platform_driver_unregister(&afu_driver);
-+
-+	dfl_fpga_port_ops_del(&afu_port_ops);
-+}
-+
-+module_init(afu_init);
-+module_exit(afu_exit);
+ }
  
- MODULE_DESCRIPTION("FPGA Accelerated Function Unit driver");
- MODULE_AUTHOR("Intel Corporation");
+ static void __exit dfl_fpga_exit(void)
+ {
++	dfl_chardev_uinit();
+ 	dfl_ids_destroy();
+ }
+ 
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 47ecb3b..66c2ade 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -15,6 +15,7 @@
+ #define __FPGA_DFL_H
+ 
+ #include <linux/bitfield.h>
++#include <linux/cdev.h>
+ #include <linux/delay.h>
+ #include <linux/fs.h>
+ #include <linux/iopoll.h>
+@@ -150,6 +151,7 @@ struct dfl_feature {
+  *
+  * @node: node to link feature devs to container device's port_dev_list.
+  * @lock: mutex to protect platform data.
++ * @cdev: cdev of feature dev.
+  * @dev: ptr to platform device linked with this platform data.
+  * @dfl_cdev: ptr to container device.
+  * @disable_count: count for port disable.
+@@ -159,6 +161,7 @@ struct dfl_feature {
+ struct dfl_feature_platform_data {
+ 	struct list_head node;
+ 	struct mutex lock;
++	struct cdev cdev;
+ 	struct platform_device *dev;
+ 	struct dfl_fpga_cdev *dfl_cdev;
+ 	unsigned int disable_count;
+@@ -176,6 +179,11 @@ static inline int dfl_feature_platform_data_size(const int num)
+ 		num * sizeof(struct dfl_feature);
+ }
+ 
++int dfl_fpga_dev_ops_register(struct platform_device *pdev,
++			      const struct file_operations *fops,
++			      struct module *owner);
++void dfl_fpga_dev_ops_unregister(struct platform_device *pdev);
++
+ #define dfl_fpga_dev_for_each_feature(pdata, feature)			    \
+ 	for ((feature) = (pdata)->features;				    \
+ 	   (feature) < (pdata)->features + (pdata)->num; (feature)++)
 -- 
 1.8.3.1
