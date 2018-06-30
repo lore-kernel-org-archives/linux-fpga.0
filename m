@@ -1,73 +1,44 @@
 Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=pfHz=JQ=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v7 11/29] fpga: dfl: add dfl_fpga_check_port_id function.
-Date: Sat, 30 Jun 2018 08:53:18 +0800
-Message-Id: <1530320016-24712-12-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v7 29/29] MAINTAINERS: add entry for FPGA DFL drivers
+Date: Sat, 30 Jun 2018 08:53:36 +0800
+Message-Id: <1530320016-24712-30-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
 References: <1530320016-24712-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds one common function in DFL framework. It uses
-port_ops get_id callback to get port id and compare it with given
-value. This function could be used as match function of the
-dfl_fpga_cdev_find_port function.
+Add entry for FPGA Device Feature List (DFL) drivers.
 
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v6: reabse and add Acked-by from Alan.
+v7: add Acked-by from Alan and Moritz
 ---
- drivers/fpga/dfl.c | 22 ++++++++++++++++++++++
- drivers/fpga/dfl.h |  1 +
- 2 files changed, 23 insertions(+)
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 421668a..a9b521b 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -216,6 +216,28 @@ void dfl_fpga_port_ops_del(struct dfl_fpga_port_ops *ops)
- EXPORT_SYMBOL_GPL(dfl_fpga_port_ops_del);
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 07d1576..b9bb042 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5638,6 +5638,14 @@ F:	drivers/fpga/
+ F:	include/linux/fpga/
+ W:	http://www.rocketboards.org
  
- /**
-+ * dfl_fpga_check_port_id - check the port id
-+ * @pdev: port platform device.
-+ * @pport_id: port id to compare.
-+ *
-+ * Return: 1 if port device matches with given port id, otherwise 0.
-+ */
-+int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id)
-+{
-+	struct dfl_fpga_port_ops *port_ops = dfl_fpga_port_ops_get(pdev);
-+	int port_id;
++FPGA DFL DRIVERS
++M:	Wu Hao <hao.wu@intel.com>
++L:	linux-fpga@vger.kernel.org
++S:	Maintained
++F:	Documentation/fpga/dfl.txt
++F:	include/uapi/linux/fpga-dfl.h
++F:	drivers/fpga/dfl*
 +
-+	if (!port_ops || !port_ops->get_id)
-+		return 0;
-+
-+	port_id = port_ops->get_id(pdev);
-+	dfl_fpga_port_ops_put(port_ops);
-+
-+	return port_id == *(int *)pport_id;
-+}
-+EXPORT_SYMBOL_GPL(dfl_fpga_check_port_id);
-+
-+/**
-  * dfl_fpga_dev_feature_uinit - uinit for sub features of dfl feature device
-  * @pdev: feature device.
-  */
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 654e0f6..a8b869e 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -151,6 +151,7 @@ struct dfl_fpga_port_ops {
- void dfl_fpga_port_ops_del(struct dfl_fpga_port_ops *ops);
- struct dfl_fpga_port_ops *dfl_fpga_port_ops_get(struct platform_device *pdev);
- void dfl_fpga_port_ops_put(struct dfl_fpga_port_ops *ops);
-+int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id);
- 
- /**
-  * struct dfl_feature_driver - sub feature's driver
+ FPU EMULATOR
+ M:	Bill Metzenthen <billm@melbpc.org.au>
+ W:	http://floatingpoint.sourceforge.net/emulator/index.html
 -- 
 1.8.3.1
