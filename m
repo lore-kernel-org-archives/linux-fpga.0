@@ -1,99 +1,57 @@
-Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=Wyc8=JT=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=Wyc8=JT=linux.intel.com=richard.gong@kernel.org>
 From: richard.gong@linux.intel.com
-Subject: [PATCHv8 1/9] dt-bindings, firmware: add Intel Stratix10 service layer binding
-Date: Thu, 26 Jul 2018 11:27:18 -0500
-Message-Id: <1532622446-19663-2-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
-References: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com, joyce.ooi@intel.com
+Subject: [PATCHv6 7/8] defconfig: enable fpga and service layer
+Date: Tue,  3 Jul 2018 09:46:54 -0500
+Message-Id: <1530629215-26990-8-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1530629215-26990-1-git-send-email-richard.gong@linux.intel.com>
+References: <1530629215-26990-1-git-send-email-richard.gong@linux.intel.com>
+To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Richard Gong <richard.gong@intel.com>
 
-Add a device tree binding for the Intel Stratix10 service layer driver
+Enable fpga framework, Stratix 10 SoC FPGA manager and Stratix10
+Service Layer
 
 Signed-off-by: Richard Gong <richard.gong@intel.com>
 Signed-off-by: Alan Tull <atull@kernel.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2: change to put service layer driver node under the firmware node
-    change compatible to "intel, stratix10-svc"
+v2: this patch is added in patch set version 2
 v3: no change
-v4: add Rob's Reviewed-by
+v4: s/CONFIG_INTEL_SERVICE/CONFIG_STRATIX10_SERVICE/
+    add CONFIG_OF_FPGA_REGION=y
+    s/Intel/Stratix10/ in subject line
 v5: no change
-v6: add Moritz's Acked-by
-v7: no change
-v8: no change
+v6: no change
 ---
- .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+ arch/arm64/configs/defconfig | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-new file mode 100644
-index 0000000..1fa6606
---- /dev/null
-+++ b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-@@ -0,0 +1,57 @@
-+Intel Service Layer Driver for Stratix10 SoC
-+============================================
-+Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
-+processor system (HPS) and Secure Device Manager (SDM). When the FPGA is
-+configured from HPS, there needs to be a way for HPS to notify SDM the
-+location and size of the configuration data. Then SDM will get the
-+configuration data from that location and perform the FPGA configuration.
-+
-+To meet the whole system security needs and support virtual machine requesting
-+communication with SDM, only the secure world of software (EL3, Exception
-+Layer 3) can interface with SDM. All software entities running on other
-+exception layers must channel through the EL3 software whenever it needs
-+service from SDM.
-+
-+Intel Stratix10 service layer driver, running at privileged exception level
-+(EL1, Exception Layer 1), interfaces with the service providers and provides
-+the services for FPGA configuration, QSPI, Crypto and warm reset. Service layer
-+driver also manages secure monitor call (SMC) to communicate with secure monitor
-+code running in EL3.
-+
-+Required properties:
-+-------------------
-+The svc node has the following mandatory properties, must be located under
-+the firmware node.
-+
-+- compatible: "intel,stratix10-svc"
-+- method: smc or hvc
-+        smc - Secure Monitor Call
-+        hvc - Hypervisor Call
-+- memory-region:
-+	phandle to the reserved memory node. See
-+	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
-+	for details
-+
-+Example:
-+-------
-+
-+	reserved-memory {
-+                #address-cells = <2>;
-+                #size-cells = <2>;
-+                ranges;
-+
-+                service_reserved: svcbuffer@0 {
-+                        compatible = "shared-dma-pool";
-+                        reg = <0x0 0x0 0x0 0x1000000>;
-+                        alignment = <0x1000>;
-+                        no-map;
-+                };
-+        };
-+
-+	firmware {
-+		svc {
-+			compatible = "intel,stratix10-svc";
-+			method = "smc";
-+			memory-region = <&service_reserved>;
-+		};
-+	};
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 3cfa8ca..a8ec2cb 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -188,6 +188,7 @@ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_VIRTIO_BLK=y
+ CONFIG_BLK_DEV_NVME=m
++CONFIG_STRATIX10_SERVICE=y
+ CONFIG_SRAM=y
+ CONFIG_EEPROM_AT25=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -636,6 +637,11 @@ CONFIG_PHY_TEGRA_XUSB=y
+ CONFIG_QCOM_L2_PMU=y
+ CONFIG_QCOM_L3_PMU=y
+ CONFIG_MESON_EFUSE=m
++CONFIG_FPGA=y
++CONFIG_FPGA_MGR_STRATIX10_SOC=y
++CONFIG_FPGA_REGION=y
++CONFIG_FPGA_BRIDGE=y
++CONFIG_OF_FPGA_REGION=y
+ CONFIG_QCOM_QFPROM=y
+ CONFIG_ROCKCHIP_EFUSE=y
+ CONFIG_UNIPHIER_EFUSE=y
 -- 
 2.7.4
