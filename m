@@ -1,205 +1,97 @@
-Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=Wyc8=JT=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=Wyc8=JT=linux.intel.com=richard.gong@kernel.org>
 From: richard.gong@linux.intel.com
-Subject: [PATCHv8 9/9] misc: add remote status update client support
-Date: Thu, 26 Jul 2018 11:27:26 -0500
-Message-Id: <1532622446-19663-10-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
-References: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com, joyce.ooi@intel.com
+Subject: [PATCHv6 1/8] dt-bindings, firmware: add Intel Stratix10 service layer binding
+Date: Tue,  3 Jul 2018 09:46:48 -0500
+Message-Id: <1530629215-26990-2-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1530629215-26990-1-git-send-email-richard.gong@linux.intel.com>
+References: <1530629215-26990-1-git-send-email-richard.gong@linux.intel.com>
+To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Richard Gong <richard.gong@intel.com>
 
-Extend Intel Stratix10 service layer to support the second service layer
-client, Remote Status Update (RSU).
-
-RSU is used to provide our customers with protection against loading bas
-bitstreams onto their devices when those device are booting from flash.
+Add a device tree binding for the Intel Stratix10 service layer driver
 
 Signed-off-by: Richard Gong <richard.gong@intel.com>
 Signed-off-by: Alan Tull <atull@kernel.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v7: this patch is added in patch set version 7
-v8: no change
+v2: Change to put service layer driver node under the firmware node
+    Change compatible to "intel, stratix10-svc"
+v3: No change
+v4: Add Rob's Reviewed-by
+v5: No change
+v6: Add Moritz's Acked-by
 ---
- drivers/misc/stratix10-svc.c         | 39 ++++++++++++++++++++++++++++--------
- include/linux/stratix10-smc.h        |  6 ++++++
- include/linux/stratix10-svc-client.h | 20 ++++++++++++++++--
- 3 files changed, 55 insertions(+), 10 deletions(-)
+ .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
 
-diff --git a/drivers/misc/stratix10-svc.c b/drivers/misc/stratix10-svc.c
-index d552703..82ab423 100644
---- a/drivers/misc/stratix10-svc.c
-+++ b/drivers/misc/stratix10-svc.c
-@@ -35,7 +35,7 @@
-  * timeout is set to 30 seconds (30 * 1000) at Intel Stratix10 SoC.
-  */
- #define SVC_NUM_DATA_IN_FIFO			32
--#define SVC_NUM_CHANNEL				1
-+#define SVC_NUM_CHANNEL				2
- #define FPGA_CONFIG_DATA_CLAIM_TIMEOUT_MS	200
- #define FPGA_CONFIG_STATUS_TIMEOUT_SEC		30
- 
-@@ -270,7 +270,7 @@ static void svc_thread_cmd_config_status(struct stratix10_svc_controller *ctrl,
-  * @cb_data: pointer to callback data structure to service client
-  * @res: result from SMC or HVC call
-  *
-- * Send back the correspond status to the service client (FPGA manager etc).
-+ * Send back the correspond status to the service clients.
-  */
- static void svc_thread_recv_status_ok(struct stratix10_svc_data *p_data,
- 				      struct stratix10_svc_cb_data *cb_data,
-@@ -406,6 +406,16 @@ static int svc_normal_to_secure_thread(void *data)
- 			a1 = 0;
- 			a2 = 0;
- 			break;
-+		case COMMAND_RSU_STATUS:
-+			a0 = INTEL_SIP_SMC_RSU_STATUS;
-+			a1 = 0;
-+			a2 = 0;
-+			break;
-+		case COMMAND_RSU_UPDATE:
-+			a0 = INTEL_SIP_SMC_RSU_UPDATE;
-+			a1 = pdata->arg[0];
-+			a2 = 0;
-+			break;
- 		default:
- 			pr_warn("it shouldn't happen\n");
- 			break;
-@@ -422,6 +432,19 @@ static int svc_normal_to_secure_thread(void *data)
- 			 (unsigned int)res.a1, (unsigned int)res.a2);
- 		pr_debug(" res.a3=0x%016x\n", (unsigned int)res.a3);
- 
-+		if (pdata->command == COMMAND_RSU_STATUS) {
-+			if (res.a0 == INTEL_SIP_SMC_RSU_ERROR)
-+				cbdata->status = BIT(SVC_STATUS_RSU_ERROR);
-+			else
-+				cbdata->status = BIT(SVC_STATUS_RSU_OK);
+diff --git a/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+new file mode 100644
+index 0000000..1fa6606
+--- /dev/null
++++ b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+@@ -0,0 +1,57 @@
++Intel Service Layer Driver for Stratix10 SoC
++============================================
++Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
++processor system (HPS) and Secure Device Manager (SDM). When the FPGA is
++configured from HPS, there needs to be a way for HPS to notify SDM the
++location and size of the configuration data. Then SDM will get the
++configuration data from that location and perform the FPGA configuration.
 +
-+			cbdata->kaddr1 = &res;
-+			cbdata->kaddr2 = NULL;
-+			cbdata->kaddr3 = NULL;
-+			pdata->chan->scl->receive_cb(pdata->chan->scl, cbdata);
-+			continue;
-+		}
++To meet the whole system security needs and support virtual machine requesting
++communication with SDM, only the secure world of software (EL3, Exception
++Layer 3) can interface with SDM. All software entities running on other
++exception layers must channel through the EL3 software whenever it needs
++service from SDM.
 +
- 		switch (res.a0) {
- 		case INTEL_SIP_SMC_STATUS_OK:
- 			svc_thread_recv_status_ok(pdata, cbdata, res);
-@@ -445,12 +468,7 @@ static int svc_normal_to_secure_thread(void *data)
- 			pr_debug("%s: STATUS_REJECTED\n", __func__);
- 			break;
- 		case INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR:
--			pr_err("%s: STATUS_ERROR\n", __func__);
--			cbdata->status = BIT(SVC_STATUS_RECONFIG_ERROR);
--			cbdata->kaddr1 = NULL;
--			cbdata->kaddr2 = NULL;
--			cbdata->kaddr3 = NULL;
--			pdata->chan->scl->receive_cb(pdata->chan->scl, cbdata);
-+			svc_thread_recv_status_err(pdata, cbdata, res);
- 			break;
- 		default:
- 			pr_warn("it shouldn't happen\n");
-@@ -971,6 +989,11 @@ static int stratix10_svc_drv_probe(struct platform_device *pdev)
- 	chans[0].name = SVC_CLIENT_FPGA;
- 	spin_lock_init(&chans[0].lock);
- 
-+	chans[1].scl = NULL;
-+	chans[1].ctrl = controller;
-+	chans[1].name = SVC_CLIENT_RSU;
-+	spin_lock_init(&chans[1].lock);
++Intel Stratix10 service layer driver, running at privileged exception level
++(EL1, Exception Layer 1), interfaces with the service providers and provides
++the services for FPGA configuration, QSPI, Crypto and warm reset. Service layer
++driver also manages secure monitor call (SMC) to communicate with secure monitor
++code running in EL3.
 +
- 	list_add_tail(&controller->node, &svc_ctrl);
- 	platform_set_drvdata(pdev, controller);
- 
-diff --git a/include/linux/stratix10-smc.h b/include/linux/stratix10-smc.h
-index 14c7223..5be5dab 100644
---- a/include/linux/stratix10-smc.h
-+++ b/include/linux/stratix10-smc.h
-@@ -67,6 +67,12 @@
-  *
-  * INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR:
-  * There is error during the FPGA configuration process.
-+ *
-+ * INTEL_SIP_SMC_REG_ERROR:
-+ * There is error during a read or write operation of the protected registers.
-+ *
-+ * INTEL_SIP_SMC_RSU_ERROR:
-+ * There is error during a remote status update.
-  */
- #define INTEL_SIP_SMC_RETURN_UNKNOWN_FUNCTION		0xFFFFFFFF
- #define INTEL_SIP_SMC_STATUS_OK				0x0
-diff --git a/include/linux/stratix10-svc-client.h b/include/linux/stratix10-svc-client.h
-index 4e5f0af..f7b09e3 100644
---- a/include/linux/stratix10-svc-client.h
-+++ b/include/linux/stratix10-svc-client.h
-@@ -10,8 +10,10 @@
-  * Service layer driver supports client names
-  *
-  * fpga: for FPGA configuration
-+ * rsu: for remote status update
-  */
- #define SVC_CLIENT_FPGA			"fpga"
-+#define SVC_CLIENT_RSU			"rsu"
- 
- /**
-  * Status of the sent command, in bit number
-@@ -36,6 +38,9 @@
-  *
-  * SVC_COMMAND_STATUS_RECONFIG_ERROR:
-  * Error encountered during FPGA configuration.
-+ *
-+ * SVC_STATUS_RSU_OK:
-+ * Secure firmware accepts the request of remote status update (RSU).
-  */
- #define SVC_STATUS_RECONFIG_REQUEST_OK		0
- #define SVC_STATUS_RECONFIG_BUFFER_SUBMITTED	1
-@@ -43,7 +48,8 @@
- #define SVC_STATUS_RECONFIG_COMPLETED		3
- #define SVC_STATUS_RECONFIG_BUSY		4
- #define SVC_STATUS_RECONFIG_ERROR		5
--
-+#define SVC_STATUS_RSU_OK			6
-+#define SVC_STATUS_RSU_ERROR			7
- /**
-  * Flag bit for COMMAND_RECONFIG
-  *
-@@ -56,9 +62,11 @@
- /**
-  * Timeout settings for service clients:
-  * timeout value used in Stratix10 FPGA manager driver.
-+ * timeout value used in RSU driver
-  */
- #define SVC_RECONFIG_REQUEST_TIMEOUT_MS         100
- #define SVC_RECONFIG_BUFFER_TIMEOUT_MS          240
-+#define SVC_RSU_REQUEST_TIMEOUT_MS              300
- 
- struct stratix10_svc_chan;
- 
-@@ -81,13 +89,21 @@ struct stratix10_svc_chan;
-  * @COMMAND_RECONFIG_STATUS: check the status of the configuration, return
-  * status is SVC_STATUS_RECONFIG_COMPLETED, or  SVC_STATUS_RECONFIG_BUSY, or
-  * SVC_STATUS_RECONFIG_ERROR
-+ *
-+ * @COMMAND_RSU_STATUS: request remote system update boot log, return status
-+ * is log data or SVC_STATUS_RSU_ERROR
-+ *
-+ * @COMMAND_RSU_UPDATE: set the offset of the bitstream to boot after reboot,
-+ * return status is SVC_STATUS_RSU_OK or SVC_STATUS_RSU_ERROR
-  */
- enum stratix10_svc_command_code {
- 	COMMAND_NOOP = 0,
- 	COMMAND_RECONFIG,
- 	COMMAND_RECONFIG_DATA_SUBMIT,
- 	COMMAND_RECONFIG_DATA_CLAIM,
--	COMMAND_RECONFIG_STATUS
-+	COMMAND_RECONFIG_STATUS,
-+	COMMAND_RSU_STATUS,
-+	COMMAND_RSU_UPDATE
- };
- 
- /**
++Required properties:
++-------------------
++The svc node has the following mandatory properties, must be located under
++the firmware node.
++
++- compatible: "intel,stratix10-svc"
++- method: smc or hvc
++        smc - Secure Monitor Call
++        hvc - Hypervisor Call
++- memory-region:
++	phandle to the reserved memory node. See
++	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
++	for details
++
++Example:
++-------
++
++	reserved-memory {
++                #address-cells = <2>;
++                #size-cells = <2>;
++                ranges;
++
++                service_reserved: svcbuffer@0 {
++                        compatible = "shared-dma-pool";
++                        reg = <0x0 0x0 0x0 0x1000000>;
++                        alignment = <0x1000>;
++                        no-map;
++                };
++        };
++
++	firmware {
++		svc {
++			compatible = "intel,stratix10-svc";
++			method = "smc";
++			memory-region = <&service_reserved>;
++		};
++	};
 -- 
 2.7.4
