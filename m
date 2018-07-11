@@ -4,8 +4,8 @@ MIME-Version: 1.0
 In-Reply-To: <1531172389-7312-1-git-send-email-atull@kernel.org>
 References: <1531172389-7312-1-git-send-email-atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Date: Wed, 18 Jul 2018 15:07:10 -0500
-Message-ID: <CANk1AXQ-Hz++SVxsAwQQJ+dsrG6vU3WF2gLR9wzFRyQ7FAp1kw@mail.gmail.com>
+Date: Wed, 11 Jul 2018 13:17:20 -0500
+Message-ID: <CANk1AXTGvMHEMPF6nfzxncgXhH6bazmPaAXovBOi8hBC4ZkCug@mail.gmail.com>
 Subject: Re: [PATCH] fpga: mgr: rework fpga_mgr_get API for multiple managers
 Content-Type: text/plain; charset="UTF-8"
 To: Moritz Fischer <mdf@kernel.org>
@@ -13,18 +13,16 @@ Cc: Alan Tull <atull@kernel.org>, Appana Durga Kedareswara rao <appana.durga.rao
 List-ID: <linux-fpga@vger.kernel.org>
 
 On Mon, Jul 9, 2018 at 4:39 PM, Alan Tull <atull@kernel.org> wrote:
+> Change fpga_mgr_get() function to take manager as the parameter
+> instead of dev.
 
-On Mon, Jul 9, 2018 at 4:39 PM, Alan Tull <atull@kernel.org> wrote:
-
-This patch is now outdated and would break the upstream.  I currently
-doubt that this change is needed or would be helpful.  The discussion
-on whether this patch is needed is on a separate thread:
-https://lkml.org/lkml/2018/7/18/866
+Todo: if this approach seems good, I'm going to do the same thing in
+fpga-bridge.c for fpga_bridge_get, taking the bridge struct as a
+parameter instead of dev of the bridge.
 
 Alan
 
-> Change fpga_mgr_get() function to take manager as the parameter
-> instead of dev.  Caller probably has a pointer to manager already
+>  Caller probably has a pointer to manager already
 > anyway, so remove code that searched for manager based on dev.  The
 > rationale for this change is that cards that have more than one FPGA
 > may have more than one manager.
