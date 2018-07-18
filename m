@@ -1,13 +1,13 @@
-Return-Path: <SRS0=Wyc8=JT=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=Wyc8=JT=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=P5hi=KC=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=P5hi=KC=linux.intel.com=richard.gong@kernel.org>
 From: richard.gong@linux.intel.com
-Subject: [PATCHv6 1/8] dt-bindings, firmware: add Intel Stratix10 service layer binding
-Date: Tue,  3 Jul 2018 09:46:48 -0500
-Message-Id: <1530629215-26990-2-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1530629215-26990-1-git-send-email-richard.gong@linux.intel.com>
-References: <1530629215-26990-1-git-send-email-richard.gong@linux.intel.com>
-To: catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
+Subject: [PATCHv7 1/9] dt-bindings, firmware: add Intel Stratix10 service layer binding
+Date: Wed, 18 Jul 2018 11:18:36 -0500
+Message-Id: <1531930724-22061-2-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1531930724-22061-1-git-send-email-richard.gong@linux.intel.com>
+References: <1531930724-22061-1-git-send-email-richard.gong@linux.intel.com>
+To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Richard Gong <richard.gong@intel.com>
@@ -25,6 +25,7 @@ v3: No change
 v4: Add Rob's Reviewed-by
 v5: No change
 v6: Add Moritz's Acked-by
+v7: No change
 ---
  .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
  1 file changed, 57 insertions(+)
