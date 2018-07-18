@@ -1,66 +1,84 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 2/2] fpga: do not access region struct after fpga_region_unregister
-Date: Wed, 25 Jul 2018 13:15:14 -0500
-Message-Id: <20180725181514.3501-2-atull@kernel.org>
-In-Reply-To: <20180725181514.3501-1-atull@kernel.org>
-References: <20180725181514.3501-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Federico Vaga <federico.vaga@cern.ch>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=P5hi=KC=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=P5hi=KC=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv7 8/9] Documentation: driver-api: add stratix10 service layer
+Date: Wed, 18 Jul 2018 11:18:43 -0500
+Message-Id: <1531930724-22061-9-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1531930724-22061-1-git-send-email-richard.gong@linux.intel.com>
+References: <1531930724-22061-1-git-send-email-richard.gong@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-The FPGA region class's dev_release handles freeing the struct
-fpga_region when fpga_region_unregister() unregisters the device.  A
-couple drivers were accessing the region struct after it had been
-freed.  Save off the pointer to the mgr before the region struct gets
-freed.
+From: Richard Gong <richard.gong@intel.com>
 
+Add new file stratix10-svc.rst
+Add stratix10-svc.rst to driver-api/index.rst
+
+Signed-off-by: Richard Gong <richard.gong@intel.com>
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/dfl-fme-region.c | 4 +++-
- drivers/fpga/of-fpga-region.c | 3 ++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+v5: this patch is added in patch set version 5
+v6: no change
+v7: no change
+---
+ Documentation/driver-api/index.rst         |  1 +
+ Documentation/driver-api/stratix10-svc.rst | 32 ++++++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
+ create mode 100644 Documentation/driver-api/stratix10-svc.rst
 
-diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
-index 0b7e19c..51a5ac2 100644
---- a/drivers/fpga/dfl-fme-region.c
-+++ b/drivers/fpga/dfl-fme-region.c
-@@ -14,6 +14,7 @@
-  */
+diff --git a/Documentation/driver-api/index.rst b/Documentation/driver-api/index.rst
+index 6d9f2f9..d4d2671 100644
+--- a/Documentation/driver-api/index.rst
++++ b/Documentation/driver-api/index.rst
+@@ -53,6 +53,7 @@ available subsections can be seen below.
+    slimbus
+    soundwire/index
+    fpga/index
++   stratix10-svc
  
- #include <linux/module.h>
-+#include <linux/fpga/fpga-mgr.h>
- #include <linux/fpga/fpga-region.h>
+ .. only::  subproject and html
  
- #include "dfl-fme-pr.h"
-@@ -66,9 +67,10 @@ static int fme_region_probe(struct platform_device *pdev)
- static int fme_region_remove(struct platform_device *pdev)
- {
- 	struct fpga_region *region = dev_get_drvdata(&pdev->dev);
-+	struct fpga_manager *mgr = region->mgr;
- 
- 	fpga_region_unregister(region);
--	fpga_mgr_put(region->mgr);
-+	fpga_mgr_put(mgr);
- 
- 	return 0;
- }
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 35fabb8..052a134 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -437,9 +437,10 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- static int of_fpga_region_remove(struct platform_device *pdev)
- {
- 	struct fpga_region *region = platform_get_drvdata(pdev);
-+	struct fpga_manager *mgr = region->mgr;
- 
- 	fpga_region_unregister(region);
--	fpga_mgr_put(region->mgr);
-+	fpga_mgr_put(mgr);
- 
- 	return 0;
- }
+diff --git a/Documentation/driver-api/stratix10-svc.rst b/Documentation/driver-api/stratix10-svc.rst
+new file mode 100644
+index 0000000..ed361d8
+--- /dev/null
++++ b/Documentation/driver-api/stratix10-svc.rst
+@@ -0,0 +1,32 @@
++
++Intel Stratix10 SoC Service Layer
++=================================
++
++Some features of the Intel Stratix10 SoC require a level of privilege
++higher than the kernel is granted. Such secure features include
++FPGA programming. In terms of the ARMv8 architecture, the kernel runs
++at Exception Level 1 (EL1), access to the features requires
++Exception Level 3 (EL3).
++
++The Intel Stratix10 SoC service layer provides an in kernel API for
++drivers to request access to the secure features. The requests are queued
++and processed one by one. ARM’s SMCCC is used to pass the execution
++of the requests on to a secure monitor (EL3).
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_command_code
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_client_msg
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_command_reconfig_payload
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_cb_data
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_client
++
++.. kernel-doc:: drivers/misc/stratix10-svc.c
++   :export:
 -- 
 2.7.4
