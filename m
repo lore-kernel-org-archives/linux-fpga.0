@@ -1,110 +1,262 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 1/2] fpga: Document when fpga_blah_free functions should be used
-Date: Wed, 25 Jul 2018 13:15:13 -0500
-Message-Id: <20180725181514.3501-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Federico Vaga <federico.vaga@cern.ch>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=eGI6=KC=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=eGI6=KC=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-eopbgr80048.outbound.protection.outlook.com ([40.107.8.48]:38304
+        "EHLO EUR04-VI1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726985AbeGRW1r (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 18 Jul 2018 18:27:47 -0400
+From: Federico Vaga <federico.vaga@cern.ch>
+Subject: Re: fpga: fpga_mgr_get() buggy ?
+Date: Wed, 18 Jul 2018 23:47:35 +0200
+Message-ID: <2076282.DFHNtXLtgF@harkonnen>
+In-Reply-To: <CANk1AXSd7V03w=uPuo+HiibxmD9_JwaTZyx4uRJ_OfXB4o-_Cw@mail.gmail.com>
+References: <4617134.5euanDEBgJ@pcbe13614> <2419388.jt6midSiEu@pcbe13614> <CANk1AXSd7V03w=uPuo+HiibxmD9_JwaTZyx4uRJ_OfXB4o-_Cw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 
-Clarify when fpga_(mgr|bridge|region)_free functions should be used.
-The class's dev_release will handle cleanup when the device is released
-so once the mgr/brige/region has been successfully registered, it
-would be a bug to call fpga_(mgr|bridge|region)_free.
+Hi Alan,
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Suggested-by: Florian Fainelli <f.fainelli@gmail.com>
-Suggested-by: Federico Vaga <federico.vaga@cern.ch>
----
- drivers/fpga/fpga-bridge.c | 10 +++++++++-
- drivers/fpga/fpga-mgr.c    | 10 +++++++++-
- drivers/fpga/fpga-region.c | 10 +++++++++-
- 3 files changed, 27 insertions(+), 3 deletions(-)
+Thanks for your time, comments below
 
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index 24b8f98..528d2149 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -379,7 +379,11 @@ EXPORT_SYMBOL_GPL(fpga_bridge_create);
+On Wednesday, July 18, 2018 9:47:24 PM CEST Alan Tull wrote:
+> On Thu, Jun 28, 2018 at 2:50 AM, Federico Vaga <federico.vaga@cern.ch> 
+wrote:
+> > On Wednesday, 27 June 2018 23:23:07 CEST Alan Tull wrote:
+> >> On Wed, Jun 27, 2018 at 4:25 AM, Federico Vaga
+> > 
+> > <federico.vaga@cern.ch> wrote:
+> >> > Hi Alan,
+> >> > 
+> >> > On Tuesday, 26 June 2018 23:00:46 CEST Alan Tull wrote:
+> >> >> On Fri, Jun 22, 2018 at 2:53 AM, Federico Vaga
+> >> >> <federico.vaga@cern.ch> wrote:
+> >> >> 
+> >> >> Hi Federico,
+> >> >> 
+> >> >> >> > What is buggy is the function fpga_mgr_get().
+> >> >> >> > That patch has been done to allow multiple FPGA manager
+> >> >> >> > instances
+> >> >> >> > to be linked to the same device (PCI it says). But function
+> >> >> >> > fpga_mgr_get() will return only the first found: what about
+> >> >> >> > the
+> >> >> >> > others?
+> 
+> Looking at this further, no code change is needed in the FPGA API to
+> support multiple managers.  A FPGA manager driver is a self-contained
+> platform driver.  The PCI driver for a board that contains multiple
+> FPGAs should create a platform device for each manager and save each
+> of those devs in its pdata.
+> 
+> >> >> >> > Then, all load kernel-doc comments says:
+> >> >> >> > 
+> >> >> >> > "This code assumes the caller got the mgr pointer from
+> >> >> >> > of_fpga_mgr_get() or fpga_mgr_get()"
+> >> >> >> > 
+> >> >> >> > but that function does not allow me to get, for instance,
+> >> >> >> > the
+> >> >> >> > second FPGA manager on my card.
+> 
+> fpga_mgr_get() will do what you want if your PCI driver creates a
+> platform device per FPGA manager as mentioned above.
+> 
+> >> >> >> > Since, thanks to this patch I'm actually the creator of the
+> >> >> >> > fpga_manager structure,  I do not need to use fpga_mgr_get()
+> >> >> >> > to
+> >> >> >> > retrieve that data structure.
+> 
+> The creator of the FPGA mgr structure is the low level FPGA manager
+> driver, not the PCIe driver.
+
+In my case it is.
+It's a bit like where SPI driver is the low level FPGA manager driver for 
+the xilinx-spi.c. But if I understand what you mean, I should always have a 
+platform_driver just for the FPGA manager even if it has a 1:1 relation 
+with its carrier? In other words, I write two drivers:
+- one for the FPGA manager
+- one for the PCI device that then register the FPGA manager driver
+
+In my case the FPGA programmed is also the PCIe bridge (GN4124). Probably I 
+can do it anyway, because the part dedicated to FPGA programming is quite 
+independent from the rest (don't remember all details)
  
- /**
-  * fpga_bridge_free - free a fpga bridge and its id
-- * @bridge:	FPGA bridge struct created by fpga_bridge_create
-+ * @bridge:	FPGA bridge struct created by fpga_bridge_create()
-+ *
-+ * Free a FPGA bridge.  This function should only be called for
-+ * freeing a bridge that has not been registered yet (such as in error
-+ * paths in a probe function).
-  */
- void fpga_bridge_free(struct fpga_bridge *bridge)
- {
-@@ -414,6 +418,10 @@ EXPORT_SYMBOL_GPL(fpga_bridge_register);
- /**
-  * fpga_bridge_unregister - unregister and free a fpga bridge
-  * @bridge:	FPGA bridge struct created by fpga_bridge_create
-+ *
-+ * Unregister the bridge device.  The class's dev_release will handle
-+ * freeing the bridge struct when the device is released so don't
-+ * call fpga_bridge_free() after calling fpga_bridge_unregister().
-  */
- void fpga_bridge_unregister(struct fpga_bridge *bridge)
- {
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index a41b07e..9632cbd 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -619,7 +619,11 @@ EXPORT_SYMBOL_GPL(fpga_mgr_create);
- 
- /**
-  * fpga_mgr_free - deallocate a FPGA manager
-- * @mgr:	fpga manager struct created by fpga_mgr_create
-+ * @mgr:	fpga manager struct created by fpga_mgr_create()
-+ *
-+ * Free a FPGA manager struct.  This function should only be called
-+ * for freeing a manager that has not been registered yet (such as in
-+ * error paths in a probe function).
-  */
- void fpga_mgr_free(struct fpga_manager *mgr)
- {
-@@ -663,6 +667,10 @@ EXPORT_SYMBOL_GPL(fpga_mgr_register);
- /**
-  * fpga_mgr_unregister - unregister and free a FPGA manager
-  * @mgr:	fpga manager struct
-+ *
-+ * Unregister the manager device.  The class's dev_release will handle
-+ * freeing the manager struct when the device is released so don't
-+ * call fpga_mgr_free() after calling fpga_mgr_unregister().
-  */
- void fpga_mgr_unregister(struct fpga_manager *mgr)
- {
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 0d65220..7335fa9 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -231,7 +231,11 @@ EXPORT_SYMBOL_GPL(fpga_region_create);
- 
- /**
-  * fpga_region_free - free a struct fpga_region
-- * @region: FPGA region created by fpga_region_create
-+ * @region:  FPGA region created by fpga_region_create()
-+ *
-+ * Free a FPGA region struct.  This function should only be called for
-+ * freeing a region that has not been registered yet (such as in error
-+ * paths in a probe function).
-  */
- void fpga_region_free(struct fpga_region *region)
- {
-@@ -255,6 +259,10 @@ EXPORT_SYMBOL_GPL(fpga_region_register);
- /**
-  * fpga_region_unregister - unregister and free a FPGA region
-  * @region: FPGA region
-+ *
-+ * Unregister the region device.  The class's dev_release will handle
-+ * freeing the region so don't call fpga_region_free() after calling
-+ * fpga_region_unregister().
-  */
- void fpga_region_unregister(struct fpga_region *region)
- {
+> >> >> >> > Despite this, I believe we still need to increment the
+> >> >> >> > module
+> >> >> >> > reference counter (which is done by fpga_mgr_get()).
+> 
+> This is only done in the probe function of a FPGA region driver.
+> 
+> >> >> >> > We can fix this function by just replacing the argument from
+> >> >> >> > 'device' to 'fpga_manager' (the one returned by create() ).
+> >> >> >> 
+> >> >> >> At first thought, that's what I'd want.
+> >> >> >> 
+> >> >> >> > Alternatively, we
+> >> >> >> > can add an 'owner' field in "struct fpga_manager_ops" and
+> >> >> >> > 'get'
+> >> >> >> > it
+> >> >> >> > when we use it. Or again, just an 'owner' argument in the
+> >> >> >> > create()
+> >> >> >> > function.
+> >> >> >> 
+> >> >> >> It seems like we shouldn't have to do that.
+> >> >> > 
+> >> >> > Why?
+> >> >> 
+> >> >> OK yes, I agree; the kernel has a lot of examples of doing this.
+> >> >> 
+> >> >> I'll have to play with it, I'll probably add the owner arg to the
+> >> >> create function, add owner to struct fpga_manager, and save.
+> >> > 
+> >> > I have two though about this.
+> >> > 
+> >> > 1. file_operation like approach. The onwer is associated to the
+> >> > FPGA manager operation. Whenever the FPGA manager wants to use an
+> >> > operation it get/put the module owner of these operations
+> >> > (because this is what we need to protect). With this the user is
+> >> > not directly involved, read it as less code, less things to care
+> >> > about. And probably there is no need for fpga_manager_get().
+> >> 
+> >> How does try_module_get fit into this scheme?  I think this proposal
+> >> #1 is missing the point of what the reference count increment is
+> >> meant to do.  Or am I misunderstanding?  How does that keep the
+> >> module from being unloaded 1/3 way through programming a FPGA?
+> >> IIUC you are saying that the reference count would be incremented
+> >> before doing the manager ops .write_init, then decremented again
+> >> afterwards, incremented before each call to .write, decremented
+> >> afterwards, then the same for .write_complete.
+> > 
+> > I'm not saying to do module_get/put just around the mops->XXX(): it's
+> > too much. Just where you have this comment:
+> > 
+> > "This code assumes the caller got the mgr pointer from
+> > of_fpga_mgr_get() or fpga_mgr_get()"
+> > 
+> > Because, currently, it's here where we do module_get()
+> 
+> No it's not.
+
+It is not in the code, but the comment says that we should do it before 
+calling fpga_mgr_load()
+
+> fpga_mgr_get() or of_fpga_mgr_get() is called when the region is
+> created such as in of-fpga-region's probe.  That way, as long as the
+> region exists, the manager won't be unloaded.  If someone wants to
+> start unloading modules, they need to unload higher level ones first,
+> so they'll have to unload the region before mgr.
+> 
+> > Most mops are invoked within a set of static functions which are
+> > called only by few exported functions. I'm suggesting to do
+> > module_get/put in those exported function at the beginning (get) and
+> > and the end (put) because we know that within these functions, here
+> > and there, we will use mops which are owned by a different module.
+> > We do not want the module owner of the mops to disappear while someone
+> > is doing fpga_mgr_load(). For example, inside fpga_mgr_load() we use
+> > most of the mops, so we 'get' the module at the beginning and 'put' it
+> > at the end. The same for fpga_region_program_fpga().
+> 
+> If we do it the way you are suggesting, then someone can unload the
+> manager module without unloading the region.  The region code will be
+> in for a nasty surprise when programming is attempted.
+
+Of course, this should be taken into account. I was not suggesting a 
+precise implementation, but only the idea to hide get/put. Probably there 
+other things as well that I'm not considering (indeed I do not have a 
+patch, but just a comment) 
+
+> > Like this we do not have to ask users to do fpga_mgr_get()/put().
+> 
+> The only user who has to do this is a region's probe function.
+> 
+> I'm assuming that only fpga_region is using fpga_mgr_load() and
+> anybody who is creating a region uses fpga_region_program_fpga().
+> That's what I want to encourage anyway.  I should probably move
+> fpga_mgr_load to a private header.
+
+All right, if this is what you want to encourage I do not have anything to 
+say because I did exactly what you do not want to encourage :)
+
+For me this change everything because I do not use regions since I do not 
+have them. The way the API is exposed to me did not encouraged me to use 
+their API. In addition, the documentation guides me directly to the FPGA 
+manager.
+
+To be honest I did not have much time to look at the region code. My 
+understanding, after a quick look, is that it works great with device-tree. 
+But what if I do not have it? Actually, I cannot use device-tree because of 
+environment limitations and Linux version in use. Oops, this implies that I 
+back-ported the FPGA manager to an older Linux version? Yes, guilty :)
+
+Anyway, I'm using the API exposed, and if part of the assumptions behind 
+this API is that I should use device-tree, then I'm out of scope.
+
+<chatting>
+Just for chatting. One addition I made for the FPGA manager is to support 
+dynamic loading of FPGA code using char devices. Something like:
+
+   dd if=binary.bin of=/dev/fpga0
+   cat binary.bin > /dev/fpga0
+
+We do not have device tree, and we do not have binaries in /lib/firmware. 
+It's quite handy to quickly load a binary just synthesized, especially for 
+debugging purpose. If you are interested I can try to clean it up (at some 
+point, probably in autumn), or I can show you the code in private for a 
+quick look.
+</chatting>
+
+
+> > <Parenthesis>
+> > fpga_region_program_fpga() does not do (today) fpga_mgr_get() because
+> > it assumes, but it is not enforced, that both fpga_region and fpga_mgr
+> > are child of the same device.
+> 
+> fpga_region_program_fpga() doesn't do fpga_mgr_get() becuase
+> fpga_mgr_get() happens when the fpga_region probes.  The assumption I
+> am making is that nobody other than a region is calling
+> fpga_manager_load().  I should create a fpga_private.h and move
+> fpga_manager_load() out of fpga-mgr.h to make that official.
+
+Yes, I agree. If what I'm doing is not supposed to happen I should not be 
+allowed to do it :)
+
+<suggestion>
+If you want to encourage people to use regions rather than the manager 
+directly, have you though about changing the API and merge in a single 
+module fpga-mgr and fpga-region?
+
+Brainstorming. Perhaps, it is possible to have a `struct fpga_region_info` 
+and when we register and FPGA manager we use something like:
+
+struct fpga_manager *fpga_mgr_create(struct device *dev, const char *name,
+				     const struct fpga_manager_ops *mops,
+                     struct fpga_region_info *info, int n_regions,
+				     void *priv)
+
+So those regions will be created directly and the interface will be smaller 
+and easier.
+
+Don't waste much time on this suggestion, as I said before I did not study 
+much the fpga-region.c code and perhaps this is not possible and I'm just 
+speaking rubbish :)
+</suggestion>
+
+
+> > Probably this is true 99.99% of the
+> > time.
+> > Let me open in parallel another point: why fpga_region is not a child
+> > of fpga_manager?
+> 
+> FPGA regions are children of FPGA bridges.
+> 
+> Alan
+
+
 -- 
-2.7.4
+Federico Vaga
+[BE-CO-HT]
+
+
