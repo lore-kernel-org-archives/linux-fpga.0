@@ -1,62 +1,49 @@
-Return-Path: <SRS0=HJlN=KJ=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=HJlN=KJ=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-sn1nam01on0082.outbound.protection.outlook.com ([104.47.32.82]:28876
-        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728673AbeGYKXQ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 25 Jul 2018 06:23:16 -0400
-From: Appana Durga Kedareswara Rao <appanad@xilinx.com>
-Subject: RE: [PATCH v3 2/2] fpga: zynq-fpga: Add support for readback
-Date: Wed, 25 Jul 2018 09:12:21 +0000
-Message-ID: <CY1PR02MB1692876485F0557FE798C2D9DC540@CY1PR02MB1692.namprd02.prod.outlook.com>
-References: <1532441858-13507-1-git-send-email-appana.durga.rao@xilinx.com>
- <1532441858-13507-2-git-send-email-appana.durga.rao@xilinx.com>
- <CAAtXAHeVXw4BT7XF+Mu=nR9U9nK=nR_+x+JKSQU1owwPbt_HPA@mail.gmail.com>
- <CY1PR02MB169273A09D4E675A7671375CDC550@CY1PR02MB1692.namprd02.prod.outlook.com>
- <CANk1AXRYX+7hkm93r0maHz1e1Uh-gTKzs==1xjd_CZPQqBLSyA@mail.gmail.com>
-In-Reply-To: <CANk1AXRYX+7hkm93r0maHz1e1Uh-gTKzs==1xjd_CZPQqBLSyA@mail.gmail.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <moritz.fischer@ettus.com>, Nava kishore Manne <navam@xilinx.com>, Michal Simek <michals@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1532441858-13507-2-git-send-email-appana.durga.rao@xilinx.com>
+References: <1532441858-13507-1-git-send-email-appana.durga.rao@xilinx.com> <1532441858-13507-2-git-send-email-appana.durga.rao@xilinx.com>
+From: Alan Tull <atull@kernel.org>
+Date: Tue, 24 Jul 2018 13:52:30 -0500
+Message-ID: <CANk1AXQ7RH6gwjNMQSXJZ=wCrwTGZ+T6uVgOsb6N+YJ2Y6zR8g@mail.gmail.com>
+Subject: Re: [PATCH v3 2/2] fpga: zynq-fpga: Add support for readback
+Content-Type: text/plain; charset="UTF-8"
+To: Appana Durga Kedareswara rao <appana.durga.rao@xilinx.com>
+Cc: Moritz Fischer <mdf@kernel.org>, navam@xilinx.com, michals@xilinx.com, linux-fpga@vger.kernel.org, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>
+List-ID: <linux-fpga@vger.kernel.org>
 
-SGkgQWxhbiwNCgkNCglUaGFua3MgZm9yIHRoZSByZXZpZXcuLi4NCg0KPFNuaXA+IA0KPiA+DQo+
-ID4gPFNuaXA+DQo+ID4+ID4gK3N0YXRpYyBib29sIHJlYWRiYWNrX3R5cGU7DQo+ID4+ID4gK21v
-ZHVsZV9wYXJhbShyZWFkYmFja190eXBlLCBib29sLCAwNjQ0KTsNCj4gPj4gPiArTU9EVUxFX1BB
-Uk1fREVTQyhyZWFkYmFja190eXBlLA0KPiA+PiA+ICsgICAgICAgICAgICAgICAicmVhZGJhY2tf
-dHlwZSAwLWNvbmZpZ3VyYXRpb24gcmVnaXN0ZXIgcmVhZCAiDQo+ID4+ID4gKyAgICAgICAgICAg
-ICAgICIxLSBjb25maWd1cmF0aW9uIGRhdGEgcmVhZCAoZGVmYXVsdDogMCkiKTsNCj4gPj4NCj4g
-Pj4gTm90IHN1cmUgYSBtb2R1bGUgcGFyYW0gaXMgdGhlIGJlc3Qgc29sdXRpb24gaGVyZS4NCj4g
-Pg0KPiA+IE5lZWQgdG8gcHJvdmlkZSBmbGV4aWJpbGl0eSB0byB0aGUgdXNlciB0byBzd2l0Y2gg
-YmV0d2VlbiByZWFkaW5nIG9mIEZQR0ENCj4gcmVnaXN0ZXJzIGFuZCBjb25maWd1cmF0aW9uIGRh
-dGEuDQo+IA0KPiBJIHN1Z2dlc3RlZCBjYWxsaW5nIHRoZSBhdHRyaWJ1dGUgJ2ltYWdlJyBiZWNh
-dXNlIEkgdGhvdWdodCBpdCB3b3VsZCBhbHdheXMgYmUNCj4gYSByZWFkIGJhY2sgb2YgdGhlIEZQ
-R0EgaW1hZ2UgaW5mb3JtYXRpb24uICBJIGRvbid0IHRoaW5rIHRoYXQgYSBzeXNmcw0KPiBhdHRy
-aWJ1dGUncyBmdW5jdGlvbiBzaG91bGQgY2hhbmdlLiA6KQ0KDQpJbiBaeW5xIENhc2UgaXQgc3Vw
-cG9ydHMgdHdvIHR5cGVzIG9mIHRoZSByZWFkYmFjayAoQ29uZmlndXJhdGlvbiByZWdpc3RlcnMs
-IENvbmZpZ3VyYXRpb24gZGF0YShmcGdhIGltYWdlKSkgIHdoaWNoIG1heSBub3QgYmUgdGhlIHNh
-bWUgY2FzZSBmb3Igb3RoZXIgdmVuZG9ycy4gDQpTaW5jZSBJIG5lZWQgdG8gc3VwcG9ydCBib3Ro
-IHRoZSB1c2UgY2FzZXMgSSBoYXZlIGRpZmZlcmVudGlhdGVkIHRoZW0gdXNpbmcgbW9kdWxlIHBh
-cmFtIGluIHRoZSB6eW5xLWZwZ2EgZHJpdmVyLg0KDQpBcyB5b3Ugc2FpZCB3ZSBzaG91bGRuJ3Qg
-Y2hhbmdlIHRoZSBhdHRyaWJ1dGUncyBmdW5jdGlvbiwgU28gaW4gdGhlIHp5bnEtZnBnYSBkcml2
-ZXIsDQpJIGFtIHBsYW5uaW5nIHRvIGFkZCBhbm90aGVyIGRlYnVnZnMgYXR0cmlidXRlIGZvciBy
-ZWFkaW5nIGJhY2sgb2YgY29uZmlndXJhdGlvbiByZWdpc3RlcnMgYXMgaXQgaXMgdmVuZG9yIHNw
-ZWNpZmljIHJlYWRiYWNrIHR5cGUuDQogKENvbmZpZ3VyYXRpb24gcmVnaXN0ZXJzICAgICAgICAg
-ICAgICAgICAgIC0tLS0gIFVzYWdlOiAgL3N5cy9rZXJuZWwvZGVidWcvZnBnYS96eW5xLWZwZ2Ev
-Y2ZncmVnX3N1bW1hcnkpIA0KKENvbmZpZ3VyYXRpb24gZGF0YShmcGdhIGltYWdlKSAgICAtLS0t
-ICAgVXNhZ2U6IC9zeXMva2VybmVsL2RlYnVnL2ZwZ2EvZnBnYTAvaW1hZ2UpDQpQbGVhc2UgbGV0
-IG1lIGtub3cgeW91ciB0aG91Z2h0cyBmb3IgdGhlIHNhbWUuLi4gDQoJDQo+IA0KPiA+IE9uZSBv
-dGhlciBvcHRpb24gaXMgc3lzZnMuIERvIHlvdSB3YW50IG1lIHRvIGltcGxlbWVudCBzeXNmcyBw
-YXRoPz8/DQo+ID4gQW55IG90aGVyIHN1Z2dlc3Rpb25zPz8/DQo+IA0KPiBZb3UgY291bGQgaW1w
-bGVtZW50IGFub3RoZXIgc3lzZnMgYXR0cmlidXRlIGZvciByZWFkaW5nIEZQR0EgcmVnaXN0ZXJz
-DQo+IHdpdGggYSBzZXBhcmF0ZSBvcHMgY2FsbGJhY2suICAgUGxlYXNlIGNsYXJpZnkgd2hhdCBp
-dCBpcyBkb2luZyAobm90DQo+IGFsbCBGUEdBcyBoYXZlIHRoaXMgZnVuY3Rpb24pIGFuZCB3aGF0
-IHRoYXQgd2lsbCBsb29rIGxpa2Ugd2hlbiB0aGUgdXNlciByZWFkcw0KPiB0aGUgZnJvbSB0aGUg
-c3lzZnMNCg0KQUZBSUsgd2Ugc2hvdWxkbid0IGFkZCBhbm90aGVyIHN5c2ZzL2RlYnVnZnMgYXR0
-cmlidXRlIGZvciB2ZW5kb3Itc3BlY2lmaWMgcmVhZGJhY2sgdHlwZSBpbiB0aGUgRlBHQSBtYW5h
-Z2VyIG9wcy4NClBsZWFzZSBjb3JyZWN0IG1lIGlmIG15IHVuZGVyc3RhbmRpbmcgaXMgd3Jvbmcu
-IA0KDQpSZWdhcmRzLA0KS2VkYXIuDQoNCj4gDQo+IEFsYW4NCg==
+On Tue, Jul 24, 2018 at 9:17 AM, Appana Durga Kedareswara rao
+<appana.durga.rao@xilinx.com> wrote:
+
+Hi Appana,
+
+Another minor thing.
+
+> +
+> +/****************************************************************************/
+
+Let's keep the coding style consistent by not having
+'***************************'
+
+> +/**
+> + *
+
+Also, you don't need /** followed by '*', just take out the
+essentially blank line here, please.
+
+> + * Generates a Type 2 packet header that reads back the requested Configuration
+> + * register.
+> + *
+> + * @param        OpCode is the read/write operation code.
+> + * @param        Size is the size of the word to be read.
+> + *
+> + * @return       Type 2 packet header to read the specified register
+> + *
+> + * @note         None.
+> + *
+> + *****************************************************************************/
+> +static int zynq_type2_pkt(u8 OpCode, u32 Size)
+> +{
+
+Thanks,
+Alan
