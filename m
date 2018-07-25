@@ -1,59 +1,66 @@
-Return-Path: <SRS0=P5hi=KC=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=P5hi=KC=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv7 7/9] defconfig: enable fpga and service layer
-Date: Wed, 18 Jul 2018 11:18:42 -0500
-Message-Id: <1531930724-22061-8-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1531930724-22061-1-git-send-email-richard.gong@linux.intel.com>
-References: <1531930724-22061-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 2/2] fpga: do not access region struct after fpga_region_unregister
+Date: Wed, 25 Jul 2018 13:15:14 -0500
+Message-Id: <20180725181514.3501-2-atull@kernel.org>
+In-Reply-To: <20180725181514.3501-1-atull@kernel.org>
+References: <20180725181514.3501-1-atull@kernel.org>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Alan Tull <atull@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Federico Vaga <federico.vaga@cern.ch>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+The FPGA region class's dev_release handles freeing the struct
+fpga_region when fpga_region_unregister() unregisters the device.  A
+couple drivers were accessing the region struct after it had been
+freed.  Save off the pointer to the mgr before the region struct gets
+freed.
 
-Enable fpga framework, Stratix 10 SoC FPGA manager and Stratix10
-Service Layer
-
-Signed-off-by: Richard Gong <richard.gong@intel.com>
 Signed-off-by: Alan Tull <atull@kernel.org>
 ---
-v2: this patch is added in patch set version 2
-v3: no change
-v4: s/CONFIG_INTEL_SERVICE/CONFIG_STRATIX10_SERVICE/
-    add CONFIG_OF_FPGA_REGION=y
-    s/Intel/Stratix10/ in subject line
-v5: no change
-v6: no change
-v7: no change
----
- arch/arm64/configs/defconfig | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/fpga/dfl-fme-region.c | 4 +++-
+ drivers/fpga/of-fpga-region.c | 3 ++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index d95b628..cb77c7c 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -184,6 +184,7 @@ CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=m
- CONFIG_VIRTIO_BLK=y
- CONFIG_BLK_DEV_NVME=m
-+CONFIG_STRATIX10_SERVICE=y
- CONFIG_SRAM=y
- CONFIG_EEPROM_AT25=m
- # CONFIG_SCSI_PROC_FS is not set
-@@ -621,6 +622,12 @@ CONFIG_PHY_ROCKCHIP_TYPEC=y
- CONFIG_PHY_TEGRA_XUSB=y
- CONFIG_QCOM_L2_PMU=y
- CONFIG_QCOM_L3_PMU=y
-+CONFIG_MESON_EFUSE=m
-+CONFIG_FPGA=y
-+CONFIG_FPGA_MGR_STRATIX10_SOC=y
-+CONFIG_FPGA_REGION=y
-+CONFIG_FPGA_BRIDGE=y
-+CONFIG_OF_FPGA_REGION=y
- CONFIG_QCOM_QFPROM=y
- CONFIG_ROCKCHIP_EFUSE=y
- CONFIG_UNIPHIER_EFUSE=y
+diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
+index 0b7e19c..51a5ac2 100644
+--- a/drivers/fpga/dfl-fme-region.c
++++ b/drivers/fpga/dfl-fme-region.c
+@@ -14,6 +14,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/fpga/fpga-mgr.h>
+ #include <linux/fpga/fpga-region.h>
+ 
+ #include "dfl-fme-pr.h"
+@@ -66,9 +67,10 @@ static int fme_region_probe(struct platform_device *pdev)
+ static int fme_region_remove(struct platform_device *pdev)
+ {
+ 	struct fpga_region *region = dev_get_drvdata(&pdev->dev);
++	struct fpga_manager *mgr = region->mgr;
+ 
+ 	fpga_region_unregister(region);
+-	fpga_mgr_put(region->mgr);
++	fpga_mgr_put(mgr);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index 35fabb8..052a134 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -437,9 +437,10 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ static int of_fpga_region_remove(struct platform_device *pdev)
+ {
+ 	struct fpga_region *region = platform_get_drvdata(pdev);
++	struct fpga_manager *mgr = region->mgr;
+ 
+ 	fpga_region_unregister(region);
+-	fpga_mgr_put(region->mgr);
++	fpga_mgr_put(mgr);
+ 
+ 	return 0;
+ }
 -- 
 2.7.4
