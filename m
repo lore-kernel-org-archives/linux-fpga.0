@@ -1,36 +1,133 @@
-Return-Path: <SRS0=Bvgt=KD=huawei.com=weiyongjun1@kernel.org>
-Return-Path: <SRS0=Bvgt=KD=huawei.com=weiyongjun1@kernel.org>
-From: Wei Yongjun <weiyongjun1@huawei.com>
-Subject: [PATCH -next] fpga: dfl: fme: fix return value check in in pr_mgmt_init()
-Date: Thu, 19 Jul 2018 13:16:54 +0000
-Message-ID: <1532006214-104930-1-git-send-email-weiyongjun1@huawei.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Return-Path: <SRS0=9Rfz=KK=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=9Rfz=KK=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-eopbgr10041.outbound.protection.outlook.com ([40.107.1.41]:18688
+        "EHLO EUR02-HE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726326AbeGZImY (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 26 Jul 2018 04:42:24 -0400
+From: Federico Vaga <federico.vaga@cern.ch>
+Reply-To: <federico.vaga@cern.ch>
+Subject: Re: [PATCH 1/2] fpga: Document when fpga_blah_free functions should be used
+Date: Thu, 26 Jul 2018 09:26:33 +0200
+Message-ID: <3092191.aOBZP6MEga@pcbe13614>
+In-Reply-To: <20180725181514.3501-1-atull@kernel.org>
+References: <20180725181514.3501-1-atull@kernel.org>
 MIME-Version: 1.0
-To: Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Kang Luwei <luwei.kang@intel.com>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-fpga@vger.kernel.org, kernel-janitors@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 
-In case of error, the function dfl_fme_create_region() returns ERR_PTR()
-and never returns NULL. The NULL test in the return value check should
-be replaced with IS_ERR().
+Hi Alan,
 
-Fixes: 29de76240e86 ("fpga: dfl: fme: add partial reconfiguration sub feature support")
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
----
- drivers/fpga/dfl-fme-pr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+have you considered the possibility of having something like devm_fpga_[mgr|
+bridge|region]_[create|free]() ? Like this, it will be obvious that 'struct 
+fpga_mgr' will be released automatically without reading any comment (but the 
+comment is still good), and you use devm_*_free() only to handle error 
+conditions. 
 
-diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-index fc9fd2d..0b84053 100644
---- a/drivers/fpga/dfl-fme-pr.c
-+++ b/drivers/fpga/dfl-fme-pr.c
-@@ -420,7 +420,7 @@ static int pr_mgmt_init(struct platform_device *pdev,
- 		/* Create region for each port */
- 		fme_region = dfl_fme_create_region(pdata, mgr,
- 						   fme_br->br, i);
--		if (!fme_region) {
-+		if (IS_ERR(fme_region)) {
- 			ret = PTR_ERR(fme_region);
- 			goto destroy_region;
- 		}
+On Wednesday, July 25, 2018 8:15:13 PM CEST Alan Tull wrote:
+> Clarify when fpga_(mgr|bridge|region)_free functions should be used.
+> The class's dev_release will handle cleanup when the device is released
+> so once the mgr/brige/region has been successfully registered, it
+> would be a bug to call fpga_(mgr|bridge|region)_free.
+> 
+> Signed-off-by: Alan Tull <atull@kernel.org>
+> Suggested-by: Florian Fainelli <f.fainelli@gmail.com>
+> Suggested-by: Federico Vaga <federico.vaga@cern.ch>
+> ---
+>  drivers/fpga/fpga-bridge.c | 10 +++++++++-
+>  drivers/fpga/fpga-mgr.c    | 10 +++++++++-
+>  drivers/fpga/fpga-region.c | 10 +++++++++-
+>  3 files changed, 27 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+> index 24b8f98..528d2149 100644
+> --- a/drivers/fpga/fpga-bridge.c
+> +++ b/drivers/fpga/fpga-bridge.c
+> @@ -379,7 +379,11 @@ EXPORT_SYMBOL_GPL(fpga_bridge_create);
+> 
+>  /**
+>   * fpga_bridge_free - free a fpga bridge and its id
+> - * @bridge:	FPGA bridge struct created by fpga_bridge_create
+> + * @bridge:	FPGA bridge struct created by fpga_bridge_create()
+> + *
+> + * Free a FPGA bridge.  This function should only be called for
+> + * freeing a bridge that has not been registered yet (such as in error
+> + * paths in a probe function).
+>   */
+>  void fpga_bridge_free(struct fpga_bridge *bridge)
+>  {
+> @@ -414,6 +418,10 @@ EXPORT_SYMBOL_GPL(fpga_bridge_register);
+>  /**
+>   * fpga_bridge_unregister - unregister and free a fpga bridge
+>   * @bridge:	FPGA bridge struct created by fpga_bridge_create
+> + *
+> + * Unregister the bridge device.  The class's dev_release will handle
+> + * freeing the bridge struct when the device is released so don't
+> + * call fpga_bridge_free() after calling fpga_bridge_unregister().
+>   */
+>  void fpga_bridge_unregister(struct fpga_bridge *bridge)
+>  {
+> diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+> index a41b07e..9632cbd 100644
+> --- a/drivers/fpga/fpga-mgr.c
+> +++ b/drivers/fpga/fpga-mgr.c
+> @@ -619,7 +619,11 @@ EXPORT_SYMBOL_GPL(fpga_mgr_create);
+> 
+>  /**
+>   * fpga_mgr_free - deallocate a FPGA manager
+> - * @mgr:	fpga manager struct created by fpga_mgr_create
+> + * @mgr:	fpga manager struct created by fpga_mgr_create()
+> + *
+> + * Free a FPGA manager struct.  This function should only be called
+> + * for freeing a manager that has not been registered yet (such as in
+> + * error paths in a probe function).
+>   */
+>  void fpga_mgr_free(struct fpga_manager *mgr)
+>  {
+> @@ -663,6 +667,10 @@ EXPORT_SYMBOL_GPL(fpga_mgr_register);
+>  /**
+>   * fpga_mgr_unregister - unregister and free a FPGA manager
+>   * @mgr:	fpga manager struct
+> + *
+> + * Unregister the manager device.  The class's dev_release will handle
+> + * freeing the manager struct when the device is released so don't
+> + * call fpga_mgr_free() after calling fpga_mgr_unregister().
+>   */
+>  void fpga_mgr_unregister(struct fpga_manager *mgr)
+>  {
+> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+> index 0d65220..7335fa9 100644
+> --- a/drivers/fpga/fpga-region.c
+> +++ b/drivers/fpga/fpga-region.c
+> @@ -231,7 +231,11 @@ EXPORT_SYMBOL_GPL(fpga_region_create);
+> 
+>  /**
+>   * fpga_region_free - free a struct fpga_region
+> - * @region: FPGA region created by fpga_region_create
+> + * @region:  FPGA region created by fpga_region_create()
+> + *
+> + * Free a FPGA region struct.  This function should only be called for
+> + * freeing a region that has not been registered yet (such as in error
+> + * paths in a probe function).
+>   */
+>  void fpga_region_free(struct fpga_region *region)
+>  {
+> @@ -255,6 +259,10 @@ EXPORT_SYMBOL_GPL(fpga_region_register);
+>  /**
+>   * fpga_region_unregister - unregister and free a FPGA region
+>   * @region: FPGA region
+> + *
+> + * Unregister the region device.  The class's dev_release will handle
+> + * freeing the region so don't call fpga_region_free() after calling
+> + * fpga_region_unregister().
+>   */
+>  void fpga_region_unregister(struct fpga_region *region)
+>  {
+
+
+
+
