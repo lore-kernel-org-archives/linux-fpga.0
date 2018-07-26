@@ -1,84 +1,72 @@
-Return-Path: <SRS0=P5hi=KC=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=P5hi=KC=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
 From: richard.gong@linux.intel.com
-Subject: [PATCHv7 8/9] Documentation: driver-api: add stratix10 service layer
-Date: Wed, 18 Jul 2018 11:18:43 -0500
-Message-Id: <1531930724-22061-9-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1531930724-22061-1-git-send-email-richard.gong@linux.intel.com>
-References: <1531930724-22061-1-git-send-email-richard.gong@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: [PATCHv8 2/9] arm64: dts: stratix10: add stratix10 service driver binding to base dtsi
+Date: Thu, 26 Jul 2018 11:27:19 -0500
+Message-Id: <1532622446-19663-3-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
+References: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
 To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com, joyce.ooi@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Richard Gong <richard.gong@intel.com>
 
-Add new file stratix10-svc.rst
-Add stratix10-svc.rst to driver-api/index.rst
+Add Intel Stratix10 service layer to the device tree
 
 Signed-off-by: Richard Gong <richard.gong@intel.com>
 Signed-off-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v5: this patch is added in patch set version 5
-v6: no change
+v2: change to put service layer driver node under the firmware node
+    change compatible to "intel, stratix10-svc"
+v3: no change
+v4: s/service driver/stratix10 service driver/ in subject line
+v5: no change
+v6: add Moritz's Acked-by
 v7: no change
+v8: no change
 ---
- Documentation/driver-api/index.rst         |  1 +
- Documentation/driver-api/stratix10-svc.rst | 32 ++++++++++++++++++++++++++++++
- 2 files changed, 33 insertions(+)
- create mode 100644 Documentation/driver-api/stratix10-svc.rst
+ arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/Documentation/driver-api/index.rst b/Documentation/driver-api/index.rst
-index 6d9f2f9..d4d2671 100644
---- a/Documentation/driver-api/index.rst
-+++ b/Documentation/driver-api/index.rst
-@@ -53,6 +53,7 @@ available subsections can be seen below.
-    slimbus
-    soundwire/index
-    fpga/index
-+   stratix10-svc
+diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+index d033da4..ee4715a 100644
+--- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
++++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+@@ -24,6 +24,19 @@
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
  
- .. only::  subproject and html
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		service_reserved: svcbuffer@0 {
++			compatible = "shared-dma-pool";
++			reg = <0x0 0x0 0x0 0x1000000>;
++			alignment = <0x1000>;
++			no-map;
++		};
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -493,5 +506,13 @@
  
-diff --git a/Documentation/driver-api/stratix10-svc.rst b/Documentation/driver-api/stratix10-svc.rst
-new file mode 100644
-index 0000000..ed361d8
---- /dev/null
-+++ b/Documentation/driver-api/stratix10-svc.rst
-@@ -0,0 +1,32 @@
+ 			status = "disabled";
+ 		};
 +
-+Intel Stratix10 SoC Service Layer
-+=================================
-+
-+Some features of the Intel Stratix10 SoC require a level of privilege
-+higher than the kernel is granted. Such secure features include
-+FPGA programming. In terms of the ARMv8 architecture, the kernel runs
-+at Exception Level 1 (EL1), access to the features requires
-+Exception Level 3 (EL3).
-+
-+The Intel Stratix10 SoC service layer provides an in kernel API for
-+drivers to request access to the secure features. The requests are queued
-+and processed one by one. ARM’s SMCCC is used to pass the execution
-+of the requests on to a secure monitor (EL3).
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_command_code
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_client_msg
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_command_reconfig_payload
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_cb_data
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_client
-+
-+.. kernel-doc:: drivers/misc/stratix10-svc.c
-+   :export:
++		firmware {
++			svc {
++				compatible = "intel,stratix10-svc";
++				method = "smc";
++				memory-region = <&service_reserved>;
++			};
++		};
+ 	};
+ };
 -- 
 2.7.4
