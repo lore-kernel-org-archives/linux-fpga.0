@@ -1,190 +1,64 @@
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=JwJD=I6=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v6 20/29] fpga: dfl: add fpga bridge platform driver for FME
-Date: Tue, 12 Jun 2018 18:10:34 +0800
-Message-Id: <1528798243-2029-21-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-References: <1528798243-2029-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, luwei.kang@intel.com, yi.z.zhang@intel.com, hao.wu@intel.com, Tim Whisonant <tim.whisonant@intel.com>, Enno Luebbers <enno.luebbers@intel.com>, Shiva Rao <shiva.rao@intel.com>, Christopher Rauer <christopher.rauer@intel.com>
+Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv8 5/9] arm64: dts: stratix10: add fpga manager and region
+Date: Thu, 26 Jul 2018 11:27:22 -0500
+Message-Id: <1532622446-19663-6-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
+References: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
+To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com, joyce.ooi@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds fpga bridge platform driver for FPGA Management Engine.
-It implements the enable_set callback for fpga bridge.
+From: Alan Tull <atull@kernel.org>
 
-Signed-off-by: Tim Whisonant <tim.whisonant@intel.com>
-Signed-off-by: Enno Luebbers <enno.luebbers@intel.com>
-Signed-off-by: Shiva Rao <shiva.rao@intel.com>
-Signed-off-by: Christopher Rauer <christopher.rauer@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v3: rename driver to fpga-dfl-fme-br
-    remove useless dev_dbg in probe function.
-    rebased due to fpga api change.
-v4: rename to dfl-fme-br and fix SPDX license issue
-    include dfl-fme-pr.h instead of dfl-fme.h
-    add Acked-by from Alan and Moritz
-v5: rebase due to API changes.
-    defer port and its ops finding when really need.
-v6: reabse, and fix copyright time.
----
- drivers/fpga/Kconfig      |   6 +++
- drivers/fpga/Makefile     |   1 +
- drivers/fpga/dfl-fme-br.c | 114 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 121 insertions(+)
- create mode 100644 drivers/fpga/dfl-fme-br.c
+Add the Stratix10 FPGA manager and a FPGA region to the
+device tree.
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index ca97f3c..c933d67 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -162,6 +162,12 @@ config FPGA_DFL_FME_MGR
- 	help
- 	  Say Y to enable FPGA Manager driver for FPGA Management Engine.
+Signed-off-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Richard Gong <richard.gong@intel.com>
+---
+v2: this patch is added in patch set version 2
+v3: change to put fpga_mgr node under firmware/svc node
+v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
+    add Richard's signed-off-by
+v5: no change
+v6: no change
+v7: no change
+v8: no change
+---
+ arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+index ee4715a..0b20209 100644
+--- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
++++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+@@ -106,6 +106,14 @@
+ 		interrupt-parent = <&intc>;
+ 		ranges = <0 0 0 0xffffffff>;
  
-+config FPGA_DFL_FME_BRIDGE
-+	tristate "FPGA DFL FME Bridge Driver"
-+	depends on FPGA_DFL_FME
-+	help
-+	  Say Y to enable FPGA Bridge driver for FPGA Management Engine.
++		base_fpga_region {
++			#address-cells = <0x1>;
++			#size-cells = <0x1>;
 +
- config FPGA_DFL_PCI
- 	tristate "FPGA DFL PCIe Device Driver"
- 	depends on PCI && FPGA_DFL
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 23f41b0..cda0551 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -33,6 +33,7 @@ obj-$(CONFIG_OF_FPGA_REGION)		+= of-fpga-region.o
- obj-$(CONFIG_FPGA_DFL)			+= dfl.o
- obj-$(CONFIG_FPGA_DFL_FME)		+= dfl-fme.o
- obj-$(CONFIG_FPGA_DFL_FME_MGR)		+= dfl-fme-mgr.o
-+obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= dfl-fme-br.o
- 
- dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
- 
-diff --git a/drivers/fpga/dfl-fme-br.c b/drivers/fpga/dfl-fme-br.c
-new file mode 100644
-index 0000000..7cc041d
---- /dev/null
-+++ b/drivers/fpga/dfl-fme-br.c
-@@ -0,0 +1,114 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * FPGA Bridge Driver for FPGA Management Engine (FME)
-+ *
-+ * Copyright (C) 2017-2018 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Henry Mitchel <henry.mitchel@intel.com>
-+ */
++			compatible = "fpga-region";
++			fpga-mgr = <&fpga_mgr>;
++		};
 +
-+#include <linux/module.h>
-+#include <linux/fpga/fpga-bridge.h>
+ 		clkmgr: clock-controller@ffd10000 {
+ 			compatible = "intel,stratix10-clkmgr";
+ 			reg = <0xffd10000 0x1000>;
+@@ -512,6 +520,10 @@
+ 				compatible = "intel,stratix10-svc";
+ 				method = "smc";
+ 				memory-region = <&service_reserved>;
 +
-+#include "dfl.h"
-+#include "dfl-fme-pr.h"
-+
-+struct fme_br_priv {
-+	struct dfl_fme_br_pdata *pdata;
-+	struct dfl_fpga_port_ops *port_ops;
-+	struct platform_device *port_pdev;
-+};
-+
-+static int fme_bridge_enable_set(struct fpga_bridge *bridge, bool enable)
-+{
-+	struct fme_br_priv *priv = bridge->priv;
-+	struct platform_device *port_pdev;
-+	struct dfl_fpga_port_ops *ops;
-+
-+	if (!priv->port_pdev) {
-+		port_pdev = dfl_fpga_cdev_find_port(priv->pdata->cdev,
-+						    &priv->pdata->port_id,
-+						    dfl_fpga_check_port_id);
-+		if (!port_pdev)
-+			return -ENODEV;
-+
-+		priv->port_pdev = port_pdev;
-+	}
-+
-+	if (priv->port_pdev && !priv->port_ops) {
-+		ops = dfl_fpga_port_ops_get(priv->port_pdev);
-+		if (!ops || !ops->enable_set)
-+			return -ENOENT;
-+
-+		priv->port_ops = ops;
-+	}
-+
-+	return priv->port_ops->enable_set(priv->port_pdev, enable);
-+}
-+
-+static const struct fpga_bridge_ops fme_bridge_ops = {
-+	.enable_set = fme_bridge_enable_set,
-+};
-+
-+static int fme_br_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct fme_br_priv *priv;
-+	struct fpga_bridge *br;
-+	int ret;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->pdata = dev_get_platdata(dev);
-+
-+	br = fpga_bridge_create(dev, "DFL FPGA FME Bridge",
-+				&fme_bridge_ops, priv);
-+	if (!br)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, br);
-+
-+	ret = fpga_bridge_register(br);
-+	if (ret)
-+		fpga_bridge_free(br);
-+
-+	return ret;
-+}
-+
-+static int fme_br_remove(struct platform_device *pdev)
-+{
-+	struct fpga_bridge *br = platform_get_drvdata(pdev);
-+	struct fme_br_priv *priv = br->priv;
-+
-+	fpga_bridge_unregister(br);
-+
-+	if (priv->port_pdev)
-+		put_device(&priv->port_pdev->dev);
-+	if (priv->port_ops)
-+		dfl_fpga_port_ops_put(priv->port_ops);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver fme_br_driver = {
-+	.driver	= {
-+		.name    = DFL_FPGA_FME_BRIDGE,
-+	},
-+	.probe   = fme_br_probe,
-+	.remove  = fme_br_remove,
-+};
-+
-+module_platform_driver(fme_br_driver);
-+
-+MODULE_DESCRIPTION("FPGA Bridge for DFL FPGA Management Engine");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:dfl-fme-bridge");
++				fpga_mgr: fpga-mgr {
++					compatible = "intel,stratix10-soc-fpga-mgr";
++				};
+ 			};
+ 		};
+ 	};
 -- 
-1.8.3.1
+2.7.4
