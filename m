@@ -1,56 +1,85 @@
-Return-Path: <SRS0=ipgG=KP=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=ipgG=KP=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-it0-f50.google.com ([209.85.214.50]:36664 "EHLO
-        mail-it0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732274AbeGaRLu (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 31 Jul 2018 13:11:50 -0400
-Received: by mail-it0-f50.google.com with SMTP id p81-v6so4951220itp.1
-        for <linux-fpga@vger.kernel.org>; Tue, 31 Jul 2018 08:30:59 -0700 (PDT)
+Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=nory=KK=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv8 8/9] Documentation: driver-api: add stratix10 service layer
+Date: Thu, 26 Jul 2018 11:27:25 -0500
+Message-Id: <1532622446-19663-9-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
+References: <1532622446-19663-1-git-send-email-richard.gong@linux.intel.com>
 MIME-Version: 1.0
-From: fei phung <feiphung27@gmail.com>
-Date: Tue, 31 Jul 2018 23:30:58 +0800
-Message-ID: <CAF8QhUgrkjp01eFwTpq2Qn9Hi=-1K_ts-beCMd1DgnbtCOV-LA@mail.gmail.com>
-Subject: pthread, ioctl and kthread
-Content-Type: multipart/alternative; boundary="000000000000c3a95805724d432c"
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-fpga@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com, joyce.ooi@intel.com
+List-ID: <linux-fpga@vger.kernel.org>
 
---000000000000c3a95805724d432c
-Content-Type: text/plain; charset="UTF-8"
+From: Richard Gong <richard.gong@intel.com>
 
-How does pthread_create()
-<https://github.com/promach/riffa/blob/full_duplex/c_c%2B%2B/linux/x64/test_apps/testutil.c#L182-L215>
-calling fpga_ioctl()
-<https://github.com/promach/riffa/blob/full_duplex/driver/linux/riffa_driver.c#L1011-L1027>
-which call kthread_run()
-<http://www.cs.fsu.edu/%7Ecop4610t/lectures/project2/kthreads/kthreads.pdf#page=4>
-appear to you guys ?
+Add new file stratix10-svc.rst
+Add stratix10-svc.rst to driver-api/index.rst
 
-Remember, the code modification work I had done in the github repo
-<https://github.com/promach/riffa/tree/full_duplex> is for transforming the
-code from half-duplex to full-duplex, thus the use of threads.
+Signed-off-by: Richard Gong <richard.gong@intel.com>
+Signed-off-by: Alan Tull <atull@kernel.org>
+---
+v5: this patch is added in patch set version 5
+v6: no change
+v7: no change
+v8: no change
+---
+ Documentation/driver-api/index.rst         |  1 +
+ Documentation/driver-api/stratix10-svc.rst | 32 ++++++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
+ create mode 100644 Documentation/driver-api/stratix10-svc.rst
 
-Could anyone help ? Thanks !!!
-
---000000000000c3a95805724d432c
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">How does <a href=3D"https://github.com/promach/riffa/blob/=
-full_duplex/c_c%2B%2B/linux/x64/test_apps/testutil.c#L182-L215" rel=3D"nofo=
-llow" target=3D"_blank">pthread_create()</a> calling <a href=3D"https://git=
-hub.com/promach/riffa/blob/full_duplex/driver/linux/riffa_driver.c#L1011-L1=
-027" rel=3D"nofollow" target=3D"_blank">fpga_ioctl()</a> which call <a href=
-=3D"http://www.cs.fsu.edu/%7Ecop4610t/lectures/project2/kthreads/kthreads.p=
-df#page=3D4" rel=3D"nofollow" target=3D"_blank">kthread_run()</a> appear to=
- you guys ?<br>
-<br>
-Remember, the <a href=3D"https://github.com/promach/riffa/tree/full_duplex"=
- rel=3D"nofollow" target=3D"_blank">code modification work I had done in th=
-e github repo</a> is for transforming the code from half-duplex to full-dup=
-lex, thus the use of threads.<br>
-<br>
-Could anyone help ? Thanks !!!<br></div>
-
---000000000000c3a95805724d432c--
+diff --git a/Documentation/driver-api/index.rst b/Documentation/driver-api/index.rst
+index 6d9f2f9..d4d2671 100644
+--- a/Documentation/driver-api/index.rst
++++ b/Documentation/driver-api/index.rst
+@@ -53,6 +53,7 @@ available subsections can be seen below.
+    slimbus
+    soundwire/index
+    fpga/index
++   stratix10-svc
+ 
+ .. only::  subproject and html
+ 
+diff --git a/Documentation/driver-api/stratix10-svc.rst b/Documentation/driver-api/stratix10-svc.rst
+new file mode 100644
+index 0000000..ed361d8
+--- /dev/null
++++ b/Documentation/driver-api/stratix10-svc.rst
+@@ -0,0 +1,32 @@
++
++Intel Stratix10 SoC Service Layer
++=================================
++
++Some features of the Intel Stratix10 SoC require a level of privilege
++higher than the kernel is granted. Such secure features include
++FPGA programming. In terms of the ARMv8 architecture, the kernel runs
++at Exception Level 1 (EL1), access to the features requires
++Exception Level 3 (EL3).
++
++The Intel Stratix10 SoC service layer provides an in kernel API for
++drivers to request access to the secure features. The requests are queued
++and processed one by one. ARM’s SMCCC is used to pass the execution
++of the requests on to a secure monitor (EL3).
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_command_code
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_client_msg
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_command_reconfig_payload
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_cb_data
++
++.. kernel-doc:: include/linux/stratix10-svc-client.h
++   :functions: stratix10_svc_client
++
++.. kernel-doc:: drivers/misc/stratix10-svc.c
++   :export:
+-- 
+2.7.4
