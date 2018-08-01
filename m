@@ -1,309 +1,210 @@
-Return-Path: <SRS0=upAy=JU=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=upAy=JU=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-bn3nam01on0046.outbound.protection.outlook.com ([104.47.33.46]:46544
-        "EHLO NAM01-BN3-obe.outbound.protection.outlook.com"
+Return-Path: <SRS0=dfNq=KQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=dfNq=KQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-cys01nam02on0050.outbound.protection.outlook.com ([104.47.37.50]:20992
+        "EHLO NAM02-CY1-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S932204AbeGDGAc (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 4 Jul 2018 02:00:32 -0400
-From: Appana Durga Kedareswara rao <appana.durga.rao@xilinx.com>
-Subject: [RFC PATCH v2 2/2] fpga: zynq-fpga: Add support for readback of configuration registers
-Date: Wed, 4 Jul 2018 11:30:05 +0530
-Message-ID: <1530684005-27343-1-git-send-email-appana.durga.rao@xilinx.com>
+        id S1733166AbeHAHeT (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 1 Aug 2018 03:34:19 -0400
+From: Nava kishore Manne <navam@xilinx.com>
+Subject: RE: [RFC PATCH 2/2] fpga manager: Adding FPGA Manager support for
+ Xilinx zynqmp
+Date: Wed, 1 Aug 2018 05:49:16 +0000
+Message-ID: <MWHPR0201MB3481D2A338A004B2FB17CA61C22D0@MWHPR0201MB3481.namprd02.prod.outlook.com>
+References: <20180801100457.25614-1-nava.manne@xilinx.com>
+ <20180801100457.25614-2-nava.manne@xilinx.com>
+ <MWHPR0201MB34811402926886136673CE68C22E0@MWHPR0201MB3481.namprd02.prod.outlook.com>
+ <CANk1AXQ-qrEKAm9zEs8sVaFNGGFkjCr+npTKUNDXz_bnpL=DQw@mail.gmail.com>
+In-Reply-To: <CANk1AXQ-qrEKAm9zEs8sVaFNGGFkjCr+npTKUNDXz_bnpL=DQw@mail.gmail.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: atull@kernel.org, mdf@kernel.org, michal.simek@xilinx.com, navam@xilinx.com
-Cc: linux-fpga@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kedare06@gmail.com, Appana Durga Kedareswara rao <appana.durga.rao@xilinx.com>
+To: Alan Tull <atull@kernel.org>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, Michal Simek <michals@xilinx.com>, Soren Brinkmann <sorenb@xilinx.com>, "atull@opensource.altera.com" <atull@opensource.altera.com>, "moritz.fischer@ettus.com" <moritz.fischer@ettus.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Appana Durga Kedareswara Rao <appanad@xilinx.com>, "chinnikishore369@gmail.com" <chinnikishore369@gmail.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
 
-This patch adds support for Read-back of
-configuration registers in zynq.
-
-Signed-off-by: Appana Durga Kedareswara rao <appana.durga.rao@xilinx.com>
----
-Changes for v2:
---> Removed locks from the read ops as
-lock handling is done in the framework.
-
- drivers/fpga/zynq-fpga.c | 245 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 245 insertions(+)
-
-diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
-index 70b15b3..b56a6c6 100644
---- a/drivers/fpga/zynq-fpga.c
-+++ b/drivers/fpga/zynq-fpga.c
-@@ -127,6 +127,49 @@
- /* Disable global resets */
- #define FPGA_RST_NONE_MASK		0x0
- 
-+/* Configuration Registers */
-+#define TYPE1_CRC_OFFSET	0x0
-+#define TYPE1_FAR_OFFSET	0x1
-+#define TYPE1_FDRI_OFFSET	0x2
-+#define TYPE1_FDRO_OFFSET	0x3
-+#define TYPE1_CMD_OFFSET	0x4
-+#define TYPE1_CTRL0_OFFSET	0x5
-+#define TYPE1_MASK_OFFSET	0x6
-+#define TYPE1_STAT_OFFSET	0x7
-+#define TYPE1_LOUT_OFFSET	0x8
-+#define TYPE1_COR0_OFFSET	0x9
-+#define TYPE1_MFWR_OFFSET	0xa
-+#define TYPE1_CBC_OFFSET	0xb
-+#define TYPE1_IDCODE_OFFSET	0xc
-+#define TYPE1_AXSS_OFFSET	0xd
-+#define TYPE1_COR1_OFFSET	0xe
-+#define TYPE1_WBSTR_OFFSET	0x10
-+#define TYPE1_TIMER_OFFSET	0x11
-+#define TYPE1_BOOTSTS_OFFSET	0x16
-+#define TYPE1_CTRL1_OFFSET	0x18
-+#define TYPE1_BSPI_OFFSET	0x1f
-+
-+/* Masks for Configuration registers */
-+#define RCFG_CMD_MASK		0x00000004
-+#define START_CMD_MASK		0x00000005
-+#define RCRC_CMD_MASK		0x00000007
-+#define SHUTDOWN_CMD_MASK	0x0000000B
-+#define DESYNC_WORD_MASK	0x0000000D
-+#define BUSWIDTH_SYNCWORD_MASK	0x000000BB
-+#define NOOP_WORD_MASK		0x20000000
-+#define BUSWIDTH_DETECT_MASK	0x11220044
-+#define SYNC_WORD_MASK		0xAA995566
-+#define DUMMY_WORD_MASK		0xFFFFFFFF
-+
-+#define TYPE1_HDR_SHIFT		29
-+#define TYPE1_REG_SHIFT		13
-+#define TYPE1_OP_SHIFT		27
-+#define TYPE1_OPCODE_NOOP	0
-+#define TYPE1_OPCODE_READ	1
-+#define TYPE1_OPCODE_WRITE	2
-+
-+#define CFGREG_SRCDMA_SIZE	0x40
-+
- struct zynq_fpga_priv {
- 	int irq;
- 	struct clk *clk;
-@@ -164,6 +207,15 @@ static inline void zynq_fpga_set_irq(struct zynq_fpga_priv *priv, u32 enable)
- 	zynq_fpga_write(priv, INT_MASK_OFFSET, ~enable);
- }
- 
-+static void zynq_fpga_dma_xfer(struct zynq_fpga_priv *priv, u32 srcaddr,
-+			       u32 srclen, u32 dstaddr, u32 dstlen)
-+{
-+	zynq_fpga_write(priv, DMA_SRC_ADDR_OFFSET, srcaddr);
-+	zynq_fpga_write(priv, DMA_DST_ADDR_OFFSET, dstaddr);
-+	zynq_fpga_write(priv, DMA_SRC_LEN_OFFSET, srclen);
-+	zynq_fpga_write(priv, DMA_DEST_LEN_OFFSET, dstlen);
-+}
-+
- /* Must be called with dma_lock held */
- static void zynq_step_dma(struct zynq_fpga_priv *priv)
- {
-@@ -546,12 +598,205 @@ static enum fpga_mgr_states zynq_fpga_ops_state(struct fpga_manager *mgr)
- 	return FPGA_MGR_STATE_UNKNOWN;
- }
- 
-+static int zynq_type1_pkt(u8 reg, u8 opcode, u16 size)
-+{
-+	/*
-+	 * Type 1 Packet Header Format
-+	 * The header section is always a 32-bit word.
-+	 *
-+	 * HeaderType | Opcode | Register Address | Reserved | Word Count
-+	 * [31:29]      [28:27]         [26:13]      [12:11]     [10:0]
-+	 * --------------------------------------------------------------
-+	 *   001          xx      RRRRRRRRRxxxxx        RR      xxxxxxxxxxx
-+	 *
-+	 * @R: means the bit is not used and reserved for future use.
-+	 * The reserved bits should be written as 0s.
-+	 *
-+	 * Generating the Type 1 packet header which involves sifting of Type1
-+	 * Header Mask, Register value and the OpCode which is 01 in this case
-+	 * as only read operation is to be carried out and then performing OR
-+	 * operation with the Word Length.
-+	 */
-+	return (((1 << TYPE1_HDR_SHIFT) |
-+		(reg << TYPE1_REG_SHIFT) |
-+		(opcode << TYPE1_OP_SHIFT)) | size);
-+
-+}
-+
-+static int zynq_fpga_getconfigreg(struct fpga_manager *mgr, u8 reg)
-+{
-+	struct zynq_fpga_priv *priv;
-+	int ret = 0, cmdindex, src_offset;
-+	int *srcbuf, *dstbuf;
-+	dma_addr_t src_dma_addr, dst_dma_addr;
-+	u32 status, intr_status;
-+
-+	priv = mgr->priv;
-+
-+	srcbuf = dma_alloc_coherent(mgr->dev.parent, CFGREG_SRCDMA_SIZE,
-+				    &src_dma_addr, GFP_KERNEL);
-+	if (!srcbuf)
-+		return -ENOMEM;
-+
-+	dstbuf = dma_alloc_coherent(mgr->dev.parent, sizeof(dstbuf),
-+				    &dst_dma_addr, GFP_KERNEL);
-+	if (!dstbuf)
-+		goto free_srcbuf;
-+
-+	cmdindex = 0;
-+	srcbuf[cmdindex++] = DUMMY_WORD_MASK;
-+	srcbuf[cmdindex++] = BUSWIDTH_SYNCWORD_MASK;
-+	srcbuf[cmdindex++] = BUSWIDTH_DETECT_MASK;
-+	srcbuf[cmdindex++] = DUMMY_WORD_MASK;
-+	srcbuf[cmdindex++] = SYNC_WORD_MASK;
-+	srcbuf[cmdindex++] = NOOP_WORD_MASK;
-+	srcbuf[cmdindex++] = zynq_type1_pkt(reg, TYPE1_OPCODE_READ, 1);
-+	srcbuf[cmdindex++] = NOOP_WORD_MASK;
-+	srcbuf[cmdindex++] = NOOP_WORD_MASK;
-+
-+	ret = zynq_fpga_poll_timeout(priv, STATUS_OFFSET, status,
-+				     status & STATUS_PCFG_INIT_MASK,
-+				     INIT_POLL_DELAY,
-+				     INIT_POLL_TIMEOUT);
-+	if (ret) {
-+		dev_err(&mgr->dev, "Timeout waiting for PCFG_INIT\n");
-+		goto free_dstbuf;
-+	}
-+
-+	intr_status = zynq_fpga_read(priv, INT_STS_OFFSET);
-+	zynq_fpga_write(priv, INT_STS_OFFSET, IXR_ALL_MASK);
-+
-+	zynq_fpga_dma_xfer(priv, src_dma_addr, cmdindex,
-+			   DMA_INVALID_ADDRESS, 0);
-+	ret = zynq_fpga_poll_timeout(priv, INT_STS_OFFSET, status,
-+				     status & IXR_D_P_DONE_MASK,
-+				     INIT_POLL_DELAY,
-+				     INIT_POLL_TIMEOUT);
-+	if (ret) {
-+		dev_err(&mgr->dev, "Timeout waiting for D_P_DONE\n");
-+		goto free_dstbuf;
-+	}
-+	zynq_fpga_set_irq(priv, intr_status);
-+	zynq_fpga_dma_xfer(priv, DMA_INVALID_ADDRESS, 0, dst_dma_addr, 1);
-+	ret = zynq_fpga_poll_timeout(priv, INT_STS_OFFSET, status,
-+				     status & IXR_DMA_DONE_MASK,
-+				     INIT_POLL_DELAY,
-+				     INIT_POLL_TIMEOUT);
-+	if (ret) {
-+		dev_err(&mgr->dev, "Timeout waiting for DMA DONE\n");
-+		goto free_dstbuf;
-+	}
-+	ret = zynq_fpga_poll_timeout(priv, INT_STS_OFFSET, status,
-+				     status & IXR_D_P_DONE_MASK,
-+				     INIT_POLL_DELAY,
-+				     INIT_POLL_TIMEOUT);
-+	if (ret) {
-+		dev_err(&mgr->dev, "Timeout waiting for D_P_DONE\n");
-+		goto free_dstbuf;
-+	}
-+	src_offset = cmdindex * 4;
-+	cmdindex = 0;
-+	srcbuf[cmdindex++] = zynq_type1_pkt(TYPE1_CMD_OFFSET,
-+					    TYPE1_OPCODE_WRITE, 1);
-+	srcbuf[cmdindex++] = DESYNC_WORD_MASK;
-+	srcbuf[cmdindex++] = NOOP_WORD_MASK;
-+	srcbuf[cmdindex++] = NOOP_WORD_MASK;
-+	zynq_fpga_dma_xfer(priv, src_dma_addr + src_offset, cmdindex,
-+			   DMA_INVALID_ADDRESS, 0);
-+	ret = zynq_fpga_poll_timeout(priv, INT_STS_OFFSET, status,
-+				     status & IXR_DMA_DONE_MASK,
-+				     INIT_POLL_DELAY,
-+				     INIT_POLL_TIMEOUT);
-+	if (ret) {
-+		dev_err(&mgr->dev, "Timeout waiting for DMA DONE\n");
-+		goto free_dstbuf;
-+	}
-+	ret = zynq_fpga_poll_timeout(priv, INT_STS_OFFSET, status,
-+				     status & IXR_D_P_DONE_MASK,
-+				     INIT_POLL_DELAY,
-+				     INIT_POLL_TIMEOUT);
-+	if (ret) {
-+		dev_err(&mgr->dev, "Timeout waiting for D_P_DONE\n");
-+		goto free_dstbuf;
-+	}
-+
-+	ret = *dstbuf;
-+
-+free_dstbuf:
-+	dma_free_coherent(mgr->dev.parent, sizeof(dstbuf), dstbuf,
-+			  dst_dma_addr);
-+free_srcbuf:
-+	dma_free_coherent(mgr->dev.parent, CFGREG_SRCDMA_SIZE, srcbuf,
-+			  src_dma_addr);
-+
-+	return ret;
-+}
-+
-+static int zynq_fpga_ops_read(struct fpga_manager *mgr, struct seq_file *s)
-+{
-+	struct zynq_fpga_priv *priv;
-+	int err;
-+
-+	priv = mgr->priv;
-+
-+	err = clk_enable(priv->clk);
-+	if (err)
-+		return err;
-+
-+	seq_puts(s, "zynq FPGA Configuration register contents are\n");
-+	seq_printf(s, "CRC --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_CRC_OFFSET)));
-+	seq_printf(s, "FAR --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_FAR_OFFSET)));
-+	seq_printf(s, "FDRI --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_FDRI_OFFSET)));
-+	seq_printf(s, "FDRO --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_FDRO_OFFSET)));
-+	seq_printf(s, "CMD --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_CMD_OFFSET)));
-+	seq_printf(s, "CTRL0 --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_CTRL0_OFFSET)));
-+	seq_printf(s, "MASK --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_MASK_OFFSET)));
-+	seq_printf(s, "STAT --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_STAT_OFFSET)));
-+	seq_printf(s, "LOUT --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_LOUT_OFFSET)));
-+	seq_printf(s, "COR0 --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_COR0_OFFSET)));
-+	seq_printf(s, "MFWR --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_MFWR_OFFSET)));
-+	seq_printf(s, "CBC --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_CBC_OFFSET)));
-+	seq_printf(s, "IDCODE --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_IDCODE_OFFSET)));
-+	seq_printf(s, "AXSS --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_AXSS_OFFSET)));
-+	seq_printf(s, "COR1 --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_COR1_OFFSET)));
-+	seq_printf(s, "WBSTR --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_WBSTR_OFFSET)));
-+	seq_printf(s, "TIMER --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_TIMER_OFFSET)));
-+	seq_printf(s, "BOOTSTS --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_BOOTSTS_OFFSET)));
-+	seq_printf(s, "CTRL1 --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_CTRL1_OFFSET)));
-+	seq_printf(s, "BSPI --> \t %x \t\r\n",
-+		   (zynq_fpga_getconfigreg(mgr, TYPE1_BSPI_OFFSET)));
-+
-+	clk_disable(priv->clk);
-+
-+	return 0;
-+}
-+
- static const struct fpga_manager_ops zynq_fpga_ops = {
- 	.initial_header_size = 128,
- 	.state = zynq_fpga_ops_state,
- 	.write_init = zynq_fpga_ops_write_init,
- 	.write_sg = zynq_fpga_ops_write,
- 	.write_complete = zynq_fpga_ops_write_complete,
-+	.read = zynq_fpga_ops_read,
- };
- 
- static int zynq_fpga_probe(struct platform_device *pdev)
--- 
-2.7.4
-
+SGkgQWxhbiBUdWxsLA0KDQpUaGFua3MgZm9yIHRoZSBxdWljayByZXNwb25zZS4NClBsZWFzZSBm
+aW5kIG15IENvbW1lbnRzIGlubGluZS4uLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0t
+DQo+IEZyb206IEFsYW4gVHVsbCBbbWFpbHRvOmF0dWxsQGtlcm5lbC5vcmddDQo+IFNlbnQ6IFR1
+ZXNkYXksIEp1bHkgMzEsIDIwMTggODo1MiBQTQ0KPiBUbzogTmF2YSBraXNob3JlIE1hbm5lIDxu
+YXZhbUB4aWxpbnguY29tPg0KPiBDYzogcm9iaCtkdEBrZXJuZWwub3JnOyBtYXJrLnJ1dGxhbmRA
+YXJtLmNvbTsgTWljaGFsIFNpbWVrDQo+IDxtaWNoYWxzQHhpbGlueC5jb20+OyBTb3JlbiBCcmlu
+a21hbm4gPHNvcmVuYkB4aWxpbnguY29tPjsNCj4gYXR1bGxAb3BlbnNvdXJjZS5hbHRlcmEuY29t
+OyBtb3JpdHouZmlzY2hlckBldHR1cy5jb207DQo+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3Jn
+OyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxA
+dmdlci5rZXJuZWwub3JnOyBBcHBhbmEgRHVyZ2EgS2VkYXJlc3dhcmEgUmFvDQo+IDxhcHBhbmFk
+QHhpbGlueC5jb20+OyBjaGlubmlraXNob3JlMzY5QGdtYWlsLmNvbTsgbGludXgtDQo+IGZwZ2FA
+dmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUkZDIFBBVENIIDIvMl0gZnBnYSBtYW5h
+Z2VyOiBBZGRpbmcgRlBHQSBNYW5hZ2VyIHN1cHBvcnQgZm9yDQo+IFhpbGlueCB6eW5xbXANCj4g
+DQo+IE9uIFR1ZSwgSnVsIDMxLCAyMDE4IGF0IDg6MDggQU0sIE5hdmEga2lzaG9yZSBNYW5uZSA8
+bmF2YW1AeGlsaW54LmNvbT4NCj4gd3JvdGU6DQo+ID4NCj4gPiArQWxhbiBUdWxsLA0KPiANCj4g
+KyBsaW51eC1mcGdhIG1haWxpbmcgbGlzdA0KPiANCj4gSGkgTmF2YSwNCj4gDQo+IFRoYW5rcyBm
+b3Igc3VibWl0dGluZy4NCj4gDQo+IFRoaXMgc2hvdWxkIGJlIG9uIHRoZSBsaW51eC1mcGdhIG1h
+aWxpbmcgbGlzdC4gIFRoZQ0KPiBsaW51eC9zY3JpcHRzL2dldF9tYWludGFpbmVyLnBsIHNjcmlw
+dCB3b3VsZCB0ZWxsIHlvdSB0aGF0Lg0KPiANCkkgaGF2ZSBDcmVhdGVkIHRoaXMgUGF0Y2ggT24g
+TWFzdGVyIEJyYW5jaCB0aGVyZSBnZXRfbWFpbnRhaW5lci5wbCBEb2Vzbid0IGhhdmUgbGludXgt
+ZnBnYSBtYWlsaW5nIGxpc3QuDQpodHRwczovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgv
+a2VybmVsL2dpdC9hdHVsbC9saW51eC1mcGdhLmdpdC8gDQpQbGVhc2Ugc3VnZ2VzdCBhIGJyYW5j
+aCBTbyB3aWxsIGNyZWF0ZSBhIHBhdGNoIG9uIHRvcCBvZiBpdC4NCg0KPiBBbHNvLCBkaWQgeW91
+IHJ1biBjaGVja3BhdGNoLnBsIG9uIHRoZXNlPyA6KSAgSSBlbmNvdXJhZ2UgdXNpbmcgdGhlIC0t
+c3RyaWN0DQo+IHBhcmFtZXRlci4NCj4gDQpXaWxsIEZpeCBpbiB0aGUgbmV4dCB2ZXJzaW9uLg0K
+PiA+DQo+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IE5hdmEga2lz
+aG9yZSBNYW5uZSBbbWFpbHRvOm5hdmEubWFubmVAeGlsaW54LmNvbV0NCj4gPj4gU2VudDogV2Vk
+bmVzZGF5LCBBdWd1c3QgMSwgMjAxOCAzOjM1IFBNDQo+ID4+IFRvOiByb2JoK2R0QGtlcm5lbC5v
+cmc7IG1hcmsucnV0bGFuZEBhcm0uY29tOyBNaWNoYWwgU2ltZWsNCj4gPj4gPG1pY2hhbHNAeGls
+aW54LmNvbT47IFNvcmVuIEJyaW5rbWFubiA8c29yZW5iQHhpbGlueC5jb20+Ow0KPiA+PiBhdHVs
+bEBvcGVuc291cmNlLmFsdGVyYS5jb207IG1vcml0ei5maXNjaGVyQGV0dHVzLmNvbTsgTmF2YSBr
+aXNob3JlDQo+ID4+IE1hbm5lIDxuYXZhbUB4aWxpbnguY29tPjsgZGV2aWNldHJlZUB2Z2VyLmtl
+cm5lbC5vcmc7IGxpbnV4LWFybS0NCj4gPj4ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGxp
+bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEFwcGFuYQ0KPiA+PiBEdXJnYSBLZWRhcmVzd2Fy
+YSBSYW8gPGFwcGFuYWRAeGlsaW54LmNvbT47DQo+ID4+IGNoaW5uaWtpc2hvcmUzNjlAZ21haWwu
+Y29tDQo+ID4+IFN1YmplY3Q6IFtSRkMgUEFUQ0ggMi8yXSBmcGdhIG1hbmFnZXI6IEFkZGluZyBG
+UEdBIE1hbmFnZXIgc3VwcG9ydA0KPiA+PiBmb3IgWGlsaW54IHp5bnFtcA0KPiA+Pg0KPiA+PiBU
+aGlzIHBhdGNoIGFkZHMgRlBHQSBNYW5hZ2VyIHN1cHBvcnQgZm9yIHRoZSBYaWxpbnggWnlucU1w
+IGNoaXAuDQo+ID4+DQo+ID4+IFNpZ25lZC1vZmYtYnk6IE5hdmEga2lzaG9yZSBNYW5uZSA8bmF2
+YS5tYW5uZUB4aWxpbnguY29tPg0KPiA+PiAtLS0NCj4gPj4gIGRyaXZlcnMvZnBnYS9LY29uZmln
+ICAgICAgIHwgICA2ICsrDQo+ID4+ICBkcml2ZXJzL2ZwZ2EvTWFrZWZpbGUgICAgICB8ICAgMSAr
+DQo+ID4+ICBkcml2ZXJzL2ZwZ2EvenlucW1wLWZwZ2EuYyB8IDE2NA0KPiA+PiArKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ID4+ICAzIGZpbGVzIGNoYW5nZWQsIDE3MSBp
+bnNlcnRpb25zKCspDQo+ID4+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9mcGdhL3p5bnFt
+cC1mcGdhLmMNCj4gPj4NCj4gPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZnBnYS9LY29uZmlnIGIv
+ZHJpdmVycy9mcGdhL0tjb25maWcgaW5kZXgNCj4gPj4gY2Q4NDkzNDc3NGNjLi5iODRlMzU1NWIz
+ZTMgMTAwNjQ0DQo+ID4+IC0tLSBhL2RyaXZlcnMvZnBnYS9LY29uZmlnDQo+ID4+ICsrKyBiL2Ry
+aXZlcnMvZnBnYS9LY29uZmlnDQo+ID4+IEBAIC0yNiw2ICsyNiwxMiBAQCBjb25maWcgRlBHQV9N
+R1JfWllOUV9GUEdBDQo+ID4+ICAgICAgIGhlbHANCj4gPj4gICAgICAgICBGUEdBIG1hbmFnZXIg
+ZHJpdmVyIHN1cHBvcnQgZm9yIFhpbGlueCBaeW5xIEZQR0FzLg0KPiA+Pg0KPiA+PiArY29uZmln
+IEZQR0FfTUdSX1pZTlFNUF9GUEdBDQo+ID4+ICsgICAgIHRyaXN0YXRlICJYaWxpbnggWnlucW1w
+IEZQR0EiDQo+ID4+ICsgICAgIGRlcGVuZHMgb24gQVJDSF9aWU5RTVAgfHwgQ09NUElMRV9URVNU
+DQo+ID4+ICsgICAgIGhlbHANCj4gPj4gKyAgICAgICBGUEdBIG1hbmFnZXIgZHJpdmVyIHN1cHBv
+cnQgZm9yIFhpbGlueCBaeW5xTXAgRlBHQXMuDQo+ID4+ICsNCj4gPj4gIGVuZGlmICMgRlBHQQ0K
+PiA+Pg0KPiA+PiAgZW5kbWVudQ0KPiA+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9mcGdhL01ha2Vm
+aWxlIGIvZHJpdmVycy9mcGdhL01ha2VmaWxlIGluZGV4DQo+ID4+IDhkODNmYzZiMTYxMy4uZWY0
+NDQ1MTJjYjAxIDEwMDY0NA0KPiA+PiAtLS0gYS9kcml2ZXJzL2ZwZ2EvTWFrZWZpbGUNCj4gPj4g
+KysrIGIvZHJpdmVycy9mcGdhL01ha2VmaWxlDQo+ID4+IEBAIC04LDMgKzgsNCBAQCBvYmotJChD
+T05GSUdfRlBHQSkgICAgICAgICAgICAgICAgICAgICs9IGZwZ2EtbWdyLm8NCj4gPj4gICMgRlBH
+QSBNYW5hZ2VyIERyaXZlcnMNCj4gPj4gIG9iai0kKENPTkZJR19GUEdBX01HUl9TT0NGUEdBKSAg
+ICAgICAgICAgICAgICs9IHNvY2ZwZ2Eubw0KPiA+PiAgb2JqLSQoQ09ORklHX0ZQR0FfTUdSX1pZ
+TlFfRlBHQSkgICAgICs9IHp5bnEtZnBnYS5vDQo+ID4+ICtvYmotJChDT05GSUdfRlBHQV9NR1Jf
+WllOUU1QX0ZQR0EpICAgKz0genlucW1wLWZwZ2Eubw0KPiA+PiBkaWZmIC0tZ2l0IGEvZHJpdmVy
+cy9mcGdhL3p5bnFtcC1mcGdhLmMgYi9kcml2ZXJzL2ZwZ2EvenlucW1wLWZwZ2EuYw0KPiA+PiBu
+ZXcgZmlsZSBtb2RlIDEwMDY0NCBpbmRleCAwMDAwMDAwMDAwMDAuLmU0MTcyYzNhNjg2OA0KPiA+
+PiAtLS0gL2Rldi9udWxsDQo+ID4+ICsrKyBiL2RyaXZlcnMvZnBnYS96eW5xbXAtZnBnYS5jDQo+
+ID4+IEBAIC0wLDAgKzEsMTY0IEBADQo+ID4+ICsvLyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjog
+R1BMLTIuMCsNCj4gPj4gKy8qDQo+ID4+ICsgKiBDb3B5cmlnaHQgKEMpIDIwMTggWGlsaW54LCBJ
+bmMuDQo+ID4+ICsgKg0KPiANCj4gUGxlYXNlIGRlbGV0ZSB0aGUgdW5uZWNlc3NhcnkgYmxhbmsg
+JyonIGxpbmUgaGVyZS4NCj4gDQpXaWxsIEZpeCBpbiB0aGUgbmV4dCB2ZXJzaW9uLg0KDQo+ID4+
+ICsgKi8NCj4gPj4gKw0KPiA+PiArI2luY2x1ZGUgPGxpbnV4L2RtYS1tYXBwaW5nLmg+DQo+ID4+
+ICsjaW5jbHVkZSA8bGludXgvZnBnYS9mcGdhLW1nci5oPg0KPiA+PiArI2luY2x1ZGUgPGxpbnV4
+L2lvLmg+DQo+ID4+ICsjaW5jbHVkZSA8bGludXgva2VybmVsLmg+DQo+ID4+ICsjaW5jbHVkZSA8
+bGludXgvbW9kdWxlLmg+DQo+ID4+ICsjaW5jbHVkZSA8bGludXgvb2ZfYWRkcmVzcy5oPg0KPiA+
+PiArI2luY2x1ZGUgPGxpbnV4L3N0cmluZy5oPg0KPiA+PiArI2luY2x1ZGUgPGxpbnV4L2Zpcm13
+YXJlL3hpbGlueC96eW5xbXAvZmlybXdhcmUuaD4NCj4gDQo+IEkgZG9uJ3Qgc2VlIHRoaXMgZmly
+bXdhcmUveGlsaW54IGZvbGRlci4gIElzIHRoaXMgZGVwZW5kZW50IG9uIG90aGVyIGNvbW1pdHMg
+dGhhdA0KPiB3ZXJlIHN1Ym1pdHRlZD8gIElmIHNvLCBwbGVhc2Ugbm90ZSB0aGF0IGluIHRoZSBo
+ZWFkZXIuDQo+IA0KVGhpcyAgRHJpdmVyIGhhdmUgYSBkZXBlbmRlbmN5IE9uIGZpcm13YXJlLmgg
+Y3VycmVudGx5IEpvbGx5IFNoYWggaXMgd29ya2luZyBPbiBpdC4NCk9uY2UgaXRzIGdvdCBhY2Nl
+cHRlZCB3aWxsIGFkZCB0aGUgUmVxdWlyZWQgQVBJJ3MgaW4gdGhlIGZpcm13YXJlLmgNCmh0dHBz
+Oi8vbGttbC5vcmcvbGttbC8yMDE4LzcvMTcvMTAzOCANCndpbGwgZml4IHRoaXMgaW4gdGhlIG5l
+eHQgdmVyc2lvbi4NCg0KPiA+PiArDQo+ID4+ICsvKiBDb25zdGFudCBEZWZpbml0aW9ucyAqLw0K
+PiA+PiArI2RlZmluZSBJWFJfRlBHQV9ET05FX01BU0sgICAwWDAwMDAwMDA4VQ0KPiA+PiArI2Rl
+ZmluZSBJWFJfRlBHQV9FTkNSWVBUSU9OX0VOICAgICAgIDB4MDAwMDAwMDhVDQo+ID4+ICsNCj4g
+Pj4gKy8qKg0KPiA+PiArICogc3RydWN0IHp5bnFtcF9mcGdhX3ByaXYgLSBQcml2YXRlIGRhdGEg
+c3RydWN0dXJlDQo+ID4+ICsgKiBAZGV2OiAgICAgRGV2aWNlIGRhdGEgc3RydWN0dXJlDQo+ID4+
+ICsgKiBAZmxhZ3M6ICAgZmxhZ3Mgd2hpY2ggaXMgdXNlZCB0byBpZGVudGlmeSB0aGUgYml0Zmls
+ZSB0eXBlDQo+ID4+ICsgKi8NCj4gPj4gK3N0cnVjdCB6eW5xbXBfZnBnYV9wcml2IHsNCj4gPj4g
+KyAgICAgc3RydWN0IGRldmljZSAqZGV2Ow0KPiA+PiArICAgICB1MzIgZmxhZ3M7DQo+ID4+ICt9
+Ow0KPiA+PiArDQo+ID4+ICtzdGF0aWMgaW50IHp5bnFtcF9mcGdhX29wc193cml0ZV9pbml0KHN0
+cnVjdCBmcGdhX21hbmFnZXIgKm1nciwNCj4gPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgc3RydWN0IGZwZ2FfaW1hZ2VfaW5mbyAqaW5mbywNCj4gPj4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgY29uc3QgY2hhciAqYnVmLCBzaXplX3Qgc2l6ZSkgew0K
+PiANCj4gY2hlY2twYXRjaC5wbCB3b3VsZCBoYXZlIGNvbXBsYWluZWQgYWJvdXQgdGhpczoNCj4g
+RVJST1I6IG9wZW4gYnJhY2UgJ3snIGZvbGxvd2luZyBmdW5jdGlvbiBkZWZpbml0aW9ucyBnbyBv
+biB0aGUgbmV4dCBsaW5lDQo+IA0KV2lsbCBGaXggaW4gdGhlIG5leHQgdmVyc2lvbi4NCg0KPiA+
+PiArICAgICBzdHJ1Y3QgenlucW1wX2ZwZ2FfcHJpdiAqcHJpdjsNCj4gPj4gKw0KPiA+PiArICAg
+ICBwcml2ID0gbWdyLT5wcml2Ow0KPiA+PiArICAgICBwcml2LT5mbGFncyA9IGluZm8tPmZsYWdz
+Ow0KPiA+PiArDQo+ID4+ICsgICAgIHJldHVybiAwOw0KPiA+PiArfQ0KPiA+PiArDQo+ID4+ICtz
+dGF0aWMgaW50IHp5bnFtcF9mcGdhX29wc193cml0ZShzdHJ1Y3QgZnBnYV9tYW5hZ2VyICptZ3Is
+DQo+ID4+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb25zdCBjaGFyICpidWYsIHNp
+emVfdCBzaXplKSB7DQo+ID4+ICsgICAgIHN0cnVjdCB6eW5xbXBfZnBnYV9wcml2ICpwcml2Ow0K
+PiA+PiArICAgICBjaGFyICprYnVmOw0KPiA+PiArICAgICBzaXplX3QgZG1hX3NpemU7DQo+ID4+
+ICsgICAgIGRtYV9hZGRyX3QgZG1hX2FkZHI7DQo+ID4+ICsgICAgIGludCByZXQ7DQo+ID4+ICsg
+ICAgIGNvbnN0IHN0cnVjdCB6eW5xbXBfZWVtaV9vcHMgKmVlbWlfb3BzID0NCj4gPj4genlucW1w
+X3BtX2dldF9lZW1pX29wcygpOw0KPiANCj4gQXBwZWFycyB0byBoYXZlIGEgZGVwZW5kZW5jeSB0
+aGF0IEkgY2FuJ3Qgc2VlIGhlcmUuICBJJ20gbG9va2luZyBhdCB0aGUgY3VycmVudA0KPiBsaW51
+eC1uZXh0L21hc3RlciBicmFuY2ggYW5kIG5vdCBzZWVpbmcgdGhpcyB6eW5xbXBfcG1fZ2V0X2Vl
+bWlfb3BzDQo+IGZ1bmN0aW9uIGFueXdoZXJlLg0KPiANClRoaXMgQVBJIGV4aXN0cyBpbiBmaXJt
+d2FyZS5jIGZpbGUuIEN1cnJlbnRseSBpdCBpcyBpbiB1bmRlciByZXZpZXcuLi4NCiBodHRwczov
+L2xrbWwub3JnL2xrbWwvMjAxOC83LzE3LzEwMzggDQoNCj4gPj4gKw0KPiA+PiArICAgICBpZiAo
+IWVlbWlfb3BzIHx8ICFlZW1pX29wcy0+ZnBnYV9sb2FkKQ0KPiA+PiArICAgICAgICAgICAgIHJl
+dHVybiAtRU5YSU87DQo+ID4+ICsNCj4gPj4gKyAgICAgcHJpdiA9IG1nci0+cHJpdjsNCj4gPj4g
+Kw0KPiA+PiArICAgICBpZiAobWdyLT5mbGFncyAmIElYUl9GUEdBX0VOQ1JZUFRJT05fRU4pDQo+
+ID4+ICsgICAgICAgICAgICAgZG1hX3NpemUgPSBzaXplICsgRU5DUllQVEVEX0tFWV9MRU47DQo+
+ID4+ICsgICAgIGVsc2UNCj4gPj4gKyAgICAgICAgICAgICBkbWFfc2l6ZSA9IHNpemU7DQo+ID4+
+ICsNCj4gPj4gKyAgICAga2J1ZiA9IGRtYV9hbGxvY19jb2hlcmVudChwcml2LT5kZXYsIGRtYV9z
+aXplLCAmZG1hX2FkZHIsDQo+ID4+IEdGUF9LRVJORUwpOw0KPiA+PiArICAgICBpZiAoIWtidWYp
+DQo+ID4+ICsgICAgICAgICAgICAgcmV0dXJuIC1FTk9NRU07DQo+ID4+ICsNCj4gPj4gKyAgICAg
+bWVtY3B5KGtidWYsIGJ1Ziwgc2l6ZSk7DQo+ID4+ICsNCj4gPj4gKyAgICAgaWYgKG1nci0+Zmxh
+Z3MgJiBJWFJfRlBHQV9FTkNSWVBUSU9OX0VOKQ0KPiA+PiArICAgICAgICAgICAgIG1lbWNweShr
+YnVmICsgc2l6ZSwgbWdyLT5rZXksIEVOQ1JZUFRFRF9LRVlfTEVOKTsNCj4gPj4gKw0KPiA+PiAr
+ICAgICB3bWIoKTsgLyogZW5zdXJlIGFsbCB3cml0ZXMgYXJlIGRvbmUgYmVmb3JlIGluaXRpYXRl
+IEZXIGNhbGwgKi8NCj4gPj4gKw0KPiA+PiArICAgICBpZiAobWdyLT5mbGFncyAmIElYUl9GUEdB
+X0VOQ1JZUFRJT05fRU4pDQo+ID4+ICsgICAgICAgICAgICAgcmV0ID0gZWVtaV9vcHMtPmZwZ2Ff
+bG9hZChkbWFfYWRkciwgZG1hX2FkZHIgKyBzaXplLA0KPiA+PiArICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgbWdyLT5mbGFncyk7DQo+ID4+ICsgICAgIGVsc2UNCj4gPj4g
+KyAgICAgICAgICAgICByZXQgPSBlZW1pX29wcy0+ZnBnYV9sb2FkKGRtYV9hZGRyLCBzaXplLCBt
+Z3ItPmZsYWdzKTsNCj4gPj4gKw0KPiA+PiArICAgICBkbWFfZnJlZV9jb2hlcmVudChwcml2LT5k
+ZXYsIGRtYV9zaXplLCBrYnVmLCBkbWFfYWRkcik7DQo+ID4+ICsNCj4gPj4gKyAgICAgcmV0dXJu
+IHJldDsNCj4gPj4gK30NCj4gPj4gKw0KPiA+PiArc3RhdGljIGludCB6eW5xbXBfZnBnYV9vcHNf
+d3JpdGVfY29tcGxldGUoc3RydWN0IGZwZ2FfbWFuYWdlciAqbWdyLA0KPiA+PiArICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RydWN0IGZwZ2FfaW1hZ2VfaW5mbyAqaW5m
+bykNCj4gPj4gK3sNCj4gPj4gKyAgICAgcmV0dXJuIDA7DQo+ID4+ICt9DQo+ID4+ICsNCj4gPj4g
+K3N0YXRpYyBlbnVtIGZwZ2FfbWdyX3N0YXRlcyB6eW5xbXBfZnBnYV9vcHNfc3RhdGUoc3RydWN0
+DQo+ID4+ICtmcGdhX21hbmFnZXINCj4gPj4gKyptZ3IpIHsNCj4gPj4gKyAgICAgdTMyIHN0YXR1
+czsNCj4gPj4gKyAgICAgY29uc3Qgc3RydWN0IHp5bnFtcF9lZW1pX29wcyAqZWVtaV9vcHMgPQ0K
+PiA+PiB6eW5xbXBfcG1fZ2V0X2VlbWlfb3BzKCk7DQo+ID4+ICsNCj4gPj4gKyAgICAgaWYgKCFl
+ZW1pX29wcyB8fCAhZWVtaV9vcHMtPmZwZ2FfZ2V0X3N0YXR1cykNCj4gPj4gKyAgICAgICAgICAg
+ICByZXR1cm4gRlBHQV9NR1JfU1RBVEVfVU5LTk9XTjsNCj4gPj4gKw0KPiA+PiArICAgICBlZW1p
+X29wcy0+ZnBnYV9nZXRfc3RhdHVzKCZzdGF0dXMpOw0KPiA+PiArICAgICBpZiAoc3RhdHVzICYg
+SVhSX0ZQR0FfRE9ORV9NQVNLKQ0KPiA+PiArICAgICAgICAgICAgIHJldHVybiBGUEdBX01HUl9T
+VEFURV9PUEVSQVRJTkc7DQo+ID4+ICsNCj4gPj4gKyAgICAgcmV0dXJuIEZQR0FfTUdSX1NUQVRF
+X1VOS05PV047DQo+ID4+ICt9DQo+ID4+ICsNCj4gPj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgZnBn
+YV9tYW5hZ2VyX29wcyB6eW5xbXBfZnBnYV9vcHMgPSB7DQo+ID4+ICsgICAgIC5zdGF0ZSA9IHp5
+bnFtcF9mcGdhX29wc19zdGF0ZSwNCj4gPj4gKyAgICAgLndyaXRlX2luaXQgPSB6eW5xbXBfZnBn
+YV9vcHNfd3JpdGVfaW5pdCwNCj4gPj4gKyAgICAgLndyaXRlID0genlucW1wX2ZwZ2Ffb3BzX3dy
+aXRlLA0KPiA+PiArICAgICAud3JpdGVfY29tcGxldGUgPSB6eW5xbXBfZnBnYV9vcHNfd3JpdGVf
+Y29tcGxldGUsIH07DQo+ID4+ICsNCj4gPj4gK3N0YXRpYyBpbnQgenlucW1wX2ZwZ2FfcHJvYmUo
+c3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikgew0KPiA+PiArICAgICBzdHJ1Y3QgZGV2aWNl
+ICpkZXYgPSAmcGRldi0+ZGV2Ow0KPiA+PiArICAgICBzdHJ1Y3QgenlucW1wX2ZwZ2FfcHJpdiAq
+cHJpdjsNCj4gPj4gKyAgICAgaW50IGVyciwgcmV0Ow0KPiA+PiArDQo+ID4+ICsgICAgIHByaXYg
+PSBkZXZtX2t6YWxsb2MoZGV2LCBzaXplb2YoKnByaXYpLCBHRlBfS0VSTkVMKTsNCj4gPj4gKyAg
+ICAgaWYgKCFwcml2KQ0KPiA+PiArICAgICAgICAgICAgIHJldHVybiAtRU5PTUVNOw0KPiA+PiAr
+DQo+ID4+ICsgICAgIHByaXYtPmRldiA9IGRldjsNCj4gPj4gKyAgICAgcmV0ID0gZG1hX3NldF9t
+YXNrX2FuZF9jb2hlcmVudCgmcGRldi0+ZGV2LA0KPiA+PiBETUFfQklUX01BU0soNDQpKTsNCj4g
+Pj4gKyAgICAgaWYgKHJldCA8IDApDQo+ID4+ICsgICAgICAgICAgICAgZGV2X2VycihkZXYsICJu
+byB1c2FibGUgRE1BIGNvbmZpZ3VyYXRpb24iKTsNCj4gPj4gKw0KPiA+PiArICAgICBlcnIgPSBm
+cGdhX21ncl9yZWdpc3RlcihkZXYsICJYaWxpbnggWnlucU1QIEZQR0EgTWFuYWdlciIsDQo+ID4+
+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICZ6eW5xbXBfZnBnYV9vcHMsIHByaXYpOw0K
+PiANCj4gVGhlIEFQSSBoYXMgY2hhbmdlZCBpbiA0LjE3IHRvIGJlDQo+IGZwZ2FfbWdyX2NyZWF0
+ZS9mcmVlL3JlZ2lzdGVyL3VucmVnaXN0ZXIuICBQbGVhc2UgbG9vayBhdCBsaW51eC1uZXh0L21h
+c3RlciBmb3INCj4gdGhlIGxhdGVzdC4NCg0KV2lsbCBGaXggaW4gdGhlIG5leHQgdmVyc2lvbi4N
+Cg0KPiANCj4gPj4gKyAgICAgaWYgKGVycikgew0KPiA+PiArICAgICAgICAgICAgIGRldl9lcnIo
+ZGV2LCAidW5hYmxlIHRvIHJlZ2lzdGVyIEZQR0EgbWFuYWdlciIpOw0KPiA+PiArICAgICAgICAg
+ICAgIHJldHVybiBlcnI7DQo+ID4+ICsgICAgIH0NCj4gPj4gKw0KPiA+PiArICAgICByZXR1cm4g
+MDsNCj4gPj4gK30NCj4gPj4gKw0KPiA+PiArc3RhdGljIGludCB6eW5xbXBfZnBnYV9yZW1vdmUo
+c3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikgew0KPiA+PiArICAgICBmcGdhX21ncl91bnJl
+Z2lzdGVyKCZwZGV2LT5kZXYpOw0KPiA+PiArDQo+ID4+ICsgICAgIHJldHVybiAwOw0KPiA+PiAr
+fQ0KPiA+PiArDQo+ID4+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCB6eW5xbXBf
+ZnBnYV9vZl9tYXRjaFtdID0gew0KPiA+PiArICAgICB7IC5jb21wYXRpYmxlID0gInhsbngsenlu
+cW1wLXBjYXAtZnBnYSIsIH0sDQo+ID4+ICsgICAgIHt9LA0KPiA+PiArfTsNCj4gPj4gKw0KPiA+
+PiArTU9EVUxFX0RFVklDRV9UQUJMRShvZiwgenlucW1wX2ZwZ2Ffb2ZfbWF0Y2gpOw0KPiA+PiAr
+DQo+ID4+ICtzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciB6eW5xbXBfZnBnYV9kcml2ZXIg
+PSB7DQo+ID4+ICsgICAgIC5wcm9iZSA9IHp5bnFtcF9mcGdhX3Byb2JlLA0KPiA+PiArICAgICAu
+cmVtb3ZlID0genlucW1wX2ZwZ2FfcmVtb3ZlLA0KPiA+PiArICAgICAuZHJpdmVyID0gew0KPiA+
+PiArICAgICAgICAgICAgIC5uYW1lID0gInp5bnFtcF9mcGdhX21hbmFnZXIiLA0KPiA+PiArICAg
+ICAgICAgICAgIC5vZl9tYXRjaF90YWJsZSA9IG9mX21hdGNoX3B0cih6eW5xbXBfZnBnYV9vZl9t
+YXRjaCksDQo+ID4+ICsgICAgIH0sDQo+ID4+ICt9Ow0KPiA+PiArDQo+ID4+ICttb2R1bGVfcGxh
+dGZvcm1fZHJpdmVyKHp5bnFtcF9mcGdhX2RyaXZlcik7DQo+ID4+ICsNCj4gPj4gK01PRFVMRV9B
+VVRIT1IoIk5hdmEga2lzaG9yZSBNYW5uZSA8bmF2YW1AeGlsaW54LmNvbT4iKTsNCj4gPj4gK01P
+RFVMRV9ERVNDUklQVElPTigiWGlsaW54IFp5bnFNcCBGUEdBIE1hbmFnZXIiKTsNCj4gPj4gK01P
+RFVMRV9MSUNFTlNFKCJHUEwiKTsNCj4gPj4gLS0NCj4gPj4gMi4xOC4wDQo+ID4NCg==
