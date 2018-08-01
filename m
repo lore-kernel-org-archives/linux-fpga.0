@@ -1,98 +1,83 @@
-Return-Path: <SRS0=ek6B=K5=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=ek6B=K5=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-it0-f45.google.com ([209.85.214.45]:39167 "EHLO
-        mail-it0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729443AbeHNHKE (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 14 Aug 2018 03:10:04 -0400
+Return-Path: <SRS0=dfNq=KQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=dfNq=KQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:39432 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2389498AbeHAQgd (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 1 Aug 2018 12:36:33 -0400
 MIME-Version: 1.0
-From: fei phung <feiphung27@gmail.com>
-Date: Tue, 14 Aug 2018 12:24:31 +0800
-Message-ID: <CAF8QhUiCOpbUjzkA_HF+6kFtRTFM254b+Q=AV5QjcJeXTWuDfQ@mail.gmail.com>
-Subject: riffa linux driver modification with round-robin scheduling
+In-Reply-To: <MWHPR0201MB3481D2A338A004B2FB17CA61C22D0@MWHPR0201MB3481.namprd02.prod.outlook.com>
+References: <20180801100457.25614-1-nava.manne@xilinx.com> <20180801100457.25614-2-nava.manne@xilinx.com>
+ <MWHPR0201MB34811402926886136673CE68C22E0@MWHPR0201MB3481.namprd02.prod.outlook.com>
+ <CANk1AXQ-qrEKAm9zEs8sVaFNGGFkjCr+npTKUNDXz_bnpL=DQw@mail.gmail.com> <MWHPR0201MB3481D2A338A004B2FB17CA61C22D0@MWHPR0201MB3481.namprd02.prod.outlook.com>
+From: Alan Tull <atull@kernel.org>
+Date: Wed, 1 Aug 2018 09:49:46 -0500
+Message-ID: <CANk1AXQci08TOVq7TeXXGfMWi8C8o4AGYDJK2Dr-mVgZPqU8bQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 2/2] fpga manager: Adding FPGA Manager support for
+ Xilinx zynqmp
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: linux-fpga@vger.kernel.org, linux-c-programming@vger.kernel.org
+To: Nava kishore Manne <navam@xilinx.com>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, Michal Simek <michals@xilinx.com>, Soren Brinkmann <sorenb@xilinx.com>, "atull@opensource.altera.com" <atull@opensource.altera.com>, "moritz.fischer@ettus.com" <moritz.fischer@ettus.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Appana Durga Kedareswara Rao <appanad@xilinx.com>, "chinnikishore369@gmail.com" <chinnikishore369@gmail.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
 
-For https://paste.ubuntu.com/p/FvgjPns75v/ (modified riffa_driver.c) ,
-why am I having the following error: invalid use of undefined type
-=E2=80=98struct sched_param=E2=80=99 ?
-
-I have included
-https://github.com/promach/riffa/blob/full_duplex/driver/linux/riffa_driver=
-.c#L55-L59
-(sched.h header)
-
-I am trying to make
-https://github.com/promach/riffa/blob/full_duplex/driver/linux/riffa_driver=
-.c#L1011-L1027
-(this un-modified riffa_driver.c) scheduled with round-robin policy
-
-Note: For the riffa_driver.c, please refer to the ubuntu paste.
-Mailing list receivers do not generally favour inline posting of long
-code.
-
->phung@UbuntuHW15:~/Documents/fpga_overlay/riffa/driver/linux$ make clean &=
-& make debug
-> rm -Rf *.ko *.cmd *.o *.so *.so.* .*.cmd Module.symvers Module.markers mo=
-dules.order *.mod.c .tmp_versions
-> Compiling driver for kernel: 4.17.4-041704-generic with the following val=
-ues
->      NAME: 'riffa'
->    MAJNUM: '100'
-> VENDOR_ID0: '10EE'
-> VENDOR_ID1: '1172'
+On Wed, Aug 1, 2018 at 12:49 AM, Nava kishore Manne <navam@xilinx.com> wrote:
+> Hi Alan Tull,
 >
-> sed -i 's/#define MAJOR_NUM [^\n]*/#define MAJOR_NUM 100/g' riffa_driver.=
-h
-> sed -i 's/#define DEVICE_NAME [^\n]*/#define DEVICE_NAME "riffa"/g' riffa=
-_driver.h
-> sed -i 's/#define VENDOR_ID0 [^\n]*/#define VENDOR_ID0 0x10EE/g' riffa_dr=
-iver.h
-> sed -i 's/#define VENDOR_ID1 [^\n]*/#define VENDOR_ID1 0x1172/g' riffa_dr=
-iver.h
-> sed -i 's/#define DEBUG [^\n]*/#define DBUG 1/g' riffa_driver.h
-> sed -i 's/#define DBUG [^\n]*/#define DEBUG 1/g' riffa_driver.h
-> make -C /lib/modules/`uname -r`/build SUBDIRS=3D`pwd` modules
-> make[1]: Entering directory '/usr/src/linux-headers-4.17.4-041704-generic=
-'
->   CC [M]  /home/phung/Documents/fpga_overlay/riffa/driver/linux/riffa_dri=
-ver.o
-> /home/phung/Documents/fpga_overlay/riffa/driver/linux/riffa_driver.c: In =
-function =E2=80=98chnl_recv=E2=80=99:
-> /home/phung/Documents/fpga_overlay/riffa/driver/linux/riffa_driver.c:601:=
-12: error: invalid use of undefined type =E2=80=98struct sched_param=E2=80=
-=99
->   recv_param.sched_priority =3D 1;
->             ^
-> /home/phung/Documents/fpga_overlay/riffa/driver/linux/riffa_driver.c: In =
-function =E2=80=98chnl_send=E2=80=99:
-> /home/phung/Documents/fpga_overlay/riffa/driver/linux/riffa_driver.c:831:=
-12: error: invalid use of undefined type =E2=80=98struct sched_param=E2=80=
-=99
->   send_param.sched_priority =3D 1;
->             ^
-> /home/phung/Documents/fpga_overlay/riffa/driver/linux/riffa_driver.c: At =
-top level:
-> /home/phung/Documents/fpga_overlay/riffa/driver/linux/riffa_driver.c:133:=
-27: error: storage size of =E2=80=98recv_param=E2=80=99 isn=E2=80=99t known
->  static struct sched_param recv_param;
->                            ^~~~~~~~~~
-> /home/phung/Documents/fpga_overlay/riffa/driver/linux/riffa_driver.c:134:=
-27: error: storage size of =E2=80=98send_param=E2=80=99 isn=E2=80=99t known
->  static struct sched_param send_param;
->                            ^~~~~~~~~~
-> scripts/Makefile.build:312: recipe for target '/home/phung/Documents/fpga=
-_overlay/riffa/driver/linux/riffa_driver.o' failed
-> make[2]: *** [/home/phung/Documents/fpga_overlay/riffa/driver/linux/riffa=
-_driver.o] Error 1
-> Makefile:1577: recipe for target '_module_/home/phung/Documents/fpga_over=
-lay/riffa/driver/linux' failed
-> make[1]: *** [_module_/home/phung/Documents/fpga_overlay/riffa/driver/lin=
-ux] Error 2
-> make[1]: Leaving directory '/usr/src/linux-headers-4.17.4-041704-generic'
-> Makefile:94: recipe for target 'riffa.ko' failed
-> make: *** [riffa.ko] Error 2
+> Thanks for the quick response.
+> Please find my Comments inline...
 >
-> phung@UbuntuHW15:~/Documents/fpga_overlay/riffa/driver/linux$
+>> -----Original Message-----
+>> From: Alan Tull [mailto:atull@kernel.org]
+>> Sent: Tuesday, July 31, 2018 8:52 PM
+>> To: Nava kishore Manne <navam@xilinx.com>
+>> Cc: robh+dt@kernel.org; mark.rutland@arm.com; Michal Simek
+>> <michals@xilinx.com>; Soren Brinkmann <sorenb@xilinx.com>;
+>> atull@opensource.altera.com; moritz.fischer@ettus.com;
+>> devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
+>> kernel@vger.kernel.org; Appana Durga Kedareswara Rao
+>> <appanad@xilinx.com>; chinnikishore369@gmail.com; linux-
+>> fpga@vger.kernel.org
+>> Subject: Re: [RFC PATCH 2/2] fpga manager: Adding FPGA Manager support for
+>> Xilinx zynqmp
+>>
+>> On Tue, Jul 31, 2018 at 8:08 AM, Nava kishore Manne <navam@xilinx.com>
+>> wrote:
+>> >
+>> > +Alan Tull,
+>>
+>> + linux-fpga mailing list
+>>
+>> Hi Nava,
+>>
+>> Thanks for submitting.
+>>
+>> This should be on the linux-fpga mailing list.  The
+>> linux/scripts/get_maintainer.pl script would tell you that.
+>>
+> I have Created this Patch On Master Branch there get_maintainer.pl Doesn't have linux-fpga mailing list.
+
+The linux-fpga mailing list has been in MAINTAINERS since v4.9.
+
+> https://git.kernel.org/pub/scm/linux/kernel/git/atull/linux-fpga.git/
+> Please suggest a branch So will create a patch on top of it.
+
+I understand now.  linux-fpga/master is v4.9ish.  I haven't updated
+the master branch it since I cloned the repo, it doesn't have any
+special FPGA development patches, it's just what Linus's master branch
+was when I cloned.  I don't think you can count on any kernel.org's
+master branch to be up to date with Linus other than Linus.  Probably
+because it would be a waste of traffic on kernel.org and you can have
+multiple remotes on your local git repo with Linus being the one that
+contains the one true master branch.
+
+Right now, Linus's master branch has the latest FPGA API, so it would
+be a good one to develop on.
+
+Generally speaking, sometimes there will be some API changes for FPGA
+that are only on linux-next/master.  I spend most of my time
+developing on linux-next/master.  Occasionally that's broken but most
+of the time that works for me.  Or you could use a Linus release tag
+from linus' repo.  Or Linus' master branch.  When submitting, if your
+patches apply cleanly on linux-next/master, that is helpful and good.
+
+Alan
