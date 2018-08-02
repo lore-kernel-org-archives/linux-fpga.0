@@ -1,68 +1,46 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 7/8] docs: fpga: document fpga manager flags
-Date: Tue, 14 Aug 2018 14:15:25 -0500
-Message-Id: <20180814191526.3247-8-atull@kernel.org>
-In-Reply-To: <20180814191526.3247-1-atull@kernel.org>
-References: <20180814191526.3247-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Cc: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, Alan Tull <atull@kernel.org>
+Return-Path: <SRS0=xztf=KR=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=xztf=KR=intel.com=hao.wu@kernel.org>
+Date: Thu, 2 Aug 2018 16:40:42 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH] fpga: dfl: fme: error pointer vs NULL bug
+Message-ID: <20180802084042.GA3280@hao-dev>
+References: <20180802082931.6nfcgaztkxbkrgh7@kili.mountain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20180802082931.6nfcgaztkxbkrgh7@kili.mountain>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Kang Luwei <luwei.kang@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add flags #defines to kerneldoc documentation in a
-useful place.
+On Thu, Aug 02, 2018 at 11:29:31AM +0300, Dan Carpenter wrote:
+> The dfl_fme_create_region() function doesn't return NULL pointers, it
+> returns error pointers.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
----
- Documentation/driver-api/fpga/fpga-mgr.rst |  5 +++++
- include/linux/fpga/fpga-mgr.h              | 18 ++++++++++++------
- 2 files changed, 17 insertions(+), 6 deletions(-)
+Thanks for your patch. But it's the same fixing as below one. :)
 
-diff --git a/Documentation/driver-api/fpga/fpga-mgr.rst b/Documentation/driver-api/fpga/fpga-mgr.rst
-index 431556d..db8885e 100644
---- a/Documentation/driver-api/fpga/fpga-mgr.rst
-+++ b/Documentation/driver-api/fpga/fpga-mgr.rst
-@@ -183,6 +183,11 @@ API for implementing a new FPGA Manager driver
- API for programming an FPGA
- ---------------------------
- 
-+FPGA Manager flags
-+
-+.. kernel-doc:: include/linux/fpga/fpga-mgr.h
-+   :doc: FPGA Manager flags
-+
- .. kernel-doc:: include/linux/fpga/fpga-mgr.h
-    :functions: fpga_image_info
- 
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 1ca02ce..777c502 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -53,12 +53,18 @@ enum fpga_mgr_states {
- 	FPGA_MGR_STATE_OPERATING,
- };
- 
--/*
-- * FPGA Manager flags
-- * FPGA_MGR_PARTIAL_RECONFIG: do partial reconfiguration if supported
-- * FPGA_MGR_EXTERNAL_CONFIG: FPGA has been configured prior to Linux booting
-- * FPGA_MGR_BITSTREAM_LSB_FIRST: SPI bitstream bit order is LSB first
-- * FPGA_MGR_COMPRESSED_BITSTREAM: FPGA bitstream is compressed
-+/**
-+ * DOC: FPGA Manager flags
-+ *
-+ * Flags used in the &fpga_image_info->flags field
-+ *
-+ * %FPGA_MGR_PARTIAL_RECONFIG: do partial reconfiguration if supported
-+ *
-+ * %FPGA_MGR_EXTERNAL_CONFIG: FPGA has been configured prior to Linux booting
-+ *
-+ * %FPGA_MGR_BITSTREAM_LSB_FIRST: SPI bitstream bit order is LSB first
-+ *
-+ * %FPGA_MGR_COMPRESSED_BITSTREAM: FPGA bitstream is compressed
-  */
- #define FPGA_MGR_PARTIAL_RECONFIG	BIT(0)
- #define FPGA_MGR_EXTERNAL_CONFIG	BIT(1)
--- 
-2.7.4
+https://marc.info/?l=linux-fpga&m=153200573532534&w=2
+
+Hao
+
+> 
+> Fixes: 29de76240e86 ("fpga: dfl: fme: add partial reconfiguration sub feature support")
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+> index fc9fd2d0482f..0b840531ef33 100644
+> --- a/drivers/fpga/dfl-fme-pr.c
+> +++ b/drivers/fpga/dfl-fme-pr.c
+> @@ -420,7 +420,7 @@ static int pr_mgmt_init(struct platform_device *pdev,
+>  		/* Create region for each port */
+>  		fme_region = dfl_fme_create_region(pdata, mgr,
+>  						   fme_br->br, i);
+> -		if (!fme_region) {
+> +		if (IS_ERR(fme_region)) {
+>  			ret = PTR_ERR(fme_region);
+>  			goto destroy_region;
+>  		}
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
