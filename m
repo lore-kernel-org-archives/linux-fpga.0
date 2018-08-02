@@ -1,205 +1,152 @@
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv8 9/9] misc: add remote status update client support
-Date: Tue, 28 Aug 2018 08:50:45 -0500
-Message-Id: <1535464245-11638-10-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
-References: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+Return-Path: <SRS0=Jeej=KR=xilinx.com=appanad@kernel.org>
+Return-Path: <SRS0=Jeej=KR=xilinx.com=appanad@kernel.org>
+From: Appana Durga Kedareswara Rao <appanad@xilinx.com>
+Subject: RE: [PATCH v4 1/2] fpga: fpga-mgr: Add readback support
+Date: Thu, 2 Aug 2018 07:04:13 +0000
+Message-ID: 
+ <CY1PR02MB1692A7EAFB0C025B7E9529B9DC2C0@CY1PR02MB1692.namprd02.prod.outlook.com>
+References: <1532672551-22146-1-git-send-email-appana.durga.rao@xilinx.com>
+ <CANk1AXSEWcZ7Oqv5pgpwvJRyyFWk5gPtniXa7T+oe6-uywqEqA@mail.gmail.com>
+In-Reply-To: 
+ <CANk1AXSEWcZ7Oqv5pgpwvJRyyFWk5gPtniXa7T+oe6-uywqEqA@mail.gmail.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Michal Simek <michals@xilinx.com>, "kedare06@gmail.com" <kedare06@gmail.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE  <linux-arm-kernel@lists.infradead.org>, linux-kernel" <linux-kernel@vger.kernel.org>, Nava kishore Manne <navam@xilinx.com>, Ajay Yugalkishore Pandey <APANDEY@xilinx.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
-
-Extend Intel Stratix10 service layer to support the second service layer
-client, Remote Status Update (RSU).
-
-RSU is used to provide our customers with protection against loading bas
-bitstreams onto their devices when those device are booting from flash.
-
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Signed-off-by: Alan Tull <atull@kernel.org>
----
-v7: this patch is added in patch set version 7
-v8: no change
----
- drivers/misc/stratix10-svc.c         | 39 ++++++++++++++++++++++++++++--------
- include/linux/stratix10-smc.h        |  6 ++++++
- include/linux/stratix10-svc-client.h | 20 ++++++++++++++++--
- 3 files changed, 55 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/misc/stratix10-svc.c b/drivers/misc/stratix10-svc.c
-index d552703..82ab423 100644
---- a/drivers/misc/stratix10-svc.c
-+++ b/drivers/misc/stratix10-svc.c
-@@ -35,7 +35,7 @@
-  * timeout is set to 30 seconds (30 * 1000) at Intel Stratix10 SoC.
-  */
- #define SVC_NUM_DATA_IN_FIFO			32
--#define SVC_NUM_CHANNEL				1
-+#define SVC_NUM_CHANNEL				2
- #define FPGA_CONFIG_DATA_CLAIM_TIMEOUT_MS	200
- #define FPGA_CONFIG_STATUS_TIMEOUT_SEC		30
- 
-@@ -270,7 +270,7 @@ static void svc_thread_cmd_config_status(struct stratix10_svc_controller *ctrl,
-  * @cb_data: pointer to callback data structure to service client
-  * @res: result from SMC or HVC call
-  *
-- * Send back the correspond status to the service client (FPGA manager etc).
-+ * Send back the correspond status to the service clients.
-  */
- static void svc_thread_recv_status_ok(struct stratix10_svc_data *p_data,
- 				      struct stratix10_svc_cb_data *cb_data,
-@@ -406,6 +406,16 @@ static int svc_normal_to_secure_thread(void *data)
- 			a1 = 0;
- 			a2 = 0;
- 			break;
-+		case COMMAND_RSU_STATUS:
-+			a0 = INTEL_SIP_SMC_RSU_STATUS;
-+			a1 = 0;
-+			a2 = 0;
-+			break;
-+		case COMMAND_RSU_UPDATE:
-+			a0 = INTEL_SIP_SMC_RSU_UPDATE;
-+			a1 = pdata->arg[0];
-+			a2 = 0;
-+			break;
- 		default:
- 			pr_warn("it shouldn't happen\n");
- 			break;
-@@ -422,6 +432,19 @@ static int svc_normal_to_secure_thread(void *data)
- 			 (unsigned int)res.a1, (unsigned int)res.a2);
- 		pr_debug(" res.a3=0x%016x\n", (unsigned int)res.a3);
- 
-+		if (pdata->command == COMMAND_RSU_STATUS) {
-+			if (res.a0 == INTEL_SIP_SMC_RSU_ERROR)
-+				cbdata->status = BIT(SVC_STATUS_RSU_ERROR);
-+			else
-+				cbdata->status = BIT(SVC_STATUS_RSU_OK);
-+
-+			cbdata->kaddr1 = &res;
-+			cbdata->kaddr2 = NULL;
-+			cbdata->kaddr3 = NULL;
-+			pdata->chan->scl->receive_cb(pdata->chan->scl, cbdata);
-+			continue;
-+		}
-+
- 		switch (res.a0) {
- 		case INTEL_SIP_SMC_STATUS_OK:
- 			svc_thread_recv_status_ok(pdata, cbdata, res);
-@@ -445,12 +468,7 @@ static int svc_normal_to_secure_thread(void *data)
- 			pr_debug("%s: STATUS_REJECTED\n", __func__);
- 			break;
- 		case INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR:
--			pr_err("%s: STATUS_ERROR\n", __func__);
--			cbdata->status = BIT(SVC_STATUS_RECONFIG_ERROR);
--			cbdata->kaddr1 = NULL;
--			cbdata->kaddr2 = NULL;
--			cbdata->kaddr3 = NULL;
--			pdata->chan->scl->receive_cb(pdata->chan->scl, cbdata);
-+			svc_thread_recv_status_err(pdata, cbdata, res);
- 			break;
- 		default:
- 			pr_warn("it shouldn't happen\n");
-@@ -971,6 +989,11 @@ static int stratix10_svc_drv_probe(struct platform_device *pdev)
- 	chans[0].name = SVC_CLIENT_FPGA;
- 	spin_lock_init(&chans[0].lock);
- 
-+	chans[1].scl = NULL;
-+	chans[1].ctrl = controller;
-+	chans[1].name = SVC_CLIENT_RSU;
-+	spin_lock_init(&chans[1].lock);
-+
- 	list_add_tail(&controller->node, &svc_ctrl);
- 	platform_set_drvdata(pdev, controller);
- 
-diff --git a/include/linux/stratix10-smc.h b/include/linux/stratix10-smc.h
-index 14c7223..5be5dab 100644
---- a/include/linux/stratix10-smc.h
-+++ b/include/linux/stratix10-smc.h
-@@ -67,6 +67,12 @@
-  *
-  * INTEL_SIP_SMC_FPGA_CONFIG_STATUS_ERROR:
-  * There is error during the FPGA configuration process.
-+ *
-+ * INTEL_SIP_SMC_REG_ERROR:
-+ * There is error during a read or write operation of the protected registers.
-+ *
-+ * INTEL_SIP_SMC_RSU_ERROR:
-+ * There is error during a remote status update.
-  */
- #define INTEL_SIP_SMC_RETURN_UNKNOWN_FUNCTION		0xFFFFFFFF
- #define INTEL_SIP_SMC_STATUS_OK				0x0
-diff --git a/include/linux/stratix10-svc-client.h b/include/linux/stratix10-svc-client.h
-index 4e5f0af..f7b09e3 100644
---- a/include/linux/stratix10-svc-client.h
-+++ b/include/linux/stratix10-svc-client.h
-@@ -10,8 +10,10 @@
-  * Service layer driver supports client names
-  *
-  * fpga: for FPGA configuration
-+ * rsu: for remote status update
-  */
- #define SVC_CLIENT_FPGA			"fpga"
-+#define SVC_CLIENT_RSU			"rsu"
- 
- /**
-  * Status of the sent command, in bit number
-@@ -36,6 +38,9 @@
-  *
-  * SVC_COMMAND_STATUS_RECONFIG_ERROR:
-  * Error encountered during FPGA configuration.
-+ *
-+ * SVC_STATUS_RSU_OK:
-+ * Secure firmware accepts the request of remote status update (RSU).
-  */
- #define SVC_STATUS_RECONFIG_REQUEST_OK		0
- #define SVC_STATUS_RECONFIG_BUFFER_SUBMITTED	1
-@@ -43,7 +48,8 @@
- #define SVC_STATUS_RECONFIG_COMPLETED		3
- #define SVC_STATUS_RECONFIG_BUSY		4
- #define SVC_STATUS_RECONFIG_ERROR		5
--
-+#define SVC_STATUS_RSU_OK			6
-+#define SVC_STATUS_RSU_ERROR			7
- /**
-  * Flag bit for COMMAND_RECONFIG
-  *
-@@ -56,9 +62,11 @@
- /**
-  * Timeout settings for service clients:
-  * timeout value used in Stratix10 FPGA manager driver.
-+ * timeout value used in RSU driver
-  */
- #define SVC_RECONFIG_REQUEST_TIMEOUT_MS         100
- #define SVC_RECONFIG_BUFFER_TIMEOUT_MS          240
-+#define SVC_RSU_REQUEST_TIMEOUT_MS              300
- 
- struct stratix10_svc_chan;
- 
-@@ -81,13 +89,21 @@ struct stratix10_svc_chan;
-  * @COMMAND_RECONFIG_STATUS: check the status of the configuration, return
-  * status is SVC_STATUS_RECONFIG_COMPLETED, or  SVC_STATUS_RECONFIG_BUSY, or
-  * SVC_STATUS_RECONFIG_ERROR
-+ *
-+ * @COMMAND_RSU_STATUS: request remote system update boot log, return status
-+ * is log data or SVC_STATUS_RSU_ERROR
-+ *
-+ * @COMMAND_RSU_UPDATE: set the offset of the bitstream to boot after reboot,
-+ * return status is SVC_STATUS_RSU_OK or SVC_STATUS_RSU_ERROR
-  */
- enum stratix10_svc_command_code {
- 	COMMAND_NOOP = 0,
- 	COMMAND_RECONFIG,
- 	COMMAND_RECONFIG_DATA_SUBMIT,
- 	COMMAND_RECONFIG_DATA_CLAIM,
--	COMMAND_RECONFIG_STATUS
-+	COMMAND_RECONFIG_STATUS,
-+	COMMAND_RSU_STATUS,
-+	COMMAND_RSU_UPDATE
- };
- 
- /**
--- 
-2.7.4
+SGkgQWxhbiwNCg0KCVRoYW5rcyBmb3IgdGhlIHJldmlldy4uLiANCg0KPFNuaXA+DQo+IE9uIEZy
+aSwgSnVsIDI3LCAyMDE4IGF0IDE6MjIgQU0sIEFwcGFuYSBEdXJnYSBLZWRhcmVzd2FyYSByYW8N
+Cj4gPGFwcGFuYS5kdXJnYS5yYW9AeGlsaW54LmNvbT4gd3JvdGU6DQo+IA0KPiBIaSBBcHBhbmEs
+DQo+IA0KPiBUaGVyZSBzaG91bGQgYmUgc29tZSBkb2N1bWVudGF0aW9uIGZvciB0aGUgZGVidWdm
+cyBhZGRlZCB1bmRlcg0KPiBEb2N1bWVudGF0aW9uL2RyaXZlci1hcGkvZnBnYS8NCj4gDQo+IEFs
+c28gdGhlcmUgYXJlIGEgbG90IG9mICNpZmRlZnMgdGhhdCB3ZXJlIGFkZGVkIGR1ZSB0byB0aGUN
+Cj4gQ09ORklHX0ZQR0FfTUdSX0RFQlVHX0ZTLiAgVGhpcyBoYXMgY2F1c2VkIGEga2VybmVsIHJv
+Ym90IGNvbXBsYWludC4NCj4gVGhlIHdheSB0byBmaXggdGhhdCBpcyB0byBoYXZlIGEgc2VwYXJh
+dGUgYyBmaWxlIGZvciB0aGUgZGVidWdmcw0KPiBpbXBsZW1lbnRhdGlvbi4gIEkgc2VlIGEgbG90
+IG9mIG90aGVyIGtlcm5lbCBkcml2ZXJzIGhhdmUgZG9uZSBpdCB0aGlzIHdheS4gIEkNCj4gaGF2
+ZSBhbiBpbXBsZW1lbnRhdGlvbiB0aGF0IEkgaGF2ZW4ndCBzdWJtaXR0ZWQgeWV0LCBpdCBleHBv
+c2VzIGRpZmZlcmVudA0KPiBmdW5jdGlvbmFsaXR5IChleHBvc2luZyB0aGUgaW1hZ2UgZmlybXdh
+cmUgZmlsZSBuYW1lIGFuZCB3cml0aW5nIHRvIHRoZQ0KPiBpbWFnZSBmaWxlKS4gIEl0J3Mgb24g
+dGhlIGRvd25zdHJlYW0gZ2l0aHViLmNvbS9hbHRlcmEtb3BlbnNvdXJjZSByZXBvIFsxXS4NCj4g
+SSdsbCBjbGVhbiB0aGlzIHVwIGFuZCBzdWJtaXQgaXQgdG8gdGhlIG1haWxpbmcgbGlzdCwgaXQg
+bWF5IHRha2UgYSBtaW51dGUgZm9yIG1lDQo+IHRvIGdldCB0byB0aGF0Lg0KPiBPbmNlIHRoYXQn
+cyBkb25lLCB5b3VyIGFkZGVkIGZ1bmN0aW9uYWxpdHkgY2FuIGJlIGEgcGF0Y2ggb24gdG9wIG9m
+IHRoYXQuDQoNClNvdW5kcyBnb29kLi4uDQpMZXQgbWUga25vdyBpZiB5b3UgbmVlZCBhbnkgaGVs
+cCBvbiB0ZXN0aW5nIHRoaXMgd2lsbCBkby4NCg0KUmVnYXJkcywNCktlZGFyLg0KPiANCj4gQWxh
+bg0KPiANCj4gWzFdIGh0dHBzOi8vZ2l0aHViLmNvbS9hbHRlcmEtb3BlbnNvdXJjZS9saW51eC1z
+b2NmcGdhL2Jsb2Ivc29jZnBnYS0NCj4gNC4xNy9kcml2ZXJzL2ZwZ2EvZnBnYS1tZ3ItZGVidWdm
+cy5jDQo+IGh0dHBzOi8vZ2l0aHViLmNvbS9hbHRlcmEtb3BlbnNvdXJjZS9saW51eC1zb2NmcGdh
+L2Jsb2Ivc29jZnBnYS0NCj4gNC4xNy9kcml2ZXJzL2ZwZ2EvZnBnYS1tZ3ItZGVidWdmcy5oDQo+
+IA0KPiANCj4gPiBJbm9yZGVyIHRvIGRlYnVnIGlzc3VlcyB3aXRoIGZwZ2EncyB1c2VycyB3b3Vs
+ZCBsaWtlIHRvIHJlYWQgdGhlIGZwZ2ENCj4gPiBjb25maWd1cmF0aW9uIGluZm9ybWF0aW9uLg0K
+PiA+IFRoaXMgcGF0Y2ggYWRkcyByZWFkYmFjayBzdXBwb3J0IGZvciBmcGdhIGNvbmZpZ3VyYXRp
+b24gZGF0YSBpbiB0aGUNCj4gPiBmcmFtZXdvcmsgdGhyb3VnaCBkZWJ1Z2ZzIGludGVyZmFjZS4N
+Cj4gPg0KPiA+IFVzYWdlOg0KPiA+ICAgICAgICAgY2F0IC9zeXMva2VybmVsL2RlYnVnL2ZwZ2Ev
+ZnBnYTAvaW1hZ2UNCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEFwcGFuYSBEdXJnYSBLZWRhcmVz
+d2FyYSByYW8NCj4gPiA8YXBwYW5hLmR1cmdhLnJhb0B4aWxpbnguY29tPg0KPiA+IC0tLQ0KPiA+
+IENoYW5nZXMgZm9yIHY0Og0KPiA+IC0tPiBOb25lLg0KPiA+IENoYW5nZXMgZm9yIHYzOg0KPiA+
+IC0tPiBOb25lLg0KPiA+IENoYW5nZXMgZm9yIHYyOg0KPiA+IC0tPiBGaXhlZCBkZWJ1ZyBhdHRy
+aWJ1dGUgcGF0aCBhbmQgbmFtZSBhcyBzdWdnZXN0ZWQgYnkgQWxhbiBBZGQNCj4gPiAtLT4gY29u
+ZmlnIGVudHJ5IGZvciBERUJVRyBhcyBzdWdnZXN0ZWQgYnkgQWxhbiBGaXhlZCB0cml2YWwgY29k
+aW5nDQo+ID4gLS0+IHN0eWxlIGlzc3Vlcy4NCj4gPg0KPiA+ICBkcml2ZXJzL2ZwZ2EvS2NvbmZp
+ZyAgICAgICAgICB8ICA3ICsrKysrDQo+ID4gIGRyaXZlcnMvZnBnYS9mcGdhLW1nci5jICAgICAg
+IHwgNjgNCj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiA+
+ICBpbmNsdWRlL2xpbnV4L2ZwZ2EvZnBnYS1tZ3IuaCB8ICA1ICsrKysNCj4gPiAgMyBmaWxlcyBj
+aGFuZ2VkLCA4MCBpbnNlcnRpb25zKCspDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9m
+cGdhL0tjb25maWcgYi9kcml2ZXJzL2ZwZ2EvS2NvbmZpZyBpbmRleA0KPiA+IDUzZDNmNTUuLjgz
+OGFkNGUgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9mcGdhL0tjb25maWcNCj4gPiArKysgYi9k
+cml2ZXJzL2ZwZ2EvS2NvbmZpZw0KPiA+IEBAIC0xMSw2ICsxMSwxMyBAQCBtZW51Y29uZmlnIEZQ
+R0ENCj4gPg0KPiA+ICBpZiBGUEdBDQo+ID4NCj4gPiArY29uZmlnIEZQR0FfTUdSX0RFQlVHX0ZT
+DQo+ID4gKyAgICAgICB0cmlzdGF0ZSAiRlBHQSBEZWJ1ZyBmcyINCj4gPiArICAgICAgIHNlbGVj
+dCBERUJVR19GUw0KPiA+ICsgICAgICAgaGVscA0KPiA+ICsgICAgICAgICBGUEdBIG1hbmFnZXIg
+ZGVidWcgcHJvdmlkZXMgc3VwcG9ydCBmb3IgcmVhZGluZyBmcGdhDQo+IGNvbmZpZ3VyYXRpb24N
+Cj4gPiArICAgICAgICAgaW5mb3JtYXRpb24uDQo+ID4gKw0KPiA+ICBjb25maWcgRlBHQV9NR1Jf
+U09DRlBHQQ0KPiA+ICAgICAgICAgdHJpc3RhdGUgIkFsdGVyYSBTT0NGUEdBIEZQR0EgTWFuYWdl
+ciINCj4gPiAgICAgICAgIGRlcGVuZHMgb24gQVJDSF9TT0NGUEdBIHx8IENPTVBJTEVfVEVTVCBk
+aWZmIC0tZ2l0DQo+ID4gYS9kcml2ZXJzL2ZwZ2EvZnBnYS1tZ3IuYyBiL2RyaXZlcnMvZnBnYS9m
+cGdhLW1nci5jIGluZGV4DQo+ID4gOTkzOWQyYy4uNGJlYTg2MCAxMDA2NDQNCj4gPiAtLS0gYS9k
+cml2ZXJzL2ZwZ2EvZnBnYS1tZ3IuYw0KPiA+ICsrKyBiL2RyaXZlcnMvZnBnYS9mcGdhLW1nci5j
+DQo+ID4gQEAgLTQ4NCw2ICs0ODQsNDggQEAgdm9pZCBmcGdhX21ncl9wdXQoc3RydWN0IGZwZ2Ff
+bWFuYWdlciAqbWdyKSAgfQ0KPiA+IEVYUE9SVF9TWU1CT0xfR1BMKGZwZ2FfbWdyX3B1dCk7DQo+
+ID4NCj4gPiArI2lmZGVmIENPTkZJR19GUEdBX01HUl9ERUJVR19GUw0KPiA+ICsjaW5jbHVkZSA8
+bGludXgvZGVidWdmcy5oPg0KPiA+ICsNCj4gPiArc3RhdGljIGludCBmcGdhX21ncl9yZWFkKHN0
+cnVjdCBzZXFfZmlsZSAqcywgdm9pZCAqZGF0YSkgew0KPiA+ICsgICAgICAgc3RydWN0IGZwZ2Ff
+bWFuYWdlciAqbWdyID0gKHN0cnVjdCBmcGdhX21hbmFnZXIgKilzLT5wcml2YXRlOw0KPiA+ICsg
+ICAgICAgaW50IHJldCA9IDA7DQo+ID4gKw0KPiA+ICsgICAgICAgaWYgKCFtZ3ItPm1vcHMtPnJl
+YWQpDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiAtRU5PRU5UOw0KPiA+ICsNCj4gPiArICAg
+ICAgIGlmICghbXV0ZXhfdHJ5bG9jaygmbWdyLT5yZWZfbXV0ZXgpKQ0KPiA+ICsgICAgICAgICAg
+ICAgICByZXR1cm4gLUVCVVNZOw0KPiA+ICsNCj4gPiArICAgICAgIGlmIChtZ3ItPnN0YXRlICE9
+IEZQR0FfTUdSX1NUQVRFX09QRVJBVElORykgew0KPiA+ICsgICAgICAgICAgICAgICByZXQgPSAt
+RVBFUk07DQo+ID4gKyAgICAgICAgICAgICAgIGdvdG8gZXJyX3VubG9jazsNCj4gPiArICAgICAg
+IH0NCj4gPiArDQo+ID4gKyAgICAgICAvKiBSZWFkIHRoZSBGUEdBIGNvbmZpZ3VyYXRpb24gZGF0
+YSBmcm9tIHRoZSBmYWJyaWMgKi8NCj4gPiArICAgICAgIHJldCA9IG1nci0+bW9wcy0+cmVhZCht
+Z3IsIHMpOw0KPiA+ICsgICAgICAgaWYgKHJldCkNCj4gPiArICAgICAgICAgICAgICAgZGV2X2Vy
+cigmbWdyLT5kZXYsICJFcnJvciB3aGlsZSByZWFkaW5nIGNvbmZpZ3VyYXRpb24NCj4gPiArIGRh
+dGEgZnJvbSBGUEdBXG4iKTsNCj4gPiArDQo+ID4gK2Vycl91bmxvY2s6DQo+ID4gKyAgICAgICBt
+dXRleF91bmxvY2soJm1nci0+cmVmX211dGV4KTsNCj4gPiArDQo+ID4gKyAgICAgICByZXR1cm4g
+cmV0Ow0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IGZwZ2FfbWdyX3JlYWRfb3Blbihz
+dHJ1Y3QgaW5vZGUgKmlub2RlLCBzdHJ1Y3QgZmlsZSAqZmlsZSkNCj4gPiArew0KPiA+ICsgICAg
+ICAgcmV0dXJuIHNpbmdsZV9vcGVuKGZpbGUsIGZwZ2FfbWdyX3JlYWQsIGlub2RlLT5pX3ByaXZh
+dGUpOyB9DQo+ID4gKw0KPiA+ICtzdGF0aWMgY29uc3Qgc3RydWN0IGZpbGVfb3BlcmF0aW9ucyBm
+cGdhX21ncl9vcHNfaW1hZ2UgPSB7DQo+ID4gKyAgICAgICAub3duZXIgPSBUSElTX01PRFVMRSwN
+Cj4gPiArICAgICAgIC5vcGVuID0gZnBnYV9tZ3JfcmVhZF9vcGVuLA0KPiA+ICsgICAgICAgLnJl
+YWQgPSBzZXFfcmVhZCwNCj4gPiArfTsNCj4gPiArI2VuZGlmDQo+ID4gKw0KPiA+ICAvKioNCj4g
+PiAgICogZnBnYV9tZ3JfbG9jayAtIExvY2sgRlBHQSBtYW5hZ2VyIGZvciBleGNsdXNpdmUgdXNl
+DQo+ID4gICAqIEBtZ3I6ICAgICAgIGZwZ2EgbWFuYWdlcg0KPiA+IEBAIC01ODEsNiArNjIzLDI5
+IEBAIGludCBmcGdhX21ncl9yZWdpc3RlcihzdHJ1Y3QgZGV2aWNlICpkZXYsIGNvbnN0DQo+IGNo
+YXIgKm5hbWUsDQo+ID4gICAgICAgICBpZiAocmV0KQ0KPiA+ICAgICAgICAgICAgICAgICBnb3Rv
+IGVycm9yX2RldmljZTsNCj4gPg0KPiA+ICsjaWZkZWYgQ09ORklHX0ZQR0FfTUdSX0RFQlVHX0ZT
+DQo+ID4gKyAgICAgICBzdHJ1Y3QgZGVudHJ5ICpkLCAqcGFyZW50Ow0KPiA+ICsNCj4gPiArICAg
+ICAgIG1nci0+ZGlyID0gZGVidWdmc19jcmVhdGVfZGlyKCJmcGdhIiwgTlVMTCk7DQo+ID4gKyAg
+ICAgICBpZiAoIW1nci0+ZGlyKQ0KPiA+ICsgICAgICAgICAgICAgICBnb3RvIGVycm9yX2Rldmlj
+ZTsNCj4gPiArDQo+ID4gKyAgICAgICBwYXJlbnQgPSBtZ3ItPmRpcjsNCj4gPiArICAgICAgIGQg
+PSBkZWJ1Z2ZzX2NyZWF0ZV9kaXIobWdyLT5kZXYua29iai5uYW1lLCBwYXJlbnQpOw0KPiA+ICsg
+ICAgICAgaWYgKCFkKSB7DQo+ID4gKyAgICAgICAgICAgICAgIGRlYnVnZnNfcmVtb3ZlX3JlY3Vy
+c2l2ZShwYXJlbnQpOw0KPiA+ICsgICAgICAgICAgICAgICBnb3RvIGVycm9yX2RldmljZTsNCj4g
+PiArICAgICAgIH0NCj4gPiArDQo+ID4gKyAgICAgICBwYXJlbnQgPSBkOw0KPiA+ICsgICAgICAg
+ZCA9IGRlYnVnZnNfY3JlYXRlX2ZpbGUoImltYWdlIiwgMDY0NCwgcGFyZW50LCBtZ3IsDQo+ID4g
+KyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAmZnBnYV9tZ3Jfb3BzX2ltYWdlKTsNCj4g
+PiArICAgICAgIGlmICghZCkgew0KPiA+ICsgICAgICAgICAgICAgICBkZWJ1Z2ZzX3JlbW92ZV9y
+ZWN1cnNpdmUobWdyLT5kaXIpOw0KPiA+ICsgICAgICAgICAgICAgICBnb3RvIGVycm9yX2Rldmlj
+ZTsNCj4gPiArICAgICAgIH0NCj4gPiArI2VuZGlmDQo+ID4gKw0KPiA+ICAgICAgICAgZGV2X2lu
+Zm8oJm1nci0+ZGV2LCAiJXMgcmVnaXN0ZXJlZFxuIiwgbWdyLT5uYW1lKTsNCj4gPg0KPiA+ICAg
+ICAgICAgcmV0dXJuIDA7DQo+ID4gQEAgLTYwNCw2ICs2NjksOSBAQCB2b2lkIGZwZ2FfbWdyX3Vu
+cmVnaXN0ZXIoc3RydWN0IGRldmljZSAqZGV2KQ0KPiA+DQo+ID4gICAgICAgICBkZXZfaW5mbygm
+bWdyLT5kZXYsICIlcyAlc1xuIiwgX19mdW5jX18sIG1nci0+bmFtZSk7DQo+ID4NCj4gPiArI2lm
+ZGVmIENPTkZJR19GUEdBX01HUl9ERUJVR19GUw0KPiA+ICsgICAgICAgZGVidWdmc19yZW1vdmVf
+cmVjdXJzaXZlKG1nci0+ZGlyKTsNCj4gPiArI2VuZGlmDQo+ID4gICAgICAgICAvKg0KPiA+ICAg
+ICAgICAgICogSWYgdGhlIGxvdyBsZXZlbCBkcml2ZXIgcHJvdmlkZXMgYSBtZXRob2QgZm9yIHB1
+dHRpbmcgZnBnYSBpbnRvDQo+ID4gICAgICAgICAgKiBhIGRlc2lyZWQgc3RhdGUgdXBvbiB1bnJl
+Z2lzdGVyLCBkbyBpdC4NCj4gPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9mcGdhL2ZwZ2Et
+bWdyLmgNCj4gPiBiL2luY2x1ZGUvbGludXgvZnBnYS9mcGdhLW1nci5oIGluZGV4IDNjNmRlMjMu
+LmU5ZTE3YTkgMTAwNjQ0DQo+ID4gLS0tIGEvaW5jbHVkZS9saW51eC9mcGdhL2ZwZ2EtbWdyLmgN
+Cj4gPiArKysgYi9pbmNsdWRlL2xpbnV4L2ZwZ2EvZnBnYS1tZ3IuaA0KPiA+IEBAIC0xMTQsNiAr
+MTE0LDcgQEAgc3RydWN0IGZwZ2FfaW1hZ2VfaW5mbyB7DQo+ID4gICAqIEB3cml0ZTogd3JpdGUg
+Y291bnQgYnl0ZXMgb2YgY29uZmlndXJhdGlvbiBkYXRhIHRvIHRoZSBGUEdBDQo+ID4gICAqIEB3
+cml0ZV9zZzogd3JpdGUgdGhlIHNjYXR0ZXIgbGlzdCBvZiBjb25maWd1cmF0aW9uIGRhdGEgdG8g
+dGhlIEZQR0ENCj4gPiAgICogQHdyaXRlX2NvbXBsZXRlOiBzZXQgRlBHQSB0byBvcGVyYXRpbmcg
+c3RhdGUgYWZ0ZXIgd3JpdGluZyBpcyBkb25lDQo+ID4gKyAqIEByZWFkOiBvcHRpb25hbDogcmVh
+ZCBGUEdBIGNvbmZpZ3VyYXRpb24gaW5mb3JtYXRpb24NCj4gPiAgICogQGZwZ2FfcmVtb3ZlOiBv
+cHRpb25hbDogU2V0IEZQR0EgaW50byBhIHNwZWNpZmljIHN0YXRlIGR1cmluZyBkcml2ZXINCj4g
+cmVtb3ZlDQo+ID4gICAqIEBncm91cHM6IG9wdGlvbmFsIGF0dHJpYnV0ZSBncm91cHMuDQo+ID4g
+ICAqDQo+ID4gQEAgLTEzMSw2ICsxMzIsNyBAQCBzdHJ1Y3QgZnBnYV9tYW5hZ2VyX29wcyB7DQo+
+ID4gICAgICAgICBpbnQgKCp3cml0ZV9zZykoc3RydWN0IGZwZ2FfbWFuYWdlciAqbWdyLCBzdHJ1
+Y3Qgc2dfdGFibGUgKnNndCk7DQo+ID4gICAgICAgICBpbnQgKCp3cml0ZV9jb21wbGV0ZSkoc3Ry
+dWN0IGZwZ2FfbWFuYWdlciAqbWdyLA0KPiA+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IHN0cnVjdCBmcGdhX2ltYWdlX2luZm8gKmluZm8pOw0KPiA+ICsgICAgICAgaW50ICgqcmVhZCko
+c3RydWN0IGZwZ2FfbWFuYWdlciAqbWdyLCBzdHJ1Y3Qgc2VxX2ZpbGUgKnMpOw0KPiA+ICAgICAg
+ICAgdm9pZCAoKmZwZ2FfcmVtb3ZlKShzdHJ1Y3QgZnBnYV9tYW5hZ2VyICptZ3IpOw0KPiA+ICAg
+ICAgICAgY29uc3Qgc3RydWN0IGF0dHJpYnV0ZV9ncm91cCAqKmdyb3VwczsgIH07IEBAIC0xNTEs
+NiArMTUzLDkgQEANCj4gPiBzdHJ1Y3QgZnBnYV9tYW5hZ2VyIHsNCj4gPiAgICAgICAgIGVudW0g
+ZnBnYV9tZ3Jfc3RhdGVzIHN0YXRlOw0KPiA+ICAgICAgICAgY29uc3Qgc3RydWN0IGZwZ2FfbWFu
+YWdlcl9vcHMgKm1vcHM7DQo+ID4gICAgICAgICB2b2lkICpwcml2Ow0KPiA+ICsjaWZkZWYgQ09O
+RklHX0ZQR0FfTUdSX0RFQlVHX0ZTDQo+ID4gKyAgICAgICBzdHJ1Y3QgZGVudHJ5ICpkaXI7DQo+
+ID4gKyNlbmRpZg0KPiA+ICB9Ow0KPiA+DQo+ID4gICNkZWZpbmUgdG9fZnBnYV9tYW5hZ2VyKGQp
+IGNvbnRhaW5lcl9vZihkLCBzdHJ1Y3QgZnBnYV9tYW5hZ2VyLCBkZXYpDQo+ID4gLS0NCj4gPiAy
+LjcuNA0KPiA+DQo+ID4gLS0NCj4gPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2Vu
+ZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtZnBnYSINCj4gPiBpbiB0aGUgYm9keSBvZiBh
+IG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlDQo+IG1ham9yZG9tbw0K
+PiA+IGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0K
