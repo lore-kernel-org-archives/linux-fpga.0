@@ -1,34 +1,32 @@
-Return-Path: <SRS0=4jE6=LH=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=4jE6=LH=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 1/2] fpga: of-fpga-region: Use platform_set_drvdata
-Date: Fri, 24 Aug 2018 08:25:12 -0700
-Message-Id: <20180824152513.8336-1-mdf@kernel.org>
-To: hao.wu@intel.com, atull@kernel.org
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <CAF8QhUiCOpbUjzkA_HF+6kFtRTFM254b+Q=AV5QjcJeXTWuDfQ@mail.gmail.com>
+References: <CAF8QhUiCOpbUjzkA_HF+6kFtRTFM254b+Q=AV5QjcJeXTWuDfQ@mail.gmail.com>
+Date: Tue, 14 Aug 2018 11:31:11 -0700
+Message-ID: <CAJYdmeMHjz=9=T=Qvu9eBjBRFkb4YLFdB=9=54yg9wfEbOP9Ww@mail.gmail.com>
+Subject: Re: riffa linux driver modification with round-robin scheduling
+From: Moritz Fischer <moritz.fischer.private@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+To: fei phung <feiphung27@gmail.com>
+Cc: linux-fpga@vger.kernel.org, linux-c-programming@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Use platform_set_drvdata rather than dev_set_drvdata
-to match the platform_get_drvdata in the _remove()
-function of the platform driver.
+Hi Fei,
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
- drivers/fpga/of-fpga-region.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, Aug 13, 2018 at 9:24 PM, fei phung <feiphung27@gmail.com> wrote:
+> For https://paste.ubuntu.com/p/FvgjPns75v/ (modified riffa_driver.c) ,
+> why am I having the following error: invalid use of undefined type
+> =E2=80=98struct sched_param=E2=80=99 ?
+>
+> I have included
+> https://github.com/promach/riffa/blob/full_duplex/driver/linux/riffa_driv=
+er.c#L55-L59
+> (sched.h header)
 
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 35fabb8083fb..8c6120e30930 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -421,7 +421,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 		goto eprobe_free;
- 
- 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
--	dev_set_drvdata(dev, region);
-+	platform_set_drvdata(pdev, region);
- 
- 	dev_info(dev, "FPGA Region probed\n");
- 
--- 
-2.18.0
+This list is not really associated with the riffa project. I don't think th=
+is is the right place=20
+to discuss issues in out of tree kernel code.
+
+Thanks,
+
+Moritz
