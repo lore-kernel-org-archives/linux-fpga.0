@@ -1,85 +1,98 @@
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv8 8/9] Documentation: driver-api: add stratix10 service layer
-Date: Tue, 28 Aug 2018 08:50:44 -0500
-Message-Id: <1535464245-11638-9-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
-References: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+In-Reply-To: <3975392.G1LtsYJEZq@harkonnen>
+References: <20180814191526.3247-1-atull@kernel.org> <3975392.G1LtsYJEZq@harkonnen>
+From: Alan Tull <atull@kernel.org>
+Date: Tue, 14 Aug 2018 18:45:24 -0500
+Message-ID: <CANk1AXR=6kEx6gotxPV_E7KyMCD65qpdpJjmpKd4KSw3XrWogw@mail.gmail.com>
+Subject: Re: [PATCH 0/8] fpga: Add managed create in FPGA API
+Content-Type: text/plain; charset="UTF-8"
+To: Federico Vaga <federico.vaga@cern.ch>
+Cc: Moritz Fischer <mdf@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+On Tue, Aug 14, 2018 at 4:44 PM, Federico Vaga <federico.vaga@cern.ch> wrote:
+> Hi Alan,
+>
+> I think you forgot to add:
+>
+> Suggested-by: Federico Vaga <federico.vaga@cern.ch>
+>
+> on patches 2,3,4 which were suggested here
+>
+> https://lkml.org/lkml/2018/7/26/145
+>
+> and patch 8 here:
+>
+> https://lkml.org/lkml/2018/7/18/959
 
-Add new file stratix10-svc.rst
-Add stratix10-svc.rst to driver-api/index.rst
+You are right and I appreciate the suggestions.  I credited you on the
+patch that this replaces [1].  I'll fix this in v2.
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Signed-off-by: Alan Tull <atull@kernel.org>
----
-v5: this patch is added in patch set version 5
-v6: no change
-v7: no change
-v8: no change
----
- Documentation/driver-api/index.rst         |  1 +
- Documentation/driver-api/stratix10-svc.rst | 32 ++++++++++++++++++++++++++++++
- 2 files changed, 33 insertions(+)
- create mode 100644 Documentation/driver-api/stratix10-svc.rst
+Alan
 
-diff --git a/Documentation/driver-api/index.rst b/Documentation/driver-api/index.rst
-index 6d9f2f9..d4d2671 100644
---- a/Documentation/driver-api/index.rst
-+++ b/Documentation/driver-api/index.rst
-@@ -53,6 +53,7 @@ available subsections can be seen below.
-    slimbus
-    soundwire/index
-    fpga/index
-+   stratix10-svc
- 
- .. only::  subproject and html
- 
-diff --git a/Documentation/driver-api/stratix10-svc.rst b/Documentation/driver-api/stratix10-svc.rst
-new file mode 100644
-index 0000000..ed361d8
---- /dev/null
-+++ b/Documentation/driver-api/stratix10-svc.rst
-@@ -0,0 +1,32 @@
-+
-+Intel Stratix10 SoC Service Layer
-+=================================
-+
-+Some features of the Intel Stratix10 SoC require a level of privilege
-+higher than the kernel is granted. Such secure features include
-+FPGA programming. In terms of the ARMv8 architecture, the kernel runs
-+at Exception Level 1 (EL1), access to the features requires
-+Exception Level 3 (EL3).
-+
-+The Intel Stratix10 SoC service layer provides an in kernel API for
-+drivers to request access to the secure features. The requests are queued
-+and processed one by one. ARM’s SMCCC is used to pass the execution
-+of the requests on to a secure monitor (EL3).
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_command_code
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_client_msg
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_command_reconfig_payload
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_cb_data
-+
-+.. kernel-doc:: include/linux/stratix10-svc-client.h
-+   :functions: stratix10_svc_client
-+
-+.. kernel-doc:: drivers/misc/stratix10-svc.c
-+   :export:
--- 
-2.7.4
+[1] https://lkml.org/lkml/2018/7/25/721
+
+>
+> On Tuesday, August 14, 2018 9:15:18 PM CEST Alan Tull wrote:
+>> Fix one functional FPGA bug.
+>>
+>> Implement managed devm_fpga_(mgr|bridge|region)_create() functions.
+>>
+>> More documentation cleanup to make the documentation more helpful
+>> and to emphasize the use of FPGA regions for FPGA programming.
+>>
+>> Fix a few minor documentation corrections.
+>>
+>> Alan Tull (8):
+>>   fpga: do not access region struct after fpga_region_unregister
+>>   fpga: mgr: add devm_fpga_mgr_create
+>>   fpga: bridge: add devm_fpga_bridge_create
+>>   fpga: add devm_fpga_region_create
+>>   dt-bindings: fpga: fix freeze controller compatible in region doc
+>>   fpga: bridge: fix obvious function documentation error
+>>   docs: fpga: document fpga manager flags
+>>   docs: fpga: document programming fpgas using regions
+>>
+>>  .../devicetree/bindings/fpga/fpga-region.txt       |   4 +-
+>>  Documentation/driver-api/fpga/fpga-bridge.rst      |  37 ++-----
+>>  Documentation/driver-api/fpga/fpga-mgr.rst         | 121
+>> +++------------------ Documentation/driver-api/fpga/fpga-programming.rst
+>> | 103 ++++++++++++++++++ Documentation/driver-api/fpga/fpga-region.rst
+>>    |  91 ++++++++-------- Documentation/driver-api/fpga/index.rst
+>>     |   2 +
+>>  drivers/fpga/altera-cvp.c                          |   8 +-
+>>  drivers/fpga/altera-fpga2sdram.c                   |   8 +-
+>>  drivers/fpga/altera-freeze-bridge.c                |  13 +--
+>>  drivers/fpga/altera-hps2fpga.c                     |   7 +-
+>>  drivers/fpga/altera-pr-ip-core.c                   |   9 +-
+>>  drivers/fpga/altera-ps-spi.c                       |  11 +-
+>>  drivers/fpga/dfl-fme-br.c                          |  11 +-
+>>  drivers/fpga/dfl-fme-mgr.c                         |  11 +-
+>>  drivers/fpga/dfl-fme-region.c                      |  10 +-
+>>  drivers/fpga/dfl.c                                 |   6 +-
+>>  drivers/fpga/fpga-bridge.c                         |  74 +++++++++++--
+>>  drivers/fpga/fpga-mgr.c                            |  67 ++++++++++--
+>>  drivers/fpga/fpga-region.c                         |  68 ++++++++++--
+>>  drivers/fpga/ice40-spi.c                           |  10 +-
+>>  drivers/fpga/machxo2-spi.c                         |  11 +-
+>>  drivers/fpga/of-fpga-region.c                      |   9 +-
+>>  drivers/fpga/socfpga-a10.c                         |   5 +-
+>>  drivers/fpga/socfpga.c                             |  10 +-
+>>  drivers/fpga/ts73xx-fpga.c                         |  11 +-
+>>  drivers/fpga/xilinx-pr-decoupler.c                 |   4 +-
+>>  drivers/fpga/xilinx-spi.c                          |  12 +-
+>>  drivers/fpga/zynq-fpga.c                           |   5 +-
+>>  include/linux/fpga/fpga-bridge.h                   |   4 +
+>>  include/linux/fpga/fpga-mgr.h                      |  22 +++-
+>>  include/linux/fpga/fpga-region.h                   |   4 +
+>>  31 files changed, 437 insertions(+), 331 deletions(-)
+>>  create mode 100644 Documentation/driver-api/fpga/fpga-programming.rst
+>
+>
+> --
+> Federico Vaga
+> [BE-CO-HT]
+>
+>
