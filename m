@@ -1,292 +1,257 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <2076282.DFHNtXLtgF@harkonnen>
-References: <4617134.5euanDEBgJ@pcbe13614> <2419388.jt6midSiEu@pcbe13614>
- <CANk1AXSd7V03w=uPuo+HiibxmD9_JwaTZyx4uRJ_OfXB4o-_Cw@mail.gmail.com> <2076282.DFHNtXLtgF@harkonnen>
+In-Reply-To: <ae18c3c0-6ba4-7e9f-9f94-0f8b7cdc8156@infradead.org>
+References: <20180814191526.3247-1-atull@kernel.org> <20180814191526.3247-9-atull@kernel.org>
+ <ae18c3c0-6ba4-7e9f-9f94-0f8b7cdc8156@infradead.org>
 From: Alan Tull <atull@kernel.org>
-Date: Wed, 15 Aug 2018 16:02:12 -0500
-Message-ID: <CANk1AXTWZk2bA2ysK+1ZEMGUo5rd8GaVoRi+MH8Fwsxs1H0RYA@mail.gmail.com>
-Subject: Re: fpga: fpga_mgr_get() buggy ?
+Date: Wed, 15 Aug 2018 11:31:58 -0500
+Message-ID: <CANk1AXSo98Es+tCEx4CPAs=Hg=m6-Q2vAeq0zJBd8XzRs4jf+A@mail.gmail.com>
+Subject: Re: [PATCH 8/8] docs: fpga: document programming fpgas using regions
 Content-Type: text/plain; charset="UTF-8"
-To: Federico Vaga <federico.vaga@cern.ch>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: quoted-printable
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Jonathan Corbet <corbet@lwn.net>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Wed, Jul 18, 2018 at 4:47 PM, Federico Vaga <federico.vaga@cern.ch> wrote:
-> Hi Alan,
->
-> Thanks for your time, comments below
->
-> On Wednesday, July 18, 2018 9:47:24 PM CEST Alan Tull wrote:
->> On Thu, Jun 28, 2018 at 2:50 AM, Federico Vaga <federico.vaga@cern.ch>
-> wrote:
->> > On Wednesday, 27 June 2018 23:23:07 CEST Alan Tull wrote:
->> >> On Wed, Jun 27, 2018 at 4:25 AM, Federico Vaga
->> >
->> > <federico.vaga@cern.ch> wrote:
->> >> > Hi Alan,
->> >> >
->> >> > On Tuesday, 26 June 2018 23:00:46 CEST Alan Tull wrote:
->> >> >> On Fri, Jun 22, 2018 at 2:53 AM, Federico Vaga
->> >> >> <federico.vaga@cern.ch> wrote:
->> >> >>
->> >> >> Hi Federico,
->> >> >>
->> >> >> >> > What is buggy is the function fpga_mgr_get().
->> >> >> >> > That patch has been done to allow multiple FPGA manager
->> >> >> >> > instances
->> >> >> >> > to be linked to the same device (PCI it says). But function
->> >> >> >> > fpga_mgr_get() will return only the first found: what about
->> >> >> >> > the
->> >> >> >> > others?
->>
->> Looking at this further, no code change is needed in the FPGA API to
->> support multiple managers.  A FPGA manager driver is a self-contained
->> platform driver.  The PCI driver for a board that contains multiple
->> FPGAs should create a platform device for each manager and save each
->> of those devs in its pdata.
->>
->> >> >> >> > Then, all load kernel-doc comments says:
->> >> >> >> >
->> >> >> >> > "This code assumes the caller got the mgr pointer from
->> >> >> >> > of_fpga_mgr_get() or fpga_mgr_get()"
->> >> >> >> >
->> >> >> >> > but that function does not allow me to get, for instance,
->> >> >> >> > the
->> >> >> >> > second FPGA manager on my card.
->>
->> fpga_mgr_get() will do what you want if your PCI driver creates a
->> platform device per FPGA manager as mentioned above.
->>
->> >> >> >> > Since, thanks to this patch I'm actually the creator of the
->> >> >> >> > fpga_manager structure,  I do not need to use fpga_mgr_get()
->> >> >> >> > to
->> >> >> >> > retrieve that data structure.
->>
->> The creator of the FPGA mgr structure is the low level FPGA manager
->> driver, not the PCIe driver.
->
-> In my case it is.
-> It's a bit like where SPI driver is the low level FPGA manager driver for
-> the xilinx-spi.c. But if I understand what you mean, I should always have a
-> platform_driver just for the FPGA manager even if it has a 1:1 relation
-> with its carrier? In other words, I write two drivers:
-> - one for the FPGA manager
-> - one for the PCI device that then register the FPGA manager driver
->
-> In my case the FPGA programmed is also the PCIe bridge (GN4124). Probably I
-> can do it anyway, because the part dedicated to FPGA programming is quite
-> independent from the rest (don't remember all details)
->
->> >> >> >> > Despite this, I believe we still need to increment the
->> >> >> >> > module
->> >> >> >> > reference counter (which is done by fpga_mgr_get()).
->>
->> This is only done in the probe function of a FPGA region driver.
->>
->> >> >> >> > We can fix this function by just replacing the argument from
->> >> >> >> > 'device' to 'fpga_manager' (the one returned by create() ).
->> >> >> >>
->> >> >> >> At first thought, that's what I'd want.
->> >> >> >>
->> >> >> >> > Alternatively, we
->> >> >> >> > can add an 'owner' field in "struct fpga_manager_ops" and
->> >> >> >> > 'get'
->> >> >> >> > it
->> >> >> >> > when we use it. Or again, just an 'owner' argument in the
->> >> >> >> > create()
->> >> >> >> > function.
->> >> >> >>
->> >> >> >> It seems like we shouldn't have to do that.
->> >> >> >
->> >> >> > Why?
->> >> >>
->> >> >> OK yes, I agree; the kernel has a lot of examples of doing this.
->> >> >>
->> >> >> I'll have to play with it, I'll probably add the owner arg to the
->> >> >> create function, add owner to struct fpga_manager, and save.
->> >> >
->> >> > I have two though about this.
->> >> >
->> >> > 1. file_operation like approach. The onwer is associated to the
->> >> > FPGA manager operation. Whenever the FPGA manager wants to use an
->> >> > operation it get/put the module owner of these operations
->> >> > (because this is what we need to protect). With this the user is
->> >> > not directly involved, read it as less code, less things to care
->> >> > about. And probably there is no need for fpga_manager_get().
->> >>
->> >> How does try_module_get fit into this scheme?  I think this proposal
->> >> #1 is missing the point of what the reference count increment is
->> >> meant to do.  Or am I misunderstanding?  How does that keep the
->> >> module from being unloaded 1/3 way through programming a FPGA?
->> >> IIUC you are saying that the reference count would be incremented
->> >> before doing the manager ops .write_init, then decremented again
->> >> afterwards, incremented before each call to .write, decremented
->> >> afterwards, then the same for .write_complete.
->> >
->> > I'm not saying to do module_get/put just around the mops->XXX(): it's
->> > too much. Just where you have this comment:
->> >
->> > "This code assumes the caller got the mgr pointer from
->> > of_fpga_mgr_get() or fpga_mgr_get()"
->> >
->> > Because, currently, it's here where we do module_get()
->>
->> No it's not.
->
-> It is not in the code, but the comment says that we should do it before
-> calling fpga_mgr_load()
->
->> fpga_mgr_get() or of_fpga_mgr_get() is called when the region is
->> created such as in of-fpga-region's probe.  That way, as long as the
->> region exists, the manager won't be unloaded.  If someone wants to
->> start unloading modules, they need to unload higher level ones first,
->> so they'll have to unload the region before mgr.
->>
->> > Most mops are invoked within a set of static functions which are
->> > called only by few exported functions. I'm suggesting to do
->> > module_get/put in those exported function at the beginning (get) and
->> > and the end (put) because we know that within these functions, here
->> > and there, we will use mops which are owned by a different module.
->> > We do not want the module owner of the mops to disappear while someone
->> > is doing fpga_mgr_load(). For example, inside fpga_mgr_load() we use
->> > most of the mops, so we 'get' the module at the beginning and 'put' it
->> > at the end. The same for fpga_region_program_fpga().
->>
->> If we do it the way you are suggesting, then someone can unload the
->> manager module without unloading the region.  The region code will be
->> in for a nasty surprise when programming is attempted.
->
-> Of course, this should be taken into account. I was not suggesting a
-> precise implementation, but only the idea to hide get/put. Probably there
-> other things as well that I'm not considering (indeed I do not have a
-> patch, but just a comment)
->
->> > Like this we do not have to ask users to do fpga_mgr_get()/put().
->>
->> The only user who has to do this is a region's probe function.
->>
->> I'm assuming that only fpga_region is using fpga_mgr_load() and
->> anybody who is creating a region uses fpga_region_program_fpga().
->> That's what I want to encourage anyway.  I should probably move
->> fpga_mgr_load to a private header.
->
-> All right, if this is what you want to encourage I do not have anything to
-> say because I did exactly what you do not want to encourage :)
->
-> For me this change everything because I do not use regions since I do not
-> have them. The way the API is exposed to me did not encouraged me to use
-> their API. In addition, the documentation guides me directly to the FPGA
-> manager.
+On Tue, Aug 14, 2018 at 9:40 PM, Randy Dunlap <rdunlap@infradead.org> wrote=
+:
 
-The documentation says:
+Hi Randy,
 
-"If you are adding a new interface to the FPGA framework, add it on
-top of a FPGA region to allow the most reuse of your interface."
+> On 08/14/2018 12:15 PM, Alan Tull wrote:
+>> Clarify the intention that interfaces and upper layers use
+>> regions rather than managers directly.
+>>
+>> Rearrange API documentation to better group the API functions
+>> used to create FPGA mgr/bridge/regions and the API used for
+>> programming FPGAs.
+>>
+>> Signed-off-by: Alan Tull <atull@kernel.org>
+>> ---
+>>  Documentation/driver-api/fpga/fpga-bridge.rst      |  38 ++-----
+>>  Documentation/driver-api/fpga/fpga-mgr.rst         | 117 ++------------=
+-------
+>>  Documentation/driver-api/fpga/fpga-programming.rst | 103 ++++++++++++++=
+++++
+>>  Documentation/driver-api/fpga/fpga-region.rst      |  92 ++++++++------=
+--
+>>  Documentation/driver-api/fpga/index.rst            |   2 +
+>>  5 files changed, 166 insertions(+), 186 deletions(-)
+>>  create mode 100644 Documentation/driver-api/fpga/fpga-programming.rst
+>>
+>
+> Hi,
+> A few comments below...
+>
+>
+>> diff --git a/Documentation/driver-api/fpga/fpga-programming.rst b/Docume=
+ntation/driver-api/fpga/fpga-programming.rst
+>> new file mode 100644
+>> index 0000000..cc34d17
+>> --- /dev/null
+>> +++ b/Documentation/driver-api/fpga/fpga-programming.rst
+>> @@ -0,0 +1,103 @@
+>> +In-kernel API for FPGA Programming
+>> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>> +
+>> +Overview
+>> +--------
+>> +
+>> +The in-kernel API for FPGA programming is a combination of APIs from
+>> +FPGA manager, bridge, and regions.  The actual function used to
+>> +trigger FPGA programming is :c:func:`fpga_region_program_fpga()`.
+>> +
+>> +:c:func:`fpga_region_program_fpga()` uses functionality supplied by
+>> +the FPGA manager and bridges.  It will:
+>> +
+>> + * lock the region's mutex
+>> + * lock the mutex of the region's FPGA manager
+>> + * build a list of FPGA bridges if a method has been specified to do so
+>> + * disable the bridges
+>> + * program the FPGA using info passed in :c:member:`fpga_region->info`.
+>> + * re-enable the bridges
+>> + * release the locks
+>> +
+>> +The struct fpga_image_info specifies what FPGA image to program.  It is=
+ allocated/freed by :c:func:`fpga_image_info_alloc()` and freed with :c:fun=
+c:`fpga_image_info_free()`
+>> +
+>> +How to program an FPGA using a region
+>> +-------------------------------------
+>> +
+>> +When the FPGA region driver probed, it was given a pointer to a FPGA ma=
+nager
+>
+>                                                               to an FPGA
 
-https://www.kernel.org/doc/html/latest/driver-api/fpga/intro.html
-
-But the stuff that I submitted yesterday goes back through the docs to
-clear out anything that is not clear about this.
+Yes
 
 >
-> To be honest I did not have much time to look at the region code. My
-> understanding, after a quick look, is that it works great with device-tree.
+>> +driver so it knows which manager to use.  The region also either has a =
+list of
+>> +bridges to control during programming or it has a pointer to a function=
+ that
+>> +will generate that list.  Here's some sample code of what to do next::
+>> +
+>> +     #include <linux/fpga/fpga-mgr.h>
+>> +     #include <linux/fpga/fpga-region.h>
+>> +
+>> +     struct fpga_image_info *info;
+>> +     int ret;
+>> +
+>> +     /*
+>> +      * First, alloc the struct with information about the FPGA image t=
+o
+>> +      * program.
+>> +      */
+>> +     info =3D fpga_image_info_alloc(dev);
+>> +     if (!info)
+>> +             return -ENOMEM;
+>> +
+>> +     /* Set flags as needed, such as: */
+>> +     info->flags =3D FPGA_MGR_PARTIAL_RECONFIG;
+>> +
+>> +     /*
+>> +      * Indicate where the FPGA image is. This is pseudo-code; you're
+>> +      * going to use one of these three.
+>> +      */
+>> +     if (image is in a scatter gather table) {
+>> +
+>> +             info->sgt =3D [your scatter gather table]
+>> +
+>> +     } else if (image is in a buffer) {
+>> +
+>> +             info->buf =3D [your image buffer]
+>> +             info->count =3D [image buffer size]
+>> +
+>> +     } else if (image is in a firmware file) {
+>> +
+>> +             info->firmware_name =3D devm_kstrdup(dev, firmware_name,
+>> +                                                GFP_KERNEL);
+>> +
+>> +     }
+>> +
+>> +     /* Add info to region and do the programming */
+>> +     region->info =3D info;
+>> +     ret =3D fpga_region_program_fpga(region);
+>> +     if (ret)
+>> +             return ret;
+>> +
+>
+> always deallocate and then do:
+>         if (ret)
+>                 return ret;
+> ?
 
-It is used by the DFL framework which doesn't use device tree.
-
-> But what if I do not have it? Actually, I cannot use device-tree because of
-> environment limitations and Linux version in use. Oops, this implies that I
-> back-ported the FPGA manager to an older Linux version? Yes, guilty :)
-
-I separated region code from its device-tree dependencies.  But if you
-can't use device-tree, then you end up having to implement some of the
-things DT gives you for free.
+Yep, I'll fix it.
 
 >
-> Anyway, I'm using the API exposed, and if part of the assumptions behind
-> this API is that I should use device-tree, then I'm out of scope.
+>> +     /* Deallocate the image info if you're done with it */
+>> +     fpga_image_info_free(info);
+>> +
+>> +     /* Now enumerate whatever hardware has appeared in the FPGA. */
+>> +
+>> +API for programming an FPGA
+>> +---------------------------
+>> +
+>> +* :c:func:`fpga_region_program_fpga` =E2=80=94  Program a FPGA
+>> +* :c:type:`fpga_image_info` =E2=80=94  Specifies what FPGA image to pro=
+gram
+>> +* :c:func:`fpga_image_info_alloc()` =E2=80=94  Allocate a FPGA image in=
+fo struct
+>> +* :c:func:`fpga_image_info_free()` =E2=80=94  Free a FPGA image info st=
+ruct
+>> +
+>> +.. kernel-doc:: drivers/fpga/fpga-region.c
+>> +   :functions: fpga_region_program_fpga
+>> +
+>> +FPGA Manager flags
+>> +
+>> +.. kernel-doc:: include/linux/fpga/fpga-mgr.h
+>> +   :doc: FPGA Manager flags
+>> +
+>> +.. kernel-doc:: include/linux/fpga/fpga-mgr.h
+>> +   :functions: fpga_image_info
+>> +
+>> +.. kernel-doc:: drivers/fpga/fpga-mgr.c
+>> +   :functions: fpga_image_info_alloc
+>> +
+>> +.. kernel-doc:: drivers/fpga/fpga-mgr.c
+>> +   :functions: fpga_image_info_free
 >
-> <chatting>
-> Just for chatting. One addition I made for the FPGA manager is to support
-> dynamic loading of FPGA code using char devices. Something like:
+> [snip]
 >
->    dd if=binary.bin of=/dev/fpga0
->    cat binary.bin > /dev/fpga0
-
-Since it's not handling the bridge, there's some risk involved.
-
->
-> We do not have device tree, and we do not have binaries in /lib/firmware.
-> It's quite handy to quickly load a binary just synthesized, especially for
-> debugging purpose.
-
-Like a debugfs?
-
-https://lkml.org/lkml/2018/8/2/125
-
-But for a debugging/developing, I have a debugfs that was a downstream
-patchset that I'm cleaning for submission.
-
-> If you are interested I can try to clean it up (at some
-> point, probably in autumn), or I can show you the code in private for a
-> quick look.
-> </chatting>
->
->
->> > <Parenthesis>
->> > fpga_region_program_fpga() does not do (today) fpga_mgr_get() because
->> > it assumes, but it is not enforced, that both fpga_region and fpga_mgr
->> > are child of the same device.
+>>  API to add a new FPGA region
+>>  ----------------------------
 >>
->> fpga_region_program_fpga() doesn't do fpga_mgr_get() becuase
->> fpga_mgr_get() happens when the fpga_region probes.  The assumption I
->> am making is that nobody other than a region is calling
->> fpga_manager_load().  I should create a fpga_private.h and move
->> fpga_manager_load() out of fpga-mgr.h to make that official.
+>> +* struct :c:type:`fpga_region` =E2=80=94 The FPGA region struct
+>> +* :c:func:`devm_fpga_region_create` =E2=80=94 Allocate and init a regio=
+n struct
+>> +* :c:func:`fpga_region_register` =E2=80=94  Register a FPGA region
 >
-> Yes, I agree. If what I'm doing is not supposed to happen I should not be
-> allowed to do it :)
+>                                                 an FPGA
 >
-> <suggestion>
-> If you want to encourage people to use regions rather than the manager
-> directly, have you though about changing the API and merge in a single
-> module fpga-mgr and fpga-region?
+>> +* :c:func:`fpga_region_unregister` =E2=80=94  Unregister a FPGA region
 >
-> Brainstorming. Perhaps, it is possible to have a `struct fpga_region_info`
-> and when we register and FPGA manager we use something like:
+>                                                     an FPGA
 >
-> struct fpga_manager *fpga_mgr_create(struct device *dev, const char *name,
->                                      const struct fpga_manager_ops *mops,
->                      struct fpga_region_info *info, int n_regions,
->                                      void *priv)
+>> +
+>> +The FPGA region's probe function will need to get a reference to the FP=
+GA
+>> +Manager it will be using to do the programming.  This usually would hap=
+pen
+>> +during the region's probe function.
+>> +
+>> +* :c:func:`fpga_mgr_get` =E2=80=94 Get a reference to a FPGA manager, r=
+aise ref count
 >
-> So those regions will be created directly and the interface will be smaller
-> and easier.
+>                                                  an FPGA
 >
-> Don't waste much time on this suggestion, as I said before I did not study
-> much the fpga-region.c code and perhaps this is not possible and I'm just
-> speaking rubbish :)
-> </suggestion>
+>> +* :c:func:`of_fpga_mgr_get` =E2=80=94  Get a reference to a FPGA manage=
+r, raise ref count,
 >
+>                                                      an FPGA
 >
->> > Probably this is true 99.99% of the
->> > time.
->> > Let me open in parallel another point: why fpga_region is not a child
->> > of fpga_manager?
+>> +  given a device node.
+>> +* :c:func:`fpga_mgr_put` =E2=80=94 Put a FPGA manager
+>
+>                                   an FPGA
+
+I'll fix these too; I'll go through this folder and s/a FPGA/an FPGA/g
+
+>
+>> +
+>> +The FPGA region will need to specify which bridges to control while pro=
+gramming
+>> +the FPGA.  The region driver can build a list of bridges during probe t=
+ime
+>> +(:c:member:`fpga_region->bridge_list`) or it can have a function that c=
+reates
+>> +the list of bridges to program just before programming
+>> +(:c:member:`fpga_region->get_bridges`).  The FPGA bridge framework supp=
+lies the
+>> +following APIs to handle building or tearing down that list.
+>> +
+>> +* :c:func:`fpga_bridge_get_to_list` =E2=80=94 Get a ref of a FPGA bridg=
+e, add it to a
+>> +  list
+>> +* :c:func:`of_fpga_bridge_get_to_list` =E2=80=94 Get a ref of a FPGA br=
+idge, add it to a
+>> +  list, given a device node
+>> +* :c:func:`fpga_bridges_put` =E2=80=94 Given a list of bridges, put the=
+m
+>> +
+>>  .. kernel-doc:: include/linux/fpga/fpga-region.h
+>>     :functions: fpga_region
 >>
->> FPGA regions are children of FPGA bridges.
->>
->> Alan
+>
 >
 >
 > --
-> Federico Vaga
-> [BE-CO-HT]
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fpga" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> ~Randy
+
+Thanks for the review!
+
+Alan
