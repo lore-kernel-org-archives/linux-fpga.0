@@ -1,99 +1,103 @@
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv8 1/9] dt-bindings, firmware: add Intel Stratix10 service layer binding
-Date: Tue, 28 Aug 2018 08:50:37 -0500
-Message-Id: <1535464245-11638-2-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
-References: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+Return-Path: <SRS0=iILP=K7=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=iILP=K7=ettus.com=moritz.fischer@kernel.org>
+Date: Thu, 16 Aug 2018 15:01:23 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH 7/8] docs: fpga: document fpga manager flags
+Message-ID: <20180816220123.GB4431@archbook>
+References: <20180814191526.3247-1-atull@kernel.org>
+ <20180814191526.3247-8-atull@kernel.org>
+ <20180816190252.GB3932@archbook>
+ <CANk1AXR3gAc6YiC-WARrgnFbJWQVWv2Nuz49u7qyobJdKdNotg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXR3gAc6YiC-WARrgnFbJWQVWv2Nuz49u7qyobJdKdNotg@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+On Thu, Aug 16, 2018 at 03:20:12PM -0500, Alan Tull wrote:
+> On Thu, Aug 16, 2018 at 2:02 PM, Moritz Fischer <mdf@kernel.org> wrote:
+> Hi Moritz,
+> 
+> > Hi Alan,
+> >
+> > On Tue, Aug 14, 2018 at 02:15:25PM -0500, Alan Tull wrote:
+> >> Add flags #defines to kerneldoc documentation in a
+> >> useful place.
+> >>
+> >> Signed-off-by: Alan Tull <atull@kernel.org>
+> >> ---
+> >>  Documentation/driver-api/fpga/fpga-mgr.rst |  5 +++++
+> >>  include/linux/fpga/fpga-mgr.h              | 18 ++++++++++++------
+> >>  2 files changed, 17 insertions(+), 6 deletions(-)
+> >>
+> >> diff --git a/Documentation/driver-api/fpga/fpga-mgr.rst b/Documentation/driver-api/fpga/fpga-mgr.rst
+> >> index 431556d..db8885e 100644
+> >> --- a/Documentation/driver-api/fpga/fpga-mgr.rst
+> >> +++ b/Documentation/driver-api/fpga/fpga-mgr.rst
+> >> @@ -183,6 +183,11 @@ API for implementing a new FPGA Manager driver
+> >>  API for programming an FPGA
+> >>  ---------------------------
+> >>
+> >> +FPGA Manager flags
+> >> +
+> >> +.. kernel-doc:: include/linux/fpga/fpga-mgr.h
+> >> +   :doc: FPGA Manager flags
+> >> +
+> >>  .. kernel-doc:: include/linux/fpga/fpga-mgr.h
+> >>     :functions: fpga_image_info
+> >>
+> >> diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+> >> index 1ca02ce..777c502 100644
+> >> --- a/include/linux/fpga/fpga-mgr.h
+> >> +++ b/include/linux/fpga/fpga-mgr.h
+> >> @@ -53,12 +53,18 @@ enum fpga_mgr_states {
+> >>       FPGA_MGR_STATE_OPERATING,
+> >>  };
+> >>
+> >> -/*
+> >> - * FPGA Manager flags
+> >> - * FPGA_MGR_PARTIAL_RECONFIG: do partial reconfiguration if supported
+> >> - * FPGA_MGR_EXTERNAL_CONFIG: FPGA has been configured prior to Linux booting
+> >> - * FPGA_MGR_BITSTREAM_LSB_FIRST: SPI bitstream bit order is LSB first
+> >
+> > We are actually missing the ENCRYPTED flag here, can you add that while
+> > we're at it? I must've forgotten to add that back then ... derp.
+> 
+> Sure!
+> 
+> >
+> >> - * FPGA_MGR_COMPRESSED_BITSTREAM: FPGA bitstream is compressed
+> >> +/**
+> >> + * DOC: FPGA Manager flags
+> >> + *
+> >> + * Flags used in the &fpga_image_info->flags field
+> >> + *
+> >> + * %FPGA_MGR_PARTIAL_RECONFIG: do partial reconfiguration if supported
+> >> + *
+> >> + * %FPGA_MGR_EXTERNAL_CONFIG: FPGA has been configured prior to Linux booting
+> 
+> How about this description?
+> 
+> + *
+> + * %FPGA_MGR_ENCRYPTED_BITSTREAM: indicates bitstream is encrypted
 
-Add a device tree binding for the Intel Stratix10 service layer driver
-
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Signed-off-by: Alan Tull <atull@kernel.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: change to put service layer driver node under the firmware node
-    change compatible to "intel, stratix10-svc"
-v3: no change
-v4: add Rob's Reviewed-by
-v5: no change
-v6: add Moritz's Acked-by
-v7: no change
-v8: no change
----
- .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-
-diff --git a/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-new file mode 100644
-index 0000000..1fa6606
---- /dev/null
-+++ b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-@@ -0,0 +1,57 @@
-+Intel Service Layer Driver for Stratix10 SoC
-+============================================
-+Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
-+processor system (HPS) and Secure Device Manager (SDM). When the FPGA is
-+configured from HPS, there needs to be a way for HPS to notify SDM the
-+location and size of the configuration data. Then SDM will get the
-+configuration data from that location and perform the FPGA configuration.
-+
-+To meet the whole system security needs and support virtual machine requesting
-+communication with SDM, only the secure world of software (EL3, Exception
-+Layer 3) can interface with SDM. All software entities running on other
-+exception layers must channel through the EL3 software whenever it needs
-+service from SDM.
-+
-+Intel Stratix10 service layer driver, running at privileged exception level
-+(EL1, Exception Layer 1), interfaces with the service providers and provides
-+the services for FPGA configuration, QSPI, Crypto and warm reset. Service layer
-+driver also manages secure monitor call (SMC) to communicate with secure monitor
-+code running in EL3.
-+
-+Required properties:
-+-------------------
-+The svc node has the following mandatory properties, must be located under
-+the firmware node.
-+
-+- compatible: "intel,stratix10-svc"
-+- method: smc or hvc
-+        smc - Secure Monitor Call
-+        hvc - Hypervisor Call
-+- memory-region:
-+	phandle to the reserved memory node. See
-+	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
-+	for details
-+
-+Example:
-+-------
-+
-+	reserved-memory {
-+                #address-cells = <2>;
-+                #size-cells = <2>;
-+                ranges;
-+
-+                service_reserved: svcbuffer@0 {
-+                        compatible = "shared-dma-pool";
-+                        reg = <0x0 0x0 0x0 0x1000000>;
-+                        alignment = <0x1000>;
-+                        no-map;
-+                };
-+        };
-+
-+	firmware {
-+		svc {
-+			compatible = "intel,stratix10-svc";
-+			method = "smc";
-+			memory-region = <&service_reserved>;
-+		};
-+	};
--- 
-2.7.4
+Works for me :)
+> 
+> >> + *
+> >> + * %FPGA_MGR_BITSTREAM_LSB_FIRST: SPI bitstream bit order is LSB first
+> >> + *
+> >> + * %FPGA_MGR_COMPRESSED_BITSTREAM: FPGA bitstream is compressed
+> >>   */
+> >>  #define FPGA_MGR_PARTIAL_RECONFIG    BIT(0)
+> >>  #define FPGA_MGR_EXTERNAL_CONFIG     BIT(1)
+> >> --
+> >> 2.7.4
+> >>
+> >
+> > Thanks,
+> > Moritz
+> 
+> Thanks,
+> Alan
