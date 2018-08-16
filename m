@@ -1,37 +1,41 @@
-Return-Path: <SRS0=CNYI=LJ=canonical.com=colin.king@kernel.org>
-Return-Path: <SRS0=CNYI=LJ=canonical.com=colin.king@kernel.org>
-From: Colin King <colin.king@canonical.com>
-Subject: [PATCH] fpga: dfl: fme-mgr: fix spelling mistake "Invaild" -> "Invalid"
-Date: Sun, 26 Aug 2018 23:13:55 +0100
-Message-Id: <20180826221355.12661-1-colin.king@canonical.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 1/2] fpga: dfl: fme: fix return value check in in pr_mgmt_init()
+Date: Thu, 16 Aug 2018 14:42:13 -0500
+Message-Id: <20180816194214.3462-2-atull@kernel.org>
+In-Reply-To: <20180816194214.3462-1-atull@kernel.org>
+References: <20180816194214.3462-1-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Wei Yongjun <weiyongjun1@huawei.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+From: Wei Yongjun <weiyongjun1@huawei.com>
 
-Trivial fix to spelling mistake in dev_err message.
+In case of error, the function dfl_fme_create_region() returns ERR_PTR()
+and never returns NULL. The NULL test in the return value check should
+be replaced with IS_ERR().
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Fixes: 29de76240e86 ("fpga: dfl: fme: add partial reconfiguration sub feature support")
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/dfl-fme-mgr.c | 2 +-
+ drivers/fpga/dfl-fme-pr.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
-index b5ef405b6d88..9f045d058cfd 100644
---- a/drivers/fpga/dfl-fme-mgr.c
-+++ b/drivers/fpga/dfl-fme-mgr.c
-@@ -201,7 +201,7 @@ static int fme_mgr_write(struct fpga_manager *mgr,
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+index fc9fd2d..0b84053 100644
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -420,7 +420,7 @@ static int pr_mgmt_init(struct platform_device *pdev,
+ 		/* Create region for each port */
+ 		fme_region = dfl_fme_create_region(pdata, mgr,
+ 						   fme_br->br, i);
+-		if (!fme_region) {
++		if (IS_ERR(fme_region)) {
+ 			ret = PTR_ERR(fme_region);
+ 			goto destroy_region;
  		}
- 
- 		if (count < 4) {
--			dev_err(dev, "Invaild PR bitstream size\n");
-+			dev_err(dev, "Invalid PR bitstream size\n");
- 			return -EINVAL;
- 		}
- 
 -- 
-2.17.1
+2.7.4
