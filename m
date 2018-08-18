@@ -1,41 +1,39 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 1/2] fpga: dfl: fme: fix return value check in in pr_mgmt_init()
-Date: Thu, 16 Aug 2018 14:42:13 -0500
-Message-Id: <20180816194214.3462-2-atull@kernel.org>
-In-Reply-To: <20180816194214.3462-1-atull@kernel.org>
-References: <20180816194214.3462-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Wei Yongjun <weiyongjun1@huawei.com>
+MIME-Version: 1.0
+In-Reply-To: <20180817234049.9624-1-mdf@kernel.org>
+References: <20180817234049.9624-1-mdf@kernel.org>
+Date: Fri, 17 Aug 2018 17:44:14 -0700
+Message-ID: <CAJYdmeOBWt3rdbBGfCR5OFxO8pQHn62msXb0q2ukxBFGHQQqog@mail.gmail.com>
+Subject: Re: [PATCH] fpga: dfl: region: Restory symmetry in probe()/remove()
+From: Moritz Fischer <moritz.fischer.private@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Wei Yongjun <weiyongjun1@huawei.com>
+On Fri, Aug 17, 2018 at 4:40 PM, Moritz Fischer <mdf@kernel.org> wrote:
+> Replace dev_get_drvdata() with platform_get_drvdata() to
+> match the platform_set_drvdata() in the probe function of
+> the platform driver.
+>
+> Fixes commit bb61b9be3e6b ("fpga: dfl: add fpga region platform driver for
+> FME")
+> Signed-off-by: Moritz Fischer <mdf@kernel.org>
+> ---
+>  drivers/fpga/dfl-fme-region.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
+> index 0b7e19c27c6d..ce7ebe4b3212 100644
+> --- a/drivers/fpga/dfl-fme-region.c
+> +++ b/drivers/fpga/dfl-fme-region.c
+> @@ -65,7 +65,7 @@ static int fme_region_probe(struct platform_device *pdev)
+>
+>  static int fme_region_remove(struct platform_device *pdev)
+>  {
+> -       struct fpga_region *region = dev_get_drvdata(&pdev->dev);
+> +       struct fpga_region *region = platform_get_drvdata(&pdev->dev);
+Blergh ... that doesn't even compile. I'll resubmit next week. Sorry
+for the noise.
+Should of course be platform_get_drvdata(pdev);
 
-In case of error, the function dfl_fme_create_region() returns ERR_PTR()
-and never returns NULL. The NULL test in the return value check should
-be replaced with IS_ERR().
-
-Fixes: 29de76240e86 ("fpga: dfl: fme: add partial reconfiguration sub feature support")
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
----
- drivers/fpga/dfl-fme-pr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-index fc9fd2d..0b84053 100644
---- a/drivers/fpga/dfl-fme-pr.c
-+++ b/drivers/fpga/dfl-fme-pr.c
-@@ -420,7 +420,7 @@ static int pr_mgmt_init(struct platform_device *pdev,
- 		/* Create region for each port */
- 		fme_region = dfl_fme_create_region(pdata, mgr,
- 						   fme_br->br, i);
--		if (!fme_region) {
-+		if (IS_ERR(fme_region)) {
- 			ret = PTR_ERR(fme_region);
- 			goto destroy_region;
- 		}
--- 
-2.7.4
+- Moritz
