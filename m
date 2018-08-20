@@ -1,64 +1,53 @@
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv8 5/9] arm64: dts: stratix10: add fpga manager and region
-Date: Tue, 28 Aug 2018 08:50:41 -0500
-Message-Id: <1535464245-11638-6-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
-References: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <20180820175425.zoxnbcz3ziutxaq5@derp-derp.local>
+References: <20180820171818.7710-1-mdf@kernel.org> <CANk1AXSMSLGCcaRcZo4TWKEJW+YUQqbHWEuHpz_csF5J1m-Sew@mail.gmail.com>
+ <20180820175425.zoxnbcz3ziutxaq5@derp-derp.local>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 20 Aug 2018 13:04:19 -0500
+Message-ID: <CANk1AXS9qVMGfdsFGYNe08q60n1keo7FnfwgGYYR4djR+Fd-wg@mail.gmail.com>
+Subject: Re: [PATCH v2] fpga: dfl: region: Restory symmetry in probe()/remove()
+Content-Type: text/plain; charset="UTF-8"
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Wu Hao <hao.wu@intel.com>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alan Tull <atull@kernel.org>
+On Mon, Aug 20, 2018 at 12:54 PM, Moritz Fischer <mdf@kernel.org> wrote:
+> Hi Alan,
+>
+> On Mon, Aug 20, 2018 at 12:46:32PM -0500, Alan Tull wrote:
+>> On Mon, Aug 20, 2018 at 12:18 PM, Moritz Fischer <mdf@kernel.org> wrote:
+>>
+>> Hi Moritz,
+>>
+>> > Replace dev_get_drvdata() with platform_get_drvdata() to
+>> > match the platform_set_drvdata() in the probe function of
+>> > the platform driver.
+>> >
+>> > Fixes commit bb61b9be3e6b ("fpga: dfl: add fpga region platform driver for FME")
+>> > Signed-off-by: Moritz Fischer <mdf@kernel.org>
+>> > ---
+>> >
+>> > Changes from v1:
+>> > - Still compile after change ...
+>> >
+>> > ---
+>> >  drivers/fpga/dfl-fme-region.c | 2 +-
+>>
+>> Thanks for catching this.  of-fpga-region.c does a similar thing and
+>> needs s/dev_set_drvdata/platform_set_drvdata/ in the probe.  Could you
+>> fix it here too?
 
-Add the Stratix10 FPGA manager and a FPGA region to the
-device tree.
+Actually I should have said something more like
+s/dev_set_drvdata(dev/platform_set_drvdata(pdev/
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Richard Gong <richard.gong@intel.com>
----
-v2: this patch is added in patch set version 2
-v3: change to put fpga_mgr node under firmware/svc node
-v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
-    add Richard's signed-off-by
-v5: no change
-v6: no change
-v7: no change
-v8: no change
----
- arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+>
+> Yeah, can do in a v3 series ... Will add your Suggested-by: ...
 
-diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-index ee4715a..0b20209 100644
---- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-+++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-@@ -106,6 +106,14 @@
- 		interrupt-parent = <&intc>;
- 		ranges = <0 0 0 0xffffffff>;
- 
-+		base_fpga_region {
-+			#address-cells = <0x1>;
-+			#size-cells = <0x1>;
-+
-+			compatible = "fpga-region";
-+			fpga-mgr = <&fpga_mgr>;
-+		};
-+
- 		clkmgr: clock-controller@ffd10000 {
- 			compatible = "intel,stratix10-clkmgr";
- 			reg = <0xffd10000 0x1000>;
-@@ -512,6 +520,10 @@
- 				compatible = "intel,stratix10-svc";
- 				method = "smc";
- 				memory-region = <&service_reserved>;
-+
-+				fpga_mgr: fpga-mgr {
-+					compatible = "intel,stratix10-soc-fpga-mgr";
-+				};
- 			};
- 		};
- 	};
--- 
-2.7.4
+Thanks!
+
+>
+> Cheers,
+>
+> Moritz
