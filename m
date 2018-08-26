@@ -1,58 +1,48 @@
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=x/aC=LL=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv8 4/9] dt-bindings: fpga: add Stratix10 SoC FPGA manager binding
-Date: Tue, 28 Aug 2018 08:50:40 -0500
-Message-Id: <1535464245-11638-5-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
-References: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+References: <20180824152513.8336-1-mdf@kernel.org>
+In-Reply-To: <20180824152513.8336-1-mdf@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Date: Sun, 26 Aug 2018 16:20:39 -0500
+Message-ID: <CANk1AXTuVbJLmtv_+L3Dr2GyQ+2gTjJFGwrtFsh0rMu2RbYzkw@mail.gmail.com>
+Subject: Re: [PATCH 1/2] fpga: of-fpga-region: Use platform_set_drvdata
+Content-Type: text/plain; charset="UTF-8"
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Wu Hao <hao.wu@intel.com>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alan Tull <atull@kernel.org>
+On Fri, Aug 24, 2018 at 10:26 AM Moritz Fischer <mdf@kernel.org> wrote:
 
-Add a Device Tree binding for the Intel Stratix10 SoC FPGA manager.
+Hi Moritz,
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
-v2: this patch is added in patch set version 2
-v3: change to put fpga_mgr node under firmware/svc node
-v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
-    add Richard's signed-off-by
-v5: add Reviewed-by Rob Herring
-v6: no change
-v7: no change
-v8: no change
----
- .../bindings/fpga/intel-stratix10-soc-fpga-mgr.txt      | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
+Looks good.  Thanks for the patches!
 
-diff --git a/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-new file mode 100644
-index 0000000..6e03f79
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-@@ -0,0 +1,17 @@
-+Intel Stratix10 SoC FPGA Manager
-+
-+Required properties:
-+The fpga_mgr node has the following mandatory property, must be located under
-+firmware/svc node.
-+
-+- compatible : should contain "intel,stratix10-soc-fpga-mgr"
-+
-+Example:
-+
-+	firmware {
-+		svc {
-+			fpga_mgr: fpga-mgr {
-+				compatible = "intel,stratix10-soc-fpga-mgr";
-+			};
-+		};
-+	};
--- 
-2.7.4
+>
+> Use platform_set_drvdata rather than dev_set_drvdata
+> to match the platform_get_drvdata in the _remove()
+> function of the platform driver.
+>
+> Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
+
+> ---
+>  drivers/fpga/of-fpga-region.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+> index 35fabb8083fb..8c6120e30930 100644
+> --- a/drivers/fpga/of-fpga-region.c
+> +++ b/drivers/fpga/of-fpga-region.c
+> @@ -421,7 +421,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+>                 goto eprobe_free;
+>
+>         of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
+> -       dev_set_drvdata(dev, region);
+> +       platform_set_drvdata(pdev, region);
+>
+>         dev_info(dev, "FPGA Region probed\n");
+>
+> --
+> 2.18.0
+>
