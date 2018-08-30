@@ -1,72 +1,100 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 1/2] fpga: doc: documentation for FPGA debugfs
-Date: Wed, 15 Aug 2018 17:09:57 -0500
-Message-Id: <20180815220958.3606-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, Dinh Nguyen <dinguyen@kernel.org>
-Cc: Appana Durga Kedareswara Rao <appanad@xilinx.com>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, Alan Tull <atull@kernel.org>, Alan Tull <atull@opensource.altera.com>, Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Return-Path: <SRS0=Lc3t=LN=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=Lc3t=LN=linux.intel.com=richard.gong@kernel.org>
+Subject: Re: [PATCHv8 7/9] defconfig: enable fpga and service layer
+References: <1535464245-11638-1-git-send-email-richard.gong@linux.intel.com>
+ <1535464245-11638-8-git-send-email-richard.gong@linux.intel.com>
+ <54ccf9d5-1cf4-edf6-47c6-be7cc5badb3e@kernel.org>
+From: Richard Gong <richard.gong@linux.intel.com>
+Message-ID: <18b2948c-07dc-dc23-6a36-04e8295705f3@linux.intel.com>
+Date: Thu, 30 Aug 2018 09:05:55 -0500
+MIME-Version: 1.0
+In-Reply-To: <54ccf9d5-1cf4-edf6-47c6-be7cc5badb3e@kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Dinh Nguyen <dinguyen@kernel.org>, gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alan Tull <atull@opensource.altera.com>
 
-This patch depends on my recently submitted documentation changes
-("docs: fpga: document programming fpgas using regions")
 
-Document the DebugFS interface for the core FPGA Manager
-framework.
+On 08/28/2018 09:11 AM, Dinh Nguyen wrote:
+> 
+> 
+> On 08/28/2018 08:50 AM, richard.gong@linux.intel.com wrote:
+>> From: Richard Gong <richard.gong@intel.com>
+>>
+>> Enable fpga framework, Stratix 10 SoC FPGA manager and Stratix10
+>> Service Layer
+>>
+> 
+> Please update your commit header be "arm64: defconfig: enable fpga and
+> service layer"
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
----
- Documentation/driver-api/fpga/fpga-mgr.rst | 38 ++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+Ok, I will make update in the next submission.
 
-diff --git a/Documentation/driver-api/fpga/fpga-mgr.rst b/Documentation/driver-api/fpga/fpga-mgr.rst
-index 576f194..d7ca320 100644
---- a/Documentation/driver-api/fpga/fpga-mgr.rst
-+++ b/Documentation/driver-api/fpga/fpga-mgr.rst
-@@ -125,3 +125,41 @@ API for implementing a new FPGA Manager driver
- 
- .. kernel-doc:: drivers/fpga/fpga-mgr.c
-    :functions: fpga_mgr_unregister
-+
-+FPGA Manager DebugFS
-+--------------------
-+
-+This interface allows the user to program an FPGA from userspace.  However,
-+bridges and soft IP device driver loading/unloading are not handled.  This makes
-+it really easy to mess things up by doing things like reprogramming the hardware
-+out from under a driver or reprogramming while a bridge is enabled, causing gunk
-+to go out on a CPU bus.  It should go without saying that this interface is for
-+debug and development only.  Not intended for production use.
-+
-+Each FPGA gets its own directory such as <debugfs>/fpga_manager/fpga0 and the
-+files described below.  To program the FPGA, write the ``flags`` and/or
-+``config_complete_timeout_us`` files (as needed), then use either the
-+``firmware_name`` or ``image`` file to program.
-+
-+* ``flags`` - [RW] flags as defined in fpga-mgr.h.  For example::
-+
-+   $ echo 1 > /sys/kernel/debug/fpga_manager/fpga0/flags
-+
-+* ``config_complete_timeout_us`` - [RW] time out in microseconds to wait for the
-+  FPGA to go to operating state after region has been programmed.  Not all
-+  low level drivers use this.  For example::
-+
-+   $ echo 4 > /sys/kernel/debug/fpga_manager/fpga0/config_complete_timeout_us
-+
-+* ``firmware_name`` - [RW] Name of an FPGA image firmware file.  Writing
-+  initiates an FPGA programming cycle.  Note that the image file must be in a
-+  directory on the firmware search path such as /lib/firmware::
-+
-+   $ echo image.rbf > /sys/kernel/debug/fpga_manager/fpga0/firmware_name
-+
-+* ``image`` - [WO] Raw FPGA image data.  Writing the FPGA image data will
-+  initiate an FPGA programming cycle.  Data must be written in one chunk, for
-+  example::
-+
-+   $ dd bs=10M if=./image.rbf of=/sys/kernel/debug/fpga_manager/fpga0/image
-+    (where image.rbf < 10M)
--- 
-2.7.4
+> 
+> 
+>> Signed-off-by: Richard Gong <richard.gong@intel.com>
+>> Signed-off-by: Alan Tull <atull@kernel.org>
+>> ---
+>> v2: this patch is added in patch set version 2
+>> v3: no change
+>> v4: s/CONFIG_INTEL_SERVICE/CONFIG_STRATIX10_SERVICE/
+>>      add CONFIG_OF_FPGA_REGION=y
+>>      s/Intel/Stratix10/ in subject line
+>> v5: no change
+>> v6: no change
+>> v7: no change
+>> v8: no change
+>> ---
+>>   arch/arm64/configs/defconfig | 7 +++++++
+>>   1 file changed, 7 insertions(+)
+>>
+>> diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+>> index f67e8d5..2ad50a5 100644
+>> --- a/arch/arm64/configs/defconfig
+>> +++ b/arch/arm64/configs/defconfig
+>> @@ -185,6 +185,7 @@ CONFIG_BLK_DEV_LOOP=y
+>>   CONFIG_BLK_DEV_NBD=m
+>>   CONFIG_VIRTIO_BLK=y
+>>   CONFIG_BLK_DEV_NVME=m
+>> +CONFIG_STRATIX10_SERVICE=y
+> 
+> Can this be a module?
+
+No, Service layer driver need be compiled as part of kernel image.
+
+Service layer driver provides services for service clients, it must be 
+loaded & initialized before service clients (FPGA manager and remote 
+status update drivers).
+
+> 
+>>   CONFIG_SRAM=y
+>>   CONFIG_EEPROM_AT25=m
+>>   # CONFIG_SCSI_PROC_FS is not set
+>> @@ -642,6 +643,12 @@ CONFIG_PHY_TEGRA_XUSB=y
+>>   CONFIG_HISI_PMU=y
+>>   CONFIG_QCOM_L2_PMU=y
+>>   CONFIG_QCOM_L3_PMU=y
+>> +CONFIG_MESON_EFUSE=m
+> 
+> What does this change have to do with this patch?
+
+My mistake, I will fix in the next submission.
+
+> 
+>> +CONFIG_FPGA=y
+>> +CONFIG_FPGA_MGR_STRATIX10_SOC=y
+>> +CONFIG_FPGA_REGION=y
+>> +CONFIG_FPGA_BRIDGE=y
+>> +CONFIG_OF_FPGA_REGION=y
+> 
+> Can these be modules?
+
+CONFIG_FPGA_MGR_STRATIX10_SOC could be module, but the remaining 
+components need be compiled as part of kernel image.
+
+> 
+> Dinh
+> 
