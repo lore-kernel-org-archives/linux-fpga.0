@@ -1,65 +1,38 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
+Return-Path: <SRS0=2nBX=LT=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=2nBX=LT=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:33062 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726497AbeIETim (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 5 Sep 2018 15:38:42 -0400
+MIME-Version: 1.0
+References: <20180904212237.3078-1-atull@kernel.org> <20180904212237.3078-2-atull@kernel.org>
+ <CAAtXAHfzhmdZ6SnheZ-DXD14dde7Ccm66jEM=Q3UWDukKsyGBA@mail.gmail.com>
+In-Reply-To: <CAAtXAHfzhmdZ6SnheZ-DXD14dde7Ccm66jEM=Q3UWDukKsyGBA@mail.gmail.com>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 1/5] fpga: do not access region struct after fpga_region_unregister
-Date: Wed, 12 Sep 2018 09:43:23 -0500
-Message-Id: <20180912144327.3130-2-atull@kernel.org>
-In-Reply-To: <20180912144327.3130-1-atull@kernel.org>
-References: <20180912144327.3130-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Date: Wed, 5 Sep 2018 10:07:29 -0500
+Message-ID: <CANk1AXSttp7HmnoXnf0LYqEDrz0gDCYQxqJ1mmViqEeDqU=Ecg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/8] fpga: do not access region struct after fpga_region_unregister
+Content-Type: text/plain; charset="UTF-8"
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Moritz Fischer <moritz.fischer@ettus.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>
 
-A couple drivers were accessing the region struct after it had been
-freed.  Save off the pointer to the mgr before the region struct gets
-freed.
+On Tue, Sep 4, 2018 at 6:41 PM Moritz Fischer <moritz.fischer@ettus.com> wrote:
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
- drivers/fpga/dfl-fme-region.c | 4 +++-
- drivers/fpga/of-fpga-region.c | 3 ++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+Hi Moritz,
 
-diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
-index 0b7e19c..51a5ac2 100644
---- a/drivers/fpga/dfl-fme-region.c
-+++ b/drivers/fpga/dfl-fme-region.c
-@@ -14,6 +14,7 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/fpga/fpga-mgr.h>
- #include <linux/fpga/fpga-region.h>
- 
- #include "dfl-fme-pr.h"
-@@ -66,9 +67,10 @@ static int fme_region_probe(struct platform_device *pdev)
- static int fme_region_remove(struct platform_device *pdev)
- {
- 	struct fpga_region *region = dev_get_drvdata(&pdev->dev);
-+	struct fpga_manager *mgr = region->mgr;
- 
- 	fpga_region_unregister(region);
--	fpga_mgr_put(region->mgr);
-+	fpga_mgr_put(mgr);
- 
- 	return 0;
- }
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 35fabb8..052a134 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -437,9 +437,10 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- static int of_fpga_region_remove(struct platform_device *pdev)
- {
- 	struct fpga_region *region = platform_get_drvdata(pdev);
-+	struct fpga_manager *mgr = region->mgr;
- 
- 	fpga_region_unregister(region);
--	fpga_mgr_put(region->mgr);
-+	fpga_mgr_put(mgr);
- 
- 	return 0;
- }
--- 
-2.7.4
+>
+> Hi Alan,
+>
+> On Tue, Sep 4, 2018 at 2:22 PM, Alan Tull <atull@kernel.org> wrote:
+> > A couple drivers were accessing the region struct after it had been
+> > freed.  Save off the pointer to the mgr before the region struct gets
+> > freed.
+> >
+> > Signed-off-by: Alan Tull <atull@kernel.org>
+> Acked-by: Moritz Fischer <mdf@kernel.org>
+
+Thanks!
+
+Alan
