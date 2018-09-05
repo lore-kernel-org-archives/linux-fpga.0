@@ -1,312 +1,120 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v3 2/4] fpga: bridge: add devm_fpga_bridge_create
-Date: Wed, 26 Sep 2018 11:12:20 -0500
-Message-Id: <1537978342-17697-3-git-send-email-atull@kernel.org>
-In-Reply-To: <1537978342-17697-1-git-send-email-atull@kernel.org>
-References: <1537978342-17697-1-git-send-email-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Federico Vaga <federico.vaga@cern.ch>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, Alan Tull <atull@kernel.org>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=Ghnj=LS=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=Ghnj=LS=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-bn3nam01on0050.outbound.protection.outlook.com ([104.47.33.50]:6848
+        "EHLO NAM01-BN3-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726047AbeIDLtT (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 4 Sep 2018 07:49:19 -0400
+From: Nava kishore Manne <nava.manne@xilinx.com>
+Subject: [RFC PATCH v2 1/3] firmware: xilinx: Add fpga API's
+Date: Wed, 5 Sep 2018 12:54:46 +0530
+Message-ID: <20180905072448.12488-2-nava.manne@xilinx.com>
+In-Reply-To: <20180905072448.12488-1-nava.manne@xilinx.com>
+References: <20180905072448.12488-1-nava.manne@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, atull@kernel.org, mdf@kernel.org, jollys@xilinx.com, sboyd@kernel.org, rajanv@xilinx.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, chinnikishore369@gmail.com
+Cc: Nava kishore Manne <nava.manne@xilinx.com>
 
-Add devm_fpga_bridge_create() which is the managed
-version of fpga_bridge_create().
+This Patch Adds fpga API's to support the Bitstream loading
+by using firmware interface.
 
-Change current bridge drivers to use
-devm_fpga_bridge_create().
-
-Signed-off-by: Alan Tull <atull@kernel.org>
-Suggested-by: Federico Vaga <federico.vaga@cern.ch>
-Acked-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
 ---
-v2: add suggested-by
-v3: remove some unclear documentation about fpga_bridge_unregister
-    add Acked-by
----
- Documentation/driver-api/fpga/fpga-bridge.rst |  3 ++
- drivers/fpga/altera-fpga2sdram.c              |  8 ++--
- drivers/fpga/altera-freeze-bridge.c           | 13 ++---
- drivers/fpga/altera-hps2fpga.c                |  7 ++-
- drivers/fpga/dfl-fme-br.c                     | 11 ++---
- drivers/fpga/fpga-bridge.c                    | 68 +++++++++++++++++++++++----
- drivers/fpga/xilinx-pr-decoupler.c            |  4 +-
- include/linux/fpga/fpga-bridge.h              |  4 ++
- 8 files changed, 80 insertions(+), 38 deletions(-)
+Changes for v2:
+                -New Patch.
 
-diff --git a/Documentation/driver-api/fpga/fpga-bridge.rst b/Documentation/driver-api/fpga/fpga-bridge.rst
-index 2c2aaca..ebbcbde 100644
---- a/Documentation/driver-api/fpga/fpga-bridge.rst
-+++ b/Documentation/driver-api/fpga/fpga-bridge.rst
-@@ -11,6 +11,9 @@ API to implement a new FPGA bridge
-    :functions: fpga_bridge_ops
- 
- .. kernel-doc:: drivers/fpga/fpga-bridge.c
-+   :functions: devm_fpga_bridge_create
-+
-+.. kernel-doc:: drivers/fpga/fpga-bridge.c
-    :functions: fpga_bridge_create
- 
- .. kernel-doc:: drivers/fpga/fpga-bridge.c
-diff --git a/drivers/fpga/altera-fpga2sdram.c b/drivers/fpga/altera-fpga2sdram.c
-index 23660cc..a78e49c 100644
---- a/drivers/fpga/altera-fpga2sdram.c
-+++ b/drivers/fpga/altera-fpga2sdram.c
-@@ -121,18 +121,16 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 	/* Get f2s bridge configuration saved in handoff register */
- 	regmap_read(sysmgr, SYSMGR_ISWGRP_HANDOFF3, &priv->mask);
- 
--	br = fpga_bridge_create(dev, F2S_BRIDGE_NAME,
--				&altera_fpga2sdram_br_ops, priv);
-+	br = devm_fpga_bridge_create(dev, F2S_BRIDGE_NAME,
-+				     &altera_fpga2sdram_br_ops, priv);
- 	if (!br)
- 		return -ENOMEM;
- 
- 	platform_set_drvdata(pdev, br);
- 
- 	ret = fpga_bridge_register(br);
--	if (ret) {
--		fpga_bridge_free(br);
-+	if (ret)
- 		return ret;
--	}
- 
- 	dev_info(dev, "driver initialized with handoff %08x\n", priv->mask);
- 
-diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
-index ffd586c..dd58c4a 100644
---- a/drivers/fpga/altera-freeze-bridge.c
-+++ b/drivers/fpga/altera-freeze-bridge.c
-@@ -213,7 +213,6 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
- 	struct fpga_bridge *br;
- 	struct resource *res;
- 	u32 status, revision;
--	int ret;
- 
- 	if (!np)
- 		return -ENODEV;
-@@ -245,20 +244,14 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
- 
- 	priv->base_addr = base_addr;
- 
--	br = fpga_bridge_create(dev, FREEZE_BRIDGE_NAME,
--				&altera_freeze_br_br_ops, priv);
-+	br = devm_fpga_bridge_create(dev, FREEZE_BRIDGE_NAME,
-+				     &altera_freeze_br_br_ops, priv);
- 	if (!br)
- 		return -ENOMEM;
- 
- 	platform_set_drvdata(pdev, br);
- 
--	ret = fpga_bridge_register(br);
--	if (ret) {
--		fpga_bridge_free(br);
--		return ret;
--	}
--
--	return 0;
-+	return fpga_bridge_register(br);
+ drivers/firmware/xilinx/zynqmp.c     | 46 ++++++++++++++++++++++++++++
+ include/linux/firmware/xlnx-zynqmp.h |  4 +++
+ 2 files changed, 50 insertions(+)
+
+diff --git a/drivers/firmware/xilinx/zynqmp.c b/drivers/firmware/xilinx/zynqmp.c
+index 7ccedf083926..9b3a59512dd7 100644
+--- a/drivers/firmware/xilinx/zynqmp.c
++++ b/drivers/firmware/xilinx/zynqmp.c
+@@ -447,6 +447,50 @@ static int zynqmp_pm_clock_getparent(u32 clock_id, u32 *parent_id)
+ 	return ret;
  }
  
- static int altera_freeze_br_remove(struct platform_device *pdev)
-diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
-index a974d3f..77b95f2 100644
---- a/drivers/fpga/altera-hps2fpga.c
-+++ b/drivers/fpga/altera-hps2fpga.c
-@@ -180,7 +180,8 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	br = fpga_bridge_create(dev, priv->name, &altera_hps2fpga_br_ops, priv);
-+	br = devm_fpga_bridge_create(dev, priv->name,
-+				     &altera_hps2fpga_br_ops, priv);
- 	if (!br) {
- 		ret = -ENOMEM;
- 		goto err;
-@@ -190,12 +191,10 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 
- 	ret = fpga_bridge_register(br);
- 	if (ret)
--		goto err_free;
-+		goto err;
- 
- 	return 0;
- 
--err_free:
--	fpga_bridge_free(br);
- err:
- 	clk_disable_unprepare(priv->clk);
- 
-diff --git a/drivers/fpga/dfl-fme-br.c b/drivers/fpga/dfl-fme-br.c
-index 7cc041d..3ff9f3a 100644
---- a/drivers/fpga/dfl-fme-br.c
-+++ b/drivers/fpga/dfl-fme-br.c
-@@ -61,7 +61,6 @@ static int fme_br_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct fme_br_priv *priv;
- 	struct fpga_bridge *br;
--	int ret;
- 
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
-@@ -69,18 +68,14 @@ static int fme_br_probe(struct platform_device *pdev)
- 
- 	priv->pdata = dev_get_platdata(dev);
- 
--	br = fpga_bridge_create(dev, "DFL FPGA FME Bridge",
--				&fme_bridge_ops, priv);
-+	br = devm_fpga_bridge_create(dev, "DFL FPGA FME Bridge",
-+				     &fme_bridge_ops, priv);
- 	if (!br)
- 		return -ENOMEM;
- 
- 	platform_set_drvdata(pdev, br);
- 
--	ret = fpga_bridge_register(br);
--	if (ret)
--		fpga_bridge_free(br);
--
--	return ret;
-+	return fpga_bridge_register(br);
- }
- 
- static int fme_br_remove(struct platform_device *pdev)
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index c983dac..80bd8f1 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -324,6 +324,9 @@ ATTRIBUTE_GROUPS(fpga_bridge);
-  * @br_ops:	pointer to structure of fpga bridge ops
-  * @priv:	FPGA bridge private data
-  *
-+ * The caller of this function is responsible for freeing the bridge with
-+ * fpga_bridge_free().  Using devm_fpga_bridge_create() instead is recommended.
++/**
++ * zynqmp_pm_fpga_load - Perform the fpga load
++ * @address:	Address to write to
++ * @size:	pl bitstream size
++ * @flags:
++ *	BIT(0) - Bit-stream type.
++ *		 0 - Full Bit-stream.
++ *		 1 - Partial Bit-stream.
 + *
-  * Return: struct fpga_bridge or NULL
-  */
- struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
-@@ -378,8 +381,8 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
- EXPORT_SYMBOL_GPL(fpga_bridge_create);
- 
- /**
-- * fpga_bridge_free - free a fpga bridge and its id
-- * @bridge:	FPGA bridge struct created by fpga_bridge_create
-+ * fpga_bridge_free - free a fpga bridge created by fpga_bridge_create()
-+ * @bridge:	FPGA bridge struct
-  */
- void fpga_bridge_free(struct fpga_bridge *bridge)
- {
-@@ -388,9 +391,56 @@ void fpga_bridge_free(struct fpga_bridge *bridge)
- }
- EXPORT_SYMBOL_GPL(fpga_bridge_free);
- 
-+static void devm_fpga_bridge_release(struct device *dev, void *res)
-+{
-+	struct fpga_bridge *bridge = *(struct fpga_bridge **)res;
-+
-+	fpga_bridge_free(bridge);
-+}
-+
- /**
-- * fpga_bridge_register - register a fpga bridge
-- * @bridge:	FPGA bridge struct created by fpga_bridge_create
-+ * devm_fpga_bridge_create - create and init a managed struct fpga_bridge
-+ * @dev:	FPGA bridge device from pdev
-+ * @name:	FPGA bridge name
-+ * @br_ops:	pointer to structure of fpga bridge ops
-+ * @priv:	FPGA bridge private data
++ * This function provides access to pmufw. To transfer
++ * the required bitstream into PL.
 + *
-+ * This function is intended for use in a FPGA bridge driver's probe function.
-+ * After the bridge driver creates the struct with devm_fpga_bridge_create(), it
-+ * should register the bridge with fpga_bridge_register().  The bridge driver's
-+ * remove function should call fpga_bridge_unregister().  The bridge struct
-+ * allocated with this function will be freed automatically on driver detach.
-+ * This includes the case of a probe function returning error before calling
-+ * fpga_bridge_register(), the struct will still get cleaned up.
-+ *
-+ *  Return: struct fpga_bridge or NULL
++ * Return: Returns status, either success or error+reason
 + */
-+struct fpga_bridge
-+*devm_fpga_bridge_create(struct device *dev, const char *name,
-+			 const struct fpga_bridge_ops *br_ops, void *priv)
++static int zynqmp_pm_fpga_load(const u64 address, const u32 size,
++			       const u32 flags)
 +{
-+	struct fpga_bridge **ptr, *bridge;
-+
-+	ptr = devres_alloc(devm_fpga_bridge_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return NULL;
-+
-+	bridge = fpga_bridge_create(dev, name, br_ops, priv);
-+	if (!bridge) {
-+		devres_free(ptr);
-+	} else {
-+		*ptr = bridge;
-+		devres_add(dev, ptr);
-+	}
-+
-+	return bridge;
++	return zynqmp_pm_invoke_fn(PM_FPGA_LOAD, lower_32_bits(address),
++				   upper_32_bits(address), size, flags, NULL);
 +}
-+EXPORT_SYMBOL_GPL(devm_fpga_bridge_create);
 +
 +/**
-+ * fpga_bridge_register - register a FPGA bridge
++ * zynqmp_pm_fpga_get_status - Read value from PCAP status register
++ * @value: Value to read
 + *
-+ * @bridge: FPGA bridge struct
-  *
-  * Return: 0 for success, error code otherwise.
-  */
-@@ -412,8 +462,11 @@ int fpga_bridge_register(struct fpga_bridge *bridge)
- EXPORT_SYMBOL_GPL(fpga_bridge_register);
++ * This function provides access to the xilfpga library to get
++ * the PCAP status
++ *
++ * Return: Returns status, either success or error+reason
++ */
++static int zynqmp_pm_fpga_get_status(u32 *value)
++{
++	u32 ret_payload[PAYLOAD_ARG_CNT];
++	int ret;
++
++	if (!value)
++		return -EINVAL;
++
++	ret = zynqmp_pm_invoke_fn(PM_FPGA_GET_STATUS, 0, 0, 0, 0, ret_payload);
++	*value = ret_payload[1];
++
++	return ret;
++}
++
+ static const struct zynqmp_eemi_ops eemi_ops = {
+ 	.get_api_version = zynqmp_pm_get_api_version,
+ 	.ioctl = zynqmp_pm_ioctl,
+@@ -460,6 +504,8 @@ static const struct zynqmp_eemi_ops eemi_ops = {
+ 	.clock_getrate = zynqmp_pm_clock_getrate,
+ 	.clock_setparent = zynqmp_pm_clock_setparent,
+ 	.clock_getparent = zynqmp_pm_clock_getparent,
++	.fpga_load = zynqmp_pm_fpga_load,
++	.fpga_get_status = zynqmp_pm_fpga_get_status,
+ };
  
  /**
-- * fpga_bridge_unregister - unregister and free a fpga bridge
-- * @bridge:	FPGA bridge struct created by fpga_bridge_create
-+ * fpga_bridge_unregister - unregister a FPGA bridge
-+ *
-+ * @bridge: FPGA bridge struct
-+ *
-+ * This function is intended for use in a FPGA bridge driver's remove function.
-  */
- void fpga_bridge_unregister(struct fpga_bridge *bridge)
- {
-@@ -430,9 +483,6 @@ EXPORT_SYMBOL_GPL(fpga_bridge_unregister);
+diff --git a/include/linux/firmware/xlnx-zynqmp.h b/include/linux/firmware/xlnx-zynqmp.h
+index 58a74781b51d..5a6bd5e58ea4 100644
+--- a/include/linux/firmware/xlnx-zynqmp.h
++++ b/include/linux/firmware/xlnx-zynqmp.h
+@@ -34,6 +34,8 @@
  
- static void fpga_bridge_dev_release(struct device *dev)
- {
--	struct fpga_bridge *bridge = to_fpga_bridge(dev);
--
--	fpga_bridge_free(bridge);
- }
+ enum pm_api_id {
+ 	PM_GET_API_VERSION = 1,
++	PM_FPGA_LOAD = 22,
++	PM_FPGA_GET_STATUS,
+ 	PM_IOCTL = 34,
+ 	PM_QUERY_DATA,
+ 	PM_CLOCK_ENABLE,
+@@ -90,6 +92,8 @@ struct zynqmp_pm_query_data {
  
- static int __init fpga_bridge_dev_init(void)
-diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
-index 07ba153..6410361 100644
---- a/drivers/fpga/xilinx-pr-decoupler.c
-+++ b/drivers/fpga/xilinx-pr-decoupler.c
-@@ -121,8 +121,8 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
- 
- 	clk_disable(priv->clk);
- 
--	br = fpga_bridge_create(&pdev->dev, "Xilinx PR Decoupler",
--				&xlnx_pr_decoupler_br_ops, priv);
-+	br = devm_fpga_bridge_create(&pdev->dev, "Xilinx PR Decoupler",
-+				     &xlnx_pr_decoupler_br_ops, priv);
- 	if (!br) {
- 		err = -ENOMEM;
- 		goto err_clk;
-diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
-index ce550fc..817600a 100644
---- a/include/linux/fpga/fpga-bridge.h
-+++ b/include/linux/fpga/fpga-bridge.h
-@@ -69,4 +69,8 @@ void fpga_bridge_free(struct fpga_bridge *br);
- int fpga_bridge_register(struct fpga_bridge *br);
- void fpga_bridge_unregister(struct fpga_bridge *br);
- 
-+struct fpga_bridge
-+*devm_fpga_bridge_create(struct device *dev, const char *name,
-+			 const struct fpga_bridge_ops *br_ops, void *priv);
-+
- #endif /* _LINUX_FPGA_BRIDGE_H */
+ struct zynqmp_eemi_ops {
+ 	int (*get_api_version)(u32 *version);
++	int (*fpga_load)(const u64 address, const u32 size, const u32 flags);
++	int (*fpga_get_status)(u32 *value);
+ 	int (*ioctl)(u32 node_id, u32 ioctl_id, u32 arg1, u32 arg2, u32 *out);
+ 	int (*query_data)(struct zynqmp_pm_query_data qdata, u32 *out);
+ 	int (*clock_enable)(u32 clock_id);
 -- 
-2.7.4
+2.18.0
