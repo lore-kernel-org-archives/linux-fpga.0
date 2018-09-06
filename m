@@ -1,38 +1,65 @@
-Return-Path: <SRS0=Ghnj=LS=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=Ghnj=LS=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-dm3nam03on0074.outbound.protection.outlook.com ([104.47.41.74]:46560
-        "EHLO NAM03-DM3-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725992AbeIDLtU (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 4 Sep 2018 07:49:20 -0400
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [RFC PATCH v2 0/3] Add Bitstream configuration support for ZynqMP
-Date: Wed, 5 Sep 2018 12:54:45 +0530
-Message-ID: <20180905072448.12488-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, atull@kernel.org, mdf@kernel.org, jollys@xilinx.com, sboyd@kernel.org, rajanv@xilinx.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, chinnikishore369@gmail.com
-Cc: Nava kishore Manne <nava.manne@xilinx.com>
+Return-Path: <SRS0=PkUq=LU=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=PkUq=LU=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv9 5/8] arm64: dts: stratix10: add fpga manager and region
+Date: Thu,  6 Sep 2018 14:25:07 -0500
+Message-Id: <1536261910-16426-6-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1536261910-16426-1-git-send-email-richard.gong@linux.intel.com>
+References: <1536261910-16426-1-git-send-email-richard.gong@linux.intel.com>
+To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+List-ID: <linux-fpga@vger.kernel.org>
 
-This series of patches are created On top of the
-below series of patches.
-https://lkml.org/lkml/2018/8/3/687 
+From: Alan Tull <atull@kernel.org>
 
-Nava kishore Manne (3):
-  firmware: xilinx: Add fpga API's
-  dt-bindings: fpga: Add bindings for ZynqMP fpga driver
-  fpga manager: Adding FPGA Manager support for Xilinx zynqmp
+Add the Stratix10 FPGA manager and a FPGA region to the
+device tree.
 
- .../firmware/xilinx/xlnx,zynqmp-firmware.txt  |  13 ++
- drivers/firmware/xilinx/zynqmp.c              |  46 +++++
- drivers/fpga/Kconfig                          |   9 +
- drivers/fpga/Makefile                         |   1 +
- drivers/fpga/zynqmp-fpga.c                    | 159 ++++++++++++++++++
- include/linux/firmware/xlnx-zynqmp.h          |   4 +
- 6 files changed, 232 insertions(+)
- create mode 100644 drivers/fpga/zynqmp-fpga.c
+Signed-off-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Richard Gong <richard.gong@intel.com>
+---
+v2: this patch is added in patch set version 2
+v3: change to put fpga_mgr node under firmware/svc node
+v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
+    add Richard's signed-off-by
+v5: no change
+v6: no change
+v7: no change
+v8: no change
+v9: no change
+---
+ arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
+diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+index ee4715a..0b20209 100644
+--- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
++++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+@@ -106,6 +106,14 @@
+ 		interrupt-parent = <&intc>;
+ 		ranges = <0 0 0 0xffffffff>;
+ 
++		base_fpga_region {
++			#address-cells = <0x1>;
++			#size-cells = <0x1>;
++
++			compatible = "fpga-region";
++			fpga-mgr = <&fpga_mgr>;
++		};
++
+ 		clkmgr: clock-controller@ffd10000 {
+ 			compatible = "intel,stratix10-clkmgr";
+ 			reg = <0xffd10000 0x1000>;
+@@ -512,6 +520,10 @@
+ 				compatible = "intel,stratix10-svc";
+ 				method = "smc";
+ 				memory-region = <&service_reserved>;
++
++				fpga_mgr: fpga-mgr {
++					compatible = "intel,stratix10-soc-fpga-mgr";
++				};
+ 			};
+ 		};
+ 	};
 -- 
-2.18.0
+2.7.4
