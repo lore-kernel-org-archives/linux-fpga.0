@@ -1,263 +1,100 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v2 4/8] fpga: add devm_fpga_region_create
-Date: Tue,  4 Sep 2018 16:22:33 -0500
-Message-Id: <20180904212237.3078-5-atull@kernel.org>
-In-Reply-To: <20180904212237.3078-1-atull@kernel.org>
-References: <20180904212237.3078-1-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Cc: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, Alan Tull <atull@kernel.org>
+Return-Path: <SRS0=PkUq=LU=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=PkUq=LU=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv9 1/8] dt-bindings, firmware: add Intel Stratix10 service layer binding
+Date: Thu,  6 Sep 2018 14:25:03 -0500
+Message-Id: <1536261910-16426-2-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1536261910-16426-1-git-send-email-richard.gong@linux.intel.com>
+References: <1536261910-16426-1-git-send-email-richard.gong@linux.intel.com>
+To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add devm_fpga_region_create() which is the
-managed version of fpga_region_create().
+From: Richard Gong <richard.gong@intel.com>
 
-Change current region drivers to use
-devm_fpga_region_create().
+Add a device tree binding for the Intel Stratix10 service layer driver
 
+Signed-off-by: Richard Gong <richard.gong@intel.com>
 Signed-off-by: Alan Tull <atull@kernel.org>
-Suggested-by: Federico Vaga <federico.vaga@cern.ch>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2: add suggested-by
+v2: change to put service layer driver node under the firmware node
+    change compatible to "intel, stratix10-svc"
+v3: no change
+v4: add Rob's Reviewed-by
+v5: no change
+v6: add Moritz's Acked-by
+v7: no change
+v8: no change
+v9: no chnage
 ---
- Documentation/driver-api/fpga/fpga-region.rst |  3 ++
- drivers/fpga/dfl-fme-region.c                 |  6 +--
- drivers/fpga/dfl.c                            |  6 +--
- drivers/fpga/fpga-region.c                    | 68 +++++++++++++++++++++++----
- drivers/fpga/of-fpga-region.c                 |  6 +--
- include/linux/fpga/fpga-region.h              |  4 ++
- 6 files changed, 73 insertions(+), 20 deletions(-)
+ .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
 
-diff --git a/Documentation/driver-api/fpga/fpga-region.rst b/Documentation/driver-api/fpga/fpga-region.rst
-index f30333c..dc9f75c 100644
---- a/Documentation/driver-api/fpga/fpga-region.rst
-+++ b/Documentation/driver-api/fpga/fpga-region.rst
-@@ -90,6 +90,9 @@ API to add a new FPGA region
-    :functions: fpga_region
- 
- .. kernel-doc:: drivers/fpga/fpga-region.c
-+   :functions: devm_fpga_region_create
+diff --git a/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+new file mode 100644
+index 0000000..1fa6606
+--- /dev/null
++++ b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+@@ -0,0 +1,57 @@
++Intel Service Layer Driver for Stratix10 SoC
++============================================
++Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
++processor system (HPS) and Secure Device Manager (SDM). When the FPGA is
++configured from HPS, there needs to be a way for HPS to notify SDM the
++location and size of the configuration data. Then SDM will get the
++configuration data from that location and perform the FPGA configuration.
 +
-+.. kernel-doc:: drivers/fpga/fpga-region.c
-    :functions: fpga_region_create
- 
- .. kernel-doc:: drivers/fpga/fpga-region.c
-diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
-index 51a5ac2..ec134ec 100644
---- a/drivers/fpga/dfl-fme-region.c
-+++ b/drivers/fpga/dfl-fme-region.c
-@@ -39,7 +39,7 @@ static int fme_region_probe(struct platform_device *pdev)
- 	if (IS_ERR(mgr))
- 		return -EPROBE_DEFER;
- 
--	region = fpga_region_create(dev, mgr, fme_region_get_bridges);
-+	region = devm_fpga_region_create(dev, mgr, fme_region_get_bridges);
- 	if (!region) {
- 		ret = -ENOMEM;
- 		goto eprobe_mgr_put;
-@@ -51,14 +51,12 @@ static int fme_region_probe(struct platform_device *pdev)
- 
- 	ret = fpga_region_register(region);
- 	if (ret)
--		goto region_free;
-+		goto eprobe_mgr_put;
- 
- 	dev_dbg(dev, "DFL FME FPGA Region probed\n");
- 
- 	return 0;
- 
--region_free:
--	fpga_region_free(region);
- eprobe_mgr_put:
- 	fpga_mgr_put(mgr);
- 	return ret;
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index a9b521b..2c09e50 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -899,7 +899,7 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
- 	if (!cdev)
- 		return ERR_PTR(-ENOMEM);
- 
--	cdev->region = fpga_region_create(info->dev, NULL, NULL);
-+	cdev->region = devm_fpga_region_create(info->dev, NULL, NULL);
- 	if (!cdev->region) {
- 		ret = -ENOMEM;
- 		goto free_cdev_exit;
-@@ -911,7 +911,7 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
- 
- 	ret = fpga_region_register(cdev->region);
- 	if (ret)
--		goto free_region_exit;
-+		goto free_cdev_exit;
- 
- 	/* create and init build info for enumeration */
- 	binfo = devm_kzalloc(info->dev, sizeof(*binfo), GFP_KERNEL);
-@@ -942,8 +942,6 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
- 
- unregister_region_exit:
- 	fpga_region_unregister(cdev->region);
--free_region_exit:
--	fpga_region_free(cdev->region);
- free_cdev_exit:
- 	devm_kfree(info->dev, cdev);
- 	return ERR_PTR(ret);
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 0d65220..56f773d 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -185,6 +185,10 @@ ATTRIBUTE_GROUPS(fpga_region);
-  * @mgr: manager that programs this region
-  * @get_bridges: optional function to get bridges to a list
-  *
-+ * The caller of this function is responsible for freeing the resulting region
-+ * struct with fpga_region_free().  Using devm_fpga_region_create() instead is
-+ * recommended.
-+ *
-  * Return: struct fpga_region or NULL
-  */
- struct fpga_region
-@@ -230,8 +234,8 @@ struct fpga_region
- EXPORT_SYMBOL_GPL(fpga_region_create);
- 
- /**
-- * fpga_region_free - free a struct fpga_region
-- * @region: FPGA region created by fpga_region_create
-+ * fpga_region_free - free a FPGA region created by fpga_region_create()
-+ * @region: FPGA region
-  */
- void fpga_region_free(struct fpga_region *region)
- {
-@@ -240,21 +244,72 @@ void fpga_region_free(struct fpga_region *region)
- }
- EXPORT_SYMBOL_GPL(fpga_region_free);
- 
-+static void devm_fpga_region_release(struct device *dev, void *res)
-+{
-+	struct fpga_region *region = *(struct fpga_region **)res;
++To meet the whole system security needs and support virtual machine requesting
++communication with SDM, only the secure world of software (EL3, Exception
++Layer 3) can interface with SDM. All software entities running on other
++exception layers must channel through the EL3 software whenever it needs
++service from SDM.
 +
-+	fpga_region_free(region);
-+}
++Intel Stratix10 service layer driver, running at privileged exception level
++(EL1, Exception Layer 1), interfaces with the service providers and provides
++the services for FPGA configuration, QSPI, Crypto and warm reset. Service layer
++driver also manages secure monitor call (SMC) to communicate with secure monitor
++code running in EL3.
 +
-+/**
-+ * devm_fpga_region_create - create and initialize a managed FPGA region struct
-+ * @dev: device parent
-+ * @mgr: manager that programs this region
-+ * @get_bridges: optional function to get bridges to a list
-+ *
-+ * This function is intended for use in a FPGA region driver's probe function.
-+ * After the region driver creates the region struct with
-+ * devm_fpga_region_create(), it should register it with fpga_region_register().
-+ * The region driver's remove function should call fpga_region_unregister().
-+ * The region struct allocated with this function will be freed automatically on
-+ * driver detach.  This includes the case of a probe function returning error
-+ * before calling fpga_region_register(), the struct will still get cleaned up.
-+ *
-+ * Return: struct fpga_region or NULL
-+ */
-+struct fpga_region
-+*devm_fpga_region_create(struct device *dev,
-+			 struct fpga_manager *mgr,
-+			 int (*get_bridges)(struct fpga_region *))
-+{
-+	struct fpga_region **ptr, *region;
++Required properties:
++-------------------
++The svc node has the following mandatory properties, must be located under
++the firmware node.
 +
-+	ptr = devres_alloc(devm_fpga_region_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return NULL;
++- compatible: "intel,stratix10-svc"
++- method: smc or hvc
++        smc - Secure Monitor Call
++        hvc - Hypervisor Call
++- memory-region:
++	phandle to the reserved memory node. See
++	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
++	for details
 +
-+	region = fpga_region_create(dev, mgr, get_bridges);
-+	if (!region) {
-+		devres_free(ptr);
-+	} else {
-+		*ptr = region;
-+		devres_add(dev, ptr);
-+	}
++Example:
++-------
 +
-+	return region;
-+}
-+EXPORT_SYMBOL_GPL(devm_fpga_region_create);
++	reserved-memory {
++                #address-cells = <2>;
++                #size-cells = <2>;
++                ranges;
 +
- /**
-  * fpga_region_register - register a FPGA region
-- * @region: FPGA region created by fpga_region_create
-+ * @region: FPGA region
-+ *
-  * Return: 0 or -errno
-  */
- int fpga_region_register(struct fpga_region *region)
- {
- 	return device_add(&region->dev);
--
- }
- EXPORT_SYMBOL_GPL(fpga_region_register);
- 
- /**
-- * fpga_region_unregister - unregister and free a FPGA region
-+ * fpga_region_unregister - unregister a FPGA region
-  * @region: FPGA region
-+ *
-+ * This function is intended for use in a FPGA region driver's remove function.
-+ * If the region was created by devm_fpga_region_create(), it will be
-+ * automatically freed.  If the region was created by fpga_region_create(), the
-+ * caller is responsible for freeing it with fpga_region_free().
-  */
- void fpga_region_unregister(struct fpga_region *region)
- {
-@@ -264,9 +319,6 @@ EXPORT_SYMBOL_GPL(fpga_region_unregister);
- 
- static void fpga_region_dev_release(struct device *dev)
- {
--	struct fpga_region *region = to_fpga_region(dev);
--
--	fpga_region_free(region);
- }
- 
- /**
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 052a134..122286f 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -410,7 +410,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 	if (IS_ERR(mgr))
- 		return -EPROBE_DEFER;
- 
--	region = fpga_region_create(dev, mgr, of_fpga_region_get_bridges);
-+	region = devm_fpga_region_create(dev, mgr, of_fpga_region_get_bridges);
- 	if (!region) {
- 		ret = -ENOMEM;
- 		goto eprobe_mgr_put;
-@@ -418,7 +418,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 
- 	ret = fpga_region_register(region);
- 	if (ret)
--		goto eprobe_free;
-+		goto eprobe_mgr_put;
- 
- 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
- 	dev_set_drvdata(dev, region);
-@@ -427,8 +427,6 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
--eprobe_free:
--	fpga_region_free(region);
- eprobe_mgr_put:
- 	fpga_mgr_put(mgr);
- 	return ret;
-diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
-index 0521b7f..27cb706 100644
---- a/include/linux/fpga/fpga-region.h
-+++ b/include/linux/fpga/fpga-region.h
-@@ -44,4 +44,8 @@ void fpga_region_free(struct fpga_region *region);
- int fpga_region_register(struct fpga_region *region);
- void fpga_region_unregister(struct fpga_region *region);
- 
-+struct fpga_region
-+*devm_fpga_region_create(struct device *dev, struct fpga_manager *mgr,
-+			int (*get_bridges)(struct fpga_region *));
++                service_reserved: svcbuffer@0 {
++                        compatible = "shared-dma-pool";
++                        reg = <0x0 0x0 0x0 0x1000000>;
++                        alignment = <0x1000>;
++                        no-map;
++                };
++        };
 +
- #endif /* _FPGA_REGION_H */
++	firmware {
++		svc {
++			compatible = "intel,stratix10-svc";
++			method = "smc";
++			memory-region = <&service_reserved>;
++		};
++	};
 -- 
 2.7.4
