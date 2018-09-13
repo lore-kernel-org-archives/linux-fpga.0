@@ -1,65 +1,51 @@
-Return-Path: <SRS0=PkUq=LU=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=PkUq=LU=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv9 5/8] arm64: dts: stratix10: add fpga manager and region
-Date: Thu,  6 Sep 2018 14:25:07 -0500
-Message-Id: <1536261910-16426-6-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1536261910-16426-1-git-send-email-richard.gong@linux.intel.com>
-References: <1536261910-16426-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+References: <20180911123732.32579-1-colin.king@canonical.com>
+In-Reply-To: <20180911123732.32579-1-colin.king@canonical.com>
+From: Alan Tull <atull@kernel.org>
+Date: Thu, 13 Sep 2018 15:21:30 -0500
+Message-ID: <CANk1AXTxBtMEJo0NTW9g0GeMX8-RTcD_PJ2eyqkYyCtw-u_9Mw@mail.gmail.com>
+Subject: Re: [PATCH] fpga: region: fix spelling mistake "partion" -> "partition"
+Content-Type: text/plain; charset="UTF-8"
+To: Colin King <colin.king@canonical.com>
+Cc: Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-fpga@vger.kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, kernel-janitors@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alan Tull <atull@kernel.org>
+On Tue, Sep 11, 2018 at 7:37 AM Colin King <colin.king@canonical.com> wrote:
 
-Add the Stratix10 FPGA manager and a FPGA region to the
-device tree.
+Hi Colin,
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Richard Gong <richard.gong@intel.com>
----
-v2: this patch is added in patch set version 2
-v3: change to put fpga_mgr node under firmware/svc node
-v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
-    add Richard's signed-off-by
-v5: no change
-v6: no change
-v7: no change
-v8: no change
-v9: no change
----
- arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+>
+> From: Colin Ian King <colin.king@canonical.com>
+>
+> Trivial fix to spelling mistake in the documentation
 
-diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-index ee4715a..0b20209 100644
---- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-+++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-@@ -106,6 +106,14 @@
- 		interrupt-parent = <&intc>;
- 		ranges = <0 0 0 0xffffffff>;
- 
-+		base_fpga_region {
-+			#address-cells = <0x1>;
-+			#size-cells = <0x1>;
-+
-+			compatible = "fpga-region";
-+			fpga-mgr = <&fpga_mgr>;
-+		};
-+
- 		clkmgr: clock-controller@ffd10000 {
- 			compatible = "intel,stratix10-clkmgr";
- 			reg = <0xffd10000 0x1000>;
-@@ -512,6 +520,10 @@
- 				compatible = "intel,stratix10-svc";
- 				method = "smc";
- 				memory-region = <&service_reserved>;
-+
-+				fpga_mgr: fpga-mgr {
-+					compatible = "intel,stratix10-soc-fpga-mgr";
-+				};
- 			};
- 		};
- 	};
--- 
-2.7.4
+I took a look, there's other misspellings in this doc.  I'd like to
+get them all in one patch if possible.  If I have time I'll add them
+to this patch or if you have time, you can.
+
+Alan
+
+>
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>  Documentation/devicetree/bindings/fpga/fpga-region.txt | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/Documentation/devicetree/bindings/fpga/fpga-region.txt b/Documentation/devicetree/bindings/fpga/fpga-region.txt
+> index 6db8aeda461a..71beb85b56f1 100644
+> --- a/Documentation/devicetree/bindings/fpga/fpga-region.txt
+> +++ b/Documentation/devicetree/bindings/fpga/fpga-region.txt
+> @@ -484,7 +484,7 @@ It is beyond the scope of this document to fully describe all the FPGA design
+>  constraints required to make partial reconfiguration work[1] [2] [3], but a few
+>  deserve quick mention.
+>
+> -A persona must have boundary connections that line up with those of the partion
+> +A persona must have boundary connections that line up with those of the partition
+>  or region it is designed to go into.
+>
+>  During programming, transactions through those connections must be stopped and
+> --
+> 2.17.1
+>
