@@ -1,100 +1,74 @@
-Return-Path: <SRS0=PkUq=LU=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=PkUq=LU=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv9 1/8] dt-bindings, firmware: add Intel Stratix10 service layer binding
-Date: Thu,  6 Sep 2018 14:25:03 -0500
-Message-Id: <1536261910-16426-2-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1536261910-16426-1-git-send-email-richard.gong@linux.intel.com>
-References: <1536261910-16426-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, yves.vandervennet@linux.intel.com, richard.gong@intel.com
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=chq5=L5=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=chq5=L5=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mga18.intel.com ([134.134.136.126]:49564 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725744AbeIOHXN (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Sat, 15 Sep 2018 03:23:13 -0400
+Date: Sat, 15 Sep 2018 09:52:49 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH -next] fpga: dfl: fme: remove set but not used variable
+ 'priv'
+Message-ID: <20180915015249.GA25204@hao-dev>
+References: <1536888816-51700-1-git-send-email-yuehaibing@huawei.com>
+ <20180914102321.GA21810@hao-dev>
+ <CAAtXAHeWQ-QsD833ugV6Uqk=FOn8mxvg25FY4tyBJVe0bAf38g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAAtXAHeWQ-QsD833ugV6Uqk=FOn8mxvg25FY4tyBJVe0bAf38g@mail.gmail.com>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Moritz Fischer <moritz.fischer@ettus.com>
+Cc: YueHaibing <yuehaibing@huawei.com>, Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-From: Richard Gong <richard.gong@intel.com>
+On Fri, Sep 14, 2018 at 09:18:12AM -0700, Moritz Fischer wrote:
+> Hi,
+> 
+> On Fri, Sep 14, 2018 at 3:23 AM, Wu Hao <hao.wu@intel.com> wrote:
+> > On Fri, Sep 14, 2018 at 01:33:36AM +0000, YueHaibing wrote:
+> >> Fixes gcc '-Wunused-but-set-variable' warning:
+> >>
+> >> drivers/fpga/dfl-fme-pr.c: In function 'pr_mgmt_uinit':
+> >> drivers/fpga/dfl-fme-pr.c:447:18: warning:
+> >>  variable 'priv' set but not used [-Wunused-but-set-variable]
+> >
+> > Looks good to me, thanks for this fixing.
+> 
+> Hao, is this an Acked-by? :)
 
-Add a device tree binding for the Intel Stratix10 service layer driver
+Sure.. thanks for reminding. :)
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Signed-off-by: Alan Tull <atull@kernel.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: change to put service layer driver node under the firmware node
-    change compatible to "intel, stratix10-svc"
-v3: no change
-v4: add Rob's Reviewed-by
-v5: no change
-v6: add Moritz's Acked-by
-v7: no change
-v8: no change
-v9: no chnage
----
- .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+Acked-by: Wu Hao <hao.wu@intel.com>
 
-diff --git a/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-new file mode 100644
-index 0000000..1fa6606
---- /dev/null
-+++ b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-@@ -0,0 +1,57 @@
-+Intel Service Layer Driver for Stratix10 SoC
-+============================================
-+Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
-+processor system (HPS) and Secure Device Manager (SDM). When the FPGA is
-+configured from HPS, there needs to be a way for HPS to notify SDM the
-+location and size of the configuration data. Then SDM will get the
-+configuration data from that location and perform the FPGA configuration.
-+
-+To meet the whole system security needs and support virtual machine requesting
-+communication with SDM, only the secure world of software (EL3, Exception
-+Layer 3) can interface with SDM. All software entities running on other
-+exception layers must channel through the EL3 software whenever it needs
-+service from SDM.
-+
-+Intel Stratix10 service layer driver, running at privileged exception level
-+(EL1, Exception Layer 1), interfaces with the service providers and provides
-+the services for FPGA configuration, QSPI, Crypto and warm reset. Service layer
-+driver also manages secure monitor call (SMC) to communicate with secure monitor
-+code running in EL3.
-+
-+Required properties:
-+-------------------
-+The svc node has the following mandatory properties, must be located under
-+the firmware node.
-+
-+- compatible: "intel,stratix10-svc"
-+- method: smc or hvc
-+        smc - Secure Monitor Call
-+        hvc - Hypervisor Call
-+- memory-region:
-+	phandle to the reserved memory node. See
-+	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
-+	for details
-+
-+Example:
-+-------
-+
-+	reserved-memory {
-+                #address-cells = <2>;
-+                #size-cells = <2>;
-+                ranges;
-+
-+                service_reserved: svcbuffer@0 {
-+                        compatible = "shared-dma-pool";
-+                        reg = <0x0 0x0 0x0 0x1000000>;
-+                        alignment = <0x1000>;
-+                        no-map;
-+                };
-+        };
-+
-+	firmware {
-+		svc {
-+			compatible = "intel,stratix10-svc";
-+			method = "smc";
-+			memory-region = <&service_reserved>;
-+		};
-+	};
--- 
-2.7.4
+Hao
+
+> >
+> > Thanks
+> > Hao
+> >
+> >>
+> >> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> Acked-by: Moritz Fischer <mdf@kernel.org>
+> >> ---
+> >>  drivers/fpga/dfl-fme-pr.c | 2 --
+> >>  1 file changed, 2 deletions(-)
+> >>
+> >> diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+> >> index 0b84053..fe5a557 100644
+> >> --- a/drivers/fpga/dfl-fme-pr.c
+> >> +++ b/drivers/fpga/dfl-fme-pr.c
+> >> @@ -444,10 +444,8 @@ static void pr_mgmt_uinit(struct platform_device *pdev,
+> >>                         struct dfl_feature *feature)
+> >>  {
+> >>       struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+> >> -     struct dfl_fme *priv;
+> >>
+> >>       mutex_lock(&pdata->lock);
+> >> -     priv = dfl_fpga_pdata_get_private(pdata);
+> >>
+> >>       dfl_fme_destroy_regions(pdata);
+> >>       dfl_fme_destroy_bridges(pdata);
+> 
+> Thanks for the patch,
+> 
+> Moritz
