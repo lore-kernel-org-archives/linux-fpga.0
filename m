@@ -1,63 +1,66 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH v3 0/4] fpga: add devm managed create APIs
-Date: Wed, 26 Sep 2018 11:12:18 -0500
-Message-Id: <1537978342-17697-1-git-send-email-atull@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Federico Vaga <federico.vaga@cern.ch>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, Alan Tull <atull@kernel.org>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=eoXi=MH=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=eoXi=MH=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-it1-f182.google.com ([209.85.166.182]:34611 "EHLO
+        mail-it1-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726655AbeIYKGz (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 25 Sep 2018 06:06:55 -0400
+Received: by mail-it1-f182.google.com with SMTP id o72-v6so5251079ita.1
+        for <linux-fpga@vger.kernel.org>; Mon, 24 Sep 2018 21:01:24 -0700 (PDT)
+MIME-Version: 1.0
+From: darknighte <darknighte@darknighte.com>
+Date: Mon, 24 Sep 2018 23:01:12 -0500
+Message-ID: <CAKM2CVJuiCyDM_JPZj6waukhsDSJSc=1EHjp1Ch=g0Ok_LMFOg@mail.gmail.com>
+Subject: Call for speakers for the Devicetree Microconference @ the 2018 LPC
+ in Vancouver
+Content-Type: text/plain; charset="UTF-8"
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: linux-fpga@vger.kernel.org
+Cc: Frank Rowand <frowand.list@gmail.com>
 
-Implement managed devm_fpga_(mgr|bridge|region)_create() functions.
+The Devicetree Microconference has been accepted into the 2018 Linux
+Plumbers Conference, which will be held in Vancouver, British
+Columbia, Canada from Tuesday, November 13 through Thursday, November
+15.  If you are interested in speaking, please contact myself, or
+co-leader Frank Rowand (on CC), to request a slot.
 
-Patchset is dependent on the patches that were acked/sent upstream:
-   https://lkml.org/lkml/2018/9/12/639
+For more details, here is the LPC announcement :
 
-v3 changes:
-* take out unclear explanation fpga_(mgr|br|region)_unregister
-* Add acks
-* drop the separately resent "dt-bindings: fpga: fix freeze controller compatible in region doc"
-* drop some of the acked patches that I send to Greg
+We are pleased to announce the the Devicetree Microconference
+has been accepted into the 2018 Linux Plumbers Conference!
 
-Alan Tull (4):
-  fpga: mgr: add devm_fpga_mgr_create
-  fpga: bridge: add devm_fpga_bridge_create
-  fpga: add devm_fpga_region_create
-  docs: fpga: document programming fpgas using regions
+Devicetree provides hardware description for many platforms, such
+as Linux [1], U-Boot [2], BSD [3], and Zephyr [4]. Devicetree
+continues to evolve to become more robust and attempt to provide the
+features desired by the varied users.
 
- Documentation/driver-api/fpga/fpga-bridge.rst      |  37 ++----
- Documentation/driver-api/fpga/fpga-mgr.rst         | 126 +++------------------
- Documentation/driver-api/fpga/fpga-programming.rst | 107 +++++++++++++++++
- Documentation/driver-api/fpga/fpga-region.rst      |  91 +++++++--------
- Documentation/driver-api/fpga/index.rst            |   2 +
- Documentation/driver-api/fpga/intro.rst            |   2 +-
- drivers/fpga/altera-cvp.c                          |   8 +-
- drivers/fpga/altera-fpga2sdram.c                   |   8 +-
- drivers/fpga/altera-freeze-bridge.c                |  13 +--
- drivers/fpga/altera-hps2fpga.c                     |   7 +-
- drivers/fpga/altera-pr-ip-core.c                   |   9 +-
- drivers/fpga/altera-ps-spi.c                       |  11 +-
- drivers/fpga/dfl-fme-br.c                          |  11 +-
- drivers/fpga/dfl-fme-mgr.c                         |  11 +-
- drivers/fpga/dfl-fme-region.c                      |   6 +-
- drivers/fpga/dfl.c                                 |   6 +-
- drivers/fpga/fpga-bridge.c                         |  68 +++++++++--
- drivers/fpga/fpga-mgr.c                            |  64 +++++++++--
- drivers/fpga/fpga-region.c                         |  65 +++++++++--
- drivers/fpga/ice40-spi.c                           |  10 +-
- drivers/fpga/machxo2-spi.c                         |  11 +-
- drivers/fpga/of-fpga-region.c                      |   6 +-
- drivers/fpga/socfpga-a10.c                         |   5 +-
- drivers/fpga/socfpga.c                             |  10 +-
- drivers/fpga/ts73xx-fpga.c                         |  11 +-
- drivers/fpga/xilinx-pr-decoupler.c                 |   4 +-
- drivers/fpga/xilinx-spi.c                          |  12 +-
- drivers/fpga/zynq-fpga.c                           |   5 +-
- include/linux/fpga/fpga-bridge.h                   |   4 +
- include/linux/fpga/fpga-mgr.h                      |   4 +
- include/linux/fpga/fpga-region.h                   |   4 +
- 31 files changed, 412 insertions(+), 326 deletions(-)
- create mode 100644 Documentation/driver-api/fpga/fpga-programming.rst
+Some of the overlay related needs are now being addressed by
+U-boot, but there remain use cases for run time overlay management in
+the Linux kernel. Support for run time overlay management in the Linux
+kernel is slowly moving forward, but significant issues remain [5].
 
--- 
-2.7.4
+Devicetree verification has been an ongoing project for several years,
+with the most recent in person discussion occurring at the Devicetree
+Workshop [6] at Kernel Summit 2017. Progress continues on mail lists,
+and will be an important topic at the microconference.
+
+Other Devicetree related tools, such as the dtc compiler and libfdt [7]
+continue to see active development.
+
+Additional possible issues to be discussed may include potential
+changes to the Flattened Device Tree (FDT) format, reducing the
+Devicetree memory and storage size in the Linux kernel, creating new
+architecture to provide solutions to current problems, updating the
+Devicetree Specification, and using devicetrees in constrained contexts.
+
+LPC [8] will be held in Vancouver, British Columbia, Canada
+from Tuesday, November 13 through Thursday, November 15.
+
+[1] https://elinux.org/Device_Tree_Reference
+[2] https://github.com/lentinj/u-boot/blob/master/doc/README.fdt-control
+[3] https://wiki.freebsd.org/FlattenedDeviceTree
+[4] http://docs.zephyrproject.org/devices/dts/device_tree.html
+[5] https://elinux.org/Frank%27s_Evolving_Overlay_Thoughts
+[6] https://elinux.org/Device_tree_future#Kernel_Summit_2017.2C_Devicetree_Workshop
+[7] https://elinux.org/Device_Tree_Reference#dtc_.28upstream_project.29
+[8] https://linuxplumbersconf.org/
