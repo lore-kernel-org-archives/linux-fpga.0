@@ -1,259 +1,76 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 3/4] fpga: add devm_fpga_region_create
-Date: Mon, 15 Oct 2018 17:20:03 -0500
-Message-Id: <1539642004-18473-4-git-send-email-atull@kernel.org>
-In-Reply-To: <1539642004-18473-1-git-send-email-atull@kernel.org>
-References: <1539642004-18473-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
+Subject: Re: [PATCH 15/16] of: unittest: initialize args before calling
+ of_irq_parse_one()
+References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+ <1538712767-30394-16-git-send-email-frowand.list@gmail.com>
+ <7fc4b9da-5fdf-11c9-e168-ccb2d960adea@roeck-us.net>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <3c6fe77f-5fe6-0289-9480-7c98cdf81a43@gmail.com>
+Date: Fri, 5 Oct 2018 12:05:17 -0700
+MIME-Version: 1.0
+In-Reply-To: <7fc4b9da-5fdf-11c9-e168-ccb2d960adea@roeck-us.net>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+To: Guenter Roeck <linux@roeck-us.net>, Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add devm_fpga_region_create() which is the
-managed version of fpga_region_create().
+On 10/05/18 06:26, Guenter Roeck wrote:
+> On 10/04/2018 09:12 PM, frowand.list@gmail.com wrote:
+>> From: Frank Rowand <frank.rowand@sony.com>
+>>
+>> Callers of of_irq_parse_one() blindly use the pointer args.np
+>> without checking whether of_irq_parse_one() had an error and
+>> thus did not set the value of args.np.  Initialize args to
+>> zero so that using the format "%pOF" to show the value of
+>> args.np will show "(null)" when of_irq_parse_one() has an
+>> error and does not set args.np instead of trying to
+>> dereference a random value.
+>>
+>> Reported-by: Guenter Roeck <linux@roeck-us.net>
+>> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+> 
+> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+> 
+> The same problem exists when of_parse_phandle_with_args() reports an error.
 
-Change current region drivers to use
-devm_fpga_region_create().
+Thanks, I'll add a fix for that.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Suggested-by: Federico Vaga <federico.vaga@cern.ch>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
- Documentation/driver-api/fpga/fpga-region.rst |  3 ++
- drivers/fpga/dfl-fme-region.c                 |  6 +--
- drivers/fpga/dfl.c                            |  6 +--
- drivers/fpga/fpga-region.c                    | 65 +++++++++++++++++++++++----
- drivers/fpga/of-fpga-region.c                 |  6 +--
- include/linux/fpga/fpga-region.h              |  4 ++
- 6 files changed, 70 insertions(+), 20 deletions(-)
+-Frank
 
-diff --git a/Documentation/driver-api/fpga/fpga-region.rst b/Documentation/driver-api/fpga/fpga-region.rst
-index f30333c..dc9f75c 100644
---- a/Documentation/driver-api/fpga/fpga-region.rst
-+++ b/Documentation/driver-api/fpga/fpga-region.rst
-@@ -90,6 +90,9 @@ API to add a new FPGA region
-    :functions: fpga_region
- 
- .. kernel-doc:: drivers/fpga/fpga-region.c
-+   :functions: devm_fpga_region_create
-+
-+.. kernel-doc:: drivers/fpga/fpga-region.c
-    :functions: fpga_region_create
- 
- .. kernel-doc:: drivers/fpga/fpga-region.c
-diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
-index 51a5ac2..ec134ec 100644
---- a/drivers/fpga/dfl-fme-region.c
-+++ b/drivers/fpga/dfl-fme-region.c
-@@ -39,7 +39,7 @@ static int fme_region_probe(struct platform_device *pdev)
- 	if (IS_ERR(mgr))
- 		return -EPROBE_DEFER;
- 
--	region = fpga_region_create(dev, mgr, fme_region_get_bridges);
-+	region = devm_fpga_region_create(dev, mgr, fme_region_get_bridges);
- 	if (!region) {
- 		ret = -ENOMEM;
- 		goto eprobe_mgr_put;
-@@ -51,14 +51,12 @@ static int fme_region_probe(struct platform_device *pdev)
- 
- 	ret = fpga_region_register(region);
- 	if (ret)
--		goto region_free;
-+		goto eprobe_mgr_put;
- 
- 	dev_dbg(dev, "DFL FME FPGA Region probed\n");
- 
- 	return 0;
- 
--region_free:
--	fpga_region_free(region);
- eprobe_mgr_put:
- 	fpga_mgr_put(mgr);
- 	return ret;
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index a9b521b..2c09e50 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -899,7 +899,7 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
- 	if (!cdev)
- 		return ERR_PTR(-ENOMEM);
- 
--	cdev->region = fpga_region_create(info->dev, NULL, NULL);
-+	cdev->region = devm_fpga_region_create(info->dev, NULL, NULL);
- 	if (!cdev->region) {
- 		ret = -ENOMEM;
- 		goto free_cdev_exit;
-@@ -911,7 +911,7 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
- 
- 	ret = fpga_region_register(cdev->region);
- 	if (ret)
--		goto free_region_exit;
-+		goto free_cdev_exit;
- 
- 	/* create and init build info for enumeration */
- 	binfo = devm_kzalloc(info->dev, sizeof(*binfo), GFP_KERNEL);
-@@ -942,8 +942,6 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
- 
- unregister_region_exit:
- 	fpga_region_unregister(cdev->region);
--free_region_exit:
--	fpga_region_free(cdev->region);
- free_cdev_exit:
- 	devm_kfree(info->dev, cdev);
- 	return ERR_PTR(ret);
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 0d65220..bde5a9d 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -185,6 +185,10 @@ ATTRIBUTE_GROUPS(fpga_region);
-  * @mgr: manager that programs this region
-  * @get_bridges: optional function to get bridges to a list
-  *
-+ * The caller of this function is responsible for freeing the resulting region
-+ * struct with fpga_region_free().  Using devm_fpga_region_create() instead is
-+ * recommended.
-+ *
-  * Return: struct fpga_region or NULL
-  */
- struct fpga_region
-@@ -230,8 +234,8 @@ struct fpga_region
- EXPORT_SYMBOL_GPL(fpga_region_create);
- 
- /**
-- * fpga_region_free - free a struct fpga_region
-- * @region: FPGA region created by fpga_region_create
-+ * fpga_region_free - free a FPGA region created by fpga_region_create()
-+ * @region: FPGA region
-  */
- void fpga_region_free(struct fpga_region *region)
- {
-@@ -240,21 +244,69 @@ void fpga_region_free(struct fpga_region *region)
- }
- EXPORT_SYMBOL_GPL(fpga_region_free);
- 
-+static void devm_fpga_region_release(struct device *dev, void *res)
-+{
-+	struct fpga_region *region = *(struct fpga_region **)res;
-+
-+	fpga_region_free(region);
-+}
-+
-+/**
-+ * devm_fpga_region_create - create and initialize a managed FPGA region struct
-+ * @dev: device parent
-+ * @mgr: manager that programs this region
-+ * @get_bridges: optional function to get bridges to a list
-+ *
-+ * This function is intended for use in a FPGA region driver's probe function.
-+ * After the region driver creates the region struct with
-+ * devm_fpga_region_create(), it should register it with fpga_region_register().
-+ * The region driver's remove function should call fpga_region_unregister().
-+ * The region struct allocated with this function will be freed automatically on
-+ * driver detach.  This includes the case of a probe function returning error
-+ * before calling fpga_region_register(), the struct will still get cleaned up.
-+ *
-+ * Return: struct fpga_region or NULL
-+ */
-+struct fpga_region
-+*devm_fpga_region_create(struct device *dev,
-+			 struct fpga_manager *mgr,
-+			 int (*get_bridges)(struct fpga_region *))
-+{
-+	struct fpga_region **ptr, *region;
-+
-+	ptr = devres_alloc(devm_fpga_region_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return NULL;
-+
-+	region = fpga_region_create(dev, mgr, get_bridges);
-+	if (!region) {
-+		devres_free(ptr);
-+	} else {
-+		*ptr = region;
-+		devres_add(dev, ptr);
-+	}
-+
-+	return region;
-+}
-+EXPORT_SYMBOL_GPL(devm_fpga_region_create);
-+
- /**
-  * fpga_region_register - register a FPGA region
-- * @region: FPGA region created by fpga_region_create
-+ * @region: FPGA region
-+ *
-  * Return: 0 or -errno
-  */
- int fpga_region_register(struct fpga_region *region)
- {
- 	return device_add(&region->dev);
--
- }
- EXPORT_SYMBOL_GPL(fpga_region_register);
- 
- /**
-- * fpga_region_unregister - unregister and free a FPGA region
-+ * fpga_region_unregister - unregister a FPGA region
-  * @region: FPGA region
-+ *
-+ * This function is intended for use in a FPGA region driver's remove function.
-  */
- void fpga_region_unregister(struct fpga_region *region)
- {
-@@ -264,9 +316,6 @@ EXPORT_SYMBOL_GPL(fpga_region_unregister);
- 
- static void fpga_region_dev_release(struct device *dev)
- {
--	struct fpga_region *region = to_fpga_region(dev);
--
--	fpga_region_free(region);
- }
- 
- /**
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 052a134..122286f 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -410,7 +410,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 	if (IS_ERR(mgr))
- 		return -EPROBE_DEFER;
- 
--	region = fpga_region_create(dev, mgr, of_fpga_region_get_bridges);
-+	region = devm_fpga_region_create(dev, mgr, of_fpga_region_get_bridges);
- 	if (!region) {
- 		ret = -ENOMEM;
- 		goto eprobe_mgr_put;
-@@ -418,7 +418,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 
- 	ret = fpga_region_register(region);
- 	if (ret)
--		goto eprobe_free;
-+		goto eprobe_mgr_put;
- 
- 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
- 	dev_set_drvdata(dev, region);
-@@ -427,8 +427,6 @@ static int of_fpga_region_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
--eprobe_free:
--	fpga_region_free(region);
- eprobe_mgr_put:
- 	fpga_mgr_put(mgr);
- 	return ret;
-diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
-index 0521b7f..27cb706 100644
---- a/include/linux/fpga/fpga-region.h
-+++ b/include/linux/fpga/fpga-region.h
-@@ -44,4 +44,8 @@ void fpga_region_free(struct fpga_region *region);
- int fpga_region_register(struct fpga_region *region);
- void fpga_region_unregister(struct fpga_region *region);
- 
-+struct fpga_region
-+*devm_fpga_region_create(struct device *dev, struct fpga_manager *mgr,
-+			int (*get_bridges)(struct fpga_region *));
-+
- #endif /* _FPGA_REGION_H */
--- 
-2.7.4
+> 
+> Guenter
+> 
+>> ---
+>>   drivers/of/unittest.c | 5 +++--
+>>   1 file changed, 3 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+>> index 6d80f474c8f2..b61a33f30a56 100644
+>> --- a/drivers/of/unittest.c
+>> +++ b/drivers/of/unittest.c
+>> @@ -780,7 +780,7 @@ static void __init of_unittest_parse_interrupts(void)
+>>       for (i = 0; i < 4; i++) {
+>>           bool passed = true;
+>>   -        args.args_count = 0;
+>> +        memset(&args, 0, sizeof(args));
+>>           rc = of_irq_parse_one(np, i, &args);
+>>             passed &= !rc;
+>> @@ -801,7 +801,7 @@ static void __init of_unittest_parse_interrupts(void)
+>>       for (i = 0; i < 4; i++) {
+>>           bool passed = true;
+>>   -        args.args_count = 0;
+>> +        memset(&args, 0, sizeof(args));
+>>           rc = of_irq_parse_one(np, i, &args);
+>>             /* Test the values from tests-phandle.dtsi */
+>> @@ -854,6 +854,7 @@ static void __init of_unittest_parse_interrupts_extended(void)
+>>       for (i = 0; i < 7; i++) {
+>>           bool passed = true;
+>>   +        memset(&args, 0, sizeof(args));
+>>           rc = of_irq_parse_one(np, i, &args);
+>>             /* Test the values from tests-phandle.dtsi */
+>>
+> 
+> 
