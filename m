@@ -1,144 +1,127 @@
-Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v2 07/18] of: dynamic: change type of of_{at,de}tach_node() to void
-Date: Fri, 12 Oct 2018 21:53:27 -0700
-Message-Id: <1539406418-18162-8-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
-References: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH 11/16] of: overlay: test case of two fragments adding same node
+Date: Thu,  4 Oct 2018 21:12:42 -0700
+Message-Id: <1538712767-30394-12-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-of_attach_node() and of_detach_node() always return zero, so
-their return value is meaningless.  Change their type to void
-and fix all callers to ignore return value.
+Multiple overlay fragments adding or deleting the same node is not
+supported.  An attempt to do so results in an incorrect devicetree.
+The node name will be munged for the second add.
+
+After adding this patch, the unittest messages will show:
+
+   Duplicate name in motor-1, renamed to "controller#1"
+   OF: overlay: of_overlay_apply() err=0
+   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
+   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
+
+   ...
+
+   ### dt-test ### end of unittest - 210 passed, 1 failed
+
+The incorrect (munged) node name "controller#1" can be seen in the
+/proc filesystem:
+
+   $ pwd
+   /proc/device-tree/testcase-data-2/substation@100/motor-1
+   $ ls
+   compatible    controller    controller#1  name          phandle       spin
+   $ ls controller
+   power_bus
+   $ ls controller#1
+   power_bus_emergency
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- arch/powerpc/platforms/pseries/dlpar.c    | 13 ++-----------
- arch/powerpc/platforms/pseries/reconfig.c |  6 +-----
- drivers/of/dynamic.c                      |  9 ++-------
- include/linux/of.h                        |  4 ++--
- 4 files changed, 7 insertions(+), 25 deletions(-)
+ drivers/of/unittest-data/Makefile                  |  1 +
+ .../of/unittest-data/overlay_bad_add_dup_node.dts  | 28 ++++++++++++++++++++++
+ drivers/of/unittest.c                              |  5 ++++
+ 3 files changed, 34 insertions(+)
+ create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index e3010b14aea5..0027eea94a8b 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -244,15 +244,9 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
+diff --git a/drivers/of/unittest-data/Makefile b/drivers/of/unittest-data/Makefile
+index 013d85e694c6..166dbdbfd1c5 100644
+--- a/drivers/of/unittest-data/Makefile
++++ b/drivers/of/unittest-data/Makefile
+@@ -17,6 +17,7 @@ obj-$(CONFIG_OF_OVERLAY) += overlay.dtb.o \
+ 			    overlay_12.dtb.o \
+ 			    overlay_13.dtb.o \
+ 			    overlay_15.dtb.o \
++			    overlay_bad_add_dup_node.dtb.o \
+ 			    overlay_bad_phandle.dtb.o \
+ 			    overlay_bad_symbol.dtb.o \
+ 			    overlay_base.dtb.o
+diff --git a/drivers/of/unittest-data/overlay_bad_add_dup_node.dts b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+new file mode 100644
+index 000000000000..145dfc3b1024
+--- /dev/null
++++ b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+@@ -0,0 +1,28 @@
++// SPDX-License-Identifier: GPL-2.0
++/dts-v1/;
++/plugin/;
++
++/*
++ * &electric_1/motor-1 and &spin_ctrl_1 are the same node:
++ *   /testcase-data-2/substation@100/motor-1
++ *
++ * Thus the new node "controller" in each fragment will
++ * result in an attempt to add the same node twice.
++ * This will result in an error and the overlay apply
++ * will fail.
++ */
++
++&electric_1 {
++
++	motor-1 {
++		controller {
++			power_bus = < 0x1 0x2 >;
++		};
++	};
++};
++
++&spin_ctrl_1 {
++		controller {
++			power_bus_emergency = < 0x101 0x102 >;
++		};
++};
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 722537e14848..471b8eb6e842 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -2147,6 +2147,7 @@ struct overlay_info {
+ OVERLAY_INFO_EXTERN(overlay_12);
+ OVERLAY_INFO_EXTERN(overlay_13);
+ OVERLAY_INFO_EXTERN(overlay_15);
++OVERLAY_INFO_EXTERN(overlay_bad_add_dup_node);
+ OVERLAY_INFO_EXTERN(overlay_bad_phandle);
+ OVERLAY_INFO_EXTERN(overlay_bad_symbol);
  
- int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
- {
--	int rc;
--
- 	dn->parent = parent;
+@@ -2169,6 +2170,7 @@ struct overlay_info {
+ 	OVERLAY_INFO(overlay_12, 0),
+ 	OVERLAY_INFO(overlay_13, 0),
+ 	OVERLAY_INFO(overlay_15, 0),
++	OVERLAY_INFO(overlay_bad_add_dup_node, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
+ 	{}
+@@ -2413,6 +2415,9 @@ static __init void of_unittest_overlay_high_level(void)
+ 	unittest(overlay_data_apply("overlay", NULL),
+ 		 "Adding overlay 'overlay' failed\n");
  
--	rc = of_attach_node(dn);
--	if (rc) {
--		printk(KERN_ERR "Failed to add device node %pOF\n", dn);
--		return rc;
--	}
-+	of_attach_node(dn);
- 
- 	return 0;
- }
-@@ -260,7 +254,6 @@ int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
- int dlpar_detach_node(struct device_node *dn)
- {
- 	struct device_node *child;
--	int rc;
- 
- 	child = of_get_next_child(dn, NULL);
- 	while (child) {
-@@ -268,9 +261,7 @@ int dlpar_detach_node(struct device_node *dn)
- 		child = of_get_next_child(dn, child);
- 	}
- 
--	rc = of_detach_node(dn);
--	if (rc)
--		return rc;
-+	of_detach_node(dn);
- 
- 	of_node_put(dn);
- 
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 0e0208117e77..0b72098da454 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -47,11 +47,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
- 		goto out_err;
- 	}
- 
--	err = of_attach_node(np);
--	if (err) {
--		printk(KERN_ERR "Failed to add device node %s\n", path);
--		goto out_err;
--	}
-+	of_attach_node(np);
- 
- 	of_node_put(np->parent);
- 
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index 275c0d7e2268..5f7c99b9de0d 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -224,7 +224,7 @@ static void __of_attach_node(struct device_node *np)
- /**
-  * of_attach_node() - Plug a device node into the tree and global list.
-  */
--int of_attach_node(struct device_node *np)
-+void of_attach_node(struct device_node *np)
- {
- 	struct of_reconfig_data rd;
- 	unsigned long flags;
-@@ -241,8 +241,6 @@ int of_attach_node(struct device_node *np)
- 	mutex_unlock(&of_mutex);
- 
- 	of_reconfig_notify(OF_RECONFIG_ATTACH_NODE, &rd);
--
--	return 0;
- }
- 
- void __of_detach_node(struct device_node *np)
-@@ -273,11 +271,10 @@ void __of_detach_node(struct device_node *np)
- /**
-  * of_detach_node() - "Unplug" a node from the device tree.
-  */
--int of_detach_node(struct device_node *np)
-+void of_detach_node(struct device_node *np)
- {
- 	struct of_reconfig_data rd;
- 	unsigned long flags;
--	int rc = 0;
- 
- 	memset(&rd, 0, sizeof(rd));
- 	rd.dn = np;
-@@ -291,8 +288,6 @@ int of_detach_node(struct device_node *np)
- 	mutex_unlock(&of_mutex);
- 
- 	of_reconfig_notify(OF_RECONFIG_DETACH_NODE, &rd);
--
--	return rc;
- }
- EXPORT_SYMBOL_GPL(of_detach_node);
- 
-diff --git a/include/linux/of.h b/include/linux/of.h
-index aa1dafaec6ae..72c593455019 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -406,8 +406,8 @@ extern int of_phandle_iterator_args(struct of_phandle_iterator *it,
- #define OF_RECONFIG_REMOVE_PROPERTY	0x0004
- #define OF_RECONFIG_UPDATE_PROPERTY	0x0005
- 
--extern int of_attach_node(struct device_node *);
--extern int of_detach_node(struct device_node *);
-+extern void of_attach_node(struct device_node *np);
-+extern void of_detach_node(struct device_node *np);
- 
- #define of_match_ptr(_ptr)	(_ptr)
++	unittest(overlay_data_apply("overlay_bad_add_dup_node", NULL),
++		 "Adding overlay 'overlay_bad_add_dup_node' failed\n");
++
+ 	unittest(overlay_data_apply("overlay_bad_phandle", NULL),
+ 		 "Adding overlay 'overlay_bad_phandle' failed\n");
  
 -- 
 Frank Rowand <frank.rowand@sony.com>
