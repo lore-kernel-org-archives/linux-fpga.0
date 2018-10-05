@@ -1,11 +1,11 @@
-Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v3 07/18] of: dynamic: change type of of_{at,de}tach_node() to void
-Date: Sun, 14 Oct 2018 17:24:19 -0700
-Message-Id: <1539563070-12969-8-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
-References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH 07/16] of: dynamic: change type of of_{at,de}tach_node() to void
+Date: Thu,  4 Oct 2018 21:12:38 -0700
+Message-Id: <1538712767-30394-8-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
@@ -18,6 +18,9 @@ and fix all callers to ignore return value.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
+
+Powerpc files not tested
+
  arch/powerpc/platforms/pseries/dlpar.c    | 13 ++-----------
  arch/powerpc/platforms/pseries/reconfig.c |  6 +-----
  drivers/of/dynamic.c                      |  9 ++-------
