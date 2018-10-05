@@ -1,119 +1,49 @@
-Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v2 16/18] of: unittest: allow base devicetree to have symbol metadata
-Date: Fri, 12 Oct 2018 21:53:36 -0700
-Message-Id: <1539406418-18162-17-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
-References: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH 04/16] powerpc/pseries: add of_node_put() in dlpar_detach_node()
+Date: Thu,  4 Oct 2018 21:12:35 -0700
+Message-Id: <1538712767-30394-5-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-The overlay metadata nodes in the FDT created from testcases.dts
-are not handled properly.
+"of: overlay: add missing of_node_get() in __of_attach_node_sysfs"
+added a missing of_node_get() to __of_attach_node_sysfs().  This
+results in a refcount imbalance for nodes attached with
+dlpar_attach_node().  The calling sequence from dlpar_attach_node()
+to __of_attach_node_sysfs() is:
 
-The __fixups__ and __local_fixups__ node were added to the live
-devicetree, but should not be.
-
-Only the first property in the /__symbols__ node was added to the
-live devicetree if the live devicetree already contained a
-/__symbols node.  All of the node's properties must be added.
+   dlpar_attach_node()
+      of_attach_node()
+         __of_attach_node_sysfs()
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/unittest.c | 43 +++++++++++++++++++++++++++++++++++--------
- 1 file changed, 35 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 6d80f474c8f2..1c2bd8503095 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -1057,20 +1057,44 @@ static void __init of_unittest_platform_populate(void)
-  *	of np into dup node (present in live tree) and
-  *	updates parent of children of np to dup.
-  *
-- *	@np:	node already present in live tree
-+ *	@np:	node whose properties are being added to the live tree
-  *	@dup:	node present in live tree to be updated
-  */
- static void update_node_properties(struct device_node *np,
- 					struct device_node *dup)
- {
- 	struct property *prop;
-+	struct property *save_next;
- 	struct device_node *child;
--
--	for_each_property_of_node(np, prop)
--		of_add_property(dup, prop);
-+	int ret;
+***** UNTESTED.  I need people with the affected PowerPC systems
+*****            (systems that dynamically allocate and deallocate
+*****            devicetree nodes) to test this patch.
+
+ arch/powerpc/platforms/pseries/dlpar.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index a0b20c03f078..e3010b14aea5 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -272,6 +272,8 @@ int dlpar_detach_node(struct device_node *dn)
+ 	if (rc)
+ 		return rc;
  
- 	for_each_child_of_node(np, child)
- 		child->parent = dup;
++	of_node_put(dn);
 +
-+	/*
-+	 * "unittest internal error: unable to add testdata property"
-+	 *
-+	 *    If this message reports a property in node '/__symbols__' then
-+	 *    the respective unittest overlay contains a label that has the
-+	 *    same name as a label in the live devicetree.  The label will
-+	 *    be in the live devicetree only if the devicetree source was
-+	 *    compiled with the '-@' option.  If you encounter this error,
-+	 *    please consider renaming __all__ of the labels in the unittest
-+	 *    overlay dts files with an odd prefix that is unlikely to be
-+	 *    used in a real devicetree.
-+	 */
-+
-+	/*
-+	 * open code for_each_property_of_node() because of_add_property()
-+	 * sets prop->next to NULL
-+	 */
-+	for (prop = np->properties; prop != NULL; prop = save_next) {
-+		save_next = prop->next;
-+		ret = of_add_property(dup, prop);
-+		if (ret)
-+			pr_err("unittest internal error: unable to add testdata property %pOF/%s",
-+			       np, prop->name);
-+	}
+ 	return 0;
  }
  
- /**
-@@ -1079,18 +1103,23 @@ static void update_node_properties(struct device_node *np,
-  *
-  *	@np:	Node to attach to live tree
-  */
--static int attach_node_and_children(struct device_node *np)
-+static void attach_node_and_children(struct device_node *np)
- {
- 	struct device_node *next, *dup, *child;
- 	unsigned long flags;
- 	const char *full_name;
- 
- 	full_name = kasprintf(GFP_KERNEL, "%pOF", np);
-+
-+	if (!strcmp(full_name, "/__local_fixups__") ||
-+	    !strcmp(full_name, "/__fixups__"))
-+		return;
-+
- 	dup = of_find_node_by_path(full_name);
- 	kfree(full_name);
- 	if (dup) {
- 		update_node_properties(np, dup);
--		return 0;
-+		return;
- 	}
- 
- 	child = np->child;
-@@ -1111,8 +1140,6 @@ static int attach_node_and_children(struct device_node *np)
- 		attach_node_and_children(child);
- 		child = next;
- 	}
--
--	return 0;
- }
- 
- /**
 -- 
 Frank Rowand <frank.rowand@sony.com>
