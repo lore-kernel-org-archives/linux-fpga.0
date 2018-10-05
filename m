@@ -1,9 +1,9 @@
 Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
 Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH 02/16] of: overlay: add missing of_node_put() after add new node to changeset
-Date: Thu,  4 Oct 2018 21:12:33 -0700
-Message-Id: <1538712767-30394-3-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH 06/16] of: overlay: do not duplicate properties from overlay for new nodes
+Date: Thu,  4 Oct 2018 21:12:37 -0700
+Message-Id: <1538712767-30394-7-git-send-email-frowand.list@gmail.com>
 In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
 References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
@@ -12,61 +12,42 @@ List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-The refcount of a newly added overlay node decrements to one
-(instead of zero) when the overlay changeset is destroyed.  This
-change will cause the final decrement be to zero.
+When allocating a new node, add_changeset_node() was duplicating the
+properties from the respective node in the overlay instead of
+allocating a node with no properties.
 
-After applying this patch, new validation warnings will be
-reported from the devicetree unittest during boot due to
-a pre-existing devicetree bug.  The warnings will be similar to:
+When this patch is applied the errors reported by the devictree
+unittest from patch "of: overlay: add tests to validate kfrees from
+overlay removal" will no longer occur.  These error messages are of
+the form:
 
-  OF: ERROR: memory leak of_node_release() overlay node /testcase-data/overlay-node/test-bus/test-unittest4 before free overlay changeset
+   "OF: ERROR: ..."
 
-This pre-existing devicetree bug will also trigger a WARN_ONCE() from
-refcount_sub_and_test_checked() when an overlay changeset is
-destroyed without having first been applied.  This scenario occurs
-when an error in the overlay is detected during the overlay changeset
-creation:
+and the unittest results will change from:
 
-  WARNING: CPU: 0 PID: 1 at lib/refcount.c:187 refcount_sub_and_test_checked+0xa8/0xbc
-  refcount_t: underflow; use-after-free.
+   ### dt-test ### end of unittest - 203 passed, 7 failed
 
-  (unwind_backtrace) from (show_stack+0x10/0x14)
-  (show_stack) from (dump_stack+0x6c/0x8c)
-  (dump_stack) from (__warn+0xdc/0x104)
-  (__warn) from (warn_slowpath_fmt+0x44/0x6c)
-  (warn_slowpath_fmt) from (refcount_sub_and_test_checked+0xa8/0xbc)
-  (refcount_sub_and_test_checked) from (kobject_put+0x24/0x208)
-  (kobject_put) from (of_changeset_destroy+0x2c/0xb4)
-  (of_changeset_destroy) from (free_overlay_changeset+0x1c/0x9c)
-  (free_overlay_changeset) from (of_overlay_remove+0x284/0x2cc)
-  (of_overlay_remove) from (of_unittest_apply_revert_overlay_check.constprop.4+0xf8/0x1e8)
-  (of_unittest_apply_revert_overlay_check.constprop.4) from (of_unittest_overlay+0x960/0xed8)
-  (of_unittest_overlay) from (of_unittest+0x1cc4/0x2138)
-  (of_unittest) from (do_one_initcall+0x4c/0x28c)
-  (do_one_initcall) from (kernel_init_freeable+0x29c/0x378)
-  (kernel_init_freeable) from (kernel_init+0x8/0x110)
-  (kernel_init) from (ret_from_fork+0x14/0x2c)
+to
+
+   ### dt-test ### end of unittest - 210 passed, 0 failed
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/overlay.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/of/overlay.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 1176cb4b6e4e..32cfee68f2e3 100644
+index 0b0904f44bc7..c113186e222c 100644
 --- a/drivers/of/overlay.c
 +++ b/drivers/of/overlay.c
-@@ -379,7 +379,9 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 		if (ret)
- 			return ret;
+@@ -393,7 +393,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 			break;
  
--		return build_changeset_next_level(ovcs, tchild, node);
-+		ret = build_changeset_next_level(ovcs, tchild, node);
-+		of_node_put(tchild);
-+		return ret;
- 	}
+ 	if (!tchild) {
+-		tchild = __of_node_dup(node, node_kbasename);
++		tchild = __of_node_dup(NULL, node_kbasename);
+ 		if (!tchild)
+ 			return -ENOMEM;
  
- 	if (node->phandle && tchild->phandle)
 -- 
 Frank Rowand <frank.rowand@sony.com>
