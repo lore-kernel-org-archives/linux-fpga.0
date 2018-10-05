@@ -1,270 +1,133 @@
-MIME-Version: 1.0
-Date: Mon, 15 Oct 2018 13:10:49 -0700
-References: <1537978342-17697-1-git-send-email-atull@kernel.org>
-	<1537978342-17697-4-git-send-email-atull@kernel.org>
-In-Reply-To: <1537978342-17697-4-git-send-email-atull@kernel.org>
-Message-ID: <CAJYdmeNAbZRHOB8eCNgx466QkA6PBD8nOQVSO57oG=tYkqD1Eg@mail.gmail.com>
-Subject: Re: [PATCH v3 3/4] fpga: add devm_fpga_region_create
-From: Moritz Fischer <moritz.fischer.private@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-To: Alan Tull <atull@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, Federico Vaga <federico.vaga@cern.ch>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH 12/16] of: overlay: check prevents multiple fragments add or delete same node
+Date: Thu,  4 Oct 2018 21:12:43 -0700
+Message-Id: <1538712767-30394-13-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Wed, Sep 26, 2018 at 9:12 AM Alan Tull <atull@kernel.org> wrote:
->
-> Add devm_fpga_region_create() which is the
-> managed version of fpga_region_create().
->
-> Change current region drivers to use
-> devm_fpga_region_create().
->
-> Signed-off-by: Alan Tull <atull@kernel.org>
-> Suggested-by: Federico Vaga <federico.vaga@cern.ch>
+From: Frank Rowand <frank.rowand@sony.com>
 
-Acked-by: Moritz Fischer <mdf@kernel.org>
-> ---
-> v2: add suggested-by
-> v3: remove some unclear documentation about fpga_region_unregister
-> ---
->  Documentation/driver-api/fpga/fpga-region.rst |  3 ++
->  drivers/fpga/dfl-fme-region.c                 |  6 +--
->  drivers/fpga/dfl.c                            |  6 +--
->  drivers/fpga/fpga-region.c                    | 65 +++++++++++++++++++++++----
->  drivers/fpga/of-fpga-region.c                 |  6 +--
->  include/linux/fpga/fpga-region.h              |  4 ++
->  6 files changed, 70 insertions(+), 20 deletions(-)
->
-> diff --git a/Documentation/driver-api/fpga/fpga-region.rst b/Documentation/driver-api/fpga/fpga-region.rst
-> index f30333c..dc9f75c 100644
-> --- a/Documentation/driver-api/fpga/fpga-region.rst
-> +++ b/Documentation/driver-api/fpga/fpga-region.rst
-> @@ -90,6 +90,9 @@ API to add a new FPGA region
->     :functions: fpga_region
->
->  .. kernel-doc:: drivers/fpga/fpga-region.c
-> +   :functions: devm_fpga_region_create
-> +
-> +.. kernel-doc:: drivers/fpga/fpga-region.c
->     :functions: fpga_region_create
->
->  .. kernel-doc:: drivers/fpga/fpga-region.c
-> diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
-> index 3fa0de2..1eeb42a 100644
-> --- a/drivers/fpga/dfl-fme-region.c
-> +++ b/drivers/fpga/dfl-fme-region.c
-> @@ -39,7 +39,7 @@ static int fme_region_probe(struct platform_device *pdev)
->         if (IS_ERR(mgr))
->                 return -EPROBE_DEFER;
->
-> -       region = fpga_region_create(dev, mgr, fme_region_get_bridges);
-> +       region = devm_fpga_region_create(dev, mgr, fme_region_get_bridges);
->         if (!region) {
->                 ret = -ENOMEM;
->                 goto eprobe_mgr_put;
-> @@ -51,14 +51,12 @@ static int fme_region_probe(struct platform_device *pdev)
->
->         ret = fpga_region_register(region);
->         if (ret)
-> -               goto region_free;
-> +               goto eprobe_mgr_put;
->
->         dev_dbg(dev, "DFL FME FPGA Region probed\n");
->
->         return 0;
->
-> -region_free:
-> -       fpga_region_free(region);
->  eprobe_mgr_put:
->         fpga_mgr_put(mgr);
->         return ret;
-> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-> index a9b521b..2c09e50 100644
-> --- a/drivers/fpga/dfl.c
-> +++ b/drivers/fpga/dfl.c
-> @@ -899,7 +899,7 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
->         if (!cdev)
->                 return ERR_PTR(-ENOMEM);
->
-> -       cdev->region = fpga_region_create(info->dev, NULL, NULL);
-> +       cdev->region = devm_fpga_region_create(info->dev, NULL, NULL);
->         if (!cdev->region) {
->                 ret = -ENOMEM;
->                 goto free_cdev_exit;
-> @@ -911,7 +911,7 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
->
->         ret = fpga_region_register(cdev->region);
->         if (ret)
-> -               goto free_region_exit;
-> +               goto free_cdev_exit;
->
->         /* create and init build info for enumeration */
->         binfo = devm_kzalloc(info->dev, sizeof(*binfo), GFP_KERNEL);
-> @@ -942,8 +942,6 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
->
->  unregister_region_exit:
->         fpga_region_unregister(cdev->region);
-> -free_region_exit:
-> -       fpga_region_free(cdev->region);
->  free_cdev_exit:
->         devm_kfree(info->dev, cdev);
->         return ERR_PTR(ret);
-> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-> index 0d65220..bde5a9d 100644
-> --- a/drivers/fpga/fpga-region.c
-> +++ b/drivers/fpga/fpga-region.c
-> @@ -185,6 +185,10 @@ ATTRIBUTE_GROUPS(fpga_region);
->   * @mgr: manager that programs this region
->   * @get_bridges: optional function to get bridges to a list
->   *
-> + * The caller of this function is responsible for freeing the resulting region
-> + * struct with fpga_region_free().  Using devm_fpga_region_create() instead is
-> + * recommended.
-> + *
->   * Return: struct fpga_region or NULL
->   */
->  struct fpga_region
-> @@ -230,8 +234,8 @@ struct fpga_region
->  EXPORT_SYMBOL_GPL(fpga_region_create);
->
->  /**
-> - * fpga_region_free - free a struct fpga_region
-> - * @region: FPGA region created by fpga_region_create
-> + * fpga_region_free - free a FPGA region created by fpga_region_create()
-> + * @region: FPGA region
->   */
->  void fpga_region_free(struct fpga_region *region)
->  {
-> @@ -240,21 +244,69 @@ void fpga_region_free(struct fpga_region *region)
->  }
->  EXPORT_SYMBOL_GPL(fpga_region_free);
->
-> +static void devm_fpga_region_release(struct device *dev, void *res)
-> +{
-> +       struct fpga_region *region = *(struct fpga_region **)res;
-> +
-> +       fpga_region_free(region);
-> +}
-> +
-> +/**
-> + * devm_fpga_region_create - create and initialize a managed FPGA region struct
-> + * @dev: device parent
-> + * @mgr: manager that programs this region
-> + * @get_bridges: optional function to get bridges to a list
-> + *
-> + * This function is intended for use in a FPGA region driver's probe function.
-> + * After the region driver creates the region struct with
-> + * devm_fpga_region_create(), it should register it with fpga_region_register().
-> + * The region driver's remove function should call fpga_region_unregister().
-> + * The region struct allocated with this function will be freed automatically on
-> + * driver detach.  This includes the case of a probe function returning error
-> + * before calling fpga_region_register(), the struct will still get cleaned up.
-> + *
-> + * Return: struct fpga_region or NULL
-> + */
-> +struct fpga_region
-> +*devm_fpga_region_create(struct device *dev,
-> +                        struct fpga_manager *mgr,
-> +                        int (*get_bridges)(struct fpga_region *))
-> +{
-> +       struct fpga_region **ptr, *region;
-> +
-> +       ptr = devres_alloc(devm_fpga_region_release, sizeof(*ptr), GFP_KERNEL);
-> +       if (!ptr)
-> +               return NULL;
-> +
-> +       region = fpga_region_create(dev, mgr, get_bridges);
-> +       if (!region) {
-> +               devres_free(ptr);
-> +       } else {
-> +               *ptr = region;
-> +               devres_add(dev, ptr);
-> +       }
-> +
-> +       return region;
-> +}
-> +EXPORT_SYMBOL_GPL(devm_fpga_region_create);
-> +
->  /**
->   * fpga_region_register - register a FPGA region
-> - * @region: FPGA region created by fpga_region_create
-> + * @region: FPGA region
-> + *
->   * Return: 0 or -errno
->   */
->  int fpga_region_register(struct fpga_region *region)
->  {
->         return device_add(&region->dev);
-> -
->  }
->  EXPORT_SYMBOL_GPL(fpga_region_register);
->
->  /**
-> - * fpga_region_unregister - unregister and free a FPGA region
-> + * fpga_region_unregister - unregister a FPGA region
->   * @region: FPGA region
-> + *
-> + * This function is intended for use in a FPGA region driver's remove function.
->   */
->  void fpga_region_unregister(struct fpga_region *region)
->  {
-> @@ -264,9 +316,6 @@ EXPORT_SYMBOL_GPL(fpga_region_unregister);
->
->  static void fpga_region_dev_release(struct device *dev)
->  {
-> -       struct fpga_region *region = to_fpga_region(dev);
-> -
-> -       fpga_region_free(region);
->  }
->
->  /**
-> diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-> index d6a70e4..75f64ab 100644
-> --- a/drivers/fpga/of-fpga-region.c
-> +++ b/drivers/fpga/of-fpga-region.c
-> @@ -410,7 +410,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
->         if (IS_ERR(mgr))
->                 return -EPROBE_DEFER;
->
-> -       region = fpga_region_create(dev, mgr, of_fpga_region_get_bridges);
-> +       region = devm_fpga_region_create(dev, mgr, of_fpga_region_get_bridges);
->         if (!region) {
->                 ret = -ENOMEM;
->                 goto eprobe_mgr_put;
-> @@ -418,7 +418,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
->
->         ret = fpga_region_register(region);
->         if (ret)
-> -               goto eprobe_free;
-> +               goto eprobe_mgr_put;
->
->         of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
->         platform_set_drvdata(pdev, region);
-> @@ -427,8 +427,6 @@ static int of_fpga_region_probe(struct platform_device *pdev)
->
->         return 0;
->
-> -eprobe_free:
-> -       fpga_region_free(region);
->  eprobe_mgr_put:
->         fpga_mgr_put(mgr);
->         return ret;
-> diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
-> index 0521b7f..27cb706 100644
-> --- a/include/linux/fpga/fpga-region.h
-> +++ b/include/linux/fpga/fpga-region.h
-> @@ -44,4 +44,8 @@ void fpga_region_free(struct fpga_region *region);
->  int fpga_region_register(struct fpga_region *region);
->  void fpga_region_unregister(struct fpga_region *region);
->
-> +struct fpga_region
-> +*devm_fpga_region_create(struct device *dev, struct fpga_manager *mgr,
-> +                       int (*get_bridges)(struct fpga_region *));
-> +
->  #endif /* _FPGA_REGION_H */
-> --
-> 2.7.4
->
+Multiple overlay fragments adding or deleting the same node is not
+supported.  Replace code comment of such, with check to detect the
+attempt and fail the overlay apply.
 
-Thanks,
-Moritz
+Devicetree unittest where multiple fragments added the same node was
+added in the previous patch in the series.  After applying this patch
+the unittest messages will no longer include:
+
+   Duplicate name in motor-1, renamed to "controller#1"
+   OF: overlay: of_overlay_apply() err=0
+   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
+   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
+
+   ...
+
+   ### dt-test ### end of unittest - 210 passed, 1 failed
+
+but will instead include:
+
+   OF: overlay: ERROR: multiple overlay fragments add and/or delete node /testcase-data-2/substation@100/motor-1/controller
+
+   ...
+
+   ### dt-test ### end of unittest - 211 passed, 0 failed
+
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+---
+
+checkpatch errors "line over 80 characters" are ok, they will be
+fixed two patches later in this series
+
+ drivers/of/overlay.c | 58 ++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 49 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index f89383331b88..5376ae166caf 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -398,14 +398,6 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+  *       a live devicetree created from Open Firmware.
+  *
+  * NOTE_2: Multiple mods of created nodes not supported.
+- *       If more than one fragment contains a node that does not already exist
+- *       in the live tree, then for each fragment of_changeset_attach_node()
+- *       will add a changeset entry to add the node.  When the changeset is
+- *       applied, __of_attach_node() will attach the node twice (once for
+- *       each fragment).  At this point the device tree will be corrupted.
+- *
+- *       TODO: add integrity check to ensure that multiple fragments do not
+- *             create the same node.
+  *
+  * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
+  * invalid @overlay.
+@@ -523,6 +515,54 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
+ }
+ 
+ /**
++ * check_changeset_dup_add_node() - changeset validation: duplicate add node
++ * @ovcs:	Overlay changeset
++ *
++ * Check changeset @ovcs->cset for multiple add node entries for the same
++ * node.
++ *
++ * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
++ * invalid overlay in @ovcs->fragments[].
++ */
++static int check_changeset_dup_add_node(struct overlay_changeset *ovcs)
++{
++	struct of_changeset_entry *ce_1, *ce_2;
++	char *fn_1, *fn_2;
++	int name_match;
++
++	list_for_each_entry(ce_1, &ovcs->cset.entries, node) {
++
++		if (ce_1->action == OF_RECONFIG_ATTACH_NODE ||
++		    ce_1->action == OF_RECONFIG_DETACH_NODE) {
++
++			ce_2 = ce_1;
++			list_for_each_entry_continue(ce_2, &ovcs->cset.entries, node) {
++				if (ce_2->action == OF_RECONFIG_ATTACH_NODE ||
++				    ce_2->action == OF_RECONFIG_DETACH_NODE) {
++					/* inexpensive name compare */
++					if (!of_node_cmp(ce_1->np->full_name,
++					    ce_2->np->full_name)) {
++						/* expensive full path name compare */
++						fn_1 = kasprintf(GFP_KERNEL, "%pOF", ce_1->np);
++						fn_2 = kasprintf(GFP_KERNEL, "%pOF", ce_2->np);
++						name_match = !strcmp(fn_1, fn_2);
++						kfree(fn_1);
++						kfree(fn_2);
++						if (name_match) {
++							pr_err("ERROR: multiple overlay fragments add and/or delete node %pOF\n",
++							       ce_1->np);
++							return -EINVAL;
++						}
++					}
++				}
++			}
++		}
++	}
++
++	return 0;
++}
++
++/**
+  * build_changeset() - populate overlay changeset in @ovcs from @ovcs->fragments
+  * @ovcs:	Overlay changeset
+  *
+@@ -577,7 +617,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
+ 		}
+ 	}
+ 
+-	return 0;
++	return check_changeset_dup_add_node(ovcs);
+ }
+ 
+ /*
+-- 
+Frank Rowand <frank.rowand@sony.com>
