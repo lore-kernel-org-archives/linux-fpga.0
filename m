@@ -1,11 +1,11 @@
-Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v3 02/18] of: overlay: add missing of_node_put() after add new node to changeset
-Date: Sun, 14 Oct 2018 17:24:14 -0700
-Message-Id: <1539563070-12969-3-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
-References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v2 02/18] of: overlay: add missing of_node_put() after add new node to changeset
+Date: Fri, 12 Oct 2018 21:53:22 -0700
+Message-Id: <1539406418-18162-3-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
+References: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
