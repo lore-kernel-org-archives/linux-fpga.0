@@ -1,133 +1,119 @@
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v4 12/18] of: overlay: check prevents multiple fragments add or delete same node
-Date: Mon, 15 Oct 2018 19:37:32 -0700
-Message-Id: <1539657458-24401-13-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v2 16/18] of: unittest: allow base devicetree to have symbol metadata
+Date: Fri, 12 Oct 2018 21:53:36 -0700
+Message-Id: <1539406418-18162-17-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
+References: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-Multiple overlay fragments adding or deleting the same node is not
-supported.  Replace code comment of such, with check to detect the
-attempt and fail the overlay apply.
+The overlay metadata nodes in the FDT created from testcases.dts
+are not handled properly.
 
-Devicetree unittest where multiple fragments added the same node was
-added in the previous patch in the series.  After applying this patch
-the unittest messages will no longer include:
+The __fixups__ and __local_fixups__ node were added to the live
+devicetree, but should not be.
 
-   Duplicate name in motor-1, renamed to "controller#1"
-   OF: overlay: of_overlay_apply() err=0
-   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
-   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
-
-   ...
-
-   ### dt-test ### end of unittest - 210 passed, 1 failed
-
-but will instead include:
-
-   OF: overlay: ERROR: multiple overlay fragments add and/or delete node /testcase-data-2/substation@100/motor-1/controller
-
-   ...
-
-   ### dt-test ### end of unittest - 211 passed, 0 failed
+Only the first property in the /__symbols__ node was added to the
+live devicetree if the live devicetree already contained a
+/__symbols node.  All of the node's properties must be added.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
+ drivers/of/unittest.c | 43 +++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 35 insertions(+), 8 deletions(-)
 
-checkpatch errors "line over 80 characters" are ok, they will be
-fixed later in this series
-
- drivers/of/overlay.c | 58 ++++++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 49 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 34396d6db1b3..0dc7452e2ed5 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -402,14 +402,6 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
-  *       a live devicetree created from Open Firmware.
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 6d80f474c8f2..1c2bd8503095 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -1057,20 +1057,44 @@ static void __init of_unittest_platform_populate(void)
+  *	of np into dup node (present in live tree) and
+  *	updates parent of children of np to dup.
   *
-  * NOTE_2: Multiple mods of created nodes not supported.
-- *       If more than one fragment contains a node that does not already exist
-- *       in the live tree, then for each fragment of_changeset_attach_node()
-- *       will add a changeset entry to add the node.  When the changeset is
-- *       applied, __of_attach_node() will attach the node twice (once for
-- *       each fragment).  At this point the device tree will be corrupted.
-- *
-- *       TODO: add integrity check to ensure that multiple fragments do not
-- *             create the same node.
-  *
-  * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
-  * invalid @overlay.
-@@ -527,6 +519,54 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
+- *	@np:	node already present in live tree
++ *	@np:	node whose properties are being added to the live tree
+  *	@dup:	node present in live tree to be updated
+  */
+ static void update_node_properties(struct device_node *np,
+ 					struct device_node *dup)
+ {
+ 	struct property *prop;
++	struct property *save_next;
+ 	struct device_node *child;
+-
+-	for_each_property_of_node(np, prop)
+-		of_add_property(dup, prop);
++	int ret;
+ 
+ 	for_each_child_of_node(np, child)
+ 		child->parent = dup;
++
++	/*
++	 * "unittest internal error: unable to add testdata property"
++	 *
++	 *    If this message reports a property in node '/__symbols__' then
++	 *    the respective unittest overlay contains a label that has the
++	 *    same name as a label in the live devicetree.  The label will
++	 *    be in the live devicetree only if the devicetree source was
++	 *    compiled with the '-@' option.  If you encounter this error,
++	 *    please consider renaming __all__ of the labels in the unittest
++	 *    overlay dts files with an odd prefix that is unlikely to be
++	 *    used in a real devicetree.
++	 */
++
++	/*
++	 * open code for_each_property_of_node() because of_add_property()
++	 * sets prop->next to NULL
++	 */
++	for (prop = np->properties; prop != NULL; prop = save_next) {
++		save_next = prop->next;
++		ret = of_add_property(dup, prop);
++		if (ret)
++			pr_err("unittest internal error: unable to add testdata property %pOF/%s",
++			       np, prop->name);
++	}
  }
  
  /**
-+ * check_changeset_dup_add_node() - changeset validation: duplicate add node
-+ * @ovcs:	Overlay changeset
-+ *
-+ * Check changeset @ovcs->cset for multiple add node entries for the same
-+ * node.
-+ *
-+ * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
-+ * invalid overlay in @ovcs->fragments[].
-+ */
-+static int check_changeset_dup_add_node(struct overlay_changeset *ovcs)
-+{
-+	struct of_changeset_entry *ce_1, *ce_2;
-+	char *fn_1, *fn_2;
-+	int name_match;
-+
-+	list_for_each_entry(ce_1, &ovcs->cset.entries, node) {
-+
-+		if (ce_1->action == OF_RECONFIG_ATTACH_NODE ||
-+		    ce_1->action == OF_RECONFIG_DETACH_NODE) {
-+
-+			ce_2 = ce_1;
-+			list_for_each_entry_continue(ce_2, &ovcs->cset.entries, node) {
-+				if (ce_2->action == OF_RECONFIG_ATTACH_NODE ||
-+				    ce_2->action == OF_RECONFIG_DETACH_NODE) {
-+					/* inexpensive name compare */
-+					if (!of_node_cmp(ce_1->np->full_name,
-+					    ce_2->np->full_name)) {
-+						/* expensive full path name compare */
-+						fn_1 = kasprintf(GFP_KERNEL, "%pOF", ce_1->np);
-+						fn_2 = kasprintf(GFP_KERNEL, "%pOF", ce_2->np);
-+						name_match = !strcmp(fn_1, fn_2);
-+						kfree(fn_1);
-+						kfree(fn_2);
-+						if (name_match) {
-+							pr_err("ERROR: multiple overlay fragments add and/or delete node %pOF\n",
-+							       ce_1->np);
-+							return -EINVAL;
-+						}
-+					}
-+				}
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-  * build_changeset() - populate overlay changeset in @ovcs from @ovcs->fragments
-  * @ovcs:	Overlay changeset
+@@ -1079,18 +1103,23 @@ static void update_node_properties(struct device_node *np,
   *
-@@ -581,7 +621,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
- 		}
+  *	@np:	Node to attach to live tree
+  */
+-static int attach_node_and_children(struct device_node *np)
++static void attach_node_and_children(struct device_node *np)
+ {
+ 	struct device_node *next, *dup, *child;
+ 	unsigned long flags;
+ 	const char *full_name;
+ 
+ 	full_name = kasprintf(GFP_KERNEL, "%pOF", np);
++
++	if (!strcmp(full_name, "/__local_fixups__") ||
++	    !strcmp(full_name, "/__fixups__"))
++		return;
++
+ 	dup = of_find_node_by_path(full_name);
+ 	kfree(full_name);
+ 	if (dup) {
+ 		update_node_properties(np, dup);
+-		return 0;
++		return;
  	}
  
+ 	child = np->child;
+@@ -1111,8 +1140,6 @@ static int attach_node_and_children(struct device_node *np)
+ 		attach_node_and_children(child);
+ 		child = next;
+ 	}
+-
 -	return 0;
-+	return check_changeset_dup_add_node(ovcs);
  }
  
- /*
+ /**
 -- 
 Frank Rowand <frank.rowand@sony.com>
