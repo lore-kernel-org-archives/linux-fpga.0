@@ -1,127 +1,338 @@
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v5 11/18] of: overlay: test case of two fragments adding same node
-Date: Thu, 18 Oct 2018 15:46:29 -0700
-Message-Id: <1539902796-8382-12-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
-References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v2 05/18] of: overlay: use prop add changeset entry for property in new nodes
+Date: Fri, 12 Oct 2018 21:53:25 -0700
+Message-Id: <1539406418-18162-6-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
+References: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-Multiple overlay fragments adding or deleting the same node is not
-supported.  An attempt to do so results in an incorrect devicetree.
-The node name will be munged for the second add.
+The changeset entry 'update property' was used for new properties in
+an overlay instead of 'add property'.
 
-After adding this patch, the unittest messages will show:
+The decision of whether to use 'update property' was based on whether
+the property already exists in the subtree where the node is being
+spliced into.  At the top level of creating a changeset describing the
+overlay, the target node is in the live devicetree, so checking whether
+the property exists in the target node returns the correct result.
+As soon as the changeset creation algorithm recurses into a new node,
+the target is no longer in the live devicetree, but is instead in the
+detached overlay tree, thus all properties are incorrectly found to
+already exist in the target.
 
-   Duplicate name in motor-1, renamed to "controller#1"
-   OF: overlay: of_overlay_apply() err=0
-   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
-   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
+This fix will expose another devicetree bug that will be fixed
+in the following patch in the series.
 
-   ...
+When this patch is applied the errors reported by the devictree
+unittest will change, and the unittest results will change from:
 
-   ### dt-test ### end of unittest - 210 passed, 1 failed
+   ### dt-test ### end of unittest - 210 passed, 0 failed
 
-The incorrect (munged) node name "controller#1" can be seen in the
-/proc filesystem:
+to
 
-   $ pwd
-   /proc/device-tree/testcase-data-2/substation@100/motor-1
-   $ ls
-   compatible    controller    controller#1  name          phandle       spin
-   $ ls controller
-   power_bus
-   $ ls controller#1
-   power_bus_emergency
+   ### dt-test ### end of unittest - 203 passed, 7 failed
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/unittest-data/Makefile                  |  1 +
- .../of/unittest-data/overlay_bad_add_dup_node.dts  | 28 ++++++++++++++++++++++
- drivers/of/unittest.c                              |  5 ++++
- 3 files changed, 34 insertions(+)
- create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
 
-diff --git a/drivers/of/unittest-data/Makefile b/drivers/of/unittest-data/Makefile
-index 013d85e694c6..166dbdbfd1c5 100644
---- a/drivers/of/unittest-data/Makefile
-+++ b/drivers/of/unittest-data/Makefile
-@@ -17,6 +17,7 @@ obj-$(CONFIG_OF_OVERLAY) += overlay.dtb.o \
- 			    overlay_12.dtb.o \
- 			    overlay_13.dtb.o \
- 			    overlay_15.dtb.o \
-+			    overlay_bad_add_dup_node.dtb.o \
- 			    overlay_bad_phandle.dtb.o \
- 			    overlay_bad_symbol.dtb.o \
- 			    overlay_base.dtb.o
-diff --git a/drivers/of/unittest-data/overlay_bad_add_dup_node.dts b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
-new file mode 100644
-index 000000000000..145dfc3b1024
---- /dev/null
-+++ b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
-@@ -0,0 +1,28 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/dts-v1/;
-+/plugin/;
-+
-+/*
-+ * &electric_1/motor-1 and &spin_ctrl_1 are the same node:
-+ *   /testcase-data-2/substation@100/motor-1
+changes since v1:
+   - add_changeset_node() header comment: incorrect comment for @target
+
+ drivers/of/overlay.c | 112 ++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 74 insertions(+), 38 deletions(-)
+
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 32cfee68f2e3..94740f4ee34c 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -24,6 +24,26 @@
+ #include "of_private.h"
+ 
+ /**
++ * struct target - info about current target node as recursing through overlay
++ * @np:			node where current level of overlay will be applied
++ * @in_livetree:	@np is a node in the live devicetree
 + *
-+ * Thus the new node "controller" in each fragment will
-+ * result in an attempt to add the same node twice.
-+ * This will result in an error and the overlay apply
-+ * will fail.
++ * Used in the algorithm to create the portion of a changeset that describes
++ * an overlay fragment, which is a devicetree subtree.  Initially @np is a node
++ * in the live devicetree where the overlay subtree is targeted to be grafted
++ * into.  When recursing to the next level of the overlay subtree, the target
++ * also recurses to the next level of the live devicetree, as long as overlay
++ * subtree node also exists in the live devicetree.  When a node in the overlay
++ * subtree does not exist at the same level in the live devicetree, target->np
++ * points to a newly allocated node, and all subsequent targets in the subtree
++ * will be newly allocated nodes.
 + */
-+
-+&electric_1 {
-+
-+	motor-1 {
-+		controller {
-+			power_bus = < 0x1 0x2 >;
-+		};
-+	};
++struct target {
++	struct device_node *np;
++	bool in_livetree;
 +};
 +
-+&spin_ctrl_1 {
-+		controller {
-+			power_bus_emergency = < 0x101 0x102 >;
-+		};
-+};
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 722537e14848..471b8eb6e842 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -2147,6 +2147,7 @@ struct overlay_info {
- OVERLAY_INFO_EXTERN(overlay_12);
- OVERLAY_INFO_EXTERN(overlay_13);
- OVERLAY_INFO_EXTERN(overlay_15);
-+OVERLAY_INFO_EXTERN(overlay_bad_add_dup_node);
- OVERLAY_INFO_EXTERN(overlay_bad_phandle);
- OVERLAY_INFO_EXTERN(overlay_bad_symbol);
++/**
+  * struct fragment - info about fragment nodes in overlay expanded device tree
+  * @target:	target of the overlay operation
+  * @overlay:	pointer to the __overlay__ node
+@@ -72,8 +92,7 @@ static int devicetree_corrupt(void)
+ }
  
-@@ -2169,6 +2170,7 @@ struct overlay_info {
- 	OVERLAY_INFO(overlay_12, 0),
- 	OVERLAY_INFO(overlay_13, 0),
- 	OVERLAY_INFO(overlay_15, 0),
-+	OVERLAY_INFO(overlay_bad_add_dup_node, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
- 	{}
-@@ -2413,6 +2415,9 @@ static __init void of_unittest_overlay_high_level(void)
- 	unittest(overlay_data_apply("overlay", NULL),
- 		 "Adding overlay 'overlay' failed\n");
+ static int build_changeset_next_level(struct overlay_changeset *ovcs,
+-		struct device_node *target_node,
+-		const struct device_node *overlay_node);
++		struct target *target, const struct device_node *overlay_node);
  
-+	unittest(overlay_data_apply("overlay_bad_add_dup_node", NULL),
-+		 "Adding overlay 'overlay_bad_add_dup_node' failed\n");
+ /*
+  * of_resolve_phandles() finds the largest phandle in the live tree.
+@@ -257,14 +276,17 @@ static struct property *dup_and_fixup_symbol_prop(
+ /**
+  * add_changeset_property() - add @overlay_prop to overlay changeset
+  * @ovcs:		overlay changeset
+- * @target_node:	where to place @overlay_prop in live tree
++ * @target:		where @overlay_prop will be placed
+  * @overlay_prop:	property to add or update, from overlay tree
+  * @is_symbols_prop:	1 if @overlay_prop is from node "/__symbols__"
+  *
+- * If @overlay_prop does not already exist in @target_node, add changeset entry
+- * to add @overlay_prop in @target_node, else add changeset entry to update
++ * If @overlay_prop does not already exist in live devicetree, add changeset
++ * entry to add @overlay_prop in @target, else add changeset entry to update
+  * value of @overlay_prop.
+  *
++ * @target may be either in the live devicetree or in a new subtree that
++ * is contained in the changeset.
++ *
+  * Some special properties are not updated (no error returned).
+  *
+  * Update of property in symbols node is not allowed.
+@@ -273,20 +295,22 @@ static struct property *dup_and_fixup_symbol_prop(
+  * invalid @overlay.
+  */
+ static int add_changeset_property(struct overlay_changeset *ovcs,
+-		struct device_node *target_node,
+-		struct property *overlay_prop,
++		struct target *target, struct property *overlay_prop,
+ 		bool is_symbols_prop)
+ {
+ 	struct property *new_prop = NULL, *prop;
+ 	int ret = 0;
+ 
+-	prop = of_find_property(target_node, overlay_prop->name, NULL);
+-
+ 	if (!of_prop_cmp(overlay_prop->name, "name") ||
+ 	    !of_prop_cmp(overlay_prop->name, "phandle") ||
+ 	    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
+ 		return 0;
+ 
++	if (target->in_livetree)
++		prop = of_find_property(target->np, overlay_prop->name, NULL);
++	else
++		prop = NULL;
 +
- 	unittest(overlay_data_apply("overlay_bad_phandle", NULL),
- 		 "Adding overlay 'overlay_bad_phandle' failed\n");
+ 	if (is_symbols_prop) {
+ 		if (prop)
+ 			return -EINVAL;
+@@ -299,10 +323,10 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ 		return -ENOMEM;
  
+ 	if (!prop)
+-		ret = of_changeset_add_property(&ovcs->cset, target_node,
++		ret = of_changeset_add_property(&ovcs->cset, target->np,
+ 						new_prop);
+ 	else
+-		ret = of_changeset_update_property(&ovcs->cset, target_node,
++		ret = of_changeset_update_property(&ovcs->cset, target->np,
+ 						   new_prop);
+ 
+ 	if (ret) {
+@@ -315,14 +339,14 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ 
+ /**
+  * add_changeset_node() - add @node (and children) to overlay changeset
+- * @ovcs:		overlay changeset
+- * @target_node:	where to place @node in live tree
+- * @node:		node from within overlay device tree fragment
++ * @ovcs:	overlay changeset
++ * @target:	where @node will be placed in live tree or changeset
++ * @node:	node from within overlay device tree fragment
+  *
+- * If @node does not already exist in @target_node, add changeset entry
+- * to add @node in @target_node.
++ * If @node does not already exist in @target, add changeset entry
++ * to add @node in @target.
+  *
+- * If @node already exists in @target_node, and the existing node has
++ * If @node already exists in @target, and the existing node has
+  * a phandle, the overlay node is not allowed to have a phandle.
+  *
+  * If @node has child nodes, add the children recursively via
+@@ -355,15 +379,16 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+  * invalid @overlay.
+  */
+ static int add_changeset_node(struct overlay_changeset *ovcs,
+-		struct device_node *target_node, struct device_node *node)
++		struct target *target, struct device_node *node)
+ {
+ 	const char *node_kbasename;
+ 	struct device_node *tchild;
++	struct target target_child;
+ 	int ret = 0;
+ 
+ 	node_kbasename = kbasename(node->full_name);
+ 
+-	for_each_child_of_node(target_node, tchild)
++	for_each_child_of_node(target->np, tchild)
+ 		if (!of_node_cmp(node_kbasename, kbasename(tchild->full_name)))
+ 			break;
+ 
+@@ -372,22 +397,28 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 		if (!tchild)
+ 			return -ENOMEM;
+ 
+-		tchild->parent = target_node;
++		tchild->parent = target->np;
+ 		of_node_set_flag(tchild, OF_OVERLAY);
+ 
+ 		ret = of_changeset_attach_node(&ovcs->cset, tchild);
+ 		if (ret)
+ 			return ret;
+ 
+-		ret = build_changeset_next_level(ovcs, tchild, node);
++		target_child.np = tchild;
++		target_child.in_livetree = false;
++
++		ret = build_changeset_next_level(ovcs, &target_child, node);
+ 		of_node_put(tchild);
+ 		return ret;
+ 	}
+ 
+-	if (node->phandle && tchild->phandle)
++	if (node->phandle && tchild->phandle) {
+ 		ret = -EINVAL;
+-	else
+-		ret = build_changeset_next_level(ovcs, tchild, node);
++	} else {
++		target_child.np = tchild;
++		target_child.in_livetree = target->in_livetree;
++		ret = build_changeset_next_level(ovcs, &target_child, node);
++	}
+ 	of_node_put(tchild);
+ 
+ 	return ret;
+@@ -396,7 +427,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ /**
+  * build_changeset_next_level() - add level of overlay changeset
+  * @ovcs:		overlay changeset
+- * @target_node:	where to place @overlay_node in live tree
++ * @target:		where to place @overlay_node in live tree
+  * @overlay_node:	node from within an overlay device tree fragment
+  *
+  * Add the properties (if any) and nodes (if any) from @overlay_node to the
+@@ -409,27 +440,26 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+  * invalid @overlay_node.
+  */
+ static int build_changeset_next_level(struct overlay_changeset *ovcs,
+-		struct device_node *target_node,
+-		const struct device_node *overlay_node)
++		struct target *target, const struct device_node *overlay_node)
+ {
+ 	struct device_node *child;
+ 	struct property *prop;
+ 	int ret;
+ 
+ 	for_each_property_of_node(overlay_node, prop) {
+-		ret = add_changeset_property(ovcs, target_node, prop, 0);
++		ret = add_changeset_property(ovcs, target, prop, 0);
+ 		if (ret) {
+ 			pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
+-				 target_node, prop->name, ret);
++				 target->np, prop->name, ret);
+ 			return ret;
+ 		}
+ 	}
+ 
+ 	for_each_child_of_node(overlay_node, child) {
+-		ret = add_changeset_node(ovcs, target_node, child);
++		ret = add_changeset_node(ovcs, target, child);
+ 		if (ret) {
+ 			pr_debug("Failed to apply node @%pOF/%s, err=%d\n",
+-				 target_node, child->name, ret);
++				 target->np, child->name, ret);
+ 			of_node_put(child);
+ 			return ret;
+ 		}
+@@ -442,17 +472,17 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
+  * Add the properties from __overlay__ node to the @ovcs->cset changeset.
+  */
+ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
+-		struct device_node *target_node,
++		struct target *target,
+ 		const struct device_node *overlay_symbols_node)
+ {
+ 	struct property *prop;
+ 	int ret;
+ 
+ 	for_each_property_of_node(overlay_symbols_node, prop) {
+-		ret = add_changeset_property(ovcs, target_node, prop, 1);
++		ret = add_changeset_property(ovcs, target, prop, 1);
+ 		if (ret) {
+ 			pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
+-				 target_node, prop->name, ret);
++				 target->np, prop->name, ret);
+ 			return ret;
+ 		}
+ 	}
+@@ -475,6 +505,7 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
+ static int build_changeset(struct overlay_changeset *ovcs)
+ {
+ 	struct fragment *fragment;
++	struct target target;
+ 	int fragments_count, i, ret;
+ 
+ 	/*
+@@ -489,7 +520,9 @@ static int build_changeset(struct overlay_changeset *ovcs)
+ 	for (i = 0; i < fragments_count; i++) {
+ 		fragment = &ovcs->fragments[i];
+ 
+-		ret = build_changeset_next_level(ovcs, fragment->target,
++		target.np = fragment->target;
++		target.in_livetree = true;
++		ret = build_changeset_next_level(ovcs, &target,
+ 						 fragment->overlay);
+ 		if (ret) {
+ 			pr_debug("apply failed '%pOF'\n", fragment->target);
+@@ -499,7 +532,10 @@ static int build_changeset(struct overlay_changeset *ovcs)
+ 
+ 	if (ovcs->symbols_fragment) {
+ 		fragment = &ovcs->fragments[ovcs->count - 1];
+-		ret = build_changeset_symbols_node(ovcs, fragment->target,
++
++		target.np = fragment->target;
++		target.in_livetree = true;
++		ret = build_changeset_symbols_node(ovcs, &target,
+ 						   fragment->overlay);
+ 		if (ret) {
+ 			pr_debug("apply failed '%pOF'\n", fragment->target);
+@@ -517,7 +553,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
+  * 1) "target" property containing the phandle of the target
+  * 2) "target-path" property containing the path of the target
+  */
+-static struct device_node *find_target_node(struct device_node *info_node)
++static struct device_node *find_target(struct device_node *info_node)
+ {
+ 	struct device_node *node;
+ 	const char *path;
+@@ -623,7 +659,7 @@ static int init_overlay_changeset(struct overlay_changeset *ovcs,
+ 
+ 		fragment = &fragments[cnt];
+ 		fragment->overlay = overlay_node;
+-		fragment->target = find_target_node(node);
++		fragment->target = find_target(node);
+ 		if (!fragment->target) {
+ 			of_node_put(fragment->overlay);
+ 			ret = -EINVAL;
 -- 
 Frank Rowand <frank.rowand@sony.com>
