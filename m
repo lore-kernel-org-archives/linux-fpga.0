@@ -1,127 +1,141 @@
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v5 01/18] of: overlay: add tests to validate kfrees from overlay removal
-Date: Thu, 18 Oct 2018 15:46:19 -0700
-Message-Id: <1539902796-8382-2-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
-References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v2 15/18] of: overlay: set node fields from properties when add new overlay node
+Date: Fri, 12 Oct 2018 21:53:35 -0700
+Message-Id: <1539406418-18162-16-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
+References: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-Add checks:
-  - attempted kfree due to refcount reaching zero before overlay
-    is removed
-  - properties linked to an overlay node when the node is removed
-  - node refcount > one during node removal in a changeset destroy,
-    if the node was created by the changeset
+Overlay nodes added by add_changeset_node() do not have the node
+fields name, phandle, and type set.
 
-After applying this patch, several validation warnings will be
-reported from the devicetree unittest during boot due to
-pre-existing devicetree bugs. The warnings will be similar to:
+The node passed to __of_attach_node() when the add node changeset
+entry is processed does not contain any properties.  The node's
+properties are located in add property changeset entries that will
+be processed after the add node changeset is applied.
 
-  OF: ERROR: of_node_release(), unexpected properties in /testcase-data/overlay-node/test-bus/test-unittest11
-  OF: ERROR: memory leak, expected refcount 1 instead of 2, of_node_get()/of_node_put() unbalanced - destroy cset entry: attach overlay node /testcase-data-2/substation@100/
-  hvac-medium-2
+Set the node's fields in the node contained in the add node
+changeset entry and do not set them to incorrect values in
+add_changeset_node().
+
+A visible symptom that is fixed by this patch is the names of nodes
+added by overlays that have an entry in /sys/bus/platform/drivers/*/
+will contain the unit-address but the node-name will be <NULL>,  for
+example, "fc4ab000.<NULL>".  After applying the patch the name, in
+this example, for node restart@fc4ab000 is "fc4ab000.restart".
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-
-Changes since v4:
-  - make error message format consistent, error first, path last
-
- drivers/of/dynamic.c | 29 +++++++++++++++++++++++++++++
- drivers/of/overlay.c |  1 +
- include/linux/of.h   | 15 ++++++++++-----
- 3 files changed, 40 insertions(+), 5 deletions(-)
+ drivers/of/dynamic.c | 27 ++++++++++++++++++---------
+ drivers/of/overlay.c | 29 ++++++++++++++++++++++++-----
+ 2 files changed, 42 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index f4f8ed9b5454..12c3f9a15e94 100644
+index 5f7c99b9de0d..5b740114dbdc 100644
 --- a/drivers/of/dynamic.c
 +++ b/drivers/of/dynamic.c
-@@ -330,6 +330,25 @@ void of_node_release(struct kobject *kobj)
- 	if (!of_node_check_flag(node, OF_DYNAMIC))
- 		return;
+@@ -205,15 +205,24 @@ static void __of_attach_node(struct device_node *np)
+ 	const __be32 *phandle;
+ 	int sz;
  
-+	if (of_node_check_flag(node, OF_OVERLAY)) {
+-	np->name = __of_get_property(np, "name", NULL) ? : "<NULL>";
+-	np->type = __of_get_property(np, "device_type", NULL) ? : "<NULL>";
+-
+-	phandle = __of_get_property(np, "phandle", &sz);
+-	if (!phandle)
+-		phandle = __of_get_property(np, "linux,phandle", &sz);
+-	if (IS_ENABLED(CONFIG_PPC_PSERIES) && !phandle)
+-		phandle = __of_get_property(np, "ibm,phandle", &sz);
+-	np->phandle = (phandle && (sz >= 4)) ? be32_to_cpup(phandle) : 0;
++	if (!of_node_check_flag(np, OF_OVERLAY)) {
++		np->name = __of_get_property(np, "name", NULL);
++		np->type = __of_get_property(np, "device_type", NULL);
++		if (!np->name)
++			np->name = "<NULL>";
++		if (!np->type)
++			np->type = "<NULL>";
 +
-+		if (!of_node_check_flag(node, OF_OVERLAY_FREE_CSET)) {
-+			/* premature refcount of zero, do not free memory */
-+			pr_err("ERROR: memory leak before free overlay changeset,  %pOF\n",
-+			       node);
-+			return;
-+		}
-+
-+		/*
-+		 * If node->properties non-empty then properties were added
-+		 * to this node either by different overlay that has not
-+		 * yet been removed, or by a non-overlay mechanism.
-+		 */
-+		if (node->properties)
-+			pr_err("ERROR: %s(), unexpected properties in %pOF\n",
-+			       __func__, node);
++		phandle = __of_get_property(np, "phandle", &sz);
++		if (!phandle)
++			phandle = __of_get_property(np, "linux,phandle", &sz);
++		if (IS_ENABLED(CONFIG_PPC_PSERIES) && !phandle)
++			phandle = __of_get_property(np, "ibm,phandle", &sz);
++		if (phandle && (sz >= 4))
++			np->phandle = be32_to_cpup(phandle);
++		else
++			np->phandle = 0;
 +	}
-+
- 	property_list_free(node->properties);
- 	property_list_free(node->deadprops);
  
-@@ -434,6 +453,16 @@ struct device_node *__of_node_dup(const struct device_node *np,
- 
- static void __of_changeset_entry_destroy(struct of_changeset_entry *ce)
- {
-+	if (ce->action == OF_RECONFIG_ATTACH_NODE &&
-+	    of_node_check_flag(ce->np, OF_OVERLAY)) {
-+		if (kref_read(&ce->np->kobj.kref) > 1) {
-+			pr_err("ERROR: memory leak, expected refcount 1 instead of %d, of_node_get()/of_node_put() unbalanced - destroy cset entry: attach overlay node %pOF\n",
-+			       kref_read(&ce->np->kobj.kref), ce->np);
-+		} else {
-+			of_node_set_flag(ce->np, OF_OVERLAY_FREE_CSET);
-+		}
-+	}
-+
- 	of_node_put(ce->np);
- 	list_del(&ce->node);
- 	kfree(ce);
+ 	np->child = NULL;
+ 	np->sibling = np->parent->child;
 diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index eda57ef12fd0..1176cb4b6e4e 100644
+index 41f56091663b..df808f73918e 100644
 --- a/drivers/of/overlay.c
 +++ b/drivers/of/overlay.c
-@@ -373,6 +373,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+@@ -307,10 +307,11 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ 	int ret = 0;
+ 	bool check_for_non_overlay_node = false;
+ 
+-	if (!of_prop_cmp(overlay_prop->name, "name") ||
+-	    !of_prop_cmp(overlay_prop->name, "phandle") ||
+-	    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
+-		return 0;
++	if (target->in_livetree)
++		if (!of_prop_cmp(overlay_prop->name, "name") ||
++		    !of_prop_cmp(overlay_prop->name, "phandle") ||
++		    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
++			return 0;
+ 
+ 	if (target->in_livetree)
+ 		prop = of_find_property(target->np, overlay_prop->name, NULL);
+@@ -331,6 +332,10 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ 	if (!prop) {
+ 
+ 		check_for_non_overlay_node = true;
++		if (!target->in_livetree) {
++			new_prop->next = target->np->deadprops;
++			target->np->deadprops = new_prop;
++		}
+ 		ret = of_changeset_add_property(&ovcs->cset, target->np,
+ 						new_prop);
+ 
+@@ -406,9 +411,10 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 		struct target *target, struct device_node *node)
+ {
+ 	const char *node_kbasename;
++	const __be32 *phandle;
+ 	struct device_node *tchild;
+ 	struct target target_child;
+-	int ret = 0;
++	int ret = 0, size;
+ 
+ 	node_kbasename = kbasename(node->full_name);
+ 
+@@ -422,6 +428,19 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
  			return -ENOMEM;
  
- 		tchild->parent = target_node;
-+		of_node_set_flag(tchild, OF_OVERLAY);
+ 		tchild->parent = target->np;
++		tchild->name = __of_get_property(node, "name", NULL);
++		tchild->type = __of_get_property(node, "device_type", NULL);
++
++		if (!tchild->name)
++			tchild->name = "<NULL>";
++		if (!tchild->type)
++			tchild->type = "<NULL>";
++
++		/* ignore obsolete "linux,phandle" */
++		phandle = __of_get_property(node, "phandle", &size);
++		if (phandle && (size == 4))
++			tchild->phandle = be32_to_cpup(phandle);
++
+ 		of_node_set_flag(tchild, OF_OVERLAY);
  
  		ret = of_changeset_attach_node(&ovcs->cset, tchild);
- 		if (ret)
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 4d25e4f952d9..aa1dafaec6ae 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -138,11 +138,16 @@ static inline void of_node_put(struct device_node *node) { }
- extern struct device_node *of_stdout;
- extern raw_spinlock_t devtree_lock;
- 
--/* flag descriptions (need to be visible even when !CONFIG_OF) */
--#define OF_DYNAMIC	1 /* node and properties were allocated via kmalloc */
--#define OF_DETACHED	2 /* node has been detached from the device tree */
--#define OF_POPULATED	3 /* device already created for the node */
--#define OF_POPULATED_BUS	4 /* of_platform_populate recursed to children of this node */
-+/*
-+ * struct device_node flag descriptions
-+ * (need to be visible even when !CONFIG_OF)
-+ */
-+#define OF_DYNAMIC		1 /* (and properties) allocated via kmalloc */
-+#define OF_DETACHED		2 /* detached from the device tree */
-+#define OF_POPULATED		3 /* device already created */
-+#define OF_POPULATED_BUS	4 /* platform bus created for children */
-+#define OF_OVERLAY		5 /* allocated for an overlay */
-+#define OF_OVERLAY_FREE_CSET	6 /* in overlay cset being freed */
- 
- #define OF_BAD_ADDR	((u64)-1)
- 
 -- 
 Frank Rowand <frank.rowand@sony.com>
