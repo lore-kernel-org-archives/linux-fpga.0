@@ -1,9 +1,9 @@
 Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
 Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v2 06/18] of: overlay: do not duplicate properties from overlay for new nodes
-Date: Fri, 12 Oct 2018 21:53:26 -0700
-Message-Id: <1539406418-18162-7-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v2 10/18] of: overlay: make all pr_debug() and pr_err() messages unique
+Date: Fri, 12 Oct 2018 21:53:30 -0700
+Message-Id: <1539406418-18162-11-git-send-email-frowand.list@gmail.com>
 In-Reply-To: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
 References: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
@@ -12,42 +12,64 @@ List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-When allocating a new node, add_changeset_node() was duplicating the
-properties from the respective node in the overlay instead of
-allocating a node with no properties.
-
-When this patch is applied the errors reported by the devictree
-unittest from patch "of: overlay: add tests to validate kfrees from
-overlay removal" will no longer occur.  These error messages are of
-the form:
-
-   "OF: ERROR: ..."
-
-and the unittest results will change from:
-
-   ### dt-test ### end of unittest - 203 passed, 7 failed
-
-to
-
-   ### dt-test ### end of unittest - 210 passed, 0 failed
+Make overlay.c debug and error messages unique so that they can be
+unambiguously found by grep.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/overlay.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/of/overlay.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 94740f4ee34c..7fcf4a812d06 100644
+index ee66651db553..a3990c20e210 100644
 --- a/drivers/of/overlay.c
 +++ b/drivers/of/overlay.c
-@@ -393,7 +393,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 			break;
+@@ -513,7 +513,7 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
+ 	for_each_property_of_node(overlay_symbols_node, prop) {
+ 		ret = add_changeset_property(ovcs, target, prop, 1);
+ 		if (ret) {
+-			pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
++			pr_debug("Failed to apply symbols prop @%pOF/%s, err=%d\n",
+ 				 target->np, prop->name, ret);
+ 			return ret;
+ 		}
+@@ -557,7 +557,8 @@ static int build_changeset(struct overlay_changeset *ovcs)
+ 		ret = build_changeset_next_level(ovcs, &target,
+ 						 fragment->overlay);
+ 		if (ret) {
+-			pr_debug("apply failed '%pOF'\n", fragment->target);
++			pr_debug("fragment apply failed '%pOF'\n",
++				 fragment->target);
+ 			return ret;
+ 		}
+ 	}
+@@ -570,7 +571,8 @@ static int build_changeset(struct overlay_changeset *ovcs)
+ 		ret = build_changeset_symbols_node(ovcs, &target,
+ 						   fragment->overlay);
+ 		if (ret) {
+-			pr_debug("apply failed '%pOF'\n", fragment->target);
++			pr_debug("symbols fragment apply failed '%pOF'\n",
++				 fragment->target);
+ 			return ret;
+ 		}
+ 	}
+@@ -879,7 +881,7 @@ static int of_overlay_apply(const void *fdt, struct device_node *tree,
  
- 	if (!tchild) {
--		tchild = __of_node_dup(node, node_kbasename);
-+		tchild = __of_node_dup(NULL, node_kbasename);
- 		if (!tchild)
- 			return -ENOMEM;
+ 	ret = __of_changeset_apply_notify(&ovcs->cset);
+ 	if (ret)
+-		pr_err("overlay changeset entry notify error %d\n", ret);
++		pr_err("overlay apply changeset entry notify error %d\n", ret);
+ 	/* notify failure is not fatal, continue */
  
+ 	list_add_tail(&ovcs->ovcs_list, &ovcs_list);
+@@ -1138,7 +1140,7 @@ int of_overlay_remove(int *ovcs_id)
+ 
+ 	ret = __of_changeset_revert_notify(&ovcs->cset);
+ 	if (ret)
+-		pr_err("overlay changeset entry notify error %d\n", ret);
++		pr_err("overlay remove changeset entry notify error %d\n", ret);
+ 	/* notify failure is not fatal, continue */
+ 
+ 	*ovcs_id = 0;
 -- 
 Frank Rowand <frank.rowand@sony.com>
