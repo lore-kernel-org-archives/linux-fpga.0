@@ -1,11 +1,11 @@
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v5 03/18] of: overlay: add missing of_node_get() in __of_attach_node_sysfs
-Date: Thu, 18 Oct 2018 15:46:21 -0700
-Message-Id: <1539902796-8382-4-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
-References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v3 03/18] of: overlay: add missing of_node_get() in __of_attach_node_sysfs
+Date: Sun, 14 Oct 2018 17:24:15 -0700
+Message-Id: <1539563070-12969-4-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
+References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
@@ -23,19 +23,12 @@ using changesets.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-
-This patch should result in powerpc systems that dynamically
-allocate a node, then later deallocate the node to have a
-memory leak when the node is deallocated.
-
-The next patch in the series will fix the leak.
-
  drivers/of/dynamic.c | 3 ---
  drivers/of/kobj.c    | 4 +++-
  2 files changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index 12c3f9a15e94..146681540487 100644
+index b04ee021a891..275c0d7e2268 100644
 --- a/drivers/of/dynamic.c
 +++ b/drivers/of/dynamic.c
 @@ -272,9 +272,6 @@ void __of_detach_node(struct device_node *np)
