@@ -1,136 +1,308 @@
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v5 18/18] of: unittest: initialize args before calling of_*parse_*()
-Date: Thu, 18 Oct 2018 15:46:36 -0700
-Message-Id: <1539902796-8382-19-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
-References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 2/4] fpga: bridge: add devm_fpga_bridge_create
+Date: Mon, 15 Oct 2018 17:20:02 -0500
+Message-Id: <1539642004-18473-3-git-send-email-atull@kernel.org>
+In-Reply-To: <1539642004-18473-1-git-send-email-atull@kernel.org>
+References: <1539642004-18473-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Add devm_fpga_bridge_create() which is the managed
+version of fpga_bridge_create().
 
-Callers of of_irq_parse_one() blindly use the pointer args.np
-without checking whether of_irq_parse_one() had an error and
-thus did not set the value of args.np.  Initialize args to
-zero so that using the format "%pOF" to show the value of
-args.np will show "(null)" when of_irq_parse_one() has an
-error.  This prevents the dereference of a random value.
+Change current bridge drivers to use
+devm_fpga_bridge_create().
 
-Make the same fix for callers of of_parse_phandle_with_args()
-and of_parse_phandle_with_args_map().
-
-Reported-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+Signed-off-by: Alan Tull <atull@kernel.org>
+Suggested-by: Federico Vaga <federico.vaga@cern.ch>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/of/unittest.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ Documentation/driver-api/fpga/fpga-bridge.rst |  3 ++
+ drivers/fpga/altera-fpga2sdram.c              |  8 ++--
+ drivers/fpga/altera-freeze-bridge.c           | 13 ++---
+ drivers/fpga/altera-hps2fpga.c                |  7 ++-
+ drivers/fpga/dfl-fme-br.c                     | 11 ++---
+ drivers/fpga/fpga-bridge.c                    | 68 +++++++++++++++++++++++----
+ drivers/fpga/xilinx-pr-decoupler.c            |  4 +-
+ include/linux/fpga/fpga-bridge.h              |  4 ++
+ 8 files changed, 80 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 785985bdbfa6..5f4db23e4752 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -375,6 +375,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
+diff --git a/Documentation/driver-api/fpga/fpga-bridge.rst b/Documentation/driver-api/fpga/fpga-bridge.rst
+index 2c2aaca..ebbcbde 100644
+--- a/Documentation/driver-api/fpga/fpga-bridge.rst
++++ b/Documentation/driver-api/fpga/fpga-bridge.rst
+@@ -11,6 +11,9 @@ API to implement a new FPGA bridge
+    :functions: fpga_bridge_ops
  
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args(np, "phandle-list",
- 						"#phandle-cells", i, &args);
+ .. kernel-doc:: drivers/fpga/fpga-bridge.c
++   :functions: devm_fpga_bridge_create
++
++.. kernel-doc:: drivers/fpga/fpga-bridge.c
+    :functions: fpga_bridge_create
  
-@@ -428,6 +429,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
+ .. kernel-doc:: drivers/fpga/fpga-bridge.c
+diff --git a/drivers/fpga/altera-fpga2sdram.c b/drivers/fpga/altera-fpga2sdram.c
+index 23660cc..a78e49c 100644
+--- a/drivers/fpga/altera-fpga2sdram.c
++++ b/drivers/fpga/altera-fpga2sdram.c
+@@ -121,18 +121,16 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+ 	/* Get f2s bridge configuration saved in handoff register */
+ 	regmap_read(sysmgr, SYSMGR_ISWGRP_HANDOFF3, &priv->mask);
+ 
+-	br = fpga_bridge_create(dev, F2S_BRIDGE_NAME,
+-				&altera_fpga2sdram_br_ops, priv);
++	br = devm_fpga_bridge_create(dev, F2S_BRIDGE_NAME,
++				     &altera_fpga2sdram_br_ops, priv);
+ 	if (!br)
+ 		return -ENOMEM;
+ 
+ 	platform_set_drvdata(pdev, br);
+ 
+ 	ret = fpga_bridge_register(br);
+-	if (ret) {
+-		fpga_bridge_free(br);
++	if (ret)
+ 		return ret;
+-	}
+ 
+ 	dev_info(dev, "driver initialized with handoff %08x\n", priv->mask);
+ 
+diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
+index ffd586c..dd58c4a 100644
+--- a/drivers/fpga/altera-freeze-bridge.c
++++ b/drivers/fpga/altera-freeze-bridge.c
+@@ -213,7 +213,6 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+ 	struct fpga_bridge *br;
+ 	struct resource *res;
+ 	u32 status, revision;
+-	int ret;
+ 
+ 	if (!np)
+ 		return -ENODEV;
+@@ -245,20 +244,14 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
+ 
+ 	priv->base_addr = base_addr;
+ 
+-	br = fpga_bridge_create(dev, FREEZE_BRIDGE_NAME,
+-				&altera_freeze_br_br_ops, priv);
++	br = devm_fpga_bridge_create(dev, FREEZE_BRIDGE_NAME,
++				     &altera_freeze_br_br_ops, priv);
+ 	if (!br)
+ 		return -ENOMEM;
+ 
+ 	platform_set_drvdata(pdev, br);
+ 
+-	ret = fpga_bridge_register(br);
+-	if (ret) {
+-		fpga_bridge_free(br);
+-		return ret;
+-	}
+-
+-	return 0;
++	return fpga_bridge_register(br);
+ }
+ 
+ static int altera_freeze_br_remove(struct platform_device *pdev)
+diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
+index a974d3f..77b95f2 100644
+--- a/drivers/fpga/altera-hps2fpga.c
++++ b/drivers/fpga/altera-hps2fpga.c
+@@ -180,7 +180,8 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+ 		}
  	}
  
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-missing",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
-@@ -436,6 +438,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
+-	br = fpga_bridge_create(dev, priv->name, &altera_hps2fpga_br_ops, priv);
++	br = devm_fpga_bridge_create(dev, priv->name,
++				     &altera_hps2fpga_br_ops, priv);
+ 	if (!br) {
+ 		ret = -ENOMEM;
+ 		goto err;
+@@ -190,12 +191,10 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
  
- 	/* Check for missing cells property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list",
- 					"#phandle-cells-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -444,6 +447,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+ 	ret = fpga_bridge_register(br);
+ 	if (ret)
+-		goto err_free;
++		goto err;
  
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-phandle",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -452,6 +456,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+ 	return 0;
  
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-args",
- 					"#phandle-cells", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -502,6 +507,7 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
+-err_free:
+-	fpga_bridge_free(br);
+ err:
+ 	clk_disable_unprepare(priv->clk);
  
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 						    "phandle", i, &args);
+diff --git a/drivers/fpga/dfl-fme-br.c b/drivers/fpga/dfl-fme-br.c
+index 7cc041d..3ff9f3a 100644
+--- a/drivers/fpga/dfl-fme-br.c
++++ b/drivers/fpga/dfl-fme-br.c
+@@ -61,7 +61,6 @@ static int fme_br_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct fme_br_priv *priv;
+ 	struct fpga_bridge *br;
+-	int ret;
  
-@@ -559,21 +565,25 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
- 	}
+ 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+ 	if (!priv)
+@@ -69,18 +68,14 @@ static int fme_br_probe(struct platform_device *pdev)
  
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-missing",
- 					    "phandle", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
+ 	priv->pdata = dev_get_platdata(dev);
  
- 	/* Check for missing cells,map,mask property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 					    "phandle-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+-	br = fpga_bridge_create(dev, "DFL FPGA FME Bridge",
+-				&fme_bridge_ops, priv);
++	br = devm_fpga_bridge_create(dev, "DFL FPGA FME Bridge",
++				     &fme_bridge_ops, priv);
+ 	if (!br)
+ 		return -ENOMEM;
  
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-phandle",
- 					    "phandle", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+ 	platform_set_drvdata(pdev, br);
  
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-args",
- 					    "phandle", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -780,7 +790,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
+-	ret = fpga_bridge_register(br);
+-	if (ret)
+-		fpga_bridge_free(br);
+-
+-	return ret;
++	return fpga_bridge_register(br);
+ }
  
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
+ static int fme_br_remove(struct platform_device *pdev)
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index c983dac..80bd8f1 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -324,6 +324,9 @@ ATTRIBUTE_GROUPS(fpga_bridge);
+  * @br_ops:	pointer to structure of fpga bridge ops
+  * @priv:	FPGA bridge private data
+  *
++ * The caller of this function is responsible for freeing the bridge with
++ * fpga_bridge_free().  Using devm_fpga_bridge_create() instead is recommended.
++ *
+  * Return: struct fpga_bridge or NULL
+  */
+ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
+@@ -378,8 +381,8 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
+ EXPORT_SYMBOL_GPL(fpga_bridge_create);
  
- 		passed &= !rc;
-@@ -801,7 +811,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
+ /**
+- * fpga_bridge_free - free a fpga bridge and its id
+- * @bridge:	FPGA bridge struct created by fpga_bridge_create
++ * fpga_bridge_free - free a fpga bridge created by fpga_bridge_create()
++ * @bridge:	FPGA bridge struct
+  */
+ void fpga_bridge_free(struct fpga_bridge *bridge)
+ {
+@@ -388,9 +391,56 @@ void fpga_bridge_free(struct fpga_bridge *bridge)
+ }
+ EXPORT_SYMBOL_GPL(fpga_bridge_free);
  
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
++static void devm_fpga_bridge_release(struct device *dev, void *res)
++{
++	struct fpga_bridge *bridge = *(struct fpga_bridge **)res;
++
++	fpga_bridge_free(bridge);
++}
++
+ /**
+- * fpga_bridge_register - register a fpga bridge
+- * @bridge:	FPGA bridge struct created by fpga_bridge_create
++ * devm_fpga_bridge_create - create and init a managed struct fpga_bridge
++ * @dev:	FPGA bridge device from pdev
++ * @name:	FPGA bridge name
++ * @br_ops:	pointer to structure of fpga bridge ops
++ * @priv:	FPGA bridge private data
++ *
++ * This function is intended for use in a FPGA bridge driver's probe function.
++ * After the bridge driver creates the struct with devm_fpga_bridge_create(), it
++ * should register the bridge with fpga_bridge_register().  The bridge driver's
++ * remove function should call fpga_bridge_unregister().  The bridge struct
++ * allocated with this function will be freed automatically on driver detach.
++ * This includes the case of a probe function returning error before calling
++ * fpga_bridge_register(), the struct will still get cleaned up.
++ *
++ *  Return: struct fpga_bridge or NULL
++ */
++struct fpga_bridge
++*devm_fpga_bridge_create(struct device *dev, const char *name,
++			 const struct fpga_bridge_ops *br_ops, void *priv)
++{
++	struct fpga_bridge **ptr, *bridge;
++
++	ptr = devres_alloc(devm_fpga_bridge_release, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return NULL;
++
++	bridge = fpga_bridge_create(dev, name, br_ops, priv);
++	if (!bridge) {
++		devres_free(ptr);
++	} else {
++		*ptr = bridge;
++		devres_add(dev, ptr);
++	}
++
++	return bridge;
++}
++EXPORT_SYMBOL_GPL(devm_fpga_bridge_create);
++
++/**
++ * fpga_bridge_register - register a FPGA bridge
++ *
++ * @bridge: FPGA bridge struct
+  *
+  * Return: 0 for success, error code otherwise.
+  */
+@@ -412,8 +462,11 @@ int fpga_bridge_register(struct fpga_bridge *bridge)
+ EXPORT_SYMBOL_GPL(fpga_bridge_register);
  
- 		/* Test the values from tests-phandle.dtsi */
-@@ -854,6 +864,7 @@ static void __init of_unittest_parse_interrupts_extended(void)
- 	for (i = 0; i < 7; i++) {
- 		bool passed = true;
+ /**
+- * fpga_bridge_unregister - unregister and free a fpga bridge
+- * @bridge:	FPGA bridge struct created by fpga_bridge_create
++ * fpga_bridge_unregister - unregister a FPGA bridge
++ *
++ * @bridge: FPGA bridge struct
++ *
++ * This function is intended for use in a FPGA bridge driver's remove function.
+  */
+ void fpga_bridge_unregister(struct fpga_bridge *bridge)
+ {
+@@ -430,9 +483,6 @@ EXPORT_SYMBOL_GPL(fpga_bridge_unregister);
  
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
+ static void fpga_bridge_dev_release(struct device *dev)
+ {
+-	struct fpga_bridge *bridge = to_fpga_bridge(dev);
+-
+-	fpga_bridge_free(bridge);
+ }
  
- 		/* Test the values from tests-phandle.dtsi */
+ static int __init fpga_bridge_dev_init(void)
+diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
+index 07ba153..6410361 100644
+--- a/drivers/fpga/xilinx-pr-decoupler.c
++++ b/drivers/fpga/xilinx-pr-decoupler.c
+@@ -121,8 +121,8 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+ 
+ 	clk_disable(priv->clk);
+ 
+-	br = fpga_bridge_create(&pdev->dev, "Xilinx PR Decoupler",
+-				&xlnx_pr_decoupler_br_ops, priv);
++	br = devm_fpga_bridge_create(&pdev->dev, "Xilinx PR Decoupler",
++				     &xlnx_pr_decoupler_br_ops, priv);
+ 	if (!br) {
+ 		err = -ENOMEM;
+ 		goto err_clk;
+diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
+index ce550fc..817600a 100644
+--- a/include/linux/fpga/fpga-bridge.h
++++ b/include/linux/fpga/fpga-bridge.h
+@@ -69,4 +69,8 @@ void fpga_bridge_free(struct fpga_bridge *br);
+ int fpga_bridge_register(struct fpga_bridge *br);
+ void fpga_bridge_unregister(struct fpga_bridge *br);
+ 
++struct fpga_bridge
++*devm_fpga_bridge_create(struct device *dev, const char *name,
++			 const struct fpga_bridge_ops *br_ops, void *priv);
++
+ #endif /* _LINUX_FPGA_BRIDGE_H */
 -- 
-Frank Rowand <frank.rowand@sony.com>
+2.7.4
