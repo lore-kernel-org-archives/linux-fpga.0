@@ -1,9 +1,9 @@
 Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
 Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v3 03/18] of: overlay: add missing of_node_get() in __of_attach_node_sysfs
-Date: Sun, 14 Oct 2018 17:24:15 -0700
-Message-Id: <1539563070-12969-4-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v3 17/18] of: unittest: find overlays[] entry by name instead of index
+Date: Sun, 14 Oct 2018 17:24:29 -0700
+Message-Id: <1539563070-12969-18-git-send-email-frowand.list@gmail.com>
 In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
 References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
@@ -12,55 +12,70 @@ List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-There is a matching of_node_put() in __of_detach_node_sysfs()
-
-Remove misleading comment from function header comment for
-of_detach_node().
-
-This patch may result in memory leaks from code that directly calls
-the dynamic node add and delete functions directly instead of
-using changesets.
+One accessor of overlays[] was using a hard coded index value to
+find the correct array entry instead of searching for the entry
+containing the correct name.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/dynamic.c | 3 ---
- drivers/of/kobj.c    | 4 +++-
- 2 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/of/unittest.c | 21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index b04ee021a891..275c0d7e2268 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -272,9 +272,6 @@ void __of_detach_node(struct device_node *np)
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 1c2bd8503095..785985bdbfa6 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -2178,7 +2178,7 @@ struct overlay_info {
+ OVERLAY_INFO_EXTERN(overlay_bad_phandle);
+ OVERLAY_INFO_EXTERN(overlay_bad_symbol);
  
- /**
-  * of_detach_node() - "Unplug" a node from the device tree.
-- *
-- * The caller must hold a reference to the node.  The memory associated with
-- * the node is not freed until its refcount goes to zero.
-  */
- int of_detach_node(struct device_node *np)
+-/* order of entries is hard-coded into users of overlays[] */
++/* entries found by name */
+ static struct overlay_info overlays[] = {
+ 	OVERLAY_INFO(overlay_base, -9999),
+ 	OVERLAY_INFO(overlay, 0),
+@@ -2201,7 +2201,8 @@ struct overlay_info {
+ 	OVERLAY_INFO(overlay_bad_add_dup_prop, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
+-	{}
++	/* end marker */
++	{.dtb_begin = NULL, .dtb_end = NULL, .expected_result = 0, .name = NULL}
+ };
+ 
+ static struct device_node *overlay_base_root;
+@@ -2231,6 +2232,19 @@ void __init unittest_unflatten_overlay_base(void)
+ 	u32 data_size;
+ 	void *new_fdt;
+ 	u32 size;
++	int found = 0;
++	const char *overlay_name = "overlay_base";
++
++	for (info = overlays; info && info->name; info++) {
++		if (!strcmp(overlay_name, info->name)) {
++			found = 1;
++			break;
++		}
++	}
++	if (!found) {
++		pr_err("no overlay data for %s\n", overlay_name);
++		return;
++	}
+ 
+ 	info = &overlays[0];
+ 
+@@ -2278,11 +2292,10 @@ static int __init overlay_data_apply(const char *overlay_name, int *overlay_id)
  {
-diff --git a/drivers/of/kobj.c b/drivers/of/kobj.c
-index 7a0a18980b98..c72eef988041 100644
---- a/drivers/of/kobj.c
-+++ b/drivers/of/kobj.c
-@@ -133,6 +133,9 @@ int __of_attach_node_sysfs(struct device_node *np)
- 	}
- 	if (!name)
- 		return -ENOMEM;
-+
-+	of_node_get(np);
-+
- 	rc = kobject_add(&np->kobj, parent, "%s", name);
- 	kfree(name);
- 	if (rc)
-@@ -159,6 +162,5 @@ void __of_detach_node_sysfs(struct device_node *np)
- 		kobject_del(&np->kobj);
- 	}
+ 	struct overlay_info *info;
+ 	int found = 0;
+-	int k;
+ 	int ret;
+ 	u32 size;
  
--	/* finally remove the kobj_init ref */
- 	of_node_put(np);
- }
+-	for (k = 0, info = overlays; info && info->name; info++, k++) {
++	for (info = overlays; info && info->name; info++) {
+ 		if (!strcmp(overlay_name, info->name)) {
+ 			found = 1;
+ 			break;
 -- 
 Frank Rowand <frank.rowand@sony.com>
