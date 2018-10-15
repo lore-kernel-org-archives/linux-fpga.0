@@ -1,122 +1,72 @@
-Return-Path: <SRS0=lgA+=M7=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=lgA+=M7=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-dm3nam03on0044.outbound.protection.outlook.com ([104.47.41.44]:58400
-        "EHLO NAM03-DM3-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726690AbeJSQyr (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 19 Oct 2018 12:54:47 -0400
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH 1/3] firmware: xilinx: Add fpga API's
-Date: Sat, 20 Oct 2018 14:18:03 +0530
-Message-ID: <20181020084805.29103-2-nava.manne@xilinx.com>
-In-Reply-To: <20181020084805.29103-1-nava.manne@xilinx.com>
-References: <20181020084805.29103-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v3 02/18] of: overlay: add missing of_node_put() after add new node to changeset
+Date: Sun, 14 Oct 2018 17:24:14 -0700
+Message-Id: <1539563070-12969-3-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
+References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-This Patch Adds fpga API's to support the Bitstream loading
-by using firmware interface.
+From: Frank Rowand <frank.rowand@sony.com>
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+The refcount of a newly added overlay node decrements to one
+(instead of zero) when the overlay changeset is destroyed.  This
+change will cause the final decrement be to zero.
+
+After applying this patch, new validation warnings will be
+reported from the devicetree unittest during boot due to
+a pre-existing devicetree bug.  The warnings will be similar to:
+
+  OF: ERROR: memory leak of_node_release() overlay node /testcase-data/overlay-node/test-bus/test-unittest4 before free overlay changeset
+
+This pre-existing devicetree bug will also trigger a WARN_ONCE() from
+refcount_sub_and_test_checked() when an overlay changeset is
+destroyed without having first been applied.  This scenario occurs
+when an error in the overlay is detected during the overlay changeset
+creation:
+
+  WARNING: CPU: 0 PID: 1 at lib/refcount.c:187 refcount_sub_and_test_checked+0xa8/0xbc
+  refcount_t: underflow; use-after-free.
+
+  (unwind_backtrace) from (show_stack+0x10/0x14)
+  (show_stack) from (dump_stack+0x6c/0x8c)
+  (dump_stack) from (__warn+0xdc/0x104)
+  (__warn) from (warn_slowpath_fmt+0x44/0x6c)
+  (warn_slowpath_fmt) from (refcount_sub_and_test_checked+0xa8/0xbc)
+  (refcount_sub_and_test_checked) from (kobject_put+0x24/0x208)
+  (kobject_put) from (of_changeset_destroy+0x2c/0xb4)
+  (of_changeset_destroy) from (free_overlay_changeset+0x1c/0x9c)
+  (free_overlay_changeset) from (of_overlay_remove+0x284/0x2cc)
+  (of_overlay_remove) from (of_unittest_apply_revert_overlay_check.constprop.4+0xf8/0x1e8)
+  (of_unittest_apply_revert_overlay_check.constprop.4) from (of_unittest_overlay+0x960/0xed8)
+  (of_unittest_overlay) from (of_unittest+0x1cc4/0x2138)
+  (of_unittest) from (do_one_initcall+0x4c/0x28c)
+  (do_one_initcall) from (kernel_init_freeable+0x29c/0x378)
+  (kernel_init_freeable) from (kernel_init+0x8/0x110)
+  (kernel_init) from (ret_from_fork+0x14/0x2c)
+
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-Changes for v1:
-		-None.
+ drivers/of/overlay.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Changes for RFC-V2:
-                -New Patch.
-
- drivers/firmware/xilinx/zynqmp.c     | 46 ++++++++++++++++++++++++++++
- include/linux/firmware/xlnx-zynqmp.h |  4 +++
- 2 files changed, 50 insertions(+)
-
-diff --git a/drivers/firmware/xilinx/zynqmp.c b/drivers/firmware/xilinx/zynqmp.c
-index 84b3fd2eca8b..38a1ab1be03b 100644
---- a/drivers/firmware/xilinx/zynqmp.c
-+++ b/drivers/firmware/xilinx/zynqmp.c
-@@ -428,6 +428,50 @@ static int zynqmp_pm_clock_getparent(u32 clock_id, u32 *parent_id)
- 	return ret;
- }
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 1176cb4b6e4e..32cfee68f2e3 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -379,7 +379,9 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 		if (ret)
+ 			return ret;
  
-+/**
-+ * zynqmp_pm_fpga_load - Perform the fpga load
-+ * @address:	Address to write to
-+ * @size:	pl bitstream size
-+ * @flags:
-+ *	BIT(0) - Bit-stream type.
-+ *		 0 - Full Bit-stream.
-+ *		 1 - Partial Bit-stream.
-+ *
-+ * This function provides access to pmufw. To transfer
-+ * the required bitstream into PL.
-+ *
-+ * Return: Returns status, either success or error+reason
-+ */
-+static int zynqmp_pm_fpga_load(const u64 address, const u32 size,
-+			       const u32 flags)
-+{
-+	return zynqmp_pm_invoke_fn(PM_FPGA_LOAD, lower_32_bits(address),
-+				   upper_32_bits(address), size, flags, NULL);
-+}
-+
-+/**
-+ * zynqmp_pm_fpga_get_status - Read value from PCAP status register
-+ * @value: Value to read
-+ *
-+ * This function provides access to the xilfpga library to get
-+ * the PCAP status
-+ *
-+ * Return: Returns status, either success or error+reason
-+ */
-+static int zynqmp_pm_fpga_get_status(u32 *value)
-+{
-+	u32 ret_payload[PAYLOAD_ARG_CNT];
-+	int ret;
-+
-+	if (!value)
-+		return -EINVAL;
-+
-+	ret = zynqmp_pm_invoke_fn(PM_FPGA_GET_STATUS, 0, 0, 0, 0, ret_payload);
-+	*value = ret_payload[1];
-+
-+	return ret;
-+}
-+
- static const struct zynqmp_eemi_ops eemi_ops = {
- 	.get_api_version = zynqmp_pm_get_api_version,
- 	.query_data = zynqmp_pm_query_data,
-@@ -440,6 +484,8 @@ static const struct zynqmp_eemi_ops eemi_ops = {
- 	.clock_getrate = zynqmp_pm_clock_getrate,
- 	.clock_setparent = zynqmp_pm_clock_setparent,
- 	.clock_getparent = zynqmp_pm_clock_getparent,
-+	.fpga_load = zynqmp_pm_fpga_load,
-+	.fpga_get_status = zynqmp_pm_fpga_get_status,
- };
+-		return build_changeset_next_level(ovcs, tchild, node);
++		ret = build_changeset_next_level(ovcs, tchild, node);
++		of_node_put(tchild);
++		return ret;
+ 	}
  
- /**
-diff --git a/include/linux/firmware/xlnx-zynqmp.h b/include/linux/firmware/xlnx-zynqmp.h
-index 015e130431e6..b24400ee630a 100644
---- a/include/linux/firmware/xlnx-zynqmp.h
-+++ b/include/linux/firmware/xlnx-zynqmp.h
-@@ -34,6 +34,8 @@
- 
- enum pm_api_id {
- 	PM_GET_API_VERSION = 1,
-+	PM_FPGA_LOAD = 22,
-+	PM_FPGA_GET_STATUS,
- 	PM_QUERY_DATA = 35,
- 	PM_CLOCK_ENABLE,
- 	PM_CLOCK_DISABLE,
-@@ -89,6 +91,8 @@ struct zynqmp_pm_query_data {
- 
- struct zynqmp_eemi_ops {
- 	int (*get_api_version)(u32 *version);
-+	int (*fpga_load)(const u64 address, const u32 size, const u32 flags);
-+	int (*fpga_get_status)(u32 *value);
- 	int (*query_data)(struct zynqmp_pm_query_data qdata, u32 *out);
- 	int (*clock_enable)(u32 clock_id);
- 	int (*clock_disable)(u32 clock_id);
+ 	if (node->phandle && tchild->phandle)
 -- 
-2.18.0
+Frank Rowand <frank.rowand@sony.com>
