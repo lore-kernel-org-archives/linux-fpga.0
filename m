@@ -2,8 +2,8 @@ Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
 Subject: [PATCH 0/4] fpga: add managed create functions
-Date: Mon, 15 Oct 2018 17:20:00 -0500
-Message-Id: <1539642004-18473-1-git-send-email-atull@kernel.org>
+Date: Mon, 15 Oct 2018 17:19:29 -0500
+Message-Id: <1539641973-18387-1-git-send-email-atull@kernel.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
