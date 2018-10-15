@@ -1,177 +1,144 @@
-Return-Path: <SRS0=wrND=MW=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=wrND=MW=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:39527 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726015AbeJJN0y (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 10 Oct 2018 09:26:54 -0400
+Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH 05.1/16] of:overlay: missing name, phandle, linux,phandle in new nodes
-Date: Tue,  9 Oct 2018 23:04:55 -0700
-Message-Id: <1539151495-8110-1-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <CANk1AXQScT_b1_UOiVuWNcB=LiA3gvvZrw53H1XVSCNqsGPqtA@mail.gmail.com>
-References: <CANk1AXQScT_b1_UOiVuWNcB=LiA3gvvZrw53H1XVSCNqsGPqtA@mail.gmail.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
+Subject: [PATCH v3 07/18] of: dynamic: change type of of_{at,de}tach_node() to void
+Date: Sun, 14 Oct 2018 17:24:19 -0700
+Message-Id: <1539563070-12969-8-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
+References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-
-"of: overlay: use prop add changeset entry for property in new nodes"
-fixed a problem where an 'update property' changeset entry was
-created for properties contained in nodes added by a changeset.
-The fix was to use an 'add property' changeset entry.
-
-This exposed more bugs in the apply overlay code.  The properties
-'name', 'phandle', and 'linux,phandle' were filtered out by
-add_changeset_property() as special properties.  Change the filter
-to be only for existing nodes, not newly added nodes.
-
-The second bug is that the 'name' property does not exist in the
-newest FDT version, and has to be constructed from the node's
-full_name.  Construct an 'add property' changeset entry for
-newly added nodes.
+of_attach_node() and of_detach_node() always return zero, so
+their return value is meaningless.  Change their type to void
+and fix all callers to ignore return value.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
+ arch/powerpc/platforms/pseries/dlpar.c    | 13 ++-----------
+ arch/powerpc/platforms/pseries/reconfig.c |  6 +-----
+ drivers/of/dynamic.c                      |  9 ++-------
+ include/linux/of.h                        |  4 ++--
+ 4 files changed, 7 insertions(+), 25 deletions(-)
 
-
-Hi Alan,
-
-Thanks for reporting the problem with missing node names.
-
-I was able to replicate the problem, and have created this preliminary
-version of a patch to fix the problem.
-
-I have not extensively reviewed the patch yet, but would appreciate
-if you can confirm this fixes your problem.
-
-I created this patch as patch 17 of the series, but have also
-applied it as patch 05.1, immediately after patch 05/16, and
-built the kernel, booted, and verified name and phandle for
-one of the nodes in a unittest overlay for both cases.  So
-minimal testing so far on my part.
-
-I have not verified whether the series builds and boots after
-each of patches 06..16 if this patch is applied as patch 05.1.
-
-There is definitely more work needed for me to complete this
-patch because it allocates some more memory, but does not yet
-free it when the overlay is released.
-
--Frank
-
-
- drivers/of/overlay.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 67 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 0b0904f44bc7..9746cea2aa91 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -301,10 +301,11 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- 	struct property *new_prop = NULL, *prop;
- 	int ret = 0;
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index e3010b14aea5..0027eea94a8b 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -244,15 +244,9 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
  
--	if (!of_prop_cmp(overlay_prop->name, "name") ||
--	    !of_prop_cmp(overlay_prop->name, "phandle") ||
--	    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
--		return 0;
-+	if (target->in_livetree)
-+		if (!of_prop_cmp(overlay_prop->name, "name") ||
-+		    !of_prop_cmp(overlay_prop->name, "phandle") ||
-+		    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
-+			return 0;
- 
- 	if (target->in_livetree)
- 		prop = of_find_property(target->np, overlay_prop->name, NULL);
-@@ -443,10 +444,13 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
- 		struct target *target, const struct device_node *overlay_node)
+ int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
  {
- 	struct device_node *child;
--	struct property *prop;
-+	struct property *prop, *name_prop;
-+	bool has_name = false;
- 	int ret;
+-	int rc;
+-
+ 	dn->parent = parent;
  
- 	for_each_property_of_node(overlay_node, prop) {
-+		if (!strcmp(prop->name, "name"))
-+			has_name = true;
- 		ret = add_changeset_property(ovcs, target, prop, 0);
- 		if (ret) {
- 			pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
-@@ -455,6 +459,57 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
- 		}
- 	}
- 
-+	/*
-+	 * With FDT version 0x10 we may not have the name property,
-+	 * recreate it here from the unit name if absent
-+	 */
-+
-+	if (!has_name) {
-+		const char *p = target->np->full_name, *ps = p, *pa = NULL;
-+		int len;
-+
-+		/*
-+		 * zzz
-+		 * TODO: stash name_prop on a list in ovcs, to be freed
-+		 * after overlay removed
-+		 */
-+
-+		while (*p) {
-+			if ((*p) == '@')
-+				pa = p;
-+			else if ((*p) == '/')
-+				ps = p + 1;
-+			p++;
-+		}
-+
-+		if (pa < ps)
-+			pa = p;
-+		len = (pa - ps) + 1;
-+
-+		name_prop = kmalloc(sizeof(*name_prop), GFP_KERNEL);
-+		if (!name_prop)
-+			return -ENOMEM;
-+
-+		name_prop->name = kstrdup("name", GFP_KERNEL);
-+		name_prop->value = kmalloc(len, GFP_KERNEL);
-+		if (!name_prop->name || !name_prop->value) {
-+			ret = -ENOMEM;
-+			goto err_free_name_prop;
-+		}
-+
-+		memcpy(name_prop->value, ps, len - 1);
-+		((char *)name_prop->value)[len - 1] = 0;
-+
-+		name_prop->length = strlen(name_prop->value) + 1;
-+
-+		ret = add_changeset_property(ovcs, target, name_prop, 0);
-+		if (ret) {
-+			pr_debug("Failed to apply name_prop @%pOF/%s, err=%d\n",
-+				 target->np, name_prop->name, ret);
-+			goto err_free_name_prop;
-+		}
-+	}
-+
- 	for_each_child_of_node(overlay_node, child) {
- 		ret = add_changeset_node(ovcs, target, child);
- 		if (ret) {
-@@ -466,6 +521,13 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
- 	}
+-	rc = of_attach_node(dn);
+-	if (rc) {
+-		printk(KERN_ERR "Failed to add device node %pOF\n", dn);
+-		return rc;
+-	}
++	of_attach_node(dn);
  
  	return 0;
-+
-+err_free_name_prop:
-+	kfree(name_prop->name);
-+	kfree(name_prop->value);
-+	kfree(name_prop);
-+	return ret;
-+
+ }
+@@ -260,7 +254,6 @@ int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
+ int dlpar_detach_node(struct device_node *dn)
+ {
+ 	struct device_node *child;
+-	int rc;
+ 
+ 	child = of_get_next_child(dn, NULL);
+ 	while (child) {
+@@ -268,9 +261,7 @@ int dlpar_detach_node(struct device_node *dn)
+ 		child = of_get_next_child(dn, child);
+ 	}
+ 
+-	rc = of_detach_node(dn);
+-	if (rc)
+-		return rc;
++	of_detach_node(dn);
+ 
+ 	of_node_put(dn);
+ 
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 0e0208117e77..0b72098da454 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -47,11 +47,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
+ 		goto out_err;
+ 	}
+ 
+-	err = of_attach_node(np);
+-	if (err) {
+-		printk(KERN_ERR "Failed to add device node %s\n", path);
+-		goto out_err;
+-	}
++	of_attach_node(np);
+ 
+ 	of_node_put(np->parent);
+ 
+diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+index 275c0d7e2268..5f7c99b9de0d 100644
+--- a/drivers/of/dynamic.c
++++ b/drivers/of/dynamic.c
+@@ -224,7 +224,7 @@ static void __of_attach_node(struct device_node *np)
+ /**
+  * of_attach_node() - Plug a device node into the tree and global list.
+  */
+-int of_attach_node(struct device_node *np)
++void of_attach_node(struct device_node *np)
+ {
+ 	struct of_reconfig_data rd;
+ 	unsigned long flags;
+@@ -241,8 +241,6 @@ int of_attach_node(struct device_node *np)
+ 	mutex_unlock(&of_mutex);
+ 
+ 	of_reconfig_notify(OF_RECONFIG_ATTACH_NODE, &rd);
+-
+-	return 0;
  }
  
- /*
+ void __of_detach_node(struct device_node *np)
+@@ -273,11 +271,10 @@ void __of_detach_node(struct device_node *np)
+ /**
+  * of_detach_node() - "Unplug" a node from the device tree.
+  */
+-int of_detach_node(struct device_node *np)
++void of_detach_node(struct device_node *np)
+ {
+ 	struct of_reconfig_data rd;
+ 	unsigned long flags;
+-	int rc = 0;
+ 
+ 	memset(&rd, 0, sizeof(rd));
+ 	rd.dn = np;
+@@ -291,8 +288,6 @@ int of_detach_node(struct device_node *np)
+ 	mutex_unlock(&of_mutex);
+ 
+ 	of_reconfig_notify(OF_RECONFIG_DETACH_NODE, &rd);
+-
+-	return rc;
+ }
+ EXPORT_SYMBOL_GPL(of_detach_node);
+ 
+diff --git a/include/linux/of.h b/include/linux/of.h
+index aa1dafaec6ae..72c593455019 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -406,8 +406,8 @@ extern int of_phandle_iterator_args(struct of_phandle_iterator *it,
+ #define OF_RECONFIG_REMOVE_PROPERTY	0x0004
+ #define OF_RECONFIG_UPDATE_PROPERTY	0x0005
+ 
+-extern int of_attach_node(struct device_node *);
+-extern int of_detach_node(struct device_node *);
++extern void of_attach_node(struct device_node *np);
++extern void of_detach_node(struct device_node *np);
+ 
+ #define of_match_ptr(_ptr)	(_ptr)
+ 
 -- 
 Frank Rowand <frank.rowand@sony.com>
