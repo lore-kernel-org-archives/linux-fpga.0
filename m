@@ -1,64 +1,93 @@
-Return-Path: <SRS0=2ORC=M4=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=2ORC=M4=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:52884 "EHLO mail.kernel.org"
+Return-Path: <SRS0=NzGV=M3=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=NzGV=M3=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:40496 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726539AbeJPQRO (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 16 Oct 2018 12:17:14 -0400
-Date: Tue, 16 Oct 2018 10:27:54 +0200
-From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+        id S1726421AbeJOSb5 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 15 Oct 2018 14:31:57 -0400
+Date: Mon, 15 Oct 2018 12:47:09 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
 Subject: Re: [PATCH] Add RIFFA PCIe driver to staging tree
-Message-ID: <20181016082754.GA11851@kroah.com>
-References: <SG2PR06MB31763736BF5D2F346D19C12EC1FE0@SG2PR06MB3176.apcprd06.prod.outlook.com>
- <SG2PR06MB3176B20AA8DAB164A73568B7C1FE0@SG2PR06MB3176.apcprd06.prod.outlook.com>
+Message-ID: <20181015104709.GA26218@kroah.com>
+References: <CAF8QhUjTZB8YO-eBJM1TLfKfi91JR6cexAD_ApGn9KWs1VGEHg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <SG2PR06MB3176B20AA8DAB164A73568B7C1FE0@SG2PR06MB3176.apcprd06.prod.outlook.com>
+In-Reply-To: <CAF8QhUjTZB8YO-eBJM1TLfKfi91JR6cexAD_ApGn9KWs1VGEHg@mail.gmail.com>
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: Cheng Fei Phung <feiphung@hotmail.com>
-Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
+To: fei phung <feiphung27@gmail.com>
+Cc: linux-fpga@vger.kernel.org
 
-On Tue, Oct 16, 2018 at 07:41:45AM +0000, Cheng Fei Phung wrote:
-> Patch changelog content:
+On Mon, Oct 15, 2018 at 06:41:31PM +0800, fei phung wrote:
+> Please the patch below or the email attachment
 > 
-> Add a PCIe linux driver called RIFFA to the linux staging tree. It has full duplex capability compared to the original RIFFA linux driver that you can easily find from https://github.com/KastnerRG/riffa/tree/master/driver/linux
+> For reference, please see
+> https://github.com/promach/riffa/tree/full_duplex/driver/linux
 > 
-> For more context, please refer to https://github.com/promach/riffa/tree/full_duplex/driver/linux
-> 
-> 
-> 
-> phung@UbuntuHW15:~/linux$ cat patches/0001-Added-a-full-duplex-riffa-PCIe-linux-staging-driver..patch
+> phung@UbuntuHW15:~/linux$ cat
+> patches/0001-Added-a-full-duplex-riffa-PCIe-linux-staging-driver..patch
 > >From 7c3050c7e86017d85c75c640ea38376f505b2763 Mon Sep 17 00:00:00 2001
 > From: promach <feiphung@hotmail.com>
 > Date: Mon, 15 Oct 2018 18:28:16 +0800
 > Subject: [PATCH] Added a full duplex riffa PCIe linux staging driver.
-> �Signed-off-by: PHUNG CHENG FEI (feiphung@hotmail.com)
+>  Signed-off-by: PHUNG CHENG FEI (feiphung@hotmail.com)
 > 
+> ---
+>  drivers/staging/riffa/Makefile       |  157 +++
+>  drivers/staging/riffa/README.txt     |   38 +
+>  drivers/staging/riffa/circ_queue.c   |  188 +++
+>  drivers/staging/riffa/circ_queue.h   |   96 ++
+>  drivers/staging/riffa/riffa.c        |  152 +++
+>  drivers/staging/riffa/riffa.h        |  121 ++
+>  drivers/staging/riffa/riffa_driver.c | 1633 ++++++++++++++++++++++++++
+>  drivers/staging/riffa/riffa_driver.h |  131 +++
+>  8 files changed, 2516 insertions(+)
+>  create mode 100644 drivers/staging/riffa/Makefile
+>  create mode 100644 drivers/staging/riffa/README.txt
+>  create mode 100644 drivers/staging/riffa/circ_queue.c
+>  create mode 100644 drivers/staging/riffa/circ_queue.h
+>  create mode 100644 drivers/staging/riffa/riffa.c
+>  create mode 100644 drivers/staging/riffa/riffa.h
+>  create mode 100644 drivers/staging/riffa/riffa_driver.c
+>  create mode 100644 drivers/staging/riffa/riffa_driver.h
 
-This whole format is very odd.  Please look at how other patches are
-posted to the list.  I need a proper changelog and signed-off-by line in
-the correct place.
+Hi,
 
-Also, no need to 'cat' the file here, just use git send-email to send
-the patch correctly.
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
 
-Because of this, all of your tabs got converted to spaces, so the patch
-you sent here is corrupted.
+You are receiving this message because of the following common error(s)
+as indicated below:
 
-Try sending it to yourself first, run the result of that email through
-scripts/checkpatch.pl and apply it to the tree to verify that it really
-does work.
+- Your patch is malformed (tabs converted to spaces, linewrapped, etc.)
+  and can not be applied.  Please read the file,
+  Documentation/email-clients.txt in order to fix this.
 
-Also, for staging drivers I need a TODO file that lists the remaining
-tasks that are left to be done in order to get the driver out of the
-staging portion of the kernel tree.
+- Your patch was attached, please place it inline so that it can be
+  applied directly from the email message itself.
 
-Look at the patch that was sent today that added a new driver to the
-staging portion of the kernel as an example of how to do all of this
-correctly.
+- You did not specify a description of why the patch is needed, or
+  possibly, any description at all, in the email body.  Please read the
+  section entitled "The canonical patch format" in the kernel file,
+  Documentation/SubmittingPatches for what is needed in order to
+  properly describe the change.
+
+- You did not write a descriptive Subject: for the patch, allowing Greg,
+  and everyone else, to know what this patch is all about.  Please read
+  the section entitled "The canonical patch format" in the kernel file,
+  Documentation/SubmittingPatches for what a proper Subject: line should
+  look like.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
 
 thanks,
 
-greg k-h
+greg k-h's patch email bot
