@@ -1,72 +1,56 @@
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v4 02/18] of: overlay: add missing of_node_put() after add new node to changeset
-Date: Mon, 15 Oct 2018 19:37:22 -0700
-Message-Id: <1539657458-24401-3-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v3 14/18] of: unittest: remove unused of_unittest_apply_overlay() argument
+Date: Sun, 14 Oct 2018 17:24:26 -0700
+Message-Id: <1539563070-12969-15-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
+References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-The refcount of a newly added overlay node decrements to one
-(instead of zero) when the overlay changeset is destroyed.  This
-change will cause the final decrement be to zero.
-
-After applying this patch, new validation warnings will be
-reported from the devicetree unittest during boot due to
-a pre-existing devicetree bug.  The warnings will be similar to:
-
-  OF: ERROR: memory leak of_node_release() overlay node /testcase-data/overlay-node/test-bus/test-unittest4 before free overlay changeset
-
-This pre-existing devicetree bug will also trigger a WARN_ONCE() from
-refcount_sub_and_test_checked() when an overlay changeset is
-destroyed without having first been applied.  This scenario occurs
-when an error in the overlay is detected during the overlay changeset
-creation:
-
-  WARNING: CPU: 0 PID: 1 at lib/refcount.c:187 refcount_sub_and_test_checked+0xa8/0xbc
-  refcount_t: underflow; use-after-free.
-
-  (unwind_backtrace) from (show_stack+0x10/0x14)
-  (show_stack) from (dump_stack+0x6c/0x8c)
-  (dump_stack) from (__warn+0xdc/0x104)
-  (__warn) from (warn_slowpath_fmt+0x44/0x6c)
-  (warn_slowpath_fmt) from (refcount_sub_and_test_checked+0xa8/0xbc)
-  (refcount_sub_and_test_checked) from (kobject_put+0x24/0x208)
-  (kobject_put) from (of_changeset_destroy+0x2c/0xb4)
-  (of_changeset_destroy) from (free_overlay_changeset+0x1c/0x9c)
-  (free_overlay_changeset) from (of_overlay_remove+0x284/0x2cc)
-  (of_overlay_remove) from (of_unittest_apply_revert_overlay_check.constprop.4+0xf8/0x1e8)
-  (of_unittest_apply_revert_overlay_check.constprop.4) from (of_unittest_overlay+0x960/0xed8)
-  (of_unittest_overlay) from (of_unittest+0x1cc4/0x2138)
-  (of_unittest) from (do_one_initcall+0x4c/0x28c)
-  (do_one_initcall) from (kernel_init_freeable+0x29c/0x378)
-  (kernel_init_freeable) from (kernel_init+0x8/0x110)
-  (kernel_init) from (ret_from_fork+0x14/0x2c)
+Argument unittest_nr is not used in of_unittest_apply_overlay(),
+remove it.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/overlay.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/of/unittest.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 1176cb4b6e4e..32cfee68f2e3 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -379,7 +379,9 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 		if (ret)
- 			return ret;
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index efd9c947f192..6d80f474c8f2 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -1419,8 +1419,7 @@ static void of_unittest_destroy_tracked_overlays(void)
+ 	} while (defers > 0);
+ }
  
--		return build_changeset_next_level(ovcs, tchild, node);
-+		ret = build_changeset_next_level(ovcs, tchild, node);
-+		of_node_put(tchild);
-+		return ret;
+-static int __init of_unittest_apply_overlay(int overlay_nr, int unittest_nr,
+-		int *overlay_id)
++static int __init of_unittest_apply_overlay(int overlay_nr, int *overlay_id)
+ {
+ 	const char *overlay_name;
+ 
+@@ -1453,7 +1452,7 @@ static int __init of_unittest_apply_overlay_check(int overlay_nr,
  	}
  
- 	if (node->phandle && tchild->phandle)
+ 	ovcs_id = 0;
+-	ret = of_unittest_apply_overlay(overlay_nr, unittest_nr, &ovcs_id);
++	ret = of_unittest_apply_overlay(overlay_nr, &ovcs_id);
+ 	if (ret != 0) {
+ 		/* of_unittest_apply_overlay already called unittest() */
+ 		return ret;
+@@ -1489,7 +1488,7 @@ static int __init of_unittest_apply_revert_overlay_check(int overlay_nr,
+ 
+ 	/* apply the overlay */
+ 	ovcs_id = 0;
+-	ret = of_unittest_apply_overlay(overlay_nr, unittest_nr, &ovcs_id);
++	ret = of_unittest_apply_overlay(overlay_nr, &ovcs_id);
+ 	if (ret != 0) {
+ 		/* of_unittest_apply_overlay already called unittest() */
+ 		return ret;
 -- 
 Frank Rowand <frank.rowand@sony.com>
