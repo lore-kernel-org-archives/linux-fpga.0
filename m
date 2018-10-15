@@ -1,334 +1,490 @@
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH 05/16] of: overlay: use prop add changeset entry for property in new nodes
-Date: Thu,  4 Oct 2018 21:12:36 -0700
-Message-Id: <1538712767-30394-6-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 4/4] docs: fpga: document programming fpgas using regions
+Date: Mon, 15 Oct 2018 17:20:04 -0500
+Message-Id: <1539642004-18473-5-git-send-email-atull@kernel.org>
+In-Reply-To: <1539642004-18473-1-git-send-email-atull@kernel.org>
+References: <1539642004-18473-1-git-send-email-atull@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Clarify the intention that interfaces and upper layers use
+regions rather than managers directly.
 
-The changeset entry 'update property' was used for new properties in
-an overlay instead of 'add property'.
+Rearrange API documentation to better group the API functions
+used to create FPGA mgr/bridge/regions and the API used for
+programming FPGAs.
 
-The decision of whether to use 'update property' was based on whether
-the property already exists in the subtree where the node is being
-spliced into.  At the top level of creating a changeset describing the
-overlay, the target node is in the live devicetree, so checking whether
-the property exists in the target node returns the correct result.
-As soon as the changeset creation algorithm recurses into a new node,
-the target is no longer in the live devicetree, but is instead in the
-detached overlay tree, thus all properties are incorrectly found to
-already exist in the target.
-
-This fix will expose another devicetree bug that will be fixed
-in the following patch in the series.
-
-When this patch is applied the errors reported by the devictree
-unittest will change, and the unittest results will change from:
-
-   ### dt-test ### end of unittest - 210 passed, 0 failed
-
-to
-
-   ### dt-test ### end of unittest - 203 passed, 7 failed
-
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+Signed-off-by: Alan Tull <atull@kernel.org>
+Suggested-by: Federico Vaga <federico.vaga@cern.ch>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/of/overlay.c | 112 ++++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 74 insertions(+), 38 deletions(-)
+ Documentation/driver-api/fpga/fpga-bridge.rst      |  38 ++-----
+ Documentation/driver-api/fpga/fpga-mgr.rst         | 117 ++-------------------
+ Documentation/driver-api/fpga/fpga-programming.rst | 107 +++++++++++++++++++
+ Documentation/driver-api/fpga/fpga-region.rst      |  92 ++++++++--------
+ Documentation/driver-api/fpga/index.rst            |   2 +
+ Documentation/driver-api/fpga/intro.rst            |   2 +-
+ 6 files changed, 171 insertions(+), 187 deletions(-)
+ create mode 100644 Documentation/driver-api/fpga/fpga-programming.rst
 
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 32cfee68f2e3..0b0904f44bc7 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -24,6 +24,26 @@
- #include "of_private.h"
+diff --git a/Documentation/driver-api/fpga/fpga-bridge.rst b/Documentation/driver-api/fpga/fpga-bridge.rst
+index ebbcbde..71c5a40 100644
+--- a/Documentation/driver-api/fpga/fpga-bridge.rst
++++ b/Documentation/driver-api/fpga/fpga-bridge.rst
+@@ -4,6 +4,12 @@ FPGA Bridge
+ API to implement a new FPGA bridge
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
- /**
-+ * struct target - info about current target node as recursing through overlay
-+ * @np:			node where current level of overlay will be applied
-+ * @in_livetree:	@np is a node in the live devicetree
-+ *
-+ * Used in the algorithm to create the portion of a changeset that describes
-+ * an overlay fragment, which is a devicetree subtree.  Initially @np is a node
-+ * in the live devicetree where the overlay subtree is targeted to be grafted
-+ * into.  When recursing to the next level of the overlay subtree, the target
-+ * also recurses to the next level of the live devicetree, as long as overlay
-+ * subtree node also exists in the live devicetree.  When a node in the overlay
-+ * subtree does not exist at the same level in the live devicetree, target->np
-+ * points to a newly allocated node, and all subsequent targets in the subtree
-+ * will be newly allocated nodes.
-+ */
-+struct target {
-+	struct device_node *np;
-+	bool in_livetree;
-+};
++* struct :c:type:`fpga_bridge` — The FPGA Bridge structure
++* struct :c:type:`fpga_bridge_ops` — Low level Bridge driver ops
++* :c:func:`devm_fpga_bridge_create()` — Allocate and init a bridge struct
++* :c:func:`fpga_bridge_register()` — Register a bridge
++* :c:func:`fpga_bridge_unregister()` — Unregister a bridge
 +
-+/**
-  * struct fragment - info about fragment nodes in overlay expanded device tree
-  * @target:	target of the overlay operation
-  * @overlay:	pointer to the __overlay__ node
-@@ -72,8 +92,7 @@ static int devicetree_corrupt(void)
- }
+ .. kernel-doc:: include/linux/fpga/fpga-bridge.h
+    :functions: fpga_bridge
  
- static int build_changeset_next_level(struct overlay_changeset *ovcs,
--		struct device_node *target_node,
--		const struct device_node *overlay_node);
-+		struct target *target, const struct device_node *overlay_node);
+@@ -14,39 +20,7 @@ API to implement a new FPGA bridge
+    :functions: devm_fpga_bridge_create
  
- /*
-  * of_resolve_phandles() finds the largest phandle in the live tree.
-@@ -257,14 +276,17 @@ static struct property *dup_and_fixup_symbol_prop(
- /**
-  * add_changeset_property() - add @overlay_prop to overlay changeset
-  * @ovcs:		overlay changeset
-- * @target_node:	where to place @overlay_prop in live tree
-+ * @target:		where @overlay_prop will be placed
-  * @overlay_prop:	property to add or update, from overlay tree
-  * @is_symbols_prop:	1 if @overlay_prop is from node "/__symbols__"
-  *
-- * If @overlay_prop does not already exist in @target_node, add changeset entry
-- * to add @overlay_prop in @target_node, else add changeset entry to update
-+ * If @overlay_prop does not already exist in live devicetree, add changeset
-+ * entry to add @overlay_prop in @target, else add changeset entry to update
-  * value of @overlay_prop.
-  *
-+ * @target may be either in the live devicetree or in a new subtree that
-+ * is contained in the changeset.
-+ *
-  * Some special properties are not updated (no error returned).
-  *
-  * Update of property in symbols node is not allowed.
-@@ -273,20 +295,22 @@ static struct property *dup_and_fixup_symbol_prop(
-  * invalid @overlay.
-  */
- static int add_changeset_property(struct overlay_changeset *ovcs,
--		struct device_node *target_node,
--		struct property *overlay_prop,
-+		struct target *target, struct property *overlay_prop,
- 		bool is_symbols_prop)
- {
- 	struct property *new_prop = NULL, *prop;
- 	int ret = 0;
- 
--	prop = of_find_property(target_node, overlay_prop->name, NULL);
+ .. kernel-doc:: drivers/fpga/fpga-bridge.c
+-   :functions: fpga_bridge_create
 -
- 	if (!of_prop_cmp(overlay_prop->name, "name") ||
- 	    !of_prop_cmp(overlay_prop->name, "phandle") ||
- 	    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
- 		return 0;
+-.. kernel-doc:: drivers/fpga/fpga-bridge.c
+-   :functions: fpga_bridge_free
+-
+-.. kernel-doc:: drivers/fpga/fpga-bridge.c
+    :functions: fpga_bridge_register
  
-+	if (target->in_livetree)
-+		prop = of_find_property(target->np, overlay_prop->name, NULL);
-+	else
-+		prop = NULL;
+ .. kernel-doc:: drivers/fpga/fpga-bridge.c
+    :functions: fpga_bridge_unregister
+-
+-API to control an FPGA bridge
+-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-
+-You probably won't need these directly.  FPGA regions should handle this.
+-
+-.. kernel-doc:: drivers/fpga/fpga-bridge.c
+-   :functions: of_fpga_bridge_get
+-
+-.. kernel-doc:: drivers/fpga/fpga-bridge.c
+-   :functions: fpga_bridge_get
+-
+-.. kernel-doc:: drivers/fpga/fpga-bridge.c
+-   :functions: fpga_bridge_put
+-
+-.. kernel-doc:: drivers/fpga/fpga-bridge.c
+-   :functions: fpga_bridge_get_to_list
+-
+-.. kernel-doc:: drivers/fpga/fpga-bridge.c
+-   :functions: of_fpga_bridge_get_to_list
+-
+-.. kernel-doc:: drivers/fpga/fpga-bridge.c
+-   :functions: fpga_bridge_enable
+-
+-.. kernel-doc:: drivers/fpga/fpga-bridge.c
+-   :functions: fpga_bridge_disable
+diff --git a/Documentation/driver-api/fpga/fpga-mgr.rst b/Documentation/driver-api/fpga/fpga-mgr.rst
+index db8885e..576f194 100644
+--- a/Documentation/driver-api/fpga/fpga-mgr.rst
++++ b/Documentation/driver-api/fpga/fpga-mgr.rst
+@@ -98,67 +98,19 @@ The ops include a .state function which will determine the state the FPGA is in
+ and return a code of type enum fpga_mgr_states.  It doesn't result in a change
+ in state.
+ 
+-How to write an image buffer to a supported FPGA
+-------------------------------------------------
+-
+-Some sample code::
+-
+-	#include <linux/fpga/fpga-mgr.h>
+-
+-	struct fpga_manager *mgr;
+-	struct fpga_image_info *info;
+-	int ret;
+-
+-	/*
+-	 * Get a reference to FPGA manager.  The manager is not locked, so you can
+-	 * hold onto this reference without it preventing programming.
+-	 *
+-	 * This example uses the device node of the manager.  Alternatively, use
+-	 * fpga_mgr_get(dev) instead if you have the device.
+-	 */
+-	mgr = of_fpga_mgr_get(mgr_node);
+-
+-	/* struct with information about the FPGA image to program. */
+-	info = fpga_image_info_alloc(dev);
+-
+-	/* flags indicates whether to do full or partial reconfiguration */
+-	info->flags = FPGA_MGR_PARTIAL_RECONFIG;
+-
+-	/*
+-	 * At this point, indicate where the image is. This is pseudo-code; you're
+-	 * going to use one of these three.
+-	 */
+-	if (image is in a scatter gather table) {
+-
+-		info->sgt = [your scatter gather table]
+-
+-	} else if (image is in a buffer) {
+-
+-		info->buf = [your image buffer]
+-		info->count = [image buffer size]
+-
+-	} else if (image is in a firmware file) {
+-
+-		info->firmware_name = devm_kstrdup(dev, firmware_name, GFP_KERNEL);
+-
+-	}
+-
+-	/* Get exclusive control of FPGA manager */
+-	ret = fpga_mgr_lock(mgr);
+-
+-	/* Load the buffer to the FPGA */
+-	ret = fpga_mgr_buf_load(mgr, &info, buf, count);
+-
+-	/* Release the FPGA manager */
+-	fpga_mgr_unlock(mgr);
+-	fpga_mgr_put(mgr);
+-
+-	/* Deallocate the image info if you're done with it */
+-	fpga_image_info_free(info);
+-
+ API for implementing a new FPGA Manager driver
+ ----------------------------------------------
+ 
++* ``fpga_mgr_states`` —  Values for :c:member:`fpga_manager->state`.
++* struct :c:type:`fpga_manager` —  the FPGA manager struct
++* struct :c:type:`fpga_manager_ops` —  Low level FPGA manager driver ops
++* :c:func:`devm_fpga_mgr_create` —  Allocate and init a manager struct
++* :c:func:`fpga_mgr_register` —  Register an FPGA manager
++* :c:func:`fpga_mgr_unregister` —  Unregister an FPGA manager
 +
- 	if (is_symbols_prop) {
- 		if (prop)
- 			return -EINVAL;
-@@ -299,10 +323,10 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- 		return -ENOMEM;
- 
- 	if (!prop)
--		ret = of_changeset_add_property(&ovcs->cset, target_node,
-+		ret = of_changeset_add_property(&ovcs->cset, target->np,
- 						new_prop);
- 	else
--		ret = of_changeset_update_property(&ovcs->cset, target_node,
-+		ret = of_changeset_update_property(&ovcs->cset, target->np,
- 						   new_prop);
- 
- 	if (ret) {
-@@ -315,14 +339,14 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- 
- /**
-  * add_changeset_node() - add @node (and children) to overlay changeset
-- * @ovcs:		overlay changeset
-- * @target_node:	where to place @node in live tree
-- * @node:		node from within overlay device tree fragment
-+ * @ovcs:	overlay changeset
-+ * @target:	where @overlay_prop will be placed in live tree or changeset
-+ * @node:	node from within overlay device tree fragment
-  *
-- * If @node does not already exist in @target_node, add changeset entry
-- * to add @node in @target_node.
-+ * If @node does not already exist in @target, add changeset entry
-+ * to add @node in @target.
-  *
-- * If @node already exists in @target_node, and the existing node has
-+ * If @node already exists in @target, and the existing node has
-  * a phandle, the overlay node is not allowed to have a phandle.
-  *
-  * If @node has child nodes, add the children recursively via
-@@ -355,15 +379,16 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
-  * invalid @overlay.
-  */
- static int add_changeset_node(struct overlay_changeset *ovcs,
--		struct device_node *target_node, struct device_node *node)
-+		struct target *target, struct device_node *node)
- {
- 	const char *node_kbasename;
- 	struct device_node *tchild;
-+	struct target target_child;
- 	int ret = 0;
- 
- 	node_kbasename = kbasename(node->full_name);
- 
--	for_each_child_of_node(target_node, tchild)
-+	for_each_child_of_node(target->np, tchild)
- 		if (!of_node_cmp(node_kbasename, kbasename(tchild->full_name)))
- 			break;
- 
-@@ -372,22 +397,28 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 		if (!tchild)
- 			return -ENOMEM;
- 
--		tchild->parent = target_node;
-+		tchild->parent = target->np;
- 		of_node_set_flag(tchild, OF_OVERLAY);
- 
- 		ret = of_changeset_attach_node(&ovcs->cset, tchild);
- 		if (ret)
- 			return ret;
- 
--		ret = build_changeset_next_level(ovcs, tchild, node);
-+		target_child.np = tchild;
-+		target_child.in_livetree = false;
++.. kernel-doc:: include/linux/fpga/fpga-mgr.h
++   :functions: fpga_mgr_states
 +
-+		ret = build_changeset_next_level(ovcs, &target_child, node);
- 		of_node_put(tchild);
- 		return ret;
- 	}
+ .. kernel-doc:: include/linux/fpga/fpga-mgr.h
+    :functions: fpga_manager
  
--	if (node->phandle && tchild->phandle)
-+	if (node->phandle && tchild->phandle) {
- 		ret = -EINVAL;
--	else
--		ret = build_changeset_next_level(ovcs, tchild, node);
-+	} else {
-+		target_child.np = tchild;
-+		target_child.in_livetree = target->in_livetree;
-+		ret = build_changeset_next_level(ovcs, &target_child, node);
+@@ -169,56 +121,7 @@ API for implementing a new FPGA Manager driver
+    :functions: devm_fpga_mgr_create
+ 
+ .. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: fpga_mgr_create
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: fpga_mgr_free
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+    :functions: fpga_mgr_register
+ 
+ .. kernel-doc:: drivers/fpga/fpga-mgr.c
+    :functions: fpga_mgr_unregister
+-
+-API for programming an FPGA
+----------------------------
+-
+-FPGA Manager flags
+-
+-.. kernel-doc:: include/linux/fpga/fpga-mgr.h
+-   :doc: FPGA Manager flags
+-
+-.. kernel-doc:: include/linux/fpga/fpga-mgr.h
+-   :functions: fpga_image_info
+-
+-.. kernel-doc:: include/linux/fpga/fpga-mgr.h
+-   :functions: fpga_mgr_states
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: fpga_image_info_alloc
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: fpga_image_info_free
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: of_fpga_mgr_get
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: fpga_mgr_get
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: fpga_mgr_put
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: fpga_mgr_lock
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: fpga_mgr_unlock
+-
+-.. kernel-doc:: include/linux/fpga/fpga-mgr.h
+-   :functions: fpga_mgr_states
+-
+-Note - use :c:func:`fpga_region_program_fpga()` instead of :c:func:`fpga_mgr_load()`
+-
+-.. kernel-doc:: drivers/fpga/fpga-mgr.c
+-   :functions: fpga_mgr_load
+diff --git a/Documentation/driver-api/fpga/fpga-programming.rst b/Documentation/driver-api/fpga/fpga-programming.rst
+new file mode 100644
+index 0000000..b5484df
+--- /dev/null
++++ b/Documentation/driver-api/fpga/fpga-programming.rst
+@@ -0,0 +1,107 @@
++In-kernel API for FPGA Programming
++==================================
++
++Overview
++--------
++
++The in-kernel API for FPGA programming is a combination of APIs from
++FPGA manager, bridge, and regions.  The actual function used to
++trigger FPGA programming is :c:func:`fpga_region_program_fpga()`.
++
++:c:func:`fpga_region_program_fpga()` uses functionality supplied by
++the FPGA manager and bridges.  It will:
++
++ * lock the region's mutex
++ * lock the mutex of the region's FPGA manager
++ * build a list of FPGA bridges if a method has been specified to do so
++ * disable the bridges
++ * program the FPGA using info passed in :c:member:`fpga_region->info`.
++ * re-enable the bridges
++ * release the locks
++
++The struct fpga_image_info specifies what FPGA image to program.  It is
++allocated/freed by :c:func:`fpga_image_info_alloc()` and freed with
++:c:func:`fpga_image_info_free()`
++
++How to program an FPGA using a region
++-------------------------------------
++
++When the FPGA region driver probed, it was given a pointer to an FPGA manager
++driver so it knows which manager to use.  The region also either has a list of
++bridges to control during programming or it has a pointer to a function that
++will generate that list.  Here's some sample code of what to do next::
++
++	#include <linux/fpga/fpga-mgr.h>
++	#include <linux/fpga/fpga-region.h>
++
++	struct fpga_image_info *info;
++	int ret;
++
++	/*
++	 * First, alloc the struct with information about the FPGA image to
++	 * program.
++	 */
++	info = fpga_image_info_alloc(dev);
++	if (!info)
++		return -ENOMEM;
++
++	/* Set flags as needed, such as: */
++	info->flags = FPGA_MGR_PARTIAL_RECONFIG;
++
++	/*
++	 * Indicate where the FPGA image is. This is pseudo-code; you're
++	 * going to use one of these three.
++	 */
++	if (image is in a scatter gather table) {
++
++		info->sgt = [your scatter gather table]
++
++	} else if (image is in a buffer) {
++
++		info->buf = [your image buffer]
++		info->count = [image buffer size]
++
++	} else if (image is in a firmware file) {
++
++		info->firmware_name = devm_kstrdup(dev, firmware_name,
++						   GFP_KERNEL);
++
 +	}
- 	of_node_put(tchild);
- 
- 	return ret;
-@@ -396,7 +427,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- /**
-  * build_changeset_next_level() - add level of overlay changeset
-  * @ovcs:		overlay changeset
-- * @target_node:	where to place @overlay_node in live tree
-+ * @target:		where to place @overlay_node in live tree
-  * @overlay_node:	node from within an overlay device tree fragment
-  *
-  * Add the properties (if any) and nodes (if any) from @overlay_node to the
-@@ -409,27 +440,26 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
-  * invalid @overlay_node.
-  */
- static int build_changeset_next_level(struct overlay_changeset *ovcs,
--		struct device_node *target_node,
--		const struct device_node *overlay_node)
-+		struct target *target, const struct device_node *overlay_node)
- {
- 	struct device_node *child;
- 	struct property *prop;
- 	int ret;
- 
- 	for_each_property_of_node(overlay_node, prop) {
--		ret = add_changeset_property(ovcs, target_node, prop, 0);
-+		ret = add_changeset_property(ovcs, target, prop, 0);
- 		if (ret) {
- 			pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
--				 target_node, prop->name, ret);
-+				 target->np, prop->name, ret);
- 			return ret;
- 		}
- 	}
- 
- 	for_each_child_of_node(overlay_node, child) {
--		ret = add_changeset_node(ovcs, target_node, child);
-+		ret = add_changeset_node(ovcs, target, child);
- 		if (ret) {
- 			pr_debug("Failed to apply node @%pOF/%s, err=%d\n",
--				 target_node, child->name, ret);
-+				 target->np, child->name, ret);
- 			of_node_put(child);
- 			return ret;
- 		}
-@@ -442,17 +472,17 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
-  * Add the properties from __overlay__ node to the @ovcs->cset changeset.
-  */
- static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
--		struct device_node *target_node,
-+		struct target *target,
- 		const struct device_node *overlay_symbols_node)
- {
- 	struct property *prop;
- 	int ret;
- 
- 	for_each_property_of_node(overlay_symbols_node, prop) {
--		ret = add_changeset_property(ovcs, target_node, prop, 1);
-+		ret = add_changeset_property(ovcs, target, prop, 1);
- 		if (ret) {
- 			pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
--				 target_node, prop->name, ret);
-+				 target->np, prop->name, ret);
- 			return ret;
- 		}
- 	}
-@@ -475,6 +505,7 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
- static int build_changeset(struct overlay_changeset *ovcs)
- {
- 	struct fragment *fragment;
-+	struct target target;
- 	int fragments_count, i, ret;
- 
- 	/*
-@@ -489,7 +520,9 @@ static int build_changeset(struct overlay_changeset *ovcs)
- 	for (i = 0; i < fragments_count; i++) {
- 		fragment = &ovcs->fragments[i];
- 
--		ret = build_changeset_next_level(ovcs, fragment->target,
-+		target.np = fragment->target;
-+		target.in_livetree = true;
-+		ret = build_changeset_next_level(ovcs, &target,
- 						 fragment->overlay);
- 		if (ret) {
- 			pr_debug("apply failed '%pOF'\n", fragment->target);
-@@ -499,7 +532,10 @@ static int build_changeset(struct overlay_changeset *ovcs)
- 
- 	if (ovcs->symbols_fragment) {
- 		fragment = &ovcs->fragments[ovcs->count - 1];
--		ret = build_changeset_symbols_node(ovcs, fragment->target,
 +
-+		target.np = fragment->target;
-+		target.in_livetree = true;
-+		ret = build_changeset_symbols_node(ovcs, &target,
- 						   fragment->overlay);
- 		if (ret) {
- 			pr_debug("apply failed '%pOF'\n", fragment->target);
-@@ -517,7 +553,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
-  * 1) "target" property containing the phandle of the target
-  * 2) "target-path" property containing the path of the target
-  */
--static struct device_node *find_target_node(struct device_node *info_node)
-+static struct device_node *find_target(struct device_node *info_node)
- {
- 	struct device_node *node;
- 	const char *path;
-@@ -623,7 +659,7 @@ static int init_overlay_changeset(struct overlay_changeset *ovcs,
++	/* Add info to region and do the programming */
++	region->info = info;
++	ret = fpga_region_program_fpga(region);
++
++	/* Deallocate the image info if you're done with it */
++	region->info = NULL;
++	fpga_image_info_free(info);
++
++	if (ret)
++		return ret;
++
++	/* Now enumerate whatever hardware has appeared in the FPGA. */
++
++API for programming an FPGA
++---------------------------
++
++* :c:func:`fpga_region_program_fpga` —  Program an FPGA
++* :c:type:`fpga_image_info` —  Specifies what FPGA image to program
++* :c:func:`fpga_image_info_alloc()` —  Allocate an FPGA image info struct
++* :c:func:`fpga_image_info_free()` —  Free an FPGA image info struct
++
++.. kernel-doc:: drivers/fpga/fpga-region.c
++   :functions: fpga_region_program_fpga
++
++FPGA Manager flags
++
++.. kernel-doc:: include/linux/fpga/fpga-mgr.h
++   :doc: FPGA Manager flags
++
++.. kernel-doc:: include/linux/fpga/fpga-mgr.h
++   :functions: fpga_image_info
++
++.. kernel-doc:: drivers/fpga/fpga-mgr.c
++   :functions: fpga_image_info_alloc
++
++.. kernel-doc:: drivers/fpga/fpga-mgr.c
++   :functions: fpga_image_info_free
+diff --git a/Documentation/driver-api/fpga/fpga-region.rst b/Documentation/driver-api/fpga/fpga-region.rst
+index dc9f75c..0529b2d 100644
+--- a/Documentation/driver-api/fpga/fpga-region.rst
++++ b/Documentation/driver-api/fpga/fpga-region.rst
+@@ -34,41 +34,6 @@ fpga_image_info including:
+  * flags indicating specifics such as whether the image is for partial
+    reconfiguration.
  
- 		fragment = &fragments[cnt];
- 		fragment->overlay = overlay_node;
--		fragment->target = find_target_node(node);
-+		fragment->target = find_target(node);
- 		if (!fragment->target) {
- 			of_node_put(fragment->overlay);
- 			ret = -EINVAL;
+-How to program an FPGA using a region
+--------------------------------------
+-
+-First, allocate the info struct::
+-
+-	info = fpga_image_info_alloc(dev);
+-	if (!info)
+-		return -ENOMEM;
+-
+-Set flags as needed, i.e.::
+-
+-	info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
+-
+-Point to your FPGA image, such as::
+-
+-	info->sgt = &sgt;
+-
+-Add info to region and do the programming::
+-
+-	region->info = info;
+-	ret = fpga_region_program_fpga(region);
+-
+-:c:func:`fpga_region_program_fpga()` operates on info passed in the
+-fpga_image_info (region->info).  This function will attempt to:
+-
+- * lock the region's mutex
+- * lock the region's FPGA manager
+- * build a list of FPGA bridges if a method has been specified to do so
+- * disable the bridges
+- * program the FPGA
+- * re-enable the bridges
+- * release the locks
+-
+-Then you will want to enumerate whatever hardware has appeared in the FPGA.
+-
+ How to add a new FPGA region
+ ----------------------------
+ 
+@@ -77,15 +42,36 @@ An example of usage can be seen in the probe function of [#f2]_.
+ .. [#f1] ../devicetree/bindings/fpga/fpga-region.txt
+ .. [#f2] ../../drivers/fpga/of-fpga-region.c
+ 
+-API to program an FPGA
+-----------------------
+-
+-.. kernel-doc:: drivers/fpga/fpga-region.c
+-   :functions: fpga_region_program_fpga
+-
+ API to add a new FPGA region
+ ----------------------------
+ 
++* struct :c:type:`fpga_region` — The FPGA region struct
++* :c:func:`devm_fpga_region_create` — Allocate and init a region struct
++* :c:func:`fpga_region_register` —  Register an FPGA region
++* :c:func:`fpga_region_unregister` —  Unregister an FPGA region
++
++The FPGA region's probe function will need to get a reference to the FPGA
++Manager it will be using to do the programming.  This usually would happen
++during the region's probe function.
++
++* :c:func:`fpga_mgr_get` — Get a reference to an FPGA manager, raise ref count
++* :c:func:`of_fpga_mgr_get` —  Get a reference to an FPGA manager, raise ref count,
++  given a device node.
++* :c:func:`fpga_mgr_put` — Put an FPGA manager
++
++The FPGA region will need to specify which bridges to control while programming
++the FPGA.  The region driver can build a list of bridges during probe time
++(:c:member:`fpga_region->bridge_list`) or it can have a function that creates
++the list of bridges to program just before programming
++(:c:member:`fpga_region->get_bridges`).  The FPGA bridge framework supplies the
++following APIs to handle building or tearing down that list.
++
++* :c:func:`fpga_bridge_get_to_list` — Get a ref of an FPGA bridge, add it to a
++  list
++* :c:func:`of_fpga_bridge_get_to_list` — Get a ref of an FPGA bridge, add it to a
++  list, given a device node
++* :c:func:`fpga_bridges_put` — Given a list of bridges, put them
++
+ .. kernel-doc:: include/linux/fpga/fpga-region.h
+    :functions: fpga_region
+ 
+@@ -93,13 +79,25 @@ API to add a new FPGA region
+    :functions: devm_fpga_region_create
+ 
+ .. kernel-doc:: drivers/fpga/fpga-region.c
+-   :functions: fpga_region_create
+-
+-.. kernel-doc:: drivers/fpga/fpga-region.c
+-   :functions: fpga_region_free
+-
+-.. kernel-doc:: drivers/fpga/fpga-region.c
+    :functions: fpga_region_register
+ 
+ .. kernel-doc:: drivers/fpga/fpga-region.c
+    :functions: fpga_region_unregister
++
++.. kernel-doc:: drivers/fpga/fpga-mgr.c
++   :functions: fpga_mgr_get
++
++.. kernel-doc:: drivers/fpga/fpga-mgr.c
++   :functions: of_fpga_mgr_get
++
++.. kernel-doc:: drivers/fpga/fpga-mgr.c
++   :functions: fpga_mgr_put
++
++.. kernel-doc:: drivers/fpga/fpga-bridge.c
++   :functions: fpga_bridge_get_to_list
++
++.. kernel-doc:: drivers/fpga/fpga-bridge.c
++   :functions: of_fpga_bridge_get_to_list
++
++.. kernel-doc:: drivers/fpga/fpga-bridge.c
++   :functions: fpga_bridges_put
+diff --git a/Documentation/driver-api/fpga/index.rst b/Documentation/driver-api/fpga/index.rst
+index c51e5eb..31a4773 100644
+--- a/Documentation/driver-api/fpga/index.rst
++++ b/Documentation/driver-api/fpga/index.rst
+@@ -11,3 +11,5 @@ FPGA Subsystem
+    fpga-mgr
+    fpga-bridge
+    fpga-region
++   fpga-programming
++
+diff --git a/Documentation/driver-api/fpga/intro.rst b/Documentation/driver-api/fpga/intro.rst
+index 50d1cab..f54c7da 100644
+--- a/Documentation/driver-api/fpga/intro.rst
++++ b/Documentation/driver-api/fpga/intro.rst
+@@ -44,7 +44,7 @@ FPGA Region
+ -----------
+ 
+ If you are adding a new interface to the FPGA framework, add it on top
+-of an FPGA region to allow the most reuse of your interface.
++of an FPGA region.
+ 
+ The FPGA Region framework (fpga-region.c) associates managers and
+ bridges as reconfigurable regions.  A region may refer to the whole
 -- 
-Frank Rowand <frank.rowand@sony.com>
+2.7.4
