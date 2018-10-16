@@ -1,122 +1,64 @@
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH 01/16] of: overlay: add tests to validate kfrees from overlay removal
-Date: Thu,  4 Oct 2018 21:12:32 -0700
-Message-Id: <1538712767-30394-2-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=2ORC=M4=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=2ORC=M4=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:52884 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726539AbeJPQRO (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 16 Oct 2018 12:17:14 -0400
+Date: Tue, 16 Oct 2018 10:27:54 +0200
+From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] Add RIFFA PCIe driver to staging tree
+Message-ID: <20181016082754.GA11851@kroah.com>
+References: <SG2PR06MB31763736BF5D2F346D19C12EC1FE0@SG2PR06MB3176.apcprd06.prod.outlook.com>
+ <SG2PR06MB3176B20AA8DAB164A73568B7C1FE0@SG2PR06MB3176.apcprd06.prod.outlook.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <SG2PR06MB3176B20AA8DAB164A73568B7C1FE0@SG2PR06MB3176.apcprd06.prod.outlook.com>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Cheng Fei Phung <feiphung@hotmail.com>
+Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+On Tue, Oct 16, 2018 at 07:41:45AM +0000, Cheng Fei Phung wrote:
+> Patch changelog content:
+> 
+> Add a PCIe linux driver called RIFFA to the linux staging tree. It has full duplex capability compared to the original RIFFA linux driver that you can easily find from https://github.com/KastnerRG/riffa/tree/master/driver/linux
+> 
+> For more context, please refer to https://github.com/promach/riffa/tree/full_duplex/driver/linux
+> 
+> 
+> 
+> phung@UbuntuHW15:~/linux$ cat patches/0001-Added-a-full-duplex-riffa-PCIe-linux-staging-driver..patch
+> >From 7c3050c7e86017d85c75c640ea38376f505b2763 Mon Sep 17 00:00:00 2001
+> From: promach <feiphung@hotmail.com>
+> Date: Mon, 15 Oct 2018 18:28:16 +0800
+> Subject: [PATCH] Added a full duplex riffa PCIe linux staging driver.
+> �Signed-off-by: PHUNG CHENG FEI (feiphung@hotmail.com)
+> 
 
-Add checks:
-  - attempted kfree due to refcount reaching zero before overlay
-    is removed
-  - properties linked to an overlay node when the node is removed
-  - node refcount > one during node removal in a changeset destroy,
-    if the node was created by the changeset
+This whole format is very odd.  Please look at how other patches are
+posted to the list.  I need a proper changelog and signed-off-by line in
+the correct place.
 
-After applying this patch, several validation warnings will be
-reported from the devicetree unittest during boot due to
-pre-existing devicetree bugs. The warnings will be similar to:
+Also, no need to 'cat' the file here, just use git send-email to send
+the patch correctly.
 
-  OF: ERROR: of_node_release() overlay node /testcase-data/overlay-node/test-bus/test-unittest11/test-unittest111 contains unexpected properties
-  OF: ERROR: memory leak - destroy cset entry: attach overlay node /testcase-data-2/substation@100/hvac-medium-2 with refcount 2
+Because of this, all of your tabs got converted to spaces, so the patch
+you sent here is corrupted.
 
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/dynamic.c | 29 +++++++++++++++++++++++++++++
- drivers/of/overlay.c |  1 +
- include/linux/of.h   | 15 ++++++++++-----
- 3 files changed, 40 insertions(+), 5 deletions(-)
+Try sending it to yourself first, run the result of that email through
+scripts/checkpatch.pl and apply it to the tree to verify that it really
+does work.
 
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index f4f8ed9b5454..b04ee021a891 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -330,6 +330,25 @@ void of_node_release(struct kobject *kobj)
- 	if (!of_node_check_flag(node, OF_DYNAMIC))
- 		return;
- 
-+	if (of_node_check_flag(node, OF_OVERLAY)) {
-+
-+		if (!of_node_check_flag(node, OF_OVERLAY_FREE_CSET)) {
-+			/* premature refcount of zero, do not free memory */
-+			pr_err("ERROR: memory leak %s() overlay node %pOF before free overlay changeset\n",
-+			       __func__, node);
-+			return;
-+		}
-+
-+		/*
-+		 * If node->properties non-empty then properties were added
-+		 * to this node either by different overlay that has not
-+		 * yet been removed, or by a non-overlay mechanism.
-+		 */
-+		if (node->properties)
-+			pr_err("ERROR: %s() overlay node %pOF contains unexpected properties\n",
-+			       __func__, node);
-+	}
-+
- 	property_list_free(node->properties);
- 	property_list_free(node->deadprops);
- 
-@@ -434,6 +453,16 @@ struct device_node *__of_node_dup(const struct device_node *np,
- 
- static void __of_changeset_entry_destroy(struct of_changeset_entry *ce)
- {
-+	if (ce->action == OF_RECONFIG_ATTACH_NODE &&
-+	    of_node_check_flag(ce->np, OF_OVERLAY)) {
-+		if (kref_read(&ce->np->kobj.kref) > 1) {
-+			pr_err("ERROR: memory leak - destroy cset entry: attach overlay node %pOF with refcount %d\n",
-+			       ce->np, kref_read(&ce->np->kobj.kref));
-+		} else {
-+			of_node_set_flag(ce->np, OF_OVERLAY_FREE_CSET);
-+		}
-+	}
-+
- 	of_node_put(ce->np);
- 	list_del(&ce->node);
- 	kfree(ce);
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index eda57ef12fd0..1176cb4b6e4e 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -373,6 +373,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 			return -ENOMEM;
- 
- 		tchild->parent = target_node;
-+		of_node_set_flag(tchild, OF_OVERLAY);
- 
- 		ret = of_changeset_attach_node(&ovcs->cset, tchild);
- 		if (ret)
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 4d25e4f952d9..aa1dafaec6ae 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -138,11 +138,16 @@ static inline void of_node_put(struct device_node *node) { }
- extern struct device_node *of_stdout;
- extern raw_spinlock_t devtree_lock;
- 
--/* flag descriptions (need to be visible even when !CONFIG_OF) */
--#define OF_DYNAMIC	1 /* node and properties were allocated via kmalloc */
--#define OF_DETACHED	2 /* node has been detached from the device tree */
--#define OF_POPULATED	3 /* device already created for the node */
--#define OF_POPULATED_BUS	4 /* of_platform_populate recursed to children of this node */
-+/*
-+ * struct device_node flag descriptions
-+ * (need to be visible even when !CONFIG_OF)
-+ */
-+#define OF_DYNAMIC		1 /* (and properties) allocated via kmalloc */
-+#define OF_DETACHED		2 /* detached from the device tree */
-+#define OF_POPULATED		3 /* device already created */
-+#define OF_POPULATED_BUS	4 /* platform bus created for children */
-+#define OF_OVERLAY		5 /* allocated for an overlay */
-+#define OF_OVERLAY_FREE_CSET	6 /* in overlay cset being freed */
- 
- #define OF_BAD_ADDR	((u64)-1)
- 
--- 
-Frank Rowand <frank.rowand@sony.com>
+Also, for staging drivers I need a TODO file that lists the remaining
+tasks that are left to be done in order to get the driver out of the
+staging portion of the kernel tree.
+
+Look at the patch that was sent today that added a new driver to the
+staging portion of the kernel as an example of how to do all of this
+correctly.
+
+thanks,
+
+greg k-h
