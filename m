@@ -1,11 +1,11 @@
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v5 15/18] of: overlay: set node fields from properties when add new overlay node
-Date: Thu, 18 Oct 2018 15:46:33 -0700
-Message-Id: <1539902796-8382-16-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
-References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v4 15/18] of: overlay: set node fields from properties when add new overlay node
+Date: Mon, 15 Oct 2018 19:37:35 -0700
+Message-Id: <1539657458-24401-16-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
@@ -37,7 +37,7 @@ Signed-off-by: Frank Rowand <frank.rowand@sony.com>
  2 files changed, 42 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index beea792debb6..43e1ccb9c387 100644
+index a94f727ec3da..a9f5d5fb3f25 100644
 --- a/drivers/of/dynamic.c
 +++ b/drivers/of/dynamic.c
 @@ -205,15 +205,24 @@ static void __of_attach_node(struct device_node *np)
@@ -75,7 +75,7 @@ index beea792debb6..43e1ccb9c387 100644
  	np->child = NULL;
  	np->sibling = np->parent->child;
 diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 9e4af83c8c62..eaedb3a63077 100644
+index 01afd22566ed..d011177e5aaa 100644
 --- a/drivers/of/overlay.c
 +++ b/drivers/of/overlay.c
 @@ -307,10 +307,11 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
@@ -94,9 +94,9 @@ index 9e4af83c8c62..eaedb3a63077 100644
  
  	if (target->in_livetree)
  		prop = of_find_property(target->np, overlay_prop->name, NULL);
-@@ -330,6 +331,10 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- 
+@@ -331,6 +332,10 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
  	if (!prop) {
+ 
  		check_for_non_overlay_node = true;
 +		if (!target->in_livetree) {
 +			new_prop->next = target->np->deadprops;
@@ -104,8 +104,8 @@ index 9e4af83c8c62..eaedb3a63077 100644
 +		}
  		ret = of_changeset_add_property(&ovcs->cset, target->np,
  						new_prop);
- 	} else if (!of_prop_cmp(prop->name, "#address-cells")) {
-@@ -400,9 +405,10 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 
+@@ -410,9 +415,10 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
  		struct target *target, struct device_node *node)
  {
  	const char *node_kbasename;
@@ -117,7 +117,7 @@ index 9e4af83c8c62..eaedb3a63077 100644
  
  	node_kbasename = kbasename(node->full_name);
  
-@@ -416,6 +422,19 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+@@ -426,6 +432,19 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
  			return -ENOMEM;
  
  		tchild->parent = target->np;
