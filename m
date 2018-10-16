@@ -1,11 +1,11 @@
-Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v2 05/18] of: overlay: use prop add changeset entry for property in new nodes
-Date: Fri, 12 Oct 2018 21:53:25 -0700
-Message-Id: <1539406418-18162-6-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
-References: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v4 05/18] of: overlay: use prop add changeset entry for property in new nodes
+Date: Mon, 15 Oct 2018 19:37:25 -0700
+Message-Id: <1539657458-24401-6-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
@@ -39,10 +39,6 @@ to
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-
-changes since v1:
-   - add_changeset_node() header comment: incorrect comment for @target
-
  drivers/of/overlay.c | 112 ++++++++++++++++++++++++++++++++++-----------------
  1 file changed, 74 insertions(+), 38 deletions(-)
 
