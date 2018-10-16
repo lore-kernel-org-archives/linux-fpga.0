@@ -1,56 +1,119 @@
-Return-Path: <SRS0=BJpF=NJ=denx.de=agust@kernel.org>
-Return-Path: <SRS0=BJpF=NJ=denx.de=agust@kernel.org>
-From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v2] fpga: altera-cvp: Fix registration for CvP incapable devices
-Date: Mon, 29 Oct 2018 08:26:30 +0100
-Message-Id: <20181029072630.13339-1-agust@denx.de>
-To: atull@kernel.org, mdf@kernel.org
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Andreas Puhm <puhm@oregano.at>
+Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v4 16/18] of: unittest: allow base devicetree to have symbol metadata
+Date: Mon, 15 Oct 2018 19:37:36 -0700
+Message-Id: <1539657458-24401-17-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Andreas Puhm <puhm@oregano.at>
+From: Frank Rowand <frank.rowand@sony.com>
 
-The probe function needs to verify the CvP enable bit in order to
-properly determine if FPGA Manager functionality can be safely
-enabled.
+The overlay metadata nodes in the FDT created from testcases.dts
+are not handled properly.
 
-Fixes: 34d1dc17ce97 ("fpga manager: Add Altera CvP driver")
-Signed-off-by: Andreas Puhm <puhm@oregano.at>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+The __fixups__ and __local_fixups__ node were added to the live
+devicetree, but should not be.
+
+Only the first property in the /__symbols__ node was added to the
+live devicetree if the live devicetree already contained a
+/__symbols node.  All of the node's properties must be added.
+
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-Changes in v2:
- - improve Fixes tag
- - wrap lines in commit description
+ drivers/of/unittest.c | 43 +++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 35 insertions(+), 8 deletions(-)
 
- drivers/fpga/altera-cvp.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 3998d4f0e5e7..196d52558990 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -403,6 +403,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	struct altera_cvp_conf *conf;
- 	struct fpga_manager *mgr;
- 	u16 cmd, val;
-+	u32 regval;
- 	int ret;
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 6d80f474c8f2..1c2bd8503095 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -1057,20 +1057,44 @@ static void __init of_unittest_platform_populate(void)
+  *	of np into dup node (present in live tree) and
+  *	updates parent of children of np to dup.
+  *
+- *	@np:	node already present in live tree
++ *	@np:	node whose properties are being added to the live tree
+  *	@dup:	node present in live tree to be updated
+  */
+ static void update_node_properties(struct device_node *np,
+ 					struct device_node *dup)
+ {
+ 	struct property *prop;
++	struct property *save_next;
+ 	struct device_node *child;
+-
+-	for_each_property_of_node(np, prop)
+-		of_add_property(dup, prop);
++	int ret;
  
- 	/*
-@@ -419,6 +420,14 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 		return -ENODEV;
+ 	for_each_child_of_node(np, child)
+ 		child->parent = dup;
++
++	/*
++	 * "unittest internal error: unable to add testdata property"
++	 *
++	 *    If this message reports a property in node '/__symbols__' then
++	 *    the respective unittest overlay contains a label that has the
++	 *    same name as a label in the live devicetree.  The label will
++	 *    be in the live devicetree only if the devicetree source was
++	 *    compiled with the '-@' option.  If you encounter this error,
++	 *    please consider renaming __all__ of the labels in the unittest
++	 *    overlay dts files with an odd prefix that is unlikely to be
++	 *    used in a real devicetree.
++	 */
++
++	/*
++	 * open code for_each_property_of_node() because of_add_property()
++	 * sets prop->next to NULL
++	 */
++	for (prop = np->properties; prop != NULL; prop = save_next) {
++		save_next = prop->next;
++		ret = of_add_property(dup, prop);
++		if (ret)
++			pr_err("unittest internal error: unable to add testdata property %pOF/%s",
++			       np, prop->name);
++	}
+ }
+ 
+ /**
+@@ -1079,18 +1103,23 @@ static void update_node_properties(struct device_node *np,
+  *
+  *	@np:	Node to attach to live tree
+  */
+-static int attach_node_and_children(struct device_node *np)
++static void attach_node_and_children(struct device_node *np)
+ {
+ 	struct device_node *next, *dup, *child;
+ 	unsigned long flags;
+ 	const char *full_name;
+ 
+ 	full_name = kasprintf(GFP_KERNEL, "%pOF", np);
++
++	if (!strcmp(full_name, "/__local_fixups__") ||
++	    !strcmp(full_name, "/__fixups__"))
++		return;
++
+ 	dup = of_find_node_by_path(full_name);
+ 	kfree(full_name);
+ 	if (dup) {
+ 		update_node_properties(np, dup);
+-		return 0;
++		return;
  	}
  
-+	pci_read_config_dword(pdev, VSE_CVP_STATUS, &regval);
-+	if (!(regval & VSE_CVP_STATUS_CVP_EN)) {
-+		dev_err(&pdev->dev,
-+			"CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
-+			regval);
-+		return -ENODEV;
-+	}
-+
- 	conf = devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
- 	if (!conf)
- 		return -ENOMEM;
+ 	child = np->child;
+@@ -1111,8 +1140,6 @@ static int attach_node_and_children(struct device_node *np)
+ 		attach_node_and_children(child);
+ 		child = next;
+ 	}
+-
+-	return 0;
+ }
+ 
+ /**
 -- 
-2.17.1
+Frank Rowand <frank.rowand@sony.com>
