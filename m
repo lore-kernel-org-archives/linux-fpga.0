@@ -1,61 +1,136 @@
-Return-Path: <SRS0=lgA+=M7=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=lgA+=M7=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-eopbgr720079.outbound.protection.outlook.com ([40.107.72.79]:12641
-        "EHLO NAM05-CO1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726609AbeJSQy5 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 19 Oct 2018 12:54:57 -0400
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH 2/3] dt-bindings: fpga: Add bindings for ZynqMP fpga driver
-Date: Sat, 20 Oct 2018 14:18:04 +0530
-Message-ID: <20181020084805.29103-3-nava.manne@xilinx.com>
-In-Reply-To: <20181020084805.29103-1-nava.manne@xilinx.com>
-References: <20181020084805.29103-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v4 18/18] of: unittest: initialize args before calling of_*parse_*()
+Date: Mon, 15 Oct 2018 19:37:38 -0700
+Message-Id: <1539657458-24401-19-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-Add documentation to describe Xilinx ZynqMP fpga driver
-bindings.
+From: Frank Rowand <frank.rowand@sony.com>
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+Callers of of_irq_parse_one() blindly use the pointer args.np
+without checking whether of_irq_parse_one() had an error and
+thus did not set the value of args.np.  Initialize args to
+zero so that using the format "%pOF" to show the value of
+args.np will show "(null)" when of_irq_parse_one() has an
+error.  This prevents the dereference of a random value.
+
+Make the same fix for callers of of_parse_phandle_with_args()
+and of_parse_phandle_with_args_map().
+
+Reported-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-Changes for v1:
-                Created a Seperate(New) DT binding file as
-                suggested by Rob.
+ drivers/of/unittest.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-Changes for RFC-V2:
-                -Moved pcap node as a child to firwmare
-                 node as suggested by Rob.
-
- .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt     | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-
-diff --git a/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-new file mode 100644
-index 000000000000..248ff0ee60a8
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-@@ -0,0 +1,17 @@
-+--------------------------------------------------------------------------
-+Device Tree zynqmp-fpga bindings for the Zynq Ultrascale+ MPSoC controlled
-+using ZynqMP SoC firmware interface
-+--------------------------------------------------------------------------
-+For Bitstream configuration on ZynqMp Soc uses processor configuration
-+port(PCAP) to configure the programmable logic(PL) through PS by using
-+FW interface.
-+
-+Required properties:
-+- compatible: should contain "xlnx,zynqmp-pcap-fpga"
-+
-+-------
-+Example
-+-------
-+	zynqmp_pcap: pcap {
-+		compatible = "xlnx,zynqmp-pcap-fpga";
-+	};
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 785985bdbfa6..5f4db23e4752 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -375,6 +375,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
+ 	for (i = 0; i < 8; i++) {
+ 		bool passed = true;
+ 
++		memset(&args, 0, sizeof(args));
+ 		rc = of_parse_phandle_with_args(np, "phandle-list",
+ 						"#phandle-cells", i, &args);
+ 
+@@ -428,6 +429,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
+ 	}
+ 
+ 	/* Check for missing list property */
++	memset(&args, 0, sizeof(args));
+ 	rc = of_parse_phandle_with_args(np, "phandle-list-missing",
+ 					"#phandle-cells", 0, &args);
+ 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
+@@ -436,6 +438,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
+ 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
+ 
+ 	/* Check for missing cells property */
++	memset(&args, 0, sizeof(args));
+ 	rc = of_parse_phandle_with_args(np, "phandle-list",
+ 					"#phandle-cells-missing", 0, &args);
+ 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+@@ -444,6 +447,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
+ 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+ 
+ 	/* Check for bad phandle in list */
++	memset(&args, 0, sizeof(args));
+ 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-phandle",
+ 					"#phandle-cells", 0, &args);
+ 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+@@ -452,6 +456,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
+ 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+ 
+ 	/* Check for incorrectly formed argument list */
++	memset(&args, 0, sizeof(args));
+ 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-args",
+ 					"#phandle-cells", 1, &args);
+ 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+@@ -502,6 +507,7 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
+ 	for (i = 0; i < 8; i++) {
+ 		bool passed = true;
+ 
++		memset(&args, 0, sizeof(args));
+ 		rc = of_parse_phandle_with_args_map(np, "phandle-list",
+ 						    "phandle", i, &args);
+ 
+@@ -559,21 +565,25 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
+ 	}
+ 
+ 	/* Check for missing list property */
++	memset(&args, 0, sizeof(args));
+ 	rc = of_parse_phandle_with_args_map(np, "phandle-list-missing",
+ 					    "phandle", 0, &args);
+ 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
+ 
+ 	/* Check for missing cells,map,mask property */
++	memset(&args, 0, sizeof(args));
+ 	rc = of_parse_phandle_with_args_map(np, "phandle-list",
+ 					    "phandle-missing", 0, &args);
+ 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+ 
+ 	/* Check for bad phandle in list */
++	memset(&args, 0, sizeof(args));
+ 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-phandle",
+ 					    "phandle", 0, &args);
+ 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+ 
+ 	/* Check for incorrectly formed argument list */
++	memset(&args, 0, sizeof(args));
+ 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-args",
+ 					    "phandle", 1, &args);
+ 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+@@ -780,7 +790,7 @@ static void __init of_unittest_parse_interrupts(void)
+ 	for (i = 0; i < 4; i++) {
+ 		bool passed = true;
+ 
+-		args.args_count = 0;
++		memset(&args, 0, sizeof(args));
+ 		rc = of_irq_parse_one(np, i, &args);
+ 
+ 		passed &= !rc;
+@@ -801,7 +811,7 @@ static void __init of_unittest_parse_interrupts(void)
+ 	for (i = 0; i < 4; i++) {
+ 		bool passed = true;
+ 
+-		args.args_count = 0;
++		memset(&args, 0, sizeof(args));
+ 		rc = of_irq_parse_one(np, i, &args);
+ 
+ 		/* Test the values from tests-phandle.dtsi */
+@@ -854,6 +864,7 @@ static void __init of_unittest_parse_interrupts_extended(void)
+ 	for (i = 0; i < 7; i++) {
+ 		bool passed = true;
+ 
++		memset(&args, 0, sizeof(args));
+ 		rc = of_irq_parse_one(np, i, &args);
+ 
+ 		/* Test the values from tests-phandle.dtsi */
 -- 
-2.18.0
+Frank Rowand <frank.rowand@sony.com>
