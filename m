@@ -1,134 +1,127 @@
-Return-Path: <SRS0=iGBL=NE=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=iGBL=NE=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v2 1/3] firmware: xilinx: Add fpga API's
-Date: Thu, 25 Oct 2018 13:02:04 +0530
-Message-ID: <20181025073206.9264-2-nava.manne@xilinx.com>
-In-Reply-To: <20181025073206.9264-1-nava.manne@xilinx.com>
-References: <20181025073206.9264-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v5 11/18] of: overlay: test case of two fragments adding same node
+Date: Thu, 18 Oct 2018 15:46:29 -0700
+Message-Id: <1539902796-8382-12-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This Patch Adds fpga API's to support the Bitstream loading
-by using firmware interface.
+From: Frank Rowand <frank.rowand@sony.com>
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+Multiple overlay fragments adding or deleting the same node is not
+supported.  An attempt to do so results in an incorrect devicetree.
+The node name will be munged for the second add.
+
+After adding this patch, the unittest messages will show:
+
+   Duplicate name in motor-1, renamed to "controller#1"
+   OF: overlay: of_overlay_apply() err=0
+   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
+   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
+
+   ...
+
+   ### dt-test ### end of unittest - 210 passed, 1 failed
+
+The incorrect (munged) node name "controller#1" can be seen in the
+/proc filesystem:
+
+   $ pwd
+   /proc/device-tree/testcase-data-2/substation@100/motor-1
+   $ ls
+   compatible    controller    controller#1  name          phandle       spin
+   $ ls controller
+   power_bus
+   $ ls controller#1
+   power_bus_emergency
+
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-This patch depends on the below series of patches
-https://lkml.org/lkml/2018/9/12/983
-Which is got integrated into the below upstream repo.
-https://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git/tree/drivers/firmware/xilinx?h=for-next
+ drivers/of/unittest-data/Makefile                  |  1 +
+ .../of/unittest-data/overlay_bad_add_dup_node.dts  | 28 ++++++++++++++++++++++
+ drivers/of/unittest.c                              |  5 ++++
+ 3 files changed, 34 insertions(+)
+ create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
 
-Changes for v2:
-		-Added Firmware FPGA Manager flags As suggested by
-		 Moritz.
-Changes for v1:
-                -None.
-
-Changes for RFC-V2:
-                -New Patch.
-
- drivers/firmware/xilinx/zynqmp.c     | 46 ++++++++++++++++++++++++++++
- include/linux/firmware/xlnx-zynqmp.h | 12 ++++++++
- 2 files changed, 58 insertions(+)
-
-diff --git a/drivers/firmware/xilinx/zynqmp.c b/drivers/firmware/xilinx/zynqmp.c
-index 84b3fd2eca8b..4a5919448198 100644
---- a/drivers/firmware/xilinx/zynqmp.c
-+++ b/drivers/firmware/xilinx/zynqmp.c
-@@ -428,6 +428,50 @@ static int zynqmp_pm_clock_getparent(u32 clock_id, u32 *parent_id)
- 	return ret;
- }
- 
-+/**
-+ * zynqmp_pm_fpga_load - Perform the fpga load
-+ * @address:	Address to write to
-+ * @size:	pl bitstream size
-+ * @flags:
-+ *	BIT(0) - Bit-stream type.
-+ *		 0 - Full Bitstream.
-+ *		 1 - Partial Bitstream.
-+ *
-+ * This function provides access to pmufw. To transfer
-+ * the required bitstream into PL.
-+ *
-+ * Return: Returns status, either success or error+reason
-+ */
-+static int zynqmp_pm_fpga_load(const u64 address, const u32 size,
-+			       const u32 flags)
-+{
-+	return zynqmp_pm_invoke_fn(PM_FPGA_LOAD, lower_32_bits(address),
-+				   upper_32_bits(address), size, flags, NULL);
-+}
+diff --git a/drivers/of/unittest-data/Makefile b/drivers/of/unittest-data/Makefile
+index 013d85e694c6..166dbdbfd1c5 100644
+--- a/drivers/of/unittest-data/Makefile
++++ b/drivers/of/unittest-data/Makefile
+@@ -17,6 +17,7 @@ obj-$(CONFIG_OF_OVERLAY) += overlay.dtb.o \
+ 			    overlay_12.dtb.o \
+ 			    overlay_13.dtb.o \
+ 			    overlay_15.dtb.o \
++			    overlay_bad_add_dup_node.dtb.o \
+ 			    overlay_bad_phandle.dtb.o \
+ 			    overlay_bad_symbol.dtb.o \
+ 			    overlay_base.dtb.o
+diff --git a/drivers/of/unittest-data/overlay_bad_add_dup_node.dts b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+new file mode 100644
+index 000000000000..145dfc3b1024
+--- /dev/null
++++ b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+@@ -0,0 +1,28 @@
++// SPDX-License-Identifier: GPL-2.0
++/dts-v1/;
++/plugin/;
 +
-+/**
-+ * zynqmp_pm_fpga_get_status - Read value from PCAP status register
-+ * @value: Value to read
-+ *
-+ * This function provides access to the xilfpga library to get
-+ * the PCAP status
-+ *
-+ * Return: Returns status, either success or error+reason
-+ */
-+static int zynqmp_pm_fpga_get_status(u32 *value)
-+{
-+	u32 ret_payload[PAYLOAD_ARG_CNT];
-+	int ret;
-+
-+	if (!value)
-+		return -EINVAL;
-+
-+	ret = zynqmp_pm_invoke_fn(PM_FPGA_GET_STATUS, 0, 0, 0, 0, ret_payload);
-+	*value = ret_payload[1];
-+
-+	return ret;
-+}
-+
- static const struct zynqmp_eemi_ops eemi_ops = {
- 	.get_api_version = zynqmp_pm_get_api_version,
- 	.query_data = zynqmp_pm_query_data,
-@@ -440,6 +484,8 @@ static const struct zynqmp_eemi_ops eemi_ops = {
- 	.clock_getrate = zynqmp_pm_clock_getrate,
- 	.clock_setparent = zynqmp_pm_clock_setparent,
- 	.clock_getparent = zynqmp_pm_clock_getparent,
-+	.fpga_load = zynqmp_pm_fpga_load,
-+	.fpga_get_status = zynqmp_pm_fpga_get_status,
- };
- 
- /**
-diff --git a/include/linux/firmware/xlnx-zynqmp.h b/include/linux/firmware/xlnx-zynqmp.h
-index 015e130431e6..0f900b48e1be 100644
---- a/include/linux/firmware/xlnx-zynqmp.h
-+++ b/include/linux/firmware/xlnx-zynqmp.h
-@@ -32,8 +32,18 @@
- /* Number of 32bits values in payload */
- #define PAYLOAD_ARG_CNT	4U
- 
 +/*
-+ * Firmware FPGA Manager flags
-+ * XILINX_ZYNQMP_PM_FPGA_PARTIAL: FPGA partial reconfiguration
++ * &electric_1/motor-1 and &spin_ctrl_1 are the same node:
++ *   /testcase-data-2/substation@100/motor-1
++ *
++ * Thus the new node "controller" in each fragment will
++ * result in an attempt to add the same node twice.
++ * This will result in an error and the overlay apply
++ * will fail.
 + */
-+#define XILINX_ZYNQMP_PM_FPGA_PARTIAL	BIT(0)
 +
++&electric_1 {
 +
++	motor-1 {
++		controller {
++			power_bus = < 0x1 0x2 >;
++		};
++	};
++};
 +
- enum pm_api_id {
- 	PM_GET_API_VERSION = 1,
-+	PM_FPGA_LOAD = 22,
-+	PM_FPGA_GET_STATUS,
- 	PM_QUERY_DATA = 35,
- 	PM_CLOCK_ENABLE,
- 	PM_CLOCK_DISABLE,
-@@ -89,6 +99,8 @@ struct zynqmp_pm_query_data {
++&spin_ctrl_1 {
++		controller {
++			power_bus_emergency = < 0x101 0x102 >;
++		};
++};
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 722537e14848..471b8eb6e842 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -2147,6 +2147,7 @@ struct overlay_info {
+ OVERLAY_INFO_EXTERN(overlay_12);
+ OVERLAY_INFO_EXTERN(overlay_13);
+ OVERLAY_INFO_EXTERN(overlay_15);
++OVERLAY_INFO_EXTERN(overlay_bad_add_dup_node);
+ OVERLAY_INFO_EXTERN(overlay_bad_phandle);
+ OVERLAY_INFO_EXTERN(overlay_bad_symbol);
  
- struct zynqmp_eemi_ops {
- 	int (*get_api_version)(u32 *version);
-+	int (*fpga_load)(const u64 address, const u32 size, const u32 flags);
-+	int (*fpga_get_status)(u32 *value);
- 	int (*query_data)(struct zynqmp_pm_query_data qdata, u32 *out);
- 	int (*clock_enable)(u32 clock_id);
- 	int (*clock_disable)(u32 clock_id);
+@@ -2169,6 +2170,7 @@ struct overlay_info {
+ 	OVERLAY_INFO(overlay_12, 0),
+ 	OVERLAY_INFO(overlay_13, 0),
+ 	OVERLAY_INFO(overlay_15, 0),
++	OVERLAY_INFO(overlay_bad_add_dup_node, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
+ 	{}
+@@ -2413,6 +2415,9 @@ static __init void of_unittest_overlay_high_level(void)
+ 	unittest(overlay_data_apply("overlay", NULL),
+ 		 "Adding overlay 'overlay' failed\n");
+ 
++	unittest(overlay_data_apply("overlay_bad_add_dup_node", NULL),
++		 "Adding overlay 'overlay_bad_add_dup_node' failed\n");
++
+ 	unittest(overlay_data_apply("overlay_bad_phandle", NULL),
+ 		 "Adding overlay 'overlay_bad_phandle' failed\n");
+ 
 -- 
-2.18.0
+Frank Rowand <frank.rowand@sony.com>
