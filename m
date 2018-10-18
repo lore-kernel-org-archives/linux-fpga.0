@@ -1,141 +1,144 @@
-Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=sv72=MZ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v2 18/18] of: unittest: initialize args before calling of_*parse_*()
-Date: Fri, 12 Oct 2018 21:53:38 -0700
-Message-Id: <1539406418-18162-19-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
-References: <1539406418-18162-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v5 07/18] of: dynamic: change type of of_{at,de}tach_node() to void
+Date: Thu, 18 Oct 2018 15:46:25 -0700
+Message-Id: <1539902796-8382-8-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-Callers of of_irq_parse_one() blindly use the pointer args.np
-without checking whether of_irq_parse_one() had an error and
-thus did not set the value of args.np.  Initialize args to
-zero so that using the format "%pOF" to show the value of
-args.np will show "(null)" when of_irq_parse_one() has an
-error.  This prevents the dereference of a random value.
+of_attach_node() and of_detach_node() always return zero, so
+their return value is meaningless.  Change their type to void
+and fix all callers to ignore return value.
 
-Make the same fix for callers of of_parse_phandle_with_args()
-and of_parse_phandle_with_args_map().
-
-Reported-by: Guenter Roeck <linux@roeck-us.net>
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
+ arch/powerpc/platforms/pseries/dlpar.c    | 13 ++-----------
+ arch/powerpc/platforms/pseries/reconfig.c |  6 +-----
+ drivers/of/dynamic.c                      |  9 ++-------
+ include/linux/of.h                        |  4 ++--
+ 4 files changed, 7 insertions(+), 25 deletions(-)
 
-changes since v1:
-   - add same fix for of_parse_phandle_with_args()
-   - add same fix for of_parse_phandle_with_args_map()
-
- drivers/of/unittest.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 785985bdbfa6..5f4db23e4752 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -375,6 +375,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index e3010b14aea5..0027eea94a8b 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -244,15 +244,9 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
  
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args(np, "phandle-list",
- 						"#phandle-cells", i, &args);
+ int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
+ {
+-	int rc;
+-
+ 	dn->parent = parent;
  
-@@ -428,6 +429,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
+-	rc = of_attach_node(dn);
+-	if (rc) {
+-		printk(KERN_ERR "Failed to add device node %pOF\n", dn);
+-		return rc;
+-	}
++	of_attach_node(dn);
+ 
+ 	return 0;
+ }
+@@ -260,7 +254,6 @@ int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
+ int dlpar_detach_node(struct device_node *dn)
+ {
+ 	struct device_node *child;
+-	int rc;
+ 
+ 	child = of_get_next_child(dn, NULL);
+ 	while (child) {
+@@ -268,9 +261,7 @@ int dlpar_detach_node(struct device_node *dn)
+ 		child = of_get_next_child(dn, child);
  	}
  
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-missing",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
-@@ -436,6 +438,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
+-	rc = of_detach_node(dn);
+-	if (rc)
+-		return rc;
++	of_detach_node(dn);
  
- 	/* Check for missing cells property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list",
- 					"#phandle-cells-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -444,6 +447,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+ 	of_node_put(dn);
  
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-phandle",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -452,6 +456,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-args",
- 					"#phandle-cells", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -502,6 +507,7 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
- 
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 						    "phandle", i, &args);
- 
-@@ -559,21 +565,25 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 0e0208117e77..0b72098da454 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -47,11 +47,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
+ 		goto out_err;
  	}
  
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-missing",
- 					    "phandle", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
+-	err = of_attach_node(np);
+-	if (err) {
+-		printk(KERN_ERR "Failed to add device node %s\n", path);
+-		goto out_err;
+-	}
++	of_attach_node(np);
  
- 	/* Check for missing cells,map,mask property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 					    "phandle-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+ 	of_node_put(np->parent);
  
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-phandle",
- 					    "phandle", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
+diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+index 146681540487..beea792debb6 100644
+--- a/drivers/of/dynamic.c
++++ b/drivers/of/dynamic.c
+@@ -224,7 +224,7 @@ static void __of_attach_node(struct device_node *np)
+ /**
+  * of_attach_node() - Plug a device node into the tree and global list.
+  */
+-int of_attach_node(struct device_node *np)
++void of_attach_node(struct device_node *np)
+ {
+ 	struct of_reconfig_data rd;
+ 	unsigned long flags;
+@@ -241,8 +241,6 @@ int of_attach_node(struct device_node *np)
+ 	mutex_unlock(&of_mutex);
  
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-args",
- 					    "phandle", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -780,7 +790,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
+ 	of_reconfig_notify(OF_RECONFIG_ATTACH_NODE, &rd);
+-
+-	return 0;
+ }
  
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
+ void __of_detach_node(struct device_node *np)
+@@ -273,11 +271,10 @@ void __of_detach_node(struct device_node *np)
+ /**
+  * of_detach_node() - "Unplug" a node from the device tree.
+  */
+-int of_detach_node(struct device_node *np)
++void of_detach_node(struct device_node *np)
+ {
+ 	struct of_reconfig_data rd;
+ 	unsigned long flags;
+-	int rc = 0;
  
- 		passed &= !rc;
-@@ -801,7 +811,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
+ 	memset(&rd, 0, sizeof(rd));
+ 	rd.dn = np;
+@@ -291,8 +288,6 @@ int of_detach_node(struct device_node *np)
+ 	mutex_unlock(&of_mutex);
  
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
+ 	of_reconfig_notify(OF_RECONFIG_DETACH_NODE, &rd);
+-
+-	return rc;
+ }
+ EXPORT_SYMBOL_GPL(of_detach_node);
  
- 		/* Test the values from tests-phandle.dtsi */
-@@ -854,6 +864,7 @@ static void __init of_unittest_parse_interrupts_extended(void)
- 	for (i = 0; i < 7; i++) {
- 		bool passed = true;
+diff --git a/include/linux/of.h b/include/linux/of.h
+index aa1dafaec6ae..72c593455019 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -406,8 +406,8 @@ extern int of_phandle_iterator_args(struct of_phandle_iterator *it,
+ #define OF_RECONFIG_REMOVE_PROPERTY	0x0004
+ #define OF_RECONFIG_UPDATE_PROPERTY	0x0005
  
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
+-extern int of_attach_node(struct device_node *);
+-extern int of_detach_node(struct device_node *);
++extern void of_attach_node(struct device_node *np);
++extern void of_detach_node(struct device_node *np);
  
- 		/* Test the values from tests-phandle.dtsi */
+ #define of_match_ptr(_ptr)	(_ptr)
+ 
 -- 
 Frank Rowand <frank.rowand@sony.com>
