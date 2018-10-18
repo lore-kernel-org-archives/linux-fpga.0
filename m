@@ -1,51 +1,72 @@
-Return-Path: <SRS0=bKZa=NJ=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=bKZa=NJ=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-out.m-online.net ([212.18.0.10]:33776 "EHLO
-        mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727629AbeJ3A5b (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 29 Oct 2018 20:57:31 -0400
-From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH] fpga: altera-cvp: fix 'bad IO access' on x86_64
-Date: Mon, 29 Oct 2018 17:08:14 +0100
-Message-Id: <20181029160814.5530-1-agust@denx.de>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-fpga@vger.kernel.org
-Cc: atull@kernel.org, mdf@kernel.org
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v5 02/18] of: overlay: add missing of_node_put() after add new node to changeset
+Date: Thu, 18 Oct 2018 15:46:20 -0700
+Message-Id: <1539902796-8382-3-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-If mapping the CvP BAR fails, we still can configure the FPGA via
-PCI config space access. In this case the iomap pointer is NULL.
-On x86_64, passing NULL address to pci_iounmap() generates
-"Bad IO access at port 0x0" output with stack call trace. Fix it.
+From: Frank Rowand <frank.rowand@sony.com>
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+The refcount of a newly added overlay node decrements to one
+(instead of zero) when the overlay changeset is destroyed.  This
+change will cause the final decrement be to zero.
+
+After applying this patch, new validation warnings will be
+reported from the devicetree unittest during boot due to
+a pre-existing devicetree bug.  The warnings will be similar to:
+
+  OF: ERROR: memory leak before free overlay changeset,  /testcase-data/overlay-node/test-bus/test-unittest4
+
+This pre-existing devicetree bug will also trigger a WARN_ONCE() from
+refcount_sub_and_test_checked() when an overlay changeset is
+destroyed without having first been applied.  This scenario occurs
+when an error in the overlay is detected during the overlay changeset
+creation:
+
+  WARNING: CPU: 0 PID: 1 at lib/refcount.c:187 refcount_sub_and_test_checked+0xa8/0xbc
+  refcount_t: underflow; use-after-free.
+
+  (unwind_backtrace) from (show_stack+0x10/0x14)
+  (show_stack) from (dump_stack+0x6c/0x8c)
+  (dump_stack) from (__warn+0xdc/0x104)
+  (__warn) from (warn_slowpath_fmt+0x44/0x6c)
+  (warn_slowpath_fmt) from (refcount_sub_and_test_checked+0xa8/0xbc)
+  (refcount_sub_and_test_checked) from (kobject_put+0x24/0x208)
+  (kobject_put) from (of_changeset_destroy+0x2c/0xb4)
+  (of_changeset_destroy) from (free_overlay_changeset+0x1c/0x9c)
+  (free_overlay_changeset) from (of_overlay_remove+0x284/0x2cc)
+  (of_overlay_remove) from (of_unittest_apply_revert_overlay_check.constprop.4+0xf8/0x1e8)
+  (of_unittest_apply_revert_overlay_check.constprop.4) from (of_unittest_overlay+0x960/0xed8)
+  (of_unittest_overlay) from (of_unittest+0x1cc4/0x2138)
+  (of_unittest) from (do_one_initcall+0x4c/0x28c)
+  (do_one_initcall) from (kernel_init_freeable+0x29c/0x378)
+  (kernel_init_freeable) from (kernel_init+0x8/0x110)
+  (kernel_init) from (ret_from_fork+0x14/0x2c)
+
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/fpga/altera-cvp.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/of/overlay.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 610a1558e0ed..144fa2a4d4cc 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -477,7 +477,8 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	return 0;
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 1176cb4b6e4e..32cfee68f2e3 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -379,7 +379,9 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 		if (ret)
+ 			return ret;
  
- err_unmap:
--	pci_iounmap(pdev, conf->map);
-+	if (conf->map)
-+		pci_iounmap(pdev, conf->map);
- 	pci_release_region(pdev, CVP_BAR);
- err_disable:
- 	cmd &= ~PCI_COMMAND_MEMORY;
-@@ -493,7 +494,8 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+-		return build_changeset_next_level(ovcs, tchild, node);
++		ret = build_changeset_next_level(ovcs, tchild, node);
++		of_node_put(tchild);
++		return ret;
+ 	}
  
- 	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
- 	fpga_mgr_unregister(mgr);
--	pci_iounmap(pdev, conf->map);
-+	if (conf->map)
-+		pci_iounmap(pdev, conf->map);
- 	pci_release_region(pdev, CVP_BAR);
- 	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
- 	cmd &= ~PCI_COMMAND_MEMORY;
+ 	if (node->phandle && tchild->phandle)
 -- 
-2.17.1
+Frank Rowand <frank.rowand@sony.com>
