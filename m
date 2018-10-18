@@ -1,49 +1,140 @@
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH 04/16] powerpc/pseries: add of_node_put() in dlpar_detach_node()
-Date: Thu,  4 Oct 2018 21:12:35 -0700
-Message-Id: <1538712767-30394-5-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+ <1539657458-24401-2-git-send-email-frowand.list@gmail.com> <CANk1AXS-DMhA3=8v9N28K_V6K18HcgN_Esuo=-ddmeBLO46-Rw@mail.gmail.com>
+In-Reply-To: <CANk1AXS-DMhA3=8v9N28K_V6K18HcgN_Esuo=-ddmeBLO46-Rw@mail.gmail.com>
+From: Alan Tull <atull@kernel.org>
+Date: Thu, 18 Oct 2018 15:24:53 -0500
+Message-ID: <CANk1AXT38UJ0gZze87b3jDiGfXoVEW7izhohsGRdZ5P20wfeEw@mail.gmail.com>
+Subject: Re: [PATCH v4 01/18] of: overlay: add tests to validate kfrees from
+ overlay removal
+Content-Type: text/plain; charset="UTF-8"
+To: Frank Rowand <frowand.list@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Moritz Fischer <mdf@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+On Wed, Oct 17, 2018 at 4:30 PM Alan Tull <atull@kernel.org> wrote:
+>
+> On Mon, Oct 15, 2018 at 9:39 PM <frowand.list@gmail.com> wrote:
+>
+> Hi Frank,
+>
+> >
+> > From: Frank Rowand <frank.rowand@sony.com>
+> >
+> > Add checks:
+> >   - attempted kfree due to refcount reaching zero before overlay
+> >     is removed
+> >   - properties linked to an overlay node when the node is removed
+> >   - node refcount > one during node removal in a changeset destroy,
+> >     if the node was created by the changeset
+> >
+> > After applying this patch, several validation warnings will be
+> > reported from the devicetree unittest during boot due to
+> > pre-existing devicetree bugs. The warnings will be similar to:
+> >
+> >   OF: ERROR: of_node_release() overlay node /testcase-data/overlay-node/test-bus/test-unittest11/test-unittest111 contains unexpected properties
+> >   OF: ERROR: memory leak - destroy cset entry: attach overlay node /testcase-data-2/substation@100/hvac-medium-2 expected refcount 1 instead of 2.  of_node_get() / of_node_put() are unbalanced for this node.
+> >
+> > Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+> > ---
+> > Changes since v3:
+> >   - Add expected value of refcount for destroy cset entry error.  Also
+> >     explain the cause of the error.
+> >
+> >  drivers/of/dynamic.c | 29 +++++++++++++++++++++++++++++
+> >  drivers/of/overlay.c |  1 +
+> >  include/linux/of.h   | 15 ++++++++++-----
+> >  3 files changed, 40 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+> > index f4f8ed9b5454..24c97b7a050f 100644
+> > --- a/drivers/of/dynamic.c
+> > +++ b/drivers/of/dynamic.c
+> > @@ -330,6 +330,25 @@ void of_node_release(struct kobject *kobj)
+> >         if (!of_node_check_flag(node, OF_DYNAMIC))
+> >                 return;
+> >
+> > +       if (of_node_check_flag(node, OF_OVERLAY)) {
+> > +
+> > +               if (!of_node_check_flag(node, OF_OVERLAY_FREE_CSET)) {
+> > +                       /* premature refcount of zero, do not free memory */
+> > +                       pr_err("ERROR: memory leak %s() overlay node %pOF before free overlay changeset\n",
+> > +                              __func__, node);
+> > +                       return;
+> > +               }
+> > +
+> > +               /*
+> > +                * If node->properties non-empty then properties were added
+> > +                * to this node either by different overlay that has not
+> > +                * yet been removed, or by a non-overlay mechanism.
+> > +                */
+> > +               if (node->properties)
+> > +                       pr_err("ERROR: %s() overlay node %pOF contains unexpected properties\n",
+> > +                              __func__, node);
+> > +       }
+> > +
+> >         property_list_free(node->properties);
+> >         property_list_free(node->deadprops);
+> >
+> > @@ -434,6 +453,16 @@ struct device_node *__of_node_dup(const struct device_node *np,
+> >
+> >  static void __of_changeset_entry_destroy(struct of_changeset_entry *ce)
+> >  {
+> > +       if (ce->action == OF_RECONFIG_ATTACH_NODE &&
+> > +           of_node_check_flag(ce->np, OF_OVERLAY)) {
+> > +               if (kref_read(&ce->np->kobj.kref) > 1) {
+> > +                       pr_err("ERROR: memory leak - destroy cset entry: attach overlay node %pOF expected refcount 1 instead of %d.  of_node_get() / of_node_put() are unbalanced for this node.\n",
+> > +                              ce->np, kref_read(&ce->np->kobj.kref));
+>
+> Still testing as much as I have time to do.
+>
+> I'm hitting this error message once when removing an overlay that adds
+> several child nodes.  The only node I get the message for was a node
+> that added a fixed-clock (the other nodes didn't trigger the error).
+> Then even if I edited all the rest of the overlay DTS and removed all
+> other child nodes and all references to the clock from other nodes, I
+> still got the error.
+>
+> Removing dtbo: 1-socfpga_arria10_socdk_sdmmc_ghrd_ovl_ext_cfg.dtb
+> [   72.032270] OF: ERROR: memory leak - destroy cset entry: attach
+> overlay node /soc/base_fpga_region/clk_0 expected refcount 1 instead
+> of 2.  of_node_get() / of_node_put() are unbalanced for this node.
 
-"of: overlay: add missing of_node_get() in __of_attach_node_sysfs"
-added a missing of_node_get() to __of_attach_node_sysfs().  This
-results in a refcount imbalance for nodes attached with
-dlpar_attach_node().  The calling sequence from dlpar_attach_node()
-to __of_attach_node_sysfs() is:
+Update: with some helpful offline debug patches from Frank, I was able
+to find the source of the of_node_get/put unbalance.  The fixed-rate
+clock driver calls of_clk_add_provider() when probed but never calls
+of_clk_del_provider()
 
-   dlpar_attach_node()
-      of_attach_node()
-         __of_attach_node_sysfs()
+This patchset quite likely will uncover other of_node_get/put
+unbalances around the kernel.
 
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
+Alan
 
-***** UNTESTED.  I need people with the affected PowerPC systems
-*****            (systems that dynamically allocate and deallocate
-*****            devicetree nodes) to test this patch.
-
- arch/powerpc/platforms/pseries/dlpar.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index a0b20c03f078..e3010b14aea5 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -272,6 +272,8 @@ int dlpar_detach_node(struct device_node *dn)
- 	if (rc)
- 		return rc;
- 
-+	of_node_put(dn);
-+
- 	return 0;
- }
- 
--- 
-Frank Rowand <frank.rowand@sony.com>
+>
+> Here's the very stripped down overlay:
+>
+> /dts-v1/;
+> /plugin/;
+> / {
+>         fragment@0 {
+>                 target-path = "/soc/base_fpga_region";
+>                 #address-cells = <1>;
+>                 #size-cells = <1>;
+>
+>                 __overlay__ {
+>                         external-fpga-config;
+>
+>                         #address-cells = <1>;
+>                         #size-cells = <1>;
+>
+>                         clk_0: clk_0 {
+>                                 compatible = "fixed-clock";
+>                                 #clock-cells = <0>;
+>                                 clock-frequency = <100000000>;  /* 100.00 MHz */
+>                                 clock-output-names = "clk_0-clk";
+>                         };
+>                 };
+>         };
+> };
