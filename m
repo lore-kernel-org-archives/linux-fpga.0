@@ -1,53 +1,73 @@
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH 06/16] of: overlay: do not duplicate properties from overlay for new nodes
-Date: Thu,  4 Oct 2018 21:12:37 -0700
-Message-Id: <1538712767-30394-7-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v5 03/18] of: overlay: add missing of_node_get() in __of_attach_node_sysfs
+Date: Thu, 18 Oct 2018 15:46:21 -0700
+Message-Id: <1539902796-8382-4-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-When allocating a new node, add_changeset_node() was duplicating the
-properties from the respective node in the overlay instead of
-allocating a node with no properties.
+There is a matching of_node_put() in __of_detach_node_sysfs()
 
-When this patch is applied the errors reported by the devictree
-unittest from patch "of: overlay: add tests to validate kfrees from
-overlay removal" will no longer occur.  These error messages are of
-the form:
+Remove misleading comment from function header comment for
+of_detach_node().
 
-   "OF: ERROR: ..."
-
-and the unittest results will change from:
-
-   ### dt-test ### end of unittest - 203 passed, 7 failed
-
-to
-
-   ### dt-test ### end of unittest - 210 passed, 0 failed
+This patch may result in memory leaks from code that directly calls
+the dynamic node add and delete functions directly instead of
+using changesets.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/overlay.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 0b0904f44bc7..c113186e222c 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -393,7 +393,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 			break;
+This patch should result in powerpc systems that dynamically
+allocate a node, then later deallocate the node to have a
+memory leak when the node is deallocated.
+
+The next patch in the series will fix the leak.
+
+ drivers/of/dynamic.c | 3 ---
+ drivers/of/kobj.c    | 4 +++-
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+index 12c3f9a15e94..146681540487 100644
+--- a/drivers/of/dynamic.c
++++ b/drivers/of/dynamic.c
+@@ -272,9 +272,6 @@ void __of_detach_node(struct device_node *np)
  
- 	if (!tchild) {
--		tchild = __of_node_dup(node, node_kbasename);
-+		tchild = __of_node_dup(NULL, node_kbasename);
- 		if (!tchild)
- 			return -ENOMEM;
+ /**
+  * of_detach_node() - "Unplug" a node from the device tree.
+- *
+- * The caller must hold a reference to the node.  The memory associated with
+- * the node is not freed until its refcount goes to zero.
+  */
+ int of_detach_node(struct device_node *np)
+ {
+diff --git a/drivers/of/kobj.c b/drivers/of/kobj.c
+index 7a0a18980b98..c72eef988041 100644
+--- a/drivers/of/kobj.c
++++ b/drivers/of/kobj.c
+@@ -133,6 +133,9 @@ int __of_attach_node_sysfs(struct device_node *np)
+ 	}
+ 	if (!name)
+ 		return -ENOMEM;
++
++	of_node_get(np);
++
+ 	rc = kobject_add(&np->kobj, parent, "%s", name);
+ 	kfree(name);
+ 	if (rc)
+@@ -159,6 +162,5 @@ void __of_detach_node_sysfs(struct device_node *np)
+ 		kobject_del(&np->kobj);
+ 	}
  
+-	/* finally remove the kobj_init ref */
+ 	of_node_put(np);
+ }
 -- 
 Frank Rowand <frank.rowand@sony.com>
