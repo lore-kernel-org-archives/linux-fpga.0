@@ -1,133 +1,114 @@
-Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v3 12/18] of: overlay: check prevents multiple fragments add or delete same node
-Date: Sun, 14 Oct 2018 17:24:24 -0700
-Message-Id: <1539563070-12969-13-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
-References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v5 09/18] of: overlay: validate overlay properties #address-cells and #size-cells
+Date: Thu, 18 Oct 2018 15:46:27 -0700
+Message-Id: <1539902796-8382-10-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-Multiple overlay fragments adding or deleting the same node is not
-supported.  Replace code comment of such, with check to detect the
-attempt and fail the overlay apply.
+If overlay properties #address-cells or #size-cells are already in
+the live devicetree for any given node, then the values in the
+overlay must match the values in the live tree.
 
-Devicetree unittest where multiple fragments added the same node was
-added in the previous patch in the series.  After applying this patch
-the unittest messages will no longer include:
-
-   Duplicate name in motor-1, renamed to "controller#1"
-   OF: overlay: of_overlay_apply() err=0
-   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
-   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
-
-   ...
-
-   ### dt-test ### end of unittest - 210 passed, 1 failed
-
-but will instead include:
-
-   OF: overlay: ERROR: multiple overlay fragments add and/or delete node /testcase-data-2/substation@100/motor-1/controller
-
-   ...
-
-   ### dt-test ### end of unittest - 211 passed, 0 failed
+If the properties are already in the live tree then there is no
+need to create a changeset entry to add them since they must
+have the same value.  This reduces the memory used by the
+changeset and eliminates a possible memory leak.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
 
-checkpatch errors "line over 80 characters" and "Too many leading tabs"
-are ok, they will be fixed later in this series
+Changes since v4:
+  - create of_prop_val_eq() and change open code to use it
+  - remove extra blank lines
 
- drivers/of/overlay.c | 58 ++++++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 49 insertions(+), 9 deletions(-)
+ drivers/of/overlay.c | 32 +++++++++++++++++++++++++++++---
+ include/linux/of.h   |  6 ++++++
+ 2 files changed, 35 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index a3990c20e210..b0a0dafb6a13 100644
+index 272a0d1a5e18..e20d8923f475 100644
 --- a/drivers/of/overlay.c
 +++ b/drivers/of/overlay.c
-@@ -398,14 +398,6 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
-  *       a live devicetree created from Open Firmware.
+@@ -287,7 +287,12 @@ static struct property *dup_and_fixup_symbol_prop(
+  * @target may be either in the live devicetree or in a new subtree that
+  * is contained in the changeset.
   *
-  * NOTE_2: Multiple mods of created nodes not supported.
-- *       If more than one fragment contains a node that does not already exist
-- *       in the live tree, then for each fragment of_changeset_attach_node()
-- *       will add a changeset entry to add the node.  When the changeset is
-- *       applied, __of_attach_node() will attach the node twice (once for
-- *       each fragment).  At this point the device tree will be corrupted.
-- *
-- *       TODO: add integrity check to ensure that multiple fragments do not
-- *             create the same node.
+- * Some special properties are not updated (no error returned).
++ * Some special properties are not added or updated (no error returned):
++ * "name", "phandle", "linux,phandle".
++ *
++ * Properties "#address-cells" and "#size-cells" are not updated if they
++ * are already in the live tree, but if present in the live tree, the values
++ * in the overlay must match the values in the live tree.
   *
-  * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
-  * invalid @overlay.
-@@ -523,6 +515,54 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
- }
+  * Update of property in symbols node is not allowed.
+  *
+@@ -300,6 +305,7 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ {
+ 	struct property *new_prop = NULL, *prop;
+ 	int ret = 0;
++	bool check_for_non_overlay_node = false;
  
- /**
-+ * check_changeset_dup_add_node() - changeset validation: duplicate add node
-+ * @ovcs:	Overlay changeset
-+ *
-+ * Check changeset @ovcs->cset for multiple add node entries for the same
-+ * node.
-+ *
-+ * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
-+ * invalid overlay in @ovcs->fragments[].
-+ */
-+static int check_changeset_dup_add_node(struct overlay_changeset *ovcs)
-+{
-+	struct of_changeset_entry *ce_1, *ce_2;
-+	char *fn_1, *fn_2;
-+	int name_match;
-+
-+	list_for_each_entry(ce_1, &ovcs->cset.entries, node) {
-+
-+		if (ce_1->action == OF_RECONFIG_ATTACH_NODE ||
-+		    ce_1->action == OF_RECONFIG_DETACH_NODE) {
-+
-+			ce_2 = ce_1;
-+			list_for_each_entry_continue(ce_2, &ovcs->cset.entries, node) {
-+				if (ce_2->action == OF_RECONFIG_ATTACH_NODE ||
-+				    ce_2->action == OF_RECONFIG_DETACH_NODE) {
-+					/* inexpensive name compare */
-+					if (!of_node_cmp(ce_1->np->full_name,
-+					    ce_2->np->full_name)) {
-+						/* expensive full path name compare */
-+						fn_1 = kasprintf(GFP_KERNEL, "%pOF", ce_1->np);
-+						fn_2 = kasprintf(GFP_KERNEL, "%pOF", ce_2->np);
-+						name_match = !strcmp(fn_1, fn_2);
-+						kfree(fn_1);
-+						kfree(fn_2);
-+						if (name_match) {
-+							pr_err("ERROR: multiple overlay fragments add and/or delete node %pOF\n",
-+							       ce_1->np);
-+							return -EINVAL;
-+						}
-+					}
-+				}
-+			}
+ 	if (!of_prop_cmp(overlay_prop->name, "name") ||
+ 	    !of_prop_cmp(overlay_prop->name, "phandle") ||
+@@ -322,12 +328,32 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ 	if (!new_prop)
+ 		return -ENOMEM;
+ 
+-	if (!prop)
++	if (!prop) {
++		check_for_non_overlay_node = true;
+ 		ret = of_changeset_add_property(&ovcs->cset, target->np,
+ 						new_prop);
+-	else
++	} else if (!of_prop_cmp(prop->name, "#address-cells")) {
++		if (!of_prop_val_eq(prop, new_prop)) {
++			pr_err("ERROR: changing value of #address-cells is not allowed in %pOF\n",
++			       target->np);
++			ret = -EINVAL;
 +		}
++	} else if (!of_prop_cmp(prop->name, "#size-cells")) {
++		if (!of_prop_val_eq(prop, new_prop)) {
++			pr_err("ERROR: changing value of #size-cells is not allowed in %pOF\n",
++			       target->np);
++			ret = -EINVAL;
++		}
++	} else {
++		check_for_non_overlay_node = true;
+ 		ret = of_changeset_update_property(&ovcs->cset, target->np,
+ 						   new_prop);
 +	}
 +
-+	return 0;
++	if (check_for_non_overlay_node &&
++	    !of_node_check_flag(target->np, OF_OVERLAY))
++		pr_err("WARNING: memory leak will occur if overlay removed, property: %pOF/%s\n",
++		       target->np, new_prop->name);
+ 
+ 	if (ret) {
+ 		kfree(new_prop->name);
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 72c593455019..1bb14a1f7227 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -947,6 +947,12 @@ static inline int of_cpu_node_to_id(struct device_node *np)
+ #define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+ #endif
+ 
++static inline int of_prop_val_eq(struct property *p1, struct property *p2)
++{
++	return p1->length == p2->length &&
++	       !memcmp(p1->value, p2->value, (size_t)p1->length);
 +}
 +
-+/**
-  * build_changeset() - populate overlay changeset in @ovcs from @ovcs->fragments
-  * @ovcs:	Overlay changeset
-  *
-@@ -577,7 +617,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
- 		}
- 	}
- 
--	return 0;
-+	return check_changeset_dup_add_node(ovcs);
- }
- 
- /*
+ #if defined(CONFIG_OF) && defined(CONFIG_NUMA)
+ extern int of_node_to_nid(struct device_node *np);
+ #else
 -- 
 Frank Rowand <frank.rowand@sony.com>
