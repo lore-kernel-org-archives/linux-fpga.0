@@ -1,141 +1,81 @@
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v4 15/18] of: overlay: set node fields from properties when add new overlay node
-Date: Mon, 15 Oct 2018 19:37:35 -0700
-Message-Id: <1539657458-24401-16-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v5 17/18] of: unittest: find overlays[] entry by name instead of index
+Date: Thu, 18 Oct 2018 15:46:35 -0700
+Message-Id: <1539902796-8382-18-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-Overlay nodes added by add_changeset_node() do not have the node
-fields name, phandle, and type set.
-
-The node passed to __of_attach_node() when the add node changeset
-entry is processed does not contain any properties.  The node's
-properties are located in add property changeset entries that will
-be processed after the add node changeset is applied.
-
-Set the node's fields in the node contained in the add node
-changeset entry and do not set them to incorrect values in
-add_changeset_node().
-
-A visible symptom that is fixed by this patch is the names of nodes
-added by overlays that have an entry in /sys/bus/platform/drivers/*/
-will contain the unit-address but the node-name will be <NULL>,  for
-example, "fc4ab000.<NULL>".  After applying the patch the name, in
-this example, for node restart@fc4ab000 is "fc4ab000.restart".
+One accessor of overlays[] was using a hard coded index value to
+find the correct array entry instead of searching for the entry
+containing the correct name.
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/dynamic.c | 27 ++++++++++++++++++---------
- drivers/of/overlay.c | 29 ++++++++++++++++++++++++-----
- 2 files changed, 42 insertions(+), 14 deletions(-)
+ drivers/of/unittest.c | 21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index a94f727ec3da..a9f5d5fb3f25 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -205,15 +205,24 @@ static void __of_attach_node(struct device_node *np)
- 	const __be32 *phandle;
- 	int sz;
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 1c2bd8503095..785985bdbfa6 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -2178,7 +2178,7 @@ struct overlay_info {
+ OVERLAY_INFO_EXTERN(overlay_bad_phandle);
+ OVERLAY_INFO_EXTERN(overlay_bad_symbol);
  
--	np->name = __of_get_property(np, "name", NULL) ? : "<NULL>";
--	np->type = __of_get_property(np, "device_type", NULL) ? : "<NULL>";
--
--	phandle = __of_get_property(np, "phandle", &sz);
--	if (!phandle)
--		phandle = __of_get_property(np, "linux,phandle", &sz);
--	if (IS_ENABLED(CONFIG_PPC_PSERIES) && !phandle)
--		phandle = __of_get_property(np, "ibm,phandle", &sz);
--	np->phandle = (phandle && (sz >= 4)) ? be32_to_cpup(phandle) : 0;
-+	if (!of_node_check_flag(np, OF_OVERLAY)) {
-+		np->name = __of_get_property(np, "name", NULL);
-+		np->type = __of_get_property(np, "device_type", NULL);
-+		if (!np->name)
-+			np->name = "<NULL>";
-+		if (!np->type)
-+			np->type = "<NULL>";
+-/* order of entries is hard-coded into users of overlays[] */
++/* entries found by name */
+ static struct overlay_info overlays[] = {
+ 	OVERLAY_INFO(overlay_base, -9999),
+ 	OVERLAY_INFO(overlay, 0),
+@@ -2201,7 +2201,8 @@ struct overlay_info {
+ 	OVERLAY_INFO(overlay_bad_add_dup_prop, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
+-	{}
++	/* end marker */
++	{.dtb_begin = NULL, .dtb_end = NULL, .expected_result = 0, .name = NULL}
+ };
+ 
+ static struct device_node *overlay_base_root;
+@@ -2231,6 +2232,19 @@ void __init unittest_unflatten_overlay_base(void)
+ 	u32 data_size;
+ 	void *new_fdt;
+ 	u32 size;
++	int found = 0;
++	const char *overlay_name = "overlay_base";
 +
-+		phandle = __of_get_property(np, "phandle", &sz);
-+		if (!phandle)
-+			phandle = __of_get_property(np, "linux,phandle", &sz);
-+		if (IS_ENABLED(CONFIG_PPC_PSERIES) && !phandle)
-+			phandle = __of_get_property(np, "ibm,phandle", &sz);
-+		if (phandle && (sz >= 4))
-+			np->phandle = be32_to_cpup(phandle);
-+		else
-+			np->phandle = 0;
++	for (info = overlays; info && info->name; info++) {
++		if (!strcmp(overlay_name, info->name)) {
++			found = 1;
++			break;
++		}
++	}
++	if (!found) {
++		pr_err("no overlay data for %s\n", overlay_name);
++		return;
 +	}
  
- 	np->child = NULL;
- 	np->sibling = np->parent->child;
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 01afd22566ed..d011177e5aaa 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -307,10 +307,11 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- 	int ret = 0;
- 	bool check_for_non_overlay_node = false;
+ 	info = &overlays[0];
  
--	if (!of_prop_cmp(overlay_prop->name, "name") ||
--	    !of_prop_cmp(overlay_prop->name, "phandle") ||
--	    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
--		return 0;
-+	if (target->in_livetree)
-+		if (!of_prop_cmp(overlay_prop->name, "name") ||
-+		    !of_prop_cmp(overlay_prop->name, "phandle") ||
-+		    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
-+			return 0;
- 
- 	if (target->in_livetree)
- 		prop = of_find_property(target->np, overlay_prop->name, NULL);
-@@ -331,6 +332,10 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- 	if (!prop) {
- 
- 		check_for_non_overlay_node = true;
-+		if (!target->in_livetree) {
-+			new_prop->next = target->np->deadprops;
-+			target->np->deadprops = new_prop;
-+		}
- 		ret = of_changeset_add_property(&ovcs->cset, target->np,
- 						new_prop);
- 
-@@ -410,9 +415,10 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 		struct target *target, struct device_node *node)
+@@ -2278,11 +2292,10 @@ static int __init overlay_data_apply(const char *overlay_name, int *overlay_id)
  {
- 	const char *node_kbasename;
-+	const __be32 *phandle;
- 	struct device_node *tchild;
- 	struct target target_child;
--	int ret = 0;
-+	int ret = 0, size;
+ 	struct overlay_info *info;
+ 	int found = 0;
+-	int k;
+ 	int ret;
+ 	u32 size;
  
- 	node_kbasename = kbasename(node->full_name);
- 
-@@ -426,6 +432,19 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 			return -ENOMEM;
- 
- 		tchild->parent = target->np;
-+		tchild->name = __of_get_property(node, "name", NULL);
-+		tchild->type = __of_get_property(node, "device_type", NULL);
-+
-+		if (!tchild->name)
-+			tchild->name = "<NULL>";
-+		if (!tchild->type)
-+			tchild->type = "<NULL>";
-+
-+		/* ignore obsolete "linux,phandle" */
-+		phandle = __of_get_property(node, "phandle", &size);
-+		if (phandle && (size == 4))
-+			tchild->phandle = be32_to_cpup(phandle);
-+
- 		of_node_set_flag(tchild, OF_OVERLAY);
- 
- 		ret = of_changeset_attach_node(&ovcs->cset, tchild);
+-	for (k = 0, info = overlays; info && info->name; info++, k++) {
++	for (info = overlays; info && info->name; info++) {
+ 		if (!strcmp(overlay_name, info->name)) {
+ 			found = 1;
+ 			break;
 -- 
 Frank Rowand <frank.rowand@sony.com>
