@@ -1,53 +1,53 @@
-Return-Path: <SRS0=iGBL=NE=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=iGBL=NE=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v2 2/3] dt-bindings: fpga: Add bindings for ZynqMP fpga driver
-Date: Thu, 25 Oct 2018 13:02:05 +0530
-Message-ID: <20181025073206.9264-3-nava.manne@xilinx.com>
-In-Reply-To: <20181025073206.9264-1-nava.manne@xilinx.com>
-References: <20181025073206.9264-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=UOBO=M6=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v5 06/18] of: overlay: do not duplicate properties from overlay for new nodes
+Date: Thu, 18 Oct 2018 15:46:24 -0700
+Message-Id: <1539902796-8382-7-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add documentation to describe Xilinx ZynqMP fpga driver
-bindings.
+From: Frank Rowand <frank.rowand@sony.com>
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+When allocating a new node, add_changeset_node() was duplicating the
+properties from the respective node in the overlay instead of
+allocating a node with no properties.
+
+When this patch is applied the errors reported by the devictree
+unittest from patch "of: overlay: add tests to validate kfrees from
+overlay removal" will no longer occur.  These error messages are of
+the form:
+
+   "OF: ERROR: ..."
+
+and the unittest results will change from:
+
+   ### dt-test ### end of unittest - 203 passed, 7 failed
+
+to
+
+   ### dt-test ### end of unittest - 210 passed, 0 failed
+
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-Changes for v2:
-		-Removed "----" separators.
-Changes for v1:
-                -Created a Seperate(New) DT binding file as
-                 suggested by Rob.
+ drivers/of/overlay.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes for RFC-V2:
-                -Moved pcap node as a child to firwmare
-                 node as suggested by Rob.
-
- .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt         | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-
-diff --git a/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-new file mode 100644
-index 000000000000..1f6f58872311
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-@@ -0,0 +1,13 @@
-+Device Tree zynqmp-fpga bindings for the Zynq Ultrascale+ MPSoC controlled
-+using ZynqMP SoC firmware interface
-+For Bitstream configuration on ZynqMp Soc uses processor configuration
-+port(PCAP) to configure the programmable logic(PL) through PS by using
-+FW interface.
-+
-+Required properties:
-+- compatible: should contain "xlnx,zynqmp-pcap-fpga"
-+
-+Example:
-+	zynqmp_pcap: pcap {
-+		compatible = "xlnx,zynqmp-pcap-fpga";
-+	};
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 94740f4ee34c..7fcf4a812d06 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -393,7 +393,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 			break;
+ 
+ 	if (!tchild) {
+-		tchild = __of_node_dup(node, node_kbasename);
++		tchild = __of_node_dup(NULL, node_kbasename);
+ 		if (!tchild)
+ 			return -ENOMEM;
+ 
 -- 
-2.18.0
+Frank Rowand <frank.rowand@sony.com>
