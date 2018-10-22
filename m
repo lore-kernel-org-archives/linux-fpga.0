@@ -1,210 +1,135 @@
-Return-Path: <moritz.fischer@ettus.com>
-Return-Path: <moritz.fischer@ettus.com>
-Date: Mon, 22 Oct 2018 03:22:55 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH 3/3] fpga manager: Adding FPGA Manager support for Xilinx
+Return-Path: <navam@xilinx.com>
+From: Nava kishore Manne <navam@xilinx.com>
+Subject: RE: [PATCH 3/3] fpga manager: Adding FPGA Manager support for Xilinx
  zynqmp
-Message-ID: <20181022102255.GA1428@archbook>
+Date: Mon, 22 Oct 2018 10:03:55 +0000
+Message-ID: 
+ <BYAPR02MB47106D61C0CDB8268BAF4E44C2F40@BYAPR02MB4710.namprd02.prod.outlook.com>
 References: <20181020084805.29103-1-nava.manne@xilinx.com>
  <20181020084805.29103-4-nava.manne@xilinx.com>
  <CAJYdmePxnkG=3iJC5Lewq3n3zFGTKASJX7ceUEufBvOJogCfdA@mail.gmail.com>
  <CAAtXAHdP6z5NG+EAvW_N_RfcPv59e15hkd83AR-L3RDBrLMvcQ@mail.gmail.com>
- <BYAPR02MB47106D61C0CDB8268BAF4E44C2F40@BYAPR02MB4710.namprd02.prod.outlook.com>
+In-Reply-To: 
+ <CAAtXAHdP6z5NG+EAvW_N_RfcPv59e15hkd83AR-L3RDBrLMvcQ@mail.gmail.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BYAPR02MB47106D61C0CDB8268BAF4E44C2F40@BYAPR02MB4710.namprd02.prod.outlook.com>
-To: Nava kishore Manne <navam@xilinx.com>
-Cc: Moritz Fischer <moritz.fischer@ettus.com>, Moritz Fischer <moritz.fischer.private@gmail.com>, Alan Tull <atull@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michal Simek <michals@xilinx.com>, Rajan Vaja <RAJANV@xilinx.com>, Jolly Shah <JOLLYS@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, Devicetree List <devicetree@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "chinnikishore369@gmail.com" <chinnikishore369@gmail.com>
+To: Moritz Fischer <moritz.fischer@ettus.com>, Moritz Fischer <moritz.fischer.private@gmail.com>
+Cc: Alan Tull <atull@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michal Simek <michals@xilinx.com>, Rajan Vaja <RAJANV@xilinx.com>, Jolly Shah <JOLLYS@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, Devicetree List <devicetree@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "chinnikishore369@gmail.com" <chinnikishore369@gmail.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Oct 22, 2018 at 10:03:55AM +0000, Nava kishore Manne wrote:
-> Hi Mortiz,
-> 
-> Thanks for the quick response....
-> Please find my response inline.
-> 
-> > -----Original Message-----
-> > From: Moritz Fischer [mailto:moritz.fischer@ettus.com]
-> > Sent: Saturday, October 20, 2018 7:02 AM
-> > To: Moritz Fischer <moritz.fischer.private@gmail.com>
-> > Cc: Nava kishore Manne <navam@xilinx.com>; Alan Tull <atull@kernel.org>;
-> > Rob Herring <robh+dt@kernel.org>; Mark Rutland <mark.rutland@arm.com>;
-> > Michal Simek <michals@xilinx.com>; Rajan Vaja <RAJANV@xilinx.com>; Jolly
-> > Shah <JOLLYS@xilinx.com>; linux-fpga@vger.kernel.org; Devicetree List
-> > <devicetree@vger.kernel.org>; linux-arm-kernel <linux-arm-
-> > kernel@lists.infradead.org>; Linux Kernel Mailing List <linux-
-> > kernel@vger.kernel.org>; chinnikishore369@gmail.com
-> > Subject: Re: [PATCH 3/3] fpga manager: Adding FPGA Manager support for
-> > Xilinx zynqmp
-> > 
-> > On Fri, Oct 19, 2018 at 2:33 PM Moritz Fischer
-> > <moritz.fischer.private@gmail.com> wrote:
-> > >
-> > > Hi Nava,
-> > >
-> > > Looks good to me, a couple of nits inline below.
-> > >
-> > > On Fri, Oct 19, 2018 at 1:50 AM Nava kishore Manne
-> > > <nava.manne@xilinx.com> wrote:
-> > > >
-> > > > This patch adds FPGA Manager support for the Xilinx ZynqMp chip.
-> > >
-> > > Isn't it ZynqMP ?
-> > > >
-> > > > Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
-> > > > ---
-> > > > Changes for v1:
-> > > >                 -None.
-> > > >
-> > > > Changes for RFC-V2:
-> > > >                 -Updated the Fpga Mgr registrations call's
-> > > >                  to 4.18
-> > > >
-> > > >  drivers/fpga/Kconfig       |   9 +++
-> > > >  drivers/fpga/Makefile      |   1 +
-> > > >  drivers/fpga/zynqmp-fpga.c | 159
-> > > > +++++++++++++++++++++++++++++++++++++
-> > > >  3 files changed, 169 insertions(+)
-> > > >  create mode 100644 drivers/fpga/zynqmp-fpga.c
-> > > >
-> > > > diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig index
-> > > > 1ebcef4bab5b..26ebbcf3d3a3 100644
-> > > > --- a/drivers/fpga/Kconfig
-> > > > +++ b/drivers/fpga/Kconfig
-> > > > @@ -56,6 +56,15 @@ config FPGA_MGR_ZYNQ_FPGA
-> > > >         help
-> > > >           FPGA manager driver support for Xilinx Zynq FPGAs.
-> > > >
-> > > > +config FPGA_MGR_ZYNQMP_FPGA
-> > > > +       tristate "Xilinx Zynqmp FPGA"
-> > > > +       depends on ARCH_ZYNQMP || COMPILE_TEST
-> > > > +       help
-> > > > +         FPGA manager driver support for Xilinx ZynqMP FPGAs.
-> > > > +         This driver uses processor configuration port(PCAP)
-> > > This driver uses *the* processor configuration port.
-> > >
-> > > > +         to configure the programmable logic(PL) through PS
-> > > > +         on ZynqMP SoC.
-> > > > +
-> > > >  config FPGA_MGR_XILINX_SPI
-> > > >         tristate "Xilinx Configuration over Slave Serial (SPI)"
-> > > >         depends on SPI
-> > > > diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile index
-> > > > 7a2d73ba7122..3488ebbaee46 100644
-> > > > --- a/drivers/fpga/Makefile
-> > > > +++ b/drivers/fpga/Makefile
-> > > > @@ -16,6 +16,7 @@ obj-$(CONFIG_FPGA_MGR_SOCFPGA_A10)    +=
-> > socfpga-a10.o
-> > > >  obj-$(CONFIG_FPGA_MGR_TS73XX)          += ts73xx-fpga.o
-> > > >  obj-$(CONFIG_FPGA_MGR_XILINX_SPI)      += xilinx-spi.o
-> > > >  obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)       += zynq-fpga.o
-> > > > +obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)     += zynqmp-fpga.o
-> > > >  obj-$(CONFIG_ALTERA_PR_IP_CORE)         += altera-pr-ip-core.o
-> > > >  obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)    += altera-pr-ip-core-plat.o
-> > > >
-> > > > diff --git a/drivers/fpga/zynqmp-fpga.c b/drivers/fpga/zynqmp-fpga.c
-> > > > new file mode 100644 index 000000000000..2760d7e3872a
-> > > > --- /dev/null
-> > > > +++ b/drivers/fpga/zynqmp-fpga.c
-> > > > @@ -0,0 +1,159 @@
-> > > > +// SPDX-License-Identifier: GPL-2.0+
-> > > > +/*
-> > > > + * Copyright (C) 2018 Xilinx, Inc.
-> > > > + */
-> > > > +
-> > > > +#include <linux/dma-mapping.h>
-> > > > +#include <linux/fpga/fpga-mgr.h>
-> > > > +#include <linux/io.h>
-> > > > +#include <linux/kernel.h>
-> > > > +#include <linux/module.h>
-> > > > +#include <linux/of_address.h>
-> > > > +#include <linux/string.h>
-> > > > +#include <linux/firmware/xlnx-zynqmp.h>
-> > > > +
-> > > > +/* Constant Definitions */
-> > > > +#define IXR_FPGA_DONE_MASK     0X00000008U
-> > > > +
-> > > > +/**
-> > > > + * struct zynqmp_fpga_priv - Private data structure
-> > > > + * @dev:       Device data structure
-> > > > + * @flags:     flags which is used to identify the bitfile type
-> > > > + */
-> > > > +struct zynqmp_fpga_priv {
-> > > > +       struct device *dev;
-> > > > +       u32 flags;
-> > > > +};
-> > > > +
-> > > > +static int zynqmp_fpga_ops_write_init(struct fpga_manager *mgr,
-> > > > +                                     struct fpga_image_info *info,
-> > > > +                                     const char *buf, size_t size)
-> > > > +{
-> > > > +       struct zynqmp_fpga_priv *priv;
-> > > > +
-> > > > +       priv = mgr->priv;
-> > > > +       priv->flags = info->flags;
-> > > > +
-> > > > +       return 0;
-> > > > +}
-> > > > +
-> > > > +static int zynqmp_fpga_ops_write(struct fpga_manager *mgr,
-> > > > +                                const char *buf, size_t size) {
-> > > > +       struct zynqmp_fpga_priv *priv;
-> > > > +       char *kbuf;
-> > > > +       dma_addr_t dma_addr;
-> > > > +       int ret;
-> > > > +       const struct zynqmp_eemi_ops *eemi_ops =
-> > > > +zynqmp_pm_get_eemi_ops();
-> > >
-> > > Reverse xmas-tree please, i.e. long lines first.
-> > >
-> > > > +
-> > > > +       if (!eemi_ops || !eemi_ops->fpga_load)
-> > > > +               return -ENXIO;
-> > > > +
-> > > > +       priv = mgr->priv;
-> > > > +
-> > > > +       kbuf = dma_alloc_coherent(priv->dev, size, &dma_addr,
-> > GFP_KERNEL);
-> > > > +       if (!kbuf)
-> > > > +               return -ENOMEM;
-> > > > +
-> > > > +       memcpy(kbuf, buf, size);
-> > > > +
-> > > > +       wmb(); /* ensure all writes are done before initiate FW call
-> > > > + */
-> > > > +
-> > > > +       ret = eemi_ops->fpga_load(dma_addr, size, priv->flags);
-> > 
-> > Don't you have to do anything with the flags? Is it really just a pass-through of
-> > FPGA manager flags to eemi calls?
-> > 
-> > Don't you want to make partial bitstreams e.g. use a flags value that you export
-> > in your firmware header (xlnx-zynqmp.h) and set those based on what flags get
-> > passed in, i.e. explicitely translate FPGA Manager flags to your firmware flags?
-> 
-> At this point of time the firmware use Flag 0 for full Bitstream and 1 for partial bitstream loading.
-> So I have not doing any explicit translate FPGA Manager flags inside the driver.
-> Will document the flags info in xlnx-zynqmp.h
-
-I think you should explicitely translate them, the fact that they happen
-to line up in the current implementation is somewhat of coincidence, and
-in future might break (since it's not really easy to to spot the
-dependency when refactoring).
-
-Why don't you do something like:
-
-#include <linux/firmware/xilinx-zynqmp.h>
-
-[...]
-
-eemi_flags = 0;
-
-if (flags & FPGA_MGR_PARTIAL_RECONFIG)
-	eemi_flags |= XILINX_ZYNQMP_PM_FPGA_PARTIAL;
-
-eemi_ops->fpga_load(...., eemi_flags);
-
-Thanks,
-
-Moritz
+SGkgTW9ydGl6LA0KDQpUaGFua3MgZm9yIHRoZSBxdWljayByZXNwb25zZS4uLi4NClBsZWFzZSBm
+aW5kIG15IHJlc3BvbnNlIGlubGluZS4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+PiBGcm9tOiBNb3JpdHogRmlzY2hlciBbbWFpbHRvOm1vcml0ei5maXNjaGVyQGV0dHVzLmNvbV0N
+Cj4gU2VudDogU2F0dXJkYXksIE9jdG9iZXIgMjAsIDIwMTggNzowMiBBTQ0KPiBUbzogTW9yaXR6
+IEZpc2NoZXIgPG1vcml0ei5maXNjaGVyLnByaXZhdGVAZ21haWwuY29tPg0KPiBDYzogTmF2YSBr
+aXNob3JlIE1hbm5lIDxuYXZhbUB4aWxpbnguY29tPjsgQWxhbiBUdWxsIDxhdHVsbEBrZXJuZWwu
+b3JnPjsNCj4gUm9iIEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47IE1hcmsgUnV0bGFuZCA8
+bWFyay5ydXRsYW5kQGFybS5jb20+Ow0KPiBNaWNoYWwgU2ltZWsgPG1pY2hhbHNAeGlsaW54LmNv
+bT47IFJhamFuIFZhamEgPFJBSkFOVkB4aWxpbnguY29tPjsgSm9sbHkNCj4gU2hhaCA8Sk9MTFlT
+QHhpbGlueC5jb20+OyBsaW51eC1mcGdhQHZnZXIua2VybmVsLm9yZzsgRGV2aWNldHJlZSBMaXN0
+DQo+IDxkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZz47IGxpbnV4LWFybS1rZXJuZWwgPGxpbnV4
+LWFybS0NCj4ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc+OyBMaW51eCBLZXJuZWwgTWFpbGlu
+ZyBMaXN0IDxsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZz47IGNoaW5uaWtpc2hvcmUz
+NjlAZ21haWwuY29tDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMy8zXSBmcGdhIG1hbmFnZXI6IEFk
+ZGluZyBGUEdBIE1hbmFnZXIgc3VwcG9ydCBmb3INCj4gWGlsaW54IHp5bnFtcA0KPiANCj4gT24g
+RnJpLCBPY3QgMTksIDIwMTggYXQgMjozMyBQTSBNb3JpdHogRmlzY2hlcg0KPiA8bW9yaXR6LmZp
+c2NoZXIucHJpdmF0ZUBnbWFpbC5jb20+IHdyb3RlOg0KPiA+DQo+ID4gSGkgTmF2YSwNCj4gPg0K
+PiA+IExvb2tzIGdvb2QgdG8gbWUsIGEgY291cGxlIG9mIG5pdHMgaW5saW5lIGJlbG93Lg0KPiA+
+DQo+ID4gT24gRnJpLCBPY3QgMTksIDIwMTggYXQgMTo1MCBBTSBOYXZhIGtpc2hvcmUgTWFubmUN
+Cj4gPiA8bmF2YS5tYW5uZUB4aWxpbnguY29tPiB3cm90ZToNCj4gPiA+DQo+ID4gPiBUaGlzIHBh
+dGNoIGFkZHMgRlBHQSBNYW5hZ2VyIHN1cHBvcnQgZm9yIHRoZSBYaWxpbnggWnlucU1wIGNoaXAu
+DQo+ID4NCj4gPiBJc24ndCBpdCBaeW5xTVAgPw0KPiA+ID4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6
+IE5hdmEga2lzaG9yZSBNYW5uZSA8bmF2YS5tYW5uZUB4aWxpbnguY29tPg0KPiA+ID4gLS0tDQo+
+ID4gPiBDaGFuZ2VzIGZvciB2MToNCj4gPiA+ICAgICAgICAgICAgICAgICAtTm9uZS4NCj4gPiA+
+DQo+ID4gPiBDaGFuZ2VzIGZvciBSRkMtVjI6DQo+ID4gPiAgICAgICAgICAgICAgICAgLVVwZGF0
+ZWQgdGhlIEZwZ2EgTWdyIHJlZ2lzdHJhdGlvbnMgY2FsbCdzDQo+ID4gPiAgICAgICAgICAgICAg
+ICAgIHRvIDQuMTgNCj4gPiA+DQo+ID4gPiAgZHJpdmVycy9mcGdhL0tjb25maWcgICAgICAgfCAg
+IDkgKysrDQo+ID4gPiAgZHJpdmVycy9mcGdhL01ha2VmaWxlICAgICAgfCAgIDEgKw0KPiA+ID4g
+IGRyaXZlcnMvZnBnYS96eW5xbXAtZnBnYS5jIHwgMTU5DQo+ID4gPiArKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrDQo+ID4gPiAgMyBmaWxlcyBjaGFuZ2VkLCAxNjkgaW5zZXJ0
+aW9ucygrKQ0KPiA+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2ZwZ2EvenlucW1wLWZw
+Z2EuYw0KPiA+ID4NCj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2ZwZ2EvS2NvbmZpZyBiL2Ry
+aXZlcnMvZnBnYS9LY29uZmlnIGluZGV4DQo+ID4gPiAxZWJjZWY0YmFiNWIuLjI2ZWJiY2YzZDNh
+MyAxMDA2NDQNCj4gPiA+IC0tLSBhL2RyaXZlcnMvZnBnYS9LY29uZmlnDQo+ID4gPiArKysgYi9k
+cml2ZXJzL2ZwZ2EvS2NvbmZpZw0KPiA+ID4gQEAgLTU2LDYgKzU2LDE1IEBAIGNvbmZpZyBGUEdB
+X01HUl9aWU5RX0ZQR0ENCj4gPiA+ICAgICAgICAgaGVscA0KPiA+ID4gICAgICAgICAgIEZQR0Eg
+bWFuYWdlciBkcml2ZXIgc3VwcG9ydCBmb3IgWGlsaW54IFp5bnEgRlBHQXMuDQo+ID4gPg0KPiA+
+ID4gK2NvbmZpZyBGUEdBX01HUl9aWU5RTVBfRlBHQQ0KPiA+ID4gKyAgICAgICB0cmlzdGF0ZSAi
+WGlsaW54IFp5bnFtcCBGUEdBIg0KPiA+ID4gKyAgICAgICBkZXBlbmRzIG9uIEFSQ0hfWllOUU1Q
+IHx8IENPTVBJTEVfVEVTVA0KPiA+ID4gKyAgICAgICBoZWxwDQo+ID4gPiArICAgICAgICAgRlBH
+QSBtYW5hZ2VyIGRyaXZlciBzdXBwb3J0IGZvciBYaWxpbnggWnlucU1QIEZQR0FzLg0KPiA+ID4g
+KyAgICAgICAgIFRoaXMgZHJpdmVyIHVzZXMgcHJvY2Vzc29yIGNvbmZpZ3VyYXRpb24gcG9ydChQ
+Q0FQKQ0KPiA+IFRoaXMgZHJpdmVyIHVzZXMgKnRoZSogcHJvY2Vzc29yIGNvbmZpZ3VyYXRpb24g
+cG9ydC4NCj4gPg0KPiA+ID4gKyAgICAgICAgIHRvIGNvbmZpZ3VyZSB0aGUgcHJvZ3JhbW1hYmxl
+IGxvZ2ljKFBMKSB0aHJvdWdoIFBTDQo+ID4gPiArICAgICAgICAgb24gWnlucU1QIFNvQy4NCj4g
+PiA+ICsNCj4gPiA+ICBjb25maWcgRlBHQV9NR1JfWElMSU5YX1NQSQ0KPiA+ID4gICAgICAgICB0
+cmlzdGF0ZSAiWGlsaW54IENvbmZpZ3VyYXRpb24gb3ZlciBTbGF2ZSBTZXJpYWwgKFNQSSkiDQo+
+ID4gPiAgICAgICAgIGRlcGVuZHMgb24gU1BJDQo+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9m
+cGdhL01ha2VmaWxlIGIvZHJpdmVycy9mcGdhL01ha2VmaWxlIGluZGV4DQo+ID4gPiA3YTJkNzNi
+YTcxMjIuLjM0ODhlYmJhZWU0NiAxMDA2NDQNCj4gPiA+IC0tLSBhL2RyaXZlcnMvZnBnYS9NYWtl
+ZmlsZQ0KPiA+ID4gKysrIGIvZHJpdmVycy9mcGdhL01ha2VmaWxlDQo+ID4gPiBAQCAtMTYsNiAr
+MTYsNyBAQCBvYmotJChDT05GSUdfRlBHQV9NR1JfU09DRlBHQV9BMTApICAgICs9DQo+IHNvY2Zw
+Z2EtYTEwLm8NCj4gPiA+ICBvYmotJChDT05GSUdfRlBHQV9NR1JfVFM3M1hYKSAgICAgICAgICAr
+PSB0czczeHgtZnBnYS5vDQo+ID4gPiAgb2JqLSQoQ09ORklHX0ZQR0FfTUdSX1hJTElOWF9TUEkp
+ICAgICAgKz0geGlsaW54LXNwaS5vDQo+ID4gPiAgb2JqLSQoQ09ORklHX0ZQR0FfTUdSX1pZTlFf
+RlBHQSkgICAgICAgKz0genlucS1mcGdhLm8NCj4gPiA+ICtvYmotJChDT05GSUdfRlBHQV9NR1Jf
+WllOUU1QX0ZQR0EpICAgICArPSB6eW5xbXAtZnBnYS5vDQo+ID4gPiAgb2JqLSQoQ09ORklHX0FM
+VEVSQV9QUl9JUF9DT1JFKSAgICAgICAgICs9IGFsdGVyYS1wci1pcC1jb3JlLm8NCj4gPiA+ICBv
+YmotJChDT05GSUdfQUxURVJBX1BSX0lQX0NPUkVfUExBVCkgICAgKz0gYWx0ZXJhLXByLWlwLWNv
+cmUtcGxhdC5vDQo+ID4gPg0KPiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZnBnYS96eW5xbXAt
+ZnBnYS5jIGIvZHJpdmVycy9mcGdhL3p5bnFtcC1mcGdhLmMNCj4gPiA+IG5ldyBmaWxlIG1vZGUg
+MTAwNjQ0IGluZGV4IDAwMDAwMDAwMDAwMC4uMjc2MGQ3ZTM4NzJhDQo+ID4gPiAtLS0gL2Rldi9u
+dWxsDQo+ID4gPiArKysgYi9kcml2ZXJzL2ZwZ2EvenlucW1wLWZwZ2EuYw0KPiA+ID4gQEAgLTAs
+MCArMSwxNTkgQEANCj4gPiA+ICsvLyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogR1BMLTIuMCsN
+Cj4gPiA+ICsvKg0KPiA+ID4gKyAqIENvcHlyaWdodCAoQykgMjAxOCBYaWxpbngsIEluYy4NCj4g
+PiA+ICsgKi8NCj4gPiA+ICsNCj4gPiA+ICsjaW5jbHVkZSA8bGludXgvZG1hLW1hcHBpbmcuaD4N
+Cj4gPiA+ICsjaW5jbHVkZSA8bGludXgvZnBnYS9mcGdhLW1nci5oPg0KPiA+ID4gKyNpbmNsdWRl
+IDxsaW51eC9pby5oPg0KPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9rZXJuZWwuaD4NCj4gPiA+ICsj
+aW5jbHVkZSA8bGludXgvbW9kdWxlLmg+DQo+ID4gPiArI2luY2x1ZGUgPGxpbnV4L29mX2FkZHJl
+c3MuaD4NCj4gPiA+ICsjaW5jbHVkZSA8bGludXgvc3RyaW5nLmg+DQo+ID4gPiArI2luY2x1ZGUg
+PGxpbnV4L2Zpcm13YXJlL3hsbngtenlucW1wLmg+DQo+ID4gPiArDQo+ID4gPiArLyogQ29uc3Rh
+bnQgRGVmaW5pdGlvbnMgKi8NCj4gPiA+ICsjZGVmaW5lIElYUl9GUEdBX0RPTkVfTUFTSyAgICAg
+MFgwMDAwMDAwOFUNCj4gPiA+ICsNCj4gPiA+ICsvKioNCj4gPiA+ICsgKiBzdHJ1Y3QgenlucW1w
+X2ZwZ2FfcHJpdiAtIFByaXZhdGUgZGF0YSBzdHJ1Y3R1cmUNCj4gPiA+ICsgKiBAZGV2OiAgICAg
+ICBEZXZpY2UgZGF0YSBzdHJ1Y3R1cmUNCj4gPiA+ICsgKiBAZmxhZ3M6ICAgICBmbGFncyB3aGlj
+aCBpcyB1c2VkIHRvIGlkZW50aWZ5IHRoZSBiaXRmaWxlIHR5cGUNCj4gPiA+ICsgKi8NCj4gPiA+
+ICtzdHJ1Y3QgenlucW1wX2ZwZ2FfcHJpdiB7DQo+ID4gPiArICAgICAgIHN0cnVjdCBkZXZpY2Ug
+KmRldjsNCj4gPiA+ICsgICAgICAgdTMyIGZsYWdzOw0KPiA+ID4gK307DQo+ID4gPiArDQo+ID4g
+PiArc3RhdGljIGludCB6eW5xbXBfZnBnYV9vcHNfd3JpdGVfaW5pdChzdHJ1Y3QgZnBnYV9tYW5h
+Z2VyICptZ3IsDQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0
+cnVjdCBmcGdhX2ltYWdlX2luZm8gKmluZm8sDQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIGNvbnN0IGNoYXIgKmJ1Ziwgc2l6ZV90IHNpemUpDQo+ID4gPiArew0K
+PiA+ID4gKyAgICAgICBzdHJ1Y3QgenlucW1wX2ZwZ2FfcHJpdiAqcHJpdjsNCj4gPiA+ICsNCj4g
+PiA+ICsgICAgICAgcHJpdiA9IG1nci0+cHJpdjsNCj4gPiA+ICsgICAgICAgcHJpdi0+ZmxhZ3Mg
+PSBpbmZvLT5mbGFnczsNCj4gPiA+ICsNCj4gPiA+ICsgICAgICAgcmV0dXJuIDA7DQo+ID4gPiAr
+fQ0KPiA+ID4gKw0KPiA+ID4gK3N0YXRpYyBpbnQgenlucW1wX2ZwZ2Ffb3BzX3dyaXRlKHN0cnVj
+dCBmcGdhX21hbmFnZXIgKm1nciwNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIGNvbnN0IGNoYXIgKmJ1Ziwgc2l6ZV90IHNpemUpIHsNCj4gPiA+ICsgICAgICAgc3RydWN0
+IHp5bnFtcF9mcGdhX3ByaXYgKnByaXY7DQo+ID4gPiArICAgICAgIGNoYXIgKmtidWY7DQo+ID4g
+PiArICAgICAgIGRtYV9hZGRyX3QgZG1hX2FkZHI7DQo+ID4gPiArICAgICAgIGludCByZXQ7DQo+
+ID4gPiArICAgICAgIGNvbnN0IHN0cnVjdCB6eW5xbXBfZWVtaV9vcHMgKmVlbWlfb3BzID0NCj4g
+PiA+ICt6eW5xbXBfcG1fZ2V0X2VlbWlfb3BzKCk7DQo+ID4NCj4gPiBSZXZlcnNlIHhtYXMtdHJl
+ZSBwbGVhc2UsIGkuZS4gbG9uZyBsaW5lcyBmaXJzdC4NCj4gPg0KPiA+ID4gKw0KPiA+ID4gKyAg
+ICAgICBpZiAoIWVlbWlfb3BzIHx8ICFlZW1pX29wcy0+ZnBnYV9sb2FkKQ0KPiA+ID4gKyAgICAg
+ICAgICAgICAgIHJldHVybiAtRU5YSU87DQo+ID4gPiArDQo+ID4gPiArICAgICAgIHByaXYgPSBt
+Z3ItPnByaXY7DQo+ID4gPiArDQo+ID4gPiArICAgICAgIGtidWYgPSBkbWFfYWxsb2NfY29oZXJl
+bnQocHJpdi0+ZGV2LCBzaXplLCAmZG1hX2FkZHIsDQo+IEdGUF9LRVJORUwpOw0KPiA+ID4gKyAg
+ICAgICBpZiAoIWtidWYpDQo+ID4gPiArICAgICAgICAgICAgICAgcmV0dXJuIC1FTk9NRU07DQo+
+ID4gPiArDQo+ID4gPiArICAgICAgIG1lbWNweShrYnVmLCBidWYsIHNpemUpOw0KPiA+ID4gKw0K
+PiA+ID4gKyAgICAgICB3bWIoKTsgLyogZW5zdXJlIGFsbCB3cml0ZXMgYXJlIGRvbmUgYmVmb3Jl
+IGluaXRpYXRlIEZXIGNhbGwNCj4gPiA+ICsgKi8NCj4gPiA+ICsNCj4gPiA+ICsgICAgICAgcmV0
+ID0gZWVtaV9vcHMtPmZwZ2FfbG9hZChkbWFfYWRkciwgc2l6ZSwgcHJpdi0+ZmxhZ3MpOw0KPiAN
+Cj4gRG9uJ3QgeW91IGhhdmUgdG8gZG8gYW55dGhpbmcgd2l0aCB0aGUgZmxhZ3M/IElzIGl0IHJl
+YWxseSBqdXN0IGEgcGFzcy10aHJvdWdoIG9mDQo+IEZQR0EgbWFuYWdlciBmbGFncyB0byBlZW1p
+IGNhbGxzPw0KPiANCj4gRG9uJ3QgeW91IHdhbnQgdG8gbWFrZSBwYXJ0aWFsIGJpdHN0cmVhbXMg
+ZS5nLiB1c2UgYSBmbGFncyB2YWx1ZSB0aGF0IHlvdSBleHBvcnQNCj4gaW4geW91ciBmaXJtd2Fy
+ZSBoZWFkZXIgKHhsbngtenlucW1wLmgpIGFuZCBzZXQgdGhvc2UgYmFzZWQgb24gd2hhdCBmbGFn
+cyBnZXQNCj4gcGFzc2VkIGluLCBpLmUuIGV4cGxpY2l0ZWx5IHRyYW5zbGF0ZSBGUEdBIE1hbmFn
+ZXIgZmxhZ3MgdG8geW91ciBmaXJtd2FyZSBmbGFncz8NCg0KQXQgdGhpcyBwb2ludCBvZiB0aW1l
+IHRoZSBmaXJtd2FyZSB1c2UgRmxhZyAwIGZvciBmdWxsIEJpdHN0cmVhbSBhbmQgMSBmb3IgcGFy
+dGlhbCBiaXRzdHJlYW0gbG9hZGluZy4NClNvIEkgaGF2ZSBub3QgZG9pbmcgYW55IGV4cGxpY2l0
+IHRyYW5zbGF0ZSBGUEdBIE1hbmFnZXIgZmxhZ3MgaW5zaWRlIHRoZSBkcml2ZXIuDQpXaWxsIGRv
+Y3VtZW50IHRoZSBmbGFncyBpbmZvIGluIHhsbngtenlucW1wLmgNCg0KUmVnYXJkcywNCk5hdmFr
+aXNob3JlLg0K
