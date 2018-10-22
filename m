@@ -1,136 +1,63 @@
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v4 18/18] of: unittest: initialize args before calling of_*parse_*()
-Date: Mon, 15 Oct 2018 19:37:38 -0700
-Message-Id: <1539657458-24401-19-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=VnBr=NC=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=VnBr=NC=ettus.com=moritz.fischer@kernel.org>
+Date: Mon, 22 Oct 2018 03:33:24 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [Bug] altera_cvp registers a PCI device (Altera/Intel FPGA)
+ without verifying that it supports CVP
+Message-ID: <20181022103324.GA6888@archbook>
+References: <2c6313a3f7c04b70b8a06a50934fe27a@SRV177.busymouse24.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2c6313a3f7c04b70b8a06a50934fe27a@SRV177.busymouse24.de>
+To: Andreas Puhm <puhm@oregano.at>
+Cc: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Hi Andreas,
 
-Callers of of_irq_parse_one() blindly use the pointer args.np
-without checking whether of_irq_parse_one() had an error and
-thus did not set the value of args.np.  Initialize args to
-zero so that using the format "%pOF" to show the value of
-args.np will show "(null)" when of_irq_parse_one() has an
-error.  This prevents the dereference of a random value.
+On Fri, Oct 19, 2018 at 03:53:02PM +0000, Andreas Puhm wrote:
+> Hello,
+> 
+> I hope the following information is descriptive enough.
+> If this is no the case, I will provide further details.
+> 
+> --------------------------------------------------------------------
+> Full description:
+> The altera_cvp probe function only checks, 
+> if the Altera/Intel PCI device configuration space contains a vendor specific entry (VSEC Capability Header 0x000b) at offset 0x200.
+>  But the probe function does not verify, if the PCI device (and further the FPGA), 
+> for which it has been called, actually supports the Configure-via-Protocol feature.
+> 
+> The PCI device (FPGA) can explicitly disable the Configur-via-Protocol (CvP) feature by setting the CVP_EN bit, index 20 of CVP_STATUS register, to '0'. 
+> As the altera_cvp probe function does not check this it registers the device in any way. 
+> At this point, the altera_cvp module cannot be used to program this device via CvP. 
+> In addition no other module can use the device, as it is still registered by altera_cvp.
+> 
+> Keywords: altera_cvp module, PCI, Configure-via-Protocol
+> 
+> Kernel version: problem occured with v4.15, should occur from 4.14+
+> 
+> Instructions to reproduce: 
+> Proper hardware is necessary to reproduce this, i.e., FPGA with instantiated Altera/Intel PCIe IP Core with disabled CvP feature.
+> 
+> Workaround:
+> It is possible to circumvent this problem by manually unloading or blacklisting the altera_cvp module.
+> 
+> Suggested Patch:
+> This patch was successfully build and tested for 4.15 and 4.18
+> 
+> Subject: [PATCH] register device only, if it supports CvP operation
 
-Make the same fix for callers of of_parse_phandle_with_args()
-and of_parse_phandle_with_args_map().
+Could you make this: 'fpga: altera_cvp: Conditionalize registration' or
+something along those lines?
+> 
+> This patch is based on: git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.18
 
-Reported-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/unittest.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+Put some of the extensive description you made above in the git commit
+message, please, such that future us will know why the change was made
+:)
 
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 785985bdbfa6..5f4db23e4752 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -375,6 +375,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
- 
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args(np, "phandle-list",
- 						"#phandle-cells", i, &args);
- 
-@@ -428,6 +429,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	}
- 
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-missing",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
-@@ -436,6 +438,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
- 
- 	/* Check for missing cells property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list",
- 					"#phandle-cells-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -444,6 +447,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-phandle",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -452,6 +456,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-args",
- 					"#phandle-cells", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -502,6 +507,7 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
- 
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 						    "phandle", i, &args);
- 
-@@ -559,21 +565,25 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
- 	}
- 
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-missing",
- 					    "phandle", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
- 
- 	/* Check for missing cells,map,mask property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 					    "phandle-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-phandle",
- 					    "phandle", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-args",
- 					    "phandle", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -780,7 +790,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
- 
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
- 
- 		passed &= !rc;
-@@ -801,7 +811,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
- 
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
- 
- 		/* Test the values from tests-phandle.dtsi */
-@@ -854,6 +864,7 @@ static void __init of_unittest_parse_interrupts_extended(void)
- 	for (i = 0; i < 7; i++) {
- 		bool passed = true;
- 
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
- 
- 		/* Test the values from tests-phandle.dtsi */
--- 
-Frank Rowand <frank.rowand@sony.com>
+Thanks for your patch,
+
+Moritz
