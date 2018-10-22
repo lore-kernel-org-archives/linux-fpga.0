@@ -1,100 +1,244 @@
-Return-Path: <SRS0=h6Hu=NC=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=h6Hu=NC=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mx01.busymouse24.de ([83.246.107.19]:47628 "EHLO
-        mx01.busymouse24.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727669AbeJVVeK (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 22 Oct 2018 17:34:10 -0400
-From: Andreas Puhm <puhm@oregano.at>
-Subject: [PATCH] fpga: altera_cvp: restrict registration to CvP enabled
- devices
-Date: Mon, 22 Oct 2018 13:15:34 +0000
-Message-ID: <78c44ad0b2344a4490ffd300cf0df746@SRV177.busymouse24.de>
-Content-Language: de-DE
+Return-Path: <navam@xilinx.com>
+From: Nava kishore Manne <navam@xilinx.com>
+Subject: RE: [PATCH 3/3] fpga manager: Adding FPGA Manager support for Xilinx
+ zynqmp
+Date: Mon, 22 Oct 2018 10:31:01 +0000
+Message-ID: 
+ <BYAPR02MB4710080A6C3947734D8FB21CC2F40@BYAPR02MB4710.namprd02.prod.outlook.com>
+References: <20181020084805.29103-1-nava.manne@xilinx.com>
+ <20181020084805.29103-4-nava.manne@xilinx.com>
+ <CAJYdmePxnkG=3iJC5Lewq3n3zFGTKASJX7ceUEufBvOJogCfdA@mail.gmail.com>
+ <CAAtXAHdP6z5NG+EAvW_N_RfcPv59e15hkd83AR-L3RDBrLMvcQ@mail.gmail.com>
+ <BYAPR02MB47106D61C0CDB8268BAF4E44C2F40@BYAPR02MB4710.namprd02.prod.outlook.com>
+ <20181022102255.GA1428@archbook>
+In-Reply-To: <20181022102255.GA1428@archbook>
+Content-Language: en-US
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
 To: Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Moritz Fischer <moritz.fischer@ettus.com>, Moritz Fischer <moritz.fischer.private@gmail.com>, Alan Tull <atull@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michal Simek <michals@xilinx.com>, Rajan Vaja <RAJANV@xilinx.com>, Jolly Shah <JOLLYS@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, Devicetree List <devicetree@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "chinnikishore369@gmail.com" <chinnikishore369@gmail.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
 Hi Moritz,
 
-Thank you, for your fast response!
-Below you can find the updated patch.
+Thanks for the quick response..
+Please find my response inline.
 
---------------------------------------------------------------------
-Full description:
-The altera_cvp probe function only checks, 
-if the Altera/Intel PCI device configuration space contains a vendor specific entry (VSEC Capability Header 0x000b) at offset 0x200.
- But the probe function does not verify, if the PCI device (and further the FPGA), 
-for which it has been called, actually supports the Configure-via-Protocol feature.
+> -----Original Message-----
+> From: Moritz Fischer [mailto:mdf@kernel.org]
+> Sent: Monday, October 22, 2018 3:53 PM
+> To: Nava kishore Manne <navam@xilinx.com>
+> Cc: Moritz Fischer <moritz.fischer@ettus.com>; Moritz Fischer
+> <moritz.fischer.private@gmail.com>; Alan Tull <atull@kernel.org>; Rob Her=
+ring
+> <robh+dt@kernel.org>; Mark Rutland <mark.rutland@arm.com>; Michal Simek
+> <michals@xilinx.com>; Rajan Vaja <RAJANV@xilinx.com>; Jolly Shah
+> <JOLLYS@xilinx.com>; linux-fpga@vger.kernel.org; Devicetree List
+> <devicetree@vger.kernel.org>; linux-arm-kernel <linux-arm-
+> kernel@lists.infradead.org>; Linux Kernel Mailing List <linux-
+> kernel@vger.kernel.org>; chinnikishore369@gmail.com
+> Subject: Re: [PATCH 3/3] fpga manager: Adding FPGA Manager support for
+> Xilinx zynqmp
+>=20
+> On Mon, Oct 22, 2018 at 10:03:55AM +0000, Nava kishore Manne wrote:
+> > Hi Mortiz,
+> >
+> > Thanks for the quick response....
+> > Please find my response inline.
+> >
+> > > -----Original Message-----
+> > > From: Moritz Fischer [mailto:moritz.fischer@ettus.com]
+> > > Sent: Saturday, October 20, 2018 7:02 AM
+> > > To: Moritz Fischer <moritz.fischer.private@gmail.com>
+> > > Cc: Nava kishore Manne <navam@xilinx.com>; Alan Tull
+> > > <atull@kernel.org>; Rob Herring <robh+dt@kernel.org>; Mark Rutland
+> > > <mark.rutland@arm.com>; Michal Simek <michals@xilinx.com>; Rajan
+> > > Vaja <RAJANV@xilinx.com>; Jolly Shah <JOLLYS@xilinx.com>;
+> > > linux-fpga@vger.kernel.org; Devicetree List
+> > > <devicetree@vger.kernel.org>; linux-arm-kernel <linux-arm-
+> > > kernel@lists.infradead.org>; Linux Kernel Mailing List <linux-
+> > > kernel@vger.kernel.org>; chinnikishore369@gmail.com
+> > > Subject: Re: [PATCH 3/3] fpga manager: Adding FPGA Manager support
+> > > for Xilinx zynqmp
+> > >
+> > > On Fri, Oct 19, 2018 at 2:33 PM Moritz Fischer
+> > > <moritz.fischer.private@gmail.com> wrote:
+> > > >
+> > > > Hi Nava,
+> > > >
+> > > > Looks good to me, a couple of nits inline below.
+> > > >
+> > > > On Fri, Oct 19, 2018 at 1:50 AM Nava kishore Manne
+> > > > <nava.manne@xilinx.com> wrote:
+> > > > >
+> > > > > This patch adds FPGA Manager support for the Xilinx ZynqMp chip.
+> > > >
+> > > > Isn't it ZynqMP ?
+> > > > >
+> > > > > Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+> > > > > ---
+> > > > > Changes for v1:
+> > > > >                 -None.
+> > > > >
+> > > > > Changes for RFC-V2:
+> > > > >                 -Updated the Fpga Mgr registrations call's
+> > > > >                  to 4.18
+> > > > >
+> > > > >  drivers/fpga/Kconfig       |   9 +++
+> > > > >  drivers/fpga/Makefile      |   1 +
+> > > > >  drivers/fpga/zynqmp-fpga.c | 159
+> > > > > +++++++++++++++++++++++++++++++++++++
+> > > > >  3 files changed, 169 insertions(+)  create mode 100644
+> > > > > drivers/fpga/zynqmp-fpga.c
+> > > > >
+> > > > > diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig index
+> > > > > 1ebcef4bab5b..26ebbcf3d3a3 100644
+> > > > > --- a/drivers/fpga/Kconfig
+> > > > > +++ b/drivers/fpga/Kconfig
+> > > > > @@ -56,6 +56,15 @@ config FPGA_MGR_ZYNQ_FPGA
+> > > > >         help
+> > > > >           FPGA manager driver support for Xilinx Zynq FPGAs.
+> > > > >
+> > > > > +config FPGA_MGR_ZYNQMP_FPGA
+> > > > > +       tristate "Xilinx Zynqmp FPGA"
+> > > > > +       depends on ARCH_ZYNQMP || COMPILE_TEST
+> > > > > +       help
+> > > > > +         FPGA manager driver support for Xilinx ZynqMP FPGAs.
+> > > > > +         This driver uses processor configuration port(PCAP)
+> > > > This driver uses *the* processor configuration port.
+> > > >
+> > > > > +         to configure the programmable logic(PL) through PS
+> > > > > +         on ZynqMP SoC.
+> > > > > +
+> > > > >  config FPGA_MGR_XILINX_SPI
+> > > > >         tristate "Xilinx Configuration over Slave Serial (SPI)"
+> > > > >         depends on SPI
+> > > > > diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile index
+> > > > > 7a2d73ba7122..3488ebbaee46 100644
+> > > > > --- a/drivers/fpga/Makefile
+> > > > > +++ b/drivers/fpga/Makefile
+> > > > > @@ -16,6 +16,7 @@ obj-$(CONFIG_FPGA_MGR_SOCFPGA_A10)    +=3D
+> > > socfpga-a10.o
+> > > > >  obj-$(CONFIG_FPGA_MGR_TS73XX)          +=3D ts73xx-fpga.o
+> > > > >  obj-$(CONFIG_FPGA_MGR_XILINX_SPI)      +=3D xilinx-spi.o
+> > > > >  obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)       +=3D zynq-fpga.o
+> > > > > +obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)     +=3D zynqmp-fpga.o
+> > > > >  obj-$(CONFIG_ALTERA_PR_IP_CORE)         +=3D altera-pr-ip-core.o
+> > > > >  obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)    +=3D altera-pr-ip-core-p=
+lat.o
+> > > > >
+> > > > > diff --git a/drivers/fpga/zynqmp-fpga.c
+> > > > > b/drivers/fpga/zynqmp-fpga.c new file mode 100644 index
+> > > > > 000000000000..2760d7e3872a
+> > > > > --- /dev/null
+> > > > > +++ b/drivers/fpga/zynqmp-fpga.c
+> > > > > @@ -0,0 +1,159 @@
+> > > > > +// SPDX-License-Identifier: GPL-2.0+
+> > > > > +/*
+> > > > > + * Copyright (C) 2018 Xilinx, Inc.
+> > > > > + */
+> > > > > +
+> > > > > +#include <linux/dma-mapping.h>
+> > > > > +#include <linux/fpga/fpga-mgr.h> #include <linux/io.h> #include
+> > > > > +<linux/kernel.h> #include <linux/module.h> #include
+> > > > > +<linux/of_address.h> #include <linux/string.h> #include
+> > > > > +<linux/firmware/xlnx-zynqmp.h>
+> > > > > +
+> > > > > +/* Constant Definitions */
+> > > > > +#define IXR_FPGA_DONE_MASK     0X00000008U
+> > > > > +
+> > > > > +/**
+> > > > > + * struct zynqmp_fpga_priv - Private data structure
+> > > > > + * @dev:       Device data structure
+> > > > > + * @flags:     flags which is used to identify the bitfile type
+> > > > > + */
+> > > > > +struct zynqmp_fpga_priv {
+> > > > > +       struct device *dev;
+> > > > > +       u32 flags;
+> > > > > +};
+> > > > > +
+> > > > > +static int zynqmp_fpga_ops_write_init(struct fpga_manager *mgr,
+> > > > > +                                     struct fpga_image_info *inf=
+o,
+> > > > > +                                     const char *buf, size_t
+> > > > > +size) {
+> > > > > +       struct zynqmp_fpga_priv *priv;
+> > > > > +
+> > > > > +       priv =3D mgr->priv;
+> > > > > +       priv->flags =3D info->flags;
+> > > > > +
+> > > > > +       return 0;
+> > > > > +}
+> > > > > +
+> > > > > +static int zynqmp_fpga_ops_write(struct fpga_manager *mgr,
+> > > > > +                                const char *buf, size_t size) {
+> > > > > +       struct zynqmp_fpga_priv *priv;
+> > > > > +       char *kbuf;
+> > > > > +       dma_addr_t dma_addr;
+> > > > > +       int ret;
+> > > > > +       const struct zynqmp_eemi_ops *eemi_ops =3D
+> > > > > +zynqmp_pm_get_eemi_ops();
+> > > >
+> > > > Reverse xmas-tree please, i.e. long lines first.
+> > > >
+> > > > > +
+> > > > > +       if (!eemi_ops || !eemi_ops->fpga_load)
+> > > > > +               return -ENXIO;
+> > > > > +
+> > > > > +       priv =3D mgr->priv;
+> > > > > +
+> > > > > +       kbuf =3D dma_alloc_coherent(priv->dev, size, &dma_addr,
+> > > GFP_KERNEL);
+> > > > > +       if (!kbuf)
+> > > > > +               return -ENOMEM;
+> > > > > +
+> > > > > +       memcpy(kbuf, buf, size);
+> > > > > +
+> > > > > +       wmb(); /* ensure all writes are done before initiate FW
+> > > > > + call */
+> > > > > +
+> > > > > +       ret =3D eemi_ops->fpga_load(dma_addr, size, priv->flags);
+> > >
+> > > Don't you have to do anything with the flags? Is it really just a
+> > > pass-through of FPGA manager flags to eemi calls?
+> > >
+> > > Don't you want to make partial bitstreams e.g. use a flags value
+> > > that you export in your firmware header (xlnx-zynqmp.h) and set
+> > > those based on what flags get passed in, i.e. explicitely translate F=
+PGA
+> Manager flags to your firmware flags?
+> >
+> > At this point of time the firmware use Flag 0 for full Bitstream and 1 =
+for partial
+> bitstream loading.
+> > So I have not doing any explicit translate FPGA Manager flags inside th=
+e
+> driver.
+> > Will document the flags info in xlnx-zynqmp.h
+>=20
+> I think you should explicitely translate them, the fact that they happen =
+to line
+> up in the current implementation is somewhat of coincidence, and in futur=
+e
+> might break (since it's not really easy to to spot the dependency when
+> refactoring).
+>=20
+> Why don't you do something like:
+>=20
+> #include <linux/firmware/xilinx-zynqmp.h>
+>=20
+> [...]
+>=20
+> eemi_flags =3D 0;
+>=20
+> if (flags & FPGA_MGR_PARTIAL_RECONFIG)
+> 	eemi_flags |=3D XILINX_ZYNQMP_PM_FPGA_PARTIAL;
+>=20
+> eemi_ops->fpga_load(...., eemi_flags);
+>=20
 
-The PCI device (FPGA) can explicitly disable the Configur-via-Protocol (CvP) feature by setting the CVP_EN bit, index 20 of CVP_STATUS register, to '0'. 
-As the altera_cvp probe function does not check this it registers the device in any way. 
-At this point, the altera_cvp module cannot be used to program this device via CvP. 
-In addition no other module can use the device, as it is still registered by altera_cvp.
+Yes, I agree with you and it's sound good. Will fix in the next version.
 
-Keywords: altera_cvp module, PCI, Configure-via-Protocol
-
-Kernel version: problem occured with v4.15, should occur from 4.14+
-
-Instructions to reproduce: 
-Proper hardware is necessary to reproduce this, i.e., FPGA with instantiated Altera/Intel PCIe IP Core with disabled CvP feature.
-
-Workaround:
-It is possible to circumvent this problem by manually unloading or blacklisting the altera_cvp module.
---------------------------------------------------------------------
-Suggested Patch:
-This patch was successfully build and tested for 4.15 and 4.18
-
-The patch is based on: git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.18
-
-Subject: [PATCH] fpga: altera_cvp: restrict registration to CvP enabled devices
-
-The altera-cvp probe function now verifies, that the PCI device supports
-the CvP feature, before it registers the device.
-This is done by reading the CVP_EN bit,
-Bit 20 of the CVP_STATUS register (@ PCI Config Address 0x21C).
-
-If this bit is '1' (CvP enabled), altera-cvp will register the device
-for further interaction.
-If this bit is '0' (CvP disabled), altera-cvp will not register the device.
-
-Signed-off-by: Andreas Puhm <puhm@oregano.at>
----
- drivers/fpga/altera-cvp.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 7fa793672a7a..838abcfca0fb 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -403,6 +403,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	struct altera_cvp_conf *conf;
- 	struct fpga_manager *mgr;
- 	u16 cmd, val;
-+	u32 val32;
- 	int ret;
- 
- 	/*
-@@ -416,6 +417,14 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 		return -ENODEV;
- 	}
- 
-+	pci_read_config_dword(pdev, VSE_CVP_STATUS, &val32);
-+	if (!(val32 & VSE_CVP_STATUS_CVP_EN)) {
-+		dev_err(&pdev->dev,
-+			"CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
-+			val32);
-+		return -ENODEV;
-+	}
-+
- 	conf = devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
- 	if (!conf)
- 		return -ENOMEM;
---
-
-
-With best regards,
-Andreas Puhm <puhm@oregano.at>
+Regards,
+Navakishore.
