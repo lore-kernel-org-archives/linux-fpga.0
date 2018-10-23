@@ -1,86 +1,162 @@
-Return-Path: <SRS0=Ciit=ND=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=Ciit=ND=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:35836 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728330AbeJWRtR (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 23 Oct 2018 13:49:17 -0400
-Received: by mail-wm1-f66.google.com with SMTP id w186-v6so1001564wmf.0
-        for <linux-fpga@vger.kernel.org>; Tue, 23 Oct 2018 02:26:42 -0700 (PDT)
-Date: Tue, 23 Oct 2018 10:26:39 +0100
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH] fpga: altera-cvp: Fix registration for CvP incapable
- devices
-Message-ID: <20181023092639.GA4682@archbook>
-References: <9b53d15391054a598ec3a32cee540798@SRV177.busymouse24.de>
+Return-Path: <SRS0=VL/4=ND=oregano.at=puhm@kernel.org>
+Return-Path: <SRS0=VL/4=ND=oregano.at=puhm@kernel.org>
+Content-Type: multipart/mixed;
+	boundary="_000_9b53d15391054a598ec3a32cee540798SRV177busymouse24de_"
+From: Andreas Puhm <puhm@oregano.at>
+Subject: [PATCH] fpga: altera-cvp: Fix registration for CvP incapable devices
+Date: Tue, 23 Oct 2018 09:01:39 +0000
+Message-ID: <9b53d15391054a598ec3a32cee540798@SRV177.busymouse24.de>
+Content-Language: de-DE
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9b53d15391054a598ec3a32cee540798@SRV177.busymouse24.de>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Andreas Puhm <puhm@oregano.at>
-Cc: "mdf@kernel.org" <mdf@kernel.org>, "atull@kernel.org" <atull@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "mdf@kernel.org" <mdf@kernel.org>
+Cc: "atull@kernel.org" <atull@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Andreas,
+--_000_9b53d15391054a598ec3a32cee540798SRV177busymouse24de_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-we're getting there :) It seems your mail setup is still a bit
-funky though. Did you use git send-email / git format-patch?
+From bfc602900b016f65bc2f183aa93702101a1fdc17 Mon Sep 17 00:00:00 2001
+From: Andreas Puhm <puhm@oregano.at>
+Date: Tue, 23 Oct 2018 10:24:10 +0200
+Subject: [PATCH] fpga: altera-cvp: Fix registration for CvP incapable devic=
+es
 
-On Tue, Oct 23, 2018 at 09:01:39AM +0000, Andreas Puhm wrote:
-> From bfc602900b016f65bc2f183aa93702101a1fdc17 Mon Sep 17 00:00:00 2001
-> From: Andreas Puhm <puhm@oregano.at>
-> Date: Tue, 23 Oct 2018 10:24:10 +0200
-> Subject: [PATCH] fpga: altera-cvp: Fix registration for CvP incapable devices
-> 
-> The probe function needs to verify the CvP enable bit in order to properly determine if FPGA Manager functionality can be safely enabled.
-> 
-> Fixes 34d1dc17ce978ae76e676d401b48fe9d004aa948 ("fpga manager: Add Altera CvP driver")
+The probe function needs to verify the CvP enable bit in order to properly =
+determine if FPGA Manager functionality can be safely enabled.
 
-According to [1] this should be the first 12 characters of the SHA-1.
-> 
-> Signed-off-by: Andreas Puhm <puhm@oregano.at>
-> ---
->  drivers/fpga/altera-cvp.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-> index 7fa793672a7a..ece344a56075 100644
-> --- a/drivers/fpga/altera-cvp.c
-> +++ b/drivers/fpga/altera-cvp.c
-> @@ -403,6 +403,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
->  	struct altera_cvp_conf *conf;
->  	struct fpga_manager *mgr;
->  	u16 cmd, val;
-> +	u32 regval;
->  	int ret;
->  
->  	/*
-> @@ -416,6 +417,14 @@ static int altera_cvp_probe(struct pci_dev *pdev,
->  		return -ENODEV;
->  	}
->  
-> +	pci_read_config_dword(pdev, VSE_CVP_STATUS, &regval);
-> +	if (!(regval & VSE_CVP_STATUS_CVP_EN)) {
-> +		dev_err(&pdev->dev,
-> +			"CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
-> +			regval);
-> +		return -ENODEV;
-> +	}
-> +
->  	conf = devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
->  	if (!conf)
->  		return -ENOMEM;
-> -- 
-> 2.18.0.windows.1
-> 
+Fixes 34d1dc17ce978ae76e676d401b48fe9d004aa948 ("fpga manager: Add Altera C=
+vP driver")
 
-It looks like you used Windows / Outlook or something. Please don't send 
-patches as attachment.
+Signed-off-by: Andreas Puhm <puhm@oregano.at>
+---
+ drivers/fpga/altera-cvp.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-There's tutorials out there to set up git send-email with GMail for
-example, if your current provider makes using git send-email hard.
+diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+index 7fa793672a7a..ece344a56075 100644
+--- a/drivers/fpga/altera-cvp.c
++++ b/drivers/fpga/altera-cvp.c
+@@ -403,6 +403,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	struct altera_cvp_conf *conf;
+ 	struct fpga_manager *mgr;
+ 	u16 cmd, val;
++	u32 regval;
+ 	int ret;
+=20
+ 	/*
+@@ -416,6 +417,14 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 		return -ENODEV;
+ 	}
+=20
++	pci_read_config_dword(pdev, VSE_CVP_STATUS, &regval);
++	if (!(regval & VSE_CVP_STATUS_CVP_EN)) {
++		dev_err(&pdev->dev,
++			"CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
++			regval);
++		return -ENODEV;
++	}
++
+ 	conf =3D devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
+ 	if (!conf)
+ 		return -ENOMEM;
+--=20
+2.18.0.windows.1
 
-[1] https://www.kernel.org/doc/html/v4.19/process/submitting-patches.html
 
-Thanks,
-Moritz
+--_000_9b53d15391054a598ec3a32cee540798SRV177busymouse24de_
+Content-Disposition: attachment; filename="winmail.dat"
+Content-Transfer-Encoding: base64
+Content-Type: application/ms-tnef; name="winmail.dat"
+
+eJ8+IqM6AQaQCAAEAAAAAAABAAEAAQeQBgAIAAAA5AQAAAAAAADoAAEJgAEAIQAAADQyODZFRTBG
+QkI5M0IzNDY4NDk3RDRBMkQ2MDM3OUFBADkHAQ2ABAACAAAAAgACAAEFgAMADgAAAOIHCgAXAAkA
+AQAnAAIAPQEBIIADAA4AAADiBwoAFwAJAAEAJwACAD0BAQiABwAYAAAASVBNLk1pY3Jvc29mdCBN
+YWlsLk5vdGUAMQgBBIABAEUAAABbUEFUQ0hdIGZwZ2E6IGFsdGVyYS1jdnA6IEZpeCByZWdpc3Ry
+YXRpb24gZm9yIEN2UCBpbmNhcGFibGUgZGV2aWNlcwA9GAELgAEAIQAAADQyODZFRTBGQkI5M0Iz
+NDY4NDk3RDRBMkQ2MDM3OUFBADkHAQOQBgB4EgAAPQAAAAIBfwABAAAAOQAAADw5YjUzZDE1Mzkx
+MDU0YTU5OGVjM2EzMmNlZTU0MDc5OEBTUlYxNzcuYnVzeW1vdXNlMjQuZGU+AAAAAAsAHw4AAAAA
+AgEJEAEAAAC7BAAAtwQAAJEHAABMWkZ1AsVXDWEACmZiaWQEAABjY8BwZzEyNTIA/gND8HRleHQB
+9wKkA+MCAARjaArAc2V0MCDvB20CgwBQEU0yCoAGtAKAln0KgAjIOwliMTkOwL8JwxZyCjIWcQKA
+FWIqCbBzCfAEkGF0BbIOUANgc6JvAYAgRXgRwW4YMF0GUnYEkBe2AhByAMB0fQhQbhoxECAFwAWg
+G2RkmiADUiAQIheyXHYIkOR3awuAZDUdUwTwB0ANF3AwCnEX8mJrbWsGcwGQACAgQk1fQuBFR0lO
+fQr8AfEL8RQgRhySYhGwNjAyAjkeoGIwMTZmNhA1YmMyAEA4M2EwYTkzNyIwHpAxYeIxBXBjMTcF
+0AIgBlGscCAkUR6gOiUzIAHQaSKQXGwLgGUKgCGiOiwgQR3ACXBhBCBQdVJoHLA8cCdhQAWwZVJn
+AHBvLhiAPiYFRFUYgGUmsFQKUCwlsDP4IE9jBUAB0CMwJPAlQMgyNDoekCArIjAeoKEmBVN1YmoF
+kHQmsIBbUEFUQ0hdHHAdDnBhJrAHQBuhYS1jhHZwJrBGaXggKBE1BAB0GHFpJJEa4SBD+HZQIAuA
+HlAKsAJgGeA7AQAdYGMHkCYFJgVUaJUZ4HADYGIZ4GZ1L7DfLtMYUAmABCAYkCAaMQaQ/nkcwDGh
+L2IJ8C/zDcAFQL0LgCAFsASBMxIx0XAEkG5sM6ABABuhbSYhL5BmsSGQUEdBBdAAcGEYMP8FwDI2
+B0A0wDOgHlADoDIBMHNhZmU2ETREZC7nMLwuEQeRMzQWYCQyMIAAOTc4YWU3NmUSNjxQZDQikGI0
+OGU5UDkJkDA0I2E9ACB0KCIs8iADgTeSJrFkXRxgQS1jL1Mm8GkaMSIiKTC8U2lnGFBkLeEZMGYt
+YnkmvyfPJiNOLUSAJgU/1XMvLPIvgS1YLmMgfCA5KxB7RxZEtjEccAMQGeAZlGQ/KbBG8AuAEgAA
+IC7hcyjuK0BdDeABICBEgC5wBUD3ReBFP0ZHYku/RjcmBR2xwRAwIDdmYTcjgDyAojJQAGEuLgWQ
+ZTtgJT2ANSIgNzUqgTA271EARBhLn05vCkcRTV9TrxgKQEBLMDzAMyw2/ysQV2IkYFchH2Eu0Eaw
+C4CrS4EtY18twV8x0ygukUJ1KhFwY2lfMEEg9CpwMEEsRLZaJVkZG+G9NvAqXRIWIFuMLPJfPmVt
+WwBtCcBdt3UioBvQbQ1I8XYHQF22K3UzMn8uQmDpWMMJcB0ARLZEti8fGBBWySKgV5MkUCwxNH9Y
+L1k/Wk9bWGMRCHADoC3ARU5PREVWY0ggQO1jbCtoYkJhZF0DQVBokAp3NSEoWyMgVlNFgF9DVlBf
+U1QskNRVUymwJmHkKWEXNuH4KCEoYeRvAG4NbkNqQLwpKQMwAABUZTBBXwSQSHIoJlsiLT5bOSv+
+Im5RL5AEIA3hOcMvEzPAf3UyMFNCEG5YB/AoICUgeMAleFxcbiJ0V28uX2nPVHRrN0eXXRM9MDJt
+2F9regdACQBjc6o5IKhpemUZMChdYykpsAJHNxBfS0VSTkV+TG+HNtJwUH8TaU9qUE2cRU1dtlJx
+JgUyLiMw2C4wLgPwHcBvHjCD8AcwvBVChgAAHwBCAAEAAAAaAAAAQQBuAGQAcgBlAGEAcwAgAFAA
+dQBoAG0AAAAAAB8AZQABAAAAIAAAAHAAdQBoAG0AQABvAHIAZQBnAGEAbgBvAC4AYQB0AAAAHwBk
+AAEAAAAKAAAAUwBNAFQAUAAAAAAAAgFBAAEAAABcAAAAAAAAAIErH6S+oxAZnW4A3QEPVAIAAACA
+QQBuAGQAcgBlAGEAcwAgAFAAdQBoAG0AAABTAE0AVABQAAAAcAB1AGgAbQBAAG8AcgBlAGcAYQBu
+AG8ALgBhAHQAAAAfAAJdAQAAACAAAABwAHUAaABtAEAAbwByAGUAZwBhAG4AbwAuAGEAdAAAAB8A
+5V8BAAAABAAAACAAAAACAU4OAQAAABwAAAABBQAAAAAABRUAAADct6WQFfhjIci/KytuJQAAHwAa
+DAEAAAAaAAAAQQBuAGQAcgBlAGEAcwAgAFAAdQBoAG0AAAAAAB8AHwwBAAAAIAAAAHAAdQBoAG0A
+QABvAHIAZQBnAGEAbgBvAC4AYQB0AAAAHwAeDAEAAAAKAAAAUwBNAFQAUAAAAAAAAgEZDAEAAABc
+AAAAAAAAAIErH6S+oxAZnW4A3QEPVAIAAACAQQBuAGQAcgBlAGEAcwAgAFAAdQBoAG0AAABTAE0A
+VABQAAAAcAB1AGgAbQBAAG8AcgBlAGcAYQBuAG8ALgBhAHQAAAAfAAFdAQAAACAAAABwAHUAaABt
+AEAAbwByAGUAZwBhAG4AbwAuAGEAdAAAAAIBTQ4BAAAAHAAAAAEFAAAAAAAFFQAAANy3pZAV+GMh
+yL8rK24lAAALAEA6AQAAAB8AGgABAAAAEgAAAEkAUABNAC4ATgBvAHQAZQAAAAAAAwDxPwcEAAAL
+AEA6AQAAAAMA/T/kBAAAAgELMAEAAAAQAAAAQobuD7uTs0aEl9Si1gN5qgMAFwABAAAAQAA5AICb
+PQKvatQBQAAIMKzuugKvatQBCwApAAAAAAAfAACAhgMCAAAAAADAAAAAAAAARgEAAAAeAAAAYQBj
+AGMAZQBwAHQAbABhAG4AZwB1AGEAZwBlAAAAAAABAAAAKAAAAGQAZQAtAEEAVAAsACAAZABlAC0A
+RABFACwAIABlAG4ALQBVAFMAAAAfAPo/AQAAABoAAABBAG4AZAByAGUAYQBzACAAUAB1AGgAbQAA
+AAAAHwA3AAEAAACKAAAAWwBQAEEAVABDAEgAXQAgAGYAcABnAGEAOgAgAGEAbAB0AGUAcgBhAC0A
+YwB2AHAAOgAgAEYAaQB4ACAAcgBlAGcAaQBzAHQAcgBhAHQAaQBvAG4AIABmAG8AcgAgAEMAdgBQ
+ACAAaQBuAGMAYQBwAGEAYgBsAGUAIABkAGUAdgBpAGMAZQBzAAAAAAAfAD0AAQAAAAIAAAAAAAAA
+AwA2AAAAAAAfANk/AQAAAAACAABGAHIAbwBtACAAYgBmAGMANgAwADIAOQAwADAAYgAwADEANgBm
+ADYANQBiAGMAMgBmADEAOAAzAGEAYQA5ADMANwAwADIAMQAwADEAYQAxAGYAZABjADEANwAgAE0A
+bwBuACAAUwBlAHAAIAAxADcAIAAwADAAOgAwADAAOgAwADAAIAAyADAAMAAxAA0ACgBGAHIAbwBt
+ADoAIABBAG4AZAByAGUAYQBzACAAUAB1AGgAbQAgADwAcAB1AGgAbQBAAG8AcgBlAGcAYQBuAG8A
+LgBhAHQAPgANAAoARABhAHQAZQA6ACAAVAB1AGUALAAgADIAMwAgAE8AYwB0ACAAMgAwADEAOAAg
+ADEAMAA6ADIANAA6ADEAMAAgACsAMAAyADAAMAANAAoAUwB1AGIAagBlAGMAdAA6ACAAWwBQAEEA
+VABDAEgAXQAgAGYAcABnAGEAOgAgAGEAbAB0AGUAcgBhAC0AYwB2AHAAOgAgAEYAaQB4ACAAcgBl
+AGcAaQBzAHQAcgBhAHQAaQBvAG4AIABmAG8AcgAgAEMAdgBQACAAaQBuAGMAYQBwAGEAYgBsAGUA
+IABkAGUAdgBpAGMAZQBzAA0ACgANAAoAVABoAGUAIABwAHIAbwBiAGUAIABmAHUAbgBjAHQAaQBv
+AG4AIABuAGUAZQBkAHMAIAAAAAIBcQABAAAAFgAAAAHUaq8B0nMzTHs9Y0Djn1U/KSqRHTEAAB8A
+cAABAAAAigAAAFsAUABBAFQAQwBIAF0AIABmAHAAZwBhADoAIABhAGwAdABlAHIAYQAtAGMAdgBw
+ADoAIABGAGkAeAAgAHIAZQBnAGkAcwB0AHIAYQB0AGkAbwBuACAAZgBvAHIAIABDAHYAUAAgAGkA
+bgBjAGEAcABhAGIAbABlACAAZABlAHYAaQBjAGUAcwAAAAAAHwA1EAEAAAByAAAAPAA5AGIANQAz
+AGQAMQA1ADMAOQAxADAANQA0AGEANQA5ADgAZQBjADMAYQAzADIAYwBlAGUANQA0ADAANwA5ADgA
+QABTAFIAVgAxADcANwAuAGIAdQBzAHkAbQBvAHUAcwBlADIANAAuAGQAZQA+AAAAAAADAN4/n04A
+AEAABzDborMCr2rUAQIBCwABAAAAEAAAAEKG7g+7k7NGhJfUotYDeaoDACYAAAAAAAsABgwAAAAA
+AgEQMAEAAABGAAAAAAAAAMDNQ233xCNIhZ3/GaX4GUQHAPsFtXvN0LVAnwSTCJqiHOQAAAAAAQsA
+APsFtXvN0LVAnwSTCJqiHOQAAAAA2V8AAAAAAgETMAEAAAAQAAAAczNMez1jQOOfVT8pKpEdMR8A
++D8BAAAAGgAAAEEAbgBkAHIAZQBhAHMAIABQAHUAaABtAAAAAAAfACJAAQAAAAYAAABFAFgAAAAA
+AB8AI0ABAAAA/AAAAC8ATwA9AEIAVQBTAFkATQBPAFUAUwBFADIANAAvAE8AVQA9AEUAWABDAEgA
+QQBOAEcARQAgAEEARABNAEkATgBJAFMAVABSAEEAVABJAFYARQAgAEcAUgBPAFUAUAAgACgARgBZ
+AEQASQBCAE8ASABGADIAMwBTAFAARABMAFQAKQAvAEMATgA9AFIARQBDAEkAUABJAEUATgBUAFMA
+LwBDAE4APQBEAEYAOAA3ADkAMgA1AEQARAA5ADMANAA0ADMAMQAyADgARgA3AEMAQwA4ADIAOAAw
+ADkARAA0ADEARgA4ADQALQBQAFUASABNADAAMAAwADAAMAAAAB8AJEABAAAABgAAAEUAWAAAAAAA
+HwAlQAEAAAD8AAAALwBPAD0AQgBVAFMAWQBNAE8AVQBTAEUAMgA0AC8ATwBVAD0ARQBYAEMASABB
+AE4ARwBFACAAQQBEAE0ASQBOAEkAUwBUAFIAQQBUAEkAVgBFACAARwBSAE8AVQBQACAAKABGAFkA
+RABJAEIATwBIAEYAMgAzAFMAUABEAEwAVAApAC8AQwBOAD0AUgBFAEMASQBQAEkARQBOAFQAUwAv
+AEMATgA9AEQARgA4ADcAOQAyADUARABEADkAMwA0ADQAMwAxADIAOABGADcAQwBDADgAMgA4ADAA
+OQBEADQAMQBGADgANAAtAFAAVQBIAE0AMAAwADAAMAAwAAAAHwAwQAEAAAAaAAAAQQBuAGQAcgBl
+AGEAcwAgAFAAdQBoAG0AAAAAAB8AMUABAAAAGgAAAEEAbgBkAHIAZQBhAHMAIABQAHUAaABtAAAA
+AAAfADhAAQAAABoAAABBAG4AZAByAGUAYQBzACAAUAB1AGgAbQAAAAAAHwA5QAEAAAAaAAAAQQBu
+AGQAcgBlAGEAcwAgAFAAdQBoAG0AAAAAAAMAWUAAAAAAAwBaQAAAAAADAAlZAQAAAAsAAIAIIAYA
+AAAAAMAAAAAAAABGAAAAAIKFAAAAAAAAQAAAgAggBgAAAAAAwAAAAAAAAEYAAAAAv4UAAMDL0gGv
+atQBAwANNP0/AAAfAACAhgMCAAAAAADAAAAAAAAARgEAAAAgAAAAeAAtAG0AcwAtAGgAYQBzAC0A
+YQB0AHQAYQBjAGgAAAABAAAAAgAAAAAAAAAfAACAhgMCAAAAAADAAAAAAAAARgEAAABSAAAAeAAt
+AG0AcwAtAGUAeABjAGgAYQBuAGcAZQAtAHQAcgBhAG4AcwBwAG8AcgB0AC0AZgByAG8AbQBlAG4A
+dABpAHQAeQBoAGUAYQBkAGUAcgAAAAAAAQAAAA4AAABIAG8AcwB0AGUAZAAAAAAAHwAAgIYDAgAA
+AAAAwAAAAAAAAEYBAAAAIgAAAHgALQBvAHIAaQBnAGkAbgBhAHQAaQBuAGcALQBpAHAAAAAAAAEA
+AAAiAAAAWwA4ADMALgAyADQANgAuADEAMAA3AC4AMQAzADUAXQAAAAAAHwAAgIYDAgAAAAAAwAAA
+AAAAAEYBAAAALAAAAHgALQBlAHgAYwBsAGEAaQBtAGUAcgAtAG0AZAAtAGMAbwBuAGYAaQBnAAAA
+AQAAAEoAAAAxADgAMAAyAGYAMwBmAGUALQBiAGMAOQA0AC0ANAAzADAAMQAtADkAZABjADIALQBk
+ADUAOQBhADcANABlADYAZABlADMAYQAAAAAA148=
+
+--_000_9b53d15391054a598ec3a32cee540798SRV177busymouse24de_--
