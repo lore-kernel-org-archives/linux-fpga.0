@@ -1,41 +1,74 @@
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v4 08/18] of: overlay: reorder fields in struct fragment
-Date: Mon, 15 Oct 2018 19:37:28 -0700
-Message-Id: <1539657458-24401-9-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=5rKg=NE=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=5rKg=NE=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-by2nam03on0079.outbound.protection.outlook.com ([104.47.42.79]:6416
+        "EHLO NAM03-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726279AbeJXPMB (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 24 Oct 2018 11:12:01 -0400
+From: Nava kishore Manne <navam@xilinx.com>
+Subject: RE: [PATCH 2/3] dt-bindings: fpga: Add bindings for ZynqMP fpga
+ driver
+Date: Wed, 24 Oct 2018 06:45:11 +0000
+Message-ID: <BYAPR02MB47101F176968C213EA05B5D5C2F60@BYAPR02MB4710.namprd02.prod.outlook.com>
+References: <20181020084805.29103-1-nava.manne@xilinx.com>
+ <20181020084805.29103-3-nava.manne@xilinx.com>
+ <CANk1AXQ_AFGX9_80YM7-GYncfZ8pOhaYdSb=O-ZpYCWuHx71vA@mail.gmail.com>
+In-Reply-To: <CANk1AXQ_AFGX9_80YM7-GYncfZ8pOhaYdSb=O-ZpYCWuHx71vA@mail.gmail.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michal Simek <michals@xilinx.com>, Rajan Vaja <RAJANV@xilinx.com>, Jolly Shah <JOLLYS@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, kishore m <chinnikishore369@gmail.com>
 
-From: Frank Rowand <frank.rowand@sony.com>
-
-Order the fields of struct fragment in the same order as
-struct of_overlay_notify_data.  The order in struct fragment is
-not significant.  If both structs are ordered the same then when
-examining the data in a debugger or dump the human involved does
-not have to remember which context they are examining.
-
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/overlay.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 7fcf4a812d06..272a0d1a5e18 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -49,8 +49,8 @@ struct target {
-  * @overlay:	pointer to the __overlay__ node
-  */
- struct fragment {
--	struct device_node *target;
- 	struct device_node *overlay;
-+	struct device_node *target;
- };
- 
- /**
--- 
-Frank Rowand <frank.rowand@sony.com>
+SGkgQWxhbiwNCg0KVGhhbmtzIGZvciB0aGUgcXVpY2sgcmVzcG9uc2UuLg0KUGxlYXNlIGZpbmQg
+bXkgcmVzcG9uc2UgaW5saW5lLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
+b206IEFsYW4gVHVsbCBbbWFpbHRvOmF0dWxsQGtlcm5lbC5vcmddDQo+IFNlbnQ6IE1vbmRheSwg
+T2N0b2JlciAyMiwgMjAxOCAxMToxMiBQTQ0KPiBUbzogTmF2YSBraXNob3JlIE1hbm5lIDxuYXZh
+bUB4aWxpbnguY29tPg0KPiBDYzogTW9yaXR6IEZpc2NoZXIgPG1kZkBrZXJuZWwub3JnPjsgUm9i
+IEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47DQo+IE1hcmsgUnV0bGFuZCA8bWFyay5ydXRs
+YW5kQGFybS5jb20+OyBNaWNoYWwgU2ltZWsgPG1pY2hhbHNAeGlsaW54LmNvbT47DQo+IFJhamFu
+IFZhamEgPFJBSkFOVkB4aWxpbnguY29tPjsgSm9sbHkgU2hhaCA8Sk9MTFlTQHhpbGlueC5jb20+
+OyBsaW51eC0NCj4gZnBnYUB2Z2VyLmtlcm5lbC5vcmc7IG9wZW4gbGlzdDpPUEVOIEZJUk1XQVJF
+IEFORCBGTEFUVEVORUQgREVWSUNFDQo+IFRSRUUgQklORElOR1MgPGRldmljZXRyZWVAdmdlci5r
+ZXJuZWwub3JnPjsgbW9kZXJhdGVkDQo+IGxpc3Q6QVJNL0ZSRUVTQ0FMRSBJTVggLyBNWEMgQVJN
+IEFSQ0hJVEVDVFVSRSA8bGludXgtYXJtLQ0KPiBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZz47
+IGxpbnV4LWtlcm5lbCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47DQo+IGtpc2hvcmUg
+bSA8Y2hpbm5pa2lzaG9yZTM2OUBnbWFpbC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8z
+XSBkdC1iaW5kaW5nczogZnBnYTogQWRkIGJpbmRpbmdzIGZvciBaeW5xTVAgZnBnYQ0KPiBkcml2
+ZXINCj4gDQo+IE9uIEZyaSwgT2N0IDE5LCAyMDE4IGF0IDM6NDkgQU0gTmF2YSBraXNob3JlIE1h
+bm5lDQo+IDxuYXZhLm1hbm5lQHhpbGlueC5jb20+IHdyb3RlOg0KPiANCj4gSGkgTmF2YSwNCj4g
+DQo+IEp1c3Qgc29tZSBuaXRzLCBiZWxvdy4NCj4gDQo+ID4NCj4gPiBBZGQgZG9jdW1lbnRhdGlv
+biB0byBkZXNjcmliZSBYaWxpbnggWnlucU1QIGZwZ2EgZHJpdmVyIGJpbmRpbmdzLg0KPiA+DQo+
+ID4gU2lnbmVkLW9mZi1ieTogTmF2YSBraXNob3JlIE1hbm5lIDxuYXZhLm1hbm5lQHhpbGlueC5j
+b20+DQo+ID4gLS0tDQo+ID4gQ2hhbmdlcyBmb3IgdjE6DQo+ID4gICAgICAgICAgICAgICAgIENy
+ZWF0ZWQgYSBTZXBlcmF0ZShOZXcpIERUIGJpbmRpbmcgZmlsZSBhcw0KPiA+ICAgICAgICAgICAg
+ICAgICBzdWdnZXN0ZWQgYnkgUm9iLg0KPiA+DQo+ID4gQ2hhbmdlcyBmb3IgUkZDLVYyOg0KPiA+
+ICAgICAgICAgICAgICAgICAtTW92ZWQgcGNhcCBub2RlIGFzIGEgY2hpbGQgdG8gZmlyd21hcmUN
+Cj4gPiAgICAgICAgICAgICAgICAgIG5vZGUgYXMgc3VnZ2VzdGVkIGJ5IFJvYi4NCj4gPg0KPiA+
+ICAuLi4vYmluZGluZ3MvZnBnYS94bG54LHp5bnFtcC1wY2FwLWZwZ2EudHh0ICAgICB8IDE3ICsr
+KysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxNyBpbnNlcnRpb25zKCspDQo+
+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NA0KPiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
+aW5ncy9mcGdhL3hsbngsenlucW1wLXBjYXAtZnBnYS50eHQNCj4gPg0KPiA+IGRpZmYgLS1naXQN
+Cj4gPiBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9mcGdhL3hsbngsenlucW1w
+LXBjYXAtZnBnYS50eHQNCj4gPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9m
+cGdhL3hsbngsenlucW1wLXBjYXAtZnBnYS50eHQNCj4gPiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0K
+PiA+IGluZGV4IDAwMDAwMDAwMDAwMC4uMjQ4ZmYwZWU2MGE4DQo+ID4gLS0tIC9kZXYvbnVsbA0K
+PiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9mcGdhL3hsbngsenlu
+cW1wLXBjYXAtZnBnYS50eHQNCj4gPiBAQCAtMCwwICsxLDE3IEBADQo+ID4gKy0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LQ0KPiA+ICstLS0tLQ0KPiANCj4gUGxlYXNlIGdldCByaWQgb2YgYWxsIHRoZXNlICctLS0tJyBz
+ZXBhcmF0b3JzIChpbiA0IHBsYWNlcykuDQo+IA0KV2lsbCBmaXggaW4gdGhlIG5leHQgdmVyc2lv
+bi4NCg0KPiA+ICtEZXZpY2UgVHJlZSB6eW5xbXAtZnBnYSBiaW5kaW5ncyBmb3IgdGhlIFp5bnEg
+VWx0cmFzY2FsZSsgTVBTb0MNCj4gPiArY29udHJvbGxlZCB1c2luZyBaeW5xTVAgU29DIGZpcm13
+YXJlIGludGVyZmFjZQ0KPiA+ICstLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiArLS0tLS0gRm9yIEJpdHN0cmVh
+bSBjb25maWd1cmF0aW9uIG9uIFp5bnFNcCBTb2MgdXNlcyBwcm9jZXNzb3INCj4gPiArY29uZmln
+dXJhdGlvbg0KPiA+ICtwb3J0KFBDQVApIHRvIGNvbmZpZ3VyZSB0aGUgcHJvZ3JhbW1hYmxlIGxv
+Z2ljKFBMKSB0aHJvdWdoIFBTIGJ5DQo+ID4gK3VzaW5nIEZXIGludGVyZmFjZS4NCj4gPiArDQo+
+ID4gK1JlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gKy0gY29tcGF0aWJsZTogc2hvdWxkIGNvbnRh
+aW4gInhsbngsenlucW1wLXBjYXAtZnBnYSINCj4gPiArDQo+ID4gKy0tLS0tLS0NCj4gPiArRXhh
+bXBsZQ0KPiANCj4gTml0OiBwbGVhc2UgYWRkIGEgY29sb24gc28gJ0V4YW1wbGU6Jw0KV2lsbCBm
+aXggaW4gdGhlIG5leHQgdmVyc2lvbg0KDQpSZWdhcmRzLA0KTmF2YWtpc2hvcmUuDQo=
