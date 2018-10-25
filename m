@@ -1,75 +1,53 @@
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH 10/16] of: overlay: make all pr_debug() and pr_err() messages unique
-Date: Thu,  4 Oct 2018 21:12:41 -0700
-Message-Id: <1538712767-30394-11-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=iGBL=NE=xilinx.com=navam@kernel.org>
+Return-Path: <SRS0=iGBL=NE=xilinx.com=navam@kernel.org>
+From: Nava kishore Manne <nava.manne@xilinx.com>
+Subject: [PATCH v2 2/3] dt-bindings: fpga: Add bindings for ZynqMP fpga driver
+Date: Thu, 25 Oct 2018 13:02:05 +0530
+Message-ID: <20181025073206.9264-3-nava.manne@xilinx.com>
+In-Reply-To: <20181025073206.9264-1-nava.manne@xilinx.com>
+References: <20181025073206.9264-1-nava.manne@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Add documentation to describe Xilinx ZynqMP fpga driver
+bindings.
 
-Make overlay.c debug and error messages unique so that they can be
-unambiguously found by grep.
-
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
 ---
- drivers/of/overlay.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+Changes for v2:
+		-Removed "----" separators.
+Changes for v1:
+                -Created a Seperate(New) DT binding file as
+                 suggested by Rob.
 
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index e6fb3ffe9d93..f89383331b88 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -513,7 +513,7 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
- 	for_each_property_of_node(overlay_symbols_node, prop) {
- 		ret = add_changeset_property(ovcs, target, prop, 1);
- 		if (ret) {
--			pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
-+			pr_debug("Failed to apply symbols prop @%pOF/%s, err=%d\n",
- 				 target->np, prop->name, ret);
- 			return ret;
- 		}
-@@ -557,7 +557,8 @@ static int build_changeset(struct overlay_changeset *ovcs)
- 		ret = build_changeset_next_level(ovcs, &target,
- 						 fragment->overlay);
- 		if (ret) {
--			pr_debug("apply failed '%pOF'\n", fragment->target);
-+			pr_debug("fragment apply failed '%pOF'\n",
-+				 fragment->target);
- 			return ret;
- 		}
- 	}
-@@ -570,7 +571,8 @@ static int build_changeset(struct overlay_changeset *ovcs)
- 		ret = build_changeset_symbols_node(ovcs, &target,
- 						   fragment->overlay);
- 		if (ret) {
--			pr_debug("apply failed '%pOF'\n", fragment->target);
-+			pr_debug("symbols fragment apply failed '%pOF'\n",
-+				 fragment->target);
- 			return ret;
- 		}
- 	}
-@@ -879,7 +881,7 @@ static int of_overlay_apply(const void *fdt, struct device_node *tree,
- 
- 	ret = __of_changeset_apply_notify(&ovcs->cset);
- 	if (ret)
--		pr_err("overlay changeset entry notify error %d\n", ret);
-+		pr_err("overlay apply changeset entry notify error %d\n", ret);
- 	/* notify failure is not fatal, continue */
- 
- 	list_add_tail(&ovcs->ovcs_list, &ovcs_list);
-@@ -1138,7 +1140,7 @@ int of_overlay_remove(int *ovcs_id)
- 
- 	ret = __of_changeset_revert_notify(&ovcs->cset);
- 	if (ret)
--		pr_err("overlay changeset entry notify error %d\n", ret);
-+		pr_err("overlay remove changeset entry notify error %d\n", ret);
- 	/* notify failure is not fatal, continue */
- 
- 	*ovcs_id = 0;
+Changes for RFC-V2:
+                -Moved pcap node as a child to firwmare
+                 node as suggested by Rob.
+
+ .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt         | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+
+diff --git a/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+new file mode 100644
+index 000000000000..1f6f58872311
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+@@ -0,0 +1,13 @@
++Device Tree zynqmp-fpga bindings for the Zynq Ultrascale+ MPSoC controlled
++using ZynqMP SoC firmware interface
++For Bitstream configuration on ZynqMp Soc uses processor configuration
++port(PCAP) to configure the programmable logic(PL) through PS by using
++FW interface.
++
++Required properties:
++- compatible: should contain "xlnx,zynqmp-pcap-fpga"
++
++Example:
++	zynqmp_pcap: pcap {
++		compatible = "xlnx,zynqmp-pcap-fpga";
++	};
 -- 
-Frank Rowand <frank.rowand@sony.com>
+2.18.0
