@@ -1,144 +1,39 @@
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=JvJ4=M4=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v4 07/18] of: dynamic: change type of of_{at,de}tach_node() to void
-Date: Mon, 15 Oct 2018 19:37:27 -0700
-Message-Id: <1539657458-24401-8-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=5rKg=NE=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=5rKg=NE=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-eopbgr700053.outbound.protection.outlook.com ([40.107.70.53]:50544
+        "EHLO NAM04-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1729296AbeJXQBX (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:01:23 -0400
+From: Nava kishore Manne <nava.manne@xilinx.com>
+Subject: [PATCH v2 0/3] Add Bitstream configuration support for ZynqMP
+Date: Thu, 25 Oct 2018 13:02:03 +0530
+Message-ID: <20181025073206.9264-1-nava.manne@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
 
-From: Frank Rowand <frank.rowand@sony.com>
+This series of patches are created On top of the
+below repo.
+//git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git
+BRANCH: next/drivers. 
 
-of_attach_node() and of_detach_node() always return zero, so
-their return value is meaningless.  Change their type to void
-and fix all callers to ignore return value.
+Nava kishore Manne (3):
+  firmware: xilinx: Add fpga API's
+  dt-bindings: fpga: Add bindings for ZynqMP fpga driver
+  fpga manager: Adding FPGA Manager support for Xilinx zynqmp
 
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- arch/powerpc/platforms/pseries/dlpar.c    | 13 ++-----------
- arch/powerpc/platforms/pseries/reconfig.c |  6 +-----
- drivers/of/dynamic.c                      |  9 ++-------
- include/linux/of.h                        |  4 ++--
- 4 files changed, 7 insertions(+), 25 deletions(-)
+ .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt   |  13 ++
+ drivers/firmware/xilinx/zynqmp.c              |  46 +++++
+ drivers/fpga/Kconfig                          |   9 +
+ drivers/fpga/Makefile                         |   1 +
+ drivers/fpga/zynqmp-fpga.c                    | 165 ++++++++++++++++++
+ include/linux/firmware/xlnx-zynqmp.h          |  12 ++
+ 6 files changed, 246 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+ create mode 100644 drivers/fpga/zynqmp-fpga.c
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index e3010b14aea5..0027eea94a8b 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -244,15 +244,9 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
- 
- int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
- {
--	int rc;
--
- 	dn->parent = parent;
- 
--	rc = of_attach_node(dn);
--	if (rc) {
--		printk(KERN_ERR "Failed to add device node %pOF\n", dn);
--		return rc;
--	}
-+	of_attach_node(dn);
- 
- 	return 0;
- }
-@@ -260,7 +254,6 @@ int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
- int dlpar_detach_node(struct device_node *dn)
- {
- 	struct device_node *child;
--	int rc;
- 
- 	child = of_get_next_child(dn, NULL);
- 	while (child) {
-@@ -268,9 +261,7 @@ int dlpar_detach_node(struct device_node *dn)
- 		child = of_get_next_child(dn, child);
- 	}
- 
--	rc = of_detach_node(dn);
--	if (rc)
--		return rc;
-+	of_detach_node(dn);
- 
- 	of_node_put(dn);
- 
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 0e0208117e77..0b72098da454 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -47,11 +47,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
- 		goto out_err;
- 	}
- 
--	err = of_attach_node(np);
--	if (err) {
--		printk(KERN_ERR "Failed to add device node %s\n", path);
--		goto out_err;
--	}
-+	of_attach_node(np);
- 
- 	of_node_put(np->parent);
- 
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index fe8816cca99b..a94f727ec3da 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -224,7 +224,7 @@ static void __of_attach_node(struct device_node *np)
- /**
-  * of_attach_node() - Plug a device node into the tree and global list.
-  */
--int of_attach_node(struct device_node *np)
-+void of_attach_node(struct device_node *np)
- {
- 	struct of_reconfig_data rd;
- 	unsigned long flags;
-@@ -241,8 +241,6 @@ int of_attach_node(struct device_node *np)
- 	mutex_unlock(&of_mutex);
- 
- 	of_reconfig_notify(OF_RECONFIG_ATTACH_NODE, &rd);
--
--	return 0;
- }
- 
- void __of_detach_node(struct device_node *np)
-@@ -273,11 +271,10 @@ void __of_detach_node(struct device_node *np)
- /**
-  * of_detach_node() - "Unplug" a node from the device tree.
-  */
--int of_detach_node(struct device_node *np)
-+void of_detach_node(struct device_node *np)
- {
- 	struct of_reconfig_data rd;
- 	unsigned long flags;
--	int rc = 0;
- 
- 	memset(&rd, 0, sizeof(rd));
- 	rd.dn = np;
-@@ -291,8 +288,6 @@ int of_detach_node(struct device_node *np)
- 	mutex_unlock(&of_mutex);
- 
- 	of_reconfig_notify(OF_RECONFIG_DETACH_NODE, &rd);
--
--	return rc;
- }
- EXPORT_SYMBOL_GPL(of_detach_node);
- 
-diff --git a/include/linux/of.h b/include/linux/of.h
-index aa1dafaec6ae..72c593455019 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -406,8 +406,8 @@ extern int of_phandle_iterator_args(struct of_phandle_iterator *it,
- #define OF_RECONFIG_REMOVE_PROPERTY	0x0004
- #define OF_RECONFIG_UPDATE_PROPERTY	0x0005
- 
--extern int of_attach_node(struct device_node *);
--extern int of_detach_node(struct device_node *);
-+extern void of_attach_node(struct device_node *np);
-+extern void of_detach_node(struct device_node *np);
- 
- #define of_match_ptr(_ptr)	(_ptr)
- 
 -- 
-Frank Rowand <frank.rowand@sony.com>
+2.18.0
