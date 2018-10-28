@@ -1,56 +1,41 @@
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=I98M=MR=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH 14/16] of: unittest: remove unused of_unittest_apply_overlay() argument
-Date: Thu,  4 Oct 2018 21:12:45 -0700
-Message-Id: <1538712767-30394-15-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=SrHn=NI=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=SrHn=NI=ettus.com=moritz.fischer@kernel.org>
+Date: Sun, 28 Oct 2018 10:35:03 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH] fpga: altera_cvp: restrict registration to CvP enabled
+ devices
+Message-ID: <20181028173503.GA4358@archbook>
+References: <78c44ad0b2344a4490ffd300cf0df746@SRV177.busymouse24.de>
+ <20181023182649.047f1f93@crub>
+ <3773264cdfcb4c258cc7eebd213302dd@SRV177.busymouse24.de>
+ <20181024095135.GA1382@archbook>
+ <alpine.DEB.2.20.1810241545580.2819@mgerlach-VirtualBox>
+ <1540457043890.27497@oregano.at>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1540457043890.27497@oregano.at>
+To: Andreas Puhm <puhm@oregano.at>
+Cc: "matthew.gerlach@linux.intel.com" <matthew.gerlach@linux.intel.com>, Moritz Fischer <mdf@kernel.org>, Anatolij Gustschin <agust@denx.de>, Alan Tull <atull@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Hi Andreas,
 
-Argument unittest_nr is not used in of_unittest_apply_overlay(),
-remove it.
+On Thu, Oct 25, 2018 at 08:44:06AM +0000, Andreas Puhm wrote:
 
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/unittest.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+> >My experience with cvp is with Arria10 and Stratix 10.  The PCIe Hard IP
+> >gets configured when the IOring gets configured at power on.  The idea is
+> >that the load of the IOring is very fast, much before the infamous 100ms
+> >PCIe timeout for link training.  When the Hard IP is configured, the
+> >CVP_EN is set or cleared according to how it was configured.  Yes, you
+> 
+> So is it correct that the value of CVP_EN can be evaluated by the altera_cvp right in the first call of its probe function
+> (as would be the case with my proposed patch).
+> 
+> If it is, I will fix the remaining issues with the patch and submit it.
 
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index efd9c947f192..6d80f474c8f2 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -1419,8 +1419,7 @@ static void of_unittest_destroy_tracked_overlays(void)
- 	} while (defers > 0);
- }
- 
--static int __init of_unittest_apply_overlay(int overlay_nr, int unittest_nr,
--		int *overlay_id)
-+static int __init of_unittest_apply_overlay(int overlay_nr, int *overlay_id)
- {
- 	const char *overlay_name;
- 
-@@ -1453,7 +1452,7 @@ static int __init of_unittest_apply_overlay_check(int overlay_nr,
- 	}
- 
- 	ovcs_id = 0;
--	ret = of_unittest_apply_overlay(overlay_nr, unittest_nr, &ovcs_id);
-+	ret = of_unittest_apply_overlay(overlay_nr, &ovcs_id);
- 	if (ret != 0) {
- 		/* of_unittest_apply_overlay already called unittest() */
- 		return ret;
-@@ -1489,7 +1488,7 @@ static int __init of_unittest_apply_revert_overlay_check(int overlay_nr,
- 
- 	/* apply the overlay */
- 	ovcs_id = 0;
--	ret = of_unittest_apply_overlay(overlay_nr, unittest_nr, &ovcs_id);
-+	ret = of_unittest_apply_overlay(overlay_nr, &ovcs_id);
- 	if (ret != 0) {
- 		/* of_unittest_apply_overlay already called unittest() */
- 		return ret;
--- 
-Frank Rowand <frank.rowand@sony.com>
+Yes please, go ahead and fix up the remaining issues (+ send it using
+git send-email)
+
+Thanks,
+Moritz
