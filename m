@@ -1,39 +1,51 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 5/5] fpga: dfl-fme-region: Use platform_get_drvdata()
-Date: Wed, 12 Sep 2018 09:43:27 -0500
-Message-Id: <20180912144327.3130-6-atull@kernel.org>
-In-Reply-To: <20180912144327.3130-1-atull@kernel.org>
-References: <20180912144327.3130-1-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=bKZa=NJ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=bKZa=NJ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-out.m-online.net ([212.18.0.10]:33776 "EHLO
+        mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727629AbeJ3A5b (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 29 Oct 2018 20:57:31 -0400
+From: Anatolij Gustschin <agust@denx.de>
+Subject: [PATCH] fpga: altera-cvp: fix 'bad IO access' on x86_64
+Date: Mon, 29 Oct 2018 17:08:14 +0100
+Message-Id: <20181029160814.5530-1-agust@denx.de>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: linux-fpga@vger.kernel.org
+Cc: atull@kernel.org, mdf@kernel.org
 
-From: Moritz Fischer <mdf@kernel.org>
+If mapping the CvP BAR fails, we still can configure the FPGA via
+PCI config space access. In this case the iomap pointer is NULL.
+On x86_64, passing NULL address to pci_iounmap() generates
+"Bad IO access at port 0x0" output with stack call trace. Fix it.
 
-Use platform_get_drvdata() in remove() function of
-the platform driver rather than dev_get_drvdata()
-to match the platform_set_drvdata in the probe().
-
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
 ---
- drivers/fpga/dfl-fme-region.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/fpga/altera-cvp.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
-index 51a5ac2..3fa0de2 100644
---- a/drivers/fpga/dfl-fme-region.c
-+++ b/drivers/fpga/dfl-fme-region.c
-@@ -66,7 +66,7 @@ static int fme_region_probe(struct platform_device *pdev)
+diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+index 610a1558e0ed..144fa2a4d4cc 100644
+--- a/drivers/fpga/altera-cvp.c
++++ b/drivers/fpga/altera-cvp.c
+@@ -477,7 +477,8 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	return 0;
  
- static int fme_region_remove(struct platform_device *pdev)
- {
--	struct fpga_region *region = dev_get_drvdata(&pdev->dev);
-+	struct fpga_region *region = platform_get_drvdata(pdev);
- 	struct fpga_manager *mgr = region->mgr;
+ err_unmap:
+-	pci_iounmap(pdev, conf->map);
++	if (conf->map)
++		pci_iounmap(pdev, conf->map);
+ 	pci_release_region(pdev, CVP_BAR);
+ err_disable:
+ 	cmd &= ~PCI_COMMAND_MEMORY;
+@@ -493,7 +494,8 @@ static void altera_cvp_remove(struct pci_dev *pdev)
  
- 	fpga_region_unregister(region);
+ 	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
+ 	fpga_mgr_unregister(mgr);
+-	pci_iounmap(pdev, conf->map);
++	if (conf->map)
++		pci_iounmap(pdev, conf->map);
+ 	pci_release_region(pdev, CVP_BAR);
+ 	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
+ 	cmd &= ~PCI_COMMAND_MEMORY;
 -- 
-2.7.4
+2.17.1
