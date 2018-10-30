@@ -1,39 +1,30 @@
-Return-Path: <SRS0=5rKg=NE=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=5rKg=NE=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-eopbgr700053.outbound.protection.outlook.com ([40.107.70.53]:50544
-        "EHLO NAM04-SN1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1729296AbeJXQBX (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 24 Oct 2018 12:01:23 -0400
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v2 0/3] Add Bitstream configuration support for ZynqMP
-Date: Thu, 25 Oct 2018 13:02:03 +0530
-Message-ID: <20181025073206.9264-1-nava.manne@xilinx.com>
+Return-Path: <SRS0=41lj=NK=denx.de=agust@kernel.org>
+Return-Path: <SRS0=41lj=NK=denx.de=agust@kernel.org>
+Date: Tue, 30 Oct 2018 12:19:13 +0100
+From: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH] fpga: xilinx-spi: Use unique FPGA manager names
+Message-ID: <20181030121913.3f5f8458@crub>
+In-Reply-To: <20181029164857.GA2453@archbook>
+References: <20181029144222.26927-1-agust@denx.de>
+	<20181029164857.GA2453@archbook>
 MIME-Version: 1.0
-Content-Type: text/plain
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+To: Moritz Fischer <mdf@kernel.org>
+Cc: linux-fpga@vger.kernel.org, atull@kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-This series of patches are created On top of the
-below repo.
-//git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git
-BRANCH: next/drivers. 
+Hi Moritz,
 
-Nava kishore Manne (3):
-  firmware: xilinx: Add fpga API's
-  dt-bindings: fpga: Add bindings for ZynqMP fpga driver
-  fpga manager: Adding FPGA Manager support for Xilinx zynqmp
+On Mon, 29 Oct 2018 09:48:57 -0700
+Moritz Fischer mdf@kernel.org wrote:
+...
+>Sounds like a udev problem that can be solved by looking at the
+>parent device?
 
- .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt   |  13 ++
- drivers/firmware/xilinx/zynqmp.c              |  46 +++++
- drivers/fpga/Kconfig                          |   9 +
- drivers/fpga/Makefile                         |   1 +
- drivers/fpga/zynqmp-fpga.c                    | 165 ++++++++++++++++++
- include/linux/firmware/xlnx-zynqmp.h          |  12 ++
- 6 files changed, 246 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
- create mode 100644 drivers/fpga/zynqmp-fpga.c
+Yes, but there are still all kinds of small embedded systems
+without udev/systemd support.
 
--- 
-2.18.0
+Thanks,
+
+Anatolij
