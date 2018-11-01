@@ -1,82 +1,53 @@
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v6 17/18] of: unittest: find overlays[] entry by name instead of index
-Date: Mon,  5 Nov 2018 07:25:14 -0800
-Message-Id: <1541431515-25197-18-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=KFgc=NM=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=KFgc=NM=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-yw1-f66.google.com ([209.85.161.66]:40790 "EHLO
+        mail-yw1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726602AbeKBEsh (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 2 Nov 2018 00:48:37 -0400
+Received: by mail-yw1-f66.google.com with SMTP id f192-v6so715878ywh.7
+        for <linux-fpga@vger.kernel.org>; Thu, 01 Nov 2018 12:44:15 -0700 (PDT)
+MIME-Version: 1.0
+References: <20181029144222.26927-1-agust@denx.de> <20181029164857.GA2453@archbook>
+ <20181030121913.3f5f8458@crub> <CANk1AXR470s6XyfjR8=1SdiNAFsVj0oNA1-STVCu6_zY-kLf3A@mail.gmail.com>
+ <20181101193336.766566fc@crub> <CANk1AXR+Kv9-vEmMS3ybMoPOUdbNZXSK1341BD1jsEWUaZRXUg@mail.gmail.com>
+ <20181101202325.3bf87ea3@crub>
+In-Reply-To: <20181101202325.3bf87ea3@crub>
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Date: Thu, 1 Nov 2018 12:44:03 -0700
+Message-ID: <CAAtXAHcv_=CEKdDsQH59-OrPaHO2CUPAYF89ce=kP6WX_UUCeg@mail.gmail.com>
+Subject: Re: [PATCH] fpga: xilinx-spi: Use unique FPGA manager names
+Content-Type: text/plain; charset="UTF-8"
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Anatolij Gustschin <agust@denx.de>
+Cc: Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org
 
-From: Frank Rowand <frank.rowand@sony.com>
+Hi Anatolij,
 
-One accessor of overlays[] was using a hard coded index value to
-find the correct array entry instead of searching for the entry
-containing the correct name.
+On Thu, Nov 1, 2018 at 12:23 PM Anatolij Gustschin <agust@denx.de> wrote:
+>
+> On Thu, 1 Nov 2018 13:46:27 -0500
+> Alan Tull atull@kernel.org wrote:
+> ...
+> >> # ls -l /sys/class/fpga_manager/fpga0/device
+> >> lrwxrwxrwx 1 root root 0 Nov  1 19:26 /sys/class/fpga_manager/fpga0/device -> ../../../spi1.0
+> >
+> >Is 'device' giving the info this patch is adding to 'name'?
+>
+> One can extract this info from 'device' somehow, but it is much more
+> easier to get it from the name
+>
+> # cat /sys/class/fpga_manager/fpga0/name
+> xlnx-slave-spi spi1.0
 
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/unittest.c | 21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
+I see your use case, but I don't think the FPGA Manager framework is
+the right place to fix this,
+especially not encoding bus information in the FPGA Manager name. The
+info is already available
+to userland (not conveniently I agree, but nevertheless).
 
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index d625a91a7f60..fe01c5869b0f 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -2192,7 +2192,7 @@ struct overlay_info {
- OVERLAY_INFO_EXTERN(overlay_bad_phandle);
- OVERLAY_INFO_EXTERN(overlay_bad_symbol);
- 
--/* order of entries is hard-coded into users of overlays[] */
-+/* entries found by name */
- static struct overlay_info overlays[] = {
- 	OVERLAY_INFO(overlay_base, -9999),
- 	OVERLAY_INFO(overlay, 0),
-@@ -2215,7 +2215,8 @@ struct overlay_info {
- 	OVERLAY_INFO(overlay_bad_add_dup_prop, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
--	{}
-+	/* end marker */
-+	{.dtb_begin = NULL, .dtb_end = NULL, .expected_result = 0, .name = NULL}
- };
- 
- static struct device_node *overlay_base_root;
-@@ -2245,6 +2246,19 @@ void __init unittest_unflatten_overlay_base(void)
- 	u32 data_size;
- 	void *new_fdt;
- 	u32 size;
-+	int found = 0;
-+	const char *overlay_name = "overlay_base";
-+
-+	for (info = overlays; info && info->name; info++) {
-+		if (!strcmp(overlay_name, info->name)) {
-+			found = 1;
-+			break;
-+		}
-+	}
-+	if (!found) {
-+		pr_err("no overlay data for %s\n", overlay_name);
-+		return;
-+	}
- 
- 	info = &overlays[0];
- 
-@@ -2292,11 +2306,10 @@ static int __init overlay_data_apply(const char *overlay_name, int *overlay_id)
- {
- 	struct overlay_info *info;
- 	int found = 0;
--	int k;
- 	int ret;
- 	u32 size;
- 
--	for (k = 0, info = overlays; info && info->name; info++, k++) {
-+	for (info = overlays; info && info->name; info++) {
- 		if (!strcmp(overlay_name, info->name)) {
- 			found = 1;
- 			break;
--- 
-Frank Rowand <frank.rowand@sony.com>
+From my end NAK.
+
+Thanks,
+
+Moritz
