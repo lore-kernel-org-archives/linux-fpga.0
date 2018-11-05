@@ -1,103 +1,128 @@
-Return-Path: <SRS0=L03T=NR=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=L03T=NR=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-out.m-online.net ([212.18.0.9]:55492 "EHLO
-        mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730742AbeKGGCQ (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 7 Nov 2018 01:02:16 -0500
-From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH] fpga: altera-cvp: fix probing for multiple FPGAs on the bus
-Date: Tue,  6 Nov 2018 21:35:12 +0100
-Message-Id: <20181106203512.4509-1-agust@denx.de>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-fpga@vger.kernel.org
-Cc: atull@kernel.org, mdf@kernel.org
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v6 11/18] of: overlay: test case of two fragments adding same node
+Date: Mon,  5 Nov 2018 07:25:08 -0800
+Message-Id: <1541431515-25197-12-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-Currently registering CvP managers works only for first probed CvP
-device, for all other devices it is refused due to duplicated chkcfg
-sysfs entry:
+From: Frank Rowand <frank.rowand@sony.com>
 
-fpga_manager fpga3: Altera CvP FPGA Manager @0000:0c:00.0 registered
-sysfs: cannot create duplicate filename '/bus/pci/drivers/altera-cvp/chkcfg'
-CPU: 0 PID: 3808 Comm: bash Tainted: G           O      4.19.0-custom+ #5
-Call Trace:
-  dump_stack+0x46/0x5b
-  sysfs_warn_dup+0x53/0x60
-  sysfs_add_file_mode_ns+0x16d/0x180
-  sysfs_create_file_ns+0x51/0x60
-  altera_cvp_probe+0x16f/0x2a0 [altera_cvp]
-  local_pci_probe+0x3f/0xa0
-  ? pci_match_device+0xb1/0xf0
-  pci_device_probe+0x116/0x170
-  really_probe+0x21b/0x2c0
-  driver_probe_device+0x4b/0xe0
-  bind_store+0xcb/0x130
-  kernfs_fop_write+0xfd/0x180
-  __vfs_write+0x21/0x150
-  ? selinux_file_permission+0xdc/0x130
-  vfs_write+0xa8/0x1a0
-  ? find_vma+0xd/0x60
-  ksys_write+0x3d/0x90
-  do_syscall_64+0x44/0xf0
-  entry_SYSCALL_64_after_hwframe+0x44/0xa9
-  ...
- altera-cvp 0000:0c:00.0: Can't create sysfs chkcfg file
- fpga_manager fpga3: fpga_mgr_unregister Altera CvP FPGA Manager @0000:0c:00.0
+Multiple overlay fragments adding or deleting the same node is not
+supported.  An attempt to do so results in an incorrect devicetree.
+The node name will be munged for the second add.
 
-Skip chkcfg creation for all but first probed device. Remove chkcfg
-interface when last potential user has gone.
+After adding this patch, the unittest messages will show:
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+   Duplicate name in motor-1, renamed to "controller#1"
+   OF: overlay: of_overlay_apply() err=0
+   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
+   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
+
+   ...
+
+   ### dt-test ### end of unittest - 210 passed, 1 failed
+
+The incorrect (munged) node name "controller#1" can be seen in the
+/proc filesystem:
+
+   $ pwd
+   /proc/device-tree/testcase-data-2/substation@100/motor-1
+   $ ls
+   compatible    controller    controller#1  name          phandle       spin
+   $ ls controller
+   power_bus
+   $ ls controller#1
+   power_bus_emergency
+
+Tested-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/fpga/altera-cvp.c | 22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+ drivers/of/unittest-data/Makefile                  |  1 +
+ .../of/unittest-data/overlay_bad_add_dup_node.dts  | 28 ++++++++++++++++++++++
+ drivers/of/unittest.c                              |  5 ++++
+ 3 files changed, 34 insertions(+)
+ create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 144fa2a4d4cc..381d0c42450f 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -60,6 +60,7 @@
- 
- /* Optional CvP config error status check for debugging */
- static bool altera_cvp_chkcfg;
-+static unsigned int altera_cvp_cnt;
- 
- struct altera_cvp_conf {
- 	struct fpga_manager	*mgr;
-@@ -466,12 +467,15 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	if (ret)
- 		goto err_unmap;
- 
--	ret = driver_create_file(&altera_cvp_driver.driver,
--				 &driver_attr_chkcfg);
--	if (ret) {
--		dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
--		fpga_mgr_unregister(mgr);
--		goto err_unmap;
-+	if (!altera_cvp_cnt++) {
-+		ret = driver_create_file(&altera_cvp_driver.driver,
-+					 &driver_attr_chkcfg);
-+		if (ret) {
-+			dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
-+			fpga_mgr_unregister(mgr);
-+			altera_cvp_cnt--;
-+			goto err_unmap;
-+		}
- 	}
- 
- 	return 0;
-@@ -492,7 +496,11 @@ static void altera_cvp_remove(struct pci_dev *pdev)
- 	struct altera_cvp_conf *conf = mgr->priv;
- 	u16 cmd;
- 
--	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
-+	if (!--altera_cvp_cnt) {
-+		driver_remove_file(&altera_cvp_driver.driver,
-+				   &driver_attr_chkcfg);
-+	}
+diff --git a/drivers/of/unittest-data/Makefile b/drivers/of/unittest-data/Makefile
+index 013d85e694c6..166dbdbfd1c5 100644
+--- a/drivers/of/unittest-data/Makefile
++++ b/drivers/of/unittest-data/Makefile
+@@ -17,6 +17,7 @@ obj-$(CONFIG_OF_OVERLAY) += overlay.dtb.o \
+ 			    overlay_12.dtb.o \
+ 			    overlay_13.dtb.o \
+ 			    overlay_15.dtb.o \
++			    overlay_bad_add_dup_node.dtb.o \
+ 			    overlay_bad_phandle.dtb.o \
+ 			    overlay_bad_symbol.dtb.o \
+ 			    overlay_base.dtb.o
+diff --git a/drivers/of/unittest-data/overlay_bad_add_dup_node.dts b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+new file mode 100644
+index 000000000000..145dfc3b1024
+--- /dev/null
++++ b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+@@ -0,0 +1,28 @@
++// SPDX-License-Identifier: GPL-2.0
++/dts-v1/;
++/plugin/;
 +
- 	fpga_mgr_unregister(mgr);
- 	if (conf->map)
- 		pci_iounmap(pdev, conf->map);
++/*
++ * &electric_1/motor-1 and &spin_ctrl_1 are the same node:
++ *   /testcase-data-2/substation@100/motor-1
++ *
++ * Thus the new node "controller" in each fragment will
++ * result in an attempt to add the same node twice.
++ * This will result in an error and the overlay apply
++ * will fail.
++ */
++
++&electric_1 {
++
++	motor-1 {
++		controller {
++			power_bus = < 0x1 0x2 >;
++		};
++	};
++};
++
++&spin_ctrl_1 {
++		controller {
++			power_bus_emergency = < 0x101 0x102 >;
++		};
++};
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 49ae2aa744d6..f82edf829f43 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -2161,6 +2161,7 @@ struct overlay_info {
+ OVERLAY_INFO_EXTERN(overlay_12);
+ OVERLAY_INFO_EXTERN(overlay_13);
+ OVERLAY_INFO_EXTERN(overlay_15);
++OVERLAY_INFO_EXTERN(overlay_bad_add_dup_node);
+ OVERLAY_INFO_EXTERN(overlay_bad_phandle);
+ OVERLAY_INFO_EXTERN(overlay_bad_symbol);
+ 
+@@ -2183,6 +2184,7 @@ struct overlay_info {
+ 	OVERLAY_INFO(overlay_12, 0),
+ 	OVERLAY_INFO(overlay_13, 0),
+ 	OVERLAY_INFO(overlay_15, 0),
++	OVERLAY_INFO(overlay_bad_add_dup_node, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
+ 	{}
+@@ -2430,6 +2432,9 @@ static __init void of_unittest_overlay_high_level(void)
+ 	unittest(overlay_data_apply("overlay", NULL),
+ 		 "Adding overlay 'overlay' failed\n");
+ 
++	unittest(overlay_data_apply("overlay_bad_add_dup_node", NULL),
++		 "Adding overlay 'overlay_bad_add_dup_node' failed\n");
++
+ 	unittest(overlay_data_apply("overlay_bad_phandle", NULL),
+ 		 "Adding overlay 'overlay_bad_phandle' failed\n");
+ 
 -- 
-2.17.1
+Frank Rowand <frank.rowand@sony.com>
