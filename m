@@ -1,102 +1,340 @@
-Return-Path: <SRS0=wszZ=NY=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=wszZ=NY=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv11 1/8] dt-bindings, firmware: add Intel Stratix10 service layer binding
-Date: Tue, 13 Nov 2018 12:13:59 -0600
-Message-Id: <1542132846-24168-2-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1542132846-24168-1-git-send-email-richard.gong@linux.intel.com>
-References: <1542132846-24168-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v6 05/18] of: overlay: use prop add changeset entry for property in new nodes
+Date: Mon,  5 Nov 2018 07:25:02 -0800
+Message-Id: <1541431515-25197-6-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+From: Frank Rowand <frank.rowand@sony.com>
 
-Add a device tree binding for the Intel Stratix10 service layer driver
+The changeset entry 'update property' was used for new properties in
+an overlay instead of 'add property'.
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Signed-off-by: Alan Tull <atull@kernel.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
+The decision of whether to use 'update property' was based on whether
+the property already exists in the subtree where the node is being
+spliced into.  At the top level of creating a changeset describing the
+overlay, the target node is in the live devicetree, so checking whether
+the property exists in the target node returns the correct result.
+As soon as the changeset creation algorithm recurses into a new node,
+the target is no longer in the live devicetree, but is instead in the
+detached overlay tree, thus all properties are incorrectly found to
+already exist in the target.
+
+This fix will expose another devicetree bug that will be fixed
+in the following patch in the series.
+
+When this patch is applied the errors reported by the devictree
+unittest will change, and the unittest results will change from:
+
+   ### dt-test ### end of unittest - 210 passed, 0 failed
+
+to
+
+   ### dt-test ### end of unittest - 203 passed, 7 failed
+
+Tested-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-v2: change to put service layer driver node under the firmware node
-    change compatible to "intel, stratix10-svc"
-v3: no change
-v4: add Rob's Reviewed-by
-v5: no change
-v6: add Moritz's Acked-by
-v7: no change
-v8: no change
-v9: no chnage
-v10: no change
-v11: no change
----
- .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
 
-diff --git a/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-new file mode 100644
-index 0000000..1fa6606
---- /dev/null
-+++ b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-@@ -0,0 +1,57 @@
-+Intel Service Layer Driver for Stratix10 SoC
-+============================================
-+Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
-+processor system (HPS) and Secure Device Manager (SDM). When the FPGA is
-+configured from HPS, there needs to be a way for HPS to notify SDM the
-+location and size of the configuration data. Then SDM will get the
-+configuration data from that location and perform the FPGA configuration.
+Changes since v5:
+  - update for context change from a613b26a50136 "of: Convert to using
+    %pOFn instead of device_node.name"
+
+ drivers/of/overlay.c | 112 ++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 74 insertions(+), 38 deletions(-)
+
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 7613f7d680c7..6fd8e6145e10 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -24,6 +24,26 @@
+ #include "of_private.h"
+ 
+ /**
++ * struct target - info about current target node as recursing through overlay
++ * @np:			node where current level of overlay will be applied
++ * @in_livetree:	@np is a node in the live devicetree
++ *
++ * Used in the algorithm to create the portion of a changeset that describes
++ * an overlay fragment, which is a devicetree subtree.  Initially @np is a node
++ * in the live devicetree where the overlay subtree is targeted to be grafted
++ * into.  When recursing to the next level of the overlay subtree, the target
++ * also recurses to the next level of the live devicetree, as long as overlay
++ * subtree node also exists in the live devicetree.  When a node in the overlay
++ * subtree does not exist at the same level in the live devicetree, target->np
++ * points to a newly allocated node, and all subsequent targets in the subtree
++ * will be newly allocated nodes.
++ */
++struct target {
++	struct device_node *np;
++	bool in_livetree;
++};
 +
-+To meet the whole system security needs and support virtual machine requesting
-+communication with SDM, only the secure world of software (EL3, Exception
-+Layer 3) can interface with SDM. All software entities running on other
-+exception layers must channel through the EL3 software whenever it needs
-+service from SDM.
++/**
+  * struct fragment - info about fragment nodes in overlay expanded device tree
+  * @target:	target of the overlay operation
+  * @overlay:	pointer to the __overlay__ node
+@@ -72,8 +92,7 @@ static int devicetree_corrupt(void)
+ }
+ 
+ static int build_changeset_next_level(struct overlay_changeset *ovcs,
+-		struct device_node *target_node,
+-		const struct device_node *overlay_node);
++		struct target *target, const struct device_node *overlay_node);
+ 
+ /*
+  * of_resolve_phandles() finds the largest phandle in the live tree.
+@@ -257,14 +276,17 @@ static struct property *dup_and_fixup_symbol_prop(
+ /**
+  * add_changeset_property() - add @overlay_prop to overlay changeset
+  * @ovcs:		overlay changeset
+- * @target_node:	where to place @overlay_prop in live tree
++ * @target:		where @overlay_prop will be placed
+  * @overlay_prop:	property to add or update, from overlay tree
+  * @is_symbols_prop:	1 if @overlay_prop is from node "/__symbols__"
+  *
+- * If @overlay_prop does not already exist in @target_node, add changeset entry
+- * to add @overlay_prop in @target_node, else add changeset entry to update
++ * If @overlay_prop does not already exist in live devicetree, add changeset
++ * entry to add @overlay_prop in @target, else add changeset entry to update
+  * value of @overlay_prop.
+  *
++ * @target may be either in the live devicetree or in a new subtree that
++ * is contained in the changeset.
++ *
+  * Some special properties are not updated (no error returned).
+  *
+  * Update of property in symbols node is not allowed.
+@@ -273,20 +295,22 @@ static struct property *dup_and_fixup_symbol_prop(
+  * invalid @overlay.
+  */
+ static int add_changeset_property(struct overlay_changeset *ovcs,
+-		struct device_node *target_node,
+-		struct property *overlay_prop,
++		struct target *target, struct property *overlay_prop,
+ 		bool is_symbols_prop)
+ {
+ 	struct property *new_prop = NULL, *prop;
+ 	int ret = 0;
+ 
+-	prop = of_find_property(target_node, overlay_prop->name, NULL);
+-
+ 	if (!of_prop_cmp(overlay_prop->name, "name") ||
+ 	    !of_prop_cmp(overlay_prop->name, "phandle") ||
+ 	    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
+ 		return 0;
+ 
++	if (target->in_livetree)
++		prop = of_find_property(target->np, overlay_prop->name, NULL);
++	else
++		prop = NULL;
 +
-+Intel Stratix10 service layer driver, running at privileged exception level
-+(EL1, Exception Layer 1), interfaces with the service providers and provides
-+the services for FPGA configuration, QSPI, Crypto and warm reset. Service layer
-+driver also manages secure monitor call (SMC) to communicate with secure monitor
-+code running in EL3.
+ 	if (is_symbols_prop) {
+ 		if (prop)
+ 			return -EINVAL;
+@@ -299,10 +323,10 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ 		return -ENOMEM;
+ 
+ 	if (!prop)
+-		ret = of_changeset_add_property(&ovcs->cset, target_node,
++		ret = of_changeset_add_property(&ovcs->cset, target->np,
+ 						new_prop);
+ 	else
+-		ret = of_changeset_update_property(&ovcs->cset, target_node,
++		ret = of_changeset_update_property(&ovcs->cset, target->np,
+ 						   new_prop);
+ 
+ 	if (ret) {
+@@ -315,14 +339,14 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ 
+ /**
+  * add_changeset_node() - add @node (and children) to overlay changeset
+- * @ovcs:		overlay changeset
+- * @target_node:	where to place @node in live tree
+- * @node:		node from within overlay device tree fragment
++ * @ovcs:	overlay changeset
++ * @target:	where @node will be placed in live tree or changeset
++ * @node:	node from within overlay device tree fragment
+  *
+- * If @node does not already exist in @target_node, add changeset entry
+- * to add @node in @target_node.
++ * If @node does not already exist in @target, add changeset entry
++ * to add @node in @target.
+  *
+- * If @node already exists in @target_node, and the existing node has
++ * If @node already exists in @target, and the existing node has
+  * a phandle, the overlay node is not allowed to have a phandle.
+  *
+  * If @node has child nodes, add the children recursively via
+@@ -355,15 +379,16 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+  * invalid @overlay.
+  */
+ static int add_changeset_node(struct overlay_changeset *ovcs,
+-		struct device_node *target_node, struct device_node *node)
++		struct target *target, struct device_node *node)
+ {
+ 	const char *node_kbasename;
+ 	struct device_node *tchild;
++	struct target target_child;
+ 	int ret = 0;
+ 
+ 	node_kbasename = kbasename(node->full_name);
+ 
+-	for_each_child_of_node(target_node, tchild)
++	for_each_child_of_node(target->np, tchild)
+ 		if (!of_node_cmp(node_kbasename, kbasename(tchild->full_name)))
+ 			break;
+ 
+@@ -372,22 +397,28 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 		if (!tchild)
+ 			return -ENOMEM;
+ 
+-		tchild->parent = target_node;
++		tchild->parent = target->np;
+ 		of_node_set_flag(tchild, OF_OVERLAY);
+ 
+ 		ret = of_changeset_attach_node(&ovcs->cset, tchild);
+ 		if (ret)
+ 			return ret;
+ 
+-		ret = build_changeset_next_level(ovcs, tchild, node);
++		target_child.np = tchild;
++		target_child.in_livetree = false;
 +
-+Required properties:
-+-------------------
-+The svc node has the following mandatory properties, must be located under
-+the firmware node.
++		ret = build_changeset_next_level(ovcs, &target_child, node);
+ 		of_node_put(tchild);
+ 		return ret;
+ 	}
+ 
+-	if (node->phandle && tchild->phandle)
++	if (node->phandle && tchild->phandle) {
+ 		ret = -EINVAL;
+-	else
+-		ret = build_changeset_next_level(ovcs, tchild, node);
++	} else {
++		target_child.np = tchild;
++		target_child.in_livetree = target->in_livetree;
++		ret = build_changeset_next_level(ovcs, &target_child, node);
++	}
+ 	of_node_put(tchild);
+ 
+ 	return ret;
+@@ -396,7 +427,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ /**
+  * build_changeset_next_level() - add level of overlay changeset
+  * @ovcs:		overlay changeset
+- * @target_node:	where to place @overlay_node in live tree
++ * @target:		where to place @overlay_node in live tree
+  * @overlay_node:	node from within an overlay device tree fragment
+  *
+  * Add the properties (if any) and nodes (if any) from @overlay_node to the
+@@ -409,27 +440,26 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+  * invalid @overlay_node.
+  */
+ static int build_changeset_next_level(struct overlay_changeset *ovcs,
+-		struct device_node *target_node,
+-		const struct device_node *overlay_node)
++		struct target *target, const struct device_node *overlay_node)
+ {
+ 	struct device_node *child;
+ 	struct property *prop;
+ 	int ret;
+ 
+ 	for_each_property_of_node(overlay_node, prop) {
+-		ret = add_changeset_property(ovcs, target_node, prop, 0);
++		ret = add_changeset_property(ovcs, target, prop, 0);
+ 		if (ret) {
+ 			pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
+-				 target_node, prop->name, ret);
++				 target->np, prop->name, ret);
+ 			return ret;
+ 		}
+ 	}
+ 
+ 	for_each_child_of_node(overlay_node, child) {
+-		ret = add_changeset_node(ovcs, target_node, child);
++		ret = add_changeset_node(ovcs, target, child);
+ 		if (ret) {
+ 			pr_debug("Failed to apply node @%pOF/%pOFn, err=%d\n",
+-				 target_node, child, ret);
++				 target->np, child, ret);
+ 			of_node_put(child);
+ 			return ret;
+ 		}
+@@ -442,17 +472,17 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
+  * Add the properties from __overlay__ node to the @ovcs->cset changeset.
+  */
+ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
+-		struct device_node *target_node,
++		struct target *target,
+ 		const struct device_node *overlay_symbols_node)
+ {
+ 	struct property *prop;
+ 	int ret;
+ 
+ 	for_each_property_of_node(overlay_symbols_node, prop) {
+-		ret = add_changeset_property(ovcs, target_node, prop, 1);
++		ret = add_changeset_property(ovcs, target, prop, 1);
+ 		if (ret) {
+ 			pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
+-				 target_node, prop->name, ret);
++				 target->np, prop->name, ret);
+ 			return ret;
+ 		}
+ 	}
+@@ -475,6 +505,7 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
+ static int build_changeset(struct overlay_changeset *ovcs)
+ {
+ 	struct fragment *fragment;
++	struct target target;
+ 	int fragments_count, i, ret;
+ 
+ 	/*
+@@ -489,7 +520,9 @@ static int build_changeset(struct overlay_changeset *ovcs)
+ 	for (i = 0; i < fragments_count; i++) {
+ 		fragment = &ovcs->fragments[i];
+ 
+-		ret = build_changeset_next_level(ovcs, fragment->target,
++		target.np = fragment->target;
++		target.in_livetree = true;
++		ret = build_changeset_next_level(ovcs, &target,
+ 						 fragment->overlay);
+ 		if (ret) {
+ 			pr_debug("apply failed '%pOF'\n", fragment->target);
+@@ -499,7 +532,10 @@ static int build_changeset(struct overlay_changeset *ovcs)
+ 
+ 	if (ovcs->symbols_fragment) {
+ 		fragment = &ovcs->fragments[ovcs->count - 1];
+-		ret = build_changeset_symbols_node(ovcs, fragment->target,
 +
-+- compatible: "intel,stratix10-svc"
-+- method: smc or hvc
-+        smc - Secure Monitor Call
-+        hvc - Hypervisor Call
-+- memory-region:
-+	phandle to the reserved memory node. See
-+	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
-+	for details
-+
-+Example:
-+-------
-+
-+	reserved-memory {
-+                #address-cells = <2>;
-+                #size-cells = <2>;
-+                ranges;
-+
-+                service_reserved: svcbuffer@0 {
-+                        compatible = "shared-dma-pool";
-+                        reg = <0x0 0x0 0x0 0x1000000>;
-+                        alignment = <0x1000>;
-+                        no-map;
-+                };
-+        };
-+
-+	firmware {
-+		svc {
-+			compatible = "intel,stratix10-svc";
-+			method = "smc";
-+			memory-region = <&service_reserved>;
-+		};
-+	};
++		target.np = fragment->target;
++		target.in_livetree = true;
++		ret = build_changeset_symbols_node(ovcs, &target,
+ 						   fragment->overlay);
+ 		if (ret) {
+ 			pr_debug("apply failed '%pOF'\n", fragment->target);
+@@ -517,7 +553,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
+  * 1) "target" property containing the phandle of the target
+  * 2) "target-path" property containing the path of the target
+  */
+-static struct device_node *find_target_node(struct device_node *info_node)
++static struct device_node *find_target(struct device_node *info_node)
+ {
+ 	struct device_node *node;
+ 	const char *path;
+@@ -623,7 +659,7 @@ static int init_overlay_changeset(struct overlay_changeset *ovcs,
+ 
+ 		fragment = &fragments[cnt];
+ 		fragment->overlay = overlay_node;
+-		fragment->target = find_target_node(node);
++		fragment->target = find_target(node);
+ 		if (!fragment->target) {
+ 			of_node_put(fragment->overlay);
+ 			ret = -EINVAL;
 -- 
-2.7.4
+Frank Rowand <frank.rowand@sony.com>
