@@ -1,89 +1,110 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-References: <20181029141709.14749-1-agust@denx.de>
-In-Reply-To: <20181029141709.14749-1-agust@denx.de>
-From: Alan Tull <atull@kernel.org>
-Date: Thu, 1 Nov 2018 14:37:02 -0500
-Message-ID: <CANk1AXQCQpi7nuvDSPGrp=zwvkhKpWha6_5T=7hYaZFpjsyuxw@mail.gmail.com>
-Subject: Re: [PATCH v2] fpga: mgr: altera-ps-spi: enable usage on non-dt platforms
-Content-Type: text/plain; charset="UTF-8"
-To: Anatolij Gustschin <agust@denx.de>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v6 09/18] of: overlay: validate overlay properties #address-cells and #size-cells
+Date: Mon,  5 Nov 2018 07:25:06 -0800
+Message-Id: <1541431515-25197-10-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Oct 29, 2018 at 9:17 AM Anatolij Gustschin <agust@denx.de> wrote:
+From: Frank Rowand <frank.rowand@sony.com>
 
-Hi Anatolij,
+If overlay properties #address-cells or #size-cells are already in
+the live devicetree for any given node, then the values in the
+overlay must match the values in the live tree.
 
->
-> Driver probing fails on non-dt platforms since of_match_device()
-> always returns NULL here. Add device names and matching driver
-> data to the spi_device_id table. This allows driver binding to
-> dynamically added PS-SPI devices (e.g. added via spi_new_device()
-> after hot-plugging).
->
-> Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> ---
-> Changes in v2:
->  - removed not necessary braces {}
->  - dropped not needed !id check
->
->  drivers/fpga/altera-ps-spi.c | 18 +++++++++++++-----
->  1 file changed, 13 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/fpga/altera-ps-spi.c b/drivers/fpga/altera-ps-spi.c
-> index 33aafda50af5..b8136ee49ace 100644
-> --- a/drivers/fpga/altera-ps-spi.c
-> +++ b/drivers/fpga/altera-ps-spi.c
-> @@ -238,17 +238,23 @@ static int altera_ps_probe(struct spi_device *spi)
->  {
->         struct altera_ps_conf *conf;
->         const struct of_device_id *of_id;
-> +       const struct spi_device_id *id;
->         struct fpga_manager *mgr;
->
->         conf = devm_kzalloc(&spi->dev, sizeof(*conf), GFP_KERNEL);
->         if (!conf)
->                 return -ENOMEM;
->
-> -       of_id = of_match_device(of_ef_match, &spi->dev);
-> -       if (!of_id)
-> -               return -ENODEV;
-> +       if (spi->dev.of_node) {
-> +               of_id = of_match_device(of_ef_match, &spi->dev);
-> +               if (!of_id)
-> +                       return -ENODEV;
-> +               conf->data = of_id->data;
-> +       } else {
-> +               id = spi_get_device_id(spi);
-> +               conf->data = (struct altera_ps_data *)id->driver_data;
-> +       }
->
-> -       conf->data = of_id->data;
->         conf->spi = spi;
->         conf->config = devm_gpiod_get(&spi->dev, "nconfig", GPIOD_OUT_LOW);
->         if (IS_ERR(conf->config)) {
-> @@ -294,7 +300,9 @@ static int altera_ps_remove(struct spi_device *spi)
->  }
->
->  static const struct spi_device_id altera_ps_spi_ids[] = {
-> -       {"cyclone-ps-spi", 0},
-> +       {"cyclone-ps-spi", (kernel_ulong_t)&c5_data},
-> +       {"fpga-passive-serial", (kernel_ulong_t)&c5_data},
-> +       {"fpga-arria10-passive-serial", (kernel_ulong_t)&a10_data},
+If the properties are already in the live tree then there is no
+need to create a changeset entry to add them since they must
+have the same value.  This reduces the memory used by the
+changeset and eliminates a possible memory leak.
 
-I don't think this should be implemented as a pointer. This would be
-easy if driver_data were void* but it's a value that's not a pointer.
- I suggest using driver_data as a index to an array of pointers to the
-structs instead.
+Tested-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+---
+ drivers/of/overlay.c | 32 +++++++++++++++++++++++++++++---
+ include/linux/of.h   |  6 ++++++
+ 2 files changed, 35 insertions(+), 3 deletions(-)
 
-Thanks,
-Alan
-
->         {}
->  };
->  MODULE_DEVICE_TABLE(spi, altera_ps_spi_ids);
-> --
-> 2.17.1
->
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 15be3da34fef..72bf00adb9c8 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -287,7 +287,12 @@ static struct property *dup_and_fixup_symbol_prop(
+  * @target may be either in the live devicetree or in a new subtree that
+  * is contained in the changeset.
+  *
+- * Some special properties are not updated (no error returned).
++ * Some special properties are not added or updated (no error returned):
++ * "name", "phandle", "linux,phandle".
++ *
++ * Properties "#address-cells" and "#size-cells" are not updated if they
++ * are already in the live tree, but if present in the live tree, the values
++ * in the overlay must match the values in the live tree.
+  *
+  * Update of property in symbols node is not allowed.
+  *
+@@ -300,6 +305,7 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ {
+ 	struct property *new_prop = NULL, *prop;
+ 	int ret = 0;
++	bool check_for_non_overlay_node = false;
+ 
+ 	if (!of_prop_cmp(overlay_prop->name, "name") ||
+ 	    !of_prop_cmp(overlay_prop->name, "phandle") ||
+@@ -322,12 +328,32 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+ 	if (!new_prop)
+ 		return -ENOMEM;
+ 
+-	if (!prop)
++	if (!prop) {
++		check_for_non_overlay_node = true;
+ 		ret = of_changeset_add_property(&ovcs->cset, target->np,
+ 						new_prop);
+-	else
++	} else if (!of_prop_cmp(prop->name, "#address-cells")) {
++		if (!of_prop_val_eq(prop, new_prop)) {
++			pr_err("ERROR: changing value of #address-cells is not allowed in %pOF\n",
++			       target->np);
++			ret = -EINVAL;
++		}
++	} else if (!of_prop_cmp(prop->name, "#size-cells")) {
++		if (!of_prop_val_eq(prop, new_prop)) {
++			pr_err("ERROR: changing value of #size-cells is not allowed in %pOF\n",
++			       target->np);
++			ret = -EINVAL;
++		}
++	} else {
++		check_for_non_overlay_node = true;
+ 		ret = of_changeset_update_property(&ovcs->cset, target->np,
+ 						   new_prop);
++	}
++
++	if (check_for_non_overlay_node &&
++	    !of_node_check_flag(target->np, OF_OVERLAY))
++		pr_err("WARNING: memory leak will occur if overlay removed, property: %pOF/%s\n",
++		       target->np, new_prop->name);
+ 
+ 	if (ret) {
+ 		kfree(new_prop->name);
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 5dd9ff480397..f247a3f557e0 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -990,6 +990,12 @@ static inline int of_map_rid(struct device_node *np, u32 rid,
+ #define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+ #endif
+ 
++static inline int of_prop_val_eq(struct property *p1, struct property *p2)
++{
++	return p1->length == p2->length &&
++	       !memcmp(p1->value, p2->value, (size_t)p1->length);
++}
++
+ #if defined(CONFIG_OF) && defined(CONFIG_NUMA)
+ extern int of_node_to_nid(struct device_node *np);
+ #else
+-- 
+Frank Rowand <frank.rowand@sony.com>
