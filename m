@@ -1,45 +1,73 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 2/4] fpga: dfl: fme: remove set but not used variable 'priv'
-Date: Wed,  7 Nov 2018 11:51:46 -0600
-Message-Id: <1541613108-29660-3-git-send-email-atull@kernel.org>
-In-Reply-To: <1541613108-29660-1-git-send-email-atull@kernel.org>
-References: <1541613108-29660-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v6 02/18] of: overlay: add missing of_node_put() after add new node to changeset
+Date: Mon,  5 Nov 2018 07:24:59 -0800
+Message-Id: <1541431515-25197-3-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: YueHaibing <yuehaibing@huawei.com>
+From: Frank Rowand <frank.rowand@sony.com>
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+The refcount of a newly added overlay node decrements to one
+(instead of zero) when the overlay changeset is destroyed.  This
+change will cause the final decrement be to zero.
 
-drivers/fpga/dfl-fme-pr.c: In function 'pr_mgmt_uinit':
-drivers/fpga/dfl-fme-pr.c:447:18: warning:
- variable 'priv' set but not used [-Wunused-but-set-variable]
+After applying this patch, new validation warnings will be
+reported from the devicetree unittest during boot due to
+a pre-existing devicetree bug.  The warnings will be similar to:
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
+  OF: ERROR: memory leak before free overlay changeset,  /testcase-data/overlay-node/test-bus/test-unittest4
+
+This pre-existing devicetree bug will also trigger a WARN_ONCE() from
+refcount_sub_and_test_checked() when an overlay changeset is
+destroyed without having first been applied.  This scenario occurs
+when an error in the overlay is detected during the overlay changeset
+creation:
+
+  WARNING: CPU: 0 PID: 1 at lib/refcount.c:187 refcount_sub_and_test_checked+0xa8/0xbc
+  refcount_t: underflow; use-after-free.
+
+  (unwind_backtrace) from (show_stack+0x10/0x14)
+  (show_stack) from (dump_stack+0x6c/0x8c)
+  (dump_stack) from (__warn+0xdc/0x104)
+  (__warn) from (warn_slowpath_fmt+0x44/0x6c)
+  (warn_slowpath_fmt) from (refcount_sub_and_test_checked+0xa8/0xbc)
+  (refcount_sub_and_test_checked) from (kobject_put+0x24/0x208)
+  (kobject_put) from (of_changeset_destroy+0x2c/0xb4)
+  (of_changeset_destroy) from (free_overlay_changeset+0x1c/0x9c)
+  (free_overlay_changeset) from (of_overlay_remove+0x284/0x2cc)
+  (of_overlay_remove) from (of_unittest_apply_revert_overlay_check.constprop.4+0xf8/0x1e8)
+  (of_unittest_apply_revert_overlay_check.constprop.4) from (of_unittest_overlay+0x960/0xed8)
+  (of_unittest_overlay) from (of_unittest+0x1cc4/0x2138)
+  (of_unittest) from (do_one_initcall+0x4c/0x28c)
+  (do_one_initcall) from (kernel_init_freeable+0x29c/0x378)
+  (kernel_init_freeable) from (kernel_init+0x8/0x110)
+  (kernel_init) from (ret_from_fork+0x14/0x2c)
+
+Tested-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/fpga/dfl-fme-pr.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/of/overlay.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-index 0b84053..fe5a557 100644
---- a/drivers/fpga/dfl-fme-pr.c
-+++ b/drivers/fpga/dfl-fme-pr.c
-@@ -444,10 +444,8 @@ static void pr_mgmt_uinit(struct platform_device *pdev,
- 			  struct dfl_feature *feature)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	struct dfl_fme *priv;
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index f5fc8859a7ee..7613f7d680c7 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -379,7 +379,9 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 		if (ret)
+ 			return ret;
  
- 	mutex_lock(&pdata->lock);
--	priv = dfl_fpga_pdata_get_private(pdata);
+-		return build_changeset_next_level(ovcs, tchild, node);
++		ret = build_changeset_next_level(ovcs, tchild, node);
++		of_node_put(tchild);
++		return ret;
+ 	}
  
- 	dfl_fme_destroy_regions(pdata);
- 	dfl_fme_destroy_bridges(pdata);
+ 	if (node->phandle && tchild->phandle)
 -- 
-2.7.4
+Frank Rowand <frank.rowand@sony.com>
