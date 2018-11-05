@@ -1,71 +1,72 @@
-Return-Path: <SRS0=8dAr=NQ=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=8dAr=NQ=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-out.m-online.net ([212.18.0.9]:43554 "EHLO
-        mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725910AbeKFFvP (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 6 Nov 2018 00:51:15 -0500
-Date: Mon, 5 Nov 2018 21:29:45 +0100
-From: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH 0/3] Add support for ARRI FPGA configuration
-Message-ID: <20181105212945.7625cfd3@crub>
-In-Reply-To: <CANk1AXQCTc39hgn7FszzhqHVFRCeMwqddC1FmHe25i2QYffrcw@mail.gmail.com>
-References: <20181105161913.27538-1-agust@denx.de>
-        <CANk1AXQCTc39hgn7FszzhqHVFRCeMwqddC1FmHe25i2QYffrcw@mail.gmail.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Alan Tull <atull@kernel.org>
+References: <20181105161913.27538-1-agust@denx.de>
+In-Reply-To: <20181105161913.27538-1-agust@denx.de>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 5 Nov 2018 12:52:03 -0600
+Message-ID: <CANk1AXQCTc39hgn7FszzhqHVFRCeMwqddC1FmHe25i2QYffrcw@mail.gmail.com>
+Subject: Re: [PATCH 0/3] Add support for ARRI FPGA configuration
+Content-Type: text/plain; charset="UTF-8"
+To: Anatolij Gustschin <agust@denx.de>
 Cc: USB list <linux-usb@vger.kernel.org>, linux-spi <linux-spi@vger.kernel.org>, linux-fpga@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Moritz Fischer <mdf@kernel.org>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Alan,
+On Mon, Nov 5, 2018 at 10:19 AM Anatolij Gustschin <agust@denx.de> wrote:
 
-On Mon, 5 Nov 2018 12:52:03 -0600
-Alan Tull atull@kernel.org wrote:
+Hi Anatolij,
 
->On Mon, Nov 5, 2018 at 10:19 AM Anatolij Gustschin <agust@denx.de> wrote:
 >
->Hi Anatolij,
->
->>
->> This series adds drivers and FPGA manager support required
->> for FT232H based ARRI FPGA configuration adapters.  
->
->Is this a repost or a new version of this patchset?  If it's a repost,
->you could note that.  If there are changes since the previous posting,
->version info helps reviewers know what's new.
+> This series adds drivers and FPGA manager support required
+> for FT232H based ARRI FPGA configuration adapters.
 
-This is a new version. Or it is very different compared to my first
-attempt to add driver support for this adapter hardware. The initial
-series ([1],[2],[3]) didn't include MPSSE SPI driver, it didn't use
-vendor specific USB PIDs for FTDI device and had fundamental design
-issues. This new version implements the new driver design as summarized
-here [4].
-
-Changes in this new version:
- - don't use MFD framework
- - don't use original FT232H USB PID (it is too generic and collides
-   with existing ftdi_sio driver)
- - don't add separate CBUS GPIO driver based on FT232H MFD device
- - redesign/rework the drivers as described under [4]
- - add basic FT232H interface driver under drivers/usb/misc/
- - use custom reserved USB PIDs in the USB driver for adapter devices
- - add notes about borrowed protocol code from libftdi to commit log
-   and header file
- - add MPSSE SPI controller driver supporting USB-SPI bus with
-   dynamically added SPI slaves from description in platform data
-   (the initial attempt didn't include USB SPI bus support for PS-
-    SPI FPGA configuration via USB)
- - rework FPP fpga manager driver based on new FT232H interface
-   driver and extend it according to CPLD changes for additional
-   support of new hardware revision B.
-
-[1] https://patchwork.kernel.org/patch/9828985/
-[2] https://patchwork.kernel.org/patch/9828981/
-[3] https://patchwork.kernel.org/patch/9828983/
-[4] https://www.spinics.net/lists/linux-usb/msg163441.html
+Is this a repost or a new version of this patchset?  If it's a repost,
+you could note that.  If there are changes since the previous posting,
+version info helps reviewers know what's new.
 
 Thanks,
+Alan
 
-Anatolij
+>
+> Patch 1/3 adds FT232H interface driver (for ARRI USB PIDs)
+> implementing commonly used FTDI USB transfer operations and
+> ACBUS/MPSSE GPIO controllers. Depending on USB PIDs it creates
+> platform devices for MPSSE SPI bus with attached SPI slaves
+> or platform devices for ARRI FPP FPGA manager.
+>
+> Patch 2/3 adds MPSSE SPI controller driver which registers
+> an FTDI USB-SPI bus with attached SPI slaves from description
+> in platform data, so existing SPI protocol drivers can be
+> used for these slave devices (in our case altera-ps-spi).
+> Via interface driver in patch 1/3 it is easily possible to add
+> support for other slave devices using custom USB PIDs (e.g.
+> spi-nor flash W25Q32 with m25p80 driver has beed used for
+> testing MPSSE SPI controller driver).
+>
+> Patch 3/3 adds FPGA manager driver for ARRI FPP adapters for
+> FPGA configuration via Altera fast passive parallel interface.
+>
+> Anatolij Gustschin (3):
+>   usb: misc: add driver for FT232H based FPGA configuration devices
+>   spi: add FTDI MPSSE SPI controller driver
+>   fpga: Add fpga manager driver for ARRI Altera FPP
+>
+>  drivers/fpga/Kconfig            |    7 +
+>  drivers/fpga/Makefile           |    1 +
+>  drivers/fpga/ftdi-fifo-fpp.c    |  594 +++++++++++++
+>  drivers/spi/Kconfig             |    7 +
+>  drivers/spi/Makefile            |    1 +
+>  drivers/spi/spi-ftdi-mpsse.c    |  671 ++++++++++++++
+>  drivers/usb/misc/Kconfig        |    9 +
+>  drivers/usb/misc/Makefile       |    1 +
+>  drivers/usb/misc/ft232h-intf.c  | 1468 +++++++++++++++++++++++++++++++
+>  include/linux/usb/ft232h-intf.h |  198 +++++
+>  10 files changed, 2957 insertions(+)
+>  create mode 100644 drivers/fpga/ftdi-fifo-fpp.c
+>  create mode 100644 drivers/spi/spi-ftdi-mpsse.c
+>  create mode 100644 drivers/usb/misc/ft232h-intf.c
+>  create mode 100644 include/linux/usb/ft232h-intf.h
+>
+> --
+> 2.17.1
+>
