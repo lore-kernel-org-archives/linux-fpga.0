@@ -1,51 +1,42 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
+Return-Path: <SRS0=F0XN=NQ=denx.de=agust@kernel.org>
+Return-Path: <SRS0=F0XN=NQ=denx.de=agust@kernel.org>
+Date: Mon, 5 Nov 2018 18:54:13 +0100
+From: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH v2] fpga: mgr: altera-ps-spi: enable usage on non-dt
+ platforms
+Message-ID: <20181105185413.6ee0ba0d@crub>
+In-Reply-To: <CANk1AXQCQpi7nuvDSPGrp=zwvkhKpWha6_5T=7hYaZFpjsyuxw@mail.gmail.com>
+References: <20181029141709.14749-1-agust@denx.de>
+	<CANk1AXQCQpi7nuvDSPGrp=zwvkhKpWha6_5T=7hYaZFpjsyuxw@mail.gmail.com>
 MIME-Version: 1.0
-References: <20180912144327.3130-1-atull@kernel.org> <20180912144327.3130-5-atull@kernel.org>
- <20180930154921.GB13200@kroah.com>
-In-Reply-To: <20180930154921.GB13200@kroah.com>
-From: Alan Tull <atull@kernel.org>
-Date: Mon, 12 Nov 2018 09:48:00 -0600
-Message-ID: <CANk1AXSr1xdqfmyNeN6Jc-OnZhDqbL+C2Uz_j37NGopVRWNj6g@mail.gmail.com>
-Subject: Re: [PATCH 4/5] fpga: of-fpga-region: Use platform_set_drvdata
-Content-Type: text/plain; charset="UTF-8"
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Sun, Sep 30, 2018 at 10:49 AM Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
+Hi Alan,
 
-Hi Greg,
-
+On Thu, 1 Nov 2018 14:37:02 -0500
+Alan Tull atull@kernel.org wrote:
+...
+>>  static const struct spi_device_id altera_ps_spi_ids[] = {
+>> -       {"cyclone-ps-spi", 0},
+>> +       {"cyclone-ps-spi", (kernel_ulong_t)&c5_data},
+>> +       {"fpga-passive-serial", (kernel_ulong_t)&c5_data},
+>> +       {"fpga-arria10-passive-serial", (kernel_ulong_t)&a10_data},  
 >
-> On Wed, Sep 12, 2018 at 09:43:26AM -0500, Alan Tull wrote:
-> > From: Moritz Fischer <mdf@kernel.org>
-> >
-> > Use platform_set_drvdata rather than dev_set_drvdata
-> > to match the platform_get_drvdata in the _remove()
-> > function of the platform driver.
-> >
-> > Signed-off-by: Moritz Fischer <mdf@kernel.org>
-> > Acked-by: Alan Tull <atull@kernel.org>
-> > ---
-> >  drivers/fpga/of-fpga-region.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-> > index 052a134..d6a70e4 100644
-> > --- a/drivers/fpga/of-fpga-region.c
-> > +++ b/drivers/fpga/of-fpga-region.c
-> > @@ -421,7 +421,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
-> >               goto eprobe_free;
-> >
-> >       of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
-> > -     dev_set_drvdata(dev, region);
-> > +     platform_set_drvdata(pdev, region);
->
-> Again, not really a bugfix :)
+>I don't think this should be implemented as a pointer. This would be
+>easy if driver_data were void* but it's a value that's not a pointer.
+> I suggest using driver_data as a index to an array of pointers to the
+>structs instead.
 
-Could you take this patch 4/5 (just sent a reminder for 5/5)?
+Thanks for review. I've sent v3 using array of pointers. It uses
+the FPGA type in driver_data. It could be used as an index to the
+array of pointers, but I'd prefer checking for this type explicitly,
+so it will work even if the array is wrongly extended or reordered
+by future changes.
 
-Thanks
-Alan
+Thanks,
+
+Anatolij
