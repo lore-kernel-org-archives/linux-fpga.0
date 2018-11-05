@@ -1,76 +1,42 @@
-Return-Path: <SRS0=wszZ=NY=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=wszZ=NY=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv11 7/8] Documentation: driver-api: add stratix10 service layer
-Date: Tue, 13 Nov 2018 12:14:05 -0600
-Message-Id: <1542132846-24168-8-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1542132846-24168-1-git-send-email-richard.gong@linux.intel.com>
-References: <1542132846-24168-1-git-send-email-richard.gong@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v6 08/18] of: overlay: reorder fields in struct fragment
+Date: Mon,  5 Nov 2018 07:25:05 -0800
+Message-Id: <1541431515-25197-9-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+From: Frank Rowand <frank.rowand@sony.com>
 
-Add Intel Stratix10 service layer driver document
+Order the fields of struct fragment in the same order as
+struct of_overlay_notify_data.  The order in struct fragment is
+not significant.  If both structs are ordered the same then when
+examining the data in a debugger or dump the human involved does
+not have to remember which context they are examining.
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Signed-off-by: Alan Tull <atull@kernel.org>
+Tested-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-v5: this patch is added in patch set version 5,
-    add new file stratix10-svc.rst
-    add stratix10-svc.rst to driver-api/index.rst
-v6: no change
-v7: no change
-v8: no change
-v9: no change
-v10: add stratix10 service layer document to other firmware
-     interface, and then remove stratix10-svc.rst file
-v11: no change
----
- .../driver-api/firmware/other_interfaces.rst       | 30 ++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ drivers/of/overlay.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/driver-api/firmware/other_interfaces.rst b/Documentation/driver-api/firmware/other_interfaces.rst
-index 36c47b1..a4ac54b 100644
---- a/Documentation/driver-api/firmware/other_interfaces.rst
-+++ b/Documentation/driver-api/firmware/other_interfaces.rst
-@@ -13,3 +13,33 @@ EDD Interfaces
- .. kernel-doc:: drivers/firmware/edd.c
-    :internal:
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 9808aae4621a..15be3da34fef 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -49,8 +49,8 @@ struct target {
+  * @overlay:	pointer to the __overlay__ node
+  */
+ struct fragment {
+-	struct device_node *target;
+ 	struct device_node *overlay;
++	struct device_node *target;
+ };
  
-+Intel Stratix10 SoC Service Layer
-+---------------------------------
-+Some features of the Intel Stratix10 SoC require a level of privilege
-+higher than the kernel is granted. Such secure features include
-+FPGA programming. In terms of the ARMv8 architecture, the kernel runs
-+at Exception Level 1 (EL1), access to the features requires
-+Exception Level 3 (EL3).
-+
-+The Intel Stratix10 SoC service layer provides an in kernel API for
-+drivers to request access to the secure features. The requests are queued
-+and processed one by one. ARM’s SMCCC is used to pass the execution
-+of the requests on to a secure monitor (EL3).
-+
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_command_code
-+
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_client_msg
-+
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_command_reconfig_payload
-+
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_cb_data
-+
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_client
-+
-+.. kernel-doc:: drivers/firmware/stratix10-svc.c
-+   :export:
+ /**
 -- 
-2.7.4
+Frank Rowand <frank.rowand@sony.com>
