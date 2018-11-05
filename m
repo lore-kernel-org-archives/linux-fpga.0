@@ -1,35 +1,50 @@
-Return-Path: <SRS0=gGtO=NS=ellerman.id.au=mpe@kernel.org>
-Return-Path: <SRS0=gGtO=NS=ellerman.id.au=mpe@kernel.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
 Subject: Re: [PATCH v6 00/18] of: overlay: validation checks, subsequent fixes
-In-Reply-To: <bf1be459-22d7-6b23-7b1f-847dad5e028f@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com> <CAL_JsqJ6fJcqH4+YHrEZRb+8-KFEmL8WSTSE_XSyrtO=2+JQBA@mail.gmail.com> <bf1be459-22d7-6b23-7b1f-847dad5e028f@gmail.com>
-Date: Wed, 07 Nov 2018 23:09:14 +1100
-Message-ID: <87sh0dqec5.fsf@concordia.ellerman.id.au>
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+ <CAL_JsqJ6fJcqH4+YHrEZRb+8-KFEmL8WSTSE_XSyrtO=2+JQBA@mail.gmail.com>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <bf1be459-22d7-6b23-7b1f-847dad5e028f@gmail.com>
+Date: Mon, 5 Nov 2018 13:55:10 -0800
 MIME-Version: 1.0
-Content-Type: text/plain
-To: Frank Rowand <frowand.list@gmail.com>, Rob Herring <robh+dt@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <CAL_JsqJ6fJcqH4+YHrEZRb+8-KFEmL8WSTSE_XSyrtO=2+JQBA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Rob Herring <robh+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
 Cc: Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Frank Rowand <frowand.list@gmail.com> writes:
+Hi Michael, Ben, Paul,
 
-> Hi Michael, Ben, Paul,
->
-> Do you know if anyone has tried this series on PowerPC?
+Do you know if anyone has tried this series on PowerPC?
 
-I have. No obvious breakage.
+Thanks,
 
-My test does a loop of adding and removing multiple CPUs multiple times,
-and in the past that has uncovered refcounting bugs. So I don't think
-we're leaking any with this series applied.
-
-I used the tracepoint patch to keep an eye on the refcounts :)
-
-  https://patchwork.ozlabs.org/patch/751602/
+-Frank
 
 
-I'm happy for this series to go into linux-next where it should get some
-more testing.
-
-cheers
+On 11/5/18 11:24 AM, Rob Herring wrote:
+> On Mon, Nov 5, 2018 at 9:26 AM <frowand.list@gmail.com> wrote:
+>>
+>> From: Frank Rowand <frank.rowand@sony.com>
+>>
+>> Add checks to (1) overlay apply process and (2) memory freeing
+>> triggered by overlay release.  The checks are intended to detect
+>> possible memory leaks and invalid overlays.
+>>
+>> The checks revealed bugs in existing code.  Fixed the bugs.
+>>
+>> While fixing bugs, noted other issues, which are fixed in
+>> separate patches.
+>>
+>> *****  Powerpc folks: I was not able to test the patches that
+>> *****  directly impact Powerpc systems that use dynamic
+>> *****  devicetree.  Please review that code carefully and
+>> *****  test.  The specific patches are: 03/16, 04/16, 07/16
+> 
+> I'm waiting for this to happen. Send me a pull req when it does or
+> when you give up waiting for a response.
+> 
+> Rob
+> 
