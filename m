@@ -1,110 +1,71 @@
-Return-Path: <SRS0=NVLg=N2=denx.de=agust@kernel.org>
-Return-Path: <SRS0=NVLg=N2=denx.de=agust@kernel.org>
+Return-Path: <SRS0=8dAr=NQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=8dAr=NQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-out.m-online.net ([212.18.0.9]:43554 "EHLO
+        mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725910AbeKFFvP (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 6 Nov 2018 00:51:15 -0500
+Date: Mon, 5 Nov 2018 21:29:45 +0100
 From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v4] fpga: mgr: altera-ps-spi: enable usage on non-dt platforms
-Date: Fri, 16 Nov 2018 00:58:03 +0100
-Message-Id: <20181115235803.25316-1-agust@denx.de>
-To: linux-fpga@vger.kernel.org
-Cc: atull@kernel.org, mdf@kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Subject: Re: [PATCH 0/3] Add support for ARRI FPGA configuration
+Message-ID: <20181105212945.7625cfd3@crub>
+In-Reply-To: <CANk1AXQCTc39hgn7FszzhqHVFRCeMwqddC1FmHe25i2QYffrcw@mail.gmail.com>
+References: <20181105161913.27538-1-agust@denx.de>
+        <CANk1AXQCTc39hgn7FszzhqHVFRCeMwqddC1FmHe25i2QYffrcw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: USB list <linux-usb@vger.kernel.org>, linux-spi <linux-spi@vger.kernel.org>, linux-fpga@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Moritz Fischer <mdf@kernel.org>
 
-Driver probing fails on non-dt platforms since of_match_device()
-always returns NULL here. Add spi ids with device names and
-matching driver data as an index of a map array with data for
-supported devices. Add this map array and Alan's code to map
-spi ids to driver data. This allows driver binding to dynamically
-added PS-SPI devices (e.g. when added via spi_new_device() after
-hot-plugging).
+Hi Alan,
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
-Changes in v4:
- - reword commit message to describe code changes
- - rework mapping code as suggested by Alan
- - add comment about index with driver data map
+On Mon, 5 Nov 2018 12:52:03 -0600
+Alan Tull atull@kernel.org wrote:
 
-Changes in v3:
- - don't use pointers to device data struct in driver_data
+>On Mon, Nov 5, 2018 at 10:19 AM Anatolij Gustschin <agust@denx.de> wrote:
+>
+>Hi Anatolij,
+>
+>>
+>> This series adds drivers and FPGA manager support required
+>> for FT232H based ARRI FPGA configuration adapters.  
+>
+>Is this a repost or a new version of this patchset?  If it's a repost,
+>you could note that.  If there are changes since the previous posting,
+>version info helps reviewers know what's new.
 
-Changes in v2:
- - removed not necessary braces {}
- - dropped not needed !id check
+This is a new version. Or it is very different compared to my first
+attempt to add driver support for this adapter hardware. The initial
+series ([1],[2],[3]) didn't include MPSSE SPI driver, it didn't use
+vendor specific USB PIDs for FTDI device and had fundamental design
+issues. This new version implements the new driver design as summarized
+here [4].
 
- drivers/fpga/altera-ps-spi.c | 40 +++++++++++++++++++++++++++++++-----
- 1 file changed, 35 insertions(+), 5 deletions(-)
+Changes in this new version:
+ - don't use MFD framework
+ - don't use original FT232H USB PID (it is too generic and collides
+   with existing ftdi_sio driver)
+ - don't add separate CBUS GPIO driver based on FT232H MFD device
+ - redesign/rework the drivers as described under [4]
+ - add basic FT232H interface driver under drivers/usb/misc/
+ - use custom reserved USB PIDs in the USB driver for adapter devices
+ - add notes about borrowed protocol code from libftdi to commit log
+   and header file
+ - add MPSSE SPI controller driver supporting USB-SPI bus with
+   dynamically added SPI slaves from description in platform data
+   (the initial attempt didn't include USB SPI bus support for PS-
+    SPI FPGA configuration via USB)
+ - rework FPP fpga manager driver based on new FT232H interface
+   driver and extend it according to CPLD changes for additional
+   support of new hardware revision B.
 
-diff --git a/drivers/fpga/altera-ps-spi.c b/drivers/fpga/altera-ps-spi.c
-index 33aafda50af5..8c18beec6b57 100644
---- a/drivers/fpga/altera-ps-spi.c
-+++ b/drivers/fpga/altera-ps-spi.c
-@@ -75,6 +75,12 @@ static struct altera_ps_data a10_data = {
- 	.t_st2ck_us = 10, /* min(t_ST2CK) */
- };
- 
-+/* Array index is enum altera_ps_devtype */
-+static const struct altera_ps_data *altera_ps_data_map[] = {
-+	&c5_data,
-+	&a10_data,
-+};
-+
- static const struct of_device_id of_ef_match[] = {
- 	{ .compatible = "altr,fpga-passive-serial", .data = &c5_data },
- 	{ .compatible = "altr,fpga-arria10-passive-serial", .data = &a10_data },
-@@ -234,6 +240,22 @@ static const struct fpga_manager_ops altera_ps_ops = {
- 	.write_complete = altera_ps_write_complete,
- };
- 
-+static const struct altera_ps_data *id_to_data(const struct spi_device_id *id)
-+{
-+	kernel_ulong_t devtype = id->driver_data;
-+	const struct altera_ps_data *data;
-+
-+	/* someone added a altera_ps_devtype without adding to the map array */
-+	if (devtype >= ARRAY_SIZE(altera_ps_data_map))
-+		return NULL;
-+
-+	data = altera_ps_data_map[devtype];
-+	if (!data || data->devtype != devtype)
-+		return NULL;
-+
-+	return data;
-+}
-+
- static int altera_ps_probe(struct spi_device *spi)
- {
- 	struct altera_ps_conf *conf;
-@@ -244,11 +266,17 @@ static int altera_ps_probe(struct spi_device *spi)
- 	if (!conf)
- 		return -ENOMEM;
- 
--	of_id = of_match_device(of_ef_match, &spi->dev);
--	if (!of_id)
--		return -ENODEV;
-+	if (spi->dev.of_node) {
-+		of_id = of_match_device(of_ef_match, &spi->dev);
-+		if (!of_id)
-+			return -ENODEV;
-+		conf->data = of_id->data;
-+	} else {
-+		conf->data = id_to_data(spi_get_device_id(spi));
-+		if (!conf->data)
-+			return -ENODEV;
-+	}
- 
--	conf->data = of_id->data;
- 	conf->spi = spi;
- 	conf->config = devm_gpiod_get(&spi->dev, "nconfig", GPIOD_OUT_LOW);
- 	if (IS_ERR(conf->config)) {
-@@ -294,7 +322,9 @@ static int altera_ps_remove(struct spi_device *spi)
- }
- 
- static const struct spi_device_id altera_ps_spi_ids[] = {
--	{"cyclone-ps-spi", 0},
-+	{ "cyclone-ps-spi", CYCLONE5 },
-+	{ "fpga-passive-serial", CYCLONE5 },
-+	{ "fpga-arria10-passive-serial", ARRIA10 },
- 	{}
- };
- MODULE_DEVICE_TABLE(spi, altera_ps_spi_ids);
--- 
-2.17.1
+[1] https://patchwork.kernel.org/patch/9828985/
+[2] https://patchwork.kernel.org/patch/9828981/
+[3] https://patchwork.kernel.org/patch/9828983/
+[4] https://www.spinics.net/lists/linux-usb/msg163441.html
+
+Thanks,
+
+Anatolij
