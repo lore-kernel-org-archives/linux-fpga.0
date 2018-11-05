@@ -1,62 +1,54 @@
-Return-Path: <SRS0=wszZ=NY=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=wszZ=NY=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv11 4/8] dt-bindings: fpga: add Stratix10 SoC FPGA manager binding
-Date: Tue, 13 Nov 2018 12:14:02 -0600
-Message-Id: <1542132846-24168-5-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1542132846-24168-1-git-send-email-richard.gong@linux.intel.com>
-References: <1542132846-24168-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v6 06/18] of: overlay: do not duplicate properties from overlay for new nodes
+Date: Mon,  5 Nov 2018 07:25:03 -0800
+Message-Id: <1541431515-25197-7-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Alan Tull <atull@kernel.org>
+From: Frank Rowand <frank.rowand@sony.com>
 
-Add a Device Tree binding for the Intel Stratix10 SoC FPGA manager.
+When allocating a new node, add_changeset_node() was duplicating the
+properties from the respective node in the overlay instead of
+allocating a node with no properties.
 
-Signed-off-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
+When this patch is applied the errors reported by the devictree
+unittest from patch "of: overlay: add tests to validate kfrees from
+overlay removal" will no longer occur.  These error messages are of
+the form:
+
+   "OF: ERROR: ..."
+
+and the unittest results will change from:
+
+   ### dt-test ### end of unittest - 203 passed, 7 failed
+
+to
+
+   ### dt-test ### end of unittest - 210 passed, 0 failed
+
+Tested-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-v2: this patch is added in patch set version 2
-v3: change to put fpga_mgr node under firmware/svc node
-v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
-    add Richard's signed-off-by
-v5: add Reviewed-by Rob Herring
-v6: no change
-v7: no change
-v8: no change
-v9: no change
-v10: no change
-v11: add Moritz Fischer's Acked-by
----
- .../bindings/fpga/intel-stratix10-soc-fpga-mgr.txt      | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
+ drivers/of/overlay.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-new file mode 100644
-index 0000000..6e03f79
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-@@ -0,0 +1,17 @@
-+Intel Stratix10 SoC FPGA Manager
-+
-+Required properties:
-+The fpga_mgr node has the following mandatory property, must be located under
-+firmware/svc node.
-+
-+- compatible : should contain "intel,stratix10-soc-fpga-mgr"
-+
-+Example:
-+
-+	firmware {
-+		svc {
-+			fpga_mgr: fpga-mgr {
-+				compatible = "intel,stratix10-soc-fpga-mgr";
-+			};
-+		};
-+	};
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 6fd8e6145e10..9808aae4621a 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -393,7 +393,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
+ 			break;
+ 
+ 	if (!tchild) {
+-		tchild = __of_node_dup(node, node_kbasename);
++		tchild = __of_node_dup(NULL, node_kbasename);
+ 		if (!tchild)
+ 			return -ENOMEM;
+ 
 -- 
-2.7.4
+Frank Rowand <frank.rowand@sony.com>
