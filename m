@@ -1,78 +1,119 @@
-Return-Path: <SRS0=Jnos=NR=denx.de=agust@kernel.org>
-Return-Path: <SRS0=Jnos=NR=denx.de=agust@kernel.org>
-Date: Wed, 7 Nov 2018 00:56:04 +0100
-From: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] fpga: altera-cvp: fix probing for multiple FPGAs on the
- bus
-Message-ID: <20181107005604.693d3162@crub>
-In-Reply-To: <CANk1AXS_FXFV3Q1zoorHc+fEMWtQzPfbgMEm=LzP5U0Qq_CAJg@mail.gmail.com>
-References: <20181106203512.4509-1-agust@denx.de>
-	<CANk1AXS_FXFV3Q1zoorHc+fEMWtQzPfbgMEm=LzP5U0Qq_CAJg@mail.gmail.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-To: Alan Tull <atull@kernel.org>
+References: <20181106203512.4509-1-agust@denx.de>
+In-Reply-To: <20181106203512.4509-1-agust@denx.de>
+From: Alan Tull <atull@kernel.org>
+Date: Tue, 6 Nov 2018 15:54:17 -0600
+Message-ID: <CANk1AXS_FXFV3Q1zoorHc+fEMWtQzPfbgMEm=LzP5U0Qq_CAJg@mail.gmail.com>
+Subject: Re: [PATCH] fpga: altera-cvp: fix probing for multiple FPGAs on the bus
+Content-Type: text/plain; charset="UTF-8"
+To: Anatolij Gustschin <agust@denx.de>
 Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Alan,
+On Tue, Nov 6, 2018 at 2:35 PM Anatolij Gustschin <agust@denx.de> wrote:
 
-On Tue, 6 Nov 2018 15:54:17 -0600
-Alan Tull atull@kernel.org wrote:
-...
->> fpga_manager fpga3: Altera CvP FPGA Manager @0000:0c:00.0 registered
->> sysfs: cannot create duplicate filename '/bus/pci/drivers/altera-cvp/chkcfg'  
+Hi Anatolij,
+
 >
->Shouldn't this have been a file under /sys/class/fpga_manager/fpga0/
->instead?  This is a control per-device not per driver.
-
-I thought /sys/class/fpga_manager/fpgaN/ interface is generic for fpga-mgr
-and low-level manager specific stuff does not belong there. At least this
-is my filling when reading Documentation/ABI/testing/sysfs-class-fpga-manager.
-
-chkcfg is a debugging option and will be rarely used while development,
-it is off by default. And when enabling it globally at debugging time,
-it won't hurt other devices I think. If it were some device specific
-behaviour control, then it surely would make sense to turn it on/off
-pre-device.
-
-...
->> -       ret = driver_create_file(&altera_cvp_driver.driver,
->> -                                &driver_attr_chkcfg);
->> -       if (ret) {
->> -               dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
->> -               fpga_mgr_unregister(mgr);
->> -               goto err_unmap;
->> +       if (!altera_cvp_cnt++) {
->> +               ret = driver_create_file(&altera_cvp_driver.driver,
->> +                                        &driver_attr_chkcfg);  
+> Currently registering CvP managers works only for first probed CvP
+> device, for all other devices it is refused due to duplicated chkcfg
+> sysfs entry:
 >
->In the review, I didn't catch that this was adding a driver file
->instead of a device file.
+> fpga_manager fpga3: Altera CvP FPGA Manager @0000:0c:00.0 registered
+> sysfs: cannot create duplicate filename '/bus/pci/drivers/altera-cvp/chkcfg'
 
-I was too focused on tons of comments to the driver patches when
-mainlining this driver and didn't have hardware with multiple
-PCIe cards to test it, so this bug crept in.
+Shouldn't this have been a file under /sys/class/fpga_manager/fpga0/
+instead?  This is a control per-device not per driver.
 
-When adding it as a device file, it will be in the directory with
-many PCI device specific files, e.g:
-# ls /sys/bus/pci/devices/0000\:0c\:00.0/
-ari_enabled           config                    current_link_width  dma_mask_bits    enable        local_cpulist   max_link_width  numa_node  rescan    resource0  resource4     subsystem         uevent
-broken_parity_status  consistent_dma_mask_bits  d3cold_allowed      driver           fpga_manager  local_cpus      modalias        power      reset     resource1  resource4_wc  subsystem_device  vendor
-class                 current_link_speed        device              driver_override  irq           max_link_speed  msi_bus         remove     resource  resource2  revision      subsystem_vendor
+> CPU: 0 PID: 3808 Comm: bash Tainted: G           O      4.19.0-custom+ #5
+> Call Trace:
+>   dump_stack+0x46/0x5b
+>   sysfs_warn_dup+0x53/0x60
+>   sysfs_add_file_mode_ns+0x16d/0x180
+>   sysfs_create_file_ns+0x51/0x60
+>   altera_cvp_probe+0x16f/0x2a0 [altera_cvp]
+>   local_pci_probe+0x3f/0xa0
+>   ? pci_match_device+0xb1/0xf0
+>   pci_device_probe+0x116/0x170
+>   really_probe+0x21b/0x2c0
+>   driver_probe_device+0x4b/0xe0
+>   bind_store+0xcb/0x130
+>   kernfs_fop_write+0xfd/0x180
+>   __vfs_write+0x21/0x150
+>   ? selinux_file_permission+0xdc/0x130
+>   vfs_write+0xa8/0x1a0
+>   ? find_vma+0xd/0x60
+>   ksys_write+0x3d/0x90
+>   do_syscall_64+0x44/0xf0
+>   entry_SYSCALL_64_after_hwframe+0x44/0xa9
+>   ...
+>  altera-cvp 0000:0c:00.0: Can't create sysfs chkcfg file
+>  fpga_manager fpga3: fpga_mgr_unregister Altera CvP FPGA Manager @0000:0c:00.0
+>
+> Skip chkcfg creation for all but first probed device. Remove chkcfg
+> interface when last potential user has gone.
+>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> ---
+>  drivers/fpga/altera-cvp.c | 22 +++++++++++++++-------
+>  1 file changed, 15 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+> index 144fa2a4d4cc..381d0c42450f 100644
+> --- a/drivers/fpga/altera-cvp.c
+> +++ b/drivers/fpga/altera-cvp.c
+> @@ -60,6 +60,7 @@
+>
+>  /* Optional CvP config error status check for debugging */
+>  static bool altera_cvp_chkcfg;
+> +static unsigned int altera_cvp_cnt;
+>
+>  struct altera_cvp_conf {
+>         struct fpga_manager     *mgr;
+> @@ -466,12 +467,15 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+>         if (ret)
+>                 goto err_unmap;
+>
+> -       ret = driver_create_file(&altera_cvp_driver.driver,
+> -                                &driver_attr_chkcfg);
+> -       if (ret) {
+> -               dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
+> -               fpga_mgr_unregister(mgr);
+> -               goto err_unmap;
+> +       if (!altera_cvp_cnt++) {
+> +               ret = driver_create_file(&altera_cvp_driver.driver,
+> +                                        &driver_attr_chkcfg);
 
-I don't think that it is a good place for such driver specific control file.
-If we really must implement it per-device, then it would make more sense to
-use the current path and use something like
+In the review, I didn't catch that this was adding a driver file
+instead of a device file.
 
-   echo "1 0000:0c:00.0" > /sys/bus/pci/drivers/altera-cvp/chkcfg
-
-for enabling the option for a particular device. For disabling:
-
-  echo "0 0000:0c:00.0" > /sys/bus/pci/drivers/altera-cvp/chkcfg
-
-But it is harder to implement. Is it worth the effort when it is
-hardly used?
+> +               if (ret) {
+> +                       dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
+> +                       fpga_mgr_unregister(mgr);
+> +                       altera_cvp_cnt--;
+> +                       goto err_unmap;
+> +               }
+>         }
+>
+>         return 0;
+> @@ -492,7 +496,11 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+>         struct altera_cvp_conf *conf = mgr->priv;
+>         u16 cmd;
+>
+> -       driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
+> +       if (!--altera_cvp_cnt) {
+> +               driver_remove_file(&altera_cvp_driver.driver,
+> +                                  &driver_attr_chkcfg);
+> +       }
+> +
+>         fpga_mgr_unregister(mgr);
+>         if (conf->map)
+>                 pci_iounmap(pdev, conf->map);
+> --
+> 2.17.1
+>
 
 Thanks,
-Anatolij
+Alan
