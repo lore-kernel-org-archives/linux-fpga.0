@@ -1,114 +1,72 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 1/2] fpga: altera-cvp: fix probing for multiple FPGAs on the bus
-Date: Mon, 26 Nov 2018 11:35:27 -0600
-Message-Id: <1543253728-26542-2-git-send-email-atull@kernel.org>
-In-Reply-To: <1543253728-26542-1-git-send-email-atull@kernel.org>
-References: <1543253728-26542-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Anatolij Gustschin <agust@denx.de>
+Return-Path: <SRS0=D2yy=NR=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=D2yy=NR=ettus.com=moritz.fischer@kernel.org>
+Date: Tue, 6 Nov 2018 11:07:47 -0800
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCHv10 4/8] dt-bindings: fpga: add Stratix10 SoC FPGA manager
+ binding
+Message-ID: <20181106190747.GA5690@archbook>
+References: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
+ <1541523172-5171-5-git-send-email-richard.gong@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1541523172-5171-5-git-send-email-richard.gong@linux.intel.com>
+To: richard.gong@linux.intel.com
+Cc: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@intel.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Anatolij Gustschin <agust@denx.de>
+Hi Richard,
 
-Currently registering CvP managers works only for first probed CvP
-device, for all other devices it is refused due to duplicated chkcfg
-sysfs entry:
-
-fpga_manager fpga3: Altera CvP FPGA Manager @0000:0c:00.0 registered
-sysfs: cannot create duplicate filename '/bus/pci/drivers/altera-cvp/chkcfg'
-CPU: 0 PID: 3808 Comm: bash Tainted: G           O      4.19.0-custom+ #5
-Call Trace:
-  dump_stack+0x46/0x5b
-  sysfs_warn_dup+0x53/0x60
-  sysfs_add_file_mode_ns+0x16d/0x180
-  sysfs_create_file_ns+0x51/0x60
-  altera_cvp_probe+0x16f/0x2a0 [altera_cvp]
-  local_pci_probe+0x3f/0xa0
-  ? pci_match_device+0xb1/0xf0
-  pci_device_probe+0x116/0x170
-  really_probe+0x21b/0x2c0
-  driver_probe_device+0x4b/0xe0
-  bind_store+0xcb/0x130
-  kernfs_fop_write+0xfd/0x180
-  __vfs_write+0x21/0x150
-  ? selinux_file_permission+0xdc/0x130
-  vfs_write+0xa8/0x1a0
-  ? find_vma+0xd/0x60
-  ksys_write+0x3d/0x90
-  do_syscall_64+0x44/0xf0
-  entry_SYSCALL_64_after_hwframe+0x44/0xa9
-  ...
- altera-cvp 0000:0c:00.0: Can't create sysfs chkcfg file
- fpga_manager fpga3: fpga_mgr_unregister Altera CvP FPGA Manager @0000:0c:00.0
-
-Move chkcfg creation to module init as suggested by Alan.
-
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Acked-by: Alan Tull <atull@kernel.org>
----
- drivers/fpga/altera-cvp.c | 34 ++++++++++++++++++++++++----------
- 1 file changed, 24 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 7395085..35c3aa5 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -475,14 +475,6 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	if (ret)
- 		goto err_unmap;
- 
--	ret = driver_create_file(&altera_cvp_driver.driver,
--				 &driver_attr_chkcfg);
--	if (ret) {
--		dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
--		fpga_mgr_unregister(mgr);
--		goto err_unmap;
--	}
--
- 	return 0;
- 
- err_unmap:
-@@ -501,7 +493,6 @@ static void altera_cvp_remove(struct pci_dev *pdev)
- 	struct altera_cvp_conf *conf = mgr->priv;
- 	u16 cmd;
- 
--	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
- 	fpga_mgr_unregister(mgr);
- 	if (conf->map)
- 		pci_iounmap(pdev, conf->map);
-@@ -511,7 +502,30 @@ static void altera_cvp_remove(struct pci_dev *pdev)
- 	pci_write_config_word(pdev, PCI_COMMAND, cmd);
- }
- 
--module_pci_driver(altera_cvp_driver);
-+static int __init altera_cvp_init(void)
-+{
-+	int ret;
-+
-+	ret = pci_register_driver(&altera_cvp_driver);
-+	if (ret)
-+		return ret;
-+
-+	ret = driver_create_file(&altera_cvp_driver.driver,
-+				 &driver_attr_chkcfg);
-+	if (ret)
-+		pr_warn("Can't create sysfs chkcfg file\n");
-+
-+	return 0;
-+}
-+
-+static void __exit altera_cvp_exit(void)
-+{
-+	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
-+	pci_unregister_driver(&altera_cvp_driver);
-+}
-+
-+module_init(altera_cvp_init);
-+module_exit(altera_cvp_exit);
- 
- MODULE_LICENSE("GPL v2");
- MODULE_AUTHOR("Anatolij Gustschin <agust@denx.de>");
--- 
-2.7.4
+On Tue, Nov 06, 2018 at 10:52:48AM -0600, richard.gong@linux.intel.com wrote:
+> From: Alan Tull <atull@kernel.org>
+> 
+> Add a Device Tree binding for the Intel Stratix10 SoC FPGA manager.
+> 
+> Signed-off-by: Alan Tull <atull@kernel.org>
+> Signed-off-by: Richard Gong <richard.gong@intel.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+> ---
+> v2: this patch is added in patch set version 2
+> v3: change to put fpga_mgr node under firmware/svc node
+> v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
+>     add Richard's signed-off-by
+> v5: add Reviewed-by Rob Herring
+> v6: no change
+> v7: no change
+> v8: no change
+> v9: no change
+> v10: no change
+> ---
+>  .../bindings/fpga/intel-stratix10-soc-fpga-mgr.txt      | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
+> new file mode 100644
+> index 0000000..6e03f79
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
+> @@ -0,0 +1,17 @@
+> +Intel Stratix10 SoC FPGA Manager
+> +
+> +Required properties:
+> +The fpga_mgr node has the following mandatory property, must be located under
+> +firmware/svc node.
+> +
+> +- compatible : should contain "intel,stratix10-soc-fpga-mgr"
+> +
+> +Example:
+> +
+> +	firmware {
+> +		svc {
+> +			fpga_mgr: fpga-mgr {
+> +				compatible = "intel,stratix10-soc-fpga-mgr";
+> +			};
+> +		};
+> +	};
+> -- 
+> 2.7.4
+> 
+Thanks,
+Moritz
