@@ -1,142 +1,97 @@
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v6 15/18] of: overlay: set node fields from properties when add new overlay node
-Date: Mon,  5 Nov 2018 07:25:12 -0800
-Message-Id: <1541431515-25197-16-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+References: <20181105171457.28150-1-agust@denx.de> <CANk1AXTTWMSsnjSgubnP6Mrt5GJ_edOL=cgix_rcrXs7t4-2CA@mail.gmail.com>
+ <20181106102931.7ec6d038@crub> <CANk1AXSWzDoSNJu4KX+fUYNJJvd1RmGy7QZBorEh2kc4-N1yVA@mail.gmail.com>
+In-Reply-To: <CANk1AXSWzDoSNJu4KX+fUYNJJvd1RmGy7QZBorEh2kc4-N1yVA@mail.gmail.com>
+From: Alan Tull <atull@kernel.org>
+Date: Tue, 6 Nov 2018 13:47:22 -0600
+Message-ID: <CANk1AXRnT25aAXDaVuq+widFzavkGUPsJKpQm3MDzhkeBjrYgA@mail.gmail.com>
+Subject: Re: [PATCH v2] fpga: mgr: add notifier for manager
+ register/unregister events
+Content-Type: text/plain; charset="UTF-8"
+To: Anatolij Gustschin <agust@denx.de>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>, Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+On Tue, Nov 6, 2018 at 11:22 AM Alan Tull <atull@kernel.org> wrote:
+>
+> On Tue, Nov 6, 2018 at 3:29 AM Anatolij Gustschin <agust@denx.de> wrote:
+> >
+> > Hi Alan,
+> >
+> > On Mon, 5 Nov 2018 15:08:03 -0600
+> > Alan Tull atull@kernel.org wrote:
+> >
+> > >On Mon, Nov 5, 2018 at 11:15 AM Anatolij Gustschin <agust@denx.de> wrote:
+> > >
+> > >Hi Anatolij,
+> > >
+> > >>
+> > >> Add API functions for registering and removing a notifier for FPGA
+> > >> manager register/unregister events. Notify when a new FPGA manager
+> > >> has been registered or when an existing manager is being removed.
+> > >> This will help configuration interface drivers to get the notion
+> > >> of low-level FPGA managers appearing or disappearing, when using
+> > >> hotpluggable FPGA configuration devices (e.g. via USB-FPP or
+> > >> USB-SPI adapters).
+>
+> To be clear, this patch will need to wait to go upstream when there is
+> a user for it.  So you could resubmit it when you are submitting
+> patches that use it.  That way we won't be adding code and maintaining
+> an API which has no upstream use.
+>
+> > >
+> > >Are you going to be adding any code upstream that uses this API?
+> >
+> > I'd like to add our fpga-cfg driver [1] in upstream which uses this API.
+> > Here [2] is a better readable README about it.
+>
+> This is adding a debugfs interface for FPGA manager.  I've posted a
+> patch for this recently and it got discussed [3].
+>
+> My view is that FPGA manager debugfs is fine for debug/development
+> work, but  turning it on and leaving it on for production work is
+> really wrong.   I keep seeing it come up since there currently is not
+> an accessible alternative if you are running without devicetree.
+>
+> It's more stable and secure if the kernel handles reprogramming,
+> bridges (if they exist), and enumeration all together under kernel
+> control rather than userspace handling them piecemeal.  So any
+> production FPGA interfaces need to be added on top of FPGA region
+> (which coordinates programming and bridges) and if possible handle
+> enumeration.  The other benefit of adding the interface on top of FPGA
+> regions is that supports a wider set of users, i.e. if you can control
+> a region, you can handle users who need bridges as well as users who
+> don't.
 
-Overlay nodes added by add_changeset_node() do not have the node
-fields name, phandle, and type set.
+This interface also adds a way of adding a configuration description
+in a sysfs file that will be parsed in the kernel [2].
 
-The node passed to __of_attach_node() when the add node changeset
-entry is processed does not contain any properties.  The node's
-properties are located in add property changeset entries that will
-be processed after the add node changeset is applied.
+One thing that was discussed at length on the linux-fpga mailing list
+last year was adding a header to an FPGA image that could contain
+image specific information (Jason Gunthorpe's suggestion [4]).  The
+desire was to keep the image specific information together with the
+image.  There were a few proposals regarding the format of the header,
+with Moritz suggesting using FIT images [5] [6].  FIT has the
+advantage of being a standard that is already supported in the kernel
+(so we can avoid adding code that does string parsing to the kernel).
+Putting the image file together is easy to do using mkimage.  I did a
+RFC [7].
 
-Set the node's fields in the node contained in the add node
-changeset entry and do not set them to incorrect values in
-add_changeset_node().
+>
+> >
+> > Thanks,
+> >
+> > Anatolij
+> >
+> >
+> > [1] http://git.denx.de/?p=fpga-cfg.git;a=summary
+> > [2] https://github.com/vdsao/fpga-cfg/blob/master/README.md
+>
+> [3] https://lkml.org/lkml/2018/8/16/665
 
-A visible symptom that is fixed by this patch is the names of nodes
-added by overlays that have an entry in /sys/bus/platform/drivers/*/
-will contain the unit-address but the node-name will be <NULL>,  for
-example, "fc4ab000.<NULL>".  After applying the patch the name, in
-this example, for node restart@fc4ab000 is "fc4ab000.restart".
-
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/dynamic.c | 27 ++++++++++++++++++---------
- drivers/of/overlay.c | 29 ++++++++++++++++++++++++-----
- 2 files changed, 42 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index beea792debb6..43e1ccb9c387 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -205,15 +205,24 @@ static void __of_attach_node(struct device_node *np)
- 	const __be32 *phandle;
- 	int sz;
- 
--	np->name = __of_get_property(np, "name", NULL) ? : "<NULL>";
--	np->type = __of_get_property(np, "device_type", NULL) ? : "<NULL>";
--
--	phandle = __of_get_property(np, "phandle", &sz);
--	if (!phandle)
--		phandle = __of_get_property(np, "linux,phandle", &sz);
--	if (IS_ENABLED(CONFIG_PPC_PSERIES) && !phandle)
--		phandle = __of_get_property(np, "ibm,phandle", &sz);
--	np->phandle = (phandle && (sz >= 4)) ? be32_to_cpup(phandle) : 0;
-+	if (!of_node_check_flag(np, OF_OVERLAY)) {
-+		np->name = __of_get_property(np, "name", NULL);
-+		np->type = __of_get_property(np, "device_type", NULL);
-+		if (!np->name)
-+			np->name = "<NULL>";
-+		if (!np->type)
-+			np->type = "<NULL>";
-+
-+		phandle = __of_get_property(np, "phandle", &sz);
-+		if (!phandle)
-+			phandle = __of_get_property(np, "linux,phandle", &sz);
-+		if (IS_ENABLED(CONFIG_PPC_PSERIES) && !phandle)
-+			phandle = __of_get_property(np, "ibm,phandle", &sz);
-+		if (phandle && (sz >= 4))
-+			np->phandle = be32_to_cpup(phandle);
-+		else
-+			np->phandle = 0;
-+	}
- 
- 	np->child = NULL;
- 	np->sibling = np->parent->child;
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 184cc2c4a931..2b5ac43a5690 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -307,10 +307,11 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- 	int ret = 0;
- 	bool check_for_non_overlay_node = false;
- 
--	if (!of_prop_cmp(overlay_prop->name, "name") ||
--	    !of_prop_cmp(overlay_prop->name, "phandle") ||
--	    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
--		return 0;
-+	if (target->in_livetree)
-+		if (!of_prop_cmp(overlay_prop->name, "name") ||
-+		    !of_prop_cmp(overlay_prop->name, "phandle") ||
-+		    !of_prop_cmp(overlay_prop->name, "linux,phandle"))
-+			return 0;
- 
- 	if (target->in_livetree)
- 		prop = of_find_property(target->np, overlay_prop->name, NULL);
-@@ -330,6 +331,10 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- 
- 	if (!prop) {
- 		check_for_non_overlay_node = true;
-+		if (!target->in_livetree) {
-+			new_prop->next = target->np->deadprops;
-+			target->np->deadprops = new_prop;
-+		}
- 		ret = of_changeset_add_property(&ovcs->cset, target->np,
- 						new_prop);
- 	} else if (!of_prop_cmp(prop->name, "#address-cells")) {
-@@ -400,9 +405,10 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 		struct target *target, struct device_node *node)
- {
- 	const char *node_kbasename;
-+	const __be32 *phandle;
- 	struct device_node *tchild;
- 	struct target target_child;
--	int ret = 0;
-+	int ret = 0, size;
- 
- 	node_kbasename = kbasename(node->full_name);
- 
-@@ -416,6 +422,19 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 			return -ENOMEM;
- 
- 		tchild->parent = target->np;
-+		tchild->name = __of_get_property(node, "name", NULL);
-+		tchild->type = __of_get_property(node, "device_type", NULL);
-+
-+		if (!tchild->name)
-+			tchild->name = "<NULL>";
-+		if (!tchild->type)
-+			tchild->type = "<NULL>";
-+
-+		/* ignore obsolete "linux,phandle" */
-+		phandle = __of_get_property(node, "phandle", &size);
-+		if (phandle && (size == 4))
-+			tchild->phandle = be32_to_cpup(phandle);
-+
- 		of_node_set_flag(tchild, OF_OVERLAY);
- 
- 		ret = of_changeset_attach_node(&ovcs->cset, tchild);
--- 
-Frank Rowand <frank.rowand@sony.com>
+[4] https://lkml.org/lkml/2017/2/15/469
+[5] https://lkml.org/lkml/2017/2/15/544
+[6] https://lkml.org/lkml/2017/2/15/641
+[7] https://lkml.org/lkml/2017/7/24/649
