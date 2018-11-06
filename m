@@ -1,135 +1,101 @@
-Return-Path: <SRS0=C43o=NU=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=C43o=NU=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-pg1-f193.google.com ([209.85.215.193]:36005 "EHLO
-        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727485AbeKIPqp (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 9 Nov 2018 10:46:45 -0500
-From: frowand.list@gmail.com
-Subject: [PATCH v7 00/17] of: overlay: validation checks, subsequent fixes
-Date: Thu,  8 Nov 2018 22:05:48 -0800
-Message-Id: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=qTBN=NR=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=qTBN=NR=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv10 1/8] dt-bindings, firmware: add Intel Stratix10 service layer binding
+Date: Tue,  6 Nov 2018 10:52:45 -0600
+Message-Id: <1541523172-5171-2-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
+References: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
+To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@intel.com
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+From: Richard Gong <richard.gong@intel.com>
 
-Add checks to (1) overlay apply process and (2) memory freeing
-triggered by overlay release.  The checks are intended to detect
-possible memory leaks and invalid overlays.
+Add a device tree binding for the Intel Stratix10 service layer driver
 
-The checks revealed bugs in existing code.  Fixed the bugs.
+Signed-off-by: Richard Gong <richard.gong@intel.com>
+Signed-off-by: Alan Tull <atull@kernel.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+---
+v2: change to put service layer driver node under the firmware node
+    change compatible to "intel, stratix10-svc"
+v3: no change
+v4: add Rob's Reviewed-by
+v5: no change
+v6: add Moritz's Acked-by
+v7: no change
+v8: no change
+v9: no chnage
+v10: no change
+---
+ .../bindings/firmware/intel,stratix10-svc.txt      | 57 ++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
 
-While fixing bugs, noted other issues, which are fixed in
-separate patches.
-
-FPGA folks:
-
-  I made the validation checks that should result in an
-  invalid live devicetree report "ERROR" and cause the overlay apply
-  to fail.
-
-  I made the memory leak validation tests report "WARNING" and allow
-  the overlay apply to complete successfully.  Please let me know
-  if you encounter the warnings.  There are at least two paths
-  forward to deal with the cases that trigger the warning: (1) change
-  the warning to an error and fail the overlay apply, or (2) find a
-  way to detect the potential memory leaks and free the memory
-  appropriately.
-
-ALL people:
-
-  The validations do _not_ address another major concern I have with
-  releasing overlays, which is use after free errors.
-
-Changes since v6:
-  - 03/18 Add acked-by from Michael Ellerman
-  - 03/18 Move info from post "---" into header comment
-  - 04/18 Add acked-by from Michael Ellerman
-  - 03/18 Move info from post "---" into header comment, add more info
-  - 07/18 Drop.
-
-Changes since v5:
-  - move from 4.19-rc1 to 4.20-rc1
-  - all patches: add tested-by Alan Tull
-  - 05/18: update for context change from commit a613b26a50136 ("of:
-    Convert to using %pOFn instead of device_node.name")
-
-Changes since v4:
-  - 01/18: make error message format consistent, error first, path last
-  - 09/18: create of_prop_val_eq() and change open code to use it
-  - 09/18: remove extra blank lines
-
-Changes since v3:
-  - 01/18: Add expected value of refcount for destroy cset entry error.  Also
-    explain the cause of the error.
-
-  - 09/18: for errors of an overlay changing the value of #size-cells or
-    #address-cells, return -EINVAL so that overlay apply will fail
-  - 09/18: for errors of an overlay changing the value of #size-cells or
-    #address-cells, make the message more direct.
-    Old message:
-      OF: overlay: ERROR: overlay and/or live tree #size-cells invalid in node /soc/base_fpga_region
-    New message:
-      OF: overlay: ERROR: changing value of /soc/base_fpga_region/#size-cells not allowed
-
-  - 13/18: Update patch comment header to state that this patch modifies the
-    previous patch to not return immediately on fragment error and
-    explain this is not a performance issue.
-  - 13/18: remove redundant "overlay" from two error messages.  "OF: overlay:"
-    is already present in pr_fmt()
-
-Changes since v2:
-
-  - 13/18: Use continue to reduce indentation in find_dup_cset_node_entry()
-    and find_dup_cset_prop()
-
-Changes since v1:
-
-  - move patch 16/16 to 17/18
-  - move patch 15/16 to 18/18
-  - new patch 15/18
-  - new patch 16/18
-
-  - 05/18: add_changeset_node() header comment: incorrect comment for @target
-
-  - 18/18: add same fix for of_parse_phandle_with_args()
-  - 18/18: add same fix for of_parse_phandle_with_args_map()
-
-Frank Rowand (17):
-  of: overlay: add tests to validate kfrees from overlay removal
-  of: overlay: add missing of_node_put() after add new node to changeset
-  of: overlay: add missing of_node_get() in __of_attach_node_sysfs
-  powerpc/pseries: add of_node_put() in dlpar_detach_node()
-  of: overlay: use prop add changeset entry for property in new nodes
-  of: overlay: do not duplicate properties from overlay for new nodes
-  of: overlay: reorder fields in struct fragment
-  of: overlay: validate overlay properties #address-cells and
-    #size-cells
-  of: overlay: make all pr_debug() and pr_err() messages unique
-  of: overlay: test case of two fragments adding same node
-  of: overlay: check prevents multiple fragments add or delete same node
-  of: overlay: check prevents multiple fragments touching same property
-  of: unittest: remove unused of_unittest_apply_overlay() argument
-  of: overlay: set node fields from properties when add new overlay node
-  of: unittest: allow base devicetree to have symbol metadata
-  of: unittest: find overlays[] entry by name instead of index
-  of: unittest: initialize args before calling of_*parse_*()
-
- arch/powerpc/platforms/pseries/dlpar.c             |   2 +
- drivers/of/dynamic.c                               |  59 ++++-
- drivers/of/kobj.c                                  |   4 +-
- drivers/of/overlay.c                               | 292 ++++++++++++++++-----
- drivers/of/unittest-data/Makefile                  |   2 +
- .../of/unittest-data/overlay_bad_add_dup_node.dts  |  28 ++
- .../of/unittest-data/overlay_bad_add_dup_prop.dts  |  24 ++
- drivers/of/unittest-data/overlay_base.dts          |   1 +
- drivers/of/unittest.c                              |  96 +++++--
- include/linux/of.h                                 |  21 +-
- 10 files changed, 432 insertions(+), 97 deletions(-)
- create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
- create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
-
+diff --git a/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+new file mode 100644
+index 0000000..1fa6606
+--- /dev/null
++++ b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
+@@ -0,0 +1,57 @@
++Intel Service Layer Driver for Stratix10 SoC
++============================================
++Intel Stratix10 SoC is composed of a 64 bit quad-core ARM Cortex A53 hard
++processor system (HPS) and Secure Device Manager (SDM). When the FPGA is
++configured from HPS, there needs to be a way for HPS to notify SDM the
++location and size of the configuration data. Then SDM will get the
++configuration data from that location and perform the FPGA configuration.
++
++To meet the whole system security needs and support virtual machine requesting
++communication with SDM, only the secure world of software (EL3, Exception
++Layer 3) can interface with SDM. All software entities running on other
++exception layers must channel through the EL3 software whenever it needs
++service from SDM.
++
++Intel Stratix10 service layer driver, running at privileged exception level
++(EL1, Exception Layer 1), interfaces with the service providers and provides
++the services for FPGA configuration, QSPI, Crypto and warm reset. Service layer
++driver also manages secure monitor call (SMC) to communicate with secure monitor
++code running in EL3.
++
++Required properties:
++-------------------
++The svc node has the following mandatory properties, must be located under
++the firmware node.
++
++- compatible: "intel,stratix10-svc"
++- method: smc or hvc
++        smc - Secure Monitor Call
++        hvc - Hypervisor Call
++- memory-region:
++	phandle to the reserved memory node. See
++	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
++	for details
++
++Example:
++-------
++
++	reserved-memory {
++                #address-cells = <2>;
++                #size-cells = <2>;
++                ranges;
++
++                service_reserved: svcbuffer@0 {
++                        compatible = "shared-dma-pool";
++                        reg = <0x0 0x0 0x0 0x1000000>;
++                        alignment = <0x1000>;
++                        no-map;
++                };
++        };
++
++	firmware {
++		svc {
++			compatible = "intel,stratix10-svc";
++			method = "smc";
++			memory-region = <&service_reserved>;
++		};
++	};
 -- 
-Frank Rowand <frank.rowand@sony.com>
+2.7.4
