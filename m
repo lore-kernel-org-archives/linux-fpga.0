@@ -1,113 +1,71 @@
-Return-Path: <SRS0=E6IX=N7=denx.de=agust@kernel.org>
-Return-Path: <SRS0=E6IX=N7=denx.de=agust@kernel.org>
-From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v5] fpga: mgr: altera-ps-spi: enable usage on non-dt platforms
-Date: Tue, 20 Nov 2018 20:06:03 +0100
-Message-Id: <20181120190603.5636-1-agust@denx.de>
-To: linux-fpga@vger.kernel.org
-Cc: atull@kernel.org, mdf@kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=L03T=NR=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=L03T=NR=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mga07.intel.com ([134.134.136.100]:48200 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2388935AbeKGCMy (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 6 Nov 2018 21:12:54 -0500
+From: richard.gong@linux.intel.com
+Subject: [PATCHv10 5/8] arm64: dts: stratix10: add fpga manager and region
+Date: Tue,  6 Nov 2018 10:52:49 -0600
+Message-Id: <1541523172-5171-6-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
+References: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@intel.com
 
-Driver probing fails on non-dt platforms since of_match_device()
-always returns NULL here. Add spi ids with device names and
-matching driver data as an index of a map array with data for
-supported devices. Add this map array and a function for mapping
-spi ids to driver data. This allows driver binding to dynamically
-added PS-SPI devices (e.g. when added via spi_new_device() after
-hot-plugging).
+From: Alan Tull <atull@kernel.org>
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Add the Stratix10 FPGA manager and a FPGA region to the
+device tree.
+
+Signed-off-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Richard Gong <richard.gong@intel.com>
 ---
-Changes in v5:
- - reword commit message
+v2: this patch is added in patch set version 2
+v3: change to put fpga_mgr node under firmware/svc node
+v4: s/fpga-mgr@0/fpga-mgr/ to remove unit_address
+    add Richard's signed-off-by
+v5: no change
+v6: no change
+v7: no change
+v8: no change
+v9: no change
+v10: no change
+---
+ arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-Changes in v4:
- - reword commit message to describe code changes
- - rework mapping code as suggested by Alan
- - add comment about index with driver data map
-
-Changes in v3:
- - don't use pointers to device data struct in driver_data
-
-Changes in v2:
- - removed not necessary braces {}
- - dropped not needed !id check
-
- drivers/fpga/altera-ps-spi.c | 40 +++++++++++++++++++++++++++++++-----
- 1 file changed, 35 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/fpga/altera-ps-spi.c b/drivers/fpga/altera-ps-spi.c
-index 33aafda50af5..8c18beec6b57 100644
---- a/drivers/fpga/altera-ps-spi.c
-+++ b/drivers/fpga/altera-ps-spi.c
-@@ -75,6 +75,12 @@ static struct altera_ps_data a10_data = {
- 	.t_st2ck_us = 10, /* min(t_ST2CK) */
- };
+diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+index a43ed05..62550a1 100644
+--- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
++++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+@@ -106,6 +106,14 @@
+ 		interrupt-parent = <&intc>;
+ 		ranges = <0 0 0 0xffffffff>;
  
-+/* Array index is enum altera_ps_devtype */
-+static const struct altera_ps_data *altera_ps_data_map[] = {
-+	&c5_data,
-+	&a10_data,
-+};
++		base_fpga_region {
++			#address-cells = <0x1>;
++			#size-cells = <0x1>;
 +
- static const struct of_device_id of_ef_match[] = {
- 	{ .compatible = "altr,fpga-passive-serial", .data = &c5_data },
- 	{ .compatible = "altr,fpga-arria10-passive-serial", .data = &a10_data },
-@@ -234,6 +240,22 @@ static const struct fpga_manager_ops altera_ps_ops = {
- 	.write_complete = altera_ps_write_complete,
- };
- 
-+static const struct altera_ps_data *id_to_data(const struct spi_device_id *id)
-+{
-+	kernel_ulong_t devtype = id->driver_data;
-+	const struct altera_ps_data *data;
++			compatible = "fpga-region";
++			fpga-mgr = <&fpga_mgr>;
++		};
 +
-+	/* someone added a altera_ps_devtype without adding to the map array */
-+	if (devtype >= ARRAY_SIZE(altera_ps_data_map))
-+		return NULL;
+ 		clkmgr: clock-controller@ffd10000 {
+ 			compatible = "intel,stratix10-clkmgr";
+ 			reg = <0xffd10000 0x1000>;
+@@ -553,6 +561,10 @@
+ 				compatible = "intel,stratix10-svc";
+ 				method = "smc";
+ 				memory-region = <&service_reserved>;
 +
-+	data = altera_ps_data_map[devtype];
-+	if (!data || data->devtype != devtype)
-+		return NULL;
-+
-+	return data;
-+}
-+
- static int altera_ps_probe(struct spi_device *spi)
- {
- 	struct altera_ps_conf *conf;
-@@ -244,11 +266,17 @@ static int altera_ps_probe(struct spi_device *spi)
- 	if (!conf)
- 		return -ENOMEM;
- 
--	of_id = of_match_device(of_ef_match, &spi->dev);
--	if (!of_id)
--		return -ENODEV;
-+	if (spi->dev.of_node) {
-+		of_id = of_match_device(of_ef_match, &spi->dev);
-+		if (!of_id)
-+			return -ENODEV;
-+		conf->data = of_id->data;
-+	} else {
-+		conf->data = id_to_data(spi_get_device_id(spi));
-+		if (!conf->data)
-+			return -ENODEV;
-+	}
- 
--	conf->data = of_id->data;
- 	conf->spi = spi;
- 	conf->config = devm_gpiod_get(&spi->dev, "nconfig", GPIOD_OUT_LOW);
- 	if (IS_ERR(conf->config)) {
-@@ -294,7 +322,9 @@ static int altera_ps_remove(struct spi_device *spi)
- }
- 
- static const struct spi_device_id altera_ps_spi_ids[] = {
--	{"cyclone-ps-spi", 0},
-+	{ "cyclone-ps-spi", CYCLONE5 },
-+	{ "fpga-passive-serial", CYCLONE5 },
-+	{ "fpga-arria10-passive-serial", ARRIA10 },
- 	{}
- };
- MODULE_DEVICE_TABLE(spi, altera_ps_spi_ids);
++				fpga_mgr: fpga-mgr {
++					compatible = "intel,stratix10-soc-fpga-mgr";
++				};
+ 			};
+ 		};
+ 	};
 -- 
-2.17.1
+2.7.4
