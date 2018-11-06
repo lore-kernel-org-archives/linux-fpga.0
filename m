@@ -1,55 +1,37 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-References: <20181106215838.5212-1-agust@denx.de>
-In-Reply-To: <20181106215838.5212-1-agust@denx.de>
-From: Alan Tull <atull@kernel.org>
-Date: Thu, 15 Nov 2018 16:28:10 -0600
-Message-ID: <CANk1AXRnahbsdbe7_XWvQudG_+Kr0exZgk2J4ay0sjM0b=bGBg@mail.gmail.com>
-Subject: Re: [PATCH] fpga: altera-cvp: output expected CvP VSE_PCIE_EXT_CAP_ID
- in error case
-Content-Type: text/plain; charset="UTF-8"
-To: Anatolij Gustschin <agust@denx.de>
-Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
+Return-Path: <SRS0=Jnos=NR=denx.de=agust@kernel.org>
+Return-Path: <SRS0=Jnos=NR=denx.de=agust@kernel.org>
+From: Anatolij Gustschin <agust@denx.de>
+Subject: [PATCH] fpga: altera-cvp: output expected CvP VSE_PCIE_EXT_CAP_ID in error case
+Date: Tue,  6 Nov 2018 22:58:38 +0100
+Message-Id: <20181106215838.5212-1-agust@denx.de>
+To: linux-fpga@vger.kernel.org
+Cc: atull@kernel.org, mdf@kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Nov 6, 2018 at 3:58 PM Anatolij Gustschin <agust@denx.de> wrote:
+Output VSE_PCIE_EXT_CAP_ID register address and expected register
+value in error message to give more info when analyzing issues
+with loaded periphery image.
 
-Hi Anatolij,
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/fpga/altera-cvp.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
->
-> Output VSE_PCIE_EXT_CAP_ID register address and expected register
-> value in error message to give more info when analyzing issues
-> with loaded periphery image.
->
-> Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> ---
->  drivers/fpga/altera-cvp.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-> index 381d0c42450f..08c0080092da 100644
-> --- a/drivers/fpga/altera-cvp.c
-> +++ b/drivers/fpga/altera-cvp.c
-> @@ -413,7 +413,10 @@ static int altera_cvp_probe(struct pci_dev *pdev,
->          */
->         pci_read_config_word(pdev, VSE_PCIE_EXT_CAP_ID, &val);
->         if (val != VSE_PCIE_EXT_CAP_ID_VAL) {
-> -               dev_err(&pdev->dev, "Wrong EXT_CAP_ID value 0x%x\n", val);
-> +               dev_err(&pdev->dev,
-> +                       "Wrong VSE_PCIE_EXT_CAP_ID value 0x%04x at 0x%x, "
-> +                       "expected: 0x%04x\n",
-> +                       val, VSE_PCIE_EXT_CAP_ID, VSE_PCIE_EXT_CAP_ID_VAL);
-
-This patch adds error print info which is printing out constants.
-Wouldn't the user just be able to look at the source and know what was
-expected?  I may be missing something here.
-
-Alan
-
->                 return -ENODEV;
->         }
->
-> --
-> 2.17.1
->
+diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+index 381d0c42450f..08c0080092da 100644
+--- a/drivers/fpga/altera-cvp.c
++++ b/drivers/fpga/altera-cvp.c
+@@ -413,7 +413,10 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	 */
+ 	pci_read_config_word(pdev, VSE_PCIE_EXT_CAP_ID, &val);
+ 	if (val != VSE_PCIE_EXT_CAP_ID_VAL) {
+-		dev_err(&pdev->dev, "Wrong EXT_CAP_ID value 0x%x\n", val);
++		dev_err(&pdev->dev,
++			"Wrong VSE_PCIE_EXT_CAP_ID value 0x%04x at 0x%x, "
++			"expected: 0x%04x\n",
++			val, VSE_PCIE_EXT_CAP_ID, VSE_PCIE_EXT_CAP_ID_VAL);
+ 		return -ENODEV;
+ 	}
+ 
+-- 
+2.17.1
