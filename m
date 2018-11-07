@@ -1,46 +1,45 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 4/4] zynq-fpga: Only route PR via PCAP when required
-Date: Wed,  7 Nov 2018 11:51:48 -0600
-Message-Id: <1541613108-29660-5-git-send-email-atull@kernel.org>
+Subject: [PATCH 2/4] fpga: dfl: fme: remove set but not used variable 'priv'
+Date: Wed,  7 Nov 2018 11:51:46 -0600
+Message-Id: <1541613108-29660-3-git-send-email-atull@kernel.org>
 In-Reply-To: <1541613108-29660-1-git-send-email-atull@kernel.org>
 References: <1541613108-29660-1-git-send-email-atull@kernel.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Mike Looijmans <mike.looijmans@topic.nl>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Mike Looijmans <mike.looijmans@topic.nl>
+From: YueHaibing <yuehaibing@huawei.com>
 
-The Xilinx Zynq FPGA driver takes ownership of the PR interface, making
-it impossible to use the ICAP interface for partial reconfiguration.
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-This patch changes the driver to only activate PR over PCAP while the
-device is actively being accessed by the driver for programming.
+drivers/fpga/dfl-fme-pr.c: In function 'pr_mgmt_uinit':
+drivers/fpga/dfl-fme-pr.c:447:18: warning:
+ variable 'priv' set but not used [-Wunused-but-set-variable]
 
-This allows both PCAP and ICAP interfaces to be used for PR.
-
-Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
-Reviewed-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/zynq-fpga.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/fpga/dfl-fme-pr.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
-index bb82efe..57b0e67 100644
---- a/drivers/fpga/zynq-fpga.c
-+++ b/drivers/fpga/zynq-fpga.c
-@@ -501,6 +501,10 @@ static int zynq_fpga_ops_write_complete(struct fpga_manager *mgr,
- 	if (err)
- 		return err;
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+index 0b84053..fe5a557 100644
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -444,10 +444,8 @@ static void pr_mgmt_uinit(struct platform_device *pdev,
+ 			  struct dfl_feature *feature)
+ {
+ 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+-	struct dfl_fme *priv;
  
-+	/* Release 'PR' control back to the ICAP */
-+	zynq_fpga_write(priv, CTRL_OFFSET,
-+		zynq_fpga_read(priv, CTRL_OFFSET) & ~CTRL_PCAP_PR_MASK);
-+
- 	err = zynq_fpga_poll_timeout(priv, INT_STS_OFFSET, intr_status,
- 				     intr_status & IXR_PCFG_DONE_MASK,
- 				     INIT_POLL_DELAY,
+ 	mutex_lock(&pdata->lock);
+-	priv = dfl_fpga_pdata_get_private(pdata);
+ 
+ 	dfl_fme_destroy_regions(pdata);
+ 	dfl_fme_destroy_bridges(pdata);
 -- 
 2.7.4
