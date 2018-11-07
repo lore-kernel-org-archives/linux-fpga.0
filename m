@@ -1,134 +1,85 @@
-Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v7 11/17] of: overlay: check prevents multiple fragments add or delete same node
-Date: Thu,  8 Nov 2018 22:05:59 -0800
-Message-Id: <1541743565-23163-12-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
-References: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Return-Path: <SRS0=NL9p=NS=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=NL9p=NS=gmail.com=frowand.list@kernel.org>
+Subject: Re: [PATCH v6 04/18] powerpc/pseries: add of_node_put() in
+ dlpar_detach_node()
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+ <1541431515-25197-5-git-send-email-frowand.list@gmail.com>
+ <87muqlqdog.fsf@concordia.ellerman.id.au>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <ea4d4314-a7e8-f4cd-f9e0-15fedcd3510f@gmail.com>
+Date: Wed, 7 Nov 2018 06:58:56 -0800
+MIME-Version: 1.0
+In-Reply-To: <87muqlqdog.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Michael Ellerman <mpe@ellerman.id.au>, Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+On 11/7/18 4:23 AM, Michael Ellerman wrote:
+> frowand.list@gmail.com writes:
+> 
+>> From: Frank Rowand <frank.rowand@sony.com>
+>>
+>> "of: overlay: add missing of_node_get() in __of_attach_node_sysfs"
+> 
+> It would be clearer if you said 'The previous commit "of: overlay ..."
 
-Multiple overlay fragments adding or deleting the same node is not
-supported.  Replace code comment of such, with check to detect the
-attempt and fail the overlay apply.
+Will fix.
 
-Devicetree unittest where multiple fragments added the same node was
-added in the previous patch in the series.  After applying this patch
-the unittest messages will no longer include:
 
-   Duplicate name in motor-1, renamed to "controller#1"
-   OF: overlay: of_overlay_apply() err=0
-   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
-   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
+>> added a missing of_node_get() to __of_attach_node_sysfs().  This
+>> results in a refcount imbalance for nodes attached with
+>> dlpar_attach_node().  The calling sequence from dlpar_attach_node()
+>> to __of_attach_node_sysfs() is:
+>>
+>>    dlpar_attach_node()
+>>       of_attach_node()
+>>          __of_attach_node_sysfs()
+>>
+>> Tested-by: Alan Tull <atull@kernel.org>
+>> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+>> ---
+>>
+>> ***** UNTESTED.  I need people with the affected PowerPC systems
+>> *****            (systems that dynamically allocate and deallocate
+>> *****            devicetree nodes) to test this patch.
+> 
+> This looks OK to me in light of the previous patch.
+> 
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> It also means dlpar_detach_node() is again behaving as described in the
+> comment to of_detach_node().
+> 
+> It would be good to make mention of:
+> 
+>   Fixes: 68baf692c435 ("powerpc/pseries: Fix of_node_put() underflow during DLPAR remove")
+> 
+> Which removed an of_node_put() in the exact same place for different
+> reasons.
 
-   ...
+OK.
 
-   ### dt-test ### end of unittest - 210 passed, 1 failed
+-Frank
 
-but will instead include:
-
-   OF: overlay: ERROR: multiple overlay fragments add and/or delete node /testcase-data-2/substation@100/motor-1/controller
-
-   ...
-
-   ### dt-test ### end of unittest - 211 passed, 0 failed
-
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
-
-checkpatch errors "line over 80 characters" and "Too many leading tabs"
-are ok, they will be fixed later in this series
-
- drivers/of/overlay.c | 58 ++++++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 49 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index c8f88b0836a3..8af8115bd36e 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -392,14 +392,6 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
-  *       a live devicetree created from Open Firmware.
-  *
-  * NOTE_2: Multiple mods of created nodes not supported.
-- *       If more than one fragment contains a node that does not already exist
-- *       in the live tree, then for each fragment of_changeset_attach_node()
-- *       will add a changeset entry to add the node.  When the changeset is
-- *       applied, __of_attach_node() will attach the node twice (once for
-- *       each fragment).  At this point the device tree will be corrupted.
-- *
-- *       TODO: add integrity check to ensure that multiple fragments do not
-- *             create the same node.
-  *
-  * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
-  * invalid @overlay.
-@@ -517,6 +509,54 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
- }
- 
- /**
-+ * check_changeset_dup_add_node() - changeset validation: duplicate add node
-+ * @ovcs:	Overlay changeset
-+ *
-+ * Check changeset @ovcs->cset for multiple add node entries for the same
-+ * node.
-+ *
-+ * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
-+ * invalid overlay in @ovcs->fragments[].
-+ */
-+static int check_changeset_dup_add_node(struct overlay_changeset *ovcs)
-+{
-+	struct of_changeset_entry *ce_1, *ce_2;
-+	char *fn_1, *fn_2;
-+	int name_match;
-+
-+	list_for_each_entry(ce_1, &ovcs->cset.entries, node) {
-+
-+		if (ce_1->action == OF_RECONFIG_ATTACH_NODE ||
-+		    ce_1->action == OF_RECONFIG_DETACH_NODE) {
-+
-+			ce_2 = ce_1;
-+			list_for_each_entry_continue(ce_2, &ovcs->cset.entries, node) {
-+				if (ce_2->action == OF_RECONFIG_ATTACH_NODE ||
-+				    ce_2->action == OF_RECONFIG_DETACH_NODE) {
-+					/* inexpensive name compare */
-+					if (!of_node_cmp(ce_1->np->full_name,
-+					    ce_2->np->full_name)) {
-+						/* expensive full path name compare */
-+						fn_1 = kasprintf(GFP_KERNEL, "%pOF", ce_1->np);
-+						fn_2 = kasprintf(GFP_KERNEL, "%pOF", ce_2->np);
-+						name_match = !strcmp(fn_1, fn_2);
-+						kfree(fn_1);
-+						kfree(fn_2);
-+						if (name_match) {
-+							pr_err("ERROR: multiple overlay fragments add and/or delete node %pOF\n",
-+							       ce_1->np);
-+							return -EINVAL;
-+						}
-+					}
-+				}
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-  * build_changeset() - populate overlay changeset in @ovcs from @ovcs->fragments
-  * @ovcs:	Overlay changeset
-  *
-@@ -571,7 +611,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
- 		}
- 	}
- 
--	return 0;
-+	return check_changeset_dup_add_node(ovcs);
- }
- 
- /*
--- 
-Frank Rowand <frank.rowand@sony.com>
+> 
+> cheers
+> 
+>> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+>> index 7625546caefd..17958043e7f7 100644
+>> --- a/arch/powerpc/platforms/pseries/dlpar.c
+>> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+>> @@ -270,6 +270,8 @@ int dlpar_detach_node(struct device_node *dn)
+>>  	if (rc)
+>>  		return rc;
+>>  
+>> +	of_node_put(dn);
+>> +
+>>  	return 0;
+>>  }
+>>  
+>> -- 
+>> Frank Rowand <frank.rowand@sony.com>
+> 
