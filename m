@@ -1,57 +1,52 @@
-Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v7 13/17] of: unittest: remove unused of_unittest_apply_overlay() argument
-Date: Thu,  8 Nov 2018 22:06:01 -0800
-Message-Id: <1541743565-23163-14-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
-References: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=gGtO=NS=ellerman.id.au=mpe@kernel.org>
+Return-Path: <SRS0=gGtO=NS=ellerman.id.au=mpe@kernel.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v6 07/18] of: dynamic: change type of of_{at,de}tach_node() to void
+In-Reply-To: <6bc78502-7587-eb9c-237f-d3f031979d42@gmail.com>
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com> <1541431515-25197-8-git-send-email-frowand.list@gmail.com> <87tvktqedf.fsf@concordia.ellerman.id.au> <6bc78502-7587-eb9c-237f-d3f031979d42@gmail.com>
+Date: Thu, 08 Nov 2018 10:48:33 +1100
+Message-ID: <87h8gsqwj2.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
+To: Frank Rowand <frowand.list@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, nfont@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Frank Rowand <frowand.list@gmail.com> writes:
+> On 11/7/18 4:08 AM, Michael Ellerman wrote:
+>> frowand.list@gmail.com writes:
+>> 
+>>> From: Frank Rowand <frank.rowand@sony.com>
+>>>
+>>> of_attach_node() and of_detach_node() always return zero, so
+>>> their return value is meaningless.
+>> 
+>> But should they always return zero?
+>> 
+>> At least __of_attach_node_sysfs() can fail in several ways.
+>
+> Sigh.  And of_reconfig_notify() can fail.  And at one point in the
+> history the return value of of_reconfig_notify() was returned by
+> of_attach_node() if of_reconfig_notify() failed.
+>
+>> And there's also this in __of_detach_node() which should probably be
+>> returning an error:
+>> 
+>> 	if (WARN_ON(of_node_check_flag(np, OF_DETACHED)))
+>>         	return;
+>> 
+>> 
+>> Seems to me we should instead be fixing these to propagate errors,
+>> rather than hiding them?
+>
+> The history of how of_attach_node() stopped propagating errors is
+> a bit more complex than I want to dig into at the moment.  So I'll
+> drop this patch from the series and add investigating this onto
+> my todo list.  I suspect that the result of investigating will be
+> that error return values should not be ignored in of_attach_node()
+> and of_detach_node(), but should instead be propagated to the
+> callers, as you suggest.
 
-Argument unittest_nr is not used in of_unittest_apply_overlay(),
-remove it.
+Thanks.
 
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/unittest.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index f0139d1e8b63..14838b21ec6a 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -1433,8 +1433,7 @@ static void of_unittest_destroy_tracked_overlays(void)
- 	} while (defers > 0);
- }
- 
--static int __init of_unittest_apply_overlay(int overlay_nr, int unittest_nr,
--		int *overlay_id)
-+static int __init of_unittest_apply_overlay(int overlay_nr, int *overlay_id)
- {
- 	const char *overlay_name;
- 
-@@ -1467,7 +1466,7 @@ static int __init of_unittest_apply_overlay_check(int overlay_nr,
- 	}
- 
- 	ovcs_id = 0;
--	ret = of_unittest_apply_overlay(overlay_nr, unittest_nr, &ovcs_id);
-+	ret = of_unittest_apply_overlay(overlay_nr, &ovcs_id);
- 	if (ret != 0) {
- 		/* of_unittest_apply_overlay already called unittest() */
- 		return ret;
-@@ -1503,7 +1502,7 @@ static int __init of_unittest_apply_revert_overlay_check(int overlay_nr,
- 
- 	/* apply the overlay */
- 	ovcs_id = 0;
--	ret = of_unittest_apply_overlay(overlay_nr, unittest_nr, &ovcs_id);
-+	ret = of_unittest_apply_overlay(overlay_nr, &ovcs_id);
- 	if (ret != 0) {
- 		/* of_unittest_apply_overlay already called unittest() */
- 		return ret;
--- 
-Frank Rowand <frank.rowand@sony.com>
+cheers
