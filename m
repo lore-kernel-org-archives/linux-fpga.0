@@ -1,112 +1,35 @@
 Return-Path: <SRS0=6hQ7=NS=denx.de=agust@kernel.org>
 Return-Path: <SRS0=6hQ7=NS=denx.de=agust@kernel.org>
+Date: Wed, 7 Nov 2018 23:11:36 +0100
 From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v2] fpga: altera-cvp: fix probing for multiple FPGAs on the bus
-Date: Wed,  7 Nov 2018 23:20:42 +0100
-Message-Id: <20181107222042.17942-1-agust@denx.de>
-To: linux-fpga@vger.kernel.org
-Cc: atull@kernel.org, mdf@kernel.org
+Subject: Re: [PATCH] fpga: altera-cvp: fix probing for multiple FPGAs on the
+ bus
+Message-ID: <20181107231136.4e9da738@crub>
+In-Reply-To: <CANk1AXSAN1ywxR6AkP9EsodP73GY+CON76pTUCzMe8G-OHnkxQ@mail.gmail.com>
+References: <20181106203512.4509-1-agust@denx.de>
+	<CANk1AXS_FXFV3Q1zoorHc+fEMWtQzPfbgMEm=LzP5U0Qq_CAJg@mail.gmail.com>
+	<20181107005604.693d3162@crub>
+	<CANk1AXTXRT8fNQb18mUAi=N7DCKgRjYjbuTZiXPkpDDTMCKALA@mail.gmail.com>
+	<CANk1AXSAN1ywxR6AkP9EsodP73GY+CON76pTUCzMe8G-OHnkxQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+To: Alan Tull <atull@kernel.org>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Currently registering CvP managers works only for first probed CvP
-device, for all other devices it is refused due to duplicated chkcfg
-sysfs entry:
+Hi Alan,
 
-fpga_manager fpga3: Altera CvP FPGA Manager @0000:0c:00.0 registered
-sysfs: cannot create duplicate filename '/bus/pci/drivers/altera-cvp/chkcfg'
-CPU: 0 PID: 3808 Comm: bash Tainted: G           O      4.19.0-custom+ #5
-Call Trace:
-  dump_stack+0x46/0x5b
-  sysfs_warn_dup+0x53/0x60
-  sysfs_add_file_mode_ns+0x16d/0x180
-  sysfs_create_file_ns+0x51/0x60
-  altera_cvp_probe+0x16f/0x2a0 [altera_cvp]
-  local_pci_probe+0x3f/0xa0
-  ? pci_match_device+0xb1/0xf0
-  pci_device_probe+0x116/0x170
-  really_probe+0x21b/0x2c0
-  driver_probe_device+0x4b/0xe0
-  bind_store+0xcb/0x130
-  kernfs_fop_write+0xfd/0x180
-  __vfs_write+0x21/0x150
-  ? selinux_file_permission+0xdc/0x130
-  vfs_write+0xa8/0x1a0
-  ? find_vma+0xd/0x60
-  ksys_write+0x3d/0x90
-  do_syscall_64+0x44/0xf0
-  entry_SYSCALL_64_after_hwframe+0x44/0xa9
-  ...
- altera-cvp 0000:0c:00.0: Can't create sysfs chkcfg file
- fpga_manager fpga3: fpga_mgr_unregister Altera CvP FPGA Manager @0000:0c:00.0
+On Wed, 7 Nov 2018 10:05:21 -0600
+Alan Tull atull@kernel.org wrote:
+...
+>> > >> +       if (!altera_cvp_cnt++) {
+>> > >> +               ret = driver_create_file(&altera_cvp_driver.driver,
+>> > >> +                                        &driver_attr_chkcfg);  
+>
+>Please consider whether moving this to the module init would solve
+>your problem without having to add a counter.
 
-Move chkcfg creation to module init as suggested by Alan.
+This should work and it is a better idea, thanks.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
-Changes in v2:
- - don't add a counter, move sysfs entry creation to module init instead
-
- drivers/fpga/altera-cvp.c | 34 ++++++++++++++++++++++++----------
- 1 file changed, 24 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 144fa2a4d4cc..74bf1e8ff616 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -466,14 +466,6 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	if (ret)
- 		goto err_unmap;
- 
--	ret = driver_create_file(&altera_cvp_driver.driver,
--				 &driver_attr_chkcfg);
--	if (ret) {
--		dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
--		fpga_mgr_unregister(mgr);
--		goto err_unmap;
--	}
--
- 	return 0;
- 
- err_unmap:
-@@ -492,7 +484,6 @@ static void altera_cvp_remove(struct pci_dev *pdev)
- 	struct altera_cvp_conf *conf = mgr->priv;
- 	u16 cmd;
- 
--	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
- 	fpga_mgr_unregister(mgr);
- 	if (conf->map)
- 		pci_iounmap(pdev, conf->map);
-@@ -502,7 +493,30 @@ static void altera_cvp_remove(struct pci_dev *pdev)
- 	pci_write_config_word(pdev, PCI_COMMAND, cmd);
- }
- 
--module_pci_driver(altera_cvp_driver);
-+static int __init altera_cvp_init(void)
-+{
-+	int ret;
-+
-+	ret = pci_register_driver(&altera_cvp_driver);
-+	if (ret)
-+		return ret;
-+
-+	ret = driver_create_file(&altera_cvp_driver.driver,
-+				 &driver_attr_chkcfg);
-+	if (ret)
-+		pr_warn("Can't create sysfs chkcfg file\n");
-+
-+	return 0;
-+}
-+
-+static void __exit altera_cvp_exit(void)
-+{
-+	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
-+	pci_unregister_driver(&altera_cvp_driver);
-+}
-+
-+module_init(altera_cvp_init);
-+module_exit(altera_cvp_exit);
- 
- MODULE_LICENSE("GPL v2");
- MODULE_AUTHOR("Anatolij Gustschin <agust@denx.de>");
--- 
-2.17.1
+Anatolij
