@@ -1,75 +1,46 @@
-Return-Path: <SRS0=wszZ=NY=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=wszZ=NY=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv11 2/8] arm64: dts: stratix10: add stratix10 service driver binding to base dtsi
-Date: Tue, 13 Nov 2018 12:14:00 -0600
-Message-Id: <1542132846-24168-3-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1542132846-24168-1-git-send-email-richard.gong@linux.intel.com>
-References: <1542132846-24168-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@linux.intel.com, richard.gong@intel.com
+Return-Path: <SRS0=NL9p=NS=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=NL9p=NS=gmail.com=frowand.list@kernel.org>
+Subject: Re: [PATCH v6 00/18] of: overlay: validation checks, subsequent fixes
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+ <CAL_JsqJ6fJcqH4+YHrEZRb+8-KFEmL8WSTSE_XSyrtO=2+JQBA@mail.gmail.com>
+ <bf1be459-22d7-6b23-7b1f-847dad5e028f@gmail.com>
+ <87sh0dqec5.fsf@concordia.ellerman.id.au>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <8d2d4bcb-1349-7bfb-7007-151cb9f19c1b@gmail.com>
+Date: Wed, 7 Nov 2018 06:59:53 -0800
+MIME-Version: 1.0
+In-Reply-To: <87sh0dqec5.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Michael Ellerman <mpe@ellerman.id.au>, Rob Herring <robh+dt@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Cc: Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+On 11/7/18 4:09 AM, Michael Ellerman wrote:
+> Frank Rowand <frowand.list@gmail.com> writes:
+> 
+>> Hi Michael, Ben, Paul,
+>>
+>> Do you know if anyone has tried this series on PowerPC?
+> 
+> I have. No obvious breakage.
+> 
+> My test does a loop of adding and removing multiple CPUs multiple times,
+> and in the past that has uncovered refcounting bugs. So I don't think
+> we're leaking any with this series applied.
+> 
+> I used the tracepoint patch to keep an eye on the refcounts :)
+> 
+>   https://patchwork.ozlabs.org/patch/751602/
+> 
+> 
+> I'm happy for this series to go into linux-next where it should get some
+> more testing.
+> 
+> cheers
+> 
 
-Add Intel Stratix10 service layer to the device tree
+Thanks for the reviews and testing.
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Signed-off-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: change to put service layer driver node under the firmware node
-    change compatible to "intel, stratix10-svc"
-v3: no change
-v4: s/service driver/stratix10 service driver/ in subject line
-v5: no change
-v6: add Moritz's Acked-by
-v7: no change
-v8: no change
-v9: no change
-v10: no change
-v11: no change
----
- arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-index fef7351..519b16e 100644
---- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-+++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-@@ -24,6 +24,19 @@
- 	#address-cells = <2>;
- 	#size-cells = <2>;
- 
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+
-+		service_reserved: svcbuffer@0 {
-+			compatible = "shared-dma-pool";
-+			reg = <0x0 0x0 0x0 0x1000000>;
-+			alignment = <0x1000>;
-+			no-map;
-+		};
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -537,5 +550,13 @@
- 
- 			status = "disabled";
- 		};
-+
-+		firmware {
-+			svc {
-+				compatible = "intel,stratix10-svc";
-+				method = "smc";
-+				memory-region = <&service_reserved>;
-+			};
-+		};
- 	};
- };
--- 
-2.7.4
+-Frank
