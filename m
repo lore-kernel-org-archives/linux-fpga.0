@@ -1,34 +1,127 @@
-Return-Path: <SRS0=W2pA=NU=gmail.com=capetry.dev@kernel.org>
-Return-Path: <SRS0=W2pA=NU=gmail.com=capetry.dev@kernel.org>
-From: capetry.dev@gmail.com
-Subject: [PATCH 1/2] fpga: altera-cvp: Insert SPDX-License-Identifier
-Date: Wed,  7 Nov 2018 23:13:11 -0200
-Message-Id: <20181108011312.29587-2-capetry.dev@gmail.com>
-In-Reply-To: <20181108011312.29587-1-capetry.dev@gmail.com>
-References: <20181108011312.29587-1-capetry.dev@gmail.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+References: <20181107222042.17942-1-agust@denx.de>
+In-Reply-To: <20181107222042.17942-1-agust@denx.de>
+From: Alan Tull <atull@kernel.org>
+Date: Thu, 8 Nov 2018 11:13:47 -0600
+Message-ID: <CANk1AXSpEc7QNXVx9pUpptOfC9L0gLyKn1YXjoKZnSKiTL7ELQ@mail.gmail.com>
+Subject: Re: [PATCH v2] fpga: altera-cvp: fix probing for multiple FPGAs on
+ the bus
+Content-Type: text/plain; charset="UTF-8"
+To: Anatolij Gustschin <agust@denx.de>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Carlos A Petry <capetry.dev@gmail.com>
+On Wed, Nov 7, 2018 at 4:20 PM Anatolij Gustschin <agust@denx.de> wrote:
 
-Fix the following checkpatch warning:
+Hi Anatolij,
 
-WARNING: Missing or malformed SPDX-License-Identifier tag in line 1
+Looks good!
 
-Signed-off-by: Carlos A Petry <capetry.dev@gmail.com>
+>
+> Currently registering CvP managers works only for first probed CvP
+> device, for all other devices it is refused due to duplicated chkcfg
+> sysfs entry:
+>
+> fpga_manager fpga3: Altera CvP FPGA Manager @0000:0c:00.0 registered
+> sysfs: cannot create duplicate filename '/bus/pci/drivers/altera-cvp/chkcfg'
+> CPU: 0 PID: 3808 Comm: bash Tainted: G           O      4.19.0-custom+ #5
+> Call Trace:
+>   dump_stack+0x46/0x5b
+>   sysfs_warn_dup+0x53/0x60
+>   sysfs_add_file_mode_ns+0x16d/0x180
+>   sysfs_create_file_ns+0x51/0x60
+>   altera_cvp_probe+0x16f/0x2a0 [altera_cvp]
+>   local_pci_probe+0x3f/0xa0
+>   ? pci_match_device+0xb1/0xf0
+>   pci_device_probe+0x116/0x170
+>   really_probe+0x21b/0x2c0
+>   driver_probe_device+0x4b/0xe0
+>   bind_store+0xcb/0x130
+>   kernfs_fop_write+0xfd/0x180
+>   __vfs_write+0x21/0x150
+>   ? selinux_file_permission+0xdc/0x130
+>   vfs_write+0xa8/0x1a0
+>   ? find_vma+0xd/0x60
+>   ksys_write+0x3d/0x90
+>   do_syscall_64+0x44/0xf0
+>   entry_SYSCALL_64_after_hwframe+0x44/0xa9
+>   ...
+>  altera-cvp 0000:0c:00.0: Can't create sysfs chkcfg file
+>  fpga_manager fpga3: fpga_mgr_unregister Altera CvP FPGA Manager @0000:0c:00.0
+>
+> Move chkcfg creation to module init as suggested by Alan.
+>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Acked-by: Alan Tull <atull@kernel.org>
 
----
- drivers/fpga/altera-cvp.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 610a1558e..45b7c8c0b 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0
- /*
-  * FPGA Manager Driver for Altera Arria/Cyclone/Stratix CvP
-  *
--- 
-2.17.1
+> ---
+> Changes in v2:
+>  - don't add a counter, move sysfs entry creation to module init instead
+>
+>  drivers/fpga/altera-cvp.c | 34 ++++++++++++++++++++++++----------
+>  1 file changed, 24 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+> index 144fa2a4d4cc..74bf1e8ff616 100644
+> --- a/drivers/fpga/altera-cvp.c
+> +++ b/drivers/fpga/altera-cvp.c
+> @@ -466,14 +466,6 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+>         if (ret)
+>                 goto err_unmap;
+>
+> -       ret = driver_create_file(&altera_cvp_driver.driver,
+> -                                &driver_attr_chkcfg);
+> -       if (ret) {
+> -               dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
+> -               fpga_mgr_unregister(mgr);
+> -               goto err_unmap;
+> -       }
+> -
+>         return 0;
+>
+>  err_unmap:
+> @@ -492,7 +484,6 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+>         struct altera_cvp_conf *conf = mgr->priv;
+>         u16 cmd;
+>
+> -       driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
+>         fpga_mgr_unregister(mgr);
+>         if (conf->map)
+>                 pci_iounmap(pdev, conf->map);
+> @@ -502,7 +493,30 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+>         pci_write_config_word(pdev, PCI_COMMAND, cmd);
+>  }
+>
+> -module_pci_driver(altera_cvp_driver);
+> +static int __init altera_cvp_init(void)
+> +{
+> +       int ret;
+> +
+> +       ret = pci_register_driver(&altera_cvp_driver);
+> +       if (ret)
+> +               return ret;
+> +
+> +       ret = driver_create_file(&altera_cvp_driver.driver,
+> +                                &driver_attr_chkcfg);
+> +       if (ret)
+> +               pr_warn("Can't create sysfs chkcfg file\n");
+> +
+> +       return 0;
+> +}
+> +
+> +static void __exit altera_cvp_exit(void)
+> +{
+> +       driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
+> +       pci_unregister_driver(&altera_cvp_driver);
+> +}
+> +
+> +module_init(altera_cvp_init);
+> +module_exit(altera_cvp_exit);
+>
+>  MODULE_LICENSE("GPL v2");
+>  MODULE_AUTHOR("Anatolij Gustschin <agust@denx.de>");
+> --
+> 2.17.1
+>
