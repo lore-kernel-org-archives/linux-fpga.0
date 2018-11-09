@@ -1,74 +1,74 @@
-Return-Path: <SRS0=qTBN=NR=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=qTBN=NR=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv10 7/8] Documentation: driver-api: add stratix10 service layer
-Date: Tue,  6 Nov 2018 10:52:51 -0600
-Message-Id: <1541523172-5171-8-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
-References: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@intel.com
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v7 03/17] of: overlay: add missing of_node_get() in __of_attach_node_sysfs
+Date: Thu,  8 Nov 2018 22:05:51 -0800
+Message-Id: <1541743565-23163-4-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+References: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+From: Frank Rowand <frank.rowand@sony.com>
 
-Add new file stratix10-svc.rst
-Add stratix10-svc.rst to driver-api/index.rst
+There is a matching of_node_put() in __of_detach_node_sysfs()
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Signed-off-by: Alan Tull <atull@kernel.org>
+Remove misleading comment from function header comment for
+of_detach_node().
+
+This patch may result in memory leaks from code that directly calls
+the dynamic node add and delete functions directly instead of
+using changesets.
+
+This commit should result in powerpc systems that dynamically
+allocate a node, then later deallocate the node to have a
+memory leak when the node is deallocated.
+
+The next commit will fix the leak.
+
+Tested-by: Alan Tull <atull@kernel.org>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
-v5: this patch is added in patch set version 5
-v6: no change
-v7: no change
-v8: no change
-v9: no change
-v10: add stratix10 service layer document to other firmware
-     interface, and then remove stratix10-svc.rst file
----
- .../driver-api/firmware/other_interfaces.rst       | 30 ++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ drivers/of/dynamic.c | 3 ---
+ drivers/of/kobj.c    | 4 +++-
+ 2 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/driver-api/firmware/other_interfaces.rst b/Documentation/driver-api/firmware/other_interfaces.rst
-index 36c47b1..a4ac54b 100644
---- a/Documentation/driver-api/firmware/other_interfaces.rst
-+++ b/Documentation/driver-api/firmware/other_interfaces.rst
-@@ -13,3 +13,33 @@ EDD Interfaces
- .. kernel-doc:: drivers/firmware/edd.c
-    :internal:
+diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+index 12c3f9a15e94..146681540487 100644
+--- a/drivers/of/dynamic.c
++++ b/drivers/of/dynamic.c
+@@ -272,9 +272,6 @@ void __of_detach_node(struct device_node *np)
  
-+Intel Stratix10 SoC Service Layer
-+---------------------------------
-+Some features of the Intel Stratix10 SoC require a level of privilege
-+higher than the kernel is granted. Such secure features include
-+FPGA programming. In terms of the ARMv8 architecture, the kernel runs
-+at Exception Level 1 (EL1), access to the features requires
-+Exception Level 3 (EL3).
+ /**
+  * of_detach_node() - "Unplug" a node from the device tree.
+- *
+- * The caller must hold a reference to the node.  The memory associated with
+- * the node is not freed until its refcount goes to zero.
+  */
+ int of_detach_node(struct device_node *np)
+ {
+diff --git a/drivers/of/kobj.c b/drivers/of/kobj.c
+index 7a0a18980b98..c72eef988041 100644
+--- a/drivers/of/kobj.c
++++ b/drivers/of/kobj.c
+@@ -133,6 +133,9 @@ int __of_attach_node_sysfs(struct device_node *np)
+ 	}
+ 	if (!name)
+ 		return -ENOMEM;
 +
-+The Intel Stratix10 SoC service layer provides an in kernel API for
-+drivers to request access to the secure features. The requests are queued
-+and processed one by one. ARM’s SMCCC is used to pass the execution
-+of the requests on to a secure monitor (EL3).
++	of_node_get(np);
 +
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_command_code
-+
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_client_msg
-+
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_command_reconfig_payload
-+
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_cb_data
-+
-+.. kernel-doc:: include/linux/firmware/intel/stratix10-svc-client.h
-+   :functions: stratix10_svc_client
-+
-+.. kernel-doc:: drivers/firmware/stratix10-svc.c
-+   :export:
+ 	rc = kobject_add(&np->kobj, parent, "%s", name);
+ 	kfree(name);
+ 	if (rc)
+@@ -159,6 +162,5 @@ void __of_detach_node_sysfs(struct device_node *np)
+ 		kobject_del(&np->kobj);
+ 	}
+ 
+-	/* finally remove the kobj_init ref */
+ 	of_node_put(np);
+ }
 -- 
-2.7.4
+Frank Rowand <frank.rowand@sony.com>
