@@ -1,77 +1,42 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-References: <20181029072630.13339-1-agust@denx.de> <20181029165945.GB2453@archbook>
-In-Reply-To: <20181029165945.GB2453@archbook>
-From: Alan Tull <atull@kernel.org>
-Date: Thu, 1 Nov 2018 13:39:20 -0500
-Message-ID: <CANk1AXRc7Erwb-stmZ6+zp9EKAb3f0XjPd3uiWYLPzgapkozbw@mail.gmail.com>
-Subject: Re: [PATCH v2] fpga: altera-cvp: Fix registration for CvP incapable devices
-Content-Type: text/plain; charset="UTF-8"
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Anatolij Gustschin <agust@denx.de>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, puhm@oregano.at
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
+From: frowand.list@gmail.com
+Subject: [PATCH v7 07/17] of: overlay: reorder fields in struct fragment
+Date: Thu,  8 Nov 2018 22:05:55 -0800
+Message-Id: <1541743565-23163-8-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+References: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Oct 29, 2018 at 11:59 AM Moritz Fischer <mdf@kernel.org> wrote:
->
-> Hi Anatolij, Andreas,
->
-> On Mon, Oct 29, 2018 at 08:26:30AM +0100, Anatolij Gustschin wrote:
-> > From: Andreas Puhm <puhm@oregano.at>
-> >
-> > The probe function needs to verify the CvP enable bit in order to
-> > properly determine if FPGA Manager functionality can be safely
-> > enabled.
-> >
-> > Fixes: 34d1dc17ce97 ("fpga manager: Add Altera CvP driver")
-> > Signed-off-by: Andreas Puhm <puhm@oregano.at>
-> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
->
-> Reviewed-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
+From: Frank Rowand <frank.rowand@sony.com>
 
-Thanks!
+Order the fields of struct fragment in the same order as
+struct of_overlay_notify_data.  The order in struct fragment is
+not significant.  If both structs are ordered the same then when
+examining the data in a debugger or dump the human involved does
+not have to remember which context they are examining.
 
-Alan
+Tested-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+---
+ drivers/of/overlay.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> > ---
-> > Changes in v2:
-> >  - improve Fixes tag
-> >  - wrap lines in commit description
-> >
-> >  drivers/fpga/altera-cvp.c | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> >
-> > diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-> > index 3998d4f0e5e7..196d52558990 100644
-> > --- a/drivers/fpga/altera-cvp.c
-> > +++ b/drivers/fpga/altera-cvp.c
-> > @@ -403,6 +403,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
-> >       struct altera_cvp_conf *conf;
-> >       struct fpga_manager *mgr;
-> >       u16 cmd, val;
-> > +     u32 regval;
-> >       int ret;
-> >
-> >       /*
-> > @@ -419,6 +420,14 @@ static int altera_cvp_probe(struct pci_dev *pdev,
-> >               return -ENODEV;
-> >       }
-> >
-> > +     pci_read_config_dword(pdev, VSE_CVP_STATUS, &regval);
-> > +     if (!(regval & VSE_CVP_STATUS_CVP_EN)) {
-> > +             dev_err(&pdev->dev,
-> > +                     "CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
-> > +                     regval);
-> > +             return -ENODEV;
-> > +     }
-> > +
-> >       conf = devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
-> >       if (!conf)
-> >               return -ENOMEM;
-> > --
-> > 2.17.1
-> >
->
-> Thanks,
-> Moritz
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 9808aae4621a..15be3da34fef 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -49,8 +49,8 @@ struct target {
+  * @overlay:	pointer to the __overlay__ node
+  */
+ struct fragment {
+-	struct device_node *target;
+ 	struct device_node *overlay;
++	struct device_node *target;
+ };
+ 
+ /**
+-- 
+Frank Rowand <frank.rowand@sony.com>
