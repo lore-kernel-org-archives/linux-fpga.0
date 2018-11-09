@@ -1,136 +1,50 @@
-Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=63Yb=M3=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v3 18/18] of: unittest: initialize args before calling of_*parse_*()
-Date: Sun, 14 Oct 2018 17:24:30 -0700
-Message-Id: <1539563070-12969-19-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
-References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v7 04/17] powerpc/pseries: add of_node_put() in dlpar_detach_node()
+Date: Thu,  8 Nov 2018 22:05:52 -0800
+Message-Id: <1541743565-23163-5-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+References: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-Callers of of_irq_parse_one() blindly use the pointer args.np
-without checking whether of_irq_parse_one() had an error and
-thus did not set the value of args.np.  Initialize args to
-zero so that using the format "%pOF" to show the value of
-args.np will show "(null)" when of_irq_parse_one() has an
-error.  This prevents the dereference of a random value.
+The previous commit, "of: overlay: add missing of_node_get() in
+__of_attach_node_sysfs" added a missing of_node_get() to
+__of_attach_node_sysfs().  This results in a refcount imbalance
+for nodes attached with dlpar_attach_node().  The calling sequence
+from dlpar_attach_node() to __of_attach_node_sysfs() is:
 
-Make the same fix for callers of of_parse_phandle_with_args()
-and of_parse_phandle_with_args_map().
+   dlpar_attach_node()
+      of_attach_node()
+         __of_attach_node_sysfs()
 
-Reported-by: Guenter Roeck <linux@roeck-us.net>
+For more detailed description of the node refcount, see
+commit 68baf692c435 ("powerpc/pseries: Fix of_node_put() underflow
+during DLPAR remove").
+
+Tested-by: Alan Tull <atull@kernel.org>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/unittest.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/dlpar.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 785985bdbfa6..5f4db23e4752 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -375,6 +375,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 7625546caefd..17958043e7f7 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -270,6 +270,8 @@ int dlpar_detach_node(struct device_node *dn)
+ 	if (rc)
+ 		return rc;
  
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args(np, "phandle-list",
- 						"#phandle-cells", i, &args);
++	of_node_put(dn);
++
+ 	return 0;
+ }
  
-@@ -428,6 +429,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	}
- 
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-missing",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
-@@ -436,6 +438,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
- 
- 	/* Check for missing cells property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list",
- 					"#phandle-cells-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -444,6 +447,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-phandle",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -452,6 +456,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-args",
- 					"#phandle-cells", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -502,6 +507,7 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
- 
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 						    "phandle", i, &args);
- 
-@@ -559,21 +565,25 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
- 	}
- 
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-missing",
- 					    "phandle", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
- 
- 	/* Check for missing cells,map,mask property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 					    "phandle-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-phandle",
- 					    "phandle", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-args",
- 					    "phandle", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -780,7 +790,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
- 
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
- 
- 		passed &= !rc;
-@@ -801,7 +811,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
- 
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
- 
- 		/* Test the values from tests-phandle.dtsi */
-@@ -854,6 +864,7 @@ static void __init of_unittest_parse_interrupts_extended(void)
- 	for (i = 0; i < 7; i++) {
- 		bool passed = true;
- 
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
- 
- 		/* Test the values from tests-phandle.dtsi */
 -- 
 Frank Rowand <frank.rowand@sony.com>
