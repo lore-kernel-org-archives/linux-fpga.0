@@ -1,110 +1,83 @@
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v6 09/18] of: overlay: validate overlay properties #address-cells and #size-cells
-Date: Mon,  5 Nov 2018 07:25:06 -0800
-Message-Id: <1541431515-25197-10-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
+Subject: Re: [GIT PULL] of: overlay: validation checks, subsequent fixes for
+ v20 -- correction: v4.20
+From: Frank Rowand <frowand.list@gmail.com>
+References: <262419e9-5c9f-1193-f119-33f373d81e43@gmail.com>
+Message-ID: <b113e03d-95f9-96bc-2a50-bc61307e780e@gmail.com>
+Date: Thu, 8 Nov 2018 22:57:59 -0800
+MIME-Version: 1.0
+In-Reply-To: <262419e9-5c9f-1193-f119-33f373d81e43@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
-
-If overlay properties #address-cells or #size-cells are already in
-the live devicetree for any given node, then the values in the
-overlay must match the values in the live tree.
-
-If the properties are already in the live tree then there is no
-need to create a changeset entry to add them since they must
-have the same value.  This reduces the memory used by the
-changeset and eliminates a possible memory leak.
-
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/overlay.c | 32 +++++++++++++++++++++++++++++---
- include/linux/of.h   |  6 ++++++
- 2 files changed, 35 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 15be3da34fef..72bf00adb9c8 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -287,7 +287,12 @@ static struct property *dup_and_fixup_symbol_prop(
-  * @target may be either in the live devicetree or in a new subtree that
-  * is contained in the changeset.
-  *
-- * Some special properties are not updated (no error returned).
-+ * Some special properties are not added or updated (no error returned):
-+ * "name", "phandle", "linux,phandle".
-+ *
-+ * Properties "#address-cells" and "#size-cells" are not updated if they
-+ * are already in the live tree, but if present in the live tree, the values
-+ * in the overlay must match the values in the live tree.
-  *
-  * Update of property in symbols node is not allowed.
-  *
-@@ -300,6 +305,7 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- {
- 	struct property *new_prop = NULL, *prop;
- 	int ret = 0;
-+	bool check_for_non_overlay_node = false;
- 
- 	if (!of_prop_cmp(overlay_prop->name, "name") ||
- 	    !of_prop_cmp(overlay_prop->name, "phandle") ||
-@@ -322,12 +328,32 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
- 	if (!new_prop)
- 		return -ENOMEM;
- 
--	if (!prop)
-+	if (!prop) {
-+		check_for_non_overlay_node = true;
- 		ret = of_changeset_add_property(&ovcs->cset, target->np,
- 						new_prop);
--	else
-+	} else if (!of_prop_cmp(prop->name, "#address-cells")) {
-+		if (!of_prop_val_eq(prop, new_prop)) {
-+			pr_err("ERROR: changing value of #address-cells is not allowed in %pOF\n",
-+			       target->np);
-+			ret = -EINVAL;
-+		}
-+	} else if (!of_prop_cmp(prop->name, "#size-cells")) {
-+		if (!of_prop_val_eq(prop, new_prop)) {
-+			pr_err("ERROR: changing value of #size-cells is not allowed in %pOF\n",
-+			       target->np);
-+			ret = -EINVAL;
-+		}
-+	} else {
-+		check_for_non_overlay_node = true;
- 		ret = of_changeset_update_property(&ovcs->cset, target->np,
- 						   new_prop);
-+	}
-+
-+	if (check_for_non_overlay_node &&
-+	    !of_node_check_flag(target->np, OF_OVERLAY))
-+		pr_err("WARNING: memory leak will occur if overlay removed, property: %pOF/%s\n",
-+		       target->np, new_prop->name);
- 
- 	if (ret) {
- 		kfree(new_prop->name);
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 5dd9ff480397..f247a3f557e0 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -990,6 +990,12 @@ static inline int of_map_rid(struct device_node *np, u32 rid,
- #define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
- #endif
- 
-+static inline int of_prop_val_eq(struct property *p1, struct property *p2)
-+{
-+	return p1->length == p2->length &&
-+	       !memcmp(p1->value, p2->value, (size_t)p1->length);
-+}
-+
- #if defined(CONFIG_OF) && defined(CONFIG_NUMA)
- extern int of_node_to_nid(struct device_node *np);
- #else
--- 
-Frank Rowand <frank.rowand@sony.com>
+On 11/8/18 10:56 PM, Frank Rowand wrote:
+> Hi Rob,
+> 
+> Please pull the changes to add the overlay validation checks.
+> 
+> This is the v7 version of the patch series.
+> 
+> -Frank
+> 
+> 
+> The following changes since commit 651022382c7f8da46cb4872a545ee1da6d097d2a:
+> 
+>   Linux 4.20-rc1 (2018-11-04 15:37:52 -0800)
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frowand/linux.git tags/kfree_validate_v7-for-4.20
+> 
+> for you to fetch changes up to eeb07c573ec307c53fe2f6ac6d8d11c261f64006:
+> 
+>   of: unittest: initialize args before calling of_*parse_*() (2018-11-08 22:12:37 -0800)
+> 
+> ----------------------------------------------------------------
+> Add checks to (1) overlay apply process and (2) memory freeing
+> triggered by overlay release.  The checks are intended to detect
+> possible memory leaks and invalid overlays.
+> 
+> The checks revealed bugs in existing code.  Fixed the bugs.
+> 
+> While fixing bugs, noted other issues, which are fixed in
+> separate patches.
+> 
+> ----------------------------------------------------------------
+> Frank Rowand (17):
+>       of: overlay: add tests to validate kfrees from overlay removal
+>       of: overlay: add missing of_node_put() after add new node to changeset
+>       of: overlay: add missing of_node_get() in __of_attach_node_sysfs
+>       powerpc/pseries: add of_node_put() in dlpar_detach_node()
+>       of: overlay: use prop add changeset entry for property in new nodes
+>       of: overlay: do not duplicate properties from overlay for new nodes
+>       of: overlay: reorder fields in struct fragment
+>       of: overlay: validate overlay properties #address-cells and #size-cells
+>       of: overlay: make all pr_debug() and pr_err() messages unique
+>       of: overlay: test case of two fragments adding same node
+>       of: overlay: check prevents multiple fragments add or delete same node
+>       of: overlay: check prevents multiple fragments touching same property
+>       of: unittest: remove unused of_unittest_apply_overlay() argument
+>       of: overlay: set node fields from properties when add new overlay node
+>       of: unittest: allow base devicetree to have symbol metadata
+>       of: unittest: find overlays[] entry by name instead of index
+>       of: unittest: initialize args before calling of_*parse_*()
+> 
+>  arch/powerpc/platforms/pseries/dlpar.c             |   2 +
+>  drivers/of/dynamic.c                               |  59 ++++-
+>  drivers/of/kobj.c                                  |   4 +-
+>  drivers/of/overlay.c                               | 292 ++++++++++++++++-----
+>  drivers/of/unittest-data/Makefile                  |   2 +
+>  .../of/unittest-data/overlay_bad_add_dup_node.dts  |  28 ++
+>  .../of/unittest-data/overlay_bad_add_dup_prop.dts  |  24 ++
+>  drivers/of/unittest-data/overlay_base.dts          |   1 +
+>  drivers/of/unittest.c                              |  96 +++++--
+>  include/linux/of.h                                 |  21 +-
+>  10 files changed, 432 insertions(+), 97 deletions(-)
+>  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+>  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
+> 
