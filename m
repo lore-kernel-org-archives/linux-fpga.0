@@ -1,137 +1,128 @@
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v6 18/18] of: unittest: initialize args before calling of_*parse_*()
-Date: Mon,  5 Nov 2018 07:25:15 -0800
-Message-Id: <1541431515-25197-19-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v7 10/17] of: overlay: test case of two fragments adding same node
+Date: Thu,  8 Nov 2018 22:05:58 -0800
+Message-Id: <1541743565-23163-11-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+References: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-Callers of of_irq_parse_one() blindly use the pointer args.np
-without checking whether of_irq_parse_one() had an error and
-thus did not set the value of args.np.  Initialize args to
-zero so that using the format "%pOF" to show the value of
-args.np will show "(null)" when of_irq_parse_one() has an
-error.  This prevents the dereference of a random value.
+Multiple overlay fragments adding or deleting the same node is not
+supported.  An attempt to do so results in an incorrect devicetree.
+The node name will be munged for the second add.
 
-Make the same fix for callers of of_parse_phandle_with_args()
-and of_parse_phandle_with_args_map().
+After adding this patch, the unittest messages will show:
 
-Reported-by: Guenter Roeck <linux@roeck-us.net>
+   Duplicate name in motor-1, renamed to "controller#1"
+   OF: overlay: of_overlay_apply() err=0
+   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
+   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
+
+   ...
+
+   ### dt-test ### end of unittest - 210 passed, 1 failed
+
+The incorrect (munged) node name "controller#1" can be seen in the
+/proc filesystem:
+
+   $ pwd
+   /proc/device-tree/testcase-data-2/substation@100/motor-1
+   $ ls
+   compatible    controller    controller#1  name          phandle       spin
+   $ ls controller
+   power_bus
+   $ ls controller#1
+   power_bus_emergency
+
 Tested-by: Alan Tull <atull@kernel.org>
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/unittest.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ drivers/of/unittest-data/Makefile                  |  1 +
+ .../of/unittest-data/overlay_bad_add_dup_node.dts  | 28 ++++++++++++++++++++++
+ drivers/of/unittest.c                              |  5 ++++
+ 3 files changed, 34 insertions(+)
+ create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
 
+diff --git a/drivers/of/unittest-data/Makefile b/drivers/of/unittest-data/Makefile
+index 013d85e694c6..166dbdbfd1c5 100644
+--- a/drivers/of/unittest-data/Makefile
++++ b/drivers/of/unittest-data/Makefile
+@@ -17,6 +17,7 @@ obj-$(CONFIG_OF_OVERLAY) += overlay.dtb.o \
+ 			    overlay_12.dtb.o \
+ 			    overlay_13.dtb.o \
+ 			    overlay_15.dtb.o \
++			    overlay_bad_add_dup_node.dtb.o \
+ 			    overlay_bad_phandle.dtb.o \
+ 			    overlay_bad_symbol.dtb.o \
+ 			    overlay_base.dtb.o
+diff --git a/drivers/of/unittest-data/overlay_bad_add_dup_node.dts b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+new file mode 100644
+index 000000000000..145dfc3b1024
+--- /dev/null
++++ b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+@@ -0,0 +1,28 @@
++// SPDX-License-Identifier: GPL-2.0
++/dts-v1/;
++/plugin/;
++
++/*
++ * &electric_1/motor-1 and &spin_ctrl_1 are the same node:
++ *   /testcase-data-2/substation@100/motor-1
++ *
++ * Thus the new node "controller" in each fragment will
++ * result in an attempt to add the same node twice.
++ * This will result in an error and the overlay apply
++ * will fail.
++ */
++
++&electric_1 {
++
++	motor-1 {
++		controller {
++			power_bus = < 0x1 0x2 >;
++		};
++	};
++};
++
++&spin_ctrl_1 {
++		controller {
++			power_bus_emergency = < 0x101 0x102 >;
++		};
++};
 diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index fe01c5869b0f..9a10a48eb6a1 100644
+index 49ae2aa744d6..f82edf829f43 100644
 --- a/drivers/of/unittest.c
 +++ b/drivers/of/unittest.c
-@@ -379,6 +379,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
+@@ -2161,6 +2161,7 @@ struct overlay_info {
+ OVERLAY_INFO_EXTERN(overlay_12);
+ OVERLAY_INFO_EXTERN(overlay_13);
+ OVERLAY_INFO_EXTERN(overlay_15);
++OVERLAY_INFO_EXTERN(overlay_bad_add_dup_node);
+ OVERLAY_INFO_EXTERN(overlay_bad_phandle);
+ OVERLAY_INFO_EXTERN(overlay_bad_symbol);
  
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args(np, "phandle-list",
- 						"#phandle-cells", i, &args);
+@@ -2183,6 +2184,7 @@ struct overlay_info {
+ 	OVERLAY_INFO(overlay_12, 0),
+ 	OVERLAY_INFO(overlay_13, 0),
+ 	OVERLAY_INFO(overlay_15, 0),
++	OVERLAY_INFO(overlay_bad_add_dup_node, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
+ 	{}
+@@ -2430,6 +2432,9 @@ static __init void of_unittest_overlay_high_level(void)
+ 	unittest(overlay_data_apply("overlay", NULL),
+ 		 "Adding overlay 'overlay' failed\n");
  
-@@ -432,6 +433,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	}
++	unittest(overlay_data_apply("overlay_bad_add_dup_node", NULL),
++		 "Adding overlay 'overlay_bad_add_dup_node' failed\n");
++
+ 	unittest(overlay_data_apply("overlay_bad_phandle", NULL),
+ 		 "Adding overlay 'overlay_bad_phandle' failed\n");
  
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-missing",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
-@@ -440,6 +442,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
- 
- 	/* Check for missing cells property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list",
- 					"#phandle-cells-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -448,6 +451,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-phandle",
- 					"#phandle-cells", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -456,6 +460,7 @@ static void __init of_unittest_parse_phandle_with_args(void)
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args(np, "phandle-list-bad-args",
- 					"#phandle-cells", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -506,6 +511,7 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
- 	for (i = 0; i < 8; i++) {
- 		bool passed = true;
- 
-+		memset(&args, 0, sizeof(args));
- 		rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 						    "phandle", i, &args);
- 
-@@ -563,21 +569,25 @@ static void __init of_unittest_parse_phandle_with_args_map(void)
- 	}
- 
- 	/* Check for missing list property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-missing",
- 					    "phandle", 0, &args);
- 	unittest(rc == -ENOENT, "expected:%i got:%i\n", -ENOENT, rc);
- 
- 	/* Check for missing cells,map,mask property */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list",
- 					    "phandle-missing", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for bad phandle in list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-phandle",
- 					    "phandle", 0, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
- 
- 	/* Check for incorrectly formed argument list */
-+	memset(&args, 0, sizeof(args));
- 	rc = of_parse_phandle_with_args_map(np, "phandle-list-bad-args",
- 					    "phandle", 1, &args);
- 	unittest(rc == -EINVAL, "expected:%i got:%i\n", -EINVAL, rc);
-@@ -787,7 +797,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
- 
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
- 
- 		passed &= !rc;
-@@ -808,7 +818,7 @@ static void __init of_unittest_parse_interrupts(void)
- 	for (i = 0; i < 4; i++) {
- 		bool passed = true;
- 
--		args.args_count = 0;
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
- 
- 		/* Test the values from tests-phandle.dtsi */
-@@ -864,6 +874,7 @@ static void __init of_unittest_parse_interrupts_extended(void)
- 	for (i = 0; i < 7; i++) {
- 		bool passed = true;
- 
-+		memset(&args, 0, sizeof(args));
- 		rc = of_irq_parse_one(np, i, &args);
- 
- 		/* Test the values from tests-phandle.dtsi */
 -- 
 Frank Rowand <frank.rowand@sony.com>
