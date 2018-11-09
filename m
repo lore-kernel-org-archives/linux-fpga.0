@@ -1,56 +1,25 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 3/4] fpga: altera-cvp: Fix registration for CvP incapable devices
-Date: Wed,  7 Nov 2018 11:51:47 -0600
-Message-Id: <1541613108-29660-4-git-send-email-atull@kernel.org>
-In-Reply-To: <1541613108-29660-1-git-send-email-atull@kernel.org>
-References: <1541613108-29660-1-git-send-email-atull@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Andreas Puhm <puhm@oregano.at>, Anatolij Gustschin <agust@denx.de>
+Return-Path: <robh+dt@kernel.org>
+Return-Path: <robh+dt@kernel.org>
+MIME-Version: 1.0
+References: <262419e9-5c9f-1193-f119-33f373d81e43@gmail.com>
+In-Reply-To: <262419e9-5c9f-1193-f119-33f373d81e43@gmail.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Fri, 9 Nov 2018 15:44:20 -0600
+Message-ID: <CAL_JsqJJHNAYAtL791UsPE=J9L97cOGvRVkqP+3VuuT5qVmRHw@mail.gmail.com>
+Subject: Re: [GIT PULL] of: overlay: validation checks, subsequent fixes for v20
+Content-Type: text/plain; charset="UTF-8"
+To: Frank Rowand <frowand.list@gmail.com>
+Cc: Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Andreas Puhm <puhm@oregano.at>
+On Fri, Nov 9, 2018 at 12:56 AM Frank Rowand <frowand.list@gmail.com> wrote:
+>
+> Hi Rob,
+>
+> Please pull the changes to add the overlay validation checks.
+>
+> This is the v7 version of the patch series.
 
-The probe function needs to verify the CvP enable bit in order to
-properly determine if FPGA Manager functionality can be safely
-enabled.
+Pulled for 4.21. Thanks.
 
-Fixes: 34d1dc17ce97 ("fpga manager: Add Altera CvP driver")
-Signed-off-by: Andreas Puhm <puhm@oregano.at>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Reviewed-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
----
- drivers/fpga/altera-cvp.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 144fa2a..7395085 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -403,6 +403,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	struct altera_cvp_conf *conf;
- 	struct fpga_manager *mgr;
- 	u16 cmd, val;
-+	u32 regval;
- 	int ret;
- 
- 	/*
-@@ -416,6 +417,14 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 		return -ENODEV;
- 	}
- 
-+	pci_read_config_dword(pdev, VSE_CVP_STATUS, &regval);
-+	if (!(regval & VSE_CVP_STATUS_CVP_EN)) {
-+		dev_err(&pdev->dev,
-+			"CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
-+			regval);
-+		return -ENODEV;
-+	}
-+
- 	conf = devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
- 	if (!conf)
- 		return -ENOMEM;
--- 
-2.7.4
+Rob
