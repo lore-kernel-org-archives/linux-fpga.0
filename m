@@ -1,50 +1,82 @@
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
+Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
 From: frowand.list@gmail.com
-Subject: [PATCH v6 04/18] powerpc/pseries: add of_node_put() in dlpar_detach_node()
-Date: Mon,  5 Nov 2018 07:25:01 -0800
-Message-Id: <1541431515-25197-5-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v7 16/17] of: unittest: find overlays[] entry by name instead of index
+Date: Thu,  8 Nov 2018 22:06:04 -0800
+Message-Id: <1541743565-23163-17-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+References: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
 To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-"of: overlay: add missing of_node_get() in __of_attach_node_sysfs"
-added a missing of_node_get() to __of_attach_node_sysfs().  This
-results in a refcount imbalance for nodes attached with
-dlpar_attach_node().  The calling sequence from dlpar_attach_node()
-to __of_attach_node_sysfs() is:
-
-   dlpar_attach_node()
-      of_attach_node()
-         __of_attach_node_sysfs()
+One accessor of overlays[] was using a hard coded index value to
+find the correct array entry instead of searching for the entry
+containing the correct name.
 
 Tested-by: Alan Tull <atull@kernel.org>
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
+ drivers/of/unittest.c | 21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
 
-***** UNTESTED.  I need people with the affected PowerPC systems
-*****            (systems that dynamically allocate and deallocate
-*****            devicetree nodes) to test this patch.
-
- arch/powerpc/platforms/pseries/dlpar.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 7625546caefd..17958043e7f7 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -270,6 +270,8 @@ int dlpar_detach_node(struct device_node *dn)
- 	if (rc)
- 		return rc;
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index d625a91a7f60..fe01c5869b0f 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -2192,7 +2192,7 @@ struct overlay_info {
+ OVERLAY_INFO_EXTERN(overlay_bad_phandle);
+ OVERLAY_INFO_EXTERN(overlay_bad_symbol);
  
-+	of_node_put(dn);
+-/* order of entries is hard-coded into users of overlays[] */
++/* entries found by name */
+ static struct overlay_info overlays[] = {
+ 	OVERLAY_INFO(overlay_base, -9999),
+ 	OVERLAY_INFO(overlay, 0),
+@@ -2215,7 +2215,8 @@ struct overlay_info {
+ 	OVERLAY_INFO(overlay_bad_add_dup_prop, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
+ 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
+-	{}
++	/* end marker */
++	{.dtb_begin = NULL, .dtb_end = NULL, .expected_result = 0, .name = NULL}
+ };
+ 
+ static struct device_node *overlay_base_root;
+@@ -2245,6 +2246,19 @@ void __init unittest_unflatten_overlay_base(void)
+ 	u32 data_size;
+ 	void *new_fdt;
+ 	u32 size;
++	int found = 0;
++	const char *overlay_name = "overlay_base";
 +
- 	return 0;
- }
++	for (info = overlays; info && info->name; info++) {
++		if (!strcmp(overlay_name, info->name)) {
++			found = 1;
++			break;
++		}
++	}
++	if (!found) {
++		pr_err("no overlay data for %s\n", overlay_name);
++		return;
++	}
  
+ 	info = &overlays[0];
+ 
+@@ -2292,11 +2306,10 @@ static int __init overlay_data_apply(const char *overlay_name, int *overlay_id)
+ {
+ 	struct overlay_info *info;
+ 	int found = 0;
+-	int k;
+ 	int ret;
+ 	u32 size;
+ 
+-	for (k = 0, info = overlays; info && info->name; info++, k++) {
++	for (info = overlays; info && info->name; info++) {
+ 		if (!strcmp(overlay_name, info->name)) {
+ 			found = 1;
+ 			break;
 -- 
 Frank Rowand <frank.rowand@sony.com>
