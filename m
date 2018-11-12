@@ -1,43 +1,39 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-References: <20181029144222.26927-1-agust@denx.de> <20181029164857.GA2453@archbook>
- <20181030121913.3f5f8458@crub>
-In-Reply-To: <20181030121913.3f5f8458@crub>
 From: Alan Tull <atull@kernel.org>
-Date: Thu, 1 Nov 2018 13:21:00 -0500
-Message-ID: <CANk1AXR470s6XyfjR8=1SdiNAFsVj0oNA1-STVCu6_zY-kLf3A@mail.gmail.com>
-Subject: Re: [PATCH] fpga: xilinx-spi: Use unique FPGA manager names
-Content-Type: text/plain; charset="UTF-8"
-To: Anatolij Gustschin <agust@denx.de>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
+Subject: [RESEND 1/2] fpga: of-fpga-region: Use platform_set_drvdata
+Date: Mon, 12 Nov 2018 13:38:33 -0600
+Message-Id: <1542051514-5205-2-git-send-email-atull@kernel.org>
+In-Reply-To: <1542051514-5205-1-git-send-email-atull@kernel.org>
+References: <1542051514-5205-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Oct 30, 2018 at 6:19 AM Anatolij Gustschin <agust@denx.de> wrote:
->
-> Hi Moritz,
->
-> On Mon, 29 Oct 2018 09:48:57 -0700
-> Moritz Fischer mdf@kernel.org wrote:
-> ...
-> >Sounds like a udev problem that can be solved by looking at the
-> >parent device?
->
-> Yes, but there are still all kinds of small embedded systems
-> without udev/systemd support.
+From: Moritz Fischer <mdf@kernel.org>
 
-What do you see if you look at the following for your fpga manager
-(may be other than fpga0)?
+Use platform_set_drvdata rather than dev_set_drvdata
+to match the platform_get_drvdata in the _remove()
+function of the platform driver.
 
-/sys/class/fpga_manager/fpga0/device
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
+---
+ drivers/fpga/of-fpga-region.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-or
-
- /sys/class/fpga_manager/fpga0/of_node
-
-Alan
-
->
-> Thanks,
->
-> Anatolij
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index 122286f..75f64ab 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -421,7 +421,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 		goto eprobe_mgr_put;
+ 
+ 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
+-	dev_set_drvdata(dev, region);
++	platform_set_drvdata(pdev, region);
+ 
+ 	dev_info(dev, "FPGA Region probed\n");
+ 
+-- 
+2.7.4
