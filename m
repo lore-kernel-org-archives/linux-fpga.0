@@ -1,82 +1,30 @@
-Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v7 16/17] of: unittest: find overlays[] entry by name instead of index
-Date: Thu,  8 Nov 2018 22:06:04 -0800
-Message-Id: <1541743565-23163-17-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
-References: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=i/2R=NX=denx.de=agust@kernel.org>
+Return-Path: <SRS0=i/2R=NX=denx.de=agust@kernel.org>
+Date: Tue, 13 Nov 2018 00:08:23 +0100
+From: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH 1/2] fpga: altera-cvp: Insert SPDX-License-Identifier
+Message-ID: <20181113000823.04df5a7a@crub>
+In-Reply-To: <20181108011312.29587-2-capetry.dev@gmail.com>
+References: <20181108011312.29587-1-capetry.dev@gmail.com>
+	<20181108011312.29587-2-capetry.dev@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+To: capetry.dev@gmail.com
+Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+On Wed,  7 Nov 2018 23:13:11 -0200
+capetry.dev@gmail.com capetry.dev@gmail.com wrote:
+...
+>diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+>index 610a1558e..45b7c8c0b 100644
+>--- a/drivers/fpga/altera-cvp.c
+>+++ b/drivers/fpga/altera-cvp.c
+>@@ -1,3 +1,4 @@
+>+// SPDX-License-Identifier: GPL-2.0
 
-One accessor of overlays[] was using a hard coded index value to
-find the correct array entry instead of searching for the entry
-containing the correct name.
+when SPDX identifier is in place, shouldn't the GPL boilerplate below
+be removed?
 
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/unittest.c | 21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index d625a91a7f60..fe01c5869b0f 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -2192,7 +2192,7 @@ struct overlay_info {
- OVERLAY_INFO_EXTERN(overlay_bad_phandle);
- OVERLAY_INFO_EXTERN(overlay_bad_symbol);
- 
--/* order of entries is hard-coded into users of overlays[] */
-+/* entries found by name */
- static struct overlay_info overlays[] = {
- 	OVERLAY_INFO(overlay_base, -9999),
- 	OVERLAY_INFO(overlay, 0),
-@@ -2215,7 +2215,8 @@ struct overlay_info {
- 	OVERLAY_INFO(overlay_bad_add_dup_prop, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
--	{}
-+	/* end marker */
-+	{.dtb_begin = NULL, .dtb_end = NULL, .expected_result = 0, .name = NULL}
- };
- 
- static struct device_node *overlay_base_root;
-@@ -2245,6 +2246,19 @@ void __init unittest_unflatten_overlay_base(void)
- 	u32 data_size;
- 	void *new_fdt;
- 	u32 size;
-+	int found = 0;
-+	const char *overlay_name = "overlay_base";
-+
-+	for (info = overlays; info && info->name; info++) {
-+		if (!strcmp(overlay_name, info->name)) {
-+			found = 1;
-+			break;
-+		}
-+	}
-+	if (!found) {
-+		pr_err("no overlay data for %s\n", overlay_name);
-+		return;
-+	}
- 
- 	info = &overlays[0];
- 
-@@ -2292,11 +2306,10 @@ static int __init overlay_data_apply(const char *overlay_name, int *overlay_id)
- {
- 	struct overlay_info *info;
- 	int found = 0;
--	int k;
- 	int ret;
- 	u32 size;
- 
--	for (k = 0, info = overlays; info && info->name; info++, k++) {
-+	for (info = overlays; info && info->name; info++) {
- 		if (!strcmp(overlay_name, info->name)) {
- 			found = 1;
- 			break;
--- 
-Frank Rowand <frank.rowand@sony.com>
+Anatolij
