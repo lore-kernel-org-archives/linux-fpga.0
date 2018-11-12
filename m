@@ -1,74 +1,65 @@
-Return-Path: <SRS0=qTBN=NR=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=qTBN=NR=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv10 2/8] arm64: dts: stratix10: add stratix10 service driver binding to base dtsi
-Date: Tue,  6 Nov 2018 10:52:46 -0600
-Message-Id: <1541523172-5171-3-git-send-email-richard.gong@linux.intel.com>
-In-Reply-To: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
-References: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@intel.com
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+References: <20180912144327.3130-1-atull@kernel.org> <20180912144327.3130-6-atull@kernel.org>
+ <20180930154845.GA13200@kroah.com> <CANk1AXR=psRx319i_2S3fqM+4WsK6YgwJMPn=2o3zw5AQ3mr6w@mail.gmail.com>
+ <20181112180206.GA28739@kroah.com>
+In-Reply-To: <20181112180206.GA28739@kroah.com>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 12 Nov 2018 13:39:38 -0600
+Message-ID: <CANk1AXSTOEZD9paFVc=G+VDKmj3E4dAMPpvhrCECeiF7=aS8pA@mail.gmail.com>
+Subject: Re: [PATCH 5/5] fpga: dfl-fme-region: Use platform_get_drvdata()
+Content-Type: text/plain; charset="UTF-8"
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+On Mon, Nov 12, 2018 at 12:02 PM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> On Mon, Nov 12, 2018 at 09:46:53AM -0600, Alan Tull wrote:
+> > On Sun, Sep 30, 2018 at 10:48 AM Greg Kroah-Hartman
+> > <gregkh@linuxfoundation.org> wrote:
+> >
+> > Hi Greg,
+> >
+> > >
+> > > On Wed, Sep 12, 2018 at 09:43:27AM -0500, Alan Tull wrote:
+> > > > From: Moritz Fischer <mdf@kernel.org>
+> > > >
+> > > > Use platform_get_drvdata() in remove() function of
+> > > > the platform driver rather than dev_get_drvdata()
+> > > > to match the platform_set_drvdata in the probe().
+> > > >
+> > > > Signed-off-by: Moritz Fischer <mdf@kernel.org>
+> > > > Acked-by: Alan Tull <atull@kernel.org>
+> > > > ---
+> > > >  drivers/fpga/dfl-fme-region.c | 2 +-
+> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > >
+> > > > diff --git a/drivers/fpga/dfl-fme-region.c b/drivers/fpga/dfl-fme-region.c
+> > > > index 51a5ac2..3fa0de2 100644
+> > > > --- a/drivers/fpga/dfl-fme-region.c
+> > > > +++ b/drivers/fpga/dfl-fme-region.c
+> > > > @@ -66,7 +66,7 @@ static int fme_region_probe(struct platform_device *pdev)
+> > > >
+> > > >  static int fme_region_remove(struct platform_device *pdev)
+> > > >  {
+> > > > -     struct fpga_region *region = dev_get_drvdata(&pdev->dev);
+> > > > +     struct fpga_region *region = platform_get_drvdata(pdev);
+> > >
+> > > This is nice, but not a bugfix.  I'll wait for 4.20-rc1 for this patch.
+> >
+> > Could you take patch 4/5 and 5/5?  They didn't make it into a 4.20 rc yet.
+>
+> Can you resend them please?  I don't see either of these in my queue
+> anywhere.
+>
+> thanks,
+>
+> greg k-h
 
-Add Intel Stratix10 service layer to the device tree
+Sure! Just sent them.
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
-Signed-off-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
-v2: change to put service layer driver node under the firmware node
-    change compatible to "intel, stratix10-svc"
-v3: no change
-v4: s/service driver/stratix10 service driver/ in subject line
-v5: no change
-v6: add Moritz's Acked-by
-v7: no change
-v8: no change
-v9: no change
-v10: no change
----
- arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-index 8253a1a..a43ed05 100644
---- a/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-+++ b/arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
-@@ -24,6 +24,19 @@
- 	#address-cells = <2>;
- 	#size-cells = <2>;
- 
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+
-+		service_reserved: svcbuffer@0 {
-+			compatible = "shared-dma-pool";
-+			reg = <0x0 0x0 0x0 0x1000000>;
-+			alignment = <0x1000>;
-+			no-map;
-+		};
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -534,5 +547,13 @@
- 
- 			status = "disabled";
- 		};
-+
-+		firmware {
-+			svc {
-+				compatible = "intel,stratix10-svc";
-+				method = "smc";
-+				memory-region = <&service_reserved>;
-+			};
-+		};
- 	};
- };
--- 
-2.7.4
+Thanks,
+Alan
