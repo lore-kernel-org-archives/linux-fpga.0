@@ -1,156 +1,29 @@
-Return-Path: <SRS0=F0XN=NQ=denx.de=agust@kernel.org>
-Return-Path: <SRS0=F0XN=NQ=denx.de=agust@kernel.org>
-From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v2] fpga: mgr: add notifier for manager register/unregister events
-Date: Mon,  5 Nov 2018 18:14:57 +0100
-Message-Id: <20181105171457.28150-1-agust@denx.de>
+Return-Path: <SRS0=Tgdl=NX=linuxfoundation.org=gregkh@kernel.org>
+Return-Path: <SRS0=Tgdl=NX=linuxfoundation.org=gregkh@kernel.org>
+Date: Mon, 12 Nov 2018 11:46:02 -0800
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [RESEND 0/2] fpga fixes for 4.20
+Message-ID: <20181112194602.GA3329@kroah.com>
+References: <1542051514-5205-1-git-send-email-atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org
-Cc: atull@kernel.org, mdf@kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1542051514-5205-1-git-send-email-atull@kernel.org>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add API functions for registering and removing a notifier for FPGA
-manager register/unregister events. Notify when a new FPGA manager
-has been registered or when an existing manager is being removed.
-This will help configuration interface drivers to get the notion
-of low-level FPGA managers appearing or disappearing, when using
-hotpluggable FPGA configuration devices (e.g. via USB-FPP or
-USB-SPI adapters).
+On Mon, Nov 12, 2018 at 01:38:32PM -0600, Alan Tull wrote:
+> Hi Greg,
+> 
+> Here's a reposting of the two small fixes for fpga, please
+> take them in.  They've been reviewed on the mailing list
+> and apply cleanly on today's char-misc-test.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
-Changes in v2:
- - rebased on v4.20-rc1, reworked documentation
- - also notify about all fpga managers that were registered before
-   adding the manager register/unregister notifier
+This isn't a bugfix, they should just go into my "next" branch to be
+merged for the next -rc1 release, right?  I thought that is what I said
+last time...
 
- Documentation/driver-api/fpga/fpga-mgr.rst | 15 ++++++++
- drivers/fpga/fpga-mgr.c                    | 45 ++++++++++++++++++++++
- include/linux/fpga/fpga-mgr.h              | 12 ++++++
- 3 files changed, 72 insertions(+)
+thanks,
 
-diff --git a/Documentation/driver-api/fpga/fpga-mgr.rst b/Documentation/driver-api/fpga/fpga-mgr.rst
-index 576f1945eacd..fd736a22f5fc 100644
---- a/Documentation/driver-api/fpga/fpga-mgr.rst
-+++ b/Documentation/driver-api/fpga/fpga-mgr.rst
-@@ -125,3 +125,18 @@ API for implementing a new FPGA Manager driver
- 
- .. kernel-doc:: drivers/fpga/fpga-mgr.c
-    :functions: fpga_mgr_unregister
-+
-+Notification about added or removed FPGA managers
-+-------------------------------------------------
-+
-+To register or unregister the notifier callback for signalling
-+about the low level FPGA managers being added or removed, use
-+
-+* :c:func:`fpga_mgr_register_mgr_notifier` —  Add notifier for manager add/remove event
-+* :c:func:`fpga_mgr_unregister_mgr_notifier` —  Remove notifier for manager events
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_register_mgr_notifier
-+
-+.. kernel-doc:: drivers/fpga/fpga-mgr.c
-+   :functions: fpga_mgr_unregister_mgr_notifier
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index c3866816456a..307717ad9c6d 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -21,6 +21,46 @@
- static DEFINE_IDA(fpga_mgr_ida);
- static struct class *fpga_mgr_class;
- 
-+static BLOCKING_NOTIFIER_HEAD(fpga_mgr_notifier_list);
-+
-+static int fpga_mgr_notify_registered(struct device *dev, void *data)
-+{
-+	struct fpga_manager *mgr = to_fpga_manager(dev);
-+
-+	blocking_notifier_call_chain(&fpga_mgr_notifier_list,
-+				     FPGA_MGR_ADD, mgr);
-+	return 0;
-+}
-+
-+/**
-+ * fpga_mgr_register_mgr_notifier() - register fpga manager notifier callback
-+ * @nb: pointer to the notifier block for the callback events.
-+ *
-+ * Add a notifier callback for FPGA manager changes. These changes are
-+ * either FPGA manager being added or removed.
-+ */
-+void fpga_mgr_register_mgr_notifier(struct notifier_block *nb)
-+{
-+	blocking_notifier_chain_register(&fpga_mgr_notifier_list, nb);
-+
-+	class_for_each_device(fpga_mgr_class, NULL, NULL,
-+			      fpga_mgr_notify_registered);
-+}
-+EXPORT_SYMBOL_GPL(fpga_mgr_register_mgr_notifier);
-+
-+/**
-+ * fpga_mgr_unregister_mgr_notifier() - unregister a notifier callback
-+ * @nb: pointer to the notifier block for the callback events.
-+ *
-+ * Remove a notifier callback. fpga_mgr_register_mgr_notifier() must have
-+ * been previously called for this function to work properly.
-+ */
-+void fpga_mgr_unregister_mgr_notifier(struct notifier_block *nb)
-+{
-+	blocking_notifier_chain_unregister(&fpga_mgr_notifier_list, nb);
-+}
-+EXPORT_SYMBOL_GPL(fpga_mgr_unregister_mgr_notifier);
-+
- /**
-  * fpga_image_info_alloc - Allocate a FPGA image info struct
-  * @dev: owning device
-@@ -700,6 +740,8 @@ int fpga_mgr_register(struct fpga_manager *mgr)
- 
- 	dev_info(&mgr->dev, "%s registered\n", mgr->name);
- 
-+	blocking_notifier_call_chain(&fpga_mgr_notifier_list,
-+				     FPGA_MGR_ADD, mgr);
- 	return 0;
- 
- error_device:
-@@ -719,6 +761,9 @@ void fpga_mgr_unregister(struct fpga_manager *mgr)
- {
- 	dev_info(&mgr->dev, "%s %s\n", __func__, mgr->name);
- 
-+	blocking_notifier_call_chain(&fpga_mgr_notifier_list,
-+				     FPGA_MGR_REMOVE, mgr);
-+
- 	/*
- 	 * If the low level driver provides a method for putting fpga into
- 	 * a desired state upon unregister, do it.
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index e8ca62b2cb5b..d6eaec80557b 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -10,6 +10,7 @@
- 
- #include <linux/mutex.h>
- #include <linux/platform_device.h>
-+#include <linux/notifier.h>
- 
- struct fpga_manager;
- struct sg_table;
-@@ -202,4 +203,15 @@ struct fpga_manager *devm_fpga_mgr_create(struct device *dev, const char *name,
- 					  const struct fpga_manager_ops *mops,
- 					  void *priv);
- 
-+/*
-+ * FPGA Manager register notifier events
-+ * FPGA_MGR_ADD: a new fpga manager has been registered
-+ * FPGA_MGR_REMOVE: a registered fpga manager is being removed
-+ */
-+#define FPGA_MGR_ADD	1
-+#define FPGA_MGR_REMOVE	2
-+
-+void fpga_mgr_register_mgr_notifier(struct notifier_block *nb);
-+void fpga_mgr_unregister_mgr_notifier(struct notifier_block *nb);
-+
- #endif /*_LINUX_FPGA_MGR_H */
--- 
-2.17.1
+greg k-h
