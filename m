@@ -1,134 +1,69 @@
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v6 12/18] of: overlay: check prevents multiple fragments add or delete same node
-Date: Mon,  5 Nov 2018 07:25:09 -0800
-Message-Id: <1541431515-25197-13-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=rMVE=N3=denx.de=agust@kernel.org>
+Return-Path: <SRS0=rMVE=N3=denx.de=agust@kernel.org>
+Date: Fri, 16 Nov 2018 01:02:55 +0100
+From: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH v3] fpga: mgr: altera-ps-spi: enable usage on non-dt
+ platforms
+Message-ID: <20181116010255.16091acf@crub>
+In-Reply-To: <CANk1AXS5q4z-3fjdD822g5tqg7ToBtwoqamSMuSJ9ChEpm2_vQ@mail.gmail.com>
+References: <20181101212231.9125-1-agust@denx.de>
+	<CANk1AXS5q4z-3fjdD822g5tqg7ToBtwoqamSMuSJ9ChEpm2_vQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+To: Alan Tull <atull@kernel.org>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Hi Alan,
 
-Multiple overlay fragments adding or deleting the same node is not
-supported.  Replace code comment of such, with check to detect the
-attempt and fail the overlay apply.
+On Thu, 15 Nov 2018 16:24:21 -0600
+Alan Tull atull@kernel.org wrote:
+...
+>Need to update the header to explain what has been added since v2
+>(added spi ids and an array and code to map spi ids to data).
 
-Devicetree unittest where multiple fragments added the same node was
-added in the previous patch in the series.  After applying this patch
-the unittest messages will no longer include:
+Done in v4.
 
-   Duplicate name in motor-1, renamed to "controller#1"
-   OF: overlay: of_overlay_apply() err=0
-   ### dt-test ### of_overlay_fdt_apply() expected -22, ret=0, overlay_bad_add_dup_node
-   ### dt-test ### FAIL of_unittest_overlay_high_level():2419 Adding overlay 'overlay_bad_add_dup_node' failed
+...
+>> +static const struct altera_ps_data *altera_ps_data_map[] = {  
+>
+>Please add a comment that array index is enum altera_ps_devtype or
+>something like that.  Make it easy for future generations to do the
+>right thing.  :)
 
-   ...
+Done in v4.
 
-   ### dt-test ### end of unittest - 210 passed, 1 failed
+...
+>> +static const struct altera_ps_data *id_to_data(const struct spi_device_id *id)
+>> +{
+>> +       const struct altera_ps_data *data;
+>> +       unsigned int i;
+>> +
+>> +       for (i = 0; i < ARRAY_SIZE(altera_ps_data_map); i++) {  
+>
+>At this point, id->driver_data == CYCLONE5 or ARRIA10 (more added in
+>the future) so we don't need a loop to search the mapping array for a
+>matching id.     Would something like the following work instead of
+>this for loop?  I understand you wanted to do some checking, this
+>accomplishes some checking but will exit NULL if someone extends the
+>array wrongly.
 
-but will instead include:
+Yes, this works.
 
-   OF: overlay: ERROR: multiple overlay fragments add and/or delete node /testcase-data-2/substation@100/motor-1/controller
+>kernel_ulong_t devtype = id->driver_data;
+>
+>/* someone added a altera_ps_devtype without adding to the map array */
+>if (devtype >= ARRAY_SIZE(altera_ps_data_map))
+>   return NULL;
+>
+>data = altera_ps_data_map[devtype];
+>if (!data || data->devtype != devtype)
+>    return NULL;
+>
+>return data;
 
-   ...
+Okay, v4 uses this code.
 
-   ### dt-test ### end of unittest - 211 passed, 0 failed
-
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
-
-checkpatch errors "line over 80 characters" and "Too many leading tabs"
-are ok, they will be fixed later in this series
-
- drivers/of/overlay.c | 58 ++++++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 49 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index c8f88b0836a3..8af8115bd36e 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -392,14 +392,6 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
-  *       a live devicetree created from Open Firmware.
-  *
-  * NOTE_2: Multiple mods of created nodes not supported.
-- *       If more than one fragment contains a node that does not already exist
-- *       in the live tree, then for each fragment of_changeset_attach_node()
-- *       will add a changeset entry to add the node.  When the changeset is
-- *       applied, __of_attach_node() will attach the node twice (once for
-- *       each fragment).  At this point the device tree will be corrupted.
-- *
-- *       TODO: add integrity check to ensure that multiple fragments do not
-- *             create the same node.
-  *
-  * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
-  * invalid @overlay.
-@@ -517,6 +509,54 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
- }
- 
- /**
-+ * check_changeset_dup_add_node() - changeset validation: duplicate add node
-+ * @ovcs:	Overlay changeset
-+ *
-+ * Check changeset @ovcs->cset for multiple add node entries for the same
-+ * node.
-+ *
-+ * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
-+ * invalid overlay in @ovcs->fragments[].
-+ */
-+static int check_changeset_dup_add_node(struct overlay_changeset *ovcs)
-+{
-+	struct of_changeset_entry *ce_1, *ce_2;
-+	char *fn_1, *fn_2;
-+	int name_match;
-+
-+	list_for_each_entry(ce_1, &ovcs->cset.entries, node) {
-+
-+		if (ce_1->action == OF_RECONFIG_ATTACH_NODE ||
-+		    ce_1->action == OF_RECONFIG_DETACH_NODE) {
-+
-+			ce_2 = ce_1;
-+			list_for_each_entry_continue(ce_2, &ovcs->cset.entries, node) {
-+				if (ce_2->action == OF_RECONFIG_ATTACH_NODE ||
-+				    ce_2->action == OF_RECONFIG_DETACH_NODE) {
-+					/* inexpensive name compare */
-+					if (!of_node_cmp(ce_1->np->full_name,
-+					    ce_2->np->full_name)) {
-+						/* expensive full path name compare */
-+						fn_1 = kasprintf(GFP_KERNEL, "%pOF", ce_1->np);
-+						fn_2 = kasprintf(GFP_KERNEL, "%pOF", ce_2->np);
-+						name_match = !strcmp(fn_1, fn_2);
-+						kfree(fn_1);
-+						kfree(fn_2);
-+						if (name_match) {
-+							pr_err("ERROR: multiple overlay fragments add and/or delete node %pOF\n",
-+							       ce_1->np);
-+							return -EINVAL;
-+						}
-+					}
-+				}
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-  * build_changeset() - populate overlay changeset in @ovcs from @ovcs->fragments
-  * @ovcs:	Overlay changeset
-  *
-@@ -571,7 +611,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
- 		}
- 	}
- 
--	return 0;
-+	return check_changeset_dup_add_node(ovcs);
- }
- 
- /*
--- 
-Frank Rowand <frank.rowand@sony.com>
+Thanks,
+Anatolij
