@@ -1,285 +1,64 @@
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v6 13/18] of: overlay: check prevents multiple fragments touching same property
-Date: Mon,  5 Nov 2018 07:25:10 -0800
-Message-Id: <1541431515-25197-14-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=YrXQ=N3=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=YrXQ=N3=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-out.m-online.net ([212.18.0.10]:53500 "EHLO
+        mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725985AbeKPKSY (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 16 Nov 2018 05:18:24 -0500
+Date: Fri, 16 Nov 2018 01:08:17 +0100
+From: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH] fpga: altera-cvp: output expected CvP
+ VSE_PCIE_EXT_CAP_ID in error case
+Message-ID: <20181116010817.155391d3@crub>
+In-Reply-To: <CANk1AXRnahbsdbe7_XWvQudG_+Kr0exZgk2J4ay0sjM0b=bGBg@mail.gmail.com>
+References: <20181106215838.5212-1-agust@denx.de>
+        <CANk1AXRnahbsdbe7_XWvQudG_+Kr0exZgk2J4ay0sjM0b=bGBg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Hi Alan,
 
-Add test case of two fragments updating the same property.  After
-adding the test case, the system hangs at end of boot, after
-after slub stack dumps from kfree() in crypto modprobe code.
+On Thu, 15 Nov 2018 16:28:10 -0600
+Alan Tull atull@kernel.org wrote:
 
-Multiple overlay fragments adding, modifying, or deleting the same
-property is not supported.  Add check to detect the attempt and fail
-the overlay apply.
+>On Tue, Nov 6, 2018 at 3:58 PM Anatolij Gustschin <agust@denx.de> wrote:
+>
+>Hi Anatolij,
+>
+>>
+>> Output VSE_PCIE_EXT_CAP_ID register address and expected register
+>> value in error message to give more info when analyzing issues
+>> with loaded periphery image.
+>>
+>> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+>> ---
+>>  drivers/fpga/altera-cvp.c | 5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+>> index 381d0c42450f..08c0080092da 100644
+>> --- a/drivers/fpga/altera-cvp.c
+>> +++ b/drivers/fpga/altera-cvp.c
+>> @@ -413,7 +413,10 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+>>          */
+>>         pci_read_config_word(pdev, VSE_PCIE_EXT_CAP_ID, &val);
+>>         if (val != VSE_PCIE_EXT_CAP_ID_VAL) {
+>> -               dev_err(&pdev->dev, "Wrong EXT_CAP_ID value 0x%x\n", val);
+>> +               dev_err(&pdev->dev,
+>> +                       "Wrong VSE_PCIE_EXT_CAP_ID value 0x%04x at 0x%x, "
+>> +                       "expected: 0x%04x\n",
+>> +                       val, VSE_PCIE_EXT_CAP_ID, VSE_PCIE_EXT_CAP_ID_VAL);  
+>
+>This patch adds error print info which is printing out constants.
+>Wouldn't the user just be able to look at the source and know what was
+>expected?  I may be missing something here.
 
-Before this patch, the first fragment error would terminate
-processing.  Allow fragment checking to proceed and report all
-of the fragment errors before terminating the overlay apply. This
-is not a hot path, thus not a performance issue (the error is not
-transient and requires fixing the overlay before attempting to
-apply it again).
+People dealing with different FPGAs asked me to add this, they didn't
+want to lookup it in the code.
 
-After applying this patch, the devicetree unittest messages will
-include:
-
-   OF: overlay: ERROR: multiple fragments add, update, and/or delete property /testcase-data-2/substation@100/motor-1/rpm_avail
-
-   ...
-
-   ### dt-test ### end of unittest - 212 passed, 0 failed
-
-The check to detect two fragments updating the same property is
-folded into the patch that created the test case to maintain
-bisectability.
-
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/overlay.c                               | 118 ++++++++++++++-------
- drivers/of/unittest-data/Makefile                  |   1 +
- .../of/unittest-data/overlay_bad_add_dup_prop.dts  |  24 +++++
- drivers/of/unittest-data/overlay_base.dts          |   1 +
- drivers/of/unittest.c                              |   5 +
- 5 files changed, 112 insertions(+), 37 deletions(-)
- create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
-
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 8af8115bd36e..184cc2c4a931 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -508,52 +508,96 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
- 	return 0;
- }
- 
-+static int find_dup_cset_node_entry(struct overlay_changeset *ovcs,
-+		struct of_changeset_entry *ce_1)
-+{
-+	struct of_changeset_entry *ce_2;
-+	char *fn_1, *fn_2;
-+	int node_path_match;
-+
-+	if (ce_1->action != OF_RECONFIG_ATTACH_NODE &&
-+	    ce_1->action != OF_RECONFIG_DETACH_NODE)
-+		return 0;
-+
-+	ce_2 = ce_1;
-+	list_for_each_entry_continue(ce_2, &ovcs->cset.entries, node) {
-+		if ((ce_2->action != OF_RECONFIG_ATTACH_NODE &&
-+		     ce_2->action != OF_RECONFIG_DETACH_NODE) ||
-+		    of_node_cmp(ce_1->np->full_name, ce_2->np->full_name))
-+			continue;
-+
-+		fn_1 = kasprintf(GFP_KERNEL, "%pOF", ce_1->np);
-+		fn_2 = kasprintf(GFP_KERNEL, "%pOF", ce_2->np);
-+		node_path_match = !strcmp(fn_1, fn_2);
-+		kfree(fn_1);
-+		kfree(fn_2);
-+		if (node_path_match) {
-+			pr_err("ERROR: multiple fragments add and/or delete node %pOF\n",
-+			       ce_1->np);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int find_dup_cset_prop(struct overlay_changeset *ovcs,
-+		struct of_changeset_entry *ce_1)
-+{
-+	struct of_changeset_entry *ce_2;
-+	char *fn_1, *fn_2;
-+	int node_path_match;
-+
-+	if (ce_1->action != OF_RECONFIG_ADD_PROPERTY &&
-+	    ce_1->action != OF_RECONFIG_REMOVE_PROPERTY &&
-+	    ce_1->action != OF_RECONFIG_UPDATE_PROPERTY)
-+		return 0;
-+
-+	ce_2 = ce_1;
-+	list_for_each_entry_continue(ce_2, &ovcs->cset.entries, node) {
-+		if ((ce_2->action != OF_RECONFIG_ADD_PROPERTY &&
-+		     ce_2->action != OF_RECONFIG_REMOVE_PROPERTY &&
-+		     ce_2->action != OF_RECONFIG_UPDATE_PROPERTY) ||
-+		    of_node_cmp(ce_1->np->full_name, ce_2->np->full_name))
-+			continue;
-+
-+		fn_1 = kasprintf(GFP_KERNEL, "%pOF", ce_1->np);
-+		fn_2 = kasprintf(GFP_KERNEL, "%pOF", ce_2->np);
-+		node_path_match = !strcmp(fn_1, fn_2);
-+		kfree(fn_1);
-+		kfree(fn_2);
-+		if (node_path_match &&
-+		    !of_prop_cmp(ce_1->prop->name, ce_2->prop->name)) {
-+			pr_err("ERROR: multiple fragments add, update, and/or delete property %pOF/%s\n",
-+			       ce_1->np, ce_1->prop->name);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- /**
-- * check_changeset_dup_add_node() - changeset validation: duplicate add node
-+ * changeset_dup_entry_check() - check for duplicate entries
-  * @ovcs:	Overlay changeset
-  *
-- * Check changeset @ovcs->cset for multiple add node entries for the same
-- * node.
-+ * Check changeset @ovcs->cset for multiple {add or delete} node entries for
-+ * the same node or duplicate {add, delete, or update} properties entries
-+ * for the same property.
-  *
-- * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
-- * invalid overlay in @ovcs->fragments[].
-+ * Returns 0 on success, or -EINVAL if duplicate changeset entry found.
-  */
--static int check_changeset_dup_add_node(struct overlay_changeset *ovcs)
-+static int changeset_dup_entry_check(struct overlay_changeset *ovcs)
- {
--	struct of_changeset_entry *ce_1, *ce_2;
--	char *fn_1, *fn_2;
--	int name_match;
-+	struct of_changeset_entry *ce_1;
-+	int dup_entry = 0;
- 
- 	list_for_each_entry(ce_1, &ovcs->cset.entries, node) {
--
--		if (ce_1->action == OF_RECONFIG_ATTACH_NODE ||
--		    ce_1->action == OF_RECONFIG_DETACH_NODE) {
--
--			ce_2 = ce_1;
--			list_for_each_entry_continue(ce_2, &ovcs->cset.entries, node) {
--				if (ce_2->action == OF_RECONFIG_ATTACH_NODE ||
--				    ce_2->action == OF_RECONFIG_DETACH_NODE) {
--					/* inexpensive name compare */
--					if (!of_node_cmp(ce_1->np->full_name,
--					    ce_2->np->full_name)) {
--						/* expensive full path name compare */
--						fn_1 = kasprintf(GFP_KERNEL, "%pOF", ce_1->np);
--						fn_2 = kasprintf(GFP_KERNEL, "%pOF", ce_2->np);
--						name_match = !strcmp(fn_1, fn_2);
--						kfree(fn_1);
--						kfree(fn_2);
--						if (name_match) {
--							pr_err("ERROR: multiple overlay fragments add and/or delete node %pOF\n",
--							       ce_1->np);
--							return -EINVAL;
--						}
--					}
--				}
--			}
--		}
-+		dup_entry |= find_dup_cset_node_entry(ovcs, ce_1);
-+		dup_entry |= find_dup_cset_prop(ovcs, ce_1);
- 	}
- 
--	return 0;
-+	return dup_entry ? -EINVAL : 0;
- }
- 
- /**
-@@ -611,7 +655,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
- 		}
- 	}
- 
--	return check_changeset_dup_add_node(ovcs);
-+	return changeset_dup_entry_check(ovcs);
- }
- 
- /*
-diff --git a/drivers/of/unittest-data/Makefile b/drivers/of/unittest-data/Makefile
-index 166dbdbfd1c5..9b6807065827 100644
---- a/drivers/of/unittest-data/Makefile
-+++ b/drivers/of/unittest-data/Makefile
-@@ -18,6 +18,7 @@ obj-$(CONFIG_OF_OVERLAY) += overlay.dtb.o \
- 			    overlay_13.dtb.o \
- 			    overlay_15.dtb.o \
- 			    overlay_bad_add_dup_node.dtb.o \
-+			    overlay_bad_add_dup_prop.dtb.o \
- 			    overlay_bad_phandle.dtb.o \
- 			    overlay_bad_symbol.dtb.o \
- 			    overlay_base.dtb.o
-diff --git a/drivers/of/unittest-data/overlay_bad_add_dup_prop.dts b/drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
-new file mode 100644
-index 000000000000..c190da54f175
---- /dev/null
-+++ b/drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
-@@ -0,0 +1,24 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/dts-v1/;
-+/plugin/;
-+
-+/*
-+ * &electric_1/motor-1 and &spin_ctrl_1 are the same node:
-+ *   /testcase-data-2/substation@100/motor-1
-+ *
-+ * Thus the property "rpm_avail" in each fragment will
-+ * result in an attempt to update the same property twice.
-+ * This will result in an error and the overlay apply
-+ * will fail.
-+ */
-+
-+&electric_1 {
-+
-+	motor-1 {
-+		rpm_avail = < 100 >;
-+	};
-+};
-+
-+&spin_ctrl_1 {
-+		rpm_avail = < 100 200 >;
-+};
-diff --git a/drivers/of/unittest-data/overlay_base.dts b/drivers/of/unittest-data/overlay_base.dts
-index 820b79ca378a..99ab9d12d00b 100644
---- a/drivers/of/unittest-data/overlay_base.dts
-+++ b/drivers/of/unittest-data/overlay_base.dts
-@@ -30,6 +30,7 @@
- 			spin_ctrl_1: motor-1 {
- 				compatible = "ot,ferris-wheel-motor";
- 				spin = "clockwise";
-+				rpm_avail = < 50 >;
- 			};
- 
- 			spin_ctrl_2: motor-8 {
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index f82edf829f43..f0139d1e8b63 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -2162,6 +2162,7 @@ struct overlay_info {
- OVERLAY_INFO_EXTERN(overlay_13);
- OVERLAY_INFO_EXTERN(overlay_15);
- OVERLAY_INFO_EXTERN(overlay_bad_add_dup_node);
-+OVERLAY_INFO_EXTERN(overlay_bad_add_dup_prop);
- OVERLAY_INFO_EXTERN(overlay_bad_phandle);
- OVERLAY_INFO_EXTERN(overlay_bad_symbol);
- 
-@@ -2185,6 +2186,7 @@ struct overlay_info {
- 	OVERLAY_INFO(overlay_13, 0),
- 	OVERLAY_INFO(overlay_15, 0),
- 	OVERLAY_INFO(overlay_bad_add_dup_node, -EINVAL),
-+	OVERLAY_INFO(overlay_bad_add_dup_prop, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
- 	{}
-@@ -2435,6 +2437,9 @@ static __init void of_unittest_overlay_high_level(void)
- 	unittest(overlay_data_apply("overlay_bad_add_dup_node", NULL),
- 		 "Adding overlay 'overlay_bad_add_dup_node' failed\n");
- 
-+	unittest(overlay_data_apply("overlay_bad_add_dup_prop", NULL),
-+		 "Adding overlay 'overlay_bad_add_dup_prop' failed\n");
-+
- 	unittest(overlay_data_apply("overlay_bad_phandle", NULL),
- 		 "Adding overlay 'overlay_bad_phandle' failed\n");
- 
--- 
-Frank Rowand <frank.rowand@sony.com>
+Thanks,
+Anatolij
