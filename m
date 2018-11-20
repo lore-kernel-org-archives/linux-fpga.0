@@ -1,142 +1,121 @@
-Return-Path: <SRS0=qTBN=NR=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=qTBN=NR=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv10 0/8] Add Intel Stratix10 FPGA manager and service layer 
-Date: Tue,  6 Nov 2018 10:52:44 -0600
-Message-Id: <1541523172-5171-1-git-send-email-richard.gong@linux.intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: gregkh@linuxfoundation.org, catalin.marinas@arm.com, will.deacon@arm.com, dinguyen@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, atull@kernel.org, mdf@kernel.org, arnd@arndb.de, corbet@lwn.net
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, todd.riffel@intel.com, richard.gong@intel.com
+References: <20181115235803.25316-1-agust@denx.de>
+In-Reply-To: <20181115235803.25316-1-agust@denx.de>
+From: Alan Tull <atull@kernel.org>
+Date: Tue, 20 Nov 2018 09:42:38 -0600
+Message-ID: <CANk1AXQJ6iLFBPQANF+Vy=7O-+zQjQf+sJRJqiWpWuEgYXEvgQ@mail.gmail.com>
+Subject: Re: [PATCH v4] fpga: mgr: altera-ps-spi: enable usage on non-dt platforms
+Content-Type: text/plain; charset="UTF-8"
+To: Anatolij Gustschin <agust@denx.de>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+On Thu, Nov 15, 2018 at 5:58 PM Anatolij Gustschin <agust@denx.de> wrote:
+>
+> Driver probing fails on non-dt platforms since of_match_device()
+> always returns NULL here. Add spi ids with device names and
+> matching driver data as an index of a map array with data for
+> supported devices. Add this map array and Alan's code to map
 
-This is the 10th submission of Intel Stratix10 service layer and FPGA
-manager driver patches. In this submission I have moved Stratix10 service
-layer driver .c file to drivers/firmware and header files to
-include/linux/firmware/intel. I have added Stratix10 service layer
-document to other firmware interface.
+I suggested reworks to get rid of a loop and make it more readable.
+Not really my code.
 
-Stratix10 service layer patches have been reviewed internally by Alan Tull
-and other colleagues at Intel.
-
-Some features of the Intel Stratix10 SoC require a level of privilege
-higher than the kernel is granted. Such secure features include
-FPGA programming, remote status update, read and write the secure
-registers. In terms of the ARMv8 architecture, the kernel runs at Exception
-Level 1 (EL1), access to the features requires Exception Level 3 (EL3).
-
-The Intel Stratix10 service layer provides kernel APIs for drivers to
-request access to the secure features. The requests are queued and
-processed one by one. ARM’s SMCCC is used to pass the execution of the
-requests on to a secure monitor (EL3).
-
-Later the Intel Stratix10 service layer driver will be extended to provide
-services for QSPI, Crypto and warm reset.
-
-v2: add patches for FPGA manager, FPGA manager binding, dts and defconfig
-    remove intel-service subdirectory and intel-service.h, move intel-smc.h
-    and intel-service.c to driver/misc subdirectory.
-    remove global variables.
-    change service layer driver be 'default n'.
-    correct SPDX markers.
-    add timeout for do..while() loop.
-    add kernel-doc for the functions and structs, correct multiline
-    comments.
-    replace kfifo_in and kfifo_out with kfifo_in_spinlocked and
-    kfifo_out_spinlocked.
-    rename struct intel_svc_data (at client header) to
-    intel_svc_client_msg.
-    rename struct intel_svc_private_mem to intel_svc_data.
-    other corrections/changes from Intel internal code reviews.
-v3: change all exported functions with "intel_svc_" as the prefix.
-    increase timeout values for claiming back submitted buffer(s).
-    rename struct intel_command_reconfig_payload to
-    struct intel_svc_command_reconfig_payload.
-    add pr_err() to provide the error return value.
-    change to put fpga_mgr node under firmware/svc node.
-    change to FPGA manager to align the update of service client APIs, and
-    the update of fpga_mgr device node.
-    Other corrections/changes.
-v4: s/intel/stratix10/ on some variables, structs, functions, and file
-    names intel-service.c -> stratix10-svc.c
-    intel-smc.h -> stratix10-smc.h
-    intel-service-client.h -> stratix10-svc-client.h.
-    remove non-kernel-doc formatting.
-    s/fpga-mgr@0/fpga-mgr/ to remove unit_address at fpga_mgr node.
-    add Rob's Reviewed-by.
-    add Richard's signed-off-by.
-v5: add a new API statix10_svc_done() which is called by service client
-    when client request is completed or error occurs during request
-    process. Which allows service layer to free its resources.
-    remove dummy client from service layer client header and service layer
-    source file.
-    add Rob's Reviewed-by.
-    add a new file stratix10-svc.rst and add that to driver-api/index.rst.
-    kernel-doc fixes.
-v6: replace kthread_create_on_cpu() with kthread_create_on_node().
-    extend stratix_svc_send() to support service client which doesn't use
-    memory allocated by service layer.
-    add S10_RECONFIG_TIMEOUT.
-    rename s/S10_BUF_TIMEOUT/S10_BUFFER_TIMEOUT/.
-    fix service layer and FPGA manager Klocwork errors.
-v7: add remote status update client support.
-    s/pr_debug/dev_dbg, s/dev_info/dev_dbg.
-    add unlock buffer if s10_svc_send_msg() fails.
-    add release channel if fpga_mgr_create() fails.
-    handle invalid pointer at svc if the client passed an invalid name.
-v8: move stratix10-smc.h to include/linux from driver/misc.
-    revert version 7 error code & smc function ID value changes at
-    stratix10-smc.h.
-    add a goto and common error handling at the end of fpga driver's.
-    probe function.
-v9: remove a patch on defconfig for enable service layer and FPGA manager.
-    resolve a issue found at git-bisect test.
-    remove kernel-doc markups that aren't being built.
-v10:move stratix10-smc.h and stratix10-svc-client.h to
-    include/linux/firmware/intel.
-    move stratix10-svc.c to drivers/firmware.
-    s/STRATIX10_SERVICE/INTEL_STRATIX10_SERVICE, fix a Klocwork error at
-    service layer driver.
-    s/stratix10_svc_command_reconfig_payload/
-    stratix10_svc_command_config_type.
-    add stratix10 service layer document to other firmware interface.
-    update path for the included header in Stratix10 FPGA manager driver.
-
-Alan Tull (3):
-  dt-bindings: fpga: add Stratix10 SoC FPGA manager binding
-  arm64: dts: stratix10: add fpga manager and region
-  fpga: add intel stratix10 soc fpga manager driver
-
-Richard Gong (5):
-  dt-bindings, firmware: add Intel Stratix10 service layer binding
-  arm64: dts: stratix10: add stratix10 service driver binding to base
-    dtsi
-  firmware: add Intel Stratix10 service layer driver
-  Documentation: driver-api: add stratix10 service layer
-  firmware: add remote status update client support
-
- .../bindings/firmware/intel,stratix10-svc.txt      |   57 ++
- .../bindings/fpga/intel-stratix10-soc-fpga-mgr.txt |   17 +
- .../driver-api/firmware/other_interfaces.rst       |   30 +
- arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi  |   33 +
- drivers/firmware/Kconfig                           |   12 +
- drivers/firmware/Makefile                          |    1 +
- drivers/firmware/stratix10-svc.c                   | 1044 ++++++++++++++++++++
- drivers/fpga/Kconfig                               |    6 +
- drivers/fpga/Makefile                              |    1 +
- drivers/fpga/stratix10-soc.c                       |  535 ++++++++++
- include/linux/firmware/intel/stratix10-smc.h       |  312 ++++++
- .../linux/firmware/intel/stratix10-svc-client.h    |  217 ++++
- 12 files changed, 2265 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
- create mode 100644 Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
- create mode 100644 drivers/firmware/stratix10-svc.c
- create mode 100644 drivers/fpga/stratix10-soc.c
- create mode 100644 include/linux/firmware/intel/stratix10-smc.h
- create mode 100644 include/linux/firmware/intel/stratix10-svc-client.h
-
--- 
-2.7.4
+> spi ids to driver data. This allows driver binding to dynamically
+> added PS-SPI devices (e.g. when added via spi_new_device() after
+> hot-plugging).
+>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> ---
+> Changes in v4:
+>  - reword commit message to describe code changes
+>  - rework mapping code as suggested by Alan
+>  - add comment about index with driver data map
+>
+> Changes in v3:
+>  - don't use pointers to device data struct in driver_data
+>
+> Changes in v2:
+>  - removed not necessary braces {}
+>  - dropped not needed !id check
+>
+>  drivers/fpga/altera-ps-spi.c | 40 +++++++++++++++++++++++++++++++-----
+>  1 file changed, 35 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/fpga/altera-ps-spi.c b/drivers/fpga/altera-ps-spi.c
+> index 33aafda50af5..8c18beec6b57 100644
+> --- a/drivers/fpga/altera-ps-spi.c
+> +++ b/drivers/fpga/altera-ps-spi.c
+> @@ -75,6 +75,12 @@ static struct altera_ps_data a10_data = {
+>         .t_st2ck_us = 10, /* min(t_ST2CK) */
+>  };
+>
+> +/* Array index is enum altera_ps_devtype */
+> +static const struct altera_ps_data *altera_ps_data_map[] = {
+> +       &c5_data,
+> +       &a10_data,
+> +};
+> +
+>  static const struct of_device_id of_ef_match[] = {
+>         { .compatible = "altr,fpga-passive-serial", .data = &c5_data },
+>         { .compatible = "altr,fpga-arria10-passive-serial", .data = &a10_data },
+> @@ -234,6 +240,22 @@ static const struct fpga_manager_ops altera_ps_ops = {
+>         .write_complete = altera_ps_write_complete,
+>  };
+>
+> +static const struct altera_ps_data *id_to_data(const struct spi_device_id *id)
+> +{
+> +       kernel_ulong_t devtype = id->driver_data;
+> +       const struct altera_ps_data *data;
+> +
+> +       /* someone added a altera_ps_devtype without adding to the map array */
+> +       if (devtype >= ARRAY_SIZE(altera_ps_data_map))
+> +               return NULL;
+> +
+> +       data = altera_ps_data_map[devtype];
+> +       if (!data || data->devtype != devtype)
+> +               return NULL;
+> +
+> +       return data;
+> +}
+> +
+>  static int altera_ps_probe(struct spi_device *spi)
+>  {
+>         struct altera_ps_conf *conf;
+> @@ -244,11 +266,17 @@ static int altera_ps_probe(struct spi_device *spi)
+>         if (!conf)
+>                 return -ENOMEM;
+>
+> -       of_id = of_match_device(of_ef_match, &spi->dev);
+> -       if (!of_id)
+> -               return -ENODEV;
+> +       if (spi->dev.of_node) {
+> +               of_id = of_match_device(of_ef_match, &spi->dev);
+> +               if (!of_id)
+> +                       return -ENODEV;
+> +               conf->data = of_id->data;
+> +       } else {
+> +               conf->data = id_to_data(spi_get_device_id(spi));
+> +               if (!conf->data)
+> +                       return -ENODEV;
+> +       }
+>
+> -       conf->data = of_id->data;
+>         conf->spi = spi;
+>         conf->config = devm_gpiod_get(&spi->dev, "nconfig", GPIOD_OUT_LOW);
+>         if (IS_ERR(conf->config)) {
+> @@ -294,7 +322,9 @@ static int altera_ps_remove(struct spi_device *spi)
+>  }
+>
+>  static const struct spi_device_id altera_ps_spi_ids[] = {
+> -       {"cyclone-ps-spi", 0},
+> +       { "cyclone-ps-spi", CYCLONE5 },
+> +       { "fpga-passive-serial", CYCLONE5 },
+> +       { "fpga-arria10-passive-serial", ARRIA10 },
+>         {}
+>  };
+>  MODULE_DEVICE_TABLE(spi, altera_ps_spi_ids);
+> --
+> 2.17.1
+>
