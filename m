@@ -1,104 +1,67 @@
-Return-Path: <SRS0=E6IX=N7=denx.de=agust@kernel.org>
-Return-Path: <SRS0=E6IX=N7=denx.de=agust@kernel.org>
-Date: Tue, 20 Nov 2018 15:49:47 +0100
-From: Anatolij Gustschin <agust@denx.de>
+Return-Path: <SRS0=lTv2=N7=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=lTv2=N7=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-eopbgr820137.outbound.protection.outlook.com ([40.107.82.137]:32420
+        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1730140AbeKTLWl (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 20 Nov 2018 06:22:41 -0500
+From: Trent Piepho <tpiepho@impinj.com>
 Subject: Re: [PATCH v2 1/3] usb: misc: add driver for FT232H based FPGA
  configuration devices
-Message-ID: <20181120154947.4dbc90d6@crub>
-In-Reply-To: <1542675372.30311.573.camel@impinj.com>
+Date: Tue, 20 Nov 2018 00:56:13 +0000
+Message-ID: <1542675372.30311.573.camel@impinj.com>
 References: <20181120002821.12794-1-agust@denx.de>
-	<20181120002821.12794-2-agust@denx.de>
-	<1542675372.30311.573.camel@impinj.com>
+         <20181120002821.12794-2-agust@denx.de>
+In-Reply-To: <20181120002821.12794-2-agust@denx.de>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <35124F5A78DFE44DBD17E32E11905BEE@namprd06.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-To: Trent Piepho <tpiepho@impinj.com>
-Cc: "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "broonie@kernel.org" <broonie@kernel.org>, "atull@kernel.org" <atull@kernel.org>, "mdf@kernel.org" <mdf@kernel.org>
-List-ID: <linux-fpga@vger.kernel.org>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: "agust@denx.de" <agust@denx.de>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "broonie@kernel.org" <broonie@kernel.org>, "atull@kernel.org" <atull@kernel.org>, "mdf@kernel.org" <mdf@kernel.org>
 
-On Tue, 20 Nov 2018 00:56:13 +0000
-Trent Piepho tpiepho@impinj.com wrote:
-
->On Tue, 2018-11-20 at 01:28 +0100, Anatolij Gustschin wrote:
->> Add USB interface driver for ARRI FPGA configuration devices based on
->> FTDI FT232H chip. Depending on USB PID the driver registers different
->> platform devices describing an FPGA configuration interface.  
->
->Is ARRI different than Arria?
-
-yes, ARRI is a company name.
-
->> +/* Use baudrate calculation borrowed from libftdi */
->> +static int ftdi_to_clkbits(int baudrate, unsigned int clk, int clk_div,  
->
->Linux uses unsigned values for clocks.  Does it make any sense to mix
->the unsigned clk with signed values?  Seems like baudrate and clk_div
->should also be unsigned.
-
-okay, will fix to unsigned.
-
->> +			   unsigned long *encoded_divisor)  
->
->unsigned long is an odd choice here.  Is there any to reason to use an
->unsigned long to store the result of right shifting a signed int
->(best_div)?  It can't be longer than a int, but it can be negative.
-
-okay, I'll change that to unsigned int.
-
->> +{
->> +	static const char frac_code[8] = { 0, 3, 2, 4, 1, 5, 6, 7 };
->> +	int best_baud = 0;
->> +	int div, best_div;
->> +
->> +	if (baudrate >= clk / clk_div) {
->> +		*encoded_divisor = 0;
->> +		best_baud = clk / clk_div;
->> +	} else if (baudrate >= clk / (clk_div + clk_div / 2)) {
->> +		*encoded_divisor = 1;
->> +		best_baud = clk / (clk_div + clk_div / 2);
->> +	} else if (baudrate >= clk / (2 * clk_div)) {
->> +		*encoded_divisor = 2;
->> +		best_baud = clk / (2 * clk_div);
->> +	} else {
->> +		/*
->> +		 * Divide by 16 to have 3 fractional bits and
->> +		 * one bit for rounding
->> +		 */
->> +		div = clk * 16 / clk_div / baudrate;
->> 
->> +		if (div & 1)	/* Decide if to round up or down */
->> +			best_div = div / 2 + 1;
->> +		else
->> +			best_div = div / 2;  
->
->In Linux we would write:
->
->best_div = DIV_ROUND_UP(div, 2);
->
->Though I think you can combine that with the above to get:
->
->best_div = DIV_ROUND_CLOSEST(clk * 8 / clk_div, baudrate);
->
->That what the above is trying to accomplish in a round about way
-
-will rework this, too. Thanks for suggestions.
-
->> +		if (best_div > 0x20000)
->> +			best_div = 0x1ffff;
-
->Looks like the above was probably supposed to be >=
-
-I'll check it.
-
->> +		best_baud = clk * 16 / clk_div / best_div;
->> +		if (best_baud & 1)	/* Decide if to round up or down */
->> +			best_baud = best_baud / 2 + 1;
->> +		else
->> +			best_baud = best_baud / 2;  
->
->Again, looks like a complicated way to round to the nearest.
-
-will change this, too.
-
-Thanks,
-Anatolij
+T24gVHVlLCAyMDE4LTExLTIwIGF0IDAxOjI4ICswMTAwLCBBbmF0b2xpaiBHdXN0c2NoaW4gd3Jv
+dGU6DQo+IEFkZCBVU0IgaW50ZXJmYWNlIGRyaXZlciBmb3IgQVJSSSBGUEdBIGNvbmZpZ3VyYXRp
+b24gZGV2aWNlcyBiYXNlZCBvbg0KPiBGVERJIEZUMjMySCBjaGlwLiBEZXBlbmRpbmcgb24gVVNC
+IFBJRCB0aGUgZHJpdmVyIHJlZ2lzdGVycyBkaWZmZXJlbnQNCj4gcGxhdGZvcm0gZGV2aWNlcyBk
+ZXNjcmliaW5nIGFuIEZQR0EgY29uZmlndXJhdGlvbiBpbnRlcmZhY2UuDQoNCklzIEFSUkkgZGlm
+ZmVyZW50IHRoYW4gQXJyaWE/DQoNCj4gKy8qIFVzZSBiYXVkcmF0ZSBjYWxjdWxhdGlvbiBib3Jy
+b3dlZCBmcm9tIGxpYmZ0ZGkgKi8NCj4gK3N0YXRpYyBpbnQgZnRkaV90b19jbGtiaXRzKGludCBi
+YXVkcmF0ZSwgdW5zaWduZWQgaW50IGNsaywgaW50IGNsa19kaXYsDQoNCkxpbnV4IHVzZXMgdW5z
+aWduZWQgdmFsdWVzIGZvciBjbG9ja3MuICBEb2VzIGl0IG1ha2UgYW55IHNlbnNlIHRvIG1peA0K
+dGhlIHVuc2lnbmVkIGNsayB3aXRoIHNpZ25lZCB2YWx1ZXM/ICBTZWVtcyBsaWtlIGJhdWRyYXRl
+IGFuZCBjbGtfZGl2DQpzaG91bGQgYWxzbyBiZSB1bnNpZ25lZC4NCg0KPiArCQkJICAgdW5zaWdu
+ZWQgbG9uZyAqZW5jb2RlZF9kaXZpc29yKQ0KDQp1bnNpZ25lZCBsb25nIGlzIGFuIG9kZCBjaG9p
+Y2UgaGVyZS4gIElzIHRoZXJlIGFueSB0byByZWFzb24gdG8gdXNlIGFuDQp1bnNpZ25lZCBsb25n
+IHRvIHN0b3JlIHRoZSByZXN1bHQgb2YgcmlnaHQgc2hpZnRpbmcgYSBzaWduZWQgaW50DQooYmVz
+dF9kaXYpPyAgSXQgY2FuJ3QgYmUgbG9uZ2VyIHRoYW4gYSBpbnQsIGJ1dCBpdCBjYW4gYmUgbmVn
+YXRpdmUuDQoNCj4gK3sNCj4gKwlzdGF0aWMgY29uc3QgY2hhciBmcmFjX2NvZGVbOF0gPSB7IDAs
+IDMsIDIsIDQsIDEsIDUsIDYsIDcgfTsNCj4gKwlpbnQgYmVzdF9iYXVkID0gMDsNCj4gKwlpbnQg
+ZGl2LCBiZXN0X2RpdjsNCj4gKw0KPiArCWlmIChiYXVkcmF0ZSA+PSBjbGsgLyBjbGtfZGl2KSB7
+DQo+ICsJCSplbmNvZGVkX2Rpdmlzb3IgPSAwOw0KPiArCQliZXN0X2JhdWQgPSBjbGsgLyBjbGtf
+ZGl2Ow0KPiArCX0gZWxzZSBpZiAoYmF1ZHJhdGUgPj0gY2xrIC8gKGNsa19kaXYgKyBjbGtfZGl2
+IC8gMikpIHsNCj4gKwkJKmVuY29kZWRfZGl2aXNvciA9IDE7DQo+ICsJCWJlc3RfYmF1ZCA9IGNs
+ayAvIChjbGtfZGl2ICsgY2xrX2RpdiAvIDIpOw0KPiArCX0gZWxzZSBpZiAoYmF1ZHJhdGUgPj0g
+Y2xrIC8gKDIgKiBjbGtfZGl2KSkgew0KPiArCQkqZW5jb2RlZF9kaXZpc29yID0gMjsNCj4gKwkJ
+YmVzdF9iYXVkID0gY2xrIC8gKDIgKiBjbGtfZGl2KTsNCj4gKwl9IGVsc2Ugew0KPiArCQkvKg0K
+PiArCQkgKiBEaXZpZGUgYnkgMTYgdG8gaGF2ZSAzIGZyYWN0aW9uYWwgYml0cyBhbmQNCj4gKwkJ
+ICogb25lIGJpdCBmb3Igcm91bmRpbmcNCj4gKwkJICovDQo+ICsJCWRpdiA9IGNsayAqIDE2IC8g
+Y2xrX2RpdiAvIGJhdWRyYXRlOw0KPiANCj4gKwkJaWYgKGRpdiAmIDEpCS8qIERlY2lkZSBpZiB0
+byByb3VuZCB1cCBvciBkb3duICovDQo+ICsJCQliZXN0X2RpdiA9IGRpdiAvIDIgKyAxOw0KPiAr
+CQllbHNlDQo+ICsJCQliZXN0X2RpdiA9IGRpdiAvIDI7DQoNCkluIExpbnV4IHdlIHdvdWxkIHdy
+aXRlOg0KDQpiZXN0X2RpdiA9IERJVl9ST1VORF9VUChkaXYsIDIpOw0KDQpUaG91Z2ggSSB0aGlu
+ayB5b3UgY2FuIGNvbWJpbmUgdGhhdCB3aXRoIHRoZSBhYm92ZSB0byBnZXQ6DQoNCmJlc3RfZGl2
+ID0gRElWX1JPVU5EX0NMT1NFU1QoY2xrICogOCAvIGNsa19kaXYsIGJhdWRyYXRlKTsNCg0KVGhh
+dCB3aGF0IHRoZSBhYm92ZSBpcyB0cnlpbmcgdG8gYWNjb21wbGlzaCBpbiBhIHJvdW5kIGFib3V0
+IHdheQ0KDQo+ICsJCWlmIChiZXN0X2RpdiA+IDB4MjAwMDApDQo+ICsJCQliZXN0X2RpdiA9IDB4
+MWZmZmY7DQoNCkxvb2tzIGxpa2UgdGhlIGFib3ZlIHdhcyBwcm9iYWJseSBzdXBwb3NlZCB0byBi
+ZSA+PQ0KDQo+ICsJCWJlc3RfYmF1ZCA9IGNsayAqIDE2IC8gY2xrX2RpdiAvIGJlc3RfZGl2Ow0K
+PiArCQlpZiAoYmVzdF9iYXVkICYgMSkJLyogRGVjaWRlIGlmIHRvIHJvdW5kIHVwIG9yIGRvd24g
+Ki8NCj4gKwkJCWJlc3RfYmF1ZCA9IGJlc3RfYmF1ZCAvIDIgKyAxOw0KPiArCQllbHNlDQo+ICsJ
+CQliZXN0X2JhdWQgPSBiZXN0X2JhdWQgLyAyOw0KDQpBZ2FpbiwgbG9va3MgbGlrZSBhIGNvbXBs
+aWNhdGVkIHdheSB0byByb3VuZCB0byB0aGUgbmVhcmVzdC4NCg0KPiArCQkqZW5jb2RlZF9kaXZp
+c29yID0gKGJlc3RfZGl2ID4+IDMpIHwNCj4gKwkJCQkgICAoZnJhY19jb2RlW2Jlc3RfZGl2ICYg
+MHg3XSA8PCAxNCk7DQo+ICsJfQ0KPiArCXJldHVybiBiZXN0X2JhdWQ7DQo+IA==
