@@ -1,145 +1,114 @@
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v6 07/18] of: dynamic: change type of of_{at,de}tach_node() to void
-Date: Mon,  5 Nov 2018 07:25:04 -0800
-Message-Id: <1541431515-25197-8-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 1/2] fpga: altera-cvp: fix probing for multiple FPGAs on the bus
+Date: Mon, 26 Nov 2018 11:35:27 -0600
+Message-Id: <1543253728-26542-2-git-send-email-atull@kernel.org>
+In-Reply-To: <1543253728-26542-1-git-send-email-atull@kernel.org>
+References: <1543253728-26542-1-git-send-email-atull@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Anatolij Gustschin <agust@denx.de>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+From: Anatolij Gustschin <agust@denx.de>
 
-of_attach_node() and of_detach_node() always return zero, so
-their return value is meaningless.  Change their type to void
-and fix all callers to ignore return value.
+Currently registering CvP managers works only for first probed CvP
+device, for all other devices it is refused due to duplicated chkcfg
+sysfs entry:
 
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+fpga_manager fpga3: Altera CvP FPGA Manager @0000:0c:00.0 registered
+sysfs: cannot create duplicate filename '/bus/pci/drivers/altera-cvp/chkcfg'
+CPU: 0 PID: 3808 Comm: bash Tainted: G           O      4.19.0-custom+ #5
+Call Trace:
+  dump_stack+0x46/0x5b
+  sysfs_warn_dup+0x53/0x60
+  sysfs_add_file_mode_ns+0x16d/0x180
+  sysfs_create_file_ns+0x51/0x60
+  altera_cvp_probe+0x16f/0x2a0 [altera_cvp]
+  local_pci_probe+0x3f/0xa0
+  ? pci_match_device+0xb1/0xf0
+  pci_device_probe+0x116/0x170
+  really_probe+0x21b/0x2c0
+  driver_probe_device+0x4b/0xe0
+  bind_store+0xcb/0x130
+  kernfs_fop_write+0xfd/0x180
+  __vfs_write+0x21/0x150
+  ? selinux_file_permission+0xdc/0x130
+  vfs_write+0xa8/0x1a0
+  ? find_vma+0xd/0x60
+  ksys_write+0x3d/0x90
+  do_syscall_64+0x44/0xf0
+  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+  ...
+ altera-cvp 0000:0c:00.0: Can't create sysfs chkcfg file
+ fpga_manager fpga3: fpga_mgr_unregister Altera CvP FPGA Manager @0000:0c:00.0
+
+Move chkcfg creation to module init as suggested by Alan.
+
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Acked-by: Alan Tull <atull@kernel.org>
 ---
- arch/powerpc/platforms/pseries/dlpar.c    | 13 ++-----------
- arch/powerpc/platforms/pseries/reconfig.c |  6 +-----
- drivers/of/dynamic.c                      |  9 ++-------
- include/linux/of.h                        |  4 ++--
- 4 files changed, 7 insertions(+), 25 deletions(-)
+ drivers/fpga/altera-cvp.c | 34 ++++++++++++++++++++++++----------
+ 1 file changed, 24 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 17958043e7f7..7c5a6f8fe9c1 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -242,15 +242,9 @@ struct device_node *dlpar_configure_connector(__be32 drc_index,
+diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+index 7395085..35c3aa5 100644
+--- a/drivers/fpga/altera-cvp.c
++++ b/drivers/fpga/altera-cvp.c
+@@ -475,14 +475,6 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	if (ret)
+ 		goto err_unmap;
  
- int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
- {
--	int rc;
--
- 	dn->parent = parent;
- 
--	rc = of_attach_node(dn);
--	if (rc) {
--		printk(KERN_ERR "Failed to add device node %pOF\n", dn);
--		return rc;
+-	ret = driver_create_file(&altera_cvp_driver.driver,
+-				 &driver_attr_chkcfg);
+-	if (ret) {
+-		dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
+-		fpga_mgr_unregister(mgr);
+-		goto err_unmap;
 -	}
-+	of_attach_node(dn);
- 
+-
  	return 0;
- }
-@@ -258,7 +252,6 @@ int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
- int dlpar_detach_node(struct device_node *dn)
- {
- 	struct device_node *child;
--	int rc;
  
- 	child = of_get_next_child(dn, NULL);
- 	while (child) {
-@@ -266,9 +259,7 @@ int dlpar_detach_node(struct device_node *dn)
- 		child = of_get_next_child(dn, child);
- 	}
+ err_unmap:
+@@ -501,7 +493,6 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+ 	struct altera_cvp_conf *conf = mgr->priv;
+ 	u16 cmd;
  
--	rc = of_detach_node(dn);
--	if (rc)
--		return rc;
-+	of_detach_node(dn);
- 
- 	of_node_put(dn);
- 
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 0e0208117e77..0b72098da454 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -47,11 +47,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
- 		goto out_err;
- 	}
- 
--	err = of_attach_node(np);
--	if (err) {
--		printk(KERN_ERR "Failed to add device node %s\n", path);
--		goto out_err;
--	}
-+	of_attach_node(np);
- 
- 	of_node_put(np->parent);
- 
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index 146681540487..beea792debb6 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -224,7 +224,7 @@ static void __of_attach_node(struct device_node *np)
- /**
-  * of_attach_node() - Plug a device node into the tree and global list.
-  */
--int of_attach_node(struct device_node *np)
-+void of_attach_node(struct device_node *np)
- {
- 	struct of_reconfig_data rd;
- 	unsigned long flags;
-@@ -241,8 +241,6 @@ int of_attach_node(struct device_node *np)
- 	mutex_unlock(&of_mutex);
- 
- 	of_reconfig_notify(OF_RECONFIG_ATTACH_NODE, &rd);
--
--	return 0;
+-	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
+ 	fpga_mgr_unregister(mgr);
+ 	if (conf->map)
+ 		pci_iounmap(pdev, conf->map);
+@@ -511,7 +502,30 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+ 	pci_write_config_word(pdev, PCI_COMMAND, cmd);
  }
  
- void __of_detach_node(struct device_node *np)
-@@ -273,11 +271,10 @@ void __of_detach_node(struct device_node *np)
- /**
-  * of_detach_node() - "Unplug" a node from the device tree.
-  */
--int of_detach_node(struct device_node *np)
-+void of_detach_node(struct device_node *np)
- {
- 	struct of_reconfig_data rd;
- 	unsigned long flags;
--	int rc = 0;
+-module_pci_driver(altera_cvp_driver);
++static int __init altera_cvp_init(void)
++{
++	int ret;
++
++	ret = pci_register_driver(&altera_cvp_driver);
++	if (ret)
++		return ret;
++
++	ret = driver_create_file(&altera_cvp_driver.driver,
++				 &driver_attr_chkcfg);
++	if (ret)
++		pr_warn("Can't create sysfs chkcfg file\n");
++
++	return 0;
++}
++
++static void __exit altera_cvp_exit(void)
++{
++	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
++	pci_unregister_driver(&altera_cvp_driver);
++}
++
++module_init(altera_cvp_init);
++module_exit(altera_cvp_exit);
  
- 	memset(&rd, 0, sizeof(rd));
- 	rd.dn = np;
-@@ -291,8 +288,6 @@ int of_detach_node(struct device_node *np)
- 	mutex_unlock(&of_mutex);
- 
- 	of_reconfig_notify(OF_RECONFIG_DETACH_NODE, &rd);
--
--	return rc;
- }
- EXPORT_SYMBOL_GPL(of_detach_node);
- 
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 664cd5573ae2..5dd9ff480397 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -410,8 +410,8 @@ extern int of_alias_get_alias_list(const struct of_device_id *matches,
- #define OF_RECONFIG_REMOVE_PROPERTY	0x0004
- #define OF_RECONFIG_UPDATE_PROPERTY	0x0005
- 
--extern int of_attach_node(struct device_node *);
--extern int of_detach_node(struct device_node *);
-+extern void of_attach_node(struct device_node *np);
-+extern void of_detach_node(struct device_node *np);
- 
- #define of_match_ptr(_ptr)	(_ptr)
- 
+ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Anatolij Gustschin <agust@denx.de>");
 -- 
-Frank Rowand <frank.rowand@sony.com>
+2.7.4
