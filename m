@@ -1,12 +1,12 @@
-Return-Path: <SRS0=F0XN=NQ=denx.de=agust@kernel.org>
-Return-Path: <SRS0=F0XN=NQ=denx.de=agust@kernel.org>
+Return-Path: <SRS0=O9uC=OG=denx.de=agust@kernel.org>
+Return-Path: <SRS0=O9uC=OG=denx.de=agust@kernel.org>
 From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH 3/3] fpga: Add fpga manager driver for ARRI Altera FPP
-Date: Mon,  5 Nov 2018 17:19:13 +0100
-Message-Id: <20181105161913.27538-4-agust@denx.de>
-In-Reply-To: <20181105161913.27538-1-agust@denx.de>
-References: <20181105161913.27538-1-agust@denx.de>
-To: linux-usb@vger.kernel.org, linux-spi@vger.kernel.org, linux-fpga@vger.kernel.org
+Subject: [PATCH v3 3/3] fpga: Add fpga manager driver for ARRI Altera FPP
+Date: Tue, 27 Nov 2018 18:54:38 +0100
+Message-Id: <20181127175438.16116-4-agust@denx.de>
+In-Reply-To: <20181127175438.16116-1-agust@denx.de>
+References: <20181127175438.16116-1-agust@denx.de>
+To: linux-usb@vger.kernel.org, linux-spi@vger.kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: gregkh@linuxfoundation.org, broonie@kernel.org, atull@kernel.org, mdf@kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
@@ -15,12 +15,27 @@ passive parallel (FPP) interface using FTDI FT232H chip.
 
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
 ---
- drivers/fpga/Kconfig         |   7 +
- drivers/fpga/Makefile        |   1 +
- drivers/fpga/ftdi-fifo-fpp.c | 594 +++++++++++++++++++++++++++++++++++
- 3 files changed, 602 insertions(+)
+ .../ABI/testing/sysfs-driver-ftdi-fifo-fpp    |   7 +
+ drivers/fpga/Kconfig                          |   7 +
+ drivers/fpga/Makefile                         |   1 +
+ drivers/fpga/ftdi-fifo-fpp.c                  | 594 ++++++++++++++++++
+ 4 files changed, 609 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-driver-ftdi-fifo-fpp
  create mode 100644 drivers/fpga/ftdi-fifo-fpp.c
 
+diff --git a/Documentation/ABI/testing/sysfs-driver-ftdi-fifo-fpp b/Documentation/ABI/testing/sysfs-driver-ftdi-fifo-fpp
+new file mode 100644
+index 000000000000..084e691d0983
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-driver-ftdi-fifo-fpp
+@@ -0,0 +1,7 @@
++What:		/sys/bus/platform/devices/ftdi-fifo-fpp-mgr.N/cfg_mode
++Date:		Nov 2018
++Kernel Version:	4.21
++Contact:	Anatolij Gustschin <agust@denx.de>
++Description:
++		Contains either "fifo" or "bitbang" and controls if fifo
++		of bitbang configuration mode is used in the driver.
 diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
 index 205042b441ea..584866a27c35 100644
 --- a/drivers/fpga/Kconfig
@@ -53,7 +68,7 @@ index 7a2d73ba7122..8c1d714bd440 100644
  obj-$(CONFIG_FPGA_MGR_SOCFPGA)		+= socfpga.o
 diff --git a/drivers/fpga/ftdi-fifo-fpp.c b/drivers/fpga/ftdi-fifo-fpp.c
 new file mode 100644
-index 000000000000..092f4265d048
+index 000000000000..652a5430bdf2
 --- /dev/null
 +++ b/drivers/fpga/ftdi-fifo-fpp.c
 @@ -0,0 +1,594 @@
@@ -61,7 +76,7 @@ index 000000000000..092f4265d048
 +/*
 + * Altera FPGA firmware upload via FPP using FT232H Bitbang/FT245-FIFO.
 + *
-+ * Copyright (C) 2017 DENX Software Engineering
++ * Copyright (C) 2017 - 2018 DENX Software Engineering
 + * Anatolij Gustschin <agust@denx.de>
 + */
 +
@@ -486,12 +501,12 @@ index 000000000000..092f4265d048
 +		return -EINVAL;
 +
 +	if (!strncmp(buf, "fifo", 4)) {
-+		strncpy(priv->cfg_mode, buf, sizeof(priv->cfg_mode));
++		strncpy(priv->cfg_mode, buf, sizeof(priv->cfg_mode) - 1);
 +		priv->cfg_mode[4] = 0;
 +		priv->ops = &fpp_mgr_ft245_fifo_ops;
 +		gpiod_direction_output_raw(priv->conf_done, 0);
 +	} else if (!strncmp(buf, "bitbang", 7)) {
-+		strncpy(priv->cfg_mode, buf, sizeof(priv->cfg_mode));
++		strncpy(priv->cfg_mode, buf, sizeof(priv->cfg_mode) - 1);
 +		priv->cfg_mode[7] = 0;
 +		priv->ops = &fpp_mgr_bitbang_ops;
 +		gpiod_direction_input(priv->conf_done);
