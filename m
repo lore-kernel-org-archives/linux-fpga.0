@@ -1,50 +1,61 @@
-Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=CYgq=NU=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v7 04/17] powerpc/pseries: add of_node_put() in dlpar_detach_node()
-Date: Thu,  8 Nov 2018 22:05:52 -0800
-Message-Id: <1541743565-23163-5-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
-References: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=gEQ3=OH=sirena.org.uk=broonie@kernel.org>
+Return-Path: <SRS0=gEQ3=OH=sirena.org.uk=broonie@kernel.org>
+Date: Wed, 28 Nov 2018 09:14:40 +0000
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 2/3] spi: add FTDI MPSSE SPI controller driver
+Message-ID: <20181128091439.GA6828@sirena.org.uk>
+References: <20181120002821.12794-1-agust@denx.de>
+ <20181120002821.12794-3-agust@denx.de>
+ <20181121124237.GC8059@sirena.org.uk>
+ <20181127012127.24e455b6@crub>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="tKW2IUtsqtDRztdT"
+Content-Disposition: inline
+In-Reply-To: <20181127012127.24e455b6@crub>
+To: Anatolij Gustschin <agust@denx.de>
+Cc: linux-usb@vger.kernel.org, linux-spi@vger.kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, atull@kernel.org, mdf@kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
 
-The previous commit, "of: overlay: add missing of_node_get() in
-__of_attach_node_sysfs" added a missing of_node_get() to
-__of_attach_node_sysfs().  This results in a refcount imbalance
-for nodes attached with dlpar_attach_node().  The calling sequence
-from dlpar_attach_node() to __of_attach_node_sysfs() is:
+--tKW2IUtsqtDRztdT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-   dlpar_attach_node()
-      of_attach_node()
-         __of_attach_node_sysfs()
+On Tue, Nov 27, 2018 at 01:21:27AM +0100, Anatolij Gustschin wrote:
+> Mark Brown broonie@kernel.org wrote:
 
-For more detailed description of the node refcount, see
-commit 68baf692c435 ("powerpc/pseries: Fix of_node_put() underflow
-during DLPAR remove").
+> >> +	if (max_cs > 12) {
+> >> +		dev_err(dev, "Invalid max CS in platform data: %d\n", max_cs);
+> >> +		return -EINVAL;
+> >> +	}
+> >> +	dev_dbg(dev, "CS count %d, max CS %d\n", num_cs, max_cs);
+> >> +	max_cs +=3D 1; /* including CS0 */ =20
 
-Tested-by: Alan Tull <atull@kernel.org>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- arch/powerpc/platforms/pseries/dlpar.c | 2 ++
- 1 file changed, 2 insertions(+)
+> >Why not just size the array based on the platform data?
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 7625546caefd..17958043e7f7 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -270,6 +270,8 @@ int dlpar_detach_node(struct device_node *dn)
- 	if (rc)
- 		return rc;
- 
-+	of_node_put(dn);
-+
- 	return 0;
- }
- 
--- 
-Frank Rowand <frank.rowand@sony.com>
+> The driver must also support multiple SPI slaves with additional control
+> pins (besides SPI chip-select gpios). There are devices with not adjacent
+> chip-select gpios or devices with single chip-select gpio starting at
+> some offset. The array size is not always the number of chip-selects
+> or the max. chip-select, e.g.:
+
+A few unused entries really won't matter.
+
+--tKW2IUtsqtDRztdT
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlv+XH0ACgkQJNaLcl1U
+h9BN6Qf8Cf8z9g7M2CSYTvbGRDLuKh4WWK/9Bj96Cg/lOX0H+++0glbKaXR9LZdW
+C3Kq93XpWg+pjvDcHSP1OEOgeG4nXIiunOIgIUTALoTqhYVxDy+XnHF2cYgz5epK
+y4BBtFVsUbA0WxN0YjEGoPRc8R2Mx/duLdpeRw2O1RvGLxZYaPYNAd5WZnoahP0c
+zjoUB0uH+H12whUSCHQuky6IEOGC2/VkKNF6zZ4sMaFaAYV94VGp5ZWYvzHrjoJg
+R8d+RKvq4vuobYgmvclOk+pKI5hr9PY2wkZ/539VoPtn6kMFDshiWeWXEQNr9AVf
+mDfS4RQOzpO6S1CfGm7XQKcqzzNrkg==
+=i8pS
+-----END PGP SIGNATURE-----
+
+--tKW2IUtsqtDRztdT--
