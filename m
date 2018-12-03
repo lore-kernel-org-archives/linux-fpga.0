@@ -1,54 +1,82 @@
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-Return-Path: <SRS0=eEcE=NQ=gmail.com=frowand.list@kernel.org>
-From: frowand.list@gmail.com
-Subject: [PATCH v6 06/18] of: overlay: do not duplicate properties from overlay for new nodes
-Date: Mon,  5 Nov 2018 07:25:03 -0800
-Message-Id: <1541431515-25197-7-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=5nsa=OM=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=5nsa=OM=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-yw1-f65.google.com ([209.85.161.65]:38543 "EHLO
+        mail-yw1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726752AbeLCRLH (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 3 Dec 2018 12:11:07 -0500
+Received: by mail-yw1-f65.google.com with SMTP id i20so5693276ywc.5
+        for <linux-fpga@vger.kernel.org>; Mon, 03 Dec 2018 09:11:06 -0800 (PST)
+MIME-Version: 1.0
+References: <20181203122145.1534-1-nsaenzjulienne@suse.de> <CANk1AXRxUai9SmSFt1uMXVRcoumh+ziKCi8WHb2tCG5Wx4Txow@mail.gmail.com>
+In-Reply-To: <CANk1AXRxUai9SmSFt1uMXVRcoumh+ziKCi8WHb2tCG5Wx4Txow@mail.gmail.com>
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Date: Mon, 3 Dec 2018 09:01:47 -0800
+Message-ID: <CAAtXAHdWrJ3zL7sHygTD9W+trvviTh_0zMSwaU4AtNpxSxLbgg@mail.gmail.com>
+Subject: Re: [PATCH] fpga: stratix10-soc: fix wrong of_node_put() in init function
+Content-Type: text/plain; charset="UTF-8"
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: nsaenzjulienne@suse.de, linux-fpga@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Hi Nicolas,
 
-When allocating a new node, add_changeset_node() was duplicating the
-properties from the respective node in the overlay instead of
-allocating a node with no properties.
+good catch.
 
-When this patch is applied the errors reported by the devictree
-unittest from patch "of: overlay: add tests to validate kfrees from
-overlay removal" will no longer occur.  These error messages are of
-the form:
+On Mon, Dec 3, 2018 at 8:13 AM Alan Tull <atull@kernel.org> wrote:
+>
+> On Mon, Dec 3, 2018 at 6:22 AM Nicolas Saenz Julienne
+> <nsaenzjulienne@suse.de> wrote:
+>
+> Hi Nicolas,
+>
+> Thanks for catching this!  I'll fix up one formatting thing (below).
+>
+> >
+> > After finding a "firmware" dt node stratix10 tries to match it's
+> > compatible string with it. To do so it's calling of_find_matching_node()
+> > which already takes care of decreasing the refcount on the "firmware"
+> > node. We are then incorrectly decreasing the refcount on that node
+> > again.
+> >
+> > This patch removes the unwarranted call to of_node_put().
+> >
+> > Fixes: e7eef1d7633a ("fpga: add intel stratix10 soc fpga manager driver")
+> > Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+> Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+>
+> > ---
+> >  drivers/fpga/stratix10-soc.c | 2 --
+> >  1 file changed, 2 deletions(-)
+> >
+> > diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+> > index a1a09e04fab8..e75dbe583152 100644
+> > --- a/drivers/fpga/stratix10-soc.c
+> > +++ b/drivers/fpga/stratix10-soc.c
+> > @@ -509,13 +509,11 @@ static int __init s10_init(void)
+> >
+> >         np = of_find_matching_node(fw_np, s10_of_match);
+> >         if (!np) {
+> > -               of_node_put(fw_np);
+> >                 return -ENODEV;
+> >         }
+>
+> We don't need the brackets anymore around the return statement.  I'll fix it up.
+>
+> Thanks,
+> Alan
+>
+> >
+> >         of_node_put(np);
+> >         ret = of_platform_populate(fw_np, s10_of_match, NULL, NULL);
+> > -       of_node_put(fw_np);
+> >         if (ret)
+> >                 return ret;
+> >
+> > --
+> > 2.19.2
+> >
 
-   "OF: ERROR: ..."
-
-and the unittest results will change from:
-
-   ### dt-test ### end of unittest - 203 passed, 7 failed
-
-to
-
-   ### dt-test ### end of unittest - 210 passed, 0 failed
-
-Tested-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
- drivers/of/overlay.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 6fd8e6145e10..9808aae4621a 100644
---- a/drivers/of/overlay.c
-+++ b/drivers/of/overlay.c
-@@ -393,7 +393,7 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
- 			break;
- 
- 	if (!tchild) {
--		tchild = __of_node_dup(node, node_kbasename);
-+		tchild = __of_node_dup(NULL, node_kbasename);
- 		if (!tchild)
- 			return -ENOMEM;
- 
--- 
-Frank Rowand <frank.rowand@sony.com>
+Thanks,
+Moritz
