@@ -1,46 +1,33 @@
-Return-Path: <SRS0=OMy8=OM=suse.de=nsaenzjulienne@kernel.org>
-Return-Path: <SRS0=OMy8=OM=suse.de=nsaenzjulienne@kernel.org>
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Subject: [PATCH] fpga: stratix10-soc: fix wrong of_node_put() in init function
-Date: Mon,  3 Dec 2018 13:21:45 +0100
-Message-Id: <20181203122145.1534-1-nsaenzjulienne@suse.de>
+Return-Path: <SRS0=OQ25=OO=denx.de=agust@kernel.org>
+Return-Path: <SRS0=OQ25=OO=denx.de=agust@kernel.org>
+Date: Wed, 5 Dec 2018 10:50:08 +0100
+From: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH v3 3/3] fpga: Add fpga manager driver for ARRI Altera
+ FPP
+Message-ID: <20181205105008.4a32956c@crub>
+In-Reply-To: <20181127175438.16116-4-agust@denx.de>
+References: <20181127175438.16116-1-agust@denx.de>
+	<20181127175438.16116-4-agust@denx.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+To: atull@kernel.org
+Cc: linux-usb@vger.kernel.org, linux-spi@vger.kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, broonie@kernel.org, mdf@kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-After finding a "firmware" dt node stratix10 tries to match it's
-compatible string with it. To do so it's calling of_find_matching_node()
-which already takes care of decreasing the refcount on the "firmware"
-node. We are then incorrectly decreasing the refcount on that node
-again.
+Hi Alan,
 
-This patch removes the unwarranted call to of_node_put().
+On Tue, 27 Nov 2018 18:54:38 +0100
+Anatolij Gustschin agust@denx.de wrote:
 
-Fixes: e7eef1d7633a ("fpga: add intel stratix10 soc fpga manager driver")
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
----
- drivers/fpga/stratix10-soc.c | 2 --
- 1 file changed, 2 deletions(-)
+>Add FPGA manager driver for loading ARRI Altera FPGAs via fast
+>passive parallel (FPP) interface using FTDI FT232H chip.
 
-diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
-index a1a09e04fab8..e75dbe583152 100644
---- a/drivers/fpga/stratix10-soc.c
-+++ b/drivers/fpga/stratix10-soc.c
-@@ -509,13 +509,11 @@ static int __init s10_init(void)
- 
- 	np = of_find_matching_node(fw_np, s10_of_match);
- 	if (!np) {
--		of_node_put(fw_np);
- 		return -ENODEV;
- 	}
- 
- 	of_node_put(np);
- 	ret = of_platform_populate(fw_np, s10_of_match, NULL, NULL);
--	of_node_put(fw_np);
- 	if (ret)
- 		return ret;
- 
--- 
-2.19.2
+Ping. Is this patch okay? I suppose that it will go via usb tree
+as part of the whole series (you send fpga driver patches to Greg
+anyway). Can you ack this patch or is there something that should
+be changed? I'd like to see it merged in v4.21, so if there are
+issues with this patch, I'll try to address it before it is to late.
+
+Thanks,
+Anatolij
