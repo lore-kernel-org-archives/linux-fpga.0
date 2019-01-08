@@ -1,15 +1,15 @@
 Return-Path: <SRS0=MTva=PQ=vger.kernel.org=linux-fpga-owner@kernel.org>
 Return-Path: <SRS0=MTva=PQ=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:33656 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.99]:38216 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729669AbfAHT12 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 8 Jan 2019 14:27:28 -0500
+        id S1730768AbfAHTa1 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 8 Jan 2019 14:30:27 -0500
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.20 031/117] fpga: altera-cvp: fix probing for multiple FPGAs on the bus
-Date: Tue,  8 Jan 2019 14:24:59 -0500
-Message-Id: <20190108192628.121270-31-sashal@kernel.org>
-In-Reply-To: <20190108192628.121270-1-sashal@kernel.org>
-References: <20190108192628.121270-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 24/97] fpga: altera-cvp: fix probing for multiple FPGAs on the bus
+Date: Tue,  8 Jan 2019 14:28:33 -0500
+Message-Id: <20190108192949.122407-24-sashal@kernel.org>
+In-Reply-To: <20190108192949.122407-1-sashal@kernel.org>
+References: <20190108192949.122407-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-fpga-owner@vger.kernel.org
@@ -63,12 +63,12 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 24 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 610a1558e0ed..d9fa7d4bf11f 100644
+index 7fa793672a7a..68e4b2b98c8f 100644
 --- a/drivers/fpga/altera-cvp.c
 +++ b/drivers/fpga/altera-cvp.c
-@@ -466,14 +466,6 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	if (ret)
+@@ -468,14 +468,6 @@ static int altera_cvp_probe(struct pci_dev *pdev,
  		goto err_unmap;
+ 	}
  
 -	ret = driver_create_file(&altera_cvp_driver.driver,
 -				 &driver_attr_chkcfg);
@@ -81,7 +81,7 @@ index 610a1558e0ed..d9fa7d4bf11f 100644
  	return 0;
  
  err_unmap:
-@@ -491,7 +483,6 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+@@ -493,7 +485,6 @@ static void altera_cvp_remove(struct pci_dev *pdev)
  	struct altera_cvp_conf *conf = mgr->priv;
  	u16 cmd;
  
@@ -89,7 +89,7 @@ index 610a1558e0ed..d9fa7d4bf11f 100644
  	fpga_mgr_unregister(mgr);
  	pci_iounmap(pdev, conf->map);
  	pci_release_region(pdev, CVP_BAR);
-@@ -500,7 +491,30 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+@@ -502,7 +493,30 @@ static void altera_cvp_remove(struct pci_dev *pdev)
  	pci_write_config_word(pdev, PCI_COMMAND, cmd);
  }
  
