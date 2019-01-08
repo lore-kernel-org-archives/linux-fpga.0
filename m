@@ -1,15 +1,15 @@
-Return-Path: <SRS0=HGpG=QE=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=HGpG=QE=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:46454 "EHLO mail.kernel.org"
+Return-Path: <SRS0=MTva=PQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=MTva=PQ=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:33656 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730934AbfA1QBJ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 28 Jan 2019 11:01:09 -0500
+        id S1729669AbfAHT12 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 8 Jan 2019 14:27:28 -0500
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 039/258] fpga: altera-cvp: fix 'bad IO access' on x86_64
-Date: Mon, 28 Jan 2019 10:55:45 -0500
-Message-Id: <20190128155924.51521-39-sashal@kernel.org>
-In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
-References: <20190128155924.51521-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 031/117] fpga: altera-cvp: fix probing for multiple FPGAs on the bus
+Date: Tue,  8 Jan 2019 14:24:59 -0500
+Message-Id: <20190108192628.121270-31-sashal@kernel.org>
+In-Reply-To: <20190108192628.121270-1-sashal@kernel.org>
+References: <20190108192628.121270-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-fpga-owner@vger.kernel.org
@@ -19,44 +19,107 @@ Cc: Anatolij Gustschin <agust@denx.de>, Greg Kroah-Hartman <gregkh@linuxfoundati
 
 From: Anatolij Gustschin <agust@denx.de>
 
-[ Upstream commit 187fade88ca0ff2df9d360ca751d948d73db7095 ]
+[ Upstream commit 30522a951f9d02f261d0697c35cb42205b1fae17 ]
 
-If mapping the CvP BAR fails, we still can configure the FPGA via
-PCI config space access. In this case the iomap pointer is NULL.
-On x86_64, passing NULL address to pci_iounmap() generates
-"Bad IO access at port 0x0" output with stack call trace. Fix it.
+Currently registering CvP managers works only for first probed CvP
+device, for all other devices it is refused due to duplicated chkcfg
+sysfs entry:
+
+fpga_manager fpga3: Altera CvP FPGA Manager @0000:0c:00.0 registered
+sysfs: cannot create duplicate filename '/bus/pci/drivers/altera-cvp/chkcfg'
+CPU: 0 PID: 3808 Comm: bash Tainted: G           O      4.19.0-custom+ #5
+Call Trace:
+  dump_stack+0x46/0x5b
+  sysfs_warn_dup+0x53/0x60
+  sysfs_add_file_mode_ns+0x16d/0x180
+  sysfs_create_file_ns+0x51/0x60
+  altera_cvp_probe+0x16f/0x2a0 [altera_cvp]
+  local_pci_probe+0x3f/0xa0
+  ? pci_match_device+0xb1/0xf0
+  pci_device_probe+0x116/0x170
+  really_probe+0x21b/0x2c0
+  driver_probe_device+0x4b/0xe0
+  bind_store+0xcb/0x130
+  kernfs_fop_write+0xfd/0x180
+  __vfs_write+0x21/0x150
+  ? selinux_file_permission+0xdc/0x130
+  vfs_write+0xa8/0x1a0
+  ? find_vma+0xd/0x60
+  ksys_write+0x3d/0x90
+  do_syscall_64+0x44/0xf0
+  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+  ...
+ altera-cvp 0000:0c:00.0: Can't create sysfs chkcfg file
+ fpga_manager fpga3: fpga_mgr_unregister Altera CvP FPGA Manager @0000:0c:00.0
+
+Move chkcfg creation to module init as suggested by Alan.
 
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
 Acked-by: Alan Tull <atull@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/fpga/altera-cvp.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/fpga/altera-cvp.c | 34 ++++++++++++++++++++++++----------
+ 1 file changed, 24 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 1f4c26b4794a..7a42c194b944 100644
+index 610a1558e0ed..d9fa7d4bf11f 100644
 --- a/drivers/fpga/altera-cvp.c
 +++ b/drivers/fpga/altera-cvp.c
-@@ -480,7 +480,8 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+@@ -466,14 +466,6 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	if (ret)
+ 		goto err_unmap;
+ 
+-	ret = driver_create_file(&altera_cvp_driver.driver,
+-				 &driver_attr_chkcfg);
+-	if (ret) {
+-		dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
+-		fpga_mgr_unregister(mgr);
+-		goto err_unmap;
+-	}
+-
  	return 0;
  
  err_unmap:
--	pci_iounmap(pdev, conf->map);
-+	if (conf->map)
-+		pci_iounmap(pdev, conf->map);
- 	pci_release_region(pdev, CVP_BAR);
- err_disable:
- 	cmd &= ~PCI_COMMAND_MEMORY;
-@@ -495,7 +496,8 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+@@ -491,7 +483,6 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+ 	struct altera_cvp_conf *conf = mgr->priv;
  	u16 cmd;
  
+-	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
  	fpga_mgr_unregister(mgr);
--	pci_iounmap(pdev, conf->map);
-+	if (conf->map)
-+		pci_iounmap(pdev, conf->map);
+ 	pci_iounmap(pdev, conf->map);
  	pci_release_region(pdev, CVP_BAR);
- 	pci_read_config_word(pdev, PCI_COMMAND, &cmd);
- 	cmd &= ~PCI_COMMAND_MEMORY;
+@@ -500,7 +491,30 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+ 	pci_write_config_word(pdev, PCI_COMMAND, cmd);
+ }
+ 
+-module_pci_driver(altera_cvp_driver);
++static int __init altera_cvp_init(void)
++{
++	int ret;
++
++	ret = pci_register_driver(&altera_cvp_driver);
++	if (ret)
++		return ret;
++
++	ret = driver_create_file(&altera_cvp_driver.driver,
++				 &driver_attr_chkcfg);
++	if (ret)
++		pr_warn("Can't create sysfs chkcfg file\n");
++
++	return 0;
++}
++
++static void __exit altera_cvp_exit(void)
++{
++	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
++	pci_unregister_driver(&altera_cvp_driver);
++}
++
++module_init(altera_cvp_init);
++module_exit(altera_cvp_exit);
+ 
+ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Anatolij Gustschin <agust@denx.de>");
 -- 
 2.19.1
