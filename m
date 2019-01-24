@@ -1,125 +1,79 @@
-Return-Path: <SRS0=MTva=PQ=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=MTva=PQ=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:38216 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730768AbfAHTa1 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 8 Jan 2019 14:30:27 -0500
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 24/97] fpga: altera-cvp: fix probing for multiple FPGAs on the bus
-Date: Tue,  8 Jan 2019 14:28:33 -0500
-Message-Id: <20190108192949.122407-24-sashal@kernel.org>
-In-Reply-To: <20190108192949.122407-1-sashal@kernel.org>
-References: <20190108192949.122407-1-sashal@kernel.org>
+Return-Path: <SRS0=aa2N=QA=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=aa2N=QA=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-yw1-f68.google.com ([209.85.161.68]:46620 "EHLO
+        mail-yw1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727765AbfAXRcR (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 24 Jan 2019 12:32:17 -0500
+Received: by mail-yw1-f68.google.com with SMTP id t13so2720627ywe.13
+        for <linux-fpga@vger.kernel.org>; Thu, 24 Jan 2019 09:32:16 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20181129231016.4580-1-colin.king@canonical.com> <CANk1AXRP-65fK48vqQ+Dy9-cz-4XQ1bWNyDCvzJK8rkoA2F24g@mail.gmail.com>
+In-Reply-To: <CANk1AXRP-65fK48vqQ+Dy9-cz-4XQ1bWNyDCvzJK8rkoA2F24g@mail.gmail.com>
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Date: Thu, 24 Jan 2019 09:22:54 -0800
+Message-ID: <CAAtXAHf-_5_aFdkpa5LtnQvy6ddxYwrnXcK9QBkrrP1gkRvLtA@mail.gmail.com>
+Subject: Re: [PATCH] fpga: mgr: altera-ps-spi: make array dummy static,
+ shrinks object size
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Anatolij Gustschin <agust@denx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
+To: Alan Tull <atull@kernel.org>
+Cc: Colin King <colin.king@canonical.com>, linux-fpga@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 
-From: Anatolij Gustschin <agust@denx.de>
+Hi Colin,
 
-[ Upstream commit 30522a951f9d02f261d0697c35cb42205b1fae17 ]
+sorry dropped of my radar.
 
-Currently registering CvP managers works only for first probed CvP
-device, for all other devices it is refused due to duplicated chkcfg
-sysfs entry:
+On Thu, Jan 24, 2019 at 9:17 AM Alan Tull <atull@kernel.org> wrote:
+>
+> On Thu, Nov 29, 2018 at 5:10 PM Colin King <colin.king@canonical.com> wrote:
+>
+> Hi Colin,
+>
+> Thanks!
+>
+> >
+> > From: Colin Ian King <colin.king@canonical.com>
+> >
+> > Don't populate the const array dummy on the stack but instead
+> > make it static. Makes the object code smaller by 26 bytes:
+> >
+> > Before:
+> >    text    data     bss     dec     hex filename
+> >    7371    2032       0    9403    24bb drivers/fpga/altera-ps-spi.o
+> >
+> > After:
+> >    text    data     bss     dec     hex filename
+> >    7281    2096       0    9377    24a1 drivers/fpga/altera-ps-spi.o
+> >
+> > (gcc version 8.2.0 x86_64)
+> >
+> > Signed-off-by: Colin Ian King <colin.king@canonical.com>
+>
+> Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 
-fpga_manager fpga3: Altera CvP FPGA Manager @0000:0c:00.0 registered
-sysfs: cannot create duplicate filename '/bus/pci/drivers/altera-cvp/chkcfg'
-CPU: 0 PID: 3808 Comm: bash Tainted: G           O      4.19.0-custom+ #5
-Call Trace:
-  dump_stack+0x46/0x5b
-  sysfs_warn_dup+0x53/0x60
-  sysfs_add_file_mode_ns+0x16d/0x180
-  sysfs_create_file_ns+0x51/0x60
-  altera_cvp_probe+0x16f/0x2a0 [altera_cvp]
-  local_pci_probe+0x3f/0xa0
-  ? pci_match_device+0xb1/0xf0
-  pci_device_probe+0x116/0x170
-  really_probe+0x21b/0x2c0
-  driver_probe_device+0x4b/0xe0
-  bind_store+0xcb/0x130
-  kernfs_fop_write+0xfd/0x180
-  __vfs_write+0x21/0x150
-  ? selinux_file_permission+0xdc/0x130
-  vfs_write+0xa8/0x1a0
-  ? find_vma+0xd/0x60
-  ksys_write+0x3d/0x90
-  do_syscall_64+0x44/0xf0
-  entry_SYSCALL_64_after_hwframe+0x44/0xa9
-  ...
- altera-cvp 0000:0c:00.0: Can't create sysfs chkcfg file
- fpga_manager fpga3: fpga_mgr_unregister Altera CvP FPGA Manager @0000:0c:00.0
+>
+>
+> > ---
+> >  drivers/fpga/altera-ps-spi.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/fpga/altera-ps-spi.c b/drivers/fpga/altera-ps-spi.c
+> > index 8c18beec6b57..678d0115f840 100644
+> > --- a/drivers/fpga/altera-ps-spi.c
+> > +++ b/drivers/fpga/altera-ps-spi.c
+> > @@ -205,7 +205,7 @@ static int altera_ps_write_complete(struct fpga_manager *mgr,
+> >                                     struct fpga_image_info *info)
+> >  {
+> >         struct altera_ps_conf *conf = mgr->priv;
+> > -       const char dummy[] = {0};
+> > +       static const char dummy[] = {0};
+> >         int ret;
+> >
+> >         if (gpiod_get_value_cansleep(conf->status)) {
+> > --
+> > 2.19.1
+> >
 
-Move chkcfg creation to module init as suggested by Alan.
-
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/fpga/altera-cvp.c | 34 ++++++++++++++++++++++++----------
- 1 file changed, 24 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 7fa793672a7a..68e4b2b98c8f 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -468,14 +468,6 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 		goto err_unmap;
- 	}
- 
--	ret = driver_create_file(&altera_cvp_driver.driver,
--				 &driver_attr_chkcfg);
--	if (ret) {
--		dev_err(&pdev->dev, "Can't create sysfs chkcfg file\n");
--		fpga_mgr_unregister(mgr);
--		goto err_unmap;
--	}
--
- 	return 0;
- 
- err_unmap:
-@@ -493,7 +485,6 @@ static void altera_cvp_remove(struct pci_dev *pdev)
- 	struct altera_cvp_conf *conf = mgr->priv;
- 	u16 cmd;
- 
--	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
- 	fpga_mgr_unregister(mgr);
- 	pci_iounmap(pdev, conf->map);
- 	pci_release_region(pdev, CVP_BAR);
-@@ -502,7 +493,30 @@ static void altera_cvp_remove(struct pci_dev *pdev)
- 	pci_write_config_word(pdev, PCI_COMMAND, cmd);
- }
- 
--module_pci_driver(altera_cvp_driver);
-+static int __init altera_cvp_init(void)
-+{
-+	int ret;
-+
-+	ret = pci_register_driver(&altera_cvp_driver);
-+	if (ret)
-+		return ret;
-+
-+	ret = driver_create_file(&altera_cvp_driver.driver,
-+				 &driver_attr_chkcfg);
-+	if (ret)
-+		pr_warn("Can't create sysfs chkcfg file\n");
-+
-+	return 0;
-+}
-+
-+static void __exit altera_cvp_exit(void)
-+{
-+	driver_remove_file(&altera_cvp_driver.driver, &driver_attr_chkcfg);
-+	pci_unregister_driver(&altera_cvp_driver);
-+}
-+
-+module_init(altera_cvp_init);
-+module_exit(altera_cvp_exit);
- 
- MODULE_LICENSE("GPL v2");
- MODULE_AUTHOR("Anatolij Gustschin <agust@denx.de>");
--- 
-2.19.1
+Moritz
