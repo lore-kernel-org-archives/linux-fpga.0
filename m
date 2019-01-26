@@ -1,32 +1,53 @@
-Return-Path: <SRS0=OQ25=OO=denx.de=agust@kernel.org>
-Return-Path: <SRS0=OQ25=OO=denx.de=agust@kernel.org>
-Date: Wed, 5 Dec 2018 11:25:43 +0100
-From: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH v3 2/3] spi: add FTDI MPSSE SPI controller driver
-Message-ID: <20181205112543.33e167e4@crub>
-In-Reply-To: <20181127175438.16116-3-agust@denx.de>
-References: <20181127175438.16116-1-agust@denx.de>
-	<20181127175438.16116-3-agust@denx.de>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH] fpga: stratix10-soc: fix wrong of_node_put() in init function
+Date: Sat, 26 Jan 2019 10:38:29 -0600
+Message-Id: <20190126163829.4998-1-atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-To: linux-spi@vger.kernel.org, broonie@kernel.org
-Cc: linux-usb@vger.kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, atull@kernel.org, mdf@kernel.org
+Content-Transfer-Encoding: 8bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Mark,
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 
-On Tue, 27 Nov 2018 18:54:37 +0100
-Anatolij Gustschin agust@denx.de wrote:
+After finding a "firmware" dt node stratix10 tries to match it's
+compatible string with it. To do so it's calling of_find_matching_node()
+which already takes care of decreasing the refcount on the "firmware"
+node. We are then incorrectly decreasing the refcount on that node
+again.
 
->Add SPI bus controller driver for FTDI MPSSE mode. This driver
->is supposed to be used together with the FT232H interface driver
->for FPGA configuration in drivers/usb/misc/ft232h-intf.c which
->adds an mpsse spi platform device describing USB SPI bus with
->attached SPI slave devices.
+This patch removes the unwarranted call to of_node_put().
 
-I suppose this patch should go via Greg's usb tree as part of the
-series, once acked. I've addressed comments in v3, is it okay now?
+Fixes: e7eef1d7633a ("fpga: add intel stratix10 soc fpga manager driver")
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+[atull: remove unnecessary braces]
+---
+ drivers/fpga/stratix10-soc.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-Thanks,
-Anatolij
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index a1a09e04fab8..13851b3d1c56 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -508,14 +508,11 @@ static int __init s10_init(void)
+ 		return -ENODEV;
+ 
+ 	np = of_find_matching_node(fw_np, s10_of_match);
+-	if (!np) {
+-		of_node_put(fw_np);
++	if (!np)
+ 		return -ENODEV;
+-	}
+ 
+ 	of_node_put(np);
+ 	ret = of_platform_populate(fw_np, s10_of_match, NULL, NULL);
+-	of_node_put(fw_np);
+ 	if (ret)
+ 		return ret;
+ 
+-- 
+2.20.1
