@@ -1,47 +1,67 @@
-Return-Path: <SRS0=aa2N=QA=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=aa2N=QA=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:52414 "EHLO mail.kernel.org"
+Return-Path: <SRS0=HGpG=QE=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=HGpG=QE=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:58516 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725913AbfAXUp5 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 24 Jan 2019 15:45:57 -0500
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 0/3] patches for FPGA
-Date: Thu, 24 Jan 2019 14:45:51 -0600
-Message-Id: <20190124204554.5438-1-atull@kernel.org>
+        id S1727677AbfA1PpI (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 28 Jan 2019 10:45:08 -0500
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 043/304] fpga: altera-cvp: Fix registration for CvP incapable devices
+Date: Mon, 28 Jan 2019 10:39:20 -0500
+Message-Id: <20190128154341.47195-43-sashal@kernel.org>
+In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
+References: <20190128154341.47195-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Andreas Puhm <puhm@oregano.at>, Anatolij Gustschin <agust@denx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
 
-Hi Greg,
+From: Andreas Puhm <puhm@oregano.at>
 
-Please take these patches for fpga.  They have been reviewed on
-the mailing list and apply cleanly on current linux-next.
+[ Upstream commit 68f60538daa4bc3da5d0764d46f391916fba20fd ]
 
-The "fpga: stratix10-soc: fix wrong of_node_put() in init function"
-is a bug fix, sorry it's late.  It will only affect the
-Stratix10 platform.
+The probe function needs to verify the CvP enable bit in order to
+properly determine if FPGA Manager functionality can be safely
+enabled.
 
-The other two can go in whenever is appropriate.
+Fixes: 34d1dc17ce97 ("fpga manager: Add Altera CvP driver")
+Signed-off-by: Andreas Puhm <puhm@oregano.at>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Reviewed-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/fpga/altera-cvp.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Thanks,
-Alan
-
-Alan Tull (1):
-  fpga: altera_freeze_bridge: remove restriction to socfpga
-
-Colin Ian King (1):
-  fpga: mgr: altera-ps-spi: make array dummy static, shrinks object size
-
-Nicolas Saenz Julienne (1):
-  fpga: stratix10-soc: fix wrong of_node_put() in init function
-
- drivers/fpga/Kconfig         | 2 +-
- drivers/fpga/altera-ps-spi.c | 2 +-
- drivers/fpga/stratix10-soc.c | 2 --
- 3 files changed, 2 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+index d9fa7d4bf11f..36d79b039c57 100644
+--- a/drivers/fpga/altera-cvp.c
++++ b/drivers/fpga/altera-cvp.c
+@@ -403,6 +403,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	struct altera_cvp_conf *conf;
+ 	struct fpga_manager *mgr;
+ 	u16 cmd, val;
++	u32 regval;
+ 	int ret;
+ 
+ 	/*
+@@ -416,6 +417,14 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 		return -ENODEV;
+ 	}
+ 
++	pci_read_config_dword(pdev, VSE_CVP_STATUS, &regval);
++	if (!(regval & VSE_CVP_STATUS_CVP_EN)) {
++		dev_err(&pdev->dev,
++			"CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
++			regval);
++		return -ENODEV;
++	}
++
+ 	conf = devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
+ 	if (!conf)
+ 		return -ENOMEM;
 -- 
-2.7.4
+2.19.1
