@@ -1,15 +1,15 @@
 Return-Path: <SRS0=HGpG=QE=vger.kernel.org=linux-fpga-owner@kernel.org>
 Return-Path: <SRS0=HGpG=QE=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:58582 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.99]:46454 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726947AbfA1PpN (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 28 Jan 2019 10:45:13 -0500
+        id S1730934AbfA1QBJ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 28 Jan 2019 11:01:09 -0500
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.20 045/304] fpga: altera-cvp: fix 'bad IO access' on x86_64
-Date: Mon, 28 Jan 2019 10:39:22 -0500
-Message-Id: <20190128154341.47195-45-sashal@kernel.org>
-In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
-References: <20190128154341.47195-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 039/258] fpga: altera-cvp: fix 'bad IO access' on x86_64
+Date: Mon, 28 Jan 2019 10:55:45 -0500
+Message-Id: <20190128155924.51521-39-sashal@kernel.org>
+In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
+References: <20190128155924.51521-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-fpga-owner@vger.kernel.org
@@ -35,10 +35,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 36d79b039c57..35c3aa5792e2 100644
+index 1f4c26b4794a..7a42c194b944 100644
 --- a/drivers/fpga/altera-cvp.c
 +++ b/drivers/fpga/altera-cvp.c
-@@ -478,7 +478,8 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+@@ -480,7 +480,8 @@ static int altera_cvp_probe(struct pci_dev *pdev,
  	return 0;
  
  err_unmap:
@@ -48,7 +48,7 @@ index 36d79b039c57..35c3aa5792e2 100644
  	pci_release_region(pdev, CVP_BAR);
  err_disable:
  	cmd &= ~PCI_COMMAND_MEMORY;
-@@ -493,7 +494,8 @@ static void altera_cvp_remove(struct pci_dev *pdev)
+@@ -495,7 +496,8 @@ static void altera_cvp_remove(struct pci_dev *pdev)
  	u16 cmd;
  
  	fpga_mgr_unregister(mgr);
