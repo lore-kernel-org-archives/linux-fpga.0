@@ -1,15 +1,15 @@
 Return-Path: <SRS0=HGpG=QE=vger.kernel.org=linux-fpga-owner@kernel.org>
 Return-Path: <SRS0=HGpG=QE=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:41528 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.99]:46388 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1733252AbfA1QM6 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 28 Jan 2019 11:12:58 -0500
+        id S1730934AbfA1QBE (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 28 Jan 2019 11:01:04 -0500
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 025/170] fpga: altera-cvp: Fix registration for CvP incapable devices
-Date: Mon, 28 Jan 2019 11:09:35 -0500
-Message-Id: <20190128161200.55107-25-sashal@kernel.org>
-In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
-References: <20190128161200.55107-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 037/258] fpga: altera-cvp: Fix registration for CvP incapable devices
+Date: Mon, 28 Jan 2019 10:55:43 -0500
+Message-Id: <20190128155924.51521-37-sashal@kernel.org>
+In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
+References: <20190128155924.51521-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-fpga-owner@vger.kernel.org
@@ -37,18 +37,18 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 9 insertions(+)
 
 diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 00e73d28077c..b7558acd1a66 100644
+index 68e4b2b98c8f..1f4c26b4794a 100644
 --- a/drivers/fpga/altera-cvp.c
 +++ b/drivers/fpga/altera-cvp.c
-@@ -404,6 +404,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- {
+@@ -403,6 +403,7 @@ static int altera_cvp_probe(struct pci_dev *pdev,
  	struct altera_cvp_conf *conf;
+ 	struct fpga_manager *mgr;
  	u16 cmd, val;
 +	u32 regval;
  	int ret;
  
  	/*
-@@ -417,6 +418,14 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+@@ -416,6 +417,14 @@ static int altera_cvp_probe(struct pci_dev *pdev,
  		return -ENODEV;
  	}
  
