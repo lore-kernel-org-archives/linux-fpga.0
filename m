@@ -1,10 +1,10 @@
-Return-Path: <SRS0=Lrc3=QV=intel.com=ira.weiny@kernel.org>
-Return-Path: <SRS0=Lrc3=QV=intel.com=ira.weiny@kernel.org>
-Date: Wed, 13 Feb 2019 17:53:14 -0800
-From: Ira Weiny <ira.weiny@intel.com>
+Return-Path: <SRS0=t8ba=QS=oracle.com=daniel.m.jordan@kernel.org>
+Return-Path: <SRS0=t8ba=QS=oracle.com=daniel.m.jordan@kernel.org>
+Date: Mon, 11 Feb 2019 18:15:57 -0500
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
 Subject: Re: [PATCH 0/5] use pinned_vm instead of locked_vm to account pinned
  pages
-Message-ID: <20190214015314.GB1151@iweiny-DESK2.sc.intel.com>
+Message-ID: <20190211231557.zrcq3tv7qi6lqtvo@ca-dmjordan1.us.oracle.com>
 References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
  <20190211225447.GN24692@ziepe.ca>
 MIME-Version: 1.0
@@ -17,37 +17,20 @@ List-ID: <linux-fpga@vger.kernel.org>
 
 On Mon, Feb 11, 2019 at 03:54:47PM -0700, Jason Gunthorpe wrote:
 > On Mon, Feb 11, 2019 at 05:44:32PM -0500, Daniel Jordan wrote:
+> > Hi,
+> > 
+> > This series converts users that account pinned pages with locked_vm to
+> > account with pinned_vm instead, pinned_vm being the correct counter to
+> > use.  It's based on a similar patch I posted recently[0].
+> > 
+> > The patches are based on rdma/for-next to build on Davidlohr Bueso's
+> > recent conversion of pinned_vm to an atomic64_t[1].  Seems to make some
+> > sense for these to be routed the same way, despite lack of rdma content?
 > 
-> > All five of these places, and probably some of Davidlohr's conversions,
-> > probably want to be collapsed into a common helper in the core mm for
-> > accounting pinned pages.  I tried, and there are several details that
-> > likely need discussion, so this can be done as a follow-on.
+> Oy.. I'd be willing to accumulate a branch with acks to send to Linus
+> *separately* from RDMA to Linus, but this is very abnormal.
 > 
-> I've wondered the same..
+> Better to wait a few weeks for -rc1 and send patches through the
+> subsystem trees.
 
-I'm really thinking this would be a nice way to ensure it gets cleaned up and
-does not happen again.
-
-Also, by moving it to the core we could better manage any user visible changes.
-
-From a high level, pinned is a subset of locked so it seems like we need a 2
-sets of helpers.
-
-try_increment_locked_vm(...)
-decrement_locked_vm(...)
-
-try_increment_pinned_vm(...)
-decrement_pinned_vm(...)
-
-Where try_increment_pinned_vm() also increments locked_vm...  Of course this
-may end up reverting the improvement of Davidlohr  Bueso's atomic work...  :-(
-
-Furthermore it would seem better (although I don't know if at all possible) if
-this were accounted for in core calls which tracked them based on how the pages
-are being used so that drivers can't call try_increment_locked_vm() and then
-pin the pages...  Thus getting the account wrong vs what actually happened.
-
-And then in the end we can go back to locked_vm being the value checked against
-RLIMIT_MEMLOCK.
-
-Ira
+Ok, I can do that.  It did seem strange, so I made it a question...
