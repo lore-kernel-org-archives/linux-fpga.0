@@ -1,54 +1,49 @@
-Return-Path: <SRS0=/XIh=QR=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=/XIh=QR=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v3 2/3] dt-bindings: fpga: Add bindings for ZynqMP fpga driver
-Date: Mon, 11 Feb 2019 21:47:36 +0530
-Message-ID: <20190211161736.23844-1-nava.manne@xilinx.com>
+Return-Path: <SRS0=oQeA=QT=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=oQeA=QT=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:52848 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728979AbfBLRHk (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 12 Feb 2019 12:07:40 -0500
 MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
-List-ID: <linux-fpga@vger.kernel.org>
+References: <20190211161754.23902-1-nava.manne@xilinx.com> <CAAtXAHfXaerVYzfdnA_09rK5AgLVJAiRcE2KEqosfrMZBuO3xQ@mail.gmail.com>
+In-Reply-To: <CAAtXAHfXaerVYzfdnA_09rK5AgLVJAiRcE2KEqosfrMZBuO3xQ@mail.gmail.com>
+From: Alan Tull <atull@kernel.org>
+Date: Tue, 12 Feb 2019 11:07:01 -0600
+Message-ID: <CANk1AXTSE+JXn1rinhdxeuOHgFZKga6SvGvTcNwN1knSNxwjjQ@mail.gmail.com>
+Subject: Re: [PATCH v3 3/3] fpga manager: Adding FPGA Manager support for
+ Xilinx zynqmp
+Content-Type: text/plain; charset="UTF-8"
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Moritz Fischer <moritz.fischer@ettus.com>
+Cc: Nava kishore Manne <nava.manne@xilinx.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michal Simek <michal.simek@xilinx.com>, Rajan Vaja <rajanv@xilinx.com>, Jolly Shah <jollys@xilinx.com>, linux-fpga@vger.kernel.org, Devicetree List <devicetree@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kishore m <chinnikishore369@gmail.com>
 
-Add documentation to describe Xilinx ZynqMP fpga driver
-bindings.
+On Tue, Feb 12, 2019 at 5:06 AM Moritz Fischer <moritz.fischer@ettus.com> wrote:
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
----
-Changes for v3:
-		-Created patches on top of 5.0-rc5.
-                 No functional changes.
-Changes for v2:
-                -Removed "----" separators.
-Changes for v1:
-                -Created a Seperate(New) DT binding file as
-                 suggested by Rob.
+Hi Nava,
 
-Changes for RFC-V2:
-                -Moved pcap node as a child to firwmare
-                 node as suggested by Rob.
+> > +       mgr = fpga_mgr_create(dev, "Xilinx ZynqMP FPGA Manager",
+> > +                             &zynqmp_fpga_ops, priv);
 
- .../devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt      | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+Please use the new devm_fpga_mgr_create()
 
-diff --git a/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-new file mode 100644
-index 0000000..1f6f588
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-@@ -0,0 +1,13 @@
-+Device Tree zynqmp-fpga bindings for the Zynq Ultrascale+ MPSoC controlled
-+using ZynqMP SoC firmware interface
-+For Bitstream configuration on ZynqMp Soc uses processor configuration
-+port(PCAP) to configure the programmable logic(PL) through PS by using
-+FW interface.
-+
-+Required properties:
-+- compatible: should contain "xlnx,zynqmp-pcap-fpga"
-+
-+Example:
-+	zynqmp_pcap: pcap {
-+		compatible = "xlnx,zynqmp-pcap-fpga";
-+	};
--- 
-2.7.4
+> > +       if (!mgr)
+> > +               return -ENOMEM;
+> > +
+> > +       platform_set_drvdata(pdev, mgr);
+> > +
+> > +       err = fpga_mgr_register(mgr);
+> vs here.
+> > +       if (err) {
+> > +               dev_err(dev, "unable to register FPGA manager");
+> > +               fpga_mgr_free(mgr);
+
+With devm_fpga_mgr_create(), this fpga_mgr_free() can go away.
+
+> > +               return err;
+> > +       }
+> > +
+> > +       return 0;
+
+Thanks,
+Alan
