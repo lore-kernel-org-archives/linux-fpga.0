@@ -1,84 +1,86 @@
-Return-Path: <SRS0=hiVB=Q3=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=hiVB=Q3=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:25315 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729770AbfBTFay (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 20 Feb 2019 00:30:54 -0500
-From: ira.weiny@intel.com
-Subject: [RESEND PATCH 4/7] mm/gup: Add FOLL_LONGTERM capability to GUP fast
-Date: Tue, 19 Feb 2019 21:30:37 -0800
-Message-Id: <20190220053040.10831-5-ira.weiny@intel.com>
-In-Reply-To: <20190220053040.10831-1-ira.weiny@intel.com>
-References: <20190220053040.10831-1-ira.weiny@intel.com>
+Return-Path: <SRS0=5jtu=QT=linuxfoundation.org=gregkh@kernel.org>
+Return-Path: <SRS0=5jtu=QT=linuxfoundation.org=gregkh@kernel.org>
+Date: Tue, 12 Feb 2019 08:28:21 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [GIT PULL] of: overlay: validation checks, subsequent fixes for
+ v20 -- correction: v4.20
+Message-ID: <20190212072821.GA2940@kroah.com>
+References: <262419e9-5c9f-1193-f119-33f373d81e43@gmail.com>
+ <b113e03d-95f9-96bc-2a50-bc61307e780e@gmail.com>
+ <CANk1AXS=4fT6LbOHqK4DYhSMcO9Q60mDcQsFFnwoJLHj8wRsTA@mail.gmail.com>
+ <20190211191341.GA13134@kroah.com>
+ <CANk1AXRnX+=v+7g-_rM3TwNmM3aVcOqRknv9BR+hBOeCtT24Fg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: John Hubbard <jhubbard@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>
-Cc: Ira Weiny <ira.weiny@intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, linux-media@vger.kernel.org, linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXRnX+=v+7g-_rM3TwNmM3aVcOqRknv9BR+hBOeCtT24Fg@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Frank Rowand <frowand.list@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pantelis Antoniou <pantelis.antoniou@konsulko.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Moritz Fischer <mdf@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Ira Weiny <ira.weiny@intel.com>
+On Mon, Feb 11, 2019 at 02:43:48PM -0600, Alan Tull wrote:
+> On Mon, Feb 11, 2019 at 1:13 PM Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+> >
+> > On Mon, Feb 11, 2019 at 12:41:40PM -0600, Alan Tull wrote:
+> > > On Fri, Nov 9, 2018 at 12:58 AM Frank Rowand <frowand.list@gmail.com> wrote:
+> > >
+> > > What LTSI's are these patches likely to end up in?  Just to be clear,
+> > > I'm not pushing for any specific answer, I just want to know what to
+> > > expect.
+> >
+> > I have no idea what you are asking here.
+> >
+> > What patches?
+> 
+> I probably should have asked my question *below* the pertinent context
+> of the the 17 patches listed in the pull request, which was:
+> 
+> >       of: overlay: add tests to validate kfrees from overlay removal
+> >       of: overlay: add missing of_node_put() after add new node to changeset
+> >       of: overlay: add missing of_node_get() in __of_attach_node_sysfs
+> >       powerpc/pseries: add of_node_put() in dlpar_detach_node()
+> >       of: overlay: use prop add changeset entry for property in new nodes
+> >       of: overlay: do not duplicate properties from overlay for new nodes
+> >       of: overlay: reorder fields in struct fragment
+> >       of: overlay: validate overlay properties #address-cells and #size-cells
+> >       of: overlay: make all pr_debug() and pr_err() messages unique
+> >       of: overlay: test case of two fragments adding same node
+> >       of: overlay: check prevents multiple fragments add or delete same node
+> >       of: overlay: check prevents multiple fragments touching same property
+> >       of: unittest: remove unused of_unittest_apply_overlay() argument
+> >       of: overlay: set node fields from properties when add new overlay node
+> >       of: unittest: allow base devicetree to have symbol metadata
+> >       of: unittest: find overlays[] entry by name instead of index
+> >       of: unittest: initialize args before calling of_*parse_*()
+> 
+> > What is "LTSI's"?
+> 
+> I have recently seen some of devicetree patches being picked up for
+> the 4.20 stable-queue.  That seemed to suggest that some, but not all
+> of these will end up in the next LTS release.
 
-DAX pages were previously unprotected from longterm pins when users
-called get_user_pages_fast().
+If the git commit has the "cc: stable@" marking in it, yes, it will be
+picked up.  Without the actual git ids, it's hard to know what did, and
+what did not, get backported :)
 
-Use the new FOLL_LONGTERM flag to check for DEVMAP pages and fall
-back to regular GUP processing if a DEVMAP page is encountered.
+> Also I was wondering if any of this is likely to get backported to
+> LTSI-4.14.
 
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
----
- mm/gup.c | 24 +++++++++++++++++++++---
- 1 file changed, 21 insertions(+), 3 deletions(-)
+Note, "LTSI" and "LTS" are two different things.  "LTSI" is a project
+run by some LF member companies, and "LTS" are the normal long term
+kernels that I release on kernel.org.  They have vastly different
+requirements for inclusion in them.
 
-diff --git a/mm/gup.c b/mm/gup.c
-index 6f32d36b3c5b..f7e759c523bb 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -1439,6 +1439,9 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
- 			goto pte_unmap;
- 
- 		if (pte_devmap(pte)) {
-+			if (unlikely(flags & FOLL_LONGTERM))
-+				goto pte_unmap;
-+
- 			pgmap = get_dev_pagemap(pte_pfn(pte), pgmap);
- 			if (unlikely(!pgmap)) {
- 				undo_dev_pagemap(nr, nr_start, pages);
-@@ -1578,8 +1581,11 @@ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
- 	if (!pmd_access_permitted(orig, flags & FOLL_WRITE))
- 		return 0;
- 
--	if (pmd_devmap(orig))
-+	if (pmd_devmap(orig)) {
-+		if (unlikely(flags & FOLL_LONGTERM))
-+			return 0;
- 		return __gup_device_huge_pmd(orig, pmdp, addr, end, pages, nr);
-+	}
- 
- 	refs = 0;
- 	page = pmd_page(orig) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
-@@ -1904,8 +1910,20 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
- 		start += nr << PAGE_SHIFT;
- 		pages += nr;
- 
--		ret = get_user_pages_unlocked(start, nr_pages - nr, pages,
--					      gup_flags);
-+		if (gup_flags & FOLL_LONGTERM) {
-+			down_read(&current->mm->mmap_sem);
-+			ret = __gup_longterm_locked(current, current->mm,
-+						    start, nr_pages - nr,
-+						    pages, NULL, gup_flags);
-+			up_read(&current->mm->mmap_sem);
-+		} else {
-+			/*
-+			 * retain FAULT_FOLL_ALLOW_RETRY optimization if
-+			 * possible
-+			 */
-+			ret = get_user_pages_unlocked(start, nr_pages - nr,
-+						      pages, gup_flags);
-+		}
- 
- 		/* Have to be a bit careful with return values */
- 		if (nr > 0) {
--- 
-2.20.1
+If you have questions about LTSI, I recommend go asking on their mailing
+list.
+
+As for showing up in the 4.14 "LTS" kernel, again, I need git commit ids
+to know for sure.
+
+Also, as these are now in Linus's tree, you should be able to look at
+the stable releases yourself to see if they are present there, right?
+
+thanks,
+
+greg k-h
