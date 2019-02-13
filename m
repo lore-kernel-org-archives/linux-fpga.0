@@ -1,1779 +1,689 @@
-Return-Path: <SRS0=c20E=Q4=denx.de=agust@kernel.org>
-Return-Path: <SRS0=c20E=Q4=denx.de=agust@kernel.org>
-From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v4 1/3] usb: misc: add driver for FT232H based FPGA configuration devices
-Date: Thu, 21 Feb 2019 21:25:04 +0100
-Message-Id: <20190221202506.17744-2-agust@denx.de>
-In-Reply-To: <20190221202506.17744-1-agust@denx.de>
-References: <20190221202506.17744-1-agust@denx.de>
-To: linux-usb@vger.kernel.org, linux-spi@vger.kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, broonie@kernel.org, atull@kernel.org, mdf@kernel.org
+Return-Path: <SRS0=wrEa=QU=intel.com=lkp@kernel.org>
+Return-Path: <SRS0=wrEa=QU=intel.com=lkp@kernel.org>
+Date: Wed, 13 Feb 2019 09:14:50 +0800
+From: kbuild test robot <lkp@intel.com>
+Subject: Re: [PATCH 4/5] powerpc/mmu: use pinned_vm instead of locked_vm to
+ account pinned pages
+Message-ID: <201902130917.OXVqEfcK%fengguang.wu@intel.com>
+References: <20190211224437.25267-5-daniel.m.jordan@oracle.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="PNTmBPCT7hxwcZjr"
+Content-Disposition: inline
+In-Reply-To: <20190211224437.25267-5-daniel.m.jordan@oracle.com>
+To: Daniel Jordan <daniel.m.jordan@oracle.com>
+Cc: kbuild-all@01.org, jgg@ziepe.ca, akpm@linux-foundation.org, dave@stgolabs.net, jack@suse.cz, cl@linux.com, linux-mm@kvack.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, alex.williamson@redhat.com, paulus@ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au, hao.wu@intel.com, atull@kernel.org, mdf@kernel.org, aik@ozlabs.ru
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add USB interface driver for ARRI FPGA configuration devices based on
-FTDI FT232H chip. Depending on USB PID the driver registers different
-platform devices describing an FPGA configuration interface.
 
-One FPGA configuration interface type is the usual SPI bus with
-additional control and status GPIOs. For this interface type the
-FTDI MPSSE mode is utilized to support SPI bus and GPIO-L/H pins
-for SPI bus chipselect and SPI slave device I/O. Subsequent patch
-adds an MPSSE SPI controller driver for USB-SPI bus support.
-The actual FPGA configuration driver for SPI bus is already
-available in the FPGA manager framework (altera-ps-spi module).
+--PNTmBPCT7hxwcZjr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Another FPGA configuration interface type is the FT245 FIFO
-(connected via CPLD) with additional control and status GPIOs
-on FT232H ACBUS. This interface is used to configure FPGAs using
-Altera fast passive parallel (FPP) interface. Subsequent patch
-will add an FPP FPGA manager driver for it.
+Hi Daniel,
 
-The FTDI protocol code and prototypes was borrowed from libftdi.
+Thank you for the patch! Yet something to improve:
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+[auto build test ERROR on vfio/next]
+[also build test ERROR on v5.0-rc4]
+[cannot apply to next-20190212]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+
+url:    https://github.com/0day-ci/linux/commits/Daniel-Jordan/use-pinned_vm-instead-of-locked_vm-to-account-pinned-pages/20190213-070458
+base:   https://github.com/awilliam/linux-vfio.git next
+config: powerpc-defconfig (attached as .config)
+compiler: powerpc64-linux-gnu-gcc (Debian 8.2.0-11) 8.2.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        GCC_VERSION=8.2.0 make.cross ARCH=powerpc 
+
+All errors (new ones prefixed by >>):
+
+   In file included from include/linux/rcupdate.h:38,
+                    from include/linux/rculist.h:11,
+                    from include/linux/sched/signal.h:5,
+                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+   arch/powerpc/mm/mmu_context_iommu.c: In function 'mm_iommu_adjust_pinned_vm':
+>> arch/powerpc/mm/mmu_context_iommu.c:55:43: error: passing argument 2 of 'atomic64_add_return_relaxed' from incompatible pointer type [-Werror=incompatible-pointer-types]
+      pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
+                                              ^~~~~~~~~~~~~~
+   include/linux/atomic.h:75:22: note: in definition of macro '__atomic_op_fence'
+     typeof(op##_relaxed(args)) __ret;    \
+                         ^~~~
+   arch/powerpc/mm/mmu_context_iommu.c:55:15: note: in expansion of macro 'atomic64_add_return'
+      pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
+                  ^~~~~~~~~~~~~~~~~~~
+   In file included from include/linux/atomic.h:7,
+                    from include/linux/rcupdate.h:38,
+                    from include/linux/rculist.h:11,
+                    from include/linux/sched/signal.h:5,
+                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+   arch/powerpc/include/asm/atomic.h:331:52: note: expected 'atomic64_t *' {aka 'struct <anonymous> *'} but argument is of type 'long unsigned int *'
+    atomic64_##op##_return_relaxed(long a, atomic64_t *v)   \
+                                           ~~~~~~~~~~~~^
+   arch/powerpc/include/asm/atomic.h:367:2: note: in expansion of macro 'ATOMIC64_OP_RETURN_RELAXED'
+     ATOMIC64_OP_RETURN_RELAXED(op, asm_op)    \
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~
+   arch/powerpc/include/asm/atomic.h:370:1: note: in expansion of macro 'ATOMIC64_OPS'
+    ATOMIC64_OPS(add, add)
+    ^~~~~~~~~~~~
+   In file included from include/linux/rcupdate.h:38,
+                    from include/linux/rculist.h:11,
+                    from include/linux/sched/signal.h:5,
+                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+>> arch/powerpc/mm/mmu_context_iommu.c:55:43: error: passing argument 2 of 'atomic64_add_return_relaxed' from incompatible pointer type [-Werror=incompatible-pointer-types]
+      pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
+                                              ^~~~~~~~~~~~~~
+   include/linux/atomic.h:77:23: note: in definition of macro '__atomic_op_fence'
+     __ret = op##_relaxed(args);     \
+                          ^~~~
+   arch/powerpc/mm/mmu_context_iommu.c:55:15: note: in expansion of macro 'atomic64_add_return'
+      pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
+                  ^~~~~~~~~~~~~~~~~~~
+   In file included from include/linux/atomic.h:7,
+                    from include/linux/rcupdate.h:38,
+                    from include/linux/rculist.h:11,
+                    from include/linux/sched/signal.h:5,
+                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+   arch/powerpc/include/asm/atomic.h:331:52: note: expected 'atomic64_t *' {aka 'struct <anonymous> *'} but argument is of type 'long unsigned int *'
+    atomic64_##op##_return_relaxed(long a, atomic64_t *v)   \
+                                           ~~~~~~~~~~~~^
+   arch/powerpc/include/asm/atomic.h:367:2: note: in expansion of macro 'ATOMIC64_OP_RETURN_RELAXED'
+     ATOMIC64_OP_RETURN_RELAXED(op, asm_op)    \
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~
+   arch/powerpc/include/asm/atomic.h:370:1: note: in expansion of macro 'ATOMIC64_OPS'
+    ATOMIC64_OPS(add, add)
+    ^~~~~~~~~~~~
+>> arch/powerpc/mm/mmu_context_iommu.c:58:25: error: passing argument 2 of 'atomic64_sub' from incompatible pointer type [-Werror=incompatible-pointer-types]
+       atomic64_sub(npages, &mm->pinned_vm);
+                            ^~~~~~~~~~~~~~
+   In file included from include/linux/atomic.h:7,
+                    from include/linux/rcupdate.h:38,
+                    from include/linux/rculist.h:11,
+                    from include/linux/sched/signal.h:5,
+                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+   arch/powerpc/include/asm/atomic.h:315:58: note: expected 'atomic64_t *' {aka 'struct <anonymous> *'} but argument is of type 'long unsigned int *'
+    static __inline__ void atomic64_##op(long a, atomic64_t *v)  \
+                                                 ~~~~~~~~~~~~^
+   arch/powerpc/include/asm/atomic.h:366:2: note: in expansion of macro 'ATOMIC64_OP'
+     ATOMIC64_OP(op, asm_op)      \
+     ^~~~~~~~~~~
+   arch/powerpc/include/asm/atomic.h:371:1: note: in expansion of macro 'ATOMIC64_OPS'
+    ATOMIC64_OPS(sub, subf)
+    ^~~~~~~~~~~~
+>> arch/powerpc/mm/mmu_context_iommu.c:61:29: error: passing argument 1 of 'atomic64_read' from incompatible pointer type [-Werror=incompatible-pointer-types]
+      pinned_vm = atomic64_read(&mm->pinned_vm);
+                                ^~~~~~~~~~~~~~
+   In file included from include/linux/atomic.h:7,
+                    from include/linux/rcupdate.h:38,
+                    from include/linux/rculist.h:11,
+                    from include/linux/sched/signal.h:5,
+                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+   arch/powerpc/include/asm/atomic.h:300:56: note: expected 'const atomic64_t *' {aka 'const struct <anonymous> *'} but argument is of type 'long unsigned int *'
+    static __inline__ long atomic64_read(const atomic64_t *v)
+                                         ~~~~~~~~~~~~~~~~~~^
+   arch/powerpc/mm/mmu_context_iommu.c:64:24: error: passing argument 2 of 'atomic64_sub' from incompatible pointer type [-Werror=incompatible-pointer-types]
+      atomic64_sub(npages, &mm->pinned_vm);
+                           ^~~~~~~~~~~~~~
+   In file included from include/linux/atomic.h:7,
+                    from include/linux/rcupdate.h:38,
+                    from include/linux/rculist.h:11,
+                    from include/linux/sched/signal.h:5,
+                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+   arch/powerpc/include/asm/atomic.h:315:58: note: expected 'atomic64_t *' {aka 'struct <anonymous> *'} but argument is of type 'long unsigned int *'
+    static __inline__ void atomic64_##op(long a, atomic64_t *v)  \
+                                                 ~~~~~~~~~~~~^
+   arch/powerpc/include/asm/atomic.h:366:2: note: in expansion of macro 'ATOMIC64_OP'
+     ATOMIC64_OP(op, asm_op)      \
+     ^~~~~~~~~~~
+   arch/powerpc/include/asm/atomic.h:371:1: note: in expansion of macro 'ATOMIC64_OPS'
+    ATOMIC64_OPS(sub, subf)
+    ^~~~~~~~~~~~
+   In file included from include/linux/kernel.h:14,
+                    from include/linux/list.h:9,
+                    from include/linux/rculist.h:10,
+                    from include/linux/sched/signal.h:5,
+                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+   arch/powerpc/mm/mmu_context_iommu.c:70:18: error: passing argument 1 of 'atomic64_read' from incompatible pointer type [-Werror=incompatible-pointer-types]
+       atomic64_read(&mm->pinned_vm) << PAGE_SHIFT,
+                     ^~~~~~~~~~~~~~
+   include/linux/printk.h:136:17: note: in definition of macro 'no_printk'
+      printk(fmt, ##__VA_ARGS__);  \
+                    ^~~~~~~~~~~
+   arch/powerpc/mm/mmu_context_iommu.c:67:2: note: in expansion of macro 'pr_debug'
+     pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%lu %ld/%lu\n",
+     ^~~~~~~~
+   In file included from include/linux/atomic.h:7,
+                    from include/linux/rcupdate.h:38,
+                    from include/linux/rculist.h:11,
+                    from include/linux/sched/signal.h:5,
+                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+   arch/powerpc/include/asm/atomic.h:300:56: note: expected 'const atomic64_t *' {aka 'const struct <anonymous> *'} but argument is of type 'long unsigned int *'
+    static __inline__ long atomic64_read(const atomic64_t *v)
+                                         ~~~~~~~~~~~~~~~~~~^
+   cc1: all warnings being treated as errors
+
+vim +/atomic64_add_return_relaxed +55 arch/powerpc/mm/mmu_context_iommu.c
+
+  > 13	#include <linux/sched/signal.h>
+    14	#include <linux/slab.h>
+    15	#include <linux/rculist.h>
+    16	#include <linux/vmalloc.h>
+    17	#include <linux/mutex.h>
+    18	#include <linux/migrate.h>
+    19	#include <linux/hugetlb.h>
+    20	#include <linux/swap.h>
+    21	#include <linux/sizes.h>
+    22	#include <asm/mmu_context.h>
+    23	#include <asm/pte-walk.h>
+    24	
+    25	static DEFINE_MUTEX(mem_list_mutex);
+    26	
+    27	#define MM_IOMMU_TABLE_GROUP_PAGE_DIRTY	0x1
+    28	#define MM_IOMMU_TABLE_GROUP_PAGE_MASK	~(SZ_4K - 1)
+    29	
+    30	struct mm_iommu_table_group_mem_t {
+    31		struct list_head next;
+    32		struct rcu_head rcu;
+    33		unsigned long used;
+    34		atomic64_t mapped;
+    35		unsigned int pageshift;
+    36		u64 ua;			/* userspace address */
+    37		u64 entries;		/* number of entries in hpas[] */
+    38		u64 *hpas;		/* vmalloc'ed */
+    39	#define MM_IOMMU_TABLE_INVALID_HPA	((uint64_t)-1)
+    40		u64 dev_hpa;		/* Device memory base address */
+    41	};
+    42	
+    43	static long mm_iommu_adjust_pinned_vm(struct mm_struct *mm,
+    44			unsigned long npages, bool incr)
+    45	{
+    46		long ret = 0;
+    47		unsigned long lock_limit;
+    48		s64 pinned_vm;
+    49	
+    50		if (!npages)
+    51			return 0;
+    52	
+    53		if (incr) {
+    54			lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+  > 55			pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
+    56			if (pinned_vm > lock_limit && !capable(CAP_IPC_LOCK)) {
+    57				ret = -ENOMEM;
+  > 58				atomic64_sub(npages, &mm->pinned_vm);
+    59			}
+    60		} else {
+  > 61			pinned_vm = atomic64_read(&mm->pinned_vm);
+    62			if (WARN_ON_ONCE(npages > pinned_vm))
+    63				npages = pinned_vm;
+    64			atomic64_sub(npages, &mm->pinned_vm);
+    65		}
+    66	
+    67		pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%lu %ld/%lu\n",
+    68				current ? current->pid : 0, incr ? '+' : '-',
+    69				npages << PAGE_SHIFT,
+    70				atomic64_read(&mm->pinned_vm) << PAGE_SHIFT,
+    71				rlimit(RLIMIT_MEMLOCK));
+    72	
+    73		return ret;
+    74	}
+    75	
+
 ---
- MAINTAINERS                     |    8 +
- drivers/usb/misc/Kconfig        |   10 +
- drivers/usb/misc/Makefile       |    1 +
- drivers/usb/misc/ft232h-intf.c  | 1467 +++++++++++++++++++++++++++++++
- include/linux/usb/ft232h-intf.h |  206 +++++
- 5 files changed, 1692 insertions(+)
- create mode 100644 drivers/usb/misc/ft232h-intf.c
- create mode 100644 include/linux/usb/ft232h-intf.h
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8b53eb3db271..2a489b63d138 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -15968,6 +15968,14 @@ S:	Maintained
- F:	Documentation/usb/acm.txt
- F:	drivers/usb/class/cdc-acm.*
- 
-+USB ARRI FPGA CONFIGURATION ADAPTER DRIVER
-+M:	Anatolij Gustschin <agust@denx.de>
-+L:	linux-usb@vger.kernel.org
-+S:	Maintained
-+F:	drivers/usb/misc/ft232h-intf.c
-+F:	drivers/spi/spi-ftdi-mpsse.c
-+F:	include/linux/usb/ft232h-intf.h
-+
- USB AR5523 WIRELESS DRIVER
- M:	Pontus Fuchs <pontus.fuchs@gmail.com>
- L:	linux-wireless@vger.kernel.org
-diff --git a/drivers/usb/misc/Kconfig b/drivers/usb/misc/Kconfig
-index be04c117fe80..439efc543bb3 100644
---- a/drivers/usb/misc/Kconfig
-+++ b/drivers/usb/misc/Kconfig
-@@ -276,3 +276,13 @@ config USB_CHAOSKEY
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called chaoskey.
-+
-+config USB_FT232H_INTF
-+	tristate "FTDI FT232H FPGA configuration interface driver"
-+	depends on GPIOLIB
-+	help
-+	  Enable driver support for the FT232H based USB-GPIO/SPI/FIFO
-+	  interface adapter for FPGA configuration. Additional drivers
-+	  such as spi-ftdi-mpsse, altera-ps-spi, ftdi-fifo-fpp and
-+	  fpga-mgr must be enabled in order to use the functionality of
-+	  the device.
-diff --git a/drivers/usb/misc/Makefile b/drivers/usb/misc/Makefile
-index 109f54f5b9aa..af935effb019 100644
---- a/drivers/usb/misc/Makefile
-+++ b/drivers/usb/misc/Makefile
-@@ -10,6 +10,7 @@ obj-$(CONFIG_USB_CYTHERM)		+= cytherm.o
- obj-$(CONFIG_USB_EMI26)			+= emi26.o
- obj-$(CONFIG_USB_EMI62)			+= emi62.o
- obj-$(CONFIG_USB_EZUSB_FX2)		+= ezusb.o
-+obj-$(CONFIG_USB_FT232H_INTF)		+= ft232h-intf.o
- obj-$(CONFIG_USB_FTDI_ELAN)		+= ftdi-elan.o
- obj-$(CONFIG_USB_IDMOUSE)		+= idmouse.o
- obj-$(CONFIG_USB_IOWARRIOR)		+= iowarrior.o
-diff --git a/drivers/usb/misc/ft232h-intf.c b/drivers/usb/misc/ft232h-intf.c
-new file mode 100644
-index 000000000000..6f99257b9fbd
---- /dev/null
-+++ b/drivers/usb/misc/ft232h-intf.c
-@@ -0,0 +1,1467 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * FTDI FT232H interface driver for ARRI FPGA configuration
-+ *
-+ * Copyright (C) 2017 - 2018 DENX Software Engineering
-+ * Anatolij Gustschin <agust@denx.de>
-+ *
-+ *    Figure: FT232H, FPGA Devices and Drivers Relationship
-+ *
-+ *      +-------------+
-+ *      |             |
-+ *      |  STRATIX V  |PS-SPI         FT245 FIFO & GPIO
-+ *      |             +-----+    +-------------------+
-+ *      |  on Board 1 |     +    +                   |
-+ *      |             |                         +----+---+
-+ *      |  PCIe       |   ADBUS&ACBUS           |  CPLD  |
-+ *      +---+---------+ Connection Options      +----+---+
-+ *          ^          (MPSSE or FIFO&GPIO)          |
-+ *          +                  +              +------+-------+
-+ *     altera-cvp  +-----------+----------+   |     FPP      |
-+ *                 |        FT232H        |   |              |
-+ *                 |     0x0403:0x7148    |   |   ARRIA 10   |
-+ *                 |     0x0403:0x7149    |   |              |
-+ *                 +----------+-----------+   |  on Board 2  |
-+ *                            |               |              |
-+ *                +-----------+------------+  |        PCIe  |
-+ *        creates | ft232h-intf (USB misc) |  +----------+---+
-+ *       platform |     bulk/ctrl xfer     |             ^
-+ *        devices |ACBUS GPIO Ctrl (0x7148)|             |
-+ *         below  |MPSSE GPIO Ctrl (0x7149)|             |
-+ *                +-------+-------+--------+             |
-+ *                        |       |                      |
-+ *           for     +----+       +------+    for        |
-+ *        PID 0x7149 |                   | PID 0x7148    |
-+ *         +---------+--------+  +-------+---------+     |
-+ *         |  ftdi-mpsse-spi  |  |                 |     |
-+ *         | altera-ps-spi in |  |ftdi-fifo-fpp-mgr|     |
-+ *         |   spi_board_info |  |                 |     |
-+ *         +---------+--------+  +--------+--------+     |
-+ *                   ^                    ^              |
-+ *        Drivers:   |                    |              |
-+ *                   +                    |              |
-+ *      MPSSE SPI master(spi-ftdi-mpsse)  |              +
-+ *                   ^                    |              |
-+ *                   |                    +              +
-+ *             altera-ps-spi        ftdi-fifo-fpp    altera-cvp
-+ *              FPGA Manager         FPGA Manager   FPGA Manager
-+ *
-+ *
-+ * When using your custom USB product ID, this FT232H interface driver
-+ * also allows to register the GPIO controller for CBUS pins or for
-+ * MPSSE GPIO pins. Below are examples how to use the driver as CBUS-
-+ * or MPSSE-GPIO controller.
-+ *
-+ * For CBUS-GPIOs add new entry with your PID to ft232h_intf_table[]:
-+ * static const struct ft232h_intf_info ftdi_cbus_gpio_intf_info = {
-+ *	.use_cbus_gpio_ctrl = true,
-+ * };
-+ * { USB_DEVICE(FTDI_VID, PID),
-+ *   .driver_info = (kernel_ulong_t)&ftdi_cbus_gpio_intf_info },
-+ *
-+ * For MPSSE-GPIO add new entry with your PID to ft232h_intf_table[]:
-+ * static const struct ft232h_intf_info ftdi_mpsse_gpio_intf_info = {
-+ *	.use_mpsse_gpio_ctrl = true,
-+ * };
-+ * { USB_DEVICE(FTDI_VID, PID),
-+ *   .driver_info = (kernel_ulong_t)&ftdi_mpsse_gpio_intf_info },
-+ *
-+ * With custom USB product IDs it is also possible to use FT232H SPI bus
-+ * with different SPI slave devices attached (e.g. SPI-NOR flash chips,
-+ * spidev, etc.). Example below shows how to add a bus with two SPI slave
-+ * devices for your USB PID:
-+ *
-+ * static struct spi_board_info ftdi_spi_bus_info[] = {
-+ *	{
-+ *	.modalias	= "w25q32",
-+ *	.mode		= SPI_MODE_0,
-+ *	.max_speed_hz	= 60000000,
-+ *	.bus_num	= 0,
-+ *	.chip_select	= 0, // TCK/SK at ADBUS0
-+ *	},
-+ *	{
-+ *	.modalias	= "spidev",
-+ *	.mode		= SPI_MODE_0 | SPI_LSB_FIRST | SPI_CS_HIGH,
-+ *	.max_speed_hz	= 30000000,
-+ *	.bus_num	= 0,
-+ *	.chip_select	= 5, // GPIOH0 at ACBUS0
-+ *	},
-+ * };
-+ *
-+ * static const struct mpsse_spi_platform_data ftdi_spi_bus_plat_data = {
-+ *	.ops		= &ft232h_intf_ops,
-+ *	.spi_info	= ftdi_spi_bus_info,
-+ *	.spi_info_len	= ARRAY_SIZE(ftdi_spi_bus_info),
-+ * };
-+ *
-+ * static const struct ft232h_intf_info ftdi_spi_bus_intf_info = {
-+ *	.probe  = ft232h_intf_spi_probe,
-+ *	.remove  = ft232h_intf_spi_remove,
-+ *	.plat_data  = &ftdi_spi_bus_plat_data,
-+ * };
-+ * { USB_DEVICE(FTDI_VID, YOUR_PID),
-+ *	.driver_info = (kernel_ulong_t)&ftdi_spi_bus_intf_info },
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/delay.h>
-+#include <linux/printk.h>
-+#include <linux/gpio/driver.h>
-+#include <linux/gpio/machine.h>
-+#include <linux/idr.h>
-+#include <linux/mutex.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/spi/spi.h>
-+#include <linux/usb/ch9.h>
-+#include <linux/usb.h>
-+#include <linux/usb/ft232h-intf.h>
-+
-+struct ft232h_intf_priv {
-+	struct usb_interface	*intf;
-+	struct usb_device	*udev;
-+	struct mutex		io_mutex; /* sync I/O with disconnect */
-+	struct mutex		ops_mutex;
-+	int			bitbang_enabled;
-+	int			id;
-+	int			index;
-+	u8			bulk_in;
-+	u8			bulk_out;
-+	size_t			bulk_in_sz;
-+	void			*bulk_in_buf;
-+
-+	const struct usb_device_id	*usb_dev_id;
-+	struct ft232h_intf_info		*info;
-+	struct platform_device		*fifo_pdev;
-+	struct platform_device		*spi_pdev;
-+	struct gpiod_lookup_table	*lookup_fifo;
-+	struct gpiod_lookup_table	*lookup_cs;
-+
-+	struct gpio_chip	cbus_gpio;
-+	const char		*cbus_gpio_names[4];
-+	u8			cbus_pin_offsets[4];
-+	u8			cbus_mask;
-+	u8			pinbuf[4];
-+	u8			eeprom[FTDI_MAX_EEPROM_SIZE];
-+
-+	struct gpio_chip	mpsse_gpio;
-+	u8			gpiol_mask;
-+	u8			gpioh_mask;
-+	u8			gpiol_dir;
-+	u8			gpioh_dir;
-+	u8			tx_buf[4];
-+};
-+
-+/* Device info struct used for device specific init. */
-+struct ft232h_intf_info {
-+	unsigned int use_cbus_gpio_ctrl;
-+	unsigned int use_mpsse_gpio_ctrl;
-+	int (*probe)(struct usb_interface *intf, const void *plat_data);
-+	int (*remove)(struct usb_interface *intf);
-+	const void *plat_data; /* optional, passed to probe() */
-+};
-+
-+static DEFINE_IDA(ftdi_devid_ida);
-+
-+/* Use baudrate calculation borrowed from libftdi */
-+static unsigned int ftdi_to_clkbits(unsigned int baudrate, unsigned int clk,
-+				    unsigned int clk_div,
-+				    unsigned int *encoded_divisor)
-+{
-+	static const char frac_code[8] = { 0, 3, 2, 4, 1, 5, 6, 7 };
-+	unsigned int best_baud = 0;
-+	unsigned int best_div;
-+
-+	if (baudrate >= clk / clk_div) {
-+		*encoded_divisor = 0;
-+		best_baud = clk / clk_div;
-+	} else if (baudrate >= clk / (clk_div + clk_div / 2)) {
-+		*encoded_divisor = 1;
-+		best_baud = clk / (clk_div + clk_div / 2);
-+	} else if (baudrate >= clk / (2 * clk_div)) {
-+		*encoded_divisor = 2;
-+		best_baud = clk / (2 * clk_div);
-+	} else {
-+		/*
-+		 * Divide by 16 to have 3 fractional bits and
-+		 * one bit for rounding
-+		 */
-+		best_div = DIV_ROUND_CLOSEST(clk * 8 / clk_div, baudrate);
-+
-+		if (best_div > 0x20000)
-+			best_div = 0x1ffff;
-+
-+		best_baud = DIV_ROUND_CLOSEST(clk * 8 / clk_div, best_div);
-+
-+		*encoded_divisor = (best_div >> 3) |
-+				   (frac_code[best_div & 0x7] << 14);
-+	}
-+	return best_baud;
-+}
-+
-+#define H_CLK	120000000
-+#define C_CLK	48000000
-+static int ftdi_convert_baudrate(struct ft232h_intf_priv *priv, int baud,
-+				 u16 *value, u16 *index)
-+{
-+	unsigned int encoded_divisor = 0;
-+	unsigned int best_baud;
-+
-+	if (baud <= 0)
-+		return -EINVAL;
-+
-+	/*
-+	 * On H Devices, use 12000000 baudrate when possible.
-+	 * We have a 14 bit divisor, a 1 bit divisor switch (10 or 16),
-+	 * three fractional bits and a 120 MHz clock. Assume AN_120
-+	 * "Sub-integer divisors between 0 and 2 are not allowed" holds
-+	 * for DIV/10 CLK too, so /1, /1.5 and /2 can be handled the same
-+	 */
-+	if (baud * 10 > H_CLK / 0x3fff) {
-+		best_baud = ftdi_to_clkbits(baud, H_CLK, 10, &encoded_divisor);
-+		encoded_divisor |= 0x20000;	/* switch on CLK/10 */
-+	} else {
-+		best_baud = ftdi_to_clkbits(baud, C_CLK, 16, &encoded_divisor);
-+	}
-+
-+	if (!best_baud) {
-+		pr_err("Invalid baudrate: %d\n", baud);
-+		return -EINVAL;
-+	}
-+
-+	/* Check within tolerance (about 5%) */
-+	if ((best_baud * 2 < baud) ||
-+	    (best_baud < baud
-+		? (best_baud * 21 < baud * 20)
-+		: (baud * 21 < best_baud * 20))) {
-+		pr_err("Unsupported baudrate.\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Split into "value" and "index" values */
-+	*value = (u16)(encoded_divisor & 0xffff);
-+	*index = (u16)(((encoded_divisor >> 8) & 0xff00) | priv->index);
-+
-+	dev_dbg(&priv->intf->dev, "best baud %u, v/i: %d, %d\n",
-+		best_baud, *value, *index);
-+	return best_baud;
-+}
-+
-+/*
-+ * ftdi_ctrl_xfer - FTDI control endpoint transfer
-+ * @intf: USB interface pointer
-+ * @desc: pointer to descriptor struct for control transfer
-+ *
-+ * Return:
-+ * Return: If successful, the number of bytes transferred. Otherwise,
-+ * a negative error number.
-+ */
-+static int ftdi_ctrl_xfer(struct usb_interface *intf, struct ctrl_desc *desc)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	struct usb_device *udev = priv->udev;
-+	unsigned int pipe;
-+	int ret;
-+
-+	mutex_lock(&priv->io_mutex);
-+	if (!priv->intf) {
-+		ret = -ENODEV;
-+		goto exit;
-+	}
-+
-+	if (!desc->data && desc->size)
-+		desc->data = priv->bulk_in_buf;
-+
-+	if (desc->dir_out)
-+		pipe = usb_sndctrlpipe(udev, 0);
-+	else
-+		pipe = usb_rcvctrlpipe(udev, 0);
-+
-+	ret = usb_control_msg(udev, pipe, desc->request, desc->requesttype,
-+			      desc->value, desc->index, desc->data, desc->size,
-+			      desc->timeout);
-+	if (ret < 0)
-+		dev_dbg(&udev->dev, "ctrl msg failed: %d\n", ret);
-+exit:
-+	mutex_unlock(&priv->io_mutex);
-+	return ret;
-+}
-+
-+/*
-+ * ftdi_bulk_xfer - FTDI bulk endpoint transfer
-+ * @intf: USB interface pointer
-+ * @desc: pointer to descriptor struct for bulk-in or bulk-out transfer
-+ *
-+ * Return:
-+ * If successful, 0. Otherwise a negative error number. The number of
-+ * actual bytes transferred will be stored in the @desc->act_len field
-+ * of the descriptor struct.
-+ */
-+static int ftdi_bulk_xfer(struct usb_interface *intf, struct bulk_desc *desc)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	struct usb_device *udev = priv->udev;
-+	unsigned int pipe;
-+	int ret;
-+
-+	mutex_lock(&priv->io_mutex);
-+	if (!priv->intf) {
-+		ret = -ENODEV;
-+		goto exit;
-+	}
-+
-+	if (desc->dir_out)
-+		pipe = usb_sndbulkpipe(udev, priv->bulk_out);
-+	else
-+		pipe = usb_rcvbulkpipe(udev, priv->bulk_in);
-+
-+	ret = usb_bulk_msg(udev, pipe, desc->data, desc->len,
-+			   &desc->act_len, desc->timeout);
-+	if (ret)
-+		dev_dbg(&udev->dev, "bulk msg failed: %d\n", ret);
-+
-+exit:
-+	mutex_unlock(&priv->io_mutex);
-+	return ret;
-+}
-+
-+/*
-+ * ftdi_set_baudrate - set the device baud rate
-+ * @intf: USB interface pointer
-+ * @baudrate: baud rate value to set
-+ *
-+ * Return: If successful, 0. Otherwise a negative error number.
-+ */
-+static int ftdi_set_baudrate(struct usb_interface *intf, int baudrate)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	struct ctrl_desc desc;
-+	u16 index, value;
-+	int ret;
-+
-+	if (priv->bitbang_enabled)
-+		baudrate *= 4;
-+
-+	ret = ftdi_convert_baudrate(priv, baudrate, &value, &index);
-+	if (ret < 0)
-+		return ret;
-+
-+	desc.dir_out = true;
-+	desc.request = FTDI_SIO_SET_BAUDRATE_REQUEST;
-+	desc.requesttype = USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_DIR_OUT;
-+	desc.value = value;
-+	desc.index = index;
-+	desc.data = NULL;
-+	desc.size = 0;
-+	desc.timeout = USB_CTRL_SET_TIMEOUT;
-+
-+	ret = ftdi_ctrl_xfer(intf, &desc);
-+	if (ret < 0) {
-+		dev_dbg(&intf->dev, "failed to set baudrate: %d\n", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * ftdi_read_data - read from FTDI bulk-in endpoint
-+ * @intf: USB interface pointer
-+ * @buf:  pointer to data buffer
-+ * @len:  length in bytes of the data to read
-+ *
-+ * The two modem status bytes transferred in every read will
-+ * be removed and will not appear in the data buffer.
-+ *
-+ * Return:
-+ * If successful, the number of data bytes received (can be 0).
-+ * Otherwise, a negative error number.
-+ */
-+static int ftdi_read_data(struct usb_interface *intf, void *buf, size_t len)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	struct bulk_desc desc;
-+	int ret;
-+
-+	desc.act_len = 0;
-+	desc.dir_out = false;
-+	desc.data = priv->bulk_in_buf;
-+	/* Device sends 2 additional status bytes, read at least len + 2 */
-+	desc.len = min_t(size_t, len + 2, priv->bulk_in_sz);
-+	desc.timeout = FTDI_USB_READ_TIMEOUT;
-+
-+	ret = ftdi_bulk_xfer(intf, &desc);
-+	if (ret)
-+		return ret;
-+
-+	/* Only status bytes and no data? */
-+	if (desc.act_len <= 2)
-+		return 0;
-+
-+	/* Skip first two status bytes */
-+	ret = desc.act_len - 2;
-+	if (ret > len)
-+		ret = len;
-+	memcpy(buf, desc.data + 2, ret);
-+	return ret;
-+}
-+
-+/*
-+ * ftdi_write_data - write to FTDI bulk-out endpoint
-+ * @intf: USB interface pointer
-+ * @buf:  pointer to data buffer
-+ * @len:  length in bytes of the data to send
-+ *
-+ * Return:
-+ * If successful, the number of bytes transferred. Otherwise a negative
-+ * error number.
-+ */
-+static int ftdi_write_data(struct usb_interface *intf,
-+			   const char *buf, size_t len)
-+{
-+	struct bulk_desc desc;
-+	int ret;
-+
-+	desc.act_len = 0;
-+	desc.dir_out = true;
-+	desc.data = (char *)buf;
-+	desc.len = len;
-+	desc.timeout = FTDI_USB_WRITE_TIMEOUT;
-+
-+	ret = ftdi_bulk_xfer(intf, &desc);
-+	if (ret < 0)
-+		return ret;
-+
-+	return desc.act_len;
-+}
-+
-+/*
-+ * ftdi_set_bitmode - configure bitbang mode
-+ * @intf: USB interface pointer
-+ * @bitmask: line configuration bitmask
-+ * @mode: bitbang mode to set
-+ *
-+ * Return:
-+ * If successful, 0. Otherwise a negative error number.
-+ */
-+static int ftdi_set_bitmode(struct usb_interface *intf, unsigned char bitmask,
-+			    unsigned char mode)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	struct ctrl_desc desc;
-+	int ret;
-+
-+	desc.dir_out = true;
-+	desc.data = NULL;
-+	desc.request = FTDI_SIO_SET_BITMODE_REQUEST;
-+	desc.requesttype = USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_DIR_OUT;
-+	desc.index = 1;
-+	desc.value = (mode << 8) | bitmask;
-+	desc.size = 0;
-+	desc.timeout = USB_CTRL_SET_TIMEOUT;
-+
-+	ret = ftdi_ctrl_xfer(intf, &desc);
-+	if (ret < 0)
-+		return ret;
-+
-+	switch (mode) {
-+	case BITMODE_BITBANG:
-+	case BITMODE_CBUS:
-+	case BITMODE_SYNCBB:
-+	case BITMODE_SYNCFF:
-+		priv->bitbang_enabled = 1;
-+		break;
-+	case BITMODE_MPSSE:
-+	case BITMODE_RESET:
-+	default:
-+		priv->bitbang_enabled = 0;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * ftdi_disable_bitbang - disable bitbang mode
-+ * @intf: USB interface pointer
-+ *
-+ * Return:
-+ * If successful, 0. Otherwise a negative error number.
-+ */
-+static int ftdi_disable_bitbang(struct usb_interface *intf)
-+{
-+	int ret;
-+
-+	ret = ftdi_set_bitmode(intf, 0, BITMODE_RESET);
-+	if (ret < 0) {
-+		dev_dbg(&intf->dev, "disable bitbang failed: %d\n", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int ftdi_read_eeprom(struct ft232h_intf_priv *priv)
-+{
-+	struct ctrl_desc desc;
-+	unsigned int i;
-+	int ret;
-+
-+	desc.dir_out = false;
-+	desc.request = FTDI_SIO_READ_EEPROM_REQUEST;
-+	desc.requesttype = USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_DIR_IN;
-+	desc.value = 0;
-+	desc.size = 2;
-+	desc.timeout = USB_CTRL_GET_TIMEOUT;
-+
-+	for (i = 0; i < FTDI_MAX_EEPROM_SIZE / 2; i++) {
-+		desc.index = i;
-+		desc.data = &priv->eeprom[i * 2];
-+
-+		ret = ftdi_ctrl_xfer(priv->intf, &desc);
-+		if (ret < 0) {
-+			dev_dbg(&priv->intf->dev, "EEPROM read failed: %d\n",
-+				ret);
-+			return ret;
-+		}
-+	}
-+
-+	print_hex_dump_debug("EEPROM: ", DUMP_PREFIX_OFFSET, 16, 1,
-+			     priv->eeprom, sizeof(priv->eeprom), 1);
-+	return 0;
-+}
-+
-+/*
-+ * ACBUS GPIO functions
-+ */
-+static const char *ftdi_acbus_names[5] = {
-+	"ACBUS5", "ACBUS6", NULL, "ACBUS8", "ACBUS9"
-+};
-+
-+static int ftdi_cbus_gpio_read_pins(struct ft232h_intf_priv *priv,
-+				    unsigned char *pins)
-+{
-+	struct gpio_chip *chip = &priv->cbus_gpio;
-+	struct ctrl_desc desc;
-+	int ret;
-+
-+	desc.dir_out = false;
-+	desc.request = FTDI_SIO_READ_PINS_REQUEST;
-+	desc.requesttype = USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_DIR_IN;
-+	desc.value = 0;
-+	desc.index = 1;
-+	desc.data = &priv->pinbuf[0];
-+	desc.size = 1;
-+	desc.timeout = USB_CTRL_GET_TIMEOUT;
-+
-+	ret = ftdi_ctrl_xfer(priv->intf, &desc);
-+	if (ret < 0) {
-+		dev_dbg(chip->parent, "failed to get pin values: %d\n", ret);
-+		return ret;
-+	}
-+
-+	*pins = priv->pinbuf[0];
-+	return 0;
-+}
-+
-+static inline void ftdi_cbus_init_gpio_data(struct ft232h_intf_priv *priv,
-+					    int gpio_num, int cbus_num)
-+{
-+	switch (cbus_num) {
-+	case 5:
-+	case 6:
-+		priv->cbus_pin_offsets[gpio_num] = cbus_num - 5;
-+		break;
-+	case 8:
-+	case 9:
-+		priv->cbus_pin_offsets[gpio_num] = cbus_num - 6;
-+		break;
-+	default:
-+		return;
-+	}
-+
-+	priv->cbus_gpio_names[gpio_num] = ftdi_acbus_names[cbus_num - 5];
-+}
-+
-+static int ftdi_cbus_gpio_get(struct gpio_chip *chip, unsigned int offset)
-+{
-+	struct ft232h_intf_priv *priv = gpiochip_get_data(chip);
-+	unsigned int offs;
-+	int ret;
-+	u8 pins = 0;
-+
-+	ret = ftdi_cbus_gpio_read_pins(priv, &pins);
-+	if (ret)
-+		return ret;
-+
-+	offs = priv->cbus_pin_offsets[offset];
-+
-+	return !!(pins & BIT(offs));
-+}
-+
-+static void ftdi_cbus_gpio_set(struct gpio_chip *chip,
-+			       unsigned int offset, int value)
-+{
-+	struct ft232h_intf_priv *priv = gpiochip_get_data(chip);
-+	unsigned int offs;
-+	int ret;
-+
-+	offs = priv->cbus_pin_offsets[offset];
-+
-+	if (value)
-+		priv->cbus_mask |= BIT(offs);
-+	else
-+		priv->cbus_mask &= ~BIT(offs);
-+
-+	ret = ftdi_set_bitmode(priv->intf, priv->cbus_mask, BITMODE_CBUS);
-+	if (ret < 0)
-+		dev_dbg(chip->parent, "setting pin value failed: %d\n", ret);
-+}
-+
-+static int ftdi_cbus_gpio_direction_input(struct gpio_chip *chip,
-+					  unsigned int offset)
-+{
-+	struct ft232h_intf_priv *priv = gpiochip_get_data(chip);
-+	unsigned int offs;
-+
-+	offs = priv->cbus_pin_offsets[offset];
-+	/* Direction bits are in the upper nibble */
-+	priv->cbus_mask &= ~(BIT(offs) << 4);
-+
-+	return ftdi_set_bitmode(priv->intf, priv->cbus_mask, BITMODE_CBUS);
-+}
-+
-+static int ftdi_cbus_gpio_direction_output(struct gpio_chip *chip,
-+					   unsigned int offset, int value)
-+{
-+	struct ft232h_intf_priv *priv = gpiochip_get_data(chip);
-+	unsigned int offs;
-+
-+	offs = priv->cbus_pin_offsets[offset];
-+	priv->cbus_mask |= BIT(offs) << 4;
-+
-+	if (value)
-+		priv->cbus_mask |= BIT(offs);
-+	else
-+		priv->cbus_mask &= ~BIT(offs);
-+
-+	return ftdi_set_bitmode(priv->intf, priv->cbus_mask, BITMODE_CBUS);
-+}
-+
-+static int ft232h_intf_add_cbus_gpio(struct ft232h_intf_priv *priv)
-+{
-+	struct device *dev = &priv->intf->dev;
-+	char **names, *label;
-+	int ngpio = 0;
-+	int i, ret;
-+	u8 val;
-+
-+	ret = ftdi_read_eeprom(priv);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Check if I/O mode is enabled for supported pins 5, 6, 8, 9 */
-+	for (i = 5; i < 10; i++) {
-+		val = priv->eeprom[0x18 + i / 2] >> (i % 2 ? 4 : 0);
-+		if ((val & 0x0f) == FTDI_232H_CBUS_IOMODE) {
-+			dev_dbg(dev, "gpio-%d @ ACBUS%d\n",
-+				priv->cbus_gpio.ngpio, i);
-+			priv->cbus_gpio.ngpio++;
-+			ftdi_cbus_init_gpio_data(priv, ngpio++, i);
-+		}
-+	}
-+
-+	if (!priv->cbus_gpio.ngpio) {
-+		dev_warn(dev, "I/O mode disabled in EEPROM\n");
-+		return -ENODEV;
-+	}
-+
-+	label = devm_kasprintf(dev, GFP_KERNEL, "ftdi-cbus-gpio.%d", priv->id);
-+	if (!label)
-+		return -ENOMEM;
-+
-+	priv->cbus_gpio.label = label;
-+	priv->cbus_gpio.parent = dev;
-+	priv->cbus_gpio.owner = THIS_MODULE;
-+	priv->cbus_gpio.base = -1;
-+	priv->cbus_gpio.can_sleep = true;
-+	priv->cbus_gpio.set = ftdi_cbus_gpio_set;
-+	priv->cbus_gpio.get = ftdi_cbus_gpio_get;
-+	priv->cbus_gpio.direction_input = ftdi_cbus_gpio_direction_input;
-+	priv->cbus_gpio.direction_output = ftdi_cbus_gpio_direction_output;
-+
-+	names = devm_kcalloc(dev, priv->cbus_gpio.ngpio, sizeof(char *),
-+			     GFP_KERNEL);
-+	if (!names)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < priv->cbus_gpio.ngpio; i++) {
-+		if (!priv->cbus_gpio_names[i])
-+			continue;
-+		names[i] = devm_kasprintf(dev, GFP_KERNEL, "cbus.%d-%s",
-+					  priv->id, priv->cbus_gpio_names[i]);
-+		if (!names[i])
-+			return -ENOMEM;
-+	}
-+
-+	priv->cbus_gpio.names = (const char *const *)names;
-+
-+	ret = devm_gpiochip_add_data(dev, &priv->cbus_gpio, priv);
-+	if (ret) {
-+		dev_warn(dev, "failed to add CBUS gpiochip: %d\n", ret);
-+		return ret;
-+	}
-+
-+	dev_info(dev, "using %d CBUS pins\n", priv->cbus_gpio.ngpio);
-+	return 0;
-+}
-+
-+/*
-+ * MPSSE CS and GPIO-L/-H support
-+ */
-+#define SET_BITS_LOW	0x80
-+#define GET_BITS_LOW	0x81
-+#define SET_BITS_HIGH	0x82
-+#define GET_BITS_HIGH	0x83
-+
-+static int ftdi_mpsse_get_port_pins(struct ft232h_intf_priv *priv, bool low)
-+{
-+	struct device *dev = &priv->intf->dev;
-+	int ret, tout = 10;
-+	u8 rxbuf[4];
-+
-+	if (low)
-+		priv->tx_buf[0] = GET_BITS_LOW;
-+	else
-+		priv->tx_buf[0] = GET_BITS_HIGH;
-+
-+	ret = ftdi_write_data(priv->intf, priv->tx_buf, 1);
-+	if (ret < 0) {
-+		dev_dbg_ratelimited(dev, "Writing port pins cmd failed: %d\n",
-+				    ret);
-+		return ret;
-+	}
-+
-+	rxbuf[0] = 0;
-+	do {
-+		usleep_range(5000, 5200);
-+		ret = ftdi_read_data(priv->intf, rxbuf, 1);
-+		tout--;
-+		if (!tout) {
-+			dev_err(dev, "Timeout when getting port pins\n");
-+			return -ETIMEDOUT;
-+		}
-+	} while (ret == 0);
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	if (low)
-+		priv->gpiol_mask = rxbuf[0];
-+	else
-+		priv->gpioh_mask = rxbuf[0];
-+
-+	return 0;
-+}
-+
-+static int ftdi_mpsse_set_port_pins(struct ft232h_intf_priv *priv, bool low)
-+{
-+	struct device *dev = &priv->intf->dev;
-+	int ret;
-+
-+	if (low) {
-+		priv->tx_buf[0] = SET_BITS_LOW;
-+		priv->tx_buf[1] = priv->gpiol_mask;
-+		priv->tx_buf[2] = priv->gpiol_dir;
-+	} else {
-+		priv->tx_buf[0] = SET_BITS_HIGH;
-+		priv->tx_buf[1] = priv->gpioh_mask;
-+		priv->tx_buf[2] = priv->gpioh_dir;
-+	}
-+
-+	ret = ftdi_write_data(priv->intf, priv->tx_buf, 3);
-+	if (ret < 0) {
-+		dev_dbg_ratelimited(dev, "Failed to set GPIO pins: %d\n",
-+				    ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int ftdi_mpsse_gpio_get(struct gpio_chip *chip, unsigned int offset)
-+{
-+	struct ft232h_intf_priv *priv = gpiochip_get_data(chip);
-+	int ret, val;
-+	bool low;
-+
-+	mutex_lock(&priv->io_mutex);
-+	if (!priv->intf) {
-+		mutex_unlock(&priv->io_mutex);
-+		return -ENODEV;
-+	}
-+	mutex_unlock(&priv->io_mutex);
-+
-+	dev_dbg(chip->parent, "%s: offset %d\n", __func__, offset);
-+
-+	low = offset < 5;
-+
-+	mutex_lock(&priv->ops_mutex);
-+
-+	ret = ftdi_mpsse_get_port_pins(priv, low);
-+	if (ret < 0) {
-+		mutex_unlock(&priv->ops_mutex);
-+		return ret;
-+	}
-+
-+	if (low)
-+		val = priv->gpiol_mask & (BIT(offset) << 3);
-+	else
-+		val = priv->gpioh_mask & BIT(offset - 5);
-+
-+	mutex_unlock(&priv->ops_mutex);
-+
-+	return !!val;
-+}
-+
-+static void ftdi_mpsse_gpio_set(struct gpio_chip *chip, unsigned int offset,
-+				int value)
-+{
-+	struct ft232h_intf_priv *priv = gpiochip_get_data(chip);
-+	bool low;
-+
-+	mutex_lock(&priv->io_mutex);
-+	if (!priv->intf) {
-+		mutex_unlock(&priv->io_mutex);
-+		return;
-+	}
-+	mutex_unlock(&priv->io_mutex);
-+
-+	dev_dbg(chip->parent, "%s: offset %d, val %d\n",
-+		__func__, offset, value);
-+
-+	mutex_lock(&priv->ops_mutex);
-+
-+	if (offset < 5) {
-+		low = true;
-+		if (value)
-+			priv->gpiol_mask |= (BIT(offset) << 3);
-+		else
-+			priv->gpiol_mask &= ~(BIT(offset) << 3);
-+	} else {
-+		low = false;
-+		if (value)
-+			priv->gpioh_mask |= BIT(offset - 5);
-+		else
-+			priv->gpioh_mask &= ~BIT(offset - 5);
-+	}
-+
-+	ftdi_mpsse_set_port_pins(priv, low);
-+
-+	mutex_unlock(&priv->ops_mutex);
-+}
-+
-+static int ftdi_mpsse_gpio_direction_input(struct gpio_chip *chip,
-+					   unsigned int offset)
-+{
-+	struct ft232h_intf_priv *priv = gpiochip_get_data(chip);
-+	bool low;
-+	int ret;
-+
-+	mutex_lock(&priv->io_mutex);
-+	if (!priv->intf) {
-+		mutex_unlock(&priv->io_mutex);
-+		return -ENODEV;
-+	}
-+	mutex_unlock(&priv->io_mutex);
-+
-+	dev_dbg(chip->parent, "%s: offset %d\n", __func__, offset);
-+
-+	mutex_lock(&priv->ops_mutex);
-+
-+	if (offset < 5) {
-+		low = true;
-+		priv->gpiol_dir &= ~(BIT(offset) << 3);
-+	} else {
-+		low = false;
-+		priv->gpioh_dir &= ~BIT(offset - 5);
-+	}
-+
-+	ret = ftdi_mpsse_set_port_pins(priv, low);
-+
-+	mutex_unlock(&priv->ops_mutex);
-+
-+	return ret;
-+}
-+
-+static int ftdi_mpsse_gpio_direction_output(struct gpio_chip *chip,
-+					    unsigned int offset, int value)
-+{
-+	struct ft232h_intf_priv *priv = gpiochip_get_data(chip);
-+	bool low;
-+	int ret;
-+
-+	mutex_lock(&priv->io_mutex);
-+	if (!priv->intf) {
-+		mutex_unlock(&priv->io_mutex);
-+		return -ENODEV;
-+	}
-+	mutex_unlock(&priv->io_mutex);
-+
-+	dev_dbg(chip->parent, "%s: offset %d, val %d\n",
-+		__func__, offset, value);
-+
-+	mutex_lock(&priv->ops_mutex);
-+
-+	if (offset < 5) {
-+		low = true;
-+		priv->gpiol_dir |= BIT(offset) << 3;
-+
-+		if (value)
-+			priv->gpiol_mask |= BIT(offset) << 3;
-+		else
-+			priv->gpiol_mask &= ~(BIT(offset) << 3);
-+	} else {
-+		low = false;
-+		priv->gpioh_dir |= BIT(offset - 5);
-+
-+		if (value)
-+			priv->gpioh_mask |= BIT(offset - 5);
-+		else
-+			priv->gpioh_mask &= ~BIT(offset - 5);
-+	}
-+
-+	ret = ftdi_mpsse_set_port_pins(priv, low);
-+
-+	mutex_unlock(&priv->ops_mutex);
-+
-+	return ret;
-+}
-+
-+static int ftdi_mpsse_init_pins(struct usb_interface *intf, bool low,
-+				u8 bits, u8 direction)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	int ret;
-+
-+	mutex_lock(&priv->ops_mutex);
-+
-+	if (low) {
-+		priv->gpiol_mask = bits;
-+		priv->gpiol_dir = direction;
-+	} else {
-+		priv->gpioh_mask = bits;
-+		priv->gpioh_dir = direction;
-+	}
-+	ret = ftdi_mpsse_set_port_pins(priv, low);
-+
-+	mutex_unlock(&priv->ops_mutex);
-+
-+	return ret;
-+}
-+
-+static int ftdi_mpsse_cfg_bus_pins(struct usb_interface *intf,
-+				   u8 dir_bits, u8 value_bits)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	int ret;
-+
-+	mutex_lock(&priv->ops_mutex);
-+
-+	priv->gpiol_dir &= ~7;
-+	priv->gpiol_dir |= (dir_bits & 7);
-+
-+	priv->gpiol_mask &= ~7;
-+	priv->gpiol_mask |= (value_bits & 7);
-+
-+	ret = ftdi_mpsse_set_port_pins(priv, true);
-+
-+	mutex_unlock(&priv->ops_mutex);
-+
-+	return ret;
-+}
-+
-+static int ft232h_intf_add_mpsse_gpio(struct ft232h_intf_priv *priv)
-+{
-+	struct device *dev = &priv->intf->dev;
-+	char **names, *label;
-+	int i, ret;
-+
-+	label = devm_kasprintf(dev, GFP_KERNEL, "ftdi-mpsse-gpio.%d", priv->id);
-+	if (!label)
-+		return -ENOMEM;
-+
-+	priv->mpsse_gpio.label = label;
-+	priv->mpsse_gpio.parent = dev;
-+	priv->mpsse_gpio.owner = THIS_MODULE;
-+	priv->mpsse_gpio.base = -1;
-+	priv->mpsse_gpio.ngpio = FTDI_MPSSE_GPIOS;
-+	priv->mpsse_gpio.can_sleep = true;
-+	priv->mpsse_gpio.set = ftdi_mpsse_gpio_set;
-+	priv->mpsse_gpio.get = ftdi_mpsse_gpio_get;
-+	priv->mpsse_gpio.direction_input = ftdi_mpsse_gpio_direction_input;
-+	priv->mpsse_gpio.direction_output = ftdi_mpsse_gpio_direction_output;
-+
-+	names = devm_kcalloc(dev, priv->mpsse_gpio.ngpio, sizeof(char *),
-+			     GFP_KERNEL);
-+	if (!names)
-+		return -ENOMEM;
-+
-+	names[0] = devm_kasprintf(dev, GFP_KERNEL, "mpsse.%d-CS", priv->id);
-+	if (!names[0])
-+		return -ENOMEM;
-+
-+	for (i = 1; i < priv->mpsse_gpio.ngpio; i++) {
-+		int offs;
-+
-+		offs = i < 5 ? 1 : 5;
-+		names[i] = devm_kasprintf(dev, GFP_KERNEL,
-+					  "mpsse.%d-GPIO%c%d", priv->id,
-+					  i < 5 ? 'L' : 'H', i - offs);
-+		if (!names[i])
-+			return -ENOMEM;
-+	}
-+
-+	priv->mpsse_gpio.names = (const char *const *)names;
-+
-+	ret = ftdi_set_bitmode(priv->intf, 0x00, BITMODE_MPSSE);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to set MPSSE mode\n");
-+		return ret;
-+	}
-+
-+	ret = devm_gpiochip_add_data(dev, &priv->mpsse_gpio, priv);
-+	if (ret < 0) {
-+		dev_err(dev, "Failed to add MPSSE GPIO chip: %d\n", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static void ftdi_lock(struct usb_interface *intf)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+
-+	mutex_lock(&priv->ops_mutex);
-+}
-+
-+static void ftdi_unlock(struct usb_interface *intf)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+
-+	mutex_unlock(&priv->ops_mutex);
-+}
-+
-+static const struct ft232h_intf_ops ft232h_intf_ops = {
-+	.ctrl_xfer = ftdi_ctrl_xfer,
-+	.bulk_xfer = ftdi_bulk_xfer,
-+	.read_data = ftdi_read_data,
-+	.write_data = ftdi_write_data,
-+	.lock = ftdi_lock,
-+	.unlock = ftdi_unlock,
-+	.set_bitmode = ftdi_set_bitmode,
-+	.set_baudrate = ftdi_set_baudrate,
-+	.disable_bitbang = ftdi_disable_bitbang,
-+	.init_pins = ftdi_mpsse_init_pins,
-+	.cfg_bus_pins = ftdi_mpsse_cfg_bus_pins,
-+};
-+
-+/*
-+ * FPGA config interface: FPP via FT245 FIFO
-+ */
-+#define FPP_INTF_DEVNAME	"ftdi-fifo-fpp-mgr"
-+
-+static struct dev_io_desc_data fpga_cfg_fpp_dev_io[2] = {
-+	{ "nconfig", 0, GPIO_ACTIVE_LOW },
-+	{ "conf_done", 1, GPIO_ACTIVE_HIGH },
-+};
-+
-+static const struct fifo_fpp_mgr_platform_data fpga_cfg_fpp_plat_data = {
-+	.ops = &ft232h_intf_ops,
-+	.io_data = fpga_cfg_fpp_dev_io,
-+	.io_data_len = ARRAY_SIZE(fpga_cfg_fpp_dev_io),
-+	.nconfig_num = 8,
-+	.conf_done_num = 9,
-+};
-+
-+static int ft232h_intf_fpp_probe(struct usb_interface *intf,
-+				 const void *plat_data)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	const struct fifo_fpp_mgr_platform_data *pd = plat_data;
-+	struct device *dev = &intf->dev;
-+	struct platform_device *pdev;
-+	struct gpiod_lookup_table *lookup;
-+	char *cfgdone, *ncfg, *ptr;
-+	size_t lookup_size;
-+	int i, ret, gpios = 0;
-+
-+	dev_dbg(dev, "%s: plat_data %p\n", __func__, pd);
-+	if (!pd) {
-+		dev_err(dev, "%s: Missing platform data\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	ret = ft232h_intf_add_cbus_gpio(priv);
-+	if (ret < 0)
-+		return ret;
-+
-+	lookup_size = sizeof(*lookup) + 3 * sizeof(struct gpiod_lookup);
-+	lookup = devm_kzalloc(dev, lookup_size, GFP_KERNEL);
-+	if (!lookup)
-+		return -ENOMEM;
-+
-+	lookup->dev_id = devm_kasprintf(dev, GFP_KERNEL, "%s.%d",
-+					FPP_INTF_DEVNAME, priv->id);
-+	if (!lookup->dev_id)
-+		return -ENOMEM;
-+
-+	ncfg = devm_kasprintf(dev, GFP_KERNEL, "ACBUS%d", pd->nconfig_num);
-+	if (!ncfg)
-+		return -ENOMEM;
-+
-+	cfgdone = devm_kasprintf(dev, GFP_KERNEL, "ACBUS%d", pd->conf_done_num);
-+	if (!cfgdone)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < priv->cbus_gpio.ngpio; i++) {
-+		if (!priv->cbus_gpio.names[i])
-+			continue;
-+
-+		ptr = strstr(priv->cbus_gpio.names[i], "ACBUS");
-+		if (!ptr)
-+			continue;
-+
-+		if (!strncmp(ptr, ncfg, 6)) {
-+			lookup->table[0].chip_hwnum = i;
-+			gpios++;
-+			continue;
-+		}
-+		if (!strncmp(ptr, cfgdone, 6)) {
-+			lookup->table[1].chip_hwnum = i;
-+			gpios++;
-+		}
-+	}
-+
-+	/* Does GPIO controller provide all needed ACBUS pins? */
-+	if (gpios < 2) {
-+		dev_err(dev, "Missing control GPIOs\n");
-+		return -ENODEV;
-+	}
-+
-+	for (i = 0; i < pd->io_data_len; i++) {
-+		lookup->table[i].chip_label = priv->cbus_gpio.label;
-+		lookup->table[i].idx = 0;
-+		lookup->table[i].con_id = pd->io_data[i].con_id;
-+		lookup->table[i].flags = pd->io_data[i].flags;
-+	}
-+
-+	priv->lookup_fifo = lookup;
-+	gpiod_add_lookup_table(priv->lookup_fifo);
-+
-+	pdev = platform_device_register_data(dev, FPP_INTF_DEVNAME,
-+					     priv->id, pd, sizeof(*pd));
-+	if (IS_ERR(pdev)) {
-+		gpiod_remove_lookup_table(priv->lookup_fifo);
-+		return PTR_ERR(pdev);
-+	}
-+
-+	priv->fifo_pdev = pdev;
-+
-+	dev_dbg(dev, "%s: fifo pdev %p\n", __func__, pdev);
-+	return 0;
-+}
-+
-+static int ft232h_intf_fpp_remove(struct usb_interface *intf)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	struct device *dev = &intf->dev;
-+
-+	dev_dbg(dev, "%s\n", __func__);
-+	platform_device_unregister(priv->fifo_pdev);
-+	gpiod_remove_lookup_table(priv->lookup_fifo);
-+	return 0;
-+}
-+
-+/*
-+ * FPGA config interface: PS-SPI via MPSSE
-+ */
-+#define SPI_INTF_DEVNAME	"ftdi-mpsse-spi"
-+
-+static struct dev_io_desc_data fpga_cfg_spi_dev_io[] = {
-+	{ "confd", 1, GPIO_ACTIVE_HIGH },
-+	{ "nstat", 2, GPIO_ACTIVE_LOW },
-+	{ "nconfig", 3, GPIO_ACTIVE_LOW },
-+};
-+
-+static const struct mpsse_spi_dev_data fpga_spi_dev_data[] = {
-+	{
-+	.magic		= FTDI_MPSSE_IO_DESC_MAGIC,
-+	.desc		= fpga_cfg_spi_dev_io,
-+	.desc_len	= ARRAY_SIZE(fpga_cfg_spi_dev_io),
-+	},
-+};
-+
-+static struct spi_board_info fpga_cfg_spi_info[] = {
-+	{
-+	.modalias	= "fpga-passive-serial",
-+	.mode		= SPI_MODE_0 | SPI_LSB_FIRST,
-+	.max_speed_hz	= 30000000,
-+	.bus_num	= 0,
-+	.chip_select	= 0,
-+	.platform_data	= fpga_spi_dev_data,
-+	},
-+};
-+
-+static const struct mpsse_spi_platform_data fpga_cfg_spi_plat_data = {
-+	.ops		= &ft232h_intf_ops,
-+	.spi_info	= fpga_cfg_spi_info,
-+	.spi_info_len	= ARRAY_SIZE(fpga_cfg_spi_info),
-+};
-+
-+static struct platform_device *mpsse_dev_register(struct ft232h_intf_priv *priv,
-+				const struct mpsse_spi_platform_data *pd)
-+{
-+	struct device *parent = &priv->intf->dev;
-+	struct platform_device *pdev;
-+	struct gpiod_lookup_table *lookup;
-+	size_t lookup_size, tbl_size;
-+	int i, ret;
-+
-+	pdev = platform_device_alloc(SPI_INTF_DEVNAME, 0);
-+	if (!pdev)
-+		return NULL;
-+
-+	pdev->dev.parent = parent;
-+	pdev->dev.fwnode = NULL;
-+	priv->spi_pdev = pdev;
-+
-+	tbl_size = pd->spi_info_len + 1;
-+	lookup_size = sizeof(*lookup) + tbl_size * sizeof(struct gpiod_lookup);
-+	lookup = devm_kzalloc(parent, lookup_size, GFP_KERNEL);
-+	if (!lookup) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
-+	for (i = 0; i < pd->spi_info_len; i++) {
-+		dev_dbg(parent, "INFO: %s cs %d\n",
-+			pd->spi_info[i].modalias, pd->spi_info[i].chip_select);
-+	}
-+
-+	ret = platform_device_add_data(pdev, pd, sizeof(*pd));
-+	if (ret)
-+		goto err;
-+
-+	pdev->id = priv->id;
-+
-+	ret = ft232h_intf_add_mpsse_gpio(priv);
-+	if (ret < 0)
-+		goto err;
-+
-+	lookup->dev_id = devm_kasprintf(parent, GFP_KERNEL, "%s.%d",
-+					pdev->name, pdev->id);
-+	if (!lookup->dev_id) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
-+	for (i = 0; i < pd->spi_info_len; i++) {
-+		lookup->table[i].chip_label = priv->mpsse_gpio.label;
-+		lookup->table[i].chip_hwnum = pd->spi_info[i].chip_select;
-+		lookup->table[i].idx = i;
-+		lookup->table[i].con_id = NULL;
-+		if (pd->spi_info[i].mode & SPI_CS_HIGH)
-+			lookup->table[i].flags = GPIO_ACTIVE_HIGH;
-+		else
-+			lookup->table[i].flags = GPIO_ACTIVE_LOW;
-+	}
-+
-+	priv->lookup_cs = lookup;
-+	gpiod_add_lookup_table(priv->lookup_cs);
-+
-+	ret = platform_device_add(pdev);
-+	if (ret < 0)
-+		goto err_add;
-+
-+	dev_dbg(&pdev->dev, "%s done\n", __func__);
-+	return pdev;
-+
-+err_add:
-+	gpiod_remove_lookup_table(priv->lookup_cs);
-+err:
-+	platform_device_put(pdev);
-+	return ERR_PTR(ret);
-+}
-+
-+static int ft232h_intf_spi_probe(struct usb_interface *intf,
-+				 const void *plat_data)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	struct device *dev = &intf->dev;
-+	struct platform_device *pdev;
-+
-+	pdev = mpsse_dev_register(priv, plat_data);
-+	if (IS_ERR(pdev)) {
-+		dev_err(dev, "%s: Can't create MPSSE SPI device %ld\n",
-+			__func__, PTR_ERR(pdev));
-+		return PTR_ERR(pdev);
-+	}
-+
-+	priv->spi_pdev = pdev;
-+	return 0;
-+}
-+
-+static int ft232h_intf_spi_remove(struct usb_interface *intf)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	struct device *dev = &intf->dev;
-+
-+	dev_dbg(dev, "%s: spi pdev %p\n", __func__, priv->spi_pdev);
-+	gpiod_remove_lookup_table(priv->lookup_cs);
-+	platform_device_unregister(priv->spi_pdev);
-+	return 0;
-+}
-+
-+static const struct ft232h_intf_info fpga_cfg_spi_intf_info = {
-+	.probe  = ft232h_intf_spi_probe,
-+	.remove  = ft232h_intf_spi_remove,
-+	.plat_data  = &fpga_cfg_spi_plat_data,
-+};
-+
-+static const struct ft232h_intf_info fpga_cfg_fifo_intf_info = {
-+	.probe = ft232h_intf_fpp_probe,
-+	.remove = ft232h_intf_fpp_remove,
-+	.plat_data = &fpga_cfg_fpp_plat_data,
-+};
-+
-+static int ft232h_intf_probe(struct usb_interface *intf,
-+			     const struct usb_device_id *id)
-+{
-+	struct ft232h_intf_priv *priv;
-+	struct device *dev = &intf->dev;
-+	struct usb_host_interface *iface_desc;
-+	struct usb_endpoint_descriptor *endpoint;
-+	const struct ft232h_intf_info *info;
-+	unsigned int i;
-+	int ret = 0;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	iface_desc = intf->cur_altsetting;
-+
-+	for (i = 0; i < iface_desc->desc.bNumEndpoints; i++) {
-+		endpoint = &iface_desc->endpoint[i].desc;
-+
-+		if (usb_endpoint_is_bulk_out(endpoint))
-+			priv->bulk_out = endpoint->bEndpointAddress;
-+
-+		if (usb_endpoint_is_bulk_in(endpoint)) {
-+			priv->bulk_in = endpoint->bEndpointAddress;
-+			priv->bulk_in_sz = usb_endpoint_maxp(endpoint);
-+		}
-+	}
-+
-+	priv->usb_dev_id = id;
-+	priv->index = 1;
-+	priv->intf = intf;
-+	priv->info = (struct ft232h_intf_info *)id->driver_info;
-+
-+	info = priv->info;
-+	if (!info) {
-+		dev_err(dev, "Missing device specific driver info...\n");
-+		return -ENODEV;
-+	}
-+
-+	mutex_init(&priv->io_mutex);
-+	mutex_init(&priv->ops_mutex);
-+	usb_set_intfdata(intf, priv);
-+
-+	priv->bulk_in_buf = devm_kmalloc(dev, priv->bulk_in_sz, GFP_KERNEL);
-+	if (!priv->bulk_in_buf)
-+		return -ENOMEM;
-+
-+	priv->udev = usb_get_dev(interface_to_usbdev(intf));
-+
-+	priv->id = ida_simple_get(&ftdi_devid_ida, 0, 0, GFP_KERNEL);
-+	if (priv->id < 0)
-+		return priv->id;
-+
-+	if (info->probe) {
-+		ret = info->probe(intf, info->plat_data);
-+		if (ret < 0)
-+			goto err;
-+		return 0;
-+	}
-+
-+	/* for simple GPIO-only devices */
-+	ret = -ENODEV;
-+	if (info->use_cbus_gpio_ctrl)
-+		ret = ft232h_intf_add_cbus_gpio(priv);
-+	else if (info->use_mpsse_gpio_ctrl)
-+		ret = ft232h_intf_add_mpsse_gpio(priv);
-+	if (!ret)
-+		return 0;
-+err:
-+	ida_simple_remove(&ftdi_devid_ida, priv->id);
-+	return ret;
-+}
-+
-+static void ft232h_intf_disconnect(struct usb_interface *intf)
-+{
-+	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
-+	const struct ft232h_intf_info *info;
-+
-+	info = (struct ft232h_intf_info *)priv->usb_dev_id->driver_info;
-+	if (info && info->remove)
-+		info->remove(intf);
-+
-+	if (info->use_mpsse_gpio_ctrl)
-+		gpiochip_remove(&priv->mpsse_gpio);
-+
-+	if (info->use_cbus_gpio_ctrl)
-+		gpiochip_remove(&priv->cbus_gpio);
-+
-+	mutex_lock(&priv->io_mutex);
-+	priv->intf = NULL;
-+	usb_set_intfdata(intf, NULL);
-+	mutex_unlock(&priv->io_mutex);
-+
-+	usb_put_dev(priv->udev);
-+	ida_simple_remove(&ftdi_devid_ida, priv->id);
-+}
-+
-+#define FTDI_VID			0x0403
-+#define ARRI_FPP_INTF_PRODUCT_ID	0x7148
-+#define ARRI_SPI_INTF_PRODUCT_ID	0x7149
-+
-+static struct usb_device_id ft232h_intf_table[] = {
-+	{ USB_DEVICE(FTDI_VID, ARRI_FPP_INTF_PRODUCT_ID),
-+		.driver_info = (kernel_ulong_t)&fpga_cfg_fifo_intf_info },
-+	{ USB_DEVICE(FTDI_VID, ARRI_SPI_INTF_PRODUCT_ID),
-+		.driver_info = (kernel_ulong_t)&fpga_cfg_spi_intf_info },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(usb, ft232h_intf_table);
-+
-+static struct usb_driver ft232h_intf_driver = {
-+	.name		= KBUILD_MODNAME,
-+	.id_table	= ft232h_intf_table,
-+	.probe		= ft232h_intf_probe,
-+	.disconnect	= ft232h_intf_disconnect,
-+};
-+
-+module_usb_driver(ft232h_intf_driver);
-+
-+MODULE_ALIAS("ft232h-intf");
-+MODULE_AUTHOR("Anatolij Gustschin <agust@denx.de>");
-+MODULE_DESCRIPTION("FT232H to FPGA interface driver");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/usb/ft232h-intf.h b/include/linux/usb/ft232h-intf.h
-new file mode 100644
-index 000000000000..7e6857263db2
---- /dev/null
-+++ b/include/linux/usb/ft232h-intf.h
-@@ -0,0 +1,206 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Common definitions for FTDI FT232H interface device
-+ *
-+ * Copyright (C) 2017 - 2018 DENX Software Engineering
-+ * Anatolij Gustschin <agust@denx.de>
-+ */
-+
-+#ifndef __LINUX_FT232H_INTF_H
-+#define __LINUX_FT232H_INTF_H
-+
-+/* Used FTDI USB Requests */
-+#define FTDI_SIO_RESET_REQUEST		0x00
-+#define FTDI_SIO_SET_BAUDRATE_REQUEST	0x03
-+#define FTDI_SIO_SET_BITMODE_REQUEST	0x0B
-+#define FTDI_SIO_READ_PINS_REQUEST	0x0C
-+#define FTDI_SIO_READ_EEPROM_REQUEST	0x90
-+
-+/* MPSSE Commands */
-+#define TX_BYTES_RE_MSB		0x10 /* tx on +ve clk (rising edge) */
-+#define TX_BYTES_FE_MSB		0x11 /* tx on -ve clk (falling edge) */
-+#define RX_BYTES_RE_MSB		0x20
-+#define RX_BYTES_FE_MSB		0x24
-+#define TXF_RXR_BYTES_MSB	0x31 /* tx on -ve clk, rx on +ve */
-+#define TXR_RXF_BYTES_MSB	0x34 /* tx on +ve clk, rx on -ve */
-+
-+#define TX_BYTES_RE_LSB		0x18 /* tx on +ve clk */
-+#define TX_BYTES_FE_LSB		0x19 /* tx on -ve clk */
-+#define RX_BYTES_RE_LSB		0x28
-+#define RX_BYTES_FE_LSB		0x2C
-+#define TXF_RXR_BYTES_LSB	0x39 /* tx on -ve clk, rx on +ve */
-+#define TXR_RXF_BYTES_LSB	0x3C /* tx on +ve clk, rx on -ve */
-+
-+#define LOOPBACK_ON		0x84
-+#define LOOPBACK_OFF		0x85
-+#define TCK_DIVISOR		0x86
-+#define DIS_DIV_5		0x8A
-+#define EN_DIV_5		0x8B
-+#define EN_3_PHASE		0x8C
-+#define DIS_3_PHASE		0x8D
-+#define DIS_ADAPTIVE		0x97
-+
-+/* For EEPROM I/O mode */
-+#define FTDI_MAX_EEPROM_SIZE	256
-+#define FTDI_232H_CBUS_IOMODE	0x08
-+
-+#define FTDI_USB_READ_TIMEOUT	5000
-+#define FTDI_USB_WRITE_TIMEOUT	5000
-+
-+/* Total number of MPSSE GPIOs: 4x GPIOL, 8x GPIOH, 1x CS on ADBUS3 */
-+#define FTDI_MPSSE_GPIOS	13
-+
-+/* MPSSE bitbang modes (copied from libftdi) */
-+enum ftdi_mpsse_mode {
-+	BITMODE_RESET	= 0x00,	/* switch off bitbang mode */
-+	BITMODE_BITBANG	= 0x01,	/* asynchronous bitbang mode */
-+	BITMODE_MPSSE	= 0x02,	/* MPSSE mode, on 2232x chips */
-+	BITMODE_SYNCBB	= 0x04,	/* synchronous bitbang mode  */
-+	BITMODE_MCU	= 0x08,	/* MCU Host Bus Emulation mode */
-+				/* CPU-style fifo mode gets set via EEPROM */
-+	BITMODE_OPTO	= 0x10,	/* Fast Opto-Isolated Serial Interface Mode */
-+	BITMODE_CBUS	= 0x20,	/* Bitbang on CBUS pins, EEPROM config needed */
-+	BITMODE_SYNCFF	= 0x40,	/* Single Channel Synchronous FIFO mode */
-+	BITMODE_FT1284	= 0x80,	/* FT1284 mode, available on 232H chips */
-+};
-+
-+struct ctrl_desc {
-+	unsigned int dir_out;
-+	u8 request;
-+	u8 requesttype;
-+	u16 value;
-+	u16 index;
-+	u16 size;
-+	void *data;
-+	int timeout;
-+};
-+
-+struct bulk_desc {
-+	unsigned int dir_out;
-+	void *data;
-+	int len;
-+	int act_len;
-+	int timeout;
-+};
-+
-+/*
-+ * struct ft232h_intf_ops - FT232H interface operations for upper drivers
-+ *
-+ * @bulk_xfer: FTDI USB bulk transfer
-+ * @ctrl_xfer: FTDI USB control transfer
-+ * @read_data: read 'len' bytes from FTDI device to the given buffer
-+ * @write_data: write 'len' bytes from the given buffer to the FTDI device
-+ * @lock: lock the interface for an operation sequence. Used when multiple
-+ *	  command and/or data operations must be executed in a specific order
-+ *	  (when other intermediate command/data transfers may not interfere)
-+ * @unlock: unlock the previously locked interface
-+ * @set_bitmode: configure FTDI bit mode
-+ * @set_baudrate: configure FTDI baudrate
-+ * @disable_bitbang: turn off bitbang mode
-+ * @init_pins: initialize GPIOL/GPIOH port pins in MPSSE mode
-+ * @cfg_bus_pins: configure MPSSE SPI bus pins
-+ *
-+ * Common FT232H interface USB xfer and device configuration operations used
-+ * in FIFO-FPP, MPSSE-SPI or MPSSE-I2C drivers. Many of them are like FTDI
-+ * protocol functions, which I mainly borrowed from libftdi
-+ */
-+struct ft232h_intf_ops {
-+	int (*bulk_xfer)(struct usb_interface *intf, struct bulk_desc *desc);
-+	int (*ctrl_xfer)(struct usb_interface *intf, struct ctrl_desc *desc);
-+	int (*read_data)(struct usb_interface *intf, void *buf, size_t len);
-+	int (*write_data)(struct usb_interface *intf, const char *buf,
-+			  size_t len);
-+	void (*lock)(struct usb_interface *intf);
-+	void (*unlock)(struct usb_interface *intf);
-+	int (*set_bitmode)(struct usb_interface *intf, unsigned char bitmask,
-+			   unsigned char mode);
-+	int (*set_baudrate)(struct usb_interface *intf, int baudrate);
-+	int (*disable_bitbang)(struct usb_interface *intf);
-+	int (*init_pins)(struct usb_interface *intf, bool low, u8 bits, u8 dir);
-+	int (*cfg_bus_pins)(struct usb_interface *intf, u8 dir_bits,
-+			    u8 value_bits);
-+};
-+
-+/*
-+ * struct dev_io_desc_data - Descriptor of FT232H pin used by attached device
-+ * @con_id: Name of the GPIO pin
-+ * @idx: Index of the pin
-+ * @flags: GPIOD flags of the pin
-+ *
-+ * Description of a GPIO used by device connected to FT232H
-+ */
-+struct dev_io_desc_data {
-+	const char *con_id;
-+	unsigned int idx;
-+	unsigned int flags;
-+};
-+
-+/*
-+ * struct fifo_fpp_mgr_platform_data - FIFO/FPP device platform data
-+ * @ops: USB interface operations used in FPP manager driver
-+ * @io_data: Array with descriptors of used I/O pins
-+ * @io_data_len: Length of io_data array
-+ * @nconfig_num: ACBUS pin number of the NCONFIG pin
-+ * @conf_done_num: ACBUS pin number of the CONF_DONE pin
-+ *
-+ * FIFO/FPP fpga manager specific platform data
-+ */
-+struct fifo_fpp_mgr_platform_data {
-+	const struct ft232h_intf_ops *ops;
-+	struct dev_io_desc_data *io_data;
-+	size_t io_data_len;
-+	int nconfig_num;
-+	int conf_done_num;
-+};
-+
-+#define FTDI_MPSSE_IO_DESC_MAGIC	0x5345494F
-+/*
-+ * struct mpsse_spi_dev_data - MPSSE SPI device platform data
-+ * @magic: Special # indicating that this is a I/O descriptor struct
-+ * @io_data: Array with descriptors of used I/O pins
-+ * @io_data_len: Length of io_data array
-+ *
-+ * MPSSE SPI slave specific platform data describing additional
-+ * I/O pins (if any) of attached SPI slave. It is supposed to be
-+ * passed via .platform_data of spi_board_info struct.
-+ * To differentiate between MPSSE I/O descriptor data and other
-+ * driver-specific platform data we use FTDI_MPSSE_IO_DESC_MAGIC
-+ * in the header of this struct
-+ */
-+struct mpsse_spi_dev_data {
-+	u32 magic;
-+	struct dev_io_desc_data *desc;
-+	size_t desc_len;
-+};
-+
-+/*
-+ * struct mpsse_spi_platform_data - MPSSE SPI bus platform data
-+ * @ops: USB interface operations used in MPSSE SPI controller driver
-+ * @spi_info: Array with spi_board_info structures of attached SPI slaves
-+ * @spi_info_len: Length of spi_info array
-+ *
-+ * MPSSE SPI bus specific platform data describing attached SPI slaves
-+ * and optionally their additional I/O pins (.platform_data of spi_info)
-+ */
-+struct mpsse_spi_platform_data {
-+	const struct ft232h_intf_ops *ops;
-+	struct spi_board_info *spi_info;
-+	size_t spi_info_len;
-+};
-+
-+/*
-+ * Value HIGH. rate is 12000000 / ((1 + value) * 2)
-+ */
-+static inline int div_value(int rate)
-+{
-+	int r;
-+
-+	if (rate >= 6000000)
-+		return 0;
-+	r = 6000000 / rate - 1;
-+	if (r < 0xffff)
-+		return r;
-+	return 0xffff;
-+}
-+
-+#endif /* __LINUX_FT232H_INTF_H */
--- 
-2.17.1
+--PNTmBPCT7hxwcZjr
+Content-Type: application/gzip
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
+
+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
+KCGEAQA=
+
+--PNTmBPCT7hxwcZjr--
