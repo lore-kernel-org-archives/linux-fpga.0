@@ -1,715 +1,350 @@
-Return-Path: <SRS0=c20E=Q4=denx.de=agust@kernel.org>
-Return-Path: <SRS0=c20E=Q4=denx.de=agust@kernel.org>
-From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v4 2/3] spi: add FTDI MPSSE SPI controller driver
-Date: Thu, 21 Feb 2019 21:25:05 +0100
-Message-Id: <20190221202506.17744-3-agust@denx.de>
-In-Reply-To: <20190221202506.17744-1-agust@denx.de>
-References: <20190221202506.17744-1-agust@denx.de>
-To: linux-usb@vger.kernel.org, linux-spi@vger.kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, broonie@kernel.org, atull@kernel.org, mdf@kernel.org
+Return-Path: <SRS0=i9uM=QU=intel.com=ira.weiny@kernel.org>
+Return-Path: <SRS0=i9uM=QU=intel.com=ira.weiny@kernel.org>
+From: ira.weiny@intel.com
+Subject: [PATCH V2 1/7] mm/gup: Replace get_user_pages_longterm() with FOLL_LONGTERM
+Date: Wed, 13 Feb 2019 15:04:49 -0800
+Message-Id: <20190213230455.5605-2-ira.weiny@intel.com>
+In-Reply-To: <20190213230455.5605-1-ira.weiny@intel.com>
+References: <20190211201643.7599-1-ira.weiny@intel.com>
+ <20190213230455.5605-1-ira.weiny@intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, kvm@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, linux-media@vger.kernel.org, linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-mm@kvack.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com
+Cc: Ira Weiny <ira.weiny@intel.com>, John Hubbard <jhubbard@nvidia.com>, David Hildenbrand <david@redhat.com>, Cornelia Huck <cohuck@redhat.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Joerg Roedel <joro@8bytes.org>, Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Jason Gunthorpe <jgg@ziepe.ca>, Dennis Dalessandro <dennis.dalessandro@intel.com>, Christian Benvenuti <benve@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Matt Porter <mporter@kernel.crashing.org>, Alexandre Bounine <alex.bou9@gmail.com>, =?UTF-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Rob Springer <rspringer@google.com>, Todd Poynor <toddpoynor@google.com>, Ben Chan <benchan@chromium.org>, Jens Wiklander <jens.wiklander@linaro.org>, Alex Williamson <alex.williamson@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefano Stabellini <sstabellini@kernel.org>, Martin Brandenburg <martin@omnibond.com>, Peter Zijlstra <peterz@infradead.org>, Alexander Viro <viro@zeniv.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add SPI bus controller driver for FTDI MPSSE mode. This driver
-is supposed to be used together with the FT232H interface driver
-for FPGA configuration in drivers/usb/misc/ft232h-intf.c which
-adds an mpsse spi platform device describing USB SPI bus with
-attached SPI slave devices.
+From: Ira Weiny <ira.weiny@intel.com>
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Rather than have a separate get_user_pages_longterm() call,
+introduce FOLL_LONGTERM and change the longterm callers to use
+it.
+
+This patch does not change any functionality.
+
+FOLL_LONGTERM can only be supported with get_user_pages() as it
+requires vmas to determine if DAX is in use.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/spi/Kconfig          |   7 +
- drivers/spi/Makefile         |   1 +
- drivers/spi/spi-ftdi-mpsse.c | 651 +++++++++++++++++++++++++++++++++++
- 3 files changed, 659 insertions(+)
- create mode 100644 drivers/spi/spi-ftdi-mpsse.c
+ drivers/infiniband/core/umem.c             |   5 +-
+ drivers/infiniband/hw/qib/qib_user_pages.c |   8 +-
+ drivers/infiniband/hw/usnic/usnic_uiom.c   |   9 +-
+ drivers/media/v4l2-core/videobuf-dma-sg.c  |   6 +-
+ drivers/vfio/vfio_iommu_type1.c            |   3 +-
+ include/linux/mm.h                         |  13 +-
+ mm/gup.c                                   | 138 ++++++++++++---------
+ mm/gup_benchmark.c                         |   5 +-
+ 8 files changed, 101 insertions(+), 86 deletions(-)
 
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index f761655e2a36..38015574e2dc 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -289,6 +289,13 @@ config SPI_NXP_FLEXSPI
- 	  This controller does not support generic SPI messages and only
- 	  supports the high-level SPI memory interface.
+diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
+index b69d3efa8712..120a40df91b4 100644
+--- a/drivers/infiniband/core/umem.c
++++ b/drivers/infiniband/core/umem.c
+@@ -185,10 +185,11 @@ struct ib_umem *ib_umem_get(struct ib_udata *udata, unsigned long addr,
  
-+config SPI_FTDI_MPSSE
-+	tristate "FTDI MPSSE SPI controller"
-+	depends on USB_FT232H_INTF || COMPILE_TEST
-+	help
-+	  FT232H supports SPI in MPSSE mode. This driver provides MPSSE
-+	  SPI controller in master mode.
+ 	while (npages) {
+ 		down_read(&mm->mmap_sem);
+-		ret = get_user_pages_longterm(cur_base,
++		ret = get_user_pages(cur_base,
+ 				     min_t(unsigned long, npages,
+ 					   PAGE_SIZE / sizeof (struct page *)),
+-				     gup_flags, page_list, vma_list);
++				     gup_flags | FOLL_LONGTERM,
++				     page_list, vma_list);
+ 		if (ret < 0) {
+ 			up_read(&mm->mmap_sem);
+ 			goto umem_release;
+diff --git a/drivers/infiniband/hw/qib/qib_user_pages.c b/drivers/infiniband/hw/qib/qib_user_pages.c
+index ef8bcf366ddc..1b9368261035 100644
+--- a/drivers/infiniband/hw/qib/qib_user_pages.c
++++ b/drivers/infiniband/hw/qib/qib_user_pages.c
+@@ -114,10 +114,10 @@ int qib_get_user_pages(unsigned long start_page, size_t num_pages,
+ 
+ 	down_read(&current->mm->mmap_sem);
+ 	for (got = 0; got < num_pages; got += ret) {
+-		ret = get_user_pages_longterm(start_page + got * PAGE_SIZE,
+-					      num_pages - got,
+-					      FOLL_WRITE | FOLL_FORCE,
+-					      p + got, NULL);
++		ret = get_user_pages(start_page + got * PAGE_SIZE,
++				     num_pages - got,
++				     FOLL_LONGTERM | FOLL_WRITE | FOLL_FORCE,
++				     p + got, NULL);
+ 		if (ret < 0) {
+ 			up_read(&current->mm->mmap_sem);
+ 			goto bail_release;
+diff --git a/drivers/infiniband/hw/usnic/usnic_uiom.c b/drivers/infiniband/hw/usnic/usnic_uiom.c
+index 06862a6af185..1d9a182ac163 100644
+--- a/drivers/infiniband/hw/usnic/usnic_uiom.c
++++ b/drivers/infiniband/hw/usnic/usnic_uiom.c
+@@ -143,10 +143,11 @@ static int usnic_uiom_get_pages(unsigned long addr, size_t size, int writable,
+ 	ret = 0;
+ 
+ 	while (npages) {
+-		ret = get_user_pages_longterm(cur_base,
+-					min_t(unsigned long, npages,
+-					PAGE_SIZE / sizeof(struct page *)),
+-					gup_flags, page_list, NULL);
++		ret = get_user_pages(cur_base,
++				     min_t(unsigned long, npages,
++				     PAGE_SIZE / sizeof(struct page *)),
++				     gup_flags | FOLL_LONGTERM,
++				     page_list, NULL);
+ 
+ 		if (ret < 0)
+ 			goto out;
+diff --git a/drivers/media/v4l2-core/videobuf-dma-sg.c b/drivers/media/v4l2-core/videobuf-dma-sg.c
+index 08929c087e27..870a2a526e0b 100644
+--- a/drivers/media/v4l2-core/videobuf-dma-sg.c
++++ b/drivers/media/v4l2-core/videobuf-dma-sg.c
+@@ -186,12 +186,12 @@ static int videobuf_dma_init_user_locked(struct videobuf_dmabuf *dma,
+ 	dprintk(1, "init user [0x%lx+0x%lx => %d pages]\n",
+ 		data, size, dma->nr_pages);
+ 
+-	err = get_user_pages_longterm(data & PAGE_MASK, dma->nr_pages,
+-			     flags, dma->pages, NULL);
++	err = get_user_pages(data & PAGE_MASK, dma->nr_pages,
++			     flags | FOLL_LONGTERM, dma->pages, NULL);
+ 
+ 	if (err != dma->nr_pages) {
+ 		dma->nr_pages = (err >= 0) ? err : 0;
+-		dprintk(1, "get_user_pages_longterm: err=%d [%d]\n", err,
++		dprintk(1, "get_user_pages: err=%d [%d]\n", err,
+ 			dma->nr_pages);
+ 		return err < 0 ? err : -EINVAL;
+ 	}
+diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type1.c
+index 73652e21efec..1500bd0bb6da 100644
+--- a/drivers/vfio/vfio_iommu_type1.c
++++ b/drivers/vfio/vfio_iommu_type1.c
+@@ -351,7 +351,8 @@ static int vaddr_get_pfn(struct mm_struct *mm, unsigned long vaddr,
+ 
+ 	down_read(&mm->mmap_sem);
+ 	if (mm == current->mm) {
+-		ret = get_user_pages_longterm(vaddr, 1, flags, page, vmas);
++		ret = get_user_pages(vaddr, 1, flags | FOLL_LONGTERM, page,
++				     vmas);
+ 	} else {
+ 		ret = get_user_pages_remote(NULL, mm, vaddr, 1, flags, page,
+ 					    vmas, NULL);
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 80bb6408fe73..05a105d9d4c3 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1536,18 +1536,6 @@ long get_user_pages_locked(unsigned long start, unsigned long nr_pages,
+ 		    unsigned int gup_flags, struct page **pages, int *locked);
+ long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
+ 		    struct page **pages, unsigned int gup_flags);
+-#ifdef CONFIG_FS_DAX
+-long get_user_pages_longterm(unsigned long start, unsigned long nr_pages,
+-			    unsigned int gup_flags, struct page **pages,
+-			    struct vm_area_struct **vmas);
+-#else
+-static inline long get_user_pages_longterm(unsigned long start,
+-		unsigned long nr_pages, unsigned int gup_flags,
+-		struct page **pages, struct vm_area_struct **vmas)
+-{
+-	return get_user_pages(start, nr_pages, gup_flags, pages, vmas);
+-}
+-#endif /* CONFIG_FS_DAX */
+ 
+ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages);
+@@ -2615,6 +2603,7 @@ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
+ #define FOLL_REMOTE	0x2000	/* we are working on non-current tsk/mm */
+ #define FOLL_COW	0x4000	/* internal GUP flag */
+ #define FOLL_ANON	0x8000	/* don't do file mappings */
++#define FOLL_LONGTERM	0x10000	/* mapping is intended for a long term pin */
+ 
+ static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
+ {
+diff --git a/mm/gup.c b/mm/gup.c
+index b63e88eca31b..ee96eaff118c 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -1109,87 +1109,109 @@ long get_user_pages_remote(struct task_struct *tsk, struct mm_struct *mm,
+ }
+ EXPORT_SYMBOL(get_user_pages_remote);
+ 
+-/*
+- * This is the same as get_user_pages_remote(), just with a
+- * less-flexible calling convention where we assume that the task
+- * and mm being operated on are the current task's and don't allow
+- * passing of a locked parameter.  We also obviously don't pass
+- * FOLL_REMOTE in here.
+- */
+-long get_user_pages(unsigned long start, unsigned long nr_pages,
+-		unsigned int gup_flags, struct page **pages,
+-		struct vm_area_struct **vmas)
+-{
+-	return __get_user_pages_locked(current, current->mm, start, nr_pages,
+-				       pages, vmas, NULL,
+-				       gup_flags | FOLL_TOUCH);
+-}
+-EXPORT_SYMBOL(get_user_pages);
+-
+ #ifdef CONFIG_FS_DAX
+ /*
+- * This is the same as get_user_pages() in that it assumes we are
+- * operating on the current task's mm, but it goes further to validate
+- * that the vmas associated with the address range are suitable for
+- * longterm elevated page reference counts. For example, filesystem-dax
+- * mappings are subject to the lifetime enforced by the filesystem and
+- * we need guarantees that longterm users like RDMA and V4L2 only
+- * establish mappings that have a kernel enforced revocation mechanism.
++ * __gup_longterm_locked() is a wrapper for __get_uer_pages_locked which
++ * allows us to process the FOLL_LONGTERM flag if present.
++ *
++ * __gup_longterm_locked() validates that the vmas associated with the address
++ * range are suitable for longterm elevated page reference counts. For example,
++ * filesystem-dax mappings are subject to the lifetime enforced by the
++ * filesystem and we need guarantees that longterm users like RDMA and V4L2
++ * only establish mappings that have a kernel enforced revocation mechanism.
+  *
+  * "longterm" == userspace controlled elevated page count lifetime.
+  * Contrast this to iov_iter_get_pages() usages which are transient.
+  */
+-long get_user_pages_longterm(unsigned long start, unsigned long nr_pages,
+-		unsigned int gup_flags, struct page **pages,
+-		struct vm_area_struct **vmas_arg)
++static __always_inline long __gup_longterm_locked(struct task_struct *tsk,
++						  struct mm_struct *mm,
++						  unsigned long start,
++						  unsigned long nr_pages,
++						  struct page **pages,
++						  struct vm_area_struct **vmas,
++						  unsigned int flags)
+ {
+-	struct vm_area_struct **vmas = vmas_arg;
++	struct vm_area_struct **vmas_tmp = vmas;
+ 	struct vm_area_struct *vma_prev = NULL;
+ 	long rc, i;
+ 
+-	if (!pages)
+-		return -EINVAL;
+-
+-	if (!vmas) {
+-		vmas = kcalloc(nr_pages, sizeof(struct vm_area_struct *),
+-			       GFP_KERNEL);
+-		if (!vmas)
+-			return -ENOMEM;
++	if (flags & FOLL_LONGTERM) {
++		if (!pages)
++			return -EINVAL;
 +
- config SPI_GPIO
- 	tristate "GPIO-based bitbanging SPI Master"
- 	depends on GPIOLIB || COMPILE_TEST
-diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
-index d8fc03c9faa2..2a1fd2c4d2bd 100644
---- a/drivers/spi/Makefile
-+++ b/drivers/spi/Makefile
-@@ -47,6 +47,7 @@ obj-$(CONFIG_SPI_FSL_ESPI)		+= spi-fsl-espi.o
- obj-$(CONFIG_SPI_FSL_LPSPI)		+= spi-fsl-lpspi.o
- obj-$(CONFIG_SPI_FSL_QUADSPI)		+= spi-fsl-qspi.o
- obj-$(CONFIG_SPI_FSL_SPI)		+= spi-fsl-spi.o
-+obj-$(CONFIG_SPI_FTDI_MPSSE)		+= spi-ftdi-mpsse.o
- obj-$(CONFIG_SPI_GPIO)			+= spi-gpio.o
- obj-$(CONFIG_SPI_IMG_SPFI)		+= spi-img-spfi.o
- obj-$(CONFIG_SPI_IMX)			+= spi-imx.o
-diff --git a/drivers/spi/spi-ftdi-mpsse.c b/drivers/spi/spi-ftdi-mpsse.c
-new file mode 100644
-index 000000000000..ae8442eb4052
---- /dev/null
-+++ b/drivers/spi/spi-ftdi-mpsse.c
-@@ -0,0 +1,651 @@
-+// SPDX-License-Identifier: GPL-2.0
-+//
-+// FTDI FT232H MPSSE SPI controller driver
-+//
-+// Copyright (C) 2017 - 2018 DENX Software Engineering
-+// Anatolij Gustschin <agust@denx.de>
-+//
-+
-+#include <linux/bits.h>
-+#include <linux/delay.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/gpio/machine.h>
-+#include <linux/platform_device.h>
-+#include <linux/printk.h>
-+#include <linux/slab.h>
-+#include <linux/spi/spi.h>
-+#include <linux/types.h>
-+#include <linux/sizes.h>
-+#include <linux/usb.h>
-+#include <linux/usb/ft232h-intf.h>
-+
-+enum gpiol {
-+	MPSSE_SK	= BIT(0),
-+	MPSSE_DO	= BIT(1),
-+	MPSSE_DI	= BIT(2),
-+	MPSSE_CS	= BIT(3),
-+};
-+
-+struct ftdi_spi {
-+	struct platform_device *pdev;
-+	struct usb_interface *intf;
-+	struct spi_controller *master;
-+	const struct ft232h_intf_ops *iops;
-+	struct gpiod_lookup_table *lookup[FTDI_MPSSE_GPIOS];
-+	struct gpio_desc **cs_gpios;
-+
-+	u8 txrx_cmd;
-+	u8 rx_cmd;
-+	u8 tx_cmd;
-+	u8 xfer_buf[SZ_64K];
-+	u16 last_mode;
-+};
-+
-+static void ftdi_spi_set_cs(struct spi_device *spi, bool enable)
-+{
-+	struct ftdi_spi *priv = spi_controller_get_devdata(spi->master);
-+	u16 cs = spi->chip_select;
-+
-+	dev_dbg(&priv->pdev->dev, "%s: CS %u, cs mode %d, val %d\n",
-+		__func__, cs, (spi->mode & SPI_CS_HIGH), enable);
-+
-+	gpiod_set_raw_value_cansleep(priv->cs_gpios[cs], enable);
-+}
-+
-+static inline u8 ftdi_spi_txrx_byte_cmd(struct spi_device *spi)
-+{
-+	u8 mode = spi->mode & (SPI_CPOL | SPI_CPHA);
-+	u8 cmd;
-+
-+	if (spi->mode & SPI_LSB_FIRST) {
-+		switch (mode) {
-+		case SPI_MODE_0:
-+		case SPI_MODE_1:
-+			cmd = TXF_RXR_BYTES_LSB;
-+			break;
-+		case SPI_MODE_2:
-+		case SPI_MODE_3:
-+			cmd = TXR_RXF_BYTES_LSB;
-+			break;
++		if (!vmas_tmp) {
++			vmas_tmp = kcalloc(nr_pages,
++					   sizeof(struct vm_area_struct *),
++					   GFP_KERNEL);
++			if (!vmas_tmp)
++				return -ENOMEM;
 +		}
-+	} else {
-+		switch (mode) {
-+		case SPI_MODE_0:
-+		case SPI_MODE_1:
-+			cmd = TXF_RXR_BYTES_MSB;
-+			break;
-+		case SPI_MODE_2:
-+		case SPI_MODE_3:
-+			cmd = TXR_RXF_BYTES_MSB;
-+			break;
-+		}
-+	}
-+	return cmd;
-+}
-+
-+static inline int ftdi_spi_loopback_cfg(struct ftdi_spi *priv, int on)
-+{
-+	int ret;
-+
-+	priv->xfer_buf[0] = on ? LOOPBACK_ON : LOOPBACK_OFF;
-+
-+	ret = priv->iops->write_data(priv->intf, priv->xfer_buf, 1);
-+	if (ret < 0)
-+		dev_warn(&priv->pdev->dev, "loopback %d failed\n", on);
-+	return ret;
-+}
-+
-+static int ftdi_spi_tx_rx(struct ftdi_spi *priv, struct spi_device *spi,
-+			  struct spi_transfer *t)
-+{
-+	const struct ft232h_intf_ops *ops = priv->iops;
-+	struct device *dev = &priv->pdev->dev;
-+	void *rx_offs;
-+	const void *tx_offs;
-+	size_t remaining, stride;
-+	size_t rx_stride;
-+	int ret, tout = 10;
-+	const u8 *tx_data = t->tx_buf;
-+	u8 *rx_data = t->rx_buf;
-+
-+	ops->lock(priv->intf);
-+
-+	if (spi->mode & SPI_LOOP) {
-+		ret = ftdi_spi_loopback_cfg(priv, 1);
-+		if (ret < 0)
-+			goto err;
-+	}
-+
-+	remaining = t->len;
-+	rx_offs = rx_data;
-+	tx_offs = tx_data;
-+
-+	while (remaining) {
-+		stride = min_t(size_t, remaining, SZ_512 - 3);
-+
-+		priv->xfer_buf[0] = priv->txrx_cmd;
-+		priv->xfer_buf[1] = stride - 1;
-+		priv->xfer_buf[2] = (stride - 1) >> 8;
-+		memcpy(&priv->xfer_buf[3], tx_offs, stride);
-+		print_hex_dump_debug("WR: ", DUMP_PREFIX_OFFSET, 16, 1,
-+				     priv->xfer_buf, stride + 3, 1);
-+
-+		ret = ops->write_data(priv->intf, priv->xfer_buf, stride + 3);
-+		if (ret < 0) {
-+			dev_err(dev, "%s: xfer failed %d\n", __func__, ret);
-+			goto fail;
-+		}
-+		dev_dbg(dev, "%s: WR %zu byte(s), TXRX CMD 0x%02x\n",
-+			__func__, stride, priv->txrx_cmd);
-+
-+		rx_stride = min_t(size_t, stride, SZ_512);
-+
-+		ret = ops->read_data(priv->intf, priv->xfer_buf, rx_stride);
-+		while (ret == 0) {
-+			/* If no data yet, wait and repeat */
-+			usleep_range(5000, 5100);
-+			ret = ops->read_data(priv->intf, priv->xfer_buf,
-+					     rx_stride);
-+			dev_dbg(dev, "Waiting data ready, read: %d\n", ret);
-+			if (!--tout) {
-+				dev_err(dev, "Read timeout\n");
-+				ret = -ETIMEDOUT;
-+				goto fail;
-+			}
-+		}
-+
-+		if (ret < 0)
-+			goto fail;
-+
-+		print_hex_dump_debug("RD: ", DUMP_PREFIX_OFFSET, 16, 1,
-+				     priv->xfer_buf, rx_stride, 1);
-+		memcpy(rx_offs, priv->xfer_buf, ret);
-+		rx_offs += ret;
-+
-+		remaining -= stride;
-+		tx_offs += stride;
-+		dev_dbg(dev, "%s: WR remains %zu\n", __func__, remaining);
-+	}
-+
-+	ret = 0;
-+
-+fail:
-+	if (spi->mode & SPI_LOOP)
-+		ftdi_spi_loopback_cfg(priv, 0);
-+
-+err:
-+	ops->unlock(priv->intf);
-+	return ret;
-+}
-+
-+static int ftdi_spi_push_buf(struct ftdi_spi *priv, const void *buf, size_t len)
-+{
-+	size_t bytesleft = len;
-+	int ret;
-+
-+	do {
-+		ret = priv->iops->write_data(priv->intf, buf, bytesleft);
-+		if (ret < 0)
-+			return ret;
-+
-+		buf += ret;
-+		bytesleft -= ret;
-+	} while (bytesleft);
-+
-+	return len;
-+}
-+
-+static int ftdi_spi_tx(struct ftdi_spi *priv, struct spi_transfer *xfer)
-+{
-+	const void *tx_offs;
-+	size_t remaining, stride;
-+	int ret;
-+
-+	priv->iops->lock(priv->intf);
-+
-+	tx_offs = xfer->tx_buf;
-+	remaining = xfer->len;
-+
-+	do {
-+		stride = min_t(size_t, remaining, sizeof(priv->xfer_buf) - 3);
-+
-+		priv->xfer_buf[0] = priv->tx_cmd;
-+		priv->xfer_buf[1] = stride - 1;
-+		priv->xfer_buf[2] = (stride - 1) >> 8;
-+
-+		memcpy(&priv->xfer_buf[3], tx_offs, stride);
-+
-+		ret = ftdi_spi_push_buf(priv, priv->xfer_buf, stride + 3);
-+		if (ret < 0) {
-+			dev_dbg(&priv->pdev->dev, "%s: tx failed %d\n",
-+				__func__, ret);
-+			goto err;
-+		}
-+		dev_dbg(&priv->pdev->dev, "%s: %zu byte(s) done\n",
-+			__func__, stride);
-+		remaining -= stride;
-+		tx_offs += stride;
-+	} while (remaining);
-+
-+	ret = 0;
-+err:
-+	priv->iops->unlock(priv->intf);
-+	return ret;
-+}
-+
-+static int ftdi_spi_rx(struct ftdi_spi *priv, struct spi_transfer *xfer)
-+{
-+	const struct ft232h_intf_ops *ops = priv->iops;
-+	struct device *dev = &priv->pdev->dev;
-+	size_t remaining, stride;
-+	int ret, tout = 10;
-+	void *rx_offs;
-+
-+	dev_dbg(dev, "%s: CMD 0x%02x, len %u\n",
-+		__func__, priv->rx_cmd, xfer->len);
-+
-+	priv->xfer_buf[0] = priv->rx_cmd;
-+	priv->xfer_buf[1] = xfer->len - 1;
-+	priv->xfer_buf[2] = (xfer->len - 1) >> 8;
-+
-+	ops->lock(priv->intf);
-+
-+	ret = ops->write_data(priv->intf, priv->xfer_buf, 3);
-+	if (ret < 0)
-+		goto err;
-+
-+	remaining = xfer->len;
-+	rx_offs = xfer->rx_buf;
-+
-+	do {
-+		stride = min_t(size_t, remaining, SZ_512);
-+
-+		ret = ops->read_data(priv->intf, priv->xfer_buf, stride);
-+		if (ret < 0)
-+			goto err;
-+
-+		if (!ret) {
-+			dev_dbg(dev, "Waiting for data (read: %02X), tout %d\n",
-+				ret, tout);
-+			if (--tout)
+ 	}
+ 
+-	rc = get_user_pages(start, nr_pages, gup_flags, pages, vmas);
++	rc = __get_user_pages_locked(tsk, mm, start, nr_pages, pages,
++				     vmas_tmp, NULL, flags);
+ 
+-	for (i = 0; i < rc; i++) {
+-		struct vm_area_struct *vma = vmas[i];
++	if (flags & FOLL_LONGTERM) {
++		for (i = 0; i < rc; i++) {
++			struct vm_area_struct *vma = vmas_tmp[i];
+ 
+-		if (vma == vma_prev)
+-			continue;
++			if (vma == vma_prev)
 +				continue;
-+
-+			dev_dbg(dev, "read timeout...\n");
-+			ret = -ETIMEDOUT;
-+			goto err;
-+		}
-+
-+		memcpy(rx_offs, priv->xfer_buf, ret);
-+
-+		dev_dbg(dev, "%s: %d byte(s)\n", __func__, ret);
-+		rx_offs += ret;
-+		remaining -= ret;
-+	} while (remaining);
-+
-+	ret = 0;
-+err:
-+	ops->unlock(priv->intf);
-+	return ret;
-+}
-+
-+static int ftdi_spi_transfer_one(struct spi_controller *ctlr,
-+				 struct spi_device *spi,
-+				 struct spi_transfer *xfer)
-+{
-+	struct ftdi_spi *priv = spi_controller_get_devdata(ctlr);
-+	struct device *dev = &priv->pdev->dev;
-+	int ret = 0;
-+
-+	if (!xfer->len)
-+		return 0;
-+
-+	if (priv->last_mode != spi->mode) {
-+		u8 spi_mode = spi->mode & (SPI_CPOL | SPI_CPHA);
-+		u8 pins = 0;
-+
-+		dev_dbg(dev, "%s: MODE 0x%x\n", __func__, spi->mode);
-+
-+		if (spi->mode & SPI_LSB_FIRST) {
-+			switch (spi_mode) {
-+			case SPI_MODE_0:
-+			case SPI_MODE_3:
-+				priv->tx_cmd = TX_BYTES_FE_LSB;
-+				priv->rx_cmd = RX_BYTES_RE_LSB;
+ 
+-		vma_prev = vma;
++			vma_prev = vma;
+ 
+-		if (vma_is_fsdax(vma))
+-			break;
+-	}
++			if (vma_is_fsdax(vma))
 +				break;
-+			case SPI_MODE_1:
-+			case SPI_MODE_2:
-+				priv->tx_cmd = TX_BYTES_RE_LSB;
-+				priv->rx_cmd = RX_BYTES_FE_LSB;
-+				break;
-+			}
-+		} else {
-+			switch (spi_mode) {
-+			case SPI_MODE_0:
-+			case SPI_MODE_3:
-+				priv->tx_cmd = TX_BYTES_FE_MSB;
-+				priv->rx_cmd = RX_BYTES_RE_MSB;
-+				break;
-+			case SPI_MODE_1:
-+			case SPI_MODE_2:
-+				priv->tx_cmd = TX_BYTES_RE_MSB;
-+				priv->rx_cmd = RX_BYTES_FE_MSB;
-+				break;
-+			}
 +		}
-+
-+		priv->txrx_cmd = ftdi_spi_txrx_byte_cmd(spi);
-+
-+		switch (spi_mode) {
-+		case SPI_MODE_2:
-+		case SPI_MODE_3:
-+			pins |= MPSSE_SK;
-+			break;
-+		}
-+
-+		ret = priv->iops->cfg_bus_pins(priv->intf,
-+					       MPSSE_SK | MPSSE_DO, pins);
-+		if (ret < 0) {
-+			dev_err(dev, "IO cfg failed: %d\n", ret);
-+			return ret;
-+		}
-+		priv->last_mode = spi->mode;
+ 
+-	/*
+-	 * Either get_user_pages() failed, or the vma validation
+-	 * succeeded, in either case we don't need to put_page() before
+-	 * returning.
+-	 */
+-	if (i >= rc)
+-		goto out;
++		/*
++		 * Either get_user_pages() failed, or the vma validation
++		 * succeeded, in either case we don't need to put_page() before
++		 * returning.
++		 */
++		if (i >= rc)
++			goto out;
+ 
+-	for (i = 0; i < rc; i++)
+-		put_page(pages[i]);
+-	rc = -EOPNOTSUPP;
++		for (i = 0; i < rc; i++)
++			put_page(pages[i]);
++		rc = -EOPNOTSUPP;
+ out:
+-	if (vmas != vmas_arg)
+-		kfree(vmas);
++		if (vmas_tmp != vmas)
++			kfree(vmas_tmp);
 +	}
 +
-+	dev_dbg(dev, "%s: mode 0x%x, CMD RX/TX 0x%x/0x%x\n",
-+		__func__, spi->mode, priv->rx_cmd, priv->tx_cmd);
-+
-+	if (xfer->tx_buf && xfer->rx_buf)
-+		ret = ftdi_spi_tx_rx(priv, spi, xfer);
-+	else if (xfer->tx_buf)
-+		ret = ftdi_spi_tx(priv, xfer);
-+	else if (xfer->rx_buf)
-+		ret = ftdi_spi_rx(priv, xfer);
-+
-+	dev_dbg(dev, "%s: xfer ret %d\n", __func__, ret);
-+
-+	spi_finalize_current_transfer(ctlr);
-+	return ret;
-+}
-+
-+static int ftdi_mpsse_init(struct ftdi_spi *priv)
+ 	return rc;
+ }
+-EXPORT_SYMBOL(get_user_pages_longterm);
++#else /* !CONFIG_FS_DAX */
++static __always_inline long __gup_longterm_locked(struct task_struct *tsk,
++						  struct mm_struct *mm,
++						  unsigned long start,
++						  unsigned long nr_pages,
++						  struct page **pages,
++						  struct vm_area_struct **vmas,
++						  unsigned int flags)
 +{
-+	struct platform_device *pdev = priv->pdev;
-+	int ret;
-+
-+	dev_dbg(&pdev->dev, "MPSSE init\n");
-+
-+	/* Setup and send off the Hi-Speed specific commands for the FTx232H */
-+	priv->xfer_buf[0] = DIS_DIV_5;      /* Use 60MHz master clock */
-+	priv->xfer_buf[1] = DIS_ADAPTIVE;   /* Turn off adaptive clocking */
-+	priv->xfer_buf[2] = DIS_3_PHASE;    /* Disable three-phase clocking */
-+
-+	priv->iops->lock(priv->intf);
-+
-+	ret = priv->iops->write_data(priv->intf, priv->xfer_buf, 3);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Clk cfg failed: %d\n", ret);
-+		priv->iops->unlock(priv->intf);
-+		return ret;
-+	}
-+
-+	priv->xfer_buf[0] = TCK_DIVISOR;
-+	priv->xfer_buf[1] = div_value(60000000);
-+	priv->xfer_buf[2] = div_value(60000000) >> 8;
-+	dev_dbg(&pdev->dev, "TCK_DIVISOR: 0x%04x 0x%04x\n",
-+		priv->xfer_buf[1], priv->xfer_buf[2]);
-+
-+	ret = priv->iops->write_data(priv->intf, priv->xfer_buf, 3);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Clk cfg failed: %d\n", ret);
-+		priv->iops->unlock(priv->intf);
-+		return ret;
-+	}
-+
-+	priv->iops->unlock(priv->intf);
-+
-+	ret = priv->iops->cfg_bus_pins(priv->intf, MPSSE_SK | MPSSE_DO, 0);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Can't init SPI bus pins: %d\n", ret);
-+		return ret;
-+	}
-+
-+	return 0;
++	return __get_user_pages_locked(tsk, mm, start, nr_pages, pages, vmas,
++				       NULL, flags);
 +}
-+
-+static int ftdi_spi_init_io(struct spi_controller *master, unsigned int dev_idx)
+ #endif /* CONFIG_FS_DAX */
+ 
++/*
++ * This is the same as get_user_pages_remote(), just with a
++ * less-flexible calling convention where we assume that the task
++ * and mm being operated on are the current task's and don't allow
++ * passing of a locked parameter.  We also obviously don't pass
++ * FOLL_REMOTE in here.
++ */
++long get_user_pages(unsigned long start, unsigned long nr_pages,
++		unsigned int gup_flags, struct page **pages,
++		struct vm_area_struct **vmas)
 +{
-+	struct ftdi_spi *priv = spi_controller_get_devdata(master);
-+	struct platform_device *pdev = priv->pdev;
-+	const struct mpsse_spi_platform_data *pd;
-+	const struct mpsse_spi_dev_data *data;
-+	struct gpiod_lookup_table *lookup;
-+	size_t lookup_size, size;
-+	char *label;
-+	unsigned int i;
-+	u16 cs;
-+
-+	pd = pdev->dev.platform_data;
-+
-+	data = pd->spi_info[dev_idx].platform_data;
-+	if (!data || data->magic != FTDI_MPSSE_IO_DESC_MAGIC)
-+		return 0;
-+
-+	size = data->desc_len + 1;
-+
-+	lookup_size = sizeof(*lookup) + size * sizeof(struct gpiod_lookup);
-+	lookup = devm_kzalloc(&pdev->dev, lookup_size, GFP_KERNEL);
-+	if (!lookup)
-+		return -ENOMEM;
-+
-+	cs = pd->spi_info[dev_idx].chip_select;
-+
-+	lookup->dev_id = devm_kasprintf(&pdev->dev, GFP_KERNEL, "spi%d.%d",
-+					master->bus_num, cs);
-+	if (!lookup->dev_id) {
-+		devm_kfree(&pdev->dev, lookup);
-+		return -ENOMEM;
-+	}
-+	dev_dbg(&pdev->dev, "LOOKUP ID '%s'\n", lookup->dev_id);
-+
-+	label = devm_kasprintf(&pdev->dev, GFP_KERNEL, "ftdi-mpsse-gpio.%d",
-+			       pdev->id);
-+	if (!label) {
-+		devm_kfree(&pdev->dev, (void *)lookup->dev_id);
-+		devm_kfree(&pdev->dev, lookup);
-+		return -ENOMEM;
-+	}
-+
-+	for (i = 0; i < data->desc_len; i++) {
-+		dev_dbg(&pdev->dev, "con_id: '%s' idx: %d, flags: 0x%x\n",
-+			data->desc[i].con_id, data->desc[i].idx,
-+			data->desc[i].flags);
-+		lookup->table[i].chip_label = label;
-+		lookup->table[i].chip_hwnum = data->desc[i].idx;
-+		lookup->table[i].idx = 0;
-+		lookup->table[i].con_id = data->desc[i].con_id;
-+		lookup->table[i].flags = data->desc[i].flags;
-+	}
-+
-+	priv->lookup[cs] = lookup;
-+	gpiod_add_lookup_table(lookup);
-+	return 0;
++	return __gup_longterm_locked(current, current->mm, start, nr_pages,
++				     pages, vmas, gup_flags | FOLL_TOUCH);
 +}
++EXPORT_SYMBOL(get_user_pages);
 +
-+static int ftdi_spi_probe(struct platform_device *pdev)
-+{
-+	const struct mpsse_spi_platform_data *pd;
-+	struct device *dev = &pdev->dev;
-+	struct spi_controller *master;
-+	struct ftdi_spi *priv;
-+	struct gpio_desc *desc;
-+	u16 num_cs, max_cs = 0;
-+	unsigned int i;
-+	int ret;
-+
-+	pd = dev->platform_data;
-+	if (!pd) {
-+		dev_err(dev, "Missing platform data.\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!pd->ops ||
-+	    !pd->ops->read_data || !pd->ops->write_data ||
-+	    !pd->ops->lock || !pd->ops->unlock ||
-+	    !pd->ops->set_bitmode || !pd->ops->set_baudrate ||
-+	    !pd->ops->disable_bitbang || !pd->ops->cfg_bus_pins)
-+		return -EINVAL;
-+
-+	if (pd->spi_info_len > FTDI_MPSSE_GPIOS)
-+		return -EINVAL;
-+
-+	/* Find max. slave chipselect number */
-+	num_cs = pd->spi_info_len;
-+	for (i = 0; i < num_cs; i++) {
-+		if (max_cs < pd->spi_info[i].chip_select)
-+			max_cs = pd->spi_info[i].chip_select;
-+	}
-+
-+	if (max_cs > FTDI_MPSSE_GPIOS - 1) {
-+		dev_err(dev, "Invalid max CS in platform data: %u\n", max_cs);
-+		return -EINVAL;
-+	}
-+	dev_dbg(dev, "CS count %u, max CS %u\n", num_cs, max_cs);
-+	max_cs += 1; /* including CS0 */
-+
-+	master = spi_alloc_master(&pdev->dev, sizeof(*priv));
-+	if (!master)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, master);
-+
-+	priv = spi_controller_get_devdata(master);
-+	priv->master = master;
-+	priv->pdev = pdev;
-+	priv->intf = to_usb_interface(dev->parent);
-+	priv->iops = pd->ops;
-+
-+	master->bus_num = -1;
-+	master->mode_bits = SPI_CPOL | SPI_CPHA | SPI_LOOP |
-+			    SPI_CS_HIGH | SPI_LSB_FIRST;
-+	master->num_chipselect = max_cs;
-+	master->min_speed_hz = 450;
-+	master->max_speed_hz = 30000000;
-+	master->bits_per_word_mask = SPI_BPW_MASK(8);
-+	master->set_cs = ftdi_spi_set_cs;
-+	master->transfer_one = ftdi_spi_transfer_one;
-+	master->auto_runtime_pm = false;
-+
-+	priv->cs_gpios = devm_kcalloc(&master->dev, max_cs, sizeof(desc),
-+				      GFP_KERNEL);
-+	if (!priv->cs_gpios) {
-+		spi_controller_put(master);
-+		return -ENOMEM;
-+	}
-+
-+	for (i = 0; i < num_cs; i++) {
-+		unsigned int idx = pd->spi_info[i].chip_select;
-+
-+		dev_dbg(&pdev->dev, "CS num: %u\n", idx);
-+		desc = devm_gpiod_get_index(&priv->pdev->dev, "spi-cs",
-+					    i, GPIOD_OUT_LOW);
-+		if (IS_ERR(desc)) {
-+			ret = PTR_ERR(desc);
-+			dev_err(&pdev->dev, "CS %u gpiod err: %d\n", i, ret);
-+			continue;
-+		}
-+		priv->cs_gpios[idx] = desc;
-+	}
-+
-+	ret = spi_register_controller(master);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Failed to register spi master\n");
-+		spi_controller_put(master);
-+		return ret;
-+	}
-+
-+	ret = priv->iops->set_bitmode(priv->intf, 0x00, BITMODE_MPSSE);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Failed to set MPSSE mode\n");
-+		goto err;
-+	}
-+
-+	priv->last_mode = 0xffff;
-+
-+	ret = ftdi_mpsse_init(priv);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "MPSSE init failed\n");
-+		goto err;
-+	}
-+
-+	for (i = 0; i < pd->spi_info_len; i++) {
-+		struct spi_device *sdev;
-+		u16 cs;
-+
-+		dev_dbg(&pdev->dev, "slave: '%s', CS: %u\n",
-+			pd->spi_info[i].modalias, pd->spi_info[i].chip_select);
-+
-+		ret = ftdi_spi_init_io(master, i);
-+		if (ret < 0) {
-+			dev_warn(&pdev->dev, "Can't add slave IO: %d\n", ret);
-+			continue;
-+		}
-+		sdev = spi_new_device(master, &pd->spi_info[i]);
-+		if (!sdev) {
-+			cs = pd->spi_info[i].chip_select;
-+			dev_warn(&pdev->dev, "Can't add slave '%s', CS %u\n",
-+				 pd->spi_info[i].modalias, cs);
-+			if (priv->lookup[cs]) {
-+				gpiod_remove_lookup_table(priv->lookup[cs]);
-+				priv->lookup[cs] = NULL;
-+			}
-+		}
-+	}
-+
-+	return 0;
-+err:
-+	platform_set_drvdata(pdev, NULL);
-+	spi_unregister_controller(master);
-+	return ret;
-+}
-+
-+static int ftdi_spi_slave_release(struct device *dev, void *data)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct ftdi_spi *priv = data;
-+	u16 cs = spi->chip_select;
-+
-+	dev_dbg(dev, "%s: remove CS %u\n", __func__, cs);
-+	spi_unregister_device(to_spi_device(dev));
-+
-+	if (priv->lookup[cs])
-+		gpiod_remove_lookup_table(priv->lookup[cs]);
-+	return 0;
-+}
-+
-+static int ftdi_spi_remove(struct platform_device *pdev)
-+{
-+	struct spi_controller *master;
-+	struct ftdi_spi *priv;
-+
-+	master = platform_get_drvdata(pdev);
-+	priv = spi_controller_get_devdata(master);
-+
-+	device_for_each_child(&master->dev, priv, ftdi_spi_slave_release);
-+
-+	spi_unregister_controller(master);
-+	return 0;
-+}
-+
-+static struct platform_driver ftdi_spi_driver = {
-+	.driver.name	= "ftdi-mpsse-spi",
-+	.probe		= ftdi_spi_probe,
-+	.remove		= ftdi_spi_remove,
-+};
-+module_platform_driver(ftdi_spi_driver);
-+
-+MODULE_ALIAS("platform:ftdi-mpsse-spi");
-+MODULE_AUTHOR("Anatolij Gustschin <agust@denx.de");
-+MODULE_DESCRIPTION("FTDI MPSSE SPI master driver");
-+MODULE_LICENSE("GPL v2");
+ /**
+  * populate_vma_page_range() -  populate a range of pages in the vma.
+  * @vma:   target vma
+diff --git a/mm/gup_benchmark.c b/mm/gup_benchmark.c
+index 5b42d3d4b60a..c898e2e0d1e4 100644
+--- a/mm/gup_benchmark.c
++++ b/mm/gup_benchmark.c
+@@ -54,8 +54,9 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
+ 						 pages + i);
+ 			break;
+ 		case GUP_LONGTERM_BENCHMARK:
+-			nr = get_user_pages_longterm(addr, nr, gup->flags & 1,
+-						     pages + i, NULL);
++			nr = get_user_pages(addr, nr,
++					    (gup->flags & 1) | FOLL_LONGTERM,
++					    pages + i, NULL);
+ 			break;
+ 		case GUP_BENCHMARK:
+ 			nr = get_user_pages(addr, nr, gup->flags & 1, pages + i,
 -- 
-2.17.1
+2.20.1
