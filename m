@@ -1,55 +1,40 @@
-Return-Path: <SRS0=t8ba=QS=oracle.com=daniel.m.jordan@kernel.org>
-Return-Path: <SRS0=t8ba=QS=oracle.com=daniel.m.jordan@kernel.org>
-From: Daniel Jordan <daniel.m.jordan@oracle.com>
-Subject: [PATCH 0/5] use pinned_vm instead of locked_vm to account pinned pages
-Date: Mon, 11 Feb 2019 17:44:32 -0500
-Message-Id: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
+Return-Path: <SRS0=i9uM=QU=intel.com=ira.weiny@kernel.org>
+Return-Path: <SRS0=i9uM=QU=intel.com=ira.weiny@kernel.org>
+From: ira.weiny@intel.com
+Subject: [PATCH V2 6/7] IB/qib: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+Date: Wed, 13 Feb 2019 15:04:54 -0800
+Message-Id: <20190213230455.5605-7-ira.weiny@intel.com>
+In-Reply-To: <20190213230455.5605-1-ira.weiny@intel.com>
+References: <20190211201643.7599-1-ira.weiny@intel.com>
+ <20190213230455.5605-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-To: jgg@ziepe.ca
-Cc: akpm@linux-foundation.org, dave@stgolabs.net, jack@suse.cz, cl@linux.com, linux-mm@kvack.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, alex.williamson@redhat.com, paulus@ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au, hao.wu@intel.com, atull@kernel.org, mdf@kernel.org, aik@ozlabs.ru, daniel.m.jordan@oracle.com
+To: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, kvm@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, linux-media@vger.kernel.org, linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-mm@kvack.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com
+Cc: Ira Weiny <ira.weiny@intel.com>, John Hubbard <jhubbard@nvidia.com>, David Hildenbrand <david@redhat.com>, Cornelia Huck <cohuck@redhat.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Joerg Roedel <joro@8bytes.org>, Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Jason Gunthorpe <jgg@ziepe.ca>, Dennis Dalessandro <dennis.dalessandro@intel.com>, Christian Benvenuti <benve@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Matt Porter <mporter@kernel.crashing.org>, Alexandre Bounine <alex.bou9@gmail.com>, =?UTF-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Rob Springer <rspringer@google.com>, Todd Poynor <toddpoynor@google.com>, Ben Chan <benchan@chromium.org>, Jens Wiklander <jens.wiklander@linaro.org>, Alex Williamson <alex.williamson@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefano Stabellini <sstabellini@kernel.org>, Martin Brandenburg <martin@omnibond.com>, Peter Zijlstra <peterz@infradead.org>, Alexander Viro <viro@zeniv.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi,
+From: Ira Weiny <ira.weiny@intel.com>
 
-This series converts users that account pinned pages with locked_vm to
-account with pinned_vm instead, pinned_vm being the correct counter to
-use.  It's based on a similar patch I posted recently[0].
+Use the new FOLL_LONGTERM to get_user_pages_fast() to protect against
+FS DAX pages being mapped.
 
-The patches are based on rdma/for-next to build on Davidlohr Bueso's
-recent conversion of pinned_vm to an atomic64_t[1].  Seems to make some
-sense for these to be routed the same way, despite lack of rdma content?
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+---
+ drivers/infiniband/hw/qib/qib_user_sdma.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-All five of these places, and probably some of Davidlohr's conversions,
-probably want to be collapsed into a common helper in the core mm for
-accounting pinned pages.  I tried, and there are several details that
-likely need discussion, so this can be done as a follow-on.
-
-I'd appreciate a look at patch 5 especially since the accounting is
-unusual no matter whether locked_vm or pinned_vm are used.
-
-On powerpc, this was cross-compile tested only.
-
-[0] http://lkml.kernel.org/r/20181105165558.11698-8-daniel.m.jordan@oracle.com
-[1] http://lkml.kernel.org/r/20190206175920.31082-1-dave@stgolabs.net
-
-Daniel Jordan (5):
-  vfio/type1: use pinned_vm instead of locked_vm to account pinned pages
-  vfio/spapr_tce: use pinned_vm instead of locked_vm to account pinned
-    pages
-  fpga/dlf/afu: use pinned_vm instead of locked_vm to account pinned
-    pages
-  powerpc/mmu: use pinned_vm instead of locked_vm to account pinned
-    pages
-  kvm/book3s: use pinned_vm instead of locked_vm to account pinned pages
-
- Documentation/vfio.txt              |  6 +--
- arch/powerpc/kvm/book3s_64_vio.c    | 35 +++++++---------
- arch/powerpc/mm/mmu_context_iommu.c | 43 ++++++++++---------
- drivers/fpga/dfl-afu-dma-region.c   | 50 +++++++++++-----------
- drivers/vfio/vfio_iommu_spapr_tce.c | 64 ++++++++++++++---------------
- drivers/vfio/vfio_iommu_type1.c     | 31 ++++++--------
- 6 files changed, 104 insertions(+), 125 deletions(-)
-
+diff --git a/drivers/infiniband/hw/qib/qib_user_sdma.c b/drivers/infiniband/hw/qib/qib_user_sdma.c
+index 31c523b2a9f5..b53cc0240e02 100644
+--- a/drivers/infiniband/hw/qib/qib_user_sdma.c
++++ b/drivers/infiniband/hw/qib/qib_user_sdma.c
+@@ -673,7 +673,7 @@ static int qib_user_sdma_pin_pages(const struct qib_devdata *dd,
+ 		else
+ 			j = npages;
+ 
+-		ret = get_user_pages_fast(addr, j, 0, pages);
++		ret = get_user_pages_fast(addr, j, FOLL_LONGTERM, pages);
+ 		if (ret != j) {
+ 			i = 0;
+ 			j = ret;
 -- 
 2.20.1
