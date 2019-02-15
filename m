@@ -1,128 +1,100 @@
-Return-Path: <SRS0=t8ba=QS=oracle.com=daniel.m.jordan@kernel.org>
-Return-Path: <SRS0=t8ba=QS=oracle.com=daniel.m.jordan@kernel.org>
-From: Daniel Jordan <daniel.m.jordan@oracle.com>
-Subject: [PATCH 4/5] powerpc/mmu: use pinned_vm instead of locked_vm to account pinned pages
-Date: Mon, 11 Feb 2019 17:44:36 -0500
-Message-Id: <20190211224437.25267-5-daniel.m.jordan@oracle.com>
-In-Reply-To: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
-References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
+Return-Path: <SRS0=am2V=QW=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=am2V=QW=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:54928 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2388405AbfBOS3n (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 15 Feb 2019 13:29:43 -0500
+Date: Fri, 15 Feb 2019 10:29:36 -0800
+From: Ira Weiny <ira.weiny@intel.com>
+Subject: Re: [PATCH V2 0/7] Add FOLL_LONGTERM to GUP fast and use it
+Message-ID: <20190215182935.GC26988@iweiny-DESK2.sc.intel.com>
+Reply-To: 20190211201643.7599-1-ira.weiny@intel.com
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: jgg@ziepe.ca
-Cc: akpm@linux-foundation.org, dave@stgolabs.net, jack@suse.cz, cl@linux.com, linux-mm@kvack.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, alex.williamson@redhat.com, paulus@ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au, hao.wu@intel.com, atull@kernel.org, mdf@kernel.org, aik@ozlabs.ru, daniel.m.jordan@oracle.com
-List-ID: <linux-fpga@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, kvm@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, linux-media@vger.kernel.org, linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-mm@kvack.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com
 
-Beginning with bc3e53f682d9 ("mm: distinguish between mlocked and pinned
-pages"), locked and pinned pages are accounted separately.  The IOMMU
-MMU helpers on powerpc account pinned pages to locked_vm; use pinned_vm
-instead.
+> NOTE: This series depends on my clean up patch to remove the write parameter
+> from gup_fast_permitted()[1]
+> 
+> HFI1, qib, and mthca, use get_user_pages_fast() due to it performance
+> advantages.  These pages can be held for a significant time.  But
+> get_user_pages_fast() does not protect against mapping of FS DAX pages.
+> 
+> Introduce FOLL_LONGTERM and use this flag in get_user_pages_fast() which
+> retains the performance while also adding the FS DAX checks.  XDP has also
+> shown interest in using this functionality.[2]
+> 
+> In addition we change get_user_pages() to use the new FOLL_LONGTERM flag and
+> remove the specialized get_user_pages_longterm call.
+> 
+> [1] https://lkml.org/lkml/2019/2/11/237
+> [2] https://lkml.org/lkml/2019/2/11/1789
 
-pinned_vm recently became atomic and so no longer relies on mmap_sem
-held as writer: delete.
+Any comments on this series?  I've touched a lot of subsystems which I think
+require review.
 
-Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
----
- arch/powerpc/mm/mmu_context_iommu.c | 43 ++++++++++++++---------------
- 1 file changed, 21 insertions(+), 22 deletions(-)
+Thanks,
+Ira
 
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index a712a650a8b6..fdf670542847 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -40,36 +40,35 @@ struct mm_iommu_table_group_mem_t {
- 	u64 dev_hpa;		/* Device memory base address */
- };
- 
--static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
-+static long mm_iommu_adjust_pinned_vm(struct mm_struct *mm,
- 		unsigned long npages, bool incr)
- {
--	long ret = 0, locked, lock_limit;
-+	long ret = 0;
-+	unsigned long lock_limit;
-+	s64 pinned_vm;
- 
- 	if (!npages)
- 		return 0;
- 
--	down_write(&mm->mmap_sem);
--
- 	if (incr) {
--		locked = mm->locked_vm + npages;
- 		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
-+		if (pinned_vm > lock_limit && !capable(CAP_IPC_LOCK)) {
- 			ret = -ENOMEM;
--		else
--			mm->locked_vm += npages;
-+			atomic64_sub(npages, &mm->pinned_vm);
-+		}
- 	} else {
--		if (WARN_ON_ONCE(npages > mm->locked_vm))
--			npages = mm->locked_vm;
--		mm->locked_vm -= npages;
-+		pinned_vm = atomic64_read(&mm->pinned_vm);
-+		if (WARN_ON_ONCE(npages > pinned_vm))
-+			npages = pinned_vm;
-+		atomic64_sub(npages, &mm->pinned_vm);
- 	}
- 
--	pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%ld %ld/%ld\n",
--			current ? current->pid : 0,
--			incr ? '+' : '-',
-+	pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%lu %ld/%lu\n",
-+			current ? current->pid : 0, incr ? '+' : '-',
- 			npages << PAGE_SHIFT,
--			mm->locked_vm << PAGE_SHIFT,
-+			atomic64_read(&mm->pinned_vm) << PAGE_SHIFT,
- 			rlimit(RLIMIT_MEMLOCK));
--	up_write(&mm->mmap_sem);
- 
- 	return ret;
- }
-@@ -133,7 +132,7 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
- 		struct mm_iommu_table_group_mem_t **pmem)
- {
- 	struct mm_iommu_table_group_mem_t *mem;
--	long i, j, ret = 0, locked_entries = 0;
-+	long i, j, ret = 0, pinned_entries = 0;
- 	unsigned int pageshift;
- 	unsigned long flags;
- 	unsigned long cur_ua;
-@@ -154,11 +153,11 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
- 	}
- 
- 	if (dev_hpa == MM_IOMMU_TABLE_INVALID_HPA) {
--		ret = mm_iommu_adjust_locked_vm(mm, entries, true);
-+		ret = mm_iommu_adjust_pinned_vm(mm, entries, true);
- 		if (ret)
- 			goto unlock_exit;
- 
--		locked_entries = entries;
-+		pinned_entries = entries;
- 	}
- 
- 	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
-@@ -252,8 +251,8 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
- 	list_add_rcu(&mem->next, &mm->context.iommu_group_mem_list);
- 
- unlock_exit:
--	if (locked_entries && ret)
--		mm_iommu_adjust_locked_vm(mm, locked_entries, false);
-+	if (pinned_entries && ret)
-+		mm_iommu_adjust_pinned_vm(mm, pinned_entries, false);
- 
- 	mutex_unlock(&mem_list_mutex);
- 
-@@ -352,7 +351,7 @@ long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_mem_t *mem)
- 	mm_iommu_release(mem);
- 
- 	if (dev_hpa == MM_IOMMU_TABLE_INVALID_HPA)
--		mm_iommu_adjust_locked_vm(mm, entries, false);
-+		mm_iommu_adjust_pinned_vm(mm, entries, false);
- 
- unlock_exit:
- 	mutex_unlock(&mem_list_mutex);
--- 
-2.20.1
+> 
+> Ira Weiny (7):
+>   mm/gup: Replace get_user_pages_longterm() with FOLL_LONGTERM
+>   mm/gup: Change write parameter to flags in fast walk
+>   mm/gup: Change GUP fast to use flags rather than a write 'bool'
+>   mm/gup: Add FOLL_LONGTERM capability to GUP fast
+>   IB/hfi1: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+>   IB/qib: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+>   IB/mthca: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+> 
+>  arch/mips/mm/gup.c                          |  11 +-
+>  arch/powerpc/kvm/book3s_64_mmu_hv.c         |   4 +-
+>  arch/powerpc/kvm/e500_mmu.c                 |   2 +-
+>  arch/powerpc/mm/mmu_context_iommu.c         |   4 +-
+>  arch/s390/kvm/interrupt.c                   |   2 +-
+>  arch/s390/mm/gup.c                          |  12 +-
+>  arch/sh/mm/gup.c                            |  11 +-
+>  arch/sparc/mm/gup.c                         |   9 +-
+>  arch/x86/kvm/paging_tmpl.h                  |   2 +-
+>  arch/x86/kvm/svm.c                          |   2 +-
+>  drivers/fpga/dfl-afu-dma-region.c           |   2 +-
+>  drivers/gpu/drm/via/via_dmablit.c           |   3 +-
+>  drivers/infiniband/core/umem.c              |   5 +-
+>  drivers/infiniband/hw/hfi1/user_pages.c     |   5 +-
+>  drivers/infiniband/hw/mthca/mthca_memfree.c |   3 +-
+>  drivers/infiniband/hw/qib/qib_user_pages.c  |   8 +-
+>  drivers/infiniband/hw/qib/qib_user_sdma.c   |   2 +-
+>  drivers/infiniband/hw/usnic/usnic_uiom.c    |   9 +-
+>  drivers/media/v4l2-core/videobuf-dma-sg.c   |   6 +-
+>  drivers/misc/genwqe/card_utils.c            |   2 +-
+>  drivers/misc/vmw_vmci/vmci_host.c           |   2 +-
+>  drivers/misc/vmw_vmci/vmci_queue_pair.c     |   6 +-
+>  drivers/platform/goldfish/goldfish_pipe.c   |   3 +-
+>  drivers/rapidio/devices/rio_mport_cdev.c    |   4 +-
+>  drivers/sbus/char/oradax.c                  |   2 +-
+>  drivers/scsi/st.c                           |   3 +-
+>  drivers/staging/gasket/gasket_page_table.c  |   4 +-
+>  drivers/tee/tee_shm.c                       |   2 +-
+>  drivers/vfio/vfio_iommu_spapr_tce.c         |   3 +-
+>  drivers/vfio/vfio_iommu_type1.c             |   3 +-
+>  drivers/vhost/vhost.c                       |   2 +-
+>  drivers/video/fbdev/pvr2fb.c                |   2 +-
+>  drivers/virt/fsl_hypervisor.c               |   2 +-
+>  drivers/xen/gntdev.c                        |   2 +-
+>  fs/orangefs/orangefs-bufmap.c               |   2 +-
+>  include/linux/mm.h                          |  17 +-
+>  kernel/futex.c                              |   2 +-
+>  lib/iov_iter.c                              |   7 +-
+>  mm/gup.c                                    | 220 ++++++++++++--------
+>  mm/gup_benchmark.c                          |   5 +-
+>  mm/util.c                                   |   8 +-
+>  net/ceph/pagevec.c                          |   2 +-
+>  net/rds/info.c                              |   2 +-
+>  net/rds/rdma.c                              |   3 +-
+>  44 files changed, 232 insertions(+), 180 deletions(-)
+> 
+> -- 
+> 2.20.1
+> 
