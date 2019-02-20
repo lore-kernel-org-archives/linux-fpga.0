@@ -1,26 +1,35 @@
-Return-Path: <SRS0=E3xf=Q4=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=E3xf=Q4=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:41504 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725989AbfBUDOe (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 20 Feb 2019 22:14:34 -0500
+Return-Path: <SRS0=hiVB=Q3=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=hiVB=Q3=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-yw1-f65.google.com ([209.85.161.65]:43392 "EHLO
+        mail-yw1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726297AbfBTTaL (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 20 Feb 2019 14:30:11 -0500
+Received: by mail-yw1-f65.google.com with SMTP id u200so9658331ywu.10
+        for <linux-fpga@vger.kernel.org>; Wed, 20 Feb 2019 11:30:09 -0800 (PST)
 MIME-Version: 1.0
 References: <20190220053040.10831-1-ira.weiny@intel.com> <20190220053040.10831-4-ira.weiny@intel.com>
 In-Reply-To: <20190220053040.10831-4-ira.weiny@intel.com>
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Thu, 21 Feb 2019 08:48:41 +0530
-Message-ID: <CAFqt6zYvkhKw3GExRQB2e_c16KQqrKT=GoiqErA06txUQa2bMQ@mail.gmail.com>
+From: Mike Marshall <hubcap@omnibond.com>
+Date: Wed, 20 Feb 2019 14:29:57 -0500
+Message-ID: <CAOg9mSTTcD-9bCSDfC0WRYqfVrNB4TwOzL0c4+6QXi-N_Y43Vw@mail.gmail.com>
 Subject: Re: [RESEND PATCH 3/7] mm/gup: Change GUP fast to use flags rather
  than a write 'bool'
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
 To: ira.weiny@intel.com
-Cc: John Hubbard <jhubbard@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, linux-kernel@vger.kernel.org, Linux-MM <linux-mm@kvack.org>, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, linux-media@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>, "open list:ANDROID DRIVERS" <devel@driverdev.osuosl.org>, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com
+Cc: John Hubbard <jhubbard@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, linux-mm <linux-mm@kvack.org>, sparclinux@vger.kernel.org, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, rds-devel@oss.oracle.com, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, kvm-ppc@vger.kernel.org, ceph-devel@vger.kernel.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
 
-Hi Ira,
+Hi Ira
 
-On Wed, Feb 20, 2019 at 11:01 AM <ira.weiny@intel.com> wrote:
+Martin and I looked at your patch and agree that it doesn't change
+functionality for Orangefs.
+
+Reviewed-by: Mike Marshall <hubcap@omnibond.com>
+
+
+
+On Wed, Feb 20, 2019 at 12:32 AM <ira.weiny@intel.com> wrote:
 >
 > From: Ira Weiny <ira.weiny@intel.com>
 >
@@ -126,11 +135,6 @@ On Wed, Feb 20, 2019 at 11:01 AM <ira.weiny@intel.com> wrote:
 >         hva = gfn_to_hva_memslot(memslot, gfn);
 > -       npages = get_user_pages_fast(hva, 1, writing, pages);
 > +       npages = get_user_pages_fast(hva, 1, writing ? FOLL_WRITE : 0, pages);
-
-Just requesting for opinion,
-* writing ? FOLL_WRITE : 0 * is used in many places. How about placing it in a
-macro/ inline ?
-
 >         if (npages < 1) {
 >                 /* Check if it's an I/O mapping */
 >                 down_read(&current->mm->mmap_sem);
@@ -753,4 +757,5 @@ macro/ inline ?
 >                 while (ret--)
 > --
 > 2.20.1
+>
 >
