@@ -1,49 +1,42 @@
-Return-Path: <SRS0=hiVB=Q3=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=hiVB=Q3=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:42355 "EHLO mga11.intel.com"
+Return-Path: <SRS0=E3xf=Q4=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=E3xf=Q4=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mga18.intel.com ([134.134.136.126]:21580 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726233AbfBTFav (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 20 Feb 2019 00:30:51 -0500
-From: ira.weiny@intel.com
-Subject: [RESEND PATCH 5/7] IB/hfi1: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
-Date: Tue, 19 Feb 2019 21:30:38 -0800
-Message-Id: <20190220053040.10831-6-ira.weiny@intel.com>
-In-Reply-To: <20190220053040.10831-1-ira.weiny@intel.com>
-References: <20190220053040.10831-1-ira.weiny@intel.com>
+        id S1725385AbfBUFcr (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 21 Feb 2019 00:32:47 -0500
+Date: Thu, 21 Feb 2019 13:17:34 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH] fpga: expand minor range when registering chrdev region
+Message-ID: <20190221051734.GA19553@hao-dev>
+References: <20190212062451.1354-1-cgxu519@gmx.com>
+ <CAAtXAHck6a2LbWGb9Fu7+HP9Uz8oAhTOs9636AqD7P9SOSGi3A@mail.gmail.com>
+ <3a1c6ac6-ecfe-f21c-ef4c-0af8ab8536eb@gmx.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3a1c6ac6-ecfe-f21c-ef4c-0af8ab8536eb@gmx.com>
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: John Hubbard <jhubbard@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>
-Cc: Ira Weiny <ira.weiny@intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, linux-media@vger.kernel.org, linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com
+To: cgxu519 <cgxu519@gmx.com>
+Cc: Moritz Fischer <moritz.fischer@ettus.com>, Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org
 
-From: Ira Weiny <ira.weiny@intel.com>
+On Tue, Feb 12, 2019 at 10:32:14PM +0800, cgxu519 wrote:
+> On 2/12/19 6:54 PM, Moritz Fischer wrote:
+> >Hi Chengguang,
+> >
+> >On Mon, Feb 11, 2019 at 10:25 PM Chengguang Xu <cgxu519@gmx.com> wrote:
+> >>Actually, total amount of available minor number
+> >>for a single major is MINORMARK + 1. So expand
+> >Typo. MINORMASK?
+> 
+> Yeah, it's a typo, should be MINORMASK.
+> 
 
-Use the new FOLL_LONGTERM to get_user_pages_fast() to protect against
-FS DAX pages being mapped.
+Please fix this typo, and change the patch title to "fpga: dfl: ..."
 
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
----
- drivers/infiniband/hw/hfi1/user_pages.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+with above fixings,
 
-diff --git a/drivers/infiniband/hw/hfi1/user_pages.c b/drivers/infiniband/hw/hfi1/user_pages.c
-index 78ccacaf97d0..6a7f9cd5a94e 100644
---- a/drivers/infiniband/hw/hfi1/user_pages.c
-+++ b/drivers/infiniband/hw/hfi1/user_pages.c
-@@ -104,9 +104,11 @@ int hfi1_acquire_user_pages(struct mm_struct *mm, unsigned long vaddr, size_t np
- 			    bool writable, struct page **pages)
- {
- 	int ret;
-+	unsigned int gup_flags = writable ? FOLL_WRITE : 0;
- 
--	ret = get_user_pages_fast(vaddr, npages, writable ? FOLL_WRITE : 0,
--				  pages);
-+	gup_flags |= FOLL_LONGTERM;
-+
-+	ret = get_user_pages_fast(vaddr, npages, gup_flags, pages);
- 	if (ret < 0)
- 		return ret;
- 
--- 
-2.20.1
+Acked-by: Wu Hao <hao.wu@intel.com>
+
+Thanks
+Hao
