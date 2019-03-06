@@ -1,17 +1,12 @@
-Return-Path: <SRS0=Vlpq=RK=metux.net=info@kernel.org>
-Return-Path: <SRS0=Vlpq=RK=metux.net=info@kernel.org>
+Return-Path: <SRS0=jtri=RJ=metux.net=info@kernel.org>
+Return-Path: <SRS0=jtri=RJ=metux.net=info@kernel.org>
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
-Subject: [PATCH v2] drivers: fpga: Kconfig: pedantic cleanups
-Date: Thu,  7 Mar 2019 02:25:50 +0100
-Message-Id: <1551921950-28695-1-git-send-email-info@metux.net>
-In-Reply-To: <1551896937-31066-1-git-send-email-info@metux.net>
-References: <1551896937-31066-1-git-send-email-info@metux.net>
+Subject: [PATCH] drivers: fpga: Kconfig: pedantic cleanups
+Date: Wed,  6 Mar 2019 19:28:57 +0100
+Message-Id: <1551896937-31066-1-git-send-email-info@metux.net>
 To: linux-kernel@vger.kernel.org
 Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
-
-Formatting of Kconfig files doesn't look so pretty, so just
-take damp cloth and clean it up.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
