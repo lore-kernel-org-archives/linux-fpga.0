@@ -1,171 +1,39 @@
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH 04/17] Documentation: fpga: dfl: add descriptions for virtualization and new interfaces.
-Date: Mon, 25 Mar 2019 11:07:31 +0800
-Message-Id: <1553483264-5379-5-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=Vlpq=RK=metux.net=info@kernel.org>
+Return-Path: <SRS0=Vlpq=RK=metux.net=info@kernel.org>
+From: "Enrico Weigelt, metux IT consult" <info@metux.net>
+Subject: [PATCH v2] drivers: fpga: Kconfig: pedantic cleanups
+Date: Thu,  7 Mar 2019 02:25:50 +0100
+Message-Id: <1551921950-28695-1-git-send-email-info@metux.net>
+In-Reply-To: <1551896937-31066-1-git-send-email-info@metux.net>
+References: <1551896937-31066-1-git-send-email-info@metux.net>
+To: linux-kernel@vger.kernel.org
+Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds virtualization support description for DFL based
-FPGA devices (based on PCIe SRIOV), and introductions to new
-interfaces added by new dfl private features.
+Formatting of Kconfig files doesn't look so pretty, so just
+take damp cloth and clean it up.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- Documentation/fpga/dfl.txt | 115 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 115 insertions(+)
+ drivers/fpga/Kconfig | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
-index 6df4621..360c1d9 100644
---- a/Documentation/fpga/dfl.txt
-+++ b/Documentation/fpga/dfl.txt
-@@ -84,6 +84,8 @@ The following functions are exposed through ioctls:
-  Get driver API version (DFL_FPGA_GET_API_VERSION)
-  Check for extensions (DFL_FPGA_CHECK_EXTENSION)
-  Program bitstream (DFL_FPGA_FME_PORT_PR)
-+ Assign port to PF (DFL_FPGA_FME_PORT_ASSIGN)
-+ Release port from PF (DFL_FPGA_FME_PORT_RELEASE)
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 0bb7b5c..d6562df 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -25,9 +25,9 @@ config FPGA_MGR_SOCFPGA_A10
+ 	  FPGA manager driver support for Altera Arria10 SoCFPGA.
  
- More functions are exposed through sysfs
- (/sys/class/fpga_region/regionX/dfl-fme.n/):
-@@ -99,6 +101,24 @@ More functions are exposed through sysfs
-      one FPGA device may have more than one port, this sysfs interface indicates
-      how many ports the FPGA device has.
+ config ALTERA_PR_IP_CORE
+-        tristate "Altera Partial Reconfiguration IP Core"
+-        help
+-          Core driver support for Altera Partial Reconfiguration IP component
++	tristate "Altera Partial Reconfiguration IP Core"
++	help
++	  Core driver support for Altera Partial Reconfiguration IP component
  
-+ Power management (power_mgmt/)
-+     power management sysfs interfaces allow user to read power management
-+     information (power consumption, power limits, throttling thresholds,
-+     thresholds status, etc) and configure power thresholds for different
-+     throttling levels.
-+
-+ Thermal management (thermal_mgmt/)
-+     thermal management sysfs interfaces allow user to read temperature,
-+     thresholds, thresholds status and other thermal related information.
-+
-+ Global error reporting management (errors/)
-+     error reporting sysfs interfaces allow user to read errors detected by the
-+     hardware, and clear the logged errors.
-+
-+ Performance counters (perf/)
-+     performance counters sysfs interfaces allow user to use different counters
-+     to get performance data.
-+
- 
- FIU - PORT
- ==========
-@@ -139,6 +159,10 @@ More functions are exposed through sysfs:
-  Read Accelerator GUID (afu_id)
-      afu_id indicates which PR bitstream is programmed to this AFU.
- 
-+ Error reporting (errors/)
-+     error reporting sysfs interfaces allow user to read port/afu errors
-+     detected by the hardware, and clear the logged errors.
-+
- 
- DFL Framework Overview
- ======================
-@@ -212,6 +236,97 @@ the compat_id exposed by the target FPGA region. This check is usually done by
- userspace before calling the reconfiguration IOCTL.
- 
- 
-+FPGA virtualization - PCIe SRIOV
-+================================
-+This section describes the virtualization support on DFL based FPGA device to
-+enable accessing an accelerator from applications running in a virtual machine
-+(VM). This section only describes the PCIe based FPGA device with SRIOV support.
-+
-+Features supported by the particular FPGA device are exposed through Device
-+Feature Lists, as illustrated below:
-+
-+  +-------------------------------+  +-------------+
-+  |              PF               |  |     VF      |
-+  +-------------------------------+  +-------------+
-+      ^            ^         ^              ^
-+      |            |         |              |
-++-----|------------|---------|--------------|-------+
-+|     |            |         |              |       |
-+|  +-----+     +-------+ +-------+      +-------+   |
-+|  | FME |     | Port0 | | Port1 |      | Port2 |   |
-+|  +-----+     +-------+ +-------+      +-------+   |
-+|                  ^         ^              ^       |
-+|                  |         |              |       |
-+|              +-------+ +------+       +-------+   |
-+|              |  AFU  | |  AFU |       |  AFU  |   |
-+|              +-------+ +------+       +-------+   |
-+|                                                   |
-+|            DFL based FPGA PCIe Device             |
-++---------------------------------------------------+
-+
-+FME is always accessed through the physical function (PF).
-+
-+Ports (and related AFUs) are accessed via PF by default, but could be exposed
-+through virtual function (VF) devices via PCIe SRIOV. Each VF only contains
-+1 Port and 1 AFU for isolation. Users could assign individual VFs (accelerators)
-+created via PCIe SRIOV interface, to virtual machines.
-+
-+The driver organization in virtualization case is illustrated below:
-+
-+  +-------++------++------+             |
-+  | FME   || FME  || FME  |             |
-+  | FPGA  || FPGA || FPGA |             |
-+  |Manager||Bridge||Region|             |
-+  +-------++------++------+             |
-+  +-----------------------+  +--------+ |             +--------+
-+  |          FME          |  |  AFU   | |             |  AFU   |
-+  |         Module        |  | Module | |             | Module |
-+  +-----------------------+  +--------+ |             +--------+
-+        +-----------------------+       |       +-----------------------+
-+        | FPGA Container Device |       |       | FPGA Container Device |
-+        |  (FPGA Base Region)   |       |       |  (FPGA Base Region)   |
-+        +-----------------------+       |       +-----------------------+
-+          +------------------+          |         +------------------+
-+          | FPGA PCIE Module |          | Virtual | FPGA PCIE Module |
-+          +------------------+   Host   | Machine +------------------+
-+ -------------------------------------- | ------------------------------
-+           +---------------+            |          +---------------+
-+           | PCI PF Device |            |          | PCI VF Device |
-+           +---------------+            |          +---------------+
-+
-+FPGA PCIe device driver is always loaded first once a FPGA PCIe PF or VF device
-+is detected. It:
-+
-+	a) finish enumeration on both FPGA PCIe PF and VF device using common
-+	   interfaces from DFL framework.
-+	b) supports SRIOV.
-+
-+The FME device driver plays a management role in this driver architecture, it
-+provides ioctls to release Port from PF and assign Port to PF. After release
-+a port from PF, then it's safe to expose this port through a VF via PCIe SRIOV
-+sysfs interface.
-+
-+To enable accessing an accelerator from applications running in a VM, the
-+respective AFU's port needs to be assigned to a VF using the following steps:
-+
-+	a) The PF owns all AFU ports by default. Any port that needs to be
-+	   reassigned to a VF must first be released through the
-+	   DFL_FPGA_FME_PORT_RELEASE ioctl on the FME device.
-+
-+	b) Once N ports are released from PF, then user can use command below
-+	   to enable SRIOV and VFs. Each VF owns only one Port with AFU.
-+
-+	   echo N > $PCI_DEVICE_PATH/sriov_numvfs
-+
-+	c) Pass through the VFs to VMs
-+
-+	d) The AFU under VF is accessible from applications in VM (using the
-+	   same driver inside the VF).
-+
-+Note that an FME can't be assigned to a VF, thus PR and other management
-+functions are only available via the PF.
-+
-+
- Device enumeration
- ==================
- This section introduces how applications enumerate the fpga device from
+ config ALTERA_PR_IP_CORE_PLAT
+ 	tristate "Platform support of Altera Partial Reconfiguration IP Core"
 -- 
-2.7.4
+1.9.1
