@@ -1,127 +1,53 @@
-Return-Path: <SRS0=t8ba=QS=oracle.com=daniel.m.jordan@kernel.org>
-Return-Path: <SRS0=t8ba=QS=oracle.com=daniel.m.jordan@kernel.org>
-From: Daniel Jordan <daniel.m.jordan@oracle.com>
-Subject: [PATCH 3/5] fpga/dlf/afu: use pinned_vm instead of locked_vm to account pinned pages
-Date: Mon, 11 Feb 2019 17:44:35 -0500
-Message-Id: <20190211224437.25267-4-daniel.m.jordan@oracle.com>
-In-Reply-To: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
-References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
+Return-Path: <SRS0=2IxU=RK=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=2IxU=RK=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-eopbgr730048.outbound.protection.outlook.com ([40.107.73.48]:41344
+        "EHLO NAM05-DM3-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726159AbfCGLGX (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 7 Mar 2019 06:06:23 -0500
+Subject: Re: FPGA Manager - Partial Reconfiguration support for Xilinx
+ Zynq-7000
+References: <5bdf4d79-c0d6-30c1-1eb0-360b7dce615b@gmail.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Message-ID: <70789e51-cb23-9776-dafe-fb34a0736bad@xilinx.com>
+Date: Thu, 7 Mar 2019 12:06:00 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: jgg@ziepe.ca
-Cc: akpm@linux-foundation.org, dave@stgolabs.net, jack@suse.cz, cl@linux.com, linux-mm@kvack.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, alex.williamson@redhat.com, paulus@ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au, hao.wu@intel.com, atull@kernel.org, mdf@kernel.org, aik@ozlabs.ru, daniel.m.jordan@oracle.com
-List-ID: <linux-fpga@vger.kernel.org>
+In-Reply-To: <5bdf4d79-c0d6-30c1-1eb0-360b7dce615b@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Alper Yazar <alperyazar2@gmail.com>, linux-fpga@vger.kernel.org, Nava kishore Manne <navam@xilinx.com>
+Cc: Ronan Keryell <rkeryell@xilinx.com>
 
-Beginning with bc3e53f682d9 ("mm: distinguish between mlocked and pinned
-pages"), locked and pinned pages are accounted separately.  The FPGA AFU
-driver accounts pinned pages to locked_vm; use pinned_vm instead.
+Hi,
 
-pinned_vm recently became atomic and so no longer relies on mmap_sem
-held as writer: delete.
+On 03. 03. 19 12:32, Alper Yazar wrote:
+> Hi,
+> 
+> I asked the question on Xilinx forums about 1 months ago but didn't get any response [1]. I hope that someone on this list may guide me.
+> 
+> I am creating Linux based images for Zynq-7000 devices by using Petalinux 2018.3 which is a set of build tools provided by Xilinx. For FPGA management, FPGA Manager is included by default. However it doesn't support partial reconfiguration for Zynq-7000 devices as stated [2]. I tested and verified that it doesn't work. I assumed that /drivers/fpga/zynq-fpga.c is the source code, checked it and noticed some comments about partial reconfig. AFAIK previous driver used by Xilinx before FPGA Manager whose source code file is xilinx_devcfg.c supported partial reconfig. So I don't think that there is a hardware limitation since the previous solution was working on the same device. So I wonder why the newest method is less capable than the older one. I need partial reconfig support for the newest petalinux version. What should I do?
+> 
+> a) Compile old xilinx_devcfg.c driver for Petalinux 2018.3 and disable FPGA Manager. 
+> 
+> b) Somehow patch FPGA Manager
+> 
+> c) Wait (how long?) Xilinx to solve this issue
+> 
+> Two names are listed as MODULE_AUTHOR of zynq-fpga.c: Moritz Fischer and Michal Simek. I don't know whether they are subscribed to this list or not.
+> 
+> 
+> [1]: https://forums.xilinx.com/t5/Embedded-Linux/Partial-Reconfiguration-support-in-Petalinux-2018-3-for-Zynq/td-p/934057
+> [2]: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841645/Solution+Zynq+PL+Programming+With+FPGA+Manager
 
-Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
----
- drivers/fpga/dfl-afu-dma-region.c | 50 ++++++++++++++-----------------
- 1 file changed, 23 insertions(+), 27 deletions(-)
+Nava: Can you please check if partial reconfiguration is still working?
+I see code in the driver.
 
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index e18a786fc943..a9a6b317fe2e 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -32,47 +32,43 @@ void afu_dma_region_init(struct dfl_feature_platform_data *pdata)
- }
- 
- /**
-- * afu_dma_adjust_locked_vm - adjust locked memory
-+ * afu_dma_adjust_pinned_vm - adjust pinned memory
-  * @dev: port device
-  * @npages: number of pages
-- * @incr: increase or decrease locked memory
-  *
-- * Increase or decrease the locked memory size with npages input.
-+ * Increase or decrease the pinned memory size with npages input.
-  *
-  * Return 0 on success.
-- * Return -ENOMEM if locked memory size is over the limit and no CAP_IPC_LOCK.
-+ * Return -ENOMEM if pinned memory size is over the limit and no CAP_IPC_LOCK.
-  */
--static int afu_dma_adjust_locked_vm(struct device *dev, long npages, bool incr)
-+static int afu_dma_adjust_pinned_vm(struct device *dev, long pages)
- {
--	unsigned long locked, lock_limit;
-+	unsigned long lock_limit;
-+	s64 pinned_vm;
- 	int ret = 0;
- 
- 	/* the task is exiting. */
--	if (!current->mm)
-+	if (!current->mm || !pages)
- 		return 0;
- 
--	down_write(&current->mm->mmap_sem);
--
--	if (incr) {
--		locked = current->mm->locked_vm + npages;
-+	if (pages > 0) {
- 		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		pinned_vm = atomic64_add_return(pages, &current->mm->pinned_vm);
-+		if (pinned_vm > lock_limit && !capable(CAP_IPC_LOCK)) {
- 			ret = -ENOMEM;
--		else
--			current->mm->locked_vm += npages;
-+			atomic64_sub(pages, &current->mm->pinned_vm);
-+		}
- 	} else {
--		if (WARN_ON_ONCE(npages > current->mm->locked_vm))
--			npages = current->mm->locked_vm;
--		current->mm->locked_vm -= npages;
-+		pinned_vm = atomic64_read(&current->mm->pinned_vm);
-+		if (WARN_ON_ONCE(pages > pinned_vm))
-+			pages = pinned_vm;
-+		atomic64_sub(pages, &current->mm->pinned_vm);
- 	}
- 
--	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %ld/%ld%s\n", current->pid,
--		incr ? '+' : '-', npages << PAGE_SHIFT,
--		current->mm->locked_vm << PAGE_SHIFT, rlimit(RLIMIT_MEMLOCK),
--		ret ? "- exceeded" : "");
--
--	up_write(&current->mm->mmap_sem);
-+	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %lld/%lu%s\n", current->pid,
-+		(pages > 0) ? '+' : '-', pages << PAGE_SHIFT,
-+		(s64)atomic64_read(&current->mm->pinned_vm) << PAGE_SHIFT,
-+		rlimit(RLIMIT_MEMLOCK), ret ? "- exceeded" : "");
- 
- 	return ret;
- }
-@@ -92,7 +88,7 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
- 	struct device *dev = &pdata->dev->dev;
- 	int ret, pinned;
- 
--	ret = afu_dma_adjust_locked_vm(dev, npages, true);
-+	ret = afu_dma_adjust_pinned_vm(dev, npages);
- 	if (ret)
- 		return ret;
- 
-@@ -121,7 +117,7 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
- free_pages:
- 	kfree(region->pages);
- unlock_vm:
--	afu_dma_adjust_locked_vm(dev, npages, false);
-+	afu_dma_adjust_pinned_vm(dev, -npages);
- 	return ret;
- }
- 
-@@ -141,7 +137,7 @@ static void afu_dma_unpin_pages(struct dfl_feature_platform_data *pdata,
- 
- 	put_all_pages(region->pages, npages);
- 	kfree(region->pages);
--	afu_dma_adjust_locked_vm(dev, npages, false);
-+	afu_dma_adjust_pinned_vm(dev, -npages);
- 
- 	dev_dbg(dev, "%ld pages unpinned\n", npages);
- }
--- 
-2.20.1
+Alper: Can you please use u-boot and check that your bitstreams are
+correct?
+Also will be good to have some logs to see what it is happening.
+
+Thanks,
+Michal
