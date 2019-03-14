@@ -1,11 +1,11 @@
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
+Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
+Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
 From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v5 5/6] dt-bindings: nvmem: Add bindings for ZynqMP nvmem driver
-Date: Tue, 26 Mar 2019 20:01:28 +0530
-Message-ID: <20190326143129.2608-6-nava.manne@xilinx.com>
-In-Reply-To: <20190326143129.2608-1-nava.manne@xilinx.com>
-References: <20190326143129.2608-1-nava.manne@xilinx.com>
+Subject: [PATCH v4 5/6] dt-bindings: nvmem: Add bindings for ZynqMP nvmem driver
+Date: Thu, 14 Mar 2019 19:31:21 +0530
+Message-ID: <20190314140122.23372-6-nava.manne@xilinx.com>
+In-Reply-To: <20190314140122.23372-1-nava.manne@xilinx.com>
+References: <20190314140122.23372-1-nava.manne@xilinx.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
