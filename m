@@ -1,554 +1,310 @@
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH 16/17] fpga: dfl: fme: add global error reporting support
-Date: Mon, 25 Mar 2019 11:07:43 +0800
-Message-Id: <1553483264-5379-17-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
+Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
+From: Nava kishore Manne <nava.manne@xilinx.com>
+Subject: [PATCH v4 4/6] dt-bindings: pinctrl: Add ZynqMP pin controller bindings
+Date: Thu, 14 Mar 2019 19:31:20 +0530
+Message-ID: <20190314140122.23372-5-nava.manne@xilinx.com>
+In-Reply-To: <20190314140122.23372-1-nava.manne@xilinx.com>
+References: <20190314140122.23372-1-nava.manne@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Cc: Rajan Vaja <rajan.vaja@xilinx.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds support for global error reporting for FPGA
-Management Engine (FME), it introduces sysfs interfaces to
-report different error detected by the hardware, and allow
-user to clear errors or inject error for testing purpose.
+From: Rajan Vaja <rajan.vaja@xilinx.com>
 
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+Add documentation to describe Xilinx ZynqMP pin controller
+bindings.
+
+Signed-off-by: Rajan Vaja <rajan.vaja@xilinx.com>
+Signed-off-by: Jolly Shah <jollys@xilinx.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- Documentation/ABI/testing/sysfs-platform-dfl-fme |  58 ++++
- drivers/fpga/Makefile                            |   2 +-
- drivers/fpga/dfl-fme-error.c                     | 390 +++++++++++++++++++++++
- drivers/fpga/dfl-fme-main.c                      |   4 +
- drivers/fpga/dfl-fme.h                           |   2 +
- drivers/fpga/dfl.h                               |   2 +
- 6 files changed, 457 insertions(+), 1 deletion(-)
- create mode 100644 drivers/fpga/dfl-fme-error.c
+ .../bindings/pinctrl/xlnx,zynqmp-pinctrl.txt  | 275 ++++++++++++++++++
+ 1 file changed, 275 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/pinctrl/xlnx,zynqmp-pinctrl.txt
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-index 4b6448f..38f9cdd 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-@@ -156,3 +156,61 @@ KernelVersion:  5.2
- Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-only. Read this file to get power limit for fpga, it
- 		is only valid for integrated solution.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme-errors/errors
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get errors detected by hardware.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme-errors/first_error
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the first error detected by
-+		hardware.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme-errors/next_error
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the second error detected by
-+		hardware.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme-errors/clear
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Write-only. Write error code to this file to clear errors. If
-+		the input error code doesn't match, it returns -EBUSY.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/pcie0_errors
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns errors detected on pcie0 link.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/pcie1_errors
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns errors detected on pcie1 link.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/nonfatal_errors
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns non-fatal errors detected.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/catfatal_errors
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns catastrophic and fatal errors detected.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/inject_error
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Write. Write this file to inject errors for testing
-+		purpose. Read this file to check errors injected.
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index f1f0af7..1a9fa3d 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -38,7 +38,7 @@ obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= dfl-fme-br.o
- obj-$(CONFIG_FPGA_DFL_FME_REGION)	+= dfl-fme-region.o
- obj-$(CONFIG_FPGA_DFL_AFU)		+= dfl-afu.o
- 
--dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
-+dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o dfl-fme-error.o
- dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
- dfl-afu-objs += dfl-afu-error.o
- 
-diff --git a/drivers/fpga/dfl-fme-error.c b/drivers/fpga/dfl-fme-error.c
+diff --git a/Documentation/devicetree/bindings/pinctrl/xlnx,zynqmp-pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/xlnx,zynqmp-pinctrl.txt
 new file mode 100644
-index 0000000..f2bd5f8
+index 000000000000..acf44a5d3778
 --- /dev/null
-+++ b/drivers/fpga/dfl-fme-error.c
-@@ -0,0 +1,390 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Driver for FPGA Management Engine Error Management
-+ *
-+ * Copyright 2019 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Mitchel, Henry <henry.mitchel@intel.com>
-+ */
++++ b/Documentation/devicetree/bindings/pinctrl/xlnx,zynqmp-pinctrl.txt
+@@ -0,0 +1,275 @@
++	Binding for Xilinx ZynqMP Pinctrl
 +
-+#include <linux/uaccess.h>
++Required properties:
++- compatible: "xlnx,zynqmp-pinctrl"
 +
-+#include "dfl.h"
-+#include "dfl-fme.h"
++Please refer to pinctrl-bindings.txt in this directory for details of the
++common pinctrl bindings used by client devices, including the meaning of the
++phrase "pin configuration node".
 +
-+#define FME_ERROR_MASK		0x8
-+#define FME_ERROR		0x10
-+#define MBP_ERROR		BIT_ULL(6)
-+#define PCIE0_ERROR_MASK	0x18
-+#define PCIE0_ERROR		0x20
-+#define PCIE1_ERROR_MASK	0x28
-+#define PCIE1_ERROR		0x30
-+#define FME_FIRST_ERROR		0x38
-+#define FME_NEXT_ERROR		0x40
-+#define RAS_NONFAT_ERROR_MASK	0x48
-+#define RAS_NONFAT_ERROR	0x50
-+#define RAS_CATFAT_ERROR_MASK	0x58
-+#define RAS_CATFAT_ERROR	0x60
-+#define RAS_ERROR_INJECT	0x68
-+#define INJECT_ERROR_MASK	GENMASK_ULL(2, 0)
++ZynqMP's pin configuration nodes act as a container for an arbitrary number of
++subnodes. Each of these subnodes represents some desired configuration for a
++pin, a group, or a list of pins or groups. This configuration can include the
++mux function to select on those pin(s)/group(s), and various pin configuration
++parameters, such as pull-up, slew rate, etc.
 +
-+static ssize_t errors_show(struct device *dev,
-+			   struct device_attribute *attr, char *buf)
-+{
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
++Each configuration node can consist of multiple nodes describing the pinmux and
++pinconf options. Those nodes can be pinmux nodes or pinconf nodes.
 +
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++The name of each subnode is not important; all subnodes should be enumerated
++and processed purely based on their content.
 +
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			 (unsigned long long)readq(base + FME_ERROR));
-+}
-+static DEVICE_ATTR_RO(errors);
++Required properties for pinmux nodes are:
++ - groups: A list of pinmux groups.
++ - function: The name of a pinmux function to activate for the specified set
++   of groups.
 +
-+static ssize_t first_error_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
++Required properties for configuration nodes:
++One of:
++ - pins: A list of pin names
++ - groups: A list of pinmux groups.
 +
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++The following generic properties as defined in pinctrl-bindings.txt are valid
++to specify in a pinmux subnode:
++ groups, function
 +
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			 (unsigned long long)readq(base + FME_FIRST_ERROR));
-+}
-+static DEVICE_ATTR_RO(first_error);
++The following generic properties as defined in pinctrl-bindings.txt are valid
++to specify in a pinconf subnode:
++ groups, pins, bias-disable, bias-pull-up, bias-pull-down, slew-rate
 +
-+static ssize_t next_error_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
++ Valid arguments for 'slew-rate' are 'SLEW_RATE_SLOW' and 'SLEW_RATE_FAST' to
++ select between slow and fast respectively.
 +
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++ Valid values for groups are:
++ ethernet0_0_grp, ethernet1_0_grp, ethernet2_0_grp,
++ ethernet3_0_grp, gemtsu0_0_grp, gemtsu0_1_grp,
++ gemtsu0_2_grp, mdio0_0_grp, mdio1_0_grp,
++ mdio1_1_grp, mdio2_0_grp, mdio3_0_grp,
++ qspi0_0_grp, qspi_ss_0_grp, qspi_fbclk_0_grp,
++ spi0_0_grp, spi0_ss_0_grp, spi0_ss_1_grp,
++ spi0_ss_2_grp, spi0_1_grp, spi0_ss_3_grp,
++ spi0_ss_4_grp, spi0_ss_5_grp, spi0_2_grp,
++ spi0_ss_6_grp, spi0_ss_7_grp, spi0_ss_8_grp,
++ spi0_3_grp, spi0_ss_9_grp, spi0_ss_10_grp,
++ spi0_ss_11_grp, spi0_4_grp, spi0_ss_12_grp,
++ spi0_ss_13_grp, spi0_ss_14_grp, spi0_5_grp,
++ spi0_ss_15_grp, spi0_ss_16_grp, spi0_ss_17_grp,
++ spi1_0_grp, spi1_ss_0_grp, spi1_ss_1_grp,
++ spi1_ss_2_grp, spi1_1_grp, spi1_ss_3_grp,
++ spi1_ss_4_grp, spi1_ss_5_grp, spi1_2_grp,
++ spi1_ss_6_grp, spi1_ss_7_grp, spi1_ss_8_grp,
++ spi1_3_grp, spi1_ss_9_grp, spi1_ss_10_grp,
++ spi1_ss_11_grp, spi1_4_grp, spi1_ss_12_grp,
++ spi1_ss_13_grp, spi1_ss_14_grp, spi1_5_grp,
++ spi1_ss_15_grp, spi1_ss_16_grp, spi1_ss_17_grp,
++ sdio0_0_grp, sdio0_1_grp, sdio0_2_grp,
++ sdio0_3_grp, sdio0_4_grp, sdio0_5_grp,
++ sdio0_6_grp, sdio0_7_grp, sdio0_8_grp,
++ sdio0_9_grp, sdio0_10_grp, sdio0_11_grp,
++ sdio0_12_grp, sdio0_13_grp, sdio0_14_grp,
++ sdio0_15_grp, sdio0_16_grp, sdio0_17_grp,
++ sdio0_18_grp, sdio0_19_grp, sdio0_20_grp,
++ sdio0_21_grp, sdio0_22_grp, sdio0_23_grp,
++ sdio0_24_grp, sdio0_25_grp, sdio0_26_grp,
++ sdio0_27_grp, sdio0_28_grp, sdio0_29_grp,
++ sdio0_30_grp, sdio0_31_grp, sdio0_32_grp,
++ sdio0_pc_0_grp, sdio0_cd_0_grp, sdio0_wp_0_grp,
++ sdio0_pc_1_grp, sdio0_cd_1_grp, sdio0_wp_1_grp,
++ sdio0_pc_2_grp, sdio0_cd_2_grp, sdio0_wp_2_grp,
++ sdio1_0_grp, sdio1_1_grp, sdio1_2_grp,
++ sdio1_3_grp, sdio1_4_grp, sdio1_5_grp,
++ sdio1_6_grp, sdio1_7_grp, sdio1_8_grp,
++ sdio1_9_grp, sdio1_10_grp, sdio1_11_grp,
++ sdio1_12_grp, sdio1_13_grp, sdio1_14_grp,
++ sdio1_15_grp, sdio1_pc_0_grp, sdio1_cd_0_grp,
++ sdio1_wp_0_grp, sdio1_pc_1_grp, sdio1_cd_1_grp,
++ sdio1_wp_1_grp, nand0_0_grp, nand0_ce_0_grp,
++ nand0_rb_0_grp, nand0_dqs_0_grp, nand0_ce_1_grp,
++ nand0_rb_1_grp, nand0_dqs_1_grp, can0_0_grp,
++ can0_1_grp, can0_2_grp, can0_3_grp,
++ can0_4_grp, can0_5_grp, can0_6_grp,
++ can0_7_grp, can0_8_grp, can0_9_grp,
++ can0_10_grp, can0_11_grp, can0_12_grp,
++ can0_13_grp, can0_14_grp, can0_15_grp,
++ can0_16_grp, can0_17_grp, can0_18_grp,
++ can1_0_grp, can1_1_grp, can1_2_grp,
++ can1_3_grp, can1_4_grp, can1_5_grp,
++ can1_6_grp, can1_7_grp, can1_8_grp,
++ can1_9_grp, can1_10_grp, can1_11_grp,
++ can1_12_grp, can1_13_grp, can1_14_grp,
++ can1_15_grp, can1_16_grp, can1_17_grp,
++ can1_18_grp, can1_19_grp, uart0_0_grp,
++ uart0_1_grp, uart0_2_grp, uart0_3_grp,
++ uart0_4_grp, uart0_5_grp, uart0_6_grp,
++ uart0_7_grp, uart0_8_grp, uart0_9_grp,
++ uart0_10_grp, uart0_11_grp, uart0_12_grp,
++ uart0_13_grp, uart0_14_grp, uart0_15_grp,
++ uart0_16_grp, uart0_17_grp, uart0_18_grp,
++ uart1_0_grp, uart1_1_grp, uart1_2_grp,
++ uart1_3_grp, uart1_4_grp, uart1_5_grp,
++ uart1_6_grp, uart1_7_grp, uart1_8_grp,
++ uart1_9_grp, uart1_10_grp, uart1_11_grp,
++ uart1_12_grp, uart1_13_grp, uart1_14_grp,
++ uart1_15_grp, uart1_16_grp, uart1_17_grp,
++ uart1_18_grp, i2c0_0_grp, i2c0_1_grp,
++ i2c0_2_grp, i2c0_3_grp, i2c0_4_grp,
++ i2c0_5_grp, i2c0_6_grp, i2c0_7_grp,
++ i2c0_8_grp, i2c0_9_grp, i2c0_10_grp,
++ i2c0_11_grp, i2c0_12_grp, i2c0_13_grp,
++ i2c0_14_grp, i2c0_15_grp, i2c0_16_grp,
++ i2c0_17_grp, i2c0_18_grp, i2c1_0_grp,
++ i2c1_1_grp, i2c1_2_grp, i2c1_3_grp,
++ i2c1_4_grp, i2c1_5_grp, i2c1_6_grp,
++ i2c1_7_grp, i2c1_8_grp, i2c1_9_grp,
++ i2c1_10_grp, i2c1_11_grp, i2c1_12_grp,
++ i2c1_13_grp, i2c1_14_grp, i2c1_15_grp,
++ i2c1_16_grp, i2c1_17_grp, i2c1_18_grp,
++ i2c1_19_grp, ttc0_clk_0_grp, ttc0_wav_0_grp,
++ ttc0_clk_1_grp, ttc0_wav_1_grp, ttc0_clk_2_grp,
++ ttc0_wav_2_grp, ttc0_clk_3_grp, ttc0_wav_3_grp,
++ ttc0_clk_4_grp, ttc0_wav_4_grp, ttc0_clk_5_grp,
++ ttc0_wav_5_grp, ttc0_clk_6_grp, ttc0_wav_6_grp,
++ ttc0_clk_7_grp, ttc0_wav_7_grp, ttc0_clk_8_grp,
++ ttc0_wav_8_grp, ttc1_clk_0_grp, ttc1_wav_0_grp,
++ ttc1_clk_1_grp, ttc1_wav_1_grp, ttc1_clk_2_grp,
++ ttc1_wav_2_grp, ttc1_clk_3_grp, ttc1_wav_3_grp,
++ ttc1_clk_4_grp, ttc1_wav_4_grp, ttc1_clk_5_grp,
++ ttc1_wav_5_grp, ttc1_clk_6_grp, ttc1_wav_6_grp,
++ ttc1_clk_7_grp, ttc1_wav_7_grp, ttc1_clk_8_grp,
++ ttc1_wav_8_grp, ttc2_clk_0_grp, ttc2_wav_0_grp,
++ ttc2_clk_1_grp, ttc2_wav_1_grp, ttc2_clk_2_grp,
++ ttc2_wav_2_grp, ttc2_clk_3_grp, ttc2_wav_3_grp,
++ ttc2_clk_4_grp, ttc2_wav_4_grp, ttc2_clk_5_grp,
++ ttc2_wav_5_grp, ttc2_clk_6_grp, ttc2_wav_6_grp,
++ ttc2_clk_7_grp, ttc2_wav_7_grp, ttc2_clk_8_grp,
++ ttc2_wav_8_grp, ttc3_clk_0_grp, ttc3_wav_0_grp,
++ ttc3_clk_1_grp, ttc3_wav_1_grp, ttc3_clk_2_grp,
++ ttc3_wav_2_grp, ttc3_clk_3_grp, ttc3_wav_3_grp,
++ ttc3_clk_4_grp, ttc3_wav_4_grp, ttc3_clk_5_grp,
++ ttc3_wav_5_grp, ttc3_clk_6_grp, ttc3_wav_6_grp,
++ ttc3_clk_7_grp, ttc3_wav_7_grp, ttc3_clk_8_grp,
++ ttc3_wav_8_grp, swdt0_clk_0_grp, swdt0_rst_0_grp,
++ swdt0_clk_1_grp, swdt0_rst_1_grp, swdt0_clk_2_grp,
++ swdt0_rst_2_grp, swdt0_clk_3_grp, swdt0_rst_3_grp,
++ swdt0_clk_4_grp, swdt0_rst_4_grp, swdt0_clk_5_grp,
++ swdt0_rst_5_grp, swdt0_clk_6_grp, swdt0_rst_6_grp,
++ swdt0_clk_7_grp, swdt0_rst_7_grp, swdt0_clk_8_grp,
++ swdt0_rst_8_grp, swdt0_clk_9_grp, swdt0_rst_9_grp,
++ swdt0_clk_10_grp, swdt0_rst_10_grp, swdt0_clk_11_grp,
++ swdt0_rst_11_grp, swdt0_clk_12_grp, swdt0_rst_12_grp,
++ swdt1_clk_0_grp, swdt1_rst_0_grp, swdt1_clk_1_grp,
++ swdt1_rst_1_grp, swdt1_clk_2_grp, swdt1_rst_2_grp,
++ swdt1_clk_3_grp, swdt1_rst_3_grp, swdt1_clk_4_grp,
++ swdt1_rst_4_grp, swdt1_clk_5_grp, swdt1_rst_5_grp,
++ swdt1_clk_6_grp, swdt1_rst_6_grp, swdt1_clk_7_grp,
++ swdt1_rst_7_grp, swdt1_clk_8_grp, swdt1_rst_8_grp,
++ swdt1_clk_9_grp, swdt1_rst_9_grp, swdt1_clk_10_grp,
++ swdt1_rst_10_grp, swdt1_clk_11_grp, swdt1_rst_11_grp,
++ swdt1_clk_12_grp, swdt1_rst_12_grp, gpio0_0_grp,
++ gpio0_1_grp, gpio0_2_grp, gpio0_3_grp,
++ gpio0_4_grp, gpio0_5_grp, gpio0_6_grp,
++ gpio0_7_grp, gpio0_8_grp, gpio0_9_grp,
++ gpio0_10_grp, gpio0_11_grp, gpio0_12_grp,
++ gpio0_13_grp, gpio0_14_grp, gpio0_15_grp,
++ gpio0_16_grp, gpio0_17_grp, gpio0_18_grp,
++ gpio0_19_grp, gpio0_20_grp, gpio0_21_grp,
++ gpio0_22_grp, gpio0_23_grp, gpio0_24_grp,
++ gpio0_25_grp, gpio0_26_grp, gpio0_27_grp,
++ gpio0_28_grp, gpio0_29_grp, gpio0_30_grp,
++ gpio0_31_grp, gpio0_32_grp, gpio0_33_grp,
++ gpio0_34_grp, gpio0_35_grp, gpio0_36_grp,
++ gpio0_37_grp, gpio0_38_grp, gpio0_39_grp,
++ gpio0_40_grp, gpio0_41_grp, gpio0_42_grp,
++ gpio0_43_grp, gpio0_44_grp, gpio0_45_grp,
++ gpio0_46_grp, gpio0_47_grp, gpio0_48_grp,
++ gpio0_49_grp, gpio0_50_grp, gpio0_51_grp,
++ gpio0_52_grp, gpio0_53_grp, gpio0_54_grp,
++ gpio0_55_grp, gpio0_56_grp, gpio0_57_grp,
++ gpio0_58_grp, gpio0_59_grp, gpio0_60_grp,
++ gpio0_61_grp, gpio0_62_grp, gpio0_63_grp,
++ gpio0_64_grp, gpio0_65_grp, gpio0_66_grp,
++ gpio0_67_grp, gpio0_68_grp, gpio0_69_grp,
++ gpio0_70_grp, gpio0_71_grp, gpio0_72_grp,
++ gpio0_73_grp, gpio0_74_grp, gpio0_75_grp,
++ gpio0_76_grp, gpio0_77_grp, usb0_0_grp,
++ usb1_0_grp, pmu0_0_grp, pmu0_1_grp,
++ pmu0_2_grp, pmu0_3_grp, pmu0_4_grp,
++ pmu0_5_grp, pmu0_6_grp, pmu0_7_grp,
++ pmu0_8_grp, pmu0_9_grp, pmu0_10_grp,
++ pmu0_11_grp, pcie0_0_grp, pcie0_1_grp,
++ pcie0_2_grp, pcie0_3_grp, pcie0_4_grp,
++ pcie0_5_grp, pcie0_6_grp, pcie0_7_grp,
++ csu0_0_grp, csu0_1_grp, csu0_2_grp,
++ csu0_3_grp, csu0_4_grp, csu0_5_grp,
++ csu0_6_grp, csu0_7_grp, csu0_8_grp,
++ csu0_9_grp, csu0_10_grp, csu0_11_grp,
++ dpaux0_0_grp, dpaux0_1_grp, dpaux0_2_grp,
++ dpaux0_3_grp, pjtag0_0_grp, pjtag0_1_grp,
++ pjtag0_2_grp, pjtag0_3_grp, pjtag0_4_grp,
++ pjtag0_5_grp, trace0_0_grp, trace0_clk_0_grp,
++ trace0_1_grp, trace0_clk_1_grp, trace0_2_grp,
++ trace0_clk_2_grp, testscan0_0_grp
 +
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			 (unsigned long long)readq(base + FME_NEXT_ERROR));
-+}
-+static DEVICE_ATTR_RO(next_error);
++ Valid values for pins are:
++   MIO0 - MIO77
 +
-+static ssize_t clear_store(struct device *dev, struct device_attribute *attr,
-+			   const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
-+	struct device *err_dev = dev->parent;
-+	struct dfl_feature *feature;
-+	void __iomem *base;
-+	u64 v, val;
-+	int ret;
++ Valid values for function are:
++   ethernet0, ethernet1, ethernet2, ethernet3, gemtsu0, usb0, usb1, mdio0,
++   mdio1, mdio2, mdio3, qspi0, qspi_fbclk, qspi_ss, spi0, spi1, spi0_ss,
++   spi1_ss, sdio0, sdio0_pc, sdio0_wp, sdio0_cd, sdio1, sdio1_pc, sdio1_wp,
++   sdio1_cd, nand0, nand0_ce, nand0_rb, nand0_dqs, can0, can1, uart0, uart1,
++   i2c0, i2c1, ttc0_clk, ttc0_wav, ttc1_clk, ttc1_wav, ttc2_clk, ttc2_wav,
++   ttc3_clk, ttc3_wav, swdt0_clk, swdt0_rst, swdt1_clk, swdt1_rst, gpio0, pmu0,
++   pcie0, csu0, dpaux0, pjtag0, trace0, trace0_clk, testscan0
 +
-+	ret = kstrtou64(buf, 0, &val);
-+	if (ret)
-+		return ret;
++The following driver-specific properties as defined here are valid to specify in
++a pin configuration subnode:
++ - io-standard: Configure the pin to use the selected IO standard. Valid
++   arguments are 'IO_STANDARD_LVCMOS33' and 'IO_STANDARD_LVCMOS18'.
++ - schmitt-cmos: Selects either Schmitt or CMOS input for MIO pins. Valid
++   arguments are 'PIN_INPUT_TYPE_SCHMITT' and 'PIN_INPUT_TYPE_CMOS'.
 +
-+	feature = dfl_get_feature_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+	base = feature->ioaddr;
++Example:
 +
-+	mutex_lock(&pdata->lock);
-+	writeq(GENMASK_ULL(63, 0), base + FME_ERROR_MASK);
++firmware {
++	zynqmp_firmware: zynqmp-firmware {
++		compatible = "xlnx,zynqmp-firmware";
++		method = "smc";
 +
-+	v = readq(base + FME_ERROR);
-+	if (val != v) {
-+		ret = -EINVAL;
-+		goto done;
-+	}
++		pinctrl0: pinctrl@ff180000 {
++			compatible = "xlnx,zynqmp-pinctrl";
 +
-+	writeq(v, base + FME_ERROR);
-+	v = readq(base + FME_FIRST_ERROR);
-+	writeq(v, base + FME_FIRST_ERROR);
-+	v = readq(base + FME_NEXT_ERROR);
-+	writeq(v, base + FME_NEXT_ERROR);
++			pinctrl_uart1_default: uart1-default {
++				mux {
++					groups = "uart0_4_grp";
++					function = "uart0";
++				};
 +
-+done:
-+	/* Workaround: disable MBP_ERROR if feature revision is 0 */
-+	writeq(dfl_feature_revision(feature->ioaddr) ? 0ULL : MBP_ERROR,
-+	       base + FME_ERROR_MASK);
-+	mutex_unlock(&pdata->lock);
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_WO(clear);
++				conf {
++					groups = "uart0_4_grp";
++					slew-rate = <SLEW_RATE_SLOW>;
++					io-standard = <IO_STANDARD_LVCMOS18>;
++				};
 +
-+static ssize_t revision_show(struct device *dev, struct device_attribute *attr,
-+			     char *buf)
-+{
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
++				conf-rx {
++					pins = "MIO18";
++					bias-high-impedance;
++				};
 +
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n", dfl_feature_revision(base));
-+}
-+static DEVICE_ATTR_RO(revision);
-+
-+static ssize_t pcie0_errors_show(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
-+{
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			 (unsigned long long)readq(base + PCIE0_ERROR));
-+}
-+
-+static ssize_t pcie0_errors_store(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
-+	u64 v, val;
-+	int ret;
-+
-+	ret = kstrtou64(buf, 0, &val);
-+	if (ret)
-+		return ret;
-+
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(GENMASK_ULL(63, 0), base + PCIE0_ERROR_MASK);
-+
-+	v = readq(base + PCIE0_ERROR);
-+	if (val != v)
-+		ret = -EBUSY;
-+	else
-+		writeq(v, base + PCIE0_ERROR);
-+
-+	writeq(0ULL, base + PCIE0_ERROR_MASK);
-+	mutex_unlock(&pdata->lock);
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_RW(pcie0_errors);
-+
-+static ssize_t pcie1_errors_show(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
-+{
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			 (unsigned long long)readq(base + PCIE1_ERROR));
-+}
-+
-+static ssize_t pcie1_errors_store(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
-+	u64 v, val;
-+	int ret;
-+
-+	ret = kstrtou64(buf, 0, &val);
-+	if (ret)
-+		return ret;
-+
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(GENMASK_ULL(63, 0), base + PCIE1_ERROR_MASK);
-+
-+	v = readq(base + PCIE1_ERROR);
-+	if (val != v)
-+		ret = -EBUSY;
-+	else
-+		writeq(v, base + PCIE1_ERROR);
-+
-+	writeq(0ULL, base + PCIE1_ERROR_MASK);
-+	mutex_unlock(&pdata->lock);
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_RW(pcie1_errors);
-+
-+static ssize_t nonfatal_errors_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			 (unsigned long long)readq(base + RAS_NONFAT_ERROR));
-+}
-+static DEVICE_ATTR_RO(nonfatal_errors);
-+
-+static ssize_t catfatal_errors_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			 (unsigned long long)readq(base + RAS_CATFAT_ERROR));
-+}
-+static DEVICE_ATTR_RO(catfatal_errors);
-+
-+static ssize_t inject_error_show(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
-+{
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	v = readq(base + RAS_ERROR_INJECT);
-+
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			 (unsigned long long)FIELD_GET(INJECT_ERROR_MASK, v));
-+}
-+
-+static ssize_t inject_error_store(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
-+	struct device *err_dev = dev->parent;
-+	void __iomem *base;
-+	u8 inject_error;
-+	int ret;
-+	u64 v;
-+
-+	ret = kstrtou8(buf, 0, &inject_error);
-+	if (ret)
-+		return ret;
-+
-+	if (inject_error & ~INJECT_ERROR_MASK)
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + RAS_ERROR_INJECT);
-+	v &= ~INJECT_ERROR_MASK;
-+	v |= FIELD_PREP(INJECT_ERROR_MASK, inject_error);
-+	writeq(v, base + RAS_ERROR_INJECT);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_RW(inject_error);
-+
-+static struct attribute *fme_errors_attrs[] = {
-+	&dev_attr_errors.attr,
-+	&dev_attr_first_error.attr,
-+	&dev_attr_next_error.attr,
-+	&dev_attr_clear.attr,
-+	NULL,
++				conf-tx {
++					pins = "MIO19";
++					bias-disable;
++					schmitt-cmos = <PIN_INPUT_TYPE_CMOS>;
++				};
++			};
++		};
++	};
 +};
 +
-+static struct attribute_group fme_errors_attr_group = {
-+	.attrs	= fme_errors_attrs,
-+	.name	= "fme-errors",
++uart1 {
++	...
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_uart1_default>;
++	...
++
 +};
-+
-+static struct attribute *errors_attrs[] = {
-+	&dev_attr_revision.attr,
-+	&dev_attr_pcie0_errors.attr,
-+	&dev_attr_pcie1_errors.attr,
-+	&dev_attr_nonfatal_errors.attr,
-+	&dev_attr_catfatal_errors.attr,
-+	&dev_attr_inject_error.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group errors_attr_group = {
-+	.attrs	= errors_attrs,
-+};
-+
-+static const struct attribute_group *error_groups[] = {
-+	&fme_errors_attr_group,
-+	&errors_attr_group,
-+	NULL
-+};
-+
-+static void fme_error_enable(struct dfl_feature *feature)
-+{
-+	void __iomem *base = feature->ioaddr;
-+
-+	/* Workaround: disable MBP_ERROR if revision is 0 */
-+	writeq(dfl_feature_revision(feature->ioaddr) ? 0ULL : MBP_ERROR,
-+	       base + FME_ERROR_MASK);
-+	writeq(0ULL, base + PCIE0_ERROR_MASK);
-+	writeq(0ULL, base + PCIE1_ERROR_MASK);
-+	writeq(0ULL, base + RAS_NONFAT_ERROR_MASK);
-+	writeq(0ULL, base + RAS_CATFAT_ERROR_MASK);
-+}
-+
-+static void err_dev_release(struct device *dev)
-+{
-+	kfree(dev);
-+}
-+
-+static int fme_global_err_init(struct platform_device *pdev,
-+			       struct dfl_feature *feature)
-+{
-+	struct device *dev;
-+	int ret = 0;
-+
-+	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-+	if (!dev)
-+		return -ENOMEM;
-+
-+	dev->parent = &pdev->dev;
-+	dev->release = err_dev_release;
-+	dev_set_name(dev, "errors");
-+
-+	fme_error_enable(feature);
-+
-+	ret = device_register(dev);
-+	if (ret) {
-+		put_device(dev);
-+		return ret;
-+	}
-+
-+	ret = sysfs_create_groups(&dev->kobj, error_groups);
-+	if (ret) {
-+		device_unregister(dev);
-+		return ret;
-+	}
-+
-+	feature->priv = dev;
-+
-+	return ret;
-+}
-+
-+static void fme_global_err_uinit(struct platform_device *pdev,
-+				 struct dfl_feature *feature)
-+{
-+	struct device *dev = feature->priv;
-+
-+	sysfs_remove_groups(&dev->kobj, error_groups);
-+	device_unregister(dev);
-+}
-+
-+const struct dfl_feature_id fme_global_err_id_table[] = {
-+	{.id = FME_FEATURE_ID_GLOBAL_ERR,},
-+	{0,}
-+};
-+
-+const struct dfl_feature_ops fme_global_err_ops = {
-+	.init = fme_global_err_init,
-+	.uinit = fme_global_err_uinit,
-+};
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index dafa6580..76cb112 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -686,6 +686,10 @@ static struct dfl_feature_driver fme_feature_drvs[] = {
- 		.ops = &fme_power_mgmt_ops,
- 	},
- 	{
-+		.id_table = fme_global_err_id_table,
-+		.ops = &fme_global_err_ops,
-+	},
-+	{
- 		.ops = NULL,
- 	},
- };
-diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
-index 7a021c4..5fbe3f5 100644
---- a/drivers/fpga/dfl-fme.h
-+++ b/drivers/fpga/dfl-fme.h
-@@ -37,5 +37,7 @@ struct dfl_fme {
- 
- extern const struct dfl_feature_ops fme_pr_mgmt_ops;
- extern const struct dfl_feature_id fme_pr_mgmt_id_table[];
-+extern const struct dfl_feature_ops fme_global_err_ops;
-+extern const struct dfl_feature_id fme_global_err_id_table[];
- 
- #endif /* __DFL_FME_H */
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index fbc57f0..6c32080 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -197,12 +197,14 @@ struct dfl_feature_driver {
-  *		    feature dev (platform device)'s reources.
-  * @ioaddr: mapped mmio resource address.
-  * @ops: ops of this sub feature.
-+ * @priv: priv data of this feature.
-  */
- struct dfl_feature {
- 	u64 id;
- 	int resource_index;
- 	void __iomem *ioaddr;
- 	const struct dfl_feature_ops *ops;
-+	void *priv;
- };
- 
- #define DEV_STATUS_IN_USE	0
 -- 
-2.7.4
+2.18.0
