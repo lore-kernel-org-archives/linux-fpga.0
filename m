@@ -1,77 +1,115 @@
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH 02/17] fpga: dfl: fme: align PR buffer size per PR datawidth
-Date: Mon, 25 Mar 2019 11:07:29 +0800
-Message-Id: <1553483264-5379-3-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
+Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
+From: Nava kishore Manne <nava.manne@xilinx.com>
+Subject: [PATCH v4 1/6] dt-bindings: power: Add ZynqMP power domain bindings
+Date: Thu, 14 Mar 2019 19:31:17 +0530
+Message-ID: <20190314140122.23372-2-nava.manne@xilinx.com>
+In-Reply-To: <20190314140122.23372-1-nava.manne@xilinx.com>
+References: <20190314140122.23372-1-nava.manne@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Cc: Rajan Vaja <rajan.vaja@xilinx.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Current driver checks if input bitstream file size is aligned or
-not per PR data width (default 32bits). It requires one additional
-step for end user when they generate the bitstream file, padding
-extra zeros to bitstream file to align its size per PR data width,
-but they don't have to as hardware will drop extra padding bytes
-automatically.
+From: Rajan Vaja <rajan.vaja@xilinx.com>
 
-In order to simplify the user steps, this patch aligns PR buffer
-size per PR data width in driver, to allow user to pass unaligned
-size bitstream files to driver.
+Add documentation to describe ZynqMP power domain bindings.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Rajan Vaja <rajan.vaja@xilinx.com>
+Signed-off-by: Jolly Shah <jollys@xilinx.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/fpga/dfl-fme-pr.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ .../bindings/power/xlnx,zynqmp-genpd.txt      | 34 ++++++++++++++++
+ include/dt-bindings/power/xlnx-zynqmp-power.h | 39 +++++++++++++++++++
+ 2 files changed, 73 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/xlnx,zynqmp-genpd.txt
+ create mode 100644 include/dt-bindings/power/xlnx-zynqmp-power.h
 
-diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-index d9ca955..c1fb1fe 100644
---- a/drivers/fpga/dfl-fme-pr.c
-+++ b/drivers/fpga/dfl-fme-pr.c
-@@ -74,6 +74,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 	struct dfl_fme *fme;
- 	unsigned long minsz;
- 	void *buf = NULL;
-+	size_t length;
- 	int ret = 0;
- 	u64 v;
- 
-@@ -85,9 +86,6 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 	if (port_pr.argsz < minsz || port_pr.flags)
- 		return -EINVAL;
- 
--	if (!IS_ALIGNED(port_pr.buffer_size, 4))
--		return -EINVAL;
--
- 	/* get fme header region */
- 	fme_hdr = dfl_get_feature_ioaddr_by_id(&pdev->dev,
- 					       FME_FEATURE_ID_HEADER);
-@@ -103,7 +101,13 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 		       port_pr.buffer_size))
- 		return -EFAULT;
- 
--	buf = vmalloc(port_pr.buffer_size);
-+	/*
-+	 * align PR buffer per PR bandwidth, as HW ignores the extra padding
-+	 * data automatically.
-+	 */
-+	length = ALIGN(port_pr.buffer_size, 4);
+diff --git a/Documentation/devicetree/bindings/power/xlnx,zynqmp-genpd.txt b/Documentation/devicetree/bindings/power/xlnx,zynqmp-genpd.txt
+new file mode 100644
+index 000000000000..3c7f2378e146
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/xlnx,zynqmp-genpd.txt
+@@ -0,0 +1,34 @@
++-----------------------------------------------------------
++Device Tree Bindings for the Xilinx Zynq MPSoC PM domains
++-----------------------------------------------------------
++The binding for zynqmp-power-controller follow the common
++generic PM domain binding[1].
 +
-+	buf = vmalloc(length);
- 	if (!buf)
- 		return -ENOMEM;
- 
-@@ -140,7 +144,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 	fpga_image_info_free(region->info);
- 
- 	info->buf = buf;
--	info->count = port_pr.buffer_size;
-+	info->count = length;
- 	info->region_id = port_pr.port_id;
- 	region->info = info;
- 
++[1] Documentation/devicetree/bindings/power/power_domain.txt
++
++== Zynq MPSoC Generic PM Domain Node ==
++
++Required property:
++ - Below property should be in zynqmp-firmware node.
++ - #power-domain-cells:	Number of cells in a PM domain specifier. Must be 1.
++
++Power domain ID indexes are mentioned in
++include/dt-bindings/power/xlnx-zynqmp-power.h.
++
++-------
++Example
++-------
++
++firmware {
++	zynqmp_firmware: zynqmp-firmware {
++		...
++		#power-domain-cells = <1>;
++		...
++	};
++};
++
++sata {
++	...
++	power-domains = <&zynqmp_firmware 2>;
++	...
++};
+diff --git a/include/dt-bindings/power/xlnx-zynqmp-power.h b/include/dt-bindings/power/xlnx-zynqmp-power.h
+new file mode 100644
+index 000000000000..1bc9636098ca
+--- /dev/null
++++ b/include/dt-bindings/power/xlnx-zynqmp-power.h
+@@ -0,0 +1,39 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ *  Copyright (C) 2018 Xilinx, Inc.
++ */
++
++#ifndef _DT_BINDINGS_ZYNQMP_POWER_H
++#define _DT_BINDINGS_ZYNQMP_POWER_H
++
++#define		PD_USB_0	0
++#define		PD_USB_1	1
++#define		PD_SATA		2
++#define		PD_SPI_0	3
++#define		PD_SPI_1	4
++#define		PD_UART_0	5
++#define		PD_UART_1	6
++#define		PD_ETH_0	7
++#define		PD_ETH_1	8
++#define		PD_ETH_2	9
++#define		PD_ETH_3	10
++#define		PD_I2C_0	11
++#define		PD_I2C_1	12
++#define		PD_DP		13
++#define		PD_GDMA		14
++#define		PD_ADMA		15
++#define		PD_TTC_0	16
++#define		PD_TTC_1	17
++#define		PD_TTC_2	18
++#define		PD_TTC_3	19
++#define		PD_SD_0		20
++#define		PD_SD_1		21
++#define		PD_NAND		22
++#define		PD_QSPI		23
++#define		PD_GPIO		24
++#define		PD_CAN_0	25
++#define		PD_CAN_1	26
++#define		PD_PCIE		27
++#define		PD_GPU		28
++
++#endif
 -- 
-2.7.4
+2.18.0
