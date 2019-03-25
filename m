@@ -1,60 +1,77 @@
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v5 2/6] dt-bindings: soc: Add ZynqMP PM bindings
-Date: Tue, 26 Mar 2019 20:01:25 +0530
-Message-ID: <20190326143129.2608-3-nava.manne@xilinx.com>
-In-Reply-To: <20190326143129.2608-1-nava.manne@xilinx.com>
-References: <20190326143129.2608-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
-Cc: Rajan Vaja <rajan.vaja@xilinx.com>
+Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH 12/17] fpga: dfl: afu: add STP (SignalTap) support
+Date: Mon, 25 Mar 2019 11:07:39 +0800
+Message-Id: <1553483264-5379-13-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Rajan Vaja <rajan.vaja@xilinx.com>
+STP (SignalTap) is one of the private features under the port for
+debugging. This patch adds private feature driver support for it
+to allow userspace applications to mmap related mmio region and
+provide STP service.
 
-Add documentation to describe Xilinx ZynqMP power management
-bindings.
-
-Signed-off-by: Rajan Vaja <rajan.vaja@xilinx.com>
-Signed-off-by: Jolly Shah <jollys@xilinx.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
 ---
- .../power/reset/xlnx,zynqmp-power.txt         | 25 +++++++++++++++++++
- 1 file changed, 25 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/reset/xlnx,zynqmp-power.txt
+ drivers/fpga/dfl-afu-main.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/xlnx,zynqmp-power.txt b/Documentation/devicetree/bindings/power/reset/xlnx,zynqmp-power.txt
-new file mode 100644
-index 000000000000..d366f1eb623a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/xlnx,zynqmp-power.txt
-@@ -0,0 +1,25 @@
-+--------------------------------------------------------------------
-+Device Tree Bindings for the Xilinx Zynq MPSoC Power Management
-+--------------------------------------------------------------------
-+The zynqmp-power node describes the power management configurations.
-+It will control remote suspend/shutdown interfaces.
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 754729e..14970a4 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -518,6 +518,36 @@ static const struct dfl_feature_ops port_afu_ops = {
+ 	.uinit = port_afu_uinit,
+ };
+ 
++static int port_stp_init(struct platform_device *pdev,
++			 struct dfl_feature *feature)
++{
++	struct resource *res = &pdev->resource[feature->resource_index];
 +
-+Required properties:
-+ - compatible:		Must contain:	"xlnx,zynqmp-power"
-+ - interrupts:		Interrupt specifier
++	dev_dbg(&pdev->dev, "PORT STP Init.\n");
 +
-+-------
-+Example
-+-------
++	return afu_mmio_region_add(dev_get_platdata(&pdev->dev),
++				   DFL_PORT_REGION_INDEX_STP,
++				   resource_size(res), res->start,
++				   DFL_PORT_REGION_MMAP | DFL_PORT_REGION_READ |
++				   DFL_PORT_REGION_WRITE);
++}
 +
-+firmware {
-+	zynqmp_firmware: zynqmp-firmware {
-+		compatible = "xlnx,zynqmp-firmware";
-+		method = "smc";
++static void port_stp_uinit(struct platform_device *pdev,
++			   struct dfl_feature *feature)
++{
++	dev_dbg(&pdev->dev, "PORT STP UInit.\n");
++}
 +
-+		zynqmp_power: zynqmp-power {
-+			compatible = "xlnx,zynqmp-power";
-+			interrupts = <0 35 4>;
-+		};
-+	};
++static const struct dfl_feature_id port_stp_id_table[] = {
++	{.id = PORT_FEATURE_ID_STP,},
++	{0,}
 +};
++
++static const struct dfl_feature_ops port_stp_ops = {
++	.init = port_stp_init,
++	.uinit = port_stp_uinit,
++};
++
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+ 		.id_table = port_hdr_id_table,
+@@ -532,6 +562,10 @@ static struct dfl_feature_driver port_feature_drvs[] = {
+ 		.ops = &port_err_ops,
+ 	},
+ 	{
++		.id_table = port_stp_id_table,
++		.ops = &port_stp_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	}
+ };
 -- 
-2.18.0
+2.7.4
