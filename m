@@ -1,45 +1,226 @@
-Return-Path: <SRS0=9FGq=RG=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=9FGq=RG=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-wm1-f52.google.com ([209.85.128.52]:56002 "EHLO
-        mail-wm1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726054AbfCCLc0 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 3 Mar 2019 06:32:26 -0500
-Received: by mail-wm1-f52.google.com with SMTP id q187so1999883wme.5
-        for <linux-fpga@vger.kernel.org>; Sun, 03 Mar 2019 03:32:24 -0800 (PST)
-Received: from [192.168.0.18] ([94.54.58.88])
-        by smtp.gmail.com with ESMTPSA id b197sm3350214wmd.23.2019.03.03.03.32.22
-        for <linux-fpga@vger.kernel.org>
-        (version=TLS1_3 cipher=AEAD-AES128-GCM-SHA256 bits=128/128);
-        Sun, 03 Mar 2019 03:32:23 -0800 (PST)
-From: Alper Yazar <alperyazar2@gmail.com>
-Subject: FPGA Manager - Partial Reconfiguration support for Xilinx Zynq-7000
-Message-ID: <5bdf4d79-c0d6-30c1-1eb0-360b7dce615b@gmail.com>
-Date: Sun, 3 Mar 2019 14:32:21 +0300
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-fpga@vger.kernel.org
+Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH 09/17] fpga: dfl: add id_table for dfl private feature driver
+Date: Mon, 25 Mar 2019 11:07:36 +0800
+Message-Id: <1553483264-5379-10-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hi,
+This patch adds id_table for each dfl private feature driver,
+it allows to reuse same private feature driver to match and support
+multiple dfl private features.
 
-I asked the question on Xilinx forums about 1 months ago but didn't get any response [1]. I hope that someone on this list may guide me.
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+---
+ drivers/fpga/dfl-afu-main.c | 14 ++++++++++++--
+ drivers/fpga/dfl-fme-main.c | 11 ++++++++---
+ drivers/fpga/dfl-fme-pr.c   |  7 ++++++-
+ drivers/fpga/dfl-fme.h      |  3 ++-
+ drivers/fpga/dfl.c          | 21 +++++++++++++++++++--
+ drivers/fpga/dfl.h          | 21 +++++++++++++++------
+ 6 files changed, 62 insertions(+), 15 deletions(-)
 
-I am creating Linux based images for Zynq-7000 devices by using Petalinux 2018.3 which is a set of build tools provided by Xilinx. For FPGA management, FPGA Manager is included by default. However it doesn't support partial reconfiguration for Zynq-7000 devices as stated [2]. I tested and verified that it doesn't work. I assumed that /drivers/fpga/zynq-fpga.c is the source code, checked it and noticed some comments about partial reconfig. AFAIK previous driver used by Xilinx before FPGA Manager whose source code file is xilinx_devcfg.c supported partial reconfig. So I don't think that there is a hardware limitation since the previous solution was working on the same device. So I wonder why the newest method is less capable than the older one. I need partial reconfig support for the newest petalinux version. What should I do?
-
-a) Compile old xilinx_devcfg.c driver for Petalinux 2018.3 and disable FPGA Manager. 
-
-b) Somehow patch FPGA Manager
-
-c) Wait (how long?) Xilinx to solve this issue
-
-Two names are listed as MODULE_AUTHOR of zynq-fpga.c: Moritz Fischer and Michal Simek. I don't know whether they are subscribed to this list or not.
-
-
-[1]: https://forums.xilinx.com/t5/Embedded-Linux/Partial-Reconfiguration-support-in-Petalinux-2018-3-for-Zynq/td-p/934057
-[2]: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841645/Solution+Zynq+PL+Programming+With+FPGA+Manager
-
-Best,
-Alper
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 82fd80a..2916876 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -440,6 +440,11 @@ port_hdr_ioctl(struct platform_device *pdev, struct dfl_feature *feature,
+ 	return ret;
+ }
+ 
++static const struct dfl_feature_id port_hdr_id_table[] = {
++	{.id = PORT_FEATURE_ID_HEADER,},
++	{0,}
++};
++
+ static const struct dfl_feature_ops port_hdr_ops = {
+ 	.init = port_hdr_init,
+ 	.uinit = port_hdr_uinit,
+@@ -500,6 +505,11 @@ static void port_afu_uinit(struct platform_device *pdev,
+ 	sysfs_remove_files(&pdev->dev.kobj, port_afu_attrs);
+ }
+ 
++static const struct dfl_feature_id port_afu_id_table[] = {
++	{.id = PORT_FEATURE_ID_AFU,},
++	{0,}
++};
++
+ static const struct dfl_feature_ops port_afu_ops = {
+ 	.init = port_afu_init,
+ 	.uinit = port_afu_uinit,
+@@ -507,11 +517,11 @@ static const struct dfl_feature_ops port_afu_ops = {
+ 
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+-		.id = PORT_FEATURE_ID_HEADER,
++		.id_table = port_hdr_id_table,
+ 		.ops = &port_hdr_ops,
+ 	},
+ 	{
+-		.id = PORT_FEATURE_ID_AFU,
++		.id_table = port_afu_id_table,
+ 		.ops = &port_afu_ops,
+ 	},
+ 	{
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 8b2a337..38c6342 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -158,6 +158,11 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
+ 	return -ENODEV;
+ }
+ 
++static const struct dfl_feature_id fme_hdr_id_table[] = {
++	{.id = FME_FEATURE_ID_HEADER,},
++	{0,}
++};
++
+ static const struct dfl_feature_ops fme_hdr_ops = {
+ 	.init = fme_hdr_init,
+ 	.uinit = fme_hdr_uinit,
+@@ -166,12 +171,12 @@ static const struct dfl_feature_ops fme_hdr_ops = {
+ 
+ static struct dfl_feature_driver fme_feature_drvs[] = {
+ 	{
+-		.id = FME_FEATURE_ID_HEADER,
++		.id_table = fme_hdr_id_table,
+ 		.ops = &fme_hdr_ops,
+ 	},
+ 	{
+-		.id = FME_FEATURE_ID_PR_MGMT,
+-		.ops = &pr_mgmt_ops,
++		.id_table = fme_pr_mgmt_id_table,
++		.ops = &fme_pr_mgmt_ops,
+ 	},
+ 	{
+ 		.ops = NULL,
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+index 8a0e46a..b054ac6 100644
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -482,7 +482,12 @@ static long fme_pr_ioctl(struct platform_device *pdev,
+ 	return ret;
+ }
+ 
+-const struct dfl_feature_ops pr_mgmt_ops = {
++const struct dfl_feature_id fme_pr_mgmt_id_table[] = {
++	{.id = FME_FEATURE_ID_PR_MGMT,},
++	{0}
++};
++
++const struct dfl_feature_ops fme_pr_mgmt_ops = {
+ 	.init = pr_mgmt_init,
+ 	.uinit = pr_mgmt_uinit,
+ 	.ioctl = fme_pr_ioctl,
+diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
+index de20755..7a021c4 100644
+--- a/drivers/fpga/dfl-fme.h
++++ b/drivers/fpga/dfl-fme.h
+@@ -35,6 +35,7 @@ struct dfl_fme {
+ 	struct dfl_feature_platform_data *pdata;
+ };
+ 
+-extern const struct dfl_feature_ops pr_mgmt_ops;
++extern const struct dfl_feature_ops fme_pr_mgmt_ops;
++extern const struct dfl_feature_id fme_pr_mgmt_id_table[];
+ 
+ #endif /* __DFL_FME_H */
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index c5aa287..65f91ef 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -14,6 +14,8 @@
+ 
+ #include "dfl.h"
+ 
++#define DRV_VERSION	"0.8"
++
+ static DEFINE_MUTEX(dfl_id_mutex);
+ 
+ /*
+@@ -274,6 +276,21 @@ static int dfl_feature_instance_init(struct platform_device *pdev,
+ 	return ret;
+ }
+ 
++static bool dfl_feature_drv_match(struct dfl_feature *feature,
++				  struct dfl_feature_driver *driver)
++{
++	const struct dfl_feature_id *ids = driver->id_table;
++
++	if (ids) {
++		while (ids->id) {
++			if (ids->id == feature->id)
++				return true;
++			ids++;
++		}
++	}
++	return false;
++}
++
+ /**
+  * dfl_fpga_dev_feature_init - init for sub features of dfl feature device
+  * @pdev: feature device.
+@@ -294,8 +311,7 @@ int dfl_fpga_dev_feature_init(struct platform_device *pdev,
+ 
+ 	while (drv->ops) {
+ 		dfl_fpga_dev_for_each_feature(pdata, feature) {
+-			/* match feature and drv using id */
+-			if (feature->id == drv->id) {
++			if (dfl_feature_drv_match(feature, drv)) {
+ 				ret = dfl_feature_instance_init(pdev, pdata,
+ 								feature, drv);
+ 				if (ret)
+@@ -1164,3 +1180,4 @@ module_exit(dfl_fpga_exit);
+ MODULE_DESCRIPTION("FPGA Device Feature List (DFL) Support");
+ MODULE_AUTHOR("Intel Corporation");
+ MODULE_LICENSE("GPL v2");
++MODULE_VERSION(DRV_VERSION);
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 3c5dc3a..fbc57f0 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -30,8 +30,8 @@
+ /* plus one for fme device */
+ #define MAX_DFL_FEATURE_DEV_NUM    (MAX_DFL_FPGA_PORT_NUM + 1)
+ 
+-/* Reserved 0x0 for Header Group Register and 0xff for AFU */
+-#define FEATURE_ID_FIU_HEADER		0x0
++/* Reserved 0xfe for Header Group Register and 0xff for AFU */
++#define FEATURE_ID_FIU_HEADER		0xfe
+ #define FEATURE_ID_AFU			0xff
+ 
+ #define FME_FEATURE_ID_HEADER		FEATURE_ID_FIU_HEADER
+@@ -169,13 +169,22 @@ void dfl_fpga_port_ops_put(struct dfl_fpga_port_ops *ops);
+ int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id);
+ 
+ /**
+- * struct dfl_feature_driver - sub feature's driver
++ * struct dfl_feature_id - dfl private feature id
+  *
+- * @id: sub feature id.
+- * @ops: ops of this sub feature.
++ * @id: unique dfl private feature id.
+  */
+-struct dfl_feature_driver {
++struct dfl_feature_id {
+ 	u64 id;
++};
++
++/**
++ * struct dfl_feature_driver - dfl private feature driver
++ *
++ * @id_table: id_table for dfl private features supported by this driver.
++ * @ops: ops of this dfl private feature driver.
++ */
++struct dfl_feature_driver {
++	const struct dfl_feature_id *id_table;
+ 	const struct dfl_feature_ops *ops;
+ };
+ 
+-- 
+2.7.4
