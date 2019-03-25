@@ -1,115 +1,120 @@
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v5 0/6]dt-bindings: Firmware node binding for ZynqMP core
-Date: Tue, 26 Mar 2019 20:01:23 +0530
-Message-ID: <20190326143129.2608-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH 13/17] fpga: dfl: fme: add capability sysfs interfaces
+Date: Mon, 25 Mar 2019 11:07:40 +0800
+Message-Id: <1553483264-5379-14-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Base firmware node and clock child node binding are part of mainline kernel.
-This patchset adds documentation to describe rest of the firmware child node bindings. 
+This patch adds 3 read-only sysfs interfaces for FPGA Management Engine
+(FME) block for capabilities including cache_size, fabric_version and
+socket_id.
 
-Complete firmware DT node example is shown below for ease of understanding:
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+---
+ Documentation/ABI/testing/sysfs-platform-dfl-fme | 23 ++++++++++++
+ drivers/fpga/dfl-fme-main.c                      | 48 ++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+)
 
-firmware {
-        zynqmp_firmware: zynqmp-firmware {
-                compatible = "xlnx,zynqmp-firmware";
-                method = "smc";
-                #power-domain-cells = <1>;
-                #reset-cells = <1>;
-
-                zynqmp_clk: clock-controller {
-                        #clock-cells = <1>;
-                        compatible = "xlnx,zynqmp-clk";
-                        clocks = <&pss_ref_clk>, <&video_clk>, <&pss_alt_ref_clk>, <&aux_ref_clk>, <&gt_crx_ref_clk>;
-                        clock-names = "pss_ref_clk", "video_clk", "pss_alt_ref_clk","aux_ref_clk", "gt_crx_ref_clk";
-                };
-
-                zynqmp_power: zynqmp-power {
-                        compatible = "xlnx,zynqmp-power";
-                        interrupts = <0 35 4>;
-                };
-
-                zynqmp_reset: reset-controller {
-                        compatible = "xlnx,zynqmp-reset";
-                        #reset-cells = <1>;
-                };
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+index 8fa4feb..b8327e9 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+@@ -21,3 +21,26 @@ Contact:	Wu Hao <hao.wu@intel.com>
+ Description:	Read-only. It returns Bitstream (static FPGA region) meta
+ 		data, which includes the synthesis date, seed and other
+ 		information of this static FPGA region.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/cache_size
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns cache size of this FPGA device.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/fabric_version
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns fabric version of this FPGA device.
++		Userspace applications need this information to select
++		best data channels per different fabric design.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/socket_id
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns socket_id to indicate which socket
++		this FPGA belongs to, only valid for integrated solution.
++		User only needs this information, in case standard numa node
++		can't provide correct information.
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 38c6342..8339ee8 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -75,10 +75,58 @@ static ssize_t bitstream_metadata_show(struct device *dev,
+ }
+ static DEVICE_ATTR_RO(bitstream_metadata);
  
-		nvmem_firmware {
-                        compatible = "xlnx,zynqmp-nvmem-fw";
-                        #address-cells = <1>;
-                        #size-cells = <1>;
-
-                        /* Data cells */
-                        soc_revision: soc_revision {
-                                reg = <0x0 0x4>;
-                        };
-                };
-
-		pinctrl0: pinctrl@ff180000 {
-                        compatible = "xlnx,zynqmp-pinctrl";
-
-                        pinctrl_uart1_default: uart1-default {
-                                mux {
-                                        groups = "uart0_4_grp";
-                                        function = "uart0";
-                                };
-
-                                conf {
-                                        groups = "uart0_4_grp";
-                                        slew-rate = <SLEW_RATE_SLOW>;
-                                        io-standard = <IO_STANDARD_LVCMOS18>;
-                                };
-
-                                conf-rx {
-                                        pins = "MIO18";
-                                        bias-high-impedance;
-                                };
-
-                                conf-tx {
-                                        pins = "MIO19";
-                                        bias-disable;
-                                        schmitt-cmos = <PIN_INPUT_TYPE_CMOS>;
-                                };
-                        };
-                };
-
-		zynqmp_pcap: pcap {
-			compatible = "xlnx,zynqmp-pcap-fpga";
-		};
-	};
-};
-		
-Nava kishore Manne (3):
-  dt-bindings: reset: Add bindings for ZynqMP reset driver
-  dt-bindings: nvmem: Add bindings for ZynqMP nvmem driver
-  dt-bindings: fpga: Add bindings for ZynqMP fpga driver
-
-Rajan Vaja (3):
-  dt-bindings: power: Add ZynqMP power domain bindings
-  dt-bindings: soc: Add ZynqMP PM bindings
-  dt-bindings: pinctrl: Add ZynqMP pin controller bindings
-
- .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt   |  25 ++
- .../bindings/nvmem/xlnx,zynqmp-nvmem.txt      |  47 +++
- .../bindings/pinctrl/xlnx,zynqmp-pinctrl.txt  | 275 ++++++++++++++++++
- .../power/reset/xlnx,zynqmp-power.txt         |  25 ++
- .../bindings/power/xlnx,zynqmp-genpd.txt      |  34 +++
- .../bindings/reset/xlnx,zynqmp-reset.txt      |  52 ++++
- include/dt-bindings/power/xlnx-zynqmp-power.h |  39 +++
- .../dt-bindings/reset/xlnx-zynqmp-resets.h    | 130 +++++++++
- 8 files changed, 627 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
- create mode 100644 Documentation/devicetree/bindings/nvmem/xlnx,zynqmp-nvmem.txt
- create mode 100644 Documentation/devicetree/bindings/pinctrl/xlnx,zynqmp-pinctrl.txt
- create mode 100644 Documentation/devicetree/bindings/power/reset/xlnx,zynqmp-power.txt
- create mode 100644 Documentation/devicetree/bindings/power/xlnx,zynqmp-genpd.txt
- create mode 100644 Documentation/devicetree/bindings/reset/xlnx,zynqmp-reset.txt
- create mode 100644 include/dt-bindings/power/xlnx-zynqmp-power.h
- create mode 100644 include/dt-bindings/reset/xlnx-zynqmp-resets.h
-
++static ssize_t cache_size_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_CAP_CACHE_SIZE, v));
++}
++static DEVICE_ATTR_RO(cache_size);
++
++static ssize_t fabric_version_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_CAP_FABRIC_VERID, v));
++}
++static DEVICE_ATTR_RO(fabric_version);
++
++static ssize_t socket_id_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_CAP_SOCKET_ID, v));
++}
++static DEVICE_ATTR_RO(socket_id);
++
+ static const struct attribute *fme_hdr_attrs[] = {
+ 	&dev_attr_ports_num.attr,
+ 	&dev_attr_bitstream_id.attr,
+ 	&dev_attr_bitstream_metadata.attr,
++	&dev_attr_cache_size.attr,
++	&dev_attr_fabric_version.attr,
++	&dev_attr_socket_id.attr,
+ 	NULL,
+ };
+ 
 -- 
-2.18.0
+2.7.4
