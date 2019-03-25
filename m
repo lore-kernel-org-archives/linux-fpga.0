@@ -1,62 +1,61 @@
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <navam@xilinx.com>
-Subject: RE: [PATCH v4 6/6] dt-bindings: fpga: Add bindings for ZynqMP fpga
+Return-Path: <SRS0=R/SX=R4=gmail.com=robherring2@kernel.org>
+Return-Path: <SRS0=R/SX=R4=gmail.com=robherring2@kernel.org>
+Date: Mon, 25 Mar 2019 14:18:49 -0500
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 6/6] dt-bindings: fpga: Add bindings for ZynqMP fpga
  driver
-Date: Tue, 26 Mar 2019 14:06:15 +0000
-Message-ID: 
- <SN6PR02MB47194C1EEA9BDD8F3FE61B75C25F0@SN6PR02MB4719.namprd02.prod.outlook.com>
+Message-ID: <20190315235422.GA29658@bogus>
 References: <20190314140122.23372-1-nava.manne@xilinx.com>
- <20190314140122.23372-7-nava.manne@xilinx.com> <20190315235422.GA29658@bogus>
-In-Reply-To: <20190315235422.GA29658@bogus>
-Content-Language: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ <20190314140122.23372-7-nava.manne@xilinx.com>
 MIME-Version: 1.0
-To: Rob Herring <robh@kernel.org>
-Cc: "atull@kernel.org" <atull@kernel.org>, "mdf@kernel.org" <mdf@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, Michal Simek <michals@xilinx.com>, Rajan Vaja <RAJANV@xilinx.com>, Jolly Shah <JOLLYS@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "chinnikishore369@gmail.com" <chinnikishore369@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190314140122.23372-7-nava.manne@xilinx.com>
+To: Nava kishore Manne <nava.manne@xilinx.com>
+Cc: atull@kernel.org, mdf@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Rob,
+On Thu, Mar 14, 2019 at 07:31:22PM +0530, Nava kishore Manne wrote:
+> Add documentation to describe Xilinx ZynqMP fpga driver
+> bindings.
+> 
+> Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+> ---
+> Changes for v4:
+> 		-Modified binding description as suggested by Moritz Fischer.
+> Changes for v3:
+>                 -Removed PCAP as a child node to the FW and Created
+> 		 an independent node since PCAP driver is a consumer
+> 		 not a provider.
 
-	Thanks for the response.
-Please find my response inline.
+Huh?
 
-> -----Original Message-----
-> From: Rob Herring [mailto:robh@kernel.org]
-> Sent: Tuesday, March 26, 2019 12:49 AM
-> To: Nava kishore Manne <navam@xilinx.com>
-> Cc: atull@kernel.org; mdf@kernel.org; mark.rutland@arm.com; Michal Simek
-> <michals@xilinx.com>; Rajan Vaja <RAJANV@xilinx.com>; Jolly Shah
-> <JOLLYS@xilinx.com>; linux-fpga@vger.kernel.org; devicetree@vger.kernel.o=
-rg;
-> linux-arm-kernel@lists.infradead.org; linux-kernel@vger.kernel.org;
-> chinnikishore369@gmail.com
-> Subject: Re: [PATCH v4 6/6] dt-bindings: fpga: Add bindings for ZynqMP fp=
-ga
-> driver
->=20
-> On Thu, Mar 14, 2019 at 07:31:22PM +0530, Nava kishore Manne wrote:
-> > Add documentation to describe Xilinx ZynqMP fpga driver bindings.
-> >
-> > Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
-> > ---
-> > Changes for v4:
-> > 		-Modified binding description as suggested by Moritz Fischer.
-> > Changes for v3:
-> >                 -Removed PCAP as a child node to the FW and Created
-> > 		 an independent node since PCAP driver is a consumer
-> > 		 not a provider.
->=20
-> Huh?
->=20
-> It was the fpga-regions that I suggested should perhaps be at the top-lev=
-el. As
-> long as pcap is a function exposed by the firmware it should be a child o=
-f it.
->=20
-Thanks for providing the clarification. Will address the above comments in =
-the next version.
+It was the fpga-regions that I suggested should perhaps be at the 
+top-level. As long as pcap is a function exposed by the firmware it 
+should be a child of it.
 
-Regards,
-Navakishore.
+> 
+>  .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt           | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+> new file mode 100644
+> index 000000000000..6d7f10775d9b
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+> @@ -0,0 +1,11 @@
+> +Devicetree bindings for Zynq Ultrascale MPSoC FPGA Manager.
+> +The ZynqMP SoC uses the PCAP (Processor configuration Port) to configure the
+> +Programmable Logic (PL). The configuration uses  the firmware interface.
+> +
+> +Required properties:
+> +- compatible: should contain "xlnx,zynqmp-pcap-fpga"
+> +
+> +Example:
+> +	zynqmp_pcap: pcap {
+> +		compatible = "xlnx,zynqmp-pcap-fpga";
+> +	};
+> -- 
+> 2.18.0
+> 
