@@ -1,370 +1,368 @@
 Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH 05/17] fpga: dfl: fme: add DFL_FPGA_FME_PORT_RELEASE/ASSIGN ioctl support.
-Date: Mon, 25 Mar 2019 11:07:32 +0800
-Message-Id: <1553483264-5379-6-git-send-email-hao.wu@intel.com>
+Subject: [PATCH 15/17] fpga: dfl: fme: add power management support
+Date: Mon, 25 Mar 2019 11:07:42 +0800
+Message-Id: <1553483264-5379-16-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
 References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-In order to support virtualization usage via PCIe SRIOV, this patch
-adds two ioctls under FPGA Management Engine (FME) to release and
-assign back the port device. In order to safely turn Port from PF
-into VF and enable PCIe SRIOV, it requires user to invoke this
-PORT_RELEASE ioctl to release port firstly to remove userspace
-interfaces, and then configure the PF/VF access register in FME.
-After disable SRIOV, it requires user to invoke this PORT_ASSIGN
-ioctl to attach the port back to PF.
+This patch adds support for power management private feature under
+FPGA Management Engine (FME), sysfs interfaces are introduced for
+different power management functions, users could use these sysfs
+interface to get current number of consumed power, throttling
+thresholds, threshold status and other information, and configure
+different value for throttling thresholds too.
 
- Ioctl interfaces:
- * DFL_FPGA_FME_PORT_RELEASE
-   Release platform device of given port, it deletes port platform
-   device to remove related userspace interfaces on PF, then
-   configures PF/VF access mode to VF.
-
- * DFL_FPGA_FME_PORT_ASSIGN
-   Assign platform device of given port back to PF, it configures
-   PF/VF access mode to PF, then adds port platform device back to
-   re-enable related userspace interfaces on PF.
-
-Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ---
- drivers/fpga/dfl-fme-main.c   |  54 +++++++++++++++++++++
- drivers/fpga/dfl.c            | 107 +++++++++++++++++++++++++++++++++++++-----
- drivers/fpga/dfl.h            |  10 ++++
- include/uapi/linux/fpga-dfl.h |  32 +++++++++++++
- 4 files changed, 191 insertions(+), 12 deletions(-)
+ Documentation/ABI/testing/sysfs-platform-dfl-fme |  56 +++++
+ drivers/fpga/dfl-fme-main.c                      | 257 +++++++++++++++++++++++
+ 2 files changed, 313 insertions(+)
 
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+index d3aeb88..4b6448f 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+@@ -100,3 +100,59 @@ Description:	Read-only. Read this file to get the policy of temperature
+ 		threshold1. It only supports two value (policy):
+ 		    0 - AP2 state (90% throttling)
+ 		    1 - AP1 state (50% throttling)
++
++What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/consumed
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns current power consumed by FPGA.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold1
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-Write. Read/Write this file to get/set current power
++		threshold1 in Watts.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold2
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-Write. Read/Write this file to get/set current power
++		threshold2 in Watts.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold1_status
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns 1 if power consumption reaches the
++		threshold1, otherwise 0.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold2_status
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns 1 if power consumption reaches the
++		threshold2, otherwise 0.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/ltr
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. Read this file to get current Latency Tolerance
++		Reporting (ltr) value, it's only valid for integrated
++		solution as it blocks CPU on low power state.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/xeon_limit
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. Read this file to get power limit for xeon, it
++		is only valid for integrated solution.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/fpga_limit
++Date:		March 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. Read this file to get power limit for fpga, it
++		is only valid for integrated solution.
 diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 076d74f..8b2a337 100644
+index 449a17d..dafa6580 100644
 --- a/drivers/fpga/dfl-fme-main.c
 +++ b/drivers/fpga/dfl-fme-main.c
-@@ -16,6 +16,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/uaccess.h>
- #include <linux/fpga-dfl.h>
- 
- #include "dfl.h"
-@@ -105,9 +106,62 @@ static void fme_hdr_uinit(struct platform_device *pdev,
- 	sysfs_remove_files(&pdev->dev.kobj, fme_hdr_attrs);
- }
- 
-+static long fme_hdr_ioctl_release_port(struct dfl_feature_platform_data *pdata,
-+				       void __user *arg)
-+{
-+	struct dfl_fpga_cdev *cdev = pdata->dfl_cdev;
-+	struct dfl_fpga_fme_port_release release;
-+	unsigned long minsz;
-+
-+	minsz = offsetofend(struct dfl_fpga_fme_port_release, port_id);
-+
-+	if (copy_from_user(&release, arg, minsz))
-+		return -EFAULT;
-+
-+	if (release.argsz < minsz || release.flags)
-+		return -EINVAL;
-+
-+	return dfl_fpga_cdev_config_port(cdev, release.port_id, true);
-+}
-+
-+static long fme_hdr_ioctl_assign_port(struct dfl_feature_platform_data *pdata,
-+				      void __user *arg)
-+{
-+	struct dfl_fpga_cdev *cdev = pdata->dfl_cdev;
-+	struct dfl_fpga_fme_port_assign assign;
-+	unsigned long minsz;
-+
-+	minsz = offsetofend(struct dfl_fpga_fme_port_assign, port_id);
-+
-+	if (copy_from_user(&assign, arg, minsz))
-+		return -EFAULT;
-+
-+	if (assign.argsz < minsz || assign.flags)
-+		return -EINVAL;
-+
-+	return dfl_fpga_cdev_config_port(cdev, assign.port_id, false);
-+}
-+
-+static long fme_hdr_ioctl(struct platform_device *pdev,
-+			  struct dfl_feature *feature,
-+			  unsigned int cmd, unsigned long arg)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+
-+	switch (cmd) {
-+	case DFL_FPGA_FME_PORT_RELEASE:
-+		return fme_hdr_ioctl_release_port(pdata, (void __user *)arg);
-+	case DFL_FPGA_FME_PORT_ASSIGN:
-+		return fme_hdr_ioctl_assign_port(pdata, (void __user *)arg);
-+	}
-+
-+	return -ENODEV;
-+}
-+
- static const struct dfl_feature_ops fme_hdr_ops = {
- 	.init = fme_hdr_init,
- 	.uinit = fme_hdr_uinit,
-+	.ioctl = fme_hdr_ioctl,
+@@ -415,6 +415,259 @@ static const struct dfl_feature_ops fme_thermal_mgmt_ops = {
+ 	.uinit = fme_thermal_mgmt_uinit,
  };
  
++#define FME_PWR_STATUS		0x8
++#define FME_LATENCY_TOLERANCE	BIT_ULL(18)
++#define PWR_CONSUMED		GENMASK_ULL(17, 0)
++
++#define FME_PWR_THRESHOLD	0x10
++#define PWR_THRESHOLD1		GENMASK_ULL(6, 0)	/* in Watts */
++#define PWR_THRESHOLD2		GENMASK_ULL(14, 8)	/* in Watts */
++#define PWR_THRESHOLD_MAX	0x7f
++#define PWR_THRESHOLD1_STATUS	BIT_ULL(16)
++#define PWR_THRESHOLD2_STATUS	BIT_ULL(17)
++
++#define FME_PWR_XEON_LIMIT	0x18
++#define XEON_PWR_LIMIT		GENMASK_ULL(14, 0)
++#define XEON_PWR_EN		BIT_ULL(15)
++#define FME_PWR_FPGA_LIMIT	0x20
++#define FPGA_PWR_LIMIT		GENMASK_ULL(14, 0)
++#define FPGA_PWR_EN		BIT_ULL(15)
++
++#define POWER_ATTR(_name, _mode, _show, _store)	\
++struct device_attribute power_attr_##_name =		\
++	__ATTR(_name, _mode, _show, _store)
++
++#define POWER_ATTR_RO(_name, _show)			\
++	POWER_ATTR(_name, 0444, _show, NULL)
++
++#define POWER_ATTR_RW(_name, _show, _store)		\
++	POWER_ATTR(_name, 0644, _show, _store)
++
++static ssize_t pwr_consumed_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	v = readq(base + FME_PWR_STATUS);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(PWR_CONSUMED, v));
++}
++static POWER_ATTR_RO(consumed, pwr_consumed_show);
++
++static ssize_t pwr_threshold1_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	v = readq(base + FME_PWR_THRESHOLD);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(PWR_THRESHOLD1, v));
++}
++
++static ssize_t pwr_threshold1_store(struct device *dev,
++				    struct device_attribute *attr,
++				    const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u8 threshold;
++	int ret;
++	u64 v;
++
++	ret = kstrtou8(buf, 0, &threshold);
++	if (ret)
++		return ret;
++
++	if (threshold > PWR_THRESHOLD_MAX)
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + FME_PWR_THRESHOLD);
++	v &= ~PWR_THRESHOLD1;
++	v |= FIELD_PREP(PWR_THRESHOLD1, threshold);
++	writeq(v, base + FME_PWR_THRESHOLD);
++	mutex_unlock(&pdata->lock);
++
++	return count;
++}
++static POWER_ATTR_RW(threshold1, pwr_threshold1_show, pwr_threshold1_store);
++
++static ssize_t pwr_threshold2_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	v = readq(base + FME_PWR_THRESHOLD);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(PWR_THRESHOLD2, v));
++}
++
++static ssize_t pwr_threshold2_store(struct device *dev,
++				    struct device_attribute *attr,
++				    const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u8 threshold;
++	int ret;
++	u64 v;
++
++	ret = kstrtou8(buf, 0, &threshold);
++	if (ret)
++		return ret;
++
++	if (threshold > PWR_THRESHOLD_MAX)
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + FME_PWR_THRESHOLD);
++	v &= ~PWR_THRESHOLD2;
++	v |= FIELD_PREP(PWR_THRESHOLD2, threshold);
++	writeq(v, base + FME_PWR_THRESHOLD);
++	mutex_unlock(&pdata->lock);
++
++	return count;
++}
++static POWER_ATTR_RW(threshold2, pwr_threshold2_show, pwr_threshold2_store);
++
++static ssize_t pwr_threshold1_status_show(struct device *dev,
++					  struct device_attribute *attr,
++					  char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	v = readq(base + FME_PWR_THRESHOLD);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(PWR_THRESHOLD1_STATUS, v));
++}
++static POWER_ATTR_RO(threshold1_status, pwr_threshold1_status_show);
++
++static ssize_t pwr_threshold2_status_show(struct device *dev,
++					  struct device_attribute *attr,
++					  char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	v = readq(base + FME_PWR_THRESHOLD);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(PWR_THRESHOLD2_STATUS, v));
++}
++static POWER_ATTR_RO(threshold2_status, pwr_threshold2_status_show);
++
++static ssize_t ltr_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	v = readq(base + FME_PWR_STATUS);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_LATENCY_TOLERANCE, v));
++}
++static POWER_ATTR_RO(ltr, ltr_show);
++
++static ssize_t xeon_limit_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u16 xeon_limit = 0;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	v = readq(base + FME_PWR_XEON_LIMIT);
++
++	if (FIELD_GET(XEON_PWR_EN, v))
++		xeon_limit = FIELD_GET(XEON_PWR_LIMIT, v);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n", xeon_limit);
++}
++static POWER_ATTR_RO(xeon_limit, xeon_limit_show);
++
++static ssize_t fpga_limit_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u16 fpga_limit = 0;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++
++	v = readq(base + FME_PWR_FPGA_LIMIT);
++
++	if (FIELD_GET(FPGA_PWR_EN, v))
++		fpga_limit = FIELD_GET(FPGA_PWR_LIMIT, v);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n", fpga_limit);
++}
++static POWER_ATTR_RO(fpga_limit, fpga_limit_show);
++
++static struct attribute *power_mgmt_attrs[] = {
++	&power_attr_consumed.attr,
++	&power_attr_threshold1.attr,
++	&power_attr_threshold2.attr,
++	&power_attr_threshold1_status.attr,
++	&power_attr_threshold2_status.attr,
++	&power_attr_xeon_limit.attr,
++	&power_attr_fpga_limit.attr,
++	&power_attr_ltr.attr,
++	NULL,
++};
++
++static struct attribute_group power_mgmt_attr_group = {
++	.attrs	= power_mgmt_attrs,
++	.name	= "power_mgmt",
++};
++
++static int fme_power_mgmt_init(struct platform_device *pdev,
++			       struct dfl_feature *feature)
++{
++	return sysfs_create_group(&pdev->dev.kobj, &power_mgmt_attr_group);
++}
++
++static void fme_power_mgmt_uinit(struct platform_device *pdev,
++				 struct dfl_feature *feature)
++{
++	sysfs_remove_group(&pdev->dev.kobj, &power_mgmt_attr_group);
++}
++
++static const struct dfl_feature_id fme_power_mgmt_id_table[] = {
++	{.id = FME_FEATURE_ID_POWER_MGMT,},
++	{0,}
++};
++
++static const struct dfl_feature_ops fme_power_mgmt_ops = {
++	.init = fme_power_mgmt_init,
++	.uinit = fme_power_mgmt_uinit,
++};
++
  static struct dfl_feature_driver fme_feature_drvs[] = {
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 2c09e50..a6b6d38 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -224,16 +224,20 @@ EXPORT_SYMBOL_GPL(dfl_fpga_port_ops_del);
-  */
- int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id)
- {
--	struct dfl_fpga_port_ops *port_ops = dfl_fpga_port_ops_get(pdev);
--	int port_id;
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct dfl_fpga_port_ops *port_ops;
-+
-+	if (pdata->id != FEATURE_DEV_ID_UNUSED)
-+		return pdata->id == *(int *)pport_id;
- 
-+	port_ops = dfl_fpga_port_ops_get(pdev);
- 	if (!port_ops || !port_ops->get_id)
- 		return 0;
- 
--	port_id = port_ops->get_id(pdev);
-+	pdata->id = port_ops->get_id(pdev);
- 	dfl_fpga_port_ops_put(port_ops);
- 
--	return port_id == *(int *)pport_id;
-+	return pdata->id == *(int *)pport_id;
- }
- EXPORT_SYMBOL_GPL(dfl_fpga_check_port_id);
- 
-@@ -462,6 +466,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
- 	pdata->dev = fdev;
- 	pdata->num = binfo->feature_num;
- 	pdata->dfl_cdev = binfo->cdev;
-+	pdata->id = FEATURE_DEV_ID_UNUSED;
- 	mutex_init(&pdata->lock);
- 
- 	/*
-@@ -959,25 +964,27 @@ void dfl_fpga_feature_devs_remove(struct dfl_fpga_cdev *cdev)
- {
- 	struct dfl_feature_platform_data *pdata, *ptmp;
- 
--	remove_feature_devs(cdev);
--
- 	mutex_lock(&cdev->lock);
--	if (cdev->fme_dev) {
--		/* the fme should be unregistered. */
--		WARN_ON(device_is_registered(cdev->fme_dev));
-+	if (cdev->fme_dev)
- 		put_device(cdev->fme_dev);
--	}
- 
- 	list_for_each_entry_safe(pdata, ptmp, &cdev->port_dev_list, node) {
- 		struct platform_device *port_dev = pdata->dev;
- 
--		/* the port should be unregistered. */
--		WARN_ON(device_is_registered(&port_dev->dev));
-+		/* remove released ports */
-+		if (!device_is_registered(&port_dev->dev)) {
-+			dfl_id_free(feature_dev_id_type(port_dev),
-+				    port_dev->id);
-+			platform_device_put(port_dev);
-+		}
-+
- 		list_del(&pdata->node);
- 		put_device(&port_dev->dev);
- 	}
- 	mutex_unlock(&cdev->lock);
- 
-+	remove_feature_devs(cdev);
-+
- 	fpga_region_unregister(cdev->region);
- 	devm_kfree(cdev->parent, cdev);
- }
-@@ -1015,6 +1022,82 @@ __dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
- }
- EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_find_port);
- 
-+static int attach_port_dev(struct dfl_fpga_cdev *cdev, u32 port_id)
-+{
-+	struct platform_device *port_pdev;
-+	int ret = -ENODEV;
-+
-+	mutex_lock(&cdev->lock);
-+	port_pdev = __dfl_fpga_cdev_find_port(cdev, &port_id,
-+					      dfl_fpga_check_port_id);
-+	if (!port_pdev)
-+		goto unlock_exit;
-+
-+	if (device_is_registered(&port_pdev->dev)) {
-+		ret = -EBUSY;
-+		goto put_dev_exit;
-+	}
-+
-+	ret = platform_device_add(port_pdev);
-+	if (ret)
-+		goto put_dev_exit;
-+
-+	dfl_feature_dev_use_end(dev_get_platdata(&port_pdev->dev));
-+	cdev->released_port_num--;
-+put_dev_exit:
-+	put_device(&port_pdev->dev);
-+unlock_exit:
-+	mutex_unlock(&cdev->lock);
-+	return ret;
-+}
-+
-+static int detach_port_dev(struct dfl_fpga_cdev *cdev, u32 port_id)
-+{
-+	struct platform_device *port_pdev;
-+	int ret = -ENODEV;
-+
-+	mutex_lock(&cdev->lock);
-+	port_pdev = __dfl_fpga_cdev_find_port(cdev, &port_id,
-+					      dfl_fpga_check_port_id);
-+	if (!port_pdev)
-+		goto unlock_exit;
-+
-+	if (!device_is_registered(&port_pdev->dev)) {
-+		ret = -EBUSY;
-+		goto put_dev_exit;
-+	}
-+
-+	ret = dfl_feature_dev_use_begin(dev_get_platdata(&port_pdev->dev));
-+	if (ret)
-+		goto put_dev_exit;
-+
-+	platform_device_del(port_pdev);
-+	cdev->released_port_num++;
-+put_dev_exit:
-+	put_device(&port_pdev->dev);
-+unlock_exit:
-+	mutex_unlock(&cdev->lock);
-+	return ret;
-+}
-+
-+/**
-+ * dfl_fpga_cdev_config_port - configure a port feature dev
-+ * @cdev: parent container device.
-+ * @port_id: id of the port feature device.
-+ * @release: release port or assign port back.
-+ *
-+ * This function allows user to release port platform device or assign it back.
-+ * e.g. to safely turn one port from PF into VF for PCI device SRIOV support,
-+ * release port platform device is one necessary step.
-+ */
-+int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
-+			      u32 port_id, bool release)
-+{
-+	return release ? detach_port_dev(cdev, port_id) :
-+			 attach_port_dev(cdev, port_id);
-+}
-+EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_port);
-+
- static int __init dfl_fpga_init(void)
- {
- 	int ret;
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 8851c6c..63f39ab 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -183,6 +183,8 @@ struct dfl_feature {
- 
- #define DEV_STATUS_IN_USE	0
- 
-+#define FEATURE_DEV_ID_UNUSED	(-1)
-+
- /**
-  * struct dfl_feature_platform_data - platform data for feature devices
-  *
-@@ -191,6 +193,7 @@ struct dfl_feature {
-  * @cdev: cdev of feature dev.
-  * @dev: ptr to platform device linked with this platform data.
-  * @dfl_cdev: ptr to container device.
-+ * @id: id used for this feature device.
-  * @disable_count: count for port disable.
-  * @num: number for sub features.
-  * @dev_status: dev status (e.g. DEV_STATUS_IN_USE).
-@@ -203,6 +206,7 @@ struct dfl_feature_platform_data {
- 	struct cdev cdev;
- 	struct platform_device *dev;
- 	struct dfl_fpga_cdev *dfl_cdev;
-+	int id;
- 	unsigned int disable_count;
- 	unsigned long dev_status;
- 	void *private;
-@@ -378,6 +382,7 @@ void dfl_fpga_enum_info_free(struct dfl_fpga_enum_info *info);
-  * @fme_dev: FME feature device under this container device.
-  * @lock: mutex lock to protect the port device list.
-  * @port_dev_list: list of all port feature devices under this container device.
-+ * @released_port_num: released port number under this container device.
-  */
- struct dfl_fpga_cdev {
- 	struct device *parent;
-@@ -385,6 +390,7 @@ struct dfl_fpga_cdev {
- 	struct device *fme_dev;
- 	struct mutex lock;
- 	struct list_head port_dev_list;
-+	int released_port_num;
+ 	{
+ 		.id_table = fme_hdr_id_table,
+@@ -429,6 +682,10 @@ static struct dfl_feature_driver fme_feature_drvs[] = {
+ 		.ops = &fme_thermal_mgmt_ops,
+ 	},
+ 	{
++		.id_table = fme_power_mgmt_id_table,
++		.ops = &fme_power_mgmt_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	},
  };
- 
- struct dfl_fpga_cdev *
-@@ -412,4 +418,8 @@ dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
- 
- 	return pdev;
- }
-+
-+int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
-+			      u32 port_id, bool release);
-+
- #endif /* __FPGA_DFL_H */
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-index 2e324e5..e9a00e0 100644
---- a/include/uapi/linux/fpga-dfl.h
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -176,4 +176,36 @@ struct dfl_fpga_fme_port_pr {
- 
- #define DFL_FPGA_FME_PORT_PR	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 0)
- 
-+/**
-+ * DFL_FPGA_FME_PORT_RELEASE - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 1,
-+ *					struct dfl_fpga_fme_port_release)
-+ *
-+ * Driver releases the port per Port ID provided by caller.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+struct dfl_fpga_fme_port_release {
-+	/* Input */
-+	__u32 argsz;		/* Structure length */
-+	__u32 flags;		/* Zero for now */
-+	__u32 port_id;
-+};
-+
-+#define DFL_FPGA_FME_PORT_RELEASE	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 1)
-+
-+/**
-+ * DFL_FPGA_FME_PORT_ASSIGN - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 2,
-+ *					struct dfl_fpga_fme_port_assign)
-+ *
-+ * Driver assigns the port back per Port ID provided by caller.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+struct dfl_fpga_fme_port_assign {
-+	/* Input */
-+	__u32 argsz;		/* Structure length */
-+	__u32 flags;		/* Zero for now */
-+	__u32 port_id;
-+};
-+
-+#define DFL_FPGA_FME_PORT_ASSIGN	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 2)
-+
- #endif /* _UAPI_LINUX_FPGA_DFL_H */
 -- 
 2.7.4
