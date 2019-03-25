@@ -1,368 +1,171 @@
 Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH 15/17] fpga: dfl: fme: add power management support
-Date: Mon, 25 Mar 2019 11:07:42 +0800
-Message-Id: <1553483264-5379-16-git-send-email-hao.wu@intel.com>
+Subject: [PATCH 04/17] Documentation: fpga: dfl: add descriptions for virtualization and new interfaces.
+Date: Mon, 25 Mar 2019 11:07:31 +0800
+Message-Id: <1553483264-5379-5-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
 References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds support for power management private feature under
-FPGA Management Engine (FME), sysfs interfaces are introduced for
-different power management functions, users could use these sysfs
-interface to get current number of consumed power, throttling
-thresholds, threshold status and other information, and configure
-different value for throttling thresholds too.
+This patch adds virtualization support description for DFL based
+FPGA devices (based on PCIe SRIOV), and introductions to new
+interfaces added by new dfl private features.
 
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ---
- Documentation/ABI/testing/sysfs-platform-dfl-fme |  56 +++++
- drivers/fpga/dfl-fme-main.c                      | 257 +++++++++++++++++++++++
- 2 files changed, 313 insertions(+)
+ Documentation/fpga/dfl.txt | 115 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 115 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-index d3aeb88..4b6448f 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-@@ -100,3 +100,59 @@ Description:	Read-only. Read this file to get the policy of temperature
- 		threshold1. It only supports two value (policy):
- 		    0 - AP2 state (90% throttling)
- 		    1 - AP1 state (50% throttling)
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/consumed
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns current power consumed by FPGA.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold1
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Write. Read/Write this file to get/set current power
-+		threshold1 in Watts.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold2
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Write. Read/Write this file to get/set current power
-+		threshold2 in Watts.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold1_status
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns 1 if power consumption reaches the
-+		threshold1, otherwise 0.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold2_status
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns 1 if power consumption reaches the
-+		threshold2, otherwise 0.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/ltr
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get current Latency Tolerance
-+		Reporting (ltr) value, it's only valid for integrated
-+		solution as it blocks CPU on low power state.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/xeon_limit
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get power limit for xeon, it
-+		is only valid for integrated solution.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/power_mgmt/fpga_limit
-+Date:		March 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get power limit for fpga, it
-+		is only valid for integrated solution.
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 449a17d..dafa6580 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -415,6 +415,259 @@ static const struct dfl_feature_ops fme_thermal_mgmt_ops = {
- 	.uinit = fme_thermal_mgmt_uinit,
- };
+diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
+index 6df4621..360c1d9 100644
+--- a/Documentation/fpga/dfl.txt
++++ b/Documentation/fpga/dfl.txt
+@@ -84,6 +84,8 @@ The following functions are exposed through ioctls:
+  Get driver API version (DFL_FPGA_GET_API_VERSION)
+  Check for extensions (DFL_FPGA_CHECK_EXTENSION)
+  Program bitstream (DFL_FPGA_FME_PORT_PR)
++ Assign port to PF (DFL_FPGA_FME_PORT_ASSIGN)
++ Release port from PF (DFL_FPGA_FME_PORT_RELEASE)
  
-+#define FME_PWR_STATUS		0x8
-+#define FME_LATENCY_TOLERANCE	BIT_ULL(18)
-+#define PWR_CONSUMED		GENMASK_ULL(17, 0)
+ More functions are exposed through sysfs
+ (/sys/class/fpga_region/regionX/dfl-fme.n/):
+@@ -99,6 +101,24 @@ More functions are exposed through sysfs
+      one FPGA device may have more than one port, this sysfs interface indicates
+      how many ports the FPGA device has.
+ 
++ Power management (power_mgmt/)
++     power management sysfs interfaces allow user to read power management
++     information (power consumption, power limits, throttling thresholds,
++     thresholds status, etc) and configure power thresholds for different
++     throttling levels.
 +
-+#define FME_PWR_THRESHOLD	0x10
-+#define PWR_THRESHOLD1		GENMASK_ULL(6, 0)	/* in Watts */
-+#define PWR_THRESHOLD2		GENMASK_ULL(14, 8)	/* in Watts */
-+#define PWR_THRESHOLD_MAX	0x7f
-+#define PWR_THRESHOLD1_STATUS	BIT_ULL(16)
-+#define PWR_THRESHOLD2_STATUS	BIT_ULL(17)
++ Thermal management (thermal_mgmt/)
++     thermal management sysfs interfaces allow user to read temperature,
++     thresholds, thresholds status and other thermal related information.
 +
-+#define FME_PWR_XEON_LIMIT	0x18
-+#define XEON_PWR_LIMIT		GENMASK_ULL(14, 0)
-+#define XEON_PWR_EN		BIT_ULL(15)
-+#define FME_PWR_FPGA_LIMIT	0x20
-+#define FPGA_PWR_LIMIT		GENMASK_ULL(14, 0)
-+#define FPGA_PWR_EN		BIT_ULL(15)
++ Global error reporting management (errors/)
++     error reporting sysfs interfaces allow user to read errors detected by the
++     hardware, and clear the logged errors.
 +
-+#define POWER_ATTR(_name, _mode, _show, _store)	\
-+struct device_attribute power_attr_##_name =		\
-+	__ATTR(_name, _mode, _show, _store)
++ Performance counters (perf/)
++     performance counters sysfs interfaces allow user to use different counters
++     to get performance data.
 +
-+#define POWER_ATTR_RO(_name, _show)			\
-+	POWER_ATTR(_name, 0444, _show, NULL)
+ 
+ FIU - PORT
+ ==========
+@@ -139,6 +159,10 @@ More functions are exposed through sysfs:
+  Read Accelerator GUID (afu_id)
+      afu_id indicates which PR bitstream is programmed to this AFU.
+ 
++ Error reporting (errors/)
++     error reporting sysfs interfaces allow user to read port/afu errors
++     detected by the hardware, and clear the logged errors.
 +
-+#define POWER_ATTR_RW(_name, _show, _store)		\
-+	POWER_ATTR(_name, 0644, _show, _store)
+ 
+ DFL Framework Overview
+ ======================
+@@ -212,6 +236,97 @@ the compat_id exposed by the target FPGA region. This check is usually done by
+ userspace before calling the reconfiguration IOCTL.
+ 
+ 
++FPGA virtualization - PCIe SRIOV
++================================
++This section describes the virtualization support on DFL based FPGA device to
++enable accessing an accelerator from applications running in a virtual machine
++(VM). This section only describes the PCIe based FPGA device with SRIOV support.
 +
-+static ssize_t pwr_consumed_show(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
++Features supported by the particular FPGA device are exposed through Device
++Feature Lists, as illustrated below:
 +
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++  +-------------------------------+  +-------------+
++  |              PF               |  |     VF      |
++  +-------------------------------+  +-------------+
++      ^            ^         ^              ^
++      |            |         |              |
+++-----|------------|---------|--------------|-------+
++|     |            |         |              |       |
++|  +-----+     +-------+ +-------+      +-------+   |
++|  | FME |     | Port0 | | Port1 |      | Port2 |   |
++|  +-----+     +-------+ +-------+      +-------+   |
++|                  ^         ^              ^       |
++|                  |         |              |       |
++|              +-------+ +------+       +-------+   |
++|              |  AFU  | |  AFU |       |  AFU  |   |
++|              +-------+ +------+       +-------+   |
++|                                                   |
++|            DFL based FPGA PCIe Device             |
+++---------------------------------------------------+
 +
-+	v = readq(base + FME_PWR_STATUS);
++FME is always accessed through the physical function (PF).
 +
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(PWR_CONSUMED, v));
-+}
-+static POWER_ATTR_RO(consumed, pwr_consumed_show);
++Ports (and related AFUs) are accessed via PF by default, but could be exposed
++through virtual function (VF) devices via PCIe SRIOV. Each VF only contains
++1 Port and 1 AFU for isolation. Users could assign individual VFs (accelerators)
++created via PCIe SRIOV interface, to virtual machines.
 +
-+static ssize_t pwr_threshold1_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
++The driver organization in virtualization case is illustrated below:
 +
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++  +-------++------++------+             |
++  | FME   || FME  || FME  |             |
++  | FPGA  || FPGA || FPGA |             |
++  |Manager||Bridge||Region|             |
++  +-------++------++------+             |
++  +-----------------------+  +--------+ |             +--------+
++  |          FME          |  |  AFU   | |             |  AFU   |
++  |         Module        |  | Module | |             | Module |
++  +-----------------------+  +--------+ |             +--------+
++        +-----------------------+       |       +-----------------------+
++        | FPGA Container Device |       |       | FPGA Container Device |
++        |  (FPGA Base Region)   |       |       |  (FPGA Base Region)   |
++        +-----------------------+       |       +-----------------------+
++          +------------------+          |         +------------------+
++          | FPGA PCIE Module |          | Virtual | FPGA PCIE Module |
++          +------------------+   Host   | Machine +------------------+
++ -------------------------------------- | ------------------------------
++           +---------------+            |          +---------------+
++           | PCI PF Device |            |          | PCI VF Device |
++           +---------------+            |          +---------------+
 +
-+	v = readq(base + FME_PWR_THRESHOLD);
++FPGA PCIe device driver is always loaded first once a FPGA PCIe PF or VF device
++is detected. It:
 +
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(PWR_THRESHOLD1, v));
-+}
++	a) finish enumeration on both FPGA PCIe PF and VF device using common
++	   interfaces from DFL framework.
++	b) supports SRIOV.
 +
-+static ssize_t pwr_threshold1_store(struct device *dev,
-+				    struct device_attribute *attr,
-+				    const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u8 threshold;
-+	int ret;
-+	u64 v;
++The FME device driver plays a management role in this driver architecture, it
++provides ioctls to release Port from PF and assign Port to PF. After release
++a port from PF, then it's safe to expose this port through a VF via PCIe SRIOV
++sysfs interface.
 +
-+	ret = kstrtou8(buf, 0, &threshold);
-+	if (ret)
-+		return ret;
++To enable accessing an accelerator from applications running in a VM, the
++respective AFU's port needs to be assigned to a VF using the following steps:
 +
-+	if (threshold > PWR_THRESHOLD_MAX)
-+		return -EINVAL;
++	a) The PF owns all AFU ports by default. Any port that needs to be
++	   reassigned to a VF must first be released through the
++	   DFL_FPGA_FME_PORT_RELEASE ioctl on the FME device.
 +
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++	b) Once N ports are released from PF, then user can use command below
++	   to enable SRIOV and VFs. Each VF owns only one Port with AFU.
 +
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + FME_PWR_THRESHOLD);
-+	v &= ~PWR_THRESHOLD1;
-+	v |= FIELD_PREP(PWR_THRESHOLD1, threshold);
-+	writeq(v, base + FME_PWR_THRESHOLD);
-+	mutex_unlock(&pdata->lock);
++	   echo N > $PCI_DEVICE_PATH/sriov_numvfs
 +
-+	return count;
-+}
-+static POWER_ATTR_RW(threshold1, pwr_threshold1_show, pwr_threshold1_store);
++	c) Pass through the VFs to VMs
 +
-+static ssize_t pwr_threshold2_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
++	d) The AFU under VF is accessible from applications in VM (using the
++	   same driver inside the VF).
 +
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
++Note that an FME can't be assigned to a VF, thus PR and other management
++functions are only available via the PF.
 +
-+	v = readq(base + FME_PWR_THRESHOLD);
 +
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(PWR_THRESHOLD2, v));
-+}
-+
-+static ssize_t pwr_threshold2_store(struct device *dev,
-+				    struct device_attribute *attr,
-+				    const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u8 threshold;
-+	int ret;
-+	u64 v;
-+
-+	ret = kstrtou8(buf, 0, &threshold);
-+	if (ret)
-+		return ret;
-+
-+	if (threshold > PWR_THRESHOLD_MAX)
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + FME_PWR_THRESHOLD);
-+	v &= ~PWR_THRESHOLD2;
-+	v |= FIELD_PREP(PWR_THRESHOLD2, threshold);
-+	writeq(v, base + FME_PWR_THRESHOLD);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static POWER_ATTR_RW(threshold2, pwr_threshold2_show, pwr_threshold2_store);
-+
-+static ssize_t pwr_threshold1_status_show(struct device *dev,
-+					  struct device_attribute *attr,
-+					  char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
-+
-+	v = readq(base + FME_PWR_THRESHOLD);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(PWR_THRESHOLD1_STATUS, v));
-+}
-+static POWER_ATTR_RO(threshold1_status, pwr_threshold1_status_show);
-+
-+static ssize_t pwr_threshold2_status_show(struct device *dev,
-+					  struct device_attribute *attr,
-+					  char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
-+
-+	v = readq(base + FME_PWR_THRESHOLD);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(PWR_THRESHOLD2_STATUS, v));
-+}
-+static POWER_ATTR_RO(threshold2_status, pwr_threshold2_status_show);
-+
-+static ssize_t ltr_show(struct device *dev,
-+			struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
-+
-+	v = readq(base + FME_PWR_STATUS);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(FME_LATENCY_TOLERANCE, v));
-+}
-+static POWER_ATTR_RO(ltr, ltr_show);
-+
-+static ssize_t xeon_limit_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u16 xeon_limit = 0;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
-+
-+	v = readq(base + FME_PWR_XEON_LIMIT);
-+
-+	if (FIELD_GET(XEON_PWR_EN, v))
-+		xeon_limit = FIELD_GET(XEON_PWR_LIMIT, v);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n", xeon_limit);
-+}
-+static POWER_ATTR_RO(xeon_limit, xeon_limit_show);
-+
-+static ssize_t fpga_limit_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u16 fpga_limit = 0;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_POWER_MGMT);
-+
-+	v = readq(base + FME_PWR_FPGA_LIMIT);
-+
-+	if (FIELD_GET(FPGA_PWR_EN, v))
-+		fpga_limit = FIELD_GET(FPGA_PWR_LIMIT, v);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n", fpga_limit);
-+}
-+static POWER_ATTR_RO(fpga_limit, fpga_limit_show);
-+
-+static struct attribute *power_mgmt_attrs[] = {
-+	&power_attr_consumed.attr,
-+	&power_attr_threshold1.attr,
-+	&power_attr_threshold2.attr,
-+	&power_attr_threshold1_status.attr,
-+	&power_attr_threshold2_status.attr,
-+	&power_attr_xeon_limit.attr,
-+	&power_attr_fpga_limit.attr,
-+	&power_attr_ltr.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group power_mgmt_attr_group = {
-+	.attrs	= power_mgmt_attrs,
-+	.name	= "power_mgmt",
-+};
-+
-+static int fme_power_mgmt_init(struct platform_device *pdev,
-+			       struct dfl_feature *feature)
-+{
-+	return sysfs_create_group(&pdev->dev.kobj, &power_mgmt_attr_group);
-+}
-+
-+static void fme_power_mgmt_uinit(struct platform_device *pdev,
-+				 struct dfl_feature *feature)
-+{
-+	sysfs_remove_group(&pdev->dev.kobj, &power_mgmt_attr_group);
-+}
-+
-+static const struct dfl_feature_id fme_power_mgmt_id_table[] = {
-+	{.id = FME_FEATURE_ID_POWER_MGMT,},
-+	{0,}
-+};
-+
-+static const struct dfl_feature_ops fme_power_mgmt_ops = {
-+	.init = fme_power_mgmt_init,
-+	.uinit = fme_power_mgmt_uinit,
-+};
-+
- static struct dfl_feature_driver fme_feature_drvs[] = {
- 	{
- 		.id_table = fme_hdr_id_table,
-@@ -429,6 +682,10 @@ static struct dfl_feature_driver fme_feature_drvs[] = {
- 		.ops = &fme_thermal_mgmt_ops,
- 	},
- 	{
-+		.id_table = fme_power_mgmt_id_table,
-+		.ops = &fme_power_mgmt_ops,
-+	},
-+	{
- 		.ops = NULL,
- 	},
- };
+ Device enumeration
+ ==================
+ This section introduces how applications enumerate the fpga device from
 -- 
 2.7.4
