@@ -1,48 +1,52 @@
-Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v4 6/6] dt-bindings: fpga: Add bindings for ZynqMP fpga driver
-Date: Thu, 14 Mar 2019 19:31:22 +0530
-Message-ID: <20190314140122.23372-7-nava.manne@xilinx.com>
-In-Reply-To: <20190314140122.23372-1-nava.manne@xilinx.com>
-References: <20190314140122.23372-1-nava.manne@xilinx.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com> <1553483264-5379-2-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1553483264-5379-2-git-send-email-hao.wu@intel.com>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 25 Mar 2019 12:28:22 -0500
+Message-ID: <CANk1AXRCdd_AwXj1aMwzu7ff4yxuBtN21mju62skbJnhXDwtcw@mail.gmail.com>
+Subject: Re: [PATCH 01/17] fpga: dfl-fme-mgr: fix FME_PR_INTFC_ID register address.
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add documentation to describe Xilinx ZynqMP fpga driver
-bindings.
+On Sun, Mar 24, 2019 at 10:23 PM Wu Hao <hao.wu@intel.com> wrote:
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
----
-Changes for v4:
-		-Modified binding description as suggested by Moritz Fischer.
-Changes for v3:
-                -Removed PCAP as a child node to the FW and Created
-		 an independent node since PCAP driver is a consumer
-		 not a provider.
+Hi Hao,
 
- .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt           | 11 +++++++++++
- 1 file changed, 11 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+>
+> FME_PR_INTFC_ID is used as compat_id for fpga manager and region,
+> but high 64 bits and low 64 bits of the compat_id are swapped by
+> mistake. This patch fixes this problem by fixing register address.
+>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
 
-diff --git a/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-new file mode 100644
-index 000000000000..6d7f10775d9b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-@@ -0,0 +1,11 @@
-+Devicetree bindings for Zynq Ultrascale MPSoC FPGA Manager.
-+The ZynqMP SoC uses the PCAP (Processor configuration Port) to configure the
-+Programmable Logic (PL). The configuration uses  the firmware interface.
-+
-+Required properties:
-+- compatible: should contain "xlnx,zynqmp-pcap-fpga"
-+
-+Example:
-+	zynqmp_pcap: pcap {
-+		compatible = "xlnx,zynqmp-pcap-fpga";
-+	};
--- 
-2.18.0
+Acked-by: Alan Tull <atull@kernel.org>
+
+Thanks,
+Alan
+
+> ---
+>  drivers/fpga/dfl-fme-mgr.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
+> index 76f3770..b3f7eee 100644
+> --- a/drivers/fpga/dfl-fme-mgr.c
+> +++ b/drivers/fpga/dfl-fme-mgr.c
+> @@ -30,8 +30,8 @@
+>  #define FME_PR_STS             0x10
+>  #define FME_PR_DATA            0x18
+>  #define FME_PR_ERR             0x20
+> -#define FME_PR_INTFC_ID_H      0xA8
+> -#define FME_PR_INTFC_ID_L      0xB0
+> +#define FME_PR_INTFC_ID_L      0xA8
+> +#define FME_PR_INTFC_ID_H      0xB0
+>
+>  /* FME PR Control Register Bitfield */
+>  #define FME_PR_CTRL_PR_RST     BIT_ULL(0)  /* Reset PR engine */
+> --
+> 2.7.4
+>
