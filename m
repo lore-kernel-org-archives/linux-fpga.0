@@ -1,40 +1,336 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
-References: <1553483264-5379-1-git-send-email-hao.wu@intel.com> <1553483264-5379-4-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1553483264-5379-4-git-send-email-hao.wu@intel.com>
-From: Alan Tull <atull@kernel.org>
-Date: Mon, 25 Mar 2019 13:48:52 -0500
-Message-ID: <CANk1AXTCbR3E=WFUvyHx3BDFwV19djuhC=qBpxQHT46qGgwWJA@mail.gmail.com>
-Subject: Re: [PATCH 03/17] fpga: dfl: fme: support 512bit data width PR
-Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH 03/17] fpga: dfl: fme: support 512bit data width PR
+Date: Mon, 25 Mar 2019 11:07:30 +0800
+Message-Id: <1553483264-5379-4-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Sun, Mar 24, 2019 at 10:23 PM Wu Hao <hao.wu@intel.com> wrote:
+In early partial reconfiguration private feature, it only
+supports 32bit data width when writing data to hardware for
+PR. 512bit data width PR support is an important optimization
+for some specific solutions (e.g. XEON with FPGA integrated),
+it allows driver to use AVX512 instruction to improve the
+performance of partial reconfiguration. e.g. programming one
+100MB bitstream image via this 512bit data width PR hardware
+only takes ~300ms, but 32bit revision requires ~3s per test
+result.
 
-Hi Hao,
+Please note now this optimization is only done on revision 2
+of this PR private feature which is only used in integrated
+solution that AVX512 is always supported.
 
-This looks fine.
+Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+---
+ drivers/fpga/dfl-fme-main.c |  3 ++
+ drivers/fpga/dfl-fme-mgr.c  | 75 +++++++++++++++++++++++++++++++++++++--------
+ drivers/fpga/dfl-fme-pr.c   | 45 ++++++++++++++++-----------
+ drivers/fpga/dfl-fme.h      |  2 ++
+ drivers/fpga/dfl.h          |  5 +++
+ 5 files changed, 99 insertions(+), 31 deletions(-)
 
->
-> In early partial reconfiguration private feature, it only
-> supports 32bit data width when writing data to hardware for
-> PR. 512bit data width PR support is an important optimization
-> for some specific solutions (e.g. XEON with FPGA integrated),
-> it allows driver to use AVX512 instruction to improve the
-> performance of partial reconfiguration. e.g. programming one
-> 100MB bitstream image via this 512bit data width PR hardware
-> only takes ~300ms, but 32bit revision requires ~3s per test
-> result.
->
-> Please note now this optimization is only done on revision 2
-> of this PR private feature which is only used in integrated
-> solution that AVX512 is always supported.
->
-> Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-
-Acked-by: Alan Tull <atull@kernel.org>
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 086ad24..076d74f 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -21,6 +21,8 @@
+ #include "dfl.h"
+ #include "dfl-fme.h"
+ 
++#define DRV_VERSION	"0.8"
++
+ static ssize_t ports_num_show(struct device *dev,
+ 			      struct device_attribute *attr, char *buf)
+ {
+@@ -277,3 +279,4 @@ MODULE_DESCRIPTION("FPGA Management Engine driver");
+ MODULE_AUTHOR("Intel Corporation");
+ MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:dfl-fme");
++MODULE_VERSION(DRV_VERSION);
+diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
+index b3f7eee..027d457 100644
+--- a/drivers/fpga/dfl-fme-mgr.c
++++ b/drivers/fpga/dfl-fme-mgr.c
+@@ -22,14 +22,18 @@
+ #include <linux/io-64-nonatomic-lo-hi.h>
+ #include <linux/fpga/fpga-mgr.h>
+ 
++#include "dfl.h"
+ #include "dfl-fme-pr.h"
+ 
++#define DRV_VERSION	"0.8"
++
+ /* FME Partial Reconfiguration Sub Feature Register Set */
+ #define FME_PR_DFH		0x0
+ #define FME_PR_CTRL		0x8
+ #define FME_PR_STS		0x10
+ #define FME_PR_DATA		0x18
+ #define FME_PR_ERR		0x20
++#define FME_PR_512_DATA		0x40 /* Data Register for 512bit datawidth PR */
+ #define FME_PR_INTFC_ID_L	0xA8
+ #define FME_PR_INTFC_ID_H	0xB0
+ 
+@@ -67,8 +71,31 @@
+ #define PR_WAIT_TIMEOUT   8000000
+ #define PR_HOST_STATUS_IDLE	0
+ 
++#if defined(CONFIG_X86) && defined(CONFIG_AS_AVX512)
++
++#include <asm/fpu/api.h>
++
++static inline void copy512(void *src, void __iomem *dst)
++{
++	kernel_fpu_begin();
++
++	asm volatile("vmovdqu64 (%0), %%zmm0;"
++		     "vmovntdq %%zmm0, (%1);"
++		     :
++		     : "r"(src), "r"(dst));
++
++	kernel_fpu_end();
++}
++#else
++static inline void copy512(void *src, void __iomem *dst)
++{
++	WARN_ON_ONCE(1);
++}
++#endif
++
+ struct fme_mgr_priv {
+ 	void __iomem *ioaddr;
++	unsigned int pr_datawidth;
+ 	u64 pr_error;
+ };
+ 
+@@ -169,7 +196,7 @@ static int fme_mgr_write(struct fpga_manager *mgr,
+ 	struct fme_mgr_priv *priv = mgr->priv;
+ 	void __iomem *fme_pr = priv->ioaddr;
+ 	u64 pr_ctrl, pr_status, pr_data;
+-	int delay = 0, pr_credit, i = 0;
++	int ret = 0, delay = 0, pr_credit;
+ 
+ 	dev_dbg(dev, "start request\n");
+ 
+@@ -181,9 +208,9 @@ static int fme_mgr_write(struct fpga_manager *mgr,
+ 
+ 	/*
+ 	 * driver can push data to PR hardware using PR_DATA register once HW
+-	 * has enough pr_credit (> 1), pr_credit reduces one for every 32bit
+-	 * pr data write to PR_DATA register. If pr_credit <= 1, driver needs
+-	 * to wait for enough pr_credit from hardware by polling.
++	 * has enough pr_credit (> 1), pr_credit reduces one for every pr data
++	 * width write to PR_DATA register. If pr_credit <= 1, driver needs to
++	 * wait for enough pr_credit from hardware by polling.
+ 	 */
+ 	pr_status = readq(fme_pr + FME_PR_STS);
+ 	pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
+@@ -192,7 +219,8 @@ static int fme_mgr_write(struct fpga_manager *mgr,
+ 		while (pr_credit <= 1) {
+ 			if (delay++ > PR_WAIT_TIMEOUT) {
+ 				dev_err(dev, "PR_CREDIT timeout\n");
+-				return -ETIMEDOUT;
++				ret = -ETIMEDOUT;
++				goto done;
+ 			}
+ 			udelay(1);
+ 
+@@ -200,21 +228,32 @@ static int fme_mgr_write(struct fpga_manager *mgr,
+ 			pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
+ 		}
+ 
+-		if (count < 4) {
++		if (count < priv->pr_datawidth) {
+ 			dev_err(dev, "Invalid PR bitstream size\n");
+ 			return -EINVAL;
+ 		}
+ 
+-		pr_data = 0;
+-		pr_data |= FIELD_PREP(FME_PR_DATA_PR_DATA_RAW,
+-				      *(((u32 *)buf) + i));
+-		writeq(pr_data, fme_pr + FME_PR_DATA);
+-		count -= 4;
++		switch (priv->pr_datawidth) {
++		case 4:
++			pr_data = 0;
++			pr_data |= FIELD_PREP(FME_PR_DATA_PR_DATA_RAW,
++					*((u32 *)buf));
++			writeq(pr_data, fme_pr + FME_PR_DATA);
++			break;
++		case 64:
++			copy512((void *)buf, fme_pr + FME_PR_512_DATA);
++			break;
++		default:
++			ret = -EFAULT;
++			goto done;
++		}
++		buf += priv->pr_datawidth;
++		count -= priv->pr_datawidth;
+ 		pr_credit--;
+-		i++;
+ 	}
+ 
+-	return 0;
++done:
++	return ret;
+ }
+ 
+ static int fme_mgr_write_complete(struct fpga_manager *mgr,
+@@ -302,6 +341,15 @@ static int fme_mgr_probe(struct platform_device *pdev)
+ 			return PTR_ERR(priv->ioaddr);
+ 	}
+ 
++	/*
++	 * Only revision 2 supports 512bit datawidth for better performance,
++	 * other revisions use default 32bit datawidth.
++	 */
++	if (dfl_feature_revision(priv->ioaddr) == 2)
++		priv->pr_datawidth = 64;
++	else
++		priv->pr_datawidth = 4;
++
+ 	compat_id = devm_kzalloc(dev, sizeof(*compat_id), GFP_KERNEL);
+ 	if (!compat_id)
+ 		return -ENOMEM;
+@@ -342,3 +390,4 @@ MODULE_DESCRIPTION("FPGA Manager for DFL FPGA Management Engine");
+ MODULE_AUTHOR("Intel Corporation");
+ MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:dfl-fme-mgr");
++MODULE_VERSION(DRV_VERSION);
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+index c1fb1fe..8a0e46a 100644
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -83,7 +83,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 	if (copy_from_user(&port_pr, argp, minsz))
+ 		return -EFAULT;
+ 
+-	if (port_pr.argsz < minsz || port_pr.flags)
++	if (port_pr.argsz < minsz || port_pr.flags || !port_pr.buffer_size)
+ 		return -EINVAL;
+ 
+ 	/* get fme header region */
+@@ -101,15 +101,25 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 		       port_pr.buffer_size))
+ 		return -EFAULT;
+ 
++	mutex_lock(&pdata->lock);
++	fme = dfl_fpga_pdata_get_private(pdata);
++	/* fme device has been unregistered. */
++	if (!fme) {
++		ret = -EINVAL;
++		goto unlock_exit;
++	}
++
+ 	/*
+ 	 * align PR buffer per PR bandwidth, as HW ignores the extra padding
+ 	 * data automatically.
+ 	 */
+-	length = ALIGN(port_pr.buffer_size, 4);
++	length = ALIGN(port_pr.buffer_size, fme->pr_datawidth);
+ 
+ 	buf = vmalloc(length);
+-	if (!buf)
+-		return -ENOMEM;
++	if (!buf) {
++		ret = -ENOMEM;
++		goto unlock_exit;
++	}
+ 
+ 	if (copy_from_user(buf,
+ 			   (void __user *)(unsigned long)port_pr.buffer_address,
+@@ -127,18 +137,10 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 
+ 	info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
+ 
+-	mutex_lock(&pdata->lock);
+-	fme = dfl_fpga_pdata_get_private(pdata);
+-	/* fme device has been unregistered. */
+-	if (!fme) {
+-		ret = -EINVAL;
+-		goto unlock_exit;
+-	}
+-
+ 	region = dfl_fme_region_find(fme, port_pr.port_id);
+ 	if (!region) {
+ 		ret = -EINVAL;
+-		goto unlock_exit;
++		goto free_exit;
+ 	}
+ 
+ 	fpga_image_info_free(region->info);
+@@ -159,13 +161,10 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 		fpga_bridges_put(&region->bridge_list);
+ 
+ 	put_device(&region->dev);
+-unlock_exit:
+-	mutex_unlock(&pdata->lock);
+ free_exit:
+ 	vfree(buf);
+-	if (copy_to_user((void __user *)arg, &port_pr, minsz))
+-		return -EFAULT;
+-
++unlock_exit:
++	mutex_unlock(&pdata->lock);
+ 	return ret;
+ }
+ 
+@@ -391,6 +390,16 @@ static int pr_mgmt_init(struct platform_device *pdev,
+ 	mutex_lock(&pdata->lock);
+ 	priv = dfl_fpga_pdata_get_private(pdata);
+ 
++	/*
++	 * Initialize PR data width.
++	 * Only revision 2 supports 512bit datawidth for better performance,
++	 * other revisions use default 32bit datawidth.
++	 */
++	if (dfl_feature_revision(feature->ioaddr) == 2)
++		priv->pr_datawidth = 64;
++	else
++		priv->pr_datawidth = 4;
++
+ 	/* Initialize the region and bridge sub device list */
+ 	INIT_LIST_HEAD(&priv->region_list);
+ 	INIT_LIST_HEAD(&priv->bridge_list);
+diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
+index 5394a21..de20755 100644
+--- a/drivers/fpga/dfl-fme.h
++++ b/drivers/fpga/dfl-fme.h
+@@ -21,12 +21,14 @@
+ /**
+  * struct dfl_fme - dfl fme private data
+  *
++ * @pr_datawidth: data width for partial reconfiguration.
+  * @mgr: FME's FPGA manager platform device.
+  * @region_list: linked list of FME's FPGA regions.
+  * @bridge_list: linked list of FME's FPGA bridges.
+  * @pdata: fme platform device's pdata.
+  */
+ struct dfl_fme {
++	int pr_datawidth;
+ 	struct platform_device *mgr;
+ 	struct list_head region_list;
+ 	struct list_head bridge_list;
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index a8b869e..8851c6c 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -331,6 +331,11 @@ static inline bool dfl_feature_is_port(void __iomem *base)
+ 		(FIELD_GET(DFH_ID, v) == DFH_ID_FIU_PORT);
+ }
+ 
++static inline u8 dfl_feature_revision(void __iomem *base)
++{
++	return (u8)FIELD_GET(DFH_REVISION, readq(base + DFH));
++}
++
+ /**
+  * struct dfl_fpga_enum_info - DFL FPGA enumeration information
+  *
+-- 
+2.7.4
