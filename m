@@ -1,154 +1,222 @@
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH 06/17] fpga: dfl: pci: enable SRIOV support.
-Date: Mon, 25 Mar 2019 11:07:33 +0800
-Message-Id: <1553483264-5379-7-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
+Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
+From: Nava kishore Manne <nava.manne@xilinx.com>
+Subject: [PATCH v5 3/6] dt-bindings: reset: Add bindings for ZynqMP reset driver
+Date: Tue, 26 Mar 2019 20:01:26 +0530
+Message-ID: <20190326143129.2608-4-nava.manne@xilinx.com>
+In-Reply-To: <20190326143129.2608-1-nava.manne@xilinx.com>
+References: <20190326143129.2608-1-nava.manne@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch enables the standard sriov support. It allows user to
-enable SRIOV (and VFs), then user could pass through accelerators
-(VFs) into virtual machine or use VFs directly in host.
+Add documentation to describe Xilinx ZynqMP reset driver
+bindings.
 
-Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+Signed-off-by: Jolly Shah <jollys@xilinx.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/fpga/dfl-pci.c | 40 ++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl.c     | 41 +++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl.h     |  1 +
- 3 files changed, 82 insertions(+)
+ .../bindings/reset/xlnx,zynqmp-reset.txt      |  52 +++++++
+ .../dt-bindings/reset/xlnx-zynqmp-resets.h    | 130 ++++++++++++++++++
+ 2 files changed, 182 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/reset/xlnx,zynqmp-reset.txt
+ create mode 100644 include/dt-bindings/reset/xlnx-zynqmp-resets.h
 
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index 66b5720..2fa571b 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -223,8 +223,46 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
- 	return ret;
- }
- 
-+static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
-+{
-+	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-+	struct dfl_fpga_cdev *cdev = drvdata->cdev;
-+	int ret = 0;
+diff --git a/Documentation/devicetree/bindings/reset/xlnx,zynqmp-reset.txt b/Documentation/devicetree/bindings/reset/xlnx,zynqmp-reset.txt
+new file mode 100644
+index 000000000000..27a45fe5ecf1
+--- /dev/null
++++ b/Documentation/devicetree/bindings/reset/xlnx,zynqmp-reset.txt
+@@ -0,0 +1,52 @@
++--------------------------------------------------------------------------
++ =  Zynq UltraScale+ MPSoC reset driver binding =
++--------------------------------------------------------------------------
++The Zynq UltraScale+ MPSoC has several different resets.
 +
-+	mutex_lock(&cdev->lock);
++See Chapter 36 of the Zynq UltraScale+ MPSoC TRM (UG) for more information
++about zynqmp resets.
 +
-+	if (!num_vfs) {
-+		/*
-+		 * disable SRIOV and then put released ports back to default
-+		 * PF access mode.
-+		 */
-+		pci_disable_sriov(pcidev);
++Please also refer to reset.txt in this directory for common reset
++controller binding usage.
 +
-+		__dfl_fpga_cdev_config_port_vf(cdev, false);
++Required Properties:
++- compatible:	"xlnx,zynqmp-reset"
++- #reset-cells:	Specifies the number of cells needed to encode reset
++		line, should be 1
 +
-+	} else if (cdev->released_port_num == num_vfs) {
-+		/*
-+		 * only enable SRIOV if cdev has matched released ports, put
-+		 * released ports into VF access mode firstly.
-+		 */
-+		__dfl_fpga_cdev_config_port_vf(cdev, true);
++-------
++Example
++-------
 +
-+		ret = pci_enable_sriov(pcidev, num_vfs);
-+		if (ret)
-+			__dfl_fpga_cdev_config_port_vf(cdev, false);
-+	} else {
-+		ret = -EINVAL;
-+	}
++firmware {
++	zynqmp_firmware: zynqmp-firmware {
++		compatible = "xlnx,zynqmp-firmware";
++		method = "smc";
 +
-+	mutex_unlock(&cdev->lock);
-+	return ret;
-+}
++		zynqmp_reset: reset-controller {
++			compatible = "xlnx,zynqmp-reset";
++			#reset-cells = <1>;
++		};
++	};
++};
 +
- static void cci_pci_remove(struct pci_dev *pcidev)
- {
-+	if (dev_is_pf(&pcidev->dev))
-+		cci_pci_sriov_configure(pcidev, 0);
++Specifying reset lines connected to IP modules
++==============================================
 +
- 	cci_remove_feature_devs(pcidev);
- 	pci_disable_pcie_error_reporting(pcidev);
- }
-@@ -234,6 +272,7 @@ static struct pci_driver cci_pci_driver = {
- 	.id_table = cci_pcie_id_tbl,
- 	.probe = cci_pci_probe,
- 	.remove = cci_pci_remove,
-+	.sriov_configure = cci_pci_sriov_configure,
- };
- 
- module_pci_driver(cci_pci_driver);
-@@ -241,3 +280,4 @@ module_pci_driver(cci_pci_driver);
- MODULE_DESCRIPTION("FPGA DFL PCIe Device Driver");
- MODULE_AUTHOR("Intel Corporation");
- MODULE_LICENSE("GPL v2");
-+MODULE_VERSION(DRV_VERSION);
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index a6b6d38..c5aa287 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -1098,6 +1098,47 @@ int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
- }
- EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_port);
- 
-+static void config_port_vf(struct device *fme_dev, int port_id, bool is_vf)
-+{
-+	void __iomem *base;
-+	u64 v;
++Device nodes that need access to reset lines should
++specify them as a reset phandle in their corresponding node as
++specified in reset.txt.
 +
-+	base = dfl_get_feature_ioaddr_by_id(fme_dev, FME_FEATURE_ID_HEADER);
++For list of all valid reset indicies see
++<dt-bindings/reset/xlnx-zynqmp-resets.h>
 +
-+	v = readq(base + FME_HDR_PORT_OFST(port_id));
++Example:
 +
-+	v &= ~FME_PORT_OFST_ACC_CTRL;
-+	v |= FIELD_PREP(FME_PORT_OFST_ACC_CTRL,
-+			is_vf ? FME_PORT_OFST_ACC_VF : FME_PORT_OFST_ACC_PF);
++serdes: zynqmp_phy@fd400000 {
++	...
 +
-+	writeq(v, base + FME_HDR_PORT_OFST(port_id));
-+}
++	resets = <&zynqmp_reset ZYNQMP_RESET_SATA>;
++	reset-names = "sata_rst";
 +
-+/**
-+ * __dfl_fpga_cdev_config_port_vf - configure port to VF access mode
-+ *
-+ * @cdev: parent container device.
-+ * @if_vf: true for VF access mode, and false for PF access mode
-+ *
-+ * Return: 0 on success, negative error code otherwise.
-+ *
-+ * This function is needed in sriov configuration routine. It could be used to
-+ * configures the released ports access mode to VF or PF.
-+ * The caller needs to hold lock for protection.
++	...
++};
+diff --git a/include/dt-bindings/reset/xlnx-zynqmp-resets.h b/include/dt-bindings/reset/xlnx-zynqmp-resets.h
+new file mode 100644
+index 000000000000..e295fd5d824e
+--- /dev/null
++++ b/include/dt-bindings/reset/xlnx-zynqmp-resets.h
+@@ -0,0 +1,130 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ *  Copyright (C) 2018 Xilinx, Inc.
 + */
-+void __dfl_fpga_cdev_config_port_vf(struct dfl_fpga_cdev *cdev, bool is_vf)
-+{
-+	struct dfl_feature_platform_data *pdata;
 +
-+	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
-+		if (device_is_registered(&pdata->dev->dev))
-+			continue;
++#ifndef _DT_BINDINGS_ZYNQMP_RESETS_H
++#define _DT_BINDINGS_ZYNQMP_RESETS_H
 +
-+		config_port_vf(cdev->fme_dev, pdata->id, is_vf);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_config_port_vf);
++#define		ZYNQMP_RESET_PCIE_CFG		0
++#define		ZYNQMP_RESET_PCIE_BRIDGE	1
++#define		ZYNQMP_RESET_PCIE_CTRL		2
++#define		ZYNQMP_RESET_DP			3
++#define		ZYNQMP_RESET_SWDT_CRF		4
++#define		ZYNQMP_RESET_AFI_FM5		5
++#define		ZYNQMP_RESET_AFI_FM4		6
++#define		ZYNQMP_RESET_AFI_FM3		7
++#define		ZYNQMP_RESET_AFI_FM2		8
++#define		ZYNQMP_RESET_AFI_FM1		9
++#define		ZYNQMP_RESET_AFI_FM0		10
++#define		ZYNQMP_RESET_GDMA		11
++#define		ZYNQMP_RESET_GPU_PP1		12
++#define		ZYNQMP_RESET_GPU_PP0		13
++#define		ZYNQMP_RESET_GPU		14
++#define		ZYNQMP_RESET_GT			15
++#define		ZYNQMP_RESET_SATA		16
++#define		ZYNQMP_RESET_ACPU3_PWRON	17
++#define		ZYNQMP_RESET_ACPU2_PWRON	18
++#define		ZYNQMP_RESET_ACPU1_PWRON	19
++#define		ZYNQMP_RESET_ACPU0_PWRON	20
++#define		ZYNQMP_RESET_APU_L2		21
++#define		ZYNQMP_RESET_ACPU3		22
++#define		ZYNQMP_RESET_ACPU2		23
++#define		ZYNQMP_RESET_ACPU1		24
++#define		ZYNQMP_RESET_ACPU0		25
++#define		ZYNQMP_RESET_DDR		26
++#define		ZYNQMP_RESET_APM_FPD		27
++#define		ZYNQMP_RESET_SOFT		28
++#define		ZYNQMP_RESET_GEM0		29
++#define		ZYNQMP_RESET_GEM1		30
++#define		ZYNQMP_RESET_GEM2		31
++#define		ZYNQMP_RESET_GEM3		32
++#define		ZYNQMP_RESET_QSPI		33
++#define		ZYNQMP_RESET_UART0		34
++#define		ZYNQMP_RESET_UART1		35
++#define		ZYNQMP_RESET_SPI0		36
++#define		ZYNQMP_RESET_SPI1		37
++#define		ZYNQMP_RESET_SDIO0		38
++#define		ZYNQMP_RESET_SDIO1		39
++#define		ZYNQMP_RESET_CAN0		40
++#define		ZYNQMP_RESET_CAN1		41
++#define		ZYNQMP_RESET_I2C0		42
++#define		ZYNQMP_RESET_I2C1		43
++#define		ZYNQMP_RESET_TTC0		44
++#define		ZYNQMP_RESET_TTC1		45
++#define		ZYNQMP_RESET_TTC2		46
++#define		ZYNQMP_RESET_TTC3		47
++#define		ZYNQMP_RESET_SWDT_CRL		48
++#define		ZYNQMP_RESET_NAND		49
++#define		ZYNQMP_RESET_ADMA		50
++#define		ZYNQMP_RESET_GPIO		51
++#define		ZYNQMP_RESET_IOU_CC		52
++#define		ZYNQMP_RESET_TIMESTAMP		53
++#define		ZYNQMP_RESET_RPU_R50		54
++#define		ZYNQMP_RESET_RPU_R51		55
++#define		ZYNQMP_RESET_RPU_AMBA		56
++#define		ZYNQMP_RESET_OCM		57
++#define		ZYNQMP_RESET_RPU_PGE		58
++#define		ZYNQMP_RESET_USB0_CORERESET	59
++#define		ZYNQMP_RESET_USB1_CORERESET	60
++#define		ZYNQMP_RESET_USB0_HIBERRESET	61
++#define		ZYNQMP_RESET_USB1_HIBERRESET	62
++#define		ZYNQMP_RESET_USB0_APB		63
++#define		ZYNQMP_RESET_USB1_APB		64
++#define		ZYNQMP_RESET_IPI		65
++#define		ZYNQMP_RESET_APM_LPD		66
++#define		ZYNQMP_RESET_RTC		67
++#define		ZYNQMP_RESET_SYSMON		68
++#define		ZYNQMP_RESET_AFI_FM6		69
++#define		ZYNQMP_RESET_LPD_SWDT		70
++#define		ZYNQMP_RESET_FPD		71
++#define		ZYNQMP_RESET_RPU_DBG1		72
++#define		ZYNQMP_RESET_RPU_DBG0		73
++#define		ZYNQMP_RESET_DBG_LPD		74
++#define		ZYNQMP_RESET_DBG_FPD		75
++#define		ZYNQMP_RESET_APLL		76
++#define		ZYNQMP_RESET_DPLL		77
++#define		ZYNQMP_RESET_VPLL		78
++#define		ZYNQMP_RESET_IOPLL		79
++#define		ZYNQMP_RESET_RPLL		80
++#define		ZYNQMP_RESET_GPO3_PL_0		81
++#define		ZYNQMP_RESET_GPO3_PL_1		82
++#define		ZYNQMP_RESET_GPO3_PL_2		83
++#define		ZYNQMP_RESET_GPO3_PL_3		84
++#define		ZYNQMP_RESET_GPO3_PL_4		85
++#define		ZYNQMP_RESET_GPO3_PL_5		86
++#define		ZYNQMP_RESET_GPO3_PL_6		87
++#define		ZYNQMP_RESET_GPO3_PL_7		88
++#define		ZYNQMP_RESET_GPO3_PL_8		89
++#define		ZYNQMP_RESET_GPO3_PL_9		90
++#define		ZYNQMP_RESET_GPO3_PL_10		91
++#define		ZYNQMP_RESET_GPO3_PL_11		92
++#define		ZYNQMP_RESET_GPO3_PL_12		93
++#define		ZYNQMP_RESET_GPO3_PL_13		94
++#define		ZYNQMP_RESET_GPO3_PL_14		95
++#define		ZYNQMP_RESET_GPO3_PL_15		96
++#define		ZYNQMP_RESET_GPO3_PL_16		97
++#define		ZYNQMP_RESET_GPO3_PL_17		98
++#define		ZYNQMP_RESET_GPO3_PL_18		99
++#define		ZYNQMP_RESET_GPO3_PL_19		100
++#define		ZNQMP_RESET_GPO3_PL_20		101
++#define		ZYNQMP_RESET_GPO3_PL_21		102
++#define		ZYNQMP_RESET_GPO3_PL_22		103
++#define		ZYNQMP_RESET_GPO3_PL_23		104
++#define		ZYNQMP_RESET_GPO3_PL_24		105
++#define		ZYNQMP_RESET_GPO3_PL_25		106
++#define		ZYNQMP_RESET_GPO3_PL_26		107
++#define		ZYNQMP_RESET_GPO3_PL_27		108
++#define		ZYNQMP_RESET_GPO3_PL_28		109
++#define		ZYNQMP_RESET_GPO3_PL_29		110
++#define		ZYNQMP_RESET_GPO3_PL_30		111
++#define		ZYNQMP_RESET_GPO3_PL_31		112
++#define		ZYNQMP_RESET_RPU_LS		113
++#define		ZYNQMP_RESET_PS_ONLY		114
++#define		ZYNQMP_RESET_PL			115
++#define		ZYNQMP_RESET_PS_PL0		116
++#define		ZYNQMP_RESET_PS_PL1		117
++#define		ZYNQMP_RESET_PS_PL2		118
++#define		ZYNQMP_RESET_PS_PL3		119
 +
- static int __init dfl_fpga_init(void)
- {
- 	int ret;
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 63f39ab..1350e8e 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -421,5 +421,6 @@ dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
- 
- int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
- 			      u32 port_id, bool release);
-+void __dfl_fpga_cdev_config_port_vf(struct dfl_fpga_cdev *cdev, bool is_vf);
- 
- #endif /* __FPGA_DFL_H */
++#endif
 -- 
-2.7.4
+2.18.0
