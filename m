@@ -1,115 +1,121 @@
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=lrpB=R5=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v5 1/6] dt-bindings: power: Add ZynqMP power domain bindings
-Date: Tue, 26 Mar 2019 20:01:24 +0530
-Message-ID: <20190326143129.2608-2-nava.manne@xilinx.com>
-In-Reply-To: <20190326143129.2608-1-nava.manne@xilinx.com>
-References: <20190326143129.2608-1-nava.manne@xilinx.com>
+Return-Path: <SRS0=koRt=R6=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=koRt=R6=intel.com=hao.wu@kernel.org>
+Date: Wed, 27 Mar 2019 15:10:06 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH 03/17] fpga: dfl: fme: support 512bit data width PR
+Message-ID: <20190327071006.GA18685@hao-dev>
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+ <1553483264-5379-4-git-send-email-hao.wu@intel.com>
+ <127a9356a7bf597d35dd361f2b16bf80460f0370.camel@redhat.com>
+ <655bf2991a4f8bf6a473c91218d6dba7748520aa.camel@redhat.com>
+ <20190327051040.GB20968@hao-dev>
+ <fd78636fb37cfcb725b22bb6a5f7576fa61a00a7.camel@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
-Cc: Rajan Vaja <rajan.vaja@xilinx.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fd78636fb37cfcb725b22bb6a5f7576fa61a00a7.camel@redhat.com>
+To: Scott Wood <swood@redhat.com>
+Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Rajan Vaja <rajan.vaja@xilinx.com>
+On Wed, Mar 27, 2019 at 01:19:29AM -0500, Scott Wood wrote:
+> On Wed, 2019-03-27 at 13:10 +0800, Wu Hao wrote:
+> > On Mon, Mar 25, 2019 at 05:58:36PM -0500, Scott Wood wrote:
+> > > On Mon, 2019-03-25 at 17:53 -0500, Scott Wood wrote:
+> > > > On Mon, 2019-03-25 at 11:07 +0800, Wu Hao wrote:
+> > > > > In early partial reconfiguration private feature, it only
+> > > > > supports 32bit data width when writing data to hardware for
+> > > > > PR. 512bit data width PR support is an important optimization
+> > > > > for some specific solutions (e.g. XEON with FPGA integrated),
+> > > > > it allows driver to use AVX512 instruction to improve the
+> > > > > performance of partial reconfiguration. e.g. programming one
+> > > > > 100MB bitstream image via this 512bit data width PR hardware
+> > > > > only takes ~300ms, but 32bit revision requires ~3s per test
+> > > > > result.
+> > > > > 
+> > > > > Please note now this optimization is only done on revision 2
+> > > > > of this PR private feature which is only used in integrated
+> > > > > solution that AVX512 is always supported.
+> > > > > 
+> > > > > Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
+> > > > > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > > > > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > > > > ---
+> > > > >  drivers/fpga/dfl-fme-main.c |  3 ++
+> > > > >  drivers/fpga/dfl-fme-mgr.c  | 75
+> > > > > +++++++++++++++++++++++++++++++++++++-
+> > > > > --
+> > > > > -----
+> > > > >  drivers/fpga/dfl-fme-pr.c   | 45 ++++++++++++++++-----------
+> > > > >  drivers/fpga/dfl-fme.h      |  2 ++
+> > > > >  drivers/fpga/dfl.h          |  5 +++
+> > > > >  5 files changed, 99 insertions(+), 31 deletions(-)
+> > > > > 
+> > > > > diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-
+> > > > > main.c
+> > > > > index 086ad24..076d74f 100644
+> > > > > --- a/drivers/fpga/dfl-fme-main.c
+> > > > > +++ b/drivers/fpga/dfl-fme-main.c
+> > > > > @@ -21,6 +21,8 @@
+> > > > >  #include "dfl.h"
+> > > > >  #include "dfl-fme.h"
+> > > > >  
+> > > > > +#define DRV_VERSION	"0.8"
+> > > > 
+> > > > What is this going to be used for?  Under what circumstances will the
+> > > > driver version be bumped?  What does it have to do with 512-bit
+> > > > writes?
+> > 
+> > This patchset adds more features to this driver, so i would like to add
+> > a DRV_VERSION there as an initial one. In the future, if some new features
+> > or extensions for existing features (e.g. new revision of a private
+> > feature)
+> > are added we need to bump this version.
+> 
+> This doesn't seem like a good way of advertising API availability... Besides
+> being awkward to query, what happens if a distro kernel has backported some
+> features but not others that came before?  What does it advertise?
 
-Add documentation to describe ZynqMP power domain bindings.
+DRV_VERSION here is not used for API availablity. :)
 
-Signed-off-by: Rajan Vaja <rajan.vaja@xilinx.com>
-Signed-off-by: Jolly Shah <jollys@xilinx.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
- .../bindings/power/xlnx,zynqmp-genpd.txt      | 34 ++++++++++++++++
- include/dt-bindings/power/xlnx-zynqmp-power.h | 39 +++++++++++++++++++
- 2 files changed, 73 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/xlnx,zynqmp-genpd.txt
- create mode 100644 include/dt-bindings/power/xlnx-zynqmp-power.h
+> I'd suggest some sort of feature flag mechanism that can be queried via
+> ioctl (e.g. along the lines of KVM capabilities), if "try the API and fall
+> back if it fails" is unsatisfactory.
+> 
+> Plus, if it's about new APIs being exposed, this doesn't seem like the right
+> patch for it to be in...
 
-diff --git a/Documentation/devicetree/bindings/power/xlnx,zynqmp-genpd.txt b/Documentation/devicetree/bindings/power/xlnx,zynqmp-genpd.txt
-new file mode 100644
-index 000000000000..3c7f2378e146
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/xlnx,zynqmp-genpd.txt
-@@ -0,0 +1,34 @@
-+-----------------------------------------------------------
-+Device Tree Bindings for the Xilinx Zynq MPSoC PM domains
-+-----------------------------------------------------------
-+The binding for zynqmp-power-controller follow the common
-+generic PM domain binding[1].
-+
-+[1] Documentation/devicetree/bindings/power/power_domain.txt
-+
-+== Zynq MPSoC Generic PM Domain Node ==
-+
-+Required property:
-+ - Below property should be in zynqmp-firmware node.
-+ - #power-domain-cells:	Number of cells in a PM domain specifier. Must be 1.
-+
-+Power domain ID indexes are mentioned in
-+include/dt-bindings/power/xlnx-zynqmp-power.h.
-+
-+-------
-+Example
-+-------
-+
-+firmware {
-+	zynqmp_firmware: zynqmp-firmware {
-+		...
-+		#power-domain-cells = <1>;
-+		...
-+	};
-+};
-+
-+sata {
-+	...
-+	power-domains = <&zynqmp_firmware 2>;
-+	...
-+};
-diff --git a/include/dt-bindings/power/xlnx-zynqmp-power.h b/include/dt-bindings/power/xlnx-zynqmp-power.h
-new file mode 100644
-index 000000000000..1bc9636098ca
---- /dev/null
-+++ b/include/dt-bindings/power/xlnx-zynqmp-power.h
-@@ -0,0 +1,39 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ *  Copyright (C) 2018 Xilinx, Inc.
-+ */
-+
-+#ifndef _DT_BINDINGS_ZYNQMP_POWER_H
-+#define _DT_BINDINGS_ZYNQMP_POWER_H
-+
-+#define		PD_USB_0	0
-+#define		PD_USB_1	1
-+#define		PD_SATA		2
-+#define		PD_SPI_0	3
-+#define		PD_SPI_1	4
-+#define		PD_UART_0	5
-+#define		PD_UART_1	6
-+#define		PD_ETH_0	7
-+#define		PD_ETH_1	8
-+#define		PD_ETH_2	9
-+#define		PD_ETH_3	10
-+#define		PD_I2C_0	11
-+#define		PD_I2C_1	12
-+#define		PD_DP		13
-+#define		PD_GDMA		14
-+#define		PD_ADMA		15
-+#define		PD_TTC_0	16
-+#define		PD_TTC_1	17
-+#define		PD_TTC_2	18
-+#define		PD_TTC_3	19
-+#define		PD_SD_0		20
-+#define		PD_SD_1		21
-+#define		PD_NAND		22
-+#define		PD_QSPI		23
-+#define		PD_GPIO		24
-+#define		PD_CAN_0	25
-+#define		PD_CAN_1	26
-+#define		PD_PCIE		27
-+#define		PD_GPU		28
-+
-+#endif
--- 
-2.18.0
+Actually this patch doesn't introduce new APIs, I am trying to make this
+transparent to endusers. That means users don't need to know it's a 32bit
+PR or a faster 512bit one, they still use the same IOCTL interface for PR.
+
+the API_VERSION and CHECK_EXTENSION ioctls have been defined, but I think
+at least we don't need to bump them for this change. How do you think?
+
+> 
+> > > Sorry, I missed the comment about revision 2 only being on integrated
+> > > devices -- but will that always be the case?  Seems worthwhile to check
+> > > for
+> > > AVX512 support anyway.  And there's still the possibility of being built
+> > > with an old binutils such that CONFIG_AS_AVX512 is not set, or running
+> > > on a
+> > > kernel where avx512 was disabled via a boot option.
+> > > 
+> > > What about future revisions >= 2?  Currently the driver will treat them
+> > > as
+> > > if they were revision < 2.  Is that intended?
+> > 
+> > Yes, it's intended. Currently we don't have any hardware with revisions >
+> > 2,
+> > and support new revisions may need new code. :)  e.g. currently revision
+> > is
+> > used to tell 32bit vs 512bit PR, but in future revisions, it may have new
+> > capability registers for this purpose.
+> 
+> The driver should refuse to bind to unrecognized revisions, if they're not
+> expected to be compatible.
+
+Yes, agree.
+
+Thanks
+Hao
