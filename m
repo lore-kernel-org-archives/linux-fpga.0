@@ -1,34 +1,25 @@
-Return-Path: <SRS0=jtri=RJ=metux.net=info@kernel.org>
-Return-Path: <SRS0=jtri=RJ=metux.net=info@kernel.org>
-From: "Enrico Weigelt, metux IT consult" <info@metux.net>
-Subject: [PATCH] drivers: fpga: Kconfig: pedantic cleanups
-Date: Wed,  6 Mar 2019 19:28:57 +0100
-Message-Id: <1551896937-31066-1-git-send-email-info@metux.net>
-To: linux-kernel@vger.kernel.org
-Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+MIME-Version: 1.0
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com> <1553483264-5379-7-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1553483264-5379-7-git-send-email-hao.wu@intel.com>
+From: Alan Tull <atull@kernel.org>
+Date: Thu, 28 Mar 2019 17:03:04 -0500
+Message-ID: <CANk1AXQCSK-H4wTzXxbctO8-w4cpzyGSeND-hM3qHqvOaHBuKg@mail.gmail.com>
+Subject: Re: [PATCH 06/17] fpga: dfl: pci: enable SRIOV support.
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
----
- drivers/fpga/Kconfig | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On Sun, Mar 24, 2019 at 10:24 PM Wu Hao <hao.wu@intel.com> wrote:
+>
+> This patch enables the standard sriov support. It allows user to
+> enable SRIOV (and VFs), then user could pass through accelerators
+> (VFs) into virtual machine or use VFs directly in host.
+>
+> Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 0bb7b5c..d6562df 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -25,9 +25,9 @@ config FPGA_MGR_SOCFPGA_A10
- 	  FPGA manager driver support for Altera Arria10 SoCFPGA.
- 
- config ALTERA_PR_IP_CORE
--        tristate "Altera Partial Reconfiguration IP Core"
--        help
--          Core driver support for Altera Partial Reconfiguration IP component
-+	tristate "Altera Partial Reconfiguration IP Core"
-+	help
-+	  Core driver support for Altera Partial Reconfiguration IP component
- 
- config ALTERA_PR_IP_CORE_PLAT
- 	tristate "Platform support of Altera Partial Reconfiguration IP Core"
--- 
-1.9.1
+Acked-by: Alan Tull <atull@kernel.org>
