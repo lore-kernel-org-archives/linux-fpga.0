@@ -1,338 +1,185 @@
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=K/gZ=R4=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH 11/17] fpga: dfl: afu: add error reporting support.
-Date: Mon, 25 Mar 2019 11:07:38 +0800
-Message-Id: <1553483264-5379-12-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=4Nig=SB=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=4Nig=SB=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from relay8-d.mail.gandi.net ([217.70.183.201]:33183 "EHLO
+        relay8-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730589AbfC3BJ3 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 29 Mar 2019 21:09:29 -0400
+From: Ronan KERYELL <ronan@keryell.fr>
+Subject: Re: [RFC PATCH Xilinx Alveo 0/6] Xilinx PCIe accelerator driver
+References: <20190319215401.6562-1-sonal.santan@xilinx.com>
+        <20190325202810.GG2665@phenom.ffwll.local>
+        <BYAPR02MB51608FDF39B39898FAAEBFEEBB5F0@BYAPR02MB5160.namprd02.prod.outlook.com>
+        <CAKMK7uHh5KNaTO+a4ZA+vPQcPKUBwODsx+pPCWNp3sxe9TFP0Q@mail.gmail.com>
+        <BYAPR02MB51603A1AD72F704112B55B90BB580@BYAPR02MB5160.namprd02.prod.outlook.com>
+        <20190327141137.GK2665@phenom.ffwll.local>
+        <BYAPR02MB5160162639C2EAC6B19901B7BB590@BYAPR02MB5160.namprd02.prod.outlook.com>
+        <CAPM=9tyLNOXCaKGQkCCmo4tt=Dny0j984-=q8utjwv-aX-Y6BQ@mail.gmail.com>
+Date: Fri, 29 Mar 2019 18:09:18 -0700
+In-Reply-To: <CAPM=9tyLNOXCaKGQkCCmo4tt=Dny0j984-=q8utjwv-aX-Y6BQ@mail.gmail.com> (Dave
+        Airlie's message of "Fri, 29 Mar 2019 14:56:17 +1000")
+Message-ID: <871s2pw4ld.fsf@fisel.enstb.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Dave Airlie <airlied@gmail.com>
+Cc: Sonal Santan <sonals@xilinx.com>, Daniel Vetter <daniel@ffwll.ch>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Cyril Chemparathy <cyrilc@xilinx.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Lizhi Hou <lizhih@xilinx.com>, Michal Simek <michals@xilinx.com>, "airlied@redhat.com" <airlied@redhat.com>, linux-fpga@vger.kernel.org, Ralph Wittig <wittig@xilinx.com>, Ronan Keryell <rkeryell@xilinx.com>
 
-Error reporting is one important private feature, it reports error
-detected on port and accelerated function unit (AFU). It introduces
-several sysfs interfaces to allow userspace to check and clear
-errors detected by hardware.
+I am adding linux-fpga@vger.kernel.org, since this is why I missed this
+thread in the first place...
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
- Documentation/ABI/testing/sysfs-platform-dfl-port |  29 +++
- drivers/fpga/Makefile                             |   1 +
- drivers/fpga/dfl-afu-error.c                      | 225 ++++++++++++++++++++++
- drivers/fpga/dfl-afu-main.c                       |   4 +
- drivers/fpga/dfl-afu.h                            |   4 +
- 5 files changed, 263 insertions(+)
- create mode 100644 drivers/fpga/dfl-afu-error.c
+>>>>> On Fri, 29 Mar 2019 14:56:17 +1000, Dave Airlie <airlied@gmail.com> said:
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
-index f611e47..e6140aa 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-port
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
-@@ -79,3 +79,32 @@ KernelVersion:	5.2
- Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-only. Read this file to get the status of issued command
- 		to userclck_freqcntrcmd.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/errors/errors
-+Date:		March 2019
-+KernelVersion:	5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get errors detected on port and
-+		Accelerated Function Unit (AFU).
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/errors/first_error
-+Date:		March 2019
-+KernelVersion:	5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the first error detected by
-+		hardware.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/errors/first_malformed_req
-+Date:		March 2019
-+KernelVersion:	5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the first malformed request
-+		captured by hardware.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/errors/clear
-+Date:		March 2019
-+KernelVersion:	5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Write-only. Write error code to this file to clear errors. If
-+		the input error code doesn't match, it returns -EBUSY error
-+		code.
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index c0dd4c8..f1f0af7 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -40,6 +40,7 @@ obj-$(CONFIG_FPGA_DFL_AFU)		+= dfl-afu.o
- 
- dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
- dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
-+dfl-afu-objs += dfl-afu-error.o
- 
- # Drivers for FPGAs which implement DFL
- obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
-diff --git a/drivers/fpga/dfl-afu-error.c b/drivers/fpga/dfl-afu-error.c
-new file mode 100644
-index 0000000..b66bd4a
---- /dev/null
-+++ b/drivers/fpga/dfl-afu-error.c
-@@ -0,0 +1,225 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Driver for FPGA Accelerated Function Unit (AFU) Error Reporting
-+ *
-+ * Copyright 2019 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Wu Hao <hao.wu@linux.intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Mitchel Henry <henry.mitchel@intel.com>
-+ */
-+
-+#include <linux/uaccess.h>
-+
-+#include "dfl-afu.h"
-+
-+#define PORT_ERROR_MASK		0x8
-+#define PORT_ERROR		0x10
-+#define PORT_FIRST_ERROR	0x18
-+#define PORT_MALFORMED_REQ0	0x20
-+#define PORT_MALFORMED_REQ1	0x28
-+
-+#define ERROR_MASK		GENMASK_ULL(63, 0)
-+
-+/* mask or unmask port errors by the error mask register. */
-+static void __port_err_mask(struct device *dev, bool mask)
-+{
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	writeq(mask ? ERROR_MASK : 0, base + PORT_ERROR_MASK);
-+}
-+
-+/* clear port errors. */
-+static int __port_err_clear(struct device *dev, u64 err)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	void __iomem *base_err, *base_hdr;
-+	int ret;
-+	u64 v;
-+
-+	base_err = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+	base_hdr = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	/*
-+	 * clear Port Errors
-+	 *
-+	 * - Check for AP6 State
-+	 * - Halt Port by keeping Port in reset
-+	 * - Set PORT Error mask to all 1 to mask errors
-+	 * - Clear all errors
-+	 * - Set Port mask to all 0 to enable errors
-+	 * - All errors start capturing new errors
-+	 * - Enable Port by pulling the port out of reset
-+	 */
-+
-+	/* if device is still in AP6 power state, can not clear any error. */
-+	v = readq(base_hdr + PORT_HDR_STS);
-+	if (FIELD_GET(PORT_STS_PWR_STATE, v) == PORT_STS_PWR_STATE_AP6) {
-+		dev_err(dev, "Could not clear errors, device in AP6 state.\n");
-+		return -EBUSY;
-+	}
-+
-+	/* Halt Port by keeping Port in reset */
-+	ret = __port_disable(pdev);
-+	if (ret)
-+		return ret;
-+
-+	/* Mask all errors */
-+	__port_err_mask(dev, true);
-+
-+	/* Clear errors if err input matches with current port errors.*/
-+	v = readq(base_err + PORT_ERROR);
-+
-+	if (v == err) {
-+		writeq(v, base_err + PORT_ERROR);
-+
-+		v = readq(base_err + PORT_FIRST_ERROR);
-+		writeq(v, base_err + PORT_FIRST_ERROR);
-+	} else {
-+		ret = -EBUSY;
-+	}
-+
-+	/* Clear mask */
-+	__port_err_mask(dev, false);
-+
-+	/* Enable the Port by clear the reset */
-+	__port_enable(pdev);
-+
-+	return ret;
-+}
-+
-+static ssize_t revision_show(struct device *dev, struct device_attribute *attr,
-+			     char *buf)
-+{
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n", dfl_feature_revision(base));
-+}
-+static DEVICE_ATTR_RO(revision);
-+
-+static ssize_t errors_show(struct device *dev, struct device_attribute *attr,
-+			   char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 error;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	mutex_lock(&pdata->lock);
-+	error = readq(base + PORT_ERROR);
-+	mutex_unlock(&pdata->lock);
-+
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n", (unsigned long long)error);
-+}
-+static DEVICE_ATTR_RO(errors);
-+
-+static ssize_t first_error_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 error;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	mutex_lock(&pdata->lock);
-+	error = readq(base + PORT_FIRST_ERROR);
-+	mutex_unlock(&pdata->lock);
-+
-+	return scnprintf(buf, PAGE_SIZE, "0x%llx\n", (unsigned long long)error);
-+}
-+static DEVICE_ATTR_RO(first_error);
-+
-+static ssize_t first_malformed_req_show(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 req0, req1;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	mutex_lock(&pdata->lock);
-+	req0 = readq(base + PORT_MALFORMED_REQ0);
-+	req1 = readq(base + PORT_MALFORMED_REQ1);
-+	mutex_unlock(&pdata->lock);
-+
-+	return scnprintf(buf, PAGE_SIZE, "0x%016llx%016llx\n",
-+			 (unsigned long long)req1, (unsigned long long)req0);
-+}
-+static DEVICE_ATTR_RO(first_malformed_req);
-+
-+static ssize_t clear_store(struct device *dev, struct device_attribute *attr,
-+			   const char *buff, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	u64 value;
-+	int ret;
-+
-+	if (kstrtou64(buff, 0, &value))
-+		return -EINVAL;
-+
-+	mutex_lock(&pdata->lock);
-+	ret = __port_err_clear(dev, value);
-+	mutex_unlock(&pdata->lock);
-+
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_WO(clear);
-+
-+static struct attribute *port_err_attrs[] = {
-+	&dev_attr_revision.attr,
-+	&dev_attr_errors.attr,
-+	&dev_attr_first_error.attr,
-+	&dev_attr_first_malformed_req.attr,
-+	&dev_attr_clear.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group port_err_attr_group = {
-+	.attrs = port_err_attrs,
-+	.name = "errors",
-+};
-+
-+static int port_err_init(struct platform_device *pdev,
-+			 struct dfl_feature *feature)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+
-+	dev_dbg(&pdev->dev, "PORT ERR Init.\n");
-+
-+	mutex_lock(&pdata->lock);
-+	__port_err_mask(&pdev->dev, false);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sysfs_create_group(&pdev->dev.kobj, &port_err_attr_group);
-+}
-+
-+static void port_err_uinit(struct platform_device *pdev,
-+			   struct dfl_feature *feature)
-+{
-+	dev_dbg(&pdev->dev, "PORT ERR UInit.\n");
-+
-+	sysfs_remove_group(&pdev->dev.kobj, &port_err_attr_group);
-+}
-+
-+const struct dfl_feature_id port_err_id_table[] = {
-+	{.id = PORT_FEATURE_ID_ERROR,},
-+	{0,}
-+};
-+
-+const struct dfl_feature_ops port_err_ops = {
-+	.init = port_err_init,
-+	.uinit = port_err_uinit,
-+};
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index e727d9b..754729e 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -528,6 +528,10 @@ static struct dfl_feature_driver port_feature_drvs[] = {
- 		.ops = &port_afu_ops,
- 	},
- 	{
-+		.id_table = port_err_id_table,
-+		.ops = &port_err_ops,
-+	},
-+	{
- 		.ops = NULL,
- 	}
- };
-diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
-index 35e60c5..c3182a2 100644
---- a/drivers/fpga/dfl-afu.h
-+++ b/drivers/fpga/dfl-afu.h
-@@ -100,4 +100,8 @@ int afu_dma_unmap_region(struct dfl_feature_platform_data *pdata, u64 iova);
- struct dfl_afu_dma_region *
- afu_dma_region_find(struct dfl_feature_platform_data *pdata,
- 		    u64 iova, u64 size);
-+
-+extern const struct dfl_feature_ops port_err_ops;
-+extern const struct dfl_feature_id port_err_id_table[];
-+
- #endif /* __DFL_AFU_H */
+Hi Dave!
+
+    Dave> On Thu, 28 Mar 2019 at 10:14, Sonal Santan <sonals@xilinx.com> wrote:
+
+    >>> From: Daniel Vetter [mailto:daniel.vetter@ffwll.ch]
+
+[...]
+
+    >>> Note: There's no expectation for the fully optimizing compiler,
+    >>> and we're totally ok if there's an optimizing proprietary
+    >>> compiler and a basic open one (amd, and bunch of other
+    >>> companies all have such dual stacks running on top of drm
+    >>> kernel drivers). But a basic compiler that can convert basic
+    >>> kernels into machine code is expected.
+
+    >> Although the compiler is not open source the compilation flow
+    >> lets users examine output from various stages. For example if you
+    >> write your kernel in OpenCL/C/C++ you can view the RTL
+    >> (Verilog/VHDL) output produced by first stage of compilation.
+    >> Note that the compiler is really generating a custom circuit
+    >> given a high level input which in the last phase gets synthesized
+    >> into bitstream. Expert hardware designers can handcraft a circuit
+    >> in RTL and feed it to the compiler. Our FPGA tools let you view
+    >> the generated hardware design, the register map, etc. You can get
+    >> more information about a compiled design by running XRT tool like
+    >> xclbinutil on the generated file.
+
+    >> In essence compiling for FPGAs is quite different than compiling
+    >> for GPU/CPU/DSP.  Interestingly FPGA compilers can run anywhere
+    >> from 30 mins to a few hours to compile a testcase.
+
+    Dave> So is there any open source userspace generator for what this
+    Dave> interface provides? Is the bitstream format that gets fed into
+    Dave> the FPGA proprietary and is it signed?
+
+Short answer:
+
+- a bitstream is an opaque content similar to various firmware handled
+  by Linux, EFI capsules, x86 microcode, WiFi modems, etc.
+
+- there is no open-source generator for what the interface consume;
+
+- I do not know if it is signed;
+
+- it is probably similar to what Intel FPGA (not GPU) drivers provide
+  already inside the Linux kernel and I guess there is no pure
+  open-source way to generate their bit-stream either.
+
+
+Long answer:
+
+- processors, GPU and other digital circuits are designed from a lot of
+  elementary transistors, wires, capacitors, resistors... using some
+  very complex (and expensive) tools from some EDA companies but at the
+  end, after months of work, they come often with a "simple" public
+  interface, the... instruction set! So it is rather "easy" at the end
+  to generate some instructions with a compiler such as LLVM from a
+  description of this ISA or some reverse engineering. Note that even if
+  the ISA is public, it is very difficult to make another efficient
+  processor from scratch just from this ISA, so there is often no
+  concern about making this ISA public to develop the ecosystem ;
+
+- FPGA are field-programmable gate arrays, made also from a lot of
+  elementary transistors, wires, capacitors, resistors... but organized
+  in billions of very low-level elementary gates, memory elements, DSP
+  blocks, I/O blocks, clock generators, specific
+  accelerators... directly exposed to the user and that can be
+  programmed according to a configuration memory (the bitstream) that
+  details how to connect each part, routing element, configuring each
+  elemental piece of hardware.  So instead of just writing instructions
+  like on a CPU or a GPU, you need to configure each bit of the
+  architecture in such a way it does something interesting for
+  you. Concretely, you write some programs in RTL languages (Verilog,
+  VHDL) or higher-level (C/C++, OpenCL, SYCL...)  and you use some very
+  complex (and expensive) tools from some EDA companies to generate the
+  bitstream implementing an equivalent circuit with the same
+  semantics. Since the architecture is so low level, there is a direct
+  mapping between the configuration memory (bitstream) and the hardware
+  architecture itself, so if it is public then it is easy to duplicate
+  the FPGA itself and to start a new FPGA company. That is unfortunately
+  something the existing FPGA companies do not want... ;-)
+
+To summarize:
+
+- on a CPU & GPU, the vendor used the expensive EDA tools once already
+  for you and provide the simpler ISA interface;
+
+- on an FPGA, you have access to a pile of low-level hardware and it is
+  up to you to use the lengthy process of building your own computing
+  architecture using the heavy expensive very subtle EDA tools that will
+  run for hours or days to generate some good-enough placement for your
+  pleasure.
+
+There is some public documentation on-line:
+https://www.xilinx.com/products/silicon-devices/fpga/virtex-ultrascale-plus.html#documentation
+
+To have an idea of the elementary architecture:
+https://www.xilinx.com/support/documentation/user_guides/ug574-ultrascale-clb.pdf
+https://www.xilinx.com/support/documentation/user_guides/ug579-ultrascale-dsp.pdf
+https://www.xilinx.com/support/documentation/user_guides/ug573-ultrascale-memory-resources.pdf
+
+Even on the configuration and the file format, but without any detailed semantics:
+https://www.xilinx.com/support/documentation/user_guides/ug570-ultrascale-configuration.pdf
+
+
+The Xilinx compiler xocc taking for example some LLVM IR and generating
+some bitstream is not open-source and will probably never be for the
+reasons above... :-(
+
+Xilinx is open-sourcing all what can reasonably be open-sourced:
+
+- the user-level and system run-time, including the OpenCL runtime:
+  https://github.com/Xilinx/XRT to handle the bitstreams generated by
+  some close-source tools
+
+- the kernel device drivers which are already in
+  https://github.com/Xilinx/XRT but we want to upstream into the Linux
+  kernel to make life easier (this is the matter of this e-mail thread);
+
+- to generate some real code in the most (modern and) open-source way,
+  there is an open-source framework to compile some SYCL C++ including
+  some Xilinx FPGA-specific extensions down to SPIR LLVM IR using
+  Clang/LLVM and to feed the close-source xocc tool with it
+  https://github.com/triSYCL/triSYCL
+
+  You can see starting from
+  https://github.com/triSYCL/triSYCL/blob/master/tests/Makefile#L322 how
+  to start from C++ code, generate some SPIR LLVM IR and to feed xocc
+  and build a fat binary that will use the XRT runtime.
+
+  Some documentation in
+  https://github.com/triSYCL/triSYCL/blob/master/doc/architecture.rst
+
+  There are other more official ways to generate bitstream (they are
+  called products instead of research projects like triSYCL :-) ).
+
+  We are also working on an other open-source SYCL compiler with Intel
+  to have a better common implementation
+  https://github.com/intel/llvm/wiki and to upstream this into Clang/LLVM.
+
+So for Xilinx FPGA, you can see the LLVM IR as the equivalent of PTX for
+nVidia. But xocc is close-source for some more fundamental reasons: it
+would expose all the details of the FPGA. I guess this is exactly the
+same for Xilinx FPGA.
+
+Note that probably most of the tool chains used to generate the
+low-level firmware for the various CPU (microcode), GPU, etc. are
+also close-source.
+
+See you,
 -- 
-2.7.4
+Ronan KERYELL, Xilinx Research Labs / San José, California.
