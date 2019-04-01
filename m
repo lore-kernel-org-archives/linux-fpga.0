@@ -1,113 +1,46 @@
 Return-Path: <moritz.fischer.private@gmail.com>
-Date: Tue, 2 Apr 2019 08:50:18 -0700
+Date: Mon, 1 Apr 2019 15:05:55 -0700
 From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH 10/17] fpga: dfl: afu: export __port_enable/disable
- function.
-Message-ID: <20190402155018.GA1453@archbook>
-References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
- <1553483264-5379-11-git-send-email-hao.wu@intel.com>
+Subject: Re: [PATCH v5 6/6] dt-bindings: fpga: Add bindings for ZynqMP fpga
+ driver
+Message-ID: <20190401220555.GA2716@archbook>
+References: <20190326143129.2608-1-nava.manne@xilinx.com>
+ <20190326143129.2608-7-nava.manne@xilinx.com>
+ <20190328170028.GA10815@bogus>
+ <CANk1AXTcwb1oJL5Uq-H-Q41-n8SXtamObSedMHSa_smZ8Xr1fw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1553483264-5379-11-git-send-email-hao.wu@intel.com>
-To: Wu Hao <hao.wu@intel.com>
-Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
+In-Reply-To: <CANk1AXTcwb1oJL5Uq-H-Q41-n8SXtamObSedMHSa_smZ8Xr1fw@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Nava kishore Manne <nava.manne@xilinx.com>, Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michal Simek <michal.simek@xilinx.com>, Rajan Vaja <rajanv@xilinx.com>, Jolly Shah <jollys@xilinx.com>, linux-fpga@vger.kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, kishore m <chinnikishore369@gmail.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Mar 25, 2019 at 11:07:37AM +0800, Wu Hao wrote:
-> As these two functions are used by other private features. e.g.
-> in error reporting private feature, it requires to check port status
-> and reset port for error clearing.
+On Mon, Apr 01, 2019 at 03:50:08PM -0500, Alan Tull wrote:
+> On Thu, Mar 28, 2019 at 12:00 PM Rob Herring <robh@kernel.org> wrote:
+> >
+> > On Tue, 26 Mar 2019 20:01:29 +0530, Nava kishore Manne wrote:
+> > > Add documentation to describe Xilinx ZynqMP fpga driver
+> > > bindings.
+> > >
+> > > Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+> > > ---
+> > > Changes for v5:
+> > >               -Moved pcap node as a child to firwmare
+> > >                node as suggested by Rob.
+> > > Changes for v4:
+> > >               -Modified binding description as suggested by Moritz Fischer.
+> > > Changes for v3:
+> > >               -Removed PCAP as a child node to the FW and Created
+> > >                an independent node since PCAP driver is a consumer
+> > >                not a provider.
+> > >
+> > >  .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt   | 25 +++++++++++++++++++
+> > >  1 file changed, 25 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+> > >
+> >
+> > Reviewed-by: Rob Herring <robh@kernel.org>
 > 
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Acked-by: Alan Tull <atull@kernel.org>
 Acked-by: Moritz Fischer <mdf@kernel.org>
-> ---
->  drivers/fpga/dfl-afu-main.c | 25 ++++++++++++++-----------
->  drivers/fpga/dfl-afu.h      |  3 +++
->  2 files changed, 17 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-> index 2916876..e727d9b 100644
-> --- a/drivers/fpga/dfl-afu-main.c
-> +++ b/drivers/fpga/dfl-afu-main.c
-> @@ -24,14 +24,16 @@
->  #define DRV_VERSION	"0.8"
->  
->  /**
-> - * port_enable - enable a port
-> + * __port_enable - enable a port
->   * @pdev: port platform device.
->   *
->   * Enable Port by clear the port soft reset bit, which is set by default.
->   * The AFU is unable to respond to any MMIO access while in reset.
-> - * port_enable function should only be used after port_disable function.
-> + * __port_enable function should only be used after __port_disable function.
-> + *
-> + * The caller needs to hold lock for protection.
->   */
-> -static void port_enable(struct platform_device *pdev)
-> +void __port_enable(struct platform_device *pdev)
->  {
->  	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
->  	void __iomem *base;
-> @@ -54,13 +56,14 @@ static void port_enable(struct platform_device *pdev)
->  #define RST_POLL_TIMEOUT 1000 /* us */
->  
->  /**
-> - * port_disable - disable a port
-> + * __port_disable - disable a port
->   * @pdev: port platform device.
->   *
-> - * Disable Port by setting the port soft reset bit, it puts the port into
-> - * reset.
-> + * Disable Port by setting the port soft reset bit, it puts the port into reset.
-> + *
-> + * The caller needs to hold lock for protection.
->   */
-> -static int port_disable(struct platform_device *pdev)
-> +int __port_disable(struct platform_device *pdev)
->  {
->  	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
->  	void __iomem *base;
-> @@ -106,9 +109,9 @@ static int __port_reset(struct platform_device *pdev)
->  {
->  	int ret;
->  
-> -	ret = port_disable(pdev);
-> +	ret = __port_disable(pdev);
->  	if (!ret)
-> -		port_enable(pdev);
-> +		__port_enable(pdev);
->  
->  	return ret;
->  }
-> @@ -810,9 +813,9 @@ static int port_enable_set(struct platform_device *pdev, bool enable)
->  
->  	mutex_lock(&pdata->lock);
->  	if (enable)
-> -		port_enable(pdev);
-> +		__port_enable(pdev);
->  	else
-> -		ret = port_disable(pdev);
-> +		ret = __port_disable(pdev);
->  	mutex_unlock(&pdata->lock);
->  
->  	return ret;
-> diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
-> index 0c7630a..35e60c5 100644
-> --- a/drivers/fpga/dfl-afu.h
-> +++ b/drivers/fpga/dfl-afu.h
-> @@ -79,6 +79,9 @@ struct dfl_afu {
->  	struct dfl_feature_platform_data *pdata;
->  };
->  
-> +void __port_enable(struct platform_device *pdev);
-> +int __port_disable(struct platform_device *pdev);
-> +
->  void afu_mmio_region_init(struct dfl_feature_platform_data *pdata);
->  int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
->  			u32 region_index, u64 region_size, u64 phys, u32 flags);
-> -- 
-> 2.7.4
-> 
