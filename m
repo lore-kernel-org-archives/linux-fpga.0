@@ -1,36 +1,28 @@
-Return-Path: <SRS0=dEo/=SM=redhat.com=swood@kernel.org>
-Return-Path: <SRS0=dEo/=SM=redhat.com=swood@kernel.org>
-From: Scott Wood <swood@redhat.com>
-Subject: [PATCH] fpga: dfl: afu: Pass the correct device to dma_mapping_error()
-Date: Wed, 10 Apr 2019 16:53:27 -0500
-Message-Id: <20190410215327.8024-1-swood@redhat.com>
+Return-Path: <SRS0=LHYr=SE=xilinx.com=navam@kernel.org>
+Return-Path: <SRS0=LHYr=SE=xilinx.com=navam@kernel.org>
+From: Nava kishore Manne <nava.manne@xilinx.com>
+Subject: [PATCH v4 0/3] Add Bitstream configuration support for ZynqMP 
+Date: Tue, 2 Apr 2019 18:01:20 +0530
+Message-ID: <20190402123123.915-1-nava.manne@xilinx.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Scott Wood <swood@redhat.com>
+Content-Type: text/plain
+To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-dma_mapping_error() was being called on a different device struct than
-what was passed to map/unmap.  Besides rendering the error checking
-ineffective, it caused a debug splat with CONFIG_DMA_API_DEBUG.
+Nava kishore Manne (3):
+  firmware: xilinx: Add fpga API's
+  dt-bindings: fpga: Add bindings for ZynqMP fpga driver
+  fpga manager: Adding FPGA Manager support for Xilinx zynqmp
 
-Signed-off-by: Scott Wood <swood@redhat.com>
----
- drivers/fpga/dfl-afu-dma-region.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt   |  25 +++
+ drivers/firmware/xilinx/zynqmp.c              |  46 +++++
+ drivers/fpga/Kconfig                          |   9 +
+ drivers/fpga/Makefile                         |   1 +
+ drivers/fpga/zynqmp-fpga.c                    | 159 ++++++++++++++++++
+ include/linux/firmware/xlnx-zynqmp.h          |  10 ++
+ 6 files changed, 250 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+ create mode 100644 drivers/fpga/zynqmp-fpga.c
 
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index e18a786fc943..cd68002ac097 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -399,7 +399,7 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
- 				    region->pages[0], 0,
- 				    region->length,
- 				    DMA_BIDIRECTIONAL);
--	if (dma_mapping_error(&pdata->dev->dev, region->iova)) {
-+	if (dma_mapping_error(dfl_fpga_pdata_to_parent(pdata), region->iova)) {
- 		dev_err(&pdata->dev->dev, "failed to map for dma\n");
- 		ret = -EFAULT;
- 		goto unpin_pages;
 -- 
-1.8.3.1
+2.18.0
