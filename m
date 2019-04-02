@@ -1,33 +1,117 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-MIME-Version: 1.0
+Date: Tue, 2 Apr 2019 08:42:21 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH 10/17] fpga: dfl: afu: export __port_enable/disable
+ function.
+Message-ID: <20190402154221.GD15773@archbook>
 References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
- <1553483264-5379-11-git-send-email-hao.wu@intel.com> <20190402155018.GA1453@archbook>
-In-Reply-To: <20190402155018.GA1453@archbook>
-From: Alan Tull <atull@kernel.org>
-Date: Thu, 11 Apr 2019 15:45:54 -0500
-Message-ID: <CANk1AXRuA=hWOSxV-z9h3oz1VQVTVy8tYe2pgi4qN0fz9u2fyw@mail.gmail.com>
-Subject: Re: [PATCH 10/17] fpga: dfl: afu: export __port_enable/disable function.
-Content-Type: text/plain; charset="UTF-8"
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
+ <1553483264-5379-11-git-send-email-hao.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1553483264-5379-11-git-send-email-hao.wu@intel.com>
+To: Wu Hao <hao.wu@intel.com>
+Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Apr 2, 2019 at 10:50 AM Moritz Fischer <mdf@kernel.org> wrote:
+Hi Wu,
 
-Hi Hao,
-
->
-> On Mon, Mar 25, 2019 at 11:07:37AM +0800, Wu Hao wrote:
-> > As these two functions are used by other private features. e.g.
-> > in error reporting private feature, it requires to check port status
-> > and reset port for error clearing.
-> >
-> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> > Signed-off-by: Wu Hao <hao.wu@intel.com>
-> Acked-by: Moritz Fischer <mdf@kernel.org>
-
-Acked-by: Alan Tull <atull@kernel.org>
+On Mon, Mar 25, 2019 at 11:07:37AM +0800, Wu Hao wrote:
+> As these two functions are used by other private features. e.g.
+> in error reporting private feature, it requires to check port status
+> and reset port for error clearing.
+> 
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+> ---
+>  drivers/fpga/dfl-afu-main.c | 25 ++++++++++++++-----------
+>  drivers/fpga/dfl-afu.h      |  3 +++
+>  2 files changed, 17 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+> index 2916876..e727d9b 100644
+> --- a/drivers/fpga/dfl-afu-main.c
+> +++ b/drivers/fpga/dfl-afu-main.c
+> @@ -24,14 +24,16 @@
+>  #define DRV_VERSION	"0.8"
+>  
+>  /**
+> - * port_enable - enable a port
+> + * __port_enable - enable a port
+>   * @pdev: port platform device.
+>   *
+>   * Enable Port by clear the port soft reset bit, which is set by default.
+>   * The AFU is unable to respond to any MMIO access while in reset.
+> - * port_enable function should only be used after port_disable function.
+> + * __port_enable function should only be used after __port_disable function.
+> + *
+> + * The caller needs to hold lock for protection.
+>   */
+> -static void port_enable(struct platform_device *pdev)
+> +void __port_enable(struct platform_device *pdev)
+>  {
+>  	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+>  	void __iomem *base;
+> @@ -54,13 +56,14 @@ static void port_enable(struct platform_device *pdev)
+>  #define RST_POLL_TIMEOUT 1000 /* us */
+>  
+>  /**
+> - * port_disable - disable a port
+> + * __port_disable - disable a port
+>   * @pdev: port platform device.
+>   *
+> - * Disable Port by setting the port soft reset bit, it puts the port into
+> - * reset.
+> + * Disable Port by setting the port soft reset bit, it puts the port into reset.
+> + *
+> + * The caller needs to hold lock for protection.
+>   */
+> -static int port_disable(struct platform_device *pdev)
+> +int __port_disable(struct platform_device *pdev)
+>  {
+>  	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+>  	void __iomem *base;
+> @@ -106,9 +109,9 @@ static int __port_reset(struct platform_device *pdev)
+>  {
+>  	int ret;
+>  
+> -	ret = port_disable(pdev);
+> +	ret = __port_disable(pdev);
+>  	if (!ret)
+> -		port_enable(pdev);
+> +		__port_enable(pdev);
+>  
+>  	return ret;
+>  }
+> @@ -810,9 +813,9 @@ static int port_enable_set(struct platform_device *pdev, bool enable)
+>  
+>  	mutex_lock(&pdata->lock);
+>  	if (enable)
+> -		port_enable(pdev);
+> +		__port_enable(pdev);
+>  	else
+> -		ret = port_disable(pdev);
+> +		ret = __port_disable(pdev);
+>  	mutex_unlock(&pdata->lock);
+>  
+>  	return ret;
+> diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
+> index 0c7630a..35e60c5 100644
+> --- a/drivers/fpga/dfl-afu.h
+> +++ b/drivers/fpga/dfl-afu.h
+> @@ -79,6 +79,9 @@ struct dfl_afu {
+>  	struct dfl_feature_platform_data *pdata;
+>  };
+>  
+> +void __port_enable(struct platform_device *pdev);
+> +int __port_disable(struct platform_device *pdev);
+> +
+>  void afu_mmio_region_init(struct dfl_feature_platform_data *pdata);
+>  int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
+>  			u32 region_index, u64 region_size, u64 phys, u32 flags);
+> -- 
+> 2.7.4
+> 
 
 Thanks,
-Alan
+Moritz
