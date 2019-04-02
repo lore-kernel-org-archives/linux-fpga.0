@@ -1,58 +1,52 @@
-Return-Path: <SRS0=wlyV=SK=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=wlyV=SK=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <navam@xilinx.com>
-Subject: RE: [PATCH v4 3/3] fpga manager: Adding FPGA Manager support for
- Xilinx zynqmp
-Date: Mon, 8 Apr 2019 12:39:11 +0000
-Message-ID: 
- <BYAPR02MB47101CD56BDF0B314BA37062C22C0@BYAPR02MB4710.namprd02.prod.outlook.com>
-References: <20190402123123.915-1-nava.manne@xilinx.com>
- <20190402123123.915-4-nava.manne@xilinx.com>
- <CANk1AXQEMLt5Vk9LhsmBg9U0Twknr1oy-myoL_0vZ4pqSu3DwQ@mail.gmail.com>
-In-Reply-To: 
- <CANk1AXQEMLt5Vk9LhsmBg9U0Twknr1oy-myoL_0vZ4pqSu3DwQ@mail.gmail.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-To: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michal Simek <michals@xilinx.com>, Rajan Vaja <RAJANV@xilinx.com>, Jolly Shah <JOLLYS@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS  <devicetree@vger.kernel.org>, moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, kishore m <chinnikishore369@gmail.com>
+References: <20190402123123.915-1-nava.manne@xilinx.com> <20190402123123.915-4-nava.manne@xilinx.com>
+In-Reply-To: <20190402123123.915-4-nava.manne@xilinx.com>
+From: Alan Tull <atull@kernel.org>
+Date: Tue, 2 Apr 2019 13:27:23 -0500
+Message-ID: <CANk1AXQEMLt5Vk9LhsmBg9U0Twknr1oy-myoL_0vZ4pqSu3DwQ@mail.gmail.com>
+Subject: Re: [PATCH v4 3/3] fpga manager: Adding FPGA Manager support for
+ Xilinx zynqmp
+Content-Type: text/plain; charset="UTF-8"
+To: Nava kishore Manne <nava.manne@xilinx.com>
+Cc: Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michal Simek <michal.simek@xilinx.com>, Rajan Vaja <rajanv@xilinx.com>, Jolly Shah <jollys@xilinx.com>, linux-fpga@vger.kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, kishore m <chinnikishore369@gmail.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-SGkgQWxhbiwNCg0KVGhhbmtzIGZvciBsb29rIGludG8gaXQgYW5kIHByb3ZpZGluZyB0aGUgQUNL
-LiAgDQpJIGdvdCBvbmUgbWlub3IgY29tbWVudHMgZnJvbSBNb3JpdHogRmlzY2hlciBkbyB5b3Ug
-d2FudCBtZSBmaXggdGhhdCBpc3N1ZSBub3cgb3IgSSBjYW4gZml4IGl0IGxhdGVyIGFzIGl04oCZ
-cyBhIG1pbm9yIGNvbW1lbnQ/DQpJbiB3aGljaCBrZXJuZWwgdmVyc2lvbiBpIGNhbiBleHBlY3Qg
-dGhpcyBkcml2ZXIgY2hhbmdlcz8/DQoNCg0KUmVnYXJkcywNCk5hdmFraXNob3JlLg0KDQo+IC0t
-LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEFsYW4gVHVsbCBbbWFpbHRvOmF0dWxs
-QGtlcm5lbC5vcmddDQo+IFNlbnQ6IFR1ZXNkYXksIEFwcmlsIDIsIDIwMTkgMTE6NTcgUE0NCj4g
-VG86IE5hdmEga2lzaG9yZSBNYW5uZSA8bmF2YW1AeGlsaW54LmNvbT4NCj4gQ2M6IE1vcml0eiBG
-aXNjaGVyIDxtZGZAa2VybmVsLm9yZz47IFJvYiBIZXJyaW5nIDxyb2JoK2R0QGtlcm5lbC5vcmc+
-OyBNYXJrDQo+IFJ1dGxhbmQgPG1hcmsucnV0bGFuZEBhcm0uY29tPjsgTWljaGFsIFNpbWVrIDxt
-aWNoYWxzQHhpbGlueC5jb20+OyBSYWphbg0KPiBWYWphIDxSQUpBTlZAeGlsaW54LmNvbT47IEpv
-bGx5IFNoYWggPEpPTExZU0B4aWxpbnguY29tPjsgbGludXgtDQo+IGZwZ2FAdmdlci5rZXJuZWwu
-b3JnOyBvcGVuIGxpc3Q6T1BFTiBGSVJNV0FSRSBBTkQgRkxBVFRFTkVEIERFVklDRQ0KPiBUUkVF
-IEJJTkRJTkdTIDxkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZz47IG1vZGVyYXRlZCBsaXN0OkFS
-TS9GUkVFU0NBTEUNCj4gSU1YIC8gTVhDIEFSTSBBUkNISVRFQ1RVUkUgPGxpbnV4LWFybS1rZXJu
-ZWxAbGlzdHMuaW5mcmFkZWFkLm9yZz47IGxpbnV4LQ0KPiBrZXJuZWwgPGxpbnV4LWtlcm5lbEB2
-Z2VyLmtlcm5lbC5vcmc+OyBraXNob3JlIG0NCj4gPGNoaW5uaWtpc2hvcmUzNjlAZ21haWwuY29t
-Pg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHY0IDMvM10gZnBnYSBtYW5hZ2VyOiBBZGRpbmcgRlBH
-QSBNYW5hZ2VyIHN1cHBvcnQgZm9yDQo+IFhpbGlueCB6eW5xbXANCj4gDQo+IE9uIFR1ZSwgQXBy
-IDIsIDIwMTkgYXQgNzozMiBBTSBOYXZhIGtpc2hvcmUgTWFubmUgPG5hdmEubWFubmVAeGlsaW54
-LmNvbT4NCj4gd3JvdGU6DQo+IA0KPiBIaSBOYXZhLA0KPiANCj4gTG9va3MgZ29vZC4NCj4gDQo+
-ID4NCj4gPiBUaGlzIHBhdGNoIGFkZHMgRlBHQSBNYW5hZ2VyIHN1cHBvcnQgZm9yIHRoZSBYaWxp
-bnggWnlucU1QIGNoaXAuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBOYXZhIGtpc2hvcmUgTWFu
-bmUgPG5hdmEubWFubmVAeGlsaW54LmNvbT4NCj4gQWNrZWQtYnk6IEFsYW4gVHVsbCA8YXR1bGxA
-a2VybmVsLm9yZz4NCj4gDQo+ID4gLS0tDQo+ID4gQ2hhbmdlcyBmb3IgdjQ6DQo+ID4gICAgICAg
-ICAgICAgICAgIC1VcGRhdGVkIHRoZSBGcGdhIE1nciByZWdpc3RyYXRpb25zIGNhbGwncw0KPiA+
-ICAgICAgICAgICAgICAgICAgdG8gNS4wDQo+ID4gICAgICAgICAgICAgICAgIC1SZW1vdmVkIGRt
-YV9zZXRfbWFza19hbmRfY29oZXJlbnQoKSBBcyB0aGUgRlcNCj4gPiAgICAgICAgICAgICAgICAg
-IHN1cHBvcnRzIG9ubHkgMzItYml0IGFkZHJlc3Mgb3BlcmF0aW9ucy4NCj4gPg0KPiA+IENoYW5n
-ZXMgZm9yIHYzOg0KPiA+ICAgICAgICAgICAgICAgICAtQ3JlYXRlZCBwYXRjaGVzIG9uIHRvcCBv
-ZiA1LjAtcmM1Lg0KPiA+ICAgICAgICAgICAgICAgICAgTm8gZnVuY3Rpb25hbCBjaGFuZ2VzLg0K
-PiA+DQo+ID4gQ2hhbmdlcyBmb3IgdjI6DQo+ID4gICAgICAgICAgICAgICAgIC1GaXhlZCBzb21l
-IG1pbm9yIGNvZGluZyBpc3N1ZXMgYXMgc3VnZ2VzdGVkIGJ5DQo+ID4gICAgICAgICAgICAgICAg
-ICBNb3JpdHoNCj4gPg0KPiA+IENoYW5nZXMgZm9yIHYxOg0KPiA+ICAgICAgICAgICAgICAgICAt
-Tm9uZS4NCj4gPg0KPiA+IENoYW5nZXMgZm9yIFJGQy1WMjoNCj4gPiAgICAgICAgICAgICAgICAg
-LVVwZGF0ZWQgdGhlIEZwZ2EgTWdyIHJlZ2lzdHJhdGlvbnMgY2FsbCdzDQo+ID4gICAgICAgICAg
-ICAgICAgICB0byA0LjE4DQo+IA0KPiBUaGFua3MsDQo+IEFsYW4NCg==
+On Tue, Apr 2, 2019 at 7:32 AM Nava kishore Manne <nava.manne@xilinx.com> wrote:
+
+Hi Nava,
+
+Looks good.
+
+>
+> This patch adds FPGA Manager support for the Xilinx
+> ZynqMP chip.
+>
+> Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+Acked-by: Alan Tull <atull@kernel.org>
+
+> ---
+> Changes for v4:
+>                 -Updated the Fpga Mgr registrations call's
+>                  to 5.0
+>                 -Removed dma_set_mask_and_coherent() As the FW
+>                  supports only 32-bit address operations.
+>
+> Changes for v3:
+>                 -Created patches on top of 5.0-rc5.
+>                  No functional changes.
+>
+> Changes for v2:
+>                 -Fixed some minor coding issues as suggested by
+>                  Moritz
+>
+> Changes for v1:
+>                 -None.
+>
+> Changes for RFC-V2:
+>                 -Updated the Fpga Mgr registrations call's
+>                  to 4.18
+
+Thanks,
+Alan
