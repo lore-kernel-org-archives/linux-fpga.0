@@ -1,55 +1,123 @@
-Return-Path: <SRS0=wW2w=SM=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=wW2w=SM=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-eopbgr90080.outbound.protection.outlook.com ([40.107.9.80]:6496
-        "EHLO FRA01-MR2-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726494AbfDJKCB (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 10 Apr 2019 06:02:01 -0400
-From: Federico Vaga <federico.vaga@cern.ch>
-Reply-To: <federico.vaga@cern.ch>, <federico.vaga@cern.ch>
-Subject: Re: Device Description for FPGA Components on x86 system
-Date: Wed, 10 Apr 2019 12:01:33 +0200
-Message-ID: <6563205.xRkLC0driV@pcbe13614>
-In-Reply-To: <1629227.alSmCsHHUc@pcbe13614>
-References: <1629227.alSmCsHHUc@pcbe13614>
+Return-Path: <SRS0=XueN=SE=oracle.com=daniel.m.jordan@kernel.org>
+Return-Path: <SRS0=XueN=SE=oracle.com=daniel.m.jordan@kernel.org>
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+Subject: [PATCH 4/6] fpga/dlf/afu: drop mmap_sem now that locked_vm is atomic
+Date: Tue,  2 Apr 2019 16:41:56 -0400
+Message-Id: <20190402204158.27582-5-daniel.m.jordan@oracle.com>
+In-Reply-To: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: federico.vaga@cern.chFederico Vaga <federico.vaga@cern.ch>
-Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, linux-pci@vger.kernel.org, devicetree@vger.kernel.org, linux-x86_64@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+To: akpm@linux-foundation.org
+Cc: daniel.m.jordan@oracle.com, Alan Tull <atull@kernel.org>, Christoph Lameter <cl@linux.com>, Davidlohr Bueso <dave@stgolabs.net>, Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>, linux-mm@kvack.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hello,
+With locked_vm now an atomic, there is no need to take mmap_sem as
+writer.  Delete and refactor accordingly.
 
-sorry to push for an answer but I do not want to take the risk of designing 
-something useless. I do not know how should I interpret a no-answer.
+Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Cc: Alan Tull <atull@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: Moritz Fischer <mdf@kernel.org>
+Cc: Wu Hao <hao.wu@intel.com>
+Cc: <linux-mm@kvack.org>
+Cc: <linux-fpga@vger.kernel.org>
+Cc: <linux-kernel@vger.kernel.org>
+---
+ drivers/fpga/dfl-afu-dma-region.c | 40 ++++++++++++-------------------
+ 1 file changed, 15 insertions(+), 25 deletions(-)
 
-If the solution really does not exist today, then I would like to collect 
-opinions/arguments/requirements on the topic so that I can write something 
-useful not only for CERN but for the entire community.
-
-Thank you
-
-On Wednesday, March 27, 2019 6:17:18 PM CEST Federico Vaga wrote:
-> Hello,
-> 
-> I'm looking for guidance
-> 
-> What I have:
-> * Intel x86_64 computer
-> * PCIe card with FPGA on it
-> 
-> What I want to achieve:
-> * load an FPGA bitstream on the card
-> * load a device-tree like description for the FPGA devices contained in the
-> bitstream
-> 
-> This is achievable on ARM with DeviceTree, overlay-dt, fpga-mgr; but I'm
-> puzzled about the x86_64 use-case. I'm not able to find recent and clear
-> information.
-> 
-> Does anyone know if this is doable? Perhaps with ACPI SSDTs overlay? Or with
-> the DT?
-> 
-> thanks
+diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+index 08132fd9b6b7..81e3e3a71758 100644
+--- a/drivers/fpga/dfl-afu-dma-region.c
++++ b/drivers/fpga/dfl-afu-dma-region.c
+@@ -35,46 +35,36 @@ void afu_dma_region_init(struct dfl_feature_platform_data *pdata)
+  * afu_dma_adjust_locked_vm - adjust locked memory
+  * @dev: port device
+  * @npages: number of pages
+- * @incr: increase or decrease locked memory
+  *
+  * Increase or decrease the locked memory size with npages input.
+  *
+  * Return 0 on success.
+  * Return -ENOMEM if locked memory size is over the limit and no CAP_IPC_LOCK.
+  */
+-static int afu_dma_adjust_locked_vm(struct device *dev, long npages, bool incr)
++static int afu_dma_adjust_locked_vm(struct device *dev, long pages)
+ {
+-	unsigned long locked, lock_limit;
++	unsigned long lock_limit;
+ 	s64 locked_vm;
+ 	int ret = 0;
+ 
+ 	/* the task is exiting. */
+-	if (!current->mm)
++	if (!current->mm || !pages)
+ 		return 0;
+ 
+-	down_write(&current->mm->mmap_sem);
+-
+-	locked_vm = atomic64_read(&current->mm->locked_vm);
+-	if (incr) {
+-		locked = locked_vm + npages;
++	locked_vm = atomic64_add_return(pages, &current->mm->locked_vm);
++	WARN_ON_ONCE(locked_vm < 0);
++	if (pages > 0 && !capable(CAP_IPC_LOCK)) {
+ 		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+-
+-		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
++		if (locked_vm > lock_limit) {
+ 			ret = -ENOMEM;
+-		else
+-			atomic64_add(npages, &current->mm->locked_vm);
+-	} else {
+-		if (WARN_ON_ONCE(npages > locked_vm))
+-			npages = locked_vm;
+-		atomic64_sub(npages, &current->mm->locked_vm);
++			atomic64_sub(pages, &current->mm->locked_vm);
++		}
+ 	}
+ 
+ 	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %lld/%lu%s\n", current->pid,
+-		incr ? '+' : '-', npages << PAGE_SHIFT,
+-		(s64)atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
+-		rlimit(RLIMIT_MEMLOCK), ret ? "- exceeded" : "");
+-
+-	up_write(&current->mm->mmap_sem);
++		(pages > 0) ? '+' : '-', pages << PAGE_SHIFT,
++		locked_vm << PAGE_SHIFT, rlimit(RLIMIT_MEMLOCK),
++		ret ? "- exceeded" : "");
+ 
+ 	return ret;
+ }
+@@ -94,7 +84,7 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
+ 	struct device *dev = &pdata->dev->dev;
+ 	int ret, pinned;
+ 
+-	ret = afu_dma_adjust_locked_vm(dev, npages, true);
++	ret = afu_dma_adjust_locked_vm(dev, npages);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -123,7 +113,7 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
+ free_pages:
+ 	kfree(region->pages);
+ unlock_vm:
+-	afu_dma_adjust_locked_vm(dev, npages, false);
++	afu_dma_adjust_locked_vm(dev, -npages);
+ 	return ret;
+ }
+ 
+@@ -143,7 +133,7 @@ static void afu_dma_unpin_pages(struct dfl_feature_platform_data *pdata,
+ 
+ 	put_all_pages(region->pages, npages);
+ 	kfree(region->pages);
+-	afu_dma_adjust_locked_vm(dev, npages, false);
++	afu_dma_adjust_locked_vm(dev, -npages);
+ 
+ 	dev_dbg(dev, "%ld pages unpinned\n", npages);
+ }
+-- 
+2.21.0
