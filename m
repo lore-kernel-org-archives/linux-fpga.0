@@ -1,8 +1,9 @@
-Date: Tue, 2 Apr 2019 08:42:21 -0700
+Return-Path: <moritz.fischer.private@gmail.com>
+Date: Tue, 2 Apr 2019 08:50:18 -0700
 From: Moritz Fischer <mdf@kernel.org>
 Subject: Re: [PATCH 10/17] fpga: dfl: afu: export __port_enable/disable
  function.
-Message-ID: <20190402154221.GD15773@archbook>
+Message-ID: <20190402155018.GA1453@archbook>
 References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
  <1553483264-5379-11-git-send-email-hao.wu@intel.com>
 MIME-Version: 1.0
@@ -12,8 +13,6 @@ In-Reply-To: <1553483264-5379-11-git-send-email-hao.wu@intel.com>
 To: Wu Hao <hao.wu@intel.com>
 Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
-
-Hi Wu,
 
 On Mon, Mar 25, 2019 at 11:07:37AM +0800, Wu Hao wrote:
 > As these two functions are used by other private features. e.g.
@@ -112,6 +111,3 @@ Acked-by: Moritz Fischer <mdf@kernel.org>
 > -- 
 > 2.7.4
 > 
-
-Thanks,
-Moritz
