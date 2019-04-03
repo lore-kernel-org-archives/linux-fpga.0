@@ -1,121 +1,151 @@
-Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=mWpl=SF=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=mWpl=SF=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mga18.intel.com ([134.134.136.126]:55854 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726199AbfDCX7e (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 3 Apr 2019 19:59:34 -0400
+Date: Thu, 4 Apr 2019 07:43:56 +0800
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 14/18] fpga: dfl: fme: add capability sysfs interfaces
-Date: Mon, 29 Apr 2019 16:55:47 +0800
-Message-Id: <1556528151-17221-15-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
-References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
+Subject: Re: [PATCH 14/17] fpga: dfl: fme: add thermal management support
+Message-ID: <20190403234356.GA11098@hao-dev>
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+ <1553483264-5379-15-git-send-email-hao.wu@intel.com>
+ <20190402145925.GA15773@archbook>
+ <20190403163147.GA28570@hao-dev>
+ <20190403180909.GD5752@archbook>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190403180909.GD5752@archbook>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Moritz Fischer <mdf@kernel.org>
+Cc: atull@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>, Russ Weight <russell.h.weight@intel.com>, Xu Yilun <yilun.xu@intel.com>
 
-This patch adds 3 read-only sysfs interfaces for FPGA Management Engine
-(FME) block for capabilities including cache_size, fabric_version and
-socket_id.
+On Wed, Apr 03, 2019 at 11:09:09AM -0700, Moritz Fischer wrote:
+> Hi Hao,
+> 
+> On Thu, Apr 04, 2019 at 12:31:47AM +0800, Wu Hao wrote:
+> > On Tue, Apr 02, 2019 at 07:59:25AM -0700, Moritz Fischer wrote:
+> > > Hi Wu,
+> > > 
+> > > On Mon, Mar 25, 2019 at 11:07:41AM +0800, Wu Hao wrote:
+> > > > This patch adds support to thermal management private feature for DFL
+> > > > FPGA Management Engine (FME). As thermal throttling is handled by
+> > > > hardware automatically per pre-defined thresholds, this private
+> > > > feature driver only provides read-only sysfs interfaces for user
+> > > > to read temperature, thresholds, threshold policy and other info.
+> > > > 
+> > > > Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+> > > > Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+> > > > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > > > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > > > ---
+> > > >  Documentation/ABI/testing/sysfs-platform-dfl-fme |  56 +++++++
+> > > >  drivers/fpga/dfl-fme-main.c                      | 202 +++++++++++++++++++++++
+> > > >  2 files changed, 258 insertions(+)
+> > > > 
+> > > > diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+> > > > index b8327e9..d3aeb88 100644
+> > > > --- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
+> > > > +++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+> > > > @@ -44,3 +44,59 @@ Description:	Read-only. It returns socket_id to indicate which socket
+> > > >  		this FPGA belongs to, only valid for integrated solution.
+> > > >  		User only needs this information, in case standard numa node
+> > > >  		can't provide correct information.
+> > > > +
+> > > > +What:		/sys/bus/platform/devices/dfl-fme.0/thermal_mgmt/temperature
+> > > > +Date:		March 2019
+> > > > +KernelVersion:  5.2
+> > > > +Contact:	Wu Hao <hao.wu@intel.com>
+> > > > +Description:	Read-only. It returns temperature (in Celsius) of this FPGA
+> > > > +		device.
+> > > > +
+> > > > +What:		/sys/bus/platform/devices/dfl-fme.0/thermal_mgmt/threshold1
+> > > > +Date:		March 2019
+> > > > +KernelVersion:  5.2
+> > > > +Contact:	Wu Hao <hao.wu@intel.com>
+> > > > +Description:	Read-only. Read this file to get the temperature threshold1
+> > > > +		(in Celsius).
+> > > > +
+> > > > +What:		/sys/bus/platform/devices/dfl-fme.0/thermal_mgmt/threshold2
+> > > > +Date:		March 2019
+> > > > +KernelVersion:  5.2
+> > > > +Contact:	Wu Hao <hao.wu@intel.com>
+> > > > +Description:	Read-only. Read this file to get the temperature threshold2
+> > > > +		(in Celsius).
+> > > > +
+> > > > +What:		/sys/bus/platform/devices/dfl-fme.0/thermal_mgmt/trip_threshold
+> > > > +Date:		March 2019
+> > > > +KernelVersion:  5.2
+> > > > +Contact:	Wu Hao <hao.wu@intel.com>
+> > > > +Description:	Read-only. It returns trip threshold (in Celsius), once FPGA
+> > > > +		temperature reaches trip threshold, it triggers a fatal event
+> > > > +		to board management controller (BMC) to shutdown FPGA.
+> > > > +
+> > > > +What:		/sys/bus/platform/devices/dfl-fme.0/thermal_mgmt/threshold1_status
+> > > > +Date:		March 2019
+> > > > +KernelVersion:  5.2
+> > > > +Contact:	Wu Hao <hao.wu@intel.com>
+> > > > +Description:	Read-only. It returns 1 if temperature reaches threshold1,
+> > > > +		otherwise 0. Once temperature reaches threshold1, hardware
+> > > > +		will automatically enter throttling state (AP1 - 50%
+> > > > +		or AP2 - 90% throttling, see 'threshold1_policy').
+> > > > +
+> > > > +What:		/sys/bus/platform/devices/dfl-fme.0/thermal_mgmt/threshold2_status
+> > > > +Date:		March 2019
+> > > > +KernelVersion:  5.2
+> > > > +Contact:	Wu Hao <hao.wu@intel.com>
+> > > > +Description:	Read-only. It returns 1 if temperature reaches threshold2,
+> > > > +		otherwise 0. Once temperature reaches threshold2, hardware
+> > > > +		will automatically enter the deepest throttling state (AP6
+> > > > +		- 100% throttling).
+> > > > +
+> > > > +What:		/sys/bus/platform/devices/dfl-fme.0/thermal_mgmt/threshold1_policy
+> > > > +Date:		March 2019
+> > > > +KernelVersion:  5.2
+> > > > +Contact:	Wu Hao <hao.wu@intel.com>
+> > > > +Description:	Read-only. Read this file to get the policy of temperature
+> > > > +		threshold1. It only supports two value (policy):
+> > > > +		    0 - AP2 state (90% throttling)
+> > > > +		    1 - AP1 state (50% throttling)
+> > > 
+> > > These look like they could directly map to the linux thermal framework,
+> > > any reason you can't use the thermal framework?
+> > > 
+> > > The trip stuff literally maps 1:1 to what a thermal driver does, I think
+> > > that's something you'd wanna consider.
+> > > 
+> > 
+> > Hi Moritz,
+> > 
+> > Thanks a lot for the suggestion, actually I feel that the trip points in thermal
+> > zone are used to indicate cooling actions required for thermal software either
+> > in kernel or userspace. But in this case, such FPGA hardware handles cooling
+> > automatically (yes, driver only expose Read-only sysfs for information), so
+> > software doesn't need to take care of this at all. For this purpose, it seems
+> > that we don't have to put these thresholds as trip points. And per my
+> > understanding, if people use such FPGA device, then they may need to know
+> > what's the current hardware throttling behavior, e.g. 50% vs 90%. These
+> > information can't be provided by standard thermal zone sysfs, so anyway user
+> > needs these sysfs interfaces to know it. But it seems that we still could
+> > create a thermal zone without trip points, it could help if user wants to
+> > connect some external cooling devices via userspace thermal daemon, they can
+> > define whatever trip points they like to activate the external cooling 
+> > device. I will consider this further more and come up with a new patch in
+> > v2 patchset.
+> 
+> Generally speaking extending an existing framework with the
+> functionality you want is preferable over rolling 100% your own.
+> 
+> So please look into this.
 
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
----
- Documentation/ABI/testing/sysfs-platform-dfl-fme | 23 ++++++++++++
- drivers/fpga/dfl-fme-main.c                      | 48 ++++++++++++++++++++++++
- 2 files changed, 71 insertions(+)
+Yes, agree, will look into this and try to fix this in next version.
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-index 8fa4feb..d1aa375 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-@@ -21,3 +21,26 @@ Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-only. It returns Bitstream (static FPGA region) meta
- 		data, which includes the synthesis date, seed and other
- 		information of this static FPGA region.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/cache_size
-+Date:		April 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns cache size of this FPGA device.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/fabric_version
-+Date:		April 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns fabric version of this FPGA device.
-+		Userspace applications need this information to select
-+		best data channels per different fabric design.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/socket_id
-+Date:		April 2019
-+KernelVersion:  5.2
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns socket_id to indicate which socket
-+		this FPGA belongs to, only valid for integrated solution.
-+		User only needs this information, in case standard numa node
-+		can't provide correct information.
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 38c6342..8339ee8 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -75,10 +75,58 @@ static ssize_t bitstream_metadata_show(struct device *dev,
- }
- static DEVICE_ATTR_RO(bitstream_metadata);
- 
-+static ssize_t cache_size_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
-+
-+	v = readq(base + FME_HDR_CAP);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(FME_CAP_CACHE_SIZE, v));
-+}
-+static DEVICE_ATTR_RO(cache_size);
-+
-+static ssize_t fabric_version_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
-+
-+	v = readq(base + FME_HDR_CAP);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(FME_CAP_FABRIC_VERID, v));
-+}
-+static DEVICE_ATTR_RO(fabric_version);
-+
-+static ssize_t socket_id_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
-+
-+	v = readq(base + FME_HDR_CAP);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(FME_CAP_SOCKET_ID, v));
-+}
-+static DEVICE_ATTR_RO(socket_id);
-+
- static const struct attribute *fme_hdr_attrs[] = {
- 	&dev_attr_ports_num.attr,
- 	&dev_attr_bitstream_id.attr,
- 	&dev_attr_bitstream_metadata.attr,
-+	&dev_attr_cache_size.attr,
-+	&dev_attr_fabric_version.attr,
-+	&dev_attr_socket_id.attr,
- 	NULL,
- };
- 
--- 
-1.8.3.1
+Thanks for the comments.
+
+Hao
+
+> 
+> Thanks,
+> Moritz
