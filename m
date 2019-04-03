@@ -1,128 +1,304 @@
 Return-Path: <SRS0=mWpl=SF=vger.kernel.org=linux-fpga-owner@kernel.org>
 Return-Path: <SRS0=mWpl=SF=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47110 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725990AbfDCPrl (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 3 Apr 2019 11:47:41 -0400
-Date: Wed, 3 Apr 2019 11:47:36 -0400
-From: Jerome Glisse <jglisse@redhat.com>
-Subject: Re: [RFC PATCH Xilinx Alveo 0/6] Xilinx PCIe accelerator driver
-Message-ID: <20190403154734.GA12818@redhat.com>
+Received: from mail-it1-f194.google.com ([209.85.166.194]:38966 "EHLO
+        mail-it1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726105AbfDCOxl (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 3 Apr 2019 10:53:41 -0400
+Received: by mail-it1-f194.google.com with SMTP id 139so11699950ita.4
+        for <linux-fpga@vger.kernel.org>; Wed, 03 Apr 2019 07:53:40 -0700 (PDT)
+MIME-Version: 1.0
 References: <20190319215401.6562-1-sonal.santan@xilinx.com>
- <20190325202810.GG2665@phenom.ffwll.local>
- <BYAPR02MB51608FDF39B39898FAAEBFEEBB5F0@BYAPR02MB5160.namprd02.prod.outlook.com>
+ <20190325202810.GG2665@phenom.ffwll.local> <BYAPR02MB51608FDF39B39898FAAEBFEEBB5F0@BYAPR02MB5160.namprd02.prod.outlook.com>
  <CAKMK7uHh5KNaTO+a4ZA+vPQcPKUBwODsx+pPCWNp3sxe9TFP0Q@mail.gmail.com>
  <BYAPR02MB51603A1AD72F704112B55B90BB580@BYAPR02MB5160.namprd02.prod.outlook.com>
- <20190327141137.GK2665@phenom.ffwll.local>
- <BYAPR02MB5160162639C2EAC6B19901B7BB590@BYAPR02MB5160.namprd02.prod.outlook.com>
+ <20190327141137.GK2665@phenom.ffwll.local> <BYAPR02MB5160162639C2EAC6B19901B7BB590@BYAPR02MB5160.namprd02.prod.outlook.com>
  <CAPM=9tyLNOXCaKGQkCCmo4tt=Dny0j984-=q8utjwv-aX-Y6BQ@mail.gmail.com>
- <871s2pw4ld.fsf@fisel.enstb.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <871s2pw4ld.fsf@fisel.enstb.org>
+ <871s2pw4ld.fsf@fisel.enstb.org> <20190403131449.GB2665@phenom.ffwll.local> <20190403141701.GA5752@archbook>
+In-Reply-To: <20190403141701.GA5752@archbook>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Wed, 3 Apr 2019 16:53:28 +0200
+Message-ID: <CAKMK7uEVCFgoFFGbP19bLLoQimftAkAZpJHbsqjTwhRjcJCx6w@mail.gmail.com>
+Subject: Re: [RFC PATCH Xilinx Alveo 0/6] Xilinx PCIe accelerator driver
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: Ronan KERYELL <ronan@keryell.fr>
-Cc: Dave Airlie <airlied@gmail.com>, Sonal Santan <sonals@xilinx.com>, Daniel Vetter <daniel@ffwll.ch>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Cyril Chemparathy <cyrilc@xilinx.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Lizhi Hou <lizhih@xilinx.com>, Michal Simek <michals@xilinx.com>, "airlied@redhat.com" <airlied@redhat.com>, linux-fpga@vger.kernel.org, Ralph Wittig <wittig@xilinx.com>, Ronan Keryell <rkeryell@xilinx.com>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Ronan KERYELL <ronan@keryell.fr>, Dave Airlie <airlied@gmail.com>, Sonal Santan <sonals@xilinx.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Cyril Chemparathy <cyrilc@xilinx.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Lizhi Hou <lizhih@xilinx.com>, Michal Simek <michals@xilinx.com>, "airlied@redhat.com" <airlied@redhat.com>, linux-fpga@vger.kernel.org, Ralph Wittig <wittig@xilinx.com>, Ronan Keryell <rkeryell@xilinx.com>
 
-On Fri, Mar 29, 2019 at 06:09:18PM -0700, Ronan KERYELL wrote:
-> I am adding linux-fpga@vger.kernel.org, since this is why I missed this
-> thread in the first place...
-> >>>>> On Fri, 29 Mar 2019 14:56:17 +1000, Dave Airlie <airlied@gmail.com> said:
->     Dave> On Thu, 28 Mar 2019 at 10:14, Sonal Santan <sonals@xilinx.com> wrote:
->     >>> From: Daniel Vetter [mailto:daniel.vetter@ffwll.ch]
+On Wed, Apr 3, 2019 at 4:17 PM Moritz Fischer <mdf@kernel.org> wrote:
+>
+> Hi Daniel,
+>
+> On Wed, Apr 03, 2019 at 03:14:49PM +0200, Daniel Vetter wrote:
+> > On Fri, Mar 29, 2019 at 06:09:18PM -0700, Ronan KERYELL wrote:
+> > > I am adding linux-fpga@vger.kernel.org, since this is why I missed this
+> > > thread in the first place...
+> > >
+> > > >>>>> On Fri, 29 Mar 2019 14:56:17 +1000, Dave Airlie <airlied@gmail.com> said:
+> > >
+> > > Hi Dave!
+> > >
+> > >     Dave> On Thu, 28 Mar 2019 at 10:14, Sonal Santan <sonals@xilinx.com> wrote:
+> > >
+> > >     >>> From: Daniel Vetter [mailto:daniel.vetter@ffwll.ch]
+> > >
+> > > [...]
+> > >
+> > >     >>> Note: There's no expectation for the fully optimizing compiler,
+> > >     >>> and we're totally ok if there's an optimizing proprietary
+> > >     >>> compiler and a basic open one (amd, and bunch of other
+> > >     >>> companies all have such dual stacks running on top of drm
+> > >     >>> kernel drivers). But a basic compiler that can convert basic
+> > >     >>> kernels into machine code is expected.
+> > >
+> > >     >> Although the compiler is not open source the compilation flow
+> > >     >> lets users examine output from various stages. For example if you
+> > >     >> write your kernel in OpenCL/C/C++ you can view the RTL
+> > >     >> (Verilog/VHDL) output produced by first stage of compilation.
+> > >     >> Note that the compiler is really generating a custom circuit
+> > >     >> given a high level input which in the last phase gets synthesized
+> > >     >> into bitstream. Expert hardware designers can handcraft a circuit
+> > >     >> in RTL and feed it to the compiler. Our FPGA tools let you view
+> > >     >> the generated hardware design, the register map, etc. You can get
+> > >     >> more information about a compiled design by running XRT tool like
+> > >     >> xclbinutil on the generated file.
+> > >
+> > >     >> In essence compiling for FPGAs is quite different than compiling
+> > >     >> for GPU/CPU/DSP.  Interestingly FPGA compilers can run anywhere
+> > >     >> from 30 mins to a few hours to compile a testcase.
+> > >
+> > >     Dave> So is there any open source userspace generator for what this
+> > >     Dave> interface provides? Is the bitstream format that gets fed into
+> > >     Dave> the FPGA proprietary and is it signed?
+> > >
+> > > Short answer:
+> > >
+> > > - a bitstream is an opaque content similar to various firmware handled
+> > >   by Linux, EFI capsules, x86 microcode, WiFi modems, etc.
+> > >
+> > > - there is no open-source generator for what the interface consume;
+> > >
+> > > - I do not know if it is signed;
+> > >
+> > > - it is probably similar to what Intel FPGA (not GPU) drivers provide
+> > >   already inside the Linux kernel and I guess there is no pure
+> > >   open-source way to generate their bit-stream either.
+> >
+> > Yeah, drivers/gpu folks wouldn't ever have merged drivers/fpga, and I
+> > think there's pretty strong consensus over here that merging fpga stuff
+> > without having clear specs (in the form of an executable open source
+> > compiler/synthesizer/whatever) was a mistake.
+>
+> I don't totally understand this statement. You don't go out and ask
+> people to open source their EDA tools that are used to create the ASICs
+> on any piece of HW (NIC, GPU, USB controller,...) out there.
+>
+> FPGAs are no different.
+>
+> I think you need to distinguish between the general FPGA as a means to
+> implement a HW solution and *FPGA based devices* that implement flows such
+> as OpenCL etc. For the latter I'm more inclined to buy the equivalence
+> to GPUs argument.
 
-[...]
+Yeah maybe there's a misunderstanding, my comments where in the
+context of the submitted xilinx driver, and similar drivers that mean
+to expose fpgas to userspace for doing stuff. If all you use your FGPA
+for is to load a bitstream as a firmware blob, to then instantiate a
+device which doesn't really change anymore, then then bistream is just
+like firmware indeed. But we're talking about kernel/userspace api,
+where (possible multiple) unpriviledged clients can do whatever they
+feel like, and where we have pretty hard requirements about not
+breaking userspace. To be able to fully review and more or less
+indefinitely support such driver stacks, we need to understand what
+they're doing and what's possible. It's the "unpriviledge userspace
+submits touring complete (ok sometimes not quite touring complete, but
+really powerful i/o is usually on the menu) blobs to be run on
+questionable hardware by the kernel" which is the part that
+distinguishes a firmware blob from the compute kernels we're talking
+about here. It's not gpu vs fpga vs something else. From a kernel
+driver pov those are all the same: You take a
+shader/bitstream/whatever blob + a bit of state/configuration from
+userspace, and need to make sure there's no DOS or other exploit in
+there.
 
-> Long answer:
-> 
-> - processors, GPU and other digital circuits are designed from a lot of
->   elementary transistors, wires, capacitors, resistors... using some
->   very complex (and expensive) tools from some EDA companies but at the
->   end, after months of work, they come often with a "simple" public
->   interface, the... instruction set! So it is rather "easy" at the end
->   to generate some instructions with a compiler such as LLVM from a
->   description of this ISA or some reverse engineering. Note that even if
->   the ISA is public, it is very difficult to make another efficient
->   processor from scratch just from this ISA, so there is often no
->   concern about making this ISA public to develop the ecosystem ;
-> 
-> - FPGA are field-programmable gate arrays, made also from a lot of
->   elementary transistors, wires, capacitors, resistors... but organized
->   in billions of very low-level elementary gates, memory elements, DSP
->   blocks, I/O blocks, clock generators, specific
->   accelerators... directly exposed to the user and that can be
->   programmed according to a configuration memory (the bitstream) that
->   details how to connect each part, routing element, configuring each
->   elemental piece of hardware.  So instead of just writing instructions
->   like on a CPU or a GPU, you need to configure each bit of the
->   architecture in such a way it does something interesting for
->   you. Concretely, you write some programs in RTL languages (Verilog,
->   VHDL) or higher-level (C/C++, OpenCL, SYCL...)  and you use some very
->   complex (and expensive) tools from some EDA companies to generate the
->   bitstream implementing an equivalent circuit with the same
->   semantics. Since the architecture is so low level, there is a direct
->   mapping between the configuration memory (bitstream) and the hardware
->   architecture itself, so if it is public then it is easy to duplicate
->   the FPGA itself and to start a new FPGA company. That is unfortunately
->   something the existing FPGA companies do not want... ;-)
+And we're not going to take "there's no problem here" on blind faith,
+because we know how well designed&validated hw is. This isn't new with
+smeltdown, because gpus have been very fragile/broken/insecure pieces
+since forever (it's slowly getting better though, and we rely ever
+less on sw to guarantee isolation).
 
-This is completely bogus argument, all FPGA documentation i have seen so far
-_extensively_ describe _each_ basic blocks within the FGPA, this does include
-the excelent documentation Xilinx provide on the inner working and layout of
-Xilinx FPGA. Same apply to Altera, Atmel, Latice, ...
+Wrt drivers/fpga: My understanding is that's very much meant to allow
+unpriviledge userspace to use them, at least they wouldn't need an
+ioctl interface otherwise.
+-Daniel
 
-The extensive public documentation is enough for anyone with the money and
-with half decent engineers to produce an FPGA.
+> > We just had a similar huge discussions around the recently merged
+> > habanalabs driver in drivers/misc, for neural network accel. There was a
+> > proposed drivers/accel for these. gpu folks objected, Greg and Olof were
+> > happy with merging.
+> >
+> > And the exact same arguments has come up tons of times for gpus too, with
+> > lots proposals to merge a kernel driver with just the kernel driver being
+> > open source, or just the state tracker/runtime, but most definitely not
+> > anything looking like the compiler. Because $reasons.
+> >
+> > Conclusion was that drivers/gpu people will continue to reject these,
+> > everyone else will continue to take whatever, but just don't complain to
+> > us if it all comes crashing down :-)
+> >
+> > > Long answer:
+> > >
+> > > - processors, GPU and other digital circuits are designed from a lot of
+> > >   elementary transistors, wires, capacitors, resistors... using some
+> > >   very complex (and expensive) tools from some EDA companies but at the
+> > >   end, after months of work, they come often with a "simple" public
+> > >   interface, the... instruction set! So it is rather "easy" at the end
+> > >   to generate some instructions with a compiler such as LLVM from a
+> > >   description of this ISA or some reverse engineering. Note that even if
+> > >   the ISA is public, it is very difficult to make another efficient
+> > >   processor from scratch just from this ISA, so there is often no
+> > >   concern about making this ISA public to develop the ecosystem ;
+> > >
+> > > - FPGA are field-programmable gate arrays, made also from a lot of
+> > >   elementary transistors, wires, capacitors, resistors... but organized
+> > >   in billions of very low-level elementary gates, memory elements, DSP
+> > >   blocks, I/O blocks, clock generators, specific
+> > >   accelerators... directly exposed to the user and that can be
+> > >   programmed according to a configuration memory (the bitstream) that
+> > >   details how to connect each part, routing element, configuring each
+> > >   elemental piece of hardware.  So instead of just writing instructions
+> > >   like on a CPU or a GPU, you need to configure each bit of the
+> > >   architecture in such a way it does something interesting for
+> > >   you. Concretely, you write some programs in RTL languages (Verilog,
+> > >   VHDL) or higher-level (C/C++, OpenCL, SYCL...)  and you use some very
+> > >   complex (and expensive) tools from some EDA companies to generate the
+> > >   bitstream implementing an equivalent circuit with the same
+> > >   semantics. Since the architecture is so low level, there is a direct
+> > >   mapping between the configuration memory (bitstream) and the hardware
+> > >   architecture itself, so if it is public then it is easy to duplicate
+> > >   the FPGA itself and to start a new FPGA company. That is unfortunately
+> > >   something the existing FPGA companies do not want... ;-)
+> >
+> > i.e. you have a use case where you absolutely need an offline compiler.
+> > Like with gpus (in some use cases), the only difference is that for gpus
+> > the latency requirement that's too high is measured in milliseconds, cause
+> > that would cause dropped frames, and worst case compiling takes seconds
+> > for some big shaders. With FPGAs it's just 1000x higher limits, same problem.
+>
+> As I said above, you'd do the same thing when you design any other piece
+> of hardware out there, except for with FPGAs you'd be able to change
+> stuff, whereas with an ASIC your netlist gets fixed at tape-out date.
+> >
+> > > To summarize:
+> > >
+> > > - on a CPU & GPU, the vendor used the expensive EDA tools once already
+> > >   for you and provide the simpler ISA interface;
+> > >
+> > > - on an FPGA, you have access to a pile of low-level hardware and it is
+> > >   up to you to use the lengthy process of building your own computing
+> > >   architecture using the heavy expensive very subtle EDA tools that will
+> > >   run for hours or days to generate some good-enough placement for your
+> > >   pleasure.
+> > >
+> > > There is some public documentation on-line:
+> > > https://www.xilinx.com/products/silicon-devices/fpga/virtex-ultrascale-plus.html#documentation
+> > >
+> > > To have an idea of the elementary architecture:
+> > > https://www.xilinx.com/support/documentation/user_guides/ug574-ultrascale-clb.pdf
+> > > https://www.xilinx.com/support/documentation/user_guides/ug579-ultrascale-dsp.pdf
+> > > https://www.xilinx.com/support/documentation/user_guides/ug573-ultrascale-memory-resources.pdf
+> > >
+> > > Even on the configuration and the file format, but without any detailed semantics:
+> > > https://www.xilinx.com/support/documentation/user_guides/ug570-ultrascale-configuration.pdf
+> > >
+> > >
+> > > The Xilinx compiler xocc taking for example some LLVM IR and generating
+> > > some bitstream is not open-source and will probably never be for the
+> > > reasons above... :-(
+> > >
+> > > Xilinx is open-sourcing all what can reasonably be open-sourced:
+> > >
+> > > - the user-level and system run-time, including the OpenCL runtime:
+> > >   https://github.com/Xilinx/XRT to handle the bitstreams generated by
+> > >   some close-source tools
+> > >
+> > > - the kernel device drivers which are already in
+> > >   https://github.com/Xilinx/XRT but we want to upstream into the Linux
+> > >   kernel to make life easier (this is the matter of this e-mail thread);
+> > >
+> > > - to generate some real code in the most (modern and) open-source way,
+> > >   there is an open-source framework to compile some SYCL C++ including
+> > >   some Xilinx FPGA-specific extensions down to SPIR LLVM IR using
+> > >   Clang/LLVM and to feed the close-source xocc tool with it
+> > >   https://github.com/triSYCL/triSYCL
+> > >
+> > >   You can see starting from
+> > >   https://github.com/triSYCL/triSYCL/blob/master/tests/Makefile#L322 how
+> > >   to start from C++ code, generate some SPIR LLVM IR and to feed xocc
+> > >   and build a fat binary that will use the XRT runtime.
+> > >
+> > >   Some documentation in
+> > >   https://github.com/triSYCL/triSYCL/blob/master/doc/architecture.rst
+> > >
+> > >   There are other more official ways to generate bitstream (they are
+> > >   called products instead of research projects like triSYCL :-) ).
+> > >
+> > >   We are also working on an other open-source SYCL compiler with Intel
+> > >   to have a better common implementation
+> > >   https://github.com/intel/llvm/wiki and to upstream this into Clang/LLVM.
+> >
+> > Yeah, there's been plenty of gpu stacks with "everything open sourced that
+> > can be open sourced", except the compiler, for gpus. We didn't take those
+> > drivers either.
+> >
+> > And I looked at the entire stack already to see what's there and what's
+> > missing.
+> >
+> > > So for Xilinx FPGA, you can see the LLVM IR as the equivalent of PTX for
+> > > nVidia. But xocc is close-source for some more fundamental reasons: it
+> > > would expose all the details of the FPGA. I guess this is exactly the
+> > > same for Xilinx FPGA.
+> >
+> > Yeah, neither did we merge a driver with just some IR as the "compiler",
+> > and most definitely not PTX (since that's just nv lock-in, spirv is the
+> > cross vendor solution that at least seems to have a fighting chance). We
+> > want the low level stuff (and if the high level compiler is the dumbest,
+> > least optimizing thing ever that can't run any real world workload yet,
+> > that's fine, it can be fixed). The low level stuff is what matters from an
+> > uapi perspective.
+> >
+> > > Note that probably most of the tool chains used to generate the
+> > > low-level firmware for the various CPU (microcode), GPU, etc. are
+> > > also close-source.
+> >
+> > Yup. None have been successfully used to merge stuff into drivers/gpu.
+> >
+> > Note that we're perfectly fine with closed source stacks running on top of
+> > drivers/gpu, with lots of additional secret sauce/value add/customer lock
+> > in/whatever compared to the basic open source stack. There's plenty of
+> > vendors doing that. But for the uapi review, and making sure we can at
+> > least keep the basic stack working, it needs to be the full open stack.
+> > End to end.
+> >
+> > I guess I need to actually type that article on my blog about why exactly
+> > we're so much insisting on this, seems to become a bit an FAQ.
+> >
+> > Cheers, Daniel
+> > --
+> > Daniel Vetter
+> > Software Engineer, Intel Corporation
+> > http://blog.ffwll.ch
+>
+> Cheers,
+> Moritz
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
-The real know how of FPGA vendor is how to produce big chips on small process
-capable to sustain high clock with the best power consumption possible. This
-is the part where the years of experiences of each company pay off. The cost
-for anyone to come to the market is in the hundred of millions just in setup
-cost and to catch with established vendor on the hardware side. This without
-any garanty of revenue at the end.
-
-The bitstream is only giving away which bits correspond to which wire where
-the LUT boolean table is store  ... Bitstream that have been reverse engineer
-never revealed anything of value that was not already publicly documented.
 
 
-So no the bitstream has _no_ value, please prove me wrong with Latice bitstream
-for instance. If anything the fact that Latice has a reverse engineer bitstream
-has made that FPGA popular with the maker community as it allows people to do
-experiment for which the closed source tools are an impediment. So i would argue
-that open bitstream is actualy beneficial.
-
-
-The only valid reason i have ever seen for hidding the bitstream is to protect
-the IP of the customer ie those customer that can pour quite a lot of money on
-designing something with an FPGA and then wants to keep the VHDL/Verilog
-protected and "safe" from reverse engineering.
-
-But this is security by obscurity and FPGA company would be better off providing
-strong bitstream encryption (and most already do but i have seen some paper on
-how to break them).
-
-
-I rather not see any bogus argument to try to justify something that is not
-justifiable.
-
-
-Daniel already stressed that we need to know what the bitstream can do and it
-is even more important with FPGA where on some FPGA AFAICT the bitstream can
-have total control over the PCIE BUS and thus can be use to attack either main
-memory or other PCIE devices.
-
-For instance with ATS/PASID you can have the device send pre-translated request
-to the IOMMU and access any memory despite the IOMMU.
-
-So without total confidence of what the bitstream can and can not do, and thus
-without knowledge of the bitstream format and how it maps to LUT, switch, cross-
-bar, clock, fix block (PCIE, DSP, DAC, ADC, ...) there is no way for someone
-independant to check anything.
-
-
-Cheers,
-J�r�me Glisse
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch
