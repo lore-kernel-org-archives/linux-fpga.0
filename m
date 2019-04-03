@@ -1,41 +1,30 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
+Return-Path: <SRS0=h039=SF=oracle.com=daniel.m.jordan@kernel.org>
+Return-Path: <SRS0=h039=SF=oracle.com=daniel.m.jordan@kernel.org>
+Date: Wed, 3 Apr 2019 12:52:57 -0400
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+Subject: Re: [PATCH 0/6] convert locked_vm from unsigned long to atomic64_t
+Message-ID: <20190403165257.prekuppqbcempuxo@ca-dmjordan1.us.oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+ <abe31bae-1bdf-b763-c4d1-5e4ea2ccda13@oracle.com>
 MIME-Version: 1.0
-References: <20190326143129.2608-1-nava.manne@xilinx.com> <20190326143129.2608-7-nava.manne@xilinx.com>
- <20190328170028.GA10815@bogus>
-In-Reply-To: <20190328170028.GA10815@bogus>
-From: Alan Tull <atull@kernel.org>
-Date: Mon, 1 Apr 2019 15:50:08 -0500
-Message-ID: <CANk1AXTcwb1oJL5Uq-H-Q41-n8SXtamObSedMHSa_smZ8Xr1fw@mail.gmail.com>
-Subject: Re: [PATCH v5 6/6] dt-bindings: fpga: Add bindings for ZynqMP fpga driver
-Content-Type: text/plain; charset="UTF-8"
-To: Rob Herring <robh@kernel.org>
-Cc: Nava kishore Manne <nava.manne@xilinx.com>, Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michal Simek <michal.simek@xilinx.com>, Rajan Vaja <rajanv@xilinx.com>, Jolly Shah <jollys@xilinx.com>, linux-fpga@vger.kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, kishore m <chinnikishore369@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <abe31bae-1bdf-b763-c4d1-5e4ea2ccda13@oracle.com>
+To: Steven Sistare <steven.sistare@oracle.com>
+Cc: Daniel Jordan <daniel.m.jordan@oracle.com>, akpm@linux-foundation.org, linux_lkml_grp@oracle.com, Alan Tull <atull@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>, Alex Williamson <alex.williamson@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christoph Lameter <cl@linux.com>, Davidlohr Bueso <dave@stgolabs.net>, Michael Ellerman <mpe@ellerman.id.au>, Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@ozlabs.org>, Wu Hao <hao.wu@intel.com>, linux-mm@kvack.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Thu, Mar 28, 2019 at 12:00 PM Rob Herring <robh@kernel.org> wrote:
->
-> On Tue, 26 Mar 2019 20:01:29 +0530, Nava kishore Manne wrote:
-> > Add documentation to describe Xilinx ZynqMP fpga driver
-> > bindings.
-> >
-> > Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
-> > ---
-> > Changes for v5:
-> >               -Moved pcap node as a child to firwmare
-> >                node as suggested by Rob.
-> > Changes for v4:
-> >               -Modified binding description as suggested by Moritz Fischer.
-> > Changes for v3:
-> >               -Removed PCAP as a child node to the FW and Created
-> >                an independent node since PCAP driver is a consumer
-> >                not a provider.
-> >
-> >  .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt   | 25 +++++++++++++++++++
-> >  1 file changed, 25 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
-> >
->
-> Reviewed-by: Rob Herring <robh@kernel.org>
+On Wed, Apr 03, 2019 at 08:51:13AM -0400, Steven Sistare wrote:
+> On 4/2/2019 4:41 PM, Daniel Jordan wrote:
+> > [1] https://lore.kernel.org/linux-mm/20190211224437.25267-1-daniel.m.jordan@oracle.com/
+> 
+>   You could clean all 6 patches up nicely with a common subroutine that
+> increases locked_vm subject to the rlimit.  Pass a bool arg that is true if
+> the  limit should be enforced, !dma->lock_cap for one call site, and
+> !capable(CAP_IPC_LOCK) for the rest.  Push the warnings and debug statements
+> to the subroutine as well.  One patch could refactor, and a second could
+> change the locking method.
 
-Acked-by: Alan Tull <atull@kernel.org>
+Yes, I tried writing, but didn't end up including, such a subroutine for [1].
+The devil was in the details, but with the cmpxchg business, it's more
+worthwhile to iron all those out.  I'll give it a try.
