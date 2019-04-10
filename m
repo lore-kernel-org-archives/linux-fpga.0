@@ -1,128 +1,231 @@
-Return-Path: <SRS0=mTMr=SR=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=mTMr=SR=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v5 1/3] firmware: xilinx: Add fpga API's
-Date: Mon, 15 Apr 2019 12:47:46 +0530
-Message-ID: <20190415071748.32275-2-nava.manne@xilinx.com>
-In-Reply-To: <20190415071748.32275-1-nava.manne@xilinx.com>
-References: <20190415071748.32275-1-nava.manne@xilinx.com>
+Return-Path: <SRS0=ZTOz=SM=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=ZTOz=SM=intel.com=hao.wu@kernel.org>
+Date: Wed, 10 Apr 2019 09:43:58 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH 11/17] fpga: dfl: afu: add error reporting support.
+Message-ID: <20190410014358.GB6689@hao-dev>
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+ <1553483264-5379-12-git-send-email-hao.wu@intel.com>
+ <CANk1AXS_JcdOve_7rfdzg6hkGCHY9Yp7qz6UKVq8YsRiB_fdGg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXS_JcdOve_7rfdzg6hkGCHY9Yp7qz6UKVq8YsRiB_fdGg@mail.gmail.com>
+To: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This Patch Adds fpga API's to support the Bitstream loading
-by using firmware interface.
+On Tue, Apr 09, 2019 at 03:57:37PM -0500, Alan Tull wrote:
+> On Sun, Mar 24, 2019 at 10:24 PM Wu Hao <hao.wu@intel.com> wrote:
+> 
+> Hi Hao,
+> 
+> >
+> > Error reporting is one important private feature, it reports error
+> > detected on port and accelerated function unit (AFU). It introduces
+> > several sysfs interfaces to allow userspace to check and clear
+> > errors detected by hardware.
+> >
+> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > ---
+> >  Documentation/ABI/testing/sysfs-platform-dfl-port |  29 +++
+> >  drivers/fpga/Makefile                             |   1 +
+> >  drivers/fpga/dfl-afu-error.c                      | 225 ++++++++++++++++++++++
+> >  drivers/fpga/dfl-afu-main.c                       |   4 +
+> >  drivers/fpga/dfl-afu.h                            |   4 +
+> >  5 files changed, 263 insertions(+)
+> >  create mode 100644 drivers/fpga/dfl-afu-error.c
+> >
+> > diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
+> > index f611e47..e6140aa 100644
+> > --- a/Documentation/ABI/testing/sysfs-platform-dfl-port
+> > +++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
+> > @@ -79,3 +79,32 @@ KernelVersion:       5.2
+> >  Contact:       Wu Hao <hao.wu@intel.com>
+> >  Description:   Read-only. Read this file to get the status of issued command
+> >                 to userclck_freqcntrcmd.
+> > +
+> > +What:          /sys/bus/platform/devices/dfl-port.0/errors/errors
+> > +Date:          March 2019
+> > +KernelVersion: 5.2
+> > +Contact:       Wu Hao <hao.wu@intel.com>
+> > +Description:   Read-only. Read this file to get errors detected on port and
+> > +               Accelerated Function Unit (AFU).
+> > +
+> > +What:          /sys/bus/platform/devices/dfl-port.0/errors/first_error
+> > +Date:          March 2019
+> > +KernelVersion: 5.2
+> > +Contact:       Wu Hao <hao.wu@intel.com>
+> > +Description:   Read-only. Read this file to get the first error detected by
+> > +               hardware.
+> > +
+> > +What:          /sys/bus/platform/devices/dfl-port.0/errors/first_malformed_req
+> > +Date:          March 2019
+> > +KernelVersion: 5.2
+> > +Contact:       Wu Hao <hao.wu@intel.com>
+> > +Description:   Read-only. Read this file to get the first malformed request
+> > +               captured by hardware.
+> > +
+> > +What:          /sys/bus/platform/devices/dfl-port.0/errors/clear
+> > +Date:          March 2019
+> > +KernelVersion: 5.2
+> > +Contact:       Wu Hao <hao.wu@intel.com>
+> > +Description:   Write-only. Write error code to this file to clear errors. If
+> > +               the input error code doesn't match, it returns -EBUSY error
+> > +               code.
+> 
+> I understand how -EBUSY could be the right error code for when the
+> hardware is in a state where the error can't be cleared.  But if the
+> input error code doesn't match, shouldn't the code be -EINVAL?  Also
+> as noted below, the way this is currently coded, -ETIMEDOUT could get
+> returned.
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
-Reviewed-by: Moritz Fischer <mdf@kernel.org>
----
-Changes for v5:
-		-Modified API's doc as suggested by Moritz.
+Thanks for the comments, let me try to capture all possible error return
+values in doc in the next version to avoid confusion.
 
- drivers/firmware/xilinx/zynqmp.c     | 45 ++++++++++++++++++++++++++++
- include/linux/firmware/xlnx-zynqmp.h | 12 ++++++++
- 2 files changed, 57 insertions(+)
+> 
+> > diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+> > index c0dd4c8..f1f0af7 100644
+> > --- a/drivers/fpga/Makefile
+> > +++ b/drivers/fpga/Makefile
+> > @@ -40,6 +40,7 @@ obj-$(CONFIG_FPGA_DFL_AFU)            += dfl-afu.o
+> >
+> >  dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
+> >  dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
+> > +dfl-afu-objs += dfl-afu-error.o
+> >
+> >  # Drivers for FPGAs which implement DFL
+> >  obj-$(CONFIG_FPGA_DFL_PCI)             += dfl-pci.o
+> > diff --git a/drivers/fpga/dfl-afu-error.c b/drivers/fpga/dfl-afu-error.c
+> > new file mode 100644
+> > index 0000000..b66bd4a
+> > --- /dev/null
+> > +++ b/drivers/fpga/dfl-afu-error.c
+> > @@ -0,0 +1,225 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Driver for FPGA Accelerated Function Unit (AFU) Error Reporting
+> > + *
+> > + * Copyright 2019 Intel Corporation, Inc.
+> > + *
+> > + * Authors:
+> > + *   Wu Hao <hao.wu@linux.intel.com>
+> > + *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> > + *   Joseph Grecco <joe.grecco@intel.com>
+> > + *   Enno Luebbers <enno.luebbers@intel.com>
+> > + *   Tim Whisonant <tim.whisonant@intel.com>
+> > + *   Ananda Ravuri <ananda.ravuri@intel.com>
+> > + *   Mitchel Henry <henry.mitchel@intel.com>
+> > + */
+> > +
+> > +#include <linux/uaccess.h>
+> > +
+> > +#include "dfl-afu.h"
+> > +
+> > +#define PORT_ERROR_MASK                0x8
+> > +#define PORT_ERROR             0x10
+> > +#define PORT_FIRST_ERROR       0x18
+> > +#define PORT_MALFORMED_REQ0    0x20
+> > +#define PORT_MALFORMED_REQ1    0x28
+> > +
+> > +#define ERROR_MASK             GENMASK_ULL(63, 0)
+> > +
+> > +/* mask or unmask port errors by the error mask register. */
+> > +static void __port_err_mask(struct device *dev, bool mask)
+> > +{
+> > +       void __iomem *base;
+> > +
+> > +       base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
+> > +
+> > +       writeq(mask ? ERROR_MASK : 0, base + PORT_ERROR_MASK);
+> > +}
+> > +
+> > +/* clear port errors. */
+> > +static int __port_err_clear(struct device *dev, u64 err)
+> > +{
+> > +       struct platform_device *pdev = to_platform_device(dev);
+> > +       void __iomem *base_err, *base_hdr;
+> > +       int ret;
+> > +       u64 v;
+> > +
+> > +       base_err = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
+> > +       base_hdr = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
+> > +
+> > +       /*
+> > +        * clear Port Errors
+> > +        *
+> > +        * - Check for AP6 State
+> > +        * - Halt Port by keeping Port in reset
+> > +        * - Set PORT Error mask to all 1 to mask errors
+> > +        * - Clear all errors
+> > +        * - Set Port mask to all 0 to enable errors
+> > +        * - All errors start capturing new errors
+> > +        * - Enable Port by pulling the port out of reset
+> > +        */
+> > +
+> > +       /* if device is still in AP6 power state, can not clear any error. */
+> > +       v = readq(base_hdr + PORT_HDR_STS);
+> > +       if (FIELD_GET(PORT_STS_PWR_STATE, v) == PORT_STS_PWR_STATE_AP6) {
+> > +               dev_err(dev, "Could not clear errors, device in AP6 state.\n");
+> > +               return -EBUSY;
+> > +       }
+> > +
+> > +       /* Halt Port by keeping Port in reset */
+> > +       ret = __port_disable(pdev);
+> > +       if (ret)
+> > +               return ret;
+> 
+> __port_disable can return -ETIMEDOUT which will then get returned from
+> clear_store.  The sysfs document only talks about -EBUSY. You could
+> either document -ETIMEDOUT in the sysfs doc or you could change the
+> code to adjust the returned error code.
 
-diff --git a/drivers/firmware/xilinx/zynqmp.c b/drivers/firmware/xilinx/zynqmp.c
-index 98f936125643..f355ad42917c 100644
---- a/drivers/firmware/xilinx/zynqmp.c
-+++ b/drivers/firmware/xilinx/zynqmp.c
-@@ -537,6 +537,49 @@ static int zynqmp_pm_reset_get_status(const enum zynqmp_pm_reset reset,
- 	return ret;
- }
- 
-+/*
-+ * zynqmp_pm_fpga_load - Perform the fpga load
-+ * @address:	Address to write to
-+ * @size:	pl bitstream size
-+ * @flags:	Bitstream type
-+ *	-XILINX_ZYNQMP_PM_FPGA_FULL:  FPGA full reconfiguration
-+ *	-XILINX_ZYNQMP_PM_FPGA_PARTIAL: FPGA partial reconfiguration
-+ *
-+ * This function provides access to pmufw. To transfer
-+ * the required bitstream into PL.
-+ *
-+ * Return: Returns status, either success or error+reason
-+ */
-+static int zynqmp_pm_fpga_load(const u64 address, const u32 size,
-+			       const u32 flags)
-+{
-+	return zynqmp_pm_invoke_fn(PM_FPGA_LOAD, lower_32_bits(address),
-+				   upper_32_bits(address), size, flags, NULL);
-+}
-+
-+/**
-+ * zynqmp_pm_fpga_get_status - Read value from PCAP status register
-+ * @value: Value to read
-+ *
-+ * This function provides access to the pmufw to get the PCAP
-+ * status
-+ *
-+ * Return: Returns status, either success or error+reason
-+ */
-+static int zynqmp_pm_fpga_get_status(u32 *value)
-+{
-+	u32 ret_payload[PAYLOAD_ARG_CNT];
-+	int ret;
-+
-+	if (!value)
-+		return -EINVAL;
-+
-+	ret = zynqmp_pm_invoke_fn(PM_FPGA_GET_STATUS, 0, 0, 0, 0, ret_payload);
-+	*value = ret_payload[1];
-+
-+	return ret;
-+}
-+
- /**
-  * zynqmp_pm_init_finalize() - PM call to inform firmware that the caller
-  *			       master has initialized its own power management
-@@ -640,6 +683,8 @@ static const struct zynqmp_eemi_ops eemi_ops = {
- 	.request_node = zynqmp_pm_request_node,
- 	.release_node = zynqmp_pm_release_node,
- 	.set_requirement = zynqmp_pm_set_requirement,
-+	.fpga_load = zynqmp_pm_fpga_load,
-+	.fpga_get_status = zynqmp_pm_fpga_get_status,
- };
- 
- /**
-diff --git a/include/linux/firmware/xlnx-zynqmp.h b/include/linux/firmware/xlnx-zynqmp.h
-index 642dab10f65d..1b1de5539036 100644
---- a/include/linux/firmware/xlnx-zynqmp.h
-+++ b/include/linux/firmware/xlnx-zynqmp.h
-@@ -48,6 +48,14 @@
- #define	ZYNQMP_PM_CAPABILITY_WAKEUP	0x4U
- #define	ZYNQMP_PM_CAPABILITY_POWER	0x8U
- 
-+/*
-+ * Firmware FPGA Manager flags
-+ * XILINX_ZYNQMP_PM_FPGA_FULL:	FPGA full reconfiguration
-+ * XILINX_ZYNQMP_PM_FPGA_PARTIAL: FPGA partial reconfiguration
-+ */
-+#define XILINX_ZYNQMP_PM_FPGA_FULL	0x0U
-+#define XILINX_ZYNQMP_PM_FPGA_PARTIAL	BIT(0)
-+
- enum pm_api_id {
- 	PM_GET_API_VERSION = 1,
- 	PM_REQUEST_NODE = 13,
-@@ -56,6 +64,8 @@ enum pm_api_id {
- 	PM_RESET_ASSERT = 17,
- 	PM_RESET_GET_STATUS,
- 	PM_PM_INIT_FINALIZE = 21,
-+	PM_FPGA_LOAD,
-+	PM_FPGA_GET_STATUS,
- 	PM_GET_CHIPID = 24,
- 	PM_IOCTL = 34,
- 	PM_QUERY_DATA,
-@@ -258,6 +268,8 @@ struct zynqmp_pm_query_data {
- struct zynqmp_eemi_ops {
- 	int (*get_api_version)(u32 *version);
- 	int (*get_chipid)(u32 *idcode, u32 *version);
-+	int (*fpga_load)(const u64 address, const u32 size, const u32 flags);
-+	int (*fpga_get_status)(u32 *value);
- 	int (*query_data)(struct zynqmp_pm_query_data qdata, u32 *out);
- 	int (*clock_enable)(u32 clock_id);
- 	int (*clock_disable)(u32 clock_id);
--- 
-2.18.0
+Yes, agree.
+
+> 
+> > +
+> > +       /* Mask all errors */
+> > +       __port_err_mask(dev, true);
+> > +
+> > +       /* Clear errors if err input matches with current port errors.*/
+> > +       v = readq(base_err + PORT_ERROR);
+> > +
+> > +       if (v == err) {
+> > +               writeq(v, base_err + PORT_ERROR);
+> > +
+> > +               v = readq(base_err + PORT_FIRST_ERROR);
+> > +               writeq(v, base_err + PORT_FIRST_ERROR);
+> > +       } else {
+> > +               ret = -EBUSY;
+> > +       }
+> > +
+> > +       /* Clear mask */
+> > +       __port_err_mask(dev, false);
+> > +
+> > +       /* Enable the Port by clear the reset */
+> > +       __port_enable(pdev);
+> > +
+> > +       return ret;
+> > +}
+> > +
+> > +static ssize_t revision_show(struct device *dev, struct device_attribute *attr,
+> > +                            char *buf)
+> > +{
+> > +       void __iomem *base;
+> > +
+> > +       base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
+> > +
+> > +       return scnprintf(buf, PAGE_SIZE, "%u\n", dfl_feature_revision(base));
+> > +}
+> > +static DEVICE_ATTR_RO(revision);
+> 
+> This appears to be adding a
+> /sys/bus/platform/devices/dfl-port.0/errors/revision attribute that
+> isn't documented in the sysfs document.
+
+Sorry, will fix all above issues in the next version.
+
+Thanks again for the code review and comments.
+
+Hao
