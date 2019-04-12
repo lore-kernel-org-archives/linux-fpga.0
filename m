@@ -1,43 +1,38 @@
-MIME-Version: 1.0
-Date: Fri, 12 Apr 2019 14:05:21 -0700
-References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
-	<1553483264-5379-16-git-send-email-hao.wu@intel.com>
-	<CANk1AXTji9qm0Nfbme+2=nR-PNavnv__GwzDRazhH78hYkWN6g@mail.gmail.com>
-In-Reply-To: <CANk1AXTji9qm0Nfbme+2=nR-PNavnv__GwzDRazhH78hYkWN6g@mail.gmail.com>
-Message-ID: <CAJYdmeOMm0xTRbKTS68M4uiHJLfphPXNo+eFYguda+SuwnkqmQ@mail.gmail.com>
+Return-Path: <SRS0=JigK=SO=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=JigK=SO=intel.com=hao.wu@kernel.org>
+Date: Fri, 12 Apr 2019 10:50:19 +0800
+From: Wu Hao <hao.wu@intel.com>
 Subject: Re: [PATCH 15/17] fpga: dfl: fme: add power management support
-From: Moritz Fischer <moritz.fischer.private@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190412025019.GA27997@hao-dev>
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+ <1553483264-5379-16-git-send-email-hao.wu@intel.com>
+ <CANk1AXTji9qm0Nfbme+2=nR-PNavnv__GwzDRazhH78hYkWN6g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANk1AXTji9qm0Nfbme+2=nR-PNavnv__GwzDRazhH78hYkWN6g@mail.gmail.com>
 To: Alan Tull <atull@kernel.org>
-Cc: Wu Hao <hao.wu@intel.com>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Hao,
-
-this looks suspiciously like a hwmon driver ;-)
-
-https://www.kernel.org/doc/Documentation/hwmon/hwmon-kernel-api.txt
-
-Cheers,
-Moritz
-
-
-On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
->
+On Thu, Apr 11, 2019 at 03:07:35PM -0500, Alan Tull wrote:
 > On Sun, Mar 24, 2019 at 10:24 PM Wu Hao <hao.wu@intel.com> wrote:
->
+> 
 > Hi Hao,
->
+> 
 > >
 > > This patch adds support for power management private feature under
 > > FPGA Management Engine (FME), sysfs interfaces are introduced for
 > > different power management functions, users could use these sysfs
 > > interface to get current number of consumed power, throttling
->
+> 
 > How about
 > s/number/measurement/
 > ?
->
+
+Sounds better. : )
+
+> 
 > > thresholds, threshold status and other information, and configure
 > > different value for throttling thresholds too.
 > >
@@ -63,9 +58,9 @@ On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
 > > +KernelVersion:  5.2
 > > +Contact:       Wu Hao <hao.wu@intel.com>
 > > +Description:   Read-only. It returns current power consumed by FPGA.
->
+> 
 > What are the units?
->
+> 
 > > +
 > > +What:          /sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold1
 > > +Date:          March 2019
@@ -73,9 +68,9 @@ On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
 > > +Contact:       Wu Hao <hao.wu@intel.com>
 > > +Description:   Read-Write. Read/Write this file to get/set current power
 > > +               threshold1 in Watts.
->
+> 
 > Perhaps document error codes here and for threshold2 below.
->
+> 
 > > +
 > > +What:          /sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold2
 > > +Date:          March 2019
@@ -90,13 +85,13 @@ On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
 > > +Contact:       Wu Hao <hao.wu@intel.com>
 > > +Description:   Read-only. It returns 1 if power consumption reaches the
 > > +               threshold1, otherwise 0.
->
+> 
 > I'm used to things like this requiring user to reset the status, so it
 > may be worth making it explicit that it will return to zero if
 > consumption drops below threshold if that's what's happening here.
 > If it's correct, perhaps could just say something like 'returns 1 if
 > power consumption is currently at or above threshold1, otherwise 0'
->
+> 
 > > +
 > > +What:          /sys/bus/platform/devices/dfl-fme.0/power_mgmt/threshold2_status
 > > +Date:          March 2019
@@ -104,9 +99,12 @@ On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
 > > +Contact:       Wu Hao <hao.wu@intel.com>
 > > +Description:   Read-only. It returns 1 if power consumption reaches the
 > > +               threshold2, otherwise 0.
->
+> 
 > Same here.
->
+
+Sure, will fix all above comments in this sysfs doc.
+
+> 
 > > +
 > > +What:          /sys/bus/platform/devices/dfl-fme.0/power_mgmt/ltr
 > > +Date:          March 2019
@@ -115,10 +113,17 @@ On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
 > > +Description:   Read-only. Read this file to get current Latency Tolerance
 > > +               Reporting (ltr) value, it's only valid for integrated
 > > +               solution as it blocks CPU on low power state.
->
+> 
 > If we're not on the integrated solution, it returns a value but it is
 > not really real?
->
+
+Currently only integrated solution is implementing this private feature, other
+devices e.g. Intel PAC card is not using this private feature, so user will
+not see these sysfs interfaces at all.
+
+If in the future, other devices want
+
+> 
 > > +
 > > +What:          /sys/bus/platform/devices/dfl-fme.0/power_mgmt/xeon_limit
 > > +Date:          March 2019
@@ -168,9 +173,13 @@ On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
 > > +
 > > +#define POWER_ATTR_RW(_name, _show, _store)            \
 > > +       POWER_ATTR(_name, 0644, _show, _store)
->
+> 
 > Are these #defines necessary?  Seems like you could just use DEVICE_ATTR*
->
+
+Actually it adds a prefix power_attr_xxx there to avoid name conflicts with
+other ones from different private features, e.g. for the thermal threshold.
+
+> 
 > > +
 > > +static ssize_t pwr_consumed_show(struct device *dev,
 > > +                                struct device_attribute *attr, char *buf)
@@ -367,11 +376,14 @@ On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
 > > +       &power_attr_xeon_limit.attr,
 > > +       &power_attr_fpga_limit.attr,
 > > +       &power_attr_ltr.attr,
->
+> 
 > This is a nit, but I would expect to see these listed in the same
 > order as their show/store functions above.  So ltr_attr would come
 > between threshold2_status_attr and xeon_limit_attr.
->
+
+Sure, it does make sense.
+
+> 
 > > +       NULL,
 > > +};
 > > +
@@ -419,6 +431,11 @@ On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
 > > --
 > > 2.7.4
 > >
->
+
+Thanks a lot for the review and comments. :)
+
+Hao
+
+> 
 > Thanks,
 > Alan
