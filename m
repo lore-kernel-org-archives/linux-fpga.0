@@ -1,241 +1,146 @@
-Return-Path: <SRS0=mWpl=SF=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=mWpl=SF=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-ed1-f67.google.com ([209.85.208.67]:37325 "EHLO
-        mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725959AbfDCNO4 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 3 Apr 2019 09:14:56 -0400
-Received: by mail-ed1-f67.google.com with SMTP id v21so1079878edq.4
-        for <linux-fpga@vger.kernel.org>; Wed, 03 Apr 2019 06:14:54 -0700 (PDT)
-Date: Wed, 3 Apr 2019 15:14:49 +0200
-From: Daniel Vetter <daniel@ffwll.ch>
-Subject: Re: [RFC PATCH Xilinx Alveo 0/6] Xilinx PCIe accelerator driver
-Message-ID: <20190403131449.GB2665@phenom.ffwll.local>
-References: <20190319215401.6562-1-sonal.santan@xilinx.com>
- <20190325202810.GG2665@phenom.ffwll.local>
- <BYAPR02MB51608FDF39B39898FAAEBFEEBB5F0@BYAPR02MB5160.namprd02.prod.outlook.com>
- <CAKMK7uHh5KNaTO+a4ZA+vPQcPKUBwODsx+pPCWNp3sxe9TFP0Q@mail.gmail.com>
- <BYAPR02MB51603A1AD72F704112B55B90BB580@BYAPR02MB5160.namprd02.prod.outlook.com>
- <20190327141137.GK2665@phenom.ffwll.local>
- <BYAPR02MB5160162639C2EAC6B19901B7BB590@BYAPR02MB5160.namprd02.prod.outlook.com>
- <CAPM=9tyLNOXCaKGQkCCmo4tt=Dny0j984-=q8utjwv-aX-Y6BQ@mail.gmail.com>
- <871s2pw4ld.fsf@fisel.enstb.org>
+Return-Path: <SRS0=4fMA=SO=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=4fMA=SO=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:37900 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726640AbfDLDQf (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 11 Apr 2019 23:16:35 -0400
+From: Scott Wood <swood@redhat.com>
+Subject: [PATCH v2] fpga: dfl: Add lockdep classes for pdata->lock
+Date: Thu, 11 Apr 2019 22:16:33 -0500
+Message-Id: <20190412031633.9100-1-swood@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <871s2pw4ld.fsf@fisel.enstb.org>
+Content-Transfer-Encoding: 8bit
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: Ronan KERYELL <ronan@keryell.fr>
-Cc: Dave Airlie <airlied@gmail.com>, Sonal Santan <sonals@xilinx.com>, Daniel Vetter <daniel@ffwll.ch>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Cyril Chemparathy <cyrilc@xilinx.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Lizhi Hou <lizhih@xilinx.com>, Michal Simek <michals@xilinx.com>, "airlied@redhat.com" <airlied@redhat.com>, linux-fpga@vger.kernel.org, Ralph Wittig <wittig@xilinx.com>, Ronan Keryell <rkeryell@xilinx.com>
+To: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Scott Wood <swood@redhat.com>
 
-On Fri, Mar 29, 2019 at 06:09:18PM -0700, Ronan KERYELL wrote:
-> I am adding linux-fpga@vger.kernel.org, since this is why I missed this
-> thread in the first place...
-> 
-> >>>>> On Fri, 29 Mar 2019 14:56:17 +1000, Dave Airlie <airlied@gmail.com> said:
-> 
-> Hi Dave!
-> 
->     Dave> On Thu, 28 Mar 2019 at 10:14, Sonal Santan <sonals@xilinx.com> wrote:
-> 
->     >>> From: Daniel Vetter [mailto:daniel.vetter@ffwll.ch]
-> 
-> [...]
-> 
->     >>> Note: There's no expectation for the fully optimizing compiler,
->     >>> and we're totally ok if there's an optimizing proprietary
->     >>> compiler and a basic open one (amd, and bunch of other
->     >>> companies all have such dual stacks running on top of drm
->     >>> kernel drivers). But a basic compiler that can convert basic
->     >>> kernels into machine code is expected.
-> 
->     >> Although the compiler is not open source the compilation flow
->     >> lets users examine output from various stages. For example if you
->     >> write your kernel in OpenCL/C/C++ you can view the RTL
->     >> (Verilog/VHDL) output produced by first stage of compilation.
->     >> Note that the compiler is really generating a custom circuit
->     >> given a high level input which in the last phase gets synthesized
->     >> into bitstream. Expert hardware designers can handcraft a circuit
->     >> in RTL and feed it to the compiler. Our FPGA tools let you view
->     >> the generated hardware design, the register map, etc. You can get
->     >> more information about a compiled design by running XRT tool like
->     >> xclbinutil on the generated file.
-> 
->     >> In essence compiling for FPGAs is quite different than compiling
->     >> for GPU/CPU/DSP.  Interestingly FPGA compilers can run anywhere
->     >> from 30 mins to a few hours to compile a testcase.
-> 
->     Dave> So is there any open source userspace generator for what this
->     Dave> interface provides? Is the bitstream format that gets fed into
->     Dave> the FPGA proprietary and is it signed?
-> 
-> Short answer:
-> 
-> - a bitstream is an opaque content similar to various firmware handled
->   by Linux, EFI capsules, x86 microcode, WiFi modems, etc.
-> 
-> - there is no open-source generator for what the interface consume;
-> 
-> - I do not know if it is signed;
-> 
-> - it is probably similar to what Intel FPGA (not GPU) drivers provide
->   already inside the Linux kernel and I guess there is no pure
->   open-source way to generate their bit-stream either.
+struct dfl_feature_platform_data (and it's mutex) is used
+by both fme and port devices, and when lockdep is enabled it
+complains about nesting between these locks.  Tell lockdep about
+the difference so it can track each class separately.
 
-Yeah, drivers/gpu folks wouldn't ever have merged drivers/fpga, and I
-think there's pretty strong consensus over here that merging fpga stuff
-without having clear specs (in the form of an executable open source
-compiler/synthesizer/whatever) was a mistake.
+Here's the lockdep complaint:
+[  409.680668] WARNING: possible recursive locking detected
+[  409.685983] 5.1.0-rc3.fpga+ #1 Tainted: G            E
+[  409.691469] --------------------------------------------
+[  409.696779] fpgaconf/9348 is trying to acquire lock:
+[  409.701746] 00000000a443fe2e (&pdata->lock){+.+.}, at: port_enable_set+0x24/0x60 [dfl_afu]
+[  409.710006]
+[  409.710006] but task is already holding lock:
+[  409.715837] 0000000063b78782 (&pdata->lock){+.+.}, at: fme_pr_ioctl+0x21d/0x330 [dfl_fme]
+[  409.724012]
+[  409.724012] other info that might help us debug this:
+[  409.730535]  Possible unsafe locking scenario:
+[  409.730535]
+[  409.736457]        CPU0
+[  409.738910]        ----
+[  409.741360]   lock(&pdata->lock);
+[  409.744679]   lock(&pdata->lock);
+[  409.747999]
+[  409.747999]  *** DEADLOCK ***
+[  409.747999]
+[  409.753920]  May be due to missing lock nesting notation
+[  409.753920]
+[  409.760704] 4 locks held by fpgaconf/9348:
+[  409.764805]  #0: 0000000063b78782 (&pdata->lock){+.+.}, at: fme_pr_ioctl+0x21d/0x330 [dfl_fme]
+[  409.773408]  #1: 00000000213c8a66 (&region->mutex){+.+.}, at: fpga_region_program_fpga+0x24/0x200 [fpga_region]
+[  409.783489]  #2: 00000000fe63afb9 (&mgr->ref_mutex){+.+.}, at: fpga_mgr_lock+0x15/0x40 [fpga_mgr]
+[  409.792354]  #3: 000000000b2285c5 (&bridge->mutex){+.+.}, at: __fpga_bridge_get+0x26/0xa0 [fpga_bridge]
+[  409.801740]
+[  409.801740] stack backtrace:
+[  409.806102] CPU: 45 PID: 9348 Comm: fpgaconf Kdump: loaded Tainted: G            E     5.1.0-rc3.fpga+ #1
+[  409.815658] Hardware name: Intel Corporation S2600BT/S2600BT, BIOS SE5C620.86B.01.00.0763.022420181017 02/24/2018
+[  409.825911] Call Trace:
+[  409.828369]  dump_stack+0x5e/0x8b
+[  409.831686]  __lock_acquire+0xf3d/0x10e0
+[  409.835612]  ? find_held_lock+0x3c/0xa0
+[  409.839451]  lock_acquire+0xbc/0x1d0
+[  409.843030]  ? port_enable_set+0x24/0x60 [dfl_afu]
+[  409.847823]  ? port_enable_set+0x24/0x60 [dfl_afu]
+[  409.852616]  __mutex_lock+0x86/0x970
+[  409.856195]  ? port_enable_set+0x24/0x60 [dfl_afu]
+[  409.860989]  ? port_enable_set+0x24/0x60 [dfl_afu]
+[  409.865777]  ? __mutex_unlock_slowpath+0x4b/0x290
+[  409.870486]  port_enable_set+0x24/0x60 [dfl_afu]
+[  409.875106]  fpga_bridges_disable+0x36/0x50 [fpga_bridge]
+[  409.880502]  fpga_region_program_fpga+0xea/0x200 [fpga_region]
+[  409.886338]  fme_pr_ioctl+0x13e/0x330 [dfl_fme]
+[  409.890870]  fme_ioctl+0x66/0xe0 [dfl_fme]
+[  409.894973]  do_vfs_ioctl+0xa9/0x720
+[  409.898548]  ? lockdep_hardirqs_on+0xf0/0x1a0
+[  409.902907]  ksys_ioctl+0x60/0x90
+[  409.906225]  __x64_sys_ioctl+0x16/0x20
+[  409.909981]  do_syscall_64+0x5a/0x220
+[  409.913644]  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+[  409.918698] RIP: 0033:0x7f9d31b9b8d7
+[  409.922276] Code: 44 00 00 48 8b 05 b9 15 2d 00 64 c7 00 26 00 00 00 48 c7 c0 ff ff ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 b8 10 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 89 15 2d 00 f7 d8 64 89 01 48
+[  409.941020] RSP: 002b:00007ffe4cae0d68 EFLAGS: 00000202 ORIG_RAX: 0000000000000010
+[  409.948588] RAX: ffffffffffffffda RBX: 00007f9d32ade6a0 RCX: 00007f9d31b9b8d7
+[  409.955719] RDX: 00007ffe4cae0df0 RSI: 000000000000b680 RDI: 0000000000000003
+[  409.962852] RBP: 0000000000000003 R08: 00007f9d2b70a177 R09: 00007ffe4cae0e40
+[  409.969984] R10: 00007ffe4cae0160 R11: 0000000000000202 R12: 00007ffe4cae0df0
+[  409.977115] R13: 000000000000b680 R14: 0000000000000000 R15: 00007ffe4cae0f60
 
-We just had a similar huge discussions around the recently merged
-habanalabs driver in drivers/misc, for neural network accel. There was a
-proposed drivers/accel for these. gpu folks objected, Greg and Olof were
-happy with merging.
+Signed-off-by: Scott Wood <swood@redhat.com>
+---
+v2: Removed incorrect "static" from a local variable
 
-And the exact same arguments has come up tons of times for gpus too, with
-lots proposals to merge a kernel driver with just the kernel driver being
-open source, or just the state tracker/runtime, but most definitely not
-anything looking like the compiler. Because $reasons.
+ drivers/fpga/dfl.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-Conclusion was that drivers/gpu people will continue to reject these,
-everyone else will continue to take whatever, but just don't complain to
-us if it all comes crashing down :-)
-
-> Long answer:
-> 
-> - processors, GPU and other digital circuits are designed from a lot of
->   elementary transistors, wires, capacitors, resistors... using some
->   very complex (and expensive) tools from some EDA companies but at the
->   end, after months of work, they come often with a "simple" public
->   interface, the... instruction set! So it is rather "easy" at the end
->   to generate some instructions with a compiler such as LLVM from a
->   description of this ISA or some reverse engineering. Note that even if
->   the ISA is public, it is very difficult to make another efficient
->   processor from scratch just from this ISA, so there is often no
->   concern about making this ISA public to develop the ecosystem ;
-> 
-> - FPGA are field-programmable gate arrays, made also from a lot of
->   elementary transistors, wires, capacitors, resistors... but organized
->   in billions of very low-level elementary gates, memory elements, DSP
->   blocks, I/O blocks, clock generators, specific
->   accelerators... directly exposed to the user and that can be
->   programmed according to a configuration memory (the bitstream) that
->   details how to connect each part, routing element, configuring each
->   elemental piece of hardware.  So instead of just writing instructions
->   like on a CPU or a GPU, you need to configure each bit of the
->   architecture in such a way it does something interesting for
->   you. Concretely, you write some programs in RTL languages (Verilog,
->   VHDL) or higher-level (C/C++, OpenCL, SYCL...)  and you use some very
->   complex (and expensive) tools from some EDA companies to generate the
->   bitstream implementing an equivalent circuit with the same
->   semantics. Since the architecture is so low level, there is a direct
->   mapping between the configuration memory (bitstream) and the hardware
->   architecture itself, so if it is public then it is easy to duplicate
->   the FPGA itself and to start a new FPGA company. That is unfortunately
->   something the existing FPGA companies do not want... ;-)
-
-i.e. you have a use case where you absolutely need an offline compiler.
-Like with gpus (in some use cases), the only difference is that for gpus
-the latency requirement that's too high is measured in milliseconds, cause
-that would cause dropped frames, and worst case compiling takes seconds
-for some big shaders. With FPGAs it's just 1000x higher limits, same problem.
-
-> To summarize:
-> 
-> - on a CPU & GPU, the vendor used the expensive EDA tools once already
->   for you and provide the simpler ISA interface;
-> 
-> - on an FPGA, you have access to a pile of low-level hardware and it is
->   up to you to use the lengthy process of building your own computing
->   architecture using the heavy expensive very subtle EDA tools that will
->   run for hours or days to generate some good-enough placement for your
->   pleasure.
-> 
-> There is some public documentation on-line:
-> https://www.xilinx.com/products/silicon-devices/fpga/virtex-ultrascale-plus.html#documentation
-> 
-> To have an idea of the elementary architecture:
-> https://www.xilinx.com/support/documentation/user_guides/ug574-ultrascale-clb.pdf
-> https://www.xilinx.com/support/documentation/user_guides/ug579-ultrascale-dsp.pdf
-> https://www.xilinx.com/support/documentation/user_guides/ug573-ultrascale-memory-resources.pdf
-> 
-> Even on the configuration and the file format, but without any detailed semantics:
-> https://www.xilinx.com/support/documentation/user_guides/ug570-ultrascale-configuration.pdf
-> 
-> 
-> The Xilinx compiler xocc taking for example some LLVM IR and generating
-> some bitstream is not open-source and will probably never be for the
-> reasons above... :-(
-> 
-> Xilinx is open-sourcing all what can reasonably be open-sourced:
-> 
-> - the user-level and system run-time, including the OpenCL runtime:
->   https://github.com/Xilinx/XRT to handle the bitstreams generated by
->   some close-source tools
-> 
-> - the kernel device drivers which are already in
->   https://github.com/Xilinx/XRT but we want to upstream into the Linux
->   kernel to make life easier (this is the matter of this e-mail thread);
-> 
-> - to generate some real code in the most (modern and) open-source way,
->   there is an open-source framework to compile some SYCL C++ including
->   some Xilinx FPGA-specific extensions down to SPIR LLVM IR using
->   Clang/LLVM and to feed the close-source xocc tool with it
->   https://github.com/triSYCL/triSYCL
-> 
->   You can see starting from
->   https://github.com/triSYCL/triSYCL/blob/master/tests/Makefile#L322 how
->   to start from C++ code, generate some SPIR LLVM IR and to feed xocc
->   and build a fat binary that will use the XRT runtime.
-> 
->   Some documentation in
->   https://github.com/triSYCL/triSYCL/blob/master/doc/architecture.rst
-> 
->   There are other more official ways to generate bitstream (they are
->   called products instead of research projects like triSYCL :-) ).
-> 
->   We are also working on an other open-source SYCL compiler with Intel
->   to have a better common implementation
->   https://github.com/intel/llvm/wiki and to upstream this into Clang/LLVM.
-
-Yeah, there's been plenty of gpu stacks with "everything open sourced that
-can be open sourced", except the compiler, for gpus. We didn't take those
-drivers either.
-
-And I looked at the entire stack already to see what's there and what's
-missing.
-
-> So for Xilinx FPGA, you can see the LLVM IR as the equivalent of PTX for
-> nVidia. But xocc is close-source for some more fundamental reasons: it
-> would expose all the details of the FPGA. I guess this is exactly the
-> same for Xilinx FPGA.
-
-Yeah, neither did we merge a driver with just some IR as the "compiler",
-and most definitely not PTX (since that's just nv lock-in, spirv is the
-cross vendor solution that at least seems to have a fighting chance). We
-want the low level stuff (and if the high level compiler is the dumbest,
-least optimizing thing ever that can't run any real world workload yet,
-that's fine, it can be fixed). The low level stuff is what matters from an
-uapi perspective.
-
-> Note that probably most of the tool chains used to generate the
-> low-level firmware for the various CPU (microcode), GPU, etc. are
-> also close-source.
-
-Yup. None have been successfully used to merge stuff into drivers/gpu.
-
-Note that we're perfectly fine with closed source stacks running on top of
-drivers/gpu, with lots of additional secret sauce/value add/customer lock
-in/whatever compared to the basic open source stack. There's plenty of
-vendors doing that. But for the uapi review, and making sure we can at
-least keep the basic stack working, it needs to be the full open stack.
-End to end.
-
-I guess I need to actually type that article on my blog about why exactly
-we're so much insisting on this, seems to become a bit an FAQ.
-
-Cheers, Daniel
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 2c09e502e721..56dd39dcdcdf 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -40,6 +40,13 @@ enum dfl_fpga_devt_type {
+ 	DFL_FPGA_DEVT_MAX,
+ };
+ 
++static struct lock_class_key dfl_pdata_keys[DFL_ID_MAX];
++
++static const char *dfl_pdata_key_strings[DFL_ID_MAX] = {
++	"dfl-fme-pdata",
++	"dfl-port-pdata",
++};
++
+ /**
+  * dfl_dev_info - dfl feature device information.
+  * @name: name string of the feature platform device.
+@@ -443,11 +450,16 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 	struct platform_device *fdev = binfo->feature_dev;
+ 	struct dfl_feature_platform_data *pdata;
+ 	struct dfl_feature_info *finfo, *p;
++	enum dfl_id_type type;
+ 	int ret, index = 0;
+ 
+ 	if (!fdev)
+ 		return 0;
+ 
++	type = feature_dev_id_type(fdev);
++	if (WARN_ON_ONCE(type >= DFL_ID_MAX))
++		return -EINVAL;
++
+ 	/*
+ 	 * we do not need to care for the memory which is associated with
+ 	 * the platform device. After calling platform_device_unregister(),
+@@ -463,6 +475,8 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 	pdata->num = binfo->feature_num;
+ 	pdata->dfl_cdev = binfo->cdev;
+ 	mutex_init(&pdata->lock);
++	lockdep_set_class_and_name(&pdata->lock, &dfl_pdata_keys[type],
++				   dfl_pdata_key_strings[type]);
+ 
+ 	/*
+ 	 * the count should be initialized to 0 to make sure
+@@ -497,7 +511,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 
+ 	ret = platform_device_add(binfo->feature_dev);
+ 	if (!ret) {
+-		if (feature_dev_id_type(binfo->feature_dev) == PORT_ID)
++		if (type == PORT_ID)
+ 			dfl_fpga_cdev_add_port_dev(binfo->cdev,
+ 						   binfo->feature_dev);
+ 		else
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+1.8.3.1
