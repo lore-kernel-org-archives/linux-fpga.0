@@ -1,79 +1,61 @@
-Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 13/18] fpga: dfl: afu: add STP (SignalTap) support
-Date: Mon, 29 Apr 2019 16:55:46 +0800
-Message-Id: <1556528151-17221-14-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
-References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=mTMr=SR=xilinx.com=navam@kernel.org>
+Return-Path: <SRS0=mTMr=SR=xilinx.com=navam@kernel.org>
+From: Nava kishore Manne <nava.manne@xilinx.com>
+Subject: [PATCH v5 2/3] dt-bindings: fpga: Add bindings for ZynqMP fpga driver
+Date: Mon, 15 Apr 2019 12:47:47 +0530
+Message-ID: <20190415071748.32275-3-nava.manne@xilinx.com>
+In-Reply-To: <20190415071748.32275-1-nava.manne@xilinx.com>
+References: <20190415071748.32275-1-nava.manne@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-STP (SignalTap) is one of the private features under the port for
-debugging. This patch adds private feature driver support for it
-to allow userspace applications to mmap related mmio region and
-provide STP service.
+Add documentation to describe Xilinx ZynqMP fpga driver
+bindings.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/dfl-afu-main.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+Changes for v5:
+		-None.
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 754729e..14970a4 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -518,6 +518,36 @@ static void port_afu_uinit(struct platform_device *pdev,
- 	.uinit = port_afu_uinit,
- };
- 
-+static int port_stp_init(struct platform_device *pdev,
-+			 struct dfl_feature *feature)
-+{
-+	struct resource *res = &pdev->resource[feature->resource_index];
+ .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt   | 25 +++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+
+diff --git a/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+new file mode 100644
+index 000000000000..3052bf619dd5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
+@@ -0,0 +1,25 @@
++Devicetree bindings for Zynq Ultrascale MPSoC FPGA Manager.
++The ZynqMP SoC uses the PCAP (Processor configuration Port) to configure the
++Programmable Logic (PL). The configuration uses  the firmware interface.
 +
-+	dev_dbg(&pdev->dev, "PORT STP Init.\n");
++Required properties:
++- compatible: should contain "xlnx,zynqmp-pcap-fpga"
 +
-+	return afu_mmio_region_add(dev_get_platdata(&pdev->dev),
-+				   DFL_PORT_REGION_INDEX_STP,
-+				   resource_size(res), res->start,
-+				   DFL_PORT_REGION_MMAP | DFL_PORT_REGION_READ |
-+				   DFL_PORT_REGION_WRITE);
-+}
++Example for full FPGA configuration:
 +
-+static void port_stp_uinit(struct platform_device *pdev,
-+			   struct dfl_feature *feature)
-+{
-+	dev_dbg(&pdev->dev, "PORT STP UInit.\n");
-+}
++	fpga-region0 {
++		compatible = "fpga-region";
++		fpga-mgr = <&zynqmp_pcap>;
++		#address-cells = <0x1>;
++		#size-cells = <0x1>;
++	};
 +
-+static const struct dfl_feature_id port_stp_id_table[] = {
-+	{.id = PORT_FEATURE_ID_STP,},
-+	{0,}
-+};
-+
-+static const struct dfl_feature_ops port_stp_ops = {
-+	.init = port_stp_init,
-+	.uinit = port_stp_uinit,
-+};
-+
- static struct dfl_feature_driver port_feature_drvs[] = {
- 	{
- 		.id_table = port_hdr_id_table,
-@@ -532,6 +562,10 @@ static void port_afu_uinit(struct platform_device *pdev,
- 		.ops = &port_err_ops,
- 	},
- 	{
-+		.id_table = port_stp_id_table,
-+		.ops = &port_stp_ops,
-+	},
-+	{
- 		.ops = NULL,
- 	}
- };
++	firmware {
++		zynqmp_firmware: zynqmp-firmware {
++			compatible = "xlnx,zynqmp-firmware";
++			method = "smc";
++			zynqmp_pcap: pcap {
++				compatible = "xlnx,zynqmp-pcap-fpga";
++			};
++		};
++	};
 -- 
-1.8.3.1
+2.18.0
