@@ -1,42 +1,22 @@
-Return-Path: <hao.wu@intel.com>
-Date: Wed, 17 Apr 2019 15:31:41 +0800
-From: Wu Hao <hao.wu@intel.com>
-Subject: Re: [PATCH 15/17] fpga: dfl: fme: add power management support
-Message-ID: <20190417073141.GA23258@hao-dev>
-References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
- <1553483264-5379-16-git-send-email-hao.wu@intel.com>
- <CANk1AXTji9qm0Nfbme+2=nR-PNavnv__GwzDRazhH78hYkWN6g@mail.gmail.com>
- <CAJYdmeOMm0xTRbKTS68M4uiHJLfphPXNo+eFYguda+SuwnkqmQ@mail.gmail.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJYdmeOMm0xTRbKTS68M4uiHJLfphPXNo+eFYguda+SuwnkqmQ@mail.gmail.com>
-To: Moritz Fischer <moritz.fischer.private@gmail.com>
-Cc: Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
+References: <1553483264-5379-1-git-send-email-hao.wu@intel.com>
+ <1553483264-5379-16-git-send-email-hao.wu@intel.com> <CANk1AXTji9qm0Nfbme+2=nR-PNavnv__GwzDRazhH78hYkWN6g@mail.gmail.com>
+ <20190412025019.GA27997@hao-dev>
+In-Reply-To: <20190412025019.GA27997@hao-dev>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 15 Apr 2019 16:17:48 -0500
+Message-ID: <CANk1AXRv+2cv1sJTyHD3ajgHVvda7y7t6DVvw47vAnTp4KF0yw@mail.gmail.com>
+Subject: Re: [PATCH 15/17] fpga: dfl: fme: add power management support
+Content-Type: text/plain; charset="UTF-8"
+To: Wu Hao <hao.wu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Fri, Apr 12, 2019 at 02:05:21PM -0700, Moritz Fischer wrote:
-> Hi Hao,
-> 
-> this looks suspiciously like a hwmon driver ;-)
-> 
-> https://www.kernel.org/doc/Documentation/hwmon/hwmon-kernel-api.txt
-
-Hi Moritz,
-
-Thanks a lot for the suggestion, yes, agree, and patch for thermal
-management should be the similar case too. Let me see if i can make
-thermal / power management code to hwmon in the next version. : )
-
-Hao
-
-> 
-> Cheers,
-> Moritz
-> 
-> 
-> On Thu, Apr 11, 2019 at 1:08 PM Alan Tull <atull@kernel.org> wrote:
-> >
+On Thu, Apr 11, 2019 at 10:06 PM Wu Hao <hao.wu@intel.com> wrote:
+>
+> On Thu, Apr 11, 2019 at 03:07:35PM -0500, Alan Tull wrote:
 > > On Sun, Mar 24, 2019 at 10:24 PM Wu Hao <hao.wu@intel.com> wrote:
 > >
 > > Hi Hao,
@@ -50,6 +30,9 @@ Hao
 > > How about
 > > s/number/measurement/
 > > ?
+>
+> Sounds better. : )
+>
 > >
 > > > thresholds, threshold status and other information, and configure
 > > > different value for throttling thresholds too.
@@ -119,6 +102,9 @@ Hao
 > > > +               threshold2, otherwise 0.
 > >
 > > Same here.
+>
+> Sure, will fix all above comments in this sysfs doc.
+>
 > >
 > > > +
 > > > +What:          /sys/bus/platform/devices/dfl-fme.0/power_mgmt/ltr
@@ -131,6 +117,18 @@ Hao
 > >
 > > If we're not on the integrated solution, it returns a value but it is
 > > not really real?
+>
+> Currently only integrated solution is implementing this private feature, other
+> devices e.g. Intel PAC card is not using this private feature, so user will
+> not see these sysfs interfaces at all.
+
+OK then perhaps the "it's only valid for integrated solution as it
+blocks CPU on low power state" explanation doesn't need to be here and
+can lead to confusion.
+
+>
+> If in the future, other devices want
+>
 > >
 > > > +
 > > > +What:          /sys/bus/platform/devices/dfl-fme.0/power_mgmt/xeon_limit
@@ -183,6 +181,13 @@ Hao
 > > > +       POWER_ATTR(_name, 0644, _show, _store)
 > >
 > > Are these #defines necessary?  Seems like you could just use DEVICE_ATTR*
+>
+> Actually it adds a prefix power_attr_xxx there to avoid name conflicts with
+> other ones from different private features, e.g. for the thermal threshold.
+
+Ah yes, I see it now, thanks.
+
+>
 > >
 > > > +
 > > > +static ssize_t pwr_consumed_show(struct device *dev,
@@ -384,6 +389,9 @@ Hao
 > > This is a nit, but I would expect to see these listed in the same
 > > order as their show/store functions above.  So ltr_attr would come
 > > between threshold2_status_attr and xeon_limit_attr.
+>
+> Sure, it does make sense.
+>
 > >
 > > > +       NULL,
 > > > +};
@@ -432,6 +440,11 @@ Hao
 > > > --
 > > > 2.7.4
 > > >
+>
+> Thanks a lot for the review and comments. :)
+>
+> Hao
+>
 > >
 > > Thanks,
 > > Alan
