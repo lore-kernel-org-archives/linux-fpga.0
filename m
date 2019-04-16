@@ -1,123 +1,155 @@
-Return-Path: <SRS0=XueN=SE=oracle.com=daniel.m.jordan@kernel.org>
-Return-Path: <SRS0=XueN=SE=oracle.com=daniel.m.jordan@kernel.org>
-From: Daniel Jordan <daniel.m.jordan@oracle.com>
-Subject: [PATCH 4/6] fpga/dlf/afu: drop mmap_sem now that locked_vm is atomic
-Date: Tue,  2 Apr 2019 16:41:56 -0400
-Message-Id: <20190402204158.27582-5-daniel.m.jordan@oracle.com>
-In-Reply-To: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
-References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+Return-Path: <SRS0=2aEQ=SS=bombadil.infradead.org=mchehab@kernel.org>
+Return-Path: <SRS0=2aEQ=SS=bombadil.infradead.org=mchehab@kernel.org>
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Subject: [PATCH 14/57] docs: fpga: convert it to ReST
+Date: Mon, 15 Apr 2019 23:55:39 -0300
+Message-Id: <b66aa91ff5b9b3477d21094d3111c1006c59bd42.1555382110.git.mchehab+samsung@kernel.org>
+In-Reply-To: <cover.1555382110.git.mchehab+samsung@kernel.org>
+References: <cover.1555382110.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-To: akpm@linux-foundation.org
-Cc: daniel.m.jordan@oracle.com, Alan Tull <atull@kernel.org>, Christoph Lameter <cl@linux.com>, Davidlohr Bueso <dave@stgolabs.net>, Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>, linux-mm@kvack.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Sender: Mauro Carvalho Chehab <mchehab@bombadil.infradead.org>
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-With locked_vm now an atomic, there is no need to take mmap_sem as
-writer.  Delete and refactor accordingly.
+The dfl.txt file is almost there. It needs just a few
+adjustments to be properly parsed.
 
-Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Cc: Alan Tull <atull@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux.com>
-Cc: Davidlohr Bueso <dave@stgolabs.net>
-Cc: Moritz Fischer <mdf@kernel.org>
-Cc: Wu Hao <hao.wu@intel.com>
-Cc: <linux-mm@kvack.org>
-Cc: <linux-fpga@vger.kernel.org>
-Cc: <linux-kernel@vger.kernel.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 ---
- drivers/fpga/dfl-afu-dma-region.c | 40 ++++++++++++-------------------
- 1 file changed, 15 insertions(+), 25 deletions(-)
+ Documentation/fpga/dfl.txt | 58 +++++++++++++++++++++-----------------
+ 1 file changed, 32 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index 08132fd9b6b7..81e3e3a71758 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -35,46 +35,36 @@ void afu_dma_region_init(struct dfl_feature_platform_data *pdata)
-  * afu_dma_adjust_locked_vm - adjust locked memory
-  * @dev: port device
-  * @npages: number of pages
-- * @incr: increase or decrease locked memory
-  *
-  * Increase or decrease the locked memory size with npages input.
-  *
-  * Return 0 on success.
-  * Return -ENOMEM if locked memory size is over the limit and no CAP_IPC_LOCK.
-  */
--static int afu_dma_adjust_locked_vm(struct device *dev, long npages, bool incr)
-+static int afu_dma_adjust_locked_vm(struct device *dev, long pages)
- {
--	unsigned long locked, lock_limit;
-+	unsigned long lock_limit;
- 	s64 locked_vm;
- 	int ret = 0;
+diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
+index 6df4621c3f2a..2f125abd777f 100644
+--- a/Documentation/fpga/dfl.txt
++++ b/Documentation/fpga/dfl.txt
+@@ -1,9 +1,12 @@
+-===============================================================================
+-              FPGA Device Feature List (DFL) Framework Overview
+--------------------------------------------------------------------------------
+-                Enno Luebbers <enno.luebbers@intel.com>
+-                Xiao Guangrong <guangrong.xiao@linux.intel.com>
+-                Wu Hao <hao.wu@intel.com>
++=================================================
++FPGA Device Feature List (DFL) Framework Overview
++=================================================
++
++Authors:
++
++- Enno Luebbers <enno.luebbers@intel.com>
++- Xiao Guangrong <guangrong.xiao@linux.intel.com>
++- Wu Hao <hao.wu@intel.com>
  
- 	/* the task is exiting. */
--	if (!current->mm)
-+	if (!current->mm || !pages)
- 		return 0;
+ The Device Feature List (DFL) FPGA framework (and drivers according to this
+ this framework) hides the very details of low layer hardwares and provides
+@@ -19,7 +22,7 @@ Device Feature List (DFL) defines a linked list of feature headers within the
+ device MMIO space to provide an extensible way of adding features. Software can
+ walk through these predefined data structures to enumerate FPGA features:
+ FPGA Interface Unit (FIU), Accelerated Function Unit (AFU) and Private Features,
+-as illustrated below:
++as illustrated below::
  
--	down_write(&current->mm->mmap_sem);
--
--	locked_vm = atomic64_read(&current->mm->locked_vm);
--	if (incr) {
--		locked = locked_vm + npages;
-+	locked_vm = atomic64_add_return(pages, &current->mm->locked_vm);
-+	WARN_ON_ONCE(locked_vm < 0);
-+	if (pages > 0 && !capable(CAP_IPC_LOCK)) {
- 		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		if (locked_vm > lock_limit) {
- 			ret = -ENOMEM;
--		else
--			atomic64_add(npages, &current->mm->locked_vm);
--	} else {
--		if (WARN_ON_ONCE(npages > locked_vm))
--			npages = locked_vm;
--		atomic64_sub(npages, &current->mm->locked_vm);
-+			atomic64_sub(pages, &current->mm->locked_vm);
-+		}
- 	}
+     Header            Header            Header            Header
+  +----------+  +-->+----------+  +-->+----------+  +-->+----------+
+@@ -81,9 +84,9 @@ and release it using close().
  
- 	dev_dbg(dev, "[%d] RLIMIT_MEMLOCK %c%ld %lld/%lu%s\n", current->pid,
--		incr ? '+' : '-', npages << PAGE_SHIFT,
--		(s64)atomic64_read(&current->mm->locked_vm) << PAGE_SHIFT,
--		rlimit(RLIMIT_MEMLOCK), ret ? "- exceeded" : "");
--
--	up_write(&current->mm->mmap_sem);
-+		(pages > 0) ? '+' : '-', pages << PAGE_SHIFT,
-+		locked_vm << PAGE_SHIFT, rlimit(RLIMIT_MEMLOCK),
-+		ret ? "- exceeded" : "");
+ The following functions are exposed through ioctls:
  
- 	return ret;
- }
-@@ -94,7 +84,7 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
- 	struct device *dev = &pdata->dev->dev;
- 	int ret, pinned;
+- Get driver API version (DFL_FPGA_GET_API_VERSION)
+- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
+- Program bitstream (DFL_FPGA_FME_PORT_PR)
++- Get driver API version (DFL_FPGA_GET_API_VERSION)
++- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
++- Program bitstream (DFL_FPGA_FME_PORT_PR)
  
--	ret = afu_dma_adjust_locked_vm(dev, npages, true);
-+	ret = afu_dma_adjust_locked_vm(dev, npages);
- 	if (ret)
- 		return ret;
+ More functions are exposed through sysfs
+ (/sys/class/fpga_region/regionX/dfl-fme.n/):
+@@ -118,18 +121,19 @@ port by using open() on the port device node and release it using close().
  
-@@ -123,7 +113,7 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
- free_pages:
- 	kfree(region->pages);
- unlock_vm:
--	afu_dma_adjust_locked_vm(dev, npages, false);
-+	afu_dma_adjust_locked_vm(dev, -npages);
- 	return ret;
- }
+ The following functions are exposed through ioctls:
  
-@@ -143,7 +133,7 @@ static void afu_dma_unpin_pages(struct dfl_feature_platform_data *pdata,
+- Get driver API version (DFL_FPGA_GET_API_VERSION)
+- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
+- Get port info (DFL_FPGA_PORT_GET_INFO)
+- Get MMIO region info (DFL_FPGA_PORT_GET_REGION_INFO)
+- Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
+- Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
+- Reset AFU (*DFL_FPGA_PORT_RESET)
++- Get driver API version (DFL_FPGA_GET_API_VERSION)
++- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
++- Get port info (DFL_FPGA_PORT_GET_INFO)
++- Get MMIO region info (DFL_FPGA_PORT_GET_REGION_INFO)
++- Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
++- Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
++- Reset AFU (DFL_FPGA_PORT_RESET)
  
- 	put_all_pages(region->pages, npages);
- 	kfree(region->pages);
--	afu_dma_adjust_locked_vm(dev, npages, false);
-+	afu_dma_adjust_locked_vm(dev, -npages);
+-*DFL_FPGA_PORT_RESET: reset the FPGA Port and its AFU. Userspace can do Port
+-reset at any time, e.g. during DMA or Partial Reconfiguration. But it should
+-never cause any system level issue, only functional failure (e.g. DMA or PR
+-operation failure) and be recoverable from the failure.
++DFL_FPGA_PORT_RESET:
++  reset the FPGA Port and its AFU. Userspace can do Port
++  reset at any time, e.g. during DMA or Partial Reconfiguration. But it should
++  never cause any system level issue, only functional failure (e.g. DMA or PR
++  operation failure) and be recoverable from the failure.
  
- 	dev_dbg(dev, "%ld pages unpinned\n", npages);
- }
+ User-space applications can also mmap() accelerator MMIO regions.
+ 
+@@ -143,6 +147,8 @@ More functions are exposed through sysfs:
+ DFL Framework Overview
+ ======================
+ 
++::
++
+          +----------+    +--------+ +--------+ +--------+
+          |   FME    |    |  AFU   | |  AFU   | |  AFU   |
+          |  Module  |    | Module | | Module | | Module |
+@@ -151,7 +157,7 @@ DFL Framework Overview
+                  | FPGA Container Device |    Device Feature List
+                  |  (FPGA Base Region)   |         Framework
+                  +-----------------------+
+---------------------------------------------------------------------
++  ------------------------------------------------------------------
+                +----------------------------+
+                |   FPGA DFL Device Module   |
+                | (e.g. PCIE/Platform Device)|
+@@ -220,7 +226,7 @@ the sysfs hierarchy under /sys/class/fpga_region.
+ In the example below, two DFL based FPGA devices are installed in the host. Each
+ fpga device has one FME and two ports (AFUs).
+ 
+-FPGA regions are created under /sys/class/fpga_region/
++FPGA regions are created under /sys/class/fpga_region/::
+ 
+ 	/sys/class/fpga_region/region0
+ 	/sys/class/fpga_region/region1
+@@ -231,7 +237,7 @@ Application needs to search each regionX folder, if feature device is found,
+ (e.g. "dfl-port.n" or "dfl-fme.m" is found), then it's the base
+ fpga region which represents the FPGA device.
+ 
+-Each base region has one FME and two ports (AFUs) as child devices:
++Each base region has one FME and two ports (AFUs) as child devices::
+ 
+ 	/sys/class/fpga_region/region0/dfl-fme.0
+ 	/sys/class/fpga_region/region0/dfl-port.0
+@@ -243,7 +249,7 @@ Each base region has one FME and two ports (AFUs) as child devices:
+ 	/sys/class/fpga_region/region3/dfl-port.3
+ 	...
+ 
+-In general, the FME/AFU sysfs interfaces are named as follows:
++In general, the FME/AFU sysfs interfaces are named as follows::
+ 
+ 	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/
+ 	/sys/class/fpga_region/<regionX>/<dfl-port.m>/
+@@ -251,7 +257,7 @@ In general, the FME/AFU sysfs interfaces are named as follows:
+ with 'n' consecutively numbering all FMEs and 'm' consecutively numbering all
+ ports.
+ 
+-The device nodes used for ioctl() or mmap() can be referenced through:
++The device nodes used for ioctl() or mmap() can be referenced through::
+ 
+ 	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/dev
+ 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
 -- 
-2.21.0
+2.20.1
