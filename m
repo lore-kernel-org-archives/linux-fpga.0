@@ -1,40 +1,97 @@
-Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 01/18] fpga: dfl-fme-mgr: fix FME_PR_INTFC_ID register address.
-Date: Mon, 29 Apr 2019 16:55:34 +0800
-Message-Id: <1556528151-17221-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
-References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>
+Return-Path: <SRS0=vsqP=SU=zte.com.cn=wen.yang99@kernel.org>
+Return-Path: <SRS0=vsqP=SU=zte.com.cn=wen.yang99@kernel.org>
+Date: Thu, 18 Apr 2019 09:54:25 +0800 (CST)
+Message-ID: <201904180954254089819@zte.com.cn>
+In-Reply-To: <1eba0edb8cc1b7136aac218cdb6696f92d8dbf20.camel@suse.de>
+References: 1555469093-35179-1-git-send-email-wen.yang99@zte.com.cn,1eba0edb8cc1b7136aac218cdb6696f92d8dbf20.camel@suse.de
+Mime-Version: 1.0
+From: <wen.yang99@zte.com.cn>
+Subject: =?UTF-8?B?UmU6IFtQQVRDSCAzLzNdIGZpcm13YXJlOiBzdHJhdGl4MTAtc3ZjOiBmaXggbGVha2VkIG9mX25vZGVyZWZlcmVuY2Vz?=
+Content-Type: multipart/mixed;
+	boundary="=====_001_next====="
+To: nsaenzjulienne@suse.de
+Cc: linux-kernel@vger.kernel.org, wang.yi59@zte.com.cn, gregkh@linuxfoundation.org, atull@kernel.org, richard.gong@intel.com, mdf@kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-FME_PR_INTFC_ID is used as compat_id for fpga manager and region,
-but high 64 bits and low 64 bits of the compat_id are swapped by
-mistake. This patch fixes this problem by fixing register address.
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
- drivers/fpga/dfl-fme-mgr.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
-index 76f3770..b3f7eee 100644
---- a/drivers/fpga/dfl-fme-mgr.c
-+++ b/drivers/fpga/dfl-fme-mgr.c
-@@ -30,8 +30,8 @@
- #define FME_PR_STS		0x10
- #define FME_PR_DATA		0x18
- #define FME_PR_ERR		0x20
--#define FME_PR_INTFC_ID_H	0xA8
--#define FME_PR_INTFC_ID_L	0xB0
-+#define FME_PR_INTFC_ID_L	0xA8
-+#define FME_PR_INTFC_ID_H	0xB0
- 
- /* FME PR Control Register Bitfield */
- #define FME_PR_CTRL_PR_RST	BIT_ULL(0)  /* Reset PR engine */
--- 
-1.8.3.1
+--=====_001_next=====
+Content-Type: multipart/alternative;
+	boundary="=====_003_next====="
+
+
+--=====_003_next=====
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: base64
+
+SGkgTmljb2xhcywgCgo+ID4gSW4gc3RyYXRpeDEwX3N2Y19pbml0IGZ1bmN0aW9uLCBmd19ucCBp
+cyBvYnRhaW5lZCBieSBjYWxsaW5nCj4gPiBvZl9maW5kX25vZGVfYnlfbmFtZSgpLCBucCBpcyBv
+YnRhaW5lZCBieSBjYWxsaW5nCj4gPiBvZl9maW5kX21hdGNoaW5nX25vZGUoKSwgYW5kIHRoZSBy
+ZWZlcmVuY2UgY291bnRzIG9mIHRob3NlCj4gPiB0d28gZGV2aWNlX25vZGVzLCBmd19ucCBhbmQg
+bnAsIGFyZSBpbmNyZWFzZWQuCj4gPiBCdXQgd2hlbiB0aGUgZnVuY3Rpb24gZXhpdHMsIG9ubHkg
+b2Zfbm9kZV9wdXQgaXMgY2FsbGVkIG9uIG5wLAo+ID4gYW5kIGZ3X25wJ3MgcmVmZXJlbmNlIGNv
+dW50IGlzIGxlYWtlZC4KPiA+Cj4gPiBEZXRlY3RlZCBieSBjb2NjaW5lbGxlIHdpdGggdGhlIGZv
+bGxvd2luZyB3YXJuaW5nczoKPiA+IC4vZHJpdmVycy9maXJtd2FyZS9zdHJhdGl4MTAtc3ZjLmM6
+MTAyMDoyLTg6IEVSUk9SOiBtaXNzaW5nIG9mX25vZGVfcHV0Owo+ID4gYWNxdWlyZWQgYSBub2Rl
+IHBvaW50ZXIgd2l0aCByZWZjb3VudCBpbmNyZW1lbnRlZCBvbiBsaW5lIDEwMTQsIGJ1dCB3aXRo
+b3V0IGEKPiA+IGNvcnJlc3BvbmRpbmcgb2JqZWN0IHJlbGVhc2Ugd2l0aGluIHRoaXMgZnVuY3Rp
+b24uCj4gPiAuL2RyaXZlcnMvZmlybXdhcmUvc3RyYXRpeDEwLXN2Yy5jOjEwMjU6Mi04OiBFUlJP
+UjogbWlzc2luZyBvZl9ub2RlX3B1dDsKPiA+IGFjcXVpcmVkIGEgbm9kZSBwb2ludGVyIHdpdGgg
+cmVmY291bnQgaW5jcmVtZW50ZWQgb24gbGluZSAxMDE0LCBidXQgd2l0aG91dCBhCj4gPiBjb3Jy
+ZXNwb25kaW5nIG9iamVjdCByZWxlYXNlIHdpdGhpbiB0aGlzIGZ1bmN0aW9uLgo+ID4gLi9kcml2
+ZXJzL2Zpcm13YXJlL3N0cmF0aXgxMC1zdmMuYzoxMDI3OjEtNzogRVJST1I6IG1pc3Npbmcgb2Zf
+bm9kZV9wdXQ7Cj4gPiBhY3F1aXJlZCBhIG5vZGUgcG9pbnRlciB3aXRoIHJlZmNvdW50IGluY3Jl
+bWVudGVkIG9uIGxpbmUgMTAxNCwgYnV0IHdpdGhvdXQgYQo+ID4gY29ycmVzcG9uZGluZyBvYmpl
+Y3QgcmVsZWFzZSB3aXRoaW4gdGhpcyBmdW5jdGlvbi4KPiA+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBX
+ZW4gWWFuZyA8d2VuLnlhbmc5OUB6dGUuY29tLmNuPgo+ID4gQ2M6IEdyZWcgS3JvYWgtSGFydG1h
+biA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+Cj4gPiBDYzogQWxhbiBUdWxsIDxhdHVsbEBr
+ZXJuZWwub3JnPgo+ID4gQ2M6IFJpY2hhcmQgR29uZyA8cmljaGFyZC5nb25nQGludGVsLmNvbT4K
+PiA+IENjOiBOaWNvbGFzIFNhZW56IEp1bGllbm5lIDxuc2FlbnpqdWxpZW5uZUBzdXNlLmRlPgo+
+ID4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcKPiA+IC0tLQo+ID4gIGRyaXZlcnMv
+ZmlybXdhcmUvc3RyYXRpeDEwLXN2Yy5jIHwgMTQgKysrKysrKysrKy0tLS0KPiA+ICAxIGZpbGUg
+Y2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkKPiA+Cj4gPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9maXJtd2FyZS9zdHJhdGl4MTAtc3ZjLmMgYi9kcml2ZXJzL2Zpcm13YXJl
+L3N0cmF0aXgxMC0KPiA+IHN2Yy5jCj4gPiBpbmRleCA2ZTY1MTQ4Li40ODJhNmJkIDEwMDY0NAo+
+ID4gLS0tIGEvZHJpdmVycy9maXJtd2FyZS9zdHJhdGl4MTAtc3ZjLmMKPiA+ICsrKyBiL2RyaXZl
+cnMvZmlybXdhcmUvc3RyYXRpeDEwLXN2Yy5jCj4gPiBAQCAtMTAxNiwxNSArMTAxNiwyMSBAQCBz
+dGF0aWMgaW50IF9faW5pdCBzdHJhdGl4MTBfc3ZjX2luaXQodm9pZCkKPiA+ICAgICAgICAgIHJl
+dHVybiAtRU5PREVWOwo+ID4KPiA+ICAgICAgbnAgPSBvZl9maW5kX21hdGNoaW5nX25vZGUoZndf
+bnAsIHN0cmF0aXgxMF9zdmNfZHJ2X21hdGNoKTsKPiAKPiBTb3JyeSBidXQgdGhpcyBwYXRjaCBp
+c24ndCByaWdodCwgb2ZfZmluZF9tYXRjaGluZ19ub2RlKCkgd2lsbCBmcmVlIHRoZQo+IHJlZmVy
+ZW5jZSB0byBmd19ucCBpbnRlcm5hbGx5Lgo+IAo+ID4gLSAgICBpZiAoIW5wKQo+ID4gLSAgICAg
+ICAgcmV0dXJuIC1FTk9ERVY7Cj4gPiArICAgIGlmICghbnApIHsKPiA+ICsgICAgICAgIHJldCA9
+IC1FTk9ERVY7Cj4gPiArICAgICAgICBnb3RvIG91dF9wdXRfZndfbnA7Cj4gPiArICAgIH0KPiA+
+Cj4gPiAgICAgIG9mX25vZGVfcHV0KG5wKTsKPiA+ICAgICAgcmV0ID0gb2ZfcGxhdGZvcm1fcG9w
+dWxhdGUoZndfbnAsIHN0cmF0aXgxMF9zdmNfZHJ2X21hdGNoLCBOVUxMLCBOVUxMKTsKPiA+ICAg
+ICAgaWYgKHJldCkKPiA+IC0gICAgICAgIHJldHVybiByZXQ7Cj4gPiArICAgICAgICBnb3RvIG91
+dF9wdXRfZndfbnA7Cj4gCj4gQ29uc2VxdWVudGx5IGFuZCBhc3N1bWluZyBJJ20gbm90IG1pc3Np
+bmcgc29tZXRoaW5nLCBJIHRoaW5rIGZ3X25wIHNob3VsZG4ndCBiZQo+IHVzZWQgaGVyZSBhcyBp
+cy4KCk9rLCB0aGFuayB5b3UgdmVyeSBtdWNoIGZvciB5b3VyIGNvbW1lbnRzLgpvZl9maW5kX21h
+dGNoaW5nX25vZGUoKSB3aWxsIGluZGVlZCBmcmVlIHRoZSByZWZlcmVuY2UgdG8gZndfbnAgaW50
+ZXJuYWxseS4KV2Ugd2lsbCBjb250aW51ZSB0byBpbXByb3ZlIHRoZSBTbVBMIHJ1bGVzIGJhc2Vk
+IG9uIHlvdXIgY29tbWVudHMuCgpJbiBhZGRpdGlvbiwgd2UgYWxzbyBjaGVja2VkIGl0IGZ1cnRo
+ZXIgYW5kIGZvdW5kIHRoYXQgdGhpcyBjb21taXQgbWF5IGhhdmUgYSBwcm9ibGVtOgozMmE2NjM3
+NDQ4N2IgKCJmcGdhOiBzdHJhdGl4MTAtc29jOiBmaXggd3Jvbmcgb2Zfbm9kZV9wdXQoKSBpbiBp
+bml0IGZ1bmN0aW9uIikKCmRyaXZlcnMvZnBnYS9zdHJhdGl4MTAtc29jLmMKNTAwIHN0YXRpYyBp
+bnQgX19pbml0IHMxMF9pbml0KHZvaWQpCjUwMSB7CjUwMiAgICAgICAgIHN0cnVjdCBkZXZpY2Vf
+bm9kZSAqZndfbnA7CjUwMyAgICAgICAgIHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CjUwNCAgICAg
+ICAgIGludCByZXQ7CjUwNSAKNTA2ICAgICAgICAgZndfbnAgPSBvZl9maW5kX25vZGVfYnlfbmFt
+ZShOVUxMLCAic3ZjIik7CjUwNyAgICAgICAgIGlmICghZndfbnApCjUwOCAgICAgICAgICAgICAg
+ICAgcmV0dXJuIC1FTk9ERVY7CjUwOSAKNTEwICAgICAgICAgbnAgPSBvZl9maW5kX21hdGNoaW5n
+X25vZGUoZndfbnAsIHMxMF9vZl9tYXRjaCk7ICAtLT5md19ucCByZWxlYXNlZCBoZXJlCjUxMSAg
+ICAgICAgIGlmICghbnApCjUxMiAgICAgICAgICAgICAgICAgcmV0dXJuIC1FTk9ERVY7CjUxMyAK
+NTE0ICAgICAgICAgb2Zfbm9kZV9wdXQobnApOwo1MTUgICAgICAgICByZXQgPSBvZl9wbGF0Zm9y
+bV9wb3B1bGF0ZShmd19ucCwgczEwX29mX21hdGNoLCBOVUxMLCBOVUxMKTsgICAtLT5md19ucCBz
+aG91bGRuJ3QgYmUgdXNlZCBoZXJlCjUxNiAgICAgICAgIGlmIChyZXQpCjUxNyAgICAgICAgICAg
+ICAgICAgcmV0dXJuIHJldDsKNTE4IAo1MTkgICAgICAgICByZXR1cm4gcGxhdGZvcm1fZHJpdmVy
+X3JlZ2lzdGVyKCZzMTBfZHJpdmVyKTsKNTIwIH0KCldlIHBsYW4gdG8gYWRkIHN1Y2ggU21QTCBy
+dWxlcyB0byBmdXJ0aGVyIGNoZWNrIHRoZSBjdXJyZW50IGtlcm5lbCBjb2RlOgphZnRlciBvZl9m
+aW5kX21hdGNoaW5nX25vZGUobm9kZSwgLi4uKSwgb2Zfbm9kZV9wdXQobm9kZSkgc2hvdWxkIG5v
+dCBiZSBjYWxsZWQsCmFuZCAibm9kZSIgc2hvdWxkIG5vdCBiZSB1c2VkICh1bmxlc3MgdGhlcmUg
+aXMgYW4gZXh0cmEgb2Zfbm9kZV9nZXQpLgoKLS0KQmVzdCB3aXNoZXMsCldlbg==
+
+
+--=====_003_next=====--
+
+--=====_001_next=====--
