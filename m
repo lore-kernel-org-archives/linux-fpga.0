@@ -1,227 +1,208 @@
-Return-Path: <SRS0=mTMr=SR=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=mTMr=SR=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v5 3/3] fpga manager: Adding FPGA Manager support for Xilinx zynqmp
-Date: Mon, 15 Apr 2019 12:47:48 +0530
-Message-ID: <20190415071748.32275-4-nava.manne@xilinx.com>
-In-Reply-To: <20190415071748.32275-1-nava.manne@xilinx.com>
-References: <20190415071748.32275-1-nava.manne@xilinx.com>
+Return-Path: <SRS0=L+kc=SY=bombadil.infradead.org=mchehab@kernel.org>
+Return-Path: <SRS0=L+kc=SY=bombadil.infradead.org=mchehab@kernel.org>
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Subject: [PATCH v2 14/79] docs: fpga: convert docs to ReST and rename to *.rst
+Date: Mon, 22 Apr 2019 10:27:03 -0300
+Message-Id: <902793a6738ce31b384e71cfeca27a9b9080000d.1555938376.git.mchehab+samsung@kernel.org>
+In-Reply-To: <cover.1555938375.git.mchehab+samsung@kernel.org>
+References: <cover.1555938375.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Content-Transfer-Encoding: 8bit
+Sender: Mauro Carvalho Chehab <mchehab@bombadil.infradead.org>
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds FPGA Manager support for the Xilinx
-ZynqMP chip.
+The dfl.txt file is almost there. It needs just a few
+adjustments to be properly parsed.
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
-Reviewed-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
+The conversion is actually:
+  - add blank lines and identation in order to identify paragraphs;
+  - fix tables markups;
+  - add some lists markups;
+  - mark literal blocks;
+  - adjust title markups.
+
+At its new index.rst, let's add a :orphan: while this is not linked to
+the main index.rst file, in order to avoid build warnings.
+
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 ---
-Changes for v5:
-		-Removed hardcoded  macro values and used BIT(x)
-		 as suggested by Moritz.
+ Documentation/fpga/{dfl.txt => dfl.rst} | 58 ++++++++++++++-----------
+ Documentation/fpga/index.rst            | 17 ++++++++
+ MAINTAINERS                             |  2 +-
+ 3 files changed, 50 insertions(+), 27 deletions(-)
+ rename Documentation/fpga/{dfl.txt => dfl.rst} (89%)
+ create mode 100644 Documentation/fpga/index.rst
 
- drivers/fpga/Kconfig       |   9 +++
- drivers/fpga/Makefile      |   1 +
- drivers/fpga/zynqmp-fpga.c | 159 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 169 insertions(+)
- create mode 100644 drivers/fpga/zynqmp-fpga.c
-
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index c20445b867ae..d892f3efcd76 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -204,4 +204,13 @@ config FPGA_DFL_PCI
- 
- 	  To compile this as a module, choose M here.
- 
-+config FPGA_MGR_ZYNQMP_FPGA
-+	tristate "Xilinx ZynqMP FPGA"
-+	depends on ARCH_ZYNQMP || COMPILE_TEST
-+	help
-+	  FPGA manager driver support for Xilinx ZynqMP FPGAs.
-+	  This driver uses the processor configuration port(PCAP)
-+	  to configure the programmable logic(PL) through PS
-+	  on ZynqMP SoC.
+diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.rst
+similarity index 89%
+rename from Documentation/fpga/dfl.txt
+rename to Documentation/fpga/dfl.rst
+index 6df4621c3f2a..2f125abd777f 100644
+--- a/Documentation/fpga/dfl.txt
++++ b/Documentation/fpga/dfl.rst
+@@ -1,9 +1,12 @@
+-===============================================================================
+-              FPGA Device Feature List (DFL) Framework Overview
+--------------------------------------------------------------------------------
+-                Enno Luebbers <enno.luebbers@intel.com>
+-                Xiao Guangrong <guangrong.xiao@linux.intel.com>
+-                Wu Hao <hao.wu@intel.com>
++=================================================
++FPGA Device Feature List (DFL) Framework Overview
++=================================================
 +
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index c0dd4c82fbdb..312b9371742f 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -17,6 +17,7 @@ obj-$(CONFIG_FPGA_MGR_STRATIX10_SOC)	+= stratix10-soc.o
- obj-$(CONFIG_FPGA_MGR_TS73XX)		+= ts73xx-fpga.o
- obj-$(CONFIG_FPGA_MGR_XILINX_SPI)	+= xilinx-spi.o
- obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+= zynq-fpga.o
-+obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+= zynqmp-fpga.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE)         += altera-pr-ip-core.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)    += altera-pr-ip-core-plat.o
++Authors:
++
++- Enno Luebbers <enno.luebbers@intel.com>
++- Xiao Guangrong <guangrong.xiao@linux.intel.com>
++- Wu Hao <hao.wu@intel.com>
  
-diff --git a/drivers/fpga/zynqmp-fpga.c b/drivers/fpga/zynqmp-fpga.c
+ The Device Feature List (DFL) FPGA framework (and drivers according to this
+ this framework) hides the very details of low layer hardwares and provides
+@@ -19,7 +22,7 @@ Device Feature List (DFL) defines a linked list of feature headers within the
+ device MMIO space to provide an extensible way of adding features. Software can
+ walk through these predefined data structures to enumerate FPGA features:
+ FPGA Interface Unit (FIU), Accelerated Function Unit (AFU) and Private Features,
+-as illustrated below:
++as illustrated below::
+ 
+     Header            Header            Header            Header
+  +----------+  +-->+----------+  +-->+----------+  +-->+----------+
+@@ -81,9 +84,9 @@ and release it using close().
+ 
+ The following functions are exposed through ioctls:
+ 
+- Get driver API version (DFL_FPGA_GET_API_VERSION)
+- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
+- Program bitstream (DFL_FPGA_FME_PORT_PR)
++- Get driver API version (DFL_FPGA_GET_API_VERSION)
++- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
++- Program bitstream (DFL_FPGA_FME_PORT_PR)
+ 
+ More functions are exposed through sysfs
+ (/sys/class/fpga_region/regionX/dfl-fme.n/):
+@@ -118,18 +121,19 @@ port by using open() on the port device node and release it using close().
+ 
+ The following functions are exposed through ioctls:
+ 
+- Get driver API version (DFL_FPGA_GET_API_VERSION)
+- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
+- Get port info (DFL_FPGA_PORT_GET_INFO)
+- Get MMIO region info (DFL_FPGA_PORT_GET_REGION_INFO)
+- Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
+- Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
+- Reset AFU (*DFL_FPGA_PORT_RESET)
++- Get driver API version (DFL_FPGA_GET_API_VERSION)
++- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
++- Get port info (DFL_FPGA_PORT_GET_INFO)
++- Get MMIO region info (DFL_FPGA_PORT_GET_REGION_INFO)
++- Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
++- Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
++- Reset AFU (DFL_FPGA_PORT_RESET)
+ 
+-*DFL_FPGA_PORT_RESET: reset the FPGA Port and its AFU. Userspace can do Port
+-reset at any time, e.g. during DMA or Partial Reconfiguration. But it should
+-never cause any system level issue, only functional failure (e.g. DMA or PR
+-operation failure) and be recoverable from the failure.
++DFL_FPGA_PORT_RESET:
++  reset the FPGA Port and its AFU. Userspace can do Port
++  reset at any time, e.g. during DMA or Partial Reconfiguration. But it should
++  never cause any system level issue, only functional failure (e.g. DMA or PR
++  operation failure) and be recoverable from the failure.
+ 
+ User-space applications can also mmap() accelerator MMIO regions.
+ 
+@@ -143,6 +147,8 @@ More functions are exposed through sysfs:
+ DFL Framework Overview
+ ======================
+ 
++::
++
+          +----------+    +--------+ +--------+ +--------+
+          |   FME    |    |  AFU   | |  AFU   | |  AFU   |
+          |  Module  |    | Module | | Module | | Module |
+@@ -151,7 +157,7 @@ DFL Framework Overview
+                  | FPGA Container Device |    Device Feature List
+                  |  (FPGA Base Region)   |         Framework
+                  +-----------------------+
+---------------------------------------------------------------------
++  ------------------------------------------------------------------
+                +----------------------------+
+                |   FPGA DFL Device Module   |
+                | (e.g. PCIE/Platform Device)|
+@@ -220,7 +226,7 @@ the sysfs hierarchy under /sys/class/fpga_region.
+ In the example below, two DFL based FPGA devices are installed in the host. Each
+ fpga device has one FME and two ports (AFUs).
+ 
+-FPGA regions are created under /sys/class/fpga_region/
++FPGA regions are created under /sys/class/fpga_region/::
+ 
+ 	/sys/class/fpga_region/region0
+ 	/sys/class/fpga_region/region1
+@@ -231,7 +237,7 @@ Application needs to search each regionX folder, if feature device is found,
+ (e.g. "dfl-port.n" or "dfl-fme.m" is found), then it's the base
+ fpga region which represents the FPGA device.
+ 
+-Each base region has one FME and two ports (AFUs) as child devices:
++Each base region has one FME and two ports (AFUs) as child devices::
+ 
+ 	/sys/class/fpga_region/region0/dfl-fme.0
+ 	/sys/class/fpga_region/region0/dfl-port.0
+@@ -243,7 +249,7 @@ Each base region has one FME and two ports (AFUs) as child devices:
+ 	/sys/class/fpga_region/region3/dfl-port.3
+ 	...
+ 
+-In general, the FME/AFU sysfs interfaces are named as follows:
++In general, the FME/AFU sysfs interfaces are named as follows::
+ 
+ 	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/
+ 	/sys/class/fpga_region/<regionX>/<dfl-port.m>/
+@@ -251,7 +257,7 @@ In general, the FME/AFU sysfs interfaces are named as follows:
+ with 'n' consecutively numbering all FMEs and 'm' consecutively numbering all
+ ports.
+ 
+-The device nodes used for ioctl() or mmap() can be referenced through:
++The device nodes used for ioctl() or mmap() can be referenced through::
+ 
+ 	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/dev
+ 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
+diff --git a/Documentation/fpga/index.rst b/Documentation/fpga/index.rst
 new file mode 100644
-index 000000000000..f7cbaadf49ab
+index 000000000000..2c87d1ea084f
 --- /dev/null
-+++ b/drivers/fpga/zynqmp-fpga.c
-@@ -0,0 +1,159 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (C) 2019 Xilinx, Inc.
-+ */
++++ b/Documentation/fpga/index.rst
+@@ -0,0 +1,17 @@
++:orphan:
 +
-+#include <linux/dma-mapping.h>
-+#include <linux/fpga/fpga-mgr.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/string.h>
-+#include <linux/firmware/xlnx-zynqmp.h>
++====
++fpga
++====
 +
-+/* Constant Definitions */
-+#define IXR_FPGA_DONE_MASK	BIT(3)
++.. toctree::
++    :maxdepth: 1
 +
-+/**
-+ * struct zynqmp_fpga_priv - Private data structure
-+ * @dev:	Device data structure
-+ * @flags:	flags which is used to identify the bitfile type
-+ */
-+struct zynqmp_fpga_priv {
-+	struct device *dev;
-+	u32 flags;
-+};
++    dfl
 +
-+static int zynqmp_fpga_ops_write_init(struct fpga_manager *mgr,
-+				      struct fpga_image_info *info,
-+				      const char *buf, size_t size)
-+{
-+	struct zynqmp_fpga_priv *priv;
++.. only::  subproject and html
 +
-+	priv = mgr->priv;
-+	priv->flags = info->flags;
++   Indices
++   =======
 +
-+	return 0;
-+}
-+
-+static int zynqmp_fpga_ops_write(struct fpga_manager *mgr,
-+				 const char *buf, size_t size)
-+{
-+	const struct zynqmp_eemi_ops *eemi_ops = zynqmp_pm_get_eemi_ops();
-+	struct zynqmp_fpga_priv *priv;
-+	dma_addr_t dma_addr;
-+	u32 eemi_flags = 0;
-+	char *kbuf;
-+	int ret;
-+
-+	if (!eemi_ops || !eemi_ops->fpga_load)
-+		return -ENXIO;
-+
-+	priv = mgr->priv;
-+
-+	kbuf = dma_alloc_coherent(priv->dev, size, &dma_addr, GFP_KERNEL);
-+	if (!kbuf)
-+		return -ENOMEM;
-+
-+	memcpy(kbuf, buf, size);
-+
-+	wmb(); /* ensure all writes are done before initiate FW call */
-+
-+	if (priv->flags & FPGA_MGR_PARTIAL_RECONFIG)
-+		eemi_flags |= XILINX_ZYNQMP_PM_FPGA_PARTIAL;
-+
-+	ret = eemi_ops->fpga_load(dma_addr, size, eemi_flags);
-+
-+	dma_free_coherent(priv->dev, size, kbuf, dma_addr);
-+
-+	return ret;
-+}
-+
-+static int zynqmp_fpga_ops_write_complete(struct fpga_manager *mgr,
-+					  struct fpga_image_info *info)
-+{
-+	return 0;
-+}
-+
-+static enum fpga_mgr_states zynqmp_fpga_ops_state(struct fpga_manager *mgr)
-+{
-+	const struct zynqmp_eemi_ops *eemi_ops = zynqmp_pm_get_eemi_ops();
-+	u32 status;
-+
-+	if (!eemi_ops || !eemi_ops->fpga_get_status)
-+		return FPGA_MGR_STATE_UNKNOWN;
-+
-+	eemi_ops->fpga_get_status(&status);
-+	if (status & IXR_FPGA_DONE_MASK)
-+		return FPGA_MGR_STATE_OPERATING;
-+
-+	return FPGA_MGR_STATE_UNKNOWN;
-+}
-+
-+static const struct fpga_manager_ops zynqmp_fpga_ops = {
-+	.state = zynqmp_fpga_ops_state,
-+	.write_init = zynqmp_fpga_ops_write_init,
-+	.write = zynqmp_fpga_ops_write,
-+	.write_complete = zynqmp_fpga_ops_write_complete,
-+};
-+
-+static int zynqmp_fpga_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct zynqmp_fpga_priv *priv;
-+	struct fpga_manager *mgr;
-+	int ret;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->dev = dev;
-+
-+	mgr = devm_fpga_mgr_create(dev, "Xilinx ZynqMP FPGA Manager",
-+				   &zynqmp_fpga_ops, priv);
-+	if (!mgr)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, mgr);
-+
-+	ret = fpga_mgr_register(mgr);
-+	if (ret) {
-+		dev_err(dev, "unable to register FPGA manager");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int zynqmp_fpga_remove(struct platform_device *pdev)
-+{
-+	struct fpga_manager *mgr = platform_get_drvdata(pdev);
-+
-+	fpga_mgr_unregister(mgr);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id zynqmp_fpga_of_match[] = {
-+	{ .compatible = "xlnx,zynqmp-pcap-fpga", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, zynqmp_fpga_of_match);
-+
-+static struct platform_driver zynqmp_fpga_driver = {
-+	.probe = zynqmp_fpga_probe,
-+	.remove = zynqmp_fpga_remove,
-+	.driver = {
-+		.name = "zynqmp_fpga_manager",
-+		.of_match_table = of_match_ptr(zynqmp_fpga_of_match),
-+	},
-+};
-+
-+module_platform_driver(zynqmp_fpga_driver);
-+
-+MODULE_AUTHOR("Nava kishore Manne <navam@xilinx.com>");
-+MODULE_DESCRIPTION("Xilinx ZynqMp FPGA Manager");
-+MODULE_LICENSE("GPL");
++   * :ref:`genindex`
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fac4490d2a00..3dd988519a11 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6186,7 +6186,7 @@ FPGA DFL DRIVERS
+ M:	Wu Hao <hao.wu@intel.com>
+ L:	linux-fpga@vger.kernel.org
+ S:	Maintained
+-F:	Documentation/fpga/dfl.txt
++F:	Documentation/fpga/dfl.rst
+ F:	include/uapi/linux/fpga-dfl.h
+ F:	drivers/fpga/dfl*
+ 
 -- 
-2.18.0
+2.20.1
