@@ -1,38 +1,32 @@
-Return-Path: <SRS0=CwsY=SE=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=CwsY=SE=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:60183 "EHLO mga02.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726078AbfDBWQT (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 2 Apr 2019 18:16:19 -0400
-From: richard.gong@linux.intel.com
-Subject: [PATCHv1] fpga: mgr: add FPGA configuration log
-Date: Tue,  2 Apr 2019 17:25:43 -0500
-Message-Id: <1554243943-25507-1-git-send-email-richard.gong@linux.intel.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: atull@kernel.org, mdf@kernel.org
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, richard.gong@linux.intel.com, Richard Gong <richard.gong@intel.com>
+Return-Path: <SRS0=Dhza=SY=oracle.com=daniel.m.jordan@kernel.org>
+Return-Path: <SRS0=Dhza=SY=oracle.com=daniel.m.jordan@kernel.org>
+Date: Mon, 22 Apr 2019 11:54:37 -0400
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+Subject: Re: [PATCH 1/6] mm: change locked_vm's type from unsigned long to
+ atomic64_t
+Message-ID: <20190422155437.qppyxcbfql34ginr@ca-dmjordan1.us.oracle.com>
+References: <20190402204158.27582-1-daniel.m.jordan@oracle.com>
+ <20190402204158.27582-2-daniel.m.jordan@oracle.com>
+ <614ea07a-dd1e-2561-b6f4-2d698bf55f5b@ozlabs.ru>
+ <20190411095543.GA55197@lakrids.cambridge.arm.com>
+ <20190411202807.q2fge33uoduhtehq@ca-dmjordan1.us.oracle.com>
+ <20190416163351.5e4e075ddfad0677239fc23a@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190416163351.5e4e075ddfad0677239fc23a@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Daniel Jordan <daniel.m.jordan@oracle.com>, Mark Rutland <mark.rutland@arm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>, Alan Tull <atull@kernel.org>, Alex Williamson <alex.williamson@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christoph Lameter <cl@linux.com>, Davidlohr Bueso <dave@stgolabs.net>, Michael Ellerman <mpe@ellerman.id.au>, Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@ozlabs.org>, Wu Hao <hao.wu@intel.com>, linux-mm@kvack.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+On Tue, Apr 16, 2019 at 04:33:51PM -0700, Andrew Morton wrote:
 
-Add a log for user to know FPGA configuration is successful
+Sorry for the delay, I was on vacation all last week.
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
----
- drivers/fpga/fpga-mgr.c | 1 +
- 1 file changed, 1 insertion(+)
+> What's the status of this patchset, btw?
+> 
+> I have a note here that
+> powerpc-mmu-drop-mmap_sem-now-that-locked_vm-is-atomic.patch is to be
+> updated.
 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index c386681..559e046 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -151,6 +151,7 @@ static int fpga_mgr_write_complete(struct fpga_manager *mgr,
- 	}
- 	mgr->state = FPGA_MGR_STATE_OPERATING;
- 
-+	dev_info(&mgr->dev, "Successfully programming FPGA\n");
- 	return 0;
- }
- 
--- 
-2.7.4
+Yes, the series needs a few updates.  v2 should appear in the next day or two.
