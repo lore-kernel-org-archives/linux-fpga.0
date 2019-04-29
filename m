@@ -1,364 +1,571 @@
 Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 15/18] fpga: dfl: fme: add thermal management support
-Date: Mon, 29 Apr 2019 16:55:48 +0800
-Message-Id: <1556528151-17221-16-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v2 17/18] fpga: dfl: fme: add global error reporting support
+Date: Mon, 29 Apr 2019 16:55:50 +0800
+Message-Id: <1556528151-17221-18-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
 References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Russ Weight <russell.h.weight@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds support to thermal management private feature for DFL
-FPGA Management Engine (FME). This private feature driver registers
-a hwmon for thermal/temperature monitoring (hwmon temp1_input).
-If hardware automatic throttling is supported by this hardware, then
-driver also exposes sysfs interfaces under hwmon for thresholds
-(temp1_alarm/ crit/ emergency), threshold status (temp1_alarm_status/
-temp1_crit_status) and throttling policy (temp1_alarm_policy).
+This patch adds support for global error reporting for FPGA
+Management Engine (FME), it introduces sysfs interfaces to
+report different error detected by the hardware, and allow
+user to clear errors or inject error for testing purpose.
 
 Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 ---
-v2: create a dfl_fme_thermal hwmon to expose thermal information.
-    move all sysfs interfaces under hwmon
-	tempareture       --> hwmon temp1_input
-	threshold1        --> hwmon temp1_alarm
-	threshold2        --> hwmon temp1_crit
-	trip_threshold    --> hwmon temp1_emergency
-	threshold1_status --> hwmon temp1_alarm_status
-	threshold2_status --> hwmon temp1_crit_status
-	threshold1_policy --> hwmon temp1_alarm_policy
+v2: fix issues found in sysfs doc.
+    fix returned error code issues for writable sysfs interfaces.
+    (use -EINVAL if input doesn't match error code)
+    reorder the sysfs groups in code.
 ---
- Documentation/ABI/testing/sysfs-platform-dfl-fme |  64 +++++++
- drivers/fpga/Kconfig                             |   2 +-
- drivers/fpga/dfl-fme-main.c                      | 212 +++++++++++++++++++++++
- 3 files changed, 277 insertions(+), 1 deletion(-)
+ Documentation/ABI/testing/sysfs-platform-dfl-fme |  75 +++++
+ drivers/fpga/Makefile                            |   2 +-
+ drivers/fpga/dfl-fme-error.c                     | 385 +++++++++++++++++++++++
+ drivers/fpga/dfl-fme-main.c                      |   4 +
+ drivers/fpga/dfl-fme.h                           |   2 +
+ drivers/fpga/dfl.h                               |   2 +
+ 6 files changed, 469 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/fpga/dfl-fme-error.c
 
 diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-index d1aa375..dfbd315 100644
+index e2ba92d..503984b 100644
 --- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
 +++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-@@ -44,3 +44,67 @@ Description:	Read-only. It returns socket_id to indicate which socket
- 		this FPGA belongs to, only valid for integrated solution.
- 		User only needs this information, in case standard numa node
- 		can't provide correct information.
+@@ -175,3 +175,78 @@ Contact:	Wu Hao <hao.wu@intel.com>
+ Description:	Read-only. Read this file to get current Latency Tolerance
+ 		Reporting (ltr) value. This ltr impacts the CPU low power
+ 		state in integrated solution.
 +
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/name
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/revision
 +Date:		April 2019
 +KernelVersion:	5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Only. Read this file to get the name of hwmon device, it
-+		supports values:
-+		    'dfl_fme_thermal' - thermal hwmon device name
++Description:	Read-only. Read this file to get the revision of this global
++		error reporting private feature.
 +
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_input
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/pcie0_errors
 +Date:		April 2019
-+KernelVersion:	5.2
++KernelVersion:  5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Only. It returns FPGA device temperature in millidegrees
-+		Celsius.
++Description:	Read-Write. Read this file for errors detected on pcie0 link.
++		Write this file to clear errors logged in pcie0_errors. Write
++		fails with -EINVAL if input parsing fails or input error code
++		doesn't match.
 +
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_alarm
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/pcie1_errors
 +Date:		April 2019
-+KernelVersion:	5.2
++KernelVersion:  5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Only. It returns hardware threshold1 temperature in
-+		millidegrees Celsius. If temperature rises at or above this
-+		threshold, hardware starts 50% or 90% throttling (see
-+		'temp1_alarm_policy').
++Description:	Read-Write. Read this file for errors detected on pcie1 link.
++		Write this file to clear errors logged in pcie1_errors. Write
++		fails with -EINVAL if input parsing fails or input error code
++		doesn't match.
 +
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_crit
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/nonfatal_errors
 +Date:		April 2019
-+KernelVersion:	5.2
++KernelVersion:  5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Only. It returns hardware threshold2 temperature in
-+		millidegrees Celsius. If temperature rises at or above this
-+		threshold, hardware starts 100% throttling.
++Description:	Read-only. It returns non-fatal errors detected.
 +
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_emergency
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/catfatal_errors
 +Date:		April 2019
-+KernelVersion:	5.2
++KernelVersion:  5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Only. It returns hardware trip threshold temperature in
-+		millidegrees Celsius. If temperature rises at or above this
-+		threshold, a fatal event will be triggered to board management
-+		controller (BMC) to shutdown FPGA.
++Description:	Read-only. It returns catastrophic and fatal errors detected.
 +
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_alarm_status
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/inject_error
 +Date:		April 2019
-+KernelVersion:	5.2
++KernelVersion:  5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns 1 if temperature is currently at or above
-+		hardware threshold1 (see 'temp1_alarm'), otherwise 0.
++Description:	Read-Write. Read this file to check errors injected. Write this
++		file to inject errors for testing purpose. Write fails with
++		-EINVAL if input parsing fails or input inject error code isn't
++		supported.
 +
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_crit_status
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme-errors/errors
 +Date:		April 2019
-+KernelVersion:	5.2
++KernelVersion:  5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns 1 if temperature is currently at or above
-+		hardware threshold2 (see 'temp1_crit'), otherwise 0.
++Description:	Read-only. Read this file to get errors detected by hardware.
 +
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_alarm_policy
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme-errors/first_error
 +Date:		April 2019
-+KernelVersion:	5.2
++KernelVersion:  5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Only. Read this file to get the policy of hardware threshold1
-+		(see 'temp1_alarm'). It only supports two values (policies):
-+		    0 - AP2 state (90% throttling)
-+		    1 - AP1 state (50% throttling)
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index c20445b..a6d7588 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -154,7 +154,7 @@ config FPGA_DFL
++Description:	Read-only. Read this file to get the first error detected by
++		hardware.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme-errors/next_error
++Date:		April 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. Read this file to get the second error detected by
++		hardware.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme-errors/clear
++Date:		April 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Write-only. Write error code to this file to clear all errors
++		logged in errors, first_error and next_error. Write fails with
++		-EINVAL if input parsing fails or input error code doesn't
++		match.
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index f1f0af7..1a9fa3d 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -38,7 +38,7 @@ obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= dfl-fme-br.o
+ obj-$(CONFIG_FPGA_DFL_FME_REGION)	+= dfl-fme-region.o
+ obj-$(CONFIG_FPGA_DFL_AFU)		+= dfl-afu.o
  
- config FPGA_DFL_FME
- 	tristate "FPGA DFL FME Driver"
--	depends on FPGA_DFL
-+	depends on FPGA_DFL && HWMON
- 	help
- 	  The FPGA Management Engine (FME) is a feature device implemented
- 	  under Device Feature List (DFL) framework. Select this option to
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 8339ee8..b9a68b8 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -14,6 +14,8 @@
-  *   Henry Mitchel <henry.mitchel@intel.com>
-  */
+-dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
++dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o dfl-fme-error.o
+ dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
+ dfl-afu-objs += dfl-afu-error.o
  
-+#include <linux/hwmon.h>
-+#include <linux/hwmon-sysfs.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/uaccess.h>
-@@ -217,6 +219,212 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
- 	.ioctl = fme_hdr_ioctl,
- };
- 
-+#define FME_THERM_THRESHOLD	0x8
-+#define TEMP_THRESHOLD1		GENMASK_ULL(6, 0)
-+#define TEMP_THRESHOLD1_EN	BIT_ULL(7)
-+#define TEMP_THRESHOLD2		GENMASK_ULL(14, 8)
-+#define TEMP_THRESHOLD2_EN	BIT_ULL(15)
-+#define TRIP_THRESHOLD		GENMASK_ULL(30, 24)
-+#define TEMP_THRESHOLD1_STATUS	BIT_ULL(32)		/* threshold1 reached */
-+#define TEMP_THRESHOLD2_STATUS	BIT_ULL(33)		/* threshold2 reached */
-+/* threshold1 policy: 0 - AP2 (90% throttle) / 1 - AP1 (50% throttle) */
-+#define TEMP_THRESHOLD1_POLICY	BIT_ULL(44)
+diff --git a/drivers/fpga/dfl-fme-error.c b/drivers/fpga/dfl-fme-error.c
+new file mode 100644
+index 0000000..772b53e
+--- /dev/null
++++ b/drivers/fpga/dfl-fme-error.c
+@@ -0,0 +1,385 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Driver for FPGA Management Engine Error Management
++ *
++ * Copyright 2019 Intel Corporation, Inc.
++ *
++ * Authors:
++ *   Kang Luwei <luwei.kang@intel.com>
++ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
++ *   Wu Hao <hao.wu@intel.com>
++ *   Joseph Grecco <joe.grecco@intel.com>
++ *   Enno Luebbers <enno.luebbers@intel.com>
++ *   Tim Whisonant <tim.whisonant@intel.com>
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Mitchel, Henry <henry.mitchel@intel.com>
++ */
 +
-+#define FME_THERM_RDSENSOR_FMT1	0x10
-+#define FPGA_TEMPERATURE	GENMASK_ULL(6, 0)
++#include <linux/uaccess.h>
 +
-+#define FME_THERM_CAP		0x20
-+#define THERM_NO_THROTTLE	BIT_ULL(0)
++#include "dfl.h"
++#include "dfl-fme.h"
 +
-+#define MD_PRE_DEG
++#define FME_ERROR_MASK		0x8
++#define FME_ERROR		0x10
++#define MBP_ERROR		BIT_ULL(6)
++#define PCIE0_ERROR_MASK	0x18
++#define PCIE0_ERROR		0x20
++#define PCIE1_ERROR_MASK	0x28
++#define PCIE1_ERROR		0x30
++#define FME_FIRST_ERROR		0x38
++#define FME_NEXT_ERROR		0x40
++#define RAS_NONFAT_ERROR_MASK	0x48
++#define RAS_NONFAT_ERROR	0x50
++#define RAS_CATFAT_ERROR_MASK	0x58
++#define RAS_CATFAT_ERROR	0x60
++#define RAS_ERROR_INJECT	0x68
++#define INJECT_ERROR_MASK	GENMASK_ULL(2, 0)
 +
-+static bool fme_thermal_throttle_support(void __iomem *base)
++static ssize_t revision_show(struct device *dev, struct device_attribute *attr,
++			     char *buf)
 +{
-+	u64 v = readq(base + FME_THERM_CAP);
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
 +
-+	return FIELD_GET(THERM_NO_THROTTLE, v) ? false : true;
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n", dfl_feature_revision(base));
++}
++static DEVICE_ATTR_RO(revision);
++
++static ssize_t pcie0_errors_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
++			 (unsigned long long)readq(base + PCIE0_ERROR));
 +}
 +
-+static umode_t thermal_hwmon_attrs_visible(const void *drvdata,
-+					   enum hwmon_sensor_types type,
-+					   u32 attr, int channel)
++static ssize_t pcie0_errors_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf, size_t count)
 +{
-+	const struct dfl_feature *feature = drvdata;
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++	int ret = 0;
++	u64 v, val;
 +
-+	/* temperature is always supported, and check hardware cap for others */
-+	if (attr == hwmon_temp_input)
-+		return 0444;
++	if (kstrtou64(buf, 0, &val))
++		return -EINVAL;
 +
-+	return fme_thermal_throttle_support(feature->ioaddr) ? 0444 : 0;
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	mutex_lock(&pdata->lock);
++	writeq(GENMASK_ULL(63, 0), base + PCIE0_ERROR_MASK);
++
++	v = readq(base + PCIE0_ERROR);
++	if (val == v)
++		writeq(v, base + PCIE0_ERROR);
++	else
++		ret = -EINVAL;
++
++	writeq(0ULL, base + PCIE0_ERROR_MASK);
++	mutex_unlock(&pdata->lock);
++	return ret ? ret : count;
++}
++static DEVICE_ATTR_RW(pcie0_errors);
++
++static ssize_t pcie1_errors_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
++			 (unsigned long long)readq(base + PCIE1_ERROR));
 +}
 +
-+static int thermal_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
-+			      u32 attr, int channel, long *val)
++static ssize_t pcie1_errors_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf, size_t count)
 +{
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++	int ret = 0;
++	u64 v, val;
++
++	if (kstrtou64(buf, 0, &val))
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	mutex_lock(&pdata->lock);
++	writeq(GENMASK_ULL(63, 0), base + PCIE1_ERROR_MASK);
++
++	v = readq(base + PCIE1_ERROR);
++	if (val == v)
++		writeq(v, base + PCIE1_ERROR);
++	else
++		ret = -EINVAL;
++
++	writeq(0ULL, base + PCIE1_ERROR_MASK);
++	mutex_unlock(&pdata->lock);
++	return ret ? ret : count;
++}
++static DEVICE_ATTR_RW(pcie1_errors);
++
++static ssize_t nonfatal_errors_show(struct device *dev,
++				    struct device_attribute *attr, char *buf)
++{
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
++			 (unsigned long long)readq(base + RAS_NONFAT_ERROR));
++}
++static DEVICE_ATTR_RO(nonfatal_errors);
++
++static ssize_t catfatal_errors_show(struct device *dev,
++				    struct device_attribute *attr, char *buf)
++{
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
++			 (unsigned long long)readq(base + RAS_CATFAT_ERROR));
++}
++static DEVICE_ATTR_RO(catfatal_errors);
++
++static ssize_t inject_error_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
 +	u64 v;
 +
-+	switch (attr) {
-+	case hwmon_temp_input:
-+		v = readq(feature->ioaddr + FME_THERM_RDSENSOR_FMT1);
-+		*val = (long)(FIELD_GET(FPGA_TEMPERATURE, v) * 1000);
-+		break;
-+	case hwmon_temp_alarm:
-+		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-+		*val = (long)(FIELD_GET(TEMP_THRESHOLD1, v) * 1000);
-+		break;
-+	case hwmon_temp_crit:
-+		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-+		*val = (long)(FIELD_GET(TEMP_THRESHOLD2, v) * 1000);
-+		break;
-+	case hwmon_temp_emergency:
-+		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-+		*val = (long)(FIELD_GET(TRIP_THRESHOLD, v) * 1000);
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
 +
-+	return 0;
++	v = readq(base + RAS_ERROR_INJECT);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
++			 (unsigned long long)FIELD_GET(INJECT_ERROR_MASK, v));
 +}
 +
-+static const struct hwmon_ops thermal_hwmon_ops = {
-+	.is_visible = thermal_hwmon_attrs_visible,
-+	.read = thermal_hwmon_read,
-+};
-+
-+static const u32 thermal_hwmon_temp_config[] = {
-+	HWMON_T_INPUT | HWMON_T_ALARM | HWMON_T_CRIT | HWMON_T_EMERGENCY,
-+	0
-+};
-+
-+static const struct hwmon_channel_info hwmon_temp_info = {
-+	.type = hwmon_temp,
-+	.config = thermal_hwmon_temp_config,
-+};
-+
-+static const struct hwmon_channel_info *thermal_hwmon_info[] = {
-+	&hwmon_temp_info,
-+	NULL
-+};
-+
-+static const struct hwmon_chip_info thermal_hwmon_chip_info = {
-+	.ops = &thermal_hwmon_ops,
-+	.info = thermal_hwmon_info,
-+};
-+
-+static ssize_t temp1_alarm_status_show(struct device *dev,
-+				       struct device_attribute *attr, char *buf)
++static ssize_t inject_error_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf, size_t count)
 +{
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++	u8 inject_error;
 +	u64 v;
 +
-+	v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
++	if (kstrtou8(buf, 0, &inject_error))
++		return -EINVAL;
 +
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(TEMP_THRESHOLD1_STATUS, v));
++	if (inject_error & ~INJECT_ERROR_MASK)
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + RAS_ERROR_INJECT);
++	v &= ~INJECT_ERROR_MASK;
++	v |= FIELD_PREP(INJECT_ERROR_MASK, inject_error);
++	writeq(v, base + RAS_ERROR_INJECT);
++	mutex_unlock(&pdata->lock);
++
++	return count;
 +}
++static DEVICE_ATTR_RW(inject_error);
 +
-+static ssize_t temp1_crit_status_show(struct device *dev,
-+				      struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
-+	u64 v;
-+
-+	v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(TEMP_THRESHOLD2_STATUS, v));
-+}
-+
-+static ssize_t temp1_alarm_policy_show(struct device *dev,
-+				       struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
-+	u64 v;
-+
-+	v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 (unsigned int)FIELD_GET(TEMP_THRESHOLD1_POLICY, v));
-+}
-+
-+static DEVICE_ATTR_RO(temp1_alarm_status);
-+static DEVICE_ATTR_RO(temp1_crit_status);
-+static DEVICE_ATTR_RO(temp1_alarm_policy);
-+
-+static struct attribute *thermal_extra_attrs[] = {
-+	&dev_attr_temp1_alarm_status.attr,
-+	&dev_attr_temp1_crit_status.attr,
-+	&dev_attr_temp1_alarm_policy.attr,
++static struct attribute *errors_attrs[] = {
++	&dev_attr_revision.attr,
++	&dev_attr_pcie0_errors.attr,
++	&dev_attr_pcie1_errors.attr,
++	&dev_attr_nonfatal_errors.attr,
++	&dev_attr_catfatal_errors.attr,
++	&dev_attr_inject_error.attr,
 +	NULL,
 +};
 +
-+static umode_t thermal_extra_attrs_visible(struct kobject *kobj,
-+					   struct attribute *attr, int index)
-+{
-+	struct device *dev = kobj_to_dev(kobj);
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
-+
-+	return fme_thermal_throttle_support(feature->ioaddr) ? attr->mode : 0;
-+}
-+
-+static const struct attribute_group thermal_extra_group = {
-+	.attrs		= thermal_extra_attrs,
-+	.is_visible	= thermal_extra_attrs_visible,
++static struct attribute_group errors_attr_group = {
++	.attrs	= errors_attrs,
 +};
-+__ATTRIBUTE_GROUPS(thermal_extra);
 +
-+static int fme_thermal_mgmt_init(struct platform_device *pdev,
-+				 struct dfl_feature *feature)
++static ssize_t errors_show(struct device *dev,
++			   struct device_attribute *attr, char *buf)
 +{
-+	struct device *hwmon;
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
 +
-+	dev_dbg(&pdev->dev, "FME Thermal Management Init.\n");
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
 +
-+	/*
-+	 * create hwmon to allow userspace monitoring temperature and other
-+	 * threshold information.
-+	 *
-+	 * temp1_alarm     -> hardware threshold 1 -> 50% or 90% throttling
-+	 * temp1_crit      -> hardware threshold 2 -> 100% throttling
-+	 * temp1_emergency -> hardware trip_threshold to shutdown FPGA
-+	 *
-+	 * create device specific sysfs interfaces, e.g. read temp1_alarm_policy
-+	 * to understand the actual hardware throttling action (50% vs 90%).
-+	 *
-+	 * If hardware doesn't support automatic throttling per thresholds,
-+	 * then all above sysfs interfaces are not visible except temp1_input
-+	 * for temperature.
-+	 */
-+	hwmon = devm_hwmon_device_register_with_info(&pdev->dev,
-+						     "dfl_fme_thermal", feature,
-+						     &thermal_hwmon_chip_info,
-+						     thermal_extra_groups);
-+	if (IS_ERR(hwmon)) {
-+		dev_err(&pdev->dev, "Fail to register thermal hwmon\n");
-+		return PTR_ERR(hwmon);
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
++			 (unsigned long long)readq(base + FME_ERROR));
++}
++static DEVICE_ATTR_RO(errors);
++
++static ssize_t first_error_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
++			 (unsigned long long)readq(base + FME_FIRST_ERROR));
++}
++static DEVICE_ATTR_RO(first_error);
++
++static ssize_t next_error_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	return scnprintf(buf, PAGE_SIZE, "0x%llx\n",
++			 (unsigned long long)readq(base + FME_NEXT_ERROR));
++}
++static DEVICE_ATTR_RO(next_error);
++
++static ssize_t clear_store(struct device *dev, struct device_attribute *attr,
++			   const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
++	struct device *err_dev = dev->parent;
++	void __iomem *base;
++	u64 v, val;
++	int ret = 0;
++
++	if (kstrtou64(buf, 0, &val))
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(err_dev, FME_FEATURE_ID_GLOBAL_ERR);
++
++	mutex_lock(&pdata->lock);
++	writeq(GENMASK_ULL(63, 0), base + FME_ERROR_MASK);
++
++	v = readq(base + FME_ERROR);
++	if (val == v) {
++		writeq(v, base + FME_ERROR);
++		v = readq(base + FME_FIRST_ERROR);
++		writeq(v, base + FME_FIRST_ERROR);
++		v = readq(base + FME_NEXT_ERROR);
++		writeq(v, base + FME_NEXT_ERROR);
++	} else {
++		ret = -EINVAL;
 +	}
 +
-+	return 0;
++	/* Workaround: disable MBP_ERROR if feature revision is 0 */
++	writeq(dfl_feature_revision(base) ? 0ULL : MBP_ERROR,
++	       base + FME_ERROR_MASK);
++	mutex_unlock(&pdata->lock);
++	return ret ? ret : count;
 +}
++static DEVICE_ATTR_WO(clear);
 +
-+static void fme_thermal_mgmt_uinit(struct platform_device *pdev,
-+				   struct dfl_feature *feature)
++static struct attribute *fme_errors_attrs[] = {
++	&dev_attr_errors.attr,
++	&dev_attr_first_error.attr,
++	&dev_attr_next_error.attr,
++	&dev_attr_clear.attr,
++	NULL,
++};
++
++static struct attribute_group fme_errors_attr_group = {
++	.attrs	= fme_errors_attrs,
++	.name	= "fme-errors",
++};
++
++static const struct attribute_group *error_groups[] = {
++	&fme_errors_attr_group,
++	&errors_attr_group,
++	NULL
++};
++
++static void fme_error_enable(struct dfl_feature *feature)
 +{
-+	dev_dbg(&pdev->dev, "FME Thermal Management UInit.\n");
++	void __iomem *base = feature->ioaddr;
++
++	/* Workaround: disable MBP_ERROR if revision is 0 */
++	writeq(dfl_feature_revision(feature->ioaddr) ? 0ULL : MBP_ERROR,
++	       base + FME_ERROR_MASK);
++	writeq(0ULL, base + PCIE0_ERROR_MASK);
++	writeq(0ULL, base + PCIE1_ERROR_MASK);
++	writeq(0ULL, base + RAS_NONFAT_ERROR_MASK);
++	writeq(0ULL, base + RAS_CATFAT_ERROR_MASK);
 +}
 +
-+static const struct dfl_feature_id fme_thermal_mgmt_id_table[] = {
-+	{.id = FME_FEATURE_ID_THERMAL_MGMT,},
++static void err_dev_release(struct device *dev)
++{
++	kfree(dev);
++}
++
++static int fme_global_err_init(struct platform_device *pdev,
++			       struct dfl_feature *feature)
++{
++	struct device *dev;
++	int ret = 0;
++
++	dev_dbg(&pdev->dev, "FME Global Error Reporting Init.\n");
++
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	if (!dev)
++		return -ENOMEM;
++
++	dev->parent = &pdev->dev;
++	dev->release = err_dev_release;
++	dev_set_name(dev, "errors");
++
++	fme_error_enable(feature);
++
++	ret = device_register(dev);
++	if (ret) {
++		put_device(dev);
++		return ret;
++	}
++
++	ret = sysfs_create_groups(&dev->kobj, error_groups);
++	if (ret) {
++		device_unregister(dev);
++		return ret;
++	}
++
++	feature->priv = dev;
++
++	return ret;
++}
++
++static void fme_global_err_uinit(struct platform_device *pdev,
++				 struct dfl_feature *feature)
++{
++	struct device *dev = feature->priv;
++
++	dev_dbg(&pdev->dev, "FME Global Error Reporting UInit.\n");
++
++	sysfs_remove_groups(&dev->kobj, error_groups);
++	device_unregister(dev);
++}
++
++const struct dfl_feature_id fme_global_err_id_table[] = {
++	{.id = FME_FEATURE_ID_GLOBAL_ERR,},
 +	{0,}
 +};
 +
-+static const struct dfl_feature_ops fme_thermal_mgmt_ops = {
-+	.init = fme_thermal_mgmt_init,
-+	.uinit = fme_thermal_mgmt_uinit,
++const struct dfl_feature_ops fme_global_err_ops = {
++	.init = fme_global_err_init,
++	.uinit = fme_global_err_uinit,
 +};
-+
- static struct dfl_feature_driver fme_feature_drvs[] = {
- 	{
- 		.id_table = fme_hdr_id_table,
-@@ -227,6 +435,10 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
- 		.ops = &fme_pr_mgmt_ops,
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 7005316..1986b32 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -686,6 +686,10 @@ static void fme_power_mgmt_uinit(struct platform_device *pdev,
+ 		.ops = &fme_power_mgmt_ops,
  	},
  	{
-+		.id_table = fme_thermal_mgmt_id_table,
-+		.ops = &fme_thermal_mgmt_ops,
++		.id_table = fme_global_err_id_table,
++		.ops = &fme_global_err_ops,
 +	},
 +	{
  		.ops = NULL,
  	},
  };
+diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
+index 7a021c4..5fbe3f5 100644
+--- a/drivers/fpga/dfl-fme.h
++++ b/drivers/fpga/dfl-fme.h
+@@ -37,5 +37,7 @@ struct dfl_fme {
+ 
+ extern const struct dfl_feature_ops fme_pr_mgmt_ops;
+ extern const struct dfl_feature_id fme_pr_mgmt_id_table[];
++extern const struct dfl_feature_ops fme_global_err_ops;
++extern const struct dfl_feature_id fme_global_err_id_table[];
+ 
+ #endif /* __DFL_FME_H */
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index fbc57f0..6c32080 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -197,12 +197,14 @@ struct dfl_feature_driver {
+  *		    feature dev (platform device)'s reources.
+  * @ioaddr: mapped mmio resource address.
+  * @ops: ops of this sub feature.
++ * @priv: priv data of this feature.
+  */
+ struct dfl_feature {
+ 	u64 id;
+ 	int resource_index;
+ 	void __iomem *ioaddr;
+ 	const struct dfl_feature_ops *ops;
++	void *priv;
+ };
+ 
+ #define DEV_STATUS_IN_USE	0
 -- 
 1.8.3.1
