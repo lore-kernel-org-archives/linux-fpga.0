@@ -1,60 +1,155 @@
-Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=Yrsi=RR=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v4 2/6] dt-bindings: soc: Add ZynqMP PM bindings
-Date: Thu, 14 Mar 2019 19:31:18 +0530
-Message-ID: <20190314140122.23372-3-nava.manne@xilinx.com>
-In-Reply-To: <20190314140122.23372-1-nava.manne@xilinx.com>
-References: <20190314140122.23372-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
-Cc: Rajan Vaja <rajan.vaja@xilinx.com>
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v2 07/18] fpga: dfl: pci: enable SRIOV support.
+Date: Mon, 29 Apr 2019 16:55:40 +0800
+Message-Id: <1556528151-17221-8-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Rajan Vaja <rajan.vaja@xilinx.com>
+This patch enables the standard sriov support. It allows user to
+enable SRIOV (and VFs), then user could pass through accelerators
+(VFs) into virtual machine or use VFs directly in host.
 
-Add documentation to describe Xilinx ZynqMP power management
-bindings.
-
-Signed-off-by: Rajan Vaja <rajan.vaja@xilinx.com>
-Signed-off-by: Jolly Shah <jollys@xilinx.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
 ---
- .../power/reset/xlnx,zynqmp-power.txt         | 25 +++++++++++++++++++
- 1 file changed, 25 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/reset/xlnx,zynqmp-power.txt
+ drivers/fpga/dfl-pci.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ drivers/fpga/dfl.c     | 41 +++++++++++++++++++++++++++++++++++++++++
+ drivers/fpga/dfl.h     |  1 +
+ 3 files changed, 82 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/xlnx,zynqmp-power.txt b/Documentation/devicetree/bindings/power/reset/xlnx,zynqmp-power.txt
-new file mode 100644
-index 000000000000..d366f1eb623a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/xlnx,zynqmp-power.txt
-@@ -0,0 +1,25 @@
-+--------------------------------------------------------------------
-+Device Tree Bindings for the Xilinx Zynq MPSoC Power Management
-+--------------------------------------------------------------------
-+The zynqmp-power node describes the power management configurations.
-+It will control remote suspend/shutdown interfaces.
+diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+index 66b5720..2fa571b 100644
+--- a/drivers/fpga/dfl-pci.c
++++ b/drivers/fpga/dfl-pci.c
+@@ -223,8 +223,46 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+ 	return ret;
+ }
+ 
++static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
++{
++	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
++	struct dfl_fpga_cdev *cdev = drvdata->cdev;
++	int ret = 0;
 +
-+Required properties:
-+ - compatible:		Must contain:	"xlnx,zynqmp-power"
-+ - interrupts:		Interrupt specifier
++	mutex_lock(&cdev->lock);
 +
-+-------
-+Example
-+-------
++	if (!num_vfs) {
++		/*
++		 * disable SRIOV and then put released ports back to default
++		 * PF access mode.
++		 */
++		pci_disable_sriov(pcidev);
 +
-+firmware {
-+	zynqmp_firmware: zynqmp-firmware {
-+		compatible = "xlnx,zynqmp-firmware";
-+		method = "smc";
++		__dfl_fpga_cdev_config_port_vf(cdev, false);
 +
-+		zynqmp_power: zynqmp-power {
-+			compatible = "xlnx,zynqmp-power";
-+			interrupts = <0 35 4>;
-+		};
-+	};
-+};
++	} else if (cdev->released_port_num == num_vfs) {
++		/*
++		 * only enable SRIOV if cdev has matched released ports, put
++		 * released ports into VF access mode firstly.
++		 */
++		__dfl_fpga_cdev_config_port_vf(cdev, true);
++
++		ret = pci_enable_sriov(pcidev, num_vfs);
++		if (ret)
++			__dfl_fpga_cdev_config_port_vf(cdev, false);
++	} else {
++		ret = -EINVAL;
++	}
++
++	mutex_unlock(&cdev->lock);
++	return ret;
++}
++
+ static void cci_pci_remove(struct pci_dev *pcidev)
+ {
++	if (dev_is_pf(&pcidev->dev))
++		cci_pci_sriov_configure(pcidev, 0);
++
+ 	cci_remove_feature_devs(pcidev);
+ 	pci_disable_pcie_error_reporting(pcidev);
+ }
+@@ -234,6 +272,7 @@ static void cci_pci_remove(struct pci_dev *pcidev)
+ 	.id_table = cci_pcie_id_tbl,
+ 	.probe = cci_pci_probe,
+ 	.remove = cci_pci_remove,
++	.sriov_configure = cci_pci_sriov_configure,
+ };
+ 
+ module_pci_driver(cci_pci_driver);
+@@ -241,3 +280,4 @@ static void cci_pci_remove(struct pci_dev *pcidev)
+ MODULE_DESCRIPTION("FPGA DFL PCIe Device Driver");
+ MODULE_AUTHOR("Intel Corporation");
+ MODULE_LICENSE("GPL v2");
++MODULE_VERSION(DRV_VERSION);
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index a6b6d38..c5aa287 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -1098,6 +1098,47 @@ int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
+ }
+ EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_port);
+ 
++static void config_port_vf(struct device *fme_dev, int port_id, bool is_vf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(fme_dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_PORT_OFST(port_id));
++
++	v &= ~FME_PORT_OFST_ACC_CTRL;
++	v |= FIELD_PREP(FME_PORT_OFST_ACC_CTRL,
++			is_vf ? FME_PORT_OFST_ACC_VF : FME_PORT_OFST_ACC_PF);
++
++	writeq(v, base + FME_HDR_PORT_OFST(port_id));
++}
++
++/**
++ * __dfl_fpga_cdev_config_port_vf - configure port to VF access mode
++ *
++ * @cdev: parent container device.
++ * @if_vf: true for VF access mode, and false for PF access mode
++ *
++ * Return: 0 on success, negative error code otherwise.
++ *
++ * This function is needed in sriov configuration routine. It could be used to
++ * configures the released ports access mode to VF or PF.
++ * The caller needs to hold lock for protection.
++ */
++void __dfl_fpga_cdev_config_port_vf(struct dfl_fpga_cdev *cdev, bool is_vf)
++{
++	struct dfl_feature_platform_data *pdata;
++
++	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
++		if (device_is_registered(&pdata->dev->dev))
++			continue;
++
++		config_port_vf(cdev->fme_dev, pdata->id, is_vf);
++	}
++}
++EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_config_port_vf);
++
+ static int __init dfl_fpga_init(void)
+ {
+ 	int ret;
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 63f39ab..1350e8e 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -421,5 +421,6 @@ struct platform_device *
+ 
+ int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
+ 			      u32 port_id, bool release);
++void __dfl_fpga_cdev_config_port_vf(struct dfl_fpga_cdev *cdev, bool is_vf);
+ 
+ #endif /* __FPGA_DFL_H */
 -- 
-2.18.0
+1.8.3.1
