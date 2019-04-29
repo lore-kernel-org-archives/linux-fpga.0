@@ -1,120 +1,79 @@
-Return-Path: <SRS0=Onj1=SU=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=Onj1=SU=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:49308 "EHLO
-        casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726162AbfDRMmm (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 18 Apr 2019 08:42:42 -0400
-Date: Thu, 18 Apr 2019 09:42:23 -0300
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Subject: Avoiding merge conflicts while adding new docs - Was: Re: [PATCH
- 00/57] Convert files to ReST
-Message-ID: <20190418091526.00e074d1@coco.lan>
-In-Reply-To: <cover.1555382110.git.mchehab+samsung@kernel.org>
-References: <cover.1555382110.git.mchehab+samsung@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-watchdog@vger.kernel.org, xdp-newbies@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-acpi@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, bpf@vger.kernel.org, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-scsi@vger.kernel.org, linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org, dm-devel@redhat.com, target-devel@vger.kernel.org, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-fpga@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kbuild@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-security-module@vger.kernel.org, linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v2 13/18] fpga: dfl: afu: add STP (SignalTap) support
+Date: Mon, 29 Apr 2019 16:55:46 +0800
+Message-Id: <1556528151-17221-14-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Jon,
+STP (SignalTap) is one of the private features under the port for
+debugging. This patch adds private feature driver support for it
+to allow userspace applications to mmap related mmio region and
+provide STP service.
 
-Em Mon, 15 Apr 2019 23:55:25 -0300
-Mauro Carvalho Chehab <mchehab+samsung@kernel.org> escreveu:
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
+---
+ drivers/fpga/dfl-afu-main.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-> I have a separate patch series with do the actual rename and
-> adjustment of references. I opted to submit this first, as it
-> sounds easier to merge this way, as each subsystem maintainer
-> can apply the conversion directly on their trees (or at docs
-> tree), avoiding merge conflects.
-
-Based on the number of feedbacks we have about this, I'm
-considering to submit a second version of my conversion patch
-series that would be doing the rename together with each patch,
-adding the rst files to an index file.
-
-However, doing that would produce lots of warnings. We have
-already lots of those at linux-next:
-
-	checking consistency... 
-
-	docs/Documentation/accelerators/ocxl.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/admin-guide/mm/numaperf.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/allocators.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/attributes.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/bigalloc.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/bitmaps.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/blockgroup.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/blocks.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/checksums.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/directory.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/eainode.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/group_descr.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/ifork.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/inlinedata.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/inodes.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/journal.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/mmp.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/special_inodes.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/super.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/fmc/index.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/gpu/msm-crash-dump.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/interconnect/interconnect.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/laptops/lg-laptop.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/virtual/kvm/amd-memory-encryption.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/virtual/kvm/vcpu-requests.rst: WARNING: document isn't included in any toctree
-
-After thinking a little bit and doing some tests, I think a good solution
-would be to add ":orphan:" markup to the new .rst files that were not
-added yet into the main body (e. g. something like the enclosed example).
-
-That will make Sphinx suppress the:
-	"WARNING: document isn't included in any toctree"
-warning for the new files, while they're not included at the main indexes.
-
-This way, maintainers can do all the hard work of doing/applying the ReST
-file conversion/addition patch series on their own trees, and, once
-everything gets merged, submit a patch against the latest docs-next
-tree, removing the :orphan: tag and add them to the common index.rst
-files.
-
-That should largely avoid merging conflicts.
-
-For example, assuming that someone converts the stuff at
-Documentation/accounting and rename the text files there to
-RST (I'm actually doing that), he could add the enclosed change on
-the top of its index file:
-
-	diff --git a/Documentation/accounting/index.rst b/Documentation/accounting/index.rst
-	index e7dda5afa73f..e1f6284b5ff3 100644
-	--- a/Documentation/accounting/index.rst
-	+++ b/Documentation/accounting/index.rst
-	@@ -1,3 +1,5 @@
-	+:orphan:
-	+
-	 ==========
-	 Accounting
-	 ==========
-
-With would make Sphinx to ignore the subdir index file while
-reporting errors. It will still build the documentation, allowing
-the developer to test the changes.
-
-One of the advantages is that checking the orphaned docs is as
-easy as running:
-
-	$ git grep -l ":orphan:" Documentation/
-	...
-	Documentation/accounting/index.rst
-	...
-
-Making easy for people to check the orphaned files and send a fixup
-patch if something got orphaned after the merge window and send a
-fixes patches to be applied upstream.
-
-What do you think?
-
-Regards,
-Mauro
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 754729e..14970a4 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -518,6 +518,36 @@ static void port_afu_uinit(struct platform_device *pdev,
+ 	.uinit = port_afu_uinit,
+ };
+ 
++static int port_stp_init(struct platform_device *pdev,
++			 struct dfl_feature *feature)
++{
++	struct resource *res = &pdev->resource[feature->resource_index];
++
++	dev_dbg(&pdev->dev, "PORT STP Init.\n");
++
++	return afu_mmio_region_add(dev_get_platdata(&pdev->dev),
++				   DFL_PORT_REGION_INDEX_STP,
++				   resource_size(res), res->start,
++				   DFL_PORT_REGION_MMAP | DFL_PORT_REGION_READ |
++				   DFL_PORT_REGION_WRITE);
++}
++
++static void port_stp_uinit(struct platform_device *pdev,
++			   struct dfl_feature *feature)
++{
++	dev_dbg(&pdev->dev, "PORT STP UInit.\n");
++}
++
++static const struct dfl_feature_id port_stp_id_table[] = {
++	{.id = PORT_FEATURE_ID_STP,},
++	{0,}
++};
++
++static const struct dfl_feature_ops port_stp_ops = {
++	.init = port_stp_init,
++	.uinit = port_stp_uinit,
++};
++
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+ 		.id_table = port_hdr_id_table,
+@@ -532,6 +562,10 @@ static void port_afu_uinit(struct platform_device *pdev,
+ 		.ops = &port_err_ops,
+ 	},
+ 	{
++		.id_table = port_stp_id_table,
++		.ops = &port_stp_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	}
+ };
+-- 
+1.8.3.1
