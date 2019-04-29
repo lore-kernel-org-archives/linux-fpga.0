@@ -1,34 +1,121 @@
-Return-Path: <SRS0=jqPo=SK=denx.de=agust@kernel.org>
-Return-Path: <SRS0=jqPo=SK=denx.de=agust@kernel.org>
-Date: Mon, 8 Apr 2019 19:25:39 +0200
-From: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH v4 3/3] fpga: Add fpga manager driver for ARRI Altera
- FPP
-Message-ID: <20190408192539.590410bb@crub>
-In-Reply-To: <20190221202506.17744-4-agust@denx.de>
-References: <20190221202506.17744-1-agust@denx.de>
-	<20190221202506.17744-4-agust@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-To: atull@kernel.org, mdf@kernel.org
-Cc: linux-usb@vger.kernel.org, linux-spi@vger.kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, broonie@kernel.org
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v2 14/18] fpga: dfl: fme: add capability sysfs interfaces
+Date: Mon, 29 Apr 2019 16:55:47 +0800
+Message-Id: <1556528151-17221-15-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi,
+This patch adds 3 read-only sysfs interfaces for FPGA Management Engine
+(FME) block for capabilities including cache_size, fabric_version and
+socket_id.
 
-On Thu, 21 Feb 2019 21:25:06 +0100
-Anatolij Gustschin agust@denx.de wrote:
-...
-> .../ABI/testing/sysfs-driver-ftdi-fifo-fpp    |   7 +
-> drivers/fpga/Kconfig                          |   7 +
-> drivers/fpga/Makefile                         |   1 +
-> drivers/fpga/ftdi-fifo-fpp.c                  | 594 ++++++++++++++++++
-> 4 files changed, 609 insertions(+)
-> create mode 100644 Documentation/ABI/testing/sysfs-driver-ftdi-fifo-fpp
-> create mode 100644 drivers/fpga/ftdi-fifo-fpp.c
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+---
+ Documentation/ABI/testing/sysfs-platform-dfl-fme | 23 ++++++++++++
+ drivers/fpga/dfl-fme-main.c                      | 48 ++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+)
 
-Ping. Any comments to this driver?
-
-Thanks,
-Anatolij
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+index 8fa4feb..d1aa375 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+@@ -21,3 +21,26 @@ Contact:	Wu Hao <hao.wu@intel.com>
+ Description:	Read-only. It returns Bitstream (static FPGA region) meta
+ 		data, which includes the synthesis date, seed and other
+ 		information of this static FPGA region.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/cache_size
++Date:		April 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns cache size of this FPGA device.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/fabric_version
++Date:		April 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns fabric version of this FPGA device.
++		Userspace applications need this information to select
++		best data channels per different fabric design.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/socket_id
++Date:		April 2019
++KernelVersion:  5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns socket_id to indicate which socket
++		this FPGA belongs to, only valid for integrated solution.
++		User only needs this information, in case standard numa node
++		can't provide correct information.
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 38c6342..8339ee8 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -75,10 +75,58 @@ static ssize_t bitstream_metadata_show(struct device *dev,
+ }
+ static DEVICE_ATTR_RO(bitstream_metadata);
+ 
++static ssize_t cache_size_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_CAP_CACHE_SIZE, v));
++}
++static DEVICE_ATTR_RO(cache_size);
++
++static ssize_t fabric_version_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_CAP_FABRIC_VERID, v));
++}
++static DEVICE_ATTR_RO(fabric_version);
++
++static ssize_t socket_id_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(FME_CAP_SOCKET_ID, v));
++}
++static DEVICE_ATTR_RO(socket_id);
++
+ static const struct attribute *fme_hdr_attrs[] = {
+ 	&dev_attr_ports_num.attr,
+ 	&dev_attr_bitstream_id.attr,
+ 	&dev_attr_bitstream_metadata.attr,
++	&dev_attr_cache_size.attr,
++	&dev_attr_fabric_version.attr,
++	&dev_attr_socket_id.attr,
+ 	NULL,
+ };
+ 
+-- 
+1.8.3.1
