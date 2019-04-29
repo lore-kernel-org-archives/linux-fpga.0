@@ -1,265 +1,364 @@
 Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 08/18] fpga: dfl: afu: add AFU state related sysfs interfaces
-Date: Mon, 29 Apr 2019 16:55:41 +0800
-Message-Id: <1556528151-17221-9-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v2 15/18] fpga: dfl: fme: add thermal management support
+Date: Mon, 29 Apr 2019 16:55:48 +0800
+Message-Id: <1556528151-17221-16-git-send-email-hao.wu@intel.com>
 In-Reply-To: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
 References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
 To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Russ Weight <russell.h.weight@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch introduces more sysfs interfaces for Accelerated
-Function Unit (AFU). These interfaces allow users to read
-current AFU Power State (APx), read / clear AFU Power (APx)
-events which are sticky to identify transient APx state,
-and manage AFU's LTR (latency tolerance reporting).
+This patch adds support to thermal management private feature for DFL
+FPGA Management Engine (FME). This private feature driver registers
+a hwmon for thermal/temperature monitoring (hwmon temp1_input).
+If hardware automatic throttling is supported by this hardware, then
+driver also exposes sysfs interfaces under hwmon for thresholds
+(temp1_alarm/ crit/ emergency), threshold status (temp1_alarm_status/
+temp1_crit_status) and throttling policy (temp1_alarm_policy).
 
-Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
 ---
- Documentation/ABI/testing/sysfs-platform-dfl-port |  30 +++++
- drivers/fpga/dfl-afu-main.c                       | 144 ++++++++++++++++++++++
- drivers/fpga/dfl.h                                |  11 ++
- 3 files changed, 185 insertions(+)
+v2: create a dfl_fme_thermal hwmon to expose thermal information.
+    move all sysfs interfaces under hwmon
+	tempareture       --> hwmon temp1_input
+	threshold1        --> hwmon temp1_alarm
+	threshold2        --> hwmon temp1_crit
+	trip_threshold    --> hwmon temp1_emergency
+	threshold1_status --> hwmon temp1_alarm_status
+	threshold2_status --> hwmon temp1_crit_status
+	threshold1_policy --> hwmon temp1_alarm_policy
+---
+ Documentation/ABI/testing/sysfs-platform-dfl-fme |  64 +++++++
+ drivers/fpga/Kconfig                             |   2 +-
+ drivers/fpga/dfl-fme-main.c                      | 212 +++++++++++++++++++++++
+ 3 files changed, 277 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
-index 6a92dda..d7122a4 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-port
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
-@@ -14,3 +14,33 @@ Description:	Read-only. User can program different PR bitstreams to FPGA
- 		Accelerator Function Unit (AFU) for different functions. It
- 		returns uuid which could be used to identify which PR bitstream
- 		is programmed in this AFU.
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+index d1aa375..dfbd315 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+@@ -44,3 +44,67 @@ Description:	Read-only. It returns socket_id to indicate which socket
+ 		this FPGA belongs to, only valid for integrated solution.
+ 		User only needs this information, in case standard numa node
+ 		can't provide correct information.
 +
-+What:		/sys/bus/platform/devices/dfl-port.0/power_state
++What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/name
 +Date:		April 2019
 +KernelVersion:	5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It reports the APx (AFU Power) state, different APx
-+		means different throttling level. When reading this file, it
-+		returns "0" - Normal / "1" - AP1 / "2" - AP2 / "6" - AP6.
++Description:	Read-Only. Read this file to get the name of hwmon device, it
++		supports values:
++		    'dfl_fme_thermal' - thermal hwmon device name
 +
-+What:		/sys/bus/platform/devices/dfl-port.0/ap1_event
++What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_input
 +Date:		April 2019
 +KernelVersion:	5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-write. Read or set 1 to clear AP1 (AFU Power State 1)
-+		event. It's used to indicate transient AP1 state.
++Description:	Read-Only. It returns FPGA device temperature in millidegrees
++		Celsius.
 +
-+What:		/sys/bus/platform/devices/dfl-port.0/ap2_event
++What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_alarm
 +Date:		April 2019
 +KernelVersion:	5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-write. Read or set 1 to clear AP2 (AFU Power State 2)
-+		event. It's used to indicate transient AP2 state.
++Description:	Read-Only. It returns hardware threshold1 temperature in
++		millidegrees Celsius. If temperature rises at or above this
++		threshold, hardware starts 50% or 90% throttling (see
++		'temp1_alarm_policy').
 +
-+What:		/sys/bus/platform/devices/dfl-port.0/ltr
++What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_crit
 +Date:		April 2019
 +KernelVersion:	5.2
 +Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-write. Read and set AFU latency tolerance reporting value.
-+		Set ltr to 1 if the AFU can tolerate latency >= 40us or set it
-+		to 0 if it is latency sensitive.
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 02baa6a..2ffec06 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -21,6 +21,8 @@
++Description:	Read-Only. It returns hardware threshold2 temperature in
++		millidegrees Celsius. If temperature rises at or above this
++		threshold, hardware starts 100% throttling.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_emergency
++Date:		April 2019
++KernelVersion:	5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-Only. It returns hardware trip threshold temperature in
++		millidegrees Celsius. If temperature rises at or above this
++		threshold, a fatal event will be triggered to board management
++		controller (BMC) to shutdown FPGA.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_alarm_status
++Date:		April 2019
++KernelVersion:	5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns 1 if temperature is currently at or above
++		hardware threshold1 (see 'temp1_alarm'), otherwise 0.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_crit_status
++Date:		April 2019
++KernelVersion:	5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns 1 if temperature is currently at or above
++		hardware threshold2 (see 'temp1_crit'), otherwise 0.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_alarm_policy
++Date:		April 2019
++KernelVersion:	5.2
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-Only. Read this file to get the policy of hardware threshold1
++		(see 'temp1_alarm'). It only supports two values (policies):
++		    0 - AP2 state (90% throttling)
++		    1 - AP1 state (50% throttling)
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index c20445b..a6d7588 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -154,7 +154,7 @@ config FPGA_DFL
  
- #include "dfl-afu.h"
+ config FPGA_DFL_FME
+ 	tristate "FPGA DFL FME Driver"
+-	depends on FPGA_DFL
++	depends on FPGA_DFL && HWMON
+ 	help
+ 	  The FPGA Management Engine (FME) is a feature device implemented
+ 	  under Device Feature List (DFL) framework. Select this option to
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 8339ee8..b9a68b8 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -14,6 +14,8 @@
+  *   Henry Mitchel <henry.mitchel@intel.com>
+  */
  
-+#define DRV_VERSION	"0.8"
-+
- /**
-  * port_enable - enable a port
-  * @pdev: port platform device.
-@@ -141,8 +143,149 @@ static int port_get_id(struct platform_device *pdev)
- }
- static DEVICE_ATTR_RO(id);
- 
-+static ssize_t
-+ltr_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_CTRL);
-+	mutex_unlock(&pdata->lock);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%x\n",
-+			 (u8)FIELD_GET(PORT_CTRL_LATENCY, v));
-+}
-+
-+static ssize_t
-+ltr_store(struct device *dev, struct device_attribute *attr,
-+	  const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u8 ltr;
-+	u64 v;
-+
-+	if (kstrtou8(buf, 0, &ltr) || ltr > 1)
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_CTRL);
-+	v &= ~PORT_CTRL_LATENCY;
-+	v |= FIELD_PREP(PORT_CTRL_LATENCY, ltr);
-+	writeq(v, base + PORT_HDR_CTRL);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_RW(ltr);
-+
-+static ssize_t
-+ap1_event_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%x\n",
-+			 (u8)FIELD_GET(PORT_STS_AP1_EVT, v));
-+}
-+
-+static ssize_t
-+ap1_event_store(struct device *dev, struct device_attribute *attr,
-+		const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u8 ap1_event;
-+
-+	if (kstrtou8(buf, 0, &ap1_event) || ap1_event != 1)
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(PORT_STS_AP1_EVT, base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_RW(ap1_event);
-+
-+static ssize_t
-+ap2_event_show(struct device *dev, struct device_attribute *attr,
-+	       char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%x\n",
-+			 (u8)FIELD_GET(PORT_STS_AP2_EVT, v));
-+}
-+
-+static ssize_t
-+ap2_event_store(struct device *dev, struct device_attribute *attr,
-+		const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u8 ap2_event;
-+
-+	if (kstrtou8(buf, 0, &ap2_event) || ap2_event != 1)
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(PORT_STS_AP2_EVT, base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_RW(ap2_event);
-+
-+static ssize_t
-+power_state_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return scnprintf(buf, PAGE_SIZE, "0x%x\n",
-+			 (u8)FIELD_GET(PORT_STS_PWR_STATE, v));
-+}
-+static DEVICE_ATTR_RO(power_state);
-+
- static const struct attribute *port_hdr_attrs[] = {
- 	&dev_attr_id.attr,
-+	&dev_attr_ltr.attr,
-+	&dev_attr_ap1_event.attr,
-+	&dev_attr_ap2_event.attr,
-+	&dev_attr_power_state.attr,
- 	NULL,
++#include <linux/hwmon.h>
++#include <linux/hwmon-sysfs.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
+@@ -217,6 +219,212 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
+ 	.ioctl = fme_hdr_ioctl,
  };
  
-@@ -634,3 +777,4 @@ static void __exit afu_exit(void)
- MODULE_AUTHOR("Intel Corporation");
- MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("platform:dfl-port");
-+MODULE_VERSION(DRV_VERSION);
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 1350e8e..1525098 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -119,6 +119,7 @@
- #define PORT_HDR_NEXT_AFU	NEXT_AFU
- #define PORT_HDR_CAP		0x30
- #define PORT_HDR_CTRL		0x38
-+#define PORT_HDR_STS		0x40
- 
- /* Port Capability Register Bitfield */
- #define PORT_CAP_PORT_NUM	GENMASK_ULL(1, 0)	/* ID of this port */
-@@ -130,6 +131,16 @@
- /* Latency tolerance reporting. '1' >= 40us, '0' < 40us.*/
- #define PORT_CTRL_LATENCY	BIT_ULL(2)
- #define PORT_CTRL_SFTRST_ACK	BIT_ULL(4)		/* HW ack for reset */
++#define FME_THERM_THRESHOLD	0x8
++#define TEMP_THRESHOLD1		GENMASK_ULL(6, 0)
++#define TEMP_THRESHOLD1_EN	BIT_ULL(7)
++#define TEMP_THRESHOLD2		GENMASK_ULL(14, 8)
++#define TEMP_THRESHOLD2_EN	BIT_ULL(15)
++#define TRIP_THRESHOLD		GENMASK_ULL(30, 24)
++#define TEMP_THRESHOLD1_STATUS	BIT_ULL(32)		/* threshold1 reached */
++#define TEMP_THRESHOLD2_STATUS	BIT_ULL(33)		/* threshold2 reached */
++/* threshold1 policy: 0 - AP2 (90% throttle) / 1 - AP1 (50% throttle) */
++#define TEMP_THRESHOLD1_POLICY	BIT_ULL(44)
 +
-+/* Port Status Register Bitfield */
-+#define PORT_STS_AP2_EVT	BIT_ULL(13)		/* AP2 event detected */
-+#define PORT_STS_AP1_EVT	BIT_ULL(12)		/* AP1 event detected */
-+#define PORT_STS_PWR_STATE	GENMASK_ULL(11, 8)	/* AFU power states */
-+#define PORT_STS_PWR_STATE_NORM 0
-+#define PORT_STS_PWR_STATE_AP1	1			/* 50% throttling */
-+#define PORT_STS_PWR_STATE_AP2	2			/* 90% throttling */
-+#define PORT_STS_PWR_STATE_AP6	6			/* 100% throttling */
++#define FME_THERM_RDSENSOR_FMT1	0x10
++#define FPGA_TEMPERATURE	GENMASK_ULL(6, 0)
 +
- /**
-  * struct dfl_fpga_port_ops - port ops
-  *
++#define FME_THERM_CAP		0x20
++#define THERM_NO_THROTTLE	BIT_ULL(0)
++
++#define MD_PRE_DEG
++
++static bool fme_thermal_throttle_support(void __iomem *base)
++{
++	u64 v = readq(base + FME_THERM_CAP);
++
++	return FIELD_GET(THERM_NO_THROTTLE, v) ? false : true;
++}
++
++static umode_t thermal_hwmon_attrs_visible(const void *drvdata,
++					   enum hwmon_sensor_types type,
++					   u32 attr, int channel)
++{
++	const struct dfl_feature *feature = drvdata;
++
++	/* temperature is always supported, and check hardware cap for others */
++	if (attr == hwmon_temp_input)
++		return 0444;
++
++	return fme_thermal_throttle_support(feature->ioaddr) ? 0444 : 0;
++}
++
++static int thermal_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
++			      u32 attr, int channel, long *val)
++{
++	struct dfl_feature *feature = dev_get_drvdata(dev);
++	u64 v;
++
++	switch (attr) {
++	case hwmon_temp_input:
++		v = readq(feature->ioaddr + FME_THERM_RDSENSOR_FMT1);
++		*val = (long)(FIELD_GET(FPGA_TEMPERATURE, v) * 1000);
++		break;
++	case hwmon_temp_alarm:
++		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
++		*val = (long)(FIELD_GET(TEMP_THRESHOLD1, v) * 1000);
++		break;
++	case hwmon_temp_crit:
++		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
++		*val = (long)(FIELD_GET(TEMP_THRESHOLD2, v) * 1000);
++		break;
++	case hwmon_temp_emergency:
++		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
++		*val = (long)(FIELD_GET(TRIP_THRESHOLD, v) * 1000);
++		break;
++	default:
++		return -EOPNOTSUPP;
++	}
++
++	return 0;
++}
++
++static const struct hwmon_ops thermal_hwmon_ops = {
++	.is_visible = thermal_hwmon_attrs_visible,
++	.read = thermal_hwmon_read,
++};
++
++static const u32 thermal_hwmon_temp_config[] = {
++	HWMON_T_INPUT | HWMON_T_ALARM | HWMON_T_CRIT | HWMON_T_EMERGENCY,
++	0
++};
++
++static const struct hwmon_channel_info hwmon_temp_info = {
++	.type = hwmon_temp,
++	.config = thermal_hwmon_temp_config,
++};
++
++static const struct hwmon_channel_info *thermal_hwmon_info[] = {
++	&hwmon_temp_info,
++	NULL
++};
++
++static const struct hwmon_chip_info thermal_hwmon_chip_info = {
++	.ops = &thermal_hwmon_ops,
++	.info = thermal_hwmon_info,
++};
++
++static ssize_t temp1_alarm_status_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	struct dfl_feature *feature = dev_get_drvdata(dev);
++	u64 v;
++
++	v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(TEMP_THRESHOLD1_STATUS, v));
++}
++
++static ssize_t temp1_crit_status_show(struct device *dev,
++				      struct device_attribute *attr, char *buf)
++{
++	struct dfl_feature *feature = dev_get_drvdata(dev);
++	u64 v;
++
++	v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(TEMP_THRESHOLD2_STATUS, v));
++}
++
++static ssize_t temp1_alarm_policy_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	struct dfl_feature *feature = dev_get_drvdata(dev);
++	u64 v;
++
++	v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 (unsigned int)FIELD_GET(TEMP_THRESHOLD1_POLICY, v));
++}
++
++static DEVICE_ATTR_RO(temp1_alarm_status);
++static DEVICE_ATTR_RO(temp1_crit_status);
++static DEVICE_ATTR_RO(temp1_alarm_policy);
++
++static struct attribute *thermal_extra_attrs[] = {
++	&dev_attr_temp1_alarm_status.attr,
++	&dev_attr_temp1_crit_status.attr,
++	&dev_attr_temp1_alarm_policy.attr,
++	NULL,
++};
++
++static umode_t thermal_extra_attrs_visible(struct kobject *kobj,
++					   struct attribute *attr, int index)
++{
++	struct device *dev = kobj_to_dev(kobj);
++	struct dfl_feature *feature = dev_get_drvdata(dev);
++
++	return fme_thermal_throttle_support(feature->ioaddr) ? attr->mode : 0;
++}
++
++static const struct attribute_group thermal_extra_group = {
++	.attrs		= thermal_extra_attrs,
++	.is_visible	= thermal_extra_attrs_visible,
++};
++__ATTRIBUTE_GROUPS(thermal_extra);
++
++static int fme_thermal_mgmt_init(struct platform_device *pdev,
++				 struct dfl_feature *feature)
++{
++	struct device *hwmon;
++
++	dev_dbg(&pdev->dev, "FME Thermal Management Init.\n");
++
++	/*
++	 * create hwmon to allow userspace monitoring temperature and other
++	 * threshold information.
++	 *
++	 * temp1_alarm     -> hardware threshold 1 -> 50% or 90% throttling
++	 * temp1_crit      -> hardware threshold 2 -> 100% throttling
++	 * temp1_emergency -> hardware trip_threshold to shutdown FPGA
++	 *
++	 * create device specific sysfs interfaces, e.g. read temp1_alarm_policy
++	 * to understand the actual hardware throttling action (50% vs 90%).
++	 *
++	 * If hardware doesn't support automatic throttling per thresholds,
++	 * then all above sysfs interfaces are not visible except temp1_input
++	 * for temperature.
++	 */
++	hwmon = devm_hwmon_device_register_with_info(&pdev->dev,
++						     "dfl_fme_thermal", feature,
++						     &thermal_hwmon_chip_info,
++						     thermal_extra_groups);
++	if (IS_ERR(hwmon)) {
++		dev_err(&pdev->dev, "Fail to register thermal hwmon\n");
++		return PTR_ERR(hwmon);
++	}
++
++	return 0;
++}
++
++static void fme_thermal_mgmt_uinit(struct platform_device *pdev,
++				   struct dfl_feature *feature)
++{
++	dev_dbg(&pdev->dev, "FME Thermal Management UInit.\n");
++}
++
++static const struct dfl_feature_id fme_thermal_mgmt_id_table[] = {
++	{.id = FME_FEATURE_ID_THERMAL_MGMT,},
++	{0,}
++};
++
++static const struct dfl_feature_ops fme_thermal_mgmt_ops = {
++	.init = fme_thermal_mgmt_init,
++	.uinit = fme_thermal_mgmt_uinit,
++};
++
+ static struct dfl_feature_driver fme_feature_drvs[] = {
+ 	{
+ 		.id_table = fme_hdr_id_table,
+@@ -227,6 +435,10 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
+ 		.ops = &fme_pr_mgmt_ops,
+ 	},
+ 	{
++		.id_table = fme_thermal_mgmt_id_table,
++		.ops = &fme_thermal_mgmt_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	},
+ };
 -- 
 1.8.3.1
