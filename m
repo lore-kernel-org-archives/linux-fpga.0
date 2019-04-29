@@ -1,242 +1,70 @@
-Return-Path: <SRS0=LHYr=SE=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=LHYr=SE=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v4 3/3] fpga manager: Adding FPGA Manager support for Xilinx zynqmp
-Date: Tue, 2 Apr 2019 18:01:23 +0530
-Message-ID: <20190402123123.915-4-nava.manne@xilinx.com>
-In-Reply-To: <20190402123123.915-1-nava.manne@xilinx.com>
-References: <20190402123123.915-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v2 00/18] add new features for FPGA DFL drivers
+Date: Mon, 29 Apr 2019 16:55:33 +0800
+Message-Id: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds FPGA Manager support for the Xilinx
-ZynqMP chip.
+This patchset adds more features support for FPGA Device Feature List
+(DFL) drivers, including PR enhancement, virtualization support based
+on PCIe SRIOV, private features to Port, private features to FME, and
+enhancement to DFL framework. Please refer to details in below list.
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
----
-Changes for v4:
-		-Updated the Fpga Mgr registrations call's
-		 to 5.0
-		-Removed dma_set_mask_and_coherent() As the FW
-		 supports only 32-bit address operations.
+Main changes from v1:
+ - split the clean up code in a separated patch (patch #2)
+ - add cpu_feature_enabled check for AVX512 code (patch #4)
+ - improve sysfs return values and also sysfs doc (patch #12 #17)
+ - create a hwmon for thermal management sysfs interfaces (patch #15)
+ - create a hwmon for power management sysfs interfaces (patch #16)
+ - update docmentation according to above changes (patch #5)
+ - improve sysfs doc for performance reporting support (patch #18)
 
-Changes for v3:
-		-Created patches on top of 5.0-rc5.
-		 No functional changes.
+Wu Hao (18):
+  fpga: dfl-fme-mgr: fix FME_PR_INTFC_ID register address.
+  fpga: dfl: fme: remove copy_to_user() in ioctl for PR
+  fpga: dfl: fme: align PR buffer size per PR datawidth
+  fpga: dfl: fme: support 512bit data width PR
+  Documentation: fpga: dfl: add descriptions for virtualization and new
+    interfaces.
+  fpga: dfl: fme: add DFL_FPGA_FME_PORT_RELEASE/ASSIGN ioctl support.
+  fpga: dfl: pci: enable SRIOV support.
+  fpga: dfl: afu: add AFU state related sysfs interfaces
+  fpga: dfl: afu: add userclock sysfs interfaces.
+  fpga: dfl: add id_table for dfl private feature driver
+  fpga: dfl: afu: export __port_enable/disable function.
+  fpga: dfl: afu: add error reporting support.
+  fpga: dfl: afu: add STP (SignalTap) support
+  fpga: dfl: fme: add capability sysfs interfaces
+  fpga: dfl: fme: add thermal management support
+  fpga: dfl: fme: add power management support
+  fpga: dfl: fme: add global error reporting support
+  fpga: dfl: fme: add performance reporting support
 
-Changes for v2:
-		-Fixed some minor coding issues as suggested by
-		 Moritz
+ Documentation/ABI/testing/sysfs-platform-dfl-fme  | 322 ++++++++
+ Documentation/ABI/testing/sysfs-platform-dfl-port | 104 +++
+ Documentation/fpga/dfl.txt                        | 114 +++
+ drivers/fpga/Kconfig                              |   2 +-
+ drivers/fpga/Makefile                             |   4 +-
+ drivers/fpga/dfl-afu-error.c                      | 225 +++++
+ drivers/fpga/dfl-afu-main.c                       | 335 +++++++-
+ drivers/fpga/dfl-afu.h                            |   7 +
+ drivers/fpga/dfl-fme-error.c                      | 385 +++++++++
+ drivers/fpga/dfl-fme-main.c                       | 583 ++++++++++++-
+ drivers/fpga/dfl-fme-mgr.c                        | 117 ++-
+ drivers/fpga/dfl-fme-perf.c                       | 950 ++++++++++++++++++++++
+ drivers/fpga/dfl-fme-pr.c                         |  65 +-
+ drivers/fpga/dfl-fme.h                            |   9 +-
+ drivers/fpga/dfl-pci.c                            |  40 +
+ drivers/fpga/dfl.c                                | 170 +++-
+ drivers/fpga/dfl.h                                |  56 +-
+ include/uapi/linux/fpga-dfl.h                     |  32 +
+ 18 files changed, 3439 insertions(+), 81 deletions(-)
+ create mode 100644 drivers/fpga/dfl-afu-error.c
+ create mode 100644 drivers/fpga/dfl-fme-error.c
+ create mode 100644 drivers/fpga/dfl-fme-perf.c
 
-Changes for v1:
-		-None.
-
-Changes for RFC-V2:
-		-Updated the Fpga Mgr registrations call's
-		 to 4.18
-
- drivers/fpga/Kconfig       |   9 +++
- drivers/fpga/Makefile      |   1 +
- drivers/fpga/zynqmp-fpga.c | 159 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 169 insertions(+)
- create mode 100644 drivers/fpga/zynqmp-fpga.c
-
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index c20445b867ae..d892f3efcd76 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -204,4 +204,13 @@ config FPGA_DFL_PCI
- 
- 	  To compile this as a module, choose M here.
- 
-+config FPGA_MGR_ZYNQMP_FPGA
-+	tristate "Xilinx ZynqMP FPGA"
-+	depends on ARCH_ZYNQMP || COMPILE_TEST
-+	help
-+	  FPGA manager driver support for Xilinx ZynqMP FPGAs.
-+	  This driver uses the processor configuration port(PCAP)
-+	  to configure the programmable logic(PL) through PS
-+	  on ZynqMP SoC.
-+
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index c0dd4c82fbdb..312b9371742f 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -17,6 +17,7 @@ obj-$(CONFIG_FPGA_MGR_STRATIX10_SOC)	+= stratix10-soc.o
- obj-$(CONFIG_FPGA_MGR_TS73XX)		+= ts73xx-fpga.o
- obj-$(CONFIG_FPGA_MGR_XILINX_SPI)	+= xilinx-spi.o
- obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+= zynq-fpga.o
-+obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+= zynqmp-fpga.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE)         += altera-pr-ip-core.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)    += altera-pr-ip-core-plat.o
- 
-diff --git a/drivers/fpga/zynqmp-fpga.c b/drivers/fpga/zynqmp-fpga.c
-new file mode 100644
-index 000000000000..f6e35fe95adb
---- /dev/null
-+++ b/drivers/fpga/zynqmp-fpga.c
-@@ -0,0 +1,159 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (C) 2019 Xilinx, Inc.
-+ */
-+
-+#include <linux/dma-mapping.h>
-+#include <linux/fpga/fpga-mgr.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/string.h>
-+#include <linux/firmware/xlnx-zynqmp.h>
-+
-+/* Constant Definitions */
-+#define IXR_FPGA_DONE_MASK	0X00000008U
-+
-+/**
-+ * struct zynqmp_fpga_priv - Private data structure
-+ * @dev:	Device data structure
-+ * @flags:	flags which is used to identify the bitfile type
-+ */
-+struct zynqmp_fpga_priv {
-+	struct device *dev;
-+	u32 flags;
-+};
-+
-+static int zynqmp_fpga_ops_write_init(struct fpga_manager *mgr,
-+				      struct fpga_image_info *info,
-+				      const char *buf, size_t size)
-+{
-+	struct zynqmp_fpga_priv *priv;
-+
-+	priv = mgr->priv;
-+	priv->flags = info->flags;
-+
-+	return 0;
-+}
-+
-+static int zynqmp_fpga_ops_write(struct fpga_manager *mgr,
-+				 const char *buf, size_t size)
-+{
-+	const struct zynqmp_eemi_ops *eemi_ops = zynqmp_pm_get_eemi_ops();
-+	struct zynqmp_fpga_priv *priv;
-+	dma_addr_t dma_addr;
-+	u32 eemi_flags = 0;
-+	char *kbuf;
-+	int ret;
-+
-+	if (!eemi_ops || !eemi_ops->fpga_load)
-+		return -ENXIO;
-+
-+	priv = mgr->priv;
-+
-+	kbuf = dma_alloc_coherent(priv->dev, size, &dma_addr, GFP_KERNEL);
-+	if (!kbuf)
-+		return -ENOMEM;
-+
-+	memcpy(kbuf, buf, size);
-+
-+	wmb(); /* ensure all writes are done before initiate FW call */
-+
-+	if (priv->flags & FPGA_MGR_PARTIAL_RECONFIG)
-+		eemi_flags |= XILINX_ZYNQMP_PM_FPGA_PARTIAL;
-+
-+	ret = eemi_ops->fpga_load(dma_addr, size, eemi_flags);
-+
-+	dma_free_coherent(priv->dev, size, kbuf, dma_addr);
-+
-+	return ret;
-+}
-+
-+static int zynqmp_fpga_ops_write_complete(struct fpga_manager *mgr,
-+					  struct fpga_image_info *info)
-+{
-+	return 0;
-+}
-+
-+static enum fpga_mgr_states zynqmp_fpga_ops_state(struct fpga_manager *mgr)
-+{
-+	const struct zynqmp_eemi_ops *eemi_ops = zynqmp_pm_get_eemi_ops();
-+	u32 status;
-+
-+	if (!eemi_ops || !eemi_ops->fpga_get_status)
-+		return FPGA_MGR_STATE_UNKNOWN;
-+
-+	eemi_ops->fpga_get_status(&status);
-+	if (status & IXR_FPGA_DONE_MASK)
-+		return FPGA_MGR_STATE_OPERATING;
-+
-+	return FPGA_MGR_STATE_UNKNOWN;
-+}
-+
-+static const struct fpga_manager_ops zynqmp_fpga_ops = {
-+	.state = zynqmp_fpga_ops_state,
-+	.write_init = zynqmp_fpga_ops_write_init,
-+	.write = zynqmp_fpga_ops_write,
-+	.write_complete = zynqmp_fpga_ops_write_complete,
-+};
-+
-+static int zynqmp_fpga_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct zynqmp_fpga_priv *priv;
-+	struct fpga_manager *mgr;
-+	int ret;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->dev = dev;
-+
-+	mgr = devm_fpga_mgr_create(dev, "Xilinx ZynqMP FPGA Manager",
-+				   &zynqmp_fpga_ops, priv);
-+	if (!mgr)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, mgr);
-+
-+	ret = fpga_mgr_register(mgr);
-+	if (ret) {
-+		dev_err(dev, "unable to register FPGA manager");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int zynqmp_fpga_remove(struct platform_device *pdev)
-+{
-+	struct fpga_manager *mgr = platform_get_drvdata(pdev);
-+
-+	fpga_mgr_unregister(mgr);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id zynqmp_fpga_of_match[] = {
-+	{ .compatible = "xlnx,zynqmp-pcap-fpga", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, zynqmp_fpga_of_match);
-+
-+static struct platform_driver zynqmp_fpga_driver = {
-+	.probe = zynqmp_fpga_probe,
-+	.remove = zynqmp_fpga_remove,
-+	.driver = {
-+		.name = "zynqmp_fpga_manager",
-+		.of_match_table = of_match_ptr(zynqmp_fpga_of_match),
-+	},
-+};
-+
-+module_platform_driver(zynqmp_fpga_driver);
-+
-+MODULE_AUTHOR("Nava kishore Manne <navam@xilinx.com>");
-+MODULE_DESCRIPTION("Xilinx ZynqMp FPGA Manager");
-+MODULE_LICENSE("GPL");
 -- 
-2.18.0
+1.8.3.1
