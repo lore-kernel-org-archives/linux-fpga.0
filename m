@@ -1,28 +1,40 @@
-Return-Path: <SRS0=LHYr=SE=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=LHYr=SE=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v4 0/3] Add Bitstream configuration support for ZynqMP 
-Date: Tue, 2 Apr 2019 18:01:20 +0530
-Message-ID: <20190402123123.915-1-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-To: atull@kernel.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, michal.simek@xilinx.com, rajanv@xilinx.com, jollys@xilinx.com, nava.manne@xilinx.com, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=3X6n=S7=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v2 02/18] fpga: dfl: fme: remove copy_to_user() in ioctl for PR
+Date: Mon, 29 Apr 2019 16:55:35 +0800
+Message-Id: <1556528151-17221-3-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Nava kishore Manne (3):
-  firmware: xilinx: Add fpga API's
-  dt-bindings: fpga: Add bindings for ZynqMP fpga driver
-  fpga manager: Adding FPGA Manager support for Xilinx zynqmp
+This patch removes copy_to_user() code in partial reconfiguration
+ioctl, as it's useless as user never needs to read the data
+structure after ioctl.
 
- .../bindings/fpga/xlnx,zynqmp-pcap-fpga.txt   |  25 +++
- drivers/firmware/xilinx/zynqmp.c              |  46 +++++
- drivers/fpga/Kconfig                          |   9 +
- drivers/fpga/Makefile                         |   1 +
- drivers/fpga/zynqmp-fpga.c                    | 159 ++++++++++++++++++
- include/linux/firmware/xlnx-zynqmp.h          |  10 ++
- 6 files changed, 250 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,zynqmp-pcap-fpga.txt
- create mode 100644 drivers/fpga/zynqmp-fpga.c
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+---
+v2: clean up code split from patch 2 in v1 patchset.
+---
+ drivers/fpga/dfl-fme-pr.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+index d9ca955..6ec0f09 100644
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -159,9 +159,6 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 	mutex_unlock(&pdata->lock);
+ free_exit:
+ 	vfree(buf);
+-	if (copy_to_user((void __user *)arg, &port_pr, minsz))
+-		return -EFAULT;
+-
+ 	return ret;
+ }
+ 
 -- 
-2.18.0
+1.8.3.1
