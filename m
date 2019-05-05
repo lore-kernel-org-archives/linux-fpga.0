@@ -1,120 +1,144 @@
-Return-Path: <SRS0=f6Az=TG=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=f6Az=TG=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-eopbgr770070.outbound.protection.outlook.com ([40.107.77.70]:22833
-        "EHLO NAM02-SN1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725827AbfEFMUT (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 6 May 2019 08:20:19 -0400
-From: Nava kishore Manne <navam@xilinx.com>
-Subject: RE: FPGA Manager - Partial Reconfiguration support for Xilinx
+Return-Path: <SRS0=Gv7+=TF=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=Gv7+=TF=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail-wm1-f42.google.com ([209.85.128.42]:39166 "EHLO
+        mail-wm1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725873AbfEEIkk (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sun, 5 May 2019 04:40:40 -0400
+Received: by mail-wm1-f42.google.com with SMTP id n25so11455710wmk.4
+        for <linux-fpga@vger.kernel.org>; Sun, 05 May 2019 01:40:39 -0700 (PDT)
+Subject: Re: FPGA Manager - Partial Reconfiguration support for Xilinx
  Zynq-7000
-Date: Mon, 6 May 2019 12:20:12 +0000
-Message-ID: <MN2PR02MB62240EE694CB567FC3F7D46DC2300@MN2PR02MB6224.namprd02.prod.outlook.com>
 References: <5bdf4d79-c0d6-30c1-1eb0-360b7dce615b@gmail.com>
  <70789e51-cb23-9776-dafe-fb34a0736bad@xilinx.com>
- <25125fd1-639b-69c3-f381-dfbfcee31c02@gmail.com>
-In-Reply-To: <25125fd1-639b-69c3-f381-dfbfcee31c02@gmail.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Alper Yazar <alperyazar2@gmail.com>
+Message-ID: <25125fd1-639b-69c3-f381-dfbfcee31c02@gmail.com>
+Date: Sun, 5 May 2019 11:40:35 +0300
 MIME-Version: 1.0
+In-Reply-To: <70789e51-cb23-9776-dafe-fb34a0736bad@xilinx.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: Alper Yazar <alperyazar2@gmail.com>, Michal Simek <michals@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
+To: Michal Simek <michal.simek@xilinx.com>, linux-fpga@vger.kernel.org, Nava kishore Manne <navam@xilinx.com>
 Cc: Ronan Keryell <rkeryell@xilinx.com>
 
-SGkgQWxwZXIgWWF6YXIsDQoNClBsZWFzZSBsb29rIGF0IHRoZSBiZWxvdyB3aWtpIGxpbmsgdG8g
-Z2VuZXJhdGUgLmJpbiBmb3JtIC5iaXQgZmlsZS4NCmh0dHBzOi8veGlsaW54LXdpa2kuYXRsYXNz
-aWFuLm5ldC93aWtpL3NwYWNlcy9BL3BhZ2VzLzE4ODQxNjQ1L1NvbHV0aW9uK1p5bnErUEwrUHJv
-Z3JhbW1pbmcrV2l0aCtGUEdBK01hbmFnZXIjU29sdXRpb25aeW5xUExQcm9ncmFtbWluZ1dpdGhG
-UEdBTWFuYWdlci1HZW5lcmF0aW5nLmJpbmZyb20uYml0ZmlsZXVzaW5nQm9vdGdlbiANCg0KUmVn
-YXJkcywNCk5hdmFraXNob3JlLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
-b206IEFscGVyIFlhemFyIFttYWlsdG86YWxwZXJ5YXphcjJAZ21haWwuY29tXQ0KPiBTZW50OiBT
-dW5kYXksIE1heSA1LCAyMDE5IDI6MTEgUE0NCj4gVG86IE1pY2hhbCBTaW1layA8bWljaGFsc0B4
-aWxpbnguY29tPjsgbGludXgtZnBnYUB2Z2VyLmtlcm5lbC5vcmc7IE5hdmENCj4ga2lzaG9yZSBN
-YW5uZSA8bmF2YW1AeGlsaW54LmNvbT4NCj4gQ2M6IFJvbmFuIEtlcnllbGwgPHJrZXJ5ZWxsQHhp
-bGlueC5jb20+DQo+IFN1YmplY3Q6IFJlOiBGUEdBIE1hbmFnZXIgLSBQYXJ0aWFsIFJlY29uZmln
-dXJhdGlvbiBzdXBwb3J0IGZvciBYaWxpbnggWnlucS0NCj4gNzAwMA0KPiANCj4gT24gMy83LzE5
-IDI6MDYgUE0sIE1pY2hhbCBTaW1layB3cm90ZToNCj4gPiBIaSwNCj4gPg0KPiA+IE9uIDAzLiAw
-My4gMTkgMTI6MzIsIEFscGVyIFlhemFyIHdyb3RlOg0KPiA+PiBIaSwNCj4gPj4NCj4gPj4gSSBh
-c2tlZCB0aGUgcXVlc3Rpb24gb24gWGlsaW54IGZvcnVtcyBhYm91dCAxIG1vbnRocyBhZ28gYnV0
-IGRpZG4ndCBnZXQgYW55DQo+IHJlc3BvbnNlIFsxXS4gSSBob3BlIHRoYXQgc29tZW9uZSBvbiB0
-aGlzIGxpc3QgbWF5IGd1aWRlIG1lLg0KPiA+Pg0KPiA+PiBJIGFtIGNyZWF0aW5nIExpbnV4IGJh
-c2VkIGltYWdlcyBmb3IgWnlucS03MDAwIGRldmljZXMgYnkgdXNpbmcgUGV0YWxpbnV4DQo+IDIw
-MTguMyB3aGljaCBpcyBhIHNldCBvZiBidWlsZCB0b29scyBwcm92aWRlZCBieSBYaWxpbnguIEZv
-ciBGUEdBIG1hbmFnZW1lbnQsDQo+IEZQR0EgTWFuYWdlciBpcyBpbmNsdWRlZCBieSBkZWZhdWx0
-LiBIb3dldmVyIGl0IGRvZXNuJ3Qgc3VwcG9ydCBwYXJ0aWFsDQo+IHJlY29uZmlndXJhdGlvbiBm
-b3IgWnlucS03MDAwIGRldmljZXMgYXMgc3RhdGVkIFsyXS4gSSB0ZXN0ZWQgYW5kIHZlcmlmaWVk
-IHRoYXQgaXQNCj4gZG9lc24ndCB3b3JrLiBJIGFzc3VtZWQgdGhhdCAvZHJpdmVycy9mcGdhL3p5
-bnEtZnBnYS5jIGlzIHRoZSBzb3VyY2UgY29kZSwNCj4gY2hlY2tlZCBpdCBhbmQgbm90aWNlZCBz
-b21lIGNvbW1lbnRzIGFib3V0IHBhcnRpYWwgcmVjb25maWcuIEFGQUlLIHByZXZpb3VzDQo+IGRy
-aXZlciB1c2VkIGJ5IFhpbGlueCBiZWZvcmUgRlBHQSBNYW5hZ2VyIHdob3NlIHNvdXJjZSBjb2Rl
-IGZpbGUgaXMNCj4geGlsaW54X2RldmNmZy5jIHN1cHBvcnRlZCBwYXJ0aWFsIHJlY29uZmlnLiBT
-byBJIGRvbid0IHRoaW5rIHRoYXQgdGhlcmUgaXMgYQ0KPiBoYXJkd2FyZSBsaW1pdGF0aW9uIHNp
-bmNlIHRoZSBwcmV2aW91cyBzb2x1dGlvbiB3YXMgd29ya2luZyBvbiB0aGUgc2FtZSBkZXZpY2Uu
-DQo+IFNvIEkgd29uZGVyIHdoeSB0aGUgbmV3ZXN0IG1ldGhvZCBpcyBsZXNzIGNhcGFibGUgdGhh
-biB0aGUgb2xkZXIgb25lLiBJIG5lZWQNCj4gcGFydGlhbCByZWNvbmZpZyBzdXBwb3J0IGZvciB0
-aGUgbmV3ZXN0IHBldGFsaW51eCB2ZXJzaW9uLiBXaGF0IHNob3VsZCBJIGRvPw0KPiA+Pg0KPiA+
-PiBhKSBDb21waWxlIG9sZCB4aWxpbnhfZGV2Y2ZnLmMgZHJpdmVyIGZvciBQZXRhbGludXggMjAx
-OC4zIGFuZCBkaXNhYmxlIEZQR0ENCj4gTWFuYWdlci4NCj4gPj4NCj4gPj4gYikgU29tZWhvdyBw
-YXRjaCBGUEdBIE1hbmFnZXINCj4gPj4NCj4gPj4gYykgV2FpdCAoaG93IGxvbmc/KSBYaWxpbngg
-dG8gc29sdmUgdGhpcyBpc3N1ZQ0KPiA+Pg0KPiA+PiBUd28gbmFtZXMgYXJlIGxpc3RlZCBhcyBN
-T0RVTEVfQVVUSE9SIG9mIHp5bnEtZnBnYS5jOiBNb3JpdHogRmlzY2hlcg0KPiBhbmQgTWljaGFs
-IFNpbWVrLiBJIGRvbid0IGtub3cgd2hldGhlciB0aGV5IGFyZSBzdWJzY3JpYmVkIHRvIHRoaXMg
-bGlzdCBvciBub3QuDQo+ID4+DQo+ID4+DQo+ID4+IFsxXToNCj4gPj4gaHR0cHM6Ly9mb3J1bXMu
-eGlsaW54LmNvbS90NS9FbWJlZGRlZC1MaW51eC9QYXJ0aWFsLVJlY29uZmlndXJhdGlvbi1zDQo+
-ID4+IHVwcG9ydC1pbi1QZXRhbGludXgtMjAxOC0zLWZvci1aeW5xL3RkLXAvOTM0MDU3DQo+ID4+
-IFsyXToNCj4gPj4gaHR0cHM6Ly94aWxpbngtd2lraS5hdGxhc3NpYW4ubmV0L3dpa2kvc3BhY2Vz
-L0EvcGFnZXMvMTg4NDE2NDUvU29sdXRpDQo+ID4+IG9uK1p5bnErUEwrUHJvZ3JhbW1pbmcrV2l0
-aCtGUEdBK01hbmFnZXINCj4gPg0KPiA+IE5hdmE6IENhbiB5b3UgcGxlYXNlIGNoZWNrIGlmIHBh
-cnRpYWwgcmVjb25maWd1cmF0aW9uIGlzIHN0aWxsIHdvcmtpbmc/DQo+ID4gSSBzZWUgY29kZSBp
-biB0aGUgZHJpdmVyLg0KPiA+DQo+ID4gQWxwZXI6IENhbiB5b3UgcGxlYXNlIHVzZSB1LWJvb3Qg
-YW5kIGNoZWNrIHRoYXQgeW91ciBiaXRzdHJlYW1zIGFyZQ0KPiA+IGNvcnJlY3Q/DQo+ID4gQWxz
-byB3aWxsIGJlIGdvb2QgdG8gaGF2ZSBzb21lIGxvZ3MgdG8gc2VlIHdoYXQgaXQgaXMgaGFwcGVu
-aW5nLg0KPiA+DQo+ID4gVGhhbmtzLA0KPiA+IE1pY2hhbA0KPiA+DQo+IA0KPiBIaSBNaWNoYWws
-DQo+IA0KPiBTb3JyeSBmb3IgbGF0ZSByZXNwb25zZS4gV2UgY2hlY2tlZCBVLWJvb3QgYW5kIGl0
-IHdvcmtlZCB3aXRob3V0IGFueSBwcm9ibGVtLg0KPiBPdXIgYml0c3RyZWFtcyBhcmUgYmFzZWQg
-b24gdGhlIFhpbGlueCBleGFtcGxlIHByb2plY3Qgb24gcGFydGlhbA0KPiByZWNvbmZpZ3VyYXRp
-b24uDQo+IA0KPiAxLiBMb2FkaW5nIGZ1bGwgYml0c3RyZWFtIHVzaW5nIFUtYm9vdCAoc3VjY2Vz
-c2Z1bCk6DQo+IA0KPiBaeW5xPiBmYXRsb2FkIG1tYyAwIDB4NDAwMDAwMCB0b3AuYml0DQo+IA0K
-PiByZWFkaW5nIHRvcC5iaXQNCj4gDQo+IDQwNDU2NjMgYnl0ZXMgcmVhZCBpbiAyMzUgbXMgKDE2
-LjQgTWlCL3MpDQo+IA0KPiBaeW5xPiBmcGdhIGxvYWRiIDAgMHg0MDAwMDAwIDQwNDU2NjMNCj4g
-DQo+ICAgZGVzaWduIGZpbGVuYW1lID0gInRvcDtVc2VySUQ9MFhGRkZGRkZGRjtWZXJzaW9uPTIw
-MTguMyINCj4gDQo+ICAgcGFydCBudW1iZXIgPSAiN3owMjBjbGc0ODQiDQo+IA0KPiAgIGRhdGUg
-PSAiMjAxOS8wMS8zMCINCj4gDQo+ICAgdGltZSA9ICIwMDo1NDoxOCINCj4gDQo+ICAgYnl0ZXMg
-aW4gYml0c3RyZWFtID0gNDA0NTU2NA0KPiANCj4genlucV9hbGlnbl9kbWFfYnVmZmVyOiBBbGln
-biBidWZmZXIgYXQgNDAwMDA2MyB0byAzZmZmZjgwKHN3YXAgMSkNCj4gDQo+IA0KPiAyLiBMb2Fk
-aW5nIHBhcnRpYWwgYml0c3RyZWFtIHVzaW5nIFUtYm9vdCAoc3VjY2Vzc2Z1bCk6DQo+IA0KPiBa
-eW5xPiBmYXRsb2FkIG1tYyAwIDB4NDAwMDAwMCBTX2tuaWdodF90b3BfcGFydGlhbC5iaXQNCj4g
-DQo+IHJlYWRpbmcgU19rbmlnaHRfdG9wX3BhcnRpYWwuYml0DQo+IA0KPiAxMjM4NDIwIGJ5dGVz
-IHJlYWQgaW4gODEgbXMgKDE0LjYgTWlCL3MpDQo+IA0KPiBaeW5xPiBmcGdhIGxvYWRicCAwIDB4
-NDAwMDAwMCAxMjM4NDIwDQo+IA0KPiAgIGRlc2lnbiBmaWxlbmFtZSA9ICJ0b3A7VXNlcklEPTBY
-RkZGRkZGRkY7UEFSVElBTD1UUlVFO1ZlcnNpb249MjAxOC4zIg0KPiANCj4gICBwYXJ0IG51bWJl
-ciA9ICI3ejAyMGNsZzQ4NCINCj4gDQo+ICAgZGF0ZSA9ICIyMDE5LzAxLzMwIg0KPiANCj4gICB0
-aW1lID0gIjAwOjU0OjQwIg0KPiANCj4gICBieXRlcyBpbiBiaXRzdHJlYW0gPSAxMjM4MzA4DQo+
-IA0KPiB6eW5xX2FsaWduX2RtYV9idWZmZXI6IEFsaWduIGJ1ZmZlciBhdCA0MDAwMDcwIHRvIDNm
-ZmZmODAoc3dhcCAxKQ0KPiANCj4gQm90aCBvZiB0aGVtIHdvcmtlZCBmaW5lLg0KPiANCj4gDQo+
-IDMuIExvYWRpbmcgZnVsbCBiaXRzdHJlYW0gb24gUGV0YWxpbnV4IDIwMTguMyAoc3VjY2Vzc2Z1
-bCk6DQo+IA0KPiByb290QHByb2plY3Q0On4jIG1rZGlyIC1wIC9saWIvZmlybXdhcmUNCj4gDQo+
-IHJvb3RAcHJvamVjdDQ6fiMgY2QgL21udA0KPiANCj4gcm9vdEBwcm9qZWN0NDovbW50IyBjcCB0
-b3AuYml0LmJpbiAvbGliL2Zpcm13YXJlDQo+IA0KPiByb290QHByb2plY3Q0Oi9tbnQjIGVjaG8g
-dG9wLmJpdC5iaW4NCj4gPi9zeXMvY2xhc3MvZnBnYV9tYW5hZ2VyL2ZwZ2EwL2Zpcm13YXJlDQo+
-IA0KPiBmcGdhX21hbmFnZXIgZnBnYTA6IHdyaXRpbmcgdG9wLmJpdC5iaW4gdG8gWGlsaW54IFp5
-bnEgRlBHQSBNYW5hZ2VyDQo+IA0KPiANCj4gNC4gTG9hZGluZyBwYXJ0aWFsIGJpdHN0cmVhbSBv
-biBQZXRhbGludXggMjAxOC4zIChOT1Qgc3VjY2Vzc2Z1bCk6DQo+IA0KPiByb290QHByb2plY3Q0
-Oi9tbnQjIGNwIFNfa25pZ2h0X3RvcF9wYXJ0aWFsLmJpdC5iaW4gL2xpYi9maXJtd2FyZQ0KPiAN
-Cj4gcm9vdEBwcm9qZWN0NDovbW50IyBlY2hvIFNfa25pZ2h0X3RvcF9wYXJ0aWFsLmJpdC5iaW4N
-Cj4gPi9zeXMvY2xhc3MvZnBnYV9tYW5hZ2VyL2ZwZ2EwL2Zpcm13YXJlDQo+IA0KPiBmcGdhX21h
-bmFnZXIgZnBnYTA6IHdyaXRpbmcgU19rbmlnaHRfdG9wX3BhcnRpYWwuYml0LmJpbiB0byBYaWxp
-bnggWnlucSBGUEdBDQo+IE1hbmFnZXINCj4gDQo+IC0tLSBXYWl0IGZldyBzZWNvbmRzIC0tLQ0K
-PiANCj4gZnBnYV9tYW5hZ2VyIGZwZ2EwOiBFcnJvciBhZnRlciB3cml0aW5nIGltYWdlIGRhdGEg
-dG8gRlBHQQ0KPiANCj4gLXNoOiBlY2hvOiB3cml0ZSBlcnJvcjogQ29ubmVjdGlvbiB0aW1lZCBv
-dXQNCj4gDQo+IFdlIGFsc28gY2hlY2tlZCBmcGdhLW1nci5oIGFuZCBzYXcgdGhlIGRlZmluaXRv
-bjogIiNkZWZpbmUNCj4gRlBHQV9NR1JfUEFSVElBTF9SRUNPTkZJRwlCSVQoMCkiLiBGb3IgcGFy
-dGlhbCBiaXRzdHJlYW0gdHJpYWxzIHdlDQo+IGFsc28gdHJpZWQgc2V0dGluZyB0aGlzIGJpdCB0
-byAxIGJ5ICJlY2hvIDEgPg0KPiAvc3lzL2NsYXNzL2ZwZ2FfbWFuYWdlci9mcGdhMC9mbGFncyIg
-Y29tbWFuZCBidXQgdGhpcyBkaWRuJ3QgYWZmZWN0IHRoZQ0KPiByZXN1bHQuDQo+IA0KPiBTaW5j
-ZSBGUEdBIG1hbmFnZXIgdXNlcyBCSU4gZmlsZSB3ZSBjb252ZXJ0IEJJVCB0byBCSU4gdXNpbmcg
-U0RLLiBVLWJvb3QNCj4gd29ya3Mgd2l0aCBCSVQgZmlsZXMuIElzIGl0IHBvc3NpYmxlIHRoYXQg
-dGhpcyBjb252ZXJzaW9uIGNhdXNlIHRoZSBwcm9ibGVtPyBIb3cNCj4gc2hvdWxkIHdlIGNvbnZl
-cnQgQklUIHRvIEJJTiBmaWxlPw0KPiANCj4gQmVzdCwNCj4gDQo+IEFscGVyDQoNCg==
+On 3/7/19 2:06 PM, Michal Simek wrote:
+> Hi,
+> 
+> On 03. 03. 19 12:32, Alper Yazar wrote:
+>> Hi,
+>>
+>> I asked the question on Xilinx forums about 1 months ago but didn't get any response [1]. I hope that someone on this list may guide me.
+>>
+>> I am creating Linux based images for Zynq-7000 devices by using Petalinux 2018.3 which is a set of build tools provided by Xilinx. For FPGA management, FPGA Manager is included by default. However it doesn't support partial reconfiguration for Zynq-7000 devices as stated [2]. I tested and verified that it doesn't work. I assumed that /drivers/fpga/zynq-fpga.c is the source code, checked it and noticed some comments about partial reconfig. AFAIK previous driver used by Xilinx before FPGA Manager whose source code file is xilinx_devcfg.c supported partial reconfig. So I don't think that there is a hardware limitation since the previous solution was working on the same device. So I wonder why the newest method is less capable than the older one. I need partial reconfig support for the newest petalinux version. What should I do?
+>>
+>> a) Compile old xilinx_devcfg.c driver for Petalinux 2018.3 and disable FPGA Manager. 
+>>
+>> b) Somehow patch FPGA Manager
+>>
+>> c) Wait (how long?) Xilinx to solve this issue
+>>
+>> Two names are listed as MODULE_AUTHOR of zynq-fpga.c: Moritz Fischer and Michal Simek. I don't know whether they are subscribed to this list or not.
+>>
+>>
+>> [1]: https://forums.xilinx.com/t5/Embedded-Linux/Partial-Reconfiguration-support-in-Petalinux-2018-3-for-Zynq/td-p/934057
+>> [2]: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841645/Solution+Zynq+PL+Programming+With+FPGA+Manager
+> 
+> Nava: Can you please check if partial reconfiguration is still working?
+> I see code in the driver.
+> 
+> Alper: Can you please use u-boot and check that your bitstreams are
+> correct?
+> Also will be good to have some logs to see what it is happening.
+> 
+> Thanks,
+> Michal
+> 
+
+Hi Michal,
+
+Sorry for late response. We checked U-boot and it worked without any problem. Our bitstreams are based on the Xilinx example project on partial reconfiguration.
+
+1. Loading full bitstream using U-boot (successful):
+
+Zynq> fatload mmc 0 0x4000000 top.bit
+
+reading top.bit
+
+4045663 bytes read in 235 ms (16.4 MiB/s)
+
+Zynq> fpga loadb 0 0x4000000 4045663
+
+  design filename = "top;UserID=0XFFFFFFFF;Version=2018.3"
+
+  part number = "7z020clg484"
+
+  date = "2019/01/30"
+
+  time = "00:54:18"
+
+  bytes in bitstream = 4045564
+
+zynq_align_dma_buffer: Align buffer at 4000063 to 3ffff80(swap 1)
+
+
+2. Loading partial bitstream using U-boot (successful):
+
+Zynq> fatload mmc 0 0x4000000 S_knight_top_partial.bit
+
+reading S_knight_top_partial.bit
+
+1238420 bytes read in 81 ms (14.6 MiB/s)
+
+Zynq> fpga loadbp 0 0x4000000 1238420
+
+  design filename = "top;UserID=0XFFFFFFFF;PARTIAL=TRUE;Version=2018.3"
+
+  part number = "7z020clg484"
+
+  date = "2019/01/30"
+
+  time = "00:54:40"
+
+  bytes in bitstream = 1238308
+
+zynq_align_dma_buffer: Align buffer at 4000070 to 3ffff80(swap 1)
+
+Both of them worked fine.
+
+
+3. Loading full bitstream on Petalinux 2018.3 (successful):
+
+root@project4:~# mkdir -p /lib/firmware
+
+root@project4:~# cd /mnt
+
+root@project4:/mnt# cp top.bit.bin /lib/firmware
+
+root@project4:/mnt# echo top.bit.bin >/sys/class/fpga_manager/fpga0/firmware
+
+fpga_manager fpga0: writing top.bit.bin to Xilinx Zynq FPGA Manager
+
+
+4. Loading partial bitstream on Petalinux 2018.3 (NOT successful):
+
+root@project4:/mnt# cp S_knight_top_partial.bit.bin /lib/firmware
+
+root@project4:/mnt# echo S_knight_top_partial.bit.bin >/sys/class/fpga_manager/fpga0/firmware
+
+fpga_manager fpga0: writing S_knight_top_partial.bit.bin to Xilinx Zynq FPGA Manager
+
+--- Wait few seconds ---
+
+fpga_manager fpga0: Error after writing image data to FPGA
+
+-sh: echo: write error: Connection timed out
+
+We also checked fpga-mgr.h and saw the definiton: "#define FPGA_MGR_PARTIAL_RECONFIG	BIT(0)". For partial bitstream trials we also tried setting this bit to 1 by "echo 1 > /sys/class/fpga_manager/fpga0/flags" command but this didn't affect the result.
+
+Since FPGA manager uses BIN file we convert BIT to BIN using SDK. U-boot works with BIT files. Is it possible that this conversion cause the problem? How should we convert BIT to BIN file?
+
+Best,
+
+Alper
