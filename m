@@ -1,43 +1,86 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH 2/4] fpga: dfl: afu: Pass the correct device to dma_mapping_error()
-Date: Thu,  9 May 2019 16:08:27 -0500
-Message-Id: <20190509210829.31815-3-atull@kernel.org>
-In-Reply-To: <20190509210829.31815-1-atull@kernel.org>
-References: <20190509210829.31815-1-atull@kernel.org>
+Return-Path: <SRS0=dz0a=TH=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=dz0a=TH=ettus.com=moritz.fischer@kernel.org>
+Date: Tue, 7 May 2019 10:27:32 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v2 03/18] fpga: dfl: fme: align PR buffer size per PR
+ datawidth
+Message-ID: <20190507172732.GB26690@archbox>
+References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+ <1556528151-17221-4-git-send-email-hao.wu@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Scott Wood <swood@redhat.com>, Wu Hao <hao.wu@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1556528151-17221-4-git-send-email-hao.wu@intel.com>
+To: Wu Hao <hao.wu@intel.com>
+Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Scott Wood <swood@redhat.com>
-
-dma_mapping_error() was being called on a different device struct than
-what was passed to map/unmap.  Besides rendering the error checking
-ineffective, it caused a debug splat with CONFIG_DMA_API_DEBUG.
-
-Signed-off-by: Scott Wood <swood@redhat.com>
-Acked-by: Wu Hao <hao.wu@intel.com>
+On Mon, Apr 29, 2019 at 04:55:36PM +0800, Wu Hao wrote:
+> Current driver checks if input bitstream file size is aligned or
+> not per PR data width (default 32bits). It requires one additional
+> step for end user when they generate the bitstream file, padding
+> extra zeros to bitstream file to align its size per PR data width,
+> but they don't have to as hardware will drop extra padding bytes
+> automatically.
+> 
+> In order to simplify the user steps, this patch aligns PR buffer
+> size per PR data width in driver, to allow user to pass unaligned
+> size bitstream files to driver.
+> 
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Acked-by: Alan Tull <atull@kernel.org>
 Acked-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
----
- drivers/fpga/dfl-afu-dma-region.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index 0bbc7142f1dc..f7d268f45df0 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -391,7 +391,7 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
- 				    region->pages[0], 0,
- 				    region->length,
- 				    DMA_BIDIRECTIONAL);
--	if (dma_mapping_error(&pdata->dev->dev, region->iova)) {
-+	if (dma_mapping_error(dfl_fpga_pdata_to_parent(pdata), region->iova)) {
- 		dev_err(&pdata->dev->dev, "failed to map for dma\n");
- 		ret = -EFAULT;
- 		goto unpin_pages;
--- 
-2.21.0
+> ---
+>  drivers/fpga/dfl-fme-pr.c | 14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+> index 6ec0f09..3c71dc3 100644
+> --- a/drivers/fpga/dfl-fme-pr.c
+> +++ b/drivers/fpga/dfl-fme-pr.c
+> @@ -74,6 +74,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+>  	struct dfl_fme *fme;
+>  	unsigned long minsz;
+>  	void *buf = NULL;
+> +	size_t length;
+>  	int ret = 0;
+>  	u64 v;
+>  
+> @@ -85,9 +86,6 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+>  	if (port_pr.argsz < minsz || port_pr.flags)
+>  		return -EINVAL;
+>  
+> -	if (!IS_ALIGNED(port_pr.buffer_size, 4))
+> -		return -EINVAL;
+> -
+>  	/* get fme header region */
+>  	fme_hdr = dfl_get_feature_ioaddr_by_id(&pdev->dev,
+>  					       FME_FEATURE_ID_HEADER);
+> @@ -103,7 +101,13 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+>  		       port_pr.buffer_size))
+>  		return -EFAULT;
+>  
+> -	buf = vmalloc(port_pr.buffer_size);
+> +	/*
+> +	 * align PR buffer per PR bandwidth, as HW ignores the extra padding
+> +	 * data automatically.
+> +	 */
+> +	length = ALIGN(port_pr.buffer_size, 4);
+> +
+> +	buf = vmalloc(length);
+>  	if (!buf)
+>  		return -ENOMEM;
+>  
+> @@ -140,7 +144,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+>  	fpga_image_info_free(region->info);
+>  
+>  	info->buf = buf;
+> -	info->count = port_pr.buffer_size;
+> +	info->count = length;
+>  	info->region_id = port_pr.port_id;
+>  	region->info = info;
+>  
+> -- 
+> 1.8.3.1
+> 
