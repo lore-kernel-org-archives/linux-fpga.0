@@ -1,144 +1,162 @@
-Return-Path: <SRS0=Gv7+=TF=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=Gv7+=TF=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail-wm1-f42.google.com ([209.85.128.42]:39166 "EHLO
-        mail-wm1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725873AbfEEIkk (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 5 May 2019 04:40:40 -0400
-Received: by mail-wm1-f42.google.com with SMTP id n25so11455710wmk.4
-        for <linux-fpga@vger.kernel.org>; Sun, 05 May 2019 01:40:39 -0700 (PDT)
-Subject: Re: FPGA Manager - Partial Reconfiguration support for Xilinx
- Zynq-7000
-References: <5bdf4d79-c0d6-30c1-1eb0-360b7dce615b@gmail.com>
- <70789e51-cb23-9776-dafe-fb34a0736bad@xilinx.com>
-From: Alper Yazar <alperyazar2@gmail.com>
-Message-ID: <25125fd1-639b-69c3-f381-dfbfcee31c02@gmail.com>
-Date: Sun, 5 May 2019 11:40:35 +0300
+Return-Path: <SRS0=dz0a=TH=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=dz0a=TH=ettus.com=moritz.fischer@kernel.org>
+Date: Tue, 7 May 2019 10:35:00 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v2 07/18] fpga: dfl: pci: enable SRIOV support.
+Message-ID: <20190507173500.GD26690@archbox>
+References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+ <1556528151-17221-8-git-send-email-hao.wu@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <70789e51-cb23-9776-dafe-fb34a0736bad@xilinx.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Michal Simek <michal.simek@xilinx.com>, linux-fpga@vger.kernel.org, Nava kishore Manne <navam@xilinx.com>
-Cc: Ronan Keryell <rkeryell@xilinx.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1556528151-17221-8-git-send-email-hao.wu@intel.com>
+To: Wu Hao <hao.wu@intel.com>
+Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-On 3/7/19 2:06 PM, Michal Simek wrote:
-> Hi,
+On Mon, Apr 29, 2019 at 04:55:40PM +0800, Wu Hao wrote:
+> This patch enables the standard sriov support. It allows user to
+> enable SRIOV (and VFs), then user could pass through accelerators
+> (VFs) into virtual machine or use VFs directly in host.
 > 
-> On 03. 03. 19 12:32, Alper Yazar wrote:
->> Hi,
->>
->> I asked the question on Xilinx forums about 1 months ago but didn't get any response [1]. I hope that someone on this list may guide me.
->>
->> I am creating Linux based images for Zynq-7000 devices by using Petalinux 2018.3 which is a set of build tools provided by Xilinx. For FPGA management, FPGA Manager is included by default. However it doesn't support partial reconfiguration for Zynq-7000 devices as stated [2]. I tested and verified that it doesn't work. I assumed that /drivers/fpga/zynq-fpga.c is the source code, checked it and noticed some comments about partial reconfig. AFAIK previous driver used by Xilinx before FPGA Manager whose source code file is xilinx_devcfg.c supported partial reconfig. So I don't think that there is a hardware limitation since the previous solution was working on the same device. So I wonder why the newest method is less capable than the older one. I need partial reconfig support for the newest petalinux version. What should I do?
->>
->> a) Compile old xilinx_devcfg.c driver for Petalinux 2018.3 and disable FPGA Manager. 
->>
->> b) Somehow patch FPGA Manager
->>
->> c) Wait (how long?) Xilinx to solve this issue
->>
->> Two names are listed as MODULE_AUTHOR of zynq-fpga.c: Moritz Fischer and Michal Simek. I don't know whether they are subscribed to this list or not.
->>
->>
->> [1]: https://forums.xilinx.com/t5/Embedded-Linux/Partial-Reconfiguration-support-in-Petalinux-2018-3-for-Zynq/td-p/934057
->> [2]: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841645/Solution+Zynq+PL+Programming+With+FPGA+Manager
+> Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+> ---
+>  drivers/fpga/dfl-pci.c | 40 ++++++++++++++++++++++++++++++++++++++++
+>  drivers/fpga/dfl.c     | 41 +++++++++++++++++++++++++++++++++++++++++
+>  drivers/fpga/dfl.h     |  1 +
+>  3 files changed, 82 insertions(+)
 > 
-> Nava: Can you please check if partial reconfiguration is still working?
-> I see code in the driver.
+> diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+> index 66b5720..2fa571b 100644
+> --- a/drivers/fpga/dfl-pci.c
+> +++ b/drivers/fpga/dfl-pci.c
+> @@ -223,8 +223,46 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+>  	return ret;
+>  }
+>  
+> +static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
+> +{
+> +	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
+> +	struct dfl_fpga_cdev *cdev = drvdata->cdev;
+> +	int ret = 0;
+> +
+> +	mutex_lock(&cdev->lock);
+> +
+> +	if (!num_vfs) {
+> +		/*
+> +		 * disable SRIOV and then put released ports back to default
+> +		 * PF access mode.
+> +		 */
+> +		pci_disable_sriov(pcidev);
+> +
+> +		__dfl_fpga_cdev_config_port_vf(cdev, false);
+> +
+> +	} else if (cdev->released_port_num == num_vfs) {
+> +		/*
+> +		 * only enable SRIOV if cdev has matched released ports, put
+> +		 * released ports into VF access mode firstly.
+> +		 */
+> +		__dfl_fpga_cdev_config_port_vf(cdev, true);
+> +
+> +		ret = pci_enable_sriov(pcidev, num_vfs);
+> +		if (ret)
+> +			__dfl_fpga_cdev_config_port_vf(cdev, false);
+> +	} else {
+> +		ret = -EINVAL;
+> +	}
+> +
+> +	mutex_unlock(&cdev->lock);
+> +	return ret;
+> +}
+> +
+>  static void cci_pci_remove(struct pci_dev *pcidev)
+>  {
+> +	if (dev_is_pf(&pcidev->dev))
+> +		cci_pci_sriov_configure(pcidev, 0);
+> +
+>  	cci_remove_feature_devs(pcidev);
+>  	pci_disable_pcie_error_reporting(pcidev);
+>  }
+> @@ -234,6 +272,7 @@ static void cci_pci_remove(struct pci_dev *pcidev)
+>  	.id_table = cci_pcie_id_tbl,
+>  	.probe = cci_pci_probe,
+>  	.remove = cci_pci_remove,
+> +	.sriov_configure = cci_pci_sriov_configure,
+>  };
+>  
+>  module_pci_driver(cci_pci_driver);
+> @@ -241,3 +280,4 @@ static void cci_pci_remove(struct pci_dev *pcidev)
+>  MODULE_DESCRIPTION("FPGA DFL PCIe Device Driver");
+>  MODULE_AUTHOR("Intel Corporation");
+>  MODULE_LICENSE("GPL v2");
+> +MODULE_VERSION(DRV_VERSION);
+> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+> index a6b6d38..c5aa287 100644
+> --- a/drivers/fpga/dfl.c
+> +++ b/drivers/fpga/dfl.c
+> @@ -1098,6 +1098,47 @@ int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
+>  }
+>  EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_port);
+>  
+> +static void config_port_vf(struct device *fme_dev, int port_id, bool is_vf)
+> +{
+> +	void __iomem *base;
+> +	u64 v;
+> +
+> +	base = dfl_get_feature_ioaddr_by_id(fme_dev, FME_FEATURE_ID_HEADER);
+> +
+> +	v = readq(base + FME_HDR_PORT_OFST(port_id));
+> +
+> +	v &= ~FME_PORT_OFST_ACC_CTRL;
+> +	v |= FIELD_PREP(FME_PORT_OFST_ACC_CTRL,
+> +			is_vf ? FME_PORT_OFST_ACC_VF : FME_PORT_OFST_ACC_PF);
+> +
+> +	writeq(v, base + FME_HDR_PORT_OFST(port_id));
+> +}
+> +
+> +/**
+> + * __dfl_fpga_cdev_config_port_vf - configure port to VF access mode
+> + *
+> + * @cdev: parent container device.
+> + * @if_vf: true for VF access mode, and false for PF access mode
+> + *
+> + * Return: 0 on success, negative error code otherwise.
+> + *
+> + * This function is needed in sriov configuration routine. It could be used to
+> + * configures the released ports access mode to VF or PF.
+> + * The caller needs to hold lock for protection.
+> + */
+> +void __dfl_fpga_cdev_config_port_vf(struct dfl_fpga_cdev *cdev, bool is_vf)
+> +{
+> +	struct dfl_feature_platform_data *pdata;
+> +
+> +	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
+> +		if (device_is_registered(&pdata->dev->dev))
+> +			continue;
+> +
+> +		config_port_vf(cdev->fme_dev, pdata->id, is_vf);
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_config_port_vf);
+> +
+>  static int __init dfl_fpga_init(void)
+>  {
+>  	int ret;
+> diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+> index 63f39ab..1350e8e 100644
+> --- a/drivers/fpga/dfl.h
+> +++ b/drivers/fpga/dfl.h
+> @@ -421,5 +421,6 @@ struct platform_device *
+>  
+>  int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
+>  			      u32 port_id, bool release);
+> +void __dfl_fpga_cdev_config_port_vf(struct dfl_fpga_cdev *cdev, bool is_vf);
+>  
+>  #endif /* __FPGA_DFL_H */
+> -- 
+> 1.8.3.1
 > 
-> Alper: Can you please use u-boot and check that your bitstreams are
-> correct?
-> Also will be good to have some logs to see what it is happening.
-> 
-> Thanks,
-> Michal
-> 
-
-Hi Michal,
-
-Sorry for late response. We checked U-boot and it worked without any problem. Our bitstreams are based on the Xilinx example project on partial reconfiguration.
-
-1. Loading full bitstream using U-boot (successful):
-
-Zynq> fatload mmc 0 0x4000000 top.bit
-
-reading top.bit
-
-4045663 bytes read in 235 ms (16.4 MiB/s)
-
-Zynq> fpga loadb 0 0x4000000 4045663
-
-  design filename = "top;UserID=0XFFFFFFFF;Version=2018.3"
-
-  part number = "7z020clg484"
-
-  date = "2019/01/30"
-
-  time = "00:54:18"
-
-  bytes in bitstream = 4045564
-
-zynq_align_dma_buffer: Align buffer at 4000063 to 3ffff80(swap 1)
-
-
-2. Loading partial bitstream using U-boot (successful):
-
-Zynq> fatload mmc 0 0x4000000 S_knight_top_partial.bit
-
-reading S_knight_top_partial.bit
-
-1238420 bytes read in 81 ms (14.6 MiB/s)
-
-Zynq> fpga loadbp 0 0x4000000 1238420
-
-  design filename = "top;UserID=0XFFFFFFFF;PARTIAL=TRUE;Version=2018.3"
-
-  part number = "7z020clg484"
-
-  date = "2019/01/30"
-
-  time = "00:54:40"
-
-  bytes in bitstream = 1238308
-
-zynq_align_dma_buffer: Align buffer at 4000070 to 3ffff80(swap 1)
-
-Both of them worked fine.
-
-
-3. Loading full bitstream on Petalinux 2018.3 (successful):
-
-root@project4:~# mkdir -p /lib/firmware
-
-root@project4:~# cd /mnt
-
-root@project4:/mnt# cp top.bit.bin /lib/firmware
-
-root@project4:/mnt# echo top.bit.bin >/sys/class/fpga_manager/fpga0/firmware
-
-fpga_manager fpga0: writing top.bit.bin to Xilinx Zynq FPGA Manager
-
-
-4. Loading partial bitstream on Petalinux 2018.3 (NOT successful):
-
-root@project4:/mnt# cp S_knight_top_partial.bit.bin /lib/firmware
-
-root@project4:/mnt# echo S_knight_top_partial.bit.bin >/sys/class/fpga_manager/fpga0/firmware
-
-fpga_manager fpga0: writing S_knight_top_partial.bit.bin to Xilinx Zynq FPGA Manager
-
---- Wait few seconds ---
-
-fpga_manager fpga0: Error after writing image data to FPGA
-
--sh: echo: write error: Connection timed out
-
-We also checked fpga-mgr.h and saw the definiton: "#define FPGA_MGR_PARTIAL_RECONFIG	BIT(0)". For partial bitstream trials we also tried setting this bit to 1 by "echo 1 > /sys/class/fpga_manager/fpga0/flags" command but this didn't affect the result.
-
-Since FPGA manager uses BIN file we convert BIT to BIN using SDK. U-boot works with BIT files. Is it possible that this conversion cause the problem? How should we convert BIT to BIN file?
-
-Best,
-
-Alper
