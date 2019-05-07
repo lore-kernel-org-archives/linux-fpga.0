@@ -1,26 +1,34 @@
 Return-Path: <atull@kernel.org>
 Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-References: <1556528151-17221-1-git-send-email-hao.wu@intel.com> <1556528151-17221-13-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1556528151-17221-13-git-send-email-hao.wu@intel.com>
+References: <20190507194313.1618-1-mdf@kernel.org>
+In-Reply-To: <20190507194313.1618-1-mdf@kernel.org>
 From: Alan Tull <atull@kernel.org>
-Date: Thu, 9 May 2019 09:41:18 -0500
-Message-ID: <CANk1AXQ6mcQ2td02j2g=n5cxOri--bp3yV5t7OCgK5Rc3QVHMQ@mail.gmail.com>
-Subject: Re: [PATCH v2 12/18] fpga: dfl: afu: add error reporting support.
+Date: Tue, 7 May 2019 15:09:57 -0500
+Message-ID: <CANk1AXTgzAAH+c6oNe-ALZ5vHhUCcdhWYYAs9mbdYSB+bPabJQ@mail.gmail.com>
+Subject: Re: [PATCH v2] fpga: zynqmp-fpga: Correctly handle error pointer
 Content-Type: text/plain; charset="UTF-8"
-To: Wu Hao <hao.wu@intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Dan Carpenter <dan.carpenter@oracle.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Apr 29, 2019 at 4:12 AM Wu Hao <hao.wu@intel.com> wrote:
+On Tue, May 7, 2019 at 2:43 PM Moritz Fischer <mdf@kernel.org> wrote:
 >
-> Error reporting is one important private feature, it reports error
-> detected on port and accelerated function unit (AFU). It introduces
-> several sysfs interfaces to allow userspace to check and clear
-> errors detected by hardware.
+> Fixes the following static checker errors:
 >
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> drivers/fpga/zynqmp-fpga.c:50 zynqmp_fpga_ops_write()
+> error: 'eemi_ops' dereferencing possible ERR_PTR()
+>
+> drivers/fpga/zynqmp-fpga.c:84 zynqmp_fpga_ops_state()
+> error: 'eemi_ops' dereferencing possible ERR_PTR()
+>
+> Note: This does not handle the EPROBE_DEFER value in a
+>       special manner.
+>
+> Fixes commit c09f7471127e ("fpga manager: Adding FPGA Manager support for
+> Xilinx zynqmp")
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Moritz Fischer <mdf@kernel.org>
 
 Acked-by: Alan Tull <atull@kernel.org>
 
@@ -28,14 +36,36 @@ Thanks!
 Alan
 
 > ---
-> v2: add more error code description for error clear sysfs in doc.
->     return -EINVAL instead of -EBUSY when input error code doesn't
->     match in error clear sysfs.
+>
+> Changes from v1:
+> - Address Alan's feedback regarding handling both occurences.
+>
 > ---
->  Documentation/ABI/testing/sysfs-platform-dfl-port |  39 ++++
->  drivers/fpga/Makefile                             |   1 +
->  drivers/fpga/dfl-afu-error.c                      | 225 ++++++++++++++++++++++
->  drivers/fpga/dfl-afu-main.c                       |   4 +
->  drivers/fpga/dfl-afu.h                            |   4 +
->  5 files changed, 273 insertions(+)
->  create mode 100644 drivers/fpga/dfl-afu-error.c
+>  drivers/fpga/zynqmp-fpga.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/fpga/zynqmp-fpga.c b/drivers/fpga/zynqmp-fpga.c
+> index f7cbaadf49ab..b8a88d21d038 100644
+> --- a/drivers/fpga/zynqmp-fpga.c
+> +++ b/drivers/fpga/zynqmp-fpga.c
+> @@ -47,7 +47,7 @@ static int zynqmp_fpga_ops_write(struct fpga_manager *mgr,
+>         char *kbuf;
+>         int ret;
+>
+> -       if (!eemi_ops || !eemi_ops->fpga_load)
+> +       if (IS_ERR_OR_NULL(eemi_ops) || !eemi_ops->fpga_load)
+>                 return -ENXIO;
+>
+>         priv = mgr->priv;
+> @@ -81,7 +81,7 @@ static enum fpga_mgr_states zynqmp_fpga_ops_state(struct fpga_manager *mgr)
+>         const struct zynqmp_eemi_ops *eemi_ops = zynqmp_pm_get_eemi_ops();
+>         u32 status;
+>
+> -       if (!eemi_ops || !eemi_ops->fpga_get_status)
+> +       if (IS_ERR_OR_NULL(eemi_ops) || !eemi_ops->fpga_get_status)
+>                 return FPGA_MGR_STATE_UNKNOWN;
+>
+>         eemi_ops->fpga_get_status(&status);
+> --
+> 2.21.0
+>
