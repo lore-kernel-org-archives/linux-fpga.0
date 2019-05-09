@@ -1,108 +1,59 @@
-Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 11/16] fpga: dfl: afu: export __port_enable/disable function.
-Date: Mon, 27 May 2019 13:22:21 +0800
-Message-Id: <1558934546-12171-12-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
-References: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 1/4] fpga: stratix10-soc: fix use-after-free on s10_init()
+Date: Thu,  9 May 2019 16:08:26 -0500
+Message-Id: <20190509210829.31815-2-atull@kernel.org>
+In-Reply-To: <20190509210829.31815-1-atull@kernel.org>
+References: <20190509210829.31815-1-atull@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Wen Yang <wen.yang99@zte.com.cn>, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 List-ID: <linux-fpga@vger.kernel.org>
 
-As these two functions are used by other private features. e.g.
-in error reporting private feature, it requires to check port status
-and reset port for error clearing.
+From: Wen Yang <wen.yang99@zte.com.cn>
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
+The refcount of fw_np has already been decreased by of_find_matching_node()
+so it shouldn't be used anymore.
+This patch adds an of_node_get() before of_find_matching_node() to avoid
+the use-after-free problem.
+
+Fixes: e7eef1d7633a ("fpga: add intel stratix10 soc fpga manager driver")
+Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+Cc: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>
+Cc: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Cc: linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Reviewed-by: Moritz Fischer <mdf@kernel.org>
+Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 Acked-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/dfl-afu-main.c | 25 ++++++++++++++-----------
- drivers/fpga/dfl-afu.h      |  3 +++
- 2 files changed, 17 insertions(+), 11 deletions(-)
+ drivers/fpga/stratix10-soc.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 65b3e89..c8bc0b5 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -24,14 +24,16 @@
- #define DRV_VERSION	"0.8"
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index 13851b3d1c56..215d33789c74 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -507,12 +507,16 @@ static int __init s10_init(void)
+ 	if (!fw_np)
+ 		return -ENODEV;
  
- /**
-- * port_enable - enable a port
-+ * __port_enable - enable a port
-  * @pdev: port platform device.
-  *
-  * Enable Port by clear the port soft reset bit, which is set by default.
-  * The AFU is unable to respond to any MMIO access while in reset.
-- * port_enable function should only be used after port_disable function.
-+ * __port_enable function should only be used after __port_disable function.
-+ *
-+ * The caller needs to hold lock for protection.
-  */
--static void port_enable(struct platform_device *pdev)
-+void __port_enable(struct platform_device *pdev)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
- 	void __iomem *base;
-@@ -54,13 +56,14 @@ static void port_enable(struct platform_device *pdev)
- #define RST_POLL_TIMEOUT 1000 /* us */
++	of_node_get(fw_np);
+ 	np = of_find_matching_node(fw_np, s10_of_match);
+-	if (!np)
++	if (!np) {
++		of_node_put(fw_np);
+ 		return -ENODEV;
++	}
  
- /**
-- * port_disable - disable a port
-+ * __port_disable - disable a port
-  * @pdev: port platform device.
-  *
-- * Disable Port by setting the port soft reset bit, it puts the port into
-- * reset.
-+ * Disable Port by setting the port soft reset bit, it puts the port into reset.
-+ *
-+ * The caller needs to hold lock for protection.
-  */
--static int port_disable(struct platform_device *pdev)
-+int __port_disable(struct platform_device *pdev)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
- 	void __iomem *base;
-@@ -106,9 +109,9 @@ static int __port_reset(struct platform_device *pdev)
- {
- 	int ret;
+ 	of_node_put(np);
+ 	ret = of_platform_populate(fw_np, s10_of_match, NULL, NULL);
++	of_node_put(fw_np);
+ 	if (ret)
+ 		return ret;
  
--	ret = port_disable(pdev);
-+	ret = __port_disable(pdev);
- 	if (!ret)
--		port_enable(pdev);
-+		__port_enable(pdev);
- 
- 	return ret;
- }
-@@ -805,9 +808,9 @@ static int port_enable_set(struct platform_device *pdev, bool enable)
- 
- 	mutex_lock(&pdata->lock);
- 	if (enable)
--		port_enable(pdev);
-+		__port_enable(pdev);
- 	else
--		ret = port_disable(pdev);
-+		ret = __port_disable(pdev);
- 	mutex_unlock(&pdata->lock);
- 
- 	return ret;
-diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
-index 0c7630a..35e60c5 100644
---- a/drivers/fpga/dfl-afu.h
-+++ b/drivers/fpga/dfl-afu.h
-@@ -79,6 +79,9 @@ struct dfl_afu {
- 	struct dfl_feature_platform_data *pdata;
- };
- 
-+void __port_enable(struct platform_device *pdev);
-+int __port_disable(struct platform_device *pdev);
-+
- void afu_mmio_region_init(struct dfl_feature_platform_data *pdata);
- int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
- 			u32 region_index, u64 region_size, u64 phys, u32 flags);
 -- 
-1.8.3.1
+2.21.0
