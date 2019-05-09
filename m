@@ -1,43 +1,43 @@
-Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 02/16] fpga: dfl: fme: remove copy_to_user() in ioctl for PR
-Date: Mon, 27 May 2019 13:22:12 +0800
-Message-Id: <1558934546-12171-3-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
-References: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 2/4] fpga: dfl: afu: Pass the correct device to dma_mapping_error()
+Date: Thu,  9 May 2019 16:08:27 -0500
+Message-Id: <20190509210829.31815-3-atull@kernel.org>
+In-Reply-To: <20190509210829.31815-1-atull@kernel.org>
+References: <20190509210829.31815-1-atull@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Scott Wood <swood@redhat.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch removes copy_to_user() code in partial reconfiguration
-ioctl, as it's useless as user never needs to read the data
-structure after ioctl.
+From: Scott Wood <swood@redhat.com>
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+dma_mapping_error() was being called on a different device struct than
+what was passed to map/unmap.  Besides rendering the error checking
+ineffective, it caused a debug splat with CONFIG_DMA_API_DEBUG.
+
+Signed-off-by: Scott Wood <swood@redhat.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Moritz Fischer <mdf@kernel.org>
 Acked-by: Alan Tull <atull@kernel.org>
 ---
-v2: clean up code split from patch 2 in v1 patchset.
-v3: no change.
----
- drivers/fpga/dfl-fme-pr.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/fpga/dfl-afu-dma-region.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-index d9ca955..6ec0f09 100644
---- a/drivers/fpga/dfl-fme-pr.c
-+++ b/drivers/fpga/dfl-fme-pr.c
-@@ -159,9 +159,6 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 	mutex_unlock(&pdata->lock);
- free_exit:
- 	vfree(buf);
--	if (copy_to_user((void __user *)arg, &port_pr, minsz))
--		return -EFAULT;
--
- 	return ret;
- }
- 
+diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+index 0bbc7142f1dc..f7d268f45df0 100644
+--- a/drivers/fpga/dfl-afu-dma-region.c
++++ b/drivers/fpga/dfl-afu-dma-region.c
+@@ -391,7 +391,7 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
+ 				    region->pages[0], 0,
+ 				    region->length,
+ 				    DMA_BIDIRECTIONAL);
+-	if (dma_mapping_error(&pdata->dev->dev, region->iova)) {
++	if (dma_mapping_error(dfl_fpga_pdata_to_parent(pdata), region->iova)) {
+ 		dev_err(&pdata->dev->dev, "failed to map for dma\n");
+ 		ret = -EFAULT;
+ 		goto unpin_pages;
 -- 
-1.8.3.1
+2.21.0
