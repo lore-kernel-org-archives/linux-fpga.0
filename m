@@ -1,79 +1,53 @@
-Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 13/16] fpga: dfl: afu: add STP (SignalTap) support
-Date: Mon, 27 May 2019 13:22:23 +0800
-Message-Id: <1558934546-12171-14-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
-References: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
+From: Alan Tull <atull@kernel.org>
+Subject: [PATCH 4/4] fpga: dfl: expand minor range when registering chrdev region
+Date: Thu,  9 May 2019 16:08:29 -0500
+Message-Id: <20190509210829.31815-5-atull@kernel.org>
+In-Reply-To: <20190509210829.31815-1-atull@kernel.org>
+References: <20190509210829.31815-1-atull@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, Chengguang Xu <cgxu519@gmx.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-STP (SignalTap) is one of the private features under the port for
-debugging. This patch adds private feature driver support for it
-to allow userspace applications to mmap related mmio region and
-provide STP service.
+From: Chengguang Xu <cgxu519@gmx.com>
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
+Actually, total amount of available minor number
+for a single major is MINORMASK + 1. So expand
+minor range when registering chrdev region.
+
+Signed-off-by: Chengguang Xu <cgxu519@gmx.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/dfl-afu-main.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ drivers/fpga/dfl.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index bcf6e28..8241ace 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -513,6 +513,36 @@ static void port_afu_uinit(struct platform_device *pdev,
- 	.uinit = port_afu_uinit,
- };
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index c25217cde5ca..4b66aaa32b5a 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -322,7 +322,7 @@ static void dfl_chardev_uinit(void)
+ 	for (i = 0; i < DFL_FPGA_DEVT_MAX; i++)
+ 		if (MAJOR(dfl_chrdevs[i].devt)) {
+ 			unregister_chrdev_region(dfl_chrdevs[i].devt,
+-						 MINORMASK);
++						 MINORMASK + 1);
+ 			dfl_chrdevs[i].devt = MKDEV(0, 0);
+ 		}
+ }
+@@ -332,8 +332,8 @@ static int dfl_chardev_init(void)
+ 	int i, ret;
  
-+static int port_stp_init(struct platform_device *pdev,
-+			 struct dfl_feature *feature)
-+{
-+	struct resource *res = &pdev->resource[feature->resource_index];
-+
-+	dev_dbg(&pdev->dev, "PORT STP Init.\n");
-+
-+	return afu_mmio_region_add(dev_get_platdata(&pdev->dev),
-+				   DFL_PORT_REGION_INDEX_STP,
-+				   resource_size(res), res->start,
-+				   DFL_PORT_REGION_MMAP | DFL_PORT_REGION_READ |
-+				   DFL_PORT_REGION_WRITE);
-+}
-+
-+static void port_stp_uinit(struct platform_device *pdev,
-+			   struct dfl_feature *feature)
-+{
-+	dev_dbg(&pdev->dev, "PORT STP UInit.\n");
-+}
-+
-+static const struct dfl_feature_id port_stp_id_table[] = {
-+	{.id = PORT_FEATURE_ID_STP,},
-+	{0,}
-+};
-+
-+static const struct dfl_feature_ops port_stp_ops = {
-+	.init = port_stp_init,
-+	.uinit = port_stp_uinit,
-+};
-+
- static struct dfl_feature_driver port_feature_drvs[] = {
- 	{
- 		.id_table = port_hdr_id_table,
-@@ -527,6 +557,10 @@ static void port_afu_uinit(struct platform_device *pdev,
- 		.ops = &port_err_ops,
- 	},
- 	{
-+		.id_table = port_stp_id_table,
-+		.ops = &port_stp_ops,
-+	},
-+	{
- 		.ops = NULL,
+ 	for (i = 0; i < DFL_FPGA_DEVT_MAX; i++) {
+-		ret = alloc_chrdev_region(&dfl_chrdevs[i].devt, 0, MINORMASK,
+-					  dfl_chrdevs[i].name);
++		ret = alloc_chrdev_region(&dfl_chrdevs[i].devt, 0,
++					  MINORMASK + 1, dfl_chrdevs[i].name);
+ 		if (ret)
+ 			goto exit;
  	}
- };
 -- 
-1.8.3.1
+2.21.0
