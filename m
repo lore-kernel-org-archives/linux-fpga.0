@@ -1,46 +1,68 @@
-Date: Tue, 7 May 2019 10:18:47 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v2 02/18] fpga: dfl: fme: remove copy_to_user() in ioctl
- for PR
-Message-ID: <20190507171841.GA26185@archbox>
-References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
- <1556528151-17221-3-git-send-email-hao.wu@intel.com>
+Return-Path: <atull@kernel.org>
+Return-Path: <atull@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1556528151-17221-3-git-send-email-hao.wu@intel.com>
+References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
+ <1556528151-17221-6-git-send-email-hao.wu@intel.com> <CANk1AXQSL8k=FOLv4_rLfRHBqOi=CW=yP3O8ch4VEa25cj9+Cw@mail.gmail.com>
+ <CANk1AXQCp2ozUQDWz__MuiUeDLvGvrfqj3KUYmBa5Z34oxG8NQ@mail.gmail.com> <20190517041116.GC20569@hao-dev>
+In-Reply-To: <20190517041116.GC20569@hao-dev>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 20 May 2019 13:21:24 -0500
+Message-ID: <CANk1AXTh+U-C9TxO7ZZTF+7Nu-_5i=G_0wK0FZ2Go55gPYR0Ng@mail.gmail.com>
+Subject: Re: [PATCH v2 05/18] Documentation: fpga: dfl: add descriptions for
+ virtualization and new interfaces.
+Content-Type: text/plain; charset="UTF-8"
 To: Wu Hao <hao.wu@intel.com>
-Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Apr 29, 2019 at 04:55:35PM +0800, Wu Hao wrote:
-> This patch removes copy_to_user() code in partial reconfiguration
-> ioctl, as it's useless as user never needs to read the data
-> structure after ioctl.
-> 
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-> ---
-> v2: clean up code split from patch 2 in v1 patchset.
-> ---
->  drivers/fpga/dfl-fme-pr.c | 3 ---
->  1 file changed, 3 deletions(-)
-> 
-> diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-> index d9ca955..6ec0f09 100644
-> --- a/drivers/fpga/dfl-fme-pr.c
-> +++ b/drivers/fpga/dfl-fme-pr.c
-> @@ -159,9 +159,6 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
->  	mutex_unlock(&pdata->lock);
->  free_exit:
->  	vfree(buf);
-> -	if (copy_to_user((void __user *)arg, &port_pr, minsz))
-> -		return -EFAULT;
-> -
->  	return ret;
->  }
->  
-> -- 
-> 1.8.3.1
-> 
+On Thu, May 16, 2019 at 11:27 PM Wu Hao <hao.wu@intel.com> wrote:
+>
+> On Thu, May 16, 2019 at 12:53:00PM -0500, Alan Tull wrote:
+> > On Thu, May 16, 2019 at 12:36 PM Alan Tull <atull@kernel.org> wrote:
+> > >
+> > > On Mon, Apr 29, 2019 at 4:12 AM Wu Hao <hao.wu@intel.com> wrote:
+> >
+> > Hi Hao,
+> >
+> > Most of this patchset looks ready to go upstream or nearly so with
+> > pretty straightforward changes .  Patches 17 and 18 need minor changes
+> > and please change the scnprintf in the other patches.  The patches
+> > that had nontrivial changes are the power and thermal ones involving
+> > hwmon.  I'm hoping to send up the patchset minus the hwmon patches in
+> > the next version if there's no unforseen issues.  If the hwmon patches
+> > are ready then also, that's great, but otherwise those patches don't
+> > need to hold up all the rest of the patchset.  How's that sound?
+>
+> Hi Alan
+>
+> Thanks for your time for reviewing this patchset.
+>
+> This sounds good to me. Only thing here is, I need to split the patch which
+> updates documentation into 2 patches (to remove hwmon description in doc),
+> but for sure, it should be very easy. :)
+
+Yes that sounds good.
+
+Thanks,
+Alan
+
+
+>
+> Thanks
+> Hao
+>
+> >
+> > Alan
+> >
+> > > >
+> > > > This patch adds virtualization support description for DFL based
+> > > > FPGA devices (based on PCIe SRIOV), and introductions to new
+> > > > interfaces added by new dfl private feature drivers.
+> > > >
+> > > > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > > > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > >
+> > > Acked-by: Alan Tull <atull@kernel.org>
+> > >
+> > > Thanks,
+> > > Alan
