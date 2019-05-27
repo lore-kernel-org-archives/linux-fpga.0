@@ -1,40 +1,52 @@
 Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 01/16] fpga: dfl-fme-mgr: fix FME_PR_INTFC_ID register address.
-Date: Mon, 27 May 2019 13:22:11 +0800
-Message-Id: <1558934546-12171-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
-References: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/3] add thermal/power management features for FPGA DFL drivers
+Date: Mon, 27 May 2019 14:06:53 +0800
+Message-Id: <1558937216-12742-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, jdelvare@suse.com, linux@roeck-us.net, linux-fpga@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-FME_PR_INTFC_ID is used as compat_id for fpga manager and region,
-but high 64 bits and low 64 bits of the compat_id are swapped by
-mistake. This patch fixes this problem by fixing register address.
+This patchset adds thermal and power management features for FPGA DFL
+drivers. Both patches are using hwmon as userspace interfaces.
+Actually this patchset is splitted from patchset [1].
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
- drivers/fpga/dfl-fme-mgr.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Main changes from v2:
+ - switch to standard hwmon APIs for thermal hwmon:
+     temp1_alarm        --> temp1_max
+     temp1_alarm_status --> temp1_max_alarm
+     temp1_crit_status  --> temp1_crit_alarm
+     temp1_alarm_policy --> temp1_max_policy
+ - switch to standard hwmon APIs for power hwmon:
+     power1_cap         --> power1_max
+     power1_cap_status  --> power1_max_alarm
+     power1_crit_status --> power1_crit_alarm
 
-diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
-index 76f3770..b3f7eee 100644
---- a/drivers/fpga/dfl-fme-mgr.c
-+++ b/drivers/fpga/dfl-fme-mgr.c
-@@ -30,8 +30,8 @@
- #define FME_PR_STS		0x10
- #define FME_PR_DATA		0x18
- #define FME_PR_ERR		0x20
--#define FME_PR_INTFC_ID_H	0xA8
--#define FME_PR_INTFC_ID_L	0xB0
-+#define FME_PR_INTFC_ID_L	0xA8
-+#define FME_PR_INTFC_ID_H	0xB0
- 
- /* FME PR Control Register Bitfield */
- #define FME_PR_CTRL_PR_RST	BIT_ULL(0)  /* Reset PR engine */
+v2 version patch could be found here [2] - thermal, [3] - power.
+
+Please note that this patchset needs to be applied on top of patchset [4].
+
+Thanks!
+
+[1] https://lkml.org/lkml/2019/4/29/227
+[2] https://lkml.org/lkml/2019/4/29/211
+[3] https://lkml.org/lkml/2019/4/29/213
+[4] https://lkml.org/lkml/2019/5/27/11
+
+Wu Hao (2):
+  fpga: dfl: fme: add thermal management support
+  fpga: dfl: fme: add power management support
+
+Xu Yilun (1):
+  Documentation: fpga: dfl: add descriptions for thermal/power
+    management interfaces
+
+ Documentation/ABI/testing/sysfs-platform-dfl-fme | 131 +++++++
+ Documentation/fpga/dfl.txt                       |   9 +
+ drivers/fpga/Kconfig                             |   2 +-
+ drivers/fpga/dfl-fme-main.c                      | 426 +++++++++++++++++++++++
+ 4 files changed, 567 insertions(+), 1 deletion(-)
+
 -- 
 1.8.3.1
