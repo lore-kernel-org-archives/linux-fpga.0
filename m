@@ -1,86 +1,77 @@
-Return-Path: <SRS0=dz0a=TH=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=dz0a=TH=ettus.com=moritz.fischer@kernel.org>
-Date: Tue, 7 May 2019 10:27:32 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v2 03/18] fpga: dfl: fme: align PR buffer size per PR
- datawidth
-Message-ID: <20190507172732.GB26690@archbox>
-References: <1556528151-17221-1-git-send-email-hao.wu@intel.com>
- <1556528151-17221-4-git-send-email-hao.wu@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1556528151-17221-4-git-send-email-hao.wu@intel.com>
-To: Wu Hao <hao.wu@intel.com>
-Cc: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v3 00/16] add new features for FPGA DFL drivers
+Date: Mon, 27 May 2019 13:22:10 +0800
+Message-Id: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Apr 29, 2019 at 04:55:36PM +0800, Wu Hao wrote:
-> Current driver checks if input bitstream file size is aligned or
-> not per PR data width (default 32bits). It requires one additional
-> step for end user when they generate the bitstream file, padding
-> extra zeros to bitstream file to align its size per PR data width,
-> but they don't have to as hardware will drop extra padding bytes
-> automatically.
-> 
-> In order to simplify the user steps, this patch aligns PR buffer
-> size per PR data width in driver, to allow user to pass unaligned
-> size bitstream files to driver.
-> 
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-> Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-> ---
->  drivers/fpga/dfl-fme-pr.c | 14 +++++++++-----
->  1 file changed, 9 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-> index 6ec0f09..3c71dc3 100644
-> --- a/drivers/fpga/dfl-fme-pr.c
-> +++ b/drivers/fpga/dfl-fme-pr.c
-> @@ -74,6 +74,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
->  	struct dfl_fme *fme;
->  	unsigned long minsz;
->  	void *buf = NULL;
-> +	size_t length;
->  	int ret = 0;
->  	u64 v;
->  
-> @@ -85,9 +86,6 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
->  	if (port_pr.argsz < minsz || port_pr.flags)
->  		return -EINVAL;
->  
-> -	if (!IS_ALIGNED(port_pr.buffer_size, 4))
-> -		return -EINVAL;
-> -
->  	/* get fme header region */
->  	fme_hdr = dfl_get_feature_ioaddr_by_id(&pdev->dev,
->  					       FME_FEATURE_ID_HEADER);
-> @@ -103,7 +101,13 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
->  		       port_pr.buffer_size))
->  		return -EFAULT;
->  
-> -	buf = vmalloc(port_pr.buffer_size);
-> +	/*
-> +	 * align PR buffer per PR bandwidth, as HW ignores the extra padding
-> +	 * data automatically.
-> +	 */
-> +	length = ALIGN(port_pr.buffer_size, 4);
-> +
-> +	buf = vmalloc(length);
->  	if (!buf)
->  		return -ENOMEM;
->  
-> @@ -140,7 +144,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
->  	fpga_image_info_free(region->info);
->  
->  	info->buf = buf;
-> -	info->count = port_pr.buffer_size;
-> +	info->count = length;
->  	info->region_id = port_pr.port_id;
->  	region->info = info;
->  
-> -- 
-> 1.8.3.1
-> 
+This patchset adds more features support for FPGA Device Feature List
+(DFL) drivers, including PR enhancement, virtualization support based
+on PCIe SRIOV, private features to Port, private features to FME, and
+enhancement to DFL framework. Please refer to details in below list.
+
+This patchset is created on top of these patches from Alan.
+[PATCH 0/4] patches for FPGA - https://lkml.org/lkml/2019/5/9/1002
+
+Main changes from v2:
+ - move thermal/power management private feature support to another
+   patchset, including hwmon patches and related documentation update.
+ - update sysfs doc for kernel version and date.
+ - replace scnprintf to sprintf for sysfs interfaces.
+ - fix comments for performance reporting support. (patch #16)
+
+Main changes from v1:
+ - split the clean up code in a separated patch (patch #2)
+ - add cpu_feature_enabled check for AVX512 code (patch #4)
+ - improve sysfs return values and also sysfs doc (patch #12 #17)
+ - create a hwmon for thermal management sysfs interfaces (patch #15)
+ - create a hwmon for power management sysfs interfaces (patch #16)
+ - update docmentation according to above changes (patch #5)
+ - improve sysfs doc for performance reporting support (patch #18)
+
+Wu Hao (16):
+  fpga: dfl-fme-mgr: fix FME_PR_INTFC_ID register address.
+  fpga: dfl: fme: remove copy_to_user() in ioctl for PR
+  fpga: dfl: fme: align PR buffer size per PR datawidth
+  fpga: dfl: fme: support 512bit data width PR
+  Documentation: fpga: dfl: add descriptions for virtualization and new
+    interfaces.
+  fpga: dfl: fme: add DFL_FPGA_FME_PORT_RELEASE/ASSIGN ioctl support.
+  fpga: dfl: pci: enable SRIOV support.
+  fpga: dfl: afu: add AFU state related sysfs interfaces
+  fpga: dfl: afu: add userclock sysfs interfaces.
+  fpga: dfl: add id_table for dfl private feature driver
+  fpga: dfl: afu: export __port_enable/disable function.
+  fpga: dfl: afu: add error reporting support.
+  fpga: dfl: afu: add STP (SignalTap) support
+  fpga: dfl: fme: add capability sysfs interfaces
+  fpga: dfl: fme: add global error reporting support
+  fpga: dfl: fme: add performance reporting support
+
+ Documentation/ABI/testing/sysfs-platform-dfl-fme  | 191 +++++
+ Documentation/ABI/testing/sysfs-platform-dfl-port | 104 +++
+ Documentation/fpga/dfl.txt                        | 105 +++
+ drivers/fpga/Makefile                             |   4 +-
+ drivers/fpga/dfl-afu-error.c                      | 225 +++++
+ drivers/fpga/dfl-afu-main.c                       | 330 +++++++-
+ drivers/fpga/dfl-afu.h                            |   7 +
+ drivers/fpga/dfl-fme-error.c                      | 385 +++++++++
+ drivers/fpga/dfl-fme-main.c                       | 124 ++-
+ drivers/fpga/dfl-fme-mgr.c                        | 117 ++-
+ drivers/fpga/dfl-fme-perf.c                       | 962 ++++++++++++++++++++++
+ drivers/fpga/dfl-fme-pr.c                         |  65 +-
+ drivers/fpga/dfl-fme.h                            |   9 +-
+ drivers/fpga/dfl-pci.c                            |  40 +
+ drivers/fpga/dfl.c                                | 170 +++-
+ drivers/fpga/dfl.h                                |  56 +-
+ include/uapi/linux/fpga-dfl.h                     |  32 +
+ 17 files changed, 2846 insertions(+), 80 deletions(-)
+ create mode 100644 drivers/fpga/dfl-afu-error.c
+ create mode 100644 drivers/fpga/dfl-fme-error.c
+ create mode 100644 drivers/fpga/dfl-fme-perf.c
+
+-- 
+1.8.3.1
