@@ -1,53 +1,40 @@
-Return-Path: <SRS0=YJns=TC=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=YJns=TC=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from userp2130.oracle.com ([156.151.31.86]:34598 "EHLO
-        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726186AbfEBHb5 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 2 May 2019 03:31:57 -0400
-Date: Thu, 2 May 2019 10:31:43 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: [bug report] fpga manager: Adding FPGA Manager support for Xilinx
- zynqmp
-Message-ID: <20190502073143.GA18363@mwanda>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: nava.manne@xilinx.com
-Cc: linux-fpga@vger.kernel.org
+Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v3 01/16] fpga: dfl-fme-mgr: fix FME_PR_INTFC_ID register address.
+Date: Mon, 27 May 2019 13:22:11 +0800
+Message-Id: <1558934546-12171-2-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
+References: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hello Nava kishore Manne,
+FME_PR_INTFC_ID is used as compat_id for fpga manager and region,
+but high 64 bits and low 64 bits of the compat_id are swapped by
+mistake. This patch fixes this problem by fixing register address.
 
-The patch c09f7471127e: "fpga manager: Adding FPGA Manager support
-for Xilinx zynqmp" from Apr 15, 2019, leads to the following static
-checker warning:
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+---
+ drivers/fpga/dfl-fme-mgr.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-	drivers/fpga/zynqmp-fpga.c:50 zynqmp_fpga_ops_write()
-	error: 'eemi_ops' dereferencing possible ERR_PTR()
-
-drivers/fpga/zynqmp-fpga.c
-    40  static int zynqmp_fpga_ops_write(struct fpga_manager *mgr,
-    41                                   const char *buf, size_t size)
-    42  {
-    43          const struct zynqmp_eemi_ops *eemi_ops = zynqmp_pm_get_eemi_ops();
-    44          struct zynqmp_fpga_priv *priv;
-    45          dma_addr_t dma_addr;
-    46          u32 eemi_flags = 0;
-    47          char *kbuf;
-    48          int ret;
-    49  
-    50          if (!eemi_ops || !eemi_ops->fpga_load)
-                     ^^^^^^^^
-This is an error pointer.  Possibly you want to handle EPROBE_DEFER in
-a special way?
-
-    51                  return -ENXIO;
-    52  
-
-See also:
-
-drivers/fpga/zynqmp-fpga.c:84 zynqmp_fpga_ops_state() error: 'eemi_ops' dereferencing possible ERR_PTR()
-
-regards,
-dan carpenter
+diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
+index 76f3770..b3f7eee 100644
+--- a/drivers/fpga/dfl-fme-mgr.c
++++ b/drivers/fpga/dfl-fme-mgr.c
+@@ -30,8 +30,8 @@
+ #define FME_PR_STS		0x10
+ #define FME_PR_DATA		0x18
+ #define FME_PR_ERR		0x20
+-#define FME_PR_INTFC_ID_H	0xA8
+-#define FME_PR_INTFC_ID_L	0xB0
++#define FME_PR_INTFC_ID_L	0xA8
++#define FME_PR_INTFC_ID_H	0xB0
+ 
+ /* FME PR Control Register Bitfield */
+ #define FME_PR_CTRL_PR_RST	BIT_ULL(0)  /* Reset PR engine */
+-- 
+1.8.3.1
