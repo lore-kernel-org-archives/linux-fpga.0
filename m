@@ -1,46 +1,79 @@
 Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=L5qQ=T3=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 1/3] Documentation: fpga: dfl: add descriptions for thermal/power management interfaces
-Date: Mon, 27 May 2019 14:06:54 +0800
-Message-Id: <1558937216-12742-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1558937216-12742-1-git-send-email-hao.wu@intel.com>
-References: <1558937216-12742-1-git-send-email-hao.wu@intel.com>
-To: atull@kernel.org, mdf@kernel.org, jdelvare@suse.com, linux@roeck-us.net, linux-fpga@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v3 03/16] fpga: dfl: fme: align PR buffer size per PR datawidth
+Date: Mon, 27 May 2019 13:22:13 +0800
+Message-Id: <1558934546-12171-4-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
+References: <1558934546-12171-1-git-send-email-hao.wu@intel.com>
+To: atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Xu Yilun <yilun.xu@intel.com>
+Current driver checks if input bitstream file size is aligned or
+not per PR data width (default 32bits). It requires one additional
+step for end user when they generate the bitstream file, padding
+extra zeros to bitstream file to align its size per PR data width,
+but they don't have to as hardware will drop extra padding bytes
+automatically.
 
-This patch add introductions to thermal/power interfaces. They are
-implemented as hwmon sysfs interfaces by thermal/power private
-feature drivers.
+In order to simplify the user steps, this patch aligns PR buffer
+size per PR data width in driver, to allow user to pass unaligned
+size bitstream files to driver.
 
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- Documentation/fpga/dfl.txt | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/fpga/dfl-fme-pr.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
-index 9e912a0..d377e36 100644
---- a/Documentation/fpga/dfl.txt
-+++ b/Documentation/fpga/dfl.txt
-@@ -109,6 +109,15 @@ More functions are exposed through sysfs
-      performance counters sysfs interfaces allow user to use different counters
-      to get performance data.
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+index 6ec0f09..3c71dc3 100644
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -74,6 +74,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 	struct dfl_fme *fme;
+ 	unsigned long minsz;
+ 	void *buf = NULL;
++	size_t length;
+ 	int ret = 0;
+ 	u64 v;
  
-+ Power management (dfl_fme_power hwmon)
-+     power management hwmon sysfs interfaces allow user to read power management
-+     information (power consumption, thresholds, threshold status, limits, etc.)
-+     and and configure power thresholds for different throttling levels.
+@@ -85,9 +86,6 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 	if (port_pr.argsz < minsz || port_pr.flags)
+ 		return -EINVAL;
+ 
+-	if (!IS_ALIGNED(port_pr.buffer_size, 4))
+-		return -EINVAL;
+-
+ 	/* get fme header region */
+ 	fme_hdr = dfl_get_feature_ioaddr_by_id(&pdev->dev,
+ 					       FME_FEATURE_ID_HEADER);
+@@ -103,7 +101,13 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 		       port_pr.buffer_size))
+ 		return -EFAULT;
+ 
+-	buf = vmalloc(port_pr.buffer_size);
++	/*
++	 * align PR buffer per PR bandwidth, as HW ignores the extra padding
++	 * data automatically.
++	 */
++	length = ALIGN(port_pr.buffer_size, 4);
 +
-+ Thermal management (dfl_fme_thermal hwmon)
-+     thermal management hwmon sysfs interfaces allow user to read thermal
-+     management information (current temperature, thresholds, threshold status,
-+     etc.).
++	buf = vmalloc(length);
+ 	if (!buf)
+ 		return -ENOMEM;
  
- FIU - PORT
- ==========
+@@ -140,7 +144,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 	fpga_image_info_free(region->info);
+ 
+ 	info->buf = buf;
+-	info->count = port_pr.buffer_size;
++	info->count = length;
+ 	info->region_id = port_pr.port_id;
+ 	region->info = info;
+ 
 -- 
 1.8.3.1
