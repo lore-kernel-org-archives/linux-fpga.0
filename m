@@ -1,126 +1,83 @@
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 1/2] Documentation: fpga: dfl: add description for performance reporting support
-Date: Thu, 27 Jun 2019 13:09:54 +0800
-Message-Id: <1561612195-6081-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1561612195-6081-1-git-send-email-hao.wu@intel.com>
-References: <1561612195-6081-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, gregkh@linuxfoundation.org, atull@kernel.org, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>
+Return-Path: <SRS0=mQx8=UE=arm.com=suzuki.poulose@kernel.org>
+Return-Path: <SRS0=mQx8=UE=arm.com=suzuki.poulose@kernel.org>
+From: Suzuki K Poulose <suzuki.poulose@arm.com>
+Subject: [PATCH 04/13] drivers: Add generic helper to match by of_node
+Date: Wed,  5 Jun 2019 16:13:41 +0100
+Message-Id: <1559747630-28065-5-git-send-email-suzuki.poulose@arm.com>
+In-Reply-To: <1559747630-28065-1-git-send-email-suzuki.poulose@arm.com>
+References: <1559747630-28065-1-git-send-email-suzuki.poulose@arm.com>
+To: linux-kernel@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, rafael@kernel.org, suzuki.poulose@arm.com, Alan Tull <atull@kernel.org>, Andrew Lunn <andrew@lunn.ch>, Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@linux.ie>, "David S. Miller" <davem@davemloft.net>, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, Florian Fainelli <f.fainelli@gmail.com>, Frank Rowand <frowand.list@gmail.com>, Heiner Kallweit <hkallweit1@gmail.com>, Jiri Slaby <jslaby@suse.com>, Jonathan Hunter <jonathanh@nvidia.com>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-spi@vger.kernel.org, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Mark Brown <broonie@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Moritz Fischer <mdf@kernel.org>, Peter Rosin <peda@axentia.se>, Rob Herring <robh+dt@kernel.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Thor Thayer <thor.thayer@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Ulf Hansson <ulf.hansson@linaro.org>, Joe Perches <joe@perches.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Xu Yilun <yilun.xu@intel.com>
+Add a helper to match device by the of_node. This will be later used
+to provide generic lookup functions by of_node.
 
-This patch adds description for performance reporting support for
-Device Feature List (DFL) based FPGA.
-
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+Cc: Alan Tull <atull@kernel.org>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: David Airlie <airlied@linux.ie>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: devicetree@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Frank Rowand <frowand.list@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Heiner Kallweit <hkallweit1@gmail.com>
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: Jonathan Hunter <jonathanh@nvidia.com>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: linux-fpga@vger.kernel.org
+Cc: linux-i2c@vger.kernel.org
+Cc: linux-spi@vger.kernel.org
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
+Cc: Maxime Ripard <maxime.ripard@bootlin.com>
+Cc: Moritz Fischer <mdf@kernel.org>
+Cc: Peter Rosin <peda@axentia.se>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Thor Thayer <thor.thayer@linux.intel.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Joe Perches <joe@perches.com>
+Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
 ---
- Documentation/fpga/dfl.txt | 83 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 83 insertions(+)
+ drivers/base/core.c    | 6 ++++++
+ include/linux/device.h | 2 ++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
-index 652917f..6acd1b5 100644
---- a/Documentation/fpga/dfl.txt
-+++ b/Documentation/fpga/dfl.txt
-@@ -115,6 +115,11 @@ More functions are exposed through sysfs
-      management information (current temperature, thresholds, threshold status,
-      etc.).
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index fd7511e..9211908 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -3328,3 +3328,9 @@ void device_set_of_node_from_dev(struct device *dev, const struct device *dev2)
+ 	dev->of_node_reused = true;
+ }
+ EXPORT_SYMBOL_GPL(device_set_of_node_from_dev);
++
++int device_match_of_node(struct device *dev, const void *np)
++{
++	return dev->of_node == np;
++}
++EXPORT_SYMBOL_GPL(device_match_of_node);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 4d7c881..7093085 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -163,6 +163,8 @@ void subsys_dev_iter_init(struct subsys_dev_iter *iter,
+ struct device *subsys_dev_iter_next(struct subsys_dev_iter *iter);
+ void subsys_dev_iter_exit(struct subsys_dev_iter *iter);
  
-+ Performance reporting
-+     performance counters are exposed through perf PMU APIs. Standard perf tool
-+     can be used to monitor all available perf events. Please see performance
-+     counter section below for more detailed information.
++int device_match_of_node(struct device *dev, const void *np);
 +
- 
- FIU - PORT
- ==========
-@@ -368,6 +373,84 @@ The device nodes used for ioctl() or mmap() can be referenced through:
- 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
- 
- 
-+Performance Counters
-+====================
-+Performance reporting is one private feature implemented in FME. It could
-+supports several independent, system-wide, device counter sets in hardware to
-+monitor and count for performance events, including "basic", "cache", "fabric",
-+"vtd" and "vtd_sip" counters. Users could use standard perf tool to monitor
-+FPGA cache hit/miss rate, transaction number, interface clock counter of AFU
-+and other FPGA performance events.
-+
-+Different FPGA devices may have different counter sets, it depends on hardware
-+implementation. e.g. some discrete FPGA cards don't have any cache. User could
-+use "perf list" to check which perf events are supported by target hardware.
-+
-+In order to allow user to use standard perf API to access these performance
-+counters, driver creates a perf PMU, and related sysfs interfaces in
-+/sys/bus/event_source/devices/fme* to describe available perf events and
-+configuration options.
-+
-+The "format" directory describes the format of the config field of struct
-+perf_event_attr. There are 3 bitfields for config, "evtype" defines which type
-+the perf event belongs to. "event" is the identity of the event within its
-+category. "portid" is introduced to decide counters set to monitor on FPGA
-+overall data or a specific port.
-+
-+The "events" directory describes the configuration templates for all available
-+events which can be used with perf tool directly. For example, fab_mmio_read
-+has the configuration "event=0x06,evtype=0x02,portid=0xff", which shows this
-+event belongs to fabric type (0x02), the local event id is 0x06 and it is for
-+overall monitoring (portid=0xff).
-+
-+Example usage of perf can be:
-+
-+$# perf list |grep fme
-+
-+ fme0/fab_mmio_read/                              [Kernel PMU event]
-+<...>
-+ fme0/fab_port_mmio_read,portid=?/                [Kernel PMU event]
-+<...>
-+
-+$# perf stat -a -e fme0/fab_mmio_read/ <command>
-+or
-+$# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0xff/ <command>
-+or
-+$# perf stat -a -e fme0/config=0xff2006/ <command>
-+
-+Another example, fab_port_mmio_read monitors mmio read of a specific port. So
-+its configuration template is "event=0x06,evtype=0x01,portid=?". The portid
-+should be explicitly set.
-+
-+Its usage of perf can be:
-+
-+$# perf stat -a -e fme0/fab_port_mmio_read,portid=0x0/ <command>
-+or
-+$# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0x0/ <command>
-+or
-+$# perf stat -a -e fme0/config=0x2006/ <command>
-+
-+Please note for fabric counters, overall perf events (fab_*) and port perf
-+events (fab_port_*) actually share one set of counters in hardware, so it can't
-+monitor both at the same time. If this set of counters is configured to monitor
-+overall data, then per port perf data is not supported. See below example.
-+
-+$# perf stat -e fme0/fab_mmio_read/,fme0/fab_port_mmio_write,\
-+                                                    portid=0/ sleep 1
-+
-+ Performance counter stats for 'system wide':
-+
-+                 3      fme0/fab_mmio_read/
-+   <not supported>      fme0/fab_port_mmio_write,portid=0x0/
-+
-+       1.001750904 seconds time elapsed
-+
-+The driver also provides a "cpumask" sysfs attribute, which always shows fixed
-+value cpu0 as all perf events are from system-wide counters on FPGA device.
-+
-+The current driver does not support sampling. So "perf record" is unsupported.
-+
-+
- Add new FIUs support
- ====================
- It's possible that developers made some new function blocks (FIUs) under this
+ int bus_for_each_dev(struct bus_type *bus, struct device *start, void *data,
+ 		     int (*fn)(struct device *dev, void *data));
+ struct device *bus_find_device(struct bus_type *bus, struct device *start,
 -- 
-1.8.3.1
+2.7.4
