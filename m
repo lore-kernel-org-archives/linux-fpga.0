@@ -1,84 +1,208 @@
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 03/15] fpga: dfl: fme: align PR buffer size per PR datawidth
-Date: Thu, 27 Jun 2019 17:49:39 -0700
-Message-Id: <20190628004951.6202-4-mdf@kernel.org>
-In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
-References: <20190628004951.6202-1-mdf@kernel.org>
+Return-Path: <SRS0=xE99=UL=bombadil.infradead.org=mchehab@kernel.org>
+Return-Path: <SRS0=xE99=UL=bombadil.infradead.org=mchehab@kernel.org>
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Subject: [PATCH v4 10/28] docs: fpga: convert docs to ReST and rename to *.rst
+Date: Wed, 12 Jun 2019 14:52:46 -0300
+Message-Id: <2794fa9c29b085c346561d620a891e3e979fdf3b.1560361364.git.mchehab+samsung@kernel.org>
+In-Reply-To: <cover.1560361364.git.mchehab+samsung@kernel.org>
+References: <cover.1560361364.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Sender: Mauro Carvalho Chehab <mchehab@bombadil.infradead.org>
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Wu Hao <hao.wu@intel.com>
+The dfl.txt file is almost there. It needs just a few
+adjustments to be properly parsed.
 
-Current driver checks if input bitstream file size is aligned or
-not per PR data width (default 32bits). It requires one additional
-step for end user when they generate the bitstream file, padding
-extra zeros to bitstream file to align its size per PR data width,
-but they don't have to as hardware will drop extra padding bytes
-automatically.
+The conversion is actually:
+  - add blank lines and identation in order to identify paragraphs;
+  - fix tables markups;
+  - add some lists markups;
+  - mark literal blocks;
+  - adjust title markups.
 
-In order to simplify the user steps, this patch aligns PR buffer
-size per PR data width in driver, to allow user to pass unaligned
-size bitstream files to driver.
+At its new index.rst, let's add a :orphan: while this is not linked to
+the main index.rst file, in order to avoid build warnings.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 ---
- drivers/fpga/dfl-fme-pr.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ Documentation/fpga/{dfl.txt => dfl.rst} | 58 ++++++++++++++-----------
+ Documentation/fpga/index.rst            | 17 ++++++++
+ MAINTAINERS                             |  2 +-
+ 3 files changed, 50 insertions(+), 27 deletions(-)
+ rename Documentation/fpga/{dfl.txt => dfl.rst} (89%)
+ create mode 100644 Documentation/fpga/index.rst
 
-diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-index 6ec0f09e5994..3c71dc3faaf5 100644
---- a/drivers/fpga/dfl-fme-pr.c
-+++ b/drivers/fpga/dfl-fme-pr.c
-@@ -74,6 +74,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 	struct dfl_fme *fme;
- 	unsigned long minsz;
- 	void *buf = NULL;
-+	size_t length;
- 	int ret = 0;
- 	u64 v;
- 
-@@ -85,9 +86,6 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 	if (port_pr.argsz < minsz || port_pr.flags)
- 		return -EINVAL;
- 
--	if (!IS_ALIGNED(port_pr.buffer_size, 4))
--		return -EINVAL;
--
- 	/* get fme header region */
- 	fme_hdr = dfl_get_feature_ioaddr_by_id(&pdev->dev,
- 					       FME_FEATURE_ID_HEADER);
-@@ -103,7 +101,13 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 		       port_pr.buffer_size))
- 		return -EFAULT;
- 
--	buf = vmalloc(port_pr.buffer_size);
-+	/*
-+	 * align PR buffer per PR bandwidth, as HW ignores the extra padding
-+	 * data automatically.
-+	 */
-+	length = ALIGN(port_pr.buffer_size, 4);
+diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.rst
+similarity index 89%
+rename from Documentation/fpga/dfl.txt
+rename to Documentation/fpga/dfl.rst
+index 6df4621c3f2a..2f125abd777f 100644
+--- a/Documentation/fpga/dfl.txt
++++ b/Documentation/fpga/dfl.rst
+@@ -1,9 +1,12 @@
+-===============================================================================
+-              FPGA Device Feature List (DFL) Framework Overview
+--------------------------------------------------------------------------------
+-                Enno Luebbers <enno.luebbers@intel.com>
+-                Xiao Guangrong <guangrong.xiao@linux.intel.com>
+-                Wu Hao <hao.wu@intel.com>
++=================================================
++FPGA Device Feature List (DFL) Framework Overview
++=================================================
 +
-+	buf = vmalloc(length);
- 	if (!buf)
- 		return -ENOMEM;
++Authors:
++
++- Enno Luebbers <enno.luebbers@intel.com>
++- Xiao Guangrong <guangrong.xiao@linux.intel.com>
++- Wu Hao <hao.wu@intel.com>
  
-@@ -140,7 +144,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 	fpga_image_info_free(region->info);
+ The Device Feature List (DFL) FPGA framework (and drivers according to this
+ this framework) hides the very details of low layer hardwares and provides
+@@ -19,7 +22,7 @@ Device Feature List (DFL) defines a linked list of feature headers within the
+ device MMIO space to provide an extensible way of adding features. Software can
+ walk through these predefined data structures to enumerate FPGA features:
+ FPGA Interface Unit (FIU), Accelerated Function Unit (AFU) and Private Features,
+-as illustrated below:
++as illustrated below::
  
- 	info->buf = buf;
--	info->count = port_pr.buffer_size;
-+	info->count = length;
- 	info->region_id = port_pr.port_id;
- 	region->info = info;
+     Header            Header            Header            Header
+  +----------+  +-->+----------+  +-->+----------+  +-->+----------+
+@@ -81,9 +84,9 @@ and release it using close().
+ 
+ The following functions are exposed through ioctls:
+ 
+- Get driver API version (DFL_FPGA_GET_API_VERSION)
+- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
+- Program bitstream (DFL_FPGA_FME_PORT_PR)
++- Get driver API version (DFL_FPGA_GET_API_VERSION)
++- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
++- Program bitstream (DFL_FPGA_FME_PORT_PR)
+ 
+ More functions are exposed through sysfs
+ (/sys/class/fpga_region/regionX/dfl-fme.n/):
+@@ -118,18 +121,19 @@ port by using open() on the port device node and release it using close().
+ 
+ The following functions are exposed through ioctls:
+ 
+- Get driver API version (DFL_FPGA_GET_API_VERSION)
+- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
+- Get port info (DFL_FPGA_PORT_GET_INFO)
+- Get MMIO region info (DFL_FPGA_PORT_GET_REGION_INFO)
+- Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
+- Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
+- Reset AFU (*DFL_FPGA_PORT_RESET)
++- Get driver API version (DFL_FPGA_GET_API_VERSION)
++- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
++- Get port info (DFL_FPGA_PORT_GET_INFO)
++- Get MMIO region info (DFL_FPGA_PORT_GET_REGION_INFO)
++- Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
++- Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
++- Reset AFU (DFL_FPGA_PORT_RESET)
+ 
+-*DFL_FPGA_PORT_RESET: reset the FPGA Port and its AFU. Userspace can do Port
+-reset at any time, e.g. during DMA or Partial Reconfiguration. But it should
+-never cause any system level issue, only functional failure (e.g. DMA or PR
+-operation failure) and be recoverable from the failure.
++DFL_FPGA_PORT_RESET:
++  reset the FPGA Port and its AFU. Userspace can do Port
++  reset at any time, e.g. during DMA or Partial Reconfiguration. But it should
++  never cause any system level issue, only functional failure (e.g. DMA or PR
++  operation failure) and be recoverable from the failure.
+ 
+ User-space applications can also mmap() accelerator MMIO regions.
+ 
+@@ -143,6 +147,8 @@ More functions are exposed through sysfs:
+ DFL Framework Overview
+ ======================
+ 
++::
++
+          +----------+    +--------+ +--------+ +--------+
+          |   FME    |    |  AFU   | |  AFU   | |  AFU   |
+          |  Module  |    | Module | | Module | | Module |
+@@ -151,7 +157,7 @@ DFL Framework Overview
+                  | FPGA Container Device |    Device Feature List
+                  |  (FPGA Base Region)   |         Framework
+                  +-----------------------+
+---------------------------------------------------------------------
++  ------------------------------------------------------------------
+                +----------------------------+
+                |   FPGA DFL Device Module   |
+                | (e.g. PCIE/Platform Device)|
+@@ -220,7 +226,7 @@ the sysfs hierarchy under /sys/class/fpga_region.
+ In the example below, two DFL based FPGA devices are installed in the host. Each
+ fpga device has one FME and two ports (AFUs).
+ 
+-FPGA regions are created under /sys/class/fpga_region/
++FPGA regions are created under /sys/class/fpga_region/::
+ 
+ 	/sys/class/fpga_region/region0
+ 	/sys/class/fpga_region/region1
+@@ -231,7 +237,7 @@ Application needs to search each regionX folder, if feature device is found,
+ (e.g. "dfl-port.n" or "dfl-fme.m" is found), then it's the base
+ fpga region which represents the FPGA device.
+ 
+-Each base region has one FME and two ports (AFUs) as child devices:
++Each base region has one FME and two ports (AFUs) as child devices::
+ 
+ 	/sys/class/fpga_region/region0/dfl-fme.0
+ 	/sys/class/fpga_region/region0/dfl-port.0
+@@ -243,7 +249,7 @@ Each base region has one FME and two ports (AFUs) as child devices:
+ 	/sys/class/fpga_region/region3/dfl-port.3
+ 	...
+ 
+-In general, the FME/AFU sysfs interfaces are named as follows:
++In general, the FME/AFU sysfs interfaces are named as follows::
+ 
+ 	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/
+ 	/sys/class/fpga_region/<regionX>/<dfl-port.m>/
+@@ -251,7 +257,7 @@ In general, the FME/AFU sysfs interfaces are named as follows:
+ with 'n' consecutively numbering all FMEs and 'm' consecutively numbering all
+ ports.
+ 
+-The device nodes used for ioctl() or mmap() can be referenced through:
++The device nodes used for ioctl() or mmap() can be referenced through::
+ 
+ 	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/dev
+ 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
+diff --git a/Documentation/fpga/index.rst b/Documentation/fpga/index.rst
+new file mode 100644
+index 000000000000..2c87d1ea084f
+--- /dev/null
++++ b/Documentation/fpga/index.rst
+@@ -0,0 +1,17 @@
++:orphan:
++
++====
++fpga
++====
++
++.. toctree::
++    :maxdepth: 1
++
++    dfl
++
++.. only::  subproject and html
++
++   Indices
++   =======
++
++   * :ref:`genindex`
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5ed1fc93969a..5fdbf6e78d46 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6283,7 +6283,7 @@ FPGA DFL DRIVERS
+ M:	Wu Hao <hao.wu@intel.com>
+ L:	linux-fpga@vger.kernel.org
+ S:	Maintained
+-F:	Documentation/fpga/dfl.txt
++F:	Documentation/fpga/dfl.rst
+ F:	include/uapi/linux/fpga-dfl.h
+ F:	drivers/fpga/dfl*
  
 -- 
-2.22.0
+2.21.0
