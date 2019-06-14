@@ -1,79 +1,63 @@
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 13/15] fpga: dfl: afu: add STP (SignalTap) support
-Date: Thu, 27 Jun 2019 12:44:53 +0800
-Message-Id: <1561610695-5414-14-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org
+Return-Path: <sashal@kernel.org>
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.1 14/59] fpga: stratix10-soc: fix use-after-free on s10_init()
+Date: Fri, 14 Jun 2019 16:27:58 -0400
+Message-Id: <20190614202843.26941-14-sashal@kernel.org>
+In-Reply-To: <20190614202843.26941-1-sashal@kernel.org>
+References: <20190614202843.26941-1-sashal@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Wen Yang <wen.yang99@zte.com.cn>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>, linux-fpga@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-STP (SignalTap) is one of the private features under the port for
-debugging. This patch adds private feature driver support for it
-to allow userspace applications to mmap related mmio region and
-provide STP service.
+From: Wen Yang <wen.yang99@zte.com.cn>
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
+[ Upstream commit f5dd87326fefe42a4b1a4b1a1a695060c33a88d6 ]
+
+The refcount of fw_np has already been decreased by of_find_matching_node()
+so it shouldn't be used anymore.
+This patch adds an of_node_get() before of_find_matching_node() to avoid
+the use-after-free problem.
+
+Fixes: e7eef1d7633a ("fpga: add intel stratix10 soc fpga manager driver")
+Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+Cc: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>
+Cc: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Cc: linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Reviewed-by: Moritz Fischer <mdf@kernel.org>
+Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/fpga/dfl-afu-main.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ drivers/fpga/stratix10-soc.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index bcf6e28..8241ace 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -513,6 +513,36 @@ static void port_afu_uinit(struct platform_device *pdev,
- 	.uinit = port_afu_uinit,
- };
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index 13851b3d1c56..215d33789c74 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -507,12 +507,16 @@ static int __init s10_init(void)
+ 	if (!fw_np)
+ 		return -ENODEV;
  
-+static int port_stp_init(struct platform_device *pdev,
-+			 struct dfl_feature *feature)
-+{
-+	struct resource *res = &pdev->resource[feature->resource_index];
-+
-+	dev_dbg(&pdev->dev, "PORT STP Init.\n");
-+
-+	return afu_mmio_region_add(dev_get_platdata(&pdev->dev),
-+				   DFL_PORT_REGION_INDEX_STP,
-+				   resource_size(res), res->start,
-+				   DFL_PORT_REGION_MMAP | DFL_PORT_REGION_READ |
-+				   DFL_PORT_REGION_WRITE);
-+}
-+
-+static void port_stp_uinit(struct platform_device *pdev,
-+			   struct dfl_feature *feature)
-+{
-+	dev_dbg(&pdev->dev, "PORT STP UInit.\n");
-+}
-+
-+static const struct dfl_feature_id port_stp_id_table[] = {
-+	{.id = PORT_FEATURE_ID_STP,},
-+	{0,}
-+};
-+
-+static const struct dfl_feature_ops port_stp_ops = {
-+	.init = port_stp_init,
-+	.uinit = port_stp_uinit,
-+};
-+
- static struct dfl_feature_driver port_feature_drvs[] = {
- 	{
- 		.id_table = port_hdr_id_table,
-@@ -527,6 +557,10 @@ static void port_afu_uinit(struct platform_device *pdev,
- 		.ops = &port_err_ops,
- 	},
- 	{
-+		.id_table = port_stp_id_table,
-+		.ops = &port_stp_ops,
-+	},
-+	{
- 		.ops = NULL,
- 	}
- };
++	of_node_get(fw_np);
+ 	np = of_find_matching_node(fw_np, s10_of_match);
+-	if (!np)
++	if (!np) {
++		of_node_put(fw_np);
+ 		return -ENODEV;
++	}
+ 
+ 	of_node_put(np);
+ 	ret = of_platform_populate(fw_np, s10_of_match, NULL, NULL);
++	of_node_put(fw_np);
+ 	if (ret)
+ 		return ret;
+ 
 -- 
-1.8.3.1
+2.20.1
