@@ -1,52 +1,220 @@
-Return-Path: <SRS0=S7Ns=UV=axentia.se=peda@kernel.org>
-Return-Path: <SRS0=S7Ns=UV=axentia.se=peda@kernel.org>
-From: Peter Rosin <peda@axentia.se>
-Subject: Re: [PATCH v2 13/28] drivers: Introduce
- class_find_device_by_of_node() helper
-Date: Sat, 22 Jun 2019 05:25:54 +0000
-Message-ID: <325e46fd-a480-78ed-81fd-55e993fbc06f@axentia.se>
+Return-Path: <SRS0=I96B=UN=arm.com=suzuki.poulose@kernel.org>
+Return-Path: <SRS0=I96B=UN=arm.com=suzuki.poulose@kernel.org>
+From: Suzuki K Poulose <suzuki.poulose@arm.com>
+Subject: [PATCH v2 13/28] drivers: Introduce class_find_device_by_of_node() helper
+Date: Fri, 14 Jun 2019 18:54:08 +0100
+Message-Id: <1560534863-15115-14-git-send-email-suzuki.poulose@arm.com>
+In-Reply-To: <1560534863-15115-1-git-send-email-suzuki.poulose@arm.com>
 References: <1560534863-15115-1-git-send-email-suzuki.poulose@arm.com>
- <1560534863-15115-14-git-send-email-suzuki.poulose@arm.com>
-In-Reply-To: <1560534863-15115-14-git-send-email-suzuki.poulose@arm.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <1DFDE098696CA146A51B62B2EAEDE154@eurprd02.prod.outlook.com>
-Content-Transfer-Encoding: base64
-MIME-Version: 1.0
-To: Suzuki K Poulose <suzuki.poulose@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "rafael@kernel.org" <rafael@kernel.org>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Heiner Kallweit <hkallweit1@gmail.com>, "David S. Miller" <davem@davemloft.net>, Andrew Lunn <andrew@lunn.ch>, Liam Girdwood <lgirdwood@gmail.com>, Jiri Slaby <jslaby@suse.com>
+To: linux-kernel@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, rafael@kernel.org, suzuki.poulose@arm.com, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, Peter Rosin <peda@axentia.se>, Mark Brown <broonie@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Heiner Kallweit <hkallweit1@gmail.com>, "David S. Miller" <davem@davemloft.net>, Andrew Lunn <andrew@lunn.ch>, Liam Girdwood <lgirdwood@gmail.com>, Jiri Slaby <jslaby@suse.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-T24gMjAxOS0wNi0xNCAxOTo1NCwgU3V6dWtpIEsgUG91bG9zZSB3cm90ZToNCj4gQWRkIGEgd3Jh
-cHBlciB0byBjbGFzc19maW5kX2RldmljZSgpIHRvIHNlYXJjaCBmb3IgYSBkZXZpY2UNCj4gYnkg
-dGhlIG9mX25vZGUgcG9pbnRlciwgcmV1c2luZyB0aGUgZ2VuZXJpYyBtYXRjaCBmdW5jdGlvbi4N
-Cj4gQWxzbyBjb252ZXJ0IHRoZSBleGlzdGluZyB1c2VycyB0byBtYWtlIHVzZSBvZiB0aGUgbmV3
-IGhlbHBlci4NCj4gDQo+IENjOiBBbGFuIFR1bGwgPGF0dWxsQGtlcm5lbC5vcmc+DQo+IENjOiBN
-b3JpdHogRmlzY2hlciA8bWRmQGtlcm5lbC5vcmc+DQo+IENjOiBsaW51eC1mcGdhQHZnZXIua2Vy
-bmVsLm9yZw0KPiBDYzogUGV0ZXIgUm9zaW4gPHBlZGFAYXhlbnRpYS5zZT4NCj4gQ2M6IE1hcmsg
-QnJvd24gPGJyb29uaWVAa2VybmVsLm9yZz4NCj4gQ2M6IEZsb3JpYW4gRmFpbmVsbGkgPGYuZmFp
-bmVsbGlAZ21haWwuY29tPg0KPiBDYzogSGVpbmVyIEthbGx3ZWl0IDxoa2FsbHdlaXQxQGdtYWls
-LmNvbT4NCj4gQ2M6ICJEYXZpZCBTLiBNaWxsZXIiIDxkYXZlbUBkYXZlbWxvZnQubmV0Pg0KPiBD
-YzogQW5kcmV3IEx1bm4gPGFuZHJld0BsdW5uLmNoPg0KPiBDYzogTGlhbSBHaXJkd29vZCA8bGdp
-cmR3b29kQGdtYWlsLmNvbT4NCj4gQ2M6IEdyZWcgS3JvYWgtSGFydG1hbiA8Z3JlZ2toQGxpbnV4
-Zm91bmRhdGlvbi5vcmc+DQo+IENjOiAiUmFmYWVsIEouIFd5c29ja2kiIDxyYWZhZWxAa2VybmVs
-Lm9yZz4NCj4gQ2M6IEppcmkgU2xhYnkgPGpzbGFieUBzdXNlLmNvbT4NCj4gQWNrZWQtYnk6IE1h
-cmsgQnJvd24gPGJyb29uaWVAa2VybmVsLm9yZz4NCj4gUmV2aWV3ZWQtYnk6IEFuZHJldyBMdW5u
-IDxhbmRyZXdAbHVubi5jaD4NCj4gUmV2aWV3ZWQtYnk6IFBldGVyIFJvc2luIDxwZWRhQGF4ZW50
-aWEuc2U+DQoNCldob29vYSEgSSByZXZpZXdlZCBvbmx5IHRoZSBkcml2ZXJzL211eC9jb3JlLmMg
-Y2hhbmdlcyB3aGVuIHRoaXMgd2FzIGRvbmUNCmluIGEgc2VyaWVzIG9mIG11Y2ggc21hbGxlciBw
-YXRjaGVzLiBUaGlzIHRhZyBtYWtlcyBpdCBzZWVtIGFzIGlmIEkgaGF2ZQ0KcmV2aWV3ZWQgdGhl
-IHdob2xlIHRoaW5nLCB3aGljaCBJIGhhZCBub3QgZG9uZSB3aGVuIHlvdSBhZGRlZCB0aGlzIHRh
-ZyBvdXQNCm9mIHRoZSBibHVlLg0KDQpOb3csIHRoaXMgc3R1ZmYgaXMgdHJpdmlhbCBhbmQgYnkg
-bm93IEkgaGF2ZSBsb29rZWQgYXQgdGhlIG90aGVyIGZpbGVzDQphbmQgaXQgYWxsIHNlZW1zIHNp
-bXBsZSBlbm91Z2guIFNvLCB5b3UgY2FuIGtlZXAgdGhlIHRhZywgYnV0IGl0IGlzIE5PVA0Kb2sg
-dG8gaGFuZGxlIHRhZ3MgbGlrZSB5b3UgaGF2ZSBkb25lIGhlcmUuDQoNCkNoZWVycywNClBldGVy
-DQoNCj4gU2lnbmVkLW9mZi1ieTogU3V6dWtpIEsgUG91bG9zZSA8c3V6dWtpLnBvdWxvc2VAYXJt
-LmNvbT4NCj4gLS0tDQo+ICBkcml2ZXJzL2ZwZ2EvZnBnYS1icmlkZ2UuYyAgICAgICB8ICA4ICst
-LS0tLS0tDQo+ICBkcml2ZXJzL2ZwZ2EvZnBnYS1tZ3IuYyAgICAgICAgICB8ICA4ICstLS0tLS0t
-DQo+ICBkcml2ZXJzL211eC9jb3JlLmMgICAgICAgICAgICAgICB8ICA3ICstLS0tLS0NCj4gIGRy
-aXZlcnMvbmV0L3BoeS9tZGlvX2J1cy5jICAgICAgIHwgIDkgKy0tLS0tLS0tDQo+ICBkcml2ZXJz
-L3JlZ3VsYXRvci9vZl9yZWd1bGF0b3IuYyB8ICA3ICstLS0tLS0NCj4gIGRyaXZlcnMvc3BpL3Nw
-aS5jICAgICAgICAgICAgICAgIHwgMTEgKystLS0tLS0tLS0NCj4gIGluY2x1ZGUvbGludXgvZGV2
-aWNlLmggICAgICAgICAgIHwgMTIgKysrKysrKysrKysrDQo+ICA3IGZpbGVzIGNoYW5nZWQsIDE5
-IGluc2VydGlvbnMoKyksIDQzIGRlbGV0aW9ucygtKQ0K
+Add a wrapper to class_find_device() to search for a device
+by the of_node pointer, reusing the generic match function.
+Also convert the existing users to make use of the new helper.
+
+Cc: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>
+Cc: linux-fpga@vger.kernel.org
+Cc: Peter Rosin <peda@axentia.se>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Heiner Kallweit <hkallweit1@gmail.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Jiri Slaby <jslaby@suse.com>
+Acked-by: Mark Brown <broonie@kernel.org>
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+Reviewed-by: Peter Rosin <peda@axentia.se>
+Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+---
+ drivers/fpga/fpga-bridge.c       |  8 +-------
+ drivers/fpga/fpga-mgr.c          |  8 +-------
+ drivers/mux/core.c               |  7 +------
+ drivers/net/phy/mdio_bus.c       |  9 +--------
+ drivers/regulator/of_regulator.c |  7 +------
+ drivers/spi/spi.c                | 11 ++---------
+ include/linux/device.h           | 12 ++++++++++++
+ 7 files changed, 19 insertions(+), 43 deletions(-)
+
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index 80bd8f1..4bab902 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -19,11 +19,6 @@ static struct class *fpga_bridge_class;
+ /* Lock for adding/removing bridges to linked lists*/
+ static spinlock_t bridge_list_lock;
+ 
+-static int fpga_bridge_of_node_match(struct device *dev, const void *data)
+-{
+-	return dev->of_node == data;
+-}
+-
+ /**
+  * fpga_bridge_enable - Enable transactions on the bridge
+  *
+@@ -104,8 +99,7 @@ struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
+ {
+ 	struct device *dev;
+ 
+-	dev = class_find_device(fpga_bridge_class, NULL, np,
+-				fpga_bridge_of_node_match);
++	dev = class_find_device_by_of_node(fpga_bridge_class, np);
+ 	if (!dev)
+ 		return ERR_PTR(-ENODEV);
+ 
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index c386681..e05104f 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -482,11 +482,6 @@ struct fpga_manager *fpga_mgr_get(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(fpga_mgr_get);
+ 
+-static int fpga_mgr_of_node_match(struct device *dev, const void *data)
+-{
+-	return dev->of_node == data;
+-}
+-
+ /**
+  * of_fpga_mgr_get - Given a device node, get a reference to a fpga mgr.
+  *
+@@ -498,8 +493,7 @@ struct fpga_manager *of_fpga_mgr_get(struct device_node *node)
+ {
+ 	struct device *dev;
+ 
+-	dev = class_find_device(fpga_mgr_class, NULL, node,
+-				fpga_mgr_of_node_match);
++	dev = class_find_device_by_of_node(fpga_mgr_class, node);
+ 	if (!dev)
+ 		return ERR_PTR(-ENODEV);
+ 
+diff --git a/drivers/mux/core.c b/drivers/mux/core.c
+index d1271c1..1fb2238 100644
+--- a/drivers/mux/core.c
++++ b/drivers/mux/core.c
+@@ -405,17 +405,12 @@ int mux_control_deselect(struct mux_control *mux)
+ }
+ EXPORT_SYMBOL_GPL(mux_control_deselect);
+ 
+-static int of_dev_node_match(struct device *dev, const void *data)
+-{
+-	return dev->of_node == data;
+-}
+-
+ /* Note this function returns a reference to the mux_chip dev. */
+ static struct mux_chip *of_find_mux_chip_by_node(struct device_node *np)
+ {
+ 	struct device *dev;
+ 
+-	dev = class_find_device(&mux_class, NULL, np, of_dev_node_match);
++	dev = class_find_device_by_of_node(&mux_class, np);
+ 
+ 	return dev ? to_mux_chip(dev) : NULL;
+ }
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index bd04fe7..ce94087 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -262,11 +262,6 @@ static struct class mdio_bus_class = {
+ };
+ 
+ #if IS_ENABLED(CONFIG_OF_MDIO)
+-/* Helper function for of_mdio_find_bus */
+-static int of_mdio_bus_match(struct device *dev, const void *mdio_bus_np)
+-{
+-	return dev->of_node == mdio_bus_np;
+-}
+ /**
+  * of_mdio_find_bus - Given an mii_bus node, find the mii_bus.
+  * @mdio_bus_np: Pointer to the mii_bus.
+@@ -287,9 +282,7 @@ struct mii_bus *of_mdio_find_bus(struct device_node *mdio_bus_np)
+ 	if (!mdio_bus_np)
+ 		return NULL;
+ 
+-	d = class_find_device(&mdio_bus_class, NULL,  mdio_bus_np,
+-			      of_mdio_bus_match);
+-
++	d = class_find_device_by_of_node(&mdio_bus_class, mdio_bus_np);
+ 	return d ? to_mii_bus(d) : NULL;
+ }
+ EXPORT_SYMBOL(of_mdio_find_bus);
+diff --git a/drivers/regulator/of_regulator.c b/drivers/regulator/of_regulator.c
+index 0ead116..1b40277 100644
+--- a/drivers/regulator/of_regulator.c
++++ b/drivers/regulator/of_regulator.c
+@@ -442,16 +442,11 @@ struct regulator_init_data *regulator_of_get_init_data(struct device *dev,
+ 	return NULL;
+ }
+ 
+-static int of_node_match(struct device *dev, const void *data)
+-{
+-	return dev->of_node == data;
+-}
+-
+ struct regulator_dev *of_find_regulator_by_node(struct device_node *np)
+ {
+ 	struct device *dev;
+ 
+-	dev = class_find_device(&regulator_class, NULL, np, of_node_match);
++	dev = class_find_device_by_of_node(&regulator_class, np);
+ 
+ 	return dev ? dev_to_rdev(dev) : NULL;
+ }
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index 3da1121..a256be5 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -3554,21 +3554,14 @@ EXPORT_SYMBOL_GPL(of_find_spi_device_by_node);
+ #endif /* IS_ENABLED(CONFIG_OF) */
+ 
+ #if IS_ENABLED(CONFIG_OF_DYNAMIC)
+-static int __spi_of_controller_match(struct device *dev, const void *data)
+-{
+-	return dev->of_node == data;
+-}
+-
+ /* the spi controllers are not using spi_bus, so we find it with another way */
+ static struct spi_controller *of_find_spi_controller_by_node(struct device_node *node)
+ {
+ 	struct device *dev;
+ 
+-	dev = class_find_device(&spi_master_class, NULL, node,
+-				__spi_of_controller_match);
++	dev = class_find_device_by_of_node(&spi_master_class, node);
+ 	if (!dev && IS_ENABLED(CONFIG_SPI_SLAVE))
+-		dev = class_find_device(&spi_slave_class, NULL, node,
+-					__spi_of_controller_match);
++		dev = class_find_device_by_of_node(&spi_slave_class, node);
+ 	if (!dev)
+ 		return NULL;
+ 
+diff --git a/include/linux/device.h b/include/linux/device.h
+index bb14c7f..9228502 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -497,6 +497,18 @@ static inline struct device *class_find_device_by_name(struct class *class,
+ 	return class_find_device(class, NULL, name, device_match_name);
+ }
+ 
++/**
++ * class_find_device_by_of_node : device iterator for locating a particular device
++ * matching the of_node.
++ * @class: class type
++ * @np: of_node of the device to match.
++ */
++static inline struct device *
++class_find_device_by_of_node(struct class *class, const struct device_node *np)
++{
++	return class_find_device(class, NULL, np, device_match_of_node);
++}
++
+ struct class_attribute {
+ 	struct attribute attr;
+ 	ssize_t (*show)(struct class *class, struct class_attribute *attr,
+-- 
+2.7.4
