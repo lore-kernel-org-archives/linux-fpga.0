@@ -1,108 +1,47 @@
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 11/15] fpga: dfl: afu: export __port_enable/disable function.
-Date: Thu, 27 Jun 2019 12:44:51 +0800
-Message-Id: <1561610695-5414-12-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org
+Return-Path: <sashal@kernel.org>
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 06/39] fpga: dfl: afu: Pass the correct device to dma_mapping_error()
+Date: Fri, 14 Jun 2019 16:29:11 -0400
+Message-Id: <20190614202946.27385-6-sashal@kernel.org>
+In-Reply-To: <20190614202946.27385-1-sashal@kernel.org>
+References: <20190614202946.27385-1-sashal@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Scott Wood <swood@redhat.com>, Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-As these two functions are used by other private features. e.g.
-in error reporting private feature, it requires to check port status
-and reset port for error clearing.
+From: Scott Wood <swood@redhat.com>
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
+[ Upstream commit 13069847a475b60069918dc9971f5adb42811ce3 ]
+
+dma_mapping_error() was being called on a different device struct than
+what was passed to map/unmap.  Besides rendering the error checking
+ineffective, it caused a debug splat with CONFIG_DMA_API_DEBUG.
+
+Signed-off-by: Scott Wood <swood@redhat.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Moritz Fischer <mdf@kernel.org>
 Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/fpga/dfl-afu-main.c | 25 ++++++++++++++-----------
- drivers/fpga/dfl-afu.h      |  3 +++
- 2 files changed, 17 insertions(+), 11 deletions(-)
+ drivers/fpga/dfl-afu-dma-region.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 65b3e89..c8bc0b5 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -24,14 +24,16 @@
- #define DRV_VERSION	"0.8"
- 
- /**
-- * port_enable - enable a port
-+ * __port_enable - enable a port
-  * @pdev: port platform device.
-  *
-  * Enable Port by clear the port soft reset bit, which is set by default.
-  * The AFU is unable to respond to any MMIO access while in reset.
-- * port_enable function should only be used after port_disable function.
-+ * __port_enable function should only be used after __port_disable function.
-+ *
-+ * The caller needs to hold lock for protection.
-  */
--static void port_enable(struct platform_device *pdev)
-+void __port_enable(struct platform_device *pdev)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
- 	void __iomem *base;
-@@ -54,13 +56,14 @@ static void port_enable(struct platform_device *pdev)
- #define RST_POLL_TIMEOUT 1000 /* us */
- 
- /**
-- * port_disable - disable a port
-+ * __port_disable - disable a port
-  * @pdev: port platform device.
-  *
-- * Disable Port by setting the port soft reset bit, it puts the port into
-- * reset.
-+ * Disable Port by setting the port soft reset bit, it puts the port into reset.
-+ *
-+ * The caller needs to hold lock for protection.
-  */
--static int port_disable(struct platform_device *pdev)
-+int __port_disable(struct platform_device *pdev)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
- 	void __iomem *base;
-@@ -106,9 +109,9 @@ static int __port_reset(struct platform_device *pdev)
- {
- 	int ret;
- 
--	ret = port_disable(pdev);
-+	ret = __port_disable(pdev);
- 	if (!ret)
--		port_enable(pdev);
-+		__port_enable(pdev);
- 
- 	return ret;
- }
-@@ -805,9 +808,9 @@ static int port_enable_set(struct platform_device *pdev, bool enable)
- 
- 	mutex_lock(&pdata->lock);
- 	if (enable)
--		port_enable(pdev);
-+		__port_enable(pdev);
- 	else
--		ret = port_disable(pdev);
-+		ret = __port_disable(pdev);
- 	mutex_unlock(&pdata->lock);
- 
- 	return ret;
-diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
-index 0c7630a..35e60c5 100644
---- a/drivers/fpga/dfl-afu.h
-+++ b/drivers/fpga/dfl-afu.h
-@@ -79,6 +79,9 @@ struct dfl_afu {
- 	struct dfl_feature_platform_data *pdata;
- };
- 
-+void __port_enable(struct platform_device *pdev);
-+int __port_disable(struct platform_device *pdev);
-+
- void afu_mmio_region_init(struct dfl_feature_platform_data *pdata);
- int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
- 			u32 region_index, u64 region_size, u64 phys, u32 flags);
+diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+index 0e81d33af856..c9a613dc9eb7 100644
+--- a/drivers/fpga/dfl-afu-dma-region.c
++++ b/drivers/fpga/dfl-afu-dma-region.c
+@@ -399,7 +399,7 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
+ 				    region->pages[0], 0,
+ 				    region->length,
+ 				    DMA_BIDIRECTIONAL);
+-	if (dma_mapping_error(&pdata->dev->dev, region->iova)) {
++	if (dma_mapping_error(dfl_fpga_pdata_to_parent(pdata), region->iova)) {
+ 		dev_err(&pdata->dev->dev, "failed to map for dma\n");
+ 		ret = -EFAULT;
+ 		goto unpin_pages;
 -- 
-1.8.3.1
+2.20.1
