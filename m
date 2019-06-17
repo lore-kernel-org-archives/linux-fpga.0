@@ -1,56 +1,40 @@
-Return-Path: <SRS0=PUqE=UQ=the-dreams.de=wsa@kernel.org>
-Return-Path: <SRS0=PUqE=UQ=the-dreams.de=wsa@kernel.org>
-Date: Mon, 17 Jun 2019 12:06:11 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
+Return-Path: <SRS0=mS+J=UQ=arm.com=suzuki.poulose@kernel.org>
+Return-Path: <SRS0=mS+J=UQ=arm.com=suzuki.poulose@kernel.org>
 Subject: Re: [PATCH v2 06/28] drivers: Add generic helper to match by of_node
-Message-ID: <20190617100611.GB3502@kunai>
 References: <1560534863-15115-1-git-send-email-suzuki.poulose@arm.com>
  <1560534863-15115-7-git-send-email-suzuki.poulose@arm.com>
  <20190614203144.GB7991@kunai>
- <d050ae69-52ee-b32d-2bc0-708b408f3bd4@arm.com>
+From: Suzuki K Poulose <suzuki.poulose@arm.com>
+Message-ID: <d050ae69-52ee-b32d-2bc0-708b408f3bd4@arm.com>
+Date: Mon, 17 Jun 2019 10:59:03 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="7ZAtKRhVyVSsbBD2"
-Content-Disposition: inline
-In-Reply-To: <d050ae69-52ee-b32d-2bc0-708b408f3bd4@arm.com>
-To: Suzuki K Poulose <suzuki.poulose@arm.com>
+In-Reply-To: <20190614203144.GB7991@kunai>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: wsa@the-dreams.de
 Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, atull@kernel.org, andrew@lunn.ch, daniel@ffwll.ch, airlied@linux.ie, davem@davemloft.net, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, f.fainelli@gmail.com, frowand.list@gmail.com, hkallweit1@gmail.com, jslaby@suse.com, jonathanh@nvidia.com, lee.jones@linaro.org, lgirdwood@gmail.com, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-spi@vger.kernel.org, maarten.lankhorst@linux.intel.com, broonie@kernel.org, mathieu.poirier@linaro.org, maxime.ripard@bootlin.com, mdf@kernel.org, peda@axentia.se, robh+dt@kernel.org, srinivas.kandagatla@linaro.org, thierry.reding@gmail.com, thor.thayer@linux.intel.com, ulf.hansson@linaro.org, joe@perches.com
 List-ID: <linux-fpga@vger.kernel.org>
 
+Hi
 
---7ZAtKRhVyVSsbBD2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 14/06/2019 21:31, Wolfram Sang wrote:
+>> +
+>> +int device_match_of_node(struct device *dev, const void *np)
+>> +{
+>> +	return dev->of_node == np;
+>> +}
+>> +EXPORT_SYMBOL_GPL(device_match_of_node);
+> 
+> Is it an option to 'static inline' this simple function in the header,
+> saving the EXPORT?
+> 
 
+No. This is supposed to be passed on as a call back function pointer
+for the APIs. Having it as a static inline, would simply replicate
+the same function through the driver subsystems, which is one of the
+issues that series is trying to solve. Also, by having them exported,
+we can convert the new specialized device lookup functions,
+*_find_device_by_<property> to be static inlines.
 
-> > Is it an option to 'static inline' this simple function in the header,
-> > saving the EXPORT?
-> >=20
->=20
-> No.
-
-OK, thanks for the explanation!
-
-
---7ZAtKRhVyVSsbBD2
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl0HZhMACgkQFA3kzBSg
-Kbbl3A/+LFTwA3gh8PCif9bJi4Ywry/gCg7cCVuGAw1ZhH5h29SAhoONggyXvO8N
-XvGR09Q0NYX1CpAogNTRqTtpOKSudrSozBdFRxKlNCuACTghf1AdboPKq+pM2Zos
-+Q75BJMykwO00W+5ghmbztldccufXFjjwXzDwdBq5zNjtVf3yne4h1wWAubXItsQ
-LMaf+2X6WrAPfIPVvBbtV33cG/1f8l7GemdTJj02Z+5+u1NH4L1e00WP+rxqj0Q7
-nYMFIFYfjfqHBkhAltu6bx/gqqORuDfQ6DQ/vl/qyXVHY6WcYIzUde/NpnVSjAX/
-e6d3JrHaEHw7qBEH+39w54dQr4fRii9mUOF9keTO7OSfQnAAva1QQyERtAhPj7EA
-I2X/qEU6ncbQJK91mxlelKLbD+WuJUcqahDM0tQ07nQ2lz6zwVpBQzn3VNZiXxh1
-KAJFCCaWJRGp0P1JZMwnVbmMSeFoPWJx5fXweNoQXdgz/4yy2VpTh7AdvWFCOl9+
-u5N+YWIn6gygP5kUJuDevsLDTzyodTVxi3zvYaaFM+2eIF2nT8a0AI2HPzmR3G1R
-xlNjF3xnwWLlW/0g11vgj9PPAnKgNazMZflNXIbPSRZjHZzh6+C/GYnxlDXf5N3V
-tFjRbBS861rgNrq+zJv9HqLqlF7opQ3x7jAh8LwHdpF/Z95yDW0=
-=hDM+
------END PGP SIGNATURE-----
-
---7ZAtKRhVyVSsbBD2--
+Suzuki
