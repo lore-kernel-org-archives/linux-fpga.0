@@ -1,40 +1,56 @@
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 01/15] fpga: dfl-fme-mgr: fix FME_PR_INTFC_ID register address.
-Date: Thu, 27 Jun 2019 12:44:41 +0800
-Message-Id: <1561610695-5414-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org
+Return-Path: <SRS0=PUqE=UQ=the-dreams.de=wsa@kernel.org>
+Return-Path: <SRS0=PUqE=UQ=the-dreams.de=wsa@kernel.org>
+Date: Mon, 17 Jun 2019 12:06:11 +0200
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH v2 06/28] drivers: Add generic helper to match by of_node
+Message-ID: <20190617100611.GB3502@kunai>
+References: <1560534863-15115-1-git-send-email-suzuki.poulose@arm.com>
+ <1560534863-15115-7-git-send-email-suzuki.poulose@arm.com>
+ <20190614203144.GB7991@kunai>
+ <d050ae69-52ee-b32d-2bc0-708b408f3bd4@arm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="7ZAtKRhVyVSsbBD2"
+Content-Disposition: inline
+In-Reply-To: <d050ae69-52ee-b32d-2bc0-708b408f3bd4@arm.com>
+To: Suzuki K Poulose <suzuki.poulose@arm.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, atull@kernel.org, andrew@lunn.ch, daniel@ffwll.ch, airlied@linux.ie, davem@davemloft.net, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, f.fainelli@gmail.com, frowand.list@gmail.com, hkallweit1@gmail.com, jslaby@suse.com, jonathanh@nvidia.com, lee.jones@linaro.org, lgirdwood@gmail.com, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-spi@vger.kernel.org, maarten.lankhorst@linux.intel.com, broonie@kernel.org, mathieu.poirier@linaro.org, maxime.ripard@bootlin.com, mdf@kernel.org, peda@axentia.se, robh+dt@kernel.org, srinivas.kandagatla@linaro.org, thierry.reding@gmail.com, thor.thayer@linux.intel.com, ulf.hansson@linaro.org, joe@perches.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-FME_PR_INTFC_ID is used as compat_id for fpga manager and region,
-but high 64 bits and low 64 bits of the compat_id are swapped by
-mistake. This patch fixes this problem by fixing register address.
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
----
- drivers/fpga/dfl-fme-mgr.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+--7ZAtKRhVyVSsbBD2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
-index 76f3770..b3f7eee 100644
---- a/drivers/fpga/dfl-fme-mgr.c
-+++ b/drivers/fpga/dfl-fme-mgr.c
-@@ -30,8 +30,8 @@
- #define FME_PR_STS		0x10
- #define FME_PR_DATA		0x18
- #define FME_PR_ERR		0x20
--#define FME_PR_INTFC_ID_H	0xA8
--#define FME_PR_INTFC_ID_L	0xB0
-+#define FME_PR_INTFC_ID_L	0xA8
-+#define FME_PR_INTFC_ID_H	0xB0
- 
- /* FME PR Control Register Bitfield */
- #define FME_PR_CTRL_PR_RST	BIT_ULL(0)  /* Reset PR engine */
--- 
-1.8.3.1
+
+> > Is it an option to 'static inline' this simple function in the header,
+> > saving the EXPORT?
+> >=20
+>=20
+> No.
+
+OK, thanks for the explanation!
+
+
+--7ZAtKRhVyVSsbBD2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl0HZhMACgkQFA3kzBSg
+Kbbl3A/+LFTwA3gh8PCif9bJi4Ywry/gCg7cCVuGAw1ZhH5h29SAhoONggyXvO8N
+XvGR09Q0NYX1CpAogNTRqTtpOKSudrSozBdFRxKlNCuACTghf1AdboPKq+pM2Zos
++Q75BJMykwO00W+5ghmbztldccufXFjjwXzDwdBq5zNjtVf3yne4h1wWAubXItsQ
+LMaf+2X6WrAPfIPVvBbtV33cG/1f8l7GemdTJj02Z+5+u1NH4L1e00WP+rxqj0Q7
+nYMFIFYfjfqHBkhAltu6bx/gqqORuDfQ6DQ/vl/qyXVHY6WcYIzUde/NpnVSjAX/
+e6d3JrHaEHw7qBEH+39w54dQr4fRii9mUOF9keTO7OSfQnAAva1QQyERtAhPj7EA
+I2X/qEU6ncbQJK91mxlelKLbD+WuJUcqahDM0tQ07nQ2lz6zwVpBQzn3VNZiXxh1
+KAJFCCaWJRGp0P1JZMwnVbmMSeFoPWJx5fXweNoQXdgz/4yy2VpTh7AdvWFCOl9+
+u5N+YWIn6gygP5kUJuDevsLDTzyodTVxi3zvYaaFM+2eIF2nT8a0AI2HPzmR3G1R
+xlNjF3xnwWLlW/0g11vgj9PPAnKgNazMZflNXIbPSRZjHZzh6+C/GYnxlDXf5N3V
+tFjRbBS861rgNrq+zJv9HqLqlF7opQ3x7jAh8LwHdpF/Z95yDW0=
+=hDM+
+-----END PGP SIGNATURE-----
+
+--7ZAtKRhVyVSsbBD2--
