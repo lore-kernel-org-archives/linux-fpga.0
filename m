@@ -1,161 +1,74 @@
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 07/15] fpga: dfl: pci: enable SRIOV support.
-Date: Thu, 27 Jun 2019 17:49:43 -0700
-Message-Id: <20190628004951.6202-8-mdf@kernel.org>
-In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
-References: <20190628004951.6202-1-mdf@kernel.org>
+Return-Path: <SRS0=X5Cb=UW=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=X5Cb=UW=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:35582 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726119AbfFWT06 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Sun, 23 Jun 2019 15:26:58 -0400
+Date: Sun, 23 Jun 2019 15:26:52 -0400
+From: Sasha Levin <sashal@kernel.org>
+Subject: Re: [PATCH AUTOSEL 5.1 17/59] fpga: dfl: expand minor range when
+ registering chrdev region
+Message-ID: <20190623192652.GM2226@sasha-vm>
+References: <20190614202843.26941-1-sashal@kernel.org>
+ <20190614202843.26941-17-sashal@kernel.org>
+ <20190615054806.GB23883@kroah.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-List-ID: <linux-fpga@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20190615054806.GB23883@kroah.com>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org, Chengguang Xu <cgxu519@gmx.com>, Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, linux-fpga@vger.kernel.org
 
-From: Wu Hao <hao.wu@intel.com>
+On Sat, Jun 15, 2019 at 07:48:06AM +0200, Greg Kroah-Hartman wrote:
+>On Fri, Jun 14, 2019 at 04:28:01PM -0400, Sasha Levin wrote:
+>> From: Chengguang Xu <cgxu519@gmx.com>
+>>
+>> [ Upstream commit de9a7f6f5f1967d275311cca9163b4a3ffe9b0ae ]
+>>
+>> Actually, total amount of available minor number
+>> for a single major is MINORMASK + 1. So expand
+>> minor range when registering chrdev region.
+>>
+>> Signed-off-by: Chengguang Xu <cgxu519@gmx.com>
+>> Acked-by: Wu Hao <hao.wu@intel.com>
+>> Acked-by: Alan Tull <atull@kernel.org>
+>> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Signed-off-by: Sasha Levin <sashal@kernel.org>
+>> ---
+>>  drivers/fpga/dfl.c | 6 +++---
+>>  1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+>> index c25217cde5ca..4b66aaa32b5a 100644
+>> --- a/drivers/fpga/dfl.c
+>> +++ b/drivers/fpga/dfl.c
+>> @@ -322,7 +322,7 @@ static void dfl_chardev_uinit(void)
+>>  	for (i = 0; i < DFL_FPGA_DEVT_MAX; i++)
+>>  		if (MAJOR(dfl_chrdevs[i].devt)) {
+>>  			unregister_chrdev_region(dfl_chrdevs[i].devt,
+>> -						 MINORMASK);
+>> +						 MINORMASK + 1);
+>>  			dfl_chrdevs[i].devt = MKDEV(0, 0);
+>>  		}
+>>  }
+>> @@ -332,8 +332,8 @@ static int dfl_chardev_init(void)
+>>  	int i, ret;
+>>
+>>  	for (i = 0; i < DFL_FPGA_DEVT_MAX; i++) {
+>> -		ret = alloc_chrdev_region(&dfl_chrdevs[i].devt, 0, MINORMASK,
+>> -					  dfl_chrdevs[i].name);
+>> +		ret = alloc_chrdev_region(&dfl_chrdevs[i].devt, 0,
+>> +					  MINORMASK + 1, dfl_chrdevs[i].name);
+>>  		if (ret)
+>>  			goto exit;
+>>  	}
+>
+>Not a bugfix, so not needed for stable kernels, thanks.
 
-This patch enables the standard sriov support. It allows user to
-enable SRIOV (and VFs), then user could pass through accelerators
-(VFs) into virtual machine or use VFs directly in host.
+Dropped, thanks!
 
-Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
- drivers/fpga/dfl-pci.c | 40 ++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl.c     | 41 +++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl.h     |  1 +
- 3 files changed, 82 insertions(+)
-
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index 66b5720582bb..2fa571b0fdea 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -223,8 +223,46 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
- 	return ret;
- }
- 
-+static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
-+{
-+	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-+	struct dfl_fpga_cdev *cdev = drvdata->cdev;
-+	int ret = 0;
-+
-+	mutex_lock(&cdev->lock);
-+
-+	if (!num_vfs) {
-+		/*
-+		 * disable SRIOV and then put released ports back to default
-+		 * PF access mode.
-+		 */
-+		pci_disable_sriov(pcidev);
-+
-+		__dfl_fpga_cdev_config_port_vf(cdev, false);
-+
-+	} else if (cdev->released_port_num == num_vfs) {
-+		/*
-+		 * only enable SRIOV if cdev has matched released ports, put
-+		 * released ports into VF access mode firstly.
-+		 */
-+		__dfl_fpga_cdev_config_port_vf(cdev, true);
-+
-+		ret = pci_enable_sriov(pcidev, num_vfs);
-+		if (ret)
-+			__dfl_fpga_cdev_config_port_vf(cdev, false);
-+	} else {
-+		ret = -EINVAL;
-+	}
-+
-+	mutex_unlock(&cdev->lock);
-+	return ret;
-+}
-+
- static void cci_pci_remove(struct pci_dev *pcidev)
- {
-+	if (dev_is_pf(&pcidev->dev))
-+		cci_pci_sriov_configure(pcidev, 0);
-+
- 	cci_remove_feature_devs(pcidev);
- 	pci_disable_pcie_error_reporting(pcidev);
- }
-@@ -234,6 +272,7 @@ static struct pci_driver cci_pci_driver = {
- 	.id_table = cci_pcie_id_tbl,
- 	.probe = cci_pci_probe,
- 	.remove = cci_pci_remove,
-+	.sriov_configure = cci_pci_sriov_configure,
- };
- 
- module_pci_driver(cci_pci_driver);
-@@ -241,3 +280,4 @@ module_pci_driver(cci_pci_driver);
- MODULE_DESCRIPTION("FPGA DFL PCIe Device Driver");
- MODULE_AUTHOR("Intel Corporation");
- MODULE_LICENSE("GPL v2");
-+MODULE_VERSION(DRV_VERSION);
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 308c80868af4..28d61b611165 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -1112,6 +1112,47 @@ int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
- }
- EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_port);
- 
-+static void config_port_vf(struct device *fme_dev, int port_id, bool is_vf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(fme_dev, FME_FEATURE_ID_HEADER);
-+
-+	v = readq(base + FME_HDR_PORT_OFST(port_id));
-+
-+	v &= ~FME_PORT_OFST_ACC_CTRL;
-+	v |= FIELD_PREP(FME_PORT_OFST_ACC_CTRL,
-+			is_vf ? FME_PORT_OFST_ACC_VF : FME_PORT_OFST_ACC_PF);
-+
-+	writeq(v, base + FME_HDR_PORT_OFST(port_id));
-+}
-+
-+/**
-+ * __dfl_fpga_cdev_config_port_vf - configure port to VF access mode
-+ *
-+ * @cdev: parent container device.
-+ * @if_vf: true for VF access mode, and false for PF access mode
-+ *
-+ * Return: 0 on success, negative error code otherwise.
-+ *
-+ * This function is needed in sriov configuration routine. It could be used to
-+ * configures the released ports access mode to VF or PF.
-+ * The caller needs to hold lock for protection.
-+ */
-+void __dfl_fpga_cdev_config_port_vf(struct dfl_fpga_cdev *cdev, bool is_vf)
-+{
-+	struct dfl_feature_platform_data *pdata;
-+
-+	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
-+		if (device_is_registered(&pdata->dev->dev))
-+			continue;
-+
-+		config_port_vf(cdev->fme_dev, pdata->id, is_vf);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_config_port_vf);
-+
- static int __init dfl_fpga_init(void)
- {
- 	int ret;
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 63f39ab08905..1350e8eb9e59 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -421,5 +421,6 @@ dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
- 
- int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
- 			      u32 port_id, bool release);
-+void __dfl_fpga_cdev_config_port_vf(struct dfl_fpga_cdev *cdev, bool is_vf);
- 
- #endif /* __FPGA_DFL_H */
--- 
-2.22.0
+--
+Thanks,
+Sasha
