@@ -1,47 +1,62 @@
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 0/3] add thermal/power management features for FPGA DFL drivers
-Date: Thu, 27 Jun 2019 12:53:35 +0800
-Message-Id: <1561611218-5800-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, jdelvare@suse.com, linux@roeck-us.net, atull@kernel.org, gregkh@linuxfoundation.org, Wu Hao <hao.wu@intel.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 5.1 044/121] fpga: stratix10-soc: fix use-after-free on s10_init()
+Date: Mon, 24 Jun 2019 17:56:16 +0800
+Message-Id: <20190624092323.034944246@linuxfoundation.org>
+In-Reply-To: <20190624092320.652599624@linuxfoundation.org>
+References: <20190624092320.652599624@linuxfoundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Wen Yang <wen.yang99@zte.com.cn>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>, linux-fpga@vger.kernel.org, Sasha Levin <sashal@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patchset adds thermal and power management features for FPGA DFL
-drivers. Both patches are using hwmon as userspace interfaces.
+[ Upstream commit f5dd87326fefe42a4b1a4b1a1a695060c33a88d6 ]
 
-Main changes from v3:
- - use HWMON_CHANNEL_INFO.
+The refcount of fw_np has already been decreased by of_find_matching_node()
+so it shouldn't be used anymore.
+This patch adds an of_node_get() before of_find_matching_node() to avoid
+the use-after-free problem.
 
-Main changes from v2:
- - switch to standard hwmon APIs for thermal hwmon:
-     temp1_alarm        --> temp1_max
-     temp1_alarm_status --> temp1_max_alarm
-     temp1_crit_status  --> temp1_crit_alarm
-     temp1_alarm_policy --> temp1_max_policy
- - switch to standard hwmon APIs for power hwmon:
-     power1_cap         --> power1_max
-     power1_cap_status  --> power1_max_alarm
-     power1_crit_status --> power1_crit_alarm
+Fixes: e7eef1d7633a ("fpga: add intel stratix10 soc fpga manager driver")
+Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+Cc: Alan Tull <atull@kernel.org>
+Cc: Moritz Fischer <mdf@kernel.org>
+Cc: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Cc: linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Reviewed-by: Moritz Fischer <mdf@kernel.org>
+Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/fpga/stratix10-soc.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Please note that this patchset is generated on top of this patchset.
-[PATCH v4 00/15] add new features for FPGA DFL drivers
- - https://lkml.org/lkml/2019/6/27/29
-
-Wu Hao (2):
-  fpga: dfl: fme: add thermal management support
-  fpga: dfl: fme: add power management support
-
-Xu Yilun (1):
-  Documentation: fpga: dfl: add descriptions for thermal/power
-    management interfaces
-
- Documentation/ABI/testing/sysfs-platform-dfl-fme | 131 ++++++++
- Documentation/fpga/dfl.txt                       |  10 +
- drivers/fpga/Kconfig                             |   2 +-
- drivers/fpga/dfl-fme-main.c                      | 408 +++++++++++++++++++++++
- 4 files changed, 550 insertions(+), 1 deletion(-)
-
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index 13851b3d1c56..215d33789c74 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -507,12 +507,16 @@ static int __init s10_init(void)
+ 	if (!fw_np)
+ 		return -ENODEV;
+ 
++	of_node_get(fw_np);
+ 	np = of_find_matching_node(fw_np, s10_of_match);
+-	if (!np)
++	if (!np) {
++		of_node_put(fw_np);
+ 		return -ENODEV;
++	}
+ 
+ 	of_node_put(np);
+ 	ret = of_platform_populate(fw_np, s10_of_match, NULL, NULL);
++	of_node_put(fw_np);
+ 	if (ret)
+ 		return ret;
+ 
 -- 
-1.8.3.1
+2.20.1
