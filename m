@@ -1,158 +1,72 @@
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 05/15] Documentation: fpga: dfl: add descriptions for virtualization and new interfaces.
-Date: Thu, 27 Jun 2019 12:44:45 +0800
-Message-Id: <1561610695-5414-6-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org
+Return-Path: <SRS0=GOTt=UX=arm.com=suzuki.poulose@kernel.org>
+Return-Path: <SRS0=GOTt=UX=arm.com=suzuki.poulose@kernel.org>
+Subject: Re: [PATCH v2 13/28] drivers: Introduce
+ class_find_device_by_of_node() helper
+References: <1560534863-15115-1-git-send-email-suzuki.poulose@arm.com>
+ <1560534863-15115-14-git-send-email-suzuki.poulose@arm.com>
+ <325e46fd-a480-78ed-81fd-55e993fbc06f@axentia.se>
+ <5cf1a8e2-bb1e-b6bc-32fe-93db0a6b5efd@arm.com>
+ <528dcb2e-3611-00a7-abb2-cc18001f4f8f@axentia.se>
+From: Suzuki K Poulose <suzuki.poulose@arm.com>
+Message-ID: <8c8f447d-71a9-0420-590d-94710131c69d@arm.com>
+Date: Mon, 24 Jun 2019 16:19:42 +0100
+MIME-Version: 1.0
+In-Reply-To: <528dcb2e-3611-00a7-abb2-cc18001f4f8f@axentia.se>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: peda@axentia.se, linux-kernel@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, rafael@kernel.org, atull@kernel.org, mdf@kernel.org, linux-fpga@vger.kernel.org, broonie@kernel.org, f.fainelli@gmail.com, hkallweit1@gmail.com, davem@davemloft.net, andrew@lunn.ch, lgirdwood@gmail.com, jslaby@suse.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds virtualization support description for DFL based
-FPGA devices (based on PCIe SRIOV), and introductions to new
-interfaces added by new dfl private feature drivers.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
----
- Documentation/fpga/dfl.txt | 101 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 101 insertions(+)
 
-diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
-index 6df4621..a22631f 100644
---- a/Documentation/fpga/dfl.txt
-+++ b/Documentation/fpga/dfl.txt
-@@ -84,6 +84,8 @@ The following functions are exposed through ioctls:
-  Get driver API version (DFL_FPGA_GET_API_VERSION)
-  Check for extensions (DFL_FPGA_CHECK_EXTENSION)
-  Program bitstream (DFL_FPGA_FME_PORT_PR)
-+ Assign port to PF (DFL_FPGA_FME_PORT_ASSIGN)
-+ Release port from PF (DFL_FPGA_FME_PORT_RELEASE)
- 
- More functions are exposed through sysfs
- (/sys/class/fpga_region/regionX/dfl-fme.n/):
-@@ -99,6 +101,10 @@ More functions are exposed through sysfs
-      one FPGA device may have more than one port, this sysfs interface indicates
-      how many ports the FPGA device has.
- 
-+ Global error reporting management (errors/)
-+     error reporting sysfs interfaces allow user to read errors detected by the
-+     hardware, and clear the logged errors.
-+
- 
- FIU - PORT
- ==========
-@@ -139,6 +145,10 @@ More functions are exposed through sysfs:
-  Read Accelerator GUID (afu_id)
-      afu_id indicates which PR bitstream is programmed to this AFU.
- 
-+ Error reporting (errors/)
-+     error reporting sysfs interfaces allow user to read port/afu errors
-+     detected by the hardware, and clear the logged errors.
-+
- 
- DFL Framework Overview
- ======================
-@@ -212,6 +222,97 @@ the compat_id exposed by the target FPGA region. This check is usually done by
- userspace before calling the reconfiguration IOCTL.
- 
- 
-+FPGA virtualization - PCIe SRIOV
-+================================
-+This section describes the virtualization support on DFL based FPGA device to
-+enable accessing an accelerator from applications running in a virtual machine
-+(VM). This section only describes the PCIe based FPGA device with SRIOV support.
-+
-+Features supported by the particular FPGA device are exposed through Device
-+Feature Lists, as illustrated below:
-+
-+  +-------------------------------+  +-------------+
-+  |              PF               |  |     VF      |
-+  +-------------------------------+  +-------------+
-+      ^            ^         ^              ^
-+      |            |         |              |
-++-----|------------|---------|--------------|-------+
-+|     |            |         |              |       |
-+|  +-----+     +-------+ +-------+      +-------+   |
-+|  | FME |     | Port0 | | Port1 |      | Port2 |   |
-+|  +-----+     +-------+ +-------+      +-------+   |
-+|                  ^         ^              ^       |
-+|                  |         |              |       |
-+|              +-------+ +------+       +-------+   |
-+|              |  AFU  | |  AFU |       |  AFU  |   |
-+|              +-------+ +------+       +-------+   |
-+|                                                   |
-+|            DFL based FPGA PCIe Device             |
-++---------------------------------------------------+
-+
-+FME is always accessed through the physical function (PF).
-+
-+Ports (and related AFUs) are accessed via PF by default, but could be exposed
-+through virtual function (VF) devices via PCIe SRIOV. Each VF only contains
-+1 Port and 1 AFU for isolation. Users could assign individual VFs (accelerators)
-+created via PCIe SRIOV interface, to virtual machines.
-+
-+The driver organization in virtualization case is illustrated below:
-+
-+  +-------++------++------+             |
-+  | FME   || FME  || FME  |             |
-+  | FPGA  || FPGA || FPGA |             |
-+  |Manager||Bridge||Region|             |
-+  +-------++------++------+             |
-+  +-----------------------+  +--------+ |             +--------+
-+  |          FME          |  |  AFU   | |             |  AFU   |
-+  |         Module        |  | Module | |             | Module |
-+  +-----------------------+  +--------+ |             +--------+
-+        +-----------------------+       |       +-----------------------+
-+        | FPGA Container Device |       |       | FPGA Container Device |
-+        |  (FPGA Base Region)   |       |       |  (FPGA Base Region)   |
-+        +-----------------------+       |       +-----------------------+
-+          +------------------+          |         +------------------+
-+          | FPGA PCIE Module |          | Virtual | FPGA PCIE Module |
-+          +------------------+   Host   | Machine +------------------+
-+ -------------------------------------- | ------------------------------
-+           +---------------+            |          +---------------+
-+           | PCI PF Device |            |          | PCI VF Device |
-+           +---------------+            |          +---------------+
-+
-+FPGA PCIe device driver is always loaded first once a FPGA PCIe PF or VF device
-+is detected. It:
-+
-+	a) finish enumeration on both FPGA PCIe PF and VF device using common
-+	   interfaces from DFL framework.
-+	b) supports SRIOV.
-+
-+The FME device driver plays a management role in this driver architecture, it
-+provides ioctls to release Port from PF and assign Port to PF. After release
-+a port from PF, then it's safe to expose this port through a VF via PCIe SRIOV
-+sysfs interface.
-+
-+To enable accessing an accelerator from applications running in a VM, the
-+respective AFU's port needs to be assigned to a VF using the following steps:
-+
-+	a) The PF owns all AFU ports by default. Any port that needs to be
-+	   reassigned to a VF must first be released through the
-+	   DFL_FPGA_FME_PORT_RELEASE ioctl on the FME device.
-+
-+	b) Once N ports are released from PF, then user can use command below
-+	   to enable SRIOV and VFs. Each VF owns only one Port with AFU.
-+
-+	   echo N > $PCI_DEVICE_PATH/sriov_numvfs
-+
-+	c) Pass through the VFs to VMs
-+
-+	d) The AFU under VF is accessible from applications in VM (using the
-+	   same driver inside the VF).
-+
-+Note that an FME can't be assigned to a VF, thus PR and other management
-+functions are only available via the PF.
-+
-+
- Device enumeration
- ==================
- This section introduces how applications enumerate the fpga device from
--- 
-1.8.3.1
+On 24/06/2019 15:07, Peter Rosin wrote:
+> On 2019-06-24 10:34, Suzuki K Poulose wrote:
+>> Hi Peter,
+>>
+>> On 22/06/2019 06:25, Peter Rosin wrote:
+>>> On 2019-06-14 19:54, Suzuki K Poulose wrote:
+>>>> Add a wrapper to class_find_device() to search for a device
+>>>> by the of_node pointer, reusing the generic match function.
+>>>> Also convert the existing users to make use of the new helper.
+>>>>
+>>>> Cc: Alan Tull <atull@kernel.org>
+>>>> Cc: Moritz Fischer <mdf@kernel.org>
+>>>> Cc: linux-fpga@vger.kernel.org
+>>>> Cc: Peter Rosin <peda@axentia.se>
+>>>> Cc: Mark Brown <broonie@kernel.org>
+>>>> Cc: Florian Fainelli <f.fainelli@gmail.com>
+>>>> Cc: Heiner Kallweit <hkallweit1@gmail.com>
+>>>> Cc: "David S. Miller" <davem@davemloft.net>
+>>>> Cc: Andrew Lunn <andrew@lunn.ch>
+>>>> Cc: Liam Girdwood <lgirdwood@gmail.com>
+>>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>>>> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+>>>> Cc: Jiri Slaby <jslaby@suse.com>
+>>>> Acked-by: Mark Brown <broonie@kernel.org>
+>>>> Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+>>>> Reviewed-by: Peter Rosin <peda@axentia.se>
+>>>
+>>> Whoooa! I reviewed only the drivers/mux/core.c changes when this was done
+>>> in a series of much smaller patches. This tag makes it seem as if I have
+>>> reviewed the whole thing, which I had not done when you added this tag out
+>>> of the blue.
+>>
+>> Apologies for the surprise. The patch was simply squashed with the change that
+>> introduced the "helper" to better aid the reviewers, based on suggestions on the
+>> list. I kept your tags, only because there were no changes, but some additional
+>> context on the core driver.
+> 
+> You could e.g. have written:
+> 
+> 	...
+> 	[For the drivers/mux/core.c part]
+> 	Reviewed-by: Peter Rosin <peda@axentia.se>
+> 	...
+
+Ok. This might change again, another level of merging, but no changes to the
+hunk for mux. So I can use the above.
+
+Cheers
+Suzuki
