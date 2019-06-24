@@ -1,113 +1,44 @@
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 11/15] fpga: dfl: afu: export __port_enable/disable function.
-Date: Thu, 27 Jun 2019 17:49:47 -0700
-Message-Id: <20190628004951.6202-12-mdf@kernel.org>
-In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
-References: <20190628004951.6202-1-mdf@kernel.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Date: Mon, 24 Jun 2019 05:23:48 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v2 00/28] drivers: Consolidate device lookup helpers
+Message-ID: <20190624032348.GA28919@kroah.com>
+References: <1560534863-15115-1-git-send-email-suzuki.poulose@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1560534863-15115-1-git-send-email-suzuki.poulose@arm.com>
+To: Suzuki K Poulose <suzuki.poulose@arm.com>
+Cc: linux-kernel@vger.kernel.org, rafael@kernel.org, Alan Tull <atull@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexander Aring <alex.aring@gmail.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Andreas Noever <andreas.noever@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Arnd Bergmann <arnd@arndb.de>, Bjorn Helgaas <bhelgaas@google.com>, Corey Minyard <minyard@acm.org>, Daniel Vetter <daniel@ffwll.ch>, Dan Murphy <dmurphy@ti.com>, David Airlie <airlied@linux.ie>, David Kershner <david.kershner@unisys.com>, "David S. Miller" <davem@davemloft.net>, Doug Ledford <dledford@redhat.com>, dri-devel@lists.freedesktop.org, Elie Morisse <syniurge@gmail.com>, Eric Anholt <eric@anholt.net>, Felipe Balbi <balbi@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@arm.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Harald Freudenberger <freude@linux.ibm.com>, Hartmut Knaack <knaack.h@gmx.de>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Heiner Kallweit <hkallweit1@gmail.com>, Inki Dae <inki.dae@samsung.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>, Jiri Slaby <jslaby@suse.com>, Joe Perches <joe@perches.com>, Joerg Roedel <joro@8bytes.org>, Jonathan Cameron <jic23@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, Lee Jones <lee.jones@linaro.org>, Len Brown <lenb@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Mark Brown <broonie@kernel.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, Mathieu Poirier <mathieu.poirier@linaro.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Michael Jamet <michael.jamet@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Moritz Fischer <mdf@kernel.org>, Nehal Shah <nehal-bakulchandra.shah@amd.com>, Oliver Neukum <oneukum@suse.com>, Pavel Machek <pavel@ucw.cz>, Peter Oberparleiter <oberpar@linux.ibm.com>, Peter Rosin <peda@axentia.se>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J . Wysocki " <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Robin Murphy <robin.murphy@arm.com>, Russell King <linux@armlinux.org.uk>, Sandy Huang <hjc@rock-chips.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Sebastian Ott <sebott@linux.ibm.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Shyam Sundar S K <shyam-sundar.s-k@amd.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Stefan Schmidt <stefan@datenfreihafen.org>, Takashi Iwai <tiwai@suse.com>, Thierry Reding <thierry.reding@gmail.com>, Thor Thayer <thor.thayer@linux.intel.com>, Tomas Winkler <tomas.winkler@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Will Deacon <will.deacon@arm.com>, Wolfram Sang <wsa@the-dreams.de>, devicetree@vger.kernel.org, linux-acpi@vger.kernel.org, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-leds@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-rtc@vger.kernel.org, linux-spi@vger.kernel.org, linux-usb@vger.kernel.org, linux-wpan@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Wu Hao <hao.wu@intel.com>
+On Fri, Jun 14, 2019 at 06:53:55PM +0100, Suzuki K Poulose wrote:
+> We have device iterators to find a particular device matching a criteria
+> for a given bus/class/driver. i.e, {bus,class,driver}_find_device() APIs.
+> The matching criteria is a function pointer for the APIs. Often the lookup
+> is based on a generic property of a device (e.g, name, fwnode, of node pointer
+> or device type) rather than a driver specific information. However, each driver
+> writes up its own "match" function, spilling the similar match functions all
+> over the driver subsystems.
+> 
+> Additionally the prototype for the "match" functions accepted by the above APIs
+> have a minute difference which prevents us otherwise sharing the match functions.
+> i.e,
+> 	int (*match)(struct device *dev, void *data) for {bus/driver}_find_device()
+> 	  vs
+> 	int (*match)(struct device *dev, const void *) for class_find_device()
+> 
+> If we promote the former to accept a "const void*" parameter, we could share one
+> single match function for all the helpers. This series achieves the following:
+> 
+>  a) [Patches 03-05] Unify the prototype for "match" functions accepted by the
+>      device lookup APIs.
 
-As these two functions are used by other private features. e.g.
-in error reporting private feature, it requires to check port status
-and reset port for error clearing.
+I've applied the first 6 patches of this series to my tree now.  Let's
+see how that goes, and this should give you a more solid base to redo
+the rest of the series off of.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
- drivers/fpga/dfl-afu-main.c | 25 ++++++++++++++-----------
- drivers/fpga/dfl-afu.h      |  3 +++
- 2 files changed, 17 insertions(+), 11 deletions(-)
+thanks,
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 65b3e895e364..c8bc0b5d9c16 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -24,14 +24,16 @@
- #define DRV_VERSION	"0.8"
- 
- /**
-- * port_enable - enable a port
-+ * __port_enable - enable a port
-  * @pdev: port platform device.
-  *
-  * Enable Port by clear the port soft reset bit, which is set by default.
-  * The AFU is unable to respond to any MMIO access while in reset.
-- * port_enable function should only be used after port_disable function.
-+ * __port_enable function should only be used after __port_disable function.
-+ *
-+ * The caller needs to hold lock for protection.
-  */
--static void port_enable(struct platform_device *pdev)
-+void __port_enable(struct platform_device *pdev)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
- 	void __iomem *base;
-@@ -54,13 +56,14 @@ static void port_enable(struct platform_device *pdev)
- #define RST_POLL_TIMEOUT 1000 /* us */
- 
- /**
-- * port_disable - disable a port
-+ * __port_disable - disable a port
-  * @pdev: port platform device.
-  *
-- * Disable Port by setting the port soft reset bit, it puts the port into
-- * reset.
-+ * Disable Port by setting the port soft reset bit, it puts the port into reset.
-+ *
-+ * The caller needs to hold lock for protection.
-  */
--static int port_disable(struct platform_device *pdev)
-+int __port_disable(struct platform_device *pdev)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
- 	void __iomem *base;
-@@ -106,9 +109,9 @@ static int __port_reset(struct platform_device *pdev)
- {
- 	int ret;
- 
--	ret = port_disable(pdev);
-+	ret = __port_disable(pdev);
- 	if (!ret)
--		port_enable(pdev);
-+		__port_enable(pdev);
- 
- 	return ret;
- }
-@@ -805,9 +808,9 @@ static int port_enable_set(struct platform_device *pdev, bool enable)
- 
- 	mutex_lock(&pdata->lock);
- 	if (enable)
--		port_enable(pdev);
-+		__port_enable(pdev);
- 	else
--		ret = port_disable(pdev);
-+		ret = __port_disable(pdev);
- 	mutex_unlock(&pdata->lock);
- 
- 	return ret;
-diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
-index 0c7630ae3cda..35e60c5859a4 100644
---- a/drivers/fpga/dfl-afu.h
-+++ b/drivers/fpga/dfl-afu.h
-@@ -79,6 +79,9 @@ struct dfl_afu {
- 	struct dfl_feature_platform_data *pdata;
- };
- 
-+void __port_enable(struct platform_device *pdev);
-+int __port_disable(struct platform_device *pdev);
-+
- void afu_mmio_region_init(struct dfl_feature_platform_data *pdata);
- int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
- 			u32 region_index, u64 region_size, u64 phys, u32 flags);
--- 
-2.22.0
+greg k-h
