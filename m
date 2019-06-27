@@ -1,72 +1,125 @@
-Return-Path: <SRS0=ioXU=U2=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=ioXU=U2=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH] fpga: altera-pr-ip: Make alt_pr_unregister function void
-Date: Wed, 26 Jun 2019 17:33:09 -0700
-Message-Id: <20190627003309.27595-1-mdf@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v4 14/15] fpga: dfl: fme: add capability sysfs interfaces
+Date: Thu, 27 Jun 2019 12:44:54 +0800
+Message-Id: <1561610695-5414-15-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org, Luwei Kang <luwei.kang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Make alt_pr_unregister function void, since it always returns 0,
-and nothing would act on the value anyways.
+This patch adds 3 read-only sysfs interfaces for FPGA Management Engine
+(FME) block for capabilities including cache_size, fabric_version and
+socket_id.
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/altera-pr-ip-core-plat.c  | 4 +++-
- drivers/fpga/altera-pr-ip-core.c       | 4 +---
- include/linux/fpga/altera-pr-ip-core.h | 2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+v3: replace scnprintf with sprintf in sysfs interfaces.
+    update sysfs doc kernel version and date.
+v4: update sysfs doc date.
+---
+ Documentation/ABI/testing/sysfs-platform-dfl-fme | 23 ++++++++++++
+ drivers/fpga/dfl-fme-main.c                      | 48 ++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+)
 
-diff --git a/drivers/fpga/altera-pr-ip-core-plat.c b/drivers/fpga/altera-pr-ip-core-plat.c
-index b293d83143f1..99b9cc0e70f0 100644
---- a/drivers/fpga/altera-pr-ip-core-plat.c
-+++ b/drivers/fpga/altera-pr-ip-core-plat.c
-@@ -32,7 +32,9 @@ static int alt_pr_platform_remove(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 
--	return alt_pr_unregister(dev);
-+	alt_pr_unregister(dev);
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+index 8fa4feb..99cd3b2 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+@@ -21,3 +21,26 @@ Contact:	Wu Hao <hao.wu@intel.com>
+ Description:	Read-only. It returns Bitstream (static FPGA region) meta
+ 		data, which includes the synthesis date, seed and other
+ 		information of this static FPGA region.
 +
-+	return 0;
++What:		/sys/bus/platform/devices/dfl-fme.0/cache_size
++Date:		June 2019
++KernelVersion:  5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns cache size of this FPGA device.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/fabric_version
++Date:		June 2019
++KernelVersion:  5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns fabric version of this FPGA device.
++		Userspace applications need this information to select
++		best data channels per different fabric design.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/socket_id
++Date:		June 2019
++KernelVersion:  5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns socket_id to indicate which socket
++		this FPGA belongs to, only valid for integrated solution.
++		User only needs this information, in case standard numa node
++		can't provide correct information.
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 38c6342..2d69b8f 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -75,10 +75,58 @@ static ssize_t bitstream_metadata_show(struct device *dev,
  }
+ static DEVICE_ATTR_RO(bitstream_metadata);
  
- static const struct of_device_id alt_pr_of_match[] = {
-diff --git a/drivers/fpga/altera-pr-ip-core.c b/drivers/fpga/altera-pr-ip-core.c
-index a7a3bf0b5202..2cf25fd5e897 100644
---- a/drivers/fpga/altera-pr-ip-core.c
-+++ b/drivers/fpga/altera-pr-ip-core.c
-@@ -201,15 +201,13 @@ int alt_pr_register(struct device *dev, void __iomem *reg_base)
- }
- EXPORT_SYMBOL_GPL(alt_pr_register);
++static ssize_t cache_size_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return sprintf(buf, "%u\n",
++		       (unsigned int)FIELD_GET(FME_CAP_CACHE_SIZE, v));
++}
++static DEVICE_ATTR_RO(cache_size);
++
++static ssize_t fabric_version_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return sprintf(buf, "%u\n",
++		       (unsigned int)FIELD_GET(FME_CAP_FABRIC_VERID, v));
++}
++static DEVICE_ATTR_RO(fabric_version);
++
++static ssize_t socket_id_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return sprintf(buf, "%u\n",
++		       (unsigned int)FIELD_GET(FME_CAP_SOCKET_ID, v));
++}
++static DEVICE_ATTR_RO(socket_id);
++
+ static const struct attribute *fme_hdr_attrs[] = {
+ 	&dev_attr_ports_num.attr,
+ 	&dev_attr_bitstream_id.attr,
+ 	&dev_attr_bitstream_metadata.attr,
++	&dev_attr_cache_size.attr,
++	&dev_attr_fabric_version.attr,
++	&dev_attr_socket_id.attr,
+ 	NULL,
+ };
  
--int alt_pr_unregister(struct device *dev)
-+void alt_pr_unregister(struct device *dev)
- {
- 	struct fpga_manager *mgr = dev_get_drvdata(dev);
- 
- 	dev_dbg(dev, "%s\n", __func__);
- 
- 	fpga_mgr_unregister(mgr);
--
--	return 0;
- }
- EXPORT_SYMBOL_GPL(alt_pr_unregister);
- 
-diff --git a/include/linux/fpga/altera-pr-ip-core.h b/include/linux/fpga/altera-pr-ip-core.h
-index 7d4664730d60..0b08ac20ab16 100644
---- a/include/linux/fpga/altera-pr-ip-core.h
-+++ b/include/linux/fpga/altera-pr-ip-core.h
-@@ -13,6 +13,6 @@
- #include <linux/io.h>
- 
- int alt_pr_register(struct device *dev, void __iomem *reg_base);
--int alt_pr_unregister(struct device *dev);
-+void alt_pr_unregister(struct device *dev);
- 
- #endif /* _ALT_PR_IP_CORE_H */
 -- 
-2.22.0
+1.8.3.1
