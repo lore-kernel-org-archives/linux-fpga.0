@@ -1,47 +1,72 @@
-Return-Path: <sashal@kernel.org>
-Return-Path: <sashal@kernel.org>
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 06/39] fpga: dfl: afu: Pass the correct device to dma_mapping_error()
-Date: Fri, 14 Jun 2019 16:29:11 -0400
-Message-Id: <20190614202946.27385-6-sashal@kernel.org>
-In-Reply-To: <20190614202946.27385-1-sashal@kernel.org>
-References: <20190614202946.27385-1-sashal@kernel.org>
+Return-Path: <SRS0=ioXU=U2=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=ioXU=U2=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH] fpga: altera-pr-ip: Make alt_pr_unregister function void
+Date: Wed, 26 Jun 2019 17:33:09 -0700
+Message-Id: <20190627003309.27595-1-mdf@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Scott Wood <swood@redhat.com>, Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Scott Wood <swood@redhat.com>
+Make alt_pr_unregister function void, since it always returns 0,
+and nothing would act on the value anyways.
 
-[ Upstream commit 13069847a475b60069918dc9971f5adb42811ce3 ]
-
-dma_mapping_error() was being called on a different device struct than
-what was passed to map/unmap.  Besides rendering the error checking
-ineffective, it caused a debug splat with CONFIG_DMA_API_DEBUG.
-
-Signed-off-by: Scott Wood <swood@redhat.com>
-Acked-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/dfl-afu-dma-region.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/fpga/altera-pr-ip-core-plat.c  | 4 +++-
+ drivers/fpga/altera-pr-ip-core.c       | 4 +---
+ include/linux/fpga/altera-pr-ip-core.h | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index 0e81d33af856..c9a613dc9eb7 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -399,7 +399,7 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
- 				    region->pages[0], 0,
- 				    region->length,
- 				    DMA_BIDIRECTIONAL);
--	if (dma_mapping_error(&pdata->dev->dev, region->iova)) {
-+	if (dma_mapping_error(dfl_fpga_pdata_to_parent(pdata), region->iova)) {
- 		dev_err(&pdata->dev->dev, "failed to map for dma\n");
- 		ret = -EFAULT;
- 		goto unpin_pages;
+diff --git a/drivers/fpga/altera-pr-ip-core-plat.c b/drivers/fpga/altera-pr-ip-core-plat.c
+index b293d83143f1..99b9cc0e70f0 100644
+--- a/drivers/fpga/altera-pr-ip-core-plat.c
++++ b/drivers/fpga/altera-pr-ip-core-plat.c
+@@ -32,7 +32,9 @@ static int alt_pr_platform_remove(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 
+-	return alt_pr_unregister(dev);
++	alt_pr_unregister(dev);
++
++	return 0;
+ }
+ 
+ static const struct of_device_id alt_pr_of_match[] = {
+diff --git a/drivers/fpga/altera-pr-ip-core.c b/drivers/fpga/altera-pr-ip-core.c
+index a7a3bf0b5202..2cf25fd5e897 100644
+--- a/drivers/fpga/altera-pr-ip-core.c
++++ b/drivers/fpga/altera-pr-ip-core.c
+@@ -201,15 +201,13 @@ int alt_pr_register(struct device *dev, void __iomem *reg_base)
+ }
+ EXPORT_SYMBOL_GPL(alt_pr_register);
+ 
+-int alt_pr_unregister(struct device *dev)
++void alt_pr_unregister(struct device *dev)
+ {
+ 	struct fpga_manager *mgr = dev_get_drvdata(dev);
+ 
+ 	dev_dbg(dev, "%s\n", __func__);
+ 
+ 	fpga_mgr_unregister(mgr);
+-
+-	return 0;
+ }
+ EXPORT_SYMBOL_GPL(alt_pr_unregister);
+ 
+diff --git a/include/linux/fpga/altera-pr-ip-core.h b/include/linux/fpga/altera-pr-ip-core.h
+index 7d4664730d60..0b08ac20ab16 100644
+--- a/include/linux/fpga/altera-pr-ip-core.h
++++ b/include/linux/fpga/altera-pr-ip-core.h
+@@ -13,6 +13,6 @@
+ #include <linux/io.h>
+ 
+ int alt_pr_register(struct device *dev, void __iomem *reg_base);
+-int alt_pr_unregister(struct device *dev);
++void alt_pr_unregister(struct device *dev);
+ 
+ #endif /* _ALT_PR_IP_CORE_H */
 -- 
-2.20.1
+2.22.0
