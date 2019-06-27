@@ -1,103 +1,79 @@
-Return-Path: <SRS0=P7Jb=UC=arm.com=suzuki.poulose@kernel.org>
-Return-Path: <SRS0=P7Jb=UC=arm.com=suzuki.poulose@kernel.org>
-From: Suzuki K Poulose <suzuki.poulose@arm.com>
-Subject: [RFC PATCH 38/57] drivers: fpga: Use generic helpers to match by of_node
-Date: Mon,  3 Jun 2019 16:50:04 +0100
-Message-Id: <1559577023-558-39-git-send-email-suzuki.poulose@arm.com>
-In-Reply-To: <1559577023-558-1-git-send-email-suzuki.poulose@arm.com>
-References: <1559577023-558-1-git-send-email-suzuki.poulose@arm.com>
-To: linux-kernel@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, rafael@kernel.org, suzuki.poulose@arm.com, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v4 13/15] fpga: dfl: afu: add STP (SignalTap) support
+Date: Thu, 27 Jun 2019 12:44:53 +0800
+Message-Id: <1561610695-5414-14-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Use the generic helpers available to find device matching of_node.
+STP (SignalTap) is one of the private features under the port for
+debugging. This patch adds private feature driver support for it
+to allow userspace applications to mmap related mmio region and
+provide STP service.
 
-Cc: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org
-Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
 ---
- drivers/fpga/fpga-bridge.c    | 8 +-------
- drivers/fpga/fpga-mgr.c       | 8 +-------
- drivers/fpga/of-fpga-region.c | 7 +------
- 3 files changed, 3 insertions(+), 20 deletions(-)
+ drivers/fpga/dfl-afu-main.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index 80bd8f1..f1222a9 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -19,11 +19,6 @@ static struct class *fpga_bridge_class;
- /* Lock for adding/removing bridges to linked lists*/
- static spinlock_t bridge_list_lock;
- 
--static int fpga_bridge_of_node_match(struct device *dev, const void *data)
--{
--	return dev->of_node == data;
--}
--
- /**
-  * fpga_bridge_enable - Enable transactions on the bridge
-  *
-@@ -104,8 +99,7 @@ struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
- {
- 	struct device *dev;
- 
--	dev = class_find_device(fpga_bridge_class, NULL, np,
--				fpga_bridge_of_node_match);
-+	dev = class_find_device_by_of_node(fpga_bridge_class, NULL, np);
- 	if (!dev)
- 		return ERR_PTR(-ENODEV);
- 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index c386681..78d2ddb1 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -482,11 +482,6 @@ struct fpga_manager *fpga_mgr_get(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(fpga_mgr_get);
- 
--static int fpga_mgr_of_node_match(struct device *dev, const void *data)
--{
--	return dev->of_node == data;
--}
--
- /**
-  * of_fpga_mgr_get - Given a device node, get a reference to a fpga mgr.
-  *
-@@ -498,8 +493,7 @@ struct fpga_manager *of_fpga_mgr_get(struct device_node *node)
- {
- 	struct device *dev;
- 
--	dev = class_find_device(fpga_mgr_class, NULL, node,
--				fpga_mgr_of_node_match);
-+	dev = class_find_device_by_of_node(fpga_mgr_class, NULL, node);
- 	if (!dev)
- 		return ERR_PTR(-ENODEV);
- 
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 75f64ab..e405309 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -22,11 +22,6 @@ static const struct of_device_id fpga_region_of_match[] = {
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index bcf6e28..8241ace 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -513,6 +513,36 @@ static void port_afu_uinit(struct platform_device *pdev,
+ 	.uinit = port_afu_uinit,
  };
- MODULE_DEVICE_TABLE(of, fpga_region_of_match);
  
--static int fpga_region_of_node_match(struct device *dev, const void *data)
--{
--	return dev->of_node == data;
--}
--
- /**
-  * of_fpga_region_find - find FPGA region
-  * @np: device node of FPGA Region
-@@ -37,7 +32,7 @@ static int fpga_region_of_node_match(struct device *dev, const void *data)
-  */
- static struct fpga_region *of_fpga_region_find(struct device_node *np)
- {
--	return fpga_region_class_find(NULL, np, fpga_region_of_node_match);
-+	return fpga_region_class_find(NULL, np, device_match_of_node);
- }
- 
- /**
++static int port_stp_init(struct platform_device *pdev,
++			 struct dfl_feature *feature)
++{
++	struct resource *res = &pdev->resource[feature->resource_index];
++
++	dev_dbg(&pdev->dev, "PORT STP Init.\n");
++
++	return afu_mmio_region_add(dev_get_platdata(&pdev->dev),
++				   DFL_PORT_REGION_INDEX_STP,
++				   resource_size(res), res->start,
++				   DFL_PORT_REGION_MMAP | DFL_PORT_REGION_READ |
++				   DFL_PORT_REGION_WRITE);
++}
++
++static void port_stp_uinit(struct platform_device *pdev,
++			   struct dfl_feature *feature)
++{
++	dev_dbg(&pdev->dev, "PORT STP UInit.\n");
++}
++
++static const struct dfl_feature_id port_stp_id_table[] = {
++	{.id = PORT_FEATURE_ID_STP,},
++	{0,}
++};
++
++static const struct dfl_feature_ops port_stp_ops = {
++	.init = port_stp_init,
++	.uinit = port_stp_uinit,
++};
++
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+ 		.id_table = port_hdr_id_table,
+@@ -527,6 +557,10 @@ static void port_afu_uinit(struct platform_device *pdev,
+ 		.ops = &port_err_ops,
+ 	},
+ 	{
++		.id_table = port_stp_id_table,
++		.ops = &port_stp_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	}
+ };
 -- 
-2.7.4
+1.8.3.1
