@@ -1,208 +1,375 @@
-Return-Path: <SRS0=xE99=UL=bombadil.infradead.org=mchehab@kernel.org>
-Return-Path: <SRS0=xE99=UL=bombadil.infradead.org=mchehab@kernel.org>
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Subject: [PATCH v4 10/28] docs: fpga: convert docs to ReST and rename to *.rst
-Date: Wed, 12 Jun 2019 14:52:46 -0300
-Message-Id: <2794fa9c29b085c346561d620a891e3e979fdf3b.1560361364.git.mchehab+samsung@kernel.org>
-In-Reply-To: <cover.1560361364.git.mchehab+samsung@kernel.org>
-References: <cover.1560361364.git.mchehab+samsung@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: Mauro Carvalho Chehab <mchehab@bombadil.infradead.org>
-To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v4 06/15] fpga: dfl: fme: add DFL_FPGA_FME_PORT_RELEASE/ASSIGN ioctl support.
+Date: Thu, 27 Jun 2019 12:44:46 +0800
+Message-Id: <1561610695-5414-7-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org, Zhang Yi Z <yi.z.zhang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-The dfl.txt file is almost there. It needs just a few
-adjustments to be properly parsed.
+In order to support virtualization usage via PCIe SRIOV, this patch
+adds two ioctls under FPGA Management Engine (FME) to release and
+assign back the port device. In order to safely turn Port from PF
+into VF and enable PCIe SRIOV, it requires user to invoke this
+PORT_RELEASE ioctl to release port firstly to remove userspace
+interfaces, and then configure the PF/VF access register in FME.
+After disable SRIOV, it requires user to invoke this PORT_ASSIGN
+ioctl to attach the port back to PF.
 
-The conversion is actually:
-  - add blank lines and identation in order to identify paragraphs;
-  - fix tables markups;
-  - add some lists markups;
-  - mark literal blocks;
-  - adjust title markups.
+ Ioctl interfaces:
+ * DFL_FPGA_FME_PORT_RELEASE
+   Release platform device of given port, it deletes port platform
+   device to remove related userspace interfaces on PF, then
+   configures PF/VF access mode to VF.
 
-At its new index.rst, let's add a :orphan: while this is not linked to
-the main index.rst file, in order to avoid build warnings.
+ * DFL_FPGA_FME_PORT_ASSIGN
+   Assign platform device of given port back to PF, it configures
+   PF/VF access mode to PF, then adds port platform device back to
+   re-enable related userspace interfaces on PF.
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 ---
- Documentation/fpga/{dfl.txt => dfl.rst} | 58 ++++++++++++++-----------
- Documentation/fpga/index.rst            | 17 ++++++++
- MAINTAINERS                             |  2 +-
- 3 files changed, 50 insertions(+), 27 deletions(-)
- rename Documentation/fpga/{dfl.txt => dfl.rst} (89%)
- create mode 100644 Documentation/fpga/index.rst
+v3: code rebase.
+v4: no change.
+---
+ drivers/fpga/dfl-fme-main.c   |  54 +++++++++++++++++++++
+ drivers/fpga/dfl.c            | 107 +++++++++++++++++++++++++++++++++++++-----
+ drivers/fpga/dfl.h            |  10 ++++
+ include/uapi/linux/fpga-dfl.h |  32 +++++++++++++
+ 4 files changed, 191 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.rst
-similarity index 89%
-rename from Documentation/fpga/dfl.txt
-rename to Documentation/fpga/dfl.rst
-index 6df4621c3f2a..2f125abd777f 100644
---- a/Documentation/fpga/dfl.txt
-+++ b/Documentation/fpga/dfl.rst
-@@ -1,9 +1,12 @@
--===============================================================================
--              FPGA Device Feature List (DFL) Framework Overview
---------------------------------------------------------------------------------
--                Enno Luebbers <enno.luebbers@intel.com>
--                Xiao Guangrong <guangrong.xiao@linux.intel.com>
--                Wu Hao <hao.wu@intel.com>
-+=================================================
-+FPGA Device Feature List (DFL) Framework Overview
-+=================================================
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 076d74f..8b2a337 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -16,6 +16,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/uaccess.h>
+ #include <linux/fpga-dfl.h>
+ 
+ #include "dfl.h"
+@@ -105,9 +106,62 @@ static void fme_hdr_uinit(struct platform_device *pdev,
+ 	sysfs_remove_files(&pdev->dev.kobj, fme_hdr_attrs);
+ }
+ 
++static long fme_hdr_ioctl_release_port(struct dfl_feature_platform_data *pdata,
++				       void __user *arg)
++{
++	struct dfl_fpga_cdev *cdev = pdata->dfl_cdev;
++	struct dfl_fpga_fme_port_release release;
++	unsigned long minsz;
 +
-+Authors:
++	minsz = offsetofend(struct dfl_fpga_fme_port_release, port_id);
 +
-+- Enno Luebbers <enno.luebbers@intel.com>
-+- Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+- Wu Hao <hao.wu@intel.com>
- 
- The Device Feature List (DFL) FPGA framework (and drivers according to this
- this framework) hides the very details of low layer hardwares and provides
-@@ -19,7 +22,7 @@ Device Feature List (DFL) defines a linked list of feature headers within the
- device MMIO space to provide an extensible way of adding features. Software can
- walk through these predefined data structures to enumerate FPGA features:
- FPGA Interface Unit (FIU), Accelerated Function Unit (AFU) and Private Features,
--as illustrated below:
-+as illustrated below::
- 
-     Header            Header            Header            Header
-  +----------+  +-->+----------+  +-->+----------+  +-->+----------+
-@@ -81,9 +84,9 @@ and release it using close().
- 
- The following functions are exposed through ioctls:
- 
-- Get driver API version (DFL_FPGA_GET_API_VERSION)
-- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
-- Program bitstream (DFL_FPGA_FME_PORT_PR)
-+- Get driver API version (DFL_FPGA_GET_API_VERSION)
-+- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
-+- Program bitstream (DFL_FPGA_FME_PORT_PR)
- 
- More functions are exposed through sysfs
- (/sys/class/fpga_region/regionX/dfl-fme.n/):
-@@ -118,18 +121,19 @@ port by using open() on the port device node and release it using close().
- 
- The following functions are exposed through ioctls:
- 
-- Get driver API version (DFL_FPGA_GET_API_VERSION)
-- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
-- Get port info (DFL_FPGA_PORT_GET_INFO)
-- Get MMIO region info (DFL_FPGA_PORT_GET_REGION_INFO)
-- Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
-- Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
-- Reset AFU (*DFL_FPGA_PORT_RESET)
-+- Get driver API version (DFL_FPGA_GET_API_VERSION)
-+- Check for extensions (DFL_FPGA_CHECK_EXTENSION)
-+- Get port info (DFL_FPGA_PORT_GET_INFO)
-+- Get MMIO region info (DFL_FPGA_PORT_GET_REGION_INFO)
-+- Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
-+- Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
-+- Reset AFU (DFL_FPGA_PORT_RESET)
- 
--*DFL_FPGA_PORT_RESET: reset the FPGA Port and its AFU. Userspace can do Port
--reset at any time, e.g. during DMA or Partial Reconfiguration. But it should
--never cause any system level issue, only functional failure (e.g. DMA or PR
--operation failure) and be recoverable from the failure.
-+DFL_FPGA_PORT_RESET:
-+  reset the FPGA Port and its AFU. Userspace can do Port
-+  reset at any time, e.g. during DMA or Partial Reconfiguration. But it should
-+  never cause any system level issue, only functional failure (e.g. DMA or PR
-+  operation failure) and be recoverable from the failure.
- 
- User-space applications can also mmap() accelerator MMIO regions.
- 
-@@ -143,6 +147,8 @@ More functions are exposed through sysfs:
- DFL Framework Overview
- ======================
- 
-+::
++	if (copy_from_user(&release, arg, minsz))
++		return -EFAULT;
 +
-          +----------+    +--------+ +--------+ +--------+
-          |   FME    |    |  AFU   | |  AFU   | |  AFU   |
-          |  Module  |    | Module | | Module | | Module |
-@@ -151,7 +157,7 @@ DFL Framework Overview
-                  | FPGA Container Device |    Device Feature List
-                  |  (FPGA Base Region)   |         Framework
-                  +-----------------------+
----------------------------------------------------------------------
-+  ------------------------------------------------------------------
-                +----------------------------+
-                |   FPGA DFL Device Module   |
-                | (e.g. PCIE/Platform Device)|
-@@ -220,7 +226,7 @@ the sysfs hierarchy under /sys/class/fpga_region.
- In the example below, two DFL based FPGA devices are installed in the host. Each
- fpga device has one FME and two ports (AFUs).
- 
--FPGA regions are created under /sys/class/fpga_region/
-+FPGA regions are created under /sys/class/fpga_region/::
- 
- 	/sys/class/fpga_region/region0
- 	/sys/class/fpga_region/region1
-@@ -231,7 +237,7 @@ Application needs to search each regionX folder, if feature device is found,
- (e.g. "dfl-port.n" or "dfl-fme.m" is found), then it's the base
- fpga region which represents the FPGA device.
- 
--Each base region has one FME and two ports (AFUs) as child devices:
-+Each base region has one FME and two ports (AFUs) as child devices::
- 
- 	/sys/class/fpga_region/region0/dfl-fme.0
- 	/sys/class/fpga_region/region0/dfl-port.0
-@@ -243,7 +249,7 @@ Each base region has one FME and two ports (AFUs) as child devices:
- 	/sys/class/fpga_region/region3/dfl-port.3
- 	...
- 
--In general, the FME/AFU sysfs interfaces are named as follows:
-+In general, the FME/AFU sysfs interfaces are named as follows::
- 
- 	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/
- 	/sys/class/fpga_region/<regionX>/<dfl-port.m>/
-@@ -251,7 +257,7 @@ In general, the FME/AFU sysfs interfaces are named as follows:
- with 'n' consecutively numbering all FMEs and 'm' consecutively numbering all
- ports.
- 
--The device nodes used for ioctl() or mmap() can be referenced through:
-+The device nodes used for ioctl() or mmap() can be referenced through::
- 
- 	/sys/class/fpga_region/<regionX>/<dfl-fme.n>/dev
- 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
-diff --git a/Documentation/fpga/index.rst b/Documentation/fpga/index.rst
-new file mode 100644
-index 000000000000..2c87d1ea084f
---- /dev/null
-+++ b/Documentation/fpga/index.rst
-@@ -0,0 +1,17 @@
-+:orphan:
++	if (release.argsz < minsz || release.flags)
++		return -EINVAL;
 +
-+====
-+fpga
-+====
++	return dfl_fpga_cdev_config_port(cdev, release.port_id, true);
++}
 +
-+.. toctree::
-+    :maxdepth: 1
++static long fme_hdr_ioctl_assign_port(struct dfl_feature_platform_data *pdata,
++				      void __user *arg)
++{
++	struct dfl_fpga_cdev *cdev = pdata->dfl_cdev;
++	struct dfl_fpga_fme_port_assign assign;
++	unsigned long minsz;
 +
-+    dfl
++	minsz = offsetofend(struct dfl_fpga_fme_port_assign, port_id);
 +
-+.. only::  subproject and html
++	if (copy_from_user(&assign, arg, minsz))
++		return -EFAULT;
 +
-+   Indices
-+   =======
++	if (assign.argsz < minsz || assign.flags)
++		return -EINVAL;
 +
-+   * :ref:`genindex`
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5ed1fc93969a..5fdbf6e78d46 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6283,7 +6283,7 @@ FPGA DFL DRIVERS
- M:	Wu Hao <hao.wu@intel.com>
- L:	linux-fpga@vger.kernel.org
- S:	Maintained
--F:	Documentation/fpga/dfl.txt
-+F:	Documentation/fpga/dfl.rst
- F:	include/uapi/linux/fpga-dfl.h
- F:	drivers/fpga/dfl*
++	return dfl_fpga_cdev_config_port(cdev, assign.port_id, false);
++}
++
++static long fme_hdr_ioctl(struct platform_device *pdev,
++			  struct dfl_feature *feature,
++			  unsigned int cmd, unsigned long arg)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++
++	switch (cmd) {
++	case DFL_FPGA_FME_PORT_RELEASE:
++		return fme_hdr_ioctl_release_port(pdata, (void __user *)arg);
++	case DFL_FPGA_FME_PORT_ASSIGN:
++		return fme_hdr_ioctl_assign_port(pdata, (void __user *)arg);
++	}
++
++	return -ENODEV;
++}
++
+ static const struct dfl_feature_ops fme_hdr_ops = {
+ 	.init = fme_hdr_init,
+ 	.uinit = fme_hdr_uinit,
++	.ioctl = fme_hdr_ioctl,
+ };
  
+ static struct dfl_feature_driver fme_feature_drvs[] = {
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 4b66aaa..308c808 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -231,16 +231,20 @@ void dfl_fpga_port_ops_del(struct dfl_fpga_port_ops *ops)
+  */
+ int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id)
+ {
+-	struct dfl_fpga_port_ops *port_ops = dfl_fpga_port_ops_get(pdev);
+-	int port_id;
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	struct dfl_fpga_port_ops *port_ops;
++
++	if (pdata->id != FEATURE_DEV_ID_UNUSED)
++		return pdata->id == *(int *)pport_id;
+ 
++	port_ops = dfl_fpga_port_ops_get(pdev);
+ 	if (!port_ops || !port_ops->get_id)
+ 		return 0;
+ 
+-	port_id = port_ops->get_id(pdev);
++	pdata->id = port_ops->get_id(pdev);
+ 	dfl_fpga_port_ops_put(port_ops);
+ 
+-	return port_id == *(int *)pport_id;
++	return pdata->id == *(int *)pport_id;
+ }
+ EXPORT_SYMBOL_GPL(dfl_fpga_check_port_id);
+ 
+@@ -474,6 +478,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 	pdata->dev = fdev;
+ 	pdata->num = binfo->feature_num;
+ 	pdata->dfl_cdev = binfo->cdev;
++	pdata->id = FEATURE_DEV_ID_UNUSED;
+ 	mutex_init(&pdata->lock);
+ 	lockdep_set_class_and_name(&pdata->lock, &dfl_pdata_keys[type],
+ 				   dfl_pdata_key_strings[type]);
+@@ -973,25 +978,27 @@ void dfl_fpga_feature_devs_remove(struct dfl_fpga_cdev *cdev)
+ {
+ 	struct dfl_feature_platform_data *pdata, *ptmp;
+ 
+-	remove_feature_devs(cdev);
+-
+ 	mutex_lock(&cdev->lock);
+-	if (cdev->fme_dev) {
+-		/* the fme should be unregistered. */
+-		WARN_ON(device_is_registered(cdev->fme_dev));
++	if (cdev->fme_dev)
+ 		put_device(cdev->fme_dev);
+-	}
+ 
+ 	list_for_each_entry_safe(pdata, ptmp, &cdev->port_dev_list, node) {
+ 		struct platform_device *port_dev = pdata->dev;
+ 
+-		/* the port should be unregistered. */
+-		WARN_ON(device_is_registered(&port_dev->dev));
++		/* remove released ports */
++		if (!device_is_registered(&port_dev->dev)) {
++			dfl_id_free(feature_dev_id_type(port_dev),
++				    port_dev->id);
++			platform_device_put(port_dev);
++		}
++
+ 		list_del(&pdata->node);
+ 		put_device(&port_dev->dev);
+ 	}
+ 	mutex_unlock(&cdev->lock);
+ 
++	remove_feature_devs(cdev);
++
+ 	fpga_region_unregister(cdev->region);
+ 	devm_kfree(cdev->parent, cdev);
+ }
+@@ -1029,6 +1036,82 @@ struct platform_device *
+ }
+ EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_find_port);
+ 
++static int attach_port_dev(struct dfl_fpga_cdev *cdev, u32 port_id)
++{
++	struct platform_device *port_pdev;
++	int ret = -ENODEV;
++
++	mutex_lock(&cdev->lock);
++	port_pdev = __dfl_fpga_cdev_find_port(cdev, &port_id,
++					      dfl_fpga_check_port_id);
++	if (!port_pdev)
++		goto unlock_exit;
++
++	if (device_is_registered(&port_pdev->dev)) {
++		ret = -EBUSY;
++		goto put_dev_exit;
++	}
++
++	ret = platform_device_add(port_pdev);
++	if (ret)
++		goto put_dev_exit;
++
++	dfl_feature_dev_use_end(dev_get_platdata(&port_pdev->dev));
++	cdev->released_port_num--;
++put_dev_exit:
++	put_device(&port_pdev->dev);
++unlock_exit:
++	mutex_unlock(&cdev->lock);
++	return ret;
++}
++
++static int detach_port_dev(struct dfl_fpga_cdev *cdev, u32 port_id)
++{
++	struct platform_device *port_pdev;
++	int ret = -ENODEV;
++
++	mutex_lock(&cdev->lock);
++	port_pdev = __dfl_fpga_cdev_find_port(cdev, &port_id,
++					      dfl_fpga_check_port_id);
++	if (!port_pdev)
++		goto unlock_exit;
++
++	if (!device_is_registered(&port_pdev->dev)) {
++		ret = -EBUSY;
++		goto put_dev_exit;
++	}
++
++	ret = dfl_feature_dev_use_begin(dev_get_platdata(&port_pdev->dev));
++	if (ret)
++		goto put_dev_exit;
++
++	platform_device_del(port_pdev);
++	cdev->released_port_num++;
++put_dev_exit:
++	put_device(&port_pdev->dev);
++unlock_exit:
++	mutex_unlock(&cdev->lock);
++	return ret;
++}
++
++/**
++ * dfl_fpga_cdev_config_port - configure a port feature dev
++ * @cdev: parent container device.
++ * @port_id: id of the port feature device.
++ * @release: release port or assign port back.
++ *
++ * This function allows user to release port platform device or assign it back.
++ * e.g. to safely turn one port from PF into VF for PCI device SRIOV support,
++ * release port platform device is one necessary step.
++ */
++int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
++			      u32 port_id, bool release)
++{
++	return release ? detach_port_dev(cdev, port_id) :
++			 attach_port_dev(cdev, port_id);
++}
++EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_port);
++
+ static int __init dfl_fpga_init(void)
+ {
+ 	int ret;
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 8851c6c..63f39ab 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -183,6 +183,8 @@ struct dfl_feature {
+ 
+ #define DEV_STATUS_IN_USE	0
+ 
++#define FEATURE_DEV_ID_UNUSED	(-1)
++
+ /**
+  * struct dfl_feature_platform_data - platform data for feature devices
+  *
+@@ -191,6 +193,7 @@ struct dfl_feature {
+  * @cdev: cdev of feature dev.
+  * @dev: ptr to platform device linked with this platform data.
+  * @dfl_cdev: ptr to container device.
++ * @id: id used for this feature device.
+  * @disable_count: count for port disable.
+  * @num: number for sub features.
+  * @dev_status: dev status (e.g. DEV_STATUS_IN_USE).
+@@ -203,6 +206,7 @@ struct dfl_feature_platform_data {
+ 	struct cdev cdev;
+ 	struct platform_device *dev;
+ 	struct dfl_fpga_cdev *dfl_cdev;
++	int id;
+ 	unsigned int disable_count;
+ 	unsigned long dev_status;
+ 	void *private;
+@@ -378,6 +382,7 @@ int dfl_fpga_enum_info_add_dfl(struct dfl_fpga_enum_info *info,
+  * @fme_dev: FME feature device under this container device.
+  * @lock: mutex lock to protect the port device list.
+  * @port_dev_list: list of all port feature devices under this container device.
++ * @released_port_num: released port number under this container device.
+  */
+ struct dfl_fpga_cdev {
+ 	struct device *parent;
+@@ -385,6 +390,7 @@ struct dfl_fpga_cdev {
+ 	struct device *fme_dev;
+ 	struct mutex lock;
+ 	struct list_head port_dev_list;
++	int released_port_num;
+ };
+ 
+ struct dfl_fpga_cdev *
+@@ -412,4 +418,8 @@ struct platform_device *
+ 
+ 	return pdev;
+ }
++
++int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
++			      u32 port_id, bool release);
++
+ #endif /* __FPGA_DFL_H */
+diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+index 2e324e5..e9a00e0 100644
+--- a/include/uapi/linux/fpga-dfl.h
++++ b/include/uapi/linux/fpga-dfl.h
+@@ -176,4 +176,36 @@ struct dfl_fpga_fme_port_pr {
+ 
+ #define DFL_FPGA_FME_PORT_PR	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 0)
+ 
++/**
++ * DFL_FPGA_FME_PORT_RELEASE - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 1,
++ *					struct dfl_fpga_fme_port_release)
++ *
++ * Driver releases the port per Port ID provided by caller.
++ * Return: 0 on success, -errno on failure.
++ */
++struct dfl_fpga_fme_port_release {
++	/* Input */
++	__u32 argsz;		/* Structure length */
++	__u32 flags;		/* Zero for now */
++	__u32 port_id;
++};
++
++#define DFL_FPGA_FME_PORT_RELEASE	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 1)
++
++/**
++ * DFL_FPGA_FME_PORT_ASSIGN - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 2,
++ *					struct dfl_fpga_fme_port_assign)
++ *
++ * Driver assigns the port back per Port ID provided by caller.
++ * Return: 0 on success, -errno on failure.
++ */
++struct dfl_fpga_fme_port_assign {
++	/* Input */
++	__u32 argsz;		/* Structure length */
++	__u32 flags;		/* Zero for now */
++	__u32 port_id;
++};
++
++#define DFL_FPGA_FME_PORT_ASSIGN	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 2)
++
+ #endif /* _UAPI_LINUX_FPGA_DFL_H */
 -- 
-2.21.0
+1.8.3.1
