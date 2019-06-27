@@ -1,45 +1,49 @@
 Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
 Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 0/2] add performance reporting support to FPGA DFL drivers
-Date: Thu, 27 Jun 2019 13:09:53 +0800
-Message-Id: <1561612195-6081-1-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v4 1/3] Documentation: fpga: dfl: add descriptions for thermal/power management interfaces
+Date: Thu, 27 Jun 2019 12:53:36 +0800
+Message-Id: <1561611218-5800-2-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1561611218-5800-1-git-send-email-hao.wu@intel.com>
+References: <1561611218-5800-1-git-send-email-hao.wu@intel.com>
 To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, gregkh@linuxfoundation.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>
+Cc: linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, jdelvare@suse.com, linux@roeck-us.net, atull@kernel.org, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patchset adds performance reporting support for FPGA DFL drivers. It
-introduces one pmu to expose userspace interfaces via standard perf API.
-User could use standard perf tool to access perf events exposed via pmu.
+From: Xu Yilun <yilun.xu@intel.com>
 
-This patchset is splitted from patchset[1] for better review, and version 3
-patch could be found here[2]. Please note that this patchset needs to be
-applied on top of patchset[3][4].
+This patch add introductions to thermal/power interfaces. They are
+implemented as hwmon sysfs interfaces by thermal/power private
+feature drivers.
 
-Main changes from v3:
- - add more descriptions in doc, including how to use perf tool for these
-   hardware counters. (patch #1)
- - use standard perf API instead of sysfs entries. (patch #2)
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+---
+v4: rebased.
+---
+ Documentation/fpga/dfl.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-[1]https://lkml.org/lkml/2019/5/27/11
-[2]https://lkml.org/lkml/2019/5/27/18
-[3]https://lkml.org/lkml/2019/6/27/29
-[4]https://lkml.org/lkml/2019/6/27/49
-
-Wu Hao (1):
-  fpga: dfl: fme: add performance reporting support
-
-Xu Yilun (1):
-  Documentation: fpga: dfl: add description for performance reporting
-    support
-
- Documentation/fpga/dfl.txt  |  83 +++++
- drivers/fpga/Makefile       |   1 +
- drivers/fpga/dfl-fme-main.c |   4 +
- drivers/fpga/dfl-fme-perf.c | 871 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl-fme.h      |   2 +
- 5 files changed, 961 insertions(+)
- create mode 100644 drivers/fpga/dfl-fme-perf.c
-
+diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
+index a22631f..652917f 100644
+--- a/Documentation/fpga/dfl.txt
++++ b/Documentation/fpga/dfl.txt
+@@ -105,6 +105,16 @@ More functions are exposed through sysfs
+      error reporting sysfs interfaces allow user to read errors detected by the
+      hardware, and clear the logged errors.
+ 
++ Power management (dfl_fme_power hwmon)
++     power management hwmon sysfs interfaces allow user to read power management
++     information (power consumption, thresholds, threshold status, limits, etc.)
++     and configure power thresholds for different throttling levels.
++
++ Thermal management (dfl_fme_thermal hwmon)
++     thermal management hwmon sysfs interfaces allow user to read thermal
++     management information (current temperature, thresholds, threshold status,
++     etc.).
++
+ 
+ FIU - PORT
+ ==========
 -- 
 1.8.3.1
