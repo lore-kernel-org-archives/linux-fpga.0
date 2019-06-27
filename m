@@ -1,49 +1,108 @@
-Return-Path: <SRS0=THCL=U6=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=THCL=U6=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 1/3] Documentation: fpga: dfl: add descriptions for thermal/power management interfaces
-Date: Mon,  1 Jul 2019 14:37:05 +0800
-Message-Id: <1561963027-4213-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1561963027-4213-1-git-send-email-hao.wu@intel.com>
-References: <1561963027-4213-1-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v4 11/15] fpga: dfl: afu: export __port_enable/disable function.
+Date: Thu, 27 Jun 2019 12:44:51 +0800
+Message-Id: <1561610695-5414-12-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
 To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, jdelvare@suse.com, linux@roeck-us.net, atull@kernel.org, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>
+Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Xu Yilun <yilun.xu@intel.com>
-
-This patch add introductions to thermal/power interfaces. They are
-implemented as hwmon sysfs interfaces by thermal/power private
-feature drivers.
+As these two functions are used by other private features. e.g.
+in error reporting private feature, it requires to check port status
+and reset port for error clearing.
 
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
 ---
-v5: rebase due to dfl.txt -> dfl.rst
----
- Documentation/fpga/dfl.rst | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/fpga/dfl-afu-main.c | 25 ++++++++++++++-----------
+ drivers/fpga/dfl-afu.h      |  3 +++
+ 2 files changed, 17 insertions(+), 11 deletions(-)
 
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index 6fa483f..094fc8a 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -108,6 +108,16 @@ More functions are exposed through sysfs
-      error reporting sysfs interfaces allow user to read errors detected by the
-      hardware, and clear the logged errors.
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 65b3e89..c8bc0b5 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -24,14 +24,16 @@
+ #define DRV_VERSION	"0.8"
  
-+ Power management (dfl_fme_power hwmon)
-+     power management hwmon sysfs interfaces allow user to read power management
-+     information (power consumption, thresholds, threshold status, limits, etc.)
-+     and configure power thresholds for different throttling levels.
-+
-+ Thermal management (dfl_fme_thermal hwmon)
-+     thermal management hwmon sysfs interfaces allow user to read thermal
-+     management information (current temperature, thresholds, threshold status,
-+     etc.).
-+
+ /**
+- * port_enable - enable a port
++ * __port_enable - enable a port
+  * @pdev: port platform device.
+  *
+  * Enable Port by clear the port soft reset bit, which is set by default.
+  * The AFU is unable to respond to any MMIO access while in reset.
+- * port_enable function should only be used after port_disable function.
++ * __port_enable function should only be used after __port_disable function.
++ *
++ * The caller needs to hold lock for protection.
+  */
+-static void port_enable(struct platform_device *pdev)
++void __port_enable(struct platform_device *pdev)
+ {
+ 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+ 	void __iomem *base;
+@@ -54,13 +56,14 @@ static void port_enable(struct platform_device *pdev)
+ #define RST_POLL_TIMEOUT 1000 /* us */
  
- FIU - PORT
- ==========
+ /**
+- * port_disable - disable a port
++ * __port_disable - disable a port
+  * @pdev: port platform device.
+  *
+- * Disable Port by setting the port soft reset bit, it puts the port into
+- * reset.
++ * Disable Port by setting the port soft reset bit, it puts the port into reset.
++ *
++ * The caller needs to hold lock for protection.
+  */
+-static int port_disable(struct platform_device *pdev)
++int __port_disable(struct platform_device *pdev)
+ {
+ 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+ 	void __iomem *base;
+@@ -106,9 +109,9 @@ static int __port_reset(struct platform_device *pdev)
+ {
+ 	int ret;
+ 
+-	ret = port_disable(pdev);
++	ret = __port_disable(pdev);
+ 	if (!ret)
+-		port_enable(pdev);
++		__port_enable(pdev);
+ 
+ 	return ret;
+ }
+@@ -805,9 +808,9 @@ static int port_enable_set(struct platform_device *pdev, bool enable)
+ 
+ 	mutex_lock(&pdata->lock);
+ 	if (enable)
+-		port_enable(pdev);
++		__port_enable(pdev);
+ 	else
+-		ret = port_disable(pdev);
++		ret = __port_disable(pdev);
+ 	mutex_unlock(&pdata->lock);
+ 
+ 	return ret;
+diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
+index 0c7630a..35e60c5 100644
+--- a/drivers/fpga/dfl-afu.h
++++ b/drivers/fpga/dfl-afu.h
+@@ -79,6 +79,9 @@ struct dfl_afu {
+ 	struct dfl_feature_platform_data *pdata;
+ };
+ 
++void __port_enable(struct platform_device *pdev);
++int __port_disable(struct platform_device *pdev);
++
+ void afu_mmio_region_init(struct dfl_feature_platform_data *pdata);
+ int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
+ 			u32 region_index, u64 region_size, u64 phys, u32 flags);
 -- 
 1.8.3.1
