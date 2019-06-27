@@ -1,383 +1,247 @@
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 04/15] fpga: dfl: fme: support 512bit data width PR
-Date: Thu, 27 Jun 2019 17:49:40 -0700
-Message-Id: <20190628004951.6202-5-mdf@kernel.org>
-In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
-References: <20190628004951.6202-1-mdf@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v4 09/15] fpga: dfl: afu: add userclock sysfs interfaces.
+Date: Thu, 27 Jun 2019 12:44:49 +0800
+Message-Id: <1561610695-5414-10-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org, Ananda Ravuri <ananda.ravuri@intel.com>, Russ Weight <russell.h.weight@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Wu Hao <hao.wu@intel.com>
+This patch introduces userclock sysfs interfaces for AFU, user
+could use these interfaces for clock setting to AFU.
 
-In early partial reconfiguration private feature, it only
-supports 32bit data width when writing data to hardware for
-PR. 512bit data width PR support is an important optimization
-for some specific solutions (e.g. XEON with FPGA integrated),
-it allows driver to use AVX512 instruction to improve the
-performance of partial reconfiguration. e.g. programming one
-100MB bitstream image via this 512bit data width PR hardware
-only takes ~300ms, but 32bit revision requires ~3s per test
-result.
-
-Please note now this optimization is only done on revision 2
-of this PR private feature which is only used in integrated
-solution that AVX512 is always supported. This revision 2
-hardware doesn't support 32bit PR.
+Please note that, this is only working for port header feature
+with revision 0, for later revisions, userclock setting is moved
+to a separated private feature, so one revision sysfs interface
+is exposed to userspace application for this purpose too.
 
 Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
+Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/dfl-fme-main.c |   3 +
- drivers/fpga/dfl-fme-mgr.c  | 113 +++++++++++++++++++++++++++++++-----
- drivers/fpga/dfl-fme-pr.c   |  43 +++++++++-----
- drivers/fpga/dfl-fme.h      |   2 +
- drivers/fpga/dfl.h          |   5 ++
- 5 files changed, 135 insertions(+), 31 deletions(-)
+v3: replace scnprintf with sprintf in sysfs interfaces.
+    update sysfs doc kernel version and date.
+v4: update sysfs doc date.
+---
+ Documentation/ABI/testing/sysfs-platform-dfl-port |  35 +++++++
+ drivers/fpga/dfl-afu-main.c                       | 113 +++++++++++++++++++++-
+ drivers/fpga/dfl.h                                |   4 +
+ 3 files changed, 151 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 086ad2420ade..076d74f6416d 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -21,6 +21,8 @@
- #include "dfl.h"
- #include "dfl-fme.h"
- 
-+#define DRV_VERSION	"0.8"
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
+index 17b37d1..04ea7f2 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-port
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
+@@ -44,3 +44,38 @@ Contact:	Wu Hao <hao.wu@intel.com>
+ Description:	Read-write. Read and set AFU latency tolerance reporting value.
+ 		Set ltr to 1 if the AFU can tolerate latency >= 40us or set it
+ 		to 0 if it is latency sensitive.
 +
- static ssize_t ports_num_show(struct device *dev,
- 			      struct device_attribute *attr, char *buf)
++What:		/sys/bus/platform/devices/dfl-port.0/revision
++Date:		June 2019
++KernelVersion:	5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. Read this file to get the revision of port header
++		feature.
++
++What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqcmd
++Date:		June 2019
++KernelVersion:	5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Write-only. User writes command to this interface to set
++		userclock to AFU.
++
++What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqsts
++Date:		June 2019
++KernelVersion:	5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. Read this file to get the status of issued command
++		to userclck_freqcmd.
++
++What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqcntrcmd
++Date:		June 2019
++KernelVersion:	5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Write-only. User writes command to this interface to set
++		userclock counter.
++
++What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqcntrsts
++Date:		June 2019
++KernelVersion:	5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. Read this file to get the status of issued command
++		to userclck_freqcntrcmd.
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 040ed8a..8b434a4 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -144,6 +144,17 @@ static int port_get_id(struct platform_device *pdev)
+ static DEVICE_ATTR_RO(id);
+ 
+ static ssize_t
++revision_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	return sprintf(buf, "%x\n", dfl_feature_revision(base));
++}
++static DEVICE_ATTR_RO(revision);
++
++static ssize_t
+ ltr_show(struct device *dev, struct device_attribute *attr, char *buf)
  {
-@@ -277,3 +279,4 @@ MODULE_DESCRIPTION("FPGA Management Engine driver");
- MODULE_AUTHOR("Intel Corporation");
- MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("platform:dfl-fme");
-+MODULE_VERSION(DRV_VERSION);
-diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
-index b3f7eee3c93f..d1a4ba5d1d3d 100644
---- a/drivers/fpga/dfl-fme-mgr.c
-+++ b/drivers/fpga/dfl-fme-mgr.c
-@@ -22,14 +22,18 @@
- #include <linux/io-64-nonatomic-lo-hi.h>
- #include <linux/fpga/fpga-mgr.h>
+ 	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
+@@ -278,6 +289,7 @@ static int port_get_id(struct platform_device *pdev)
  
-+#include "dfl.h"
- #include "dfl-fme-pr.h"
- 
-+#define DRV_VERSION	"0.8"
-+
- /* FME Partial Reconfiguration Sub Feature Register Set */
- #define FME_PR_DFH		0x0
- #define FME_PR_CTRL		0x8
- #define FME_PR_STS		0x10
- #define FME_PR_DATA		0x18
- #define FME_PR_ERR		0x20
-+#define FME_PR_512_DATA		0x40 /* Data Register for 512bit datawidth PR */
- #define FME_PR_INTFC_ID_L	0xA8
- #define FME_PR_INTFC_ID_H	0xB0
- 
-@@ -67,8 +71,43 @@
- #define PR_WAIT_TIMEOUT   8000000
- #define PR_HOST_STATUS_IDLE	0
- 
-+#if defined(CONFIG_X86) && defined(CONFIG_AS_AVX512)
-+
-+#include <linux/cpufeature.h>
-+#include <asm/fpu/api.h>
-+
-+static inline int is_cpu_avx512_enabled(void)
-+{
-+	return cpu_feature_enabled(X86_FEATURE_AVX512F);
-+}
-+
-+static inline void copy512(const void *src, void __iomem *dst)
-+{
-+	kernel_fpu_begin();
-+
-+	asm volatile("vmovdqu64 (%0), %%zmm0;"
-+		     "vmovntdq %%zmm0, (%1);"
-+		     :
-+		     : "r"(src), "r"(dst)
-+		     : "memory");
-+
-+	kernel_fpu_end();
-+}
-+#else
-+static inline int is_cpu_avx512_enabled(void)
-+{
-+	return 0;
-+}
-+
-+static inline void copy512(const void *src, void __iomem *dst)
-+{
-+	WARN_ON_ONCE(1);
-+}
-+#endif
-+
- struct fme_mgr_priv {
- 	void __iomem *ioaddr;
-+	unsigned int pr_datawidth;
- 	u64 pr_error;
+ static const struct attribute *port_hdr_attrs[] = {
+ 	&dev_attr_id.attr,
++	&dev_attr_revision.attr,
+ 	&dev_attr_ltr.attr,
+ 	&dev_attr_ap1_event.attr,
+ 	&dev_attr_ap2_event.attr,
+@@ -285,14 +297,112 @@ static int port_get_id(struct platform_device *pdev)
+ 	NULL,
  };
  
-@@ -169,7 +208,7 @@ static int fme_mgr_write(struct fpga_manager *mgr,
- 	struct fme_mgr_priv *priv = mgr->priv;
- 	void __iomem *fme_pr = priv->ioaddr;
- 	u64 pr_ctrl, pr_status, pr_data;
--	int delay = 0, pr_credit, i = 0;
-+	int ret = 0, delay = 0, pr_credit;
- 
- 	dev_dbg(dev, "start request\n");
- 
-@@ -181,9 +220,9 @@ static int fme_mgr_write(struct fpga_manager *mgr,
- 
- 	/*
- 	 * driver can push data to PR hardware using PR_DATA register once HW
--	 * has enough pr_credit (> 1), pr_credit reduces one for every 32bit
--	 * pr data write to PR_DATA register. If pr_credit <= 1, driver needs
--	 * to wait for enough pr_credit from hardware by polling.
-+	 * has enough pr_credit (> 1), pr_credit reduces one for every pr data
-+	 * width write to PR_DATA register. If pr_credit <= 1, driver needs to
-+	 * wait for enough pr_credit from hardware by polling.
- 	 */
- 	pr_status = readq(fme_pr + FME_PR_STS);
- 	pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
-@@ -192,7 +231,8 @@ static int fme_mgr_write(struct fpga_manager *mgr,
- 		while (pr_credit <= 1) {
- 			if (delay++ > PR_WAIT_TIMEOUT) {
- 				dev_err(dev, "PR_CREDIT timeout\n");
--				return -ETIMEDOUT;
-+				ret = -ETIMEDOUT;
-+				goto done;
- 			}
- 			udelay(1);
- 
-@@ -200,21 +240,27 @@ static int fme_mgr_write(struct fpga_manager *mgr,
- 			pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
- 		}
- 
--		if (count < 4) {
--			dev_err(dev, "Invalid PR bitstream size\n");
--			return -EINVAL;
-+		WARN_ON(count < priv->pr_datawidth);
++static ssize_t
++userclk_freqcmd_store(struct device *dev, struct device_attribute *attr,
++		      const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	u64 userclk_freq_cmd;
++	void __iomem *base;
 +
-+		switch (priv->pr_datawidth) {
-+		case 4:
-+			pr_data = FIELD_PREP(FME_PR_DATA_PR_DATA_RAW,
-+					     *(u32 *)buf);
-+			writeq(pr_data, fme_pr + FME_PR_DATA);
-+			break;
-+		case 64:
-+			copy512(buf, fme_pr + FME_PR_512_DATA);
-+			break;
-+		default:
-+			WARN_ON_ONCE(1);
- 		}
--
--		pr_data = 0;
--		pr_data |= FIELD_PREP(FME_PR_DATA_PR_DATA_RAW,
--				      *(((u32 *)buf) + i));
--		writeq(pr_data, fme_pr + FME_PR_DATA);
--		count -= 4;
-+		buf += priv->pr_datawidth;
-+		count -= priv->pr_datawidth;
- 		pr_credit--;
--		i++;
- 	}
++	if (kstrtou64(buf, 0, &userclk_freq_cmd))
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	writeq(userclk_freq_cmd, base + PORT_HDR_USRCLK_CMD0);
++	mutex_unlock(&pdata->lock);
++
++	return count;
++}
++static DEVICE_ATTR_WO(userclk_freqcmd);
++
++static ssize_t
++userclk_freqcntrcmd_store(struct device *dev, struct device_attribute *attr,
++			  const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	u64 userclk_freqcntr_cmd;
++	void __iomem *base;
++
++	if (kstrtou64(buf, 0, &userclk_freqcntr_cmd))
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	writeq(userclk_freqcntr_cmd, base + PORT_HDR_USRCLK_CMD1);
++	mutex_unlock(&pdata->lock);
++
++	return count;
++}
++static DEVICE_ATTR_WO(userclk_freqcntrcmd);
++
++static ssize_t
++userclk_freqsts_show(struct device *dev, struct device_attribute *attr,
++		     char *buf)
++{
++	u64 userclk_freqsts;
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	userclk_freqsts = readq(base + PORT_HDR_USRCLK_STS0);
++
++	return sprintf(buf, "0x%llx\n", (unsigned long long)userclk_freqsts);
++}
++static DEVICE_ATTR_RO(userclk_freqsts);
++
++static ssize_t
++userclk_freqcntrsts_show(struct device *dev, struct device_attribute *attr,
++			 char *buf)
++{
++	u64 userclk_freqcntrsts;
++	void __iomem *base;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	userclk_freqcntrsts = readq(base + PORT_HDR_USRCLK_STS1);
++
++	return sprintf(buf, "0x%llx\n",
++		       (unsigned long long)userclk_freqcntrsts);
++}
++static DEVICE_ATTR_RO(userclk_freqcntrsts);
++
++static const struct attribute *port_hdr_userclk_attrs[] = {
++	&dev_attr_userclk_freqcmd.attr,
++	&dev_attr_userclk_freqcntrcmd.attr,
++	&dev_attr_userclk_freqsts.attr,
++	&dev_attr_userclk_freqcntrsts.attr,
++	NULL,
++};
++
+ static int port_hdr_init(struct platform_device *pdev,
+ 			 struct dfl_feature *feature)
+ {
++	int ret;
++
+ 	dev_dbg(&pdev->dev, "PORT HDR Init.\n");
  
--	return 0;
-+done:
+ 	port_reset(pdev);
+ 
+-	return sysfs_create_files(&pdev->dev.kobj, port_hdr_attrs);
++	ret = sysfs_create_files(&pdev->dev.kobj, port_hdr_attrs);
++	if (ret)
++		return ret;
++
++	/*
++	 * if revision > 0, the userclock will be moved from port hdr register
++	 * region to a separated private feature.
++	 */
++	if (dfl_feature_revision(feature->ioaddr) > 0)
++		return 0;
++
++	ret = sysfs_create_files(&pdev->dev.kobj, port_hdr_userclk_attrs);
++	if (ret)
++		sysfs_remove_files(&pdev->dev.kobj, port_hdr_attrs);
++
 +	return ret;
  }
  
- static int fme_mgr_write_complete(struct fpga_manager *mgr,
-@@ -279,6 +325,36 @@ static void fme_mgr_get_compat_id(void __iomem *fme_pr,
- 	id->id_h = readq(fme_pr + FME_PR_INTFC_ID_H);
- }
- 
-+static u8 fme_mgr_get_pr_datawidth(struct device *dev, void __iomem *fme_pr)
-+{
-+	u8 revision = dfl_feature_revision(fme_pr);
-+
-+	if (revision < 2) {
-+		/*
-+		 * revision 0 and 1 only support 32bit data width partial
-+		 * reconfiguration, so pr_datawidth is 4 (Byte).
-+		 */
-+		return 4;
-+	} else if (revision == 2) {
-+		/*
-+		 * revision 2 hardware has optimization to support 512bit data
-+		 * width partial reconfiguration with AVX512 instructions. So
-+		 * pr_datawidth is 64 (Byte). As revision 2 hardware is only
-+		 * used in integrated solution, CPU supports AVX512 instructions
-+		 * for sure, but it still needs to check here as AVX512 could be
-+		 * disabled in kernel (e.g. using clearcpuid boot option).
-+		 */
-+		if (is_cpu_avx512_enabled())
-+			return 64;
-+
-+		dev_err(dev, "revision 2: AVX512 is disabled\n");
-+		return 0;
-+	}
-+
-+	dev_err(dev, "revision %d is not supported yet\n", revision);
-+	return 0;
-+}
-+
- static int fme_mgr_probe(struct platform_device *pdev)
+ static void port_hdr_uinit(struct platform_device *pdev,
+@@ -300,6 +410,7 @@ static void port_hdr_uinit(struct platform_device *pdev,
  {
- 	struct dfl_fme_mgr_pdata *pdata = dev_get_platdata(&pdev->dev);
-@@ -302,6 +378,10 @@ static int fme_mgr_probe(struct platform_device *pdev)
- 			return PTR_ERR(priv->ioaddr);
- 	}
+ 	dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
  
-+	priv->pr_datawidth = fme_mgr_get_pr_datawidth(dev, priv->ioaddr);
-+	if (!priv->pr_datawidth)
-+		return -ENODEV;
-+
- 	compat_id = devm_kzalloc(dev, sizeof(*compat_id), GFP_KERNEL);
- 	if (!compat_id)
- 		return -ENOMEM;
-@@ -342,3 +422,4 @@ MODULE_DESCRIPTION("FPGA Manager for DFL FPGA Management Engine");
- MODULE_AUTHOR("Intel Corporation");
- MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("platform:dfl-fme-mgr");
-+MODULE_VERSION(DRV_VERSION);
-diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-index 3c71dc3faaf5..cd94ba870094 100644
---- a/drivers/fpga/dfl-fme-pr.c
-+++ b/drivers/fpga/dfl-fme-pr.c
-@@ -83,7 +83,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 	if (copy_from_user(&port_pr, argp, minsz))
- 		return -EFAULT;
- 
--	if (port_pr.argsz < minsz || port_pr.flags)
-+	if (port_pr.argsz < minsz || port_pr.flags || !port_pr.buffer_size)
- 		return -EINVAL;
- 
- 	/* get fme header region */
-@@ -101,15 +101,25 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 		       port_pr.buffer_size))
- 		return -EFAULT;
- 
-+	mutex_lock(&pdata->lock);
-+	fme = dfl_fpga_pdata_get_private(pdata);
-+	/* fme device has been unregistered. */
-+	if (!fme) {
-+		ret = -EINVAL;
-+		goto unlock_exit;
-+	}
-+
- 	/*
- 	 * align PR buffer per PR bandwidth, as HW ignores the extra padding
- 	 * data automatically.
- 	 */
--	length = ALIGN(port_pr.buffer_size, 4);
-+	length = ALIGN(port_pr.buffer_size, fme->pr_datawidth);
- 
- 	buf = vmalloc(length);
--	if (!buf)
--		return -ENOMEM;
-+	if (!buf) {
-+		ret = -ENOMEM;
-+		goto unlock_exit;
-+	}
- 
- 	if (copy_from_user(buf,
- 			   (void __user *)(unsigned long)port_pr.buffer_address,
-@@ -127,18 +137,10 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 
- 	info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
- 
--	mutex_lock(&pdata->lock);
--	fme = dfl_fpga_pdata_get_private(pdata);
--	/* fme device has been unregistered. */
--	if (!fme) {
--		ret = -EINVAL;
--		goto unlock_exit;
--	}
--
- 	region = dfl_fme_region_find(fme, port_pr.port_id);
- 	if (!region) {
- 		ret = -EINVAL;
--		goto unlock_exit;
-+		goto free_exit;
- 	}
- 
- 	fpga_image_info_free(region->info);
-@@ -159,10 +161,10 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
- 		fpga_bridges_put(&region->bridge_list);
- 
- 	put_device(&region->dev);
--unlock_exit:
--	mutex_unlock(&pdata->lock);
- free_exit:
- 	vfree(buf);
-+unlock_exit:
-+	mutex_unlock(&pdata->lock);
- 	return ret;
++	sysfs_remove_files(&pdev->dev.kobj, port_hdr_userclk_attrs);
+ 	sysfs_remove_files(&pdev->dev.kobj, port_hdr_attrs);
  }
  
-@@ -388,6 +390,17 @@ static int pr_mgmt_init(struct platform_device *pdev,
- 	mutex_lock(&pdata->lock);
- 	priv = dfl_fpga_pdata_get_private(pdata);
- 
-+	/*
-+	 * Initialize PR data width.
-+	 * Only revision 2 supports 512bit datawidth for better performance,
-+	 * other revisions use default 32bit datawidth. This is used for
-+	 * buffer alignment.
-+	 */
-+	if (dfl_feature_revision(feature->ioaddr) == 2)
-+		priv->pr_datawidth = 64;
-+	else
-+		priv->pr_datawidth = 4;
-+
- 	/* Initialize the region and bridge sub device list */
- 	INIT_LIST_HEAD(&priv->region_list);
- 	INIT_LIST_HEAD(&priv->bridge_list);
-diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
-index 5394a216c5c0..de207556b70a 100644
---- a/drivers/fpga/dfl-fme.h
-+++ b/drivers/fpga/dfl-fme.h
-@@ -21,12 +21,14 @@
- /**
-  * struct dfl_fme - dfl fme private data
-  *
-+ * @pr_datawidth: data width for partial reconfiguration.
-  * @mgr: FME's FPGA manager platform device.
-  * @region_list: linked list of FME's FPGA regions.
-  * @bridge_list: linked list of FME's FPGA bridges.
-  * @pdata: fme platform device's pdata.
-  */
- struct dfl_fme {
-+	int pr_datawidth;
- 	struct platform_device *mgr;
- 	struct list_head region_list;
- 	struct list_head bridge_list;
 diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index a8b869e9e5b7..8851c6c893fc 100644
+index 1525098..3c5dc3a 100644
 --- a/drivers/fpga/dfl.h
 +++ b/drivers/fpga/dfl.h
-@@ -331,6 +331,11 @@ static inline bool dfl_feature_is_port(void __iomem *base)
- 		(FIELD_GET(DFH_ID, v) == DFH_ID_FIU_PORT);
- }
+@@ -120,6 +120,10 @@
+ #define PORT_HDR_CAP		0x30
+ #define PORT_HDR_CTRL		0x38
+ #define PORT_HDR_STS		0x40
++#define PORT_HDR_USRCLK_CMD0	0x50
++#define PORT_HDR_USRCLK_CMD1	0x58
++#define PORT_HDR_USRCLK_STS0	0x60
++#define PORT_HDR_USRCLK_STS1	0x68
  
-+static inline u8 dfl_feature_revision(void __iomem *base)
-+{
-+	return (u8)FIELD_GET(DFH_REVISION, readq(base + DFH));
-+}
-+
- /**
-  * struct dfl_fpga_enum_info - DFL FPGA enumeration information
-  *
+ /* Port Capability Register Bitfield */
+ #define PORT_CAP_PORT_NUM	GENMASK_ULL(1, 0)	/* ID of this port */
 -- 
-2.22.0
+1.8.3.1
