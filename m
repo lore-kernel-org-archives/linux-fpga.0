@@ -1,228 +1,63 @@
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 10/15] fpga: dfl: add id_table for dfl private feature driver
-Date: Thu, 27 Jun 2019 12:44:50 +0800
-Message-Id: <1561610695-5414-11-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org
+Return-Path: <SRS0=YFHC=U3=samsung.com=b.zolnierkie@kernel.org>
+Return-Path: <SRS0=YFHC=U3=samsung.com=b.zolnierkie@kernel.org>
+Subject: Re: [PATCH 37/39] docs: adds some directories to the main
+ documentation index
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Message-ID: <a89ef0db-211c-1880-e60c-dc599b36feb7@samsung.com>
+Date: Fri, 28 Jun 2019 14:55:10 +0200
+MIME-Version: 1.0
+In-Reply-To: <b26fc645cb2c81fe88ab13616c65664d2c3cead5.1561724493.git.mchehab+samsung@kernel.org>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+References: <cover.1561724493.git.mchehab+samsung@kernel.org>
+	<CGME20190628123051epcas3p35e0cb4a5a1159dac19bde504ae21b0f3@epcas3p3.samsung.com>
+	<b26fc645cb2c81fe88ab13616c65664d2c3cead5.1561724493.git.mchehab+samsung@kernel.org>
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Jens Axboe <axboe@kernel.dk>, Akinobu Mita <akinobu.mita@gmail.com>, Moritz Fischer <mdf@kernel.org>, "David S. Miller" <davem@davemloft.net>, Masahiro Yamada <yamada.masahiro@socionext.com>, Michal Marek <michal.lkml@markovi.net>, Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>, Joe Lawrence <joe.lawrence@redhat.com>, Paul Moore <paul@paul-moore.com>, Dominik Brodowski <linux@dominikbrodowski.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Martin K. Petersen" <martin.petersen@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-fpga@vger.kernel.org, linux-ide@vger.kernel.org, linux-kbuild@vger.kernel.org, live-patching@vger.kernel.org, netdev@vger.kernel.org, linux-security-module@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds id_table for each dfl private feature driver,
-it allows to reuse same private feature driver to match and support
-multiple dfl private features.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
----
- drivers/fpga/dfl-afu-main.c | 14 ++++++++++++--
- drivers/fpga/dfl-fme-main.c | 11 ++++++++---
- drivers/fpga/dfl-fme-pr.c   |  7 ++++++-
- drivers/fpga/dfl-fme.h      |  3 ++-
- drivers/fpga/dfl.c          | 21 +++++++++++++++++++--
- drivers/fpga/dfl.h          | 21 +++++++++++++++------
- 6 files changed, 62 insertions(+), 15 deletions(-)
+On 6/28/19 2:30 PM, Mauro Carvalho Chehab wrote:
+> The contents of those directories were orphaned at the documentation
+> body.
+> 
+> While those directories could likely be moved to be inside some guide,
+> I'm opting to just adding their indexes to the main one, removing the
+> :orphan: and adding the SPDX header.
+> 
+> For the drivers, the rationale is that the documentation contains
+> a mix of Kernelspace, uAPI and admin-guide. So, better to keep them on
+> separate directories, as we've be doing with similar subsystem-specific
+> docs that were not split yet.
+> 
+> For the others, well... I'm too lazy to do the move. Also, it
+> seems to make sense to keep at least some of those at the main
+> dir (like kbuild, for example). In any case, a latter patch
+> could do the move.
+> 
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 8b434a4..65b3e89 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -435,6 +435,11 @@ static void port_hdr_uinit(struct platform_device *pdev,
- 	return ret;
- }
- 
-+static const struct dfl_feature_id port_hdr_id_table[] = {
-+	{.id = PORT_FEATURE_ID_HEADER,},
-+	{0,}
-+};
-+
- static const struct dfl_feature_ops port_hdr_ops = {
- 	.init = port_hdr_init,
- 	.uinit = port_hdr_uinit,
-@@ -495,6 +500,11 @@ static void port_afu_uinit(struct platform_device *pdev,
- 	sysfs_remove_files(&pdev->dev.kobj, port_afu_attrs);
- }
- 
-+static const struct dfl_feature_id port_afu_id_table[] = {
-+	{.id = PORT_FEATURE_ID_AFU,},
-+	{0,}
-+};
-+
- static const struct dfl_feature_ops port_afu_ops = {
- 	.init = port_afu_init,
- 	.uinit = port_afu_uinit,
-@@ -502,11 +512,11 @@ static void port_afu_uinit(struct platform_device *pdev,
- 
- static struct dfl_feature_driver port_feature_drvs[] = {
- 	{
--		.id = PORT_FEATURE_ID_HEADER,
-+		.id_table = port_hdr_id_table,
- 		.ops = &port_hdr_ops,
- 	},
- 	{
--		.id = PORT_FEATURE_ID_AFU,
-+		.id_table = port_afu_id_table,
- 		.ops = &port_afu_ops,
- 	},
- 	{
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 8b2a337..38c6342 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -158,6 +158,11 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
- 	return -ENODEV;
- }
- 
-+static const struct dfl_feature_id fme_hdr_id_table[] = {
-+	{.id = FME_FEATURE_ID_HEADER,},
-+	{0,}
-+};
-+
- static const struct dfl_feature_ops fme_hdr_ops = {
- 	.init = fme_hdr_init,
- 	.uinit = fme_hdr_uinit,
-@@ -166,12 +171,12 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
- 
- static struct dfl_feature_driver fme_feature_drvs[] = {
- 	{
--		.id = FME_FEATURE_ID_HEADER,
-+		.id_table = fme_hdr_id_table,
- 		.ops = &fme_hdr_ops,
- 	},
- 	{
--		.id = FME_FEATURE_ID_PR_MGMT,
--		.ops = &pr_mgmt_ops,
-+		.id_table = fme_pr_mgmt_id_table,
-+		.ops = &fme_pr_mgmt_ops,
- 	},
- 	{
- 		.ops = NULL,
-diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
-index cd94ba8..52f1745 100644
---- a/drivers/fpga/dfl-fme-pr.c
-+++ b/drivers/fpga/dfl-fme-pr.c
-@@ -483,7 +483,12 @@ static long fme_pr_ioctl(struct platform_device *pdev,
- 	return ret;
- }
- 
--const struct dfl_feature_ops pr_mgmt_ops = {
-+const struct dfl_feature_id fme_pr_mgmt_id_table[] = {
-+	{.id = FME_FEATURE_ID_PR_MGMT,},
-+	{0}
-+};
-+
-+const struct dfl_feature_ops fme_pr_mgmt_ops = {
- 	.init = pr_mgmt_init,
- 	.uinit = pr_mgmt_uinit,
- 	.ioctl = fme_pr_ioctl,
-diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
-index de20755..7a021c4 100644
---- a/drivers/fpga/dfl-fme.h
-+++ b/drivers/fpga/dfl-fme.h
-@@ -35,6 +35,7 @@ struct dfl_fme {
- 	struct dfl_feature_platform_data *pdata;
- };
- 
--extern const struct dfl_feature_ops pr_mgmt_ops;
-+extern const struct dfl_feature_ops fme_pr_mgmt_ops;
-+extern const struct dfl_feature_id fme_pr_mgmt_id_table[];
- 
- #endif /* __DFL_FME_H */
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 28d61b6..1bb2b58 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -14,6 +14,8 @@
- 
- #include "dfl.h"
- 
-+#define DRV_VERSION	"0.8"
-+
- static DEFINE_MUTEX(dfl_id_mutex);
- 
- /*
-@@ -281,6 +283,21 @@ static int dfl_feature_instance_init(struct platform_device *pdev,
- 	return ret;
- }
- 
-+static bool dfl_feature_drv_match(struct dfl_feature *feature,
-+				  struct dfl_feature_driver *driver)
-+{
-+	const struct dfl_feature_id *ids = driver->id_table;
-+
-+	if (ids) {
-+		while (ids->id) {
-+			if (ids->id == feature->id)
-+				return true;
-+			ids++;
-+		}
-+	}
-+	return false;
-+}
-+
- /**
-  * dfl_fpga_dev_feature_init - init for sub features of dfl feature device
-  * @pdev: feature device.
-@@ -301,8 +318,7 @@ int dfl_fpga_dev_feature_init(struct platform_device *pdev,
- 
- 	while (drv->ops) {
- 		dfl_fpga_dev_for_each_feature(pdata, feature) {
--			/* match feature and drv using id */
--			if (feature->id == drv->id) {
-+			if (dfl_feature_drv_match(feature, drv)) {
- 				ret = dfl_feature_instance_init(pdev, pdata,
- 								feature, drv);
- 				if (ret)
-@@ -1178,3 +1194,4 @@ static void __exit dfl_fpga_exit(void)
- MODULE_DESCRIPTION("FPGA Device Feature List (DFL) Support");
- MODULE_AUTHOR("Intel Corporation");
- MODULE_LICENSE("GPL v2");
-+MODULE_VERSION(DRV_VERSION);
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 3c5dc3a..fbc57f0 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -30,8 +30,8 @@
- /* plus one for fme device */
- #define MAX_DFL_FEATURE_DEV_NUM    (MAX_DFL_FPGA_PORT_NUM + 1)
- 
--/* Reserved 0x0 for Header Group Register and 0xff for AFU */
--#define FEATURE_ID_FIU_HEADER		0x0
-+/* Reserved 0xfe for Header Group Register and 0xff for AFU */
-+#define FEATURE_ID_FIU_HEADER		0xfe
- #define FEATURE_ID_AFU			0xff
- 
- #define FME_FEATURE_ID_HEADER		FEATURE_ID_FIU_HEADER
-@@ -169,13 +169,22 @@ struct dfl_fpga_port_ops {
- int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id);
- 
- /**
-- * struct dfl_feature_driver - sub feature's driver
-+ * struct dfl_feature_id - dfl private feature id
-  *
-- * @id: sub feature id.
-- * @ops: ops of this sub feature.
-+ * @id: unique dfl private feature id.
-  */
--struct dfl_feature_driver {
-+struct dfl_feature_id {
- 	u64 id;
-+};
-+
-+/**
-+ * struct dfl_feature_driver - dfl private feature driver
-+ *
-+ * @id_table: id_table for dfl private features supported by this driver.
-+ * @ops: ops of this dfl private feature driver.
-+ */
-+struct dfl_feature_driver {
-+	const struct dfl_feature_id *id_table;
- 	const struct dfl_feature_ops *ops;
- };
- 
--- 
-1.8.3.1
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+> ---
+>  Documentation/cdrom/index.rst           |  2 +-
+>  Documentation/fault-injection/index.rst |  2 +-
+>  Documentation/fb/index.rst              |  2 +-
+>  Documentation/fpga/index.rst            |  2 +-
+>  Documentation/ide/index.rst             |  2 +-
+>  Documentation/index.rst                 | 14 ++++++++++++++
+>  Documentation/kbuild/index.rst          |  2 +-
+>  Documentation/livepatch/index.rst       |  2 +-
+>  Documentation/netlabel/index.rst        |  2 +-
+>  Documentation/pcmcia/index.rst          |  2 +-
+>  Documentation/power/index.rst           |  2 +-
+>  Documentation/target/index.rst          |  2 +-
+>  Documentation/timers/index.rst          |  2 +-
+>  Documentation/watchdog/index.rst        |  2 +-
+>  14 files changed, 27 insertions(+), 13 deletions(-)
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
