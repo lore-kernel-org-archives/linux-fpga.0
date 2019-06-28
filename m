@@ -1,365 +1,383 @@
-Return-Path: <SRS0=5TM0=UE=gmail.com=groeck7@kernel.org>
-Return-Path: <SRS0=5TM0=UE=gmail.com=groeck7@kernel.org>
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Wed, 5 Jun 2019 14:10:31 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 2/3] fpga: dfl: fme: add thermal management support
-Message-ID: <20190605211031.GA2730@roeck-us.net>
-References: <1558937216-12742-1-git-send-email-hao.wu@intel.com>
- <1558937216-12742-3-git-send-email-hao.wu@intel.com>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 04/15] fpga: dfl: fme: support 512bit data width PR
+Date: Thu, 27 Jun 2019 17:49:40 -0700
+Message-Id: <20190628004951.6202-5-mdf@kernel.org>
+In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
+References: <20190628004951.6202-1-mdf@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1558937216-12742-3-git-send-email-hao.wu@intel.com>
-To: Wu Hao <hao.wu@intel.com>
-Cc: atull@kernel.org, mdf@kernel.org, jdelvare@suse.com, linux-fpga@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>, Russ Weight <russell.h.weight@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Content-Transfer-Encoding: 8bit
+To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, May 27, 2019 at 02:06:55PM +0800, Wu Hao wrote:
-> This patch adds support to thermal management private feature for DFL
-> FPGA Management Engine (FME). This private feature driver registers
-> a hwmon for thermal/temperature monitoring (hwmon temp1_input).
-> If hardware automatic throttling is supported by this hardware, then
-> driver also exposes sysfs interfaces under hwmon for thresholds
-> (temp1_max/ crit/ emergency), threshold alarms (temp1_max_alarm/
-> temp1_crit_alarm) and throttling policy (temp1_max_policy).
-> 
-> Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-> Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-> ----
-> v2: create a dfl_fme_thermal hwmon to expose thermal information.
->     move all sysfs interfaces under hwmon
-> 	tempareture       --> hwmon temp1_input
-> 	threshold1        --> hwmon temp1_alarm
-> 	threshold2        --> hwmon temp1_crit
-> 	trip_threshold    --> hwmon temp1_emergency
-> 	threshold1_status --> hwmon temp1_alarm_status
-> 	threshold2_status --> hwmon temp1_crit_status
-> 	threshold1_policy --> hwmon temp1_alarm_policy
-> v3: rename some hwmon sysfs interfaces to follow hwmon ABI.
-> 	temp1_alarm        --> temp1_max
-> 	temp1_alarm_status --> temp1_max_alarm
-> 	temp1_crit_status  --> temp1_crit_alarm
-> 	temp1_alarm_policy --> temp1_max_policy
->     update sysfs doc for above sysfs interface changes.
->     replace scnprintf with sprintf in sysfs interface.
-> ---
->  Documentation/ABI/testing/sysfs-platform-dfl-fme |  64 ++++++++
->  drivers/fpga/Kconfig                             |   2 +-
->  drivers/fpga/dfl-fme-main.c                      | 196 +++++++++++++++++++++++
->  3 files changed, 261 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-> index 63a02cb..0a0b7b9 100644
-> --- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
-> +++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-> @@ -212,3 +212,67 @@ Description:	Read-Write. Read this file for current status of port level
->  		fabric counters. Write "1" to enable port level fabric counters.
->  		Once port level fabric counters are enabled, device level fabric
->  		counters will be disabled automatically.
-> +
-> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/name
-> +Date:		May 2019
-> +KernelVersion:	5.3
-> +Contact:	Wu Hao <hao.wu@intel.com>
-> +Description:	Read-Only. Read this file to get the name of hwmon device, it
-> +		supports values:
-> +		    'dfl_fme_thermal' - thermal hwmon device name
-> +
-> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_input
-> +Date:		May 2019
-> +KernelVersion:	5.3
-> +Contact:	Wu Hao <hao.wu@intel.com>
-> +Description:	Read-Only. It returns FPGA device temperature in millidegrees
-> +		Celsius.
-> +
-> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_max
-> +Date:		May 2019
-> +KernelVersion:	5.3
-> +Contact:	Wu Hao <hao.wu@intel.com>
-> +Description:	Read-Only. It returns hardware threshold1 temperature in
-> +		millidegrees Celsius. If temperature rises at or above this
-> +		threshold, hardware starts 50% or 90% throttling (see
-> +		'temp1_max_policy').
-> +
-> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_crit
-> +Date:		May 2019
-> +KernelVersion:	5.3
-> +Contact:	Wu Hao <hao.wu@intel.com>
-> +Description:	Read-Only. It returns hardware threshold2 temperature in
-> +		millidegrees Celsius. If temperature rises at or above this
-> +		threshold, hardware starts 100% throttling.
-> +
-> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_emergency
-> +Date:		May 2019
-> +KernelVersion:	5.3
-> +Contact:	Wu Hao <hao.wu@intel.com>
-> +Description:	Read-Only. It returns hardware trip threshold temperature in
-> +		millidegrees Celsius. If temperature rises at or above this
-> +		threshold, a fatal event will be triggered to board management
-> +		controller (BMC) to shutdown FPGA.
-> +
-> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_max_alarm
-> +Date:		May 2019
-> +KernelVersion:	5.3
-> +Contact:	Wu Hao <hao.wu@intel.com>
-> +Description:	Read-only. It returns 1 if temperature is currently at or above
-> +		hardware threshold1 (see 'temp1_max'), otherwise 0.
-> +
-> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_crit_alarm
-> +Date:		May 2019
-> +KernelVersion:	5.3
-> +Contact:	Wu Hao <hao.wu@intel.com>
-> +Description:	Read-only. It returns 1 if temperature is currently at or above
-> +		hardware threshold2 (see 'temp1_crit'), otherwise 0.
-> +
-> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_max_policy
-> +Date:		May 2019
-> +KernelVersion:	5.3
-> +Contact:	Wu Hao <hao.wu@intel.com>
-> +Description:	Read-Only. Read this file to get the policy of hardware threshold1
-> +		(see 'temp1_max'). It only supports two values (policies):
-> +		    0 - AP2 state (90% throttling)
-> +		    1 - AP1 state (50% throttling)
-> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-> index d892f3e..36551d6 100644
-> --- a/drivers/fpga/Kconfig
-> +++ b/drivers/fpga/Kconfig
-> @@ -154,7 +154,7 @@ config FPGA_DFL
->  
->  config FPGA_DFL_FME
->  	tristate "FPGA DFL FME Driver"
-> -	depends on FPGA_DFL
-> +	depends on FPGA_DFL && HWMON
->  	help
->  	  The FPGA Management Engine (FME) is a feature device implemented
->  	  under Device Feature List (DFL) framework. Select this option to
-> diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-> index 4a5b25d..91152d5 100644
-> --- a/drivers/fpga/dfl-fme-main.c
-> +++ b/drivers/fpga/dfl-fme-main.c
-> @@ -14,6 +14,8 @@
->   *   Henry Mitchel <henry.mitchel@intel.com>
->   */
->  
-> +#include <linux/hwmon.h>
-> +#include <linux/hwmon-sysfs.h>
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/uaccess.h>
-> @@ -217,6 +219,196 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
->  	.ioctl = fme_hdr_ioctl,
->  };
->  
-> +#define FME_THERM_THRESHOLD	0x8
-> +#define TEMP_THRESHOLD1		GENMASK_ULL(6, 0)
-> +#define TEMP_THRESHOLD1_EN	BIT_ULL(7)
-> +#define TEMP_THRESHOLD2		GENMASK_ULL(14, 8)
-> +#define TEMP_THRESHOLD2_EN	BIT_ULL(15)
-> +#define TRIP_THRESHOLD		GENMASK_ULL(30, 24)
-> +#define TEMP_THRESHOLD1_STATUS	BIT_ULL(32)		/* threshold1 reached */
-> +#define TEMP_THRESHOLD2_STATUS	BIT_ULL(33)		/* threshold2 reached */
-> +/* threshold1 policy: 0 - AP2 (90% throttle) / 1 - AP1 (50% throttle) */
-> +#define TEMP_THRESHOLD1_POLICY	BIT_ULL(44)
-> +
-> +#define FME_THERM_RDSENSOR_FMT1	0x10
-> +#define FPGA_TEMPERATURE	GENMASK_ULL(6, 0)
-> +
-> +#define FME_THERM_CAP		0x20
-> +#define THERM_NO_THROTTLE	BIT_ULL(0)
-> +
-> +#define MD_PRE_DEG
-> +
-> +static bool fme_thermal_throttle_support(void __iomem *base)
-> +{
-> +	u64 v = readq(base + FME_THERM_CAP);
-> +
-> +	return FIELD_GET(THERM_NO_THROTTLE, v) ? false : true;
-> +}
-> +
-> +static umode_t thermal_hwmon_attrs_visible(const void *drvdata,
-> +					   enum hwmon_sensor_types type,
-> +					   u32 attr, int channel)
-> +{
-> +	const struct dfl_feature *feature = drvdata;
-> +
-> +	/* temperature is always supported, and check hardware cap for others */
-> +	if (attr == hwmon_temp_input)
-> +		return 0444;
-> +
-> +	return fme_thermal_throttle_support(feature->ioaddr) ? 0444 : 0;
-> +}
-> +
-> +static int thermal_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
-> +			      u32 attr, int channel, long *val)
-> +{
-> +	struct dfl_feature *feature = dev_get_drvdata(dev);
-> +	u64 v;
-> +
-> +	switch (attr) {
-> +	case hwmon_temp_input:
-> +		v = readq(feature->ioaddr + FME_THERM_RDSENSOR_FMT1);
-> +		*val = (long)(FIELD_GET(FPGA_TEMPERATURE, v) * 1000);
-> +		break;
-> +	case hwmon_temp_max:
-> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-> +		*val = (long)(FIELD_GET(TEMP_THRESHOLD1, v) * 1000);
-> +		break;
-> +	case hwmon_temp_crit:
-> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-> +		*val = (long)(FIELD_GET(TEMP_THRESHOLD2, v) * 1000);
-> +		break;
-> +	case hwmon_temp_emergency:
-> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-> +		*val = (long)(FIELD_GET(TRIP_THRESHOLD, v) * 1000);
-> +		break;
-> +	case hwmon_temp_max_alarm:
-> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-> +		*val = (long)FIELD_GET(TEMP_THRESHOLD1_STATUS, v);
-> +		break;
-> +	case hwmon_temp_crit_alarm:
-> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-> +		*val = (long)FIELD_GET(TEMP_THRESHOLD2_STATUS, v);
-> +		break;
-> +	default:
-> +		return -EOPNOTSUPP;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct hwmon_ops thermal_hwmon_ops = {
-> +	.is_visible = thermal_hwmon_attrs_visible,
-> +	.read = thermal_hwmon_read,
-> +};
-> +
-> +static const u32 thermal_hwmon_temp_config[] = {
-> +	HWMON_T_INPUT | HWMON_T_MAX | HWMON_T_CRIT | HWMON_T_EMERGENCY |
-> +	HWMON_T_MAX_ALARM | HWMON_T_CRIT_ALARM,
-> +	0
-> +};
-> +
-> +static const struct hwmon_channel_info hwmon_temp_info = {
-> +	.type = hwmon_temp,
-> +	.config = thermal_hwmon_temp_config,
-> +};
-> +
-> +static const struct hwmon_channel_info *thermal_hwmon_info[] = {
-> +	&hwmon_temp_info,
-> +	NULL
-> +};
+From: Wu Hao <hao.wu@intel.com>
 
-Please use the HWMON_CHANNEL_INFO() macro to reduce boilerplate code.
+In early partial reconfiguration private feature, it only
+supports 32bit data width when writing data to hardware for
+PR. 512bit data width PR support is an important optimization
+for some specific solutions (e.g. XEON with FPGA integrated),
+it allows driver to use AVX512 instruction to improve the
+performance of partial reconfiguration. e.g. programming one
+100MB bitstream image via this 512bit data width PR hardware
+only takes ~300ms, but 32bit revision requires ~3s per test
+result.
 
-Thanks,
-Guenter
+Please note now this optimization is only done on revision 2
+of this PR private feature which is only used in integrated
+solution that AVX512 is always supported. This revision 2
+hardware doesn't support 32bit PR.
 
-> +
-> +static const struct hwmon_chip_info thermal_hwmon_chip_info = {
-> +	.ops = &thermal_hwmon_ops,
-> +	.info = thermal_hwmon_info,
-> +};
-> +
-> +static ssize_t temp1_max_policy_show(struct device *dev,
-> +				     struct device_attribute *attr, char *buf)
-> +{
-> +	struct dfl_feature *feature = dev_get_drvdata(dev);
-> +	u64 v;
-> +
-> +	v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
-> +
-> +	return sprintf(buf, "%u\n",
-> +		       (unsigned int)FIELD_GET(TEMP_THRESHOLD1_POLICY, v));
-> +}
-> +
-> +static DEVICE_ATTR_RO(temp1_max_policy);
-> +
-> +static struct attribute *thermal_extra_attrs[] = {
-> +	&dev_attr_temp1_max_policy.attr,
-> +	NULL,
-> +};
-> +
-> +static umode_t thermal_extra_attrs_visible(struct kobject *kobj,
-> +					   struct attribute *attr, int index)
-> +{
-> +	struct device *dev = kobj_to_dev(kobj);
-> +	struct dfl_feature *feature = dev_get_drvdata(dev);
-> +
-> +	return fme_thermal_throttle_support(feature->ioaddr) ? attr->mode : 0;
-> +}
-> +
-> +static const struct attribute_group thermal_extra_group = {
-> +	.attrs		= thermal_extra_attrs,
-> +	.is_visible	= thermal_extra_attrs_visible,
-> +};
-> +__ATTRIBUTE_GROUPS(thermal_extra);
-> +
-> +static int fme_thermal_mgmt_init(struct platform_device *pdev,
-> +				 struct dfl_feature *feature)
-> +{
-> +	struct device *hwmon;
-> +
-> +	dev_dbg(&pdev->dev, "FME Thermal Management Init.\n");
-> +
-> +	/*
-> +	 * create hwmon to allow userspace monitoring temperature and other
-> +	 * threshold information.
-> +	 *
-> +	 * temp1_input      -> FPGA device temperature
-> +	 * temp1_max        -> hardware threshold 1 -> 50% or 90% throttling
-> +	 * temp1_crit       -> hardware threshold 2 -> 100% throttling
-> +	 * temp1_emergency  -> hardware trip_threshold to shutdown FPGA
-> +	 * temp1_max_alarm  -> hardware threshold 1 alarm
-> +	 * temp1_crit_alarm -> hardware threshold 2 alarm
-> +	 *
-> +	 * create device specific sysfs interfaces, e.g. read temp1_max_policy
-> +	 * to understand the actual hardware throttling action (50% vs 90%).
-> +	 *
-> +	 * If hardware doesn't support automatic throttling per thresholds,
-> +	 * then all above sysfs interfaces are not visible except temp1_input
-> +	 * for temperature.
-> +	 */
-> +	hwmon = devm_hwmon_device_register_with_info(&pdev->dev,
-> +						     "dfl_fme_thermal", feature,
-> +						     &thermal_hwmon_chip_info,
-> +						     thermal_extra_groups);
-> +	if (IS_ERR(hwmon)) {
-> +		dev_err(&pdev->dev, "Fail to register thermal hwmon\n");
-> +		return PTR_ERR(hwmon);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static void fme_thermal_mgmt_uinit(struct platform_device *pdev,
-> +				   struct dfl_feature *feature)
-> +{
-> +	dev_dbg(&pdev->dev, "FME Thermal Management UInit.\n");
-> +}
-> +
-> +static const struct dfl_feature_id fme_thermal_mgmt_id_table[] = {
-> +	{.id = FME_FEATURE_ID_THERMAL_MGMT,},
-> +	{0,}
-> +};
-> +
-> +static const struct dfl_feature_ops fme_thermal_mgmt_ops = {
-> +	.init = fme_thermal_mgmt_init,
-> +	.uinit = fme_thermal_mgmt_uinit,
-> +};
-> +
->  static struct dfl_feature_driver fme_feature_drvs[] = {
->  	{
->  		.id_table = fme_hdr_id_table,
-> @@ -235,6 +427,10 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
->  		.ops = &fme_perf_ops,
->  	},
->  	{
-> +		.id_table = fme_thermal_mgmt_id_table,
-> +		.ops = &fme_thermal_mgmt_ops,
-> +	},
-> +	{
->  		.ops = NULL,
->  	},
->  };
+Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+---
+ drivers/fpga/dfl-fme-main.c |   3 +
+ drivers/fpga/dfl-fme-mgr.c  | 113 +++++++++++++++++++++++++++++++-----
+ drivers/fpga/dfl-fme-pr.c   |  43 +++++++++-----
+ drivers/fpga/dfl-fme.h      |   2 +
+ drivers/fpga/dfl.h          |   5 ++
+ 5 files changed, 135 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 086ad2420ade..076d74f6416d 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -21,6 +21,8 @@
+ #include "dfl.h"
+ #include "dfl-fme.h"
+ 
++#define DRV_VERSION	"0.8"
++
+ static ssize_t ports_num_show(struct device *dev,
+ 			      struct device_attribute *attr, char *buf)
+ {
+@@ -277,3 +279,4 @@ MODULE_DESCRIPTION("FPGA Management Engine driver");
+ MODULE_AUTHOR("Intel Corporation");
+ MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:dfl-fme");
++MODULE_VERSION(DRV_VERSION);
+diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
+index b3f7eee3c93f..d1a4ba5d1d3d 100644
+--- a/drivers/fpga/dfl-fme-mgr.c
++++ b/drivers/fpga/dfl-fme-mgr.c
+@@ -22,14 +22,18 @@
+ #include <linux/io-64-nonatomic-lo-hi.h>
+ #include <linux/fpga/fpga-mgr.h>
+ 
++#include "dfl.h"
+ #include "dfl-fme-pr.h"
+ 
++#define DRV_VERSION	"0.8"
++
+ /* FME Partial Reconfiguration Sub Feature Register Set */
+ #define FME_PR_DFH		0x0
+ #define FME_PR_CTRL		0x8
+ #define FME_PR_STS		0x10
+ #define FME_PR_DATA		0x18
+ #define FME_PR_ERR		0x20
++#define FME_PR_512_DATA		0x40 /* Data Register for 512bit datawidth PR */
+ #define FME_PR_INTFC_ID_L	0xA8
+ #define FME_PR_INTFC_ID_H	0xB0
+ 
+@@ -67,8 +71,43 @@
+ #define PR_WAIT_TIMEOUT   8000000
+ #define PR_HOST_STATUS_IDLE	0
+ 
++#if defined(CONFIG_X86) && defined(CONFIG_AS_AVX512)
++
++#include <linux/cpufeature.h>
++#include <asm/fpu/api.h>
++
++static inline int is_cpu_avx512_enabled(void)
++{
++	return cpu_feature_enabled(X86_FEATURE_AVX512F);
++}
++
++static inline void copy512(const void *src, void __iomem *dst)
++{
++	kernel_fpu_begin();
++
++	asm volatile("vmovdqu64 (%0), %%zmm0;"
++		     "vmovntdq %%zmm0, (%1);"
++		     :
++		     : "r"(src), "r"(dst)
++		     : "memory");
++
++	kernel_fpu_end();
++}
++#else
++static inline int is_cpu_avx512_enabled(void)
++{
++	return 0;
++}
++
++static inline void copy512(const void *src, void __iomem *dst)
++{
++	WARN_ON_ONCE(1);
++}
++#endif
++
+ struct fme_mgr_priv {
+ 	void __iomem *ioaddr;
++	unsigned int pr_datawidth;
+ 	u64 pr_error;
+ };
+ 
+@@ -169,7 +208,7 @@ static int fme_mgr_write(struct fpga_manager *mgr,
+ 	struct fme_mgr_priv *priv = mgr->priv;
+ 	void __iomem *fme_pr = priv->ioaddr;
+ 	u64 pr_ctrl, pr_status, pr_data;
+-	int delay = 0, pr_credit, i = 0;
++	int ret = 0, delay = 0, pr_credit;
+ 
+ 	dev_dbg(dev, "start request\n");
+ 
+@@ -181,9 +220,9 @@ static int fme_mgr_write(struct fpga_manager *mgr,
+ 
+ 	/*
+ 	 * driver can push data to PR hardware using PR_DATA register once HW
+-	 * has enough pr_credit (> 1), pr_credit reduces one for every 32bit
+-	 * pr data write to PR_DATA register. If pr_credit <= 1, driver needs
+-	 * to wait for enough pr_credit from hardware by polling.
++	 * has enough pr_credit (> 1), pr_credit reduces one for every pr data
++	 * width write to PR_DATA register. If pr_credit <= 1, driver needs to
++	 * wait for enough pr_credit from hardware by polling.
+ 	 */
+ 	pr_status = readq(fme_pr + FME_PR_STS);
+ 	pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
+@@ -192,7 +231,8 @@ static int fme_mgr_write(struct fpga_manager *mgr,
+ 		while (pr_credit <= 1) {
+ 			if (delay++ > PR_WAIT_TIMEOUT) {
+ 				dev_err(dev, "PR_CREDIT timeout\n");
+-				return -ETIMEDOUT;
++				ret = -ETIMEDOUT;
++				goto done;
+ 			}
+ 			udelay(1);
+ 
+@@ -200,21 +240,27 @@ static int fme_mgr_write(struct fpga_manager *mgr,
+ 			pr_credit = FIELD_GET(FME_PR_STS_PR_CREDIT, pr_status);
+ 		}
+ 
+-		if (count < 4) {
+-			dev_err(dev, "Invalid PR bitstream size\n");
+-			return -EINVAL;
++		WARN_ON(count < priv->pr_datawidth);
++
++		switch (priv->pr_datawidth) {
++		case 4:
++			pr_data = FIELD_PREP(FME_PR_DATA_PR_DATA_RAW,
++					     *(u32 *)buf);
++			writeq(pr_data, fme_pr + FME_PR_DATA);
++			break;
++		case 64:
++			copy512(buf, fme_pr + FME_PR_512_DATA);
++			break;
++		default:
++			WARN_ON_ONCE(1);
+ 		}
+-
+-		pr_data = 0;
+-		pr_data |= FIELD_PREP(FME_PR_DATA_PR_DATA_RAW,
+-				      *(((u32 *)buf) + i));
+-		writeq(pr_data, fme_pr + FME_PR_DATA);
+-		count -= 4;
++		buf += priv->pr_datawidth;
++		count -= priv->pr_datawidth;
+ 		pr_credit--;
+-		i++;
+ 	}
+ 
+-	return 0;
++done:
++	return ret;
+ }
+ 
+ static int fme_mgr_write_complete(struct fpga_manager *mgr,
+@@ -279,6 +325,36 @@ static void fme_mgr_get_compat_id(void __iomem *fme_pr,
+ 	id->id_h = readq(fme_pr + FME_PR_INTFC_ID_H);
+ }
+ 
++static u8 fme_mgr_get_pr_datawidth(struct device *dev, void __iomem *fme_pr)
++{
++	u8 revision = dfl_feature_revision(fme_pr);
++
++	if (revision < 2) {
++		/*
++		 * revision 0 and 1 only support 32bit data width partial
++		 * reconfiguration, so pr_datawidth is 4 (Byte).
++		 */
++		return 4;
++	} else if (revision == 2) {
++		/*
++		 * revision 2 hardware has optimization to support 512bit data
++		 * width partial reconfiguration with AVX512 instructions. So
++		 * pr_datawidth is 64 (Byte). As revision 2 hardware is only
++		 * used in integrated solution, CPU supports AVX512 instructions
++		 * for sure, but it still needs to check here as AVX512 could be
++		 * disabled in kernel (e.g. using clearcpuid boot option).
++		 */
++		if (is_cpu_avx512_enabled())
++			return 64;
++
++		dev_err(dev, "revision 2: AVX512 is disabled\n");
++		return 0;
++	}
++
++	dev_err(dev, "revision %d is not supported yet\n", revision);
++	return 0;
++}
++
+ static int fme_mgr_probe(struct platform_device *pdev)
+ {
+ 	struct dfl_fme_mgr_pdata *pdata = dev_get_platdata(&pdev->dev);
+@@ -302,6 +378,10 @@ static int fme_mgr_probe(struct platform_device *pdev)
+ 			return PTR_ERR(priv->ioaddr);
+ 	}
+ 
++	priv->pr_datawidth = fme_mgr_get_pr_datawidth(dev, priv->ioaddr);
++	if (!priv->pr_datawidth)
++		return -ENODEV;
++
+ 	compat_id = devm_kzalloc(dev, sizeof(*compat_id), GFP_KERNEL);
+ 	if (!compat_id)
+ 		return -ENOMEM;
+@@ -342,3 +422,4 @@ MODULE_DESCRIPTION("FPGA Manager for DFL FPGA Management Engine");
+ MODULE_AUTHOR("Intel Corporation");
+ MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:dfl-fme-mgr");
++MODULE_VERSION(DRV_VERSION);
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+index 3c71dc3faaf5..cd94ba870094 100644
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -83,7 +83,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 	if (copy_from_user(&port_pr, argp, minsz))
+ 		return -EFAULT;
+ 
+-	if (port_pr.argsz < minsz || port_pr.flags)
++	if (port_pr.argsz < minsz || port_pr.flags || !port_pr.buffer_size)
+ 		return -EINVAL;
+ 
+ 	/* get fme header region */
+@@ -101,15 +101,25 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 		       port_pr.buffer_size))
+ 		return -EFAULT;
+ 
++	mutex_lock(&pdata->lock);
++	fme = dfl_fpga_pdata_get_private(pdata);
++	/* fme device has been unregistered. */
++	if (!fme) {
++		ret = -EINVAL;
++		goto unlock_exit;
++	}
++
+ 	/*
+ 	 * align PR buffer per PR bandwidth, as HW ignores the extra padding
+ 	 * data automatically.
+ 	 */
+-	length = ALIGN(port_pr.buffer_size, 4);
++	length = ALIGN(port_pr.buffer_size, fme->pr_datawidth);
+ 
+ 	buf = vmalloc(length);
+-	if (!buf)
+-		return -ENOMEM;
++	if (!buf) {
++		ret = -ENOMEM;
++		goto unlock_exit;
++	}
+ 
+ 	if (copy_from_user(buf,
+ 			   (void __user *)(unsigned long)port_pr.buffer_address,
+@@ -127,18 +137,10 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 
+ 	info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
+ 
+-	mutex_lock(&pdata->lock);
+-	fme = dfl_fpga_pdata_get_private(pdata);
+-	/* fme device has been unregistered. */
+-	if (!fme) {
+-		ret = -EINVAL;
+-		goto unlock_exit;
+-	}
+-
+ 	region = dfl_fme_region_find(fme, port_pr.port_id);
+ 	if (!region) {
+ 		ret = -EINVAL;
+-		goto unlock_exit;
++		goto free_exit;
+ 	}
+ 
+ 	fpga_image_info_free(region->info);
+@@ -159,10 +161,10 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 		fpga_bridges_put(&region->bridge_list);
+ 
+ 	put_device(&region->dev);
+-unlock_exit:
+-	mutex_unlock(&pdata->lock);
+ free_exit:
+ 	vfree(buf);
++unlock_exit:
++	mutex_unlock(&pdata->lock);
+ 	return ret;
+ }
+ 
+@@ -388,6 +390,17 @@ static int pr_mgmt_init(struct platform_device *pdev,
+ 	mutex_lock(&pdata->lock);
+ 	priv = dfl_fpga_pdata_get_private(pdata);
+ 
++	/*
++	 * Initialize PR data width.
++	 * Only revision 2 supports 512bit datawidth for better performance,
++	 * other revisions use default 32bit datawidth. This is used for
++	 * buffer alignment.
++	 */
++	if (dfl_feature_revision(feature->ioaddr) == 2)
++		priv->pr_datawidth = 64;
++	else
++		priv->pr_datawidth = 4;
++
+ 	/* Initialize the region and bridge sub device list */
+ 	INIT_LIST_HEAD(&priv->region_list);
+ 	INIT_LIST_HEAD(&priv->bridge_list);
+diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
+index 5394a216c5c0..de207556b70a 100644
+--- a/drivers/fpga/dfl-fme.h
++++ b/drivers/fpga/dfl-fme.h
+@@ -21,12 +21,14 @@
+ /**
+  * struct dfl_fme - dfl fme private data
+  *
++ * @pr_datawidth: data width for partial reconfiguration.
+  * @mgr: FME's FPGA manager platform device.
+  * @region_list: linked list of FME's FPGA regions.
+  * @bridge_list: linked list of FME's FPGA bridges.
+  * @pdata: fme platform device's pdata.
+  */
+ struct dfl_fme {
++	int pr_datawidth;
+ 	struct platform_device *mgr;
+ 	struct list_head region_list;
+ 	struct list_head bridge_list;
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index a8b869e9e5b7..8851c6c893fc 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -331,6 +331,11 @@ static inline bool dfl_feature_is_port(void __iomem *base)
+ 		(FIELD_GET(DFH_ID, v) == DFH_ID_FIU_PORT);
+ }
+ 
++static inline u8 dfl_feature_revision(void __iomem *base)
++{
++	return (u8)FIELD_GET(DFH_REVISION, readq(base + DFH));
++}
++
+ /**
+  * struct dfl_fpga_enum_info - DFL FPGA enumeration information
+  *
+-- 
+2.22.0
