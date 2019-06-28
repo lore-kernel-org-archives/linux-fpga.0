@@ -1,35 +1,84 @@
-Return-Path: <atull@kernel.org>
-Return-Path: <atull@kernel.org>
-From: Alan Tull <atull@kernel.org>
-Subject: [PATCH] MAINTAINERS: fpga: hand off maintainership to Moritz
-Date: Sun, 16 Jun 2019 22:11:13 -0500
-Message-Id: <20190617031113.4506-1-atull@kernel.org>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 13/15] fpga: dfl: afu: add STP (SignalTap) support
+Date: Thu, 27 Jun 2019 17:49:49 -0700
+Message-Id: <20190628004951.6202-14-mdf@kernel.org>
+In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
+References: <20190628004951.6202-1-mdf@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Moritz Fischer <mdf@kernel.org>
-Cc: Alan Tull <atull@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Thor Thayer <thor.thayer@linux.intel.com>, Richard Gong <richard.gong@linux.intel.com>, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-I'm moving on to a new position and stepping down as FPGA subsystem
-maintainer.  Moritz has graciously agreed to take over the
-maintainership.
+From: Wu Hao <hao.wu@intel.com>
 
-Signed-off-by: Alan Tull <atull@kernel.org>
+STP (SignalTap) is one of the private features under the port for
+debugging. This patch adds private feature driver support for it
+to allow userspace applications to mmap related mmio region and
+provide STP service.
+
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- MAINTAINERS | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/fpga/dfl-afu-main.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 80e2bfa049d7..448730982545 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6266,7 +6266,6 @@ F:	include/linux/ipmi-fru.h
- K:	fmc_d.*register
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index bcf6e285a854..8241aced2d5d 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -513,6 +513,36 @@ static const struct dfl_feature_ops port_afu_ops = {
+ 	.uinit = port_afu_uinit,
+ };
  
- FPGA MANAGER FRAMEWORK
--M:	Alan Tull <atull@kernel.org>
- M:	Moritz Fischer <mdf@kernel.org>
- L:	linux-fpga@vger.kernel.org
- S:	Maintained
++static int port_stp_init(struct platform_device *pdev,
++			 struct dfl_feature *feature)
++{
++	struct resource *res = &pdev->resource[feature->resource_index];
++
++	dev_dbg(&pdev->dev, "PORT STP Init.\n");
++
++	return afu_mmio_region_add(dev_get_platdata(&pdev->dev),
++				   DFL_PORT_REGION_INDEX_STP,
++				   resource_size(res), res->start,
++				   DFL_PORT_REGION_MMAP | DFL_PORT_REGION_READ |
++				   DFL_PORT_REGION_WRITE);
++}
++
++static void port_stp_uinit(struct platform_device *pdev,
++			   struct dfl_feature *feature)
++{
++	dev_dbg(&pdev->dev, "PORT STP UInit.\n");
++}
++
++static const struct dfl_feature_id port_stp_id_table[] = {
++	{.id = PORT_FEATURE_ID_STP,},
++	{0,}
++};
++
++static const struct dfl_feature_ops port_stp_ops = {
++	.init = port_stp_init,
++	.uinit = port_stp_uinit,
++};
++
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+ 		.id_table = port_hdr_id_table,
+@@ -526,6 +556,10 @@ static struct dfl_feature_driver port_feature_drvs[] = {
+ 		.id_table = port_err_id_table,
+ 		.ops = &port_err_ops,
+ 	},
++	{
++		.id_table = port_stp_id_table,
++		.ops = &port_stp_ops,
++	},
+ 	{
+ 		.ops = NULL,
+ 	}
 -- 
-2.21.0
+2.22.0
