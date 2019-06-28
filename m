@@ -1,49 +1,266 @@
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 1/3] Documentation: fpga: dfl: add descriptions for thermal/power management interfaces
-Date: Thu, 27 Jun 2019 12:53:36 +0800
-Message-Id: <1561611218-5800-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1561611218-5800-1-git-send-email-hao.wu@intel.com>
-References: <1561611218-5800-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, jdelvare@suse.com, linux@roeck-us.net, atull@kernel.org, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 08/15] fpga: dfl: afu: add AFU state related sysfs interfaces
+Date: Thu, 27 Jun 2019 17:49:44 -0700
+Message-Id: <20190628004951.6202-9-mdf@kernel.org>
+In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
+References: <20190628004951.6202-1-mdf@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Xu Yilun <yilun.xu@intel.com>
+From: Wu Hao <hao.wu@intel.com>
 
-This patch add introductions to thermal/power interfaces. They are
-implemented as hwmon sysfs interfaces by thermal/power private
-feature drivers.
+This patch introduces more sysfs interfaces for Accelerated
+Function Unit (AFU). These interfaces allow users to read
+current AFU Power State (APx), read / clear AFU Power (APx)
+events which are sticky to identify transient APx state,
+and manage AFU's LTR (latency tolerance reporting).
 
+Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
-v4: rebased.
----
- Documentation/fpga/dfl.txt | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ .../ABI/testing/sysfs-platform-dfl-port       |  30 ++++
+ drivers/fpga/dfl-afu-main.c                   | 140 ++++++++++++++++++
+ drivers/fpga/dfl.h                            |  11 ++
+ 3 files changed, 181 insertions(+)
 
-diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
-index a22631f..652917f 100644
---- a/Documentation/fpga/dfl.txt
-+++ b/Documentation/fpga/dfl.txt
-@@ -105,6 +105,16 @@ More functions are exposed through sysfs
-      error reporting sysfs interfaces allow user to read errors detected by the
-      hardware, and clear the logged errors.
- 
-+ Power management (dfl_fme_power hwmon)
-+     power management hwmon sysfs interfaces allow user to read power management
-+     information (power consumption, thresholds, threshold status, limits, etc.)
-+     and configure power thresholds for different throttling levels.
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
+index 6a92dda517b0..17b37d110618 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-port
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
+@@ -14,3 +14,33 @@ Description:	Read-only. User can program different PR bitstreams to FPGA
+ 		Accelerator Function Unit (AFU) for different functions. It
+ 		returns uuid which could be used to identify which PR bitstream
+ 		is programmed in this AFU.
 +
-+ Thermal management (dfl_fme_thermal hwmon)
-+     thermal management hwmon sysfs interfaces allow user to read thermal
-+     management information (current temperature, thresholds, threshold status,
-+     etc.).
++What:		/sys/bus/platform/devices/dfl-port.0/power_state
++Date:		June 2019
++KernelVersion:	5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It reports the APx (AFU Power) state, different APx
++		means different throttling level. When reading this file, it
++		returns "0" - Normal / "1" - AP1 / "2" - AP2 / "6" - AP6.
 +
++What:		/sys/bus/platform/devices/dfl-port.0/ap1_event
++Date:		June 2019
++KernelVersion:	5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-write. Read or set 1 to clear AP1 (AFU Power State 1)
++		event. It's used to indicate transient AP1 state.
++
++What:		/sys/bus/platform/devices/dfl-port.0/ap2_event
++Date:		June 2019
++KernelVersion:	5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-write. Read or set 1 to clear AP2 (AFU Power State 2)
++		event. It's used to indicate transient AP2 state.
++
++What:		/sys/bus/platform/devices/dfl-port.0/ltr
++Date:		June 2019
++KernelVersion:	5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-write. Read and set AFU latency tolerance reporting value.
++		Set ltr to 1 if the AFU can tolerate latency >= 40us or set it
++		to 0 if it is latency sensitive.
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 02baa6a227c0..040ed8ad16e5 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -21,6 +21,8 @@
  
- FIU - PORT
- ==========
+ #include "dfl-afu.h"
+ 
++#define DRV_VERSION	"0.8"
++
+ /**
+  * port_enable - enable a port
+  * @pdev: port platform device.
+@@ -141,8 +143,145 @@ id_show(struct device *dev, struct device_attribute *attr, char *buf)
+ }
+ static DEVICE_ATTR_RO(id);
+ 
++static ssize_t
++ltr_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_CTRL);
++	mutex_unlock(&pdata->lock);
++
++	return sprintf(buf, "%x\n", (u8)FIELD_GET(PORT_CTRL_LATENCY, v));
++}
++
++static ssize_t
++ltr_store(struct device *dev, struct device_attribute *attr,
++	  const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u8 ltr;
++	u64 v;
++
++	if (kstrtou8(buf, 0, &ltr) || ltr > 1)
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_CTRL);
++	v &= ~PORT_CTRL_LATENCY;
++	v |= FIELD_PREP(PORT_CTRL_LATENCY, ltr);
++	writeq(v, base + PORT_HDR_CTRL);
++	mutex_unlock(&pdata->lock);
++
++	return count;
++}
++static DEVICE_ATTR_RW(ltr);
++
++static ssize_t
++ap1_event_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
++
++	return sprintf(buf, "%x\n", (u8)FIELD_GET(PORT_STS_AP1_EVT, v));
++}
++
++static ssize_t
++ap1_event_store(struct device *dev, struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u8 ap1_event;
++
++	if (kstrtou8(buf, 0, &ap1_event) || ap1_event != 1)
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	writeq(PORT_STS_AP1_EVT, base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
++
++	return count;
++}
++static DEVICE_ATTR_RW(ap1_event);
++
++static ssize_t
++ap2_event_show(struct device *dev, struct device_attribute *attr,
++	       char *buf)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
++
++	return sprintf(buf, "%x\n", (u8)FIELD_GET(PORT_STS_AP2_EVT, v));
++}
++
++static ssize_t
++ap2_event_store(struct device *dev, struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u8 ap2_event;
++
++	if (kstrtou8(buf, 0, &ap2_event) || ap2_event != 1)
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	writeq(PORT_STS_AP2_EVT, base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
++
++	return count;
++}
++static DEVICE_ATTR_RW(ap2_event);
++
++static ssize_t
++power_state_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
++
++	return sprintf(buf, "0x%x\n", (u8)FIELD_GET(PORT_STS_PWR_STATE, v));
++}
++static DEVICE_ATTR_RO(power_state);
++
+ static const struct attribute *port_hdr_attrs[] = {
+ 	&dev_attr_id.attr,
++	&dev_attr_ltr.attr,
++	&dev_attr_ap1_event.attr,
++	&dev_attr_ap2_event.attr,
++	&dev_attr_power_state.attr,
+ 	NULL,
+ };
+ 
+@@ -634,3 +773,4 @@ MODULE_DESCRIPTION("FPGA Accelerated Function Unit driver");
+ MODULE_AUTHOR("Intel Corporation");
+ MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:dfl-port");
++MODULE_VERSION(DRV_VERSION);
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 1350e8eb9e59..1525098b8260 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -119,6 +119,7 @@
+ #define PORT_HDR_NEXT_AFU	NEXT_AFU
+ #define PORT_HDR_CAP		0x30
+ #define PORT_HDR_CTRL		0x38
++#define PORT_HDR_STS		0x40
+ 
+ /* Port Capability Register Bitfield */
+ #define PORT_CAP_PORT_NUM	GENMASK_ULL(1, 0)	/* ID of this port */
+@@ -130,6 +131,16 @@
+ /* Latency tolerance reporting. '1' >= 40us, '0' < 40us.*/
+ #define PORT_CTRL_LATENCY	BIT_ULL(2)
+ #define PORT_CTRL_SFTRST_ACK	BIT_ULL(4)		/* HW ack for reset */
++
++/* Port Status Register Bitfield */
++#define PORT_STS_AP2_EVT	BIT_ULL(13)		/* AP2 event detected */
++#define PORT_STS_AP1_EVT	BIT_ULL(12)		/* AP1 event detected */
++#define PORT_STS_PWR_STATE	GENMASK_ULL(11, 8)	/* AFU power states */
++#define PORT_STS_PWR_STATE_NORM 0
++#define PORT_STS_PWR_STATE_AP1	1			/* 50% throttling */
++#define PORT_STS_PWR_STATE_AP2	2			/* 90% throttling */
++#define PORT_STS_PWR_STATE_AP6	6			/* 100% throttling */
++
+ /**
+  * struct dfl_fpga_port_ops - port ops
+  *
 -- 
-1.8.3.1
+2.22.0
