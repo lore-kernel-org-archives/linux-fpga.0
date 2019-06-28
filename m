@@ -1,377 +1,358 @@
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 06/15] fpga: dfl: fme: add DFL_FPGA_FME_PORT_RELEASE/ASSIGN ioctl support.
-Date: Thu, 27 Jun 2019 17:49:42 -0700
-Message-Id: <20190628004951.6202-7-mdf@kernel.org>
-In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
-References: <20190628004951.6202-1-mdf@kernel.org>
+Return-Path: <SRS0=ofgu=U3=gmail.com=groeck7@kernel.org>
+Return-Path: <SRS0=ofgu=U3=gmail.com=groeck7@kernel.org>
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Fri, 28 Jun 2019 10:35:31 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v4 2/3] fpga: dfl: fme: add thermal management support
+Message-ID: <20190628173531.GA25890@roeck-us.net>
+References: <1561611218-5800-1-git-send-email-hao.wu@intel.com>
+ <1561611218-5800-3-git-send-email-hao.wu@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1561611218-5800-3-git-send-email-hao.wu@intel.com>
+To: Wu Hao <hao.wu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, jdelvare@suse.com, atull@kernel.org, gregkh@linuxfoundation.org, Luwei Kang <luwei.kang@intel.com>, Russ Weight <russell.h.weight@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Wu Hao <hao.wu@intel.com>
+On Thu, Jun 27, 2019 at 12:53:37PM +0800, Wu Hao wrote:
+> This patch adds support to thermal management private feature for DFL
+> FPGA Management Engine (FME). This private feature driver registers
+> a hwmon for thermal/temperature monitoring (hwmon temp1_input).
+> If hardware automatic throttling is supported by this hardware, then
+> driver also exposes sysfs interfaces under hwmon for thresholds
+> (temp1_max/ crit/ emergency), threshold alarms (temp1_max_alarm/
+> temp1_crit_alarm) and throttling policy (temp1_max_policy).
+> 
+> Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+> Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
 
-In order to support virtualization usage via PCIe SRIOV, this patch
-adds two ioctls under FPGA Management Engine (FME) to release and
-assign back the port device. In order to safely turn Port from PF
-into VF and enable PCIe SRIOV, it requires user to invoke this
-PORT_RELEASE ioctl to release port firstly to remove userspace
-interfaces, and then configure the PF/VF access register in FME.
-After disable SRIOV, it requires user to invoke this PORT_ASSIGN
-ioctl to attach the port back to PF.
+Acked-by: Guenter Roeck <linux@roeck-us.net>
 
- Ioctl interfaces:
- * DFL_FPGA_FME_PORT_RELEASE
-   Release platform device of given port, it deletes port platform
-   device to remove related userspace interfaces on PF, then
-   configures PF/VF access mode to VF.
-
- * DFL_FPGA_FME_PORT_ASSIGN
-   Assign platform device of given port back to PF, it configures
-   PF/VF access mode to PF, then adds port platform device back to
-   re-enable related userspace interfaces on PF.
-
-Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
- drivers/fpga/dfl-fme-main.c   |  54 +++++++++++++++++
- drivers/fpga/dfl.c            | 107 ++++++++++++++++++++++++++++++----
- drivers/fpga/dfl.h            |  10 ++++
- include/uapi/linux/fpga-dfl.h |  32 ++++++++++
- 4 files changed, 191 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 076d74f6416d..8b2a33760483 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -16,6 +16,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/uaccess.h>
- #include <linux/fpga-dfl.h>
- 
- #include "dfl.h"
-@@ -105,9 +106,62 @@ static void fme_hdr_uinit(struct platform_device *pdev,
- 	sysfs_remove_files(&pdev->dev.kobj, fme_hdr_attrs);
- }
- 
-+static long fme_hdr_ioctl_release_port(struct dfl_feature_platform_data *pdata,
-+				       void __user *arg)
-+{
-+	struct dfl_fpga_cdev *cdev = pdata->dfl_cdev;
-+	struct dfl_fpga_fme_port_release release;
-+	unsigned long minsz;
-+
-+	minsz = offsetofend(struct dfl_fpga_fme_port_release, port_id);
-+
-+	if (copy_from_user(&release, arg, minsz))
-+		return -EFAULT;
-+
-+	if (release.argsz < minsz || release.flags)
-+		return -EINVAL;
-+
-+	return dfl_fpga_cdev_config_port(cdev, release.port_id, true);
-+}
-+
-+static long fme_hdr_ioctl_assign_port(struct dfl_feature_platform_data *pdata,
-+				      void __user *arg)
-+{
-+	struct dfl_fpga_cdev *cdev = pdata->dfl_cdev;
-+	struct dfl_fpga_fme_port_assign assign;
-+	unsigned long minsz;
-+
-+	minsz = offsetofend(struct dfl_fpga_fme_port_assign, port_id);
-+
-+	if (copy_from_user(&assign, arg, minsz))
-+		return -EFAULT;
-+
-+	if (assign.argsz < minsz || assign.flags)
-+		return -EINVAL;
-+
-+	return dfl_fpga_cdev_config_port(cdev, assign.port_id, false);
-+}
-+
-+static long fme_hdr_ioctl(struct platform_device *pdev,
-+			  struct dfl_feature *feature,
-+			  unsigned int cmd, unsigned long arg)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+
-+	switch (cmd) {
-+	case DFL_FPGA_FME_PORT_RELEASE:
-+		return fme_hdr_ioctl_release_port(pdata, (void __user *)arg);
-+	case DFL_FPGA_FME_PORT_ASSIGN:
-+		return fme_hdr_ioctl_assign_port(pdata, (void __user *)arg);
-+	}
-+
-+	return -ENODEV;
-+}
-+
- static const struct dfl_feature_ops fme_hdr_ops = {
- 	.init = fme_hdr_init,
- 	.uinit = fme_hdr_uinit,
-+	.ioctl = fme_hdr_ioctl,
- };
- 
- static struct dfl_feature_driver fme_feature_drvs[] = {
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 4b66aaa32b5a..308c80868af4 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -231,16 +231,20 @@ EXPORT_SYMBOL_GPL(dfl_fpga_port_ops_del);
-  */
- int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id)
- {
--	struct dfl_fpga_port_ops *port_ops = dfl_fpga_port_ops_get(pdev);
--	int port_id;
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct dfl_fpga_port_ops *port_ops;
-+
-+	if (pdata->id != FEATURE_DEV_ID_UNUSED)
-+		return pdata->id == *(int *)pport_id;
- 
-+	port_ops = dfl_fpga_port_ops_get(pdev);
- 	if (!port_ops || !port_ops->get_id)
- 		return 0;
- 
--	port_id = port_ops->get_id(pdev);
-+	pdata->id = port_ops->get_id(pdev);
- 	dfl_fpga_port_ops_put(port_ops);
- 
--	return port_id == *(int *)pport_id;
-+	return pdata->id == *(int *)pport_id;
- }
- EXPORT_SYMBOL_GPL(dfl_fpga_check_port_id);
- 
-@@ -474,6 +478,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
- 	pdata->dev = fdev;
- 	pdata->num = binfo->feature_num;
- 	pdata->dfl_cdev = binfo->cdev;
-+	pdata->id = FEATURE_DEV_ID_UNUSED;
- 	mutex_init(&pdata->lock);
- 	lockdep_set_class_and_name(&pdata->lock, &dfl_pdata_keys[type],
- 				   dfl_pdata_key_strings[type]);
-@@ -973,25 +978,27 @@ void dfl_fpga_feature_devs_remove(struct dfl_fpga_cdev *cdev)
- {
- 	struct dfl_feature_platform_data *pdata, *ptmp;
- 
--	remove_feature_devs(cdev);
--
- 	mutex_lock(&cdev->lock);
--	if (cdev->fme_dev) {
--		/* the fme should be unregistered. */
--		WARN_ON(device_is_registered(cdev->fme_dev));
-+	if (cdev->fme_dev)
- 		put_device(cdev->fme_dev);
--	}
- 
- 	list_for_each_entry_safe(pdata, ptmp, &cdev->port_dev_list, node) {
- 		struct platform_device *port_dev = pdata->dev;
- 
--		/* the port should be unregistered. */
--		WARN_ON(device_is_registered(&port_dev->dev));
-+		/* remove released ports */
-+		if (!device_is_registered(&port_dev->dev)) {
-+			dfl_id_free(feature_dev_id_type(port_dev),
-+				    port_dev->id);
-+			platform_device_put(port_dev);
-+		}
-+
- 		list_del(&pdata->node);
- 		put_device(&port_dev->dev);
- 	}
- 	mutex_unlock(&cdev->lock);
- 
-+	remove_feature_devs(cdev);
-+
- 	fpga_region_unregister(cdev->region);
- 	devm_kfree(cdev->parent, cdev);
- }
-@@ -1029,6 +1036,82 @@ __dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
- }
- EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_find_port);
- 
-+static int attach_port_dev(struct dfl_fpga_cdev *cdev, u32 port_id)
-+{
-+	struct platform_device *port_pdev;
-+	int ret = -ENODEV;
-+
-+	mutex_lock(&cdev->lock);
-+	port_pdev = __dfl_fpga_cdev_find_port(cdev, &port_id,
-+					      dfl_fpga_check_port_id);
-+	if (!port_pdev)
-+		goto unlock_exit;
-+
-+	if (device_is_registered(&port_pdev->dev)) {
-+		ret = -EBUSY;
-+		goto put_dev_exit;
-+	}
-+
-+	ret = platform_device_add(port_pdev);
-+	if (ret)
-+		goto put_dev_exit;
-+
-+	dfl_feature_dev_use_end(dev_get_platdata(&port_pdev->dev));
-+	cdev->released_port_num--;
-+put_dev_exit:
-+	put_device(&port_pdev->dev);
-+unlock_exit:
-+	mutex_unlock(&cdev->lock);
-+	return ret;
-+}
-+
-+static int detach_port_dev(struct dfl_fpga_cdev *cdev, u32 port_id)
-+{
-+	struct platform_device *port_pdev;
-+	int ret = -ENODEV;
-+
-+	mutex_lock(&cdev->lock);
-+	port_pdev = __dfl_fpga_cdev_find_port(cdev, &port_id,
-+					      dfl_fpga_check_port_id);
-+	if (!port_pdev)
-+		goto unlock_exit;
-+
-+	if (!device_is_registered(&port_pdev->dev)) {
-+		ret = -EBUSY;
-+		goto put_dev_exit;
-+	}
-+
-+	ret = dfl_feature_dev_use_begin(dev_get_platdata(&port_pdev->dev));
-+	if (ret)
-+		goto put_dev_exit;
-+
-+	platform_device_del(port_pdev);
-+	cdev->released_port_num++;
-+put_dev_exit:
-+	put_device(&port_pdev->dev);
-+unlock_exit:
-+	mutex_unlock(&cdev->lock);
-+	return ret;
-+}
-+
-+/**
-+ * dfl_fpga_cdev_config_port - configure a port feature dev
-+ * @cdev: parent container device.
-+ * @port_id: id of the port feature device.
-+ * @release: release port or assign port back.
-+ *
-+ * This function allows user to release port platform device or assign it back.
-+ * e.g. to safely turn one port from PF into VF for PCI device SRIOV support,
-+ * release port platform device is one necessary step.
-+ */
-+int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
-+			      u32 port_id, bool release)
-+{
-+	return release ? detach_port_dev(cdev, port_id) :
-+			 attach_port_dev(cdev, port_id);
-+}
-+EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_port);
-+
- static int __init dfl_fpga_init(void)
- {
- 	int ret;
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 8851c6c893fc..63f39ab08905 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -183,6 +183,8 @@ struct dfl_feature {
- 
- #define DEV_STATUS_IN_USE	0
- 
-+#define FEATURE_DEV_ID_UNUSED	(-1)
-+
- /**
-  * struct dfl_feature_platform_data - platform data for feature devices
-  *
-@@ -191,6 +193,7 @@ struct dfl_feature {
-  * @cdev: cdev of feature dev.
-  * @dev: ptr to platform device linked with this platform data.
-  * @dfl_cdev: ptr to container device.
-+ * @id: id used for this feature device.
-  * @disable_count: count for port disable.
-  * @num: number for sub features.
-  * @dev_status: dev status (e.g. DEV_STATUS_IN_USE).
-@@ -203,6 +206,7 @@ struct dfl_feature_platform_data {
- 	struct cdev cdev;
- 	struct platform_device *dev;
- 	struct dfl_fpga_cdev *dfl_cdev;
-+	int id;
- 	unsigned int disable_count;
- 	unsigned long dev_status;
- 	void *private;
-@@ -378,6 +382,7 @@ void dfl_fpga_enum_info_free(struct dfl_fpga_enum_info *info);
-  * @fme_dev: FME feature device under this container device.
-  * @lock: mutex lock to protect the port device list.
-  * @port_dev_list: list of all port feature devices under this container device.
-+ * @released_port_num: released port number under this container device.
-  */
- struct dfl_fpga_cdev {
- 	struct device *parent;
-@@ -385,6 +390,7 @@ struct dfl_fpga_cdev {
- 	struct device *fme_dev;
- 	struct mutex lock;
- 	struct list_head port_dev_list;
-+	int released_port_num;
- };
- 
- struct dfl_fpga_cdev *
-@@ -412,4 +418,8 @@ dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
- 
- 	return pdev;
- }
-+
-+int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
-+			      u32 port_id, bool release);
-+
- #endif /* __FPGA_DFL_H */
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-index 2e324e515c41..e9a00e014114 100644
---- a/include/uapi/linux/fpga-dfl.h
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -176,4 +176,36 @@ struct dfl_fpga_fme_port_pr {
- 
- #define DFL_FPGA_FME_PORT_PR	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 0)
- 
-+/**
-+ * DFL_FPGA_FME_PORT_RELEASE - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 1,
-+ *					struct dfl_fpga_fme_port_release)
-+ *
-+ * Driver releases the port per Port ID provided by caller.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+struct dfl_fpga_fme_port_release {
-+	/* Input */
-+	__u32 argsz;		/* Structure length */
-+	__u32 flags;		/* Zero for now */
-+	__u32 port_id;
-+};
-+
-+#define DFL_FPGA_FME_PORT_RELEASE	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 1)
-+
-+/**
-+ * DFL_FPGA_FME_PORT_ASSIGN - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 2,
-+ *					struct dfl_fpga_fme_port_assign)
-+ *
-+ * Driver assigns the port back per Port ID provided by caller.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+struct dfl_fpga_fme_port_assign {
-+	/* Input */
-+	__u32 argsz;		/* Structure length */
-+	__u32 flags;		/* Zero for now */
-+	__u32 port_id;
-+};
-+
-+#define DFL_FPGA_FME_PORT_ASSIGN	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 2)
-+
- #endif /* _UAPI_LINUX_FPGA_DFL_H */
--- 
-2.22.0
+> ---
+> v2: create a dfl_fme_thermal hwmon to expose thermal information.
+>     move all sysfs interfaces under hwmon
+> 	tempareture       --> hwmon temp1_input
+> 	threshold1        --> hwmon temp1_alarm
+> 	threshold2        --> hwmon temp1_crit
+> 	trip_threshold    --> hwmon temp1_emergency
+> 	threshold1_status --> hwmon temp1_alarm_status
+> 	threshold2_status --> hwmon temp1_crit_status
+> 	threshold1_policy --> hwmon temp1_alarm_policy
+> v3: rename some hwmon sysfs interfaces to follow hwmon ABI.
+> 	temp1_alarm        --> temp1_max
+> 	temp1_alarm_status --> temp1_max_alarm
+> 	temp1_crit_status  --> temp1_crit_alarm
+> 	temp1_alarm_policy --> temp1_max_policy
+>     update sysfs doc for above sysfs interface changes.
+>     replace scnprintf with sprintf in sysfs interface.
+> v4: use HWMON_CHANNEL_INFO.
+>     rebase, and update date in sysfs doc.
+> ---
+>  Documentation/ABI/testing/sysfs-platform-dfl-fme |  64 ++++++++
+>  drivers/fpga/Kconfig                             |   2 +-
+>  drivers/fpga/dfl-fme-main.c                      | 187 +++++++++++++++++++++++
+>  3 files changed, 252 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+> index 86eef83..2cd17dc 100644
+> --- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
+> +++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+> @@ -119,3 +119,67 @@ Description:	Write-only. Write error code to this file to clear all errors
+>  		logged in errors, first_error and next_error. Write fails with
+>  		-EINVAL if input parsing fails or input error code doesn't
+>  		match.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/name
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Only. Read this file to get the name of hwmon device, it
+> +		supports values:
+> +		    'dfl_fme_thermal' - thermal hwmon device name
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_input
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Only. It returns FPGA device temperature in millidegrees
+> +		Celsius.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_max
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Only. It returns hardware threshold1 temperature in
+> +		millidegrees Celsius. If temperature rises at or above this
+> +		threshold, hardware starts 50% or 90% throttling (see
+> +		'temp1_max_policy').
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_crit
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Only. It returns hardware threshold2 temperature in
+> +		millidegrees Celsius. If temperature rises at or above this
+> +		threshold, hardware starts 100% throttling.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_emergency
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Only. It returns hardware trip threshold temperature in
+> +		millidegrees Celsius. If temperature rises at or above this
+> +		threshold, a fatal event will be triggered to board management
+> +		controller (BMC) to shutdown FPGA.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_max_alarm
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-only. It returns 1 if temperature is currently at or above
+> +		hardware threshold1 (see 'temp1_max'), otherwise 0.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_crit_alarm
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-only. It returns 1 if temperature is currently at or above
+> +		hardware threshold2 (see 'temp1_crit'), otherwise 0.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_max_policy
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Only. Read this file to get the policy of hardware threshold1
+> +		(see 'temp1_max'). It only supports two values (policies):
+> +		    0 - AP2 state (90% throttling)
+> +		    1 - AP1 state (50% throttling)
+> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+> index 8072c19..48f6224 100644
+> --- a/drivers/fpga/Kconfig
+> +++ b/drivers/fpga/Kconfig
+> @@ -155,7 +155,7 @@ config FPGA_DFL
+>  
+>  config FPGA_DFL_FME
+>  	tristate "FPGA DFL FME Driver"
+> -	depends on FPGA_DFL
+> +	depends on FPGA_DFL && HWMON
+>  	help
+>  	  The FPGA Management Engine (FME) is a feature device implemented
+>  	  under Device Feature List (DFL) framework. Select this option to
+> diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+> index 4490cf4..59ff9f1 100644
+> --- a/drivers/fpga/dfl-fme-main.c
+> +++ b/drivers/fpga/dfl-fme-main.c
+> @@ -14,6 +14,8 @@
+>   *   Henry Mitchel <henry.mitchel@intel.com>
+>   */
+>  
+> +#include <linux/hwmon.h>
+> +#include <linux/hwmon-sysfs.h>
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/uaccess.h>
+> @@ -217,6 +219,187 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
+>  	.ioctl = fme_hdr_ioctl,
+>  };
+>  
+> +#define FME_THERM_THRESHOLD	0x8
+> +#define TEMP_THRESHOLD1		GENMASK_ULL(6, 0)
+> +#define TEMP_THRESHOLD1_EN	BIT_ULL(7)
+> +#define TEMP_THRESHOLD2		GENMASK_ULL(14, 8)
+> +#define TEMP_THRESHOLD2_EN	BIT_ULL(15)
+> +#define TRIP_THRESHOLD		GENMASK_ULL(30, 24)
+> +#define TEMP_THRESHOLD1_STATUS	BIT_ULL(32)		/* threshold1 reached */
+> +#define TEMP_THRESHOLD2_STATUS	BIT_ULL(33)		/* threshold2 reached */
+> +/* threshold1 policy: 0 - AP2 (90% throttle) / 1 - AP1 (50% throttle) */
+> +#define TEMP_THRESHOLD1_POLICY	BIT_ULL(44)
+> +
+> +#define FME_THERM_RDSENSOR_FMT1	0x10
+> +#define FPGA_TEMPERATURE	GENMASK_ULL(6, 0)
+> +
+> +#define FME_THERM_CAP		0x20
+> +#define THERM_NO_THROTTLE	BIT_ULL(0)
+> +
+> +#define MD_PRE_DEG
+> +
+> +static bool fme_thermal_throttle_support(void __iomem *base)
+> +{
+> +	u64 v = readq(base + FME_THERM_CAP);
+> +
+> +	return FIELD_GET(THERM_NO_THROTTLE, v) ? false : true;
+> +}
+> +
+> +static umode_t thermal_hwmon_attrs_visible(const void *drvdata,
+> +					   enum hwmon_sensor_types type,
+> +					   u32 attr, int channel)
+> +{
+> +	const struct dfl_feature *feature = drvdata;
+> +
+> +	/* temperature is always supported, and check hardware cap for others */
+> +	if (attr == hwmon_temp_input)
+> +		return 0444;
+> +
+> +	return fme_thermal_throttle_support(feature->ioaddr) ? 0444 : 0;
+> +}
+> +
+> +static int thermal_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
+> +			      u32 attr, int channel, long *val)
+> +{
+> +	struct dfl_feature *feature = dev_get_drvdata(dev);
+> +	u64 v;
+> +
+> +	switch (attr) {
+> +	case hwmon_temp_input:
+> +		v = readq(feature->ioaddr + FME_THERM_RDSENSOR_FMT1);
+> +		*val = (long)(FIELD_GET(FPGA_TEMPERATURE, v) * 1000);
+> +		break;
+> +	case hwmon_temp_max:
+> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
+> +		*val = (long)(FIELD_GET(TEMP_THRESHOLD1, v) * 1000);
+> +		break;
+> +	case hwmon_temp_crit:
+> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
+> +		*val = (long)(FIELD_GET(TEMP_THRESHOLD2, v) * 1000);
+> +		break;
+> +	case hwmon_temp_emergency:
+> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
+> +		*val = (long)(FIELD_GET(TRIP_THRESHOLD, v) * 1000);
+> +		break;
+> +	case hwmon_temp_max_alarm:
+> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
+> +		*val = (long)FIELD_GET(TEMP_THRESHOLD1_STATUS, v);
+> +		break;
+> +	case hwmon_temp_crit_alarm:
+> +		v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
+> +		*val = (long)FIELD_GET(TEMP_THRESHOLD2_STATUS, v);
+> +		break;
+> +	default:
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct hwmon_ops thermal_hwmon_ops = {
+> +	.is_visible = thermal_hwmon_attrs_visible,
+> +	.read = thermal_hwmon_read,
+> +};
+> +
+> +static const struct hwmon_channel_info *thermal_hwmon_info[] = {
+> +	HWMON_CHANNEL_INFO(temp, HWMON_T_INPUT | HWMON_T_EMERGENCY |
+> +				 HWMON_T_MAX   | HWMON_T_MAX_ALARM |
+> +				 HWMON_T_CRIT  | HWMON_T_CRIT_ALARM),
+> +	NULL
+> +};
+> +
+> +static const struct hwmon_chip_info thermal_hwmon_chip_info = {
+> +	.ops = &thermal_hwmon_ops,
+> +	.info = thermal_hwmon_info,
+> +};
+> +
+> +static ssize_t temp1_max_policy_show(struct device *dev,
+> +				     struct device_attribute *attr, char *buf)
+> +{
+> +	struct dfl_feature *feature = dev_get_drvdata(dev);
+> +	u64 v;
+> +
+> +	v = readq(feature->ioaddr + FME_THERM_THRESHOLD);
+> +
+> +	return sprintf(buf, "%u\n",
+> +		       (unsigned int)FIELD_GET(TEMP_THRESHOLD1_POLICY, v));
+> +}
+> +
+> +static DEVICE_ATTR_RO(temp1_max_policy);
+> +
+> +static struct attribute *thermal_extra_attrs[] = {
+> +	&dev_attr_temp1_max_policy.attr,
+> +	NULL,
+> +};
+> +
+> +static umode_t thermal_extra_attrs_visible(struct kobject *kobj,
+> +					   struct attribute *attr, int index)
+> +{
+> +	struct device *dev = kobj_to_dev(kobj);
+> +	struct dfl_feature *feature = dev_get_drvdata(dev);
+> +
+> +	return fme_thermal_throttle_support(feature->ioaddr) ? attr->mode : 0;
+> +}
+> +
+> +static const struct attribute_group thermal_extra_group = {
+> +	.attrs		= thermal_extra_attrs,
+> +	.is_visible	= thermal_extra_attrs_visible,
+> +};
+> +__ATTRIBUTE_GROUPS(thermal_extra);
+> +
+> +static int fme_thermal_mgmt_init(struct platform_device *pdev,
+> +				 struct dfl_feature *feature)
+> +{
+> +	struct device *hwmon;
+> +
+> +	dev_dbg(&pdev->dev, "FME Thermal Management Init.\n");
+> +
+> +	/*
+> +	 * create hwmon to allow userspace monitoring temperature and other
+> +	 * threshold information.
+> +	 *
+> +	 * temp1_input      -> FPGA device temperature
+> +	 * temp1_max        -> hardware threshold 1 -> 50% or 90% throttling
+> +	 * temp1_crit       -> hardware threshold 2 -> 100% throttling
+> +	 * temp1_emergency  -> hardware trip_threshold to shutdown FPGA
+> +	 * temp1_max_alarm  -> hardware threshold 1 alarm
+> +	 * temp1_crit_alarm -> hardware threshold 2 alarm
+> +	 *
+> +	 * create device specific sysfs interfaces, e.g. read temp1_max_policy
+> +	 * to understand the actual hardware throttling action (50% vs 90%).
+> +	 *
+> +	 * If hardware doesn't support automatic throttling per thresholds,
+> +	 * then all above sysfs interfaces are not visible except temp1_input
+> +	 * for temperature.
+> +	 */
+> +	hwmon = devm_hwmon_device_register_with_info(&pdev->dev,
+> +						     "dfl_fme_thermal", feature,
+> +						     &thermal_hwmon_chip_info,
+> +						     thermal_extra_groups);
+> +	if (IS_ERR(hwmon)) {
+> +		dev_err(&pdev->dev, "Fail to register thermal hwmon\n");
+> +		return PTR_ERR(hwmon);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static void fme_thermal_mgmt_uinit(struct platform_device *pdev,
+> +				   struct dfl_feature *feature)
+> +{
+> +	dev_dbg(&pdev->dev, "FME Thermal Management UInit.\n");
+> +}
+> +
+> +static const struct dfl_feature_id fme_thermal_mgmt_id_table[] = {
+> +	{.id = FME_FEATURE_ID_THERMAL_MGMT,},
+> +	{0,}
+> +};
+> +
+> +static const struct dfl_feature_ops fme_thermal_mgmt_ops = {
+> +	.init = fme_thermal_mgmt_init,
+> +	.uinit = fme_thermal_mgmt_uinit,
+> +};
+> +
+>  static struct dfl_feature_driver fme_feature_drvs[] = {
+>  	{
+>  		.id_table = fme_hdr_id_table,
+> @@ -231,6 +414,10 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
+>  		.ops = &fme_global_err_ops,
+>  	},
+>  	{
+> +		.id_table = fme_thermal_mgmt_id_table,
+> +		.ops = &fme_thermal_mgmt_ops,
+> +	},
+> +	{
+>  		.ops = NULL,
+>  	},
+>  };
+> -- 
+> 1.8.3.1
+> 
