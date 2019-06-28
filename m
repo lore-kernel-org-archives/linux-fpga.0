@@ -1,220 +1,113 @@
-Return-Path: <SRS0=I96B=UN=arm.com=suzuki.poulose@kernel.org>
-Return-Path: <SRS0=I96B=UN=arm.com=suzuki.poulose@kernel.org>
-From: Suzuki K Poulose <suzuki.poulose@arm.com>
-Subject: [PATCH v2 13/28] drivers: Introduce class_find_device_by_of_node() helper
-Date: Fri, 14 Jun 2019 18:54:08 +0100
-Message-Id: <1560534863-15115-14-git-send-email-suzuki.poulose@arm.com>
-In-Reply-To: <1560534863-15115-1-git-send-email-suzuki.poulose@arm.com>
-References: <1560534863-15115-1-git-send-email-suzuki.poulose@arm.com>
-To: linux-kernel@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, rafael@kernel.org, suzuki.poulose@arm.com, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, Peter Rosin <peda@axentia.se>, Mark Brown <broonie@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Heiner Kallweit <hkallweit1@gmail.com>, "David S. Miller" <davem@davemloft.net>, Andrew Lunn <andrew@lunn.ch>, Liam Girdwood <lgirdwood@gmail.com>, Jiri Slaby <jslaby@suse.com>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 11/15] fpga: dfl: afu: export __port_enable/disable function.
+Date: Thu, 27 Jun 2019 17:49:47 -0700
+Message-Id: <20190628004951.6202-12-mdf@kernel.org>
+In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
+References: <20190628004951.6202-1-mdf@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add a wrapper to class_find_device() to search for a device
-by the of_node pointer, reusing the generic match function.
-Also convert the existing users to make use of the new helper.
+From: Wu Hao <hao.wu@intel.com>
 
-Cc: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org
-Cc: Peter Rosin <peda@axentia.se>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Heiner Kallweit <hkallweit1@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Jiri Slaby <jslaby@suse.com>
-Acked-by: Mark Brown <broonie@kernel.org>
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
-Reviewed-by: Peter Rosin <peda@axentia.se>
-Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+As these two functions are used by other private features. e.g.
+in error reporting private feature, it requires to check port status
+and reset port for error clearing.
+
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/fpga-bridge.c       |  8 +-------
- drivers/fpga/fpga-mgr.c          |  8 +-------
- drivers/mux/core.c               |  7 +------
- drivers/net/phy/mdio_bus.c       |  9 +--------
- drivers/regulator/of_regulator.c |  7 +------
- drivers/spi/spi.c                | 11 ++---------
- include/linux/device.h           | 12 ++++++++++++
- 7 files changed, 19 insertions(+), 43 deletions(-)
+ drivers/fpga/dfl-afu-main.c | 25 ++++++++++++++-----------
+ drivers/fpga/dfl-afu.h      |  3 +++
+ 2 files changed, 17 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index 80bd8f1..4bab902 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -19,11 +19,6 @@ static struct class *fpga_bridge_class;
- /* Lock for adding/removing bridges to linked lists*/
- static spinlock_t bridge_list_lock;
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 65b3e895e364..c8bc0b5d9c16 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -24,14 +24,16 @@
+ #define DRV_VERSION	"0.8"
  
--static int fpga_bridge_of_node_match(struct device *dev, const void *data)
--{
--	return dev->of_node == data;
--}
--
  /**
-  * fpga_bridge_enable - Enable transactions on the bridge
+- * port_enable - enable a port
++ * __port_enable - enable a port
+  * @pdev: port platform device.
   *
-@@ -104,8 +99,7 @@ struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
+  * Enable Port by clear the port soft reset bit, which is set by default.
+  * The AFU is unable to respond to any MMIO access while in reset.
+- * port_enable function should only be used after port_disable function.
++ * __port_enable function should only be used after __port_disable function.
++ *
++ * The caller needs to hold lock for protection.
+  */
+-static void port_enable(struct platform_device *pdev)
++void __port_enable(struct platform_device *pdev)
  {
- 	struct device *dev;
+ 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+ 	void __iomem *base;
+@@ -54,13 +56,14 @@ static void port_enable(struct platform_device *pdev)
+ #define RST_POLL_TIMEOUT 1000 /* us */
  
--	dev = class_find_device(fpga_bridge_class, NULL, np,
--				fpga_bridge_of_node_match);
-+	dev = class_find_device_by_of_node(fpga_bridge_class, np);
- 	if (!dev)
- 		return ERR_PTR(-ENODEV);
- 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index c386681..e05104f 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -482,11 +482,6 @@ struct fpga_manager *fpga_mgr_get(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(fpga_mgr_get);
- 
--static int fpga_mgr_of_node_match(struct device *dev, const void *data)
--{
--	return dev->of_node == data;
--}
--
  /**
-  * of_fpga_mgr_get - Given a device node, get a reference to a fpga mgr.
+- * port_disable - disable a port
++ * __port_disable - disable a port
+  * @pdev: port platform device.
   *
-@@ -498,8 +493,7 @@ struct fpga_manager *of_fpga_mgr_get(struct device_node *node)
+- * Disable Port by setting the port soft reset bit, it puts the port into
+- * reset.
++ * Disable Port by setting the port soft reset bit, it puts the port into reset.
++ *
++ * The caller needs to hold lock for protection.
+  */
+-static int port_disable(struct platform_device *pdev)
++int __port_disable(struct platform_device *pdev)
  {
- 	struct device *dev;
- 
--	dev = class_find_device(fpga_mgr_class, NULL, node,
--				fpga_mgr_of_node_match);
-+	dev = class_find_device_by_of_node(fpga_mgr_class, node);
- 	if (!dev)
- 		return ERR_PTR(-ENODEV);
- 
-diff --git a/drivers/mux/core.c b/drivers/mux/core.c
-index d1271c1..1fb2238 100644
---- a/drivers/mux/core.c
-+++ b/drivers/mux/core.c
-@@ -405,17 +405,12 @@ int mux_control_deselect(struct mux_control *mux)
- }
- EXPORT_SYMBOL_GPL(mux_control_deselect);
- 
--static int of_dev_node_match(struct device *dev, const void *data)
--{
--	return dev->of_node == data;
--}
--
- /* Note this function returns a reference to the mux_chip dev. */
- static struct mux_chip *of_find_mux_chip_by_node(struct device_node *np)
+ 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+ 	void __iomem *base;
+@@ -106,9 +109,9 @@ static int __port_reset(struct platform_device *pdev)
  {
- 	struct device *dev;
+ 	int ret;
  
--	dev = class_find_device(&mux_class, NULL, np, of_dev_node_match);
-+	dev = class_find_device_by_of_node(&mux_class, np);
+-	ret = port_disable(pdev);
++	ret = __port_disable(pdev);
+ 	if (!ret)
+-		port_enable(pdev);
++		__port_enable(pdev);
  
- 	return dev ? to_mux_chip(dev) : NULL;
+ 	return ret;
  }
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index bd04fe7..ce94087 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -262,11 +262,6 @@ static struct class mdio_bus_class = {
+@@ -805,9 +808,9 @@ static int port_enable_set(struct platform_device *pdev, bool enable)
+ 
+ 	mutex_lock(&pdata->lock);
+ 	if (enable)
+-		port_enable(pdev);
++		__port_enable(pdev);
+ 	else
+-		ret = port_disable(pdev);
++		ret = __port_disable(pdev);
+ 	mutex_unlock(&pdata->lock);
+ 
+ 	return ret;
+diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
+index 0c7630ae3cda..35e60c5859a4 100644
+--- a/drivers/fpga/dfl-afu.h
++++ b/drivers/fpga/dfl-afu.h
+@@ -79,6 +79,9 @@ struct dfl_afu {
+ 	struct dfl_feature_platform_data *pdata;
  };
  
- #if IS_ENABLED(CONFIG_OF_MDIO)
--/* Helper function for of_mdio_find_bus */
--static int of_mdio_bus_match(struct device *dev, const void *mdio_bus_np)
--{
--	return dev->of_node == mdio_bus_np;
--}
- /**
-  * of_mdio_find_bus - Given an mii_bus node, find the mii_bus.
-  * @mdio_bus_np: Pointer to the mii_bus.
-@@ -287,9 +282,7 @@ struct mii_bus *of_mdio_find_bus(struct device_node *mdio_bus_np)
- 	if (!mdio_bus_np)
- 		return NULL;
- 
--	d = class_find_device(&mdio_bus_class, NULL,  mdio_bus_np,
--			      of_mdio_bus_match);
--
-+	d = class_find_device_by_of_node(&mdio_bus_class, mdio_bus_np);
- 	return d ? to_mii_bus(d) : NULL;
- }
- EXPORT_SYMBOL(of_mdio_find_bus);
-diff --git a/drivers/regulator/of_regulator.c b/drivers/regulator/of_regulator.c
-index 0ead116..1b40277 100644
---- a/drivers/regulator/of_regulator.c
-+++ b/drivers/regulator/of_regulator.c
-@@ -442,16 +442,11 @@ struct regulator_init_data *regulator_of_get_init_data(struct device *dev,
- 	return NULL;
- }
- 
--static int of_node_match(struct device *dev, const void *data)
--{
--	return dev->of_node == data;
--}
--
- struct regulator_dev *of_find_regulator_by_node(struct device_node *np)
- {
- 	struct device *dev;
- 
--	dev = class_find_device(&regulator_class, NULL, np, of_node_match);
-+	dev = class_find_device_by_of_node(&regulator_class, np);
- 
- 	return dev ? dev_to_rdev(dev) : NULL;
- }
-diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 3da1121..a256be5 100644
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -3554,21 +3554,14 @@ EXPORT_SYMBOL_GPL(of_find_spi_device_by_node);
- #endif /* IS_ENABLED(CONFIG_OF) */
- 
- #if IS_ENABLED(CONFIG_OF_DYNAMIC)
--static int __spi_of_controller_match(struct device *dev, const void *data)
--{
--	return dev->of_node == data;
--}
--
- /* the spi controllers are not using spi_bus, so we find it with another way */
- static struct spi_controller *of_find_spi_controller_by_node(struct device_node *node)
- {
- 	struct device *dev;
- 
--	dev = class_find_device(&spi_master_class, NULL, node,
--				__spi_of_controller_match);
-+	dev = class_find_device_by_of_node(&spi_master_class, node);
- 	if (!dev && IS_ENABLED(CONFIG_SPI_SLAVE))
--		dev = class_find_device(&spi_slave_class, NULL, node,
--					__spi_of_controller_match);
-+		dev = class_find_device_by_of_node(&spi_slave_class, node);
- 	if (!dev)
- 		return NULL;
- 
-diff --git a/include/linux/device.h b/include/linux/device.h
-index bb14c7f..9228502 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -497,6 +497,18 @@ static inline struct device *class_find_device_by_name(struct class *class,
- 	return class_find_device(class, NULL, name, device_match_name);
- }
- 
-+/**
-+ * class_find_device_by_of_node : device iterator for locating a particular device
-+ * matching the of_node.
-+ * @class: class type
-+ * @np: of_node of the device to match.
-+ */
-+static inline struct device *
-+class_find_device_by_of_node(struct class *class, const struct device_node *np)
-+{
-+	return class_find_device(class, NULL, np, device_match_of_node);
-+}
++void __port_enable(struct platform_device *pdev);
++int __port_disable(struct platform_device *pdev);
 +
- struct class_attribute {
- 	struct attribute attr;
- 	ssize_t (*show)(struct class *class, struct class_attribute *attr,
+ void afu_mmio_region_init(struct dfl_feature_platform_data *pdata);
+ int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
+ 			u32 region_index, u64 region_size, u64 phys, u32 flags);
 -- 
-2.7.4
+2.22.0
