@@ -1,47 +1,126 @@
-Return-Path: <sashal@kernel.org>
-Return-Path: <sashal@kernel.org>
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.1 15/59] fpga: dfl: afu: Pass the correct device to dma_mapping_error()
-Date: Fri, 14 Jun 2019 16:27:59 -0400
-Message-Id: <20190614202843.26941-15-sashal@kernel.org>
-In-Reply-To: <20190614202843.26941-1-sashal@kernel.org>
-References: <20190614202843.26941-1-sashal@kernel.org>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 14/15] fpga: dfl: fme: add capability sysfs interfaces
+Date: Thu, 27 Jun 2019 17:49:50 -0700
+Message-Id: <20190628004951.6202-15-mdf@kernel.org>
+In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
+References: <20190628004951.6202-1-mdf@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Scott Wood <swood@redhat.com>, Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
+To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Scott Wood <swood@redhat.com>
+From: Wu Hao <hao.wu@intel.com>
 
-[ Upstream commit 13069847a475b60069918dc9971f5adb42811ce3 ]
+This patch adds 3 read-only sysfs interfaces for FPGA Management Engine
+(FME) block for capabilities including cache_size, fabric_version and
+socket_id.
 
-dma_mapping_error() was being called on a different device struct than
-what was passed to map/unmap.  Besides rendering the error checking
-ineffective, it caused a debug splat with CONFIG_DMA_API_DEBUG.
-
-Signed-off-by: Scott Wood <swood@redhat.com>
-Acked-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/dfl-afu-dma-region.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../ABI/testing/sysfs-platform-dfl-fme        | 23 +++++++++
+ drivers/fpga/dfl-fme-main.c                   | 48 +++++++++++++++++++
+ 2 files changed, 71 insertions(+)
 
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index e18a786fc943..cd68002ac097 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -399,7 +399,7 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
- 				    region->pages[0], 0,
- 				    region->length,
- 				    DMA_BIDIRECTIONAL);
--	if (dma_mapping_error(&pdata->dev->dev, region->iova)) {
-+	if (dma_mapping_error(dfl_fpga_pdata_to_parent(pdata), region->iova)) {
- 		dev_err(&pdata->dev->dev, "failed to map for dma\n");
- 		ret = -EFAULT;
- 		goto unpin_pages;
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+index 8fa4febfa4b2..99cd3b2acff5 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+@@ -21,3 +21,26 @@ Contact:	Wu Hao <hao.wu@intel.com>
+ Description:	Read-only. It returns Bitstream (static FPGA region) meta
+ 		data, which includes the synthesis date, seed and other
+ 		information of this static FPGA region.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/cache_size
++Date:		June 2019
++KernelVersion:  5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns cache size of this FPGA device.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/fabric_version
++Date:		June 2019
++KernelVersion:  5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns fabric version of this FPGA device.
++		Userspace applications need this information to select
++		best data channels per different fabric design.
++
++What:		/sys/bus/platform/devices/dfl-fme.0/socket_id
++Date:		June 2019
++KernelVersion:  5.3
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It returns socket_id to indicate which socket
++		this FPGA belongs to, only valid for integrated solution.
++		User only needs this information, in case standard numa node
++		can't provide correct information.
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index 38c6342e1865..2d69b8fd0137 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -75,10 +75,58 @@ static ssize_t bitstream_metadata_show(struct device *dev,
+ }
+ static DEVICE_ATTR_RO(bitstream_metadata);
+ 
++static ssize_t cache_size_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return sprintf(buf, "%u\n",
++		       (unsigned int)FIELD_GET(FME_CAP_CACHE_SIZE, v));
++}
++static DEVICE_ATTR_RO(cache_size);
++
++static ssize_t fabric_version_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return sprintf(buf, "%u\n",
++		       (unsigned int)FIELD_GET(FME_CAP_FABRIC_VERID, v));
++}
++static DEVICE_ATTR_RO(fabric_version);
++
++static ssize_t socket_id_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_CAP);
++
++	return sprintf(buf, "%u\n",
++		       (unsigned int)FIELD_GET(FME_CAP_SOCKET_ID, v));
++}
++static DEVICE_ATTR_RO(socket_id);
++
+ static const struct attribute *fme_hdr_attrs[] = {
+ 	&dev_attr_ports_num.attr,
+ 	&dev_attr_bitstream_id.attr,
+ 	&dev_attr_bitstream_metadata.attr,
++	&dev_attr_cache_size.attr,
++	&dev_attr_fabric_version.attr,
++	&dev_attr_socket_id.attr,
+ 	NULL,
+ };
+ 
 -- 
-2.20.1
+2.22.0
