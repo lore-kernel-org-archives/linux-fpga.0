@@ -1,83 +1,84 @@
-Return-Path: <SRS0=mQx8=UE=arm.com=suzuki.poulose@kernel.org>
-Return-Path: <SRS0=mQx8=UE=arm.com=suzuki.poulose@kernel.org>
-From: Suzuki K Poulose <suzuki.poulose@arm.com>
-Subject: [PATCH 04/13] drivers: Add generic helper to match by of_node
-Date: Wed,  5 Jun 2019 16:13:41 +0100
-Message-Id: <1559747630-28065-5-git-send-email-suzuki.poulose@arm.com>
-In-Reply-To: <1559747630-28065-1-git-send-email-suzuki.poulose@arm.com>
-References: <1559747630-28065-1-git-send-email-suzuki.poulose@arm.com>
-To: linux-kernel@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, rafael@kernel.org, suzuki.poulose@arm.com, Alan Tull <atull@kernel.org>, Andrew Lunn <andrew@lunn.ch>, Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@linux.ie>, "David S. Miller" <davem@davemloft.net>, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, Florian Fainelli <f.fainelli@gmail.com>, Frank Rowand <frowand.list@gmail.com>, Heiner Kallweit <hkallweit1@gmail.com>, Jiri Slaby <jslaby@suse.com>, Jonathan Hunter <jonathanh@nvidia.com>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-spi@vger.kernel.org, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Mark Brown <broonie@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Moritz Fischer <mdf@kernel.org>, Peter Rosin <peda@axentia.se>, Rob Herring <robh+dt@kernel.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Thor Thayer <thor.thayer@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Ulf Hansson <ulf.hansson@linaro.org>, Joe Perches <joe@perches.com>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 03/15] fpga: dfl: fme: align PR buffer size per PR datawidth
+Date: Thu, 27 Jun 2019 17:49:39 -0700
+Message-Id: <20190628004951.6202-4-mdf@kernel.org>
+In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
+References: <20190628004951.6202-1-mdf@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add a helper to match device by the of_node. This will be later used
-to provide generic lookup functions by of_node.
+From: Wu Hao <hao.wu@intel.com>
 
-Cc: Alan Tull <atull@kernel.org>
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: David Airlie <airlied@linux.ie>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: devicetree@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Frank Rowand <frowand.list@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Heiner Kallweit <hkallweit1@gmail.com>
-Cc: Jiri Slaby <jslaby@suse.com>
-Cc: Jonathan Hunter <jonathanh@nvidia.com>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: linux-fpga@vger.kernel.org
-Cc: linux-i2c@vger.kernel.org
-Cc: linux-spi@vger.kernel.org
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
-Cc: Maxime Ripard <maxime.ripard@bootlin.com>
-Cc: Moritz Fischer <mdf@kernel.org>
-Cc: Peter Rosin <peda@axentia.se>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>
-Cc: Thor Thayer <thor.thayer@linux.intel.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Joe Perches <joe@perches.com>
-Signed-off-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+Current driver checks if input bitstream file size is aligned or
+not per PR data width (default 32bits). It requires one additional
+step for end user when they generate the bitstream file, padding
+extra zeros to bitstream file to align its size per PR data width,
+but they don't have to as hardware will drop extra padding bytes
+automatically.
+
+In order to simplify the user steps, this patch aligns PR buffer
+size per PR data width in driver, to allow user to pass unaligned
+size bitstream files to driver.
+
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/base/core.c    | 6 ++++++
- include/linux/device.h | 2 ++
- 2 files changed, 8 insertions(+)
+ drivers/fpga/dfl-fme-pr.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index fd7511e..9211908 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -3328,3 +3328,9 @@ void device_set_of_node_from_dev(struct device *dev, const struct device *dev2)
- 	dev->of_node_reused = true;
- }
- EXPORT_SYMBOL_GPL(device_set_of_node_from_dev);
-+
-+int device_match_of_node(struct device *dev, const void *np)
-+{
-+	return dev->of_node == np;
-+}
-+EXPORT_SYMBOL_GPL(device_match_of_node);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 4d7c881..7093085 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -163,6 +163,8 @@ void subsys_dev_iter_init(struct subsys_dev_iter *iter,
- struct device *subsys_dev_iter_next(struct subsys_dev_iter *iter);
- void subsys_dev_iter_exit(struct subsys_dev_iter *iter);
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+index 6ec0f09e5994..3c71dc3faaf5 100644
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -74,6 +74,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 	struct dfl_fme *fme;
+ 	unsigned long minsz;
+ 	void *buf = NULL;
++	size_t length;
+ 	int ret = 0;
+ 	u64 v;
  
-+int device_match_of_node(struct device *dev, const void *np);
+@@ -85,9 +86,6 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 	if (port_pr.argsz < minsz || port_pr.flags)
+ 		return -EINVAL;
+ 
+-	if (!IS_ALIGNED(port_pr.buffer_size, 4))
+-		return -EINVAL;
+-
+ 	/* get fme header region */
+ 	fme_hdr = dfl_get_feature_ioaddr_by_id(&pdev->dev,
+ 					       FME_FEATURE_ID_HEADER);
+@@ -103,7 +101,13 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 		       port_pr.buffer_size))
+ 		return -EFAULT;
+ 
+-	buf = vmalloc(port_pr.buffer_size);
++	/*
++	 * align PR buffer per PR bandwidth, as HW ignores the extra padding
++	 * data automatically.
++	 */
++	length = ALIGN(port_pr.buffer_size, 4);
 +
- int bus_for_each_dev(struct bus_type *bus, struct device *start, void *data,
- 		     int (*fn)(struct device *dev, void *data));
- struct device *bus_find_device(struct bus_type *bus, struct device *start,
++	buf = vmalloc(length);
+ 	if (!buf)
+ 		return -ENOMEM;
+ 
+@@ -140,7 +144,7 @@ static int fme_pr(struct platform_device *pdev, unsigned long arg)
+ 	fpga_image_info_free(region->info);
+ 
+ 	info->buf = buf;
+-	info->count = port_pr.buffer_size;
++	info->count = length;
+ 	info->region_id = port_pr.port_id;
+ 	region->info = info;
+ 
 -- 
-2.7.4
+2.22.0
