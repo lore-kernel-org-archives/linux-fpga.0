@@ -1,14 +1,18 @@
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LEht=U2=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 07/15] fpga: dfl: pci: enable SRIOV support.
-Date: Thu, 27 Jun 2019 12:44:47 +0800
-Message-Id: <1561610695-5414-8-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org, Zhang Yi Z <yi.z.zhang@intel.com>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=1/Hx=U3=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 07/15] fpga: dfl: pci: enable SRIOV support.
+Date: Thu, 27 Jun 2019 17:49:43 -0700
+Message-Id: <20190628004951.6202-8-mdf@kernel.org>
+In-Reply-To: <20190628004951.6202-1-mdf@kernel.org>
+References: <20190628004951.6202-1-mdf@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
+
+From: Wu Hao <hao.wu@intel.com>
 
 This patch enables the standard sriov support. It allows user to
 enable SRIOV (and VFs), then user could pass through accelerators
@@ -19,6 +23,7 @@ Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
 Acked-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
  drivers/fpga/dfl-pci.c | 40 ++++++++++++++++++++++++++++++++++++++++
  drivers/fpga/dfl.c     | 41 +++++++++++++++++++++++++++++++++++++++++
@@ -26,7 +31,7 @@ Acked-by: Moritz Fischer <mdf@kernel.org>
  3 files changed, 82 insertions(+)
 
 diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index 66b5720..2fa571b 100644
+index 66b5720582bb..2fa571b0fdea 100644
 --- a/drivers/fpga/dfl-pci.c
 +++ b/drivers/fpga/dfl-pci.c
 @@ -223,8 +223,46 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
@@ -76,7 +81,7 @@ index 66b5720..2fa571b 100644
  	cci_remove_feature_devs(pcidev);
  	pci_disable_pcie_error_reporting(pcidev);
  }
-@@ -234,6 +272,7 @@ static void cci_pci_remove(struct pci_dev *pcidev)
+@@ -234,6 +272,7 @@ static struct pci_driver cci_pci_driver = {
  	.id_table = cci_pcie_id_tbl,
  	.probe = cci_pci_probe,
  	.remove = cci_pci_remove,
@@ -84,13 +89,13 @@ index 66b5720..2fa571b 100644
  };
  
  module_pci_driver(cci_pci_driver);
-@@ -241,3 +280,4 @@ static void cci_pci_remove(struct pci_dev *pcidev)
+@@ -241,3 +280,4 @@ module_pci_driver(cci_pci_driver);
  MODULE_DESCRIPTION("FPGA DFL PCIe Device Driver");
  MODULE_AUTHOR("Intel Corporation");
  MODULE_LICENSE("GPL v2");
 +MODULE_VERSION(DRV_VERSION);
 diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 308c808..28d61b6 100644
+index 308c80868af4..28d61b611165 100644
 --- a/drivers/fpga/dfl.c
 +++ b/drivers/fpga/dfl.c
 @@ -1112,6 +1112,47 @@ int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
@@ -142,10 +147,10 @@ index 308c808..28d61b6 100644
  {
  	int ret;
 diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 63f39ab..1350e8e 100644
+index 63f39ab08905..1350e8eb9e59 100644
 --- a/drivers/fpga/dfl.h
 +++ b/drivers/fpga/dfl.h
-@@ -421,5 +421,6 @@ struct platform_device *
+@@ -421,5 +421,6 @@ dfl_fpga_cdev_find_port(struct dfl_fpga_cdev *cdev, void *data,
  
  int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev,
  			      u32 port_id, bool release);
@@ -153,4 +158,4 @@ index 63f39ab..1350e8e 100644
  
  #endif /* __FPGA_DFL_H */
 -- 
-1.8.3.1
+2.22.0
