@@ -1,62 +1,39 @@
-Return-Path: <SRS0=naif=UN=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=naif=UN=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:50744 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726637AbfFNU3A (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 14 Jun 2019 16:29:00 -0400
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.1 17/59] fpga: dfl: expand minor range when registering chrdev region
-Date: Fri, 14 Jun 2019 16:28:01 -0400
-Message-Id: <20190614202843.26941-17-sashal@kernel.org>
-In-Reply-To: <20190614202843.26941-1-sashal@kernel.org>
-References: <20190614202843.26941-1-sashal@kernel.org>
+Date: Thu, 27 Jun 2019 18:12:57 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v4 05/15] Documentation: fpga: dfl: add descriptions for
+ virtualization and new interfaces.
+Message-ID: <20190628011256.GB5671@archbook>
+References: <1561610695-5414-1-git-send-email-hao.wu@intel.com>
+ <1561610695-5414-6-git-send-email-hao.wu@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Chengguang Xu <cgxu519@gmx.com>, Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1561610695-5414-6-git-send-email-hao.wu@intel.com>
+To: Wu Hao <hao.wu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, yilun.xu@intel.com, gregkh@linuxfoundation.org, atull@kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Chengguang Xu <cgxu519@gmx.com>
+Hi Wu,
 
-[ Upstream commit de9a7f6f5f1967d275311cca9163b4a3ffe9b0ae ]
+On Thu, Jun 27, 2019 at 12:44:45PM +0800, Wu Hao wrote:
+> This patch adds virtualization support description for DFL based
+> FPGA devices (based on PCIe SRIOV), and introductions to new
+> interfaces added by new dfl private feature drivers.
+> 
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Acked-by: Alan Tull <atull@kernel.org>
+> ---
+>  Documentation/fpga/dfl.txt | 101 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 101 insertions(+)
+> 
+> diff --git a/Documentation/fpga/dfl.txt b/Documentation/fpga/dfl.txt
+> index 6df4621..a22631f 100644
+> --- a/Documentation/fpga/dfl.txt
+> +++ b/Documentation/fpga/dfl.txt
 
-Actually, total amount of available minor number
-for a single major is MINORMASK + 1. So expand
-minor range when registering chrdev region.
+This got re{named,formatted} in linux-next. I've tried to fix it before sending it
+to Greg.
 
-Signed-off-by: Chengguang Xu <cgxu519@gmx.com>
-Acked-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/fpga/dfl.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index c25217cde5ca..4b66aaa32b5a 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -322,7 +322,7 @@ static void dfl_chardev_uinit(void)
- 	for (i = 0; i < DFL_FPGA_DEVT_MAX; i++)
- 		if (MAJOR(dfl_chrdevs[i].devt)) {
- 			unregister_chrdev_region(dfl_chrdevs[i].devt,
--						 MINORMASK);
-+						 MINORMASK + 1);
- 			dfl_chrdevs[i].devt = MKDEV(0, 0);
- 		}
- }
-@@ -332,8 +332,8 @@ static int dfl_chardev_init(void)
- 	int i, ret;
- 
- 	for (i = 0; i < DFL_FPGA_DEVT_MAX; i++) {
--		ret = alloc_chrdev_region(&dfl_chrdevs[i].devt, 0, MINORMASK,
--					  dfl_chrdevs[i].name);
-+		ret = alloc_chrdev_region(&dfl_chrdevs[i].devt, 0,
-+					  MINORMASK + 1, dfl_chrdevs[i].name);
- 		if (ret)
- 			goto exit;
- 	}
--- 
-2.20.1
+Thanks,
+Moritz
