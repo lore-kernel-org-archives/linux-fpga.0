@@ -1,20 +1,22 @@
-Date: Mon, 1 Jul 2019 21:25:54 -0700
-From: Moritz Fischer <mdf@kernel.org>
+Return-Path: <SRS0=Cl+Y=U6=gmail.com=groeck7@kernel.org>
+Return-Path: <SRS0=Cl+Y=U6=gmail.com=groeck7@kernel.org>
+Sender: Guenter Roeck <groeck7@gmail.com>
 Subject: Re: [PATCH v5 3/3] fpga: dfl: fme: add power management support
-Message-ID: <20190702042550.GA21853@archbook>
 References: <1561963027-4213-1-git-send-email-hao.wu@intel.com>
  <1561963027-4213-4-git-send-email-hao.wu@intel.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <af2d0724-ac7d-c35a-b640-3f8c3fb35ad4@roeck-us.net>
+Date: Mon, 1 Jul 2019 06:25:08 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <1561963027-4213-4-git-send-email-hao.wu@intel.com>
-To: Wu Hao <hao.wu@intel.com>
-Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, jdelvare@suse.com, linux@roeck-us.net, atull@kernel.org, gregkh@linuxfoundation.org, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Wu Hao <hao.wu@intel.com>, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, jdelvare@suse.com, atull@kernel.org, gregkh@linuxfoundation.org, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Hao,
-
-On Mon, Jul 01, 2019 at 02:37:07PM +0800, Wu Hao wrote:
+On 6/30/19 11:37 PM, Wu Hao wrote:
 > This patch adds support for power management private feature under
 > FPGA Management Engine (FME). This private feature driver registers
 > a hwmon for power (power1_input), thresholds information, e.g.
@@ -26,51 +28,52 @@ On Mon, Jul 01, 2019 at 02:37:07PM +0800, Wu Hao wrote:
 > Signed-off-by: Luwei Kang <luwei.kang@intel.com>
 > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 > Signed-off-by: Wu Hao <hao.wu@intel.com>
-Reviewed-by: Moritz Fischer <mdf@kernel.org>
+
+Acked-by: Guenter Roeck <linux@roeck-us.net>
 
 > ---
 > v2: create a dfl_fme_power hwmon to expose power sysfs interfaces.
->     move all sysfs interfaces under hwmon
->         consumed          --> hwmon power1_input
->         threshold1        --> hwmon power1_cap
->         threshold2        --> hwmon power1_crit
->         threshold1_status --> hwmon power1_cap_status
->         threshold2_status --> hwmon power1_crit_status
->         xeon_limit        --> hwmon power1_xeon_limit
->         fpga_limit        --> hwmon power1_fpga_limit
->         ltr               --> hwmon power1_ltr
+>      move all sysfs interfaces under hwmon
+>          consumed          --> hwmon power1_input
+>          threshold1        --> hwmon power1_cap
+>          threshold2        --> hwmon power1_crit
+>          threshold1_status --> hwmon power1_cap_status
+>          threshold2_status --> hwmon power1_crit_status
+>          xeon_limit        --> hwmon power1_xeon_limit
+>          fpga_limit        --> hwmon power1_fpga_limit
+>          ltr               --> hwmon power1_ltr
 > v3: rename some hwmon sysfs interfaces to follow hwmon ABI.
 > 	power1_cap         --> power1_max
 > 	power1_cap_status  --> power1_max_alarm
 > 	power1_crit_status --> power1_crit_alarm
->     update sysfs doc for above sysfs interface changes.
->     replace scnprintf with sprintf in sysfs interface.
+>      update sysfs doc for above sysfs interface changes.
+>      replace scnprintf with sprintf in sysfs interface.
 > v4: use HWMON_CHANNEL_INFO.
->     update date in sysfs doc.
+>      update date in sysfs doc.
 > v5: clamp threshold inputs in power_hwmon_write function.
->     update sysfs doc as threshold inputs are clamped now.
->     add more descriptions to ltr sysfs interface.
+>      update sysfs doc as threshold inputs are clamped now.
+>      add more descriptions to ltr sysfs interface.
 > ---
->  Documentation/ABI/testing/sysfs-platform-dfl-fme |  68 +++++++
->  drivers/fpga/dfl-fme-main.c                      | 216 +++++++++++++++++++++++
->  2 files changed, 284 insertions(+)
+>   Documentation/ABI/testing/sysfs-platform-dfl-fme |  68 +++++++
+>   drivers/fpga/dfl-fme-main.c                      | 216 +++++++++++++++++++++++
+>   2 files changed, 284 insertions(+)
 > 
 > diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
 > index 2cd17dc..5c2e49d 100644
 > --- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
 > +++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
 > @@ -127,6 +127,7 @@ Contact:	Wu Hao <hao.wu@intel.com>
->  Description:	Read-Only. Read this file to get the name of hwmon device, it
->  		supports values:
->  		    'dfl_fme_thermal' - thermal hwmon device name
+>   Description:	Read-Only. Read this file to get the name of hwmon device, it
+>   		supports values:
+>   		    'dfl_fme_thermal' - thermal hwmon device name
 > +		    'dfl_fme_power'   - power hwmon device name
->  
->  What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_input
->  Date:		June 2019
+>   
+>   What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_input
+>   Date:		June 2019
 > @@ -183,3 +184,70 @@ Description:	Read-Only. Read this file to get the policy of hardware threshold1
->  		(see 'temp1_max'). It only supports two values (policies):
->  		    0 - AP2 state (90% throttling)
->  		    1 - AP1 state (50% throttling)
+>   		(see 'temp1_max'). It only supports two values (policies):
+>   		    0 - AP2 state (90% throttling)
+>   		    1 - AP1 state (50% throttling)
 > +
 > +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_input
 > +Date:		June 2019
@@ -143,9 +146,9 @@ Reviewed-by: Moritz Fischer <mdf@kernel.org>
 > --- a/drivers/fpga/dfl-fme-main.c
 > +++ b/drivers/fpga/dfl-fme-main.c
 > @@ -400,6 +400,218 @@ static void fme_thermal_mgmt_uinit(struct platform_device *pdev,
->  	.uinit = fme_thermal_mgmt_uinit,
->  };
->  
+>   	.uinit = fme_thermal_mgmt_uinit,
+>   };
+>   
 > +#define FME_PWR_STATUS		0x8
 > +#define FME_LATENCY_TOLERANCE	BIT_ULL(18)
 > +#define PWR_CONSUMED		GENMASK_ULL(17, 0)
@@ -358,22 +361,18 @@ Reviewed-by: Moritz Fischer <mdf@kernel.org>
 > +	.uinit = fme_power_mgmt_uinit,
 > +};
 > +
->  static struct dfl_feature_driver fme_feature_drvs[] = {
->  	{
->  		.id_table = fme_hdr_id_table,
+>   static struct dfl_feature_driver fme_feature_drvs[] = {
+>   	{
+>   		.id_table = fme_hdr_id_table,
 > @@ -418,6 +630,10 @@ static void fme_thermal_mgmt_uinit(struct platform_device *pdev,
->  		.ops = &fme_thermal_mgmt_ops,
->  	},
->  	{
+>   		.ops = &fme_thermal_mgmt_ops,
+>   	},
+>   	{
 > +		.id_table = fme_power_mgmt_id_table,
 > +		.ops = &fme_power_mgmt_ops,
 > +	},
 > +	{
->  		.ops = NULL,
->  	},
->  };
-> -- 
-> 1.8.3.1
+>   		.ops = NULL,
+>   	},
+>   };
 > 
-Thanks,
-Moritz
