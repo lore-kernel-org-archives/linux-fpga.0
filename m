@@ -1,314 +1,379 @@
-Return-Path: <SRS0=83J2=VN=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=83J2=VN=linux.intel.com=thor.thayer@kernel.org>
-From: thor.thayer@linux.intel.com
-Subject: [PATCHv2 3/3] fpga: altera-cvp: Add Stratix10 (V2) Support
-Date: Tue, 16 Jul 2019 17:48:07 -0500
-Message-Id: <1563317287-18834-4-git-send-email-thor.thayer@linux.intel.com>
-In-Reply-To: <1563317287-18834-1-git-send-email-thor.thayer@linux.intel.com>
-References: <1563317287-18834-1-git-send-email-thor.thayer@linux.intel.com>
-To: mdf@kernel.org, richard.gong@linux.intel.com, agust@denx.de
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
+Date: Mon, 1 Jul 2019 21:25:54 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v5 3/3] fpga: dfl: fme: add power management support
+Message-ID: <20190702042550.GA21853@archbook>
+References: <1561963027-4213-1-git-send-email-hao.wu@intel.com>
+ <1561963027-4213-4-git-send-email-hao.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1561963027-4213-4-git-send-email-hao.wu@intel.com>
+To: Wu Hao <hao.wu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, jdelvare@suse.com, linux@roeck-us.net, atull@kernel.org, gregkh@linuxfoundation.org, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Thor Thayer <thor.thayer@linux.intel.com>
+Hi Hao,
 
-Add Stratix10 specific functions that use a credit mechanism
-to throttle data to the CvP FIFOs. Add a private structure
-with function pointers for V1 vs V2 functions.
+On Mon, Jul 01, 2019 at 02:37:07PM +0800, Wu Hao wrote:
+> This patch adds support for power management private feature under
+> FPGA Management Engine (FME). This private feature driver registers
+> a hwmon for power (power1_input), thresholds information, e.g.
+> (power1_max / crit / max_alarm / crit_alarm) and also read-only sysfs
+> interfaces for other power management information. For configuration,
+> user could write threshold values via above power1_max / crit sysfs
+> interface under hwmon too.
+> 
+> Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+Reviewed-by: Moritz Fischer <mdf@kernel.org>
 
-Signed-off-by: Thor Thayer <thor.thayer@linux.intel.com>
----
-v2 Remove inline function declaration
-   Reverse Christmas Tree format for local variables
-   Remove mask from credit calculation
-   Add commment for the delay(1) function in wait_for_credit()
----
- drivers/fpga/altera-cvp.c | 174 ++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 159 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 37419d6b9915..b4aa973ea046 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -43,16 +43,32 @@
- #define VSE_CVP_PROG_CTRL		0x2c	/* 32bit */
- #define VSE_CVP_PROG_CTRL_CONFIG	BIT(0)
- #define VSE_CVP_PROG_CTRL_START_XFER	BIT(1)
-+#define VSE_CVP_PROG_CTRL_MASK		GENMASK(1, 0)
- 
- #define VSE_UNCOR_ERR_STATUS		0x34	/* 32bit */
- #define VSE_UNCOR_ERR_CVP_CFG_ERR	BIT(5)	/* CVP_CONFIG_ERROR_LATCHED */
- 
-+/* V2 Defines */
-+#define VSE_CVP_TX_CREDITS		0x49	/* 8bit */
-+
-+#define CREDIT_TIMEOUT_US		20000
-+#define V2_POLL_TIMEOUT_US		1000000
-+#define V2_USER_TIMEOUT_US		500000
-+
-+#define V1_POLL_TIMEOUT_US		10
-+
- #define DRV_NAME		"altera-cvp"
- #define ALTERA_CVP_MGR_NAME	"Altera CvP FPGA Manager"
- 
-+/* Write block sizes */
-+#define ALTERA_CVP_V1_SIZE	4
-+#define ALTERA_CVP_V2_SIZE	4096
-+
- /* Optional CvP config error status check for debugging */
- static bool altera_cvp_chkcfg;
- 
-+struct cvp_priv;
-+
- struct altera_cvp_conf {
- 	struct fpga_manager	*mgr;
- 	struct pci_dev		*pci_dev;
-@@ -60,9 +76,26 @@ struct altera_cvp_conf {
- 	void			(*write_data)(struct altera_cvp_conf *, u32);
- 	char			mgr_name[64];
- 	u8			numclks;
-+	u8			current_credit_byte;
- 	u32			vsec_offset;
-+	const struct cvp_priv	*priv;
-+};
-+
-+struct cvp_priv {
-+	void	(*switch_clk)(struct altera_cvp_conf *conf);
-+	int	(*clear_state)(struct altera_cvp_conf *conf);
-+	int	(*wait_credit)(struct fpga_manager *mgr, u32 blocks);
-+	int	block_size;
-+	int	poll_time_us;
-+	int	user_time_us;
- };
- 
-+static void altera_read_config_byte(struct altera_cvp_conf *conf,
-+				    int where, u8 *val)
-+{
-+	pci_read_config_byte(conf->pci_dev, conf->vsec_offset + where, val);
-+}
-+
- static void altera_read_config_dword(struct altera_cvp_conf *conf,
- 				     int where, u32 *val)
- {
-@@ -155,6 +188,58 @@ static int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
- 	return 0;
- }
- 
-+/*
-+ * CvP Version2 Functions
-+ * Recent Intel FPGAs use a credit mechanism to throttle incoming
-+ * bitstreams and a different method of clearing the state.
-+ */
-+
-+static int altera_cvp_v2_clear_state(struct altera_cvp_conf *conf)
-+{
-+	u32 val;
-+
-+	/* Clear the START_XFER and CVP_CONFIG bits */
-+	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
-+	val &= ~VSE_CVP_PROG_CTRL_MASK;
-+	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
-+
-+	return altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY, 0,
-+				      conf->priv->poll_time_us);
-+}
-+
-+static int altera_cvp_v2_wait_for_credit(struct fpga_manager *mgr,
-+					 u32 blocks)
-+{
-+	struct altera_cvp_conf *conf = mgr->priv;
-+	u8 val, delta_credit;
-+	u32 count = 0;
-+	int ret;
-+
-+	do {
-+		altera_read_config_byte(conf, VSE_CVP_TX_CREDITS, &val);
-+		delta_credit = val - conf->current_credit_byte;
-+
-+		ret = altera_cvp_chk_error(mgr, blocks * ALTERA_CVP_V2_SIZE);
-+		if (ret) {
-+			dev_err(&conf->pci_dev->dev,
-+				"CE Bit error credits host[0x%x]:dev[0x%x]\n",
-+				conf->current_credit_byte, val);
-+			return -EAGAIN;
-+		}
-+
-+		if (count++ >= CREDIT_TIMEOUT_US) {
-+			dev_err(&conf->pci_dev->dev,
-+				"Timeout waiting for credit\n");
-+			return -ETIMEDOUT;
-+		}
-+
-+		/* Limit the traffic & ensure a timeout in usec */
-+		udelay(1);
-+	} while (!delta_credit);
-+
-+	return 0;
-+}
-+
- static int altera_cvp_send_block(struct altera_cvp_conf *conf,
- 				 const u32 *data, size_t len)
- {
-@@ -196,10 +281,12 @@ static int altera_cvp_teardown(struct fpga_manager *mgr,
- 	 * - set CVP_NUMCLKS to 1 and then issue CVP_DUMMY_WR dummy
- 	 *   writes to the HIP
- 	 */
--	altera_cvp_dummy_write(conf); /* from CVP clock to internal clock */
-+	if (conf->priv->switch_clk)
-+		conf->priv->switch_clk(conf);
- 
- 	/* STEP 15 - poll CVP_CONFIG_READY bit for 0 with 10us timeout */
--	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY, 0, 10);
-+	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY, 0,
-+				     conf->priv->poll_time_us);
- 	if (ret)
- 		dev_err(&mgr->dev, "CFG_RDY == 0 timeout\n");
- 
-@@ -261,7 +348,16 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	 * STEP 3
- 	 * - set CVP_NUMCLKS to 1 and issue CVP_DUMMY_WR dummy writes to the HIP
- 	 */
--	altera_cvp_dummy_write(conf);
-+	if (conf->priv->switch_clk)
-+		conf->priv->switch_clk(conf);
-+
-+	if (conf->priv->clear_state) {
-+		ret = conf->priv->clear_state(conf);
-+		if (ret) {
-+			dev_err(&mgr->dev, "Problem clearing out state\n");
-+			return ret;
-+		}
-+	}
- 
- 	/* STEP 4 - set CVP_CONFIG bit */
- 	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
-@@ -269,9 +365,10 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	val |= VSE_CVP_PROG_CTRL_CONFIG;
- 	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
--	/* STEP 5 - poll CVP_CONFIG READY for 1 with 10us timeout */
-+	/* STEP 5 - poll CVP_CONFIG READY for 1 with timeout */
- 	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY,
--				     VSE_CVP_STATUS_CFG_RDY, 10);
-+				     VSE_CVP_STATUS_CFG_RDY,
-+				     conf->priv->poll_time_us);
- 	if (ret) {
- 		dev_warn(&mgr->dev, "CFG_RDY == 1 timeout\n");
- 		return ret;
-@@ -281,7 +378,16 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	 * STEP 6
- 	 * - set CVP_NUMCLKS to 1 and issue CVP_DUMMY_WR dummy writes to the HIP
- 	 */
--	altera_cvp_dummy_write(conf);
-+	if (conf->priv->switch_clk)
-+		conf->priv->switch_clk(conf);
-+
-+	if (altera_cvp_chkcfg) {
-+		ret = altera_cvp_chk_error(mgr, 0);
-+		if (ret) {
-+			dev_warn(&mgr->dev, "CFG_RDY == 1 timeout\n");
-+			return ret;
-+		}
-+	}
- 
- 	/* STEP 7 - set START_XFER */
- 	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
-@@ -289,11 +395,12 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/* STEP 8 - start transfer (set CVP_NUMCLKS for bitstream) */
--	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
--	val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
--	val |= conf->numclks << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
--	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
--
-+	if (conf->priv->switch_clk) {
-+		altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
-+		val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
-+		val |= conf->numclks << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
-+		altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
-+	}
- 	return 0;
- }
- 
-@@ -311,15 +418,26 @@ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
- 	done = 0;
- 
- 	while (remaining) {
--		if (remaining >= sizeof(u32))
--			len = sizeof(u32);
-+		/* Use credit throttling if available */
-+		if (conf->priv->wait_credit) {
-+			status = conf->priv->wait_credit(mgr, done);
-+			if (status) {
-+				dev_err(&conf->pci_dev->dev,
-+					"Wait Credit ERR: 0x%x\n", status);
-+				return status;
-+			}
-+		}
-+
-+		if (remaining >= conf->priv->block_size)
-+			len = conf->priv->block_size;
- 		else
- 			len = remaining;
- 
- 		altera_cvp_send_block(conf, data, len);
--		data++;
-+		data += len / sizeof(u32);
- 		done += len;
- 		remaining -= len;
-+		conf->current_credit_byte++;
- 
- 		/*
- 		 * STEP 10 (optional) and STEP 11
-@@ -369,7 +487,8 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
- 
- 	/* STEP 18 - poll PLD_CLK_IN_USE and USER_MODE bits */
- 	mask = VSE_CVP_STATUS_PLD_CLK_IN_USE | VSE_CVP_STATUS_USERMODE;
--	ret = altera_cvp_wait_status(conf, mask, mask, TIMEOUT_US);
-+	ret = altera_cvp_wait_status(conf, mask, mask,
-+				     conf->priv->user_time_us);
- 	if (ret)
- 		dev_err(&mgr->dev, "PLD_CLK_IN_USE|USERMODE timeout\n");
- 
-@@ -383,6 +502,24 @@ static const struct fpga_manager_ops altera_cvp_ops = {
- 	.write_complete	= altera_cvp_write_complete,
- };
- 
-+static const struct cvp_priv cvp_priv_v1 = {
-+	.switch_clk	= altera_cvp_dummy_write,
-+	.clear_state	= NULL,
-+	.wait_credit	= NULL,
-+	.block_size	= ALTERA_CVP_V1_SIZE,
-+	.poll_time_us	= V1_POLL_TIMEOUT_US,
-+	.user_time_us	= TIMEOUT_US,
-+};
-+
-+static const struct cvp_priv cvp_priv_v2 = {
-+	.switch_clk	= NULL,
-+	.clear_state	= altera_cvp_v2_clear_state,
-+	.wait_credit	= altera_cvp_v2_wait_for_credit,
-+	.block_size	= ALTERA_CVP_V2_SIZE,
-+	.poll_time_us	= V2_POLL_TIMEOUT_US,
-+	.user_time_us	= V2_USER_TIMEOUT_US,
-+};
-+
- static ssize_t chkcfg_show(struct device_driver *dev, char *buf)
- {
- 	return snprintf(buf, 3, "%d\n", altera_cvp_chkcfg);
-@@ -485,6 +622,13 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	conf->pci_dev = pdev;
- 	conf->write_data = altera_cvp_write_data_iomem;
- 
-+	if (conf->vsec_offset == 0x200)
-+		conf->priv = &cvp_priv_v1;
-+	else
-+		conf->priv = &cvp_priv_v2;
-+
-+	conf->current_credit_byte = 0;
-+
- 	conf->map = pci_iomap(pdev, CVP_BAR, 0);
- 	if (!conf->map) {
- 		dev_warn(&pdev->dev, "Mapping CVP BAR failed\n");
--- 
-2.7.4
+> ---
+> v2: create a dfl_fme_power hwmon to expose power sysfs interfaces.
+>     move all sysfs interfaces under hwmon
+>         consumed          --> hwmon power1_input
+>         threshold1        --> hwmon power1_cap
+>         threshold2        --> hwmon power1_crit
+>         threshold1_status --> hwmon power1_cap_status
+>         threshold2_status --> hwmon power1_crit_status
+>         xeon_limit        --> hwmon power1_xeon_limit
+>         fpga_limit        --> hwmon power1_fpga_limit
+>         ltr               --> hwmon power1_ltr
+> v3: rename some hwmon sysfs interfaces to follow hwmon ABI.
+> 	power1_cap         --> power1_max
+> 	power1_cap_status  --> power1_max_alarm
+> 	power1_crit_status --> power1_crit_alarm
+>     update sysfs doc for above sysfs interface changes.
+>     replace scnprintf with sprintf in sysfs interface.
+> v4: use HWMON_CHANNEL_INFO.
+>     update date in sysfs doc.
+> v5: clamp threshold inputs in power_hwmon_write function.
+>     update sysfs doc as threshold inputs are clamped now.
+>     add more descriptions to ltr sysfs interface.
+> ---
+>  Documentation/ABI/testing/sysfs-platform-dfl-fme |  68 +++++++
+>  drivers/fpga/dfl-fme-main.c                      | 216 +++++++++++++++++++++++
+>  2 files changed, 284 insertions(+)
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+> index 2cd17dc..5c2e49d 100644
+> --- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
+> +++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
+> @@ -127,6 +127,7 @@ Contact:	Wu Hao <hao.wu@intel.com>
+>  Description:	Read-Only. Read this file to get the name of hwmon device, it
+>  		supports values:
+>  		    'dfl_fme_thermal' - thermal hwmon device name
+> +		    'dfl_fme_power'   - power hwmon device name
+>  
+>  What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_input
+>  Date:		June 2019
+> @@ -183,3 +184,70 @@ Description:	Read-Only. Read this file to get the policy of hardware threshold1
+>  		(see 'temp1_max'). It only supports two values (policies):
+>  		    0 - AP2 state (90% throttling)
+>  		    1 - AP1 state (50% throttling)
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_input
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Only. It returns current FPGA power consumption in uW.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_max
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Write. Read this file to get current hardware power
+> +		threshold1 in uW. If power consumption rises at or above
+> +		this threshold, hardware starts 50% throttling.
+> +		Write this file to set current hardware power threshold1 in uW.
+> +		As hardware only accepts values in Watts, so input value will
+> +		be round down per Watts (< 1 watts part will be discarded) and
+> +		clamped within the range from 0 to 127 Watts. Write fails with
+> +		-EINVAL if input parsing fails.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_crit
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Write. Read this file to get current hardware power
+> +		threshold2 in uW. If power consumption rises at or above
+> +		this threshold, hardware starts 90% throttling.
+> +		Write this file to set current hardware power threshold2 in uW.
+> +		As hardware only accepts values in Watts, so input value will
+> +		be round down per Watts (< 1 watts part will be discarded) and
+> +		clamped within the range from 0 to 127 Watts. Write fails with
+> +		-EINVAL if input parsing fails.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_max_alarm
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-only. It returns 1 if power consumption is currently at or
+> +		above hardware threshold1 (see 'power1_max'), otherwise 0.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_crit_alarm
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-only. It returns 1 if power consumption is currently at or
+> +		above hardware threshold2 (see 'power1_crit'), otherwise 0.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_xeon_limit
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Only. It returns power limit for XEON in uW.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_fpga_limit
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-Only. It returns power limit for FPGA in uW.
+> +
+> +What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_ltr
+> +Date:		June 2019
+> +KernelVersion:	5.3
+> +Contact:	Wu Hao <hao.wu@intel.com>
+> +Description:	Read-only. Read this file to get current Latency Tolerance
+> +		Reporting (ltr) value. It returns 1 if all Accelerated
+> +		Function Units (AFUs) can tolerate latency >= 40us for memory
+> +		access or 0 if any AFU is latency sensitive (< 40us).
+> diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+> index 59ff9f1..1ff386d 100644
+> --- a/drivers/fpga/dfl-fme-main.c
+> +++ b/drivers/fpga/dfl-fme-main.c
+> @@ -400,6 +400,218 @@ static void fme_thermal_mgmt_uinit(struct platform_device *pdev,
+>  	.uinit = fme_thermal_mgmt_uinit,
+>  };
+>  
+> +#define FME_PWR_STATUS		0x8
+> +#define FME_LATENCY_TOLERANCE	BIT_ULL(18)
+> +#define PWR_CONSUMED		GENMASK_ULL(17, 0)
+> +
+> +#define FME_PWR_THRESHOLD	0x10
+> +#define PWR_THRESHOLD1		GENMASK_ULL(6, 0)	/* in Watts */
+> +#define PWR_THRESHOLD2		GENMASK_ULL(14, 8)	/* in Watts */
+> +#define PWR_THRESHOLD_MAX	0x7f			/* in Watts */
+> +#define PWR_THRESHOLD1_STATUS	BIT_ULL(16)
+> +#define PWR_THRESHOLD2_STATUS	BIT_ULL(17)
+> +
+> +#define FME_PWR_XEON_LIMIT	0x18
+> +#define XEON_PWR_LIMIT		GENMASK_ULL(14, 0)	/* in 0.1 Watts */
+> +#define XEON_PWR_EN		BIT_ULL(15)
+> +#define FME_PWR_FPGA_LIMIT	0x20
+> +#define FPGA_PWR_LIMIT		GENMASK_ULL(14, 0)	/* in 0.1 Watts */
+> +#define FPGA_PWR_EN		BIT_ULL(15)
+> +
+> +static int power_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
+> +			    u32 attr, int channel, long *val)
+> +{
+> +	struct dfl_feature *feature = dev_get_drvdata(dev);
+> +	u64 v;
+> +
+> +	switch (attr) {
+> +	case hwmon_power_input:
+> +		v = readq(feature->ioaddr + FME_PWR_STATUS);
+> +		*val = (long)(FIELD_GET(PWR_CONSUMED, v) * 1000000);
+> +		break;
+> +	case hwmon_power_max:
+> +		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
+> +		*val = (long)(FIELD_GET(PWR_THRESHOLD1, v) * 1000000);
+> +		break;
+> +	case hwmon_power_crit:
+> +		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
+> +		*val = (long)(FIELD_GET(PWR_THRESHOLD2, v) * 1000000);
+> +		break;
+> +	case hwmon_power_max_alarm:
+> +		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
+> +		*val = (long)FIELD_GET(PWR_THRESHOLD1_STATUS, v);
+> +		break;
+> +	case hwmon_power_crit_alarm:
+> +		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
+> +		*val = (long)FIELD_GET(PWR_THRESHOLD2_STATUS, v);
+> +		break;
+> +	default:
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int power_hwmon_write(struct device *dev, enum hwmon_sensor_types type,
+> +			     u32 attr, int channel, long val)
+> +{
+> +	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
+> +	struct dfl_feature *feature = dev_get_drvdata(dev);
+> +	int ret = 0;
+> +	u64 v;
+> +
+> +	val = clamp_val(val / 1000000, 0, PWR_THRESHOLD_MAX);
+> +
+> +	mutex_lock(&pdata->lock);
+> +
+> +	switch (attr) {
+> +	case hwmon_power_max:
+> +		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
+> +		v &= ~PWR_THRESHOLD1;
+> +		v |= FIELD_PREP(PWR_THRESHOLD1, val);
+> +		writeq(v, feature->ioaddr + FME_PWR_THRESHOLD);
+> +		break;
+> +	case hwmon_power_crit:
+> +		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
+> +		v &= ~PWR_THRESHOLD2;
+> +		v |= FIELD_PREP(PWR_THRESHOLD2, val);
+> +		writeq(v, feature->ioaddr + FME_PWR_THRESHOLD);
+> +		break;
+> +	default:
+> +		ret = -EOPNOTSUPP;
+> +		break;
+> +	}
+> +
+> +	mutex_unlock(&pdata->lock);
+> +
+> +	return ret;
+> +}
+> +
+> +static umode_t power_hwmon_attrs_visible(const void *drvdata,
+> +					 enum hwmon_sensor_types type,
+> +					 u32 attr, int channel)
+> +{
+> +	switch (attr) {
+> +	case hwmon_power_input:
+> +	case hwmon_power_max_alarm:
+> +	case hwmon_power_crit_alarm:
+> +		return 0444;
+> +	case hwmon_power_max:
+> +	case hwmon_power_crit:
+> +		return 0644;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct hwmon_ops power_hwmon_ops = {
+> +	.is_visible = power_hwmon_attrs_visible,
+> +	.read = power_hwmon_read,
+> +	.write = power_hwmon_write,
+> +};
+> +
+> +static const struct hwmon_channel_info *power_hwmon_info[] = {
+> +	HWMON_CHANNEL_INFO(power, HWMON_P_INPUT |
+> +				  HWMON_P_MAX   | HWMON_P_MAX_ALARM |
+> +				  HWMON_P_CRIT  | HWMON_P_CRIT_ALARM),
+> +	NULL
+> +};
+> +
+> +static const struct hwmon_chip_info power_hwmon_chip_info = {
+> +	.ops = &power_hwmon_ops,
+> +	.info = power_hwmon_info,
+> +};
+> +
+> +static ssize_t power1_xeon_limit_show(struct device *dev,
+> +				      struct device_attribute *attr, char *buf)
+> +{
+> +	struct dfl_feature *feature = dev_get_drvdata(dev);
+> +	u16 xeon_limit = 0;
+> +	u64 v;
+> +
+> +	v = readq(feature->ioaddr + FME_PWR_XEON_LIMIT);
+> +
+> +	if (FIELD_GET(XEON_PWR_EN, v))
+> +		xeon_limit = FIELD_GET(XEON_PWR_LIMIT, v);
+> +
+> +	return sprintf(buf, "%u\n", xeon_limit * 100000);
+> +}
+> +
+> +static ssize_t power1_fpga_limit_show(struct device *dev,
+> +				      struct device_attribute *attr, char *buf)
+> +{
+> +	struct dfl_feature *feature = dev_get_drvdata(dev);
+> +	u16 fpga_limit = 0;
+> +	u64 v;
+> +
+> +	v = readq(feature->ioaddr + FME_PWR_FPGA_LIMIT);
+> +
+> +	if (FIELD_GET(FPGA_PWR_EN, v))
+> +		fpga_limit = FIELD_GET(FPGA_PWR_LIMIT, v);
+> +
+> +	return sprintf(buf, "%u\n", fpga_limit * 100000);
+> +}
+> +
+> +static ssize_t power1_ltr_show(struct device *dev,
+> +			       struct device_attribute *attr, char *buf)
+> +{
+> +	struct dfl_feature *feature = dev_get_drvdata(dev);
+> +	u64 v;
+> +
+> +	v = readq(feature->ioaddr + FME_PWR_STATUS);
+> +
+> +	return sprintf(buf, "%u\n",
+> +		       (unsigned int)FIELD_GET(FME_LATENCY_TOLERANCE, v));
+> +}
+> +
+> +static DEVICE_ATTR_RO(power1_xeon_limit);
+> +static DEVICE_ATTR_RO(power1_fpga_limit);
+> +static DEVICE_ATTR_RO(power1_ltr);
+> +
+> +static struct attribute *power_extra_attrs[] = {
+> +	&dev_attr_power1_xeon_limit.attr,
+> +	&dev_attr_power1_fpga_limit.attr,
+> +	&dev_attr_power1_ltr.attr,
+> +	NULL
+> +};
+> +
+> +ATTRIBUTE_GROUPS(power_extra);
+> +
+> +static int fme_power_mgmt_init(struct platform_device *pdev,
+> +			       struct dfl_feature *feature)
+> +{
+> +	struct device *hwmon;
+> +
+> +	dev_dbg(&pdev->dev, "FME Power Management Init.\n");
+> +
+> +	hwmon = devm_hwmon_device_register_with_info(&pdev->dev,
+> +						     "dfl_fme_power", feature,
+> +						     &power_hwmon_chip_info,
+> +						     power_extra_groups);
+> +	if (IS_ERR(hwmon)) {
+> +		dev_err(&pdev->dev, "Fail to register power hwmon\n");
+> +		return PTR_ERR(hwmon);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static void fme_power_mgmt_uinit(struct platform_device *pdev,
+> +				 struct dfl_feature *feature)
+> +{
+> +	dev_dbg(&pdev->dev, "FME Power Management UInit.\n");
+> +}
+> +
+> +static const struct dfl_feature_id fme_power_mgmt_id_table[] = {
+> +	{.id = FME_FEATURE_ID_POWER_MGMT,},
+> +	{0,}
+> +};
+> +
+> +static const struct dfl_feature_ops fme_power_mgmt_ops = {
+> +	.init = fme_power_mgmt_init,
+> +	.uinit = fme_power_mgmt_uinit,
+> +};
+> +
+>  static struct dfl_feature_driver fme_feature_drvs[] = {
+>  	{
+>  		.id_table = fme_hdr_id_table,
+> @@ -418,6 +630,10 @@ static void fme_thermal_mgmt_uinit(struct platform_device *pdev,
+>  		.ops = &fme_thermal_mgmt_ops,
+>  	},
+>  	{
+> +		.id_table = fme_power_mgmt_id_table,
+> +		.ops = &fme_power_mgmt_ops,
+> +	},
+> +	{
+>  		.ops = NULL,
+>  	},
+>  };
+> -- 
+> 1.8.3.1
+> 
+Thanks,
+Moritz
