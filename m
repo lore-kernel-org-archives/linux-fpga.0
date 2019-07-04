@@ -1,66 +1,146 @@
-Return-Path: <SRS0=q4DL=VU=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=q4DL=VU=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=cHn5=VB=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=cHn5=VB=intel.com=hao.wu@kernel.org>
+Date: Thu, 4 Jul 2019 23:14:17 +0800
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 00/12] FPGA DFL updates
-Date: Tue, 23 Jul 2019 12:51:23 +0800
-Message-Id: <1563857495-26692-1-git-send-email-hao.wu@intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH] fpga: dfl: use driver core functions, not sysfs ones.
+Message-ID: <20190704151416.GA1423@hao-dev>
+References: <20190704055645.GA15471@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190704055645.GA15471@kroah.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Greg
+On Thu, Jul 04, 2019 at 07:56:45AM +0200, Greg Kroah-Hartman wrote:
+> This is a driver, do not call "raw" sysfs functions, instead call driver
+> core ones.  Specifically convert the use of sysfs_create_files() and
+> sysfs_remove_files() to use device_add_groups() and
+> device_remove_groups()
 
-This is v3 patchset which adds more features to FPGA DFL. This patchset
-is made on top of patch[1] and 5.3-rc1 tree. Documentation patch for DFL
-is added back to this patchset
+Hi Greg,
 
-Main changes from v2:
-  - update kernel version/date in sysfs doc (patch #4, #5, #8, #10, #11).
-  - add back Documentation patch (patch #12).
+Thanks for this patch. It looks good, and works well in my side.
 
-Main changes from v1:
-  - remove DRV/MODULE_VERSION modifications. (patch #1, #3, #4, #6)
-  - remove argsz from new ioctls. (patch #2)
-  - replace sysfs_create/remove_* with device_add/remove_* for sysfs entries.
-    (patch #5, #8, #11)
+I will follow the same (replace sysfs_create/remove_* with
+device_add/remove_group) to rework my patchset too. Thanks.
 
-[1] [PATCH] fpga: dfl: use driver core functions, not sysfs ones.
-    https://lkml.org/lkml/2019/7/4/36
+Hao
 
-Wu Hao (12):
-  fpga: dfl: fme: support 512bit data width PR
-  fpga: dfl: fme: add DFL_FPGA_FME_PORT_RELEASE/ASSIGN ioctl support.
-  fpga: dfl: pci: enable SRIOV support.
-  fpga: dfl: afu: add AFU state related sysfs interfaces
-  fpga: dfl: afu: add userclock sysfs interfaces.
-  fpga: dfl: add id_table for dfl private feature driver
-  fpga: dfl: afu: export __port_enable/disable function.
-  fpga: dfl: afu: add error reporting support.
-  fpga: dfl: afu: add STP (SignalTap) support
-  fpga: dfl: fme: add capability sysfs interfaces
-  fpga: dfl: fme: add global error reporting support
-  Documentation: fpga: dfl: add descriptions for virtualization and new
-    interfaces.
-
- Documentation/ABI/testing/sysfs-platform-dfl-fme  |  98 ++++++
- Documentation/ABI/testing/sysfs-platform-dfl-port | 104 ++++++
- Documentation/fpga/dfl.rst                        | 105 ++++++
- drivers/fpga/Makefile                             |   3 +-
- drivers/fpga/dfl-afu-error.c                      | 225 +++++++++++++
- drivers/fpga/dfl-afu-main.c                       | 328 +++++++++++++++++-
- drivers/fpga/dfl-afu.h                            |   7 +
- drivers/fpga/dfl-fme-error.c                      | 385 ++++++++++++++++++++++
- drivers/fpga/dfl-fme-main.c                       |  93 +++++-
- drivers/fpga/dfl-fme-mgr.c                        | 110 ++++++-
- drivers/fpga/dfl-fme-pr.c                         |  50 ++-
- drivers/fpga/dfl-fme.h                            |   7 +-
- drivers/fpga/dfl-pci.c                            |  39 +++
- drivers/fpga/dfl.c                                | 166 +++++++++-
- drivers/fpga/dfl.h                                |  54 ++-
- include/uapi/linux/fpga-dfl.h                     |  19 ++
- 16 files changed, 1722 insertions(+), 71 deletions(-)
- create mode 100644 drivers/fpga/dfl-afu-error.c
- create mode 100644 drivers/fpga/dfl-fme-error.c
-
--- 
-1.8.3.1
+> 
+> Cc: Wu Hao <hao.wu@intel.com>
+> Cc: Alan Tull <atull@kernel.org>
+> Cc: Moritz Fischer <mdf@kernel.org>
+> Cc: linux-fpga@vger.kernel.org
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> ---
+>  drivers/fpga/dfl-afu-main.c | 14 ++++++++------
+>  drivers/fpga/dfl-fme-main.c |  7 ++++---
+>  2 files changed, 12 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+> index 02baa6a227c0..68b4d0874b93 100644
+> --- a/drivers/fpga/dfl-afu-main.c
+> +++ b/drivers/fpga/dfl-afu-main.c
+> @@ -141,10 +141,11 @@ id_show(struct device *dev, struct device_attribute *attr, char *buf)
+>  }
+>  static DEVICE_ATTR_RO(id);
+>  
+> -static const struct attribute *port_hdr_attrs[] = {
+> +static struct attribute *port_hdr_attrs[] = {
+>  	&dev_attr_id.attr,
+>  	NULL,
+>  };
+> +ATTRIBUTE_GROUPS(port_hdr);
+>  
+>  static int port_hdr_init(struct platform_device *pdev,
+>  			 struct dfl_feature *feature)
+> @@ -153,7 +154,7 @@ static int port_hdr_init(struct platform_device *pdev,
+>  
+>  	port_reset(pdev);
+>  
+> -	return sysfs_create_files(&pdev->dev.kobj, port_hdr_attrs);
+> +	return device_add_groups(&pdev->dev, port_hdr_groups);
+>  }
+>  
+>  static void port_hdr_uinit(struct platform_device *pdev,
+> @@ -161,7 +162,7 @@ static void port_hdr_uinit(struct platform_device *pdev,
+>  {
+>  	dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
+>  
+> -	sysfs_remove_files(&pdev->dev.kobj, port_hdr_attrs);
+> +	device_remove_groups(&pdev->dev, port_hdr_groups);
+>  }
+>  
+>  static long
+> @@ -214,10 +215,11 @@ afu_id_show(struct device *dev, struct device_attribute *attr, char *buf)
+>  }
+>  static DEVICE_ATTR_RO(afu_id);
+>  
+> -static const struct attribute *port_afu_attrs[] = {
+> +static struct attribute *port_afu_attrs[] = {
+>  	&dev_attr_afu_id.attr,
+>  	NULL
+>  };
+> +ATTRIBUTE_GROUPS(port_afu);
+>  
+>  static int port_afu_init(struct platform_device *pdev,
+>  			 struct dfl_feature *feature)
+> @@ -234,7 +236,7 @@ static int port_afu_init(struct platform_device *pdev,
+>  	if (ret)
+>  		return ret;
+>  
+> -	return sysfs_create_files(&pdev->dev.kobj, port_afu_attrs);
+> +	return device_add_groups(&pdev->dev, port_afu_groups);
+>  }
+>  
+>  static void port_afu_uinit(struct platform_device *pdev,
+> @@ -242,7 +244,7 @@ static void port_afu_uinit(struct platform_device *pdev,
+>  {
+>  	dev_dbg(&pdev->dev, "PORT AFU UInit.\n");
+>  
+> -	sysfs_remove_files(&pdev->dev.kobj, port_afu_attrs);
+> +	device_remove_groups(&pdev->dev, port_afu_groups);
+>  }
+>  
+>  static const struct dfl_feature_ops port_afu_ops = {
+> diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+> index 086ad2420ade..0be4635583d5 100644
+> --- a/drivers/fpga/dfl-fme-main.c
+> +++ b/drivers/fpga/dfl-fme-main.c
+> @@ -72,12 +72,13 @@ static ssize_t bitstream_metadata_show(struct device *dev,
+>  }
+>  static DEVICE_ATTR_RO(bitstream_metadata);
+>  
+> -static const struct attribute *fme_hdr_attrs[] = {
+> +static struct attribute *fme_hdr_attrs[] = {
+>  	&dev_attr_ports_num.attr,
+>  	&dev_attr_bitstream_id.attr,
+>  	&dev_attr_bitstream_metadata.attr,
+>  	NULL,
+>  };
+> +ATTRIBUTE_GROUPS(fme_hdr);
+>  
+>  static int fme_hdr_init(struct platform_device *pdev,
+>  			struct dfl_feature *feature)
+> @@ -89,7 +90,7 @@ static int fme_hdr_init(struct platform_device *pdev,
+>  	dev_dbg(&pdev->dev, "FME cap %llx.\n",
+>  		(unsigned long long)readq(base + FME_HDR_CAP));
+>  
+> -	ret = sysfs_create_files(&pdev->dev.kobj, fme_hdr_attrs);
+> +	ret = device_add_groups(&pdev->dev, fme_hdr_groups);
+>  	if (ret)
+>  		return ret;
+>  
+> @@ -100,7 +101,7 @@ static void fme_hdr_uinit(struct platform_device *pdev,
+>  			  struct dfl_feature *feature)
+>  {
+>  	dev_dbg(&pdev->dev, "FME HDR UInit.\n");
+> -	sysfs_remove_files(&pdev->dev.kobj, fme_hdr_attrs);
+> +	device_remove_groups(&pdev->dev, fme_hdr_groups);
+>  }
+>  
+>  static const struct dfl_feature_ops fme_hdr_ops = {
+> -- 
+> 2.22.0
