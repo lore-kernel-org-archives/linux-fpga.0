@@ -1,141 +1,66 @@
-Return-Path: <SRS0=/XkW=VW=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=/XkW=VW=linux.intel.com=thor.thayer@kernel.org>
-From: thor.thayer@linux.intel.com
-Subject: [PATCHv3 2/3] fpga: altera-cvp: Preparation for V2 parts.
-Date: Thu, 25 Jul 2019 10:16:47 -0500
-Message-Id: <1564067808-21173-3-git-send-email-thor.thayer@linux.intel.com>
-In-Reply-To: <1564067808-21173-1-git-send-email-thor.thayer@linux.intel.com>
-References: <1564067808-21173-1-git-send-email-thor.thayer@linux.intel.com>
-To: mdf@kernel.org, richard.gong@linux.intel.com, agust@denx.de
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
+Return-Path: <SRS0=cHn5=VB=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=cHn5=VB=intel.com=hao.wu@kernel.org>
+Date: Thu, 4 Jul 2019 19:29:13 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH 06/15] fpga: dfl: fme: add
+ DFL_FPGA_FME_PORT_RELEASE/ASSIGN ioctl support.
+Message-ID: <20190704112913.GA24884@hao-dev>
+References: <20190628004951.6202-1-mdf@kernel.org>
+ <20190628004951.6202-7-mdf@kernel.org>
+ <20190703180753.GA24723@kroah.com>
+ <20190703233058.GA15825@hao-dev>
+ <20190704053927.GB347@kroah.com>
+ <20190704063106.GA24777@hao-dev>
+ <20190704082013.GE6438@kroah.com>
+ <20190704085855.GB7391@hao-dev>
+ <20190704110449.GC1404@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190704110449.GC1404@kroah.com>
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Thor Thayer <thor.thayer@linux.intel.com>
+On Thu, Jul 04, 2019 at 01:04:49PM +0200, Greg KH wrote:
+> On Thu, Jul 04, 2019 at 04:58:55PM +0800, Wu Hao wrote:
+> > > > Hope things could be more clear now. :)
+> > > 
+> > > That's nice for the vfio stuff, but you are just a "normal" driver here.
+> > > You want an ioctl that just does one thing, no arguments, no flags, no
+> > > anything.  No need for a size argument then at all.  These ioctls don't
+> > > even need a structure for them!
+> > > 
+> > > Don't try to be fancy, it's not needed, it's not like you are running
+> > > out of ioctl space...
+> > 
+> > Thanks a lot for the comments and suggestions.
+> > 
+> > That's true, it's a "normal" driver, maybe I overly considered the
+> > extensibility of it. OK, Let me rework this patch to remove argsz from
+> > these two ioctls.
+> > 
+> > What about the existing ioctls for this driver, they have argsz too.
+> > shall I prepare another patch to remove them as well?
+> 
+> I am hoping you actually have users for those ioctls in userspace today?
+> If not, and no one is using them, then yes, please fix those too.
 
-In preparation for adding newer V2 parts that use a FIFO,
-reorganize altera_cvp_chk_error() and change the write
-function to block based.
-V2 parts have a block size matching the FIFO while older
-V1 parts write a 32 bit word at a time.
+Yes, we have a few users, not many, e.g. https://github.com/OPAE/opae-sdk
 
-Signed-off-by: Thor Thayer <thor.thayer@linux.intel.com>
----
-v2 Remove inline function declaration
-   Reverse Christmas Tree format for local variables
-v3 Add return code check in altera_cvp_chk_error()
----
- drivers/fpga/altera-cvp.c | 73 ++++++++++++++++++++++++++++++-----------------
- 1 file changed, 47 insertions(+), 26 deletions(-)
+I believe we may have more users as we are submitting code to make this
+driver more usable.
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 3297613722c3..b08c0fd353ba 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -142,6 +142,42 @@ static int altera_cvp_wait_status(struct altera_cvp_conf *conf, u32 status_mask,
- 	return -ETIMEDOUT;
- }
- 
-+static int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
-+{
-+	struct altera_cvp_conf *conf = mgr->priv;
-+	u32 val;
-+	int ret;
-+
-+	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
-+	ret = altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
-+	if (ret || (val & VSE_CVP_STATUS_CFG_ERR)) {
-+		dev_err(&mgr->dev, "CVP_CONFIG_ERROR after %zu bytes!\n",
-+			bytes);
-+		return -EPROTO;
-+	}
-+	return 0;
-+}
-+
-+static int altera_cvp_send_block(struct altera_cvp_conf *conf,
-+				 const u32 *data, size_t len)
-+{
-+	u32 mask, words = len / sizeof(u32);
-+	int i, remainder;
-+
-+	for (i = 0; i < words; i++)
-+		conf->write_data(conf, *data++);
-+
-+	/* write up to 3 trailing bytes, if any */
-+	remainder = len % sizeof(u32);
-+	if (remainder) {
-+		mask = BIT(remainder * 8) - 1;
-+		if (mask)
-+			conf->write_data(conf, *data & mask);
-+	}
-+
-+	return 0;
-+}
-+
- static int altera_cvp_teardown(struct fpga_manager *mgr,
- 			       struct fpga_image_info *info)
- {
-@@ -264,39 +300,29 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	return 0;
- }
- 
--static inline int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
--{
--	struct altera_cvp_conf *conf = mgr->priv;
--	u32 val;
--
--	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
--	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
--	if (val & VSE_CVP_STATUS_CFG_ERR) {
--		dev_err(&mgr->dev, "CVP_CONFIG_ERROR after %zu bytes!\n",
--			bytes);
--		return -EPROTO;
--	}
--	return 0;
--}
--
- static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
- 			    size_t count)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
-+	size_t done, remaining, len;
- 	const u32 *data;
--	size_t done, remaining;
- 	int status = 0;
--	u32 mask;
- 
- 	/* STEP 9 - write 32-bit data from RBF file to CVP data register */
- 	data = (u32 *)buf;
- 	remaining = count;
- 	done = 0;
- 
--	while (remaining >= 4) {
--		conf->write_data(conf, *data++);
--		done += 4;
--		remaining -= 4;
-+	while (remaining) {
-+		if (remaining >= sizeof(u32))
-+			len = sizeof(u32);
-+		else
-+			len = remaining;
-+
-+		altera_cvp_send_block(conf, data, len);
-+		data++;
-+		done += len;
-+		remaining -= len;
- 
- 		/*
- 		 * STEP 10 (optional) and STEP 11
-@@ -314,11 +340,6 @@ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
- 		}
- 	}
- 
--	/* write up to 3 trailing bytes, if any */
--	mask = BIT(remaining * 8) - 1;
--	if (mask)
--		conf->write_data(conf, *data & mask);
--
- 	if (altera_cvp_chkcfg)
- 		status = altera_cvp_chk_error(mgr, count);
- 
--- 
-2.7.4
+Let me think about this, if we want to do this clean up, we have to 
+increase the API version to tell everybody, things are changed. If
+finally we decide to do this clean up, that will be a new patch after
+this patchset.
+
+Many Thanks for your patient guide and suggestions. :)
+
+Hao
+
+> 
+> thanks,
+> 
+> greg k-h
