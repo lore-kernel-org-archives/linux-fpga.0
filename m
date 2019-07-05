@@ -1,138 +1,217 @@
-Return-Path: <SRS0=iwuL=V4=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=iwuL=V4=linux.intel.com=thor.thayer@kernel.org>
-From: thor.thayer@linux.intel.com
-Subject: [PATCHv4 2/3] fpga: altera-cvp: Preparation for V2 parts.
-Date: Wed, 31 Jul 2019 11:42:00 -0500
-Message-Id: <1564591321-19037-3-git-send-email-thor.thayer@linux.intel.com>
-In-Reply-To: <1564591321-19037-1-git-send-email-thor.thayer@linux.intel.com>
-References: <1564591321-19037-1-git-send-email-thor.thayer@linux.intel.com>
-To: mdf@kernel.org, richard.gong@linux.intel.com, agust@denx.de
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
+Return-Path: <SRS0=iA5Y=VC=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=iA5Y=VC=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v2 06/11] fpga: dfl: add id_table for dfl private feature driver
+Date: Fri,  5 Jul 2019 08:23:53 +0800
+Message-Id: <1562286238-11413-7-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1562286238-11413-1-git-send-email-hao.wu@intel.com>
+References: <1562286238-11413-1-git-send-email-hao.wu@intel.com>
+To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Thor Thayer <thor.thayer@linux.intel.com>
+This patch adds id_table for each dfl private feature driver,
+it allows to reuse same private feature driver to match and support
+multiple dfl private features.
 
-In preparation for adding newer V2 parts that use a FIFO,
-reorganize altera_cvp_chk_error() and change the write
-function to block based.
-V2 parts have a block size matching the FIFO while older
-V1 parts write a 32 bit word at a time.
-
-Signed-off-by: Thor Thayer <thor.thayer@linux.intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2 Remove inline function declaration
-   Reverse Christmas Tree format for local variables
-v3 Add return code check in altera_cvp_chk_error()
-v4 Use min() function to determine block length
+v2: rebased, remove DRV/MODULE_VERSION modifications
 ---
- drivers/fpga/altera-cvp.c | 69 +++++++++++++++++++++++++++++------------------
- 1 file changed, 43 insertions(+), 26 deletions(-)
+ drivers/fpga/dfl-afu-main.c | 14 ++++++++++++--
+ drivers/fpga/dfl-fme-main.c | 11 ++++++++---
+ drivers/fpga/dfl-fme-pr.c   |  7 ++++++-
+ drivers/fpga/dfl-fme.h      |  3 ++-
+ drivers/fpga/dfl.c          | 18 ++++++++++++++++--
+ drivers/fpga/dfl.h          | 21 +++++++++++++++------
+ 6 files changed, 59 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 9df2073331cb..3b8386fd32e7 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -143,6 +143,42 @@ static int altera_cvp_wait_status(struct altera_cvp_conf *conf, u32 status_mask,
- 	return -ETIMEDOUT;
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 9025314..fbd9553 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -435,6 +435,11 @@ static void port_hdr_uinit(struct platform_device *pdev,
+ 	return ret;
  }
  
-+static int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
-+{
-+	struct altera_cvp_conf *conf = mgr->priv;
-+	u32 val;
-+	int ret;
++static const struct dfl_feature_id port_hdr_id_table[] = {
++	{.id = PORT_FEATURE_ID_HEADER,},
++	{0,}
++};
 +
-+	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
-+	ret = altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
-+	if (ret || (val & VSE_CVP_STATUS_CFG_ERR)) {
-+		dev_err(&mgr->dev, "CVP_CONFIG_ERROR after %zu bytes!\n",
-+			bytes);
-+		return -EPROTO;
-+	}
-+	return 0;
-+}
-+
-+static int altera_cvp_send_block(struct altera_cvp_conf *conf,
-+				 const u32 *data, size_t len)
-+{
-+	u32 mask, words = len / sizeof(u32);
-+	int i, remainder;
-+
-+	for (i = 0; i < words; i++)
-+		conf->write_data(conf, *data++);
-+
-+	/* write up to 3 trailing bytes, if any */
-+	remainder = len % sizeof(u32);
-+	if (remainder) {
-+		mask = BIT(remainder * 8) - 1;
-+		if (mask)
-+			conf->write_data(conf, *data & mask);
-+	}
-+
-+	return 0;
-+}
-+
- static int altera_cvp_teardown(struct fpga_manager *mgr,
- 			       struct fpga_image_info *info)
- {
-@@ -265,39 +301,25 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	return 0;
+ static const struct dfl_feature_ops port_hdr_ops = {
+ 	.init = port_hdr_init,
+ 	.uinit = port_hdr_uinit,
+@@ -496,6 +501,11 @@ static void port_afu_uinit(struct platform_device *pdev,
+ 	device_remove_groups(&pdev->dev, port_afu_groups);
  }
  
--static inline int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
--{
--	struct altera_cvp_conf *conf = mgr->priv;
--	u32 val;
--
--	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
--	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
--	if (val & VSE_CVP_STATUS_CFG_ERR) {
--		dev_err(&mgr->dev, "CVP_CONFIG_ERROR after %zu bytes!\n",
--			bytes);
--		return -EPROTO;
--	}
--	return 0;
--}
--
- static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
- 			    size_t count)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
-+	size_t done, remaining, len;
- 	const u32 *data;
--	size_t done, remaining;
- 	int status = 0;
--	u32 mask;
++static const struct dfl_feature_id port_afu_id_table[] = {
++	{.id = PORT_FEATURE_ID_AFU,},
++	{0,}
++};
++
+ static const struct dfl_feature_ops port_afu_ops = {
+ 	.init = port_afu_init,
+ 	.uinit = port_afu_uinit,
+@@ -503,11 +513,11 @@ static void port_afu_uinit(struct platform_device *pdev,
  
- 	/* STEP 9 - write 32-bit data from RBF file to CVP data register */
- 	data = (u32 *)buf;
- 	remaining = count;
- 	done = 0;
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+-		.id = PORT_FEATURE_ID_HEADER,
++		.id_table = port_hdr_id_table,
+ 		.ops = &port_hdr_ops,
+ 	},
+ 	{
+-		.id = PORT_FEATURE_ID_AFU,
++		.id_table = port_afu_id_table,
+ 		.ops = &port_afu_ops,
+ 	},
+ 	{
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index e61e0fe..e333f19 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -133,6 +133,11 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
+ 	return -ENODEV;
+ }
  
--	while (remaining >= 4) {
--		conf->write_data(conf, *data++);
--		done += 4;
--		remaining -= 4;
-+	while (remaining) {
-+		len = min(sizeof(u32), remaining);
-+		altera_cvp_send_block(conf, data, len);
-+		data++;
-+		done += len;
-+		remaining -= len;
++static const struct dfl_feature_id fme_hdr_id_table[] = {
++	{.id = FME_FEATURE_ID_HEADER,},
++	{0,}
++};
++
+ static const struct dfl_feature_ops fme_hdr_ops = {
+ 	.init = fme_hdr_init,
+ 	.uinit = fme_hdr_uinit,
+@@ -141,12 +146,12 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
  
- 		/*
- 		 * STEP 10 (optional) and STEP 11
-@@ -315,11 +337,6 @@ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
- 		}
- 	}
+ static struct dfl_feature_driver fme_feature_drvs[] = {
+ 	{
+-		.id = FME_FEATURE_ID_HEADER,
++		.id_table = fme_hdr_id_table,
+ 		.ops = &fme_hdr_ops,
+ 	},
+ 	{
+-		.id = FME_FEATURE_ID_PR_MGMT,
+-		.ops = &pr_mgmt_ops,
++		.id_table = fme_pr_mgmt_id_table,
++		.ops = &fme_pr_mgmt_ops,
+ 	},
+ 	{
+ 		.ops = NULL,
+diff --git a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+index cd94ba8..52f1745 100644
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -483,7 +483,12 @@ static long fme_pr_ioctl(struct platform_device *pdev,
+ 	return ret;
+ }
  
--	/* write up to 3 trailing bytes, if any */
--	mask = BIT(remaining * 8) - 1;
--	if (mask)
--		conf->write_data(conf, *data & mask);
--
- 	if (altera_cvp_chkcfg)
- 		status = altera_cvp_chk_error(mgr, count);
+-const struct dfl_feature_ops pr_mgmt_ops = {
++const struct dfl_feature_id fme_pr_mgmt_id_table[] = {
++	{.id = FME_FEATURE_ID_PR_MGMT,},
++	{0}
++};
++
++const struct dfl_feature_ops fme_pr_mgmt_ops = {
+ 	.init = pr_mgmt_init,
+ 	.uinit = pr_mgmt_uinit,
+ 	.ioctl = fme_pr_ioctl,
+diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
+index de20755..7a021c4 100644
+--- a/drivers/fpga/dfl-fme.h
++++ b/drivers/fpga/dfl-fme.h
+@@ -35,6 +35,7 @@ struct dfl_fme {
+ 	struct dfl_feature_platform_data *pdata;
+ };
+ 
+-extern const struct dfl_feature_ops pr_mgmt_ops;
++extern const struct dfl_feature_ops fme_pr_mgmt_ops;
++extern const struct dfl_feature_id fme_pr_mgmt_id_table[];
+ 
+ #endif /* __DFL_FME_H */
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index c3a8e1d..3eb67ab 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -281,6 +281,21 @@ static int dfl_feature_instance_init(struct platform_device *pdev,
+ 	return ret;
+ }
+ 
++static bool dfl_feature_drv_match(struct dfl_feature *feature,
++				  struct dfl_feature_driver *driver)
++{
++	const struct dfl_feature_id *ids = driver->id_table;
++
++	if (ids) {
++		while (ids->id) {
++			if (ids->id == feature->id)
++				return true;
++			ids++;
++		}
++	}
++	return false;
++}
++
+ /**
+  * dfl_fpga_dev_feature_init - init for sub features of dfl feature device
+  * @pdev: feature device.
+@@ -301,8 +316,7 @@ int dfl_fpga_dev_feature_init(struct platform_device *pdev,
+ 
+ 	while (drv->ops) {
+ 		dfl_fpga_dev_for_each_feature(pdata, feature) {
+-			/* match feature and drv using id */
+-			if (feature->id == drv->id) {
++			if (dfl_feature_drv_match(feature, drv)) {
+ 				ret = dfl_feature_instance_init(pdev, pdata,
+ 								feature, drv);
+ 				if (ret)
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 77b5137..f44fda1 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -30,8 +30,8 @@
+ /* plus one for fme device */
+ #define MAX_DFL_FEATURE_DEV_NUM    (MAX_DFL_FPGA_PORT_NUM + 1)
+ 
+-/* Reserved 0x0 for Header Group Register and 0xff for AFU */
+-#define FEATURE_ID_FIU_HEADER		0x0
++/* Reserved 0xfe for Header Group Register and 0xff for AFU */
++#define FEATURE_ID_FIU_HEADER		0xfe
+ #define FEATURE_ID_AFU			0xff
+ 
+ #define FME_FEATURE_ID_HEADER		FEATURE_ID_FIU_HEADER
+@@ -169,13 +169,22 @@ struct dfl_fpga_port_ops {
+ int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id);
+ 
+ /**
+- * struct dfl_feature_driver - sub feature's driver
++ * struct dfl_feature_id - dfl private feature id
+  *
+- * @id: sub feature id.
+- * @ops: ops of this sub feature.
++ * @id: unique dfl private feature id.
+  */
+-struct dfl_feature_driver {
++struct dfl_feature_id {
+ 	u64 id;
++};
++
++/**
++ * struct dfl_feature_driver - dfl private feature driver
++ *
++ * @id_table: id_table for dfl private features supported by this driver.
++ * @ops: ops of this dfl private feature driver.
++ */
++struct dfl_feature_driver {
++	const struct dfl_feature_id *id_table;
+ 	const struct dfl_feature_ops *ops;
+ };
  
 -- 
-2.7.4
+1.8.3.1
