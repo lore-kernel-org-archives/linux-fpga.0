@@ -1,43 +1,51 @@
-Return-Path: <SRS0=/XkW=VW=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=/XkW=VW=linux.intel.com=thor.thayer@kernel.org>
-From: thor.thayer@linux.intel.com
-Subject: [PATCHv3 0/3] fpga: altera-cvp: Add Stratix10 Support
-Date: Thu, 25 Jul 2019 10:16:45 -0500
-Message-Id: <1564067808-21173-1-git-send-email-thor.thayer@linux.intel.com>
-To: mdf@kernel.org, richard.gong@linux.intel.com, agust@denx.de
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
+Return-Path: <SRS0=+GAN=VH=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=+GAN=VH=intel.com=hao.wu@kernel.org>
+Date: Wed, 10 Jul 2019 15:22:34 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v2 00/11] FPGA DFL updates
+Message-ID: <20190710072234.GA26817@hao-dev>
+References: <1562286238-11413-1-git-send-email-hao.wu@intel.com>
+ <20190710050746.GA28620@hao-dev>
+ <20190710055417.GA5778@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190710055417.GA5778@kroah.com>
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, atull@kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Thor Thayer <thor.thayer@linux.intel.com>
+On Wed, Jul 10, 2019 at 07:54:17AM +0200, Greg KH wrote:
+> On Wed, Jul 10, 2019 at 01:07:46PM +0800, Wu Hao wrote:
+> > On Fri, Jul 05, 2019 at 08:23:47AM +0800, Wu Hao wrote:
+> > > Hi Greg / Moritz
+> > > 
+> > > This is v2 patchset which adds more features to FPGA DFL. This patchset
+> > > is made on top of patch[1] and char-misc-next tree. Documentation patch
+> > > for DFL is dropped from this patchset, and will resubmit it later to
+> > > avoid conflict.
+> > 
+> > Hi Greg,
+> > 
+> > Did you get a chance to take a look at this new version to see if these
+> > patches are good to take?
+> > 
+> > Hope we can catch up with the merge window.
+> 
+> You sent them last Friday.  I actually tried to not do kernel work last
+> weekend.  The merge window opened up on Sunday.  My trees should have
+> been closed last week, so no, this missed this merge window, I'll
+> review these patches once 5.3-rc1 is out.
 
-Newer versions (V2) of Altera/Intel FPGAs CvP have different PCI
-Vendor Specific Capability offsets than the older (V1) Altera/FPGAs.
+Oh..... I see...
 
-Most of the CvP registers and their bitfields remain the same
-between both the older parts and the newer parts.
+Ok. Then let me resend it with documentation patch added back once 5.3-rc1
+is out.
 
-This patchset implements changes to discover the Vendor Specific
-Capability offset and then add Stratix10 CvP support.
+Thanks
+Hao
 
-V2 Changes:
-  Remove inline designator from abstraction functions.
-  Reverse Christmas Tree format for local variables
-  Remove redundant mask from credit calculation
-  Add commment for the delay(1) function in wait_for_credit()
-
-V3 Changes
-  Return int instead of void for abstraction functions
-  Check the return code from read in altera_cvp_chk_error()
-  Move reset of current_credit_byte to clear_state().
-  Check return codes of read/writes in added functions.
-
-Thor Thayer (3):
-  fpga: altera-cvp: Discover Vendor Specific offset
-  fpga: altera-cvp: Preparation for V2 parts.
-  fpga: altera-cvp: Add Stratix10 (V2) Support
-
- drivers/fpga/altera-cvp.c | 348 ++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 277 insertions(+), 71 deletions(-)
-
--- 
-2.7.4
+> 
+> thanks
+> 
+> greg k-h
