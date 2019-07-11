@@ -1,78 +1,31 @@
-Return-Path: <SRS0=74yO=V3=chromium.org=swboyd@kernel.org>
-Return-Path: <SRS0=74yO=V3=chromium.org=swboyd@kernel.org>
-From: Stephen Boyd <swboyd@chromium.org>
-Subject: [PATCH v6 14/57] fpga: Remove dev_err() usage after platform_get_irq()
-Date: Tue, 30 Jul 2019 11:15:14 -0700
-Message-Id: <20190730181557.90391-15-swboyd@chromium.org>
-In-Reply-To: <20190730181557.90391-1-swboyd@chromium.org>
-References: <20190730181557.90391-1-swboyd@chromium.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org
-Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Return-Path: <SRS0=cAwu=VI=linux.intel.com=thor.thayer@kernel.org>
+Return-Path: <SRS0=cAwu=VI=linux.intel.com=thor.thayer@kernel.org>
+From: thor.thayer@linux.intel.com
+Subject: [PATCH 0/3] fpga: altera-cvp: Add Stratix10 Support
+Date: Thu, 11 Jul 2019 15:32:47 -0500
+Message-Id: <1562877170-23931-1-git-send-email-thor.thayer@linux.intel.com>
+To: mdf@kernel.org, richard.gong@intel.com, agust@denx.de
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-We don't need dev_err() messages when platform_get_irq() fails now that
-platform_get_irq() prints an error message itself when something goes
-wrong. Let's remove these prints with a simple semantic patch.
+From: Thor Thayer <thor.thayer@linux.intel.com>
 
-// <smpl>
-@@
-expression ret;
-struct platform_device *E;
-@@
+Newer versions (V2) of Altera/Intel FPGAs CvP have different PCI
+Vendor Specific Capability offsets than the older (V1) Altera/FPGAs.
 
-ret =
-(
-platform_get_irq(E, ...)
-|
-platform_get_irq_byname(E, ...)
-);
+Most of the CvP registers and their bitfields remain the same
+between both the older parts and the newer parts.
 
-if ( \( ret < 0 \| ret <= 0 \) )
-{
-(
--if (ret != -EPROBE_DEFER)
--{ ...
--dev_err(...);
--... }
-|
-...
--dev_err(...);
-)
-...
-}
-// </smpl>
+This patchset implements changes to discover the Vendor Specific
+Capability offset and then add Stratix10 CvP support.
 
-While we're here, remove braces on if statements that only have one
-statement (manually).
+Thor Thayer (3):
+  fpga: altera-cvp: Discover Vendor Specific offset
+  fpga: altera-cvp: Preparation for V2 parts.
+  fpga: altera-cvp: Add Stratix10 (V2) Support
 
-Cc: Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Stephen Boyd <swboyd@chromium.org>
----
+ drivers/fpga/altera-cvp.c | 322 ++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 253 insertions(+), 69 deletions(-)
 
-Please apply directly to subsystem trees
-
- drivers/fpga/zynq-fpga.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
-index 31ef38e38537..ee7765049607 100644
---- a/drivers/fpga/zynq-fpga.c
-+++ b/drivers/fpga/zynq-fpga.c
-@@ -578,10 +578,8 @@ static int zynq_fpga_probe(struct platform_device *pdev)
- 	init_completion(&priv->dma_done);
- 
- 	priv->irq = platform_get_irq(pdev, 0);
--	if (priv->irq < 0) {
--		dev_err(dev, "No IRQ available\n");
-+	if (priv->irq < 0)
- 		return priv->irq;
--	}
- 
- 	priv->clk = devm_clk_get(dev, "ref_clk");
- 	if (IS_ERR(priv->clk)) {
 -- 
-Sent by a computer through tubes
+2.7.4
