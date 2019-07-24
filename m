@@ -1,31 +1,54 @@
-Return-Path: <SRS0=cAwu=VI=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=cAwu=VI=linux.intel.com=thor.thayer@kernel.org>
-From: thor.thayer@linux.intel.com
-Subject: [PATCH 0/3] fpga: altera-cvp: Add Stratix10 Support
-Date: Thu, 11 Jul 2019 15:32:47 -0500
-Message-Id: <1562877170-23931-1-git-send-email-thor.thayer@linux.intel.com>
-To: mdf@kernel.org, richard.gong@intel.com, agust@denx.de
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Date: Wed, 24 Jul 2019 11:29:09 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] fpga-manager: altera-ps-spi: Fix build error
+Message-ID: <20190724092909.GA15423@kroah.com>
+References: <20190708071356.50928-1-yuehaibing@huawei.com>
+ <20190709000527.GA1587@archbook>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190709000527.GA1587@archbook>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: YueHaibing <yuehaibing@huawei.com>, stillcompiling@gmail.com, atull@kernel.org, linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Thor Thayer <thor.thayer@linux.intel.com>
+On Mon, Jul 08, 2019 at 05:05:27PM -0700, Moritz Fischer wrote:
+> On Mon, Jul 08, 2019 at 03:13:56PM +0800, YueHaibing wrote:
+> > If BITREVERSE is m and FPGA_MGR_ALTERA_PS_SPI is y,
+> > build fails:
+> > 
+> > drivers/fpga/altera-ps-spi.o: In function `altera_ps_write':
+> > altera-ps-spi.c:(.text+0x4ec): undefined reference to `byte_rev_table'
+> > 
+> > Select BITREVERSE to fix this.
+> > 
+> > Reported-by: Hulk Robot <hulkci@huawei.com>
+> > Fixes: fcfe18f885f6 ("fpga-manager: altera-ps-spi: use bitrev8x4")
+> > Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> > ---
+> >  drivers/fpga/Kconfig | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+> > index 474f304..cdd4f73 100644
+> > --- a/drivers/fpga/Kconfig
+> > +++ b/drivers/fpga/Kconfig
+> > @@ -40,6 +40,7 @@ config ALTERA_PR_IP_CORE_PLAT
+> >  config FPGA_MGR_ALTERA_PS_SPI
+> >  	tristate "Altera FPGA Passive Serial over SPI"
+> >  	depends on SPI
+> > +	select BITREVERSE
+> >  	help
+> >  	  FPGA manager driver support for Altera Arria/Cyclone/Stratix
+> >  	  using the passive serial interface over SPI.
+> > -- 
+> > 2.7.4
+> > 
+> > 
+> Acked-by: Moritz Fischer <mdf@kernel.org>
 
-Newer versions (V2) of Altera/Intel FPGAs CvP have different PCI
-Vendor Specific Capability offsets than the older (V1) Altera/FPGAs.
+I've queued this up directly now, thanks.
 
-Most of the CvP registers and their bitfields remain the same
-between both the older parts and the newer parts.
-
-This patchset implements changes to discover the Vendor Specific
-Capability offset and then add Stratix10 CvP support.
-
-Thor Thayer (3):
-  fpga: altera-cvp: Discover Vendor Specific offset
-  fpga: altera-cvp: Preparation for V2 parts.
-  fpga: altera-cvp: Add Stratix10 (V2) Support
-
- drivers/fpga/altera-cvp.c | 322 ++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 253 insertions(+), 69 deletions(-)
-
--- 
-2.7.4
+greg k-h
