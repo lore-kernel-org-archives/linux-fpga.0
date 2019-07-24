@@ -1,72 +1,166 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Return-Path: <gregkh@linuxfoundation.org>
-Date: Wed, 3 Jul 2019 20:07:53 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 06/15] fpga: dfl: fme: add
- DFL_FPGA_FME_PORT_RELEASE/ASSIGN ioctl support.
-Message-ID: <20190703180753.GA24723@kroah.com>
-References: <20190628004951.6202-1-mdf@kernel.org>
- <20190628004951.6202-7-mdf@kernel.org>
+Return-Path: <SRS0=F98P=VV=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=F98P=VV=intel.com=hao.wu@kernel.org>
+Date: Wed, 24 Jul 2019 21:37:14 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v3 03/12] fpga: dfl: pci: enable SRIOV support.
+Message-ID: <20190724133714.GC8463@hao-dev>
+References: <1563857495-26692-1-git-send-email-hao.wu@intel.com>
+ <1563857495-26692-4-git-send-email-hao.wu@intel.com>
+ <20190724093744.GC29532@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190628004951.6202-7-mdf@kernel.org>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, Wu Hao <hao.wu@intel.com>, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>, Alan Tull <atull@kernel.org>
+In-Reply-To: <20190724093744.GC29532@kroah.com>
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Thu, Jun 27, 2019 at 05:49:42PM -0700, Moritz Fischer wrote:
-> From: Wu Hao <hao.wu@intel.com>
+On Wed, Jul 24, 2019 at 11:37:44AM +0200, Greg KH wrote:
+> On Tue, Jul 23, 2019 at 12:51:26PM +0800, Wu Hao wrote:
+> > This patch enables the standard sriov support. It allows user to
+> > enable SRIOV (and VFs), then user could pass through accelerators
+> > (VFs) into virtual machine or use VFs directly in host.
+> > 
+> > Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
+> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > Acked-by: Alan Tull <atull@kernel.org>
+> > Acked-by: Moritz Fischer <mdf@kernel.org>
+> > Signed-off-by: Moritz Fischer <mdf@kernel.org>
+> > ---
+> > v2: remove DRV/MODULE_VERSION modifications.
+> > ---
+> >  drivers/fpga/dfl-pci.c | 39 +++++++++++++++++++++++++++++++++++++++
+> >  drivers/fpga/dfl.c     | 41 +++++++++++++++++++++++++++++++++++++++++
+> >  drivers/fpga/dfl.h     |  1 +
+> >  3 files changed, 81 insertions(+)
+> > 
+> > diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+> > index 66b5720..0e65d81 100644
+> > --- a/drivers/fpga/dfl-pci.c
+> > +++ b/drivers/fpga/dfl-pci.c
+> > @@ -223,8 +223,46 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+> >  	return ret;
+> >  }
+> >  
+> > +static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
+> > +{
+> > +	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
+> > +	struct dfl_fpga_cdev *cdev = drvdata->cdev;
+> > +	int ret = 0;
+> > +
+> > +	mutex_lock(&cdev->lock);
+> > +
+> > +	if (!num_vfs) {
+> > +		/*
+> > +		 * disable SRIOV and then put released ports back to default
+> > +		 * PF access mode.
+> > +		 */
+> > +		pci_disable_sriov(pcidev);
+> > +
+> > +		__dfl_fpga_cdev_config_port_vf(cdev, false);
+> > +
+> > +	} else if (cdev->released_port_num == num_vfs) {
+> > +		/*
+> > +		 * only enable SRIOV if cdev has matched released ports, put
+> > +		 * released ports into VF access mode firstly.
+> > +		 */
+> > +		__dfl_fpga_cdev_config_port_vf(cdev, true);
+> > +
+> > +		ret = pci_enable_sriov(pcidev, num_vfs);
+> > +		if (ret)
+> > +			__dfl_fpga_cdev_config_port_vf(cdev, false);
+> > +	} else {
+> > +		ret = -EINVAL;
+> > +	}
+> > +
+> > +	mutex_unlock(&cdev->lock);
+> > +	return ret;
+> > +}
+> > +
+> >  static void cci_pci_remove(struct pci_dev *pcidev)
+> >  {
+> > +	if (dev_is_pf(&pcidev->dev))
+> > +		cci_pci_sriov_configure(pcidev, 0);
+> > +
+> >  	cci_remove_feature_devs(pcidev);
+> >  	pci_disable_pcie_error_reporting(pcidev);
+> >  }
+> > @@ -234,6 +272,7 @@ static void cci_pci_remove(struct pci_dev *pcidev)
+> >  	.id_table = cci_pcie_id_tbl,
+> >  	.probe = cci_pci_probe,
+> >  	.remove = cci_pci_remove,
+> > +	.sriov_configure = cci_pci_sriov_configure,
+> >  };
+> >  
+> >  module_pci_driver(cci_pci_driver);
+> > diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+> > index e04ed45..c3a8e1d 100644
+> > --- a/drivers/fpga/dfl.c
+> > +++ b/drivers/fpga/dfl.c
+> > @@ -1112,6 +1112,47 @@ int dfl_fpga_cdev_config_port(struct dfl_fpga_cdev *cdev, int port_id,
+> >  }
+> >  EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_port);
+> >  
+> > +static void config_port_vf(struct device *fme_dev, int port_id, bool is_vf)
+> > +{
+> > +	void __iomem *base;
+> > +	u64 v;
+> > +
+> > +	base = dfl_get_feature_ioaddr_by_id(fme_dev, FME_FEATURE_ID_HEADER);
+> > +
+> > +	v = readq(base + FME_HDR_PORT_OFST(port_id));
+> > +
+> > +	v &= ~FME_PORT_OFST_ACC_CTRL;
+> > +	v |= FIELD_PREP(FME_PORT_OFST_ACC_CTRL,
+> > +			is_vf ? FME_PORT_OFST_ACC_VF : FME_PORT_OFST_ACC_PF);
+> > +
+> > +	writeq(v, base + FME_HDR_PORT_OFST(port_id));
+> > +}
+> > +
+> > +/**
+> > + * __dfl_fpga_cdev_config_port_vf - configure port to VF access mode
+> > + *
+> > + * @cdev: parent container device.
+> > + * @if_vf: true for VF access mode, and false for PF access mode
+> > + *
+> > + * Return: 0 on success, negative error code otherwise.
+> > + *
+> > + * This function is needed in sriov configuration routine. It could be used to
+> > + * configures the released ports access mode to VF or PF.
+> > + * The caller needs to hold lock for protection.
+> > + */
+> > +void __dfl_fpga_cdev_config_port_vf(struct dfl_fpga_cdev *cdev, bool is_vf)
+> > +{
+> > +	struct dfl_feature_platform_data *pdata;
+> > +
+> > +	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
+> > +		if (device_is_registered(&pdata->dev->dev))
+> > +			continue;
+> > +
+> > +		config_port_vf(cdev->fme_dev, pdata->id, is_vf);
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL_GPL(__dfl_fpga_cdev_config_port_vf);
 > 
-> In order to support virtualization usage via PCIe SRIOV, this patch
-> adds two ioctls under FPGA Management Engine (FME) to release and
-> assign back the port device. In order to safely turn Port from PF
-> into VF and enable PCIe SRIOV, it requires user to invoke this
-> PORT_RELEASE ioctl to release port firstly to remove userspace
-> interfaces, and then configure the PF/VF access register in FME.
-> After disable SRIOV, it requires user to invoke this PORT_ASSIGN
-> ioctl to attach the port back to PF.
+> Why are you exporting a function with a leading __?
 > 
->  Ioctl interfaces:
->  * DFL_FPGA_FME_PORT_RELEASE
->    Release platform device of given port, it deletes port platform
->    device to remove related userspace interfaces on PF, then
->    configures PF/VF access mode to VF.
+> You are expecting someone else, in who knows what code, to do locking
+> correctly?  If so, and the caller always has to have a local lock, then
+> it's not a big deal, just drop the '__', otherwise if you have to have a
+> specific lock for a specific device, then you have a really complex and
+> probably broken api here :(
+
+Yes, I just want to remind the user of this API, caller needs to hold the
+lock to protect the list. I fully agree, it does make sense to make the
+APIs easy to use. I will try to improve this, maybe move the lock inside
+this function, then API user doesn't need to know the details of locking.
+
+Thanks a lot for the comments, it really helps.
+
+Hao
+
 > 
->  * DFL_FPGA_FME_PORT_ASSIGN
->    Assign platform device of given port back to PF, it configures
->    PF/VF access mode to PF, then adds port platform device back to
->    re-enable related userspace interfaces on PF.
-
-Why are you not using the "generic" bind/unbind facility that userspace
-already has for this with binding drivers to devices?  Why a special
-ioctl?
-
-> --- a/include/uapi/linux/fpga-dfl.h
-> +++ b/include/uapi/linux/fpga-dfl.h
-> @@ -176,4 +176,36 @@ struct dfl_fpga_fme_port_pr {
->  
->  #define DFL_FPGA_FME_PORT_PR	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 0)
->  
-> +/**
-> + * DFL_FPGA_FME_PORT_RELEASE - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 1,
-> + *					struct dfl_fpga_fme_port_release)
-> + *
-> + * Driver releases the port per Port ID provided by caller.
-> + * Return: 0 on success, -errno on failure.
-> + */
-> +struct dfl_fpga_fme_port_release {
-> +	/* Input */
-> +	__u32 argsz;		/* Structure length */
-> +	__u32 flags;		/* Zero for now */
-> +	__u32 port_id;
-> +};
-
-meta-comment, why do all of your structures for ioctls have argsz?  You
-"know" the size of the structure already, it's part of the ioctl
-definition.  You shouldn't need to also set it again, right?  Otherwise
-ALL Linux ioctls would need something crazy like this.
-
-thanks,
-
-greg k-h
+> thanks,
+> 
+> greg k-h
