@@ -1,251 +1,94 @@
-Return-Path: <SRS0=q4DL=VU=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=q4DL=VU=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 04/12] fpga: dfl: afu: add AFU state related sysfs interfaces
-Date: Tue, 23 Jul 2019 12:51:27 +0800
-Message-Id: <1563857495-26692-5-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1563857495-26692-1-git-send-email-hao.wu@intel.com>
-References: <1563857495-26692-1-git-send-email-hao.wu@intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Date: Wed, 24 Jul 2019 10:05:51 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCHv2 2/3] fpga: altera-cvp: Preparation for V2 parts.
+Message-ID: <20190724170549.GA26502@archbox>
+References: <1563317287-18834-1-git-send-email-thor.thayer@linux.intel.com>
+ <1563317287-18834-3-git-send-email-thor.thayer@linux.intel.com>
+ <20190722005938.GB2583@archbook>
+ <6e54c0ee-b8ec-4f95-cf81-70aacc82c72e@linux.intel.com>
+ <20190724145704.GB24455@archbox>
+ <b52ea6f3-a547-ebce-88f5-6256501a7e99@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b52ea6f3-a547-ebce-88f5-6256501a7e99@linux.intel.com>
+To: Thor Thayer <thor.thayer@linux.intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, richard.gong@linux.intel.com, agust@denx.de, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch introduces more sysfs interfaces for Accelerated
-Function Unit (AFU). These interfaces allow users to read
-current AFU Power State (APx), read / clear AFU Power (APx)
-events which are sticky to identify transient APx state,
-and manage AFU's LTR (latency tolerance reporting).
+Hi Thor,
 
-Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
-v2: rebased, and remove DRV/MODULE_VERSION modifications
-v3: update kernel version and date in sysfs doc
----
- Documentation/ABI/testing/sysfs-platform-dfl-port |  30 +++++
- drivers/fpga/dfl-afu-main.c                       | 137 ++++++++++++++++++++++
- drivers/fpga/dfl.h                                |  11 ++
- 3 files changed, 178 insertions(+)
+On Wed, Jul 24, 2019 at 11:59:12AM -0500, Thor Thayer wrote:
+> Hi Moritz,
+> 
+> On 7/24/19 9:57 AM, Moritz Fischer wrote:
+> > On Tue, Jul 23, 2019 at 09:40:51AM -0500, Thor Thayer wrote:
+> > > Hi Moritz,
+> > > 
+> > > On 7/21/19 7:59 PM, Moritz Fischer wrote:
+> > > > Thor,
+> > > > 
+> > > > On Tue, Jul 16, 2019 at 05:48:06PM -0500, thor.thayer@linux.intel.com wrote:
+> > > > > From: Thor Thayer <thor.thayer@linux.intel.com>
+> > > > > 
+> > > > > In preparation for adding newer V2 parts that use a FIFO,
+> > > > > reorganize altera_cvp_chk_error() and change the write
+> > > > > function to block based.
+> > > > > V2 parts have a block size matching the FIFO while older
+> > > > > V1 parts write a 32 bit word at a time.
+> > > > > 
+> > > > > Signed-off-by: Thor Thayer <thor.thayer@linux.intel.com>
+> > > > > ---
+> > > > > v2 Remove inline function declaration
+> > > > >      Reverse Christmas Tree format for local variables
+> > > > > ---
+> > > > >    drivers/fpga/altera-cvp.c | 72 ++++++++++++++++++++++++++++++-----------------
+> > > > >    1 file changed, 46 insertions(+), 26 deletions(-)
+> > > > > 
+> > > > > diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+> > > > > index b78c90580071..37419d6b9915 100644
+> > > > > --- a/drivers/fpga/altera-cvp.c
+> > > > > +++ b/drivers/fpga/altera-cvp.c
+> > > > > @@ -140,6 +140,41 @@ static int altera_cvp_wait_status(struct altera_cvp_conf *conf, u32 status_mask,
+> > > > >    	return -ETIMEDOUT;
+> > > > >    }
+> > > > > +static int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
+> > > > > +{
+> > > > > +	struct altera_cvp_conf *conf = mgr->priv;
+> > > > > +	u32 val;
+> > > > > +
+> > > > > +	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
+> > > > > +	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
+> > > > Same as in the other email, why can we ignore return values here. I
+> > > > think the original code probably did that already.
+> > > 
+> > > Yes, I actually didn't make any changes to this function. You can see I
+> > > moved it from below since it is used in the following function.
+> > > 
+> > > I'm not checking the return code from any of the read/write functions since
+> > > the original driver didn't. Would you prefer I check and issue a warning?
+> > 
+> > Not sure a warning would change much here. We should probably look at
+> > why it was ok in the first place.
+> 
+> A quick grep of the drivers directory shows that an overwhelming majority of
+> pci_read_config_dword() and pci_write_config_dword() calls do not check the
+> return code.
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
-index 6a92dda..5961fb2 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-port
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
-@@ -14,3 +14,33 @@ Description:	Read-only. User can program different PR bitstreams to FPGA
- 		Accelerator Function Unit (AFU) for different functions. It
- 		returns uuid which could be used to identify which PR bitstream
- 		is programmed in this AFU.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/power_state
-+Date:		July 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It reports the APx (AFU Power) state, different APx
-+		means different throttling level. When reading this file, it
-+		returns "0" - Normal / "1" - AP1 / "2" - AP2 / "6" - AP6.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/ap1_event
-+Date:		July 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-write. Read or set 1 to clear AP1 (AFU Power State 1)
-+		event. It's used to indicate transient AP1 state.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/ap2_event
-+Date:		July 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-write. Read or set 1 to clear AP2 (AFU Power State 2)
-+		event. It's used to indicate transient AP2 state.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/ltr
-+Date:		July 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-write. Read and set AFU latency tolerance reporting value.
-+		Set ltr to 1 if the AFU can tolerate latency >= 40us or set it
-+		to 0 if it is latency sensitive.
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 68b4d08..cb3f73e 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -141,8 +141,145 @@ static int port_get_id(struct platform_device *pdev)
- }
- static DEVICE_ATTR_RO(id);
- 
-+static ssize_t
-+ltr_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_CTRL);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "%x\n", (u8)FIELD_GET(PORT_CTRL_LATENCY, v));
-+}
-+
-+static ssize_t
-+ltr_store(struct device *dev, struct device_attribute *attr,
-+	  const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u8 ltr;
-+	u64 v;
-+
-+	if (kstrtou8(buf, 0, &ltr) || ltr > 1)
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_CTRL);
-+	v &= ~PORT_CTRL_LATENCY;
-+	v |= FIELD_PREP(PORT_CTRL_LATENCY, ltr);
-+	writeq(v, base + PORT_HDR_CTRL);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_RW(ltr);
-+
-+static ssize_t
-+ap1_event_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "%x\n", (u8)FIELD_GET(PORT_STS_AP1_EVT, v));
-+}
-+
-+static ssize_t
-+ap1_event_store(struct device *dev, struct device_attribute *attr,
-+		const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u8 ap1_event;
-+
-+	if (kstrtou8(buf, 0, &ap1_event) || ap1_event != 1)
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(PORT_STS_AP1_EVT, base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_RW(ap1_event);
-+
-+static ssize_t
-+ap2_event_show(struct device *dev, struct device_attribute *attr,
-+	       char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "%x\n", (u8)FIELD_GET(PORT_STS_AP2_EVT, v));
-+}
-+
-+static ssize_t
-+ap2_event_store(struct device *dev, struct device_attribute *attr,
-+		const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u8 ap2_event;
-+
-+	if (kstrtou8(buf, 0, &ap2_event) || ap2_event != 1)
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(PORT_STS_AP2_EVT, base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_RW(ap2_event);
-+
-+static ssize_t
-+power_state_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + PORT_HDR_STS);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%x\n", (u8)FIELD_GET(PORT_STS_PWR_STATE, v));
-+}
-+static DEVICE_ATTR_RO(power_state);
-+
- static struct attribute *port_hdr_attrs[] = {
- 	&dev_attr_id.attr,
-+	&dev_attr_ltr.attr,
-+	&dev_attr_ap1_event.attr,
-+	&dev_attr_ap2_event.attr,
-+	&dev_attr_power_state.attr,
- 	NULL,
- };
- ATTRIBUTE_GROUPS(port_hdr);
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 061ccd4..fe7bca4 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -119,6 +119,7 @@
- #define PORT_HDR_NEXT_AFU	NEXT_AFU
- #define PORT_HDR_CAP		0x30
- #define PORT_HDR_CTRL		0x38
-+#define PORT_HDR_STS		0x40
- 
- /* Port Capability Register Bitfield */
- #define PORT_CAP_PORT_NUM	GENMASK_ULL(1, 0)	/* ID of this port */
-@@ -130,6 +131,16 @@
- /* Latency tolerance reporting. '1' >= 40us, '0' < 40us.*/
- #define PORT_CTRL_LATENCY	BIT_ULL(2)
- #define PORT_CTRL_SFTRST_ACK	BIT_ULL(4)		/* HW ack for reset */
-+
-+/* Port Status Register Bitfield */
-+#define PORT_STS_AP2_EVT	BIT_ULL(13)		/* AP2 event detected */
-+#define PORT_STS_AP1_EVT	BIT_ULL(12)		/* AP1 event detected */
-+#define PORT_STS_PWR_STATE	GENMASK_ULL(11, 8)	/* AFU power states */
-+#define PORT_STS_PWR_STATE_NORM 0
-+#define PORT_STS_PWR_STATE_AP1	1			/* 50% throttling */
-+#define PORT_STS_PWR_STATE_AP2	2			/* 90% throttling */
-+#define PORT_STS_PWR_STATE_AP6	6			/* 100% throttling */
-+
- /**
-  * struct dfl_fpga_port_ops - port ops
-  *
--- 
-1.8.3.1
+Yeah I came to the same conclusion after looking around the codebase.
+
+> 
+> For robustness, I agree with you that checking and returning the return code
+> in this error checking function is important. I will return the error code
+> if the read fails.
+
+Ok.
+
+> 
+> It shouldn't be necessary to change the rest of the code though unless you
+> feel strongly about updating the existing codebase.
+
+Yeah not in this patchset. We'll look at it separately.
+
+Cheers,
+Moritz
