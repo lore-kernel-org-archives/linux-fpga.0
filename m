@@ -1,247 +1,35 @@
-Return-Path: <SRS0=iA5Y=VC=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=iA5Y=VC=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 05/11] fpga: dfl: afu: add userclock sysfs interfaces.
-Date: Fri,  5 Jul 2019 08:23:52 +0800
-Message-Id: <1562286238-11413-6-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1562286238-11413-1-git-send-email-hao.wu@intel.com>
-References: <1562286238-11413-1-git-send-email-hao.wu@intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Russ Weight <russell.h.weight@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=gN2n=VW=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=gN2n=VW=ettus.com=moritz.fischer@kernel.org>
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH] MAINTAINERS: Move linux-fpga tree to new location
+Date: Thu, 25 Jul 2019 10:45:17 -0700
+Message-Id: <20190725174517.10516-1-mdf@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-fpga@vger.kernel.org, gregkh@linuxfoundation.org, Moritz Fischer <mdf@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch introduces userclock sysfs interfaces for AFU, user
-could use these interfaces for clock setting to AFU.
+Move the linux-fpga tree to new location at:
+ git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git
 
-Please note that, this is only working for port header feature
-with revision 0, for later revisions, userclock setting is moved
-to a separated private feature, so one revision sysfs interface
-is exposed to userspace application for this purpose too.
-
-Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2: rebased, and switched to use device_add/remove_groups for sysfs.
----
- Documentation/ABI/testing/sysfs-platform-dfl-port |  35 +++++++
- drivers/fpga/dfl-afu-main.c                       | 114 +++++++++++++++++++++-
- drivers/fpga/dfl.h                                |   4 +
- 3 files changed, 152 insertions(+), 1 deletion(-)
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
-index 17b37d1..04ea7f2 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-port
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
-@@ -44,3 +44,38 @@ Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-write. Read and set AFU latency tolerance reporting value.
- 		Set ltr to 1 if the AFU can tolerate latency >= 40us or set it
- 		to 0 if it is latency sensitive.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/revision
-+Date:		June 2019
-+KernelVersion:	5.3
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the revision of port header
-+		feature.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqcmd
-+Date:		June 2019
-+KernelVersion:	5.3
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Write-only. User writes command to this interface to set
-+		userclock to AFU.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqsts
-+Date:		June 2019
-+KernelVersion:	5.3
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the status of issued command
-+		to userclck_freqcmd.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqcntrcmd
-+Date:		June 2019
-+KernelVersion:	5.3
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Write-only. User writes command to this interface to set
-+		userclock counter.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqcntrsts
-+Date:		June 2019
-+KernelVersion:	5.3
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the status of issued command
-+		to userclck_freqcntrcmd.
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index cb3f73e..9025314 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -142,6 +142,17 @@ static int port_get_id(struct platform_device *pdev)
- static DEVICE_ATTR_RO(id);
- 
- static ssize_t
-+revision_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	return sprintf(buf, "%x\n", dfl_feature_revision(base));
-+}
-+static DEVICE_ATTR_RO(revision);
-+
-+static ssize_t
- ltr_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-@@ -276,6 +287,7 @@ static int port_get_id(struct platform_device *pdev)
- 
- static struct attribute *port_hdr_attrs[] = {
- 	&dev_attr_id.attr,
-+	&dev_attr_revision.attr,
- 	&dev_attr_ltr.attr,
- 	&dev_attr_ap1_event.attr,
- 	&dev_attr_ap2_event.attr,
-@@ -284,14 +296,113 @@ static int port_get_id(struct platform_device *pdev)
- };
- ATTRIBUTE_GROUPS(port_hdr);
- 
-+static ssize_t
-+userclk_freqcmd_store(struct device *dev, struct device_attribute *attr,
-+		      const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	u64 userclk_freq_cmd;
-+	void __iomem *base;
-+
-+	if (kstrtou64(buf, 0, &userclk_freq_cmd))
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(userclk_freq_cmd, base + PORT_HDR_USRCLK_CMD0);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_WO(userclk_freqcmd);
-+
-+static ssize_t
-+userclk_freqcntrcmd_store(struct device *dev, struct device_attribute *attr,
-+			  const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	u64 userclk_freqcntr_cmd;
-+	void __iomem *base;
-+
-+	if (kstrtou64(buf, 0, &userclk_freqcntr_cmd))
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(userclk_freqcntr_cmd, base + PORT_HDR_USRCLK_CMD1);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_WO(userclk_freqcntrcmd);
-+
-+static ssize_t
-+userclk_freqsts_show(struct device *dev, struct device_attribute *attr,
-+		     char *buf)
-+{
-+	u64 userclk_freqsts;
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	userclk_freqsts = readq(base + PORT_HDR_USRCLK_STS0);
-+
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)userclk_freqsts);
-+}
-+static DEVICE_ATTR_RO(userclk_freqsts);
-+
-+static ssize_t
-+userclk_freqcntrsts_show(struct device *dev, struct device_attribute *attr,
-+			 char *buf)
-+{
-+	u64 userclk_freqcntrsts;
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	userclk_freqcntrsts = readq(base + PORT_HDR_USRCLK_STS1);
-+
-+	return sprintf(buf, "0x%llx\n",
-+		       (unsigned long long)userclk_freqcntrsts);
-+}
-+static DEVICE_ATTR_RO(userclk_freqcntrsts);
-+
-+static struct attribute *port_hdr_userclk_attrs[] = {
-+	&dev_attr_userclk_freqcmd.attr,
-+	&dev_attr_userclk_freqcntrcmd.attr,
-+	&dev_attr_userclk_freqsts.attr,
-+	&dev_attr_userclk_freqcntrsts.attr,
-+	NULL,
-+};
-+ATTRIBUTE_GROUPS(port_hdr_userclk);
-+
- static int port_hdr_init(struct platform_device *pdev,
- 			 struct dfl_feature *feature)
- {
-+	int ret;
-+
- 	dev_dbg(&pdev->dev, "PORT HDR Init.\n");
- 
- 	port_reset(pdev);
- 
--	return device_add_groups(&pdev->dev, port_hdr_groups);
-+	ret = device_add_groups(&pdev->dev, port_hdr_groups);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * if revision > 0, the userclock will be moved from port hdr register
-+	 * region to a separated private feature.
-+	 */
-+	if (dfl_feature_revision(feature->ioaddr) > 0)
-+		return 0;
-+
-+	ret = device_add_groups(&pdev->dev, port_hdr_userclk_groups);
-+	if (ret)
-+		device_remove_groups(&pdev->dev, port_hdr_groups);
-+
-+	return ret;
- }
- 
- static void port_hdr_uinit(struct platform_device *pdev,
-@@ -299,6 +410,7 @@ static void port_hdr_uinit(struct platform_device *pdev,
- {
- 	dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
- 
-+	device_remove_groups(&pdev->dev, port_hdr_userclk_groups);
- 	device_remove_groups(&pdev->dev, port_hdr_groups);
- }
- 
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index fe7bca4..77b5137 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -120,6 +120,10 @@
- #define PORT_HDR_CAP		0x30
- #define PORT_HDR_CTRL		0x38
- #define PORT_HDR_STS		0x40
-+#define PORT_HDR_USRCLK_CMD0	0x50
-+#define PORT_HDR_USRCLK_CMD1	0x58
-+#define PORT_HDR_USRCLK_STS0	0x60
-+#define PORT_HDR_USRCLK_STS1	0x68
- 
- /* Port Capability Register Bitfield */
- #define PORT_CAP_PORT_NUM	GENMASK_ULL(1, 0)	/* ID of this port */
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 783569e3c4b4..c3b5e3dbc74e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6339,7 +6339,7 @@ FPGA MANAGER FRAMEWORK
+ M:	Moritz Fischer <mdf@kernel.org>
+ L:	linux-fpga@vger.kernel.org
+ S:	Maintained
+-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/atull/linux-fpga.git
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git
+ Q:	http://patchwork.kernel.org/project/linux-fpga/list/
+ F:	Documentation/fpga/
+ F:	Documentation/driver-api/fpga/
 -- 
-1.8.3.1
+2.22.0
