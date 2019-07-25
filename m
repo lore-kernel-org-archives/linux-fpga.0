@@ -1,9 +1,9 @@
 Return-Path: <gregkh@linuxfoundation.org>
 Return-Path: <gregkh@linuxfoundation.org>
-Date: Tue, 30 Jul 2019 13:56:43 +0200
+Date: Thu, 25 Jul 2019 16:10:36 +0200
 From: Greg KH <gregkh@linuxfoundation.org>
 Subject: Re: [PATCH v3 0/7] drivers: Add generic device lookup helpers
-Message-ID: <20190730115643.GA21672@kroah.com>
+Message-ID: <20190725141036.GA14950@kroah.com>
 References: <20190723221838.12024-1-suzuki.poulose@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,89 +39,17 @@ On Tue, Jul 23, 2019 at 11:18:31PM +0100, Suzuki K Poulose wrote:
 > RFC[1] https://marc.info/?i=1559577023-558-1-git-send-email-suzuki.poulose@arm.com
 > V1 [2] https://marc.info/?i=1559747630-28065-1-git-send-email-suzuki.poulose@arm.com
 > V2 [3] https://marc.info/?i=1560534863-15115-1-git-send-email-suzuki.poulose@arm.com
+> 
+> Changes since v2:
+>  - Merge the device match helper introduction patch with the variants
+>    of the helpers, for better review.
+>  - Use platform_find_device_by_driver for mcde drm driver.
 
-There is now a persistent tag/branch in my driver-core tree for any
-subsystem that wants to pull this tree in to make it easier for merges:
+This looks good to me at first glance, thanks for doing this work.
 
+I'll wait a few days to collect acks from various subsystem maintainers
+before taking the series in my tree.
 
-The following changes since commit 5f9e832c137075045d15cd6899ab0505cfb2ca4b:
+thanks,
 
-  Linus 5.3-rc1 (2019-07-21 14:05:38 -0700)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git tags/generic_lookup_helpers
-
-for you to fetch changes up to 36f3313d6bff91ab2a9e47698c27d15363640a4e:
-
-  platform: Add platform_find_device_by_driver() helper (2019-07-30 13:07:42 +0200)
-
-----------------------------------------------------------------
-Generic Device Lookup Helpers
-
-Persistent tag for others to pull this branch from
-
-Based on patch series from Suzuki K Poulose <suzuki.poulose@arm.com>
-with Subject: [PATCH v3 0/7] drivers: Add generic device lookup helpers
-
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
-----------------------------------------------------------------
-Suzuki K Poulose (7):
-      drivers: Introduce device lookup variants by name
-      drivers: Introduce device lookup variants by of_node
-      drivers: Introduce device lookup variants by fwnode
-      drivers: Introduce device lookup variants by device type
-      drivers: Introduce device lookup variants by ACPI_COMPANION device
-      drivers: Add generic helper to match any device
-      platform: Add platform_find_device_by_driver() helper
-
- drivers/amba/tegra-ahb.c                           |  11 +-
- drivers/base/bus.c                                 |  24 ---
- drivers/base/core.c                                |  39 +++-
- drivers/base/devcon.c                              |   8 +-
- drivers/base/platform.c                            |  14 ++
- drivers/fpga/fpga-bridge.c                         |   8 +-
- drivers/fpga/fpga-mgr.c                            |   8 +-
- drivers/gpu/drm/drm_mipi_dsi.c                     |   7 +-
- drivers/gpu/drm/exynos/exynos_drm_drv.c            |   9 +-
- drivers/gpu/drm/mcde/mcde_drv.c                    |   3 +-
- drivers/gpu/drm/rockchip/rockchip_drm_drv.c        |   3 +-
- drivers/gpu/drm/vc4/vc4_drv.c                      |   3 +-
- drivers/hwtracing/coresight/coresight-platform.c   |  11 +-
- drivers/hwtracing/coresight/coresight-priv.h       |   2 -
- drivers/hwtracing/coresight/coresight.c            |   4 +-
- drivers/hwtracing/intel_th/core.c                  |  10 +-
- drivers/hwtracing/stm/core.c                       |   9 +-
- drivers/i2c/busses/i2c-amd-mp2-pci.c               |   8 +-
- drivers/i2c/i2c-core-acpi.c                        |  11 +-
- drivers/i2c/i2c-core-of.c                          |   7 +-
- drivers/infiniband/hw/hns/hns_roce_hw_v1.c         |   8 +-
- drivers/iommu/arm-smmu-v3.c                        |   9 +-
- drivers/iommu/arm-smmu.c                           |   9 +-
- drivers/leds/led-class.c                           |   9 +-
- drivers/mfd/altera-sysmgr.c                        |  14 +-
- drivers/misc/mei/main.c                            |   9 +-
- drivers/mux/core.c                                 |   7 +-
- drivers/net/ethernet/hisilicon/hns/hns_dsaf_misc.c |   8 +-
- drivers/net/phy/mdio_bus.c                         |   9 +-
- drivers/nvmem/core.c                               |   7 +-
- drivers/of/of_mdio.c                               |   8 +-
- drivers/of/platform.c                              |   7 +-
- drivers/pci/probe.c                                |   7 +-
- drivers/regulator/of_regulator.c                   |   7 +-
- drivers/rtc/interface.c                            |  11 +-
- drivers/s390/cio/ccwgroup.c                        |  18 +-
- drivers/s390/cio/device.c                          |  15 +-
- drivers/s390/crypto/zcrypt_api.c                   |  22 +-
- drivers/scsi/scsi_proc.c                           |   9 +-
- drivers/spi/spi.c                                  |  28 +--
- drivers/tty/tty_io.c                               |   8 +-
- drivers/usb/core/devio.c                           |   8 +-
- drivers/usb/roles/class.c                          |  16 +-
- drivers/usb/typec/class.c                          |  16 +-
- include/linux/device.h                             | 237 ++++++++++++++++++++-
- include/linux/platform_device.h                    |   3 +
- net/ieee802154/core.c                              |   7 +-
- sound/soc/rockchip/rk3399_gru_sound.c              |   9 +-
- 48 files changed, 341 insertions(+), 383 deletions(-)
+greg k-h
