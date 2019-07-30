@@ -1,312 +1,127 @@
-Return-Path: <SRS0=iwuL=V4=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=iwuL=V4=linux.intel.com=thor.thayer@kernel.org>
-From: thor.thayer@linux.intel.com
-Subject: [PATCHv4 1/3] fpga: altera-cvp: Discover Vendor Specific offset
-Date: Wed, 31 Jul 2019 11:41:59 -0500
-Message-Id: <1564591321-19037-2-git-send-email-thor.thayer@linux.intel.com>
-In-Reply-To: <1564591321-19037-1-git-send-email-thor.thayer@linux.intel.com>
-References: <1564591321-19037-1-git-send-email-thor.thayer@linux.intel.com>
-To: mdf@kernel.org, richard.gong@linux.intel.com, agust@denx.de
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Date: Tue, 30 Jul 2019 13:56:43 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v3 0/7] drivers: Add generic device lookup helpers
+Message-ID: <20190730115643.GA21672@kroah.com>
+References: <20190723221838.12024-1-suzuki.poulose@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190723221838.12024-1-suzuki.poulose@arm.com>
+To: Suzuki K Poulose <suzuki.poulose@arm.com>
+Cc: linux-kernel@vger.kernel.org, rafael@kernel.org, linux-arm-kernel@lists.infradead.org, Alan Tull <atull@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexander Aring <alex.aring@gmail.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Andrew Lunn <andrew@lunn.ch>, Arnd Bergmann <arnd@arndb.de>, Bjorn Helgaas <bhelgaas@google.com>, Daniel Vetter <daniel@ffwll.ch>, Dan Murphy <dmurphy@ti.com>, David Airlie <airlied@linux.ie>, "David S. Miller" <davem@davemloft.net>, devicetree@vger.kernel.org, Doug Ledford <dledford@redhat.com>, dri-devel@lists.freedesktop.org, Elie Morisse <syniurge@gmail.com>, Eric Anholt <eric@anholt.net>, Florian Fainelli <f.fainelli@gmail.com>, Frank Rowand <frowand.list@gmail.com>, Harald Freudenberger <freude@linux.ibm.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Heiner Kallweit <hkallweit1@gmail.com>, Inki Dae <inki.dae@samsung.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>, Jiri Slaby <jslaby@suse.com>, Joe Perches <joe@perches.com>, Joerg Roedel <joro@8bytes.org>, Lee Jones <lee.jones@linaro.org>, Len Brown <lenb@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, linux-acpi@vger.kernel.org, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-leds@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-rtc@vger.kernel.org, linux-spi@vger.kernel.org, linux-usb@vger.kernel.org, linux-wpan@vger.kernel.org, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Mark Brown <broonie@kernel.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, Mathieu Poirier <mathieu.poirier@linaro.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Moritz Fischer <mdf@kernel.org>, Nehal Shah <nehal-bakulchandra.shah@amd.com>, Oliver Neukum <oneukum@suse.com>, Pavel Machek <pavel@ucw.cz>, Peter Oberparleiter <oberpar@linux.ibm.com>, Peter Rosin <peda@axentia.se>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Rob Herring <robh+dt@kernel.org>, Robin Murphy <robin.murphy@arm.com>, Sandy Huang <hjc@rock-chips.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Seung-Woo Kim <sw0312.kim@samsung.com>, Shyam Sundar S K <shyam-sundar.s-k@amd.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Stefan Schmidt <stefan@datenfreihafen.org>, Takashi Iwai <tiwai@suse.com>, Thor Thayer <thor.thayer@linux.intel.com>, Tomas Winkler <tomas.winkler@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Will Deacon <will.deacon@arm.com>, Wolfram Sang <wsa@the-dreams.de>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Thor Thayer <thor.thayer@linux.intel.com>
+On Tue, Jul 23, 2019 at 11:18:31PM +0100, Suzuki K Poulose wrote:
+> We have device iterators to find a particular device matching a criteria
+> for a given bus/class/driver. i.e, {bus,class,driver}_find_device()
+> APIs. The matching criteria is a function pointer for the APIs. Often the
+> lookup is based on a generic property of a device (e.g, name, fwnode, of node
+> pointer or device type) rather than a driver specific information. However, each
+> driver writes up its own "match" function, spilling the similar match functions
+> all over the driver subsystems.
+> 
+> This series adds device match helpers by generic device properties of a device.
+> Using these generic match functions, introduce wrappers to the existing
+>  *_find_device() helpers and converts the existing users to use the new wrappers.
+>  i.e,
+> 	{bus/class/driver}_find_device_by_name()
+> 	{bus/class/driver}_find_device_by_fwnode()
+> 	{bus/class/driver}_find_device_by_devt()
+> 	{bus/class/driver}_find_device_by_acpi_dev()
+> 
+> Also adds a wrapper for finding a platform device by driver, to avoid
+> spilling the platform_bus internals in the individual drivers. Applies
+> on 5.3-rc1.
+> 
+>    [0] git://linux-arm.org/linux-skp.git driver-cleanup/v3
+> RFC[1] https://marc.info/?i=1559577023-558-1-git-send-email-suzuki.poulose@arm.com
+> V1 [2] https://marc.info/?i=1559747630-28065-1-git-send-email-suzuki.poulose@arm.com
+> V2 [3] https://marc.info/?i=1560534863-15115-1-git-send-email-suzuki.poulose@arm.com
 
-Newer Intel FPGAs have different Vendor Specific offsets than
-legacy parts. Use PCI discovery to find the CvP registers.
-Since the register positions remain the same, change the hard
-coded address to a more flexible way of indexing registers
-from the offset.
-Adding new PCI read and write abstraction functions to
-handle the offset (altera_read_config_dword() and
-altera_write_config_dword()).
+There is now a persistent tag/branch in my driver-core tree for any
+subsystem that wants to pull this tree in to make it easier for merges:
 
-Signed-off-by: Thor Thayer <thor.thayer@linux.intel.com>
----
-v2 Remove inline designator from abstraction functions.
-   Reverse Christmas Tree format for local variables
-v3 Fix return codes of abstraction functions.
-v4 Remove dev_dbg() offset message
----
- drivers/fpga/altera-cvp.c | 95 +++++++++++++++++++++++++++++------------------
- 1 file changed, 58 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 53b963071c7b..9df2073331cb 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -22,10 +22,10 @@
- #define TIMEOUT_US	2000	/* CVP STATUS timeout for USERMODE polling */
- 
- /* Vendor Specific Extended Capability Registers */
--#define VSE_PCIE_EXT_CAP_ID		0x200
-+#define VSE_PCIE_EXT_CAP_ID		0x0
- #define VSE_PCIE_EXT_CAP_ID_VAL		0x000b	/* 16bit */
- 
--#define VSE_CVP_STATUS			0x21c	/* 32bit */
-+#define VSE_CVP_STATUS			0x1c	/* 32bit */
- #define VSE_CVP_STATUS_CFG_RDY		BIT(18)	/* CVP_CONFIG_READY */
- #define VSE_CVP_STATUS_CFG_ERR		BIT(19)	/* CVP_CONFIG_ERROR */
- #define VSE_CVP_STATUS_CVP_EN		BIT(20)	/* ctrl block is enabling CVP */
-@@ -33,18 +33,18 @@
- #define VSE_CVP_STATUS_CFG_DONE		BIT(23)	/* CVP_CONFIG_DONE */
- #define VSE_CVP_STATUS_PLD_CLK_IN_USE	BIT(24)	/* PLD_CLK_IN_USE */
- 
--#define VSE_CVP_MODE_CTRL		0x220	/* 32bit */
-+#define VSE_CVP_MODE_CTRL		0x20	/* 32bit */
- #define VSE_CVP_MODE_CTRL_CVP_MODE	BIT(0)	/* CVP (1) or normal mode (0) */
- #define VSE_CVP_MODE_CTRL_HIP_CLK_SEL	BIT(1) /* PMA (1) or fabric clock (0) */
- #define VSE_CVP_MODE_CTRL_NUMCLKS_OFF	8	/* NUMCLKS bits offset */
- #define VSE_CVP_MODE_CTRL_NUMCLKS_MASK	GENMASK(15, 8)
- 
--#define VSE_CVP_DATA			0x228	/* 32bit */
--#define VSE_CVP_PROG_CTRL		0x22c	/* 32bit */
-+#define VSE_CVP_DATA			0x28	/* 32bit */
-+#define VSE_CVP_PROG_CTRL		0x2c	/* 32bit */
- #define VSE_CVP_PROG_CTRL_CONFIG	BIT(0)
- #define VSE_CVP_PROG_CTRL_START_XFER	BIT(1)
- 
--#define VSE_UNCOR_ERR_STATUS		0x234	/* 32bit */
-+#define VSE_UNCOR_ERR_STATUS		0x34	/* 32bit */
- #define VSE_UNCOR_ERR_CVP_CFG_ERR	BIT(5)	/* CVP_CONFIG_ERROR_LATCHED */
- 
- #define DRV_NAME		"altera-cvp"
-@@ -61,14 +61,29 @@ struct altera_cvp_conf {
- 					      u32 data);
- 	char			mgr_name[64];
- 	u8			numclks;
-+	u32			vsec_offset;
- };
- 
-+static int altera_read_config_dword(struct altera_cvp_conf *conf,
-+				    int where, u32 *val)
-+{
-+	return pci_read_config_dword(conf->pci_dev, conf->vsec_offset + where,
-+				     val);
-+}
-+
-+static int altera_write_config_dword(struct altera_cvp_conf *conf,
-+				     int where, u32 val)
-+{
-+	return pci_write_config_dword(conf->pci_dev, conf->vsec_offset + where,
-+				      val);
-+}
-+
- static enum fpga_mgr_states altera_cvp_state(struct fpga_manager *mgr)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
- 	u32 status;
- 
--	pci_read_config_dword(conf->pci_dev, VSE_CVP_STATUS, &status);
-+	altera_read_config_dword(conf, VSE_CVP_STATUS, &status);
- 
- 	if (status & VSE_CVP_STATUS_CFG_DONE)
- 		return FPGA_MGR_STATE_OPERATING;
-@@ -86,7 +101,8 @@ static void altera_cvp_write_data_iomem(struct altera_cvp_conf *conf, u32 val)
- 
- static void altera_cvp_write_data_config(struct altera_cvp_conf *conf, u32 val)
- {
--	pci_write_config_dword(conf->pci_dev, VSE_CVP_DATA, val);
-+	pci_write_config_dword(conf->pci_dev, conf->vsec_offset + VSE_CVP_DATA,
-+			       val);
- }
- 
- /* switches between CvP clock and internal clock */
-@@ -96,10 +112,10 @@ static void altera_cvp_dummy_write(struct altera_cvp_conf *conf)
- 	u32 val;
- 
- 	/* set 1 CVP clock cycle for every CVP Data Register Write */
--	pci_read_config_dword(conf->pci_dev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
- 	val |= 1 << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
--	pci_write_config_dword(conf->pci_dev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	for (i = 0; i < CVP_DUMMY_WR; i++)
- 		conf->write_data(conf, 0); /* dummy data, could be any value */
-@@ -116,7 +132,7 @@ static int altera_cvp_wait_status(struct altera_cvp_conf *conf, u32 status_mask,
- 		retries++;
- 
- 	do {
--		pci_read_config_dword(conf->pci_dev, VSE_CVP_STATUS, &val);
-+		altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
- 		if ((val & status_mask) == status_val)
- 			return 0;
- 
-@@ -131,18 +147,17 @@ static int altera_cvp_teardown(struct fpga_manager *mgr,
- 			       struct fpga_image_info *info)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
--	struct pci_dev *pdev = conf->pci_dev;
- 	int ret;
- 	u32 val;
- 
- 	/* STEP 12 - reset START_XFER bit */
--	pci_read_config_dword(pdev, VSE_CVP_PROG_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
- 	val &= ~VSE_CVP_PROG_CTRL_START_XFER;
--	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/* STEP 13 - reset CVP_CONFIG bit */
- 	val &= ~VSE_CVP_PROG_CTRL_CONFIG;
--	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/*
- 	 * STEP 14
-@@ -164,7 +179,6 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 				 const char *buf, size_t count)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
--	struct pci_dev *pdev = conf->pci_dev;
- 	u32 iflags, val;
- 	int ret;
- 
-@@ -184,7 +198,7 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 		conf->numclks = 1; /* for uncompressed and unencrypted images */
- 
- 	/* STEP 1 - read CVP status and check CVP_EN flag */
--	pci_read_config_dword(pdev, VSE_CVP_STATUS, &val);
-+	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
- 	if (!(val & VSE_CVP_STATUS_CVP_EN)) {
- 		dev_err(&mgr->dev, "CVP mode off: 0x%04x\n", val);
- 		return -ENODEV;
-@@ -202,14 +216,14 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	 * - set HIP_CLK_SEL and CVP_MODE (must be set in the order mentioned)
- 	 */
- 	/* switch from fabric to PMA clock */
--	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val |= VSE_CVP_MODE_CTRL_HIP_CLK_SEL;
--	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	/* set CVP mode */
--	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val |= VSE_CVP_MODE_CTRL_CVP_MODE;
--	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	/*
- 	 * STEP 3
-@@ -218,10 +232,10 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	altera_cvp_dummy_write(conf);
- 
- 	/* STEP 4 - set CVP_CONFIG bit */
--	pci_read_config_dword(pdev, VSE_CVP_PROG_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
- 	/* request control block to begin transfer using CVP */
- 	val |= VSE_CVP_PROG_CTRL_CONFIG;
--	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/* STEP 5 - poll CVP_CONFIG READY for 1 with 10us timeout */
- 	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY,
-@@ -238,15 +252,15 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	altera_cvp_dummy_write(conf);
- 
- 	/* STEP 7 - set START_XFER */
--	pci_read_config_dword(pdev, VSE_CVP_PROG_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
- 	val |= VSE_CVP_PROG_CTRL_START_XFER;
--	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/* STEP 8 - start transfer (set CVP_NUMCLKS for bitstream) */
--	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
- 	val |= conf->numclks << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
--	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	return 0;
- }
-@@ -257,7 +271,7 @@ static inline int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
- 	u32 val;
- 
- 	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
--	pci_read_config_dword(conf->pci_dev, VSE_CVP_STATUS, &val);
-+	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
- 	if (val & VSE_CVP_STATUS_CFG_ERR) {
- 		dev_err(&mgr->dev, "CVP_CONFIG_ERROR after %zu bytes!\n",
- 			bytes);
-@@ -316,27 +330,25 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
- 				     struct fpga_image_info *info)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
--	struct pci_dev *pdev = conf->pci_dev;
-+	u32 mask, val;
- 	int ret;
--	u32 mask;
--	u32 val;
- 
- 	ret = altera_cvp_teardown(mgr, info);
- 	if (ret)
- 		return ret;
- 
- 	/* STEP 16 - check CVP_CONFIG_ERROR_LATCHED bit */
--	pci_read_config_dword(pdev, VSE_UNCOR_ERR_STATUS, &val);
-+	altera_read_config_dword(conf, VSE_UNCOR_ERR_STATUS, &val);
- 	if (val & VSE_UNCOR_ERR_CVP_CFG_ERR) {
- 		dev_err(&mgr->dev, "detected CVP_CONFIG_ERROR_LATCHED!\n");
- 		return -EPROTO;
- 	}
- 
- 	/* STEP 17 - reset CVP_MODE and HIP_CLK_SEL bit */
--	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val &= ~VSE_CVP_MODE_CTRL_HIP_CLK_SEL;
- 	val &= ~VSE_CVP_MODE_CTRL_CVP_MODE;
--	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	/* STEP 18 - poll PLD_CLK_IN_USE and USER_MODE bits */
- 	mask = VSE_CVP_STATUS_PLD_CLK_IN_USE | VSE_CVP_STATUS_USERMODE;
-@@ -395,22 +407,29 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- {
- 	struct altera_cvp_conf *conf;
- 	struct fpga_manager *mgr;
-+	int ret, offset;
- 	u16 cmd, val;
- 	u32 regval;
--	int ret;
-+
-+	/* Discover the Vendor Specific Offset for this device */
-+	offset = pci_find_next_ext_capability(pdev, 0, PCI_EXT_CAP_ID_VNDR);
-+	if (!offset) {
-+		dev_err(&pdev->dev, "No Vendor Specific Offset.\n");
-+		return -ENODEV;
-+	}
- 
- 	/*
- 	 * First check if this is the expected FPGA device. PCI config
- 	 * space access works without enabling the PCI device, memory
- 	 * space access is enabled further down.
- 	 */
--	pci_read_config_word(pdev, VSE_PCIE_EXT_CAP_ID, &val);
-+	pci_read_config_word(pdev, offset + VSE_PCIE_EXT_CAP_ID, &val);
- 	if (val != VSE_PCIE_EXT_CAP_ID_VAL) {
- 		dev_err(&pdev->dev, "Wrong EXT_CAP_ID value 0x%x\n", val);
- 		return -ENODEV;
- 	}
- 
--	pci_read_config_dword(pdev, VSE_CVP_STATUS, &regval);
-+	pci_read_config_dword(pdev, offset + VSE_CVP_STATUS, &regval);
- 	if (!(regval & VSE_CVP_STATUS_CVP_EN)) {
- 		dev_err(&pdev->dev,
- 			"CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
-@@ -422,6 +441,8 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	if (!conf)
- 		return -ENOMEM;
- 
-+	conf->vsec_offset = offset;
-+
- 	/*
- 	 * Enable memory BAR access. We cannot use pci_enable_device() here
- 	 * because it will make the driver unusable with FPGA devices that
--- 
-2.7.4
+The following changes since commit 5f9e832c137075045d15cd6899ab0505cfb2ca4b:
+
+  Linus 5.3-rc1 (2019-07-21 14:05:38 -0700)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git tags/generic_lookup_helpers
+
+for you to fetch changes up to 36f3313d6bff91ab2a9e47698c27d15363640a4e:
+
+  platform: Add platform_find_device_by_driver() helper (2019-07-30 13:07:42 +0200)
+
+----------------------------------------------------------------
+Generic Device Lookup Helpers
+
+Persistent tag for others to pull this branch from
+
+Based on patch series from Suzuki K Poulose <suzuki.poulose@arm.com>
+with Subject: [PATCH v3 0/7] drivers: Add generic device lookup helpers
+
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+----------------------------------------------------------------
+Suzuki K Poulose (7):
+      drivers: Introduce device lookup variants by name
+      drivers: Introduce device lookup variants by of_node
+      drivers: Introduce device lookup variants by fwnode
+      drivers: Introduce device lookup variants by device type
+      drivers: Introduce device lookup variants by ACPI_COMPANION device
+      drivers: Add generic helper to match any device
+      platform: Add platform_find_device_by_driver() helper
+
+ drivers/amba/tegra-ahb.c                           |  11 +-
+ drivers/base/bus.c                                 |  24 ---
+ drivers/base/core.c                                |  39 +++-
+ drivers/base/devcon.c                              |   8 +-
+ drivers/base/platform.c                            |  14 ++
+ drivers/fpga/fpga-bridge.c                         |   8 +-
+ drivers/fpga/fpga-mgr.c                            |   8 +-
+ drivers/gpu/drm/drm_mipi_dsi.c                     |   7 +-
+ drivers/gpu/drm/exynos/exynos_drm_drv.c            |   9 +-
+ drivers/gpu/drm/mcde/mcde_drv.c                    |   3 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c        |   3 +-
+ drivers/gpu/drm/vc4/vc4_drv.c                      |   3 +-
+ drivers/hwtracing/coresight/coresight-platform.c   |  11 +-
+ drivers/hwtracing/coresight/coresight-priv.h       |   2 -
+ drivers/hwtracing/coresight/coresight.c            |   4 +-
+ drivers/hwtracing/intel_th/core.c                  |  10 +-
+ drivers/hwtracing/stm/core.c                       |   9 +-
+ drivers/i2c/busses/i2c-amd-mp2-pci.c               |   8 +-
+ drivers/i2c/i2c-core-acpi.c                        |  11 +-
+ drivers/i2c/i2c-core-of.c                          |   7 +-
+ drivers/infiniband/hw/hns/hns_roce_hw_v1.c         |   8 +-
+ drivers/iommu/arm-smmu-v3.c                        |   9 +-
+ drivers/iommu/arm-smmu.c                           |   9 +-
+ drivers/leds/led-class.c                           |   9 +-
+ drivers/mfd/altera-sysmgr.c                        |  14 +-
+ drivers/misc/mei/main.c                            |   9 +-
+ drivers/mux/core.c                                 |   7 +-
+ drivers/net/ethernet/hisilicon/hns/hns_dsaf_misc.c |   8 +-
+ drivers/net/phy/mdio_bus.c                         |   9 +-
+ drivers/nvmem/core.c                               |   7 +-
+ drivers/of/of_mdio.c                               |   8 +-
+ drivers/of/platform.c                              |   7 +-
+ drivers/pci/probe.c                                |   7 +-
+ drivers/regulator/of_regulator.c                   |   7 +-
+ drivers/rtc/interface.c                            |  11 +-
+ drivers/s390/cio/ccwgroup.c                        |  18 +-
+ drivers/s390/cio/device.c                          |  15 +-
+ drivers/s390/crypto/zcrypt_api.c                   |  22 +-
+ drivers/scsi/scsi_proc.c                           |   9 +-
+ drivers/spi/spi.c                                  |  28 +--
+ drivers/tty/tty_io.c                               |   8 +-
+ drivers/usb/core/devio.c                           |   8 +-
+ drivers/usb/roles/class.c                          |  16 +-
+ drivers/usb/typec/class.c                          |  16 +-
+ include/linux/device.h                             | 237 ++++++++++++++++++++-
+ include/linux/platform_device.h                    |   3 +
+ net/ieee802154/core.c                              |   7 +-
+ sound/soc/rockchip/rk3399_gru_sound.c              |   9 +-
+ 48 files changed, 341 insertions(+), 383 deletions(-)
