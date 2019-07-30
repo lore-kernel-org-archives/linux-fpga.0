@@ -1,124 +1,78 @@
-Return-Path: <SRS0=iA5Y=VC=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=iA5Y=VC=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v2 10/11] fpga: dfl: fme: add capability sysfs interfaces
-Date: Fri,  5 Jul 2019 08:23:57 +0800
-Message-Id: <1562286238-11413-11-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1562286238-11413-1-git-send-email-hao.wu@intel.com>
-References: <1562286238-11413-1-git-send-email-hao.wu@intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=74yO=V3=chromium.org=swboyd@kernel.org>
+Return-Path: <SRS0=74yO=V3=chromium.org=swboyd@kernel.org>
+From: Stephen Boyd <swboyd@chromium.org>
+Subject: [PATCH v6 14/57] fpga: Remove dev_err() usage after platform_get_irq()
+Date: Tue, 30 Jul 2019 11:15:14 -0700
+Message-Id: <20190730181557.90391-15-swboyd@chromium.org>
+In-Reply-To: <20190730181557.90391-1-swboyd@chromium.org>
+References: <20190730181557.90391-1-swboyd@chromium.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds 3 read-only sysfs interfaces for FPGA Management Engine
-(FME) block for capabilities including cache_size, fabric_version and
-socket_id.
+We don't need dev_err() messages when platform_get_irq() fails now that
+platform_get_irq() prints an error message itself when something goes
+wrong. Let's remove these prints with a simple semantic patch.
 
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
-v2: rebased.
----
- Documentation/ABI/testing/sysfs-platform-dfl-fme | 23 ++++++++++++
- drivers/fpga/dfl-fme-main.c                      | 48 ++++++++++++++++++++++++
- 2 files changed, 71 insertions(+)
+// <smpl>
+@@
+expression ret;
+struct platform_device *E;
+@@
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-index 8fa4feb..99cd3b2 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-@@ -21,3 +21,26 @@ Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-only. It returns Bitstream (static FPGA region) meta
- 		data, which includes the synthesis date, seed and other
- 		information of this static FPGA region.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/cache_size
-+Date:		June 2019
-+KernelVersion:  5.3
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns cache size of this FPGA device.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/fabric_version
-+Date:		June 2019
-+KernelVersion:  5.3
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns fabric version of this FPGA device.
-+		Userspace applications need this information to select
-+		best data channels per different fabric design.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/socket_id
-+Date:		June 2019
-+KernelVersion:  5.3
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns socket_id to indicate which socket
-+		this FPGA belongs to, only valid for integrated solution.
-+		User only needs this information, in case standard numa node
-+		can't provide correct information.
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index e333f19..c8703c4 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -73,10 +73,58 @@ static ssize_t bitstream_metadata_show(struct device *dev,
- }
- static DEVICE_ATTR_RO(bitstream_metadata);
+ret =
+(
+platform_get_irq(E, ...)
+|
+platform_get_irq_byname(E, ...)
+);
+
+if ( \( ret < 0 \| ret <= 0 \) )
+{
+(
+-if (ret != -EPROBE_DEFER)
+-{ ...
+-dev_err(...);
+-... }
+|
+...
+-dev_err(...);
+)
+...
+}
+// </smpl>
+
+While we're here, remove braces on if statements that only have one
+statement (manually).
+
+Cc: Moritz Fischer <mdf@kernel.org>
+Cc: linux-fpga@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+---
+
+Please apply directly to subsystem trees
+
+ drivers/fpga/zynq-fpga.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
+index 31ef38e38537..ee7765049607 100644
+--- a/drivers/fpga/zynq-fpga.c
++++ b/drivers/fpga/zynq-fpga.c
+@@ -578,10 +578,8 @@ static int zynq_fpga_probe(struct platform_device *pdev)
+ 	init_completion(&priv->dma_done);
  
-+static ssize_t cache_size_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
-+
-+	v = readq(base + FME_HDR_CAP);
-+
-+	return sprintf(buf, "%u\n",
-+		       (unsigned int)FIELD_GET(FME_CAP_CACHE_SIZE, v));
-+}
-+static DEVICE_ATTR_RO(cache_size);
-+
-+static ssize_t fabric_version_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
-+
-+	v = readq(base + FME_HDR_CAP);
-+
-+	return sprintf(buf, "%u\n",
-+		       (unsigned int)FIELD_GET(FME_CAP_FABRIC_VERID, v));
-+}
-+static DEVICE_ATTR_RO(fabric_version);
-+
-+static ssize_t socket_id_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_HEADER);
-+
-+	v = readq(base + FME_HDR_CAP);
-+
-+	return sprintf(buf, "%u\n",
-+		       (unsigned int)FIELD_GET(FME_CAP_SOCKET_ID, v));
-+}
-+static DEVICE_ATTR_RO(socket_id);
-+
- static struct attribute *fme_hdr_attrs[] = {
- 	&dev_attr_ports_num.attr,
- 	&dev_attr_bitstream_id.attr,
- 	&dev_attr_bitstream_metadata.attr,
-+	&dev_attr_cache_size.attr,
-+	&dev_attr_fabric_version.attr,
-+	&dev_attr_socket_id.attr,
- 	NULL,
- };
- ATTRIBUTE_GROUPS(fme_hdr);
+ 	priv->irq = platform_get_irq(pdev, 0);
+-	if (priv->irq < 0) {
+-		dev_err(dev, "No IRQ available\n");
++	if (priv->irq < 0)
+ 		return priv->irq;
+-	}
+ 
+ 	priv->clk = devm_clk_get(dev, "ref_clk");
+ 	if (IS_ERR(priv->clk)) {
 -- 
-1.8.3.1
+Sent by a computer through tubes
