@@ -1,133 +1,59 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Return-Path: <gregkh@linuxfoundation.org>
-Date: Thu, 4 Jul 2019 07:56:45 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH] fpga: dfl: use driver core functions, not sysfs ones.
-Message-ID: <20190704055645.GA15471@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-To: Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=rSSB=V4=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=rSSB=V4=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mga18.intel.com ([134.134.136.126]:31397 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729466AbfGaQkB (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 31 Jul 2019 12:40:01 -0400
+From: thor.thayer@linux.intel.com
+Subject: [PATCHv4 0/3] fpga: altera-cvp: Add Stratix10 Support 
+Date: Wed, 31 Jul 2019 11:41:58 -0500
+Message-Id: <1564591321-19037-1-git-send-email-thor.thayer@linux.intel.com>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: mdf@kernel.org, richard.gong@linux.intel.com, agust@denx.de
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
 
-This is a driver, do not call "raw" sysfs functions, instead call driver
-core ones.  Specifically convert the use of sysfs_create_files() and
-sysfs_remove_files() to use device_add_groups() and
-device_remove_groups()
+From: Thor Thayer <thor.thayer@linux.intel.com>
 
-Cc: Wu Hao <hao.wu@intel.com>
-Cc: Alan Tull <atull@kernel.org>
-Cc: Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/fpga/dfl-afu-main.c | 14 ++++++++------
- drivers/fpga/dfl-fme-main.c |  7 ++++---
- 2 files changed, 12 insertions(+), 9 deletions(-)
+Newer versions (V2) of Altera/Intel FPGAs CvP have different PCI
+Vendor Specific Capability offsets than the older (V1) Altera/FPGAs.
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 02baa6a227c0..68b4d0874b93 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -141,10 +141,11 @@ id_show(struct device *dev, struct device_attribute *attr, char *buf)
- }
- static DEVICE_ATTR_RO(id);
- 
--static const struct attribute *port_hdr_attrs[] = {
-+static struct attribute *port_hdr_attrs[] = {
- 	&dev_attr_id.attr,
- 	NULL,
- };
-+ATTRIBUTE_GROUPS(port_hdr);
- 
- static int port_hdr_init(struct platform_device *pdev,
- 			 struct dfl_feature *feature)
-@@ -153,7 +154,7 @@ static int port_hdr_init(struct platform_device *pdev,
- 
- 	port_reset(pdev);
- 
--	return sysfs_create_files(&pdev->dev.kobj, port_hdr_attrs);
-+	return device_add_groups(&pdev->dev, port_hdr_groups);
- }
- 
- static void port_hdr_uinit(struct platform_device *pdev,
-@@ -161,7 +162,7 @@ static void port_hdr_uinit(struct platform_device *pdev,
- {
- 	dev_dbg(&pdev->dev, "PORT HDR UInit.\n");
- 
--	sysfs_remove_files(&pdev->dev.kobj, port_hdr_attrs);
-+	device_remove_groups(&pdev->dev, port_hdr_groups);
- }
- 
- static long
-@@ -214,10 +215,11 @@ afu_id_show(struct device *dev, struct device_attribute *attr, char *buf)
- }
- static DEVICE_ATTR_RO(afu_id);
- 
--static const struct attribute *port_afu_attrs[] = {
-+static struct attribute *port_afu_attrs[] = {
- 	&dev_attr_afu_id.attr,
- 	NULL
- };
-+ATTRIBUTE_GROUPS(port_afu);
- 
- static int port_afu_init(struct platform_device *pdev,
- 			 struct dfl_feature *feature)
-@@ -234,7 +236,7 @@ static int port_afu_init(struct platform_device *pdev,
- 	if (ret)
- 		return ret;
- 
--	return sysfs_create_files(&pdev->dev.kobj, port_afu_attrs);
-+	return device_add_groups(&pdev->dev, port_afu_groups);
- }
- 
- static void port_afu_uinit(struct platform_device *pdev,
-@@ -242,7 +244,7 @@ static void port_afu_uinit(struct platform_device *pdev,
- {
- 	dev_dbg(&pdev->dev, "PORT AFU UInit.\n");
- 
--	sysfs_remove_files(&pdev->dev.kobj, port_afu_attrs);
-+	device_remove_groups(&pdev->dev, port_afu_groups);
- }
- 
- static const struct dfl_feature_ops port_afu_ops = {
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 086ad2420ade..0be4635583d5 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -72,12 +72,13 @@ static ssize_t bitstream_metadata_show(struct device *dev,
- }
- static DEVICE_ATTR_RO(bitstream_metadata);
- 
--static const struct attribute *fme_hdr_attrs[] = {
-+static struct attribute *fme_hdr_attrs[] = {
- 	&dev_attr_ports_num.attr,
- 	&dev_attr_bitstream_id.attr,
- 	&dev_attr_bitstream_metadata.attr,
- 	NULL,
- };
-+ATTRIBUTE_GROUPS(fme_hdr);
- 
- static int fme_hdr_init(struct platform_device *pdev,
- 			struct dfl_feature *feature)
-@@ -89,7 +90,7 @@ static int fme_hdr_init(struct platform_device *pdev,
- 	dev_dbg(&pdev->dev, "FME cap %llx.\n",
- 		(unsigned long long)readq(base + FME_HDR_CAP));
- 
--	ret = sysfs_create_files(&pdev->dev.kobj, fme_hdr_attrs);
-+	ret = device_add_groups(&pdev->dev, fme_hdr_groups);
- 	if (ret)
- 		return ret;
- 
-@@ -100,7 +101,7 @@ static void fme_hdr_uinit(struct platform_device *pdev,
- 			  struct dfl_feature *feature)
- {
- 	dev_dbg(&pdev->dev, "FME HDR UInit.\n");
--	sysfs_remove_files(&pdev->dev.kobj, fme_hdr_attrs);
-+	device_remove_groups(&pdev->dev, fme_hdr_groups);
- }
- 
- static const struct dfl_feature_ops fme_hdr_ops = {
+Most of the CvP registers and their bitfields remain the same
+between both the older parts and the newer parts.
+
+This patchset implements changes to discover the Vendor Specific
+Capability offset and then add Stratix10 CvP support.
+
+V2 Changes:
+  Remove inline designator from abstraction functions.
+  Reverse Christmas Tree format for local variables
+  Remove redundant mask from credit calculation
+  Add commment for the delay(1) function in wait_for_credit()
+
+V3 Changes
+  Return int instead of void for abstraction functions
+  Check the return code from read in altera_cvp_chk_error()
+  Move reset of current_credit_byte to clear_state().
+  Check return codes of read/writes in added functions.
+
+V4 Changes
+  Rename delta_credit to space
+  Simplify wait for credit do-while loop.
+  Change from udelay() to usleep_range()
+  Use min() to find length to send
+  Remove NULL initialization from private structure
+  Use #define for Version1 offsets
+  Change current_credit_byte to u32 sent_packets.
+  Changes to Kconfig title and description to support Stratix10.
+
+Thor Thayer (3):
+  fpga: altera-cvp: Discover Vendor Specific offset
+  fpga: altera-cvp: Preparation for V2 parts.
+  fpga: altera-cvp: Add Stratix10 (V2) Support
+
+ drivers/fpga/Kconfig      |   6 +-
+ drivers/fpga/altera-cvp.c | 339 ++++++++++++++++++++++++++++++++++++----------
+ 2 files changed, 271 insertions(+), 74 deletions(-)
+
 -- 
-2.22.0
+2.7.4
