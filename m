@@ -1,164 +1,195 @@
-Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 9/9] Documentation: fpga: dfl: add descriptions for virtualization and new interfaces.
-Date: Mon, 12 Aug 2019 10:50:04 +0800
-Message-Id: <1565578204-13969-10-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
-References: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
+Subject: [PATCH v4 02/12] fpga: dfl: pci: enable SRIOV support.
+Date: Sun,  4 Aug 2019 18:20:12 +0800
+Message-Id: <1564914022-3710-3-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
+References: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
 To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Zhang Yi Z <yi.z.zhang@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds virtualization support description for DFL based
-FPGA devices (based on PCIe SRIOV), and introductions to new
-interfaces added by new dfl private feature drivers.
+This patch enables the standard sriov support. It allows user to
+enable SRIOV (and VFs), then user could pass through accelerators
+(VFs) into virtual machine or use VFs directly in host.
 
-[mdf@kernel.org: Fixed up to make it work with new reStructuredText docs]
+Signed-off-by: Zhang Yi Z <yi.z.zhang@intel.com>
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Moritz Fischer <mdf@kernel.org>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- Documentation/fpga/dfl.rst | 105 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 105 insertions(+)
+v2: remove DRV/MODULE_VERSION modifications.
+v4: split __dfl_fpga_cdev_config_port_vf into 2 functions with
+    locking added.
+---
+ drivers/fpga/dfl-pci.c | 36 ++++++++++++++++++++++
+ drivers/fpga/dfl.c     | 82 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/fpga/dfl.h     |  3 +-
+ 3 files changed, 120 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index 2f125ab..6fa483f 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -87,6 +87,8 @@ The following functions are exposed through ioctls:
- - Get driver API version (DFL_FPGA_GET_API_VERSION)
- - Check for extensions (DFL_FPGA_CHECK_EXTENSION)
- - Program bitstream (DFL_FPGA_FME_PORT_PR)
-+- Assign port to PF (DFL_FPGA_FME_PORT_ASSIGN)
-+- Release port from PF (DFL_FPGA_FME_PORT_RELEASE)
+diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+index 66b5720..89ca292 100644
+--- a/drivers/fpga/dfl-pci.c
++++ b/drivers/fpga/dfl-pci.c
+@@ -223,8 +223,43 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+ 	return ret;
+ }
  
- More functions are exposed through sysfs
- (/sys/class/fpga_region/regionX/dfl-fme.n/):
-@@ -102,6 +104,10 @@ More functions are exposed through sysfs
-      one FPGA device may have more than one port, this sysfs interface indicates
-      how many ports the FPGA device has.
++static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
++{
++	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
++	struct dfl_fpga_cdev *cdev = drvdata->cdev;
++	int ret = 0;
++
++	if (!num_vfs) {
++		/*
++		 * disable SRIOV and then put released ports back to default
++		 * PF access mode.
++		 */
++		pci_disable_sriov(pcidev);
++
++		dfl_fpga_cdev_config_ports_pf(cdev);
++
++	} else {
++		/*
++		 * before enable SRIOV, put released ports into VF access mode
++		 * first of all.
++		 */
++		ret = dfl_fpga_cdev_config_ports_vf(cdev, num_vfs);
++		if (ret)
++			return ret;
++
++		ret = pci_enable_sriov(pcidev, num_vfs);
++		if (ret)
++			dfl_fpga_cdev_config_ports_pf(cdev);
++	}
++
++	return ret;
++}
++
+ static void cci_pci_remove(struct pci_dev *pcidev)
+ {
++	if (dev_is_pf(&pcidev->dev))
++		cci_pci_sriov_configure(pcidev, 0);
++
+ 	cci_remove_feature_devs(pcidev);
+ 	pci_disable_pcie_error_reporting(pcidev);
+ }
+@@ -234,6 +269,7 @@ static void cci_pci_remove(struct pci_dev *pcidev)
+ 	.id_table = cci_pcie_id_tbl,
+ 	.probe = cci_pci_probe,
+ 	.remove = cci_pci_remove,
++	.sriov_configure = cci_pci_sriov_configure,
+ };
  
-+ Global error reporting management (errors/)
-+     error reporting sysfs interfaces allow user to read errors detected by the
-+     hardware, and clear the logged errors.
-+
+ module_pci_driver(cci_pci_driver);
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 70ffe8b..b913704 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -1131,6 +1131,88 @@ int dfl_fpga_cdev_assign_port(struct dfl_fpga_cdev *cdev, int port_id)
+ }
+ EXPORT_SYMBOL_GPL(dfl_fpga_cdev_assign_port);
  
- FIU - PORT
- ==========
-@@ -143,6 +149,10 @@ More functions are exposed through sysfs:
-  Read Accelerator GUID (afu_id)
-      afu_id indicates which PR bitstream is programmed to this AFU.
++static void config_port_access_mode(struct device *fme_dev, int port_id,
++				    bool is_vf)
++{
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(fme_dev, FME_FEATURE_ID_HEADER);
++
++	v = readq(base + FME_HDR_PORT_OFST(port_id));
++
++	v &= ~FME_PORT_OFST_ACC_CTRL;
++	v |= FIELD_PREP(FME_PORT_OFST_ACC_CTRL,
++			is_vf ? FME_PORT_OFST_ACC_VF : FME_PORT_OFST_ACC_PF);
++
++	writeq(v, base + FME_HDR_PORT_OFST(port_id));
++}
++
++#define config_port_vf_mode(dev, id) config_port_access_mode(dev, id, true)
++#define config_port_pf_mode(dev, id) config_port_access_mode(dev, id, false)
++
++/**
++ * dfl_fpga_cdev_config_ports_pf - configure ports to PF access mode
++ *
++ * @cdev: parent container device.
++ *
++ * This function is needed in sriov configuration routine. It could be used to
++ * configure the all released ports from VF access mode to PF.
++ */
++void dfl_fpga_cdev_config_ports_pf(struct dfl_fpga_cdev *cdev)
++{
++	struct dfl_feature_platform_data *pdata;
++
++	mutex_lock(&cdev->lock);
++	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
++		if (device_is_registered(&pdata->dev->dev))
++			continue;
++
++		config_port_pf_mode(cdev->fme_dev, pdata->id);
++	}
++	mutex_unlock(&cdev->lock);
++}
++EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_ports_pf);
++
++/**
++ * dfl_fpga_cdev_config_ports_vf - configure ports to VF access mode
++ *
++ * @cdev: parent container device.
++ * @num_vfs: VF device number.
++ *
++ * This function is needed in sriov configuration routine. It could be used to
++ * configure the released ports from PF access mode to VF.
++ *
++ * Return: 0 on success, negative error code otherwise.
++ */
++int dfl_fpga_cdev_config_ports_vf(struct dfl_fpga_cdev *cdev, int num_vfs)
++{
++	struct dfl_feature_platform_data *pdata;
++	int ret = 0;
++
++	mutex_lock(&cdev->lock);
++	/*
++	 * can't turn multiple ports into 1 VF device, only 1 port for 1 VF
++	 * device, so if released port number doesn't match VF device number,
++	 * then reject the request with -EINVAL error code.
++	 */
++	if (cdev->released_port_num != num_vfs) {
++		ret = -EINVAL;
++		goto done;
++	}
++
++	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
++		if (device_is_registered(&pdata->dev->dev))
++			continue;
++
++		config_port_vf_mode(cdev->fme_dev, pdata->id);
++	}
++done:
++	mutex_unlock(&cdev->lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_ports_vf);
++
+ static void __exit dfl_fpga_exit(void)
+ {
+ 	dfl_chardev_uinit();
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 6f7855e..b3f2f53 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -416,5 +416,6 @@ struct platform_device *
  
-+ Error reporting (errors/)
-+     error reporting sysfs interfaces allow user to read port/afu errors
-+     detected by the hardware, and clear the logged errors.
-+
- 
- DFL Framework Overview
- ======================
-@@ -218,6 +228,101 @@ the compat_id exposed by the target FPGA region. This check is usually done by
- userspace before calling the reconfiguration IOCTL.
- 
- 
-+FPGA virtualization - PCIe SRIOV
-+================================
-+This section describes the virtualization support on DFL based FPGA device to
-+enable accessing an accelerator from applications running in a virtual machine
-+(VM). This section only describes the PCIe based FPGA device with SRIOV support.
-+
-+Features supported by the particular FPGA device are exposed through Device
-+Feature Lists, as illustrated below:
-+
-+::
-+
-+    +-------------------------------+  +-------------+
-+    |              PF               |  |     VF      |
-+    +-------------------------------+  +-------------+
-+        ^            ^         ^              ^
-+        |            |         |              |
-+  +-----|------------|---------|--------------|-------+
-+  |     |            |         |              |       |
-+  |  +-----+     +-------+ +-------+      +-------+   |
-+  |  | FME |     | Port0 | | Port1 |      | Port2 |   |
-+  |  +-----+     +-------+ +-------+      +-------+   |
-+  |                  ^         ^              ^       |
-+  |                  |         |              |       |
-+  |              +-------+ +------+       +-------+   |
-+  |              |  AFU  | |  AFU |       |  AFU  |   |
-+  |              +-------+ +------+       +-------+   |
-+  |                                                   |
-+  |            DFL based FPGA PCIe Device             |
-+  +---------------------------------------------------+
-+
-+FME is always accessed through the physical function (PF).
-+
-+Ports (and related AFUs) are accessed via PF by default, but could be exposed
-+through virtual function (VF) devices via PCIe SRIOV. Each VF only contains
-+1 Port and 1 AFU for isolation. Users could assign individual VFs (accelerators)
-+created via PCIe SRIOV interface, to virtual machines.
-+
-+The driver organization in virtualization case is illustrated below:
-+::
-+
-+    +-------++------++------+             |
-+    | FME   || FME  || FME  |             |
-+    | FPGA  || FPGA || FPGA |             |
-+    |Manager||Bridge||Region|             |
-+    +-------++------++------+             |
-+    +-----------------------+  +--------+ |             +--------+
-+    |          FME          |  |  AFU   | |             |  AFU   |
-+    |         Module        |  | Module | |             | Module |
-+    +-----------------------+  +--------+ |             +--------+
-+          +-----------------------+       |       +-----------------------+
-+          | FPGA Container Device |       |       | FPGA Container Device |
-+          |  (FPGA Base Region)   |       |       |  (FPGA Base Region)   |
-+          +-----------------------+       |       +-----------------------+
-+            +------------------+          |         +------------------+
-+            | FPGA PCIE Module |          | Virtual | FPGA PCIE Module |
-+            +------------------+   Host   | Machine +------------------+
-+   -------------------------------------- | ------------------------------
-+             +---------------+            |          +---------------+
-+             | PCI PF Device |            |          | PCI VF Device |
-+             +---------------+            |          +---------------+
-+
-+FPGA PCIe device driver is always loaded first once a FPGA PCIe PF or VF device
-+is detected. It:
-+
-+* Finishes enumeration on both FPGA PCIe PF and VF device using common
-+  interfaces from DFL framework.
-+* Supports SRIOV.
-+
-+The FME device driver plays a management role in this driver architecture, it
-+provides ioctls to release Port from PF and assign Port to PF. After release
-+a port from PF, then it's safe to expose this port through a VF via PCIe SRIOV
-+sysfs interface.
-+
-+To enable accessing an accelerator from applications running in a VM, the
-+respective AFU's port needs to be assigned to a VF using the following steps:
-+
-+#. The PF owns all AFU ports by default. Any port that needs to be
-+   reassigned to a VF must first be released through the
-+   DFL_FPGA_FME_PORT_RELEASE ioctl on the FME device.
-+
-+#. Once N ports are released from PF, then user can use command below
-+   to enable SRIOV and VFs. Each VF owns only one Port with AFU.
-+
-+   ::
-+
-+      echo N > $PCI_DEVICE_PATH/sriov_numvfs
-+
-+#. Pass through the VFs to VMs
-+
-+#. The AFU under VF is accessible from applications in VM (using the
-+   same driver inside the VF).
-+
-+Note that an FME can't be assigned to a VF, thus PR and other management
-+functions are only available via the PF.
-+
- Device enumeration
- ==================
- This section introduces how applications enumerate the fpga device from
+ int dfl_fpga_cdev_release_port(struct dfl_fpga_cdev *cdev, int port_id);
+ int dfl_fpga_cdev_assign_port(struct dfl_fpga_cdev *cdev, int port_id);
+-
++void dfl_fpga_cdev_config_ports_pf(struct dfl_fpga_cdev *cdev);
++int dfl_fpga_cdev_config_ports_vf(struct dfl_fpga_cdev *cdev, int num_vf);
+ #endif /* __FPGA_DFL_H */
 -- 
 1.8.3.1
