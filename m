@@ -1,356 +1,255 @@
-Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
-From: thor.thayer@linux.intel.com
-Subject: [RESEND PATCHv4 3/3] fpga: altera-cvp: Add Stratix10 (V2) Support
-Date: Mon, 19 Aug 2019 15:48:08 -0500
-Message-Id: <1566247688-26070-4-git-send-email-thor.thayer@linux.intel.com>
-In-Reply-To: <1566247688-26070-1-git-send-email-thor.thayer@linux.intel.com>
-References: <1566247688-26070-1-git-send-email-thor.thayer@linux.intel.com>
-To: mdf@kernel.org, richard.gong@intel.com, agust@denx.de
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
+Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v4 03/12] fpga: dfl: afu: add AFU state related sysfs interfaces
+Date: Sun,  4 Aug 2019 18:20:13 +0800
+Message-Id: <1564914022-3710-4-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
+References: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
+To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Thor Thayer <thor.thayer@linux.intel.com>
+This patch introduces more sysfs interfaces for Accelerated
+Function Unit (AFU). These interfaces allow users to read
+current AFU Power State (APx), read / clear AFU Power (APx)
+events which are sticky to identify transient APx state,
+and manage AFU's LTR (latency tolerance reporting).
 
-Add Stratix10 specific functions that use a credit mechanism
-to throttle data to the CvP FIFOs. Add a private structure
-with function pointers for V1 vs V2 functions.
-
-Signed-off-by: Thor Thayer <thor.thayer@linux.intel.com>
+Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2 Remove inline function declaration
-   Reverse Christmas Tree format for local variables
-   Remove mask from credit calculation
-   Add commment for the delay(1) function in wait_for_credit()
-v3 Fix return code of abstraction function
-   Move reset of current_credit_byte to clear_state().
-   Check return code of credit register read in wait_for_credit()
-   Check return code of clear_state read/write register.
-v4 Implement changes suggested by maintainer.
-      Rename delta_credit to space
-      Simplify credit do-while loop.
-      Change from udelay() to usleep_range()
-      Remove NULL initialization from private structure
-      Use name for Version1 offsets
-   Change current_credit_byte to u32 sent_packets.
-   Changes to Kconfig title and description to support Stratix10.
+v2: rebased, and remove DRV/MODULE_VERSION modifications
+v3: update kernel version and date in sysfs doc
+v4: improve description in sysfs doc avoid misunderstanding.
+    switch to kstrtobool in sysfs entry store function.
 ---
- drivers/fpga/Kconfig      |   6 +-
- drivers/fpga/altera-cvp.c | 187 ++++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 176 insertions(+), 17 deletions(-)
+ Documentation/ABI/testing/sysfs-platform-dfl-port |  32 +++++
+ drivers/fpga/dfl-afu-main.c                       | 137 ++++++++++++++++++++++
+ drivers/fpga/dfl.h                                |  11 ++
+ 3 files changed, 180 insertions(+)
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 474f304ec109..f50956ec1300 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -45,11 +45,11 @@ config FPGA_MGR_ALTERA_PS_SPI
- 	  using the passive serial interface over SPI.
- 
- config FPGA_MGR_ALTERA_CVP
--	tristate "Altera Arria-V/Cyclone-V/Stratix-V CvP FPGA Manager"
-+	tristate "Altera CvP FPGA Manager"
- 	depends on PCI
- 	help
--	  FPGA manager driver support for Arria-V, Cyclone-V, Stratix-V
--	  and Arria 10 Altera FPGAs using the CvP interface over PCIe.
-+	  FPGA manager driver support for Arria-V, Cyclone-V, Stratix-V,
-+	  Arria 10 and Stratix10 Altera FPGAs using the CvP interface over PCIe.
- 
- config FPGA_MGR_ZYNQ_FPGA
- 	tristate "Xilinx Zynq FPGA"
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 3b8386fd32e7..4e0edb60bfba 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -43,16 +43,34 @@
- #define VSE_CVP_PROG_CTRL		0x2c	/* 32bit */
- #define VSE_CVP_PROG_CTRL_CONFIG	BIT(0)
- #define VSE_CVP_PROG_CTRL_START_XFER	BIT(1)
-+#define VSE_CVP_PROG_CTRL_MASK		GENMASK(1, 0)
- 
- #define VSE_UNCOR_ERR_STATUS		0x34	/* 32bit */
- #define VSE_UNCOR_ERR_CVP_CFG_ERR	BIT(5)	/* CVP_CONFIG_ERROR_LATCHED */
- 
-+#define V1_VSEC_OFFSET			0x200	/* Vendor Specific Offset V1 */
-+/* V2 Defines */
-+#define VSE_CVP_TX_CREDITS		0x49	/* 8bit */
+diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
+index 6a92dda..1ab3e6f 100644
+--- a/Documentation/ABI/testing/sysfs-platform-dfl-port
++++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
+@@ -14,3 +14,35 @@ Description:	Read-only. User can program different PR bitstreams to FPGA
+ 		Accelerator Function Unit (AFU) for different functions. It
+ 		returns uuid which could be used to identify which PR bitstream
+ 		is programmed in this AFU.
 +
-+#define V2_CREDIT_TIMEOUT_US		20000
-+#define V2_CHECK_CREDIT_US		10
-+#define V2_POLL_TIMEOUT_US		1000000
-+#define V2_USER_TIMEOUT_US		500000
++What:		/sys/bus/platform/devices/dfl-port.0/power_state
++Date:		August 2019
++KernelVersion:	5.4
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-only. It reports the APx (AFU Power) state, different APx
++		means different throttling level. When reading this file, it
++		returns "0" - Normal / "1" - AP1 / "2" - AP2 / "6" - AP6.
 +
-+#define V1_POLL_TIMEOUT_US		10
++What:		/sys/bus/platform/devices/dfl-port.0/ap1_event
++Date:		August 2019
++KernelVersion:	5.4
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-write. Read this file for AP1 (AFU Power State 1) event.
++		It's used to indicate transient AP1 state. Write 1 to this
++		file to clear AP1 event.
 +
- #define DRV_NAME		"altera-cvp"
- #define ALTERA_CVP_MGR_NAME	"Altera CvP FPGA Manager"
- 
-+/* Write block sizes */
-+#define ALTERA_CVP_V1_SIZE	4
-+#define ALTERA_CVP_V2_SIZE	4096
++What:		/sys/bus/platform/devices/dfl-port.0/ap2_event
++Date:		August 2019
++KernelVersion:	5.4
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-write. Read this file for AP2 (AFU Power State 2) event.
++		It's used to indicate transient AP2 state. Write 1 to this
++		file to clear AP2 event.
 +
- /* Optional CvP config error status check for debugging */
- static bool altera_cvp_chkcfg;
- 
-+struct cvp_priv;
-+
- struct altera_cvp_conf {
- 	struct fpga_manager	*mgr;
- 	struct pci_dev		*pci_dev;
-@@ -61,9 +79,27 @@ struct altera_cvp_conf {
- 					      u32 data);
- 	char			mgr_name[64];
- 	u8			numclks;
-+	u32			sent_packets;
- 	u32			vsec_offset;
-+	const struct cvp_priv	*priv;
- };
- 
-+struct cvp_priv {
-+	void	(*switch_clk)(struct altera_cvp_conf *conf);
-+	int	(*clear_state)(struct altera_cvp_conf *conf);
-+	int	(*wait_credit)(struct fpga_manager *mgr, u32 blocks);
-+	size_t	block_size;
-+	int	poll_time_us;
-+	int	user_time_us;
-+};
-+
-+static int altera_read_config_byte(struct altera_cvp_conf *conf,
-+				   int where, u8 *val)
-+{
-+	return pci_read_config_byte(conf->pci_dev, conf->vsec_offset + where,
-+				    val);
-+}
-+
- static int altera_read_config_dword(struct altera_cvp_conf *conf,
- 				    int where, u32 *val)
- {
-@@ -159,6 +195,73 @@ static int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
- 	return 0;
++What:		/sys/bus/platform/devices/dfl-port.0/ltr
++Date:		August 2019
++KernelVersion:	5.4
++Contact:	Wu Hao <hao.wu@intel.com>
++Description:	Read-write. Read or set AFU latency tolerance reporting value.
++		Set ltr to 1 if the AFU can tolerate latency >= 40us or set it
++		to 0 if it is latency sensitive.
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 68b4d08..12175bb 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -141,8 +141,145 @@ static int port_get_id(struct platform_device *pdev)
  }
+ static DEVICE_ATTR_RO(id);
  
-+/*
-+ * CvP Version2 Functions
-+ * Recent Intel FPGAs use a credit mechanism to throttle incoming
-+ * bitstreams and a different method of clearing the state.
-+ */
-+
-+static int altera_cvp_v2_clear_state(struct altera_cvp_conf *conf)
++static ssize_t
++ltr_show(struct device *dev, struct device_attribute *attr, char *buf)
 +{
-+	u32 val;
-+	int ret;
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u64 v;
 +
-+	/* Clear the START_XFER and CVP_CONFIG bits */
-+	ret = altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
-+	if (ret) {
-+		dev_err(&conf->pci_dev->dev,
-+			"Error reading CVP Program Control Register\n");
-+		return ret;
-+	}
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
 +
-+	val &= ~VSE_CVP_PROG_CTRL_MASK;
-+	ret = altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
-+	if (ret) {
-+		dev_err(&conf->pci_dev->dev,
-+			"Error writing CVP Program Control Register\n");
-+		return ret;
-+	}
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_CTRL);
++	mutex_unlock(&pdata->lock);
 +
-+	return altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY, 0,
-+				      conf->priv->poll_time_us);
++	return sprintf(buf, "%x\n", (u8)FIELD_GET(PORT_CTRL_LATENCY, v));
 +}
 +
-+static int altera_cvp_v2_wait_for_credit(struct fpga_manager *mgr,
-+					 u32 blocks)
++static ssize_t
++ltr_store(struct device *dev, struct device_attribute *attr,
++	  const char *buf, size_t count)
 +{
-+	u32 timeout = V2_CREDIT_TIMEOUT_US / V2_CHECK_CREDIT_US;
-+	struct altera_cvp_conf *conf = mgr->priv;
-+	int ret;
-+	u8 val;
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	bool ltr;
++	u64 v;
 +
-+	do {
-+		ret = altera_read_config_byte(conf, VSE_CVP_TX_CREDITS, &val);
-+		if (ret) {
-+			dev_err(&conf->pci_dev->dev,
-+				"Error reading CVP Credit Register\n");
-+			return ret;
-+		}
++	if (kstrtobool(buf, &ltr))
++		return -EINVAL;
 +
-+		/* Return if there is space in FIFO */
-+		if (val - (u8)conf->sent_packets)
-+			return 0;
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
 +
-+		ret = altera_cvp_chk_error(mgr, blocks * ALTERA_CVP_V2_SIZE);
-+		if (ret) {
-+			dev_err(&conf->pci_dev->dev,
-+				"CE Bit error credit reg[0x%x]:sent[0x%x]\n",
-+				val, conf->sent_packets);
-+			return -EAGAIN;
-+		}
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_CTRL);
++	v &= ~PORT_CTRL_LATENCY;
++	v |= FIELD_PREP(PORT_CTRL_LATENCY, ltr ? 1 : 0);
++	writeq(v, base + PORT_HDR_CTRL);
++	mutex_unlock(&pdata->lock);
 +
-+		/* Limit the check credit byte traffic */
-+		usleep_range(V2_CHECK_CREDIT_US, V2_CHECK_CREDIT_US + 1);
-+	} while (timeout--);
++	return count;
++}
++static DEVICE_ATTR_RW(ltr);
 +
-+	dev_err(&conf->pci_dev->dev, "Timeout waiting for credit\n");
-+	return -ETIMEDOUT;
++static ssize_t
++ap1_event_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
++
++	return sprintf(buf, "%x\n", (u8)FIELD_GET(PORT_STS_AP1_EVT, v));
 +}
 +
- static int altera_cvp_send_block(struct altera_cvp_conf *conf,
- 				 const u32 *data, size_t len)
- {
-@@ -200,10 +303,12 @@ static int altera_cvp_teardown(struct fpga_manager *mgr,
- 	 * - set CVP_NUMCLKS to 1 and then issue CVP_DUMMY_WR dummy
- 	 *   writes to the HIP
- 	 */
--	altera_cvp_dummy_write(conf); /* from CVP clock to internal clock */
-+	if (conf->priv->switch_clk)
-+		conf->priv->switch_clk(conf);
- 
- 	/* STEP 15 - poll CVP_CONFIG_READY bit for 0 with 10us timeout */
--	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY, 0, 10);
-+	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY, 0,
-+				     conf->priv->poll_time_us);
- 	if (ret)
- 		dev_err(&mgr->dev, "CFG_RDY == 0 timeout\n");
- 
-@@ -265,7 +370,18 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	 * STEP 3
- 	 * - set CVP_NUMCLKS to 1 and issue CVP_DUMMY_WR dummy writes to the HIP
- 	 */
--	altera_cvp_dummy_write(conf);
-+	if (conf->priv->switch_clk)
-+		conf->priv->switch_clk(conf);
++static ssize_t
++ap1_event_store(struct device *dev, struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	bool clear;
 +
-+	if (conf->priv->clear_state) {
-+		ret = conf->priv->clear_state(conf);
-+		if (ret) {
-+			dev_err(&mgr->dev, "Problem clearing out state\n");
-+			return ret;
-+		}
-+	}
++	if (kstrtobool(buf, &clear) || !clear)
++		return -EINVAL;
 +
-+	conf->sent_packets = 0;
- 
- 	/* STEP 4 - set CVP_CONFIG bit */
- 	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
-@@ -273,9 +389,10 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	val |= VSE_CVP_PROG_CTRL_CONFIG;
- 	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
--	/* STEP 5 - poll CVP_CONFIG READY for 1 with 10us timeout */
-+	/* STEP 5 - poll CVP_CONFIG READY for 1 with timeout */
- 	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY,
--				     VSE_CVP_STATUS_CFG_RDY, 10);
-+				     VSE_CVP_STATUS_CFG_RDY,
-+				     conf->priv->poll_time_us);
- 	if (ret) {
- 		dev_warn(&mgr->dev, "CFG_RDY == 1 timeout\n");
- 		return ret;
-@@ -285,7 +402,16 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	 * STEP 6
- 	 * - set CVP_NUMCLKS to 1 and issue CVP_DUMMY_WR dummy writes to the HIP
- 	 */
--	altera_cvp_dummy_write(conf);
-+	if (conf->priv->switch_clk)
-+		conf->priv->switch_clk(conf);
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
 +
-+	if (altera_cvp_chkcfg) {
-+		ret = altera_cvp_chk_error(mgr, 0);
-+		if (ret) {
-+			dev_warn(&mgr->dev, "CFG_RDY == 1 timeout\n");
-+			return ret;
-+		}
-+	}
- 
- 	/* STEP 7 - set START_XFER */
- 	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
-@@ -293,11 +419,12 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/* STEP 8 - start transfer (set CVP_NUMCLKS for bitstream) */
--	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
--	val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
--	val |= conf->numclks << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
--	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
--
-+	if (conf->priv->switch_clk) {
-+		altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
-+		val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
-+		val |= conf->numclks << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
-+		altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
-+	}
- 	return 0;
- }
- 
-@@ -315,11 +442,22 @@ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
- 	done = 0;
- 
- 	while (remaining) {
--		len = min(sizeof(u32), remaining);
-+		/* Use credit throttling if available */
-+		if (conf->priv->wait_credit) {
-+			status = conf->priv->wait_credit(mgr, done);
-+			if (status) {
-+				dev_err(&conf->pci_dev->dev,
-+					"Wait Credit ERR: 0x%x\n", status);
-+				return status;
-+			}
-+		}
++	mutex_lock(&pdata->lock);
++	writeq(PORT_STS_AP1_EVT, base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
 +
-+		len = min(conf->priv->block_size, remaining);
- 		altera_cvp_send_block(conf, data, len);
--		data++;
-+		data += len / sizeof(u32);
- 		done += len;
- 		remaining -= len;
-+		conf->sent_packets++;
- 
- 		/*
- 		 * STEP 10 (optional) and STEP 11
-@@ -369,7 +507,8 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
- 
- 	/* STEP 18 - poll PLD_CLK_IN_USE and USER_MODE bits */
- 	mask = VSE_CVP_STATUS_PLD_CLK_IN_USE | VSE_CVP_STATUS_USERMODE;
--	ret = altera_cvp_wait_status(conf, mask, mask, TIMEOUT_US);
-+	ret = altera_cvp_wait_status(conf, mask, mask,
-+				     conf->priv->user_time_us);
- 	if (ret)
- 		dev_err(&mgr->dev, "PLD_CLK_IN_USE|USERMODE timeout\n");
- 
-@@ -383,6 +522,21 @@ static const struct fpga_manager_ops altera_cvp_ops = {
- 	.write_complete	= altera_cvp_write_complete,
++	return count;
++}
++static DEVICE_ATTR_RW(ap1_event);
++
++static ssize_t
++ap2_event_show(struct device *dev, struct device_attribute *attr,
++	       char *buf)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
++
++	return sprintf(buf, "%x\n", (u8)FIELD_GET(PORT_STS_AP2_EVT, v));
++}
++
++static ssize_t
++ap2_event_store(struct device *dev, struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	bool clear;
++
++	if (kstrtobool(buf, &clear) || !clear)
++		return -EINVAL;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	writeq(PORT_STS_AP2_EVT, base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
++
++	return count;
++}
++static DEVICE_ATTR_RW(ap2_event);
++
++static ssize_t
++power_state_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
++	void __iomem *base;
++	u64 v;
++
++	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
++
++	mutex_lock(&pdata->lock);
++	v = readq(base + PORT_HDR_STS);
++	mutex_unlock(&pdata->lock);
++
++	return sprintf(buf, "0x%x\n", (u8)FIELD_GET(PORT_STS_PWR_STATE, v));
++}
++static DEVICE_ATTR_RO(power_state);
++
+ static struct attribute *port_hdr_attrs[] = {
+ 	&dev_attr_id.attr,
++	&dev_attr_ltr.attr,
++	&dev_attr_ap1_event.attr,
++	&dev_attr_ap2_event.attr,
++	&dev_attr_power_state.attr,
+ 	NULL,
  };
+ ATTRIBUTE_GROUPS(port_hdr);
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index b3f2f53..6625d73 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -119,6 +119,7 @@
+ #define PORT_HDR_NEXT_AFU	NEXT_AFU
+ #define PORT_HDR_CAP		0x30
+ #define PORT_HDR_CTRL		0x38
++#define PORT_HDR_STS		0x40
  
-+static const struct cvp_priv cvp_priv_v1 = {
-+	.switch_clk	= altera_cvp_dummy_write,
-+	.block_size	= ALTERA_CVP_V1_SIZE,
-+	.poll_time_us	= V1_POLL_TIMEOUT_US,
-+	.user_time_us	= TIMEOUT_US,
-+};
+ /* Port Capability Register Bitfield */
+ #define PORT_CAP_PORT_NUM	GENMASK_ULL(1, 0)	/* ID of this port */
+@@ -130,6 +131,16 @@
+ /* Latency tolerance reporting. '1' >= 40us, '0' < 40us.*/
+ #define PORT_CTRL_LATENCY	BIT_ULL(2)
+ #define PORT_CTRL_SFTRST_ACK	BIT_ULL(4)		/* HW ack for reset */
 +
-+static const struct cvp_priv cvp_priv_v2 = {
-+	.clear_state	= altera_cvp_v2_clear_state,
-+	.wait_credit	= altera_cvp_v2_wait_for_credit,
-+	.block_size	= ALTERA_CVP_V2_SIZE,
-+	.poll_time_us	= V2_POLL_TIMEOUT_US,
-+	.user_time_us	= V2_USER_TIMEOUT_US,
-+};
++/* Port Status Register Bitfield */
++#define PORT_STS_AP2_EVT	BIT_ULL(13)		/* AP2 event detected */
++#define PORT_STS_AP1_EVT	BIT_ULL(12)		/* AP1 event detected */
++#define PORT_STS_PWR_STATE	GENMASK_ULL(11, 8)	/* AFU power states */
++#define PORT_STS_PWR_STATE_NORM 0
++#define PORT_STS_PWR_STATE_AP1	1			/* 50% throttling */
++#define PORT_STS_PWR_STATE_AP2	2			/* 90% throttling */
++#define PORT_STS_PWR_STATE_AP6	6			/* 100% throttling */
 +
- static ssize_t chkcfg_show(struct device_driver *dev, char *buf)
- {
- 	return snprintf(buf, 3, "%d\n", altera_cvp_chkcfg);
-@@ -484,6 +638,11 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	conf->pci_dev = pdev;
- 	conf->write_data = altera_cvp_write_data_iomem;
- 
-+	if (conf->vsec_offset == V1_VSEC_OFFSET)
-+		conf->priv = &cvp_priv_v1;
-+	else
-+		conf->priv = &cvp_priv_v2;
-+
- 	conf->map = pci_iomap(pdev, CVP_BAR, 0);
- 	if (!conf->map) {
- 		dev_warn(&pdev->dev, "Mapping CVP BAR failed\n");
+ /**
+  * struct dfl_fpga_port_ops - port ops
+  *
 -- 
-2.7.4
+1.8.3.1
