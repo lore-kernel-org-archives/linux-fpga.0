@@ -1,14 +1,10 @@
-Return-Path: <SRS0=mTSl=WC=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=mTSl=WC=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:42179 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726713AbfHFKMf (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 6 Aug 2019 06:12:35 -0400
-Date: Tue, 6 Aug 2019 13:12:30 +0300
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
+Date: Sun, 4 Aug 2019 19:51:16 +0800
+From: Wu Hao <hao.wu@intel.com>
 Subject: Re: [PATCH] PCI: Add sysfs attribute for disabling PCIe link to
  downstream component
-Message-ID: <20190806101230.GI2548@lahna.fi.intel.com>
+Message-ID: <20190804115116.GA5452@hao-dev>
 References: <20190529104942.74991-1-mika.westerberg@linux.intel.com>
  <20190703133953.GK128603@google.com>
  <20190703150341.GW2640@lahna.fi.intel.com>
@@ -17,10 +13,9 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20190801215339.GF151852@google.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
 To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Logan Gunthorpe <logang@deltatee.com>, linux-pci@vger.kernel.org, Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Logan Gunthorpe <logang@deltatee.com>, linux-pci@vger.kernel.org, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
 On Thu, Aug 01, 2019 at 04:53:39PM -0500, Bjorn Helgaas wrote:
 > [+cc FPGA folks, just FYI; I'm pretty sure PCI could do a much better
@@ -59,9 +54,7 @@ On Thu, Aug 01, 2019 at 04:53:39PM -0500, Bjorn Helgaas wrote:
 > I'm not 100% sure this is enough of an issue to warrant a new sysfs
 > file.  The file is visible all the time to everybody, but it only
 > protects root from shooting him/herself in the foot.
-
-Well, only root can do rescan so in that sense it should be enough ;-)
-
+> 
 > > > I guess this particular FPGA update must be done via some side channel
 > > > (not the PCIe link)?  I assume there are other FPGA arrangements where
 > > > the update *would* be done via the PCIe link, and we would just do a
@@ -70,6 +63,29 @@ Well, only root can do rescan so in that sense it should be enough ;-)
 > > In this setup the FPGA is programmed using side channel. I haven't seen
 > > the actual system but I think it is some sort of FPGA programmer
 > > connected to another system.
+
+One example is, FPGA image is stored in flash on the PCIe card, and the
+board management controller loads the image from flash to FPGA during
+power up or any time requested by software/user.
+
+Actually I used several PCIe FPGA cards, they can do partial reconfiguration
+with inband method, but they are all using side channel to do full FPGA
+reconfiguration. Partial reconfiguration doesn't touch the PCIe logics
+inside FPGA, but full reconfiguration case really does. So we do need some
+protection for full reconfiguration case from PCIe device level.
+
+Actually we are using the similar method as above to remove/rescan pcie dev
+to make sure nobody see it during full reconfiguration. For sure we need
+to make sure nobody does the rescan at the same time, and another thing is
+we have to mask AER on the root port, otherwise it's easy to see system
+hang/reboot. I just did some qucik tests, with this patch, after link_disable
+I don't need to mask AER any more, so this patch does help on this case,
+and I should be able to try more next week.
+
+Thanks a lot for adding us to this thread. :)
+
+Hao
+
 > > 
 > > > > Once the new FPGA is burned we can re-enable
 > > > > the link and rescan the new and possibly different device:
@@ -215,5 +231,5 @@ Well, only root can do rescan so in that sense it should be enough ;-)
 > 
 > I was hoping we could get rid of "has_secondary_link" completely if we
 > corrected the type, but I'm not sure that's possible.
-
-Right, it looks like we need some sort of flag there anyway.
+> 
+> Bjorn
