@@ -1,312 +1,164 @@
-Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
-From: thor.thayer@linux.intel.com
-Subject: [RESEND PATCHv4 1/3] fpga: altera-cvp: Discover Vendor Specific offset
-Date: Mon, 19 Aug 2019 15:48:06 -0500
-Message-Id: <1566247688-26070-2-git-send-email-thor.thayer@linux.intel.com>
-In-Reply-To: <1566247688-26070-1-git-send-email-thor.thayer@linux.intel.com>
-References: <1566247688-26070-1-git-send-email-thor.thayer@linux.intel.com>
-To: mdf@kernel.org, richard.gong@intel.com, agust@denx.de
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
+Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v4 12/12] Documentation: fpga: dfl: add descriptions for virtualization and new interfaces.
+Date: Sun,  4 Aug 2019 18:20:22 +0800
+Message-Id: <1564914022-3710-13-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
+References: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
+To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Thor Thayer <thor.thayer@linux.intel.com>
+This patch adds virtualization support description for DFL based
+FPGA devices (based on PCIe SRIOV), and introductions to new
+interfaces added by new dfl private feature drivers.
 
-Newer Intel FPGAs have different Vendor Specific offsets than
-legacy parts. Use PCI discovery to find the CvP registers.
-Since the register positions remain the same, change the hard
-coded address to a more flexible way of indexing registers
-from the offset.
-Adding new PCI read and write abstraction functions to
-handle the offset (altera_read_config_dword() and
-altera_write_config_dword()).
-
-Signed-off-by: Thor Thayer <thor.thayer@linux.intel.com>
+[mdf@kernel.org: Fixed up to make it work with new reStructuredText docs]
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2 Remove inline designator from abstraction functions.
-   Reverse Christmas Tree format for local variables
-v3 Fix return codes of abstraction functions.
-v4 Remove dev_dbg() offset message
----
- drivers/fpga/altera-cvp.c | 95 +++++++++++++++++++++++++++++------------------
- 1 file changed, 58 insertions(+), 37 deletions(-)
+ Documentation/fpga/dfl.rst | 105 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 105 insertions(+)
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 53b963071c7b..9df2073331cb 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -22,10 +22,10 @@
- #define TIMEOUT_US	2000	/* CVP STATUS timeout for USERMODE polling */
+diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+index 2f125ab..6fa483f 100644
+--- a/Documentation/fpga/dfl.rst
++++ b/Documentation/fpga/dfl.rst
+@@ -87,6 +87,8 @@ The following functions are exposed through ioctls:
+ - Get driver API version (DFL_FPGA_GET_API_VERSION)
+ - Check for extensions (DFL_FPGA_CHECK_EXTENSION)
+ - Program bitstream (DFL_FPGA_FME_PORT_PR)
++- Assign port to PF (DFL_FPGA_FME_PORT_ASSIGN)
++- Release port from PF (DFL_FPGA_FME_PORT_RELEASE)
  
- /* Vendor Specific Extended Capability Registers */
--#define VSE_PCIE_EXT_CAP_ID		0x200
-+#define VSE_PCIE_EXT_CAP_ID		0x0
- #define VSE_PCIE_EXT_CAP_ID_VAL		0x000b	/* 16bit */
+ More functions are exposed through sysfs
+ (/sys/class/fpga_region/regionX/dfl-fme.n/):
+@@ -102,6 +104,10 @@ More functions are exposed through sysfs
+      one FPGA device may have more than one port, this sysfs interface indicates
+      how many ports the FPGA device has.
  
--#define VSE_CVP_STATUS			0x21c	/* 32bit */
-+#define VSE_CVP_STATUS			0x1c	/* 32bit */
- #define VSE_CVP_STATUS_CFG_RDY		BIT(18)	/* CVP_CONFIG_READY */
- #define VSE_CVP_STATUS_CFG_ERR		BIT(19)	/* CVP_CONFIG_ERROR */
- #define VSE_CVP_STATUS_CVP_EN		BIT(20)	/* ctrl block is enabling CVP */
-@@ -33,18 +33,18 @@
- #define VSE_CVP_STATUS_CFG_DONE		BIT(23)	/* CVP_CONFIG_DONE */
- #define VSE_CVP_STATUS_PLD_CLK_IN_USE	BIT(24)	/* PLD_CLK_IN_USE */
- 
--#define VSE_CVP_MODE_CTRL		0x220	/* 32bit */
-+#define VSE_CVP_MODE_CTRL		0x20	/* 32bit */
- #define VSE_CVP_MODE_CTRL_CVP_MODE	BIT(0)	/* CVP (1) or normal mode (0) */
- #define VSE_CVP_MODE_CTRL_HIP_CLK_SEL	BIT(1) /* PMA (1) or fabric clock (0) */
- #define VSE_CVP_MODE_CTRL_NUMCLKS_OFF	8	/* NUMCLKS bits offset */
- #define VSE_CVP_MODE_CTRL_NUMCLKS_MASK	GENMASK(15, 8)
- 
--#define VSE_CVP_DATA			0x228	/* 32bit */
--#define VSE_CVP_PROG_CTRL		0x22c	/* 32bit */
-+#define VSE_CVP_DATA			0x28	/* 32bit */
-+#define VSE_CVP_PROG_CTRL		0x2c	/* 32bit */
- #define VSE_CVP_PROG_CTRL_CONFIG	BIT(0)
- #define VSE_CVP_PROG_CTRL_START_XFER	BIT(1)
- 
--#define VSE_UNCOR_ERR_STATUS		0x234	/* 32bit */
-+#define VSE_UNCOR_ERR_STATUS		0x34	/* 32bit */
- #define VSE_UNCOR_ERR_CVP_CFG_ERR	BIT(5)	/* CVP_CONFIG_ERROR_LATCHED */
- 
- #define DRV_NAME		"altera-cvp"
-@@ -61,14 +61,29 @@ struct altera_cvp_conf {
- 					      u32 data);
- 	char			mgr_name[64];
- 	u8			numclks;
-+	u32			vsec_offset;
- };
- 
-+static int altera_read_config_dword(struct altera_cvp_conf *conf,
-+				    int where, u32 *val)
-+{
-+	return pci_read_config_dword(conf->pci_dev, conf->vsec_offset + where,
-+				     val);
-+}
++ Global error reporting management (errors/)
++     error reporting sysfs interfaces allow user to read errors detected by the
++     hardware, and clear the logged errors.
 +
-+static int altera_write_config_dword(struct altera_cvp_conf *conf,
-+				     int where, u32 val)
-+{
-+	return pci_write_config_dword(conf->pci_dev, conf->vsec_offset + where,
-+				      val);
-+}
+ 
+ FIU - PORT
+ ==========
+@@ -143,6 +149,10 @@ More functions are exposed through sysfs:
+  Read Accelerator GUID (afu_id)
+      afu_id indicates which PR bitstream is programmed to this AFU.
+ 
++ Error reporting (errors/)
++     error reporting sysfs interfaces allow user to read port/afu errors
++     detected by the hardware, and clear the logged errors.
 +
- static enum fpga_mgr_states altera_cvp_state(struct fpga_manager *mgr)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
- 	u32 status;
  
--	pci_read_config_dword(conf->pci_dev, VSE_CVP_STATUS, &status);
-+	altera_read_config_dword(conf, VSE_CVP_STATUS, &status);
+ DFL Framework Overview
+ ======================
+@@ -218,6 +228,101 @@ the compat_id exposed by the target FPGA region. This check is usually done by
+ userspace before calling the reconfiguration IOCTL.
  
- 	if (status & VSE_CVP_STATUS_CFG_DONE)
- 		return FPGA_MGR_STATE_OPERATING;
-@@ -86,7 +101,8 @@ static void altera_cvp_write_data_iomem(struct altera_cvp_conf *conf, u32 val)
  
- static void altera_cvp_write_data_config(struct altera_cvp_conf *conf, u32 val)
- {
--	pci_write_config_dword(conf->pci_dev, VSE_CVP_DATA, val);
-+	pci_write_config_dword(conf->pci_dev, conf->vsec_offset + VSE_CVP_DATA,
-+			       val);
- }
- 
- /* switches between CvP clock and internal clock */
-@@ -96,10 +112,10 @@ static void altera_cvp_dummy_write(struct altera_cvp_conf *conf)
- 	u32 val;
- 
- 	/* set 1 CVP clock cycle for every CVP Data Register Write */
--	pci_read_config_dword(conf->pci_dev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
- 	val |= 1 << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
--	pci_write_config_dword(conf->pci_dev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	for (i = 0; i < CVP_DUMMY_WR; i++)
- 		conf->write_data(conf, 0); /* dummy data, could be any value */
-@@ -116,7 +132,7 @@ static int altera_cvp_wait_status(struct altera_cvp_conf *conf, u32 status_mask,
- 		retries++;
- 
- 	do {
--		pci_read_config_dword(conf->pci_dev, VSE_CVP_STATUS, &val);
-+		altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
- 		if ((val & status_mask) == status_val)
- 			return 0;
- 
-@@ -131,18 +147,17 @@ static int altera_cvp_teardown(struct fpga_manager *mgr,
- 			       struct fpga_image_info *info)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
--	struct pci_dev *pdev = conf->pci_dev;
- 	int ret;
- 	u32 val;
- 
- 	/* STEP 12 - reset START_XFER bit */
--	pci_read_config_dword(pdev, VSE_CVP_PROG_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
- 	val &= ~VSE_CVP_PROG_CTRL_START_XFER;
--	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/* STEP 13 - reset CVP_CONFIG bit */
- 	val &= ~VSE_CVP_PROG_CTRL_CONFIG;
--	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/*
- 	 * STEP 14
-@@ -164,7 +179,6 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 				 const char *buf, size_t count)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
--	struct pci_dev *pdev = conf->pci_dev;
- 	u32 iflags, val;
- 	int ret;
- 
-@@ -184,7 +198,7 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 		conf->numclks = 1; /* for uncompressed and unencrypted images */
- 
- 	/* STEP 1 - read CVP status and check CVP_EN flag */
--	pci_read_config_dword(pdev, VSE_CVP_STATUS, &val);
-+	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
- 	if (!(val & VSE_CVP_STATUS_CVP_EN)) {
- 		dev_err(&mgr->dev, "CVP mode off: 0x%04x\n", val);
- 		return -ENODEV;
-@@ -202,14 +216,14 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	 * - set HIP_CLK_SEL and CVP_MODE (must be set in the order mentioned)
- 	 */
- 	/* switch from fabric to PMA clock */
--	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val |= VSE_CVP_MODE_CTRL_HIP_CLK_SEL;
--	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	/* set CVP mode */
--	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val |= VSE_CVP_MODE_CTRL_CVP_MODE;
--	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	/*
- 	 * STEP 3
-@@ -218,10 +232,10 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	altera_cvp_dummy_write(conf);
- 
- 	/* STEP 4 - set CVP_CONFIG bit */
--	pci_read_config_dword(pdev, VSE_CVP_PROG_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
- 	/* request control block to begin transfer using CVP */
- 	val |= VSE_CVP_PROG_CTRL_CONFIG;
--	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/* STEP 5 - poll CVP_CONFIG READY for 1 with 10us timeout */
- 	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY,
-@@ -238,15 +252,15 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 	altera_cvp_dummy_write(conf);
- 
- 	/* STEP 7 - set START_XFER */
--	pci_read_config_dword(pdev, VSE_CVP_PROG_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
- 	val |= VSE_CVP_PROG_CTRL_START_XFER;
--	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
- 
- 	/* STEP 8 - start transfer (set CVP_NUMCLKS for bitstream) */
--	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
- 	val |= conf->numclks << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
--	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	return 0;
- }
-@@ -257,7 +271,7 @@ static inline int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
- 	u32 val;
- 
- 	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
--	pci_read_config_dword(conf->pci_dev, VSE_CVP_STATUS, &val);
-+	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
- 	if (val & VSE_CVP_STATUS_CFG_ERR) {
- 		dev_err(&mgr->dev, "CVP_CONFIG_ERROR after %zu bytes!\n",
- 			bytes);
-@@ -316,27 +330,25 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
- 				     struct fpga_image_info *info)
- {
- 	struct altera_cvp_conf *conf = mgr->priv;
--	struct pci_dev *pdev = conf->pci_dev;
-+	u32 mask, val;
- 	int ret;
--	u32 mask;
--	u32 val;
- 
- 	ret = altera_cvp_teardown(mgr, info);
- 	if (ret)
- 		return ret;
- 
- 	/* STEP 16 - check CVP_CONFIG_ERROR_LATCHED bit */
--	pci_read_config_dword(pdev, VSE_UNCOR_ERR_STATUS, &val);
-+	altera_read_config_dword(conf, VSE_UNCOR_ERR_STATUS, &val);
- 	if (val & VSE_UNCOR_ERR_CVP_CFG_ERR) {
- 		dev_err(&mgr->dev, "detected CVP_CONFIG_ERROR_LATCHED!\n");
- 		return -EPROTO;
- 	}
- 
- 	/* STEP 17 - reset CVP_MODE and HIP_CLK_SEL bit */
--	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
- 	val &= ~VSE_CVP_MODE_CTRL_HIP_CLK_SEL;
- 	val &= ~VSE_CVP_MODE_CTRL_CVP_MODE;
--	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
- 
- 	/* STEP 18 - poll PLD_CLK_IN_USE and USER_MODE bits */
- 	mask = VSE_CVP_STATUS_PLD_CLK_IN_USE | VSE_CVP_STATUS_USERMODE;
-@@ -395,22 +407,29 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- {
- 	struct altera_cvp_conf *conf;
- 	struct fpga_manager *mgr;
-+	int ret, offset;
- 	u16 cmd, val;
- 	u32 regval;
--	int ret;
++FPGA virtualization - PCIe SRIOV
++================================
++This section describes the virtualization support on DFL based FPGA device to
++enable accessing an accelerator from applications running in a virtual machine
++(VM). This section only describes the PCIe based FPGA device with SRIOV support.
 +
-+	/* Discover the Vendor Specific Offset for this device */
-+	offset = pci_find_next_ext_capability(pdev, 0, PCI_EXT_CAP_ID_VNDR);
-+	if (!offset) {
-+		dev_err(&pdev->dev, "No Vendor Specific Offset.\n");
-+		return -ENODEV;
-+	}
- 
- 	/*
- 	 * First check if this is the expected FPGA device. PCI config
- 	 * space access works without enabling the PCI device, memory
- 	 * space access is enabled further down.
- 	 */
--	pci_read_config_word(pdev, VSE_PCIE_EXT_CAP_ID, &val);
-+	pci_read_config_word(pdev, offset + VSE_PCIE_EXT_CAP_ID, &val);
- 	if (val != VSE_PCIE_EXT_CAP_ID_VAL) {
- 		dev_err(&pdev->dev, "Wrong EXT_CAP_ID value 0x%x\n", val);
- 		return -ENODEV;
- 	}
- 
--	pci_read_config_dword(pdev, VSE_CVP_STATUS, &regval);
-+	pci_read_config_dword(pdev, offset + VSE_CVP_STATUS, &regval);
- 	if (!(regval & VSE_CVP_STATUS_CVP_EN)) {
- 		dev_err(&pdev->dev,
- 			"CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
-@@ -422,6 +441,8 @@ static int altera_cvp_probe(struct pci_dev *pdev,
- 	if (!conf)
- 		return -ENOMEM;
- 
-+	conf->vsec_offset = offset;
++Features supported by the particular FPGA device are exposed through Device
++Feature Lists, as illustrated below:
 +
- 	/*
- 	 * Enable memory BAR access. We cannot use pci_enable_device() here
- 	 * because it will make the driver unusable with FPGA devices that
++::
++
++    +-------------------------------+  +-------------+
++    |              PF               |  |     VF      |
++    +-------------------------------+  +-------------+
++        ^            ^         ^              ^
++        |            |         |              |
++  +-----|------------|---------|--------------|-------+
++  |     |            |         |              |       |
++  |  +-----+     +-------+ +-------+      +-------+   |
++  |  | FME |     | Port0 | | Port1 |      | Port2 |   |
++  |  +-----+     +-------+ +-------+      +-------+   |
++  |                  ^         ^              ^       |
++  |                  |         |              |       |
++  |              +-------+ +------+       +-------+   |
++  |              |  AFU  | |  AFU |       |  AFU  |   |
++  |              +-------+ +------+       +-------+   |
++  |                                                   |
++  |            DFL based FPGA PCIe Device             |
++  +---------------------------------------------------+
++
++FME is always accessed through the physical function (PF).
++
++Ports (and related AFUs) are accessed via PF by default, but could be exposed
++through virtual function (VF) devices via PCIe SRIOV. Each VF only contains
++1 Port and 1 AFU for isolation. Users could assign individual VFs (accelerators)
++created via PCIe SRIOV interface, to virtual machines.
++
++The driver organization in virtualization case is illustrated below:
++::
++
++    +-------++------++------+             |
++    | FME   || FME  || FME  |             |
++    | FPGA  || FPGA || FPGA |             |
++    |Manager||Bridge||Region|             |
++    +-------++------++------+             |
++    +-----------------------+  +--------+ |             +--------+
++    |          FME          |  |  AFU   | |             |  AFU   |
++    |         Module        |  | Module | |             | Module |
++    +-----------------------+  +--------+ |             +--------+
++          +-----------------------+       |       +-----------------------+
++          | FPGA Container Device |       |       | FPGA Container Device |
++          |  (FPGA Base Region)   |       |       |  (FPGA Base Region)   |
++          +-----------------------+       |       +-----------------------+
++            +------------------+          |         +------------------+
++            | FPGA PCIE Module |          | Virtual | FPGA PCIE Module |
++            +------------------+   Host   | Machine +------------------+
++   -------------------------------------- | ------------------------------
++             +---------------+            |          +---------------+
++             | PCI PF Device |            |          | PCI VF Device |
++             +---------------+            |          +---------------+
++
++FPGA PCIe device driver is always loaded first once a FPGA PCIe PF or VF device
++is detected. It:
++
++* Finishes enumeration on both FPGA PCIe PF and VF device using common
++  interfaces from DFL framework.
++* Supports SRIOV.
++
++The FME device driver plays a management role in this driver architecture, it
++provides ioctls to release Port from PF and assign Port to PF. After release
++a port from PF, then it's safe to expose this port through a VF via PCIe SRIOV
++sysfs interface.
++
++To enable accessing an accelerator from applications running in a VM, the
++respective AFU's port needs to be assigned to a VF using the following steps:
++
++#. The PF owns all AFU ports by default. Any port that needs to be
++   reassigned to a VF must first be released through the
++   DFL_FPGA_FME_PORT_RELEASE ioctl on the FME device.
++
++#. Once N ports are released from PF, then user can use command below
++   to enable SRIOV and VFs. Each VF owns only one Port with AFU.
++
++   ::
++
++      echo N > $PCI_DEVICE_PATH/sriov_numvfs
++
++#. Pass through the VFs to VMs
++
++#. The AFU under VF is accessible from applications in VM (using the
++   same driver inside the VF).
++
++Note that an FME can't be assigned to a VF, thus PR and other management
++functions are only available via the PF.
++
+ Device enumeration
+ ==================
+ This section introduces how applications enumerate the fpga device from
 -- 
-2.7.4
+1.8.3.1
