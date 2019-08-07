@@ -1,237 +1,338 @@
-Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=kJ0Q=WD=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=kJ0Q=WD=intel.com=hao.wu@kernel.org>
+Date: Wed, 7 Aug 2019 10:35:45 +0800
 From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 4/9] fpga: dfl: afu: add userclock sysfs interfaces.
-Date: Mon, 12 Aug 2019 10:49:59 +0800
-Message-Id: <1565578204-13969-5-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
-References: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Russ Weight <russell.h.weight@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Subject: Re: [PATCH v4 07/12] fpga: dfl: afu: add error reporting support.
+Message-ID: <20190807023545.GC24158@hao-dev>
+References: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
+ <1564914022-3710-8-git-send-email-hao.wu@intel.com>
+ <20190805155437.GC8107@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190805155437.GC8107@kroah.com>
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch introduces userclock sysfs interfaces for AFU, user
-could use these interfaces for clock setting to AFU.
+On Mon, Aug 05, 2019 at 05:54:37PM +0200, Greg KH wrote:
+> On Sun, Aug 04, 2019 at 06:20:17PM +0800, Wu Hao wrote:
+> > Error reporting is one important private feature, it reports error
+> > detected on port and accelerated function unit (AFU). It introduces
+> > several sysfs interfaces to allow userspace to check and clear
+> > errors detected by hardware.
+> > 
+> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > Acked-by: Alan Tull <atull@kernel.org>
+> > Signed-off-by: Moritz Fischer <mdf@kernel.org>
+> > ---
+> > v2: switch to device_add/remove_group for sysfs.
+> > v3: update kernel version and date in sysfs doc
+> > v4: remove dev_dbg in init/uinit callback function.
+> > ---
+> >  Documentation/ABI/testing/sysfs-platform-dfl-port |  39 ++++
+> >  drivers/fpga/Makefile                             |   1 +
+> >  drivers/fpga/dfl-afu-error.c                      | 221 ++++++++++++++++++++++
+> >  drivers/fpga/dfl-afu-main.c                       |   4 +
+> >  drivers/fpga/dfl-afu.h                            |   4 +
+> >  5 files changed, 269 insertions(+)
+> >  create mode 100644 drivers/fpga/dfl-afu-error.c
+> > 
+> > diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
+> > index 5663441..3b6580b 100644
+> > --- a/Documentation/ABI/testing/sysfs-platform-dfl-port
+> > +++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
+> > @@ -81,3 +81,42 @@ KernelVersion:	5.4
+> >  Contact:	Wu Hao <hao.wu@intel.com>
+> >  Description:	Read-only. Read this file to get the status of issued command
+> >  		to userclck_freqcntrcmd.
+> > +
+> > +What:		/sys/bus/platform/devices/dfl-port.0/errors/revision
+> > +Date:		August 2019
+> > +KernelVersion:	5.4
+> > +Contact:	Wu Hao <hao.wu@intel.com>
+> > +Description:	Read-only. Read this file to get the revision of this error
+> > +		reporting private feature.
+> 
+> Same revision question here that I had on an earlier patch.
+> 
+> 
+> > +
+> > +What:		/sys/bus/platform/devices/dfl-port.0/errors/errors
+> > +Date:		August 2019
+> > +KernelVersion:	5.4
+> > +Contact:	Wu Hao <hao.wu@intel.com>
+> > +Description:	Read-only. Read this file to get errors detected on port and
+> > +		Accelerated Function Unit (AFU).
+> > +
+> > +What:		/sys/bus/platform/devices/dfl-port.0/errors/first_error
+> > +Date:		August 2019
+> > +KernelVersion:	5.4
+> > +Contact:	Wu Hao <hao.wu@intel.com>
+> > +Description:	Read-only. Read this file to get the first error detected by
+> > +		hardware.
+> > +
+> > +What:		/sys/bus/platform/devices/dfl-port.0/errors/first_malformed_req
+> > +Date:		August 2019
+> > +KernelVersion:	5.4
+> > +Contact:	Wu Hao <hao.wu@intel.com>
+> > +Description:	Read-only. Read this file to get the first malformed request
+> > +		captured by hardware.
+> > +
+> > +What:		/sys/bus/platform/devices/dfl-port.0/errors/clear
+> > +Date:		August 2019
+> > +KernelVersion:	5.4
+> > +Contact:	Wu Hao <hao.wu@intel.com>
+> > +Description:	Write-only. Write error code to this file to clear errors.
+> > +		Write fails with -EINVAL if input parsing fails or input error
+> > +		code doesn't match.
+> > +		Write fails with -EBUSY or -ETIMEDOUT if error can't be cleared
+> > +		as hardware is in low power state (-EBUSY) or not responding
+> > +		(-ETIMEDOUT).
+> > diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+> > index 312b937..7255891 100644
+> > --- a/drivers/fpga/Makefile
+> > +++ b/drivers/fpga/Makefile
+> > @@ -41,6 +41,7 @@ obj-$(CONFIG_FPGA_DFL_AFU)		+= dfl-afu.o
+> >  
+> >  dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
+> >  dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
+> > +dfl-afu-objs += dfl-afu-error.o
+> >  
+> >  # Drivers for FPGAs which implement DFL
+> >  obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
+> > diff --git a/drivers/fpga/dfl-afu-error.c b/drivers/fpga/dfl-afu-error.c
+> > new file mode 100644
+> > index 0000000..c5e0efa
+> > --- /dev/null
+> > +++ b/drivers/fpga/dfl-afu-error.c
+> > @@ -0,0 +1,221 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Driver for FPGA Accelerated Function Unit (AFU) Error Reporting
+> > + *
+> > + * Copyright 2019 Intel Corporation, Inc.
+> > + *
+> > + * Authors:
+> > + *   Wu Hao <hao.wu@linux.intel.com>
+> > + *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
+> > + *   Joseph Grecco <joe.grecco@intel.com>
+> > + *   Enno Luebbers <enno.luebbers@intel.com>
+> > + *   Tim Whisonant <tim.whisonant@intel.com>
+> > + *   Ananda Ravuri <ananda.ravuri@intel.com>
+> > + *   Mitchel Henry <henry.mitchel@intel.com>
+> > + */
+> > +
+> > +#include <linux/uaccess.h>
+> > +
+> > +#include "dfl-afu.h"
+> > +
+> > +#define PORT_ERROR_MASK		0x8
+> > +#define PORT_ERROR		0x10
+> > +#define PORT_FIRST_ERROR	0x18
+> > +#define PORT_MALFORMED_REQ0	0x20
+> > +#define PORT_MALFORMED_REQ1	0x28
+> > +
+> > +#define ERROR_MASK		GENMASK_ULL(63, 0)
+> > +
+> > +/* mask or unmask port errors by the error mask register. */
+> > +static void __port_err_mask(struct device *dev, bool mask)
+> > +{
+> > +	void __iomem *base;
+> > +
+> > +	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
+> > +
+> > +	writeq(mask ? ERROR_MASK : 0, base + PORT_ERROR_MASK);
+> > +}
+> > +
+> > +/* clear port errors. */
+> > +static int __port_err_clear(struct device *dev, u64 err)
+> > +{
+> > +	struct platform_device *pdev = to_platform_device(dev);
+> > +	void __iomem *base_err, *base_hdr;
+> > +	int ret;
+> > +	u64 v;
+> > +
+> > +	base_err = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
+> > +	base_hdr = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
+> > +
+> > +	/*
+> > +	 * clear Port Errors
+> > +	 *
+> > +	 * - Check for AP6 State
+> > +	 * - Halt Port by keeping Port in reset
+> > +	 * - Set PORT Error mask to all 1 to mask errors
+> > +	 * - Clear all errors
+> > +	 * - Set Port mask to all 0 to enable errors
+> > +	 * - All errors start capturing new errors
+> > +	 * - Enable Port by pulling the port out of reset
+> > +	 */
+> > +
+> > +	/* if device is still in AP6 power state, can not clear any error. */
+> > +	v = readq(base_hdr + PORT_HDR_STS);
+> > +	if (FIELD_GET(PORT_STS_PWR_STATE, v) == PORT_STS_PWR_STATE_AP6) {
+> > +		dev_err(dev, "Could not clear errors, device in AP6 state.\n");
+> > +		return -EBUSY;
+> > +	}
+> > +
+> > +	/* Halt Port by keeping Port in reset */
+> > +	ret = __port_disable(pdev);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	/* Mask all errors */
+> > +	__port_err_mask(dev, true);
+> > +
+> > +	/* Clear errors if err input matches with current port errors.*/
+> > +	v = readq(base_err + PORT_ERROR);
+> > +
+> > +	if (v == err) {
+> > +		writeq(v, base_err + PORT_ERROR);
+> > +
+> > +		v = readq(base_err + PORT_FIRST_ERROR);
+> > +		writeq(v, base_err + PORT_FIRST_ERROR);
+> > +	} else {
+> > +		ret = -EINVAL;
+> > +	}
+> > +
+> > +	/* Clear mask */
+> > +	__port_err_mask(dev, false);
+> > +
+> > +	/* Enable the Port by clear the reset */
+> > +	__port_enable(pdev);
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +static ssize_t revision_show(struct device *dev, struct device_attribute *attr,
+> > +			     char *buf)
+> > +{
+> > +	void __iomem *base;
+> > +
+> > +	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
+> > +
+> > +	return sprintf(buf, "%u\n", dfl_feature_revision(base));
+> > +}
+> > +static DEVICE_ATTR_RO(revision);
+> > +
+> > +static ssize_t errors_show(struct device *dev, struct device_attribute *attr,
+> > +			   char *buf)
+> > +{
+> > +	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
+> > +	void __iomem *base;
+> > +	u64 error;
+> > +
+> > +	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
+> > +
+> > +	mutex_lock(&pdata->lock);
+> > +	error = readq(base + PORT_ERROR);
+> > +	mutex_unlock(&pdata->lock);
+> > +
+> > +	return sprintf(buf, "0x%llx\n", (unsigned long long)error);
+> > +}
+> > +static DEVICE_ATTR_RO(errors);
+> > +
+> > +static ssize_t first_error_show(struct device *dev,
+> > +				struct device_attribute *attr, char *buf)
+> > +{
+> > +	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
+> > +	void __iomem *base;
+> > +	u64 error;
+> > +
+> > +	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
+> > +
+> > +	mutex_lock(&pdata->lock);
+> > +	error = readq(base + PORT_FIRST_ERROR);
+> > +	mutex_unlock(&pdata->lock);
+> > +
+> > +	return sprintf(buf, "0x%llx\n", (unsigned long long)error);
+> > +}
+> > +static DEVICE_ATTR_RO(first_error);
+> > +
+> > +static ssize_t first_malformed_req_show(struct device *dev,
+> > +					struct device_attribute *attr,
+> > +					char *buf)
+> > +{
+> > +	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
+> > +	void __iomem *base;
+> > +	u64 req0, req1;
+> > +
+> > +	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
+> > +
+> > +	mutex_lock(&pdata->lock);
+> > +	req0 = readq(base + PORT_MALFORMED_REQ0);
+> > +	req1 = readq(base + PORT_MALFORMED_REQ1);
+> > +	mutex_unlock(&pdata->lock);
+> > +
+> > +	return sprintf(buf, "0x%016llx%016llx\n",
+> > +		       (unsigned long long)req1, (unsigned long long)req0);
+> > +}
+> > +static DEVICE_ATTR_RO(first_malformed_req);
+> > +
+> > +static ssize_t clear_store(struct device *dev, struct device_attribute *attr,
+> > +			   const char *buff, size_t count)
+> > +{
+> > +	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
+> > +	u64 value;
+> > +	int ret;
+> > +
+> > +	if (kstrtou64(buff, 0, &value))
+> > +		return -EINVAL;
+> > +
+> > +	mutex_lock(&pdata->lock);
+> > +	ret = __port_err_clear(dev, value);
+> > +	mutex_unlock(&pdata->lock);
+> > +
+> > +	return ret ? ret : count;
+> > +}
+> > +static DEVICE_ATTR_WO(clear);
+> > +
+> > +static struct attribute *port_err_attrs[] = {
+> > +	&dev_attr_revision.attr,
+> > +	&dev_attr_errors.attr,
+> > +	&dev_attr_first_error.attr,
+> > +	&dev_attr_first_malformed_req.attr,
+> > +	&dev_attr_clear.attr,
+> > +	NULL,
+> > +};
+> > +
+> > +static struct attribute_group port_err_attr_group = {
+> > +	.attrs = port_err_attrs,
+> > +	.name = "errors",
+> > +};
+> > +
+> > +static int port_err_init(struct platform_device *pdev,
+> > +			 struct dfl_feature *feature)
+> > +{
+> > +	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
+> > +
+> > +	mutex_lock(&pdata->lock);
+> > +	__port_err_mask(&pdev->dev, false);
+> > +	mutex_unlock(&pdata->lock);
+> 
+> Locking one data structure and then modifying another one is up there
+> with "things never to do in the kernel unless you want a huge
+> headache!".
 
-Please note that, this is only working for port header feature
-with revision 0, for later revisions, userclock setting is moved
-to a separated private feature, so one revision sysfs interface
-is exposed to userspace application for this purpose too.
+Actually we always use the same lock for protection as other places, but
+the code may cause some misunderstanding, let me improve this part in
+the next version.
 
-Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
-v2: rebased, and switched to use device_add/remove_groups for sysfs
-v3: update kernel version and date in sysfs doc
-v4: rebased.
-v5: drop sysfs add/remove in init/uinit callback.
-    add missed locking for sysfs.
-    use is_visible to decide if hardware supports userclk or not.
-    remove revision sysfs entry.
----
- Documentation/ABI/testing/sysfs-platform-dfl-port |  28 ++++++
- drivers/fpga/dfl-afu-main.c                       | 111 +++++++++++++++++++++-
- drivers/fpga/dfl.h                                |   9 ++
- 3 files changed, 147 insertions(+), 1 deletion(-)
+> 
+> > +
+> > +	return device_add_group(&pdev->dev, &port_err_attr_group);
+> 
+> You raced userspace and lost :(
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
-index 1ab3e6f..c2660e4 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-port
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
-@@ -46,3 +46,31 @@ Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-write. Read or set AFU latency tolerance reporting value.
- 		Set ltr to 1 if the AFU can tolerate latency >= 40us or set it
- 		to 0 if it is latency sensitive.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqcmd
-+Date:		August 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Write-only. User writes command to this interface to set
-+		userclock to AFU.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqsts
-+Date:		August 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the status of issued command
-+		to userclck_freqcmd.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqcntrcmd
-+Date:		August 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Write-only. User writes command to this interface to set
-+		userclock counter.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/userclk_freqcntrsts
-+Date:		August 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the status of issued command
-+		to userclck_freqcntrcmd.
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index e955149..f0b45f2 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -274,17 +274,126 @@ static int port_get_id(struct platform_device *pdev)
- }
- static DEVICE_ATTR_RO(power_state);
- 
-+static ssize_t
-+userclk_freqcmd_store(struct device *dev, struct device_attribute *attr,
-+		      const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	u64 userclk_freq_cmd;
-+	void __iomem *base;
-+
-+	if (kstrtou64(buf, 0, &userclk_freq_cmd))
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(userclk_freq_cmd, base + PORT_HDR_USRCLK_CMD0);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_WO(userclk_freqcmd);
-+
-+static ssize_t
-+userclk_freqcntrcmd_store(struct device *dev, struct device_attribute *attr,
-+			  const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	u64 userclk_freqcntr_cmd;
-+	void __iomem *base;
-+
-+	if (kstrtou64(buf, 0, &userclk_freqcntr_cmd))
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(userclk_freqcntr_cmd, base + PORT_HDR_USRCLK_CMD1);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_WO(userclk_freqcntrcmd);
-+
-+static ssize_t
-+userclk_freqsts_show(struct device *dev, struct device_attribute *attr,
-+		     char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	u64 userclk_freqsts;
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	userclk_freqsts = readq(base + PORT_HDR_USRCLK_STS0);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)userclk_freqsts);
-+}
-+static DEVICE_ATTR_RO(userclk_freqsts);
-+
-+static ssize_t
-+userclk_freqcntrsts_show(struct device *dev, struct device_attribute *attr,
-+			 char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	u64 userclk_freqcntrsts;
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	mutex_lock(&pdata->lock);
-+	userclk_freqcntrsts = readq(base + PORT_HDR_USRCLK_STS1);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n",
-+		       (unsigned long long)userclk_freqcntrsts);
-+}
-+static DEVICE_ATTR_RO(userclk_freqcntrsts);
-+
- static struct attribute *port_hdr_attrs[] = {
- 	&dev_attr_id.attr,
- 	&dev_attr_ltr.attr,
- 	&dev_attr_ap1_event.attr,
- 	&dev_attr_ap2_event.attr,
- 	&dev_attr_power_state.attr,
-+	&dev_attr_userclk_freqcmd.attr,
-+	&dev_attr_userclk_freqcntrcmd.attr,
-+	&dev_attr_userclk_freqsts.attr,
-+	&dev_attr_userclk_freqcntrsts.attr,
- 	NULL,
- };
- 
-+static umode_t port_hdr_attrs_visible(struct kobject *kobj,
-+				      struct attribute *attr, int n)
-+{
-+	struct device *dev = kobj_to_dev(kobj);
-+	umode_t mode = attr->mode;
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	if (dfl_feature_revision(base) > 0) {
-+		/*
-+		 * userclk sysfs interfaces are only visible in case port
-+		 * revision is 0, as hardware with revision >0 doesn't
-+		 * support this.
-+		 */
-+		if (attr == &dev_attr_userclk_freqcmd.attr ||
-+		    attr == &dev_attr_userclk_freqcntrcmd.attr ||
-+		    attr == &dev_attr_userclk_freqsts.attr ||
-+		    attr == &dev_attr_userclk_freqcntrsts.attr)
-+			mode = 0;
-+	}
-+
-+	return mode;
-+}
-+
- static const struct attribute_group port_hdr_group = {
--	.attrs = port_hdr_attrs,
-+	.attrs      = port_hdr_attrs,
-+	.is_visible = port_hdr_attrs_visible,
- };
- 
- static int port_hdr_init(struct platform_device *pdev,
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 856ea4e..9f0e656 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -120,6 +120,10 @@
- #define PORT_HDR_CAP		0x30
- #define PORT_HDR_CTRL		0x38
- #define PORT_HDR_STS		0x40
-+#define PORT_HDR_USRCLK_CMD0	0x50
-+#define PORT_HDR_USRCLK_CMD1	0x58
-+#define PORT_HDR_USRCLK_STS0	0x60
-+#define PORT_HDR_USRCLK_STS1	0x68
- 
- /* Port Capability Register Bitfield */
- #define PORT_CAP_PORT_NUM	GENMASK_ULL(1, 0)	/* ID of this port */
-@@ -355,6 +359,11 @@ static inline bool dfl_feature_is_port(void __iomem *base)
- 		(FIELD_GET(DFH_ID, v) == DFH_ID_FIU_PORT);
- }
- 
-+static inline u8 dfl_feature_revision(void __iomem *base)
-+{
-+	return (u8)FIELD_GET(DFH_REVISION, readq(base + DFH));
-+}
-+
- /**
-  * struct dfl_fpga_enum_info - DFL FPGA enumeration information
-  *
--- 
-1.8.3.1
+Do you mind giving some more hints on this one? I guess I didn't fully
+understand this. :( Add handling if device_add_group failed here, or
+something else I should fix?
+
+Thanks
+Hao
+
+> 
+> thanks,
+> 
+> greg k-h
