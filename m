@@ -1,111 +1,76 @@
-Return-Path: <SRS0=q4DL=VU=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=q4DL=VU=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v3 07/12] fpga: dfl: afu: export __port_enable/disable function.
-Date: Tue, 23 Jul 2019 12:51:30 +0800
-Message-Id: <1563857495-26692-8-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1563857495-26692-1-git-send-email-hao.wu@intel.com>
-References: <1563857495-26692-1-git-send-email-hao.wu@intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=DDPB=WD=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=DDPB=WD=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:44674 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726529AbfHGJbD (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 7 Aug 2019 05:31:03 -0400
+Date: Wed, 7 Aug 2019 11:30:58 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v4 11/12] fpga: dfl: fme: add global error reporting
+ support
+Message-ID: <20190807093058.GA8326@kroah.com>
+References: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
+ <1564914022-3710-12-git-send-email-hao.wu@intel.com>
+ <20190805155626.GD8107@kroah.com>
+ <20190807024521.GD24158@hao-dev>
+ <20190807080825.GA10344@hao-dev>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190807080825.GA10344@hao-dev>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Wu Hao <hao.wu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Luwei Kang <luwei.kang@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
 
-As these two functions are used by other private features. e.g.
-in error reporting private feature, it requires to check port status
-and reset port for error clearing.
+On Wed, Aug 07, 2019 at 04:08:25PM +0800, Wu Hao wrote:
+> On Wed, Aug 07, 2019 at 10:45:22AM +0800, Wu Hao wrote:
+> > On Mon, Aug 05, 2019 at 05:56:26PM +0200, Greg KH wrote:
+> > > On Sun, Aug 04, 2019 at 06:20:21PM +0800, Wu Hao wrote:
+> > > > +static int fme_global_err_init(struct platform_device *pdev,
+> > > > +			       struct dfl_feature *feature)
+> > > > +{
+> > > > +	struct device *dev;
+> > > > +	int ret = 0;
+> > > > +
+> > > > +	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+> > > > +	if (!dev)
+> > > > +		return -ENOMEM;
+> > > > +
+> > > > +	dev->parent = &pdev->dev;
+> > > > +	dev->release = err_dev_release;
+> > > > +	dev_set_name(dev, "errors");
+> > > > +
+> > > > +	fme_error_enable(feature);
+> > > > +
+> > > > +	ret = device_register(dev);
+> > > > +	if (ret) {
+> > > > +		put_device(dev);
+> > > > +		return ret;
+> > > > +	}
+> > > > +
+> > > > +	ret = device_add_groups(dev, error_groups);
+> > > 
+> > > cute, but no, you do not create a whole struct device for a subdir.  Use
+> > > the attribute group name like you did on earlier patches.
+> > 
+> > Sure, let me fix it in the next version.
+> > 
+> > > 
+> > > And again, you raced userspace and lost :(
+> > 
+> > Same here, could you please give some more hints here?
+> 
+> Oh.. I see..
+> 
+> I should follow [1] as this is a platform driver. I will fix it. Thanks!
+> 
+> [PATCH 00/11] Platform drivers, provide a way to add sysfs groups easily
+> 
+> [1]https://lkml.org/lkml/2019/7/4/181
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
-v2: rebased.
----
- drivers/fpga/dfl-afu-main.c | 25 ++++++++++++++-----------
- drivers/fpga/dfl-afu.h      |  3 +++
- 2 files changed, 17 insertions(+), 11 deletions(-)
+Yes, that is the correct thing to do.
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index fbd9553..22d294b 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -22,14 +22,16 @@
- #include "dfl-afu.h"
- 
- /**
-- * port_enable - enable a port
-+ * __port_enable - enable a port
-  * @pdev: port platform device.
-  *
-  * Enable Port by clear the port soft reset bit, which is set by default.
-  * The AFU is unable to respond to any MMIO access while in reset.
-- * port_enable function should only be used after port_disable function.
-+ * __port_enable function should only be used after __port_disable function.
-+ *
-+ * The caller needs to hold lock for protection.
-  */
--static void port_enable(struct platform_device *pdev)
-+void __port_enable(struct platform_device *pdev)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
- 	void __iomem *base;
-@@ -52,13 +54,14 @@ static void port_enable(struct platform_device *pdev)
- #define RST_POLL_TIMEOUT 1000 /* us */
- 
- /**
-- * port_disable - disable a port
-+ * __port_disable - disable a port
-  * @pdev: port platform device.
-  *
-- * Disable Port by setting the port soft reset bit, it puts the port into
-- * reset.
-+ * Disable Port by setting the port soft reset bit, it puts the port into reset.
-+ *
-+ * The caller needs to hold lock for protection.
-  */
--static int port_disable(struct platform_device *pdev)
-+int __port_disable(struct platform_device *pdev)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
- 	void __iomem *base;
-@@ -104,9 +107,9 @@ static int __port_reset(struct platform_device *pdev)
- {
- 	int ret;
- 
--	ret = port_disable(pdev);
-+	ret = __port_disable(pdev);
- 	if (!ret)
--		port_enable(pdev);
-+		__port_enable(pdev);
- 
- 	return ret;
- }
-@@ -806,9 +809,9 @@ static int port_enable_set(struct platform_device *pdev, bool enable)
- 
- 	mutex_lock(&pdata->lock);
- 	if (enable)
--		port_enable(pdev);
-+		__port_enable(pdev);
- 	else
--		ret = port_disable(pdev);
-+		ret = __port_disable(pdev);
- 	mutex_unlock(&pdata->lock);
- 
- 	return ret;
-diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
-index 0c7630a..35e60c5 100644
---- a/drivers/fpga/dfl-afu.h
-+++ b/drivers/fpga/dfl-afu.h
-@@ -79,6 +79,9 @@ struct dfl_afu {
- 	struct dfl_feature_platform_data *pdata;
- };
- 
-+void __port_enable(struct platform_device *pdev);
-+int __port_disable(struct platform_device *pdev);
-+
- void afu_mmio_region_init(struct dfl_feature_platform_data *pdata);
- int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
- 			u32 region_index, u64 region_size, u64 phys, u32 flags);
--- 
-1.8.3.1
+thanks,
+
+greg k-h
