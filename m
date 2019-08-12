@@ -1,82 +1,74 @@
-Date: Sat, 31 Aug 2019 13:55:32 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v6 14/57] fpga: Remove dev_err() usage after
- platform_get_irq()
-Message-ID: <20190831205530.GA24385@archbox>
-References: <20190730181557.90391-1-swboyd@chromium.org>
- <20190730181557.90391-15-swboyd@chromium.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190730181557.90391-15-swboyd@chromium.org>
-To: Stephen Boyd <swboyd@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v5 7/9] fpga: dfl: afu: add STP (SignalTap) support
+Date: Mon, 12 Aug 2019 10:50:02 +0800
+Message-Id: <1565578204-13969-8-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
+References: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
+To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Jul 30, 2019 at 11:15:14AM -0700, Stephen Boyd wrote:
-> We don't need dev_err() messages when platform_get_irq() fails now that
-> platform_get_irq() prints an error message itself when something goes
-> wrong. Let's remove these prints with a simple semantic patch.
-> 
-> // <smpl>
-> @@
-> expression ret;
-> struct platform_device *E;
-> @@
-> 
-> ret =
-> (
-> platform_get_irq(E, ...)
-> |
-> platform_get_irq_byname(E, ...)
-> );
-> 
-> if ( \( ret < 0 \| ret <= 0 \) )
-> {
-> (
-> -if (ret != -EPROBE_DEFER)
-> -{ ...
-> -dev_err(...);
-> -... }
-> |
-> ...
-> -dev_err(...);
-> )
-> ...
-> }
-> // </smpl>
-> 
-> While we're here, remove braces on if statements that only have one
-> statement (manually).
-> 
-> Cc: Moritz Fischer <mdf@kernel.org>
-> Cc: linux-fpga@vger.kernel.org
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: Stephen Boyd <swboyd@chromium.org>
-> ---
-> 
-> Please apply directly to subsystem trees
-> 
->  drivers/fpga/zynq-fpga.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
-> index 31ef38e38537..ee7765049607 100644
-> --- a/drivers/fpga/zynq-fpga.c
-> +++ b/drivers/fpga/zynq-fpga.c
-> @@ -578,10 +578,8 @@ static int zynq_fpga_probe(struct platform_device *pdev)
->  	init_completion(&priv->dma_done);
->  
->  	priv->irq = platform_get_irq(pdev, 0);
-> -	if (priv->irq < 0) {
-> -		dev_err(dev, "No IRQ available\n");
-> +	if (priv->irq < 0)
->  		return priv->irq;
-> -	}
->  
->  	priv->clk = devm_clk_get(dev, "ref_clk");
->  	if (IS_ERR(priv->clk)) {
-> -- 
-> Sent by a computer through tubes
-> 
-Applied to for-next. If all goes well I'll queue it for next PR.
+STP (SignalTap) is one of the private features under the port for
+debugging. This patch adds private feature driver support for it
+to allow userspace applications to mmap related mmio region and
+provide STP service.
+
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Moritz Fischer <mdf@kernel.org>
+Acked-by: Alan Tull <atull@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+---
+v4: remove uinit callback which does nothing.
+    remove dev_dbg in init callback function.
+---
+ drivers/fpga/dfl-afu-main.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index e11352a..e4a34dc 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -508,6 +508,27 @@ static int port_afu_init(struct platform_device *pdev,
+ 	.init = port_afu_init,
+ };
+ 
++static int port_stp_init(struct platform_device *pdev,
++			 struct dfl_feature *feature)
++{
++	struct resource *res = &pdev->resource[feature->resource_index];
++
++	return afu_mmio_region_add(dev_get_platdata(&pdev->dev),
++				   DFL_PORT_REGION_INDEX_STP,
++				   resource_size(res), res->start,
++				   DFL_PORT_REGION_MMAP | DFL_PORT_REGION_READ |
++				   DFL_PORT_REGION_WRITE);
++}
++
++static const struct dfl_feature_id port_stp_id_table[] = {
++	{.id = PORT_FEATURE_ID_STP,},
++	{0,}
++};
++
++static const struct dfl_feature_ops port_stp_ops = {
++	.init = port_stp_init,
++};
++
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+ 		.id_table = port_hdr_id_table,
+@@ -522,6 +543,10 @@ static int port_afu_init(struct platform_device *pdev,
+ 		.ops = &port_err_ops,
+ 	},
+ 	{
++		.id_table = port_stp_id_table,
++		.ops = &port_stp_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	}
+ };
+-- 
+1.8.3.1
