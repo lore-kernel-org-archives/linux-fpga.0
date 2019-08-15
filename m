@@ -1,54 +1,92 @@
-Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
-From: thor.thayer@linux.intel.com
-Subject: [RESEND PATCHv4 0/3] fpga: altera-cvp: Add Stratix10 Support
-Date: Mon, 19 Aug 2019 15:48:05 -0500
-Message-Id: <1566247688-26070-1-git-send-email-thor.thayer@linux.intel.com>
-To: mdf@kernel.org, richard.gong@intel.com, agust@denx.de
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
+Return-Path: <SRS0=aBvF=WL=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=aBvF=WL=intel.com=hao.wu@kernel.org>
+Date: Thu, 15 Aug 2019 11:58:04 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH v3 01/12] fpga: dfl: fme: support 512bit data width PR
+Message-ID: <20190815035804.GA29090@hao-dev>
+References: <1563857495-26692-1-git-send-email-hao.wu@intel.com>
+ <1563857495-26692-2-git-send-email-hao.wu@intel.com>
+ <20190724093532.GB29532@kroah.com>
+ <20190724142235.GE8463@hao-dev>
+ <32c46e3de1a6641eb0d5940868f7d8b8a30181d3.camel@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <32c46e3de1a6641eb0d5940868f7d8b8a30181d3.camel@redhat.com>
+To: Scott Wood <swood@redhat.com>
+Cc: Greg KH <gregkh@linuxfoundation.org>, mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Thor Thayer <thor.thayer@linux.intel.com>
+On Wed, Aug 14, 2019 at 11:34:15AM -0500, Scott Wood wrote:
+> On Wed, 2019-07-24 at 22:22 +0800, Wu Hao wrote:
+> > On Wed, Jul 24, 2019 at 11:35:32AM +0200, Greg KH wrote:
+> > > On Tue, Jul 23, 2019 at 12:51:24PM +0800, Wu Hao wrote:
+> > > >  
+> > > > @@ -67,8 +69,43 @@
+> > > >  #define PR_WAIT_TIMEOUT   8000000
+> > > >  #define PR_HOST_STATUS_IDLE	0
+> > > >  
+> > > > +#if defined(CONFIG_X86) && defined(CONFIG_AS_AVX512)
+> > > > +
+> > > > +#include <linux/cpufeature.h>
+> > > > +#include <asm/fpu/api.h>
+> > > > +
+> > > > +static inline int is_cpu_avx512_enabled(void)
+> > > > +{
+> > > > +	return cpu_feature_enabled(X86_FEATURE_AVX512F);
+> > > > +}
+> > > 
+> > > That's a very arch specific function, why would a driver ever care about
+> > > this?
+> > 
+> > Yes, this is only applied to a specific FPGA solution, which FPGA
+> > has been integrated with XEON. Hardware indicates this using register
+> > to software. As it's cpu integrated solution, so CPU always has this
+> > AVX512 capability. The only check we do, is make sure this is not
+> > manually disabled by kernel.
+> > 
+> > With this hardware, software could use AVX512 to accelerate the FPGA
+> > partial reconfiguration as mentioned in the patch commit message.
+> > It brings performance benifits to people who uses it. This is only one
+> > optimization (512 vs 32bit data write to hw) for a specific hardware.
+> 
+> I thought earlier you said that 512 bit accesses were required for this
+> particular integrated-only version of the device, and not just an
+> optimization?
 
-Newer versions (V2) of Altera/Intel FPGAs CvP have different PCI
-Vendor Specific Capability offsets than the older (V1) Altera/FPGAs.
+yes, some optimization implemented in a specific integrated-only version
+of hardware, this patch is used to support that particular hardware. This
+is also the reason you see code here to check hardware revision in this
+patch.
 
-Most of the CvP registers and their bitfields remain the same
-between both the older parts and the newer parts.
+> 
+> > > > +#else
+> > > > +static inline int is_cpu_avx512_enabled(void)
+> > > > +{
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static inline void copy512(const void *src, void __iomem *dst)
+> > > > +{
+> > > > +	WARN_ON_ONCE(1);
+> > > 
+> > > Are you trying to get reports from syzbot?  :)
+> > 
+> > Oh.. no.. I will remove it. :)
+> > 
+> > Thank you very much!
+> 
+> What's wrong with this?  The driver should never call copy512() if
+> is_cpu_avx512_enabled() returns 0, and if syzbot can somehow make the driver
+> do so, then yes we do want a report.
 
-This patchset implements changes to discover the Vendor Specific
-Capability offset and then add Stratix10 CvP support.
+Yes, you are right, in previous version, it doesn't have avx512 enable check
+there, so it's possible to have false reporting, it should be fine after
+driver does early check on this during probe. As this patch has been dropped
+from main patchset, may rework it later and resubmit. Thanks for the comments.
 
-V2 Changes:
-  Remove inline designator from abstraction functions.
-  Reverse Christmas Tree format for local variables
-  Remove redundant mask from credit calculation
-  Add commment for the delay(1) function in wait_for_credit()
+Hao
 
-V3 Changes
-  Return int instead of void for abstraction functions
-  Check the return code from read in altera_cvp_chk_error()
-  Move reset of current_credit_byte to clear_state().
-  Check return codes of read/writes in added functions.
-
-V4 Changes
-  Rename delta_credit to space
-  Simplify wait for credit do-while loop.
-  Change from udelay() to usleep_range()
-  Use min() to find length to send
-  Remove NULL initialization from private structure
-  Use #define for Version1 offsets
-  Change current_credit_byte to u32 sent_packets.
-  Changes to Kconfig title and description to support Stratix10.
-
-Thor Thayer (3):
-  fpga: altera-cvp: Discover Vendor Specific offset
-  fpga: altera-cvp: Preparation for V2 parts.
-  fpga: altera-cvp: Add Stratix10 (V2) Support
-
- drivers/fpga/Kconfig      |   6 +-
- drivers/fpga/altera-cvp.c | 339 ++++++++++++++++++++++++++++++++++++----------
- 2 files changed, 271 insertions(+), 74 deletions(-)
-
--- 
-2.7.4
+> 
+> -Scott
+> 
