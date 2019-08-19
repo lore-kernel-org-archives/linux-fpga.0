@@ -1,350 +1,312 @@
-Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=k3Wb=WA=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v4 07/12] fpga: dfl: afu: add error reporting support.
-Date: Sun,  4 Aug 2019 18:20:17 +0800
-Message-Id: <1564914022-3710-8-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
-References: <1564914022-3710-1-git-send-email-hao.wu@intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
+Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
+From: thor.thayer@linux.intel.com
+Subject: [RESEND PATCHv4 1/3] fpga: altera-cvp: Discover Vendor Specific offset
+Date: Mon, 19 Aug 2019 15:48:06 -0500
+Message-Id: <1566247688-26070-2-git-send-email-thor.thayer@linux.intel.com>
+In-Reply-To: <1566247688-26070-1-git-send-email-thor.thayer@linux.intel.com>
+References: <1566247688-26070-1-git-send-email-thor.thayer@linux.intel.com>
+To: mdf@kernel.org, richard.gong@intel.com, agust@denx.de
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Error reporting is one important private feature, it reports error
-detected on port and accelerated function unit (AFU). It introduces
-several sysfs interfaces to allow userspace to check and clear
-errors detected by hardware.
+From: Thor Thayer <thor.thayer@linux.intel.com>
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
-v2: switch to device_add/remove_group for sysfs.
-v3: update kernel version and date in sysfs doc
-v4: remove dev_dbg in init/uinit callback function.
----
- Documentation/ABI/testing/sysfs-platform-dfl-port |  39 ++++
- drivers/fpga/Makefile                             |   1 +
- drivers/fpga/dfl-afu-error.c                      | 221 ++++++++++++++++++++++
- drivers/fpga/dfl-afu-main.c                       |   4 +
- drivers/fpga/dfl-afu.h                            |   4 +
- 5 files changed, 269 insertions(+)
- create mode 100644 drivers/fpga/dfl-afu-error.c
+Newer Intel FPGAs have different Vendor Specific offsets than
+legacy parts. Use PCI discovery to find the CvP registers.
+Since the register positions remain the same, change the hard
+coded address to a more flexible way of indexing registers
+from the offset.
+Adding new PCI read and write abstraction functions to
+handle the offset (altera_read_config_dword() and
+altera_write_config_dword()).
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-port b/Documentation/ABI/testing/sysfs-platform-dfl-port
-index 5663441..3b6580b 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-port
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-port
-@@ -81,3 +81,42 @@ KernelVersion:	5.4
- Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-only. Read this file to get the status of issued command
- 		to userclck_freqcntrcmd.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/errors/revision
-+Date:		August 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the revision of this error
-+		reporting private feature.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/errors/errors
-+Date:		August 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get errors detected on port and
-+		Accelerated Function Unit (AFU).
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/errors/first_error
-+Date:		August 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the first error detected by
-+		hardware.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/errors/first_malformed_req
-+Date:		August 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the first malformed request
-+		captured by hardware.
-+
-+What:		/sys/bus/platform/devices/dfl-port.0/errors/clear
-+Date:		August 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Write-only. Write error code to this file to clear errors.
-+		Write fails with -EINVAL if input parsing fails or input error
-+		code doesn't match.
-+		Write fails with -EBUSY or -ETIMEDOUT if error can't be cleared
-+		as hardware is in low power state (-EBUSY) or not responding
-+		(-ETIMEDOUT).
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 312b937..7255891 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_FPGA_DFL_AFU)		+= dfl-afu.o
+Signed-off-by: Thor Thayer <thor.thayer@linux.intel.com>
+---
+v2 Remove inline designator from abstraction functions.
+   Reverse Christmas Tree format for local variables
+v3 Fix return codes of abstraction functions.
+v4 Remove dev_dbg() offset message
+---
+ drivers/fpga/altera-cvp.c | 95 +++++++++++++++++++++++++++++------------------
+ 1 file changed, 58 insertions(+), 37 deletions(-)
+
+diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+index 53b963071c7b..9df2073331cb 100644
+--- a/drivers/fpga/altera-cvp.c
++++ b/drivers/fpga/altera-cvp.c
+@@ -22,10 +22,10 @@
+ #define TIMEOUT_US	2000	/* CVP STATUS timeout for USERMODE polling */
  
- dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
- dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
-+dfl-afu-objs += dfl-afu-error.o
+ /* Vendor Specific Extended Capability Registers */
+-#define VSE_PCIE_EXT_CAP_ID		0x200
++#define VSE_PCIE_EXT_CAP_ID		0x0
+ #define VSE_PCIE_EXT_CAP_ID_VAL		0x000b	/* 16bit */
  
- # Drivers for FPGAs which implement DFL
- obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
-diff --git a/drivers/fpga/dfl-afu-error.c b/drivers/fpga/dfl-afu-error.c
-new file mode 100644
-index 0000000..c5e0efa
---- /dev/null
-+++ b/drivers/fpga/dfl-afu-error.c
-@@ -0,0 +1,221 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Driver for FPGA Accelerated Function Unit (AFU) Error Reporting
-+ *
-+ * Copyright 2019 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Wu Hao <hao.wu@linux.intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Mitchel Henry <henry.mitchel@intel.com>
-+ */
-+
-+#include <linux/uaccess.h>
-+
-+#include "dfl-afu.h"
-+
-+#define PORT_ERROR_MASK		0x8
-+#define PORT_ERROR		0x10
-+#define PORT_FIRST_ERROR	0x18
-+#define PORT_MALFORMED_REQ0	0x20
-+#define PORT_MALFORMED_REQ1	0x28
-+
-+#define ERROR_MASK		GENMASK_ULL(63, 0)
-+
-+/* mask or unmask port errors by the error mask register. */
-+static void __port_err_mask(struct device *dev, bool mask)
-+{
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	writeq(mask ? ERROR_MASK : 0, base + PORT_ERROR_MASK);
-+}
-+
-+/* clear port errors. */
-+static int __port_err_clear(struct device *dev, u64 err)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	void __iomem *base_err, *base_hdr;
-+	int ret;
-+	u64 v;
-+
-+	base_err = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+	base_hdr = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_HEADER);
-+
-+	/*
-+	 * clear Port Errors
-+	 *
-+	 * - Check for AP6 State
-+	 * - Halt Port by keeping Port in reset
-+	 * - Set PORT Error mask to all 1 to mask errors
-+	 * - Clear all errors
-+	 * - Set Port mask to all 0 to enable errors
-+	 * - All errors start capturing new errors
-+	 * - Enable Port by pulling the port out of reset
-+	 */
-+
-+	/* if device is still in AP6 power state, can not clear any error. */
-+	v = readq(base_hdr + PORT_HDR_STS);
-+	if (FIELD_GET(PORT_STS_PWR_STATE, v) == PORT_STS_PWR_STATE_AP6) {
-+		dev_err(dev, "Could not clear errors, device in AP6 state.\n");
-+		return -EBUSY;
-+	}
-+
-+	/* Halt Port by keeping Port in reset */
-+	ret = __port_disable(pdev);
-+	if (ret)
-+		return ret;
-+
-+	/* Mask all errors */
-+	__port_err_mask(dev, true);
-+
-+	/* Clear errors if err input matches with current port errors.*/
-+	v = readq(base_err + PORT_ERROR);
-+
-+	if (v == err) {
-+		writeq(v, base_err + PORT_ERROR);
-+
-+		v = readq(base_err + PORT_FIRST_ERROR);
-+		writeq(v, base_err + PORT_FIRST_ERROR);
-+	} else {
-+		ret = -EINVAL;
-+	}
-+
-+	/* Clear mask */
-+	__port_err_mask(dev, false);
-+
-+	/* Enable the Port by clear the reset */
-+	__port_enable(pdev);
-+
-+	return ret;
-+}
-+
-+static ssize_t revision_show(struct device *dev, struct device_attribute *attr,
-+			     char *buf)
-+{
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	return sprintf(buf, "%u\n", dfl_feature_revision(base));
-+}
-+static DEVICE_ATTR_RO(revision);
-+
-+static ssize_t errors_show(struct device *dev, struct device_attribute *attr,
-+			   char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 error;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	mutex_lock(&pdata->lock);
-+	error = readq(base + PORT_ERROR);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)error);
-+}
-+static DEVICE_ATTR_RO(errors);
-+
-+static ssize_t first_error_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 error;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	mutex_lock(&pdata->lock);
-+	error = readq(base + PORT_FIRST_ERROR);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)error);
-+}
-+static DEVICE_ATTR_RO(first_error);
-+
-+static ssize_t first_malformed_req_show(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 req0, req1;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, PORT_FEATURE_ID_ERROR);
-+
-+	mutex_lock(&pdata->lock);
-+	req0 = readq(base + PORT_MALFORMED_REQ0);
-+	req1 = readq(base + PORT_MALFORMED_REQ1);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%016llx%016llx\n",
-+		       (unsigned long long)req1, (unsigned long long)req0);
-+}
-+static DEVICE_ATTR_RO(first_malformed_req);
-+
-+static ssize_t clear_store(struct device *dev, struct device_attribute *attr,
-+			   const char *buff, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	u64 value;
-+	int ret;
-+
-+	if (kstrtou64(buff, 0, &value))
-+		return -EINVAL;
-+
-+	mutex_lock(&pdata->lock);
-+	ret = __port_err_clear(dev, value);
-+	mutex_unlock(&pdata->lock);
-+
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_WO(clear);
-+
-+static struct attribute *port_err_attrs[] = {
-+	&dev_attr_revision.attr,
-+	&dev_attr_errors.attr,
-+	&dev_attr_first_error.attr,
-+	&dev_attr_first_malformed_req.attr,
-+	&dev_attr_clear.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group port_err_attr_group = {
-+	.attrs = port_err_attrs,
-+	.name = "errors",
-+};
-+
-+static int port_err_init(struct platform_device *pdev,
-+			 struct dfl_feature *feature)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+
-+	mutex_lock(&pdata->lock);
-+	__port_err_mask(&pdev->dev, false);
-+	mutex_unlock(&pdata->lock);
-+
-+	return device_add_group(&pdev->dev, &port_err_attr_group);
-+}
-+
-+static void port_err_uinit(struct platform_device *pdev,
-+			   struct dfl_feature *feature)
-+{
-+	device_remove_group(&pdev->dev, &port_err_attr_group);
-+}
-+
-+const struct dfl_feature_id port_err_id_table[] = {
-+	{.id = PORT_FEATURE_ID_ERROR,},
-+	{0,}
-+};
-+
-+const struct dfl_feature_ops port_err_ops = {
-+	.init = port_err_init,
-+	.uinit = port_err_uinit,
-+};
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index e312179..b14df11 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -524,6 +524,10 @@ static void port_afu_uinit(struct platform_device *pdev,
- 		.ops = &port_afu_ops,
- 	},
- 	{
-+		.id_table = port_err_id_table,
-+		.ops = &port_err_ops,
-+	},
-+	{
- 		.ops = NULL,
- 	}
+-#define VSE_CVP_STATUS			0x21c	/* 32bit */
++#define VSE_CVP_STATUS			0x1c	/* 32bit */
+ #define VSE_CVP_STATUS_CFG_RDY		BIT(18)	/* CVP_CONFIG_READY */
+ #define VSE_CVP_STATUS_CFG_ERR		BIT(19)	/* CVP_CONFIG_ERROR */
+ #define VSE_CVP_STATUS_CVP_EN		BIT(20)	/* ctrl block is enabling CVP */
+@@ -33,18 +33,18 @@
+ #define VSE_CVP_STATUS_CFG_DONE		BIT(23)	/* CVP_CONFIG_DONE */
+ #define VSE_CVP_STATUS_PLD_CLK_IN_USE	BIT(24)	/* PLD_CLK_IN_USE */
+ 
+-#define VSE_CVP_MODE_CTRL		0x220	/* 32bit */
++#define VSE_CVP_MODE_CTRL		0x20	/* 32bit */
+ #define VSE_CVP_MODE_CTRL_CVP_MODE	BIT(0)	/* CVP (1) or normal mode (0) */
+ #define VSE_CVP_MODE_CTRL_HIP_CLK_SEL	BIT(1) /* PMA (1) or fabric clock (0) */
+ #define VSE_CVP_MODE_CTRL_NUMCLKS_OFF	8	/* NUMCLKS bits offset */
+ #define VSE_CVP_MODE_CTRL_NUMCLKS_MASK	GENMASK(15, 8)
+ 
+-#define VSE_CVP_DATA			0x228	/* 32bit */
+-#define VSE_CVP_PROG_CTRL		0x22c	/* 32bit */
++#define VSE_CVP_DATA			0x28	/* 32bit */
++#define VSE_CVP_PROG_CTRL		0x2c	/* 32bit */
+ #define VSE_CVP_PROG_CTRL_CONFIG	BIT(0)
+ #define VSE_CVP_PROG_CTRL_START_XFER	BIT(1)
+ 
+-#define VSE_UNCOR_ERR_STATUS		0x234	/* 32bit */
++#define VSE_UNCOR_ERR_STATUS		0x34	/* 32bit */
+ #define VSE_UNCOR_ERR_CVP_CFG_ERR	BIT(5)	/* CVP_CONFIG_ERROR_LATCHED */
+ 
+ #define DRV_NAME		"altera-cvp"
+@@ -61,14 +61,29 @@ struct altera_cvp_conf {
+ 					      u32 data);
+ 	char			mgr_name[64];
+ 	u8			numclks;
++	u32			vsec_offset;
  };
-diff --git a/drivers/fpga/dfl-afu.h b/drivers/fpga/dfl-afu.h
-index 35e60c5..c3182a2 100644
---- a/drivers/fpga/dfl-afu.h
-+++ b/drivers/fpga/dfl-afu.h
-@@ -100,4 +100,8 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
- struct dfl_afu_dma_region *
- afu_dma_region_find(struct dfl_feature_platform_data *pdata,
- 		    u64 iova, u64 size);
+ 
++static int altera_read_config_dword(struct altera_cvp_conf *conf,
++				    int where, u32 *val)
++{
++	return pci_read_config_dword(conf->pci_dev, conf->vsec_offset + where,
++				     val);
++}
 +
-+extern const struct dfl_feature_ops port_err_ops;
-+extern const struct dfl_feature_id port_err_id_table[];
++static int altera_write_config_dword(struct altera_cvp_conf *conf,
++				     int where, u32 val)
++{
++	return pci_write_config_dword(conf->pci_dev, conf->vsec_offset + where,
++				      val);
++}
 +
- #endif /* __DFL_AFU_H */
+ static enum fpga_mgr_states altera_cvp_state(struct fpga_manager *mgr)
+ {
+ 	struct altera_cvp_conf *conf = mgr->priv;
+ 	u32 status;
+ 
+-	pci_read_config_dword(conf->pci_dev, VSE_CVP_STATUS, &status);
++	altera_read_config_dword(conf, VSE_CVP_STATUS, &status);
+ 
+ 	if (status & VSE_CVP_STATUS_CFG_DONE)
+ 		return FPGA_MGR_STATE_OPERATING;
+@@ -86,7 +101,8 @@ static void altera_cvp_write_data_iomem(struct altera_cvp_conf *conf, u32 val)
+ 
+ static void altera_cvp_write_data_config(struct altera_cvp_conf *conf, u32 val)
+ {
+-	pci_write_config_dword(conf->pci_dev, VSE_CVP_DATA, val);
++	pci_write_config_dword(conf->pci_dev, conf->vsec_offset + VSE_CVP_DATA,
++			       val);
+ }
+ 
+ /* switches between CvP clock and internal clock */
+@@ -96,10 +112,10 @@ static void altera_cvp_dummy_write(struct altera_cvp_conf *conf)
+ 	u32 val;
+ 
+ 	/* set 1 CVP clock cycle for every CVP Data Register Write */
+-	pci_read_config_dword(conf->pci_dev, VSE_CVP_MODE_CTRL, &val);
++	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
+ 	val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
+ 	val |= 1 << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
+-	pci_write_config_dword(conf->pci_dev, VSE_CVP_MODE_CTRL, val);
++	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
+ 
+ 	for (i = 0; i < CVP_DUMMY_WR; i++)
+ 		conf->write_data(conf, 0); /* dummy data, could be any value */
+@@ -116,7 +132,7 @@ static int altera_cvp_wait_status(struct altera_cvp_conf *conf, u32 status_mask,
+ 		retries++;
+ 
+ 	do {
+-		pci_read_config_dword(conf->pci_dev, VSE_CVP_STATUS, &val);
++		altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
+ 		if ((val & status_mask) == status_val)
+ 			return 0;
+ 
+@@ -131,18 +147,17 @@ static int altera_cvp_teardown(struct fpga_manager *mgr,
+ 			       struct fpga_image_info *info)
+ {
+ 	struct altera_cvp_conf *conf = mgr->priv;
+-	struct pci_dev *pdev = conf->pci_dev;
+ 	int ret;
+ 	u32 val;
+ 
+ 	/* STEP 12 - reset START_XFER bit */
+-	pci_read_config_dword(pdev, VSE_CVP_PROG_CTRL, &val);
++	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
+ 	val &= ~VSE_CVP_PROG_CTRL_START_XFER;
+-	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
++	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
+ 
+ 	/* STEP 13 - reset CVP_CONFIG bit */
+ 	val &= ~VSE_CVP_PROG_CTRL_CONFIG;
+-	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
++	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
+ 
+ 	/*
+ 	 * STEP 14
+@@ -164,7 +179,6 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
+ 				 const char *buf, size_t count)
+ {
+ 	struct altera_cvp_conf *conf = mgr->priv;
+-	struct pci_dev *pdev = conf->pci_dev;
+ 	u32 iflags, val;
+ 	int ret;
+ 
+@@ -184,7 +198,7 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
+ 		conf->numclks = 1; /* for uncompressed and unencrypted images */
+ 
+ 	/* STEP 1 - read CVP status and check CVP_EN flag */
+-	pci_read_config_dword(pdev, VSE_CVP_STATUS, &val);
++	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
+ 	if (!(val & VSE_CVP_STATUS_CVP_EN)) {
+ 		dev_err(&mgr->dev, "CVP mode off: 0x%04x\n", val);
+ 		return -ENODEV;
+@@ -202,14 +216,14 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
+ 	 * - set HIP_CLK_SEL and CVP_MODE (must be set in the order mentioned)
+ 	 */
+ 	/* switch from fabric to PMA clock */
+-	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
++	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
+ 	val |= VSE_CVP_MODE_CTRL_HIP_CLK_SEL;
+-	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
++	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
+ 
+ 	/* set CVP mode */
+-	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
++	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
+ 	val |= VSE_CVP_MODE_CTRL_CVP_MODE;
+-	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
++	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
+ 
+ 	/*
+ 	 * STEP 3
+@@ -218,10 +232,10 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
+ 	altera_cvp_dummy_write(conf);
+ 
+ 	/* STEP 4 - set CVP_CONFIG bit */
+-	pci_read_config_dword(pdev, VSE_CVP_PROG_CTRL, &val);
++	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
+ 	/* request control block to begin transfer using CVP */
+ 	val |= VSE_CVP_PROG_CTRL_CONFIG;
+-	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
++	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
+ 
+ 	/* STEP 5 - poll CVP_CONFIG READY for 1 with 10us timeout */
+ 	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY,
+@@ -238,15 +252,15 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
+ 	altera_cvp_dummy_write(conf);
+ 
+ 	/* STEP 7 - set START_XFER */
+-	pci_read_config_dword(pdev, VSE_CVP_PROG_CTRL, &val);
++	altera_read_config_dword(conf, VSE_CVP_PROG_CTRL, &val);
+ 	val |= VSE_CVP_PROG_CTRL_START_XFER;
+-	pci_write_config_dword(pdev, VSE_CVP_PROG_CTRL, val);
++	altera_write_config_dword(conf, VSE_CVP_PROG_CTRL, val);
+ 
+ 	/* STEP 8 - start transfer (set CVP_NUMCLKS for bitstream) */
+-	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
++	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
+ 	val &= ~VSE_CVP_MODE_CTRL_NUMCLKS_MASK;
+ 	val |= conf->numclks << VSE_CVP_MODE_CTRL_NUMCLKS_OFF;
+-	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
++	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
+ 
+ 	return 0;
+ }
+@@ -257,7 +271,7 @@ static inline int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
+ 	u32 val;
+ 
+ 	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
+-	pci_read_config_dword(conf->pci_dev, VSE_CVP_STATUS, &val);
++	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
+ 	if (val & VSE_CVP_STATUS_CFG_ERR) {
+ 		dev_err(&mgr->dev, "CVP_CONFIG_ERROR after %zu bytes!\n",
+ 			bytes);
+@@ -316,27 +330,25 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
+ 				     struct fpga_image_info *info)
+ {
+ 	struct altera_cvp_conf *conf = mgr->priv;
+-	struct pci_dev *pdev = conf->pci_dev;
++	u32 mask, val;
+ 	int ret;
+-	u32 mask;
+-	u32 val;
+ 
+ 	ret = altera_cvp_teardown(mgr, info);
+ 	if (ret)
+ 		return ret;
+ 
+ 	/* STEP 16 - check CVP_CONFIG_ERROR_LATCHED bit */
+-	pci_read_config_dword(pdev, VSE_UNCOR_ERR_STATUS, &val);
++	altera_read_config_dword(conf, VSE_UNCOR_ERR_STATUS, &val);
+ 	if (val & VSE_UNCOR_ERR_CVP_CFG_ERR) {
+ 		dev_err(&mgr->dev, "detected CVP_CONFIG_ERROR_LATCHED!\n");
+ 		return -EPROTO;
+ 	}
+ 
+ 	/* STEP 17 - reset CVP_MODE and HIP_CLK_SEL bit */
+-	pci_read_config_dword(pdev, VSE_CVP_MODE_CTRL, &val);
++	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
+ 	val &= ~VSE_CVP_MODE_CTRL_HIP_CLK_SEL;
+ 	val &= ~VSE_CVP_MODE_CTRL_CVP_MODE;
+-	pci_write_config_dword(pdev, VSE_CVP_MODE_CTRL, val);
++	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
+ 
+ 	/* STEP 18 - poll PLD_CLK_IN_USE and USER_MODE bits */
+ 	mask = VSE_CVP_STATUS_PLD_CLK_IN_USE | VSE_CVP_STATUS_USERMODE;
+@@ -395,22 +407,29 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ {
+ 	struct altera_cvp_conf *conf;
+ 	struct fpga_manager *mgr;
++	int ret, offset;
+ 	u16 cmd, val;
+ 	u32 regval;
+-	int ret;
++
++	/* Discover the Vendor Specific Offset for this device */
++	offset = pci_find_next_ext_capability(pdev, 0, PCI_EXT_CAP_ID_VNDR);
++	if (!offset) {
++		dev_err(&pdev->dev, "No Vendor Specific Offset.\n");
++		return -ENODEV;
++	}
+ 
+ 	/*
+ 	 * First check if this is the expected FPGA device. PCI config
+ 	 * space access works without enabling the PCI device, memory
+ 	 * space access is enabled further down.
+ 	 */
+-	pci_read_config_word(pdev, VSE_PCIE_EXT_CAP_ID, &val);
++	pci_read_config_word(pdev, offset + VSE_PCIE_EXT_CAP_ID, &val);
+ 	if (val != VSE_PCIE_EXT_CAP_ID_VAL) {
+ 		dev_err(&pdev->dev, "Wrong EXT_CAP_ID value 0x%x\n", val);
+ 		return -ENODEV;
+ 	}
+ 
+-	pci_read_config_dword(pdev, VSE_CVP_STATUS, &regval);
++	pci_read_config_dword(pdev, offset + VSE_CVP_STATUS, &regval);
+ 	if (!(regval & VSE_CVP_STATUS_CVP_EN)) {
+ 		dev_err(&pdev->dev,
+ 			"CVP is disabled for this device: CVP_STATUS Reg 0x%x\n",
+@@ -422,6 +441,8 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	if (!conf)
+ 		return -ENOMEM;
+ 
++	conf->vsec_offset = offset;
++
+ 	/*
+ 	 * Enable memory BAR access. We cannot use pci_enable_device() here
+ 	 * because it will make the driver unusable with FPGA devices that
 -- 
-1.8.3.1
+2.7.4
