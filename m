@@ -1,552 +1,138 @@
-Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 8/9] fpga: dfl: fme: add global error reporting support
-Date: Mon, 12 Aug 2019 10:50:03 +0800
-Message-Id: <1565578204-13969-9-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
-References: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Ananda Ravuri <ananda.ravuri@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
+Return-Path: <SRS0=DSfT=WP=linux.intel.com=thor.thayer@kernel.org>
+From: thor.thayer@linux.intel.com
+Subject: [RESEND PATCHv4 2/3] fpga: altera-cvp: Preparation for V2 parts.
+Date: Mon, 19 Aug 2019 15:48:07 -0500
+Message-Id: <1566247688-26070-3-git-send-email-thor.thayer@linux.intel.com>
+In-Reply-To: <1566247688-26070-1-git-send-email-thor.thayer@linux.intel.com>
+References: <1566247688-26070-1-git-send-email-thor.thayer@linux.intel.com>
+To: mdf@kernel.org, richard.gong@intel.com, agust@denx.de
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Thor Thayer <thor.thayer@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds support for global error reporting for FPGA
-Management Engine (FME), it introduces sysfs interfaces to
-report different error detected by the hardware, and allow
-user to clear errors or inject error for testing purpose.
+From: Thor Thayer <thor.thayer@linux.intel.com>
 
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Ananda Ravuri <ananda.ravuri@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Alan Tull <atull@kernel.org>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
----
-v2: switch to device_add/remove_groups for sysfs.
-v3: update kernel version and date in sysfs doc
-v4: rebase, remove dev_dbg in init/uinit callback.
-v5: reorganize sysfs entries:
-      remove "fme-errors" sub folder and related sysfs entries to
-      upper level folder.
-      merge WO "clear" to RO "errors" to keep alignment with error
-      sysfs entries in upper level folder.
-      remove revision sysfs entry.
-    add missed locking in sysfs entries.
-    expose sysfs group with is_visible via dev_groups.
----
- Documentation/ABI/testing/sysfs-platform-dfl-fme |  62 ++++
- drivers/fpga/Makefile                            |   2 +-
- drivers/fpga/dfl-fme-error.c                     | 359 +++++++++++++++++++++++
- drivers/fpga/dfl-fme-main.c                      |  17 +-
- drivers/fpga/dfl-fme.h                           |   3 +
- 5 files changed, 440 insertions(+), 3 deletions(-)
- create mode 100644 drivers/fpga/dfl-fme-error.c
+In preparation for adding newer V2 parts that use a FIFO,
+reorganize altera_cvp_chk_error() and change the write
+function to block based.
+V2 parts have a block size matching the FIFO while older
+V1 parts write a 32 bit word at a time.
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-index 65372aa..72634d3 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-@@ -44,3 +44,65 @@ Description:	Read-only. It returns socket_id to indicate which socket
- 		this FPGA belongs to, only valid for integrated solution.
- 		User only needs this information, in case standard numa node
- 		can't provide correct information.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/pcie0_errors
-+Date:		August 2019
-+KernelVersion:  5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Write. Read this file for errors detected on pcie0 link.
-+		Write this file to clear errors logged in pcie0_errors. Write
-+		fails with -EINVAL if input parsing fails or input error code
-+		doesn't match.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/pcie1_errors
-+Date:		August 2019
-+KernelVersion:  5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Write. Read this file for errors detected on pcie1 link.
-+		Write this file to clear errors logged in pcie1_errors. Write
-+		fails with -EINVAL if input parsing fails or input error code
-+		doesn't match.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/nonfatal_errors
-+Date:		August 2019
-+KernelVersion:  5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns non-fatal errors detected.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/catfatal_errors
-+Date:		August 2019
-+KernelVersion:  5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns catastrophic and fatal errors detected.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/inject_errors
-+Date:		August 2019
-+KernelVersion:  5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Write. Read this file to check errors injected. Write this
-+		file to inject errors for testing purpose. Write fails with
-+		-EINVAL if input parsing fails or input inject error code isn't
-+		supported.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme_errors
-+Date:		August 2019
-+KernelVersion:  5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Write. Read this file to get errors detected on FME.
-+		Write this file to clear errors logged in fme_errors. Write
-+		fials with -EINVAL if input parsing fails or input error code
-+		doesn't match.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/first_error
-+Date:		August 2019
-+KernelVersion:  5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the first error detected by
-+		hardware.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/errors/next_error
-+Date:		August 2019
-+KernelVersion:  5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get the second error detected by
-+		hardware.
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 7255891..4865b74 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -39,7 +39,7 @@ obj-$(CONFIG_FPGA_DFL_FME_BRIDGE)	+= dfl-fme-br.o
- obj-$(CONFIG_FPGA_DFL_FME_REGION)	+= dfl-fme-region.o
- obj-$(CONFIG_FPGA_DFL_AFU)		+= dfl-afu.o
+Signed-off-by: Thor Thayer <thor.thayer@linux.intel.com>
+---
+v2 Remove inline function declaration
+   Reverse Christmas Tree format for local variables
+v3 Add return code check in altera_cvp_chk_error()
+v4 Use min() function to determine block length
+---
+ drivers/fpga/altera-cvp.c | 69 +++++++++++++++++++++++++++++------------------
+ 1 file changed, 43 insertions(+), 26 deletions(-)
+
+diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+index 9df2073331cb..3b8386fd32e7 100644
+--- a/drivers/fpga/altera-cvp.c
++++ b/drivers/fpga/altera-cvp.c
+@@ -143,6 +143,42 @@ static int altera_cvp_wait_status(struct altera_cvp_conf *conf, u32 status_mask,
+ 	return -ETIMEDOUT;
+ }
  
--dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o
-+dfl-fme-objs := dfl-fme-main.o dfl-fme-pr.o dfl-fme-error.o
- dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
- dfl-afu-objs += dfl-afu-error.o
- 
-diff --git a/drivers/fpga/dfl-fme-error.c b/drivers/fpga/dfl-fme-error.c
-new file mode 100644
-index 0000000..f897d41
---- /dev/null
-+++ b/drivers/fpga/dfl-fme-error.c
-@@ -0,0 +1,359 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Driver for FPGA Management Engine Error Management
-+ *
-+ * Copyright 2019 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Kang Luwei <luwei.kang@intel.com>
-+ *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Joseph Grecco <joe.grecco@intel.com>
-+ *   Enno Luebbers <enno.luebbers@intel.com>
-+ *   Tim Whisonant <tim.whisonant@intel.com>
-+ *   Ananda Ravuri <ananda.ravuri@intel.com>
-+ *   Mitchel, Henry <henry.mitchel@intel.com>
-+ */
-+
-+#include <linux/uaccess.h>
-+
-+#include "dfl.h"
-+#include "dfl-fme.h"
-+
-+#define FME_ERROR_MASK		0x8
-+#define FME_ERROR		0x10
-+#define MBP_ERROR		BIT_ULL(6)
-+#define PCIE0_ERROR_MASK	0x18
-+#define PCIE0_ERROR		0x20
-+#define PCIE1_ERROR_MASK	0x28
-+#define PCIE1_ERROR		0x30
-+#define FME_FIRST_ERROR		0x38
-+#define FME_NEXT_ERROR		0x40
-+#define RAS_NONFAT_ERROR_MASK	0x48
-+#define RAS_NONFAT_ERROR	0x50
-+#define RAS_CATFAT_ERROR_MASK	0x58
-+#define RAS_CATFAT_ERROR	0x60
-+#define RAS_ERROR_INJECT	0x68
-+#define INJECT_ERROR_MASK	GENMASK_ULL(2, 0)
-+
-+#define ERROR_MASK		GENMASK_ULL(63, 0)
-+
-+static ssize_t pcie0_errors_show(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
++static int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
 +{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 value;
++	struct altera_cvp_conf *conf = mgr->priv;
++	u32 val;
++	int ret;
 +
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	value = readq(base + PCIE0_ERROR);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)value);
++	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
++	ret = altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
++	if (ret || (val & VSE_CVP_STATUS_CFG_ERR)) {
++		dev_err(&mgr->dev, "CVP_CONFIG_ERROR after %zu bytes!\n",
++			bytes);
++		return -EPROTO;
++	}
++	return 0;
 +}
 +
-+static ssize_t pcie0_errors_store(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
++static int altera_cvp_send_block(struct altera_cvp_conf *conf,
++				 const u32 *data, size_t len)
 +{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	int ret = 0;
-+	u64 v, val;
++	u32 mask, words = len / sizeof(u32);
++	int i, remainder;
 +
-+	if (kstrtou64(buf, 0, &val))
-+		return -EINVAL;
++	for (i = 0; i < words; i++)
++		conf->write_data(conf, *data++);
 +
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(GENMASK_ULL(63, 0), base + PCIE0_ERROR_MASK);
-+
-+	v = readq(base + PCIE0_ERROR);
-+	if (val == v)
-+		writeq(v, base + PCIE0_ERROR);
-+	else
-+		ret = -EINVAL;
-+
-+	writeq(0ULL, base + PCIE0_ERROR_MASK);
-+	mutex_unlock(&pdata->lock);
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_RW(pcie0_errors);
-+
-+static ssize_t pcie1_errors_show(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 value;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	value = readq(base + PCIE1_ERROR);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)value);
-+}
-+
-+static ssize_t pcie1_errors_store(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	int ret = 0;
-+	u64 v, val;
-+
-+	if (kstrtou64(buf, 0, &val))
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(GENMASK_ULL(63, 0), base + PCIE1_ERROR_MASK);
-+
-+	v = readq(base + PCIE1_ERROR);
-+	if (val == v)
-+		writeq(v, base + PCIE1_ERROR);
-+	else
-+		ret = -EINVAL;
-+
-+	writeq(0ULL, base + PCIE1_ERROR_MASK);
-+	mutex_unlock(&pdata->lock);
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_RW(pcie1_errors);
-+
-+static ssize_t nonfatal_errors_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	return sprintf(buf, "0x%llx\n",
-+		       (unsigned long long)readq(base + RAS_NONFAT_ERROR));
-+}
-+static DEVICE_ATTR_RO(nonfatal_errors);
-+
-+static ssize_t catfatal_errors_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	return sprintf(buf, "0x%llx\n",
-+		       (unsigned long long)readq(base + RAS_CATFAT_ERROR));
-+}
-+static DEVICE_ATTR_RO(catfatal_errors);
-+
-+static ssize_t inject_errors_show(struct device *dev,
-+				  struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + RAS_ERROR_INJECT);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n",
-+		       (unsigned long long)FIELD_GET(INJECT_ERROR_MASK, v));
-+}
-+
-+static ssize_t inject_errors_store(struct device *dev,
-+				   struct device_attribute *attr,
-+				   const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u8 inject_error;
-+	u64 v;
-+
-+	if (kstrtou8(buf, 0, &inject_error))
-+		return -EINVAL;
-+
-+	if (inject_error & ~INJECT_ERROR_MASK)
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	v = readq(base + RAS_ERROR_INJECT);
-+	v &= ~INJECT_ERROR_MASK;
-+	v |= FIELD_PREP(INJECT_ERROR_MASK, inject_error);
-+	writeq(v, base + RAS_ERROR_INJECT);
-+	mutex_unlock(&pdata->lock);
-+
-+	return count;
-+}
-+static DEVICE_ATTR_RW(inject_errors);
-+
-+static ssize_t fme_errors_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 value;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	value = readq(base + FME_ERROR);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)value);
-+}
-+
-+static ssize_t fme_errors_store(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 v, val;
-+	int ret = 0;
-+
-+	if (kstrtou64(buf, 0, &val))
-+		return -EINVAL;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	writeq(GENMASK_ULL(63, 0), base + FME_ERROR_MASK);
-+
-+	v = readq(base + FME_ERROR);
-+	if (val == v)
-+		writeq(v, base + FME_ERROR);
-+	else
-+		ret = -EINVAL;
-+
-+	/* Workaround: disable MBP_ERROR if feature revision is 0 */
-+	writeq(dfl_feature_revision(base) ? 0ULL : MBP_ERROR,
-+	       base + FME_ERROR_MASK);
-+	mutex_unlock(&pdata->lock);
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_RW(fme_errors);
-+
-+static ssize_t first_error_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 value;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	value = readq(base + FME_FIRST_ERROR);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)value);
-+}
-+static DEVICE_ATTR_RO(first_error);
-+
-+static ssize_t next_error_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+	u64 value;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+	value = readq(base + FME_NEXT_ERROR);
-+	mutex_unlock(&pdata->lock);
-+
-+	return sprintf(buf, "0x%llx\n", (unsigned long long)value);
-+}
-+static DEVICE_ATTR_RO(next_error);
-+
-+static struct attribute *fme_global_err_attrs[] = {
-+	&dev_attr_pcie0_errors.attr,
-+	&dev_attr_pcie1_errors.attr,
-+	&dev_attr_nonfatal_errors.attr,
-+	&dev_attr_catfatal_errors.attr,
-+	&dev_attr_inject_errors.attr,
-+	&dev_attr_fme_errors.attr,
-+	&dev_attr_first_error.attr,
-+	&dev_attr_next_error.attr,
-+	NULL,
-+};
-+
-+static umode_t fme_global_err_attrs_visible(struct kobject *kobj,
-+					    struct attribute *attr, int n)
-+{
-+	struct device *dev = kobj_to_dev(kobj);
-+
-+	/*
-+	 * sysfs entries are visible only if related private feature is
-+	 * enumerated.
-+	 */
-+	if (!dfl_get_feature_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR))
-+		return 0;
-+
-+	return attr->mode;
-+}
-+
-+const struct attribute_group fme_global_err_group = {
-+	.name       = "errors",
-+	.attrs      = fme_global_err_attrs,
-+	.is_visible = fme_global_err_attrs_visible,
-+};
-+
-+static void fme_err_mask(struct device *dev, bool mask)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-+	void __iomem *base;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+
-+	mutex_lock(&pdata->lock);
-+
-+	/* Workaround: keep MBP_ERROR always masked if revision is 0 */
-+	if (dfl_feature_revision(base))
-+		writeq(mask ? ERROR_MASK : 0, base + FME_ERROR_MASK);
-+	else
-+		writeq(mask ? ERROR_MASK : MBP_ERROR, base + FME_ERROR_MASK);
-+
-+	writeq(mask ? ERROR_MASK : 0, base + PCIE0_ERROR_MASK);
-+	writeq(mask ? ERROR_MASK : 0, base + PCIE1_ERROR_MASK);
-+	writeq(mask ? ERROR_MASK : 0, base + RAS_NONFAT_ERROR_MASK);
-+	writeq(mask ? ERROR_MASK : 0, base + RAS_CATFAT_ERROR_MASK);
-+
-+	mutex_unlock(&pdata->lock);
-+}
-+
-+static int fme_global_err_init(struct platform_device *pdev,
-+			       struct dfl_feature *feature)
-+{
-+	fme_err_mask(&pdev->dev, false);
++	/* write up to 3 trailing bytes, if any */
++	remainder = len % sizeof(u32);
++	if (remainder) {
++		mask = BIT(remainder * 8) - 1;
++		if (mask)
++			conf->write_data(conf, *data & mask);
++	}
 +
 +	return 0;
 +}
 +
-+static void fme_global_err_uinit(struct platform_device *pdev,
-+				 struct dfl_feature *feature)
-+{
-+	fme_err_mask(&pdev->dev, true);
-+}
-+
-+const struct dfl_feature_id fme_global_err_id_table[] = {
-+	{.id = FME_FEATURE_ID_GLOBAL_ERR,},
-+	{0,}
-+};
-+
-+const struct dfl_feature_ops fme_global_err_ops = {
-+	.init = fme_global_err_init,
-+	.uinit = fme_global_err_uinit,
-+};
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index bf8114d..4d78e18 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -127,7 +127,10 @@ static ssize_t socket_id_show(struct device *dev,
- 	&dev_attr_socket_id.attr,
- 	NULL,
- };
--ATTRIBUTE_GROUPS(fme_hdr);
-+
-+static const struct attribute_group fme_hdr_group = {
-+	.attrs = fme_hdr_attrs,
-+};
- 
- static long fme_hdr_ioctl_release_port(struct dfl_feature_platform_data *pdata,
- 				       unsigned long arg)
-@@ -188,6 +191,10 @@ static long fme_hdr_ioctl(struct platform_device *pdev,
- 		.ops = &fme_pr_mgmt_ops,
- 	},
- 	{
-+		.id_table = fme_global_err_id_table,
-+		.ops = &fme_global_err_ops,
-+	},
-+	{
- 		.ops = NULL,
- 	},
- };
-@@ -333,10 +340,16 @@ static int fme_remove(struct platform_device *pdev)
+ static int altera_cvp_teardown(struct fpga_manager *mgr,
+ 			       struct fpga_image_info *info)
+ {
+@@ -265,39 +301,25 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
  	return 0;
  }
  
-+static const struct attribute_group *fme_dev_groups[] = {
-+	&fme_hdr_group,
-+	&fme_global_err_group,
-+	NULL
-+};
-+
- static struct platform_driver fme_driver = {
- 	.driver	= {
- 		.name       = DFL_FPGA_FEATURE_DEV_FME,
--		.dev_groups = fme_hdr_groups,
-+		.dev_groups = fme_dev_groups,
- 	},
- 	.probe   = fme_probe,
- 	.remove  = fme_remove,
-diff --git a/drivers/fpga/dfl-fme.h b/drivers/fpga/dfl-fme.h
-index e4131e8..6685c8e 100644
---- a/drivers/fpga/dfl-fme.h
-+++ b/drivers/fpga/dfl-fme.h
-@@ -35,5 +35,8 @@ struct dfl_fme {
+-static inline int altera_cvp_chk_error(struct fpga_manager *mgr, size_t bytes)
+-{
+-	struct altera_cvp_conf *conf = mgr->priv;
+-	u32 val;
+-
+-	/* STEP 10 (optional) - check CVP_CONFIG_ERROR flag */
+-	altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
+-	if (val & VSE_CVP_STATUS_CFG_ERR) {
+-		dev_err(&mgr->dev, "CVP_CONFIG_ERROR after %zu bytes!\n",
+-			bytes);
+-		return -EPROTO;
+-	}
+-	return 0;
+-}
+-
+ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
+ 			    size_t count)
+ {
+ 	struct altera_cvp_conf *conf = mgr->priv;
++	size_t done, remaining, len;
+ 	const u32 *data;
+-	size_t done, remaining;
+ 	int status = 0;
+-	u32 mask;
  
- extern const struct dfl_feature_ops fme_pr_mgmt_ops;
- extern const struct dfl_feature_id fme_pr_mgmt_id_table[];
-+extern const struct dfl_feature_ops fme_global_err_ops;
-+extern const struct dfl_feature_id fme_global_err_id_table[];
-+extern const struct attribute_group fme_global_err_group;
+ 	/* STEP 9 - write 32-bit data from RBF file to CVP data register */
+ 	data = (u32 *)buf;
+ 	remaining = count;
+ 	done = 0;
  
- #endif /* __DFL_FME_H */
+-	while (remaining >= 4) {
+-		conf->write_data(conf, *data++);
+-		done += 4;
+-		remaining -= 4;
++	while (remaining) {
++		len = min(sizeof(u32), remaining);
++		altera_cvp_send_block(conf, data, len);
++		data++;
++		done += len;
++		remaining -= len;
+ 
+ 		/*
+ 		 * STEP 10 (optional) and STEP 11
+@@ -315,11 +337,6 @@ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
+ 		}
+ 	}
+ 
+-	/* write up to 3 trailing bytes, if any */
+-	mask = BIT(remaining * 8) - 1;
+-	if (mask)
+-		conf->write_data(conf, *data & mask);
+-
+ 	if (altera_cvp_chkcfg)
+ 		status = altera_cvp_chk_error(mgr, count);
+ 
 -- 
-1.8.3.1
+2.7.4
