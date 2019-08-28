@@ -1,81 +1,27 @@
-Return-Path: <SRS0=Va0G=WI=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=Va0G=WI=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga17.intel.com ([192.55.52.151]:12631 "EHLO mga17.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726011AbfHLDHq (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Sun, 11 Aug 2019 23:07:46 -0400
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 0/9] FPGA DFL updates
-Date: Mon, 12 Aug 2019 10:49:55 +0800
-Message-Id: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Date: Wed, 28 Aug 2019 22:28:36 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [GIT PULL] FPGA Manager (late) change for 5.3-rc6
+Message-ID: <20190828202836.GA25916@kroah.com>
+References: <20190819004744.GA20155@archbox>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190819004744.GA20155@archbox>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Greg,
+On Sun, Aug 18, 2019 at 05:47:44PM -0700, Moritz Fischer wrote:
+> The following changes since commit 5f9e832c137075045d15cd6899ab0505cfb2ca4b:
+> 
+>   Linus 5.3-rc1 (2019-07-21 14:05:38 -0700)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git/ tags/fpga-fixes-for-5.3
 
-This is v5 patchset which adds more features to FPGA DFL. Marjor changes
-against v4 are sysfs related code rework to address comments on v4.
+Pulled and pushed out,t hanks.
 
-Please help to take a look. Thanks!
-
-Main changes from v4:
-  - convert code to use dev_groups for sysfs entries (#2, #3, #4, #6, #8).
-  - clean up for empty init function after remove sysfs add/remove (#1).
-  - introduce is_visible for sysfs groups (#3, #4, #6, #8).
-  - remove revision sysfs entries (#4, #6, #8).
-  - improve naming on shared functions (#5).
-  - reorganize sysfs entries for port and fme error reporting (#6, #8).
-
-Main changes from v3:
-  - drop avx512 partail reconfiguration patch for now.
-  - split dfl_fpga_cdev_config_port to 2 functions *_release/assign_port
-    (#1).
-  - split __dfl_fpga_cdev_config_port_vf into 2 functions with locking
-    added (#2).
-  - improve description in sysfs doc to avoid misunderstanding (#3).
-  - switch to boolean in sysfs entry store function (#3).
-  - remove dev_dbg in init/uinit callback function (#7, #9, #11).
-  - remove uinit callback which does does nothing (#8, #9)
-
-Main changes from v2:
-  - update kernel version/date in sysfs doc (patch #4, #5, #8, #10, #11).
-  - add back Documentation patch (patch #12).
-
-Main changes from v1:
-  - remove DRV/MODULE_VERSION modifications. (patch #1, #3, #4, #6)
-  - remove argsz from new ioctls. (patch #2)
-  - replace sysfs_create/remove_* with device_add/remove_* for sysfs entries.
-    (patch #5, #8, #11)
-
-Wu Hao (9):
-  fpga: dfl: make init callback optional
-  fpga: dfl: fme: convert platform_driver to use dev_groups
-  fpga: dfl: afu: convert platform_driver to use dev_groups
-  fpga: dfl: afu: add userclock sysfs interfaces.
-  fpga: dfl: afu: expose __afu_port_enable/disable function.
-  fpga: dfl: afu: add error reporting support.
-  fpga: dfl: afu: add STP (SignalTap) support
-  fpga: dfl: fme: add global error reporting support
-  Documentation: fpga: dfl: add descriptions for virtualization and new
-    interfaces.
-
- Documentation/ABI/testing/sysfs-platform-dfl-fme  |  62 ++++
- Documentation/ABI/testing/sysfs-platform-dfl-port |  53 ++++
- Documentation/fpga/dfl.rst                        | 105 +++++++
- drivers/fpga/Makefile                             |   3 +-
- drivers/fpga/dfl-afu-error.c                      | 230 ++++++++++++++
- drivers/fpga/dfl-afu-main.c                       | 230 +++++++++++---
- drivers/fpga/dfl-afu.h                            |   9 +
- drivers/fpga/dfl-fme-error.c                      | 359 ++++++++++++++++++++++
- drivers/fpga/dfl-fme-main.c                       |  42 +--
- drivers/fpga/dfl-fme.h                            |   3 +
- drivers/fpga/dfl.c                                |  10 +-
- drivers/fpga/dfl.h                                |   9 +
- 12 files changed, 1041 insertions(+), 74 deletions(-)
- create mode 100644 drivers/fpga/dfl-afu-error.c
- create mode 100644 drivers/fpga/dfl-fme-error.c
-
--- 
-1.8.3.1
+greg k-h
