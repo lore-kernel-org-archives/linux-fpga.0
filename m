@@ -1,44 +1,45 @@
-Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=LsED=WI=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 1/9] fpga: dfl: make init callback optional
-Date: Mon, 12 Aug 2019 10:49:56 +0800
-Message-Id: <1565578204-13969-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
-References: <1565578204-13969-1-git-send-email-hao.wu@intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, atull@kernel.org, Wu Hao <hao.wu@intel.com>
+Date: Sat, 31 Aug 2019 13:45:30 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [GIT PULL] Please pull FPGA Manager changes for 5.4
+Message-ID: <20190831204528.GA23936@archbox>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+To: gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch makes init callback of sub features optional. With
-this change, people don't need to prepare any empty init callback.
+The following changes since commit 2949dc443116a66fd1a92d9ef107be16cdd197cd:
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
- drivers/fpga/dfl.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+  dt-bindings: fpga: Consolidate bridge properties (2019-07-24 14:19:15 -0700)
 
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index c0512af..96a2b82 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -271,11 +271,13 @@ static int dfl_feature_instance_init(struct platform_device *pdev,
- 				     struct dfl_feature *feature,
- 				     struct dfl_feature_driver *drv)
- {
--	int ret;
-+	int ret = 0;
- 
--	ret = drv->ops->init(pdev, feature);
--	if (ret)
--		return ret;
-+	if (drv->ops->init) {
-+		ret = drv->ops->init(pdev, feature);
-+		if (ret)
-+			return ret;
-+	}
- 
- 	feature->ops = drv->ops;
- 
--- 
-1.8.3.1
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git/ tags/fpga-cvp-for-5.4
+
+for you to fetch changes up to e58915179f3f4a839ea3b9aeae1c1e13e98e33b1:
+
+  fpga: altera-cvp: Add Stratix10 (V2) Support (2019-08-24 11:38:29 -0700)
+
+----------------------------------------------------------------
+FPGA Manager changes for 5.4-rc1
+
+Here is the second set of changes for the 5.4 merge window.
+
+This patchset adds support for the v2 revision of Intel (Altera)'s CVP
+parts including the Stratix 10.
+
+All of this patches have been reviewed and been in the last few
+linux-next releases without issues.
+
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+
+----------------------------------------------------------------
+Thor Thayer (3):
+      fpga: altera-cvp: Discover Vendor Specific offset
+      fpga: altera-cvp: Preparation for V2 parts.
+      fpga: altera-cvp: Add Stratix10 (V2) Support
+
+ drivers/fpga/Kconfig      |   6 +-
+ drivers/fpga/altera-cvp.c | 339 ++++++++++++++++++++++++++++++++++++----------
+ 2 files changed, 271 insertions(+), 74 deletions(-)
