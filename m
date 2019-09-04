@@ -1,38 +1,62 @@
-Return-Path: <SRS0=wDjG=XV=analog.com=Nuno.Sa@kernel.org>
-Return-Path: <SRS0=wDjG=XV=analog.com=Nuno.Sa@kernel.org>
-From: =?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>
-Subject: [PATCH 1/3] include: fpga: adi-axi-common: Define version macros
-Date: Thu, 26 Sep 2019 12:39:23 +0200
-Message-ID: <20190926103925.194973-2-nuno.sa@analog.com>
-In-Reply-To: <20190926103925.194973-1-nuno.sa@analog.com>
-References: <20190926103925.194973-1-nuno.sa@analog.com>
+Return-Path: <sashal@kernel.org>
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 07/36] fpga: altera-ps-spi: Fix getting of optional confd gpio
+Date: Wed,  4 Sep 2019 12:00:53 -0400
+Message-Id: <20190904160122.4179-7-sashal@kernel.org>
+In-Reply-To: <20190904160122.4179-1-sashal@kernel.org>
+References: <20190904160122.4179-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-To: devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-hwmon@vger.kernel.org
-Cc: Moritz Fischer <mdf@kernel.org>, Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Phil Reid <preid@electromag.com.au>, Moritz Fischer <mdf@kernel.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Add commom macros to "parse" ADI HDL cores version, in terms of
-major, minor and patch.
+From: Phil Reid <preid@electromag.com.au>
 
-Signed-off-by: Nuno Sá <nuno.sa@analog.com>
+[ Upstream commit dec43da46f63eb71f519d963ba6832838e4262a3 ]
+
+Currently the driver does not handle EPROBE_DEFER for the confd gpio.
+Use devm_gpiod_get_optional() instead of devm_gpiod_get() and return
+error codes from altera_ps_probe().
+
+Fixes: 5692fae0742d ("fpga manager: Add altera-ps-spi driver for Altera FPGAs")
+Signed-off-by: Phil Reid <preid@electromag.com.au>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- include/linux/fpga/adi-axi-common.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/fpga/altera-ps-spi.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/fpga/adi-axi-common.h b/include/linux/fpga/adi-axi-common.h
-index 7fc95d5c95bb..5bc5603e6bc8 100644
---- a/include/linux/fpga/adi-axi-common.h
-+++ b/include/linux/fpga/adi-axi-common.h
-@@ -16,4 +16,8 @@
- #define ADI_AXI_PCORE_VER(major, minor, patch)	\
- 	(((major) << 16) | ((minor) << 8) | (patch))
+diff --git a/drivers/fpga/altera-ps-spi.c b/drivers/fpga/altera-ps-spi.c
+index 06d212a3d49dd..19b1cf8a82528 100644
+--- a/drivers/fpga/altera-ps-spi.c
++++ b/drivers/fpga/altera-ps-spi.c
+@@ -207,7 +207,7 @@ static int altera_ps_write_complete(struct fpga_manager *mgr,
+ 		return -EIO;
+ 	}
  
-+#define ADI_AXI_PCORE_VER_MAJOR(version)	(((version) >> 16) & 0xff)
-+#define ADI_AXI_PCORE_VER_MINOR(version)	(((version) >> 8) & 0xff)
-+#define ADI_AXI_PCORE_VER_PATCH(version)	((version) & 0xff)
-+
- #endif /* ADI_AXI_COMMON_H_ */
+-	if (!IS_ERR(conf->confd)) {
++	if (conf->confd) {
+ 		if (!gpiod_get_raw_value_cansleep(conf->confd)) {
+ 			dev_err(&mgr->dev, "CONF_DONE is inactive!\n");
+ 			return -EIO;
+@@ -263,10 +263,13 @@ static int altera_ps_probe(struct spi_device *spi)
+ 		return PTR_ERR(conf->status);
+ 	}
+ 
+-	conf->confd = devm_gpiod_get(&spi->dev, "confd", GPIOD_IN);
++	conf->confd = devm_gpiod_get_optional(&spi->dev, "confd", GPIOD_IN);
+ 	if (IS_ERR(conf->confd)) {
+-		dev_warn(&spi->dev, "Not using confd gpio: %ld\n",
+-			 PTR_ERR(conf->confd));
++		dev_err(&spi->dev, "Failed to get confd gpio: %ld\n",
++			PTR_ERR(conf->confd));
++		return PTR_ERR(conf->confd);
++	} else if (!conf->confd) {
++		dev_warn(&spi->dev, "Not using confd gpio");
+ 	}
+ 
+ 	/* Register manager with unique name */
 -- 
-2.23.0
+2.20.1
