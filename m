@@ -1,27 +1,36 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Return-Path: <gregkh@linuxfoundation.org>
-Date: Wed, 4 Sep 2019 07:46:06 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [GIT PULL] FPGA DFL Changes for 5.4 (late, sorry)
-Message-ID: <20190904054606.GA4511@kroah.com>
-References: <20190904030020.GA5534@archbox>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190904030020.GA5534@archbox>
-To: Moritz Fischer <mdf@kernel.org>
-Cc: moritzf@google.com, hao.wu@intel.com, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=wxbZ=XF=cmss.chinamobile.com=dingxiang@kernel.org>
+Return-Path: <SRS0=wxbZ=XF=cmss.chinamobile.com=dingxiang@kernel.org>
+From: Ding Xiang <dingxiang@cmss.chinamobile.com>
+Subject: [PATCH] fpga: remove redundant dev_err message
+Date: Tue, 10 Sep 2019 17:26:56 +0800
+Message-Id: <1568107616-12755-1-git-send-email-dingxiang@cmss.chinamobile.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Sep 03, 2019 at 08:00:20PM -0700, Moritz Fischer wrote:
-> Hi Greg,
-> 
-> not sure I got this one right. It's a bit complicated, since there's
-> some dependencies on stuff already in char-misc-next as well as the
-> dev_groups_all_drivers.
-> 
-> Let me know if I messed up.
+devm_ioremap_resource already contains error message, so remove
+the redundant dev_err message
 
-All looks good, now merged, thanks.
+Signed-off-by: Ding Xiang <dingxiang@cmss.chinamobile.com>
+---
+ drivers/fpga/ts73xx-fpga.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-greg k-h
+diff --git a/drivers/fpga/ts73xx-fpga.c b/drivers/fpga/ts73xx-fpga.c
+index 9a17fe9..2888ff0 100644
+--- a/drivers/fpga/ts73xx-fpga.c
++++ b/drivers/fpga/ts73xx-fpga.c
+@@ -119,10 +119,8 @@ static int ts73xx_fpga_probe(struct platform_device *pdev)
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	priv->io_base = devm_ioremap_resource(kdev, res);
+-	if (IS_ERR(priv->io_base)) {
+-		dev_err(kdev, "unable to remap registers\n");
++	if (IS_ERR(priv->io_base))
+ 		return PTR_ERR(priv->io_base);
+-	}
+ 
+ 	mgr = devm_fpga_mgr_create(kdev, "TS-73xx FPGA Manager",
+ 				   &ts73xx_fpga_ops, priv);
+-- 
+1.9.1
