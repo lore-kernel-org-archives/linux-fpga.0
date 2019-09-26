@@ -1,62 +1,35 @@
-Return-Path: <sashal@kernel.org>
-Return-Path: <sashal@kernel.org>
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.2 21/94] fpga: altera-ps-spi: Fix getting of optional confd gpio
-Date: Wed,  4 Sep 2019 11:56:26 -0400
-Message-Id: <20190904155739.2816-21-sashal@kernel.org>
-In-Reply-To: <20190904155739.2816-1-sashal@kernel.org>
-References: <20190904155739.2816-1-sashal@kernel.org>
+Return-Path: <SRS0=wDjG=XV=analog.com=Nuno.Sa@kernel.org>
+Return-Path: <SRS0=wDjG=XV=analog.com=Nuno.Sa@kernel.org>
+From: =?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>
+Subject: [PATCH 0/3] Support AXI FAN Control IP core
+Date: Thu, 26 Sep 2019 12:39:22 +0200
+Message-ID: <20190926103925.194973-1-nuno.sa@analog.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Phil Reid <preid@electromag.com.au>, Moritz Fischer <mdf@kernel.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
+To: devicetree@vger.kernel.org, linux-fpga@vger.kernel.org, linux-hwmon@vger.kernel.org
+Cc: Moritz Fischer <mdf@kernel.org>, Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Phil Reid <preid@electromag.com.au>
+This series adds support for the ADI AXI FAN Control IP core. The first
+patch adds some new definitions to the adi-axi-common header file. This
+new `#defines` will be then used by the new hwmon driver. The rest of the
+series is the usual stuff for a new device driver.
 
-[ Upstream commit dec43da46f63eb71f519d963ba6832838e4262a3 ]
+Nuno Sá (3):
+  include: fpga: adi-axi-common: Define version macros
+  hwmon: Support ADI Fan Control IP
+  dt-bindings: hwmon: Add AXI FAN Control documentation
 
-Currently the driver does not handle EPROBE_DEFER for the confd gpio.
-Use devm_gpiod_get_optional() instead of devm_gpiod_get() and return
-error codes from altera_ps_probe().
+ .../bindings/hwmon/adi,axi-fan-control.yaml   |  58 +++
+ MAINTAINERS                                   |   8 +
+ drivers/hwmon/Kconfig                         |   9 +
+ drivers/hwmon/Makefile                        |   1 +
+ drivers/hwmon/axi-fan-control.c               | 452 ++++++++++++++++++
+ include/linux/fpga/adi-axi-common.h           |   4 +
+ 6 files changed, 532 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/adi,axi-fan-control.yaml
+ create mode 100644 drivers/hwmon/axi-fan-control.c
 
-Fixes: 5692fae0742d ("fpga manager: Add altera-ps-spi driver for Altera FPGAs")
-Signed-off-by: Phil Reid <preid@electromag.com.au>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/fpga/altera-ps-spi.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/fpga/altera-ps-spi.c b/drivers/fpga/altera-ps-spi.c
-index a13f224303c69..0221dee8dd4c6 100644
---- a/drivers/fpga/altera-ps-spi.c
-+++ b/drivers/fpga/altera-ps-spi.c
-@@ -210,7 +210,7 @@ static int altera_ps_write_complete(struct fpga_manager *mgr,
- 		return -EIO;
- 	}
- 
--	if (!IS_ERR(conf->confd)) {
-+	if (conf->confd) {
- 		if (!gpiod_get_raw_value_cansleep(conf->confd)) {
- 			dev_err(&mgr->dev, "CONF_DONE is inactive!\n");
- 			return -EIO;
-@@ -289,10 +289,13 @@ static int altera_ps_probe(struct spi_device *spi)
- 		return PTR_ERR(conf->status);
- 	}
- 
--	conf->confd = devm_gpiod_get(&spi->dev, "confd", GPIOD_IN);
-+	conf->confd = devm_gpiod_get_optional(&spi->dev, "confd", GPIOD_IN);
- 	if (IS_ERR(conf->confd)) {
--		dev_warn(&spi->dev, "Not using confd gpio: %ld\n",
--			 PTR_ERR(conf->confd));
-+		dev_err(&spi->dev, "Failed to get confd gpio: %ld\n",
-+			PTR_ERR(conf->confd));
-+		return PTR_ERR(conf->confd);
-+	} else if (!conf->confd) {
-+		dev_warn(&spi->dev, "Not using confd gpio");
- 	}
- 
- 	/* Register manager with unique name */
 -- 
-2.20.1
+2.23.0
