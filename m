@@ -1,366 +1,110 @@
-Return-Path: <SRS0=GGlT=XF=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=GGlT=XF=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v6 3/3] fpga: dfl: fme: add power management support
-Date: Tue, 10 Sep 2019 13:50:40 +0800
-Message-Id: <1568094640-4920-4-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1568094640-4920-1-git-send-email-hao.wu@intel.com>
-References: <1568094640-4920-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, linux@roeck-us.net, jdelvare@suse.com, gregkh@linuxfoundation.org, Wu Hao <hao.wu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=04Uq=XW=ettus.com=moritz.fischer@kernel.org>
+Return-Path: <SRS0=04Uq=XW=ettus.com=moritz.fischer@kernel.org>
+Date: Fri, 27 Sep 2019 11:23:08 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v4 1/2] fpga: fpga-mgr: Add readback support
+Message-ID: <20190927182308.GA6797@archbox>
+References: <1532672551-22146-1-git-send-email-appana.durga.rao@xilinx.com>
+ <CANk1AXSEWcZ7Oqv5pgpwvJRyyFWk5gPtniXa7T+oe6-uywqEqA@mail.gmail.com>
+ <MN2PR02MB6400CD5312983443A67DCC4EDC810@MN2PR02MB6400.namprd02.prod.outlook.com>
+ <4476bf39-b665-50d8-fecd-d50687d10ca2@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4476bf39-b665-50d8-fecd-d50687d10ca2@linux.intel.com>
+To: Thor Thayer <thor.thayer@linux.intel.com>
+Cc: Appana Durga Kedareswara Rao <appanad@xilinx.com>, Moritz Fischer <mdf@kernel.org>, Alan Tull <atull@kernel.org>, Michal Simek <michals@xilinx.com>, "kedare06@gmail.com" <kedare06@gmail.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, Nava kishore Manne <navam@xilinx.com>, Siva Durga Prasad Paladugu <sivadur@xilinx.com>, Richard Gong <richard.gong@linux.intel.com>, Dinh Nguyen <dinguyen@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds support for power management private feature under
-FPGA Management Engine (FME). This private feature driver registers
-a hwmon for power (power1_input), thresholds information, e.g.
-(power1_max / crit / max_alarm / crit_alarm) and also read-only sysfs
-interfaces for other power management information. For configuration,
-user could write threshold values via above power1_max / crit sysfs
-interface under hwmon too.
+Thor,
 
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Acked-by: Guenter Roeck <linux@roeck-us.net>
-Reviewed-by: Moritz Fischer <mdf@kernel.org>
----
-v2: create a dfl_fme_power hwmon to expose power sysfs interfaces.
-    move all sysfs interfaces under hwmon
-        consumed          --> hwmon power1_input
-        threshold1        --> hwmon power1_cap
-        threshold2        --> hwmon power1_crit
-        threshold1_status --> hwmon power1_cap_status
-        threshold2_status --> hwmon power1_crit_status
-        xeon_limit        --> hwmon power1_xeon_limit
-        fpga_limit        --> hwmon power1_fpga_limit
-        ltr               --> hwmon power1_ltr
-v3: rename some hwmon sysfs interfaces to follow hwmon ABI.
-	power1_cap         --> power1_max
-	power1_cap_status  --> power1_max_alarm
-	power1_crit_status --> power1_crit_alarm
-    update sysfs doc for above sysfs interface changes.
-    replace scnprintf with sprintf in sysfs interface.
-v4: use HWMON_CHANNEL_INFO.
-    update date in sysfs doc.
-v5: clamp threshold inputs in power_hwmon_write function.
-    update sysfs doc as threshold inputs are clamped now.
-    add more descriptions to ltr sysfs interface.
-v6: rebase and clean up (remove empty uinit function).
-    update date in sysfs doc.
----
- Documentation/ABI/testing/sysfs-platform-dfl-fme |  70 ++++++++
- drivers/fpga/dfl-fme-main.c                      | 207 +++++++++++++++++++++++
- 2 files changed, 277 insertions(+)
+On Fri, Sep 27, 2019 at 09:32:11AM -0500, Thor Thayer wrote:
+> Hi Kedar & Moritz,
+> 
+> On 9/27/19 12:13 AM, Appana Durga Kedareswara Rao wrote:
+> > Hi Alan,
+> > 
+> > Did you get a chance to send your framework changes to upstream?
+No they weren't upstreamed.
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-index c84b3c1..9ea4697 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-@@ -114,6 +114,7 @@ Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-Only. Read this file to get the name of hwmon device, it
- 		supports values:
- 		    'dfl_fme_thermal' - thermal hwmon device name
-+		    'dfl_fme_power'   - power hwmon device name
- 
- What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/temp1_input
- Date:		September 2019
-@@ -170,3 +171,72 @@ Description:	Read-Only. Read this file to get the policy of hardware threshold1
- 		(see 'temp1_max'). It only supports two values (policies):
- 		    0 - AP2 state (90% throttling)
- 		    1 - AP1 state (50% throttling)
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_input
-+Date:		September 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Only. It returns current FPGA power consumption in uW.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_max
-+Date:		September 2019
-+KernelVersion:	5.4
-+Date:		June 2019
-+KernelVersion:	5.3
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Write. Read this file to get current hardware power
-+		threshold1 in uW. If power consumption rises at or above
-+		this threshold, hardware starts 50% throttling.
-+		Write this file to set current hardware power threshold1 in uW.
-+		As hardware only accepts values in Watts, so input value will
-+		be round down per Watts (< 1 watts part will be discarded) and
-+		clamped within the range from 0 to 127 Watts. Write fails with
-+		-EINVAL if input parsing fails.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_crit
-+Date:		September 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Write. Read this file to get current hardware power
-+		threshold2 in uW. If power consumption rises at or above
-+		this threshold, hardware starts 90% throttling.
-+		Write this file to set current hardware power threshold2 in uW.
-+		As hardware only accepts values in Watts, so input value will
-+		be round down per Watts (< 1 watts part will be discarded) and
-+		clamped within the range from 0 to 127 Watts. Write fails with
-+		-EINVAL if input parsing fails.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_max_alarm
-+Date:		September 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns 1 if power consumption is currently at or
-+		above hardware threshold1 (see 'power1_max'), otherwise 0.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_crit_alarm
-+Date:		September 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. It returns 1 if power consumption is currently at or
-+		above hardware threshold2 (see 'power1_crit'), otherwise 0.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_xeon_limit
-+Date:		September 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Only. It returns power limit for XEON in uW.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_fpga_limit
-+Date:		September 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-Only. It returns power limit for FPGA in uW.
-+
-+What:		/sys/bus/platform/devices/dfl-fme.0/hwmon/hwmonX/power1_ltr
-+Date:		September 2019
-+KernelVersion:	5.4
-+Contact:	Wu Hao <hao.wu@intel.com>
-+Description:	Read-only. Read this file to get current Latency Tolerance
-+		Reporting (ltr) value. It returns 1 if all Accelerated
-+		Function Units (AFUs) can tolerate latency >= 40us for memory
-+		access or 0 if any AFU is latency sensitive (< 40us).
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 752d71c..7c930e6 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -355,6 +355,209 @@ static int fme_thermal_mgmt_init(struct platform_device *pdev,
- 	.init = fme_thermal_mgmt_init,
- };
- 
-+#define FME_PWR_STATUS		0x8
-+#define FME_LATENCY_TOLERANCE	BIT_ULL(18)
-+#define PWR_CONSUMED		GENMASK_ULL(17, 0)
-+
-+#define FME_PWR_THRESHOLD	0x10
-+#define PWR_THRESHOLD1		GENMASK_ULL(6, 0)	/* in Watts */
-+#define PWR_THRESHOLD2		GENMASK_ULL(14, 8)	/* in Watts */
-+#define PWR_THRESHOLD_MAX	0x7f			/* in Watts */
-+#define PWR_THRESHOLD1_STATUS	BIT_ULL(16)
-+#define PWR_THRESHOLD2_STATUS	BIT_ULL(17)
-+
-+#define FME_PWR_XEON_LIMIT	0x18
-+#define XEON_PWR_LIMIT		GENMASK_ULL(14, 0)	/* in 0.1 Watts */
-+#define XEON_PWR_EN		BIT_ULL(15)
-+#define FME_PWR_FPGA_LIMIT	0x20
-+#define FPGA_PWR_LIMIT		GENMASK_ULL(14, 0)	/* in 0.1 Watts */
-+#define FPGA_PWR_EN		BIT_ULL(15)
-+
-+static int power_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
-+			    u32 attr, int channel, long *val)
-+{
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
-+	u64 v;
-+
-+	switch (attr) {
-+	case hwmon_power_input:
-+		v = readq(feature->ioaddr + FME_PWR_STATUS);
-+		*val = (long)(FIELD_GET(PWR_CONSUMED, v) * 1000000);
-+		break;
-+	case hwmon_power_max:
-+		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
-+		*val = (long)(FIELD_GET(PWR_THRESHOLD1, v) * 1000000);
-+		break;
-+	case hwmon_power_crit:
-+		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
-+		*val = (long)(FIELD_GET(PWR_THRESHOLD2, v) * 1000000);
-+		break;
-+	case hwmon_power_max_alarm:
-+		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
-+		*val = (long)FIELD_GET(PWR_THRESHOLD1_STATUS, v);
-+		break;
-+	case hwmon_power_crit_alarm:
-+		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
-+		*val = (long)FIELD_GET(PWR_THRESHOLD2_STATUS, v);
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
-+static int power_hwmon_write(struct device *dev, enum hwmon_sensor_types type,
-+			     u32 attr, int channel, long val)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev->parent);
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
-+	int ret = 0;
-+	u64 v;
-+
-+	val = clamp_val(val / 1000000, 0, PWR_THRESHOLD_MAX);
-+
-+	mutex_lock(&pdata->lock);
-+
-+	switch (attr) {
-+	case hwmon_power_max:
-+		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
-+		v &= ~PWR_THRESHOLD1;
-+		v |= FIELD_PREP(PWR_THRESHOLD1, val);
-+		writeq(v, feature->ioaddr + FME_PWR_THRESHOLD);
-+		break;
-+	case hwmon_power_crit:
-+		v = readq(feature->ioaddr + FME_PWR_THRESHOLD);
-+		v &= ~PWR_THRESHOLD2;
-+		v |= FIELD_PREP(PWR_THRESHOLD2, val);
-+		writeq(v, feature->ioaddr + FME_PWR_THRESHOLD);
-+		break;
-+	default:
-+		ret = -EOPNOTSUPP;
-+		break;
-+	}
-+
-+	mutex_unlock(&pdata->lock);
-+
-+	return ret;
-+}
-+
-+static umode_t power_hwmon_attrs_visible(const void *drvdata,
-+					 enum hwmon_sensor_types type,
-+					 u32 attr, int channel)
-+{
-+	switch (attr) {
-+	case hwmon_power_input:
-+	case hwmon_power_max_alarm:
-+	case hwmon_power_crit_alarm:
-+		return 0444;
-+	case hwmon_power_max:
-+	case hwmon_power_crit:
-+		return 0644;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct hwmon_ops power_hwmon_ops = {
-+	.is_visible = power_hwmon_attrs_visible,
-+	.read = power_hwmon_read,
-+	.write = power_hwmon_write,
-+};
-+
-+static const struct hwmon_channel_info *power_hwmon_info[] = {
-+	HWMON_CHANNEL_INFO(power, HWMON_P_INPUT |
-+				  HWMON_P_MAX   | HWMON_P_MAX_ALARM |
-+				  HWMON_P_CRIT  | HWMON_P_CRIT_ALARM),
-+	NULL
-+};
-+
-+static const struct hwmon_chip_info power_hwmon_chip_info = {
-+	.ops = &power_hwmon_ops,
-+	.info = power_hwmon_info,
-+};
-+
-+static ssize_t power1_xeon_limit_show(struct device *dev,
-+				      struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
-+	u16 xeon_limit = 0;
-+	u64 v;
-+
-+	v = readq(feature->ioaddr + FME_PWR_XEON_LIMIT);
-+
-+	if (FIELD_GET(XEON_PWR_EN, v))
-+		xeon_limit = FIELD_GET(XEON_PWR_LIMIT, v);
-+
-+	return sprintf(buf, "%u\n", xeon_limit * 100000);
-+}
-+
-+static ssize_t power1_fpga_limit_show(struct device *dev,
-+				      struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
-+	u16 fpga_limit = 0;
-+	u64 v;
-+
-+	v = readq(feature->ioaddr + FME_PWR_FPGA_LIMIT);
-+
-+	if (FIELD_GET(FPGA_PWR_EN, v))
-+		fpga_limit = FIELD_GET(FPGA_PWR_LIMIT, v);
-+
-+	return sprintf(buf, "%u\n", fpga_limit * 100000);
-+}
-+
-+static ssize_t power1_ltr_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	struct dfl_feature *feature = dev_get_drvdata(dev);
-+	u64 v;
-+
-+	v = readq(feature->ioaddr + FME_PWR_STATUS);
-+
-+	return sprintf(buf, "%u\n",
-+		       (unsigned int)FIELD_GET(FME_LATENCY_TOLERANCE, v));
-+}
-+
-+static DEVICE_ATTR_RO(power1_xeon_limit);
-+static DEVICE_ATTR_RO(power1_fpga_limit);
-+static DEVICE_ATTR_RO(power1_ltr);
-+
-+static struct attribute *power_extra_attrs[] = {
-+	&dev_attr_power1_xeon_limit.attr,
-+	&dev_attr_power1_fpga_limit.attr,
-+	&dev_attr_power1_ltr.attr,
-+	NULL
-+};
-+
-+ATTRIBUTE_GROUPS(power_extra);
-+
-+static int fme_power_mgmt_init(struct platform_device *pdev,
-+			       struct dfl_feature *feature)
-+{
-+	struct device *hwmon;
-+
-+	hwmon = devm_hwmon_device_register_with_info(&pdev->dev,
-+						     "dfl_fme_power", feature,
-+						     &power_hwmon_chip_info,
-+						     power_extra_groups);
-+	if (IS_ERR(hwmon)) {
-+		dev_err(&pdev->dev, "Fail to register power hwmon\n");
-+		return PTR_ERR(hwmon);
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct dfl_feature_id fme_power_mgmt_id_table[] = {
-+	{.id = FME_FEATURE_ID_POWER_MGMT,},
-+	{0,}
-+};
-+
-+static const struct dfl_feature_ops fme_power_mgmt_ops = {
-+	.init = fme_power_mgmt_init,
-+};
-+
- static struct dfl_feature_driver fme_feature_drvs[] = {
- 	{
- 		.id_table = fme_hdr_id_table,
-@@ -373,6 +576,10 @@ static int fme_thermal_mgmt_init(struct platform_device *pdev,
- 		.ops = &fme_thermal_mgmt_ops,
- 	},
- 	{
-+		.id_table = fme_power_mgmt_id_table,
-+		.ops = &fme_power_mgmt_ops,
-+	},
-+	{
- 		.ops = NULL,
- 	},
- };
--- 
-1.8.3.1
+> > @Moritz Fischer: If Alan couldn't send his patch series, Can we take this patch series??
+> > Please let me know your thoughts on this.
+
+Alan had some comments RE: #defines, I'll have to take another look.
+> > 
+> > Regards,
+> > Kedar.
+> 
+> 
+> I'd like to see some mechanism added as well. Our CvP driver needs a way to
+> load images to the FPGA over the PCIe bus.
+
+Can you elaborate a bit on the CvP use-case and how that would work? Who
+would use the device how after loading the bitstream?
+
+Generally there are several use cases that I have collected mentally
+over the years:
+
+I) DFL use case:
+  - Mixed-set of drivers: Kernel and Userspace
+  - FPGA logic is discoverable through DFL
+  - Userspace application wants to reprogram FPGA
+
+II) DT configfs use case:
+  - Mixed-set of drivers: Kernel and Userspace
+  - FPGA logic is *not* discoverable (hence DT overlay)
+  - Userspace application wants to reprogram FPGA
+
+III) Thomas' case:
+  - Kernel only drivers (pcie bridge, pcie drivers, ...)
+  - FPGA logic is fully discoverable (i.e. PCIe endpoint
+    implemented in FPGA, connected to SoC via PCIe)
+  - Userspace application wants to reprogram FPGA
+
+IV) VFIO case:
+  - Usually exposes either entire device via vfio-pci or part via
+    vfio-mdev
+  - Loading (basic) bitstream at boot from flash
+  - vfio-mdev case can use FPGA region interface + ioctl
+  - Full VFIO case is similar to III)
+
+How does your CvP use case fit in? Collecting all the use-cases would
+help with moving forward on coming up with an API :)
+
+> 
+> It wasn't clear to me from the discussion on Alan's patchset[1] that the
+> debugfs was acceptable to the mainline. I'd be happy to resurrect that
+> patchset with the suggested changes.
+
+Back then we decided to not move forward with the debugfs patchset since
+it's essentially cat foo.bin > /dev/xdevcfg / cat bar.rbf > /dev/fpga0
+in disguise. Which is why I vetoed it back then.
+
+> Since debugfs isn't enabled for production, are there any alternatives?
+> 
+> Alan sent a RFC [2] for loading FIT images through the sysfs.
+> 
+> The RFC described a FIT image that included FPGA image specific information
+> to be included with the image (for systems running without device tree like
+> our PCIe bus FPGA CvP).
+
+Yeah I had originally suggested that as a mechanim to make FPGA images
+discoverable by the kernel. I still think the idea has merit, however it
+will run into the same issues that the configfs interface ran into w.r.t
+using dt-overlays.
+
+Generally I'd like to see a solution that exposes the *same* interface
+to DT and not DT systems to userspace.
+
+Using FIT headers one could go ahead and design something along the
+lines of what DFL is doing, except for instead of parsing the DFL in the
+logic, one would parse the FIT header to create subdevices.
+
+> Unfortunately, I believe this has the same uphill battle that the Device
+> Tree Overlay patches[3] have to getting accepted.
+
+See above. While I'm happy to discuss this more I atm don't have the
+bandwidth to push the DT work any further.
+
+Thanks,
+Moritz
