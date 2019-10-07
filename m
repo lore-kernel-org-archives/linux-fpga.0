@@ -1,109 +1,130 @@
-Return-Path: <SRS0=32H+=YA=analog.com=Nuno.Sa@kernel.org>
-Return-Path: <SRS0=32H+=YA=analog.com=Nuno.Sa@kernel.org>
-From: "Sa, Nuno" <Nuno.Sa@analog.com>
+Return-Path: <SRS0=yLLD=YA=gmail.com=groeck7@kernel.org>
+Return-Path: <SRS0=yLLD=YA=gmail.com=groeck7@kernel.org>
+Sender: Guenter Roeck <groeck7@gmail.com>
 Subject: Re: [PATCH 2/3] hwmon: Support ADI Fan Control IP
-Date: Mon, 7 Oct 2019 15:08:55 +0000
-Message-ID: <014f3cd33766dbe32d24eebe74724df596685109.camel@analog.com>
 References: <20190926103925.194973-1-nuno.sa@analog.com>
-	 <20190926103925.194973-3-nuno.sa@analog.com>
-	 <20191006153209.GA30372@roeck-us.net>
-	 <9a3bec277caaabffb75248ddc6fbb89b5d95da5b.camel@analog.com>
-	 <8f6e8513-eba1-39ad-cb7c-d92afa9e0b92@roeck-us.net>
-In-Reply-To: <8f6e8513-eba1-39ad-cb7c-d92afa9e0b92@roeck-us.net>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <453E811B2965144A94193E2ABAB96382@namprd03.prod.outlook.com>
-Content-Transfer-Encoding: base64
+ <20190926103925.194973-3-nuno.sa@analog.com>
+ <20191006153209.GA30372@roeck-us.net>
+ <9a3bec277caaabffb75248ddc6fbb89b5d95da5b.camel@analog.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <8f6e8513-eba1-39ad-cb7c-d92afa9e0b92@roeck-us.net>
+Date: Mon, 7 Oct 2019 07:18:37 -0700
 MIME-Version: 1.0
-To: "linux@roeck-us.net" <linux@roeck-us.net>
-Cc: "linux-hwmon@vger.kernel.org" <linux-hwmon@vger.kernel.org>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "jdelvare@suse.com" <jdelvare@suse.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>
+In-Reply-To: <9a3bec277caaabffb75248ddc6fbb89b5d95da5b.camel@analog.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: "Sa, Nuno" <Nuno.Sa@analog.com>
+Cc: "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-hwmon@vger.kernel.org" <linux-hwmon@vger.kernel.org>, "jdelvare@suse.com" <jdelvare@suse.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-T24gTW9uLCAyMDE5LTEwLTA3IGF0IDA3OjE4IC0wNzAwLCBHdWVudGVyIFJvZWNrIHdyb3RlOg0K
-DQo+IA0KPiBPbiAxMC83LzE5IDY6NTIgQU0sIFNhLCBOdW5vIHdyb3RlOg0KPiBbIC4uLiBdDQo+
-ID4gPiA+ICtzdGF0aWMgbG9uZyBheGlfZmFuX2NvbnRyb2xfZ2V0X3B3bV9kdXR5KGNvbnN0IHN0
-cnVjdA0KPiA+ID4gPiBheGlfZmFuX2NvbnRyb2xfZGF0YSAqY3RsKQ0KPiA+ID4gPiArew0KPiA+
-ID4gPiArCXUzMiBwd21fd2lkdGggPQ0KPiA+ID4gPiBheGlfZmFuX2NvbnRyb2xfaW9yZWFkKEFE
-SV9SRUdfUFdNX1dJRFRILCBjdGwpOw0KPiA+ID4gPiArCXUzMiBwd21fcGVyaW9kID0NCj4gPiA+
-ID4gYXhpX2Zhbl9jb250cm9sX2lvcmVhZChBRElfUkVHX1BXTV9QRVJJT0QsDQo+ID4gPiA+IGN0
-bCk7DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlyZXR1cm4gRElWX1JPVU5EX0NMT1NFU1QocHdtX3dp
-ZHRoICogU1lTRlNfUFdNX01BWCwNCj4gPiA+ID4gcHdtX3BlcmlvZCk7DQo+ID4gPiANCj4gPiA+
-IElzIHB3bV9wZXJpb2QgZ3VhcmFudGVlZCB0byBiZSAhPSAwID8NCj4gPiANCj4gPiBZZXMsIEl0
-IGlzIGEgUk8gcmVnaXN0ZXIgYW5kIGl0IGlzIHNldCBieSB0aGUgY29yZSB3aXRoIHRoZSBkZWZh
-dWx0DQo+ID4gb2YNCj4gPiAweDRlMjAuDQo+IA0KPiBUcnVzdGluZyB0aGUgaGFyZHdhcmUgZG9l
-c24ndCBtYWtlIG1lIHRvbyBjb21mb3J0YWJsZS4gQXJlIHdlIHN1cmUgYXQNCj4gYWxsDQo+IHRp
-bWVzIHRoYXQgdGhlIEhXIGlzbid0IG1lc3NlZCB1cCA/IElmIHNvLCBwbGVhc2UgYXQgbGVhc3Qg
-YWRkIGENCj4gY29tbWVudA0KPiBzdGF0aW5nIHRoYXQgdGhlIEhXIHdpbGwgbmV2ZXIgcmV0dXJu
-IDAuIFdlIGNhbiB0aGVuIGZpeCBpdCBhZnRlciB3ZQ0KPiBnZXQNCj4gdGhlIGZpcnN0IGNyYXNo
-IHJlcG9ydCBmcm9tIHRoZSBmaWVsZCA7LSkuDQoNCldpbGwgZG8gdGhhdC4NCg0KPiBbIC4uLiBd
-DQo+IA0KPiA+ID4gPiArCWlmIChpcnFfcGVuZGluZyAmIEFESV9JUlFfU1JDX1RFTVBfSU5DUkVB
-U0UpDQo+ID4gPiA+ICsJCS8qIGhhcmR3YXJlIHJlcXVlc3RlZCBhIG5ldyBwd20gKi8NCj4gPiA+
-ID4gKwkJY3RsLT5od19wd21fcmVxID0gdHJ1ZTsNCj4gPiA+ID4gKw0KPiA+ID4gSSBkb24ndCBy
-ZWFsbHkgdW5kZXJzdGFuZCB0aGUgbG9naWMgaGVyZS4gSWYNCj4gPiA+IEFESV9JUlFfU1JDX1RF
-TVBfSU5DUkVBU0UgbWVhbnMNCj4gPiA+IHRoYXQgaGFyZHdhcmUgd2FudHMgYSBuZXcgcHdtLCBo
-b3cgaXMgdXNlcnNwYWNlIGluZm9ybWVkIGFib3V0DQo+ID4gPiB0aGF0DQo+ID4gPiByZXF1ZXN0
-ID8NCj4gPiANCj4gPiBJdCBpc24ndC4gVXNlcnNwYWNlIHdvdWxkIGhhdmUgdG8gcmVhZCB0aGUg
-cHdtIGF0dHJpYnV0ZSBhbmQgZmlndXJlDQo+ID4gdGhhdCBjaGFuZ2VkLiBTaG91bGQgSSB1c2Ug
-c29tZXRoaW5nIGxpa2Ugc3lzZnNfbm90aWZ5KCkgb24gdGhlIHB3bQ0KPiA+IGF0dHJpYnV0ZT8N
-Cj4gPiANCj4gVGhhdCBtaWdodCBtYWtlIHNlbnNlLg0KPiANCj4gPiA+IEFuZCB3aHkgYXJlIHRo
-ZSB0YWNobyBwYXJhbWF0ZXJzIF9ub3RfIHVwZGF0ZWQgaW4gdGhpcyBjYXNlIGxhdGVyDQo+ID4g
-PiBvbg0KPiA+ID4gKHVubGVzcw0KPiA+ID4gQURJX0lSUV9TUkNfUFdNX0NIQU5HRUQgYW5kIEFE
-SV9JUlFfU1JDX1RFTVBfSU5DUkVBU0UgYXJlIGJvdGgNCj4gPiA+IHNldCkgPw0KPiA+ID4gSXQg
-bWlnaHQgYmUgdXNlZnVsIHRvIGRlc2NyaWJlIHRoZSBleHBlY3RlZCBzZXF1ZW5jZSBvZiBldmVu
-dHMuDQo+ID4gDQo+ID4gVGhlIGNvcmUgY2FuIGNoYW5nZSB0aGUgUFdNIGJ5IGl0c2VsZiAod2hp
-Y2ggaXMgd2hlbiB3ZSByZWNlaXZlDQo+ID4gQURJX0lSUV9TUkNfVEVNUF9JTkNSRUFTRSkgYW5k
-IGluIHRoYXQgY2FzZSBpdCB3aWxsIHVzZSBwcmVkZWZpbmVkDQo+ID4gdmFsdWVzIHRvIGV2YWx1
-YXRlIHRoZSB0YWNobyBzaWduYWwgKHNvIGl0IHdvbid0IHVzZSB0aGUgdmFsdWVzIG9uDQo+ID4g
-VEFDSF9QRVJJT0QgYW5kIFRBQ0hfVE9MRVJBTkNFKS4gQWx0ZXJuYXRpdmVseSwgdGhlIHVzZXIg
-Y2FuDQo+ID4gcmVxdWVzdCBhDQo+ID4gbmV3IFBXTSBieSB3cml0aW5nIHRoZSBwd20gYXR0cmli
-dXRlLiBJbiB0aGlzIGNhc2UgdGhlIENPUkUgaXMNCj4gPiBleHBlY3RpbmcgdGhhdCBUQUNIX1BF
-UklPRCBhbmQgVEFDSF9UT0xFUkFOQ0UgYXJlIGdpdmVuIG90aGVyd2lzZQ0KPiA+IGl0DQo+ID4g
-d29uJ3QgZXZhbHVhdGUgdGhlIHRhY2hvIHNpZ25hbC4gTm90ZSB0aGF0IHdoZW4gaXMgdGhlIHVz
-ZXIgd2hpY2gNCj4gPiByZXF1ZXN0cyBhIG5ldyBwd20gd2Ugb25seSBnZXQgQURJX0lSUV9TUkNf
-UFdNX0NIQU5HRUQgKGFuZCBub3QgKwkNCj4gPiBpZiAoaXJxX3BlbmRpbmcgJiBBRElfSVJRX1NS
-Q19URU1QX0lOQ1JFQVNFKSwgc28gSSB1c2UgdGhhdCB0byBrbm93DQo+ID4gd2hlbiBkbyBJIGhh
-dmUgdG8gdXBkYXRlIHRoZSB0YWNobyBwYXJhbWV0ZXJzLg0KPiA+ICAgDQo+IFdvbmRlcmluZyAu
-Li4gaWYgc2V0dGluZyB0aGUgcHdtIHJlcXVpcmVzIGFuIHVwZGF0ZSBvZiBwZXJpb2QgYW5kDQo+
-IHRvbGVyYW5jZSwNCj4gd2h5IG5vdCBzZXQgdXBkYXRlX3RhY2hvX3BhcmFtcyB0byB0cnVlIHdo
-ZW4gdGhlIHB3bSB2YWx1ZSBpcw0KPiB3cml0dGVuLCBvcg0KPiB1cGRhdGUgdGhlIHJlZ2lzdGVy
-cyBkaXJlY3RseSBpbnN0ZWFkIG9mIHdhaXRpbmcgZm9yIGFuIGludGVycnVwdCA/DQoNCkFmdGVy
-IHJlcXVlc3RpbmcgYSBuZXcgZHV0eS1jeWNsZSB0aGVyZSBpcyA1cyBkZWxheSBvbiB3aGljaCB0
-aGUgY29yZQ0Kd2FpdHMgZm9yIHRoZSBmYW4gcm90YXRpb24gc3BlZWQgdG8gc3RhYmlsaXplLiBP
-bmx5IGFmdGVyIHRoYXQsIHdlIGhhdmUNCnRvIHByb3ZpZGUgdGhlIHRhY2ggcGFyYW1ldGVycy4g
-QWxzbyBub3RlIHRoYXQgd2UgZG8gbmVlZCB0byB1c2UgdGhlDQp1cGRhdGVkIHRhY2ggbWVhc3Vy
-ZW1lbnQgdmFsdWUgdG8gZGVyaXZlIHRoaXMgcGFyYW1ldGVycy4gU28sIHdlIG5lZWQNCnRvIHdh
-aXQgZm9yIHRoZSBBRElfSVJRX1NSQ19ORVdfTUVBU1VSIGludGVycnVwdC4NCg0KPiBFaXRoZXIg
-Y2FzZSwgSSB0aGluayB0aGUgYWJvdmUgc2VxdWVuY2Ugb2YgZXZlbnRzIHNob3VsZCBiZSBleHBs
-YWluZWQNCj4gaW4gdGhlIGRyaXZlciBmb3IgZnV0dXJlIGRldmVsb3BlcnMgdG8gdW5kZXJzdGFu
-ZCB3aHkgdGhlIGNvZGUgaXMNCj4gd3JpdHRlbg0KPiB0aGUgd2F5IGl0IGlzLg0KDQp3aWxsIGRv
-IHRoYXQuDQoNCj4gPiApDQo+ID4gDQo+ID4gPiA+ICsJaWYgKGlycV9wZW5kaW5nICYgQURJX0lS
-UV9TUkNfVEFDSF9FUlIpDQo+ID4gPiA+ICsJCWN0bC0+ZmFuX2ZhdWx0ID0gMTsNCj4gPiA+IA0K
-PiA+ID4gSXMgaXQgb24gcHVycG9zZSB0aGF0IHRoaXMgYml0IGlzIG5ldmVyIHJlc2V0ID8NCj4g
-PiANCj4gPiBZZXMsIGFuZCBpdCBpcyB3cm9uZy4gSSB0aG91Z2ggdGhhdCB0aGUgY29yZSB3b3Vs
-ZCBuZXZlciBjbGVhciB0aGlzDQo+ID4gYWxhcm0gYnV0IGl0IGRvZXMgY2xlYXIgaXQgaW4gdGhl
-IG5leHQgdGVtcGVyYXR1cmUgcmVhZGluZyBjeWNsZQ0KPiA+IChhbmQNCj4gPiBzZXQgaXQgYWdh
-aW4gaWYgbmVlZGVkKS4gVGhlbiwgd291bGQgYSBjbGVhciBvbiByZWFkIGJlIGEgY29ycmVjdA0K
-PiA+IGFwcHJvYWNoPw0KPiANCj4gTm90IHN1cmUgaWYgdGhlcmUgaXMgYSAiY29ycmVjdCIsIGJ1
-dCBJIHRoaW5rIGl0IHdvdWxkIG1ha2Ugc2Vuc2UuDQo+IA0KPiA+ID4gPiArDQo+ID4gPiA+ICsJ
-LyogY2xlYXIgYWxsIGludGVycnVwdHMgKi8NCj4gPiA+ID4gKwljbGVhcl9tYXNrID0gaXJxX3Bl
-bmRpbmcgJiBBRElfSVJRX1NSQ19NQVNLOw0KPiA+ID4gPiArCWF4aV9mYW5fY29udHJvbF9pb3dy
-aXRlKGNsZWFyX21hc2ssDQo+ID4gPiA+IEFESV9SRUdfSVJRX1BFTkRJTkcsIGN0bCk7DQo+ID4g
-PiA+ICsNCj4gPiA+ID4gKwlyZXR1cm4gSVJRX0hBTkRMRUQ7DQo+ID4gPiA+ICt9DQo+ID4gPiA+
-ICsNCj4gPiA+ID4gK3N0YXRpYyBpbnQgYXhpX2Zhbl9jb250cm9sX2luaXQoc3RydWN0IGF4aV9m
-YW5fY29udHJvbF9kYXRhDQo+ID4gPiA+ICpjdGwsDQo+ID4gPiA+ICsJCQkJY29uc3Qgc3RydWN0
-IGRldmljZV9ub2RlICpucCkNCj4gPiA+ID4gK3sNCj4gPiA+ID4gKwlpbnQgcmV0Ow0KPiA+ID4g
-PiArDQo+ID4gPiA+ICsJLyogZ2V0IGZhbiBwdWxzZXMgcGVyIHJldm9sdXRpb24gKi8NCj4gPiA+
-ID4gKwlyZXQgPSBvZl9wcm9wZXJ0eV9yZWFkX3UzMihucCwgImFkaSxwdWxzZXMtcGVyLQ0KPiA+
-ID4gPiByZXZvbHV0aW9uIiwNCj4gPiA+ID4gJmN0bC0+cHByKTsNCj4gPiA+ID4gKwlpZiAocmV0
-KQ0KPiA+ID4gPiArCQlyZXR1cm4gcmV0Ow0KPiA+ID4gDQo+ID4gPiBTbyBhbGwgcmFuZG9tIHZh
-bHVlcyBhcmUgYWNjZXB0YWJsZSwgaW5jbHVkaW5nIDAgYW5kIDB4ZmZmZmZmZmYgPw0KPiA+IA0K
-PiA+IFllcywgSSdtIGF3YXJlIHRoYXQgMSBhbmQgMiBhcmUgdHlwaWNhbCB2YWx1ZXMgYnV0IEkn
-bSBub3Qgc3VyZQ0KPiA+IHdoYXQgaXMNCj4gPiB0aGUgbWF4aW11bSB0aGF0IHR5cGljYWxseSBl
-eGlzdHMgc28gSSBkaWRuJ3Qgd2FudCB0byBwdXQgbGltaXRzDQo+ID4gaGVyZQ0KPiA+IHdpdGhv
-dXQga25vd2luZy4gVGhvdWdoIGF0IGxlYXN0IDAgbXVzdCBub3QgYmUgYWNjZXB0ZWQgc2luY2Ug
-dGhlbg0KPiA+IHdlDQo+ID4gYXJlIGFsd2F5cyBkaXZpZGluZyBieSAwIHdoZW4gcmVhZGluZyB0
-aGUgRkFOIHJwbS4NCj4gPiANCj4gVGhlIG9ubHkgdmFsdWVzIEkgYW0gYXdhcmUgb2YgYXJlIDIg
-YW5kIDQuIEkgZG9uJ3QgcmVjYWxsIHNlZWluZyBhbnkNCj4gZmFucw0KPiB3aXRoIDEgcHVsc2Ug
-cGVyIHJldm9sdXRpb24uIE92ZXJhbGwsIEkgZG9uJ3QgdGhpbmsgdmFsdWVzIG90aGVyIHRoYW4N
-Cj4gMSwgMiwNCj4gYW5kIDQgbWFrZSBzZW5zZS4NCg0KIFdpbGwgdXNlIDEsMiBhbmQgNCBhbmQg
-dXBkYXRlIGR0IGJpbmRpbmdzIGFjY29yZGluZ2x5Lg0KDQo+IEd1ZW50ZXINCg0K
+On 10/7/19 6:52 AM, Sa, Nuno wrote:
+[ ... ]
+>>> +static long axi_fan_control_get_pwm_duty(const struct
+>>> axi_fan_control_data *ctl)
+>>> +{
+>>> +	u32 pwm_width = axi_fan_control_ioread(ADI_REG_PWM_WIDTH, ctl);
+>>> +	u32 pwm_period = axi_fan_control_ioread(ADI_REG_PWM_PERIOD,
+>>> ctl);
+>>> +
+>>> +	return DIV_ROUND_CLOSEST(pwm_width * SYSFS_PWM_MAX,
+>>> pwm_period);
+>>
+>> Is pwm_period guaranteed to be != 0 ?
+> 
+> Yes, It is a RO register and it is set by the core with the default of
+> 0x4e20.
+
+Trusting the hardware doesn't make me too comfortable. Are we sure at all
+times that the HW isn't messed up ? If so, please at least add a comment
+stating that the HW will never return 0. We can then fix it after we get
+the first crash report from the field ;-).
+
+[ ... ]
+
+>>> +	if (irq_pending & ADI_IRQ_SRC_TEMP_INCREASE)
+>>> +		/* hardware requested a new pwm */
+>>> +		ctl->hw_pwm_req = true;
+>>> +
+>> I don't really understand the logic here. If
+>> ADI_IRQ_SRC_TEMP_INCREASE means
+>> that hardware wants a new pwm, how is userspace informed about that
+>> request ?
+> 
+> It isn't. Userspace would have to read the pwm attribute and figure
+> that changed. Should I use something like sysfs_notify() on the pwm
+> attribute?
+> 
+That might make sense.
+
+>> And why are the tacho paramaters _not_ updated in this case later on
+>> (unless
+>> ADI_IRQ_SRC_PWM_CHANGED and ADI_IRQ_SRC_TEMP_INCREASE are both set) ?
+>> It might be useful to describe the expected sequence of events.
+> 
+> The core can change the PWM by itself (which is when we receive
+> ADI_IRQ_SRC_TEMP_INCREASE) and in that case it will use predefined
+> values to evaluate the tacho signal (so it won't use the values on
+> TACH_PERIOD and TACH_TOLERANCE). Alternatively, the user can request a
+> new PWM by writing the pwm attribute. In this case the CORE is
+> expecting that TACH_PERIOD and TACH_TOLERANCE are given otherwise it
+> won't evaluate the tacho signal. Note that when is the user which
+> requests a new pwm we only get ADI_IRQ_SRC_PWM_CHANGED (and not +	
+> if (irq_pending & ADI_IRQ_SRC_TEMP_INCREASE), so I use that to know
+> when do I have to update the tacho parameters.
+>   
+Wondering ... if setting the pwm requires an update of period and tolerance,
+why not set update_tacho_params to true when the pwm value is written, or
+update the registers directly instead of waiting for an interrupt ?
+
+Either case, I think the above sequence of events should be explained
+in the driver for future developers to understand why the code is written
+the way it is.
+
+>>>
+> )
+> 
+>>> +	if (irq_pending & ADI_IRQ_SRC_TACH_ERR)
+>>> +		ctl->fan_fault = 1;
+>>
+>> Is it on purpose that this bit is never reset ?
+> 
+> Yes, and it is wrong. I though that the core would never clear this
+> alarm but it does clear it in the next temperature reading cycle (and
+> set it again if needed). Then, would a clear on read be a correct
+> approach?
+
+Not sure if there is a "correct", but I think it would make sense.
+
+>>
+>>> +
+>>> +	/* clear all interrupts */
+>>> +	clear_mask = irq_pending & ADI_IRQ_SRC_MASK;
+>>> +	axi_fan_control_iowrite(clear_mask, ADI_REG_IRQ_PENDING, ctl);
+>>> +
+>>> +	return IRQ_HANDLED;
+>>> +}
+>>> +
+>>> +static int axi_fan_control_init(struct axi_fan_control_data *ctl,
+>>> +				const struct device_node *np)
+>>> +{
+>>> +	int ret;
+>>> +
+>>> +	/* get fan pulses per revolution */
+>>> +	ret = of_property_read_u32(np, "adi,pulses-per-revolution",
+>>> &ctl->ppr);
+>>> +	if (ret)
+>>> +		return ret;
+>>
+>> So all random values are acceptable, including 0 and 0xffffffff ?
+> 
+> Yes, I'm aware that 1 and 2 are typical values but I'm not sure what is
+> the maximum that typically exists so I didn't want to put limits here
+> without knowing. Though at least 0 must not be accepted since then we
+> are always dividing by 0 when reading the FAN rpm.
+> 
+The only values I am aware of are 2 and 4. I don't recall seeing any fans
+with 1 pulse per revolution. Overall, I don't think values other than 1, 2,
+and 4 make sense.
+
+Guenter
