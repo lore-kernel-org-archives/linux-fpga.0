@@ -1,34 +1,36 @@
-Return-Path: <SRS0=/DLB=YC=analog.com=Nuno.Sa@kernel.org>
-Return-Path: <SRS0=/DLB=YC=analog.com=Nuno.Sa@kernel.org>
-From: "Sa, Nuno" <Nuno.Sa@analog.com>
+Return-Path: <SRS0=mPPm=YB=gmail.com=groeck7@kernel.org>
+Return-Path: <SRS0=mPPm=YB=gmail.com=groeck7@kernel.org>
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Tue, 8 Oct 2019 13:11:29 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 Subject: Re: [PATCH 2/3] hwmon: Support ADI Fan Control IP
-Date: Wed, 9 Oct 2019 07:10:29 +0000
-Message-ID: <1d064ffa4eb0698121eca4862ee4d25e2140e333.camel@analog.com>
+Message-ID: <20191008201129.GA14652@roeck-us.net>
 References: <20190926103925.194973-1-nuno.sa@analog.com>
-	 <20190926103925.194973-3-nuno.sa@analog.com>
-	 <20191006153209.GA30372@roeck-us.net>
-	 <1125a1f831a76b27ccc050a0db4499e5c4abd76c.camel@analog.com>
-	 <20191008201129.GA14652@roeck-us.net>
-In-Reply-To: <20191008201129.GA14652@roeck-us.net>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <638A2623C2F57C429791D8E55E70280B@namprd03.prod.outlook.com>
-Content-Transfer-Encoding: base64
+ <20190926103925.194973-3-nuno.sa@analog.com>
+ <20191006153209.GA30372@roeck-us.net>
+ <1125a1f831a76b27ccc050a0db4499e5c4abd76c.camel@analog.com>
 MIME-Version: 1.0
-To: "linux@roeck-us.net" <linux@roeck-us.net>
-Cc: "linux-hwmon@vger.kernel.org" <linux-hwmon@vger.kernel.org>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "jdelvare@suse.com" <jdelvare@suse.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1125a1f831a76b27ccc050a0db4499e5c4abd76c.camel@analog.com>
+To: "Sa, Nuno" <Nuno.Sa@analog.com>
+Cc: "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-hwmon@vger.kernel.org" <linux-hwmon@vger.kernel.org>, "jdelvare@suse.com" <jdelvare@suse.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-T24gVHVlLCAyMDE5LTEwLTA4IGF0IDEzOjExIC0wNzAwLCBHdWVudGVyIFJvZWNrIHdyb3RlOg0K
-PiANCj4gT24gVHVlLCBPY3QgMDgsIDIwMTkgYXQgMDM6NTk6NDlQTSArMDAwMCwgU2EsIE51bm8g
-d3JvdGU6DQo+IFsgLi4uIF0NCj4gPiA+ID4gKw0KPiA+ID4gPiArCWN0bC0+aXJxID0gcGxhdGZv
-cm1fZ2V0X2lycShwZGV2LCAwKTsNCj4gPiA+ID4gKwlpZiAoY3RsLT5pcnEgPCAwKSB7DQo+ID4g
-PiANCj4gPiA+IFRoaXMgY2FuIHJldHVybiAtRVBST0JFX0RFRkVSLiBPbiB0b3Agb2YgdGhhdCwg
-aXQgYWxyZWFkeQ0KPiA+ID4gZ2VuZXJhdGVzDQo+ID4gPiBhbiBlcnJvcg0KPiA+ID4gbWVzc2Fn
-ZSwgbWVhbmluZyBhbm90aGVyIG9uZSBoZXJlIGlzIHVubmVjZXNzYXJ5Lg0KPiA+IA0KPiA+IFdo
-eSByZXR1cm5pbmcgLUVQUk9CRV9ERUZFUj8gcGxhdGZvcm1fZ2V0X2lycSgpIGFscmVhZHkgc2Vl
-bXMgdG8NCj4gPiBoYW5kbGUNCj4gPiBFUFJPQkVfREVGRVIuLi4NCj4gPiANCj4gLi4uIHdoaWNo
-IGlzIGV4YWN0bHkgd2h5IEkgYW0gc2F5aW5nIHRoYXQgeW91IGRvbid0IG5lZWQgYW5vdGhlcg0K
-PiBlcnJvcg0KPiBtZXNzYWdlLCBhbmQgdGhhdCBhbiB1bmNvbmRpdGlvbmFsIGVycm9yIG1lc3Nh
-Z2UgaXMgYSBiYWQgaWRlYS4NCj4gDQoNCkFoaGgsIHNvcnJ5LiBJIGNvbXBsZXRlbHkgbWlzdW5k
-ZXJzdG9vZCB5b3UgOigNCg0KTnVubyBTw6ENCg0KPiBHdWVudGVyDQoNCg==
+On Tue, Oct 08, 2019 at 03:59:49PM +0000, Sa, Nuno wrote:
+[ ... ]
+> > > +
+> > > +	ctl->irq = platform_get_irq(pdev, 0);
+> > > +	if (ctl->irq < 0) {
+> > 
+> > This can return -EPROBE_DEFER. On top of that, it already generates
+> > an error
+> > message, meaning another one here is unnecessary.
+> 
+> Why returning -EPROBE_DEFER? platform_get_irq() already seems to handle
+> EPROBE_DEFER...
+> 
+... which is exactly why I am saying that you don't need another error
+message, and that an unconditional error message is a bad idea.
+
+Guenter
