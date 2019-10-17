@@ -1,128 +1,73 @@
-Return-Path: <SRS0=Xkdg=YV=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=Xkdg=YV=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v5 1/2] Documentation: fpga: dfl: add description for performance reporting support
-Date: Mon, 28 Oct 2019 11:31:27 +0800
-Message-Id: <1572233488-26533-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1572233488-26533-1-git-send-email-hao.wu@intel.com>
-References: <1572233488-26533-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, will@kernel.org, mark.rutland@arm.com, atull@kernel.org, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>
+Date: Wed, 16 Oct 2019 19:35:16 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v7 0/3] add thermal/power management features for FPGA
+ DFL drivers
+Message-ID: <20191017023514.GA31676@archbox>
+References: <1571031723-12101-1-git-send-email-hao.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1571031723-12101-1-git-send-email-hao.wu@intel.com>
+To: Wu Hao <hao.wu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, linux-hwmon@vger.kernel.org, linux@roeck-us.net, jdelvare@suse.com, gregkh@linuxfoundation.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Xu Yilun <yilun.xu@intel.com>
+On Mon, Oct 14, 2019 at 01:42:00PM +0800, Wu Hao wrote:
+> Hi Moritz and all,
+> 
+> This patchset adds thermal and power management features for FPGA DFL
+> drivers. Both patches are using hwmon as userspace interfaces.
+> 
+> This patchset is created on top of 5.4-rc3, please help with review to see
+> if any comments, thank you very much!
+> 
+> Main changes from v6:
+>  - update kernel version and date in sysfs doc.
+> 
+> Main changes from v5:
+>  - rebase and clean up (remove empty uinit function) per changes in recent
+>    merged dfl patches.
+>  - update date in sysfs doc.
+> 
+> Main changes from v4:
+>  - rebase due to Documentation format change (dfl.txt -> rst).
+>  - clamp threshold inputs for sysfs interfaces. (patch#3)
+>  - update sysfs doc to add more description for ltr sysfs interfaces.
+>    (patch#3)
+> 
+> Main changes from v3:
+>  - use HWMON_CHANNEL_INFO.
+> 
+> Main changes from v2:
+>  - switch to standard hwmon APIs for thermal hwmon:
+>      temp1_alarm        --> temp1_max
+>      temp1_alarm_status --> temp1_max_alarm
+>      temp1_crit_status  --> temp1_crit_alarm
+>      temp1_alarm_policy --> temp1_max_policy
+>  - switch to standard hwmon APIs for power hwmon:
+>      power1_cap         --> power1_max
+>      power1_cap_status  --> power1_max_alarm
+>      power1_crit_status --> power1_crit_alarm
+> 
+> Wu Hao (2):
+>   fpga: dfl: fme: add thermal management support
+>   fpga: dfl: fme: add power management support
+> 
+> Xu Yilun (1):
+>   Documentation: fpga: dfl: add descriptions for thermal/power
+>     management interfaces
+> 
+>  Documentation/ABI/testing/sysfs-platform-dfl-fme | 132 ++++++++
+>  Documentation/fpga/dfl.rst                       |  10 +
+>  drivers/fpga/Kconfig                             |   2 +-
+>  drivers/fpga/dfl-fme-main.c                      | 385 +++++++++++++++++++++++
+>  4 files changed, 528 insertions(+), 1 deletion(-)
+> 
+> -- 
+> 1.8.3.1
+> 
 
-This patch adds description for performance reporting support for
-Device Feature List (DFL) based FPGA.
+Series applied.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
-v5: rebase due to format change (txt->rst), and fix some typos.
----
- Documentation/fpga/dfl.rst | 83 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 83 insertions(+)
-
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index 094fc8a..93e51de 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -118,6 +118,11 @@ More functions are exposed through sysfs
-      management information (current temperature, thresholds, threshold status,
-      etc.).
- 
-+ Performance reporting
-+     performance counters are exposed through perf PMU APIs. Standard perf tool
-+     can be used to monitor all available perf events. Please see performance
-+     counter section below for more detailed information.
-+
- 
- FIU - PORT
- ==========
-@@ -378,6 +383,84 @@ The device nodes used for ioctl() or mmap() can be referenced through::
- 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
- 
- 
-+Performance Counters
-+====================
-+Performance reporting is one private feature implemented in FME. It could
-+support several independent, system-wide, device counter sets in hardware to
-+monitor and count performance events, including "basic", "cache", "fabric",
-+"vtd" and "vtd_sip" counters. Users could use standard perf tool to monitor
-+FPGA cache hit/miss rate, transaction number, interface clock counter of AFU
-+and other FPGA performance events.
-+
-+Different FPGA devices may have different counter sets, it depends on hardware
-+implementation. e.g. some discrete FPGA cards don't have any cache. User could
-+use "perf list" to check which perf events are supported by target hardware.
-+
-+In order to allow user to use standard perf API to access these performance
-+counters, driver creates a perf PMU, and related sysfs interfaces in
-+/sys/bus/event_source/devices/fme* to describe available perf events and
-+configuration options.
-+
-+The "format" directory describes the format of the config field of struct
-+perf_event_attr. There are 3 bitfields for config, "evtype" defines which type
-+the perf event belongs to. "event" is the identity of the event within its
-+category. "portid" is introduced to decide which counter set to monitor on FPGA
-+overall data or a specific port.
-+
-+The "events" directory describes the configuration templates for all available
-+events which can be used with perf tool directly. For example, fab_mmio_read
-+has the configuration "event=0x06,evtype=0x02,portid=0xff", which shows this
-+event belongs to fabric type (0x02), the local event id is 0x06 and it is for
-+overall monitoring (portid=0xff).
-+
-+Example usage of perf::
-+
-+  $# perf list |grep fme
-+
-+  fme0/fab_mmio_read/                              [Kernel PMU event]
-+  <...>
-+  fme0/fab_port_mmio_read,portid=?/                [Kernel PMU event]
-+  <...>
-+
-+  $# perf stat -a -e fme0/fab_mmio_read/ <command>
-+  or
-+  $# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0xff/ <command>
-+  or
-+  $# perf stat -a -e fme0/config=0xff2006/ <command>
-+
-+Another example, fab_port_mmio_read monitors mmio read of a specific port. So
-+its configuration template is "event=0x06,evtype=0x01,portid=?". The portid
-+should be explicitly set.
-+
-+Its usage of perf::
-+
-+  $# perf stat -a -e fme0/fab_port_mmio_read,portid=0x0/ <command>
-+  or
-+  $# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0x0/ <command>
-+  or
-+  $# perf stat -a -e fme0/config=0x2006/ <command>
-+
-+Please note for fabric counters, overall perf events (fab_*) and port perf
-+events (fab_port_*) actually share one set of counters in hardware, so it can't
-+monitor both at the same time. If this set of counters is configured to monitor
-+overall data, then per port perf data is not supported. See below example::
-+
-+  $# perf stat -e fme0/fab_mmio_read/,fme0/fab_port_mmio_write,\
-+                                                    portid=0/ sleep 1
-+
-+  Performance counter stats for 'system wide':
-+
-+                 3      fme0/fab_mmio_read/
-+   <not supported>      fme0/fab_port_mmio_write,portid=0x0/
-+
-+       1.001750904 seconds time elapsed
-+
-+The driver also provides a "cpumask" sysfs attribute, which always shows fixed
-+value cpu0 as all perf events are from system-wide counters on FPGA device.
-+
-+The current driver does not support sampling. So "perf record" is unsupported.
-+
-+
- Add new FIUs support
- ====================
- It's possible that developers made some new function blocks (FIUs) under this
--- 
-1.8.3.1
+Thanks,
+Moritz
