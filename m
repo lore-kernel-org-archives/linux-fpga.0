@@ -1,135 +1,128 @@
-Return-Path: <SRS0=p7QL=YA=linux.intel.com=thor.thayer@kernel.org>
-Return-Path: <SRS0=p7QL=YA=linux.intel.com=thor.thayer@kernel.org>
-Reply-To: thor.thayer@linux.intel.com
-Subject: Re: [PATCH v4 1/2] fpga: fpga-mgr: Add readback support
-References: <1532672551-22146-1-git-send-email-appana.durga.rao@xilinx.com>
- <CANk1AXSEWcZ7Oqv5pgpwvJRyyFWk5gPtniXa7T+oe6-uywqEqA@mail.gmail.com>
- <MN2PR02MB6400CD5312983443A67DCC4EDC810@MN2PR02MB6400.namprd02.prod.outlook.com>
- <4476bf39-b665-50d8-fecd-d50687d10ca2@linux.intel.com>
- <20190927182308.GA6797@archbox>
-From: Thor Thayer <thor.thayer@linux.intel.com>
-Message-ID: <f8a9bc07-0705-1318-eba2-8878e839d696@linux.intel.com>
-Date: Mon, 7 Oct 2019 13:06:51 -0500
-MIME-Version: 1.0
-In-Reply-To: <20190927182308.GA6797@archbox>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Appana Durga Kedareswara Rao <appanad@xilinx.com>, Alan Tull <atull@kernel.org>, Michal Simek <michals@xilinx.com>, "kedare06@gmail.com" <kedare06@gmail.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, Nava kishore Manne <navam@xilinx.com>, Siva Durga Prasad Paladugu <sivadur@xilinx.com>, Richard Gong <richard.gong@linux.intel.com>, Dinh Nguyen <dinguyen@kernel.org>
+Return-Path: <SRS0=Xkdg=YV=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=Xkdg=YV=intel.com=hao.wu@kernel.org>
+From: Wu Hao <hao.wu@intel.com>
+Subject: [PATCH v5 1/2] Documentation: fpga: dfl: add description for performance reporting support
+Date: Mon, 28 Oct 2019 11:31:27 +0800
+Message-Id: <1572233488-26533-2-git-send-email-hao.wu@intel.com>
+In-Reply-To: <1572233488-26533-1-git-send-email-hao.wu@intel.com>
+References: <1572233488-26533-1-git-send-email-hao.wu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, will@kernel.org, mark.rutland@arm.com, atull@kernel.org, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Moritz,
+From: Xu Yilun <yilun.xu@intel.com>
 
-On 9/27/19 1:23 PM, Moritz Fischer wrote:
-> Thor,
-> 
-> On Fri, Sep 27, 2019 at 09:32:11AM -0500, Thor Thayer wrote:
->> Hi Kedar & Moritz,
->>
->> On 9/27/19 12:13 AM, Appana Durga Kedareswara Rao wrote:
->>> Hi Alan,
->>>
->>> Did you get a chance to send your framework changes to upstream?
-> No they weren't upstreamed.
-> 
->>> @Moritz Fischer: If Alan couldn't send his patch series, Can we take this patch series??
->>> Please let me know your thoughts on this.
-> 
-> Alan had some comments RE: #defines, I'll have to take another look.
->>>
->>> Regards,
->>> Kedar.
->>
->>
->> I'd like to see some mechanism added as well. Our CvP driver needs a way to
->> load images to the FPGA over the PCIe bus.
-> 
-> Can you elaborate a bit on the CvP use-case and how that would work? Who
-> would use the device how after loading the bitstream?
-> 
-> Generally there are several use cases that I have collected mentally
-> over the years:
-> 
-> I) DFL use case:
->    - Mixed-set of drivers: Kernel and Userspace
->    - FPGA logic is discoverable through DFL
->    - Userspace application wants to reprogram FPGA
-> 
-> II) DT configfs use case:
->    - Mixed-set of drivers: Kernel and Userspace
->    - FPGA logic is *not* discoverable (hence DT overlay)
->    - Userspace application wants to reprogram FPGA
-> 
-> III) Thomas' case:
->    - Kernel only drivers (pcie bridge, pcie drivers, ...)
->    - FPGA logic is fully discoverable (i.e. PCIe endpoint
->      implemented in FPGA, connected to SoC via PCIe)
->    - Userspace application wants to reprogram FPGA
-> 
-> IV) VFIO case:
->    - Usually exposes either entire device via vfio-pci or part via
->      vfio-mdev
->    - Loading (basic) bitstream at boot from flash
->    - vfio-mdev case can use FPGA region interface + ioctl
->    - Full VFIO case is similar to III)
-> 
-> How does your CvP use case fit in? Collecting all the use-cases would
-> help with moving forward on coming up with an API :)
-> 
-The CvP case is the same as III) Thomas' case. The FPGA configuration 
-bitstream is downloaded over the PCIe.
+This patch adds description for performance reporting support for
+Device Feature List (DFL) based FPGA.
 
-The one difference in my case is that there isn't an SoC. This is a 
-Intel host processor connecting to a non-SoC Stratix10/Arria10. The 
-non-SoC A10/S10, boots a minimal image (CvP) setting up the peripheral 
-pins and enabling the PCIe endpoint for CvP downloads.
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+---
+v5: rebase due to format change (txt->rst), and fix some typos.
+---
+ Documentation/fpga/dfl.rst | 83 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 83 insertions(+)
 
-The host can then download bitstreams using the FPGA Manager through 
-debugFS and when the bitstream finishes downloading and the FPGA enters 
-User Mode, the functionality is available for the host to use.
-
->>
->> It wasn't clear to me from the discussion on Alan's patchset[1] that the
->> debugfs was acceptable to the mainline. I'd be happy to resurrect that
->> patchset with the suggested changes.
-> 
-> Back then we decided to not move forward with the debugfs patchset since
-> it's essentially cat foo.bin > /dev/xdevcfg / cat bar.rbf > /dev/fpga0
-> in disguise. Which is why I vetoed it back then.
-> 
->> Since debugfs isn't enabled for production, are there any alternatives?
->>
->> Alan sent a RFC [2] for loading FIT images through the sysfs.
->>
->> The RFC described a FIT image that included FPGA image specific information
->> to be included with the image (for systems running without device tree like
->> our PCIe bus FPGA CvP).
-> 
-> Yeah I had originally suggested that as a mechanim to make FPGA images
-> discoverable by the kernel. I still think the idea has merit, however it
-> will run into the same issues that the configfs interface ran into w.r.t
-> using dt-overlays.
-> 
-> Generally I'd like to see a solution that exposes the *same* interface
-> to DT and not DT systems to userspace.
-> 
-> Using FIT headers one could go ahead and design something along the
-> lines of what DFL is doing, except for instead of parsing the DFL in the
-> logic, one would parse the FIT header to create subdevices.
-> 
->> Unfortunately, I believe this has the same uphill battle that the Device
->> Tree Overlay patches[3] have to getting accepted.
-> 
-> See above. While I'm happy to discuss this more I atm don't have the
-> bandwidth to push the DT work any further.
-
-Understood. I'm still coming up to speed on the variations of FPGA 
-enablement but I'm happy to help where I can.
-
-Thanks.
-
-> 
-> Thanks,
-> Moritz
-> 
+diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+index 094fc8a..93e51de 100644
+--- a/Documentation/fpga/dfl.rst
++++ b/Documentation/fpga/dfl.rst
+@@ -118,6 +118,11 @@ More functions are exposed through sysfs
+      management information (current temperature, thresholds, threshold status,
+      etc.).
+ 
++ Performance reporting
++     performance counters are exposed through perf PMU APIs. Standard perf tool
++     can be used to monitor all available perf events. Please see performance
++     counter section below for more detailed information.
++
+ 
+ FIU - PORT
+ ==========
+@@ -378,6 +383,84 @@ The device nodes used for ioctl() or mmap() can be referenced through::
+ 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
+ 
+ 
++Performance Counters
++====================
++Performance reporting is one private feature implemented in FME. It could
++support several independent, system-wide, device counter sets in hardware to
++monitor and count performance events, including "basic", "cache", "fabric",
++"vtd" and "vtd_sip" counters. Users could use standard perf tool to monitor
++FPGA cache hit/miss rate, transaction number, interface clock counter of AFU
++and other FPGA performance events.
++
++Different FPGA devices may have different counter sets, it depends on hardware
++implementation. e.g. some discrete FPGA cards don't have any cache. User could
++use "perf list" to check which perf events are supported by target hardware.
++
++In order to allow user to use standard perf API to access these performance
++counters, driver creates a perf PMU, and related sysfs interfaces in
++/sys/bus/event_source/devices/fme* to describe available perf events and
++configuration options.
++
++The "format" directory describes the format of the config field of struct
++perf_event_attr. There are 3 bitfields for config, "evtype" defines which type
++the perf event belongs to. "event" is the identity of the event within its
++category. "portid" is introduced to decide which counter set to monitor on FPGA
++overall data or a specific port.
++
++The "events" directory describes the configuration templates for all available
++events which can be used with perf tool directly. For example, fab_mmio_read
++has the configuration "event=0x06,evtype=0x02,portid=0xff", which shows this
++event belongs to fabric type (0x02), the local event id is 0x06 and it is for
++overall monitoring (portid=0xff).
++
++Example usage of perf::
++
++  $# perf list |grep fme
++
++  fme0/fab_mmio_read/                              [Kernel PMU event]
++  <...>
++  fme0/fab_port_mmio_read,portid=?/                [Kernel PMU event]
++  <...>
++
++  $# perf stat -a -e fme0/fab_mmio_read/ <command>
++  or
++  $# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0xff/ <command>
++  or
++  $# perf stat -a -e fme0/config=0xff2006/ <command>
++
++Another example, fab_port_mmio_read monitors mmio read of a specific port. So
++its configuration template is "event=0x06,evtype=0x01,portid=?". The portid
++should be explicitly set.
++
++Its usage of perf::
++
++  $# perf stat -a -e fme0/fab_port_mmio_read,portid=0x0/ <command>
++  or
++  $# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0x0/ <command>
++  or
++  $# perf stat -a -e fme0/config=0x2006/ <command>
++
++Please note for fabric counters, overall perf events (fab_*) and port perf
++events (fab_port_*) actually share one set of counters in hardware, so it can't
++monitor both at the same time. If this set of counters is configured to monitor
++overall data, then per port perf data is not supported. See below example::
++
++  $# perf stat -e fme0/fab_mmio_read/,fme0/fab_port_mmio_write,\
++                                                    portid=0/ sleep 1
++
++  Performance counter stats for 'system wide':
++
++                 3      fme0/fab_mmio_read/
++   <not supported>      fme0/fab_port_mmio_write,portid=0x0/
++
++       1.001750904 seconds time elapsed
++
++The driver also provides a "cpumask" sysfs attribute, which always shows fixed
++value cpu0 as all perf events are from system-wide counters on FPGA device.
++
++The current driver does not support sampling. So "perf record" is unsupported.
++
++
+ Add new FIUs support
+ ====================
+ It's possible that developers made some new function blocks (FIUs) under this
+-- 
+1.8.3.1
