@@ -1,128 +1,52 @@
-Return-Path: <SRS0=kCUT=ZF=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=kCUT=ZF=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v6 1/2] Documentation: fpga: dfl: add description for performance reporting support
-Date: Wed, 13 Nov 2019 13:24:54 +0800
-Message-Id: <1573622695-25607-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1573622695-25607-1-git-send-email-hao.wu@intel.com>
-References: <1573622695-25607-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, will@kernel.org, mark.rutland@arm.com, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, atull@kernel.org, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>
+Date: Fri, 8 Nov 2019 08:19:32 -0800
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [GIT PULL] FPGA changes for 5.5
+Message-ID: <20191108161808.GA398122@archbox>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+To: gregkh@linuxfoundation.org
+Cc: linux-fpga@vger.kernel.org, hao.wu@intel.com, moritzf@google.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Xu Yilun <yilun.xu@intel.com>
+The following changes since commit 54ecb8f7028c5eb3d740bb82b0f1d90f2df63c5c:
 
-This patch adds description for performance reporting support for
-Device Feature List (DFL) based FPGA.
+  Linux 5.4-rc1 (2019-09-30 10:35:40 -0700)
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
-v5: rebase due to format change (txt->rst).
----
- Documentation/fpga/dfl.rst | 83 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 83 insertions(+)
+are available in the Git repository at:
 
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index 094fc8a..85b137b 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -118,6 +118,11 @@ More functions are exposed through sysfs
-      management information (current temperature, thresholds, threshold status,
-      etc.).
- 
-+ Performance reporting
-+     performance counters are exposed through perf PMU APIs. Standard perf tool
-+     can be used to monitor all available perf events. Please see performance
-+     counter section below for more detailed information.
-+
- 
- FIU - PORT
- ==========
-@@ -378,6 +383,84 @@ The device nodes used for ioctl() or mmap() can be referenced through::
- 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
- 
- 
-+Performance Counters
-+====================
-+Performance reporting is one private feature implemented in FME. It could
-+supports several independent, system-wide, device counter sets in hardware to
-+monitor and count for performance events, including "basic", "cache", "fabric",
-+"vtd" and "vtd_sip" counters. Users could use standard perf tool to monitor
-+FPGA cache hit/miss rate, transaction number, interface clock counter of AFU
-+and other FPGA performance events.
-+
-+Different FPGA devices may have different counter sets, it depends on hardware
-+implementation. e.g. some discrete FPGA cards don't have any cache. User could
-+use "perf list" to check which perf events are supported by target hardware.
-+
-+In order to allow user to use standard perf API to access these performance
-+counters, driver creates a perf PMU, and related sysfs interfaces in
-+/sys/bus/event_source/devices/fme* to describe available perf events and
-+configuration options.
-+
-+The "format" directory describes the format of the config field of struct
-+perf_event_attr. There are 3 bitfields for config, "evtype" defines which type
-+the perf event belongs to. "event" is the identity of the event within its
-+category. "portid" is introduced to decide counters set to monitor on FPGA
-+overall data or a specific port.
-+
-+The "events" directory describes the configuration templates for all available
-+events which can be used with perf tool directly. For example, fab_mmio_read
-+has the configuration "event=0x06,evtype=0x02,portid=0xff", which shows this
-+event belongs to fabric type (0x02), the local event id is 0x06 and it is for
-+overall monitoring (portid=0xff).
-+
-+Example usage of perf::
-+
-+  $# perf list |grep fme
-+
-+  fme0/fab_mmio_read/                              [Kernel PMU event]
-+  <...>
-+  fme0/fab_port_mmio_read,portid=?/                [Kernel PMU event]
-+  <...>
-+
-+  $# perf stat -a -e fme0/fab_mmio_read/ <command>
-+  or
-+  $# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0xff/ <command>
-+  or
-+  $# perf stat -a -e fme0/config=0xff2006/ <command>
-+
-+Another example, fab_port_mmio_read monitors mmio read of a specific port. So
-+its configuration template is "event=0x06,evtype=0x01,portid=?". The portid
-+should be explicitly set.
-+
-+Its usage of perf::
-+
-+  $# perf stat -a -e fme0/fab_port_mmio_read,portid=0x0/ <command>
-+  or
-+  $# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0x0/ <command>
-+  or
-+  $# perf stat -a -e fme0/config=0x2006/ <command>
-+
-+Please note for fabric counters, overall perf events (fab_*) and port perf
-+events (fab_port_*) actually share one set of counters in hardware, so it can't
-+monitor both at the same time. If this set of counters is configured to monitor
-+overall data, then per port perf data is not supported. See below example::
-+
-+  $# perf stat -e fme0/fab_mmio_read/,fme0/fab_port_mmio_write,\
-+                                                    portid=0/ sleep 1
-+
-+  Performance counter stats for 'system wide':
-+
-+                 3      fme0/fab_mmio_read/
-+   <not supported>      fme0/fab_port_mmio_write,portid=0x0/
-+
-+       1.001750904 seconds time elapsed
-+
-+The driver also provides a "cpumask" sysfs attribute, which always shows fixed
-+value cpu0 as all perf events are from system-wide counters on FPGA device.
-+
-+The current driver does not support sampling. So "perf record" is unsupported.
-+
-+
- Add new FIUs support
- ====================
- It's possible that developers made some new function blocks (FIUs) under this
--- 
-1.8.3.1
+  git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git tags/fpga-dfl-for-5.5
+
+for you to fetch changes up to fddc9fcbe69a502d84adf0bad5e2c6c80823838c:
+
+  fpga: dfl: fme: add power management support (2019-10-16 19:18:27 -0700)
+
+----------------------------------------------------------------
+Here is the first set of FPGA changes for 5.5
+
+The first patch from Stephen is a trivial cleanup patch.
+
+The following three patches add hwmon support to DFL FPGAs.
+
+All of this patches have been reviewed and been in the last couple
+of linux-next releases without issues.
+
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+
+----------------------------------------------------------------
+Stephen Boyd (1):
+      fpga: Remove dev_err() usage after platform_get_irq()
+
+Wu Hao (2):
+      fpga: dfl: fme: add thermal management support
+      fpga: dfl: fme: add power management support
+
+Xu Yilun (1):
+      Documentation: fpga: dfl: add descriptions for thermal/power management interfaces
+
+ Documentation/ABI/testing/sysfs-platform-dfl-fme | 132 ++++++++
+ Documentation/fpga/dfl.rst                       |  10 +
+ drivers/fpga/Kconfig                             |   2 +-
+ drivers/fpga/dfl-fme-main.c                      | 385 +++++++++++++++++++++++
+ drivers/fpga/zynq-fpga.c                         |   4 +-
+ 5 files changed, 529 insertions(+), 4 deletions(-)
