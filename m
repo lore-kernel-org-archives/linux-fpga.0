@@ -1,50 +1,47 @@
-Return-Path: <SRS0=C0zL=3G=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=C0zL=3G=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [RESEND Patch v6 0/2] add performance reporting support to FPGA DFL drivers
-Date: Fri, 17 Jan 2020 11:10:26 +0800
-Message-Id: <1579230628-22243-1-git-send-email-hao.wu@intel.com>
-To: will@kernel.org, mdf@kernel.org, mark.rutland@arm.com, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, atull@kernel.org, gregkh@linuxfoundation.org, Wu Hao <hao.wu@intel.com>
+Date: Fri, 10 Jan 2020 12:53:10 -0800
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH] fpga: xilinx-pr-decoupler: Remove clk_get error message
+ for probe defer
+Message-ID: <20200110205307.GA3246@epycbox.lan>
+References: <20200110063113.3064-1-nava.manne@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200110063113.3064-1-nava.manne@xilinx.com>
+To: Nava kishore Manne <nava.manne@xilinx.com>
+Cc: mdf@kernel.org, michal.simek@xilinx.com, linux-fpga@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi all,
+On Fri, Jan 10, 2020 at 12:01:13PM +0530, Nava kishore Manne wrote:
+> From: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
+> 
+> In probe, the driver checks for devm_clk_get return and print error
+> message in the failing case. However for -EPROBE_DEFER this message
+> is confusing so avoid it.
+> 
+> Signed-off-by: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
+> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+> ---
+>  drivers/fpga/xilinx-pr-decoupler.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
+> index af9b387c56d3..7d69af230567 100644
+> --- a/drivers/fpga/xilinx-pr-decoupler.c
+> +++ b/drivers/fpga/xilinx-pr-decoupler.c
+> @@ -101,7 +101,8 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+>  
+>  	priv->clk = devm_clk_get(&pdev->dev, "aclk");
+>  	if (IS_ERR(priv->clk)) {
+> -		dev_err(&pdev->dev, "input clock not found\n");
+> +		if (PTR_ERR(priv->clk) != -EPROBE_DEFER)
+> +			dev_err(&pdev->dev, "input clock not found\n");
+>  		return PTR_ERR(priv->clk);
+>  	}
+>  
+> -- 
+> 2.18.0
+> 
+Applied to for-next,
 
-This patchset adds performance reporting support for FPGA DFL drivers. It
-introduces one pmu to expose userspace interfaces via standard perf API.
-User could use standard perf tool to access perf events exposed via pmu.
-
-This patchset is generated based on latest fpga/for-next branch.
-
-Main changes from v5:
- - use dev_ext_attribute instead of fme_perf_event_attr.
- - use is_visible function to decide which events to expose per
-   hardware capability, and add event_init checking for all events.
-
-Main changes from v4:
- - rebase and clean up.
- - update Kconfig for PERF_EVENTS dependency.
-
-Main changes from v3:
- - add more descriptions in doc, including how to use perf tool for these
-   hardware counters. (patch #1)
- - use standard perf API instead of sysfs entries. (patch #2)
-
-Wu Hao (1):
-  fpga: dfl: fme: add performance reporting support
-
-Xu Yilun (1):
-  Documentation: fpga: dfl: add description for performance reporting
-    support
-
- Documentation/fpga/dfl.rst  |  83 ++++
- drivers/fpga/Makefile       |   1 +
- drivers/fpga/dfl-fme-main.c |   4 +
- drivers/fpga/dfl-fme-perf.c | 943 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl-fme.h      |   2 +
- drivers/fpga/dfl.h          |   2 +
- 6 files changed, 1035 insertions(+)
- create mode 100644 drivers/fpga/dfl-fme-perf.c
-
--- 
-1.8.3.1
+Thanks
