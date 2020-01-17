@@ -1,43 +1,70 @@
-Return-Path: <SRS0=pC0s=2Q=huawei.com=yukuai3@kernel.org>
-Return-Path: <SRS0=pC0s=2Q=huawei.com=yukuai3@kernel.org>
-From: yu kuai <yukuai3@huawei.com>
-Subject: [PATCH] fpga: dfl: afu: remove set but not used variable 'afu'
-Date: Thu, 26 Dec 2019 20:15:33 +0800
-Message-ID: <20191226121533.6017-1-yukuai3@huawei.com>
+Return-Path: <SRS0=C0zL=3G=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=C0zL=3G=intel.com=hao.wu@kernel.org>
+Date: Fri, 17 Jan 2020 11:39:34 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [RESEND Patch v6 0/2] add performance reporting support to FPGA
+ DFL drivers
+Message-ID: <20200117033934.GA23536@hao-dev>
+References: <1579230628-22243-1-git-send-email-hao.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-To: hao.wu@intel.com, mdf@kernel.org
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, yukuai3@huawei.com, yi.zhang@huawe.com, zhengbin13@huawei.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1579230628-22243-1-git-send-email-hao.wu@intel.com>
+To: will@kernel.org
+Cc: mdf@kernel.org, mark.rutland@arm.com, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, atull@kernel.org, gregkh@linuxfoundation.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+Hi Will
 
-drivers/fpga/dfl-afu-main.c: In function ‘afu_dev_destroy’:
-drivers/fpga/dfl-afu-main.c:816:18: warning: variable ‘afu’
-set but not used [-Wunused-but-set-variable]
+I resend this patch per suggestion from Greg.
 
-It is never used, and so can be removed.
+Actually this is one important feature for users, but was blocked by
+code review for quite a long time (no comments since last November).
 
-Signed-off-by: yu kuai <yukuai3@huawei.com>
----
- drivers/fpga/dfl-afu-main.c | 2 --
- 1 file changed, 2 deletions(-)
+We really need your help on code review from perf, please help us..
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index e4a34dc7947f..65437b6a6842 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -813,10 +813,8 @@ static int afu_dev_init(struct platform_device *pdev)
- static int afu_dev_destroy(struct platform_device *pdev)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	struct dfl_afu *afu;
- 
- 	mutex_lock(&pdata->lock);
--	afu = dfl_fpga_pdata_get_private(pdata);
- 	afu_mmio_region_destroy(pdata);
- 	afu_dma_region_destroy(pdata);
- 	dfl_fpga_pdata_set_private(pdata, NULL);
--- 
-2.17.2
+Many Thanks!
+
+Hao
+
+On Fri, Jan 17, 2020 at 11:10:26AM +0800, Wu Hao wrote:
+> Hi all,
+> 
+> This patchset adds performance reporting support for FPGA DFL drivers. It
+> introduces one pmu to expose userspace interfaces via standard perf API.
+> User could use standard perf tool to access perf events exposed via pmu.
+> 
+> This patchset is generated based on latest fpga/for-next branch.
+> 
+> Main changes from v5:
+>  - use dev_ext_attribute instead of fme_perf_event_attr.
+>  - use is_visible function to decide which events to expose per
+>    hardware capability, and add event_init checking for all events.
+> 
+> Main changes from v4:
+>  - rebase and clean up.
+>  - update Kconfig for PERF_EVENTS dependency.
+> 
+> Main changes from v3:
+>  - add more descriptions in doc, including how to use perf tool for these
+>    hardware counters. (patch #1)
+>  - use standard perf API instead of sysfs entries. (patch #2)
+> 
+> Wu Hao (1):
+>   fpga: dfl: fme: add performance reporting support
+> 
+> Xu Yilun (1):
+>   Documentation: fpga: dfl: add description for performance reporting
+>     support
+> 
+>  Documentation/fpga/dfl.rst  |  83 ++++
+>  drivers/fpga/Makefile       |   1 +
+>  drivers/fpga/dfl-fme-main.c |   4 +
+>  drivers/fpga/dfl-fme-perf.c | 943 ++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/fpga/dfl-fme.h      |   2 +
+>  drivers/fpga/dfl.h          |   2 +
+>  6 files changed, 1035 insertions(+)
+>  create mode 100644 drivers/fpga/dfl-fme-perf.c
+> 
+> -- 
+> 1.8.3.1
