@@ -1,45 +1,38 @@
-Return-Path: <SRS0=6WEz=4A=monstr.eu=monstr@kernel.org>
-Return-Path: <SRS0=6WEz=4A=monstr.eu=monstr@kernel.org>
-Sender: Michal Simek <monstr@monstr.eu>
-From: Michal Simek <michal.simek@xilinx.com>
-Subject: [PATCH] fpga: zynq: Remove clk_get error message for probe defer
-Date: Wed, 12 Feb 2020 15:17:08 +0100
-Message-Id: <0060e55f0b8d3a57e129d7eb096267cc96eae846.1581517026.git.michal.simek@xilinx.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, monstr@monstr.eu, michal.simek@xilinx.com, git@xilinx.com
-Cc: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>, Moritz Fischer <mdf@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=hO1J=4C=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=hO1J=4C=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv1 3/7] fpga: stratix10-soc: add compatible property value for intel agilex
+Date: Fri, 14 Feb 2020 10:00:48 -0600
+Message-Id: <1581696052-11540-4-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
+References: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
+To: gregkh@linuxfoundation.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, dinguyen@kernel.org
+Cc: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, richard.gong@linux.intel.com, Richard Gong <richard.gong@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
+From: Richard Gong <richard.gong@intel.com>
 
-In probe, the driver checks for devm_clk_get return and print error
-message in the failing case. However for -EPROBE_DEFER this message is
-confusing so avoid it.
+Add compatible property value so we can reuse FPGA manager driver on
+Intel Agilex SoC platform.
 
-The similar change was done also by commit 28910cee898c
-("fpga: xilinx-pr-decoupler: Remove clk_get error message for probe defer")
-
-Signed-off-by: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+Signed-off-by: Richard Gong <richard.gong@intel.com>
 ---
-
- drivers/fpga/zynq-fpga.c | 3 ++-
+ drivers/fpga/stratix10-soc.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
-index ee7765049607..07fa8d9ec675 100644
---- a/drivers/fpga/zynq-fpga.c
-+++ b/drivers/fpga/zynq-fpga.c
-@@ -583,7 +583,8 @@ static int zynq_fpga_probe(struct platform_device *pdev)
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index 215d337..bac93d0 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -482,7 +482,8 @@ static int s10_remove(struct platform_device *pdev)
+ }
  
- 	priv->clk = devm_clk_get(dev, "ref_clk");
- 	if (IS_ERR(priv->clk)) {
--		dev_err(dev, "input clock not found\n");
-+		if (PTR_ERR(priv->clk) != -EPROBE_DEFER)
-+			dev_err(dev, "input clock not found\n");
- 		return PTR_ERR(priv->clk);
- 	}
+ static const struct of_device_id s10_of_match[] = {
+-	{ .compatible = "intel,stratix10-soc-fpga-mgr", },
++	{.compatible = "intel,stratix10-soc-fpga-mgr"},
++	{.compatible = "intel,agilex-soc-fpga-mgr"},
+ 	{},
+ };
  
 -- 
-2.25.0
+2.7.4
