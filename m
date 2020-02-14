@@ -1,74 +1,36 @@
-Return-Path: <SRS0=KltO=4P=analog.com=Sergiu.Cuciurean@kernel.org>
-Return-Path: <SRS0=KltO=4P=analog.com=Sergiu.Cuciurean@kernel.org>
-From: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
-Subject: [PATCH] fpga: machxo2-spi: Use new structure for SPI transfer delays
-Date: Thu, 27 Feb 2020 16:24:14 +0200
-Message-ID: <20200227142414.16547-1-sergiu.cuciurean@analog.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
+Return-Path: <SRS0=hO1J=4C=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=hO1J=4C=linux.intel.com=richard.gong@kernel.org>
+From: richard.gong@linux.intel.com
+Subject: [PATCHv1 6/7] firmware: stratix10-svc: add the compatible value for intel agilex
+Date: Fri, 14 Feb 2020 10:00:51 -0600
+Message-Id: <1581696052-11540-7-git-send-email-richard.gong@linux.intel.com>
+In-Reply-To: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
+References: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
+To: gregkh@linuxfoundation.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, dinguyen@kernel.org
+Cc: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, richard.gong@linux.intel.com, Richard Gong <richard.gong@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-In a recent change to the SPI subsystem [1], a new `delay` struct was added
-to replace the `delay_usecs`. This change replaces the current
-`delay_usecs` with `delay` for this driver.
+From: Richard Gong <richard.gong@intel.com>
 
-The `spi_transfer_delay_exec()` function [in the SPI framework] makes sure
-that both `delay_usecs` & `delay` are used (in this order to preserve
-backwards compatibility).
+Add the compatible property value so we can reuse Intel Stratix10
+Service Layer driver on Intel Agilex SoC platform.
 
-[1] commit bebcfd272df6 ("spi: introduce `delay` field for
-`spi_transfer` + spi_transfer_delay_exec()")
-
-Signed-off-by: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
+Signed-off-by: Richard Gong <richard.gong@intel.com>
 ---
- drivers/fpga/machxo2-spi.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/firmware/stratix10-svc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/fpga/machxo2-spi.c b/drivers/fpga/machxo2-spi.c
-index 4d8a87641587..b316369156fe 100644
---- a/drivers/fpga/machxo2-spi.c
-+++ b/drivers/fpga/machxo2-spi.c
-@@ -157,7 +157,8 @@ static int machxo2_cleanup(struct fpga_manager *mgr)
- 	spi_message_init(&msg);
- 	tx[1].tx_buf = &refresh;
- 	tx[1].len = sizeof(refresh);
--	tx[1].delay_usecs = MACHXO2_REFRESH_USEC;
-+	tx[1].delay.value = MACHXO2_REFRESH_USEC;
-+	tx[1].delay.unit = SPI_DELAY_UNIT_USECS;
- 	spi_message_add_tail(&tx[1], &msg);
- 	ret = spi_sync(spi, &msg);
- 	if (ret)
-@@ -208,7 +209,8 @@ static int machxo2_write_init(struct fpga_manager *mgr,
- 	spi_message_init(&msg);
- 	tx[0].tx_buf = &enable;
- 	tx[0].len = sizeof(enable);
--	tx[0].delay_usecs = MACHXO2_LOW_DELAY_USEC;
-+	tx[0].delay.value = MACHXO2_LOW_DELAY_USEC;
-+	tx[0].delay.unit = SPI_DELAY_UNIT_USECS;
- 	spi_message_add_tail(&tx[0], &msg);
+diff --git a/drivers/firmware/stratix10-svc.c b/drivers/firmware/stratix10-svc.c
+index 7ffb42b..d5f0769 100644
+--- a/drivers/firmware/stratix10-svc.c
++++ b/drivers/firmware/stratix10-svc.c
+@@ -966,6 +966,7 @@ EXPORT_SYMBOL_GPL(stratix10_svc_free_memory);
  
- 	tx[1].tx_buf = &erase;
-@@ -269,7 +271,8 @@ static int machxo2_write(struct fpga_manager *mgr, const char *buf,
- 		spi_message_init(&msg);
- 		tx.tx_buf = payload;
- 		tx.len = MACHXO2_BUF_SIZE;
--		tx.delay_usecs = MACHXO2_HIGH_DELAY_USEC;
-+		tx.delay.value = MACHXO2_HIGH_DELAY_USEC;
-+		tx.delay.unit = SPI_DELAY_UNIT_USECS;
- 		spi_message_add_tail(&tx, &msg);
- 		ret = spi_sync(spi, &msg);
- 		if (ret) {
-@@ -317,7 +320,8 @@ static int machxo2_write_complete(struct fpga_manager *mgr,
- 		spi_message_init(&msg);
- 		tx[1].tx_buf = &refresh;
- 		tx[1].len = sizeof(refresh);
--		tx[1].delay_usecs = MACHXO2_REFRESH_USEC;
-+		tx[1].delay.value = MACHXO2_REFRESH_USEC;
-+		tx[1].delay.unit = SPI_DELAY_UNIT_USECS;
- 		spi_message_add_tail(&tx[1], &msg);
- 		ret = spi_sync(spi, &msg);
- 		if (ret)
+ static const struct of_device_id stratix10_svc_drv_match[] = {
+ 	{.compatible = "intel,stratix10-svc"},
++	{.compatible = "intel,agilex-svc"},
+ 	{},
+ };
+ 
 -- 
-2.17.1
+2.7.4
