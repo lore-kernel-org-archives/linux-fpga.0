@@ -1,17 +1,20 @@
-Date: Sat, 22 Feb 2020 10:21:47 -0800
-From: Moritz Fischer <mdf@kernel.org>
+Return-Path: <SRS0=r1hI=4J=xilinx.com=michals@kernel.org>
+Return-Path: <SRS0=r1hI=4J=xilinx.com=michals@kernel.org>
 Subject: Re: [PATCH] fpga: zynq: Remove clk_get error message for probe defer
-Message-ID: <20200222182145.GA4905@epycbox.lan>
 References: <0060e55f0b8d3a57e129d7eb096267cc96eae846.1581517026.git.michal.simek@xilinx.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Message-ID: <fddb7796-c761-c6fa-13ff-632d01ffb55a@xilinx.com>
+Date: Fri, 21 Feb 2020 11:37:53 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <0060e55f0b8d3a57e129d7eb096267cc96eae846.1581517026.git.michal.simek@xilinx.com>
-To: Michal Simek <michal.simek@xilinx.com>
-Cc: linux-kernel@vger.kernel.org, monstr@monstr.eu, git@xilinx.com, Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>, Moritz Fischer <mdf@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Michal Simek <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org, monstr@monstr.eu, git@xilinx.com, Moritz Fischer <mdf@kernel.org>
+Cc: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>, linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Wed, Feb 12, 2020 at 03:17:08PM +0100, Michal Simek wrote:
+On 12. 02. 20 15:17, Michal Simek wrote:
 > From: Shubhrajyoti Datta <shubhrajyoti.datta@xilinx.com>
 > 
 > In probe, the driver checks for devm_clk_get return and print error
@@ -42,10 +45,9 @@ On Wed, Feb 12, 2020 at 03:17:08PM +0100, Michal Simek wrote:
 >  		return PTR_ERR(priv->clk);
 >  	}
 >  
-> -- 
-> 2.25.0
 > 
-Applied to for-next.
+
+Moritz: Any comment on this one?
 
 Thanks,
-Moritz
+Michal
