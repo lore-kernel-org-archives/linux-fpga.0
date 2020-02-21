@@ -1,128 +1,254 @@
-Return-Path: <SRS0=9s+t=36=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=9s+t=36=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v7 1/2] Documentation: fpga: dfl: add description for performance reporting support
-Date: Mon, 10 Feb 2020 11:47:48 +0800
-Message-Id: <1581306469-22629-2-git-send-email-hao.wu@intel.com>
-In-Reply-To: <1581306469-22629-1-git-send-email-hao.wu@intel.com>
-References: <1581306469-22629-1-git-send-email-hao.wu@intel.com>
-To: mdf@kernel.org, will@kernel.org, mark.rutland@arm.com, gregkh@linuxfoundation.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, atull@kernel.org, yilun.xu@intel.com, Wu Hao <hao.wu@intel.com>
+Date: Thu, 20 Feb 2020 16:33:00 -0800
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH] fpga: dfl: support multiple opens on feature device node.
+Message-ID: <20200221003258.GA2670@epycbox.lan>
+References: <1574054441-1568-1-git-send-email-yilun.xu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1574054441-1568-1-git-send-email-yilun.xu@intel.com>
+To: Xu Yilun <yilun.xu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Xu Yilun <yilun.xu@intel.com>
+Hi Xu,
 
-This patch adds description for performance reporting support for
-Device Feature List (DFL) based FPGA.
+On Mon, Nov 18, 2019 at 01:20:41PM +0800, Xu Yilun wrote:
+> Each DFL functional block, e.g. AFU (Accelerated Function Unit) and FME
+> (FPGA Management Engine), could implement more than one function within
+> its region, but current driver only allows one user application to access
+> it by exclusive open on device node. So this is not convenient and
+> flexible for userspace applications, as they have to combine lots of
+> different functions into one single application.
+> 
+> This patch removes the limitation here to allow multiple opens to each
+> feature device node for AFU and FME from userspace applications. If user
+> still needs exclusive access to these device node, O_EXCL flag must be
+> issued together with open.
+> 
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> ---
+>  drivers/fpga/dfl-afu-main.c | 26 +++++++++++++++-----------
+>  drivers/fpga/dfl-fme-main.c | 19 ++++++++++++-------
+>  drivers/fpga/dfl.c          | 15 +++++++++++++--
+>  drivers/fpga/dfl.h          | 35 +++++++++++++++++++++++++++--------
+>  4 files changed, 67 insertions(+), 28 deletions(-)
+> 
+> diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+> index e4a34dc..c6e0e07 100644
+> --- a/drivers/fpga/dfl-afu-main.c
+> +++ b/drivers/fpga/dfl-afu-main.c
+> @@ -561,14 +561,16 @@ static int afu_open(struct inode *inode, struct file *filp)
+>  	if (WARN_ON(!pdata))
+>  		return -ENODEV;
+>  
+> -	ret = dfl_feature_dev_use_begin(pdata);
+> -	if (ret)
+> -		return ret;
+> -
+> -	dev_dbg(&fdev->dev, "Device File Open\n");
+> -	filp->private_data = fdev;
+> +	mutex_lock(&pdata->lock);
+> +	ret = dfl_feature_dev_use_begin(pdata, filp->f_flags & O_EXCL);
+> +	if (!ret) {
+> +		dev_dbg(&fdev->dev, "Device File Opened %d Times\n",
+> +			dfl_feature_dev_use_count(pdata));
+> +		filp->private_data = fdev;
+> +	}
+> +	mutex_unlock(&pdata->lock);
+>  
+> -	return 0;
+> +	return ret;
+>  }
+>  
+>  static int afu_release(struct inode *inode, struct file *filp)
+> @@ -581,12 +583,14 @@ static int afu_release(struct inode *inode, struct file *filp)
+>  	pdata = dev_get_platdata(&pdev->dev);
+>  
+>  	mutex_lock(&pdata->lock);
+> -	__port_reset(pdev);
+> -	afu_dma_region_destroy(pdata);
+> -	mutex_unlock(&pdata->lock);
+> -
+>  	dfl_feature_dev_use_end(pdata);
+>  
+> +	if (!dfl_feature_dev_use_count(pdata)) {
+> +		__port_reset(pdev);
+> +		afu_dma_region_destroy(pdata);
+> +	}
+> +	mutex_unlock(&pdata->lock);
+> +
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+> index 7c930e6..fda8623 100644
+> --- a/drivers/fpga/dfl-fme-main.c
+> +++ b/drivers/fpga/dfl-fme-main.c
+> @@ -600,14 +600,16 @@ static int fme_open(struct inode *inode, struct file *filp)
+>  	if (WARN_ON(!pdata))
+>  		return -ENODEV;
+>  
+> -	ret = dfl_feature_dev_use_begin(pdata);
+> -	if (ret)
+> -		return ret;
+> -
+> -	dev_dbg(&fdev->dev, "Device File Open\n");
+> -	filp->private_data = pdata;
+> +	mutex_lock(&pdata->lock);
+> +	ret = dfl_feature_dev_use_begin(pdata, filp->f_flags & O_EXCL);
+> +	if (!ret) {
+> +		dev_dbg(&fdev->dev, "Device File Opened %d Times\n",
+> +			dfl_feature_dev_use_count(pdata));
+> +		filp->private_data = pdata;
+> +	}
+> +	mutex_unlock(&pdata->lock);
+>  
+> -	return 0;
+> +	return ret;
+>  }
+>  
+>  static int fme_release(struct inode *inode, struct file *filp)
+> @@ -616,7 +618,10 @@ static int fme_release(struct inode *inode, struct file *filp)
+>  	struct platform_device *pdev = pdata->dev;
+>  
+>  	dev_dbg(&pdev->dev, "Device File Release\n");
+> +
+> +	mutex_lock(&pdata->lock);
+>  	dfl_feature_dev_use_end(pdata);
+> +	mutex_unlock(&pdata->lock);
+>  
+>  	return 0;
+>  }
+> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+> index 96a2b82..9909948 100644
+> --- a/drivers/fpga/dfl.c
+> +++ b/drivers/fpga/dfl.c
+> @@ -1079,6 +1079,7 @@ static int __init dfl_fpga_init(void)
+>   */
+>  int dfl_fpga_cdev_release_port(struct dfl_fpga_cdev *cdev, int port_id)
+>  {
+> +	struct dfl_feature_platform_data *pdata;
+>  	struct platform_device *port_pdev;
+>  	int ret = -ENODEV;
+>  
+> @@ -1093,7 +1094,11 @@ int dfl_fpga_cdev_release_port(struct dfl_fpga_cdev *cdev, int port_id)
+>  		goto put_dev_exit;
+>  	}
+>  
+> -	ret = dfl_feature_dev_use_begin(dev_get_platdata(&port_pdev->dev));
+> +	pdata = dev_get_platdata(&port_pdev->dev);
+> +
+> +	mutex_lock(&pdata->lock);
+> +	ret = dfl_feature_dev_use_begin(pdata, true);
+> +	mutex_unlock(&pdata->lock);
+>  	if (ret)
+>  		goto put_dev_exit;
+>  
+> @@ -1120,6 +1125,7 @@ EXPORT_SYMBOL_GPL(dfl_fpga_cdev_release_port);
+>   */
+>  int dfl_fpga_cdev_assign_port(struct dfl_fpga_cdev *cdev, int port_id)
+>  {
+> +	struct dfl_feature_platform_data *pdata;
+>  	struct platform_device *port_pdev;
+>  	int ret = -ENODEV;
+>  
+> @@ -1138,7 +1144,12 @@ int dfl_fpga_cdev_assign_port(struct dfl_fpga_cdev *cdev, int port_id)
+>  	if (ret)
+>  		goto put_dev_exit;
+>  
+> -	dfl_feature_dev_use_end(dev_get_platdata(&port_pdev->dev));
+> +	pdata = dev_get_platdata(&port_pdev->dev);
+> +
+> +	mutex_lock(&pdata->lock);
+> +	dfl_feature_dev_use_end(pdata);
+> +	mutex_unlock(&pdata->lock);
+> +
+>  	cdev->released_port_num--;
+>  put_dev_exit:
+>  	put_device(&port_pdev->dev);
+> diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+> index 9f0e656..4a9a33c 100644
+> --- a/drivers/fpga/dfl.h
+> +++ b/drivers/fpga/dfl.h
+> @@ -205,8 +205,6 @@ struct dfl_feature {
+>  	const struct dfl_feature_ops *ops;
+>  };
+>  
+> -#define DEV_STATUS_IN_USE	0
+> -
+>  #define FEATURE_DEV_ID_UNUSED	(-1)
+>  
+>  /**
+> @@ -219,8 +217,9 @@ struct dfl_feature {
+>   * @dfl_cdev: ptr to container device.
+>   * @id: id used for this feature device.
+>   * @disable_count: count for port disable.
+> + * @excl_open: set on feature device exclusive open.
+> + * @open_count: count for feature device open.
+>   * @num: number for sub features.
+> - * @dev_status: dev status (e.g. DEV_STATUS_IN_USE).
+>   * @private: ptr to feature dev private data.
+>   * @features: sub features of this feature dev.
+>   */
+> @@ -232,26 +231,46 @@ struct dfl_feature_platform_data {
+>  	struct dfl_fpga_cdev *dfl_cdev;
+>  	int id;
+>  	unsigned int disable_count;
+> -	unsigned long dev_status;
+> +	bool excl_open;
+> +	int open_count;
+>  	void *private;
+>  	int num;
+>  	struct dfl_feature features[0];
+>  };
+>  
+>  static inline
+> -int dfl_feature_dev_use_begin(struct dfl_feature_platform_data *pdata)
+> +int dfl_feature_dev_use_begin(struct dfl_feature_platform_data *pdata,
+> +			      bool excl)
+>  {
+> -	/* Test and set IN_USE flags to ensure file is exclusively used */
+> -	if (test_and_set_bit_lock(DEV_STATUS_IN_USE, &pdata->dev_status))
+> +	if (pdata->excl_open)
+>  		return -EBUSY;
+>  
+> +	if (excl) {
+> +		if (pdata->open_count)
+> +			return -EBUSY;
+> +
+> +		pdata->excl_open = true;
+> +	}
+> +	pdata->open_count++;
+> +
+>  	return 0;
+>  }
+>  
+>  static inline
+>  void dfl_feature_dev_use_end(struct dfl_feature_platform_data *pdata)
+>  {
+> -	clear_bit_unlock(DEV_STATUS_IN_USE, &pdata->dev_status);
+> +	pdata->excl_open = false;
+> +
+> +	if (WARN_ON(pdata->open_count <= 0))
+> +		return;
+> +
+> +	pdata->open_count--;
+> +}
+> +
+> +static inline
+> +int dfl_feature_dev_use_count(struct dfl_feature_platform_data *pdata)
+> +{
+> +	return pdata->open_count;
+>  }
+>  
+>  static inline
+> -- 
+> 2.7.4
+> 
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
----
-v5: rebase due to format change (txt->rst).
----
- Documentation/fpga/dfl.rst | 83 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 83 insertions(+)
+Applied to for-next.
 
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index 094fc8a..85b137b 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -118,6 +118,11 @@ More functions are exposed through sysfs
-      management information (current temperature, thresholds, threshold status,
-      etc.).
- 
-+ Performance reporting
-+     performance counters are exposed through perf PMU APIs. Standard perf tool
-+     can be used to monitor all available perf events. Please see performance
-+     counter section below for more detailed information.
-+
- 
- FIU - PORT
- ==========
-@@ -378,6 +383,84 @@ The device nodes used for ioctl() or mmap() can be referenced through::
- 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
- 
- 
-+Performance Counters
-+====================
-+Performance reporting is one private feature implemented in FME. It could
-+supports several independent, system-wide, device counter sets in hardware to
-+monitor and count for performance events, including "basic", "cache", "fabric",
-+"vtd" and "vtd_sip" counters. Users could use standard perf tool to monitor
-+FPGA cache hit/miss rate, transaction number, interface clock counter of AFU
-+and other FPGA performance events.
-+
-+Different FPGA devices may have different counter sets, it depends on hardware
-+implementation. e.g. some discrete FPGA cards don't have any cache. User could
-+use "perf list" to check which perf events are supported by target hardware.
-+
-+In order to allow user to use standard perf API to access these performance
-+counters, driver creates a perf PMU, and related sysfs interfaces in
-+/sys/bus/event_source/devices/fme* to describe available perf events and
-+configuration options.
-+
-+The "format" directory describes the format of the config field of struct
-+perf_event_attr. There are 3 bitfields for config, "evtype" defines which type
-+the perf event belongs to. "event" is the identity of the event within its
-+category. "portid" is introduced to decide counters set to monitor on FPGA
-+overall data or a specific port.
-+
-+The "events" directory describes the configuration templates for all available
-+events which can be used with perf tool directly. For example, fab_mmio_read
-+has the configuration "event=0x06,evtype=0x02,portid=0xff", which shows this
-+event belongs to fabric type (0x02), the local event id is 0x06 and it is for
-+overall monitoring (portid=0xff).
-+
-+Example usage of perf::
-+
-+  $# perf list |grep fme
-+
-+  fme0/fab_mmio_read/                              [Kernel PMU event]
-+  <...>
-+  fme0/fab_port_mmio_read,portid=?/                [Kernel PMU event]
-+  <...>
-+
-+  $# perf stat -a -e fme0/fab_mmio_read/ <command>
-+  or
-+  $# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0xff/ <command>
-+  or
-+  $# perf stat -a -e fme0/config=0xff2006/ <command>
-+
-+Another example, fab_port_mmio_read monitors mmio read of a specific port. So
-+its configuration template is "event=0x06,evtype=0x01,portid=?". The portid
-+should be explicitly set.
-+
-+Its usage of perf::
-+
-+  $# perf stat -a -e fme0/fab_port_mmio_read,portid=0x0/ <command>
-+  or
-+  $# perf stat -a -e fme0/event=0x06,evtype=0x02,portid=0x0/ <command>
-+  or
-+  $# perf stat -a -e fme0/config=0x2006/ <command>
-+
-+Please note for fabric counters, overall perf events (fab_*) and port perf
-+events (fab_port_*) actually share one set of counters in hardware, so it can't
-+monitor both at the same time. If this set of counters is configured to monitor
-+overall data, then per port perf data is not supported. See below example::
-+
-+  $# perf stat -e fme0/fab_mmio_read/,fme0/fab_port_mmio_write,\
-+                                                    portid=0/ sleep 1
-+
-+  Performance counter stats for 'system wide':
-+
-+                 3      fme0/fab_mmio_read/
-+   <not supported>      fme0/fab_port_mmio_write,portid=0x0/
-+
-+       1.001750904 seconds time elapsed
-+
-+The driver also provides a "cpumask" sysfs attribute, which always shows fixed
-+value cpu0 as all perf events are from system-wide counters on FPGA device.
-+
-+The current driver does not support sampling. So "perf record" is unsupported.
-+
-+
- Add new FIUs support
- ====================
- It's possible that developers made some new function blocks (FIUs) under this
--- 
-1.8.3.1
+Thanks,
+Moritz
