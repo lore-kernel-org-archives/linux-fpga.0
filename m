@@ -1,13 +1,13 @@
 Return-Path: <SRS0=KltO=4P=analog.com=Sergiu.Cuciurean@kernel.org>
 Return-Path: <SRS0=KltO=4P=analog.com=Sergiu.Cuciurean@kernel.org>
 From: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
-Subject: [PATCH] fpga: ice40-spi: Use new structure for SPI transfer delays
-Date: Thu, 27 Feb 2020 14:09:32 +0200
-Message-ID: <20200227120932.12542-1-sergiu.cuciurean@analog.com>
+Subject: [PATCH] fpga: machxo2-spi: Use new structure for SPI transfer delays
+Date: Thu, 27 Feb 2020 16:24:14 +0200
+Message-ID: <20200227142414.16547-1-sergiu.cuciurean@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-To: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
-Cc: mdf@kernel.org, Sergiu Cuciurean <sergiu.cuciurean@analog.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
 In a recent change to the SPI subsystem [1], a new `delay` struct was added
@@ -23,31 +23,52 @@ backwards compatibility).
 
 Signed-off-by: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
 ---
- drivers/fpga/ice40-spi.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/fpga/machxo2-spi.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
-index 56e112e14a10..8d689fea0dab 100644
---- a/drivers/fpga/ice40-spi.c
-+++ b/drivers/fpga/ice40-spi.c
-@@ -46,10 +46,16 @@ static int ice40_fpga_ops_write_init(struct fpga_manager *mgr,
- 	struct spi_message message;
- 	struct spi_transfer assert_cs_then_reset_delay = {
- 		.cs_change   = 1,
--		.delay_usecs = ICE40_SPI_RESET_DELAY
-+		.delay = {
-+			.value = ICE40_SPI_RESET_DELAY,
-+			.unit = SPI_DELAY_UNIT_USECS
-+		}
- 	};
- 	struct spi_transfer housekeeping_delay_then_release_cs = {
--		.delay_usecs = ICE40_SPI_HOUSEKEEPING_DELAY
-+		.delay = {
-+			.value = ICE40_SPI_HOUSEKEEPING_DELAY,
-+			.unit = SPI_DELAY_UNIT_USECS
-+		}
- 	};
- 	int ret;
+diff --git a/drivers/fpga/machxo2-spi.c b/drivers/fpga/machxo2-spi.c
+index 4d8a87641587..b316369156fe 100644
+--- a/drivers/fpga/machxo2-spi.c
++++ b/drivers/fpga/machxo2-spi.c
+@@ -157,7 +157,8 @@ static int machxo2_cleanup(struct fpga_manager *mgr)
+ 	spi_message_init(&msg);
+ 	tx[1].tx_buf = &refresh;
+ 	tx[1].len = sizeof(refresh);
+-	tx[1].delay_usecs = MACHXO2_REFRESH_USEC;
++	tx[1].delay.value = MACHXO2_REFRESH_USEC;
++	tx[1].delay.unit = SPI_DELAY_UNIT_USECS;
+ 	spi_message_add_tail(&tx[1], &msg);
+ 	ret = spi_sync(spi, &msg);
+ 	if (ret)
+@@ -208,7 +209,8 @@ static int machxo2_write_init(struct fpga_manager *mgr,
+ 	spi_message_init(&msg);
+ 	tx[0].tx_buf = &enable;
+ 	tx[0].len = sizeof(enable);
+-	tx[0].delay_usecs = MACHXO2_LOW_DELAY_USEC;
++	tx[0].delay.value = MACHXO2_LOW_DELAY_USEC;
++	tx[0].delay.unit = SPI_DELAY_UNIT_USECS;
+ 	spi_message_add_tail(&tx[0], &msg);
  
+ 	tx[1].tx_buf = &erase;
+@@ -269,7 +271,8 @@ static int machxo2_write(struct fpga_manager *mgr, const char *buf,
+ 		spi_message_init(&msg);
+ 		tx.tx_buf = payload;
+ 		tx.len = MACHXO2_BUF_SIZE;
+-		tx.delay_usecs = MACHXO2_HIGH_DELAY_USEC;
++		tx.delay.value = MACHXO2_HIGH_DELAY_USEC;
++		tx.delay.unit = SPI_DELAY_UNIT_USECS;
+ 		spi_message_add_tail(&tx, &msg);
+ 		ret = spi_sync(spi, &msg);
+ 		if (ret) {
+@@ -317,7 +320,8 @@ static int machxo2_write_complete(struct fpga_manager *mgr,
+ 		spi_message_init(&msg);
+ 		tx[1].tx_buf = &refresh;
+ 		tx[1].len = sizeof(refresh);
+-		tx[1].delay_usecs = MACHXO2_REFRESH_USEC;
++		tx[1].delay.value = MACHXO2_REFRESH_USEC;
++		tx[1].delay.unit = SPI_DELAY_UNIT_USECS;
+ 		spi_message_add_tail(&tx[1], &msg);
+ 		ret = spi_sync(spi, &msg);
+ 		if (ret)
 -- 
 2.17.1
