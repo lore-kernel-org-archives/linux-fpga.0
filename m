@@ -1,36 +1,53 @@
-Return-Path: <SRS0=hO1J=4C=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=hO1J=4C=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv1 0/7] Add compatible value to Intel Stratix10 FPGA manager and service layer
-Date: Fri, 14 Feb 2020 10:00:45 -0600
-Message-Id: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
-To: gregkh@linuxfoundation.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, dinguyen@kernel.org
-Cc: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, richard.gong@linux.intel.com, Richard Gong <richard.gong@intel.com>
+Return-Path: <SRS0=KltO=4P=analog.com=Sergiu.Cuciurean@kernel.org>
+Return-Path: <SRS0=KltO=4P=analog.com=Sergiu.Cuciurean@kernel.org>
+From: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
+Subject: [PATCH] fpga: ice40-spi: Use new structure for SPI transfer delays
+Date: Thu, 27 Feb 2020 14:09:32 +0200
+Message-ID: <20200227120932.12542-1-sergiu.cuciurean@analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+To: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org
+Cc: mdf@kernel.org, Sergiu Cuciurean <sergiu.cuciurean@analog.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+In a recent change to the SPI subsystem [1], a new `delay` struct was added
+to replace the `delay_usecs`. This change replaces the current
+`delay_usecs` with `delay` for this driver.
 
-Add a compatible property value so we can reuse Intel Stratix10 FPGA
-manager and service layer drivers on Intel Agilex SoC platform. 
+The `spi_transfer_delay_exec()` function [in the SPI framework] makes sure
+that both `delay_usecs` & `delay` are used (in this order to preserve
+backwards compatibility).
 
-Richard Gong (7):
-  dt-bindings: fpga: add compatible value to Stratix10 SoC FPGA manager
-    binding
-  arm64: dts: agilex: correct FPGA manager driver's compatible value
-  fpga: stratix10-soc: add compatible property value for intel agilex
-  dt-bindings, firmware: add compatible value Intel Stratix10 service
-    layer binding
-  arm64: dts: agilex: correct service layer driver's compatible value
-  firmware: stratix10-svc: add the compatible value for intel agilex
-  firmware: intel_stratix10_service: add depend on agilex
+[1] commit bebcfd272df6 ("spi: introduce `delay` field for
+`spi_transfer` + spi_transfer_delay_exec()")
 
- Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt    | 2 +-
- .../devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt         | 3 ++-
- arch/arm64/boot/dts/intel/socfpga_agilex.dtsi                         | 4 ++--
- drivers/firmware/Kconfig                                              | 2 +-
- drivers/firmware/stratix10-svc.c                                      | 1 +
- drivers/fpga/stratix10-soc.c                                          | 3 ++-
- 6 files changed, 9 insertions(+), 6 deletions(-)
+Signed-off-by: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
+---
+ drivers/fpga/ice40-spi.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
+index 56e112e14a10..8d689fea0dab 100644
+--- a/drivers/fpga/ice40-spi.c
++++ b/drivers/fpga/ice40-spi.c
+@@ -46,10 +46,16 @@ static int ice40_fpga_ops_write_init(struct fpga_manager *mgr,
+ 	struct spi_message message;
+ 	struct spi_transfer assert_cs_then_reset_delay = {
+ 		.cs_change   = 1,
+-		.delay_usecs = ICE40_SPI_RESET_DELAY
++		.delay = {
++			.value = ICE40_SPI_RESET_DELAY,
++			.unit = SPI_DELAY_UNIT_USECS
++		}
+ 	};
+ 	struct spi_transfer housekeeping_delay_then_release_cs = {
+-		.delay_usecs = ICE40_SPI_HOUSEKEEPING_DELAY
++		.delay = {
++			.value = ICE40_SPI_HOUSEKEEPING_DELAY,
++			.unit = SPI_DELAY_UNIT_USECS
++		}
+ 	};
+ 	int ret;
+ 
 -- 
-2.7.4
+2.17.1
