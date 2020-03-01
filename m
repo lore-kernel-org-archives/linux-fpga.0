@@ -1,48 +1,81 @@
-Return-Path: <SRS0=yryN=4V=gmail.com=d.c.ddcc@kernel.org>
-Return-Path: <SRS0=yryN=4V=gmail.com=d.c.ddcc@kernel.org>
-From: Dominic Chen <d.c.ddcc@gmail.com>
-Subject: [Resend] [PATCH] fpga: support debug access to memory-mapped afu regions
-Date: Wed,  4 Mar 2020 01:14:06 -0500
-Message-Id: <20200304061406.98865-1-d.c.ddcc@gmail.com>
-To: hao.wu@intel.com, mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc: Dominic Chen <d.c.ddcc@gmail.com>
+Date: Sun, 1 Mar 2020 08:21:52 -0800
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH] fpga: machxo2-spi: Use new structure for SPI transfer
+ delays
+Message-ID: <20200301162149.GA7593@epycbox.lan>
+References: <20200227142414.16547-1-sergiu.cuciurean@analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200227142414.16547-1-sergiu.cuciurean@analog.com>
+To: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Allow debug access to memory-mapped regions using e.g. gdb.
+On Thu, Feb 27, 2020 at 04:24:14PM +0200, Sergiu Cuciurean wrote:
+> In a recent change to the SPI subsystem [1], a new `delay` struct was added
+> to replace the `delay_usecs`. This change replaces the current
+> `delay_usecs` with `delay` for this driver.
+> 
+> The `spi_transfer_delay_exec()` function [in the SPI framework] makes sure
+> that both `delay_usecs` & `delay` are used (in this order to preserve
+> backwards compatibility).
+> 
+> [1] commit bebcfd272df6 ("spi: introduce `delay` field for
+> `spi_transfer` + spi_transfer_delay_exec()")
+> 
+> Signed-off-by: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
+> ---
+>  drivers/fpga/machxo2-spi.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/fpga/machxo2-spi.c b/drivers/fpga/machxo2-spi.c
+> index 4d8a87641587..b316369156fe 100644
+> --- a/drivers/fpga/machxo2-spi.c
+> +++ b/drivers/fpga/machxo2-spi.c
+> @@ -157,7 +157,8 @@ static int machxo2_cleanup(struct fpga_manager *mgr)
+>  	spi_message_init(&msg);
+>  	tx[1].tx_buf = &refresh;
+>  	tx[1].len = sizeof(refresh);
+> -	tx[1].delay_usecs = MACHXO2_REFRESH_USEC;
+> +	tx[1].delay.value = MACHXO2_REFRESH_USEC;
+> +	tx[1].delay.unit = SPI_DELAY_UNIT_USECS;
+>  	spi_message_add_tail(&tx[1], &msg);
+>  	ret = spi_sync(spi, &msg);
+>  	if (ret)
+> @@ -208,7 +209,8 @@ static int machxo2_write_init(struct fpga_manager *mgr,
+>  	spi_message_init(&msg);
+>  	tx[0].tx_buf = &enable;
+>  	tx[0].len = sizeof(enable);
+> -	tx[0].delay_usecs = MACHXO2_LOW_DELAY_USEC;
+> +	tx[0].delay.value = MACHXO2_LOW_DELAY_USEC;
+> +	tx[0].delay.unit = SPI_DELAY_UNIT_USECS;
+>  	spi_message_add_tail(&tx[0], &msg);
+>  
+>  	tx[1].tx_buf = &erase;
+> @@ -269,7 +271,8 @@ static int machxo2_write(struct fpga_manager *mgr, const char *buf,
+>  		spi_message_init(&msg);
+>  		tx.tx_buf = payload;
+>  		tx.len = MACHXO2_BUF_SIZE;
+> -		tx.delay_usecs = MACHXO2_HIGH_DELAY_USEC;
+> +		tx.delay.value = MACHXO2_HIGH_DELAY_USEC;
+> +		tx.delay.unit = SPI_DELAY_UNIT_USECS;
+>  		spi_message_add_tail(&tx, &msg);
+>  		ret = spi_sync(spi, &msg);
+>  		if (ret) {
+> @@ -317,7 +320,8 @@ static int machxo2_write_complete(struct fpga_manager *mgr,
+>  		spi_message_init(&msg);
+>  		tx[1].tx_buf = &refresh;
+>  		tx[1].len = sizeof(refresh);
+> -		tx[1].delay_usecs = MACHXO2_REFRESH_USEC;
+> +		tx[1].delay.value = MACHXO2_REFRESH_USEC;
+> +		tx[1].delay.unit = SPI_DELAY_UNIT_USECS;
+>  		spi_message_add_tail(&tx[1], &msg);
+>  		ret = spi_sync(spi, &msg);
+>  		if (ret)
+> -- 
+> 2.17.1
+> 
+Applied to for-next,
 
-Signed-off-by: Dominic Chen <d.c.ddcc@gmail.com>
----
- drivers/fpga/dfl-afu-main.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 02baa6a227c0..38983f9dde98 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -459,6 +459,12 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	return -EINVAL;
- }
- 
-+#ifdef CONFIG_HAVE_IOREMAP_PROT
-+const struct vm_operations_struct afu_vma_ops = {
-+	.access = generic_access_phys,
-+};
-+#endif /* CONFIG_HAVE_IOREMAP_PROT */
-+
- static int afu_mmap(struct file *filp, struct vm_area_struct *vma)
- {
- 	struct platform_device *pdev = filp->private_data;
-@@ -488,6 +494,11 @@ static int afu_mmap(struct file *filp, struct vm_area_struct *vma)
- 	    !(region.flags & DFL_PORT_REGION_WRITE))
- 		return -EPERM;
- 
-+	// Support debug access to the mapping
-+#ifdef CONFIG_HAVE_IOREMAP_PROT
-+	vma->vm_ops = &afu_vma_ops;
-+#endif /* CONFIG_HAVE_IOREMAP_PROT */
-+
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- 
- 	return remap_pfn_range(vma, vma->vm_start,
--- 
-2.17.1
+Thanks
