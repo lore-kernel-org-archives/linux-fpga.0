@@ -1,57 +1,45 @@
-Date: Sun, 1 Mar 2020 08:24:24 -0800
+Date: Sun, 1 Mar 2020 08:26:42 -0800
 From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH] fpga: dfl: pci: fix return value of
- cci_pci_sriov_configure
-Message-ID: <20200301162422.GF7593@epycbox.lan>
-References: <1582610838-7019-1-git-send-email-yilun.xu@intel.com>
+Subject: Re: [PATCHv1 5/7] arm64: dts: agilex: correct service layer driver's
+ compatible value
+Message-ID: <20200301162640.GH7593@epycbox.lan>
+References: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
+ <1581696052-11540-6-git-send-email-richard.gong@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1582610838-7019-1-git-send-email-yilun.xu@intel.com>
-To: Xu Yilun <yilun.xu@intel.com>
-Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Wu Hao <hao.wu@intel.com>
+In-Reply-To: <1581696052-11540-6-git-send-email-richard.gong@linux.intel.com>
+To: richard.gong@linux.intel.com
+Cc: gregkh@linuxfoundation.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, dinguyen@kernel.org, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Richard Gong <richard.gong@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Feb 25, 2020 at 02:07:18PM +0800, Xu Yilun wrote:
-> pci_driver.sriov_configure should return negative value on error and
-> number of enabled VFs on success. But now the driver returns 0 on
-> success. The sriov configure still works but will cause a warning
-> message:
+On Fri, Feb 14, 2020 at 10:00:50AM -0600, richard.gong@linux.intel.com wrote:
+> From: Richard Gong <richard.gong@intel.com>
 > 
->   XX VFs requested; only 0 enabled
+> Correct the compatible property value for Intel Service Layer driver
+> on Intel Agilex SoC platform.
 > 
-> This patch changes the return value accordingly.
-> 
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Signed-off-by: Richard Gong <richard.gong@intel.com>
 > ---
->  drivers/fpga/dfl-pci.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+>  arch/arm64/boot/dts/intel/socfpga_agilex.dtsi | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-> index 89ca292..5387550 100644
-> --- a/drivers/fpga/dfl-pci.c
-> +++ b/drivers/fpga/dfl-pci.c
-> @@ -248,11 +248,13 @@ static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
->  			return ret;
+> diff --git a/arch/arm64/boot/dts/intel/socfpga_agilex.dtsi b/arch/arm64/boot/dts/intel/socfpga_agilex.dtsi
+> index 8c29853..d48218c 100644
+> --- a/arch/arm64/boot/dts/intel/socfpga_agilex.dtsi
+> +++ b/arch/arm64/boot/dts/intel/socfpga_agilex.dtsi
+> @@ -539,7 +539,7 @@
 >  
->  		ret = pci_enable_sriov(pcidev, num_vfs);
-> -		if (ret)
-> +		if (ret) {
->  			dfl_fpga_cdev_config_ports_pf(cdev);
-> +			return ret;
-> +		}
->  	}
+>  		firmware {
+>  			svc {
+> -				compatible = "intel,stratix10-svc";
+> +				compatible = "intel,agilex-svc";
+>  				method = "smc";
+>  				memory-region = <&service_reserved>;
 >  
-> -	return ret;
-> +	return num_vfs;
->  }
->  
->  static void cci_pci_remove(struct pci_dev *pcidev)
 > -- 
 > 2.7.4
 > 
-
 Applied to for-next,
 
 Thanks
