@@ -1,42 +1,57 @@
-Date: Sun, 1 Mar 2020 08:31:01 -0800
+Date: Sun, 1 Mar 2020 08:24:24 -0800
 From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCHv1 6/7] firmware: stratix10-svc: add the compatible value
- for intel agilex
-Message-ID: <20200301163100.GA7992@epycbox.lan>
-References: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
- <1581696052-11540-7-git-send-email-richard.gong@linux.intel.com>
+Subject: Re: [PATCH] fpga: dfl: pci: fix return value of
+ cci_pci_sriov_configure
+Message-ID: <20200301162422.GF7593@epycbox.lan>
+References: <1582610838-7019-1-git-send-email-yilun.xu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1581696052-11540-7-git-send-email-richard.gong@linux.intel.com>
-To: richard.gong@linux.intel.com
-Cc: gregkh@linuxfoundation.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, dinguyen@kernel.org, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Richard Gong <richard.gong@intel.com>
+In-Reply-To: <1582610838-7019-1-git-send-email-yilun.xu@intel.com>
+To: Xu Yilun <yilun.xu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Fri, Feb 14, 2020 at 10:00:51AM -0600, richard.gong@linux.intel.com wrote:
-> From: Richard Gong <richard.gong@intel.com>
+On Tue, Feb 25, 2020 at 02:07:18PM +0800, Xu Yilun wrote:
+> pci_driver.sriov_configure should return negative value on error and
+> number of enabled VFs on success. But now the driver returns 0 on
+> success. The sriov configure still works but will cause a warning
+> message:
 > 
-> Add the compatible property value so we can reuse Intel Stratix10
-> Service Layer driver on Intel Agilex SoC platform.
+>   XX VFs requested; only 0 enabled
 > 
-Acked-by: Moritz Fischer <mdf@kernel.org>
-> Signed-off-by: Richard Gong <richard.gong@intel.com>
+> This patch changes the return value accordingly.
+> 
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
 > ---
->  drivers/firmware/stratix10-svc.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/fpga/dfl-pci.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/firmware/stratix10-svc.c b/drivers/firmware/stratix10-svc.c
-> index 7ffb42b..d5f0769 100644
-> --- a/drivers/firmware/stratix10-svc.c
-> +++ b/drivers/firmware/stratix10-svc.c
-> @@ -966,6 +966,7 @@ EXPORT_SYMBOL_GPL(stratix10_svc_free_memory);
+> diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+> index 89ca292..5387550 100644
+> --- a/drivers/fpga/dfl-pci.c
+> +++ b/drivers/fpga/dfl-pci.c
+> @@ -248,11 +248,13 @@ static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
+>  			return ret;
 >  
->  static const struct of_device_id stratix10_svc_drv_match[] = {
->  	{.compatible = "intel,stratix10-svc"},
-> +	{.compatible = "intel,agilex-svc"},
->  	{},
->  };
+>  		ret = pci_enable_sriov(pcidev, num_vfs);
+> -		if (ret)
+> +		if (ret) {
+>  			dfl_fpga_cdev_config_ports_pf(cdev);
+> +			return ret;
+> +		}
+>  	}
 >  
+> -	return ret;
+> +	return num_vfs;
+>  }
+>  
+>  static void cci_pci_remove(struct pci_dev *pcidev)
 > -- 
 > 2.7.4
 > 
+
+Applied to for-next,
+
+Thanks
