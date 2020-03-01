@@ -1,68 +1,42 @@
-Return-Path: <SRS0=PC+q=5B=intel.com=yilun.xu@kernel.org>
-Return-Path: <SRS0=PC+q=5B=intel.com=yilun.xu@kernel.org>
-From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH v2 7/7] Documentation: fpga: dfl: add descriptions for interrupt related interfaces.
-Date: Mon, 16 Mar 2020 12:17:02 +0800
-Message-Id: <1584332222-26652-8-git-send-email-yilun.xu@intel.com>
-In-Reply-To: <1584332222-26652-1-git-send-email-yilun.xu@intel.com>
-References: <1584332222-26652-1-git-send-email-yilun.xu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
+Date: Sun, 1 Mar 2020 08:31:28 -0800
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCHv1 7/7] firmware: intel_stratix10_service: add depend on
+ agilex
+Message-ID: <20200301163126.GB7992@epycbox.lan>
+References: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
+ <1581696052-11540-8-git-send-email-richard.gong@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1581696052-11540-8-git-send-email-richard.gong@linux.intel.com>
+To: richard.gong@linux.intel.com
+Cc: gregkh@linuxfoundation.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, dinguyen@kernel.org, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Richard Gong <richard.gong@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds introductions of interrupt related interfaces for FME
-error reporting, port error reporting and AFU user interrupts features.
-
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-----
-v2: Update Documents cause change of irq ioctl interfaces.
----
- Documentation/fpga/dfl.rst | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index 094fc8a..c7ed3e4 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -89,6 +89,8 @@ The following functions are exposed through ioctls:
- - Program bitstream (DFL_FPGA_FME_PORT_PR)
- - Assign port to PF (DFL_FPGA_FME_PORT_ASSIGN)
- - Release port from PF (DFL_FPGA_FME_PORT_RELEASE)
-+- Get number of irqs of FME global error (DFL_FPGA_FME_ERR_GET_IRQ_NUM)
-+- Set interrupt trigger for FME error (DFL_FPGA_FME_ERR_SET_IRQ)
- 
- More functions are exposed through sysfs
- (/sys/class/fpga_region/regionX/dfl-fme.n/):
-@@ -144,6 +146,10 @@ The following functions are exposed through ioctls:
- - Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
- - Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
- - Reset AFU (DFL_FPGA_PORT_RESET)
-+- Get number of irqs of port error (DFL_FPGA_PORT_ERR_GET_IRQ_NUM)
-+- Set interrupt trigger for port error (DFL_FPGA_PORT_ERR_SET_IRQ)
-+- Get number of irqs of UINT (DFL_FPGA_PORT_UINT_GET_IRQ_NUM)
-+- Set interrupt trigger for UINT (DFL_FPGA_PORT_UINT_SET_IRQ)
- 
- DFL_FPGA_PORT_RESET:
-   reset the FPGA Port and its AFU. Userspace can do Port
-@@ -378,6 +384,17 @@ The device nodes used for ioctl() or mmap() can be referenced through::
- 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
- 
- 
-+Interrupt support
-+=================
-+Some FME and AFU private features are able to generate interrupts. As mentioned
-+above, users could call ioctl (DFL_FPGA_*_GET_IRQ_NUM) to know whether or how
-+many interrupts are supported for this private feature. Drivers also implement
-+an eventfd based interrupt handling mechanism for users to get notified when
-+interrupt happens. Users could set eventfds to driver via
-+ioctl (DFL_FPGA_*_SET_IRQ), and then poll/select on these eventfds waiting for
-+notification.
-+
-+
- Add new FIUs support
- ====================
- It's possible that developers made some new function blocks (FIUs) under this
--- 
-2.7.4
+On Fri, Feb 14, 2020 at 10:00:52AM -0600, richard.gong@linux.intel.com wrote:
+> From: Richard Gong <richard.gong@intel.com>
+> 
+> Add depend on Agilex for Intel Agilex SoC platform.
+> 
+Acked-by: Moritz Fischer <mdf@kernel.org>
+> Signed-off-by: Richard Gong <richard.gong@intel.com>
+> ---
+>  drivers/firmware/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+> index ea869ad..8007d4a 100644
+> --- a/drivers/firmware/Kconfig
+> +++ b/drivers/firmware/Kconfig
+> @@ -206,7 +206,7 @@ config FW_CFG_SYSFS_CMDLINE
+>  
+>  config INTEL_STRATIX10_SERVICE
+>  	tristate "Intel Stratix10 Service Layer"
+> -	depends on ARCH_STRATIX10 && HAVE_ARM_SMCCC
+> +	depends on (ARCH_STRATIX10 || ARCH_AGILEX) && HAVE_ARM_SMCCC
+>  	default n
+>  	help
+>  	  Intel Stratix10 service layer runs at privileged exception level,
+> -- 
+> 2.7.4
+> 
