@@ -1,66 +1,60 @@
-Return-Path: <SRS0=xP2i=42=intel.com=yilun.xu@kernel.org>
-Return-Path: <SRS0=xP2i=42=intel.com=yilun.xu@kernel.org>
-From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH 7/7] Documentation: fpga: dfl: add descriptions for interrupt related interfaces.
-Date: Mon,  9 Mar 2020 18:29:50 +0800
-Message-Id: <1583749790-10837-8-git-send-email-yilun.xu@intel.com>
-In-Reply-To: <1583749790-10837-1-git-send-email-yilun.xu@intel.com>
-References: <1583749790-10837-1-git-send-email-yilun.xu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
+Date: Sun, 1 Mar 2020 08:22:09 -0800
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH] fpga: ice40-spi: Use new structure for SPI transfer
+ delays
+Message-ID: <20200301162207.GB7593@epycbox.lan>
+References: <20200227120932.12542-1-sergiu.cuciurean@analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200227120932.12542-1-sergiu.cuciurean@analog.com>
+To: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
+Cc: linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org, mdf@kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch adds introductions of interrupt related interfaces for FME
-error reporting, port error reporting and AFU user interrupts features.
+On Thu, Feb 27, 2020 at 02:09:32PM +0200, Sergiu Cuciurean wrote:
+> In a recent change to the SPI subsystem [1], a new `delay` struct was added
+> to replace the `delay_usecs`. This change replaces the current
+> `delay_usecs` with `delay` for this driver.
+> 
+> The `spi_transfer_delay_exec()` function [in the SPI framework] makes sure
+> that both `delay_usecs` & `delay` are used (in this order to preserve
+> backwards compatibility).
+> 
+> [1] commit bebcfd272df6 ("spi: introduce `delay` field for
+> `spi_transfer` + spi_transfer_delay_exec()")
+> 
+> Signed-off-by: Sergiu Cuciurean <sergiu.cuciurean@analog.com>
+> ---
+>  drivers/fpga/ice40-spi.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
+> index 56e112e14a10..8d689fea0dab 100644
+> --- a/drivers/fpga/ice40-spi.c
+> +++ b/drivers/fpga/ice40-spi.c
+> @@ -46,10 +46,16 @@ static int ice40_fpga_ops_write_init(struct fpga_manager *mgr,
+>  	struct spi_message message;
+>  	struct spi_transfer assert_cs_then_reset_delay = {
+>  		.cs_change   = 1,
+> -		.delay_usecs = ICE40_SPI_RESET_DELAY
+> +		.delay = {
+> +			.value = ICE40_SPI_RESET_DELAY,
+> +			.unit = SPI_DELAY_UNIT_USECS
+> +		}
+>  	};
+>  	struct spi_transfer housekeeping_delay_then_release_cs = {
+> -		.delay_usecs = ICE40_SPI_HOUSEKEEPING_DELAY
+> +		.delay = {
+> +			.value = ICE40_SPI_HOUSEKEEPING_DELAY,
+> +			.unit = SPI_DELAY_UNIT_USECS
+> +		}
+>  	};
+>  	int ret;
+>  
+> -- 
+> 2.17.1
+> 
+Applied to for-next,
 
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
----
- Documentation/fpga/dfl.rst | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index 094fc8a..3c4e150 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -89,6 +89,8 @@ The following functions are exposed through ioctls:
- - Program bitstream (DFL_FPGA_FME_PORT_PR)
- - Assign port to PF (DFL_FPGA_FME_PORT_ASSIGN)
- - Release port from PF (DFL_FPGA_FME_PORT_RELEASE)
-+- Get FME global error info (DFL_FPGA_FME_ERR_GET_INFO)
-+- Set interrupt trigger for FME error (DFL_FPGA_FME_ERR_SET_IRQ)
- 
- More functions are exposed through sysfs
- (/sys/class/fpga_region/regionX/dfl-fme.n/):
-@@ -144,6 +146,10 @@ The following functions are exposed through ioctls:
- - Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
- - Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
- - Reset AFU (DFL_FPGA_PORT_RESET)
-+- Get port error info (DFL_FPGA_PORT_ERR_GET_INFO)
-+- Set interrupt trigger for port error(DFL_FPGA_PORT_ERR_SET_IRQ)
-+- Get User AFU interrupt(UINT) info (DFL_FPGA_PORT_UINT_GET_INFO)
-+- Set interrupt trigger for UINT (DFL_FPGA_PORT_UINT_SET_IRQ)
- 
- DFL_FPGA_PORT_RESET:
-   reset the FPGA Port and its AFU. Userspace can do Port
-@@ -378,6 +384,17 @@ The device nodes used for ioctl() or mmap() can be referenced through::
- 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
- 
- 
-+Interrupt support
-+=================
-+Some FME and AFU private features are able to generate interrupts. As mentioned
-+above, users could call ioctl (DFL_FPGA_*_GET_INFO), query the nr_irqs field to
-+know whether or how many interrupts are supported for this private feature.
-+Drivers also implement an eventfd based interrupt handling mechanism for users
-+to get notified when interrupt happens. Users could set eventfds to driver via
-+ioctl (DFL_FPGA_*_SET_IRQ), and then poll/select on these eventfds waiting for
-+notification.
-+
-+
- Add new FIUs support
- ====================
- It's possible that developers made some new function blocks (FIUs) under this
--- 
-2.7.4
+Thanks
