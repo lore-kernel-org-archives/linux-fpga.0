@@ -1,57 +1,55 @@
-Return-Path: <SRS0=zWuL=4X=analog.com=alexandru.Ardelean@kernel.org>
-Return-Path: <SRS0=zWuL=4X=analog.com=alexandru.Ardelean@kernel.org>
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Subject: [PATCH 2/2] arch: nios2: remove 'resetvalue' property
-Date: Fri, 6 Mar 2020 13:54:50 +0200
-Message-ID: <20200306115450.3352-2-alexandru.ardelean@analog.com>
-In-Reply-To: <20200306115450.3352-1-alexandru.ardelean@analog.com>
-References: <20200306115450.3352-1-alexandru.ardelean@analog.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-To: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, nios2-dev@lists.rocketboards.org
-Cc: ley.foon.tan@intel.com, robh+dt@kernel.org, mdf@kernel.org, Alexandru Ardelean <alexandru.ardelean@analog.com>
+Return-Path: <SRS0=xP2i=42=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=xP2i=42=intel.com=yilun.xu@kernel.org>
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: [PATCH 0/7] Add interrupt support to FPGA DFL drivers
+Date: Mon,  9 Mar 2020 18:29:43 +0800
+Message-Id: <1583749790-10837-1-git-send-email-yilun.xu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-The 'altr,pio-1.0' driver does not handle the 'resetvalue', so remove it.
+This patchset add interrupt support to FPGA DFL drivers.
 
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
----
- Documentation/devicetree/bindings/fpga/fpga-region.txt | 1 -
- arch/nios2/boot/dts/10m50_devboard.dts                 | 2 --
- 2 files changed, 3 deletions(-)
+With these patches, DFL driver will parse and assign interrupt resources
+for enumerated feature devices and their sub features.
 
-diff --git a/Documentation/devicetree/bindings/fpga/fpga-region.txt b/Documentation/devicetree/bindings/fpga/fpga-region.txt
-index b0dacb6a3390..8ab19d1d3f9a 100644
---- a/Documentation/devicetree/bindings/fpga/fpga-region.txt
-+++ b/Documentation/devicetree/bindings/fpga/fpga-region.txt
-@@ -469,7 +469,6 @@ programming is the FPGA based bridge of fpga_region1.
- 				reg = <0x10040 0x20>;
- 				clocks = <0x2>;
- 				altr,ngpio = <0x4>;
--				resetvalue = <0x0>;
- 				#gpio-cells = <0x2>;
- 				gpio-controller;
- 			};
-diff --git a/arch/nios2/boot/dts/10m50_devboard.dts b/arch/nios2/boot/dts/10m50_devboard.dts
-index 739ad96a6cc1..56339bef3247 100644
---- a/arch/nios2/boot/dts/10m50_devboard.dts
-+++ b/arch/nios2/boot/dts/10m50_devboard.dts
-@@ -180,7 +180,6 @@
- 			compatible = "altr,pio-1.0";
- 			reg = <0x180014d0 0x00000010>;
- 			altr,ngpio = <4>;
--			resetvalue = <15>;
- 			#gpio-cells = <2>;
- 			gpio-controller;
- 		};
-@@ -194,7 +193,6 @@
- 			altr,interrupt-type = <2>;
- 			edge_type = <1>;
- 			level_trigger = <0>;
--			resetvalue = <0>;
- 			#gpio-cells = <2>;
- 			gpio-controller;
- 		};
+This patchset also introduces a set of APIs for user to monitor DFL
+interrupts. Three sub features (DFL FME error, DFL AFU error and user
+interrupt) drivers now support these APIs.
+
+Patch #1: DFL framework change. Accept interrupt info input from DFL bus
+	  driver, and add interrupt parsing and assignment for feature
+	  sub devices.
+Patch #2: DFL pci driver change, add interrupt info on DFL enumeration.
+Patch #3: DFL framework change. Add helper functions for feature sub
+	  device drivers to handle interrupt and notify users.
+Patch #4: Add interrupt support for AFU error reporting sub feature.
+Patch #5: Add interrupt support for FME global error reporting sub
+	  feature.
+Patch #6: Add interrupt support for a new sub feature, to handle user
+	  interrupts implemented in AFU.
+Patch #7: Documentation for DFL interrupt handling.
+
+Xu Yilun (7):
+  fpga: dfl: parse interrupt info for feature devices on enumeration
+  fpga: dfl: pci: add irq info for feature devices enumeration
+  fpga: dfl: introduce interrupt trigger setting API
+  fpga: dfl: afu: add interrupt support for error reporting
+  fpga: dfl: fme: add interrupt support for global error reporting
+  fpga: dfl: afu: add user interrupt support
+  Documentation: fpga: dfl: add descriptions for interrupt related
+    interfaces.
+
+ Documentation/fpga/dfl.rst    |  17 +++
+ drivers/fpga/dfl-afu-error.c  |  69 +++++++++++++
+ drivers/fpga/dfl-afu-main.c   |  83 +++++++++++++++
+ drivers/fpga/dfl-fme-error.c  |  71 +++++++++++++
+ drivers/fpga/dfl-fme-main.c   |   6 ++
+ drivers/fpga/dfl-pci.c        |  66 +++++++++++-
+ drivers/fpga/dfl.c            | 233 +++++++++++++++++++++++++++++++++++++++++-
+ drivers/fpga/dfl.h            |  51 +++++++++
+ include/uapi/linux/fpga-dfl.h |  89 ++++++++++++++++
+ 9 files changed, 676 insertions(+), 9 deletions(-)
+
 -- 
-2.20.1
+2.7.4
