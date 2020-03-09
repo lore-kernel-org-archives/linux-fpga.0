@@ -1,47 +1,40 @@
 Return-Path: <SRS0=+JAn=42=gmail.com=d.c.ddcc@kernel.org>
 Return-Path: <SRS0=+JAn=42=gmail.com=d.c.ddcc@kernel.org>
+Subject: Re: [PATCH v3] fpga: dfl: afu: support debug access to memory-mapped
+ afu regions
+References: <20200305033310.117030-1-d.c.ddcc@gmail.com>
+ <20200309072810.GA852@hao-dev>
 From: Dominic Chen <d.c.ddcc@gmail.com>
-Subject: [PATCH v4] fpga: dfl: afu: support debug access to memory-mapped afu regions
-Date: Mon,  9 Mar 2020 14:53:23 -0400
-Message-Id: <20200309185323.106443-1-d.c.ddcc@gmail.com>
-To: hao.wu@intel.com, linux-fpga@vger.kernel.org, mdf@kernel.org
-Cc: Dominic Chen <d.c.ddcc@gmail.com>
+Message-ID: <dca2ed7b-ff6e-2886-238b-6a924553b9f1@gmail.com>
+Date: Mon, 9 Mar 2020 14:53:05 -0400
+MIME-Version: 1.0
+In-Reply-To: <20200309072810.GA852@hao-dev>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+To: Wu Hao <hao.wu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-Allow debug access to memory-mapped regions using e.g. gdb.
 
-Signed-off-by: Dominic Chen <d.c.ddcc@gmail.com>
-Acked-by: Wu Hao <hao.wu@intel.com>
----
- drivers/fpga/dfl-afu-main.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+On 3/9/2020 3:28 AM, Wu Hao wrote:
+> On Wed, Mar 04, 2020 at 10:33:10PM -0500, Dominic Chen wrote:
+>> +static const struct vm_operations_struct afu_vma_ops = {
+>> +#ifdef CONFIG_HAVE_IOREMAP_PROT
+>> +	.access = generic_access_phys,
+>> +#endif /* CONFIG_HAVE_IOREMAP_PROT */
+> To me, it's very clear for #ifdef - #end. So looks like this
+> /* CONFIG_HAVE_IOREMAP_PROT */ comments is not needed.
+>
+> Could you please remove it? 
+>
+> Then
+>
+> Acked-by: Wu Hao <hao.wu@intel.com>
+>
+> Thanks
+> Hao
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 02baa6a227c0..d2e6826af970 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -459,6 +459,12 @@ static long afu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	return -EINVAL;
- }
- 
-+static const struct vm_operations_struct afu_vma_ops = {
-+#ifdef CONFIG_HAVE_IOREMAP_PROT
-+	.access = generic_access_phys,
-+#endif
-+};
-+
- static int afu_mmap(struct file *filp, struct vm_area_struct *vma)
- {
- 	struct platform_device *pdev = filp->private_data;
-@@ -488,6 +494,9 @@ static int afu_mmap(struct file *filp, struct vm_area_struct *vma)
- 	    !(region.flags & DFL_PORT_REGION_WRITE))
- 		return -EPERM;
- 
-+	/* Support debug access to the mapping */
-+	vma->vm_ops = &afu_vma_ops;
-+
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- 
- 	return remap_pfn_range(vma, vma->vm_start,
--- 
-2.17.1
+Thanks, sent out v4.
+
+Dominic
