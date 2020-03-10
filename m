@@ -1,48 +1,201 @@
-Date: Sun, 1 Mar 2020 08:22:46 -0800
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCHv1 4/7] dt-bindings, firmware: add compatible value Intel
- Stratix10 service layer binding
-Message-ID: <20200301162244.GC7593@epycbox.lan>
-References: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
- <1581696052-11540-5-git-send-email-richard.gong@linux.intel.com>
+Return-Path: <SRS0=CnyG=43=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=CnyG=43=intel.com=hao.wu@kernel.org>
+Date: Tue, 10 Mar 2020 18:26:33 +0800
+From: Wu Hao <hao.wu@intel.com>
+Subject: Re: [PATCH 2/7] fpga: dfl: pci: add irq info for feature devices
+ enumeration
+Message-ID: <20200310102633.GB28396@hao-dev>
+References: <1583749790-10837-1-git-send-email-yilun.xu@intel.com>
+ <1583749790-10837-3-git-send-email-yilun.xu@intel.com>
+ <20200310024626.GB11861@hao-dev>
+ <20200310094143.GB30868@yilunxu-OptiPlex-7050>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <1581696052-11540-5-git-send-email-richard.gong@linux.intel.com>
-To: richard.gong@linux.intel.com
-Cc: gregkh@linuxfoundation.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, dinguyen@kernel.org, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Richard Gong <richard.gong@intel.com>
+In-Reply-To: <20200310094143.GB30868@yilunxu-OptiPlex-7050>
+To: Xu Yilun <yilun.xu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Fri, Feb 14, 2020 at 10:00:49AM -0600, richard.gong@linux.intel.com wrot=
-e:
-> From: Richard Gong <richard.gong@intel.com>
->=20
-> A a compatible property value to Intel Stratix10 service layer binding
->=20
-> Signed-off-by: Richard Gong <richard.gong@intel.com>
-> ---
->  Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/firmware/intel,stratix10-s=
-vc.txt b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-> index 1fa6606..6eff1af 100644
-> --- a/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-> +++ b/Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
-> @@ -23,7 +23,7 @@ Required properties:
->  The svc node has the following mandatory properties, must be located und=
-er
->  the firmware node.
-> =20
-> -- compatible: "intel,stratix10-svc"
-> +- compatible: "intel,stratix10-svc" or "intel,agilex-svc"
->  - method: smc or hvc
->          smc - Secure Monitor Call
->          hvc - Hypervisor Call
-> --=20
-> 2.7.4
->=20
-Applied to for-next,
+On Tue, Mar 10, 2020 at 05:41:43PM +0800, Xu Yilun wrote:
+> On Tue, Mar 10, 2020 at 10:46:26AM +0800, Wu Hao wrote:
+> > Hi Yilun
+> > 
+> > Some comments inline. : )
+> > 
+> > On Mon, Mar 09, 2020 at 06:29:45PM +0800, Xu Yilun wrote:
+> > > Some DFL FPGA PCIe cards (e.g. Intel FPGA Programmable Acceleration
+> > > Card) support MSI-X based interrupts. This patch allows PCIe driver
+> > > to prepare and pass interrupt resources to DFL via enumeration API.
+> > > These interrupt resources could then be assigned to actual features
+> > > which use them.
+> > > 
+> > > Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+> > > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > > ---
+> > >  drivers/fpga/dfl-pci.c | 66 ++++++++++++++++++++++++++++++++++++++++++++++----
+> > >  1 file changed, 61 insertions(+), 5 deletions(-)
+> > > 
+> > > diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+> > > index 5387550..a3370e5 100644
+> > > --- a/drivers/fpga/dfl-pci.c
+> > > +++ b/drivers/fpga/dfl-pci.c
+> > > @@ -80,8 +80,23 @@ static void cci_remove_feature_devs(struct pci_dev *pcidev)
+> > >  	dfl_fpga_feature_devs_remove(drvdata->cdev);
+> > >  }
+> > >  
+> > > +static int *cci_pci_create_irq_table(struct pci_dev *pcidev, unsigned int nvec)
+> > > +{
+> > > +	int *table, i;
+> > > +
+> > > +	table = kcalloc(nvec, sizeof(int), GFP_KERNEL);
+> > 
+> > Maybe devm_ version is better?
+> 
+> This table will be freed right after dfl_fpga_enum_info_add_irq(). Maybe
+> don't need devm_ version.
+> 
+> > 
+> > > +	if (!table)
+> > > +		return NULL;
+> > > +
+> > > +	for (i = 0; i < nvec; i++)
+> > 
+> > i should be unsigned int as well?
+> 
+> Yes I should change it.
+> 
+> > 
+> > > +		table[i] = pci_irq_vector(pcidev, i);
+
+Hi Yilun,
+
+one more place here.
+
+
+table = kcalloc(nevc, sizeof(int), GFP_KERNEL);
+if (table) {
+	...
+}	
+
+return table;
 
 Thanks
+Hao
+
+> > > +
+> > > +	return table;
+> > > +}
+> > > +
+> > >  /* enumerate feature devices under pci device */
+> > > -static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+> > > +static int cci_enumerate_feature_devs(struct pci_dev *pcidev,
+> > > +				      unsigned int nvec)
+> > >  {
+> > >  	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
+> > >  	struct dfl_fpga_enum_info *info;
+> > > @@ -89,6 +104,7 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+> > >  	resource_size_t start, len;
+> > >  	int port_num, bar, i, ret = 0;
+> > >  	void __iomem *base;
+> > > +	int *irq_table;
+> > >  	u32 offset;
+> > >  	u64 v;
+> > >  
+> > > @@ -97,6 +113,18 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+> > >  	if (!info)
+> > >  		return -ENOMEM;
+> > >  
+> > > +	/* add irq info for enumeration if really needed */
+> > > +	if (nvec) {
+> > > +		irq_table = cci_pci_create_irq_table(pcidev, nvec);
+> > > +		if (irq_table) {
+> > > +			dfl_fpga_enum_info_add_irq(info, nvec, irq_table);
+> > > +			kfree(irq_table);
+> > > +		} else {
+> > > +			ret = -ENOMEM;
+> > > +			goto enum_info_free_exit;
+> > > +		}
+> > > +	}
+> > > +
+> > >  	/* start to find Device Feature List from Bar 0 */
+> > >  	base = cci_pci_ioremap_bar(pcidev, 0);
+> > >  	if (!base) {
+> > > @@ -173,6 +201,28 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+> > >  	return ret;
+> > >  }
+> > >  
+> > > +static int cci_pci_alloc_irq(struct pci_dev *pcidev)
+> > > +{
+> > > +	int nvec = pci_msix_vec_count(pcidev);
+> > > +	int ret;
+> > > +
+> > > +	if (nvec <= 0) {
+> > > +		dev_dbg(&pcidev->dev, "fpga interrupt not supported\n");
+> > > +		return 0;
+> > > +	}
+> > > +
+> > > +	ret = pci_alloc_irq_vectors(pcidev, nvec, nvec, PCI_IRQ_MSIX);
+> > > +	if (ret < 0)
+> > > +		return ret;
+> > > +
+> > > +	return nvec;
+> > > +}
+> > > +
+> > > +static void cci_pci_free_irq(struct pci_dev *pcidev)
+> > > +{
+> > > +	pci_free_irq_vectors(pcidev);
+> > > +}
+> > > +
+> > >  static
+> > >  int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+> > >  {
+> > > @@ -210,14 +260,19 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+> > >  		goto disable_error_report_exit;
+> > >  	}
+> > >  
+> > > -	ret = cci_enumerate_feature_devs(pcidev);
+> > > -	if (ret) {
+> > > -		dev_err(&pcidev->dev, "enumeration failure %d.\n", ret);
+> > > +	ret = cci_pci_alloc_irq(pcidev);
+> > > +	if (ret < 0) {
+> > > +		dev_err(&pcidev->dev, "Fail to alloc irq %d.\n", ret);
+> > 
+> > we prepare mmio resources in side cci_enumerate_feature_devs.
+> > 
+> > maybe we could put irq resources code in side cce_enumerate_feature_devs too?
+> 
+> Yes I will try to change it in patch v2.
+> 
+> Thanks for your quick response.
+> 
+> > 
+> > 
+> > Thanks
+> > Hao
+> > 
+> > >  		goto disable_error_report_exit;
+> > >  	}
+> > >  
+> > > -	return ret;
+> > > +	ret = cci_enumerate_feature_devs(pcidev, (unsigned int)ret);
+> > > +	if (!ret)
+> > > +		return ret;
+> > > +
+> > > +	dev_err(&pcidev->dev, "enumeration failure %d.\n", ret);
+> > >  
+> > > +	cci_pci_free_irq(pcidev);
+> > >  disable_error_report_exit:
+> > >  	pci_disable_pcie_error_reporting(pcidev);
+> > >  	return ret;
+> > > @@ -263,6 +318,7 @@ static void cci_pci_remove(struct pci_dev *pcidev)
+> > >  		cci_pci_sriov_configure(pcidev, 0);
+> > >  
+> > >  	cci_remove_feature_devs(pcidev);
+> > > +	cci_pci_free_irq(pcidev);
+> > >  	pci_disable_pcie_error_reporting(pcidev);
+> > >  }
+> > >  
+> > > -- 
+> > > 2.7.4
