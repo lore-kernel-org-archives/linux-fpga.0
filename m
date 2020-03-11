@@ -1,45 +1,119 @@
-Date: Sun, 1 Mar 2020 08:23:03 -0800
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCHv1 1/7] dt-bindings: fpga: add compatible value to
- Stratix10 SoC FPGA manager binding
-Message-ID: <20200301162302.GD7593@epycbox.lan>
-References: <1581696052-11540-1-git-send-email-richard.gong@linux.intel.com>
- <1581696052-11540-2-git-send-email-richard.gong@linux.intel.com>
+Return-Path: <SRS0=ZDk0=44=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=ZDk0=44=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mga12.intel.com ([192.55.52.136]:63106 "EHLO mga12.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726198AbgCKGhZ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 11 Mar 2020 02:37:25 -0400
+Date: Wed, 11 Mar 2020 14:35:19 +0800
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: Re: [PATCH 4/7] fpga: dfl: afu: add interrupt support for error
+  reporting
+Message-ID: <20200311063519.GC4193@yilunxu-OptiPlex-7050>
+References: <1583749790-10837-1-git-send-email-yilun.xu@intel.com>
+ <1583749790-10837-5-git-send-email-yilun.xu@intel.com>
+ <20200310103921.GD28396@hao-dev>
+ <20200310164738.GC30868@yilunxu-OptiPlex-7050>
+ <20200311024356.GA26202@hao-dev>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1581696052-11540-2-git-send-email-richard.gong@linux.intel.com>
-To: richard.gong@linux.intel.com
-Cc: gregkh@linuxfoundation.org, mdf@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, dinguyen@kernel.org, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Richard Gong <richard.gong@intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
+In-Reply-To: <20200311024356.GA26202@hao-dev>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Wu Hao <hao.wu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>
 
-On Fri, Feb 14, 2020 at 10:00:46AM -0600, richard.gong@linux.intel.com wrote:
-> From: Richard Gong <richard.gong@intel.com>
+On Wed, Mar 11, 2020 at 10:43:56AM +0800, Wu Hao wrote:
+> On Wed, Mar 11, 2020 at 12:47:38AM +0800, Xu Yilun wrote:
+> > On Tue, Mar 10, 2020 at 06:39:21PM +0800, Wu Hao wrote:
+> > > On Mon, Mar 09, 2020 at 06:29:47PM +0800, Xu Yilun wrote:
+> > > > Error reporting interrupt is very useful to notify users that some
+> > > > errors are detected by the hardware. Once users are notified, they
+> > > > could query hardware logged error states, no need to continuously
+> > > > poll on these states.
+> > > > 
+> > > > This patch follows the common DFL interrupt notification and handling
+> > > > mechanism, implements two ioctl commands below for user to query
+> > > > hardware capability, and set/unset interrupt triggers.
+> > > > 
+> > > >  Ioctls:
+> > > >  * DFL_FPGA_PORT_ERR_GET_INFO
+> > > >    get error reporting feature info, including num_irqs which is used to
+> > > >    determine whether/how many interrupts it supports.
+> > > > 
+> > > >  * DFL_FPGA_PORT_ERR_SET_IRQ
+> > > >    set/unset given eventfds as error interrupt triggers.
+> > > > 
+> > > > Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+> > > > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > > > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > > > ---
+> > > >  drivers/fpga/dfl-afu-error.c  | 69 +++++++++++++++++++++++++++++++++++++++++++
+> > > >  drivers/fpga/dfl-afu-main.c   |  4 +++
+> > > >  include/uapi/linux/fpga-dfl.h | 34 +++++++++++++++++++++
+> > > >  3 files changed, 107 insertions(+)
+> > > > 
+> > > > diff --git a/drivers/fpga/dfl-afu-error.c b/drivers/fpga/dfl-afu-error.c
+> > > > index c1467ae..a2c5454 100644
+> > > > --- a/drivers/fpga/dfl-afu-error.c
+> > > > +++ b/drivers/fpga/dfl-afu-error.c
+> > > > @@ -15,6 +15,7 @@
+> > > >   */
+> > > >  
+> > > >  #include <linux/uaccess.h>
+> > > > +#include <linux/fpga-dfl.h>
+> > > >  
+> > > >  #include "dfl-afu.h"
+> > > >  
+> > > > @@ -219,6 +220,73 @@ static void port_err_uinit(struct platform_device *pdev,
+> > > >  	afu_port_err_mask(&pdev->dev, true);
+> > > >  }
+> > > >  
+> > > > +static long
+> > > > +port_err_get_info(struct platform_device *pdev,
+> > > > +		  struct dfl_feature *feature, unsigned long arg)
+> > > > +{
+> > > > +	struct dfl_fpga_port_err_info info;
+> > > > +
+> > > > +	info.flags = 0;
+> > > > +	info.capability = 0;
+> > > 
+> > > as flags and capability are not used at this moment, so actually it only exposes
+> > > irq information to user. I understand flags and capability are used for
+> > > future extension, but it may not work without argsz, as we never know what
+> > > comes next, e.g. a capability requires > 32bit can't fit into this ioctl.
+> > > So maybe just a ioctl for IRQ_INFO is enough for now.
+> > > 
+> > > How do you think?
+> > 
+> > Yes the flags & capability are for future extension.
+> > 
+> > The capability field is planned to a bitmask, each bit could indicate the feature
+> > has some capability or not. So it could describe up to 32 capabilities.
+> > I think it would be enough for one sub feature.
+> > 
+> > With this field, users could get a general description of capabilities with one
+> > ioctl. If some capability has more detailed info, we may add addtional ioctl to
+> > fetch it. This is how it works without argsz. Does it make sense?
+> > 
+> > And same definition for flag field. The flag fields could contain some
+> > bool running state represented by each bit.
 > 
-> Add a compatible property value to Stratix10 SoC FPGA manager binding file
-> 
-> Signed-off-by: Richard Gong <richard.gong@intel.com>
-> ---
->  .../devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt          | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-> index 6e03f79..0f87413 100644
-> --- a/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-> +++ b/Documentation/devicetree/bindings/fpga/intel-stratix10-soc-fpga-mgr.txt
-> @@ -4,7 +4,8 @@ Required properties:
->  The fpga_mgr node has the following mandatory property, must be located under
->  firmware/svc node.
->  
-> -- compatible : should contain "intel,stratix10-soc-fpga-mgr"
-> +- compatible : should contain "intel,stratix10-soc-fpga-mgr" or
-> +	       "intel,agilex-soc-fpga-mgr"
->  
->  Example:
->  
-> -- 
-> 2.7.4
-> 
-Applied to for-next,
+> This should work for some cases, but kernel doc (core-api/ioctl.rst) says it's
+> better to avoid bitfield completely. I understand it's possible to extend this
+> ioctl with flags and capability, even we can define if flags = A, then given 
+> capability = definition B, if flags = C, then capbaility definition is D, to
+> maximum the usage for extension, but it may make this interface very very
+> complicated to users. This should be the same reason why you didn't put irq
+> info into capability directly. Another reason is, in my understanding, it
+> choices ioctl to expose irq info becasue user must use ioctl to set irq, for
+> other capabilities which doesn't use device file, then some sysfs may be enough
+> for their own functions.
 
-Thanks
+Thanks for clarify this, I'll remove the flags & capability fields
+
+Yilun
+
+> 
+> Thanks
+> Hao
