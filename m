@@ -1,192 +1,67 @@
-Return-Path: <SRS0=xP2i=42=intel.com=yilun.xu@kernel.org>
-Return-Path: <SRS0=xP2i=42=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=gzMe=5J=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=gzMe=5J=intel.com=yilun.xu@kernel.org>
 From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH 5/7] fpga: dfl: fme: add interrupt support for global error reporting
-Date: Mon,  9 Mar 2020 18:29:48 +0800
-Message-Id: <1583749790-10837-6-git-send-email-yilun.xu@intel.com>
-In-Reply-To: <1583749790-10837-1-git-send-email-yilun.xu@intel.com>
-References: <1583749790-10837-1-git-send-email-yilun.xu@intel.com>
+Subject: [PATCH v3 0/7] Add interrupt support to FPGA DFL drivers
+Date: Tue, 24 Mar 2020 16:32:36 +0800
+Message-Id: <1585038763-22944-1-git-send-email-yilun.xu@intel.com>
 To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
+Cc: trix@redhat.com, bhu@redhat.com, Xu Yilun <yilun.xu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Error reporting interrupt is very useful to notify users that some
-errors are detected by the hardware. Once users are notified, they
-could query hardware logged error states, no need to continuously
-poll on these states.
+This patchset add interrupt support to FPGA DFL drivers.
 
-This patch follows the common DFL interrupt notification and handling
-mechanism. And it implements two ioctls below for user to query
-hardware capability and set/unset interrupt triggers.
+With these patches, DFL driver will parse and assign interrupt resources
+for enumerated feature devices and their sub features.
 
- Ioctls:
- * DFL_FPGA_FME_ERR_GET_INFO
-   get fme global error reporting feature info, including num_irqs which
-   is used to determine whether/how many interrupts it supports.
+This patchset also introduces a set of APIs for user to monitor DFL
+interrupts. Three sub features (DFL FME error, DFL AFU error and user
+interrupt) drivers now support these APIs.
 
- * DFL_FPGA_FME_ERR_SET_IRQ
-   set/unset given eventfds as fme error reporting interrupt triggers.
+Patch #1: DFL framework change. Accept interrupt info input from DFL bus
+          driver, and add interrupt parsing and assignment for feature
+          sub devices.
+Patch #2: DFL pci driver change, add interrupt info on DFL enumeration.
+Patch #3: DFL framework change. Add helper functions for feature sub
+          device drivers to handle interrupt and notify users.
+Patch #4: Add interrupt support for AFU error reporting sub feature.
+Patch #5: Add interrupt support for FME global error reporting sub
+          feature.
+Patch #6: Add interrupt support for a new sub feature, to handle user
+          interrupts implemented in AFU.
+Patch #7: Documentation for DFL interrupt handling.
 
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
----
- drivers/fpga/dfl-fme-error.c  | 71 +++++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl-fme-main.c   |  6 ++++
- include/uapi/linux/fpga-dfl.h | 27 ++++++++++++++++
- 3 files changed, 104 insertions(+)
+Main changes from v1:
+ - Early validating irq table for each feature in parse_feature_irq()
+   in Patch #1.
+ - Changes IOCTL interfaces. use DFL_FPGA_FME/PORT_XXX_GET_IRQ_NUM
+   instead of DFL_FPGA_FME/PORT_XXX_GET_INFO, delete flag field for
+   DFL_FPGA_FME/PORT_XXX_SET_IRQ param
 
-diff --git a/drivers/fpga/dfl-fme-error.c b/drivers/fpga/dfl-fme-error.c
-index f897d41..df5e7b8 100644
---- a/drivers/fpga/dfl-fme-error.c
-+++ b/drivers/fpga/dfl-fme-error.c
-@@ -16,6 +16,7 @@
-  */
- 
- #include <linux/uaccess.h>
-+#include <linux/fpga-dfl.h>
- 
- #include "dfl.h"
- #include "dfl-fme.h"
-@@ -348,6 +349,75 @@ static void fme_global_err_uinit(struct platform_device *pdev,
- 	fme_err_mask(&pdev->dev, true);
- }
- 
-+static long
-+fme_global_err_get_info(struct platform_device *pdev,
-+			struct dfl_feature *feature, unsigned long arg)
-+{
-+	struct dfl_fpga_fme_err_info info;
-+
-+	info.flags = 0;
-+	info.capability = 0;
-+	info.num_irqs = feature->nr_irqs;
-+
-+	if (copy_to_user((void __user *)arg, &info, sizeof(info)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+static long
-+fme_global_err_set_irq(struct platform_device *pdev,
-+		       struct dfl_feature *feature, unsigned long arg)
-+{
-+	struct dfl_feature_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct dfl_fpga_irq_set hdr;
-+	s32 *fds;
-+	long ret;
-+
-+	if (!feature->nr_irqs)
-+		return -ENOENT;
-+
-+	if (copy_from_user(&hdr, (void __user *)arg, sizeof(hdr)))
-+		return -EFAULT;
-+
-+	if (hdr.flags || (hdr.start + hdr.count > feature->nr_irqs) ||
-+	    (hdr.start + hdr.count < hdr.start) || !hdr.count)
-+		return -EINVAL;
-+
-+	fds = memdup_user((void __user *)(arg + sizeof(hdr)),
-+			  hdr.count * sizeof(s32));
-+	if (IS_ERR(fds))
-+		return PTR_ERR(fds);
-+
-+	mutex_lock(&pdata->lock);
-+	ret = dfl_fpga_set_irq_triggers(feature, hdr.start, hdr.count, fds);
-+	mutex_unlock(&pdata->lock);
-+
-+	kfree(fds);
-+	return ret;
-+}
-+
-+static long
-+fme_global_error_ioctl(struct platform_device *pdev,
-+		       struct dfl_feature *feature,
-+		       unsigned int cmd, unsigned long arg)
-+{
-+	long ret = -ENODEV;
-+
-+	switch (cmd) {
-+	case DFL_FPGA_FME_ERR_GET_INFO:
-+		ret = fme_global_err_get_info(pdev, feature, arg);
-+		break;
-+	case DFL_FPGA_FME_ERR_SET_IRQ:
-+		ret = fme_global_err_set_irq(pdev, feature, arg);
-+		break;
-+	default:
-+		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
-+	}
-+
-+	return ret;
-+}
-+
- const struct dfl_feature_id fme_global_err_id_table[] = {
- 	{.id = FME_FEATURE_ID_GLOBAL_ERR,},
- 	{0,}
-@@ -356,4 +426,5 @@ const struct dfl_feature_id fme_global_err_id_table[] = {
- const struct dfl_feature_ops fme_global_err_ops = {
- 	.init = fme_global_err_init,
- 	.uinit = fme_global_err_uinit,
-+	.ioctl = fme_global_error_ioctl,
- };
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 56d720c..ab3722d 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -616,11 +616,17 @@ static int fme_release(struct inode *inode, struct file *filp)
- {
- 	struct dfl_feature_platform_data *pdata = filp->private_data;
- 	struct platform_device *pdev = pdata->dev;
-+	struct dfl_feature *feature;
- 
- 	dev_dbg(&pdev->dev, "Device File Release\n");
- 
- 	mutex_lock(&pdata->lock);
- 	dfl_feature_dev_use_end(pdata);
-+
-+	if (!dfl_feature_dev_use_count(pdata))
-+		dfl_fpga_dev_for_each_feature(pdata, feature)
-+			dfl_fpga_set_irq_triggers(feature, 0,
-+						  feature->nr_irqs, NULL);
- 	mutex_unlock(&pdata->lock);
- 
- 	return 0;
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-index 846fc91..c212fa9 100644
---- a/include/uapi/linux/fpga-dfl.h
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -228,4 +228,31 @@ struct dfl_fpga_fme_port_pr {
-  */
- #define DFL_FPGA_FME_PORT_ASSIGN     _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 2, int)
- 
-+/**
-+ * DFL_FPGA_FME_ERR_GET_INFO - _IOR(DFL_FPGA_MAGIC, DFL_FME_BASE + 3,
-+ *						struct dfl_fpga_fme_err_info)
-+ *
-+ * Retrieve information about the fpga fme error reporting private feature.
-+ * Driver fills the info in provided struct dfl_fpga_fme_err_info.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+struct dfl_fpga_fme_err_info {
-+	/* Output */
-+	__u32 flags;		/* Zero for now */
-+	__u32 capability;	/* The capability of fme err */
-+	__u32 num_irqs;		/* number of irqs fme err supports */
-+};
-+
-+#define DFL_FPGA_FME_ERR_GET_INFO	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 3)
-+
-+/**
-+ * DFL_FPGA_FME_ERR_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 4,
-+ *						struct dfl_fpga_irq_set)
-+ *
-+ * Set fpga fme error reporting interrupt trigger if evtfds[n] is valid.
-+ * Unset related interrupt trigger if evtfds[n] is a negative value.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+#define DFL_FPGA_FME_ERR_SET_IRQ	_IO(DFL_FPGA_MAGIC, DFL_FME_BASE + 4)
-+
- #endif /* _UAPI_LINUX_FPGA_DFL_H */
+Main changes from v2:
+ - put parse_feature_irqs() inside create_feature_instance().
+ - refines code for dfl_fpga_set_irq_triggers, delete local variable j.
+ - put_user() instead of copy_to_user() for DFL_FPGA_XXX_GET_IRQ_NUM IOCTL
+
+Xu Yilun (7):
+  fpga: dfl: parse interrupt info for feature devices on enumeration
+  fpga: dfl: pci: add irq info for feature devices enumeration
+  fpga: dfl: introduce interrupt trigger setting API
+  fpga: dfl: afu: add interrupt support for error reporting
+  fpga: dfl: fme: add interrupt support for global error reporting
+  fpga: dfl: afu: add user interrupt support
+  Documentation: fpga: dfl: add descriptions for interrupt related
+    interfaces.
+
+ Documentation/fpga/dfl.rst    |  17 +++
+ drivers/fpga/dfl-afu-error.c  |  60 +++++++++++
+ drivers/fpga/dfl-afu-main.c   |  74 +++++++++++++
+ drivers/fpga/dfl-fme-error.c  |  62 +++++++++++
+ drivers/fpga/dfl-fme-main.c   |   6 ++
+ drivers/fpga/dfl-pci.c        |  76 +++++++++++--
+ drivers/fpga/dfl.c            | 245 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/fpga/dfl.h            |  51 +++++++++
+ include/uapi/linux/fpga-dfl.h |  75 +++++++++++++
+ 9 files changed, 657 insertions(+), 9 deletions(-)
+
 -- 
 2.7.4
