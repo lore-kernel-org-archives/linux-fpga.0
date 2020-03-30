@@ -1,80 +1,42 @@
-Date: Fri, 27 Mar 2020 09:30:01 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [GIT PULL] FPGA Manager changes for 5.7
-Message-ID: <20200327162944.GA4118@epycbox.lan>
+Return-Path: <SRS0=TnrP=5P=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=TnrP=5P=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:49056 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727874AbgC3OPJ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 30 Mar 2020 10:15:09 -0400
+Date: Mon, 30 Mar 2020 16:15:06 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [GIT PULL] FPGA Manager changes for 5.7
+Message-ID: <20200330141506.GA438143@kroah.com>
+References: <20200327162944.GA4118@epycbox.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-To: gregkh@linuxfoundation.org
+In-Reply-To: <20200327162944.GA4118@epycbox.lan>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Moritz Fischer <mdf@kernel.org>
 Cc: moritzf@google.com, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
 
-The following changes since commit bb6d3fb354c5ee8d6bde2d576eb7220ea09862b9:
+On Fri, Mar 27, 2020 at 09:29:44AM -0700, Moritz Fischer wrote:
+> The following changes since commit bb6d3fb354c5ee8d6bde2d576eb7220ea09862b9:
+> 
+>   Linux 5.6-rc1 (2020-02-09 16:08:48 -0800)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git/ tags/fpga-for-5.7
+> 
+> for you to fetch changes up to 3d5a5417ad064a6ca64a33f0c554d917311c79f4:
+> 
+>   fpga: dfl: afu: support debug access to memory-mapped afu regions (2020-03-21 13:14:30 -0700)
 
-  Linux 5.6-rc1 (2020-02-09 16:08:48 -0800)
+This is too late for 5.7-rc1 as stuff needed to be in my tree last week
+(and not Friday), to give it time to test in linux-next.
 
-are available in the Git repository at:
+Care to break this up into two trees, stuff for 5.7-final with bugfixes,
+and stuff for 5.8-rc1?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git/ tags/fpga-for-5.7
+thanks,
 
-for you to fetch changes up to 3d5a5417ad064a6ca64a33f0c554d917311c79f4:
-
-  fpga: dfl: afu: support debug access to memory-mapped afu regions (2020-03-21 13:14:30 -0700)
-
-----------------------------------------------------------------
-FPGA Manager changes for 5.7
-
-Here's the first set of changes for the 5.7-rc1 merge window.
-
-Dominic's change adds support for accessing AFU regions with gdb.
-Gustavo's change is a cleanup patch regarding variable lenght arrays.
-Richard's changes update dt-bindings and add support for stratix and agilex.
-Sergiu's changes update spi transfers with the new delay field.
-Xu's change addresses an issue with a wrong return value.
-Shubhrajyoti's change makes the Zynq FPGA driver return -EPROBE_DEFER on
-check of devm_clk_get failure.
-Xu's change for DFL enables multiple opens.
-
-All of these patches have been reviewed, have appropriate Acked-by's and
-have been in the last few linux-next releases without issues.
-
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-
-----------------------------------------------------------------
-Dominic Chen (1):
-      fpga: dfl: afu: support debug access to memory-mapped afu regions
-
-Gustavo A. R. Silva (1):
-      fpga: dfl.h: Replace zero-length array with flexible-array member
-
-Richard Gong (5):
-      dt-bindings: fpga: add compatible value to Stratix10 SoC FPGA manager binding
-      arm64: dts: agilex: correct FPGA manager driver's compatible value
-      fpga: stratix10-soc: add compatible property value for intel agilex
-      dt-bindings, firmware: add compatible value Intel Stratix10 service layer binding
-      arm64: dts: agilex: correct service layer driver's compatible value
-
-Sergiu Cuciurean (2):
-      fpga: ice40-spi: Use new structure for SPI transfer delays
-      fpga: machxo2-spi: Use new structure for SPI transfer delays
-
-Shubhrajyoti Datta (1):
-      fpga: zynq: Remove clk_get error message for probe defer
-
-Xu Yilun (2):
-      fpga: dfl: support multiple opens on feature device node.
-      fpga: dfl: pci: fix return value of cci_pci_sriov_configure
-
- .../bindings/firmware/intel,stratix10-svc.txt      |  2 +-
- .../bindings/fpga/intel-stratix10-soc-fpga-mgr.txt |  3 +-
- arch/arm64/boot/dts/intel/socfpga_agilex.dtsi      |  4 +--
- drivers/fpga/dfl-afu-main.c                        | 35 +++++++++++++-------
- drivers/fpga/dfl-fme-main.c                        | 19 +++++++----
- drivers/fpga/dfl-pci.c                             |  6 ++--
- drivers/fpga/dfl.c                                 | 15 +++++++--
- drivers/fpga/dfl.h                                 | 37 ++++++++++++++++------
- drivers/fpga/ice40-spi.c                           | 10 ++++--
- drivers/fpga/machxo2-spi.c                         | 12 ++++---
- drivers/fpga/stratix10-soc.c                       |  3 +-
- drivers/fpga/zynq-fpga.c                           |  3 +-
- 12 files changed, 106 insertions(+), 43 deletions(-)
+greg k-h
