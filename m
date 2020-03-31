@@ -1,67 +1,47 @@
-Return-Path: <SRS0=Gio0=5B=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=Gio0=5B=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga12.intel.com ([192.55.52.136]:63079 "EHLO mga12.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728940AbgCPETN (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 16 Mar 2020 00:19:13 -0400
-From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH v2 0/7] Add interrupt support to FPGA DFL drivers
-Date: Mon, 16 Mar 2020 12:16:55 +0800
-Message-Id: <1584332222-26652-1-git-send-email-yilun.xu@intel.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Xu Yilun <yilun.xu@intel.com>
+Date: Mon, 30 Mar 2020 20:55:02 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: [GIT PULL] FPGA Manager (late) fixes for 5.7
+Message-ID: <20200331035459.GA3472@epycbox.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+To: gregkh@linuxfoundation.org
+Cc: moritzf@google.com, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-This patchset add interrupt support to FPGA DFL drivers.
+The following changes since commit bb6d3fb354c5ee8d6bde2d576eb7220ea09862b9:
 
-With these patches, DFL driver will parse and assign interrupt resources
-for enumerated feature devices and their sub features.
+  Linux 5.6-rc1 (2020-02-09 16:08:48 -0800)
 
-This patchset also introduces a set of APIs for user to monitor DFL
-interrupts. Three sub features (DFL FME error, DFL AFU error and user
-interrupt) drivers now support these APIs.
+are available in the Git repository at:
 
-Patch #1: DFL framework change. Accept interrupt info input from DFL bus
-          driver, and add interrupt parsing and assignment for feature
-          sub devices.
-Patch #2: DFL pci driver change, add interrupt info on DFL enumeration.
-Patch #3: DFL framework change. Add helper functions for feature sub
-          device drivers to handle interrupt and notify users.
-Patch #4: Add interrupt support for AFU error reporting sub feature.
-Patch #5: Add interrupt support for FME global error reporting sub
-          feature.
-Patch #6: Add interrupt support for a new sub feature, to handle user
-          interrupts implemented in AFU.
-Patch #7: Documentation for DFL interrupt handling.
+  git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git/ fpga-fixes-for-5.7
 
-Main changes from v1:
- - Early validating irq table for each feature in parse_feature_irq()
-   in Patch #1.
- - Changes IOCTL interfaces. use DFL_FPGA_FME/PORT_XXX_GET_IRQ_NUM
-   instead of DFL_FPGA_FME/PORT_XXX_GET_INFO, delete flag field for
-   DFL_FPGA_FME/PORT_XXX_SET_IRQ param
+for you to fetch changes up to 3c2760b78f90db874401d97e3c17829e2e36f400:
 
-Xu Yilun (7):
-  fpga: dfl: parse interrupt info for feature devices on enumeration
-  fpga: dfl: pci: add irq info for feature devices enumeration
-  fpga: dfl: introduce interrupt trigger setting API
-  fpga: dfl: afu: add interrupt support for error reporting
-  fpga: dfl: fme: add interrupt support for global error reporting
-  fpga: dfl: afu: add user interrupt support
-  Documentation: fpga: dfl: add descriptions for interrupt related
-    interfaces.
+  fpga: dfl: pci: fix return value of cci_pci_sriov_configure (2020-03-30 20:45:30 -0700)
 
- Documentation/fpga/dfl.rst    |  17 +++
- drivers/fpga/dfl-afu-error.c  |  64 +++++++++++
- drivers/fpga/dfl-afu-main.c   |  78 +++++++++++++
- drivers/fpga/dfl-fme-error.c  |  66 +++++++++++
- drivers/fpga/dfl-fme-main.c   |   6 +
- drivers/fpga/dfl-pci.c        |  78 +++++++++++--
- drivers/fpga/dfl.c            | 247 +++++++++++++++++++++++++++++++++++++++++-
- drivers/fpga/dfl.h            |  51 +++++++++
- include/uapi/linux/fpga-dfl.h |  75 +++++++++++++
- 9 files changed, 669 insertions(+), 13 deletions(-)
+----------------------------------------------------------------
+FPGA Manager fixes for 5.7-rc1
 
--- 
-2.7.4
+Here are two (late) fixes for 5.7-rc1 merge window.
+
+Xu's change addresses an issue with a wrong return value.
+
+Shubhrajyoti's change makes the Zynq FPGA driver return -EPROBE_DEFER on
+
+All patches have been reviewed on the mailing list, and have been in the
+last few linux-next releases (as part of my for-next branch) without issues.
+
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+
+----------------------------------------------------------------
+Shubhrajyoti Datta (1):
+      fpga: zynq: Remove clk_get error message for probe defer
+
+Xu Yilun (1):
+      fpga: dfl: pci: fix return value of cci_pci_sriov_configure
+
+ drivers/fpga/dfl-pci.c   | 6 ++++--
+ drivers/fpga/zynq-fpga.c | 3 ++-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
