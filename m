@@ -1,68 +1,72 @@
-Return-Path: <SRS0=Vslg=6L=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=Vslg=6L=intel.com=hao.wu@kernel.org>
-From: Wu Hao <hao.wu@intel.com>
-Subject: [PATCH v10 0/2] add performance reporting support to FPGA DFL drivers
-Date: Mon, 27 Apr 2020 09:06:21 +0800
-Message-Id: <1587949583-12058-1-git-send-email-hao.wu@intel.com>
-To: will@kernel.org, mdf@kernel.org, mark.rutland@arm.com, gregkh@linuxfoundation.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, atull@kernel.org, yilun.xu@intel.com, trix@redhat.com, bhu@redhat.com, rdunlap@infradead.org, Wu Hao <hao.wu@intel.com>
+Return-Path: <SRS0=ovGI=57=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=ovGI=57=intel.com=yilun.xu@kernel.org>
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: [PATCH v4 7/7] Documentation: fpga: dfl: add descriptions for interrupt related interfaces.
+Date: Wed, 15 Apr 2020 18:07:35 +0800
+Message-Id: <1586945255-30823-8-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <1586945255-30823-1-git-send-email-yilun.xu@intel.com>
+References: <1586945255-30823-1-git-send-email-yilun.xu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: trix@redhat.com, bhu@redhat.com, Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi all,
+This patch adds introductions of interrupt related interfaces for FME
+error reporting, port error reporting and AFU user interrupts features.
 
-This patchset adds performance reporting support for FPGA DFL drivers. It
-introduces one pmu to expose userspace interfaces via standard perf API.
-User could use standard perf tool to access perf events exposed via pmu.
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+----
+v2: Update Documents cause change of irq ioctl interfaces.
+v3: No change
+v4: Update interrupt support part.
+---
+ Documentation/fpga/dfl.rst | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-
-Main changes from v9:
- - fix Randy's comments on documentation in patch #1.
-
-Main changes from v8:
- - rebase against 5.7-rc1.
-
-Main changes from v7:
- - rename pmu name from "fme%d" to "dfl_fme%d".
- - monitor cpu hotplug for cpumask sysfs and update cpumask sysfs doc.
- - add extra read for 64bit counter registers to avoid 2-32bit readl issue.
-
-Main changes from v6:
- - add a new ABI/testing/ sysfs documentation in patch #2.
- - fix a warning reported by kbuild in patch #2.
-
-Main changes from v5:
- - use dev_ext_attribute instead of fme_perf_event_attr.
- - use is_visible function to decide which events to expose per
-   hardware capability, and add event_init checking for all events.
-
-Main changes from v4:
- - rebase and clean up.
- - update Kconfig for PERF_EVENTS dependency.
-
-Main changes from v3:
- - add more descriptions in doc, including how to use perf tool for these
-   hardware counters. (patch #1)
- - use standard perf API instead of sysfs entries. (patch #2)
-
-
-Wu Hao (1):
-  fpga: dfl: fme: add performance reporting support
-
-Xu Yilun (1):
-  Documentation: fpga: dfl: add description for performance reporting
-    support
-
- .../testing/sysfs-bus-event_source-devices-dfl_fme |  104 ++
- Documentation/fpga/dfl.rst                         |   84 ++
- drivers/fpga/Kconfig                               |    2 +-
- drivers/fpga/Makefile                              |    1 +
- drivers/fpga/dfl-fme-main.c                        |    4 +
- drivers/fpga/dfl-fme-perf.c                        | 1020 ++++++++++++++++++++
- drivers/fpga/dfl-fme.h                             |    2 +
- drivers/fpga/dfl.h                                 |    2 +
- 8 files changed, 1218 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-dfl_fme
- create mode 100644 drivers/fpga/dfl-fme-perf.c
-
+diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+index 094fc8a..702bf62 100644
+--- a/Documentation/fpga/dfl.rst
++++ b/Documentation/fpga/dfl.rst
+@@ -89,6 +89,8 @@ The following functions are exposed through ioctls:
+ - Program bitstream (DFL_FPGA_FME_PORT_PR)
+ - Assign port to PF (DFL_FPGA_FME_PORT_ASSIGN)
+ - Release port from PF (DFL_FPGA_FME_PORT_RELEASE)
++- Get number of irqs of FME global error (DFL_FPGA_FME_ERR_GET_IRQ_NUM)
++- Set interrupt trigger for FME error (DFL_FPGA_FME_ERR_SET_IRQ)
+ 
+ More functions are exposed through sysfs
+ (/sys/class/fpga_region/regionX/dfl-fme.n/):
+@@ -144,6 +146,10 @@ The following functions are exposed through ioctls:
+ - Map DMA buffer (DFL_FPGA_PORT_DMA_MAP)
+ - Unmap DMA buffer (DFL_FPGA_PORT_DMA_UNMAP)
+ - Reset AFU (DFL_FPGA_PORT_RESET)
++- Get number of irqs of port error (DFL_FPGA_PORT_ERR_GET_IRQ_NUM)
++- Set interrupt trigger for port error (DFL_FPGA_PORT_ERR_SET_IRQ)
++- Get number of irqs of UINT (DFL_FPGA_PORT_UINT_GET_IRQ_NUM)
++- Set interrupt trigger for UINT (DFL_FPGA_PORT_UINT_SET_IRQ)
+ 
+ DFL_FPGA_PORT_RESET:
+   reset the FPGA Port and its AFU. Userspace can do Port
+@@ -378,6 +384,19 @@ The device nodes used for ioctl() or mmap() can be referenced through::
+ 	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
+ 
+ 
++Interrupt support
++=================
++Some FME and AFU private features are able to generate interrupts. As mentioned
++above, users could call ioctl (DFL_FPGA_*_GET_IRQ_NUM) to know whether or how
++many interrupts are supported for this private feature. Drivers also implement
++an eventfd based interrupt handling mechanism for users to get notified when
++interrupt happens. Users could set eventfds to driver via
++ioctl (DFL_FPGA_*_SET_IRQ), and then poll/select on these eventfds waiting for
++notification.
++In Current DFL, 3 sub features (Port error, FME global error and AFU interrupt)
++support interrupts.
++
++
+ Add new FIUs support
+ ====================
+ It's possible that developers made some new function blocks (FIUs) under this
 -- 
-1.8.3.1
+2.7.4
