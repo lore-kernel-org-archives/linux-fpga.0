@@ -1,124 +1,147 @@
-Return-Path: <SRS0=irTU=6E=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=irTU=6E=intel.com=hao.wu@kernel.org>
-From: "Wu, Hao" <hao.wu@intel.com>
-Subject: RE: [PATCH v9 1/2] Documentation: fpga: dfl: add description for
+Return-Path: <SRS0=ClbJ=6C=infradead.org=rdunlap@kernel.org>
+Return-Path: <SRS0=ClbJ=6C=infradead.org=rdunlap@kernel.org>
+Subject: Re: [PATCH v9 1/2] Documentation: fpga: dfl: add description for
  performance reporting support
-Date: Mon, 20 Apr 2020 09:38:21 +0000
-Message-ID: <DM6PR11MB3819F027E924AFEB3199165485D40@DM6PR11MB3819.namprd11.prod.outlook.com>
 References: <1587102000-18262-1-git-send-email-hao.wu@intel.com>
  <1587102000-18262-2-git-send-email-hao.wu@intel.com>
- <8aa60f7e-68d4-ca41-403f-37f430ce05c1@infradead.org>
-In-Reply-To: <8aa60f7e-68d4-ca41-403f-37f430ce05c1@infradead.org>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <8aa60f7e-68d4-ca41-403f-37f430ce05c1@infradead.org>
+Date: Fri, 17 Apr 2020 17:07:41 -0700
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@infradead.org>, "will@kernel.org" <will@kernel.org>, "mdf@kernel.org" <mdf@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, "atull@kernel.org" <atull@kernel.org>, "Xu, Yilun" <yilun.xu@intel.com>, "trix@redhat.com" <trix@redhat.com>, "bhu@redhat.com" <bhu@redhat.com>
+In-Reply-To: <1587102000-18262-2-git-send-email-hao.wu@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Wu Hao <hao.wu@intel.com>, will@kernel.org, mdf@kernel.org, mark.rutland@arm.com, gregkh@linuxfoundation.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, atull@kernel.org, yilun.xu@intel.com, trix@redhat.com, bhu@redhat.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1mcGdhLW93bmVyQHZn
-ZXIua2VybmVsLm9yZyA8bGludXgtZnBnYS1vd25lckB2Z2VyLmtlcm5lbC5vcmc+DQo+IE9uIEJl
-aGFsZiBPZiBSYW5keSBEdW5sYXANCj4gU2VudDogU2F0dXJkYXksIEFwcmlsIDE4LCAyMDIwIDg6
-MDggQU0NCj4gVG86IFd1LCBIYW8gPGhhby53dUBpbnRlbC5jb20+OyB3aWxsQGtlcm5lbC5vcmc7
-IG1kZkBrZXJuZWwub3JnOw0KPiBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsgZ3JlZ2toQGxpbnV4Zm91
-bmRhdGlvbi5vcmc7IGxpbnV4LQ0KPiBmcGdhQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVs
-QHZnZXIua2VybmVsLm9yZw0KPiBDYzogbGludXgtYXBpQHZnZXIua2VybmVsLm9yZzsgYXR1bGxA
-a2VybmVsLm9yZzsgWHUsIFlpbHVuDQo+IDx5aWx1bi54dUBpbnRlbC5jb20+OyB0cml4QHJlZGhh
-dC5jb207IGJodUByZWRoYXQuY29tDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjkgMS8yXSBEb2N1
-bWVudGF0aW9uOiBmcGdhOiBkZmw6IGFkZCBkZXNjcmlwdGlvbiBmb3INCj4gcGVyZm9ybWFuY2Ug
-cmVwb3J0aW5nIHN1cHBvcnQNCj4gDQo+IEhpLS0NCj4gDQo+IEhlcmUgYXJlIGEgZmV3IGNvbW1l
-bnRzIGZvciB5b3U6DQoNClRoYW5rcyBhIGxvdCBmb3IgdGhlIGNvbW1lbnRzLCB3aWxsIGZpeCBh
-bGwgb2YgdGhlbSBpbiB0aGUgbmV4dCB2ZXJzaW9uLiA6ICkNCg0KSGFvDQoNCg0KPiANCj4gT24g
-NC8xNi8yMCAxMDozOSBQTSwgV3UgSGFvIHdyb3RlOg0KPiA+IEZyb206IFh1IFlpbHVuIDx5aWx1
-bi54dUBpbnRlbC5jb20+DQo+ID4NCj4gPiBUaGlzIHBhdGNoIGFkZHMgZGVzY3JpcHRpb24gZm9y
-IHBlcmZvcm1hbmNlIHJlcG9ydGluZyBzdXBwb3J0IGZvcg0KPiA+IERldmljZSBGZWF0dXJlIExp
-c3QgKERGTCkgYmFzZWQgRlBHQS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFh1IFlpbHVuIDx5
-aWx1bi54dUBpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogV3UgSGFvIDxoYW8ud3VAaW50
-ZWwuY29tPg0KPiA+IC0tLQ0KPiA+ICBEb2N1bWVudGF0aW9uL2ZwZ2EvZGZsLnJzdCB8IDg0DQo+
-ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMSBm
-aWxlIGNoYW5nZWQsIDg0IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1
-bWVudGF0aW9uL2ZwZ2EvZGZsLnJzdCBiL0RvY3VtZW50YXRpb24vZnBnYS9kZmwucnN0DQo+ID4g
-aW5kZXggMDk0ZmM4YS4uNmNjYWY3NyAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2Zw
-Z2EvZGZsLnJzdA0KPiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZnBnYS9kZmwucnN0DQo+IA0KPiA+
-IEBAIC0zNzgsNiArMzgzLDg1IEBAIFRoZSBkZXZpY2Ugbm9kZXMgdXNlZCBmb3IgaW9jdGwoKSBv
-ciBtbWFwKCkgY2FuDQo+IGJlIHJlZmVyZW5jZWQgdGhyb3VnaDo6DQo+ID4gIAkvc3lzL2NsYXNz
-L2ZwZ2FfcmVnaW9uLzxyZWdpb25YPi88ZGZsLXBvcnQubj4vZGV2DQo+ID4NCj4gPg0KPiA+ICtQ
-ZXJmb3JtYW5jZSBDb3VudGVycw0KPiA+ICs9PT09PT09PT09PT09PT09PT09PQ0KPiA+ICtQZXJm
-b3JtYW5jZSByZXBvcnRpbmcgaXMgb25lIHByaXZhdGUgZmVhdHVyZSBpbXBsZW1lbnRlZCBpbiBG
-TUUuIEl0DQo+IGNvdWxkDQo+ID4gK3N1cHBvcnRzIHNldmVyYWwgaW5kZXBlbmRlbnQsIHN5c3Rl
-bS13aWRlLCBkZXZpY2UgY291bnRlciBzZXRzIGluDQo+IGhhcmR3YXJlIHRvDQo+ID4gK21vbml0
-b3IgYW5kIGNvdW50IGZvciBwZXJmb3JtYW5jZSBldmVudHMsIGluY2x1ZGluZyAiYmFzaWMiLCAi
-Y2FjaGUiLA0KPiAiZmFicmljIiwNCj4gPiArInZ0ZCIgYW5kICJ2dGRfc2lwIiBjb3VudGVycy4g
-VXNlcnMgY291bGQgdXNlIHN0YW5kYXJkIHBlcmYgdG9vbCB0bw0KPiBtb25pdG9yDQo+ID4gK0ZQ
-R0EgY2FjaGUgaGl0L21pc3MgcmF0ZSwgdHJhbnNhY3Rpb24gbnVtYmVyLCBpbnRlcmZhY2UgY2xv
-Y2sgY291bnRlciBvZg0KPiBBRlUNCj4gPiArYW5kIG90aGVyIEZQR0EgcGVyZm9ybWFuY2UgZXZl
-bnRzLg0KPiA+ICsNCj4gPiArRGlmZmVyZW50IEZQR0EgZGV2aWNlcyBtYXkgaGF2ZSBkaWZmZXJl
-bnQgY291bnRlciBzZXRzLCBpdCBkZXBlbmRzIG9uDQo+IGhhcmR3YXJlDQo+IA0KPiAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNldHMsIGRlcGVu
-ZGluZyBvbiBoYXJkd2FyZQ0KPiANCj4gPiAraW1wbGVtZW50YXRpb24uIGUuZy4gc29tZSBkaXNj
-cmV0ZSBGUEdBIGNhcmRzIGRvbid0IGhhdmUgYW55IGNhY2hlLg0KPiBVc2VyIGNvdWxkDQo+IA0K
-PiAgICAgICAgICAgICAgICAgICAgRS5nLiwgc29tZQ0KPiANCj4gPiArdXNlICJwZXJmIGxpc3Qi
-IHRvIGNoZWNrIHdoaWNoIHBlcmYgZXZlbnRzIGFyZSBzdXBwb3J0ZWQgYnkgdGFyZ2V0DQo+IGhh
-cmR3YXJlLg0KPiA+ICsNCj4gPiArSW4gb3JkZXIgdG8gYWxsb3cgdXNlciB0byB1c2Ugc3RhbmRh
-cmQgcGVyZiBBUEkgdG8gYWNjZXNzIHRoZXNlDQo+IHBlcmZvcm1hbmNlDQo+ID4gK2NvdW50ZXJz
-LCBkcml2ZXIgY3JlYXRlcyBhIHBlcmYgUE1VLCBhbmQgcmVsYXRlZCBzeXNmcyBpbnRlcmZhY2Vz
-IGluDQo+ID4gKy9zeXMvYnVzL2V2ZW50X3NvdXJjZS9kZXZpY2VzL2RmbF9mbWUqIHRvIGRlc2Ny
-aWJlIGF2YWlsYWJsZSBwZXJmIGV2ZW50cw0KPiBhbmQNCj4gPiArY29uZmlndXJhdGlvbiBvcHRp
-b25zLg0KPiA+ICsNCj4gPiArVGhlICJmb3JtYXQiIGRpcmVjdG9yeSBkZXNjcmliZXMgdGhlIGZv
-cm1hdCBvZiB0aGUgY29uZmlnIGZpZWxkIG9mIHN0cnVjdA0KPiA+ICtwZXJmX2V2ZW50X2F0dHIu
-IFRoZXJlIGFyZSAzIGJpdGZpZWxkcyBmb3IgY29uZmlnLCAiZXZ0eXBlIiBkZWZpbmVzIHdoaWNo
-DQo+IHR5cGUNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICBjb25maWc6ICJldnR5cGUiDQo+IA0KPiA+ICt0aGUgcGVyZiBldmVudCBiZWxvbmdzIHRv
-LiAiZXZlbnQiIGlzIHRoZSBpZGVudGl0eSBvZiB0aGUgZXZlbnQgd2l0aGluIGl0cw0KPiANCj4g
-ICAgICAgICAgICAgICAgICAgYmVsb25ncyB0bzsgImV2ZW50IiBpcw0KPiANCj4gPiArY2F0ZWdv
-cnkuICJwb3J0aWQiIGlzIGludHJvZHVjZWQgdG8gZGVjaWRlIGNvdW50ZXJzIHNldCB0byBtb25p
-dG9yIG9uIEZQR0ENCj4gDQo+ICAgIGNhdGVnb3J5OyAicG9ydGlkIiBpcw0KPiANCj4gPiArb3Zl
-cmFsbCBkYXRhIG9yIGEgc3BlY2lmaWMgcG9ydC4NCj4gPiArDQo+ID4gK1RoZSAiZXZlbnRzIiBk
-aXJlY3RvcnkgZGVzY3JpYmVzIHRoZSBjb25maWd1cmF0aW9uIHRlbXBsYXRlcyBmb3IgYWxsDQo+
-IGF2YWlsYWJsZQ0KPiA+ICtldmVudHMgd2hpY2ggY2FuIGJlIHVzZWQgd2l0aCBwZXJmIHRvb2wg
-ZGlyZWN0bHkuIEZvciBleGFtcGxlLA0KPiBmYWJfbW1pb19yZWFkDQo+ID4gK2hhcyB0aGUgY29u
-ZmlndXJhdGlvbiAiZXZlbnQ9MHgwNixldnR5cGU9MHgwMixwb3J0aWQ9MHhmZiIsIHdoaWNoDQo+
-IHNob3dzIHRoaXMNCj4gPiArZXZlbnQgYmVsb25ncyB0byBmYWJyaWMgdHlwZSAoMHgwMiksIHRo
-ZSBsb2NhbCBldmVudCBpZCBpcyAweDA2IGFuZCBpdCBpcyBmb3INCj4gPiArb3ZlcmFsbCBtb25p
-dG9yaW5nIChwb3J0aWQ9MHhmZikuDQo+ID4gKw0KPiA+ICtFeGFtcGxlIHVzYWdlIG9mIHBlcmY6
-Og0KPiA+ICsNCj4gPiArICAkIyBwZXJmIGxpc3QgfGdyZXAgZGZsX2ZtZQ0KPiA+ICsNCj4gPiAr
-ICBkZmxfZm1lMC9mYWJfbW1pb19yZWFkLyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFtL
-ZXJuZWwgUE1VIGV2ZW50XQ0KPiA+ICsgIDwuLi4+DQo+ID4gKyAgZGZsX2ZtZTAvZmFiX3BvcnRf
-bW1pb19yZWFkLHBvcnRpZD0/LyAgICAgICAgICAgICAgICBbS2VybmVsIFBNVSBldmVudF0NCj4g
-PiArICA8Li4uPg0KPiA+ICsNCj4gPiArICAkIyBwZXJmIHN0YXQgLWEgLWUgZGZsX2ZtZTAvZmFi
-X21taW9fcmVhZC8gPGNvbW1hbmQ+DQo+ID4gKyAgb3INCj4gPiArICAkIyBwZXJmIHN0YXQgLWEg
-LWUgZGZsX2ZtZTAvZXZlbnQ9MHgwNixldnR5cGU9MHgwMixwb3J0aWQ9MHhmZi8NCj4gPGNvbW1h
-bmQ+DQo+ID4gKyAgb3INCj4gPiArICAkIyBwZXJmIHN0YXQgLWEgLWUgZGZsX2ZtZTAvY29uZmln
-PTB4ZmYyMDA2LyA8Y29tbWFuZD4NCj4gPiArDQo+ID4gK0Fub3RoZXIgZXhhbXBsZSwgZmFiX3Bv
-cnRfbW1pb19yZWFkIG1vbml0b3JzIG1taW8gcmVhZCBvZiBhIHNwZWNpZmljDQo+IHBvcnQuIFNv
-DQo+ID4gK2l0cyBjb25maWd1cmF0aW9uIHRlbXBsYXRlIGlzICJldmVudD0weDA2LGV2dHlwZT0w
-eDAxLHBvcnRpZD0/Ii4gVGhlDQo+IHBvcnRpZA0KPiA+ICtzaG91bGQgYmUgZXhwbGljaXRseSBz
-ZXQuDQo+ID4gKw0KPiA+ICtJdHMgdXNhZ2Ugb2YgcGVyZjo6DQo+ID4gKw0KPiA+ICsgICQjIHBl
-cmYgc3RhdCAtYSAtZSBkZmxfZm1lMC9mYWJfcG9ydF9tbWlvX3JlYWQscG9ydGlkPTB4MC8gPGNv
-bW1hbmQ+DQo+ID4gKyAgb3INCj4gPiArICAkIyBwZXJmIHN0YXQgLWEgLWUgZGZsX2ZtZTAvZXZl
-bnQ9MHgwNixldnR5cGU9MHgwMixwb3J0aWQ9MHgwLw0KPiA8Y29tbWFuZD4NCj4gPiArICBvcg0K
-PiA+ICsgICQjIHBlcmYgc3RhdCAtYSAtZSBkZmxfZm1lMC9jb25maWc9MHgyMDA2LyA8Y29tbWFu
-ZD4NCj4gPiArDQo+ID4gK1BsZWFzZSBub3RlIGZvciBmYWJyaWMgY291bnRlcnMsIG92ZXJhbGwg
-cGVyZiBldmVudHMgKGZhYl8qKSBhbmQgcG9ydCBwZXJmDQo+ID4gK2V2ZW50cyAoZmFiX3BvcnRf
-KikgYWN0dWFsbHkgc2hhcmUgb25lIHNldCBvZiBjb3VudGVycyBpbiBoYXJkd2FyZSwgc28gaXQN
-Cj4gY2FuJ3QNCj4gPiArbW9uaXRvciBib3RoIGF0IHRoZSBzYW1lIHRpbWUuIElmIHRoaXMgc2V0
-IG9mIGNvdW50ZXJzIGlzIGNvbmZpZ3VyZWQgdG8NCj4gbW9uaXRvcg0KPiA+ICtvdmVyYWxsIGRh
-dGEsIHRoZW4gcGVyIHBvcnQgcGVyZiBkYXRhIGlzIG5vdCBzdXBwb3J0ZWQuIFNlZSBiZWxvdyBl
-eGFtcGxlOjoNCj4gPiArDQo+ID4gKyAgJCMgcGVyZiBzdGF0IC1lDQo+IGRmbF9mbWUwL2ZhYl9t
-bWlvX3JlYWQvLGRmbF9mbWUwL2ZhYl9wb3J0X21taW9fd3JpdGUsXA0KPiA+ICsgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcG9ydGlkPTAvIHNsZWVw
-IDENCj4gPiArDQo+ID4gKyAgUGVyZm9ybWFuY2UgY291bnRlciBzdGF0cyBmb3IgJ3N5c3RlbSB3
-aWRlJzoNCj4gPiArDQo+ID4gKyAgICAgICAgICAgICAgICAgMyAgICAgIGRmbF9mbWUwL2ZhYl9t
-bWlvX3JlYWQvDQo+ID4gKyAgIDxub3Qgc3VwcG9ydGVkPiAgICAgIGRmbF9mbWUwL2ZhYl9wb3J0
-X21taW9fd3JpdGUscG9ydGlkPTB4MC8NCj4gPiArDQo+ID4gKyAgICAgICAxLjAwMTc1MDkwNCBz
-ZWNvbmRzIHRpbWUgZWxhcHNlZA0KPiA+ICsNCj4gPiArVGhlIGRyaXZlciBhbHNvIHByb3ZpZGVz
-IGEgImNwdW1hc2siIHN5c2ZzIGF0dHJpYnV0ZSwgd2hpY2ggY29udGFpbnMgb25seQ0KPiBvbmUN
-Cj4gPiArY3B1IGlkIHVzZWQgdG8gYWNjZXNzIHRoZXNlIHBlcmYgZXZlbnRzLiBDb3VudGluZyBv
-biBtdWx0aXBsZSBDUFVzIGlzIG5vdA0KPiAgICBDUFUNCj4gDQo+ID4gK2FsbG93ZWQgc2luY2Ug
-dGhleSBhcmUgc3lzdGVtLXdpZGUgY291bnRlcnMgb24gRlBHQSBkZXZpY2UuDQo+ID4gKw0KPiA+
-ICtUaGUgY3VycmVudCBkcml2ZXIgZG9lcyBub3Qgc3VwcG9ydCBzYW1wbGluZy4gU28gInBlcmYg
-cmVjb3JkIiBpcw0KPiB1bnN1cHBvcnRlZC4NCj4gPiArDQo+ID4gKw0KPiA+ICBBZGQgbmV3IEZJ
-VXMgc3VwcG9ydA0KPiA+ICA9PT09PT09PT09PT09PT09PT09PQ0KPiA+ICBJdCdzIHBvc3NpYmxl
-IHRoYXQgZGV2ZWxvcGVycyBtYWRlIHNvbWUgbmV3IGZ1bmN0aW9uIGJsb2NrcyAoRklVcykgdW5k
-ZXINCj4gdGhpcw0KPiA+DQo+IA0KPiB0aGFua3MuDQo+IC0tDQo+IH5SYW5keQ0KDQo=
+Hi--
+
+Here are a few comments for you:
+
+On 4/16/20 10:39 PM, Wu Hao wrote:
+> From: Xu Yilun <yilun.xu@intel.com>
+> 
+> This patch adds description for performance reporting support for
+> Device Feature List (DFL) based FPGA.
+> 
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> ---
+>  Documentation/fpga/dfl.rst | 84 ++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 84 insertions(+)
+> 
+> diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+> index 094fc8a..6ccaf77 100644
+> --- a/Documentation/fpga/dfl.rst
+> +++ b/Documentation/fpga/dfl.rst
+
+> @@ -378,6 +383,85 @@ The device nodes used for ioctl() or mmap() can be referenced through::
+>  	/sys/class/fpga_region/<regionX>/<dfl-port.n>/dev
+>  
+>  
+> +Performance Counters
+> +====================
+> +Performance reporting is one private feature implemented in FME. It could
+> +supports several independent, system-wide, device counter sets in hardware to
+> +monitor and count for performance events, including "basic", "cache", "fabric",
+> +"vtd" and "vtd_sip" counters. Users could use standard perf tool to monitor
+> +FPGA cache hit/miss rate, transaction number, interface clock counter of AFU
+> +and other FPGA performance events.
+> +
+> +Different FPGA devices may have different counter sets, it depends on hardware
+
+                                                     sets, depending on hardware
+
+> +implementation. e.g. some discrete FPGA cards don't have any cache. User could
+
+                   E.g., some
+
+> +use "perf list" to check which perf events are supported by target hardware.
+> +
+> +In order to allow user to use standard perf API to access these performance
+> +counters, driver creates a perf PMU, and related sysfs interfaces in
+> +/sys/bus/event_source/devices/dfl_fme* to describe available perf events and
+> +configuration options.
+> +
+> +The "format" directory describes the format of the config field of struct
+> +perf_event_attr. There are 3 bitfields for config, "evtype" defines which type
+
+                                              config: "evtype"
+
+> +the perf event belongs to. "event" is the identity of the event within its
+
+                  belongs to; "event" is
+
+> +category. "portid" is introduced to decide counters set to monitor on FPGA
+
+   category; "portid" is
+
+> +overall data or a specific port.
+> +
+> +The "events" directory describes the configuration templates for all available
+> +events which can be used with perf tool directly. For example, fab_mmio_read
+> +has the configuration "event=0x06,evtype=0x02,portid=0xff", which shows this
+> +event belongs to fabric type (0x02), the local event id is 0x06 and it is for
+> +overall monitoring (portid=0xff).
+> +
+> +Example usage of perf::
+> +
+> +  $# perf list |grep dfl_fme
+> +
+> +  dfl_fme0/fab_mmio_read/                              [Kernel PMU event]
+> +  <...>
+> +  dfl_fme0/fab_port_mmio_read,portid=?/                [Kernel PMU event]
+> +  <...>
+> +
+> +  $# perf stat -a -e dfl_fme0/fab_mmio_read/ <command>
+> +  or
+> +  $# perf stat -a -e dfl_fme0/event=0x06,evtype=0x02,portid=0xff/ <command>
+> +  or
+> +  $# perf stat -a -e dfl_fme0/config=0xff2006/ <command>
+> +
+> +Another example, fab_port_mmio_read monitors mmio read of a specific port. So
+> +its configuration template is "event=0x06,evtype=0x01,portid=?". The portid
+> +should be explicitly set.
+> +
+> +Its usage of perf::
+> +
+> +  $# perf stat -a -e dfl_fme0/fab_port_mmio_read,portid=0x0/ <command>
+> +  or
+> +  $# perf stat -a -e dfl_fme0/event=0x06,evtype=0x02,portid=0x0/ <command>
+> +  or
+> +  $# perf stat -a -e dfl_fme0/config=0x2006/ <command>
+> +
+> +Please note for fabric counters, overall perf events (fab_*) and port perf
+> +events (fab_port_*) actually share one set of counters in hardware, so it can't
+> +monitor both at the same time. If this set of counters is configured to monitor
+> +overall data, then per port perf data is not supported. See below example::
+> +
+> +  $# perf stat -e dfl_fme0/fab_mmio_read/,dfl_fme0/fab_port_mmio_write,\
+> +                                                    portid=0/ sleep 1
+> +
+> +  Performance counter stats for 'system wide':
+> +
+> +                 3      dfl_fme0/fab_mmio_read/
+> +   <not supported>      dfl_fme0/fab_port_mmio_write,portid=0x0/
+> +
+> +       1.001750904 seconds time elapsed
+> +
+> +The driver also provides a "cpumask" sysfs attribute, which contains only one
+> +cpu id used to access these perf events. Counting on multiple CPUs is not
+   CPU
+
+> +allowed since they are system-wide counters on FPGA device.
+> +
+> +The current driver does not support sampling. So "perf record" is unsupported.
+> +
+> +
+>  Add new FIUs support
+>  ====================
+>  It's possible that developers made some new function blocks (FIUs) under this
+> 
+
+thanks.
+-- 
+~Randy
