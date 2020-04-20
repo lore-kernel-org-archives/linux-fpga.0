@@ -1,11 +1,11 @@
-Return-Path: <SRS0=ovGI=57=intel.com=yilun.xu@kernel.org>
-Return-Path: <SRS0=ovGI=57=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=YV0W=6E=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=YV0W=6E=intel.com=yilun.xu@kernel.org>
 From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH v4 4/7] fpga: dfl: afu: add interrupt support for port error reporting
-Date: Wed, 15 Apr 2020 18:07:32 +0800
-Message-Id: <1586945255-30823-5-git-send-email-yilun.xu@intel.com>
-In-Reply-To: <1586945255-30823-1-git-send-email-yilun.xu@intel.com>
-References: <1586945255-30823-1-git-send-email-yilun.xu@intel.com>
+Subject: [PATCH v5 4/7] fpga: dfl: afu: add interrupt support for port error reporting
+Date: Mon, 20 Apr 2020 16:11:40 +0800
+Message-Id: <1587370303-25568-5-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <1587370303-25568-1-git-send-email-yilun.xu@intel.com>
+References: <1587370303-25568-1-git-send-email-yilun.xu@intel.com>
 To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: trix@redhat.com, bhu@redhat.com, Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
@@ -31,6 +31,7 @@ supported, and set/unset interrupt triggers.
 Signed-off-by: Luwei Kang <luwei.kang@intel.com>
 Signed-off-by: Wu Hao <hao.wu@intel.com>
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
 ----
 v2: use DFL_FPGA_PORT_ERR_GET_IRQ_NUM instead of
     DFL_FPGA_PORT_ERR_GET_INFO
@@ -38,25 +39,26 @@ v2: use DFL_FPGA_PORT_ERR_GET_IRQ_NUM instead of
 v3: put_user() instead of copy_to_user()
     improves comments
 v4: use common functions to handle irq ioctls
+v5: minor fixes for Hao's comments
 ---
- drivers/fpga/dfl-afu-error.c  | 22 ++++++++++++++++++++++
+ drivers/fpga/dfl-afu-error.c  | 17 +++++++++++++++++
  drivers/fpga/dfl-afu-main.c   |  4 ++++
  include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
- 3 files changed, 49 insertions(+)
+ 3 files changed, 44 insertions(+)
 
 diff --git a/drivers/fpga/dfl-afu-error.c b/drivers/fpga/dfl-afu-error.c
-index c1467ae..facbd7b 100644
+index c1467ae..c469118 100644
 --- a/drivers/fpga/dfl-afu-error.c
 +++ b/drivers/fpga/dfl-afu-error.c
-@@ -15,6 +15,7 @@
+@@ -14,6 +14,7 @@
+  *   Mitchel Henry <henry.mitchel@intel.com>
   */
  
- #include <linux/uaccess.h>
 +#include <linux/fpga-dfl.h>
+ #include <linux/uaccess.h>
  
  #include "dfl-afu.h"
- 
-@@ -219,6 +220,26 @@ static void port_err_uinit(struct platform_device *pdev,
+@@ -219,6 +220,21 @@ static void port_err_uinit(struct platform_device *pdev,
  	afu_port_err_mask(&pdev->dev, true);
  }
  
@@ -64,36 +66,31 @@ index c1467ae..facbd7b 100644
 +port_err_ioctl(struct platform_device *pdev, struct dfl_feature *feature,
 +	       unsigned int cmd, unsigned long arg)
 +{
-+	long ret = -ENODEV;
-+
 +	switch (cmd) {
 +	case DFL_FPGA_PORT_ERR_GET_IRQ_NUM:
-+		ret = dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
-+		break;
++		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
 +	case DFL_FPGA_PORT_ERR_SET_IRQ:
-+		ret = dfl_feature_ioctl_set_irq(pdev, feature, arg);
-+		break;
++		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
 +	default:
 +		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
++		return -ENODEV;
 +	}
-+
-+	return ret;
 +}
 +
  const struct dfl_feature_id port_err_id_table[] = {
  	{.id = PORT_FEATURE_ID_ERROR,},
  	{0,}
-@@ -227,4 +248,5 @@ const struct dfl_feature_id port_err_id_table[] = {
+@@ -227,4 +243,5 @@ const struct dfl_feature_id port_err_id_table[] = {
  const struct dfl_feature_ops port_err_ops = {
  	.init = port_err_init,
  	.uinit = port_err_uinit,
 +	.ioctl = port_err_ioctl,
  };
 diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index b0c3178..357cd5d 100644
+index 3fa2c59..b1ed7b4 100644
 --- a/drivers/fpga/dfl-afu-main.c
 +++ b/drivers/fpga/dfl-afu-main.c
-@@ -577,6 +577,7 @@ static int afu_release(struct inode *inode, struct file *filp)
+@@ -578,6 +578,7 @@ static int afu_release(struct inode *inode, struct file *filp)
  {
  	struct platform_device *pdev = filp->private_data;
  	struct dfl_feature_platform_data *pdata;
@@ -101,7 +98,7 @@ index b0c3178..357cd5d 100644
  
  	dev_dbg(&pdev->dev, "Device File Release\n");
  
-@@ -586,6 +587,9 @@ static int afu_release(struct inode *inode, struct file *filp)
+@@ -587,6 +588,9 @@ static int afu_release(struct inode *inode, struct file *filp)
  	dfl_feature_dev_use_end(pdata);
  
  	if (!dfl_feature_dev_use_count(pdata)) {
@@ -112,7 +109,7 @@ index b0c3178..357cd5d 100644
  		afu_dma_region_destroy(pdata);
  	}
 diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-index 8a5979e..fbe1e99 100644
+index 7331350..6c71c9d 100644
 --- a/include/uapi/linux/fpga-dfl.h
 +++ b/include/uapi/linux/fpga-dfl.h
 @@ -164,6 +164,29 @@ struct dfl_fpga_irq_set {
