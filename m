@@ -1,144 +1,179 @@
-Return-Path: <SRS0=KCYC=57=xilinx.com=navam@kernel.org>
-Return-Path: <SRS0=KCYC=57=xilinx.com=navam@kernel.org>
-From: Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH 2/2] fpga: zynq: Add AFI config driver
-Date: Wed, 15 Apr 2020 15:54:50 +0530
-Message-Id: <1586946290-7280-2-git-send-email-nava.manne@xilinx.com>
-In-Reply-To: <1586946290-7280-1-git-send-email-nava.manne@xilinx.com>
-References: <1586946290-7280-1-git-send-email-nava.manne@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-To: mdf@kernel.org, michal.simek@xilinx.com, linux-fpga@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, chinnikishore369@gmail.com
-Cc: Nava kishore Manne <nava.manne@xilinx.com>
+Return-Path: <SRS0=YV0W=6E=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=YV0W=6E=intel.com=yilun.xu@kernel.org>
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: [PATCH v5 2/7] fpga: dfl: pci: add irq info for feature devices enumeration
+Date: Mon, 20 Apr 2020 16:11:38 +0800
+Message-Id: <1587370303-25568-3-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <1587370303-25568-1-git-send-email-yilun.xu@intel.com>
+References: <1587370303-25568-1-git-send-email-yilun.xu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: trix@redhat.com, bhu@redhat.com, Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-This patch Adds AFI config driver. This is useful for
-the PS to PL configuration for the fpga manager On zynq
-platform.
+Some DFL FPGA PCIe cards (e.g. Intel FPGA Programmable Acceleration
+Card) support MSI-X based interrupts. This patch allows PCIe driver
+to prepare and pass interrupt resources to DFL via enumeration API.
+These interrupt resources could then be assigned to actual features
+which use them.
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
+----
+v2: put irq resources init code inside cce_enumerate_feature_dev()
+    Some minor changes for Hao's comments.
+v3: Some minor fix for Hao's comments for v2.
+v4: Some minor fix for Hao's comments for v3.
+v5: No change.
 ---
- drivers/fpga/Kconfig    |  8 +++++
- drivers/fpga/Makefile   |  1 +
- drivers/fpga/zynq-afi.c | 81 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 90 insertions(+)
- create mode 100644 drivers/fpga/zynq-afi.c
+ drivers/fpga/dfl-pci.c | 80 ++++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 71 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 474f304e..60982a0 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -214,4 +214,12 @@ config FPGA_MGR_ZYNQMP_FPGA
- 	  to configure the programmable logic(PL) through PS
- 	  on ZynqMP SoC.
+diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+index a78c409..2ff1274 100644
+--- a/drivers/fpga/dfl-pci.c
++++ b/drivers/fpga/dfl-pci.c
+@@ -39,6 +39,27 @@ static void __iomem *cci_pci_ioremap_bar(struct pci_dev *pcidev, int bar)
+ 	return pcim_iomap_table(pcidev)[bar];
+ }
  
-+config FPGA_MGR_ZYNQ_AFI_FPGA
-+	bool "Xilinx AFI FPGA"
-+	depends on FPGA_MGR_ZYNQ_FPGA
-+	help
-+	  Zynq AFI driver support for writing to the AFI registers
-+	  for configuring the PS_PL interface. For some of the bitstream
-+	  or designs to work the PS to PL interfaces need to be configured
-+	  like the data bus-width etc.
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 312b937..d115e29 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -26,6 +26,7 @@ obj-$(CONFIG_FPGA_BRIDGE)		+= fpga-bridge.o
- obj-$(CONFIG_SOCFPGA_FPGA_BRIDGE)	+= altera-hps2fpga.o altera-fpga2sdram.o
- obj-$(CONFIG_ALTERA_FREEZE_BRIDGE)	+= altera-freeze-bridge.o
- obj-$(CONFIG_XILINX_PR_DECOUPLER)	+= xilinx-pr-decoupler.o
-+obj-$(CONFIG_FPGA_MGR_ZYNQ_AFI_FPGA)	+= zynq-afi.o
- 
- # High Level Interfaces
- obj-$(CONFIG_FPGA_REGION)		+= fpga-region.o
-diff --git a/drivers/fpga/zynq-afi.c b/drivers/fpga/zynq-afi.c
-new file mode 100644
-index 0000000..7ce0d08
---- /dev/null
-+++ b/drivers/fpga/zynq-afi.c
-@@ -0,0 +1,81 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Xilinx FPGA AFI driver.
-+ * Copyright (c) 2018 Xilinx Inc.
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+
-+/* Registers and special values for doing register-based operations */
-+#define AFI_RDCHAN_CTRL_OFFSET	0x00
-+#define AFI_WRCHAN_CTRL_OFFSET	0x14
-+
-+#define AFI_BUSWIDTH_MASK	0x01
-+
-+/**
-+ * struct afi_fpga - AFI register description
-+ * @membase:	pointer to register struct
-+ * @afi_width:	AFI bus width to be written
-+ */
-+struct zynq_afi_fpga {
-+	void __iomem	*membase;
-+	u32		afi_width;
-+};
-+
-+static int zynq_afi_fpga_probe(struct platform_device *pdev)
++static int cci_pci_alloc_irq(struct pci_dev *pcidev)
 +{
-+	struct zynq_afi_fpga *afi_fpga;
-+	struct resource *res;
-+	u32 reg_val;
-+	u32 val;
++	int ret, nvec = pci_msix_vec_count(pcidev);
 +
-+	afi_fpga = devm_kzalloc(&pdev->dev, sizeof(*afi_fpga), GFP_KERNEL);
-+	if (!afi_fpga)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	afi_fpga->membase = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(afi_fpga->membase))
-+		return PTR_ERR(afi_fpga->membase);
-+
-+	val = device_property_read_u32(&pdev->dev, "xlnx,afi-width",
-+				       &afi_fpga->afi_width);
-+	if (val) {
-+		dev_err(&pdev->dev, "Fail to get the afi bus width\n");
-+		return -EINVAL;
++	if (nvec <= 0) {
++		dev_dbg(&pcidev->dev, "fpga interrupt not supported\n");
++		return 0;
 +	}
 +
-+	reg_val = readl(afi_fpga->membase + AFI_RDCHAN_CTRL_OFFSET);
-+	reg_val &= ~AFI_BUSWIDTH_MASK;
-+	writel(reg_val | afi_fpga->afi_width,
-+	       afi_fpga->membase + AFI_RDCHAN_CTRL_OFFSET);
-+	reg_val = readl(afi_fpga->membase + AFI_WRCHAN_CTRL_OFFSET);
-+	reg_val &= ~AFI_BUSWIDTH_MASK;
-+	writel(reg_val | afi_fpga->afi_width,
-+	       afi_fpga->membase + AFI_WRCHAN_CTRL_OFFSET);
++	ret = pci_alloc_irq_vectors(pcidev, nvec, nvec, PCI_IRQ_MSIX);
++	if (ret < 0)
++		return ret;
 +
-+	return 0;
++	return nvec;
 +}
 +
-+static const struct of_device_id zynq_afi_fpga_ids[] = {
-+	{ .compatible = "xlnx,zynq-afi-fpga" },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, zynq_afi_fpga_ids);
++static void cci_pci_free_irq(struct pci_dev *pcidev)
++{
++	pci_free_irq_vectors(pcidev);
++}
 +
-+static struct platform_driver zynq_afi_fpga_driver = {
-+	.driver = {
-+		.name = "zynq-afi-fpga",
-+		.of_match_table = zynq_afi_fpga_ids,
-+	},
-+	.probe = zynq_afi_fpga_probe,
-+};
-+module_platform_driver(zynq_afi_fpga_driver);
+ /* PCI Device ID */
+ #define PCIE_DEVICE_ID_PF_INT_5_X	0xBCBD
+ #define PCIE_DEVICE_ID_PF_INT_6_X	0xBCC0
+@@ -78,17 +99,38 @@ static void cci_remove_feature_devs(struct pci_dev *pcidev)
+ 
+ 	/* remove all children feature devices */
+ 	dfl_fpga_feature_devs_remove(drvdata->cdev);
++	cci_pci_free_irq(pcidev);
++}
 +
-+MODULE_DESCRIPTION("ZYNQ FPGA AFI module");
-+MODULE_AUTHOR("Nava kishore Manne <nava.manne@xilinx.com>");
-+MODULE_LICENSE("GPL v2");
++static int *cci_pci_create_irq_table(struct pci_dev *pcidev, unsigned int nvec)
++{
++	unsigned int i;
++	int *table;
++
++	table = kcalloc(nvec, sizeof(int), GFP_KERNEL);
++	if (table) {
++		for (i = 0; i < nvec; i++)
++			table[i] = pci_irq_vector(pcidev, i);
++	}
++
++	return table;
++}
++
++static void cci_pci_free_irq_table(int *table)
++{
++	kfree(table);
+ }
+ 
+ /* enumerate feature devices under pci device */
+ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+ {
+ 	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
++	int port_num, bar, i, nvec, ret = 0;
+ 	struct dfl_fpga_enum_info *info;
+ 	struct dfl_fpga_cdev *cdev;
+ 	resource_size_t start, len;
+-	int port_num, bar, i, ret = 0;
+ 	void __iomem *base;
++	int *irq_table;
+ 	u32 offset;
+ 	u64 v;
+ 
+@@ -97,11 +139,30 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+ 	if (!info)
+ 		return -ENOMEM;
+ 
++	/* add irq info for enumeration if the device support irq */
++	nvec = cci_pci_alloc_irq(pcidev);
++	if (nvec < 0) {
++		dev_err(&pcidev->dev, "Fail to alloc irq %d.\n", nvec);
++		ret = nvec;
++		goto enum_info_free_exit;
++	} else if (nvec) {
++		irq_table = cci_pci_create_irq_table(pcidev, nvec);
++		if (!irq_table) {
++			ret = -ENOMEM;
++			goto irq_free_exit;
++		}
++
++		ret = dfl_fpga_enum_info_add_irq(info, nvec, irq_table);
++		cci_pci_free_irq_table(irq_table);
++		if (ret)
++			goto irq_free_exit;
++	}
++
+ 	/* start to find Device Feature List from Bar 0 */
+ 	base = cci_pci_ioremap_bar(pcidev, 0);
+ 	if (!base) {
+ 		ret = -ENOMEM;
+-		goto enum_info_free_exit;
++		goto irq_free_exit;
+ 	}
+ 
+ 	/*
+@@ -154,7 +215,7 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+ 		dfl_fpga_enum_info_add_dfl(info, start, len, base);
+ 	} else {
+ 		ret = -ENODEV;
+-		goto enum_info_free_exit;
++		goto irq_free_exit;
+ 	}
+ 
+ 	/* start enumeration with prepared enumeration information */
+@@ -162,11 +223,14 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+ 	if (IS_ERR(cdev)) {
+ 		dev_err(&pcidev->dev, "Enumeration failure\n");
+ 		ret = PTR_ERR(cdev);
+-		goto enum_info_free_exit;
++		goto irq_free_exit;
+ 	}
+ 
+ 	drvdata->cdev = cdev;
+ 
++irq_free_exit:
++	if (ret)
++		cci_pci_free_irq(pcidev);
+ enum_info_free_exit:
+ 	dfl_fpga_enum_info_free(info);
+ 
+@@ -211,12 +275,10 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+ 	}
+ 
+ 	ret = cci_enumerate_feature_devs(pcidev);
+-	if (ret) {
+-		dev_err(&pcidev->dev, "enumeration failure %d.\n", ret);
+-		goto disable_error_report_exit;
+-	}
++	if (!ret)
++		return ret;
+ 
+-	return ret;
++	dev_err(&pcidev->dev, "enumeration failure %d.\n", ret);
+ 
+ disable_error_report_exit:
+ 	pci_disable_pcie_error_reporting(pcidev);
 -- 
 2.7.4
