@@ -1,52 +1,130 @@
-MIME-Version: 1.0
-Date: Wed, 15 Apr 2020 09:05:50 -0700
-References: <20200331035459.GA3472@epycbox.lan>
-In-Reply-To: <20200331035459.GA3472@epycbox.lan>
-Message-ID: <CAJYdmeP+wwLN7fc_6UgFAKOk5yR=OradHtH0MXVhR_TBQD7M5A@mail.gmail.com>
-Subject: Re: [GIT PULL] FPGA Manager (late) fixes for 5.7
-From: Moritz Fischer <moritz.fischer.private@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Moritz Fischer <moritzf@google.com>, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=YV0W=6E=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=YV0W=6E=intel.com=yilun.xu@kernel.org>
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: [PATCH v5 6/7] fpga: dfl: afu: add AFU interrupt support
+Date: Mon, 20 Apr 2020 16:11:42 +0800
+Message-Id: <1587370303-25568-7-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <1587370303-25568-1-git-send-email-yilun.xu@intel.com>
+References: <1587370303-25568-1-git-send-email-yilun.xu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: trix@redhat.com, bhu@redhat.com, Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Mar 30, 2020 at 8:55 PM Moritz Fischer <mdf@kernel.org> wrote:
->
-> The following changes since commit bb6d3fb354c5ee8d6bde2d576eb7220ea09862b9:
->
->   Linux 5.6-rc1 (2020-02-09 16:08:48 -0800)
->
-> are available in the Git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git/ fpga-fixes-for-5.7
->
-> for you to fetch changes up to 3c2760b78f90db874401d97e3c17829e2e36f400:
->
->   fpga: dfl: pci: fix return value of cci_pci_sriov_configure (2020-03-30 20:45:30 -0700)
->
-> ----------------------------------------------------------------
-> FPGA Manager fixes for 5.7-rc1
->
-> Here are two (late) fixes for 5.7-rc1 merge window.
->
-> Xu's change addresses an issue with a wrong return value.
->
-> Shubhrajyoti's change makes the Zynq FPGA driver return -EPROBE_DEFER on
->
-> All patches have been reviewed on the mailing list, and have been in the
-> last few linux-next releases (as part of my for-next branch) without issues.
->
-> Signed-off-by: Moritz Fischer <mdf@kernel.org>
->
-> ----------------------------------------------------------------
-> Shubhrajyoti Datta (1):
->       fpga: zynq: Remove clk_get error message for probe defer
->
-> Xu Yilun (1):
->       fpga: dfl: pci: fix return value of cci_pci_sriov_configure
->
->  drivers/fpga/dfl-pci.c   | 6 ++++--
->  drivers/fpga/zynq-fpga.c | 3 ++-
->  2 files changed, 6 insertions(+), 3 deletions(-)
+AFU (Accelerated Function Unit) is dynamic region of the DFL based FPGA,
+and always defined by users. Some DFL based FPGA cards allow users to
+implement their own interrupts in AFU. In order to support this,
+hardware implements a new UINT (AFU Interrupt) private feature with
+related capability register which describes the number of supported
+AFU interrupts as well as the local index of the interrupts for
+software enumeration, and from software side, driver follows the common
+DFL interrupt notification and handling mechanism, and it implements
+two ioctls below for user to query number of irqs supported and set/unset
+interrupt triggers.
 
-Ping
+ Ioctls:
+ * DFL_FPGA_PORT_UINT_GET_IRQ_NUM
+   get the number of irqs, which is used to determine how many interrupts
+   UINT feature supports.
+
+ * DFL_FPGA_PORT_UINT_SET_IRQ
+   set/unset eventfds as AFU interrupt triggers.
+
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
+----
+v2: use DFL_FPGA_PORT_UINT_GET_IRQ_NUM instead of
+    DFL_FPGA_PORT_UINT_GET_INFO
+    Delete flags field for DFL_FPGA_PORT_UINT_SET_IRQ
+v3: put_user() instead of copy_to_user()
+    improves comments
+v4: use common functions to handle irq ioctls
+v5: Minor fixes for Hao's comments
+---
+ drivers/fpga/dfl-afu-main.c   | 28 ++++++++++++++++++++++++++++
+ include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
+ 2 files changed, 51 insertions(+)
+
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index b1ed7b4..753cda4 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -530,6 +530,30 @@ static const struct dfl_feature_ops port_stp_ops = {
+ 	.init = port_stp_init,
+ };
+ 
++static long
++port_uint_ioctl(struct platform_device *pdev, struct dfl_feature *feature,
++		unsigned int cmd, unsigned long arg)
++{
++	switch (cmd) {
++	case DFL_FPGA_PORT_UINT_GET_IRQ_NUM:
++		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
++	case DFL_FPGA_PORT_UINT_SET_IRQ:
++		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
++	default:
++		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
++		return -ENODEV;
++	}
++}
++
++static const struct dfl_feature_id port_uint_id_table[] = {
++	{.id = PORT_FEATURE_ID_UINT,},
++	{0,}
++};
++
++static const struct dfl_feature_ops port_uint_ops = {
++	.ioctl = port_uint_ioctl,
++};
++
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+ 		.id_table = port_hdr_id_table,
+@@ -548,6 +572,10 @@ static struct dfl_feature_driver port_feature_drvs[] = {
+ 		.ops = &port_stp_ops,
+ 	},
+ 	{
++		.id_table = port_uint_id_table,
++		.ops = &port_uint_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	}
+ };
+diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+index b6495ea..1621b07 100644
+--- a/include/uapi/linux/fpga-dfl.h
++++ b/include/uapi/linux/fpga-dfl.h
+@@ -187,6 +187,29 @@ struct dfl_fpga_irq_set {
+ 					     DFL_PORT_BASE + 6,	\
+ 					     struct dfl_fpga_irq_set)
+ 
++/**
++ * DFL_FPGA_PORT_UINT_GET_IRQ_NUM - _IOR(DFL_FPGA_MAGIC, DFL_PORT_BASE + 7,
++ *								__u32 num_irqs)
++ *
++ * Get the number of irqs supported by the fpga AFU interrupt private
++ * feature.
++ * Return: 0 on success, -errno on failure.
++ */
++#define DFL_FPGA_PORT_UINT_GET_IRQ_NUM	_IOR(DFL_FPGA_MAGIC,	\
++					     DFL_PORT_BASE + 7, __u32)
++
++/**
++ * DFL_FPGA_PORT_UINT_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_PORT_BASE + 8,
++ *						struct dfl_fpga_irq_set)
++ *
++ * Set fpga AFU interrupt trigger if evtfds[n] is valid.
++ * Unset related interrupt trigger if evtfds[n] is a negative value.
++ * Return: 0 on success, -errno on failure.
++ */
++#define DFL_FPGA_PORT_UINT_SET_IRQ	_IOW(DFL_FPGA_MAGIC,	\
++					     DFL_PORT_BASE + 8,	\
++					     struct dfl_fpga_irq_set)
++
+ /* IOCTLs for FME file descriptor */
+ 
+ /**
+-- 
+2.7.4
