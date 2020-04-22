@@ -1,146 +1,127 @@
-Return-Path: <SRS0=et3w=6H=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=et3w=6H=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:37814 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725961AbgDWFMV (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 23 Apr 2020 01:12:21 -0400
-Date: Thu, 23 Apr 2020 13:09:34 +0800
-From: Xu Yilun <yilun.xu@intel.com>
+Return-Path: <SRS0=h/oP=6G=redhat.com=trix@kernel.org>
+Return-Path: <SRS0=h/oP=6G=redhat.com=trix@kernel.org>
 Subject: Re: How to upload fpga firmware
-Message-ID: <20200423050934.GC30060@yilunxu-OptiPlex-7050>
 References: <20200422114432.GM1694@pengutronix.de>
- <20200423013648.GA2430@epycbox.lan>
+From: Tom Rix <trix@redhat.com>
+Message-ID: <cba38c9a-4f13-ce6b-1705-0266b991261f@redhat.com>
+Date: Wed, 22 Apr 2020 11:24:49 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200423013648.GA2430@epycbox.lan>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Moritz Fischer <mdf@kernel.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20200422114432.GM1694@pengutronix.de>
+Content-Language: en-US
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+To: Sascha Hauer <s.hauer@pengutronix.de>, linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Moritz:
+I believe you need to use OPAE, user level interface to the kernel.
 
-On Wed, Apr 22, 2020 at 06:36:48PM -0700, Moritz Fischer wrote:
-> Hi Sascha,
-> 
-> On Wed, Apr 22, 2020 at 01:44:32PM +0200, Sascha Hauer wrote:
-> > Hi,
-> > 
-> > I wonder what can be done with the mainline state of drivers/fpga/. The
-> > entry to the framework seems to be fpga_mgr_load(). The only user of
-> > this function is fpga_region_program_fpga(). This in turn is only called
-> > in response of applying a device tree overlay. A device tree overlay is
-> > applied with of_overlay_fdt_apply() which has no users in the Kernel.
-> 
-> Yes. It is waiting for dt_overlays one way or another. I personally
-> don't currently have the bandwidth to work actively on this.
-> 
-> > My current task is to load a firmware to a FPGA. The code all seems to
-> > be there in the Kernel, it only lacks a way to trigger it. I am not very
-> > interested in device tree overlays since the FPGA appears as a PCI
-> > device (although applying a dtbo could enable the PCIe controller device
-> > tree node). Is there some mainline way to upload FPGA firmware? At the
-> > moment we are using the attached patch to trigger loading the firmware
-> > from userspace. Would something like this be acceptable for mainline?
-> 
-> We've looked into this sort of patches over the years and never came to
-> a general interface that really works.
-> 
-> The OPAE folks (and other users I know of) usually use FPGA Manager with
-> a higher layer on top of it that moves the bitstream into the kernel via
-> an ioctl().
-> 
-> One concept I had toyed with mentally, but haven't really gotten around
-> to implement is a 'discoverable' region, that would deal with the
-> necessary re-enumeration via a callback and have a sysfs interface
-> similar to what the patch below has.
-> This would essentially cover use-cases where you have a discoverable
-> device implemented in FPGA logic, such as say an FPGA hanging off of
-> PCIe bus that can get loaded over USB, a CPLD or some other side-band
-> mechanism. After loading the image you'd have to rescan the PCIe bus -
-> which - imho is the kernel's job.
+Here is a good starting point.
 
-Seems you mentioned the static region update. I have the pcie based FPGA
-card, and the pcie endpoint is implemented in FPGA static region. So after
-I have written image into Flash (over USB or other ways), and trying to
-load it to FPGA, the pcie endpoint is also disfunctional, the pcie device
-is actually lost. We need to rescan the pcie bus after loading is finished.
+https://opae.github.io/latest/docs/fpga_tools/fpgaconf/fpgaconf.html
 
-The concern is that when the pcie device lost, the 'discoverable' region
-created by the pcie driver is also destroyed. When you rescaned the pcie
-device back, it is like everything is start over again (pci probe, fpga
-region creation, subdev enumeration ...) rather than just a re-enumeration
-callback for discoverable region.
+Tom
 
-How do you think about it?
-
-> 
-> What I really wanna avoid is creating another /dev/fpga0 / /dev/xdevcfg
-> that completely leaves the kernel in the dark about the fact that it
-> reconfigures a bit of hardware hanging off the bus.
-
-I have the FPGA board whose image binary for static region is stored in Flash.
-I was able to enumerate the Flash as MTD device and update it directly, (now
-switch to another interface for security support). 
-Do you mean I should avoid doing that cause FPGA region device is unaware of
-the update? Some interface in FPGA region would be better choice?
-
-Thanks!
-
-> 
-> In my ideal world you'd create a pci driver that binds to your device,
-> and creates mfd style subdevices for whatever you'd want your design to
-> do. One of these devices would be an FPGA and a FPGA region attached to
-> that FPGA manager. Your top level driver would co-ordinate the fact that
-> you are re-programming parts of the FPGA and create / destroy devices as
-> needed for the hardware contained in the bitstream.
-> 
-> [..]
-> > +static ssize_t firmware_name_show(struct device *dev,
-> > +				  struct device_attribute *attr,
-> > +				  char *buf)
-> > +{
-> > +	struct fpga_region *region = to_fpga_region(dev);
-> > +
-> > +	if (!region->info || !region->info->firmware_name)
-> > +		return 0;
-> > +
-> > +	return sprintf(buf, "%s\n", region->info->firmware_name);
-> > +}
-> > +
-> > +static ssize_t firmware_name_store(struct device *dev,
-> > +				   struct device_attribute *attr,
-> > +				   const char *firmware_name, size_t count)
-> > +{
-> > +	struct fpga_region *region = to_fpga_region(dev);
-> > +	struct fpga_image_info *info = region->info;
-> > +	int error;
-> > +
-> > +	if (!info) {
-> > +		info = fpga_image_info_alloc(dev);
-> > +		if (!info)
-> > +			return -ENOMEM;
-> > +	} else if (info->firmware_name) {
-> > +		devm_kfree(dev, info->firmware_name);
-> > +	}
-> > +
-> > +	info->firmware_name = devm_kstrdup(dev, firmware_name, GFP_KERNEL);
-> > +	if (!info->firmware_name)
-> > +		return -ENOMEM;
-> > +
-> > +	if (count >  0 && info->firmware_name[count - 1] == '\n')
-> > +		info->firmware_name[count - 1] = '\0';
-> > +
-> > +	region->info = info;
-> > +	error = fpga_region_program_fpga(region);
-> > +	if (error) {
-> > +		devm_kfree(dev, info->firmware_name);
-> > +		info->firmware_name = NULL;
-> > +	}
-> > +
-> > +	return error ? error : count;
-> > +}
-> 
-> Cheers,
-> Moritz
+On 4/22/20 4:44 AM, Sascha Hauer wrote:
+> Hi,
+>
+> I wonder what can be done with the mainline state of drivers/fpga/. The
+> entry to the framework seems to be fpga_mgr_load(). The only user of
+> this function is fpga_region_program_fpga(). This in turn is only called
+> in response of applying a device tree overlay. A device tree overlay is
+> applied with of_overlay_fdt_apply() which has no users in the Kernel.
+>
+> My current task is to load a firmware to a FPGA. The code all seems to
+> be there in the Kernel, it only lacks a way to trigger it. I am not very
+> interested in device tree overlays since the FPGA appears as a PCI
+> device (although applying a dtbo could enable the PCIe controller device
+> tree node). Is there some mainline way to upload FPGA firmware? At the
+> moment we are using the attached patch to trigger loading the firmware
+> from userspace. Would something like this be acceptable for mainline?
+>
+> Sascha
+>
+> ---------------------------8<----------------------------------
+>
+> From 71a5ea845dd673d4011391f9e57fdaf427767ed5 Mon Sep 17 00:00:00 2001
+> From: Ahmad Fatoum <a.fatoum@pengutronix.de>
+> Date: Tue, 2 Oct 2018 17:13:40 +0200
+> Subject: [PATCH] fpga: region: Add sysfs attribute for loading firmware
+>
+> Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
+> ---
+>  drivers/fpga/fpga-region.c | 50 +++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 49 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+> index bde5a9d460c5..ca6dc830fadf 100644
+> --- a/drivers/fpga/fpga-region.c
+> +++ b/drivers/fpga/fpga-region.c
+> @@ -5,6 +5,7 @@
+>   *  Copyright (C) 2013-2016 Altera Corporation
+>   *  Copyright (C) 2017 Intel Corporation
+>   */
+> +#include <linux/device.h>
+>  #include <linux/fpga/fpga-bridge.h>
+>  #include <linux/fpga/fpga-mgr.h>
+>  #include <linux/fpga/fpga-region.h>
+> @@ -170,11 +171,58 @@ static ssize_t compat_id_show(struct device *dev,
+>  		       (unsigned long long)region->compat_id->id_h,
+>  		       (unsigned long long)region->compat_id->id_l);
+>  }
+> -
+>  static DEVICE_ATTR_RO(compat_id);
+>  
+> +static ssize_t firmware_name_show(struct device *dev,
+> +				  struct device_attribute *attr,
+> +				  char *buf)
+> +{
+> +	struct fpga_region *region = to_fpga_region(dev);
+> +
+> +	if (!region->info || !region->info->firmware_name)
+> +		return 0;
+> +
+> +	return sprintf(buf, "%s\n", region->info->firmware_name);
+> +}
+> +
+> +static ssize_t firmware_name_store(struct device *dev,
+> +				   struct device_attribute *attr,
+> +				   const char *firmware_name, size_t count)
+> +{
+> +	struct fpga_region *region = to_fpga_region(dev);
+> +	struct fpga_image_info *info = region->info;
+> +	int error;
+> +
+> +	if (!info) {
+> +		info = fpga_image_info_alloc(dev);
+> +		if (!info)
+> +			return -ENOMEM;
+> +	} else if (info->firmware_name) {
+> +		devm_kfree(dev, info->firmware_name);
+> +	}
+> +
+> +	info->firmware_name = devm_kstrdup(dev, firmware_name, GFP_KERNEL);
+> +	if (!info->firmware_name)
+> +		return -ENOMEM;
+> +
+> +	if (count >  0 && info->firmware_name[count - 1] == '\n')
+> +		info->firmware_name[count - 1] = '\0';
+> +
+> +	region->info = info;
+> +	error = fpga_region_program_fpga(region);
+> +	if (error) {
+> +		devm_kfree(dev, info->firmware_name);
+> +		info->firmware_name = NULL;
+> +	}
+> +
+> +	return error ? error : count;
+> +}
+> +
+> +static DEVICE_ATTR_RW(firmware_name);
+> +
+>  static struct attribute *fpga_region_attrs[] = {
+>  	&dev_attr_compat_id.attr,
+> +	&dev_attr_firmware_name.attr,
+>  	NULL,
+>  };
+>  ATTRIBUTE_GROUPS(fpga_region);
