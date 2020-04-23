@@ -1,40 +1,27 @@
-Return-Path: <SRS0=FSxJ=6A=intel.com=yilun.xu@kernel.org>
-Return-Path: <SRS0=FSxJ=6A=intel.com=yilun.xu@kernel.org>
-From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH 2/2] fpga: dfl: fix bug in port reset handshake
-Date: Thu, 16 Apr 2020 11:11:52 +0800
-Message-Id: <1587006712-22696-3-git-send-email-yilun.xu@intel.com>
-In-Reply-To: <1587006712-22696-1-git-send-email-yilun.xu@intel.com>
-References: <1587006712-22696-1-git-send-email-yilun.xu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: trix@redhat.com, bhu@redhat.com, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Xu Yilun <yilun.xu@intel.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Date: Thu, 23 Apr 2020 16:12:27 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [GIT PULL] FPGA Manager (late) fixes for 5.7
+Message-ID: <20200423141227.GA4154036@kroah.com>
+References: <20200331035459.GA3472@epycbox.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200331035459.GA3472@epycbox.lan>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: moritzf@google.com, linux-fpga@vger.kernel.org
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+On Mon, Mar 30, 2020 at 08:54:59PM -0700, Moritz Fischer wrote:
+> The following changes since commit bb6d3fb354c5ee8d6bde2d576eb7220ea09862b9:
+> 
+>   Linux 5.6-rc1 (2020-02-09 16:08:48 -0800)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git/ fpga-fixes-for-5.7
 
-When putting the port in reset, driver must wait for the soft reset
-acknowledgment bit instead of the soft reset bit.
+Pulled and pushed out,t hanks,.
 
-Fixes: 47c1b19c160f (fpga: dfl: afu: add port ops support)
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
----
- drivers/fpga/dfl-afu-main.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index b0c3178..3fa2c59 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -83,7 +83,8 @@ int __afu_port_disable(struct platform_device *pdev)
- 	 * on this port and minimum soft reset pulse width has elapsed.
- 	 * Driver polls port_soft_reset_ack to determine if reset done by HW.
- 	 */
--	if (readq_poll_timeout(base + PORT_HDR_CTRL, v, v & PORT_CTRL_SFTRST,
-+	if (readq_poll_timeout(base + PORT_HDR_CTRL, v,
-+			       v & PORT_CTRL_SFTRST_ACK,
- 			       RST_POLL_INVL, RST_POLL_TIMEOUT)) {
- 		dev_err(&pdev->dev, "timeout, fail to reset device\n");
- 		return -ETIMEDOUT;
--- 
-2.7.4
+greg k-h
