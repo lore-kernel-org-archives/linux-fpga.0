@@ -1,27 +1,38 @@
-Date: Sat, 9 May 2020 12:05:14 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH 2/2] fpga: zynq: Add AFI config driver
-Message-ID: <20200509190512.GB6715@epycbox.lan>
+Return-Path: <SRS0=S2na=6S=xilinx.com=navam@kernel.org>
+Return-Path: <SRS0=S2na=6S=xilinx.com=navam@kernel.org>
+From: Nava kishore Manne <navam@xilinx.com>
+Subject: RE: [PATCH 2/2] fpga: zynq: Add AFI config driver
+Date: Mon, 4 May 2020 11:58:41 +0000
+Message-ID: 
+ <DM6PR02MB5386B2BC995622312F8D241DC2A60@DM6PR02MB5386.namprd02.prod.outlook.com>
 References: <1586946290-7280-1-git-send-email-nava.manne@xilinx.com>
  <1586946290-7280-2-git-send-email-nava.manne@xilinx.com>
  <20200423032854.GB2430@epycbox.lan>
- <DM6PR02MB5386D0632A60A9C056DB31E6C2A60@DM6PR02MB5386.namprd02.prod.outlook.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DM6PR02MB5386D0632A60A9C056DB31E6C2A60@DM6PR02MB5386.namprd02.prod.outlook.com>
-To: Nava kishore Manne <navam@xilinx.com>
-Cc: Moritz Fischer <mdf@kernel.org>, Michal Simek <michals@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "chinnikishore369@gmail.com" <chinnikishore369@gmail.com>
+To: Moritz Fischer <mdf@kernel.org>
+Cc: Michal Simek <michals@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "chinnikishore369@gmail.com" <chinnikishore369@gmail.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Nava,
+Corrected typo
 
-On Mon, May 04, 2020 at 11:55:23AM +0000, Nava kishore Manne wrote:
-> Hi Mortiz,
-> 
+> -----Original Message-----
+> From: Nava kishore Manne
+> Sent: Monday, May 4, 2020 5:25 PM
+> To: 'Moritz Fischer' <mdf@kernel.org>
+> Cc: Michal Simek <michals@xilinx.com>; linux-fpga@vger.kernel.org; linux-=
+arm-
+> kernel@lists.infradead.org; linux-kernel@vger.kernel.org;
+> chinnikishore369@gmail.com
+> Subject: RE: [PATCH 2/2] fpga: zynq: Add AFI config driver
+>=20
+> Hi Moritz,
+>=20
 > Thanks for proving the comments.
 > Please find my response inline.
-> 
+>=20
 > > -----Original Message-----
 > > From: Moritz Fischer [mailto:mdf@kernel.org]
 > > Sent: Thursday, April 23, 2020 8:59 AM
@@ -30,9 +41,9 @@ On Mon, May 04, 2020 at 11:55:23AM +0000, Nava kishore Manne wrote:
 > > fpga@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
 > > kernel@vger.kernel.org; chinnikishore369@gmail.com
 > > Subject: Re: [PATCH 2/2] fpga: zynq: Add AFI config driver
-> > 
+> >
 > > Hi Nava,
-> > 
+> >
 > > On Wed, Apr 15, 2020 at 03:54:50PM +0530, Nava kishore Manne wrote:
 > > > This patch Adds AFI config driver. This is useful for the PS to PL
 > > > configuration for the fpga manager On zynq platform.
@@ -68,16 +79,16 @@ On Mon, May 04, 2020 at 11:55:23AM +0000, Nava kishore Manne wrote:
 > > > 312b937..d115e29 100644
 > > > --- a/drivers/fpga/Makefile
 > > > +++ b/drivers/fpga/Makefile
-> > > @@ -26,6 +26,7 @@ obj-$(CONFIG_FPGA_BRIDGE)		+= fpga-
+> > > @@ -26,6 +26,7 @@ obj-$(CONFIG_FPGA_BRIDGE)		+=3D fpga-
 > > bridge.o
-> > >  obj-$(CONFIG_SOCFPGA_FPGA_BRIDGE)	+= altera-hps2fpga.o altera-
+> > >  obj-$(CONFIG_SOCFPGA_FPGA_BRIDGE)	+=3D altera-hps2fpga.o altera-
 > > fpga2sdram.o
-> > >  obj-$(CONFIG_ALTERA_FREEZE_BRIDGE)	+= altera-freeze-bridge.o
-> > >  obj-$(CONFIG_XILINX_PR_DECOUPLER)	+= xilinx-pr-decoupler.o
-> > > +obj-$(CONFIG_FPGA_MGR_ZYNQ_AFI_FPGA)	+= zynq-afi.o
+> > >  obj-$(CONFIG_ALTERA_FREEZE_BRIDGE)	+=3D altera-freeze-bridge.o
+> > >  obj-$(CONFIG_XILINX_PR_DECOUPLER)	+=3D xilinx-pr-decoupler.o
+> > > +obj-$(CONFIG_FPGA_MGR_ZYNQ_AFI_FPGA)	+=3D zynq-afi.o
 > > >
 > > >  # High Level Interfaces
-> > >  obj-$(CONFIG_FPGA_REGION)		+= fpga-region.o
+> > >  obj-$(CONFIG_FPGA_REGION)		+=3D fpga-region.o
 > > > diff --git a/drivers/fpga/zynq-afi.c b/drivers/fpga/zynq-afi.c new
 > > > file mode 100644 index 0000000..7ce0d08
 > > > --- /dev/null
@@ -95,7 +106,8 @@ On Mon, May 04, 2020 at 11:55:23AM +0000, Nava kishore Manne wrote:
 > > > +#include <linux/of.h>
 > > > +#include <linux/platform_device.h>
 > > > +
-> > > +/* Registers and special values for doing register-based operations */
+> > > +/* Registers and special values for doing register-based operations =
+*/
 > > > +#define AFI_RDCHAN_CTRL_OFFSET	0x00
 > > > +#define AFI_WRCHAN_CTRL_OFFSET	0x14
 > > > +
@@ -117,46 +129,47 @@ On Mon, May 04, 2020 at 11:55:23AM +0000, Nava kishore Manne wrote:
 > > > +	u32 reg_val;
 > > > +	u32 val;
 > > > +
-> > > +	afi_fpga = devm_kzalloc(&pdev->dev, sizeof(*afi_fpga), GFP_KERNEL);
+> > > +	afi_fpga =3D devm_kzalloc(&pdev->dev, sizeof(*afi_fpga), GFP_KERNEL=
+);
 > > > +	if (!afi_fpga)
 > > > +		return -ENOMEM;
 > > > +
-> > > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > > +	afi_fpga->membase = devm_ioremap_resource(&pdev->dev, res);
+> > > +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > > +	afi_fpga->membase =3D devm_ioremap_resource(&pdev->dev, res);
 > > > +	if (IS_ERR(afi_fpga->membase))
 > > > +		return PTR_ERR(afi_fpga->membase);
 > > > +
-> > > +	val = device_property_read_u32(&pdev->dev, "xlnx,afi-width",
+> > > +	val =3D device_property_read_u32(&pdev->dev, "xlnx,afi-width",
 > > > +				       &afi_fpga->afi_width);
 > > > +	if (val) {
 > > > +		dev_err(&pdev->dev, "Fail to get the afi bus width\n");
 > > > +		return -EINVAL;
 > > > +	}
 > > > +
-> > > +	reg_val = readl(afi_fpga->membase + AFI_RDCHAN_CTRL_OFFSET);
-> > > +	reg_val &= ~AFI_BUSWIDTH_MASK;
+> > > +	reg_val =3D readl(afi_fpga->membase + AFI_RDCHAN_CTRL_OFFSET);
+> > > +	reg_val &=3D ~AFI_BUSWIDTH_MASK;
 > > > +	writel(reg_val | afi_fpga->afi_width,
 > > > +	       afi_fpga->membase + AFI_RDCHAN_CTRL_OFFSET);
-> > > +	reg_val = readl(afi_fpga->membase + AFI_WRCHAN_CTRL_OFFSET);
-> > > +	reg_val &= ~AFI_BUSWIDTH_MASK;
+> > > +	reg_val =3D readl(afi_fpga->membase + AFI_WRCHAN_CTRL_OFFSET);
+> > > +	reg_val &=3D ~AFI_BUSWIDTH_MASK;
 > > > +	writel(reg_val | afi_fpga->afi_width,
 > > > +	       afi_fpga->membase + AFI_WRCHAN_CTRL_OFFSET);
 > > > +
 > > > +	return 0;
 > > > +}
 > > > +
-> > > +static const struct of_device_id zynq_afi_fpga_ids[] = {
-> > > +	{ .compatible = "xlnx,zynq-afi-fpga" },
+> > > +static const struct of_device_id zynq_afi_fpga_ids[] =3D {
+> > > +	{ .compatible =3D "xlnx,zynq-afi-fpga" },
 > > > +	{ },
 > > > +};
 > > > +MODULE_DEVICE_TABLE(of, zynq_afi_fpga_ids);
 > > > +
-> > > +static struct platform_driver zynq_afi_fpga_driver = {
-> > > +	.driver = {
-> > > +		.name = "zynq-afi-fpga",
-> > > +		.of_match_table = zynq_afi_fpga_ids,
+> > > +static struct platform_driver zynq_afi_fpga_driver =3D {
+> > > +	.driver =3D {
+> > > +		.name =3D "zynq-afi-fpga",
+> > > +		.of_match_table =3D zynq_afi_fpga_ids,
 > > > +	},
-> > > +	.probe = zynq_afi_fpga_probe,
+> > > +	.probe =3D zynq_afi_fpga_probe,
 > > > +};
 > > > +module_platform_driver(zynq_afi_fpga_driver);
 > > > +
@@ -166,17 +179,28 @@ On Mon, May 04, 2020 at 11:55:23AM +0000, Nava kishore Manne wrote:
 > > > --
 > > > 2.7.4
 > > >
-> > 
+> >
 > > It looks like all the driver does is writing two registers? How does
 > > that fit into FPGA Manager as a framework. Should this maybe be eithe
 > > for Zynq architecture or a Misc driver instead?
-> > 
-> To establish the proper communication channel between PS and PL, The AXI Interface Bus Width should be configured properly.
-> For a design to design this AXI Interface Bus Width settings are vary. So for Zynq just loading the Bitstream into the PL is not sufficient
-> to establish a proper communication channel between PS and PL we have to do AXI Interface Bus Width settings as per the design
-> after loading the Bit file into the PL. I feel this is more relevant to the FPGA settings so I have placed this driver here.
-
-Should this maybe be a fpga bridge driver then? From my understanding you'd change that as part of reprogramming the FPGA?
-
-Thanks,
-Moritz
+> >
+> To establish the proper communication channel between PS and PL, The AXI
+> Interface Bus Width should be configured properly.
+> For a design to design this AXI Interface Bus Width settings are vary. So=
+ for Zynq
+> just loading the Bitstream into the PL is not sufficient to establish a p=
+roper
+> communication channel between PS and PL we have to do AXI Interface Bus
+> Width settings as per the design after loading the Bit file into the PL. =
+I feel this is
+> more relevant to the FPGA settings so I have placed this driver here.
+>=20
+> Please suggest the best place to put this driver.
+>=20
+> > Is the idea here to create the device via an overlay?
+> Yes, this driver loading/removal is triggered by the overlay after loadin=
+g the bit
+> file into the PL.
+>=20
+> Regards,
+> Navakishore.
