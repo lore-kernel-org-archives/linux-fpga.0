@@ -1,153 +1,182 @@
-Return-Path: <SRS0=jT5i=7H=redhat.com=mtosatti@kernel.org>
-Return-Path: <SRS0=jT5i=7H=redhat.com=mtosatti@kernel.org>
-Date: Mon, 25 May 2020 16:32:50 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [PATCH v5 5/7] fpga: dfl: fme: add interrupt support for global
- error reporting
-Message-ID: <20200525193250.GE22266@fuller.cnet>
-References: <1587370303-25568-1-git-send-email-yilun.xu@intel.com>
- <1587370303-25568-6-git-send-email-yilun.xu@intel.com>
+Date: Sat, 9 May 2020 12:05:14 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH 2/2] fpga: zynq: Add AFI config driver
+Message-ID: <20200509190512.GB6715@epycbox.lan>
+References: <1586946290-7280-1-git-send-email-nava.manne@xilinx.com>
+ <1586946290-7280-2-git-send-email-nava.manne@xilinx.com>
+ <20200423032854.GB2430@epycbox.lan>
+ <DM6PR02MB5386D0632A60A9C056DB31E6C2A60@DM6PR02MB5386.namprd02.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1587370303-25568-6-git-send-email-yilun.xu@intel.com>
-To: Xu Yilun <yilun.xu@intel.com>
-Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, trix@redhat.com, bhu@redhat.com, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
+In-Reply-To: <DM6PR02MB5386D0632A60A9C056DB31E6C2A60@DM6PR02MB5386.namprd02.prod.outlook.com>
+To: Nava kishore Manne <navam@xilinx.com>
+Cc: Moritz Fischer <mdf@kernel.org>, Michal Simek <michals@xilinx.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "chinnikishore369@gmail.com" <chinnikishore369@gmail.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Mon, Apr 20, 2020 at 04:11:41PM +0800, Xu Yilun wrote:
-> Error reporting interrupt is very useful to notify users that some
-> errors are detected by the hardware. Once users are notified, they
-> could query hardware logged error states, no need to continuously
-> poll on these states.
-> 
-> This patch adds interrupt support for fme global error reporting sub
-> feature. It follows the common DFL interrupt notification and handling
-> mechanism. And it implements two ioctls below for user to query
-> number of irqs supported, and set/unset interrupt triggers.
-> 
->  Ioctls:
->  * DFL_FPGA_FME_ERR_GET_IRQ_NUM
->    get the number of irqs, which is used to determine whether/how many
->    interrupts fme error reporting feature supports.
-> 
->  * DFL_FPGA_FME_ERR_SET_IRQ
->    set/unset given eventfds as fme error reporting interrupt triggers.
-> 
-> Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Acked-by: Wu Hao <hao.wu@intel.com>
-> ----
-> v2: use DFL_FPGA_FME_ERR_GET_IRQ_NUM instead of
->     DFL_FPGA_FME_ERR_GET_INFO
->     Delete flags field for DFL_FPGA_FME_ERR_SET_IRQ
-> v3: put_user() instead of copy_to_user()
->     improves comments
-> v4: use common functions to handle irq ioctls
-> v5: Minor fixes for Hao's comments
-> ---
->  drivers/fpga/dfl-fme-error.c  | 18 ++++++++++++++++++
->  drivers/fpga/dfl-fme-main.c   |  6 ++++++
->  include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
->  3 files changed, 47 insertions(+)
-> 
-> diff --git a/drivers/fpga/dfl-fme-error.c b/drivers/fpga/dfl-fme-error.c
-> index f897d41..51c2892 100644
-> --- a/drivers/fpga/dfl-fme-error.c
-> +++ b/drivers/fpga/dfl-fme-error.c
-> @@ -15,6 +15,7 @@
->   *   Mitchel, Henry <henry.mitchel@intel.com>
->   */
->  
-> +#include <linux/fpga-dfl.h>
->  #include <linux/uaccess.h>
->  
->  #include "dfl.h"
-> @@ -348,6 +349,22 @@ static void fme_global_err_uinit(struct platform_device *pdev,
->  	fme_err_mask(&pdev->dev, true);
->  }
->  
-> +static long
-> +fme_global_error_ioctl(struct platform_device *pdev,
-> +		       struct dfl_feature *feature,
-> +		       unsigned int cmd, unsigned long arg)
-> +{
-> +	switch (cmd) {
-> +	case DFL_FPGA_FME_ERR_GET_IRQ_NUM:
-> +		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
-> +	case DFL_FPGA_FME_ERR_SET_IRQ:
-> +		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
-> +	default:
-> +		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
-> +		return -ENODEV;
-> +	}
-> +}
-> +
->  const struct dfl_feature_id fme_global_err_id_table[] = {
->  	{.id = FME_FEATURE_ID_GLOBAL_ERR,},
->  	{0,}
-> @@ -356,4 +373,5 @@ const struct dfl_feature_id fme_global_err_id_table[] = {
->  const struct dfl_feature_ops fme_global_err_ops = {
->  	.init = fme_global_err_init,
->  	.uinit = fme_global_err_uinit,
-> +	.ioctl = fme_global_error_ioctl,
->  };
-> diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-> index 56d720c..ab3722d 100644
-> --- a/drivers/fpga/dfl-fme-main.c
-> +++ b/drivers/fpga/dfl-fme-main.c
-> @@ -616,11 +616,17 @@ static int fme_release(struct inode *inode, struct file *filp)
->  {
->  	struct dfl_feature_platform_data *pdata = filp->private_data;
->  	struct platform_device *pdev = pdata->dev;
-> +	struct dfl_feature *feature;
->  
->  	dev_dbg(&pdev->dev, "Device File Release\n");
->  
->  	mutex_lock(&pdata->lock);
->  	dfl_feature_dev_use_end(pdata);
-> +
-> +	if (!dfl_feature_dev_use_count(pdata))
-> +		dfl_fpga_dev_for_each_feature(pdata, feature)
-> +			dfl_fpga_set_irq_triggers(feature, 0,
-> +						  feature->nr_irqs, NULL);
->  	mutex_unlock(&pdata->lock);
->  
->  	return 0;
-> diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-> index 6c71c9d..b6495ea 100644
-> --- a/include/uapi/linux/fpga-dfl.h
-> +++ b/include/uapi/linux/fpga-dfl.h
-> @@ -230,4 +230,27 @@ struct dfl_fpga_fme_port_pr {
->   */
->  #define DFL_FPGA_FME_PORT_ASSIGN     _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 2, int)
->  
-> +/**
-> + * DFL_FPGA_FME_ERR_GET_IRQ_NUM - _IOR(DFL_FPGA_MAGIC, DFL_FME_BASE + 3,
-> + *							__u32 num_irqs)
-> + *
-> + * Get the number of irqs supported by the fpga fme error reporting private
-> + * feature. Currently hardware supports up to 1 irq.
-> + * Return: 0 on success, -errno on failure.
-> + */
-> +#define DFL_FPGA_FME_ERR_GET_IRQ_NUM	_IOR(DFL_FPGA_MAGIC,	\
-> +					     DFL_FME_BASE + 3, __u32)
-> +
-> +/**
-> + * DFL_FPGA_FME_ERR_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 4,
-> + *						struct dfl_fpga_irq_set)
-> + *
-> + * Set fpga fme error reporting interrupt trigger if evtfds[n] is valid.
-> + * Unset related interrupt trigger if evtfds[n] is a negative value.
-> + * Return: 0 on success, -errno on failure.
-> + */
-> +#define DFL_FPGA_FME_ERR_SET_IRQ	_IOW(DFL_FPGA_MAGIC,	\
-> +					     DFL_FME_BASE + 4,	\
-> +					     struct dfl_fpga_irq_set)
-> +
->  #endif /* _UAPI_LINUX_FPGA_DFL_H */
-> -- 
-> 2.7.4
+Hi Nava,
 
-Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
+On Mon, May 04, 2020 at 11:55:23AM +0000, Nava kishore Manne wrote:
+> Hi Mortiz,
+> 
+> Thanks for proving the comments.
+> Please find my response inline.
+> 
+> > -----Original Message-----
+> > From: Moritz Fischer [mailto:mdf@kernel.org]
+> > Sent: Thursday, April 23, 2020 8:59 AM
+> > To: Nava kishore Manne <navam@xilinx.com>
+> > Cc: mdf@kernel.org; Michal Simek <michals@xilinx.com>; linux-
+> > fpga@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
+> > kernel@vger.kernel.org; chinnikishore369@gmail.com
+> > Subject: Re: [PATCH 2/2] fpga: zynq: Add AFI config driver
+> > 
+> > Hi Nava,
+> > 
+> > On Wed, Apr 15, 2020 at 03:54:50PM +0530, Nava kishore Manne wrote:
+> > > This patch Adds AFI config driver. This is useful for the PS to PL
+> > > configuration for the fpga manager On zynq platform.
+> > >
+> > > Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+> > > ---
+> > >  drivers/fpga/Kconfig    |  8 +++++
+> > >  drivers/fpga/Makefile   |  1 +
+> > >  drivers/fpga/zynq-afi.c | 81
+> > > +++++++++++++++++++++++++++++++++++++++++++++++++
+> > >  3 files changed, 90 insertions(+)
+> > >  create mode 100644 drivers/fpga/zynq-afi.c
+> > >
+> > > diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig index
+> > > 474f304e..60982a0 100644
+> > > --- a/drivers/fpga/Kconfig
+> > > +++ b/drivers/fpga/Kconfig
+> > > @@ -214,4 +214,12 @@ config FPGA_MGR_ZYNQMP_FPGA
+> > >  	  to configure the programmable logic(PL) through PS
+> > >  	  on ZynqMP SoC.
+> > >
+> > > +config FPGA_MGR_ZYNQ_AFI_FPGA
+> > > +	bool "Xilinx AFI FPGA"
+> > > +	depends on FPGA_MGR_ZYNQ_FPGA
+> > Curious. How does this dependency play in here?
+> > > +	help
+> > > +	  Zynq AFI driver support for writing to the AFI registers
+> > > +	  for configuring the PS_PL interface. For some of the bitstream
+> > > +	  or designs to work the PS to PL interfaces need to be configured
+> > > +	  like the data bus-width etc.
+> > >  endif # FPGA
+> > > diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile index
+> > > 312b937..d115e29 100644
+> > > --- a/drivers/fpga/Makefile
+> > > +++ b/drivers/fpga/Makefile
+> > > @@ -26,6 +26,7 @@ obj-$(CONFIG_FPGA_BRIDGE)		+= fpga-
+> > bridge.o
+> > >  obj-$(CONFIG_SOCFPGA_FPGA_BRIDGE)	+= altera-hps2fpga.o altera-
+> > fpga2sdram.o
+> > >  obj-$(CONFIG_ALTERA_FREEZE_BRIDGE)	+= altera-freeze-bridge.o
+> > >  obj-$(CONFIG_XILINX_PR_DECOUPLER)	+= xilinx-pr-decoupler.o
+> > > +obj-$(CONFIG_FPGA_MGR_ZYNQ_AFI_FPGA)	+= zynq-afi.o
+> > >
+> > >  # High Level Interfaces
+> > >  obj-$(CONFIG_FPGA_REGION)		+= fpga-region.o
+> > > diff --git a/drivers/fpga/zynq-afi.c b/drivers/fpga/zynq-afi.c new
+> > > file mode 100644 index 0000000..7ce0d08
+> > > --- /dev/null
+> > > +++ b/drivers/fpga/zynq-afi.c
+> > > @@ -0,0 +1,81 @@
+> > > +// SPDX-License-Identifier: GPL-2.0
+> > > +/*
+> > > + * Xilinx FPGA AFI driver.
+> > > + * Copyright (c) 2018 Xilinx Inc.
+> > > + */
+> > > +
+> > > +#include <linux/err.h>
+> > > +#include <linux/io.h>
+> > > +#include <linux/module.h>
+> > > +#include <linux/of.h>
+> > > +#include <linux/platform_device.h>
+> > > +
+> > > +/* Registers and special values for doing register-based operations */
+> > > +#define AFI_RDCHAN_CTRL_OFFSET	0x00
+> > > +#define AFI_WRCHAN_CTRL_OFFSET	0x14
+> > > +
+> > > +#define AFI_BUSWIDTH_MASK	0x01
+> > > +
+> > > +/**
+> > > + * struct afi_fpga - AFI register description
+> > > + * @membase:	pointer to register struct
+> > > + * @afi_width:	AFI bus width to be written
+> > > + */
+> > > +struct zynq_afi_fpga {
+> > > +	void __iomem	*membase;
+> > > +	u32		afi_width;
+> > > +};
+> > > +
+> > > +static int zynq_afi_fpga_probe(struct platform_device *pdev) {
+> > > +	struct zynq_afi_fpga *afi_fpga;
+> > > +	struct resource *res;
+> > > +	u32 reg_val;
+> > > +	u32 val;
+> > > +
+> > > +	afi_fpga = devm_kzalloc(&pdev->dev, sizeof(*afi_fpga), GFP_KERNEL);
+> > > +	if (!afi_fpga)
+> > > +		return -ENOMEM;
+> > > +
+> > > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > > +	afi_fpga->membase = devm_ioremap_resource(&pdev->dev, res);
+> > > +	if (IS_ERR(afi_fpga->membase))
+> > > +		return PTR_ERR(afi_fpga->membase);
+> > > +
+> > > +	val = device_property_read_u32(&pdev->dev, "xlnx,afi-width",
+> > > +				       &afi_fpga->afi_width);
+> > > +	if (val) {
+> > > +		dev_err(&pdev->dev, "Fail to get the afi bus width\n");
+> > > +		return -EINVAL;
+> > > +	}
+> > > +
+> > > +	reg_val = readl(afi_fpga->membase + AFI_RDCHAN_CTRL_OFFSET);
+> > > +	reg_val &= ~AFI_BUSWIDTH_MASK;
+> > > +	writel(reg_val | afi_fpga->afi_width,
+> > > +	       afi_fpga->membase + AFI_RDCHAN_CTRL_OFFSET);
+> > > +	reg_val = readl(afi_fpga->membase + AFI_WRCHAN_CTRL_OFFSET);
+> > > +	reg_val &= ~AFI_BUSWIDTH_MASK;
+> > > +	writel(reg_val | afi_fpga->afi_width,
+> > > +	       afi_fpga->membase + AFI_WRCHAN_CTRL_OFFSET);
+> > > +
+> > > +	return 0;
+> > > +}
+> > > +
+> > > +static const struct of_device_id zynq_afi_fpga_ids[] = {
+> > > +	{ .compatible = "xlnx,zynq-afi-fpga" },
+> > > +	{ },
+> > > +};
+> > > +MODULE_DEVICE_TABLE(of, zynq_afi_fpga_ids);
+> > > +
+> > > +static struct platform_driver zynq_afi_fpga_driver = {
+> > > +	.driver = {
+> > > +		.name = "zynq-afi-fpga",
+> > > +		.of_match_table = zynq_afi_fpga_ids,
+> > > +	},
+> > > +	.probe = zynq_afi_fpga_probe,
+> > > +};
+> > > +module_platform_driver(zynq_afi_fpga_driver);
+> > > +
+> > > +MODULE_DESCRIPTION("ZYNQ FPGA AFI module");
+> > MODULE_AUTHOR("Nava
+> > > +kishore Manne <nava.manne@xilinx.com>"); MODULE_LICENSE("GPL v2");
+> > > --
+> > > 2.7.4
+> > >
+> > 
+> > It looks like all the driver does is writing two registers? How does
+> > that fit into FPGA Manager as a framework. Should this maybe be eithe
+> > for Zynq architecture or a Misc driver instead?
+> > 
+> To establish the proper communication channel between PS and PL, The AXI Interface Bus Width should be configured properly.
+> For a design to design this AXI Interface Bus Width settings are vary. So for Zynq just loading the Bitstream into the PL is not sufficient
+> to establish a proper communication channel between PS and PL we have to do AXI Interface Bus Width settings as per the design
+> after loading the Bit file into the PL. I feel this is more relevant to the FPGA settings so I have placed this driver here.
+
+Should this maybe be a fpga bridge driver then? From my understanding you'd change that as part of reprogramming the FPGA?
+
+Thanks,
+Moritz
