@@ -1,50 +1,45 @@
-Return-Path: <SRS0=iI+h=6T=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=iI+h=6T=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.10]:35415 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728076AbgEEOA6 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 5 May 2020 10:00:58 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] fpga: zynqmp: fix modular build
-Date: Tue,  5 May 2020 16:00:11 +0200
-Message-Id: <20200505140041.231844-1-arnd@arndb.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Moritz Fischer <mdf@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rajan Vaja <rajan.vaja@xilinx.com>, Jolly Shah <jolly.shah@xilinx.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Wu Hao <hao.wu@intel.com>, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-Path: <SRS0=1Q/i=7A=gmail.com=jrdr.linux@kernel.org>
+Return-Path: <SRS0=1Q/i=7A=gmail.com=jrdr.linux@kernel.org>
+From: Souptick Joarder <jrdr.linux@gmail.com>
+Subject: [PATCH v2] fpga: dfl: afu: Corrected error handling levels
+Date: Mon, 18 May 2020 23:49:51 +0530
+Message-Id: <1589825991-3545-1-git-send-email-jrdr.linux@gmail.com>
+To: hao.wu@intel.com, mdf@kernel.org, enno.luebbers@intel.com, guangrong.xiao@linux.intel.com, gregkh@linuxfoundation.org, christopher.rauer@intel.com
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Souptick Joarder <jrdr.linux@gmail.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-Two symbols need to be exported to allow the zynqmp-fpga module
-to get loaded dynamically:
+Corrected error handling goto sequnece. Level put_pages should
+be called when pinned pages >= 0 && pinned != npages. Level
+free_pages should be called when pinned pages < 0.
 
-ERROR: modpost: "zynqmp_pm_fpga_load" [drivers/fpga/zynqmp-fpga.ko] undefined!
-ERROR: modpost: "zynqmp_pm_fpga_get_status" [drivers/fpga/zynqmp-fpga.ko] undefined!
+Fixes: fa8dda1edef9 (fpga: dfl: afu: add DFL_FPGA_PORT_DMA_MAP/
+UNMAP ioctls support)
 
-To ensure this is done correctly, also fix the Kconfig dependency
-to only allow building the fpga driver when the firmware driver is
-either disabled, or when it is reachable. With that, the dependency
-on the SoC itself can be removed, and there are no surprises when
-the fpga driver is built-in but the firmware a module.
-
-Fixes: 4db8180ffe7c ("firmware: xilinx: Remove eemi ops for fpga related APIs")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
+Reviewed-by: Xu Yilun <yilun.xu@intel.com>
 ---
- drivers/fpga/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v2: Updated change logs and few reviews.
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index b2408a710662..7cd5a29fc437 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -208,7 +208,7 @@ config FPGA_DFL_PCI
+ drivers/fpga/dfl-afu-dma-region.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+index 62f9244..5942343 100644
+--- a/drivers/fpga/dfl-afu-dma-region.c
++++ b/drivers/fpga/dfl-afu-dma-region.c
+@@ -61,10 +61,10 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
+ 				     region->pages);
+ 	if (pinned < 0) {
+ 		ret = pinned;
+-		goto put_pages;
++		goto free_pages;
+ 	} else if (pinned != npages) {
+ 		ret = -EFAULT;
+-		goto free_pages;
++		goto put_pages;
+ 	}
  
- config FPGA_MGR_ZYNQMP_FPGA
- 	tristate "Xilinx ZynqMP FPGA"
--	depends on ARCH_ZYNQMP || COMPILE_TEST
-+	depends on ZYNQMP_FIRMWARE || (!ZYNQMP_FIRMWARE && COMPILE_TEST)
- 	help
- 	  FPGA manager driver support for Xilinx ZynqMP FPGAs.
- 	  This driver uses the processor configuration port(PCAP)
+ 	dev_dbg(dev, "%d pages pinned\n", pinned);
 -- 
-2.26.0
+1.9.1
