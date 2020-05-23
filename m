@@ -1,52 +1,121 @@
-Return-Path: <SRS0=VzZv=6Q=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=VzZv=6Q=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from userp2120.oracle.com ([156.151.31.85]:52364 "EHLO
-        userp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727963AbgEBN0V (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sat, 2 May 2020 09:26:21 -0400
-Date: Sat, 2 May 2020 16:24:19 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: [bug report] fpga: dfl: fme: add performance reporting support
-Message-ID: <20200502132419.GA41486@mwanda>
+Date: Sat, 23 May 2020 13:57:19 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v2] fpga: dfl: afu: convert get_user_pages() -->
+ pin_user_pages()
+Message-ID: <20200523205717.GA443638@epycbox.lan>
+References: <20200519201449.3136033-1-jhubbard@nvidia.com>
+ <64aa1494-7570-5319-b096-ea354ff20431@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: hao.wu@intel.com
-Cc: linux-fpga@vger.kernel.org
+In-Reply-To: <64aa1494-7570-5319-b096-ea354ff20431@nvidia.com>
+To: John Hubbard <jhubbard@nvidia.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-Hello Wu Hao,
+On Fri, May 22, 2020 at 06:52:34PM -0700, John Hubbard wrote:
+> On 2020-05-19 13:14, John Hubbard wrote:
+> > This code was using get_user_pages_fast(), in a "Case 2" scenario
+> > (DMA/RDMA), using the categorization from [1]. That means that it's
+> > time to convert the get_user_pages_fast() + put_page() calls to
+> > pin_user_pages_fast() + unpin_user_pages() calls.
+> > 
+> > There is some helpful background in [2]: basically, this is a small
+> > part of fixing a long-standing disconnect between pinning pages, and
+> > file systems' use of those pages.
+> > 
+> > [1] Documentation/core-api/pin_user_pages.rst
+> > 
+> > [2] "Explicit pinning of user-space pages":
+> >      https://lwn.net/Articles/807108/
+> > 
+> > Cc: Xu Yilun <yilun.xu@intel.com>
+> > Cc: Wu Hao <hao.wu@intel.com>
+> > Cc: Moritz Fischer <mdf@kernel.org>
+> > Cc: linux-fpga@vger.kernel.org
+> > Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+> 
+> 
+> Hi Moritz and FPGA developers,
+> 
+> Is this OK? And if so, is it going into your git tree? Or should I
+> send it up through a different tree? (I'm new to the FPGA development
+> model).
 
-The patch 724142f8c42a: "fpga: dfl: fme: add performance reporting
-support" from Apr 27, 2020, leads to the following static checker
-warning:
+I can take it, sorry for sluggish response.
 
-	drivers/fpga/dfl-fme-perf.c:948 fme_perf_offline_cpu()
-	error: potential NULL dereference 'priv'.
+Cheers,
+Moritz
 
-drivers/fpga/dfl-fme-perf.c
-   941  static int fme_perf_offline_cpu(unsigned int cpu, struct hlist_node *node)
-   942  {
-   943          struct fme_perf_priv *priv;
-   944          int target;
-   945  
-   946          priv = hlist_entry_safe(node, struct fme_perf_priv, node);
-                                  ^^^^^
-It doesn't make sense to use the _safe() version if we're not going to
-check for NULL.
-
-   947  
-   948          if (cpu != priv->cpu)
-   949                  return 0;
-   950  
-   951          target = cpumask_any_but(cpu_online_mask, cpu);
-   952          if (target >= nr_cpu_ids)
-   953                  return 0;
-   954  
-   955          priv->cpu = target;
-   956          return 0;
-   957  }
-
-regards,
-dan carpenter
+> 
+> 
+> thanks,
+> -- 
+> John Hubbard
+> NVIDIA
+> 
+> 
+> 
+> > ---
+> > 
+> > Hi,
+> > 
+> > Changes since v1:
+> > 
+> > Changed the label from "put_pages", to "unpin_pages".
+> > 
+> > thanks,
+> > John Hubbard
+> > NVIDIA
+> >   drivers/fpga/dfl-afu-dma-region.c | 19 +++++--------------
+> >   1 file changed, 5 insertions(+), 14 deletions(-)
+> > 
+> > diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+> > index 62f924489db5..a31dd3a7e581 100644
+> > --- a/drivers/fpga/dfl-afu-dma-region.c
+> > +++ b/drivers/fpga/dfl-afu-dma-region.c
+> > @@ -16,15 +16,6 @@
+> >   #include "dfl-afu.h"
+> > -static void put_all_pages(struct page **pages, int npages)
+> > -{
+> > -	int i;
+> > -
+> > -	for (i = 0; i < npages; i++)
+> > -		if (pages[i])
+> > -			put_page(pages[i]);
+> > -}
+> > -
+> >   void afu_dma_region_init(struct dfl_feature_platform_data *pdata)
+> >   {
+> >   	struct dfl_afu *afu = dfl_fpga_pdata_get_private(pdata);
+> > @@ -57,11 +48,11 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
+> >   		goto unlock_vm;
+> >   	}
+> > -	pinned = get_user_pages_fast(region->user_addr, npages, FOLL_WRITE,
+> > +	pinned = pin_user_pages_fast(region->user_addr, npages, FOLL_WRITE,
+> >   				     region->pages);
+> >   	if (pinned < 0) {
+> >   		ret = pinned;
+> > -		goto put_pages;
+> > +		goto unpin_pages;
+> >   	} else if (pinned != npages) {
+> >   		ret = -EFAULT;
+> >   		goto free_pages;
+> > @@ -71,8 +62,8 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
+> >   	return 0;
+> > -put_pages:
+> > -	put_all_pages(region->pages, pinned);
+> > +unpin_pages:
+> > +	unpin_user_pages(region->pages, pinned);
+> >   free_pages:
+> >   	kfree(region->pages);
+> >   unlock_vm:
+> > @@ -94,7 +85,7 @@ static void afu_dma_unpin_pages(struct dfl_feature_platform_data *pdata,
+> >   	long npages = region->length >> PAGE_SHIFT;
+> >   	struct device *dev = &pdata->dev->dev;
+> > -	put_all_pages(region->pages, npages);
+> > +	unpin_user_pages(region->pages, npages);
+> >   	kfree(region->pages);
+> >   	account_locked_vm(current->mm, npages, false);
+> > 
+> 
