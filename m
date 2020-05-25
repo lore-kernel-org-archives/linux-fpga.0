@@ -1,121 +1,57 @@
-Date: Sat, 23 May 2020 13:57:19 -0700
-From: Moritz Fischer <mdf@kernel.org>
+Return-Path: <SRS0=jakO=7H=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=jakO=7H=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from hqnvemgate25.nvidia.com ([216.228.121.64]:14502 "EHLO
+        hqnvemgate25.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388110AbgEYCeg (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sun, 24 May 2020 22:34:36 -0400
 Subject: Re: [PATCH v2] fpga: dfl: afu: convert get_user_pages() -->
  pin_user_pages()
-Message-ID: <20200523205717.GA443638@epycbox.lan>
 References: <20200519201449.3136033-1-jhubbard@nvidia.com>
  <64aa1494-7570-5319-b096-ea354ff20431@nvidia.com>
+ <20200523205717.GA443638@epycbox.lan>
+ <ccf86d21-2ecf-7873-1c30-fbea880b9081@nvidia.com>
+ <DM6PR11MB38194610D744865657EEB08385B30@DM6PR11MB3819.namprd11.prod.outlook.com>
+From: John Hubbard <jhubbard@nvidia.com>
+Message-ID: <4f326d89-d034-72ea-06d0-a2f9ba62bcc9@nvidia.com>
+Date: Sun, 24 May 2020 19:34:35 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64aa1494-7570-5319-b096-ea354ff20431@nvidia.com>
-To: John Hubbard <jhubbard@nvidia.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org
-List-ID: <linux-fpga@vger.kernel.org>
+In-Reply-To: <DM6PR11MB38194610D744865657EEB08385B30@DM6PR11MB3819.namprd11.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: "Wu, Hao" <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Xu, Yilun" <yilun.xu@intel.com>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
 
-On Fri, May 22, 2020 at 06:52:34PM -0700, John Hubbard wrote:
-> On 2020-05-19 13:14, John Hubbard wrote:
-> > This code was using get_user_pages_fast(), in a "Case 2" scenario
-> > (DMA/RDMA), using the categorization from [1]. That means that it's
-> > time to convert the get_user_pages_fast() + put_page() calls to
-> > pin_user_pages_fast() + unpin_user_pages() calls.
-> > 
-> > There is some helpful background in [2]: basically, this is a small
-> > part of fixing a long-standing disconnect between pinning pages, and
-> > file systems' use of those pages.
-> > 
-> > [1] Documentation/core-api/pin_user_pages.rst
-> > 
-> > [2] "Explicit pinning of user-space pages":
-> >      https://lwn.net/Articles/807108/
-> > 
-> > Cc: Xu Yilun <yilun.xu@intel.com>
-> > Cc: Wu Hao <hao.wu@intel.com>
-> > Cc: Moritz Fischer <mdf@kernel.org>
-> > Cc: linux-fpga@vger.kernel.org
-> > Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+On 2020-05-24 19:25, Wu, Hao wrote:
+>>>> Hi Moritz and FPGA developers,
+>>>>
+>>>> Is this OK? And if so, is it going into your git tree? Or should I
+>>>> send it up through a different tree? (I'm new to the FPGA development
+>>>> model).
+>>>
+>>> I can take it, sorry for sluggish response.
+>>>
+>>
+>> That's great news, thanks Moritz! Sorry to be pushy, just didn't want it
+>> to get lost. :)
 > 
+> Thanks John for this patch, and thanks Moritz for taking care of this.
+> Sorry for late response, one thing here we may need to be careful is
+> a recent bug fixing patch, that fixing patch has been merged by Greg
+> in char-misc-next tree, and may have some conflict with this one.
 > 
-> Hi Moritz and FPGA developers,
+> https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git/commit/?h=char-misc-next&id=c9d7e3da1f3c4cf5dddfc5d7ce4d76d013aba1cc
+> fpga: dfl: afu: Corrected error handling levels
 > 
-> Is this OK? And if so, is it going into your git tree? Or should I
-> send it up through a different tree? (I'm new to the FPGA development
-> model).
+> I guess we need to rebase this patch on top of it?
+> Moritz, do you have any suggestion?
+> 
 
-I can take it, sorry for sluggish response.
+I'll send you a v2, rebased on top of the latest char-misc.git, no problem.
 
-Cheers,
-Moritz
-
-> 
-> 
-> thanks,
-> -- 
-> John Hubbard
-> NVIDIA
-> 
-> 
-> 
-> > ---
-> > 
-> > Hi,
-> > 
-> > Changes since v1:
-> > 
-> > Changed the label from "put_pages", to "unpin_pages".
-> > 
-> > thanks,
-> > John Hubbard
-> > NVIDIA
-> >   drivers/fpga/dfl-afu-dma-region.c | 19 +++++--------------
-> >   1 file changed, 5 insertions(+), 14 deletions(-)
-> > 
-> > diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-> > index 62f924489db5..a31dd3a7e581 100644
-> > --- a/drivers/fpga/dfl-afu-dma-region.c
-> > +++ b/drivers/fpga/dfl-afu-dma-region.c
-> > @@ -16,15 +16,6 @@
-> >   #include "dfl-afu.h"
-> > -static void put_all_pages(struct page **pages, int npages)
-> > -{
-> > -	int i;
-> > -
-> > -	for (i = 0; i < npages; i++)
-> > -		if (pages[i])
-> > -			put_page(pages[i]);
-> > -}
-> > -
-> >   void afu_dma_region_init(struct dfl_feature_platform_data *pdata)
-> >   {
-> >   	struct dfl_afu *afu = dfl_fpga_pdata_get_private(pdata);
-> > @@ -57,11 +48,11 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
-> >   		goto unlock_vm;
-> >   	}
-> > -	pinned = get_user_pages_fast(region->user_addr, npages, FOLL_WRITE,
-> > +	pinned = pin_user_pages_fast(region->user_addr, npages, FOLL_WRITE,
-> >   				     region->pages);
-> >   	if (pinned < 0) {
-> >   		ret = pinned;
-> > -		goto put_pages;
-> > +		goto unpin_pages;
-> >   	} else if (pinned != npages) {
-> >   		ret = -EFAULT;
-> >   		goto free_pages;
-> > @@ -71,8 +62,8 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
-> >   	return 0;
-> > -put_pages:
-> > -	put_all_pages(region->pages, pinned);
-> > +unpin_pages:
-> > +	unpin_user_pages(region->pages, pinned);
-> >   free_pages:
-> >   	kfree(region->pages);
-> >   unlock_vm:
-> > @@ -94,7 +85,7 @@ static void afu_dma_unpin_pages(struct dfl_feature_platform_data *pdata,
-> >   	long npages = region->length >> PAGE_SHIFT;
-> >   	struct device *dev = &pdata->dev->dev;
-> > -	put_all_pages(region->pages, npages);
-> > +	unpin_user_pages(region->pages, npages);
-> >   	kfree(region->pages);
-> >   	account_locked_vm(current->mm, npages, false);
-> > 
-> 
+thanks,
+-- 
+John Hubbard
+NVIDIA
