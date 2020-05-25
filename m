@@ -1,54 +1,138 @@
-Return-Path: <SRS0=gngh=62=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=gngh=62=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCHv1] fpga: stratix10-soc: remove the pre-set reconfiguration condition
-Date: Tue, 12 May 2020 08:27:31 -0500
-Message-Id: <1589290051-30246-1-git-send-email-richard.gong@linux.intel.com>
-To: mdf@kernel.org
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, dinguyen@kernel.org, richard.gong@linux.intel.com, Richard Gong <richard.gong@intel.com>
+Return-Path: <SRS0=jT5i=7H=redhat.com=mtosatti@kernel.org>
+Return-Path: <SRS0=jT5i=7H=redhat.com=mtosatti@kernel.org>
+Date: Mon, 25 May 2020 16:34:32 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH v5 6/7] fpga: dfl: afu: add AFU interrupt support
+Message-ID: <20200525193432.GF22266@fuller.cnet>
+References: <1587370303-25568-1-git-send-email-yilun.xu@intel.com>
+ <1587370303-25568-7-git-send-email-yilun.xu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1587370303-25568-7-git-send-email-yilun.xu@intel.com>
+To: Xu Yilun <yilun.xu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, trix@redhat.com, bhu@redhat.com, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+On Mon, Apr 20, 2020 at 04:11:42PM +0800, Xu Yilun wrote:
+> AFU (Accelerated Function Unit) is dynamic region of the DFL based FPGA,
+> and always defined by users. Some DFL based FPGA cards allow users to
+> implement their own interrupts in AFU. In order to support this,
+> hardware implements a new UINT (AFU Interrupt) private feature with
+> related capability register which describes the number of supported
+> AFU interrupts as well as the local index of the interrupts for
+> software enumeration, and from software side, driver follows the common
+> DFL interrupt notification and handling mechanism, and it implements
+> two ioctls below for user to query number of irqs supported and set/unset
+> interrupt triggers.
+> 
+>  Ioctls:
+>  * DFL_FPGA_PORT_UINT_GET_IRQ_NUM
+>    get the number of irqs, which is used to determine how many interrupts
+>    UINT feature supports.
+> 
+>  * DFL_FPGA_PORT_UINT_SET_IRQ
+>    set/unset eventfds as AFU interrupt triggers.
+> 
+> Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Acked-by: Wu Hao <hao.wu@intel.com>
+> ----
+> v2: use DFL_FPGA_PORT_UINT_GET_IRQ_NUM instead of
+>     DFL_FPGA_PORT_UINT_GET_INFO
+>     Delete flags field for DFL_FPGA_PORT_UINT_SET_IRQ
+> v3: put_user() instead of copy_to_user()
+>     improves comments
+> v4: use common functions to handle irq ioctls
+> v5: Minor fixes for Hao's comments
+> ---
+>  drivers/fpga/dfl-afu-main.c   | 28 ++++++++++++++++++++++++++++
+>  include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
+>  2 files changed, 51 insertions(+)
+> 
+> diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+> index b1ed7b4..753cda4 100644
+> --- a/drivers/fpga/dfl-afu-main.c
+> +++ b/drivers/fpga/dfl-afu-main.c
+> @@ -530,6 +530,30 @@ static const struct dfl_feature_ops port_stp_ops = {
+>  	.init = port_stp_init,
+>  };
+>  
+> +static long
+> +port_uint_ioctl(struct platform_device *pdev, struct dfl_feature *feature,
+> +		unsigned int cmd, unsigned long arg)
+> +{
+> +	switch (cmd) {
+> +	case DFL_FPGA_PORT_UINT_GET_IRQ_NUM:
+> +		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
+> +	case DFL_FPGA_PORT_UINT_SET_IRQ:
+> +		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
+> +	default:
+> +		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
+> +		return -ENODEV;
+> +	}
+> +}
+> +
+> +static const struct dfl_feature_id port_uint_id_table[] = {
+> +	{.id = PORT_FEATURE_ID_UINT,},
+> +	{0,}
+> +};
+> +
+> +static const struct dfl_feature_ops port_uint_ops = {
+> +	.ioctl = port_uint_ioctl,
+> +};
+> +
+>  static struct dfl_feature_driver port_feature_drvs[] = {
+>  	{
+>  		.id_table = port_hdr_id_table,
+> @@ -548,6 +572,10 @@ static struct dfl_feature_driver port_feature_drvs[] = {
+>  		.ops = &port_stp_ops,
+>  	},
+>  	{
+> +		.id_table = port_uint_id_table,
+> +		.ops = &port_uint_ops,
+> +	},
+> +	{
+>  		.ops = NULL,
+>  	}
+>  };
+> diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+> index b6495ea..1621b07 100644
+> --- a/include/uapi/linux/fpga-dfl.h
+> +++ b/include/uapi/linux/fpga-dfl.h
+> @@ -187,6 +187,29 @@ struct dfl_fpga_irq_set {
+>  					     DFL_PORT_BASE + 6,	\
+>  					     struct dfl_fpga_irq_set)
+>  
+> +/**
+> + * DFL_FPGA_PORT_UINT_GET_IRQ_NUM - _IOR(DFL_FPGA_MAGIC, DFL_PORT_BASE + 7,
+> + *								__u32 num_irqs)
+> + *
+> + * Get the number of irqs supported by the fpga AFU interrupt private
+> + * feature.
+> + * Return: 0 on success, -errno on failure.
+> + */
+> +#define DFL_FPGA_PORT_UINT_GET_IRQ_NUM	_IOR(DFL_FPGA_MAGIC,	\
+> +					     DFL_PORT_BASE + 7, __u32)
+> +
+> +/**
+> + * DFL_FPGA_PORT_UINT_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_PORT_BASE + 8,
+> + *						struct dfl_fpga_irq_set)
+> + *
+> + * Set fpga AFU interrupt trigger if evtfds[n] is valid.
+> + * Unset related interrupt trigger if evtfds[n] is a negative value.
+> + * Return: 0 on success, -errno on failure.
+> + */
+> +#define DFL_FPGA_PORT_UINT_SET_IRQ	_IOW(DFL_FPGA_MAGIC,	\
+> +					     DFL_PORT_BASE + 8,	\
+> +					     struct dfl_fpga_irq_set)
+> +
+>  /* IOCTLs for FME file descriptor */
+>  
+>  /**
+> -- 
+> 2.7.4
 
-The reconfiguration mode is pre-set by driver as the full reconfiguration.
-As a result, user have to change code and recompile the drivers if he or
-she wants to perform a partial reconfiguration. Removing the pre-set
-reconfiguration condition so that user can select full or partial
-reconfiguration via overlay device tree without recompiling the drivers.
 
-Also add an error message if the configuration request is failure.
-
-Signed-off-by: Richard Gong <richard.gong@intel.com>
----
- drivers/fpga/stratix10-soc.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
-index 44b7c56..2da8a40 100644
---- a/drivers/fpga/stratix10-soc.c
-+++ b/drivers/fpga/stratix10-soc.c
-@@ -182,12 +182,12 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
- 	uint i;
- 	int ret;
- 
--	ctype.flags = 0;
- 	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
- 		dev_dbg(dev, "Requesting partial reconfiguration.\n");
--		ctype.flags |= BIT(COMMAND_RECONFIG_FLAG_PARTIAL);
-+		ctype.flags = 1;
- 	} else {
- 		dev_dbg(dev, "Requesting full reconfiguration.\n");
-+		ctype.flags = 0;
- 	}
- 
- 	reinit_completion(&priv->status_return_completion);
-@@ -210,6 +210,7 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
- 
- 	ret = 0;
- 	if (!test_and_clear_bit(SVC_STATUS_OK, &priv->status)) {
-+		dev_err(dev, "RECONFIG_REQUEST failed\n");
- 		ret = -ETIMEDOUT;
- 		goto init_done;
- 	}
--- 
-2.7.4
+Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
