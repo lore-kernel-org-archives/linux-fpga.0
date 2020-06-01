@@ -1,58 +1,126 @@
-Return-Path: <SRS0=JcOM=7Y=lucaceresoli.net=luca@kernel.org>
-Return-Path: <SRS0=JcOM=7Y=lucaceresoli.net=luca@kernel.org>
-From: Luca Ceresoli <luca@lucaceresoli.net>
-Subject: [PATCH 3/5] fpga manager: xilinx-spi: remove unneeded, mistyped variables
-Date: Thu, 11 Jun 2020 23:11:42 +0200
-Message-Id: <20200611211144.9421-3-luca@lucaceresoli.net>
-In-Reply-To: <20200611211144.9421-1-luca@lucaceresoli.net>
-References: <20200611211144.9421-1-luca@lucaceresoli.net>
+Return-Path: <SRS0=M+j5=7O=linux.intel.com=richard.gong@kernel.org>
+Return-Path: <SRS0=M+j5=7O=linux.intel.com=richard.gong@kernel.org>
+Subject: Re: [PATCHv2] fpga: stratix10-soc: remove the pre-set reconfiguration
+ condition
+References: <1589553303-7341-1-git-send-email-richard.gong@linux.intel.com>
+ <1d9b21df-7421-b25e-5139-f297e24d99d4@linux.intel.com>
+ <20200531194927.GA1622@epycbox.lan>
+From: Richard Gong <richard.gong@linux.intel.com>
+Message-ID: <de692e12-5f50-8235-5af9-2d3f5e659ddb@linux.intel.com>
+Date: Mon, 1 Jun 2020 09:44:47 -0500
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org
-Cc: Luca Ceresoli <luca@lucaceresoli.net>, Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Michal Simek <michal.simek@xilinx.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Anatolij Gustschin <agust@denx.de>
+In-Reply-To: <20200531194927.GA1622@epycbox.lan>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+To: Moritz Fischer <mdf@kernel.org>
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, dinguyen@kernel.org, Richard Gong <richard.gong@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Using variables does not add readability here: parameters passed
-to udelay*() are obviously in microseconds and their meaning is clear
-from the context.
+Hi Moritz,
 
-The type is also wrong, udelay expects an unsigned long.
 
-Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
----
- drivers/fpga/xilinx-spi.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+On 5/31/20 2:49 PM, Moritz Fischer wrote:
+> On Fri, May 29, 2020 at 08:15:15AM -0500, Richard Gong wrote:
+>> Hi Moritz,
+>>
+>> Sorry for asking.
+>>
+>> When you get chance, can you review my version 2 patch submitted on
+>> 05/15/20?
+>>
+>> Regards,
+>> Richard
+>>
+>> On 5/15/20 9:35 AM, richard.gong@linux.intel.com wrote:
+>>> From: Richard Gong <richard.gong@intel.com>
+>>>
+>>> The reconfiguration mode is pre-set by driver as the full reconfiguration.
+>>> As a result, user have to change code and recompile the drivers if he or
+>>> she wants to perform a partial reconfiguration. Removing the pre-set
+>>> reconfiguration condition so that user can select full or partial
+>>> reconfiguration via overlay device tree without recompiling the drivers.
+> 
+> Can you help me understand? See comment below, I'm not sure how this
+> change changes the behavior.
 
-diff --git a/drivers/fpga/xilinx-spi.c b/drivers/fpga/xilinx-spi.c
-index 79106626c3f8..799ae04301be 100644
---- a/drivers/fpga/xilinx-spi.c
-+++ b/drivers/fpga/xilinx-spi.c
-@@ -41,8 +41,6 @@ static int xilinx_spi_write_init(struct fpga_manager *mgr,
- 				 const char *buf, size_t count)
- {
- 	struct xilinx_spi_conf *conf = mgr->priv;
--	const size_t prog_latency_7500us = 7500;
--	const size_t prog_pulse_1us = 1;
- 
- 	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
- 		dev_err(&mgr->dev, "Partial reconfiguration not supported.\n");
-@@ -51,7 +49,7 @@ static int xilinx_spi_write_init(struct fpga_manager *mgr,
- 
- 	gpiod_set_value(conf->prog_b, 1);
- 
--	udelay(prog_pulse_1us); /* min is 500 ns */
-+	udelay(1); /* min is 500 ns */
- 
- 	gpiod_set_value(conf->prog_b, 0);
- 
-@@ -61,7 +59,7 @@ static int xilinx_spi_write_init(struct fpga_manager *mgr,
- 	}
- 
- 	/* program latency */
--	usleep_range(prog_latency_7500us, prog_latency_7500us + 100);
-+	usleep_range(7500, 7600);
- 	return 0;
- }
- 
--- 
-2.27.0
+Flag COMMAND_RECONFIG_FLAG_PARTIAL is defined in Intel service layer 
+driver (include/linux/firmware/intel/stratix10-svc-client.h) and the 
+default value is zero. It is obvious that COMMAND_RECONFIG_FLAG_PARTIAL 
+should be set to 1 to support partial reconfiguration.
+
+Please discard this FPGA patch, I will submit a patch on Intel service 
+layer driver.
+
+Regards,
+Richard
+
+>>>
+>>> Also add an error message if the configuration request is failure.
+>>>
+>>> Signed-off-by: Richard Gong <richard.gong@intel.com>
+>>> ---
+>>> v2: define and use constant values
+>>> ---
+>>>    drivers/fpga/stratix10-soc.c | 9 +++++++--
+>>>    1 file changed, 7 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+>>> index 44b7c56..4d52a80 100644
+>>> --- a/drivers/fpga/stratix10-soc.c
+>>> +++ b/drivers/fpga/stratix10-soc.c
+>>> @@ -14,9 +14,13 @@
+>>>    /*
+>>>     * FPGA programming requires a higher level of privilege (EL3), per the SoC
+>>>     * design.
+>>> + * SoC firmware supports full and partial reconfiguration.
+> Consider:
+> "The SoC firmware supports full and partial reconfiguration."
+>>>     */
+>>>    #define NUM_SVC_BUFS	4
+>>>    #define SVC_BUF_SIZE	SZ_512K
+>>> +#define FULL_RECONFIG_FLAG	0
+>>> +#define PARTIAL_RECONFIG_FLAG	1
+>>> +
+>>>    /* Indicates buffer is in use if set */
+>>>    #define SVC_BUF_LOCK	0
+>>> @@ -182,12 +186,12 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
+>>>    	uint i;
+>>>    	int ret;
+>>> -	ctype.flags = 0;
+>>>    	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
+>>>    		dev_dbg(dev, "Requesting partial reconfiguration.\n");
+>>> -		ctype.flags |= BIT(COMMAND_RECONFIG_FLAG_PARTIAL);
+>>> +		ctype.flags = PARTIAL_RECONFIG_FLAG;
+>>>    	} else {
+>>>    		dev_dbg(dev, "Requesting full reconfiguration.\n");
+>>> +		ctype.flags = FULL_RECONFIG_FLAG;
+>>>    	}
+> Am I missing something here: Doesn't this do the same as before?
+> 
+> Before:
+> If info->flags & FPGA_MGR_PARTIAL_RECONFIG -> ctype.flags = 0 |
+> BIT(COMMAND_RECONFIG_FLAG_PARTIAL) -> 1
+> and ctype->flags = FULL_RECONFIG -> 0 else.
+> 
+> Now:
+> If info->flags & FPGA_MGR_PARTIAL_RECONFIG -> ctype.flags = PARTIAL_RECONFIG_FLAG -> 1
+> ctype->flags = FULL_REECONFIG_FLAG -> 0 else.
+> 
+> Am I missing something here? If I don't set the flag for partial
+> reconfig I'd end up with full reconfiguration in both cases?
+> If I do set the flag, I get partial reconfiguration in both cases?
+> 
+>>>    	reinit_completion(&priv->status_return_completion);
+>>> @@ -210,6 +214,7 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
+>>>    	ret = 0;
+>>>    	if (!test_and_clear_bit(SVC_STATUS_OK, &priv->status)) {
+>>> +		dev_err(dev, "RECONFIG_REQUEST failed\n");
+>>>    		ret = -ETIMEDOUT;
+>>>    		goto init_done;
+>>>    	}
+>>>
+> 
+> Thanks,
+> Moritz
+> 
