@@ -1,16 +1,16 @@
 Return-Path: <SRS0=dZuy=7R=vger.kernel.org=linux-fpga-owner@kernel.org>
 Return-Path: <SRS0=dZuy=7R=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:40369 "EHLO mga05.intel.com"
+Received: from mga03.intel.com ([134.134.136.65]:16348 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726664AbgFDIzx (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 4 Jun 2020 04:55:53 -0400
+        id S1726802AbgFDIuN (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 4 Jun 2020 04:50:13 -0400
 From: Xu Yilun <yilun.xu@intel.com>
 Subject: [PATCH v6 0/7] Add interrupt support to FPGA DFL drivers
-Date: Thu,  4 Jun 2020 16:52:10 +0800
-Message-Id: <1591260737-15211-1-git-send-email-yilun.xu@intel.com>
+Date: Thu,  4 Jun 2020 16:46:21 +0800
+Message-Id: <1591260388-15128-1-git-send-email-yilun.xu@intel.com>
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+To: mfd@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: trix@redhat.com, bhu@redhat.com, mtosatti@redhat.com, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>
 
 This patchset add interrupt support to FPGA DFL drivers.
