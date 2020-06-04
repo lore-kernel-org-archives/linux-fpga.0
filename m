@@ -1,57 +1,182 @@
-Return-Path: <SRS0=bNLF=77=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=bNLF=77=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:59066 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731218AbgFRBY3 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 17 Jun 2020 21:24:29 -0400
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 101/172] fpga: dfl: afu: Corrected error handling levels
-Date: Wed, 17 Jun 2020 21:21:07 -0400
-Message-Id: <20200618012218.607130-101-sashal@kernel.org>
-In-Reply-To: <20200618012218.607130-1-sashal@kernel.org>
-References: <20200618012218.607130-1-sashal@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Souptick Joarder <jrdr.linux@gmail.com>, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=G8uL=7R=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=G8uL=7R=intel.com=yilun.xu@kernel.org>
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: [PATCH v6 2/7] fpga: dfl: pci: add irq info for feature devices enumeration
+Date: Thu,  4 Jun 2020 16:52:12 +0800
+Message-Id: <1591260737-15211-3-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <1591260737-15211-1-git-send-email-yilun.xu@intel.com>
+References: <1591260737-15211-1-git-send-email-yilun.xu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: trix@redhat.com, bhu@redhat.com, mtosatti@redhat.com, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Souptick Joarder <jrdr.linux@gmail.com>
+Some DFL FPGA PCIe cards (e.g. Intel FPGA Programmable Acceleration
+Card) support MSI-X based interrupts. This patch allows PCIe driver
+to prepare and pass interrupt resources to DFL via enumeration API.
+These interrupt resources could then be assigned to actual features
+which use them.
 
-[ Upstream commit c9d7e3da1f3c4cf5dddfc5d7ce4d76d013aba1cc ]
-
-Corrected error handling goto sequnece. Level put_pages should
-be called when pinned pages >= 0 && pinned != npages. Level
-free_pages should be called when pinned pages < 0.
-
-Fixes: fa8dda1edef9 ("fpga: dfl: afu: add DFL_FPGA_PORT_DMA_MAP/UNMAP ioctls support")
-Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
 Acked-by: Wu Hao <hao.wu@intel.com>
-Reviewed-by: Xu Yilun <yilun.xu@intel.com>
-Link: https://lore.kernel.org/r/1589825991-3545-1-git-send-email-jrdr.linux@gmail.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+----
+v2: put irq resources init code inside cce_enumerate_feature_dev()
+    Some minor changes for Hao's comments.
+v3: Some minor fix for Hao's comments for v2.
+v4: Some minor fix for Hao's comments for v3.
+v5: No change.
+v6: Some minor fix for Moritz's comments.
 ---
- drivers/fpga/dfl-afu-dma-region.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/fpga/dfl-pci.c | 81 ++++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 72 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index c9a613dc9eb7..e056965ef97b 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -106,10 +106,10 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
- 				     region->pages);
- 	if (pinned < 0) {
- 		ret = pinned;
--		goto put_pages;
-+		goto free_pages;
- 	} else if (pinned != npages) {
- 		ret = -EFAULT;
--		goto free_pages;
-+		goto put_pages;
+diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+index 5387550..e3dc4fc 100644
+--- a/drivers/fpga/dfl-pci.c
++++ b/drivers/fpga/dfl-pci.c
+@@ -39,6 +39,27 @@ static void __iomem *cci_pci_ioremap_bar(struct pci_dev *pcidev, int bar)
+ 	return pcim_iomap_table(pcidev)[bar];
+ }
+ 
++static int cci_pci_alloc_irq(struct pci_dev *pcidev)
++{
++	int ret, nvec = pci_msix_vec_count(pcidev);
++
++	if (nvec <= 0) {
++		dev_dbg(&pcidev->dev, "fpga interrupt not supported\n");
++		return 0;
++	}
++
++	ret = pci_alloc_irq_vectors(pcidev, nvec, nvec, PCI_IRQ_MSIX);
++	if (ret < 0)
++		return ret;
++
++	return nvec;
++}
++
++static void cci_pci_free_irq(struct pci_dev *pcidev)
++{
++	pci_free_irq_vectors(pcidev);
++}
++
+ /* PCI Device ID */
+ #define PCIE_DEVICE_ID_PF_INT_5_X	0xBCBD
+ #define PCIE_DEVICE_ID_PF_INT_6_X	0xBCC0
+@@ -78,17 +99,39 @@ static void cci_remove_feature_devs(struct pci_dev *pcidev)
+ 
+ 	/* remove all children feature devices */
+ 	dfl_fpga_feature_devs_remove(drvdata->cdev);
++	cci_pci_free_irq(pcidev);
++}
++
++static int *cci_pci_create_irq_table(struct pci_dev *pcidev, unsigned int nvec)
++{
++	unsigned int i;
++	int *table;
++
++	table = kcalloc(nvec, sizeof(int), GFP_KERNEL);
++	if (!table)
++		return table;
++
++	for (i = 0; i < nvec; i++)
++		table[i] = pci_irq_vector(pcidev, i);
++
++	return table;
++}
++
++static void cci_pci_free_irq_table(int *table)
++{
++	kfree(table);
+ }
+ 
+ /* enumerate feature devices under pci device */
+ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+ {
+ 	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
++	int port_num, bar, i, nvec, ret = 0;
+ 	struct dfl_fpga_enum_info *info;
+ 	struct dfl_fpga_cdev *cdev;
+ 	resource_size_t start, len;
+-	int port_num, bar, i, ret = 0;
+ 	void __iomem *base;
++	int *irq_table;
+ 	u32 offset;
+ 	u64 v;
+ 
+@@ -97,11 +140,30 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+ 	if (!info)
+ 		return -ENOMEM;
+ 
++	/* add irq info for enumeration if the device support irq */
++	nvec = cci_pci_alloc_irq(pcidev);
++	if (nvec < 0) {
++		dev_err(&pcidev->dev, "Fail to alloc irq %d.\n", nvec);
++		ret = nvec;
++		goto enum_info_free_exit;
++	} else if (nvec) {
++		irq_table = cci_pci_create_irq_table(pcidev, nvec);
++		if (!irq_table) {
++			ret = -ENOMEM;
++			goto irq_free_exit;
++		}
++
++		ret = dfl_fpga_enum_info_add_irq(info, nvec, irq_table);
++		cci_pci_free_irq_table(irq_table);
++		if (ret)
++			goto irq_free_exit;
++	}
++
+ 	/* start to find Device Feature List from Bar 0 */
+ 	base = cci_pci_ioremap_bar(pcidev, 0);
+ 	if (!base) {
+ 		ret = -ENOMEM;
+-		goto enum_info_free_exit;
++		goto irq_free_exit;
  	}
  
- 	dev_dbg(dev, "%d pages pinned\n", pinned);
+ 	/*
+@@ -154,7 +216,7 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+ 		dfl_fpga_enum_info_add_dfl(info, start, len, base);
+ 	} else {
+ 		ret = -ENODEV;
+-		goto enum_info_free_exit;
++		goto irq_free_exit;
+ 	}
+ 
+ 	/* start enumeration with prepared enumeration information */
+@@ -162,11 +224,14 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+ 	if (IS_ERR(cdev)) {
+ 		dev_err(&pcidev->dev, "Enumeration failure\n");
+ 		ret = PTR_ERR(cdev);
+-		goto enum_info_free_exit;
++		goto irq_free_exit;
+ 	}
+ 
+ 	drvdata->cdev = cdev;
+ 
++irq_free_exit:
++	if (ret)
++		cci_pci_free_irq(pcidev);
+ enum_info_free_exit:
+ 	dfl_fpga_enum_info_free(info);
+ 
+@@ -211,12 +276,10 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+ 	}
+ 
+ 	ret = cci_enumerate_feature_devs(pcidev);
+-	if (ret) {
+-		dev_err(&pcidev->dev, "enumeration failure %d.\n", ret);
+-		goto disable_error_report_exit;
+-	}
++	if (!ret)
++		return ret;
+ 
+-	return ret;
++	dev_err(&pcidev->dev, "enumeration failure %d.\n", ret);
+ 
+ disable_error_report_exit:
+ 	pci_disable_pcie_error_reporting(pcidev);
 -- 
-2.25.1
+2.7.4
