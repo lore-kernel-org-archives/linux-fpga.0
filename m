@@ -1,53 +1,47 @@
-Return-Path: <SRS0=XxEt=AD=lucaceresoli.net=luca@kernel.org>
-Return-Path: <SRS0=XxEt=AD=lucaceresoli.net=luca@kernel.org>
-From: Luca Ceresoli <luca@lucaceresoli.net>
-Subject: [PATCH v2 1/2] dt-bindings: fpga: xilinx-slave-serial: add optional INIT_B GPIO
-Date: Mon, 22 Jun 2020 15:37:22 +0200
-Message-Id: <20200622133723.23326-1-luca@lucaceresoli.net>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To: linux-fpga@vger.kernel.org
-Cc: Luca Ceresoli <luca@lucaceresoli.net>, Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Michal Simek <michal.simek@xilinx.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Anatolij Gustschin <agust@denx.de>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=YXtk=7Y=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=YXtk=7Y=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from us-smtp-delivery-1.mimecast.com ([207.211.31.120]:20117 "EHLO
+        us-smtp-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1726134AbgFKTin (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 11 Jun 2020 15:38:43 -0400
+Received: by mail-qk1-f199.google.com with SMTP id m29so6003951qkm.17
+        for <linux-fpga@vger.kernel.org>; Thu, 11 Jun 2020 12:38:35 -0700 (PDT)
+From: trix@redhat.com
+Subject: [PATCH v2 0/1]  selftests: fpga: dfl: A test for afu interrupt support
+Date: Thu, 11 Jun 2020 12:38:26 -0700
+Message-Id: <20200611193827.8302-1-trix@redhat.com>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: shuah@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, linux-fpga@vger.kernel.org, Tom Rix <trix@redhat.com>
 
-The INIT_B is used by the 6 and 7 series to report the programming status,
-providing more control and information about programming errors.
+From: Tom Rix <trix@redhat.com>
 
-Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
+repo: linux-next
+tag: next-20200611
 
----
+Start applying selftests to drivers/fpga.
 
-Changes in v2:
- - rename init_b-gpios to init-b-gpios (Rob Herring suggested to not use '_'
-   in property names)
----
- .../devicetree/bindings/fpga/xilinx-slave-serial.txt       | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+While testing out this upcoming change on linux-fpga
+'Add interrupt support to FPGA DFL drivers'
 
-diff --git a/Documentation/devicetree/bindings/fpga/xilinx-slave-serial.txt b/Documentation/devicetree/bindings/fpga/xilinx-slave-serial.txt
-index 9f103f3872e8..5ef659c1394d 100644
---- a/Documentation/devicetree/bindings/fpga/xilinx-slave-serial.txt
-+++ b/Documentation/devicetree/bindings/fpga/xilinx-slave-serial.txt
-@@ -16,6 +16,10 @@ Required properties:
- - prog_b-gpios: config pin (referred to as PROGRAM_B in the manual)
- - done-gpios: config status pin (referred to as DONE in the manual)
- 
-+Optional properties:
-+- init-b-gpios: initialization status and configuration error pin
-+                (referred to as INIT_B in the manual)
-+
- Example for full FPGA configuration:
- 
- 	fpga-region0 {
-@@ -40,7 +44,8 @@ Example for full FPGA configuration:
- 			spi-max-frequency = <60000000>;
- 			spi-cpha;
- 			reg = <0>;
--			done-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
- 			prog_b-gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;
-+			init-b-gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;
-+			done-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
- 		};
- 	};
+I did not see any existing fpga tests.
+So I added one.
+
+Change from v1
+Use ksft_* functions for reporting
+
+Tom Rix (1):
+  selftests: fpga: dfl: A test for afu interrupt support
+
+ tools/testing/selftests/Makefile              |  1 +
+ tools/testing/selftests/drivers/fpga/Makefile |  9 +++++
+ .../testing/selftests/drivers/fpga/afu_intr.c | 33 +++++++++++++++++++
+ tools/testing/selftests/drivers/fpga/config   |  1 +
+ 4 files changed, 44 insertions(+)
+ create mode 100644 tools/testing/selftests/drivers/fpga/Makefile
+ create mode 100644 tools/testing/selftests/drivers/fpga/afu_intr.c
+ create mode 100644 tools/testing/selftests/drivers/fpga/config
+
 -- 
-2.27.0
+2.18.1
