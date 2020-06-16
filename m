@@ -1,126 +1,148 @@
-Return-Path: <SRS0=M+j5=7O=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=M+j5=7O=linux.intel.com=richard.gong@kernel.org>
-Subject: Re: [PATCHv2] fpga: stratix10-soc: remove the pre-set reconfiguration
- condition
-References: <1589553303-7341-1-git-send-email-richard.gong@linux.intel.com>
- <1d9b21df-7421-b25e-5139-f297e24d99d4@linux.intel.com>
- <20200531194927.GA1622@epycbox.lan>
-From: Richard Gong <richard.gong@linux.intel.com>
-Message-ID: <de692e12-5f50-8235-5af9-2d3f5e659ddb@linux.intel.com>
-Date: Mon, 1 Jun 2020 09:44:47 -0500
-MIME-Version: 1.0
-In-Reply-To: <20200531194927.GA1622@epycbox.lan>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-To: Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, dinguyen@kernel.org, Richard Gong <richard.gong@intel.com>
+Return-Path: <SRS0=M3Wg=75=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=M3Wg=75=intel.com=yilun.xu@kernel.org>
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: [PATCH v7 5/7] fpga: dfl: fme: add interrupt support for global error reporting
+Date: Tue, 16 Jun 2020 12:08:46 +0800
+Message-Id: <1592280528-6350-6-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <1592280528-6350-1-git-send-email-yilun.xu@intel.com>
+References: <1592280528-6350-1-git-send-email-yilun.xu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: trix@redhat.com, bhu@redhat.com, mtosatti@redhat.com, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Hi Moritz,
+Error reporting interrupt is very useful to notify users that some
+errors are detected by the hardware. Once users are notified, they
+could query hardware logged error states, no need to continuously
+poll on these states.
 
+This patch adds interrupt support for fme global error reporting sub
+feature. It follows the common DFL interrupt notification and handling
+mechanism. And it implements two ioctls below for user to query
+number of irqs supported, and set/unset interrupt triggers.
 
-On 5/31/20 2:49 PM, Moritz Fischer wrote:
-> On Fri, May 29, 2020 at 08:15:15AM -0500, Richard Gong wrote:
->> Hi Moritz,
->>
->> Sorry for asking.
->>
->> When you get chance, can you review my version 2 patch submitted on
->> 05/15/20?
->>
->> Regards,
->> Richard
->>
->> On 5/15/20 9:35 AM, richard.gong@linux.intel.com wrote:
->>> From: Richard Gong <richard.gong@intel.com>
->>>
->>> The reconfiguration mode is pre-set by driver as the full reconfiguration.
->>> As a result, user have to change code and recompile the drivers if he or
->>> she wants to perform a partial reconfiguration. Removing the pre-set
->>> reconfiguration condition so that user can select full or partial
->>> reconfiguration via overlay device tree without recompiling the drivers.
-> 
-> Can you help me understand? See comment below, I'm not sure how this
-> change changes the behavior.
+ Ioctls:
+ * DFL_FPGA_FME_ERR_GET_IRQ_NUM
+   get the number of irqs, which is used to determine whether/how many
+   interrupts fme error reporting feature supports.
 
-Flag COMMAND_RECONFIG_FLAG_PARTIAL is defined in Intel service layer 
-driver (include/linux/firmware/intel/stratix10-svc-client.h) and the 
-default value is zero. It is obvious that COMMAND_RECONFIG_FLAG_PARTIAL 
-should be set to 1 to support partial reconfiguration.
+ * DFL_FPGA_FME_ERR_SET_IRQ
+   set/unset given eventfds as fme error reporting interrupt triggers.
 
-Please discard this FPGA patch, I will submit a patch on Intel service 
-layer driver.
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
+---
+v2: use DFL_FPGA_FME_ERR_GET_IRQ_NUM instead of
+    DFL_FPGA_FME_ERR_GET_INFO
+    Delete flags field for DFL_FPGA_FME_ERR_SET_IRQ
+v3: put_user() instead of copy_to_user()
+    improves comments
+v4: use common functions to handle irq ioctls
+v5: Minor fixes for Hao's comments
+v6: No change
+v7: No change
+---
+ drivers/fpga/dfl-fme-error.c  | 18 ++++++++++++++++++
+ drivers/fpga/dfl-fme-main.c   |  6 ++++++
+ include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
+ 3 files changed, 47 insertions(+)
 
-Regards,
-Richard
-
->>>
->>> Also add an error message if the configuration request is failure.
->>>
->>> Signed-off-by: Richard Gong <richard.gong@intel.com>
->>> ---
->>> v2: define and use constant values
->>> ---
->>>    drivers/fpga/stratix10-soc.c | 9 +++++++--
->>>    1 file changed, 7 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
->>> index 44b7c56..4d52a80 100644
->>> --- a/drivers/fpga/stratix10-soc.c
->>> +++ b/drivers/fpga/stratix10-soc.c
->>> @@ -14,9 +14,13 @@
->>>    /*
->>>     * FPGA programming requires a higher level of privilege (EL3), per the SoC
->>>     * design.
->>> + * SoC firmware supports full and partial reconfiguration.
-> Consider:
-> "The SoC firmware supports full and partial reconfiguration."
->>>     */
->>>    #define NUM_SVC_BUFS	4
->>>    #define SVC_BUF_SIZE	SZ_512K
->>> +#define FULL_RECONFIG_FLAG	0
->>> +#define PARTIAL_RECONFIG_FLAG	1
->>> +
->>>    /* Indicates buffer is in use if set */
->>>    #define SVC_BUF_LOCK	0
->>> @@ -182,12 +186,12 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
->>>    	uint i;
->>>    	int ret;
->>> -	ctype.flags = 0;
->>>    	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
->>>    		dev_dbg(dev, "Requesting partial reconfiguration.\n");
->>> -		ctype.flags |= BIT(COMMAND_RECONFIG_FLAG_PARTIAL);
->>> +		ctype.flags = PARTIAL_RECONFIG_FLAG;
->>>    	} else {
->>>    		dev_dbg(dev, "Requesting full reconfiguration.\n");
->>> +		ctype.flags = FULL_RECONFIG_FLAG;
->>>    	}
-> Am I missing something here: Doesn't this do the same as before?
-> 
-> Before:
-> If info->flags & FPGA_MGR_PARTIAL_RECONFIG -> ctype.flags = 0 |
-> BIT(COMMAND_RECONFIG_FLAG_PARTIAL) -> 1
-> and ctype->flags = FULL_RECONFIG -> 0 else.
-> 
-> Now:
-> If info->flags & FPGA_MGR_PARTIAL_RECONFIG -> ctype.flags = PARTIAL_RECONFIG_FLAG -> 1
-> ctype->flags = FULL_REECONFIG_FLAG -> 0 else.
-> 
-> Am I missing something here? If I don't set the flag for partial
-> reconfig I'd end up with full reconfiguration in both cases?
-> If I do set the flag, I get partial reconfiguration in both cases?
-> 
->>>    	reinit_completion(&priv->status_return_completion);
->>> @@ -210,6 +214,7 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
->>>    	ret = 0;
->>>    	if (!test_and_clear_bit(SVC_STATUS_OK, &priv->status)) {
->>> +		dev_err(dev, "RECONFIG_REQUEST failed\n");
->>>    		ret = -ETIMEDOUT;
->>>    		goto init_done;
->>>    	}
->>>
-> 
-> Thanks,
-> Moritz
-> 
+diff --git a/drivers/fpga/dfl-fme-error.c b/drivers/fpga/dfl-fme-error.c
+index f897d41..51c2892 100644
+--- a/drivers/fpga/dfl-fme-error.c
++++ b/drivers/fpga/dfl-fme-error.c
+@@ -15,6 +15,7 @@
+  *   Mitchel, Henry <henry.mitchel@intel.com>
+  */
+ 
++#include <linux/fpga-dfl.h>
+ #include <linux/uaccess.h>
+ 
+ #include "dfl.h"
+@@ -348,6 +349,22 @@ static void fme_global_err_uinit(struct platform_device *pdev,
+ 	fme_err_mask(&pdev->dev, true);
+ }
+ 
++static long
++fme_global_error_ioctl(struct platform_device *pdev,
++		       struct dfl_feature *feature,
++		       unsigned int cmd, unsigned long arg)
++{
++	switch (cmd) {
++	case DFL_FPGA_FME_ERR_GET_IRQ_NUM:
++		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
++	case DFL_FPGA_FME_ERR_SET_IRQ:
++		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
++	default:
++		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
++		return -ENODEV;
++	}
++}
++
+ const struct dfl_feature_id fme_global_err_id_table[] = {
+ 	{.id = FME_FEATURE_ID_GLOBAL_ERR,},
+ 	{0,}
+@@ -356,4 +373,5 @@ const struct dfl_feature_id fme_global_err_id_table[] = {
+ const struct dfl_feature_ops fme_global_err_ops = {
+ 	.init = fme_global_err_init,
+ 	.uinit = fme_global_err_uinit,
++	.ioctl = fme_global_error_ioctl,
+ };
+diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+index fc210d4..77ea04d 100644
+--- a/drivers/fpga/dfl-fme-main.c
++++ b/drivers/fpga/dfl-fme-main.c
+@@ -620,11 +620,17 @@ static int fme_release(struct inode *inode, struct file *filp)
+ {
+ 	struct dfl_feature_platform_data *pdata = filp->private_data;
+ 	struct platform_device *pdev = pdata->dev;
++	struct dfl_feature *feature;
+ 
+ 	dev_dbg(&pdev->dev, "Device File Release\n");
+ 
+ 	mutex_lock(&pdata->lock);
+ 	dfl_feature_dev_use_end(pdata);
++
++	if (!dfl_feature_dev_use_count(pdata))
++		dfl_fpga_dev_for_each_feature(pdata, feature)
++			dfl_fpga_set_irq_triggers(feature, 0,
++						  feature->nr_irqs, NULL);
+ 	mutex_unlock(&pdata->lock);
+ 
+ 	return 0;
+diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+index 6c71c9d..b6495ea 100644
+--- a/include/uapi/linux/fpga-dfl.h
++++ b/include/uapi/linux/fpga-dfl.h
+@@ -230,4 +230,27 @@ struct dfl_fpga_fme_port_pr {
+  */
+ #define DFL_FPGA_FME_PORT_ASSIGN     _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 2, int)
+ 
++/**
++ * DFL_FPGA_FME_ERR_GET_IRQ_NUM - _IOR(DFL_FPGA_MAGIC, DFL_FME_BASE + 3,
++ *							__u32 num_irqs)
++ *
++ * Get the number of irqs supported by the fpga fme error reporting private
++ * feature. Currently hardware supports up to 1 irq.
++ * Return: 0 on success, -errno on failure.
++ */
++#define DFL_FPGA_FME_ERR_GET_IRQ_NUM	_IOR(DFL_FPGA_MAGIC,	\
++					     DFL_FME_BASE + 3, __u32)
++
++/**
++ * DFL_FPGA_FME_ERR_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 4,
++ *						struct dfl_fpga_irq_set)
++ *
++ * Set fpga fme error reporting interrupt trigger if evtfds[n] is valid.
++ * Unset related interrupt trigger if evtfds[n] is a negative value.
++ * Return: 0 on success, -errno on failure.
++ */
++#define DFL_FPGA_FME_ERR_SET_IRQ	_IOW(DFL_FPGA_MAGIC,	\
++					     DFL_FME_BASE + 4,	\
++					     struct dfl_fpga_irq_set)
++
+ #endif /* _UAPI_LINUX_FPGA_DFL_H */
+-- 
+2.7.4
