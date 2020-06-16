@@ -1,57 +1,133 @@
-Return-Path: <SRS0=bNLF=77=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=bNLF=77=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:52138 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730235AbgFRBUC (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 17 Jun 2020 21:20:02 -0400
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.4 160/266] fpga: dfl: afu: Corrected error handling levels
-Date: Wed, 17 Jun 2020 21:14:45 -0400
-Message-Id: <20200618011631.604574-160-sashal@kernel.org>
-In-Reply-To: <20200618011631.604574-1-sashal@kernel.org>
-References: <20200618011631.604574-1-sashal@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Souptick Joarder <jrdr.linux@gmail.com>, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
+Return-Path: <SRS0=M3Wg=75=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=M3Wg=75=intel.com=yilun.xu@kernel.org>
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: [PATCH v7 6/7] fpga: dfl: afu: add AFU interrupt support
+Date: Tue, 16 Jun 2020 12:08:47 +0800
+Message-Id: <1592280528-6350-7-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <1592280528-6350-1-git-send-email-yilun.xu@intel.com>
+References: <1592280528-6350-1-git-send-email-yilun.xu@intel.com>
+To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: trix@redhat.com, bhu@redhat.com, mtosatti@redhat.com, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Souptick Joarder <jrdr.linux@gmail.com>
+AFU (Accelerated Function Unit) is dynamic region of the DFL based FPGA,
+and always defined by users. Some DFL based FPGA cards allow users to
+implement their own interrupts in AFU. In order to support this,
+hardware implements a new UINT (AFU Interrupt) private feature with
+related capability register which describes the number of supported
+AFU interrupts as well as the local index of the interrupts for
+software enumeration, and from software side, driver follows the common
+DFL interrupt notification and handling mechanism, and it implements
+two ioctls below for user to query number of irqs supported and set/unset
+interrupt triggers.
 
-[ Upstream commit c9d7e3da1f3c4cf5dddfc5d7ce4d76d013aba1cc ]
+ Ioctls:
+ * DFL_FPGA_PORT_UINT_GET_IRQ_NUM
+   get the number of irqs, which is used to determine how many interrupts
+   UINT feature supports.
 
-Corrected error handling goto sequnece. Level put_pages should
-be called when pinned pages >= 0 && pinned != npages. Level
-free_pages should be called when pinned pages < 0.
+ * DFL_FPGA_PORT_UINT_SET_IRQ
+   set/unset eventfds as AFU interrupt triggers.
 
-Fixes: fa8dda1edef9 ("fpga: dfl: afu: add DFL_FPGA_PORT_DMA_MAP/UNMAP ioctls support")
-Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
 Acked-by: Wu Hao <hao.wu@intel.com>
-Reviewed-by: Xu Yilun <yilun.xu@intel.com>
-Link: https://lore.kernel.org/r/1589825991-3545-1-git-send-email-jrdr.linux@gmail.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/fpga/dfl-afu-dma-region.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+v2: use DFL_FPGA_PORT_UINT_GET_IRQ_NUM instead of
+    DFL_FPGA_PORT_UINT_GET_INFO
+    Delete flags field for DFL_FPGA_PORT_UINT_SET_IRQ
+v3: put_user() instead of copy_to_user()
+    improves comments
+v4: use common functions to handle irq ioctls
+v5: Minor fixes for Hao's comments
+v6: No change
+v7: No change
+---
+ drivers/fpga/dfl-afu-main.c   | 28 ++++++++++++++++++++++++++++
+ include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
+ 2 files changed, 51 insertions(+)
 
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index 62f924489db5..5942343a5d6e 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -61,10 +61,10 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
- 				     region->pages);
- 	if (pinned < 0) {
- 		ret = pinned;
--		goto put_pages;
-+		goto free_pages;
- 	} else if (pinned != npages) {
- 		ret = -EFAULT;
--		goto free_pages;
-+		goto put_pages;
- 	}
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 357cd5d..7c84fee 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -529,6 +529,30 @@ static const struct dfl_feature_ops port_stp_ops = {
+ 	.init = port_stp_init,
+ };
  
- 	dev_dbg(dev, "%d pages pinned\n", pinned);
++static long
++port_uint_ioctl(struct platform_device *pdev, struct dfl_feature *feature,
++		unsigned int cmd, unsigned long arg)
++{
++	switch (cmd) {
++	case DFL_FPGA_PORT_UINT_GET_IRQ_NUM:
++		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
++	case DFL_FPGA_PORT_UINT_SET_IRQ:
++		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
++	default:
++		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
++		return -ENODEV;
++	}
++}
++
++static const struct dfl_feature_id port_uint_id_table[] = {
++	{.id = PORT_FEATURE_ID_UINT,},
++	{0,}
++};
++
++static const struct dfl_feature_ops port_uint_ops = {
++	.ioctl = port_uint_ioctl,
++};
++
+ static struct dfl_feature_driver port_feature_drvs[] = {
+ 	{
+ 		.id_table = port_hdr_id_table,
+@@ -547,6 +571,10 @@ static struct dfl_feature_driver port_feature_drvs[] = {
+ 		.ops = &port_stp_ops,
+ 	},
+ 	{
++		.id_table = port_uint_id_table,
++		.ops = &port_uint_ops,
++	},
++	{
+ 		.ops = NULL,
+ 	}
+ };
+diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+index b6495ea..1621b07 100644
+--- a/include/uapi/linux/fpga-dfl.h
++++ b/include/uapi/linux/fpga-dfl.h
+@@ -187,6 +187,29 @@ struct dfl_fpga_irq_set {
+ 					     DFL_PORT_BASE + 6,	\
+ 					     struct dfl_fpga_irq_set)
+ 
++/**
++ * DFL_FPGA_PORT_UINT_GET_IRQ_NUM - _IOR(DFL_FPGA_MAGIC, DFL_PORT_BASE + 7,
++ *								__u32 num_irqs)
++ *
++ * Get the number of irqs supported by the fpga AFU interrupt private
++ * feature.
++ * Return: 0 on success, -errno on failure.
++ */
++#define DFL_FPGA_PORT_UINT_GET_IRQ_NUM	_IOR(DFL_FPGA_MAGIC,	\
++					     DFL_PORT_BASE + 7, __u32)
++
++/**
++ * DFL_FPGA_PORT_UINT_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_PORT_BASE + 8,
++ *						struct dfl_fpga_irq_set)
++ *
++ * Set fpga AFU interrupt trigger if evtfds[n] is valid.
++ * Unset related interrupt trigger if evtfds[n] is a negative value.
++ * Return: 0 on success, -errno on failure.
++ */
++#define DFL_FPGA_PORT_UINT_SET_IRQ	_IOW(DFL_FPGA_MAGIC,	\
++					     DFL_PORT_BASE + 8,	\
++					     struct dfl_fpga_irq_set)
++
+ /* IOCTLs for FME file descriptor */
+ 
+ /**
 -- 
-2.25.1
+2.7.4
