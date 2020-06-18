@@ -1,148 +1,57 @@
-Return-Path: <SRS0=M3Wg=75=intel.com=yilun.xu@kernel.org>
-Return-Path: <SRS0=M3Wg=75=intel.com=yilun.xu@kernel.org>
-From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH v7 5/7] fpga: dfl: fme: add interrupt support for global error reporting
-Date: Tue, 16 Jun 2020 12:08:46 +0800
-Message-Id: <1592280528-6350-6-git-send-email-yilun.xu@intel.com>
-In-Reply-To: <1592280528-6350-1-git-send-email-yilun.xu@intel.com>
-References: <1592280528-6350-1-git-send-email-yilun.xu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: trix@redhat.com, bhu@redhat.com, mtosatti@redhat.com, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=bNLF=77=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=bNLF=77=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:42366 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729074AbgFRBNP (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 17 Jun 2020 21:13:15 -0400
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.7 237/388] fpga: dfl: afu: Corrected error handling levels
+Date: Wed, 17 Jun 2020 21:05:34 -0400
+Message-Id: <20200618010805.600873-237-sashal@kernel.org>
+In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
+References: <20200618010805.600873-1-sashal@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Souptick Joarder <jrdr.linux@gmail.com>, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
 
-Error reporting interrupt is very useful to notify users that some
-errors are detected by the hardware. Once users are notified, they
-could query hardware logged error states, no need to continuously
-poll on these states.
+From: Souptick Joarder <jrdr.linux@gmail.com>
 
-This patch adds interrupt support for fme global error reporting sub
-feature. It follows the common DFL interrupt notification and handling
-mechanism. And it implements two ioctls below for user to query
-number of irqs supported, and set/unset interrupt triggers.
+[ Upstream commit c9d7e3da1f3c4cf5dddfc5d7ce4d76d013aba1cc ]
 
- Ioctls:
- * DFL_FPGA_FME_ERR_GET_IRQ_NUM
-   get the number of irqs, which is used to determine whether/how many
-   interrupts fme error reporting feature supports.
+Corrected error handling goto sequnece. Level put_pages should
+be called when pinned pages >= 0 && pinned != npages. Level
+free_pages should be called when pinned pages < 0.
 
- * DFL_FPGA_FME_ERR_SET_IRQ
-   set/unset given eventfds as fme error reporting interrupt triggers.
-
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
+Fixes: fa8dda1edef9 ("fpga: dfl: afu: add DFL_FPGA_PORT_DMA_MAP/UNMAP ioctls support")
+Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
 Acked-by: Wu Hao <hao.wu@intel.com>
+Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+Link: https://lore.kernel.org/r/1589825991-3545-1-git-send-email-jrdr.linux@gmail.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-v2: use DFL_FPGA_FME_ERR_GET_IRQ_NUM instead of
-    DFL_FPGA_FME_ERR_GET_INFO
-    Delete flags field for DFL_FPGA_FME_ERR_SET_IRQ
-v3: put_user() instead of copy_to_user()
-    improves comments
-v4: use common functions to handle irq ioctls
-v5: Minor fixes for Hao's comments
-v6: No change
-v7: No change
----
- drivers/fpga/dfl-fme-error.c  | 18 ++++++++++++++++++
- drivers/fpga/dfl-fme-main.c   |  6 ++++++
- include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
- 3 files changed, 47 insertions(+)
+ drivers/fpga/dfl-afu-dma-region.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/fpga/dfl-fme-error.c b/drivers/fpga/dfl-fme-error.c
-index f897d41..51c2892 100644
---- a/drivers/fpga/dfl-fme-error.c
-+++ b/drivers/fpga/dfl-fme-error.c
-@@ -15,6 +15,7 @@
-  *   Mitchel, Henry <henry.mitchel@intel.com>
-  */
+diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+index 62f924489db5..5942343a5d6e 100644
+--- a/drivers/fpga/dfl-afu-dma-region.c
++++ b/drivers/fpga/dfl-afu-dma-region.c
+@@ -61,10 +61,10 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
+ 				     region->pages);
+ 	if (pinned < 0) {
+ 		ret = pinned;
+-		goto put_pages;
++		goto free_pages;
+ 	} else if (pinned != npages) {
+ 		ret = -EFAULT;
+-		goto free_pages;
++		goto put_pages;
+ 	}
  
-+#include <linux/fpga-dfl.h>
- #include <linux/uaccess.h>
- 
- #include "dfl.h"
-@@ -348,6 +349,22 @@ static void fme_global_err_uinit(struct platform_device *pdev,
- 	fme_err_mask(&pdev->dev, true);
- }
- 
-+static long
-+fme_global_error_ioctl(struct platform_device *pdev,
-+		       struct dfl_feature *feature,
-+		       unsigned int cmd, unsigned long arg)
-+{
-+	switch (cmd) {
-+	case DFL_FPGA_FME_ERR_GET_IRQ_NUM:
-+		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
-+	case DFL_FPGA_FME_ERR_SET_IRQ:
-+		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
-+	default:
-+		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
-+		return -ENODEV;
-+	}
-+}
-+
- const struct dfl_feature_id fme_global_err_id_table[] = {
- 	{.id = FME_FEATURE_ID_GLOBAL_ERR,},
- 	{0,}
-@@ -356,4 +373,5 @@ const struct dfl_feature_id fme_global_err_id_table[] = {
- const struct dfl_feature_ops fme_global_err_ops = {
- 	.init = fme_global_err_init,
- 	.uinit = fme_global_err_uinit,
-+	.ioctl = fme_global_error_ioctl,
- };
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index fc210d4..77ea04d 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -620,11 +620,17 @@ static int fme_release(struct inode *inode, struct file *filp)
- {
- 	struct dfl_feature_platform_data *pdata = filp->private_data;
- 	struct platform_device *pdev = pdata->dev;
-+	struct dfl_feature *feature;
- 
- 	dev_dbg(&pdev->dev, "Device File Release\n");
- 
- 	mutex_lock(&pdata->lock);
- 	dfl_feature_dev_use_end(pdata);
-+
-+	if (!dfl_feature_dev_use_count(pdata))
-+		dfl_fpga_dev_for_each_feature(pdata, feature)
-+			dfl_fpga_set_irq_triggers(feature, 0,
-+						  feature->nr_irqs, NULL);
- 	mutex_unlock(&pdata->lock);
- 
- 	return 0;
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-index 6c71c9d..b6495ea 100644
---- a/include/uapi/linux/fpga-dfl.h
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -230,4 +230,27 @@ struct dfl_fpga_fme_port_pr {
-  */
- #define DFL_FPGA_FME_PORT_ASSIGN     _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 2, int)
- 
-+/**
-+ * DFL_FPGA_FME_ERR_GET_IRQ_NUM - _IOR(DFL_FPGA_MAGIC, DFL_FME_BASE + 3,
-+ *							__u32 num_irqs)
-+ *
-+ * Get the number of irqs supported by the fpga fme error reporting private
-+ * feature. Currently hardware supports up to 1 irq.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+#define DFL_FPGA_FME_ERR_GET_IRQ_NUM	_IOR(DFL_FPGA_MAGIC,	\
-+					     DFL_FME_BASE + 3, __u32)
-+
-+/**
-+ * DFL_FPGA_FME_ERR_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_FME_BASE + 4,
-+ *						struct dfl_fpga_irq_set)
-+ *
-+ * Set fpga fme error reporting interrupt trigger if evtfds[n] is valid.
-+ * Unset related interrupt trigger if evtfds[n] is a negative value.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+#define DFL_FPGA_FME_ERR_SET_IRQ	_IOW(DFL_FPGA_MAGIC,	\
-+					     DFL_FME_BASE + 4,	\
-+					     struct dfl_fpga_irq_set)
-+
- #endif /* _UAPI_LINUX_FPGA_DFL_H */
+ 	dev_dbg(dev, "%d pages pinned\n", pinned);
 -- 
-2.7.4
+2.25.1
