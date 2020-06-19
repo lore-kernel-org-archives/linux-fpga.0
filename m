@@ -1,137 +1,64 @@
-Return-Path: <SRS0=dZuy=7R=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=dZuy=7R=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:39770 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728338AbgFDIuk (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 4 Jun 2020 04:50:40 -0400
-From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH v6 6/7] fpga: dfl: afu: add AFU interrupt support
-Date: Thu,  4 Jun 2020 16:46:27 +0800
-Message-Id: <1591260388-15128-7-git-send-email-yilun.xu@intel.com>
-In-Reply-To: <1591260388-15128-1-git-send-email-yilun.xu@intel.com>
-References: <1591260388-15128-1-git-send-email-yilun.xu@intel.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: mfd@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: trix@redhat.com, bhu@redhat.com, mtosatti@redhat.com, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
+Date: Thu, 18 Jun 2020 18:40:38 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH][next] fpga: dfl: Use struct_size() in kzalloc()
+Message-ID: <20200619014036.GF3685@epycbox.lan>
+References: <20200617221039.GA21877@embeddedor>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200617221039.GA21877@embeddedor>
+To: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-AFU (Accelerated Function Unit) is dynamic region of the DFL based FPGA,
-and always defined by users. Some DFL based FPGA cards allow users to
-implement their own interrupts in AFU. In order to support this,
-hardware implements a new UINT (AFU Interrupt) private feature with
-related capability register which describes the number of supported
-AFU interrupts as well as the local index of the interrupts for
-software enumeration, and from software side, driver follows the common
-DFL interrupt notification and handling mechanism, and it implements
-two ioctls below for user to query number of irqs supported and set/unset
-interrupt triggers.
+On Wed, Jun 17, 2020 at 05:10:39PM -0500, Gustavo A. R. Silva wrote:
+> Make use of the struct_size() helper instead of an open-coded version
+> in order to avoid any potential type mistakes. Also, remove unnecessary
+> function dfl_feature_platform_data_size().
+> 
+> This code was detected with the help of Coccinelle and, audited and
+> fixed manually.
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> ---
+>  drivers/fpga/dfl.c | 3 +--
+>  drivers/fpga/dfl.h | 6 ------
+>  2 files changed, 1 insertion(+), 8 deletions(-)
+> 
+> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+> index 990994874bf1..2dd13e036d45 100644
+> --- a/drivers/fpga/dfl.c
+> +++ b/drivers/fpga/dfl.c
+> @@ -487,8 +487,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+>  	 * it will be automatically freed by device's release() callback,
+>  	 * platform_device_release().
+>  	 */
+> -	pdata = kzalloc(dfl_feature_platform_data_size(binfo->feature_num),
+> -			GFP_KERNEL);
+> +	pdata = kzalloc(struct_size(pdata, features, binfo->feature_num), GFP_KERNEL);
+>  	if (!pdata)
+>  		return -ENOMEM;
+>  
+> diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+> index 2f5d3052e36e..044b0e88e5a8 100644
+> --- a/drivers/fpga/dfl.h
+> +++ b/drivers/fpga/dfl.h
+> @@ -299,12 +299,6 @@ struct dfl_feature_ops {
+>  #define DFL_FPGA_FEATURE_DEV_FME		"dfl-fme"
+>  #define DFL_FPGA_FEATURE_DEV_PORT		"dfl-port"
+>  
+> -static inline int dfl_feature_platform_data_size(const int num)
+> -{
+> -	return sizeof(struct dfl_feature_platform_data) +
+> -		num * sizeof(struct dfl_feature);
+> -}
+> -
+>  void dfl_fpga_dev_feature_uinit(struct platform_device *pdev);
+>  int dfl_fpga_dev_feature_init(struct platform_device *pdev,
+>  			      struct dfl_feature_driver *feature_drvs);
+> -- 
+> 2.27.0
+> 
+Applied to for-next,
 
- Ioctls:
- * DFL_FPGA_PORT_UINT_GET_IRQ_NUM
-   get the number of irqs, which is used to determine how many interrupts
-   UINT feature supports.
-
- * DFL_FPGA_PORT_UINT_SET_IRQ
-   set/unset eventfds as AFU interrupt triggers.
-
-Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
-Acked-by: Wu Hao <hao.wu@intel.com>
-----
-v2: use DFL_FPGA_PORT_UINT_GET_IRQ_NUM instead of
-    DFL_FPGA_PORT_UINT_GET_INFO
-    Delete flags field for DFL_FPGA_PORT_UINT_SET_IRQ
-v3: put_user() instead of copy_to_user()
-    improves comments
-v4: use common functions to handle irq ioctls
-v5: Minor fixes for Hao's comments
-v6: No change
----
- drivers/fpga/dfl-afu-main.c   | 28 ++++++++++++++++++++++++++++
- include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
- 2 files changed, 51 insertions(+)
-
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 357cd5d..7c84fee 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -529,6 +529,30 @@ static const struct dfl_feature_ops port_stp_ops = {
- 	.init = port_stp_init,
- };
- 
-+static long
-+port_uint_ioctl(struct platform_device *pdev, struct dfl_feature *feature,
-+		unsigned int cmd, unsigned long arg)
-+{
-+	switch (cmd) {
-+	case DFL_FPGA_PORT_UINT_GET_IRQ_NUM:
-+		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
-+	case DFL_FPGA_PORT_UINT_SET_IRQ:
-+		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
-+	default:
-+		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
-+		return -ENODEV;
-+	}
-+}
-+
-+static const struct dfl_feature_id port_uint_id_table[] = {
-+	{.id = PORT_FEATURE_ID_UINT,},
-+	{0,}
-+};
-+
-+static const struct dfl_feature_ops port_uint_ops = {
-+	.ioctl = port_uint_ioctl,
-+};
-+
- static struct dfl_feature_driver port_feature_drvs[] = {
- 	{
- 		.id_table = port_hdr_id_table,
-@@ -547,6 +571,10 @@ static struct dfl_feature_driver port_feature_drvs[] = {
- 		.ops = &port_stp_ops,
- 	},
- 	{
-+		.id_table = port_uint_id_table,
-+		.ops = &port_uint_ops,
-+	},
-+	{
- 		.ops = NULL,
- 	}
- };
-diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-index b6495ea..1621b07 100644
---- a/include/uapi/linux/fpga-dfl.h
-+++ b/include/uapi/linux/fpga-dfl.h
-@@ -187,6 +187,29 @@ struct dfl_fpga_irq_set {
- 					     DFL_PORT_BASE + 6,	\
- 					     struct dfl_fpga_irq_set)
- 
-+/**
-+ * DFL_FPGA_PORT_UINT_GET_IRQ_NUM - _IOR(DFL_FPGA_MAGIC, DFL_PORT_BASE + 7,
-+ *								__u32 num_irqs)
-+ *
-+ * Get the number of irqs supported by the fpga AFU interrupt private
-+ * feature.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+#define DFL_FPGA_PORT_UINT_GET_IRQ_NUM	_IOR(DFL_FPGA_MAGIC,	\
-+					     DFL_PORT_BASE + 7, __u32)
-+
-+/**
-+ * DFL_FPGA_PORT_UINT_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_PORT_BASE + 8,
-+ *						struct dfl_fpga_irq_set)
-+ *
-+ * Set fpga AFU interrupt trigger if evtfds[n] is valid.
-+ * Unset related interrupt trigger if evtfds[n] is a negative value.
-+ * Return: 0 on success, -errno on failure.
-+ */
-+#define DFL_FPGA_PORT_UINT_SET_IRQ	_IOW(DFL_FPGA_MAGIC,	\
-+					     DFL_PORT_BASE + 8,	\
-+					     struct dfl_fpga_irq_set)
-+
- /* IOCTLs for FME file descriptor */
- 
- /**
--- 
-2.7.4
+Thanks!
