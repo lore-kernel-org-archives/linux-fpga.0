@@ -1,59 +1,41 @@
-Return-Path: <gustavoars@kernel.org>
-Return-Path: <gustavoars@kernel.org>
-Date: Wed, 17 Jun 2020 17:10:39 -0500
-From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Subject: [PATCH][next] fpga: dfl: Use struct_size() in kzalloc()
-Message-ID: <20200617221039.GA21877@embeddedor>
+Date: Thu, 18 Jun 2020 18:38:09 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH 2/5] fpga manager: xilinx-spi: valid for the 7 Series too
+Message-ID: <20200619013807.GB3685@epycbox.lan>
+References: <20200611211144.9421-1-luca@lucaceresoli.net>
+ <20200611211144.9421-2-luca@lucaceresoli.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-To: Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+In-Reply-To: <20200611211144.9421-2-luca@lucaceresoli.net>
+To: Luca Ceresoli <luca@lucaceresoli.net>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Michal Simek <michal.simek@xilinx.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Anatolij Gustschin <agust@denx.de>
 List-ID: <linux-fpga@vger.kernel.org>
 
-Make use of the struct_size() helper instead of an open-coded version
-in order to avoid any potential type mistakes. Also, remove unnecessary
-function dfl_feature_platform_data_size().
+On Thu, Jun 11, 2020 at 11:11:41PM +0200, Luca Ceresoli wrote:
+> The Xilinx 7-series uses the same protocol, mention that.
+> 
+> Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
+> ---
+>  drivers/fpga/xilinx-spi.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/fpga/xilinx-spi.c b/drivers/fpga/xilinx-spi.c
+> index 272ee0c22822..79106626c3f8 100644
+> --- a/drivers/fpga/xilinx-spi.c
+> +++ b/drivers/fpga/xilinx-spi.c
+> @@ -1,6 +1,6 @@
+>  // SPDX-License-Identifier: GPL-2.0-only
+>  /*
+> - * Xilinx Spartan6 Slave Serial SPI Driver
+> + * Xilinx Spartan6 and 7 Series Slave Serial SPI Driver
+>   *
+>   * Copyright (C) 2017 DENX Software Engineering
+>   *
+> -- 
+> 2.27.0
+> 
 
-This code was detected with the help of Coccinelle and, audited and
-fixed manually.
+Applied to for-next,
 
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
----
- drivers/fpga/dfl.c | 3 +--
- drivers/fpga/dfl.h | 6 ------
- 2 files changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 990994874bf1..2dd13e036d45 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -487,8 +487,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
- 	 * it will be automatically freed by device's release() callback,
- 	 * platform_device_release().
- 	 */
--	pdata = kzalloc(dfl_feature_platform_data_size(binfo->feature_num),
--			GFP_KERNEL);
-+	pdata = kzalloc(struct_size(pdata, features, binfo->feature_num), GFP_KERNEL);
- 	if (!pdata)
- 		return -ENOMEM;
- 
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 2f5d3052e36e..044b0e88e5a8 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -299,12 +299,6 @@ struct dfl_feature_ops {
- #define DFL_FPGA_FEATURE_DEV_FME		"dfl-fme"
- #define DFL_FPGA_FEATURE_DEV_PORT		"dfl-port"
- 
--static inline int dfl_feature_platform_data_size(const int num)
--{
--	return sizeof(struct dfl_feature_platform_data) +
--		num * sizeof(struct dfl_feature);
--}
--
- void dfl_fpga_dev_feature_uinit(struct platform_device *pdev);
- int dfl_fpga_dev_feature_init(struct platform_device *pdev,
- 			      struct dfl_feature_driver *feature_drvs);
--- 
-2.27.0
+Thanks
