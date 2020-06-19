@@ -1,33 +1,29 @@
-Return-Path: <SRS0=PJwp=7T=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=PJwp=7T=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from us-smtp-delivery-1.mimecast.com ([207.211.31.120]:27552 "EHLO
-        us-smtp-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1727994AbgFFVCw (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sat, 6 Jun 2020 17:02:52 -0400
-Received: by mail-qv1-f72.google.com with SMTP id k35so10634385qva.18
-        for <linux-fpga@vger.kernel.org>; Sat, 06 Jun 2020 14:02:49 -0700 (PDT)
-From: trix@redhat.com
-Subject: [PATCH 0/1] fpga: dfl: Fix dead store
-Date: Sat,  6 Jun 2020 14:02:40 -0700
-Message-Id: <20200606210241.7459-1-trix@redhat.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: mdf@kernel.org
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, Tom Rix <trix@redhat.com>
+Date: Thu, 18 Jun 2020 18:37:42 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH 1/5] dt-bindings: fpga: xilinx-slave-serial: valid for
+ the 7 Series too
+Message-ID: <20200619013739.GA3685@epycbox.lan>
+References: <20200611211144.9421-1-luca@lucaceresoli.net>
+ <20200617223841.GA2967136@bogus>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200617223841.GA2967136@bogus>
+To: Rob Herring <robh@kernel.org>
+Cc: Luca Ceresoli <luca@lucaceresoli.net>, linux-fpga@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Anatolij Gustschin <agust@denx.de>, linux-kernel@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>, linux-arm-kernel@lists.infradead.org, Moritz Fischer <mdf@kernel.org>, devicetree@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Tom Rix <trix@redhat.com>
+On Wed, Jun 17, 2020 at 04:38:41PM -0600, Rob Herring wrote:
+> On Thu, 11 Jun 2020 23:11:40 +0200, Luca Ceresoli wrote:
+> > The Xilinx 7-series uses the same protocol, mention that.
+> > 
+> > Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
+> > ---
+> >  .../devicetree/bindings/fpga/xilinx-slave-serial.txt     | 9 ++++++---
+> >  1 file changed, 6 insertions(+), 3 deletions(-)
+> > 
+> 
+> Acked-by: Rob Herring <robh@kernel.org>
+Applied to for-next,
 
-Repo linux-next
-Tag next-20200605
-
-A couple of fixes for dead stores found by clang's sa tool scan-build
-
-Tom Rix (1):
-  Fix dead store
-
- drivers/fpga/fpga-bridge.c | 6 ++----
- drivers/fpga/fpga-mgr.c    | 4 +---
- 2 files changed, 3 insertions(+), 7 deletions(-)
-
--- 
-2.26.0
+Thanks
