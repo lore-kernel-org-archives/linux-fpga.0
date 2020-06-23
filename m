@@ -1,122 +1,137 @@
-Return-Path: <SRS0=JyFA=7W=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=JyFA=7W=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from us-smtp-delivery-1.mimecast.com ([205.139.110.120]:48978 "EHLO
-        us-smtp-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1728126AbgFINCe (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 9 Jun 2020 09:02:34 -0400
-Received: by mail-qk1-f198.google.com with SMTP id 140so16970197qko.23
-        for <linux-fpga@vger.kernel.org>; Tue, 09 Jun 2020 06:02:30 -0700 (PDT)
-From: trix@redhat.com
-Subject: [PATCH 1/1] selftests: fpga: dfl: A test for afu interrupt support
-Date: Tue,  9 Jun 2020 06:02:08 -0700
-Message-Id: <20200609130208.27390-2-trix@redhat.com>
-In-Reply-To: <20200609130208.27390-1-trix@redhat.com>
-References: <20200609130208.27390-1-trix@redhat.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-fpga@vger.kernel.org, shuah@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, Tom Rix <trix@redhat.com>
+MIME-Version: 1.0
+Date: Tue, 23 Jun 2020 15:42:07 -0700
+References: <1592280528-6350-1-git-send-email-yilun.xu@intel.com>
+	<20200622064806.GA5101@yilunxu-OptiPlex-7050>
+	<c9a33ee6-67f2-36b8-0870-ebc038b929ce@redhat.com>
+	<20200623052613.GB23037@yilunxu-OptiPlex-7050>
+In-Reply-To: <20200623052613.GB23037@yilunxu-OptiPlex-7050>
+Message-ID: <CAJYdmeM7ec4PMtRV+qJrMDA9V+yCEv-zPAnSCFjx1V2Ca-aw9g@mail.gmail.com>
+Subject: Re: [PATCH v7 0/7] Add interrupt support to FPGA DFL drivers
+From: Moritz Fischer <moritz.fischer.private@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+To: Xu Yilun <yilun.xu@intel.com>
+Cc: Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, bhu@redhat.com, mtosatti@redhat.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, jun.j.tian@intel.com, Wu Hao <hao.wu@intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Tom Rix <trix@redhat.com>
+Will look at it this week.
 
-Check that the ioctl DFL_FPGA_PORT_ERR_GET_IRQ_NUM returns
-an expected result.
+- Moritz
 
-Tested on vf device 0xbcc1
-
-Sample run with
-$ sudo make -C tools/testing/selftests TARGETS=drivers/fpga run_tests
-...
-ok 1 selftests: drivers/fpga: afu_intr
-
-Signed-off-by: Tom Rix <trix@redhat.com>
----
- tools/testing/selftests/Makefile              |  1 +
- tools/testing/selftests/drivers/fpga/Makefile |  9 +++++
- .../testing/selftests/drivers/fpga/afu_intr.c | 38 +++++++++++++++++++
- tools/testing/selftests/drivers/fpga/config   |  1 +
- 4 files changed, 49 insertions(+)
- create mode 100644 tools/testing/selftests/drivers/fpga/Makefile
- create mode 100644 tools/testing/selftests/drivers/fpga/afu_intr.c
- create mode 100644 tools/testing/selftests/drivers/fpga/config
-
-diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
-index 1195bd85af38..4c6eda659125 100644
---- a/tools/testing/selftests/Makefile
-+++ b/tools/testing/selftests/Makefile
-@@ -9,6 +9,7 @@ TARGETS += clone3
- TARGETS += cpufreq
- TARGETS += cpu-hotplug
- TARGETS += drivers/dma-buf
-+TARGETS += drivers/fpga
- TARGETS += efivarfs
- TARGETS += exec
- TARGETS += filesystems
-diff --git a/tools/testing/selftests/drivers/fpga/Makefile b/tools/testing/selftests/drivers/fpga/Makefile
-new file mode 100644
-index 000000000000..0a472e8c67c5
---- /dev/null
-+++ b/tools/testing/selftests/drivers/fpga/Makefile
-@@ -0,0 +1,9 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+CFLAGS += -I../../../../../usr/include/
-+CFLAGS += -I../../../../../include/uapi/
-+
-+TEST_GEN_PROGS := afu_intr
-+
-+top_srcdir ?=../../../../..
-+
-+include ../../lib.mk
-diff --git a/tools/testing/selftests/drivers/fpga/afu_intr.c b/tools/testing/selftests/drivers/fpga/afu_intr.c
-new file mode 100644
-index 000000000000..aa1efba94605
---- /dev/null
-+++ b/tools/testing/selftests/drivers/fpga/afu_intr.c
-@@ -0,0 +1,38 @@
-+// SPDX-License-Identifier: GPL-2.0
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <stdint.h>
-+#include <string.h>
-+#include <linux/fcntl.h>
-+#include <linux/fpga-dfl.h>
-+
-+#define TEST_PREFIX	"drivers/fpga/afu_intr"
-+
-+int main(int argc, char *argv[])
-+{
-+	int devfd, status;
-+	struct dfl_fpga_port_info port_info;
-+	uint32_t irq_num;
-+
-+	devfd = open("/dev/dfl-port.0", O_RDONLY);
-+	if (devfd < 0) {
-+		printf("%s: [skip,no-ufpgaintr]\n", TEST_PREFIX);
-+		exit(77);
-+	}
-+
-+	/*
-+	 * From fpga-dl.h :
-+	 * Currently hardware supports up to 1 irq.
-+	 * Return: 0 on success, -errno on failure.
-+	 */
-+	irq_num = -1;
-+	status = ioctl(devfd, DFL_FPGA_PORT_ERR_GET_IRQ_NUM, &irq_num);
-+	if (status != 0 || irq_num > 255) {
-+		printf("%s: [FAIL,err-get-irq-num]\n", TEST_PREFIX);
-+		close(devfd);
-+		exit(1);
-+	}
-+
-+	close(devfd);
-+	return 0;
-+}
-diff --git a/tools/testing/selftests/drivers/fpga/config b/tools/testing/selftests/drivers/fpga/config
-new file mode 100644
-index 000000000000..e2111b81d8d7
---- /dev/null
-+++ b/tools/testing/selftests/drivers/fpga/config
-@@ -0,0 +1 @@
-+CONFIG_FPGA_DFL_AFU=m
--- 
-2.18.1
+On Mon, Jun 22, 2020 at 10:30 PM Xu Yilun <yilun.xu@intel.com> wrote:
+>
+> On Mon, Jun 22, 2020 at 05:27:20AM -0700, Tom Rix wrote:
+> > In addition to reviewing, I have run these changes on the pac a10 card and while i do not have an afu using interrupts, I have exercised some of the new interfaces.
+> >
+> > The most useful i have submitted to selftests drivers/fpga.  In the future, this would be a good place to put other fpga unit tests.
+> >
+> > The selftest patch depends on this change.
+> >
+> > So you can also add
+> >
+> > Tested-by: Tom Rix <trix@redhat.com>
+>
+> Yes I'll add your Tested-by tag.
+>
+> Thanks,
+> Yilun
+>
+> >
+> > Tom
+> >
+> > On 6/21/20 11:48 PM, Xu Yilun wrote:
+> > > Hi Moritz:
+> > >
+> > > Could you please help review the patchset when you have time?
+> > >
+> > > You have already reviewed the first 3 patches some time ago. The
+> > > comments are all fixed. Hao and Redhat guys also have done several
+> > > rounds of review. The patches are all Acked-by Hao, reviewed by
+> > > Marcelo & Tom.
+> > >
+> > > There is little change to the code for several months, seems it stays
+> > > ready and just need your final Ack.
+> > >
+> > > Actually this is the last feature for our first generation PAC A10 Card,
+> > > and is important for users to have the full support.
+> > >
+> > > We really need your help on code review ...
+> > >
+> > > Many thanks!
+> > > Yilun
+> > >
+> > > On Tue, Jun 16, 2020 at 12:08:41PM +0800, Xu Yilun wrote:
+> > >> This patchset add interrupt support to FPGA DFL drivers.
+> > >>
+> > >> With these patches, DFL driver will parse and assign interrupt resources
+> > >> for enumerated feature devices and their sub features.
+> > >>
+> > >> This patchset also introduces a set of APIs for user to monitor DFL
+> > >> interrupts. Three sub features (DFL FME error, DFL AFU error and user
+> > >> interrupt) drivers now support these APIs.
+> > >>
+> > >> Patch #1: DFL framework change. Accept interrupt info input from DFL bus
+> > >>           driver, and add interrupt parsing and assignment for feature
+> > >>           sub devices.
+> > >> Patch #2: DFL pci driver change, add interrupt info on DFL enumeration.
+> > >> Patch #3: DFL framework change. Add helper functions for feature sub
+> > >>           device drivers to handle interrupt and notify users.
+> > >> Patch #4: Add interrupt support for AFU error reporting sub feature.
+> > >> Patch #5: Add interrupt support for FME global error reporting sub
+> > >>           feature.
+> > >> Patch #6: Add interrupt support for a new sub feature, to handle user
+> > >>           interrupts implemented in AFU.
+> > >> Patch #7: Documentation for DFL interrupt handling.
+> > >>
+> > >> Main changes from v1:
+> > >>  - Early validating irq table for each feature in parse_feature_irq()
+> > >>    in Patch #1.
+> > >>  - Changes IOCTL interfaces. use DFL_FPGA_FME/PORT_XXX_GET_IRQ_NUM
+> > >>    instead of DFL_FPGA_FME/PORT_XXX_GET_INFO, delete flag field for
+> > >>    DFL_FPGA_FME/PORT_XXX_SET_IRQ param
+> > >>
+> > >> Main changes from v2:
+> > >>  - put parse_feature_irqs() inside create_feature_instance().
+> > >>  - refines code for dfl_fpga_set_irq_triggers, delete local variable j.
+> > >>  - put_user() instead of copy_to_user() for DFL_FPGA_XXX_GET_IRQ_NUM IOCTL
+> > >>
+> > >> Main changes from v3:
+> > >>  - rebased to 5.7-rc1.
+> > >>  - fail the dfl enumeration when irq parsing error happens.
+> > >>  - Add 2 helper functions in dfl.c to handle generic irq ioctls in feature
+> > >>    drivers.
+> > >>
+> > >> Main changes from v4:
+> > >>  - Minor fixes for Hao's comments.
+> > >>
+> > >> Main changes from v5:
+> > >>  - Remove unnecessary type casting in Patch #1 & #3.
+> > >>  - Minor fixes for Moritz's comments.
+> > >>
+> > >> Main changes from v6:
+> > >>  - Add the header file <linux/interrupt.h> for Patch #1, to fix build
+> > >>    error on ARCH=xtensa
+> > >>  - Minor fixes in Patch #2 & #3.
+> > >>
+> > >> Xu Yilun (7):
+> > >>   fpga: dfl: parse interrupt info for feature devices on enumeration
+> > >>   fpga: dfl: pci: add irq info for feature devices enumeration
+> > >>   fpga: dfl: introduce interrupt trigger setting API
+> > >>   fpga: dfl: afu: add interrupt support for port error reporting
+> > >>   fpga: dfl: fme: add interrupt support for global error reporting
+> > >>   fpga: dfl: afu: add AFU interrupt support
+> > >>   Documentation: fpga: dfl: add descriptions for interrupt related
+> > >>     interfaces.
+> > >>
+> > >>  Documentation/fpga/dfl.rst    |  19 +++
+> > >>  drivers/fpga/dfl-afu-error.c  |  17 +++
+> > >>  drivers/fpga/dfl-afu-main.c   |  32 +++++
+> > >>  drivers/fpga/dfl-fme-error.c  |  18 +++
+> > >>  drivers/fpga/dfl-fme-main.c   |   6 +
+> > >>  drivers/fpga/dfl-pci.c        |  76 +++++++++--
+> > >>  drivers/fpga/dfl.c            | 310 ++++++++++++++++++++++++++++++++++++++++++
+> > >>  drivers/fpga/dfl.h            |  57 ++++++++
+> > >>  include/uapi/linux/fpga-dfl.h |  82 +++++++++++
+> > >>  9 files changed, 608 insertions(+), 9 deletions(-)
+> > >>
+> > >> --
+> > >> 2.7.4
