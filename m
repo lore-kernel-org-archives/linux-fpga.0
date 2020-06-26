@@ -1,85 +1,61 @@
-Return-Path: <SRS0=dZuy=7R=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=dZuy=7R=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:16348 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726802AbgFDIuN (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 4 Jun 2020 04:50:13 -0400
-From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH v6 0/7] Add interrupt support to FPGA DFL drivers
-Date: Thu,  4 Jun 2020 16:46:21 +0800
-Message-Id: <1591260388-15128-1-git-send-email-yilun.xu@intel.com>
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: mfd@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: trix@redhat.com, bhu@redhat.com, mtosatti@redhat.com, gregkh@linuxfoundation.org, Xu Yilun <yilun.xu@intel.com>
+Date: Fri, 26 Jun 2020 14:02:01 -0700
+From: Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v2 1/2] dt-bindings: fpga: xilinx-slave-serial: add
+ optional INIT_B GPIO
+Message-ID: <20200626210200.GA2259@epycbox.lan>
+References: <20200622133723.23326-1-luca@lucaceresoli.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200622133723.23326-1-luca@lucaceresoli.net>
+To: Luca Ceresoli <luca@lucaceresoli.net>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>, Rob Herring <robh+dt@kernel.org>, Michal Simek <michal.simek@xilinx.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Anatolij Gustschin <agust@denx.de>
+List-ID: <linux-fpga@vger.kernel.org>
 
-This patchset add interrupt support to FPGA DFL drivers.
+On Mon, Jun 22, 2020 at 03:37:22PM +0200, Luca Ceresoli wrote:
+> The INIT_B is used by the 6 and 7 series to report the programming status,
+> providing more control and information about programming errors.
+> 
+> Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
+> 
+> ---
+> 
+> Changes in v2:
+>  - rename init_b-gpios to init-b-gpios (Rob Herring suggested to not use '_'
+>    in property names)
+> ---
+>  .../devicetree/bindings/fpga/xilinx-slave-serial.txt       | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/fpga/xilinx-slave-serial.txt b/Documentation/devicetree/bindings/fpga/xilinx-slave-serial.txt
+> index 9f103f3872e8..5ef659c1394d 100644
+> --- a/Documentation/devicetree/bindings/fpga/xilinx-slave-serial.txt
+> +++ b/Documentation/devicetree/bindings/fpga/xilinx-slave-serial.txt
+> @@ -16,6 +16,10 @@ Required properties:
+>  - prog_b-gpios: config pin (referred to as PROGRAM_B in the manual)
+>  - done-gpios: config status pin (referred to as DONE in the manual)
+>  
+> +Optional properties:
+> +- init-b-gpios: initialization status and configuration error pin
+> +                (referred to as INIT_B in the manual)
+> +
+>  Example for full FPGA configuration:
+>  
+>  	fpga-region0 {
+> @@ -40,7 +44,8 @@ Example for full FPGA configuration:
+>  			spi-max-frequency = <60000000>;
+>  			spi-cpha;
+>  			reg = <0>;
+> -			done-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
+>  			prog_b-gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;
+> +			init-b-gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;
+> +			done-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
+>  		};
+>  	};
+> -- 
+> 2.27.0
+> 
 
-With these patches, DFL driver will parse and assign interrupt resources
-for enumerated feature devices and their sub features.
+Will apply to for-next,
 
-This patchset also introduces a set of APIs for user to monitor DFL
-interrupts. Three sub features (DFL FME error, DFL AFU error and user
-interrupt) drivers now support these APIs.
-
-Patch #1: DFL framework change. Accept interrupt info input from DFL bus
-          driver, and add interrupt parsing and assignment for feature
-          sub devices.
-Patch #2: DFL pci driver change, add interrupt info on DFL enumeration.
-Patch #3: DFL framework change. Add helper functions for feature sub
-          device drivers to handle interrupt and notify users.
-Patch #4: Add interrupt support for AFU error reporting sub feature.
-Patch #5: Add interrupt support for FME global error reporting sub
-          feature.
-Patch #6: Add interrupt support for a new sub feature, to handle user
-          interrupts implemented in AFU.
-Patch #7: Documentation for DFL interrupt handling.
-
-Main changes from v1: 
- - Early validating irq table for each feature in parse_feature_irq()
-   in Patch #1. 
- - Changes IOCTL interfaces. use DFL_FPGA_FME/PORT_XXX_GET_IRQ_NUM
-   instead of DFL_FPGA_FME/PORT_XXX_GET_INFO, delete flag field for 
-   DFL_FPGA_FME/PORT_XXX_SET_IRQ param
-
-Main changes from v2:
- - put parse_feature_irqs() inside create_feature_instance().
- - refines code for dfl_fpga_set_irq_triggers, delete local variable j.
- - put_user() instead of copy_to_user() for DFL_FPGA_XXX_GET_IRQ_NUM IOCTL
-
-Main changes from v3:
- - rebased to 5.7-rc1.
- - fail the dfl enumeration when irq parsing error happens.
- - Add 2 helper functions in dfl.c to handle generic irq ioctls in feature
-   drivers.
-
-Main changes from v4:
- - Minor fixes for Hao's comments.
-
-Main changes from v5:
- - Remove unnecessary type casting in Patch #1 & #3.
- - Minor fixes for Moritz's comments.
-
-Xu Yilun (7):
-  fpga: dfl: parse interrupt info for feature devices on enumeration
-  fpga: dfl: pci: add irq info for feature devices enumeration
-  fpga: dfl: introduce interrupt trigger setting API
-  fpga: dfl: afu: add interrupt support for port error reporting
-  fpga: dfl: fme: add interrupt support for global error reporting
-  fpga: dfl: afu: add AFU interrupt support
-  Documentation: fpga: dfl: add descriptions for interrupt related
-    interfaces.
-
- Documentation/fpga/dfl.rst    |  19 +++
- drivers/fpga/dfl-afu-error.c  |  17 +++
- drivers/fpga/dfl-afu-main.c   |  32 +++++
- drivers/fpga/dfl-fme-error.c  |  18 +++
- drivers/fpga/dfl-fme-main.c   |   6 +
- drivers/fpga/dfl-pci.c        |  81 +++++++++--
- drivers/fpga/dfl.c            | 308 ++++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl.h            |  57 ++++++++
- include/uapi/linux/fpga-dfl.h |  82 +++++++++++
- 9 files changed, 611 insertions(+), 9 deletions(-)
-
--- 
-2.7.4
+Thanks!
