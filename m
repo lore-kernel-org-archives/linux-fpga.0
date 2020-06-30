@@ -1,41 +1,143 @@
-Return-Path: <SRS0=WJZw=AL=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=WJZw=AL=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from us-smtp-delivery-1.mimecast.com ([207.211.31.120]:43508 "EHLO
-        us-smtp-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1726122AbgF3SoY (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 30 Jun 2020 14:44:24 -0400
-Received: by mail-qk1-f197.google.com with SMTP id q192so5015675qka.13
-        for <linux-fpga@vger.kernel.org>; Tue, 30 Jun 2020 11:44:20 -0700 (PDT)
+Return-Path: <SRS0=YL2m=AL=infradead.org=rdunlap@kernel.org>
+Return-Path: <SRS0=YL2m=AL=infradead.org=rdunlap@kernel.org>
 Subject: Re: [RFC 1/1] fpga: dfl: RFC PCI config
 References: <20200630171656.20151-1-trix@redhat.com>
  <20200630171656.20151-2-trix@redhat.com>
- <67f7f2b8-3567-aadd-30d6-4cfbc0bc8ce5@infradead.org>
-From: Tom Rix <trix@redhat.com>
-Message-ID: <78a250ab-29ad-f7cb-3fa2-482e76db207a@redhat.com>
-Date: Tue, 30 Jun 2020 11:44:16 -0700
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <67f7f2b8-3567-aadd-30d6-4cfbc0bc8ce5@infradead.org>
+Date: Tue, 30 Jun 2020 10:26:19 -0700
 MIME-Version: 1.0
-In-Reply-To: <67f7f2b8-3567-aadd-30d6-4cfbc0bc8ce5@infradead.org>
+In-Reply-To: <20200630171656.20151-2-trix@redhat.com>
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
 Content-Language: en-US
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: Randy Dunlap <rdunlap@infradead.org>, hao.wu@intel.com, mdf@kernel.org, corbet@lwn.net
+Content-Transfer-Encoding: 7bit
+To: trix@redhat.com, hao.wu@intel.com, mdf@kernel.org, corbet@lwn.net
 Cc: linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+List-ID: <linux-fpga@vger.kernel.org>
 
-> I haven't tested this, but in general it's not safe to select something like
-> SENSORS* or HWMON* unless you first check that CONFIG_HWMON is enabled.
-> Otherwise this would usually cause kconfig warning(s).
->
-> But don't add things like
-> 	select HWMON
-> 	select SPI
-> 	select SPI_MASTER
->
-> because we don't enable subsystems (like HWMON or SPI) just inside one
-> driver's kconfig entry.
-> The driver(s) should instead depend on HWMON, SPI, SPI_MASTER etc.
+On 6/30/20 10:16 AM, trix@redhat.com wrote:
+> From: Tom Rix <trix@redhat.com>
+> 
+> Create some top level configs the map to dfl pci cards.
+> 
+> Autoselect the parts of fpga that are needed to run these cards
+> as well as the other subsystem configs to the card's subdevices.
+> 
+> Signed-off-by: Tom Rix <trix@redhat.com>
+> ---
+>  Documentation/fpga/dfl.rst | 33 +++++++++++++++++++++++++++++++++
+>  drivers/fpga/Kconfig       | 28 ++++++++++++++++++++++++++++
+>  2 files changed, 61 insertions(+)
+> 
+> diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+> index d7648d7c7eee..3a872bc8e3d3 100644
+> --- a/Documentation/fpga/dfl.rst
+> +++ b/Documentation/fpga/dfl.rst
+> @@ -500,6 +500,39 @@ Developer only needs to provide a sub feature driver with matched feature id.
+>  FME Partial Reconfiguration Sub Feature driver (see drivers/fpga/dfl-fme-pr.c)
+>  could be a reference.
+>  
+> +Kernel configuration
+> +====================
+> +
+> +While it is possible to manually setup a configuration to match your device,
+> +there are some top level configurations that collect configuations for
 
-Yes, I thought this was ugly. The next rev addresses this issue.  The config will not be fully automagic.  User will have enough information in the doc to figure out the other subsystems.  
+                                                        configurations
 
-Tom
+> +some reference pci cards.  Below descibes these configuration as well as
+
+                  PCI               describes
+
+> +what other kernel configs are needed for proper configuration.
+> +
+> +FPGA_DFL_PAC10
+> +Intel Arria 10 GX PCI card, PCI id 0X09C4
+> +Depends on
+> +  SPI_ALTERA
+> +  MFD_INTEL_M10_BMC
+> +  MFD_INTEL_M10_BMC_SECURE
+> +  SENSORS_INTEL_M10_BMC_HWMON
+> +
+> +FPGA_DFL_D5005
+> +Intel Stratix 10, D5005 PCI card, PCI id 0X0B2B
+> +Depends on
+> +  SPI_ALTERA
+> +  MFD_INTEL_M10_BMC
+> +  MFD_INTEL_M10_BMC_SECURE
+> +  SENSORS_INTEL_M10_BMC_HWMON
+> +  INTEL_S10_PHY
+> +
+> +FPGA_DFL_N3000
+> +Intel Network Accelerator, N3000 PCI card, PCI id 0X0B30
+> +Depends on
+> +  SPI_ALTERA
+> +  MFD_INTEL_M10_BMC
+> +  MFD_INTEL_M10_BMC_SECURE
+> +  SENSORS_INTEL_M10_BMC_HWMON
+> +  INTEL_LL_10G_MAC
+>  
+>  Open discussion
+>  ===============
+> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+> index 9d53bd9094e2..b657de20bc98 100644
+> --- a/drivers/fpga/Kconfig
+> +++ b/drivers/fpga/Kconfig
+> @@ -138,6 +138,34 @@ config OF_FPGA_REGION
+>  	  Support for loading FPGA images by applying a Device Tree
+>  	  overlay.
+>  
+> +config FPGA_DFL_PAC10
+> +	tristate "Intel Arria 10 GX PCI card"
+> +	select SPI_ALTERA
+
+above kconfig symbol:
+	depends on SPI_MASTER
+
+> +	select MFD_INTEL_M10_BMC
+> +	select MFD_INTEL_M10_BMC_SECURE
+> +	select SENSORS_INTEL_M10_BMC_HWMON
+
+I haven't tested this, but in general it's not safe to select something like
+SENSORS* or HWMON* unless you first check that CONFIG_HWMON is enabled.
+Otherwise this would usually cause kconfig warning(s).
+
+But don't add things like
+	select HWMON
+	select SPI
+	select SPI_MASTER
+
+because we don't enable subsystems (like HWMON or SPI) just inside one
+driver's kconfig entry.
+The driver(s) should instead depend on HWMON, SPI, SPI_MASTER etc.
+
+> +	select FPGA_DFL
+> +	select FPGA_DFL_FME
+> +	select FPGA_DFL_FME_MGR
+> +	select FPGA_DFL_FME_BRIDGE
+> +	select FPGA_DFL_FME_REGION
+> +	select FPGA_DFL_AFU
+> +	select FPGA_DFL_SPI_ALTERA
+> +	select FPGA_DFL_PCI
+> +	select IFPGA_SEC_MGR
+> +
+> +config FPGA_DFL_D5005
+> +	tristate "Intel Stratix 10, D5005 PCI card"
+> +	select FPGA_DFL_PAC10
+> +	select INTEL_S10_PHY
+> +	select FPGA_DFl_HSSI
+> +
+> +config FPGA_DFL_N3000
+> +	tristate "Intel Network Accelerator, N3000 PCI card"
+> +	select FPGA_DFL_PAC10
+> +	select INTEL_LL_10G_MAC
+> +	select FPGA_DFL_N3000_NIOS
+> +
+>  config FPGA_DFL
+>  	tristate "FPGA Device Feature List (DFL) support"
+>  	select FPGA_BRIDGE
+> 
+
+
+-- 
+~Randy
