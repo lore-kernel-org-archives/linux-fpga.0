@@ -1,57 +1,72 @@
-Return-Path: <SRS0=bNLF=77=vger.kernel.org=linux-fpga-owner@kernel.org>
-Return-Path: <SRS0=bNLF=77=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:42366 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729074AbgFRBNP (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 17 Jun 2020 21:13:15 -0400
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.7 237/388] fpga: dfl: afu: Corrected error handling levels
-Date: Wed, 17 Jun 2020 21:05:34 -0400
-Message-Id: <20200618010805.600873-237-sashal@kernel.org>
-In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
-References: <20200618010805.600873-1-sashal@kernel.org>
+Return-Path: <SRS0=nYdX=AL=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=nYdX=AL=intel.com=hao.wu@kernel.org>
+From: "Wu, Hao" <hao.wu@intel.com>
+Subject: RE: [PATCH] fpga: dfl: improve configuration of dfl pci devices
+Date: Tue, 30 Jun 2020 02:34:51 +0000
+Message-ID: <DM6PR11MB381974DF93997A787488AA02856F0@DM6PR11MB3819.namprd11.prod.outlook.com>
+References: <20200628151813.7679-1-trix@redhat.com>
+ <20200629021924.GB2620@yilunxu-OptiPlex-7050>
+ <DM6PR11MB38196ED29A3E0BBAD7B246C1856E0@DM6PR11MB3819.namprd11.prod.outlook.com>
+ <26b7c920-7b9f-b753-4a49-258e09b771fa@redhat.com>
+In-Reply-To: <26b7c920-7b9f-b753-4a49-258e09b771fa@redhat.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: linux-fpga-owner@vger.kernel.org
-List-Id: linux-fpga@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Souptick Joarder <jrdr.linux@gmail.com>, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>, linux-fpga@vger.kernel.org
+To: Tom Rix <trix@redhat.com>, "Xu, Yilun" <yilun.xu@intel.com>
+Cc: "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "matthew.gerlach@linux.intel.com" <matthew.gerlach@linux.intel.com>
+List-ID: <linux-fpga@vger.kernel.org>
 
-From: Souptick Joarder <jrdr.linux@gmail.com>
-
-[ Upstream commit c9d7e3da1f3c4cf5dddfc5d7ce4d76d013aba1cc ]
-
-Corrected error handling goto sequnece. Level put_pages should
-be called when pinned pages >= 0 && pinned != npages. Level
-free_pages should be called when pinned pages < 0.
-
-Fixes: fa8dda1edef9 ("fpga: dfl: afu: add DFL_FPGA_PORT_DMA_MAP/UNMAP ioctls support")
-Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
-Acked-by: Wu Hao <hao.wu@intel.com>
-Reviewed-by: Xu Yilun <yilun.xu@intel.com>
-Link: https://lore.kernel.org/r/1589825991-3545-1-git-send-email-jrdr.linux@gmail.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/fpga/dfl-afu-dma-region.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index 62f924489db5..5942343a5d6e 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -61,10 +61,10 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
- 				     region->pages);
- 	if (pinned < 0) {
- 		ret = pinned;
--		goto put_pages;
-+		goto free_pages;
- 	} else if (pinned != npages) {
- 		ret = -EFAULT;
--		goto free_pages;
-+		goto put_pages;
- 	}
- 
- 	dev_dbg(dev, "%d pages pinned\n", pinned);
--- 
-2.25.1
+PiBPbiA2LzI4LzIwIDg6MTIgUE0sIFd1LCBIYW8gd3JvdGU6DQo+ID4+IC0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IGxpbnV4LWZwZ2Etb3duZXJAdmdlci5rZXJuZWwub3Jn
+IDxsaW51eC1mcGdhLQ0KPiBvd25lckB2Z2VyLmtlcm5lbC5vcmc+DQo+ID4+IE9uIEJlaGFsZiBP
+ZiBYdSBZaWx1bg0KPiA+PiBTZW50OiBNb25kYXksIEp1bmUgMjksIDIwMjAgMTA6MTkgQU0NCj4g
+Pj4gVG86IHRyaXhAcmVkaGF0LmNvbQ0KPiA+PiBDYzogbWRmQGtlcm5lbC5vcmc7IGxpbnV4LWZw
+Z2FAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gPj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsg
+V3UsIEhhbyA8aGFvLnd1QGludGVsLmNvbT47DQo+ID4+IG1hdHRoZXcuZ2VybGFjaEBsaW51eC5p
+bnRlbC5jb20NCj4gPj4gU3ViamVjdDogUmU6IFtQQVRDSF0gZnBnYTogZGZsOiBpbXByb3ZlIGNv
+bmZpZ3VyYXRpb24gb2YgZGZsIHBjaSBkZXZpY2VzDQo+ID4+DQo+ID4+IEkgdGhpbmsgbWF5YmUg
+d2UgZG9uJ3QgaGF2ZSB0byBzZWxlY3QgdGhlbSBhbGwuIEl0IGlzIG5vdyBwb3NzaWJsZSBmb3IN
+Cj4gPj4gRlBHQSBERkwgYm9hcmRzIHRvIHdvcmsgd2l0aG91dCBGTUUgb3IgQUZVLCBwcm92aWRp
+bmcgbGltaXRlZA0KPiA+PiBmdW5jdGlvbmFsaXR5LiBJdCBpcyBwb3NzaWJsZSBkZXNpZ25lcnMg
+dHJpbSB0aGUgYml0c3RyZWFtIGZvciB0aGVpcg0KPiA+PiBwdXJwb3NlLCBhbmQgYWxzbyBuZWVk
+IGEgc21hbGxlciBkcml2ZXIgc2V0Lg0KPiA+Pg0KPiA+IFllcywgd2UgaG9wZSB0aGF0IHRoaXMg
+ZGZsLXBjaSBjb3VsZCBiZSBhIGNvbW1vbiBtb2R1bGUgc2hhcmVkIGJ5DQo+ID4gZGlmZmVyZW50
+IGNhcmRzLiBTb21lIGRldmljZSBkb2Vzbid0IGhhdmUgRk1FLCBlLmcuIHNvbWUgVkYgZGV2aWNl
+DQo+ID4gd2l0aCBBRlUgb25seSwgc29tZSBkZXZpY2UgaGFzIEZNRSwgYnV0IG5vIFBSIHN1cHBv
+cnQsIGFuZCBpbiB0aGUNCj4gPiBmdXR1cmUsIGl0J3MgcG9zc2libGUgdG8gYWRkIG5ldyBtb2R1
+bGVzLCBvciBzb21ldGhpbmcgcmVwbGFjaW5nIEFGVQ0KPiA+IG9yIEZNRSwgc28gd2UgZG9uJ3Qg
+aGF2ZSB0byBzZWxlY3QgYWxsIGhlcmUuDQo+ID4NCj4gPj4gSSB0aGluayB3ZSBtYXkgYWRkICJk
+ZWZhdWx0IEZQR0FfREZMIiBmb3IgRlBHQV9ERkxfRk1FLA0KPiA+PiBGUEdBX0RGTF9GTUVfTUdS
+IGFuZCBvdGhlcnMgdG8gbWFrZSBsaWZlIGVhc2llci4NCj4gPiBJdCdzIGhhcmQgdG8gc2F5IGl0
+J3MgZWFzaWVyIGZvciBldmVyeWJvZHksIGUuZy4gSSBhbSBhIHVzZXIgb2YgTjMwMDAsIGJ1dA0K
+PiA+IEkgaGF2ZSB0byB1bnNlbGVjdCB0aGUgUFIgbW9kdWxlcywgYXMgdGhleSBhcmUgZGVmYXVs
+dCBZZXMgYXMgcHJvcG9zZWQ/DQo+ID4gTWF5YmUgaXQncyBiZXR0ZXIgdG8gbGV0IHVzZXIgc2Vs
+ZWN0IHdoYXQgdGhleSB3YW50LCB1bmxlc3Mgd2UgZmluZA0KPiA+IHNvbWV0aGluZyByZWFsbHkg
+Y29tbW9uIG5lZWRlZCB1bmRlciBERkwgZnJhbWV3b3JrLg0KPiANCj4gSSBnZXQgeW91ciBwb2lu
+dCBhYm91dCBuMzAwMCwgYnV0IHRoYXQgY2FyZCBpcyBub3QgY3VycmVudGx5IHN1cHBvcnRlZCBp
+biB0aGUNCj4gcHVibGljLiBDdXJyZW50bHkgdGhlcmUgaXMgcmVhbGx5IG9ubHkgcGFjMTAsIHRo
+ZSAweDljNCBkZXZpY2UuwqAgT25jZSBuMzAwMA0KPiAoYW5kIGQ1MDA1KSBpcyBvdXQsIGl0IHdp
+bGwgaGF2ZSBzZXZlcmFsIHN1YiBkZXZpY2VzIHRoYXQgd2lsbCBhbHNvIHNvIG5lZWQgdG8gYmUN
+Cj4gbWFudWFsbHkgY29uZmlndXJlZC7CoCBXaGlsZSBhIGRldmVsb3BlciBvZiB0aGUgbjMwMDAg
+d2lsbCBrbm93IHdoaWNoDQo+IHN1YmRldmljZXMgYXJlIG5lZWRlZCwgc29tZW9uZSBqdXN0IGJ1
+aWxkaW5nIHRoZSBrZXJuZWwgd2lsbCBub3QuwqAgU28gd291bGQNCj4gZXhwZWN0IHRoZXJlIHRv
+IGJlIHNvbWV0aGluZyBsaWtlDQo+IA0KPiBDT05GSUdfRlBHQV9ERkxfTjMwMDANCj4gDQo+IHNl
+bGVjdCBDT05GSUdfREZMX1BDSQ0KPiANCj4gc2VsZWN0IENPTkZJR19ERkxfU1VCREVWXzENCj4g
+DQo+IC4uDQoNCkhvdyBhYm91dCBub24gREZMIHN1YiBtb2R1bGVzPyBEbyB5b3UgbWVhbiBpdCdz
+IGdvaW5nIHRvIHNlbGVjdCBldmVyeXRoaW5nDQp0aGlzIGNhcmQgbmVlZHMsIGluY2x1ZGluZyBz
+cGksIGV0aGVybmV0LCBibWMgYW5kIG90aGVyIGNvbXBvbmVudHMgdXNlZCBvbg0KdGhpcyBjYXJk
+LCBhcyBGUEdBIChlLmcuIE4zMDAwKSBpcyB0aGUgb25seSBjb21tdW5pY2F0aW9uIGNoYW5uZWwg
+dG8gdGhlbT8NCg0KPiANCj4gT24gUEYgdnMgRlAsIHllcyBvbmx5IGFmdSBwYXJ0cyBhcmUgbmVl
+ZGVkLsKgIEJ1dCBpIGRvdWJ0IGFueW9uZSBidWlsZHMgYSBWRg0KPiBzcGVjaWZpYyBrZXJuZWwu
+IEFuZCBpZiBmb2xrcyB3YW50ZWQgdG8gbm90IHVzZSB0aGUgZm1lIHBhcnRzIHRoZXkgd291bGQg
+bm90DQo+IGhhdmUgdG8gbG9hZCBpdCdzIG1vZHVsZSBhdCBydW4gdGltZS4NCg0KSXQncyBwb3Nz
+aWJsZSB0byBidWlsZCBhIHNtYWxsZXIgaW1hZ2UgZm9yIHZpcnR1YWwgbWFjaGluZSB1c2FnZS4N
+Cg0KPiANCj4gSSB3b3VsZCBsaWtlIGEgdG9wIGxldmVsIGNvbmZpZyB3aGF0IGF1dG8gc2VsZWN0
+cyBhbGwgb2YgdGhlIHN1Ym1vZHVsZXMgbmVlZGVkDQo+IGJhc2VkIG9uIHRoZSBjYXJkLiBJIHRo
+aW5rIG1heWJlIHRoYXQgaXMgQ09ORklHX0ZQR0FfREZMX1BBQzEwLiBzbyB3ZQ0KPiB3aWxsIGJl
+IHJlYWR5IGZvciBDT05GSUdfRlBHQV9ERkxfTjMwMDAgYW5kIENPTkZJR19GUEdBX0RGTF9ENTAw
+NQ0KPiBhbmQgd2hhdCBldmVyIGNvbWVzIGxhdGVyLg0KDQpIb3cgYWJvdXQgYSByZWZlcmVuY2Ug
+a2VybmVsIGNvbmZpZyBsaXN0ZWQgc29tZXdoZXJlIChlLmcuIGluIGtlcm5lbCBkb2Mgb3INCnNv
+bWUgb3RoZXIgcHVibGljIHBsYWNlKSBmb3IgdGhlbT8NCg0KSGFvDQoNCj4gDQo+IFRvbQ0KPiAN
+Cj4gPiBIYW8NCj4gPg0KDQo=
