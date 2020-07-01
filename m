@@ -1,9 +1,9 @@
 Return-Path: <SRS0=CQ/X=AM=intel.com=yilun.xu@kernel.org>
 Return-Path: <SRS0=CQ/X=AM=intel.com=yilun.xu@kernel.org>
-Date: Wed, 1 Jul 2020 13:29:38 +0800
+Date: Wed, 1 Jul 2020 13:10:01 +0800
 From: Xu Yilun <yilun.xu@intel.com>
 Subject: Re: [RFC v2] fpga: dfl: RFC PCI config
-Message-ID: <20200701052938.GC2186@yilunxu-OptiPlex-7050>
+Message-ID: <20200701051000.GB2186@yilunxu-OptiPlex-7050>
 References: <20200630184950.950-1-trix@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -85,17 +85,23 @@ On Tue, Jun 30, 2020 at 11:49:50AM -0700, trix@redhat.com wrote:
 > +	depends on MFD_INTEL_M10_BMC
 > +	select FPGA_DFL
 > +	select FPGA_DFL_FME
-
-The FPGA_DFL_FME depends on HWMON & PERF_EVENTS, seems we cannot select
-it either.
-
 > +	select FPGA_DFL_FME_MGR
 > +	select FPGA_DFL_FME_BRIDGE
 > +	select FPGA_DFL_FME_REGION
 > +	select FPGA_DFL_AFU
 > +	select FPGA_DFL_SPI_ALTERA
 > +	select FPGA_DFL_PCI
+
+FPGA_DFL_PCI depends on PCI, seems we also cannot select it.
+
 > +	select IFPGA_SEC_MGR
+
+Since there is concern we cannot select all the configs, and now we have
+some "depends on"s, some "select"s. It means people should manually
+find and select the "depends on"s, then the helper config could appear
+and be selected to finish the rest of selection.
+IMHO seems this config is not as valuable as expected ...
+
 > +
 > +config FPGA_DFL_D5005
 > +	tristate "Intel Stratix 10, D5005 PCI card"
