@@ -1,47 +1,141 @@
-Date: Fri, 17 Jul 2020 16:44:09 -0700
+Date: Mon, 6 Jul 2020 21:40:00 -0700
 From: Moritz Fischer <mdf@kernel.org>
-Subject: [GIT PULL] FPGA Manager (late) fixes for 5.8
-Message-ID: <20200717234408.GA4556@epycbox.lan>
+Subject: Re: [PATCH v7 6/7] fpga: dfl: afu: add AFU interrupt support
+Message-ID: <20200707043959.GC10464@epycbox.lan>
+References: <1592280528-6350-1-git-send-email-yilun.xu@intel.com>
+ <1592280528-6350-7-git-send-email-yilun.xu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-To: gregkh@linuxfoundation.org
-Cc: linux-fpga@vger.kernel.org, moritzf@google.com, linux-kernel@vger.kernel.org
+In-Reply-To: <1592280528-6350-7-git-send-email-yilun.xu@intel.com>
+To: Xu Yilun <yilun.xu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, trix@redhat.com, bhu@redhat.com, mtosatti@redhat.com, gregkh@linuxfoundation.org, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-The following changes since commit 11ba468877bb23f28956a35e896356252d63c983:
+On Tue, Jun 16, 2020 at 12:08:47PM +0800, Xu Yilun wrote:
+> AFU (Accelerated Function Unit) is dynamic region of the DFL based FPGA,
+> and always defined by users. Some DFL based FPGA cards allow users to
+> implement their own interrupts in AFU. In order to support this,
+> hardware implements a new UINT (AFU Interrupt) private feature with
+> related capability register which describes the number of supported
+> AFU interrupts as well as the local index of the interrupts for
+> software enumeration, and from software side, driver follows the common
+> DFL interrupt notification and handling mechanism, and it implements
+> two ioctls below for user to query number of irqs supported and set/unset
+> interrupt triggers.
+> 
+>  Ioctls:
+>  * DFL_FPGA_PORT_UINT_GET_IRQ_NUM
+>    get the number of irqs, which is used to determine how many interrupts
+>    UINT feature supports.
+> 
+>  * DFL_FPGA_PORT_UINT_SET_IRQ
+>    set/unset eventfds as AFU interrupt triggers.
+> 
+> Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
+> Acked-by: Wu Hao <hao.wu@intel.com>
+> ---
+> v2: use DFL_FPGA_PORT_UINT_GET_IRQ_NUM instead of
+>     DFL_FPGA_PORT_UINT_GET_INFO
+>     Delete flags field for DFL_FPGA_PORT_UINT_SET_IRQ
+> v3: put_user() instead of copy_to_user()
+>     improves comments
+> v4: use common functions to handle irq ioctls
+> v5: Minor fixes for Hao's comments
+> v6: No change
+> v7: No change
+> ---
+>  drivers/fpga/dfl-afu-main.c   | 28 ++++++++++++++++++++++++++++
+>  include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
+>  2 files changed, 51 insertions(+)
+> 
+> diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+> index 357cd5d..7c84fee 100644
+> --- a/drivers/fpga/dfl-afu-main.c
+> +++ b/drivers/fpga/dfl-afu-main.c
+> @@ -529,6 +529,30 @@ static const struct dfl_feature_ops port_stp_ops = {
+>  	.init = port_stp_init,
+>  };
+>  
+> +static long
+> +port_uint_ioctl(struct platform_device *pdev, struct dfl_feature *feature,
+> +		unsigned int cmd, unsigned long arg)
+> +{
+> +	switch (cmd) {
+> +	case DFL_FPGA_PORT_UINT_GET_IRQ_NUM:
+> +		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
+> +	case DFL_FPGA_PORT_UINT_SET_IRQ:
+> +		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
+> +	default:
+> +		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
+> +		return -ENODEV;
+> +	}
+> +}
+> +
+> +static const struct dfl_feature_id port_uint_id_table[] = {
+> +	{.id = PORT_FEATURE_ID_UINT,},
+> +	{0,}
+> +};
+> +
+> +static const struct dfl_feature_ops port_uint_ops = {
+> +	.ioctl = port_uint_ioctl,
+> +};
+> +
+>  static struct dfl_feature_driver port_feature_drvs[] = {
+>  	{
+>  		.id_table = port_hdr_id_table,
+> @@ -547,6 +571,10 @@ static struct dfl_feature_driver port_feature_drvs[] = {
+>  		.ops = &port_stp_ops,
+>  	},
+>  	{
+> +		.id_table = port_uint_id_table,
+> +		.ops = &port_uint_ops,
+> +	},
+> +	{
+>  		.ops = NULL,
+>  	}
+>  };
+> diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
+> index b6495ea..1621b07 100644
+> --- a/include/uapi/linux/fpga-dfl.h
+> +++ b/include/uapi/linux/fpga-dfl.h
+> @@ -187,6 +187,29 @@ struct dfl_fpga_irq_set {
+>  					     DFL_PORT_BASE + 6,	\
+>  					     struct dfl_fpga_irq_set)
+>  
+> +/**
+> + * DFL_FPGA_PORT_UINT_GET_IRQ_NUM - _IOR(DFL_FPGA_MAGIC, DFL_PORT_BASE + 7,
+> + *								__u32 num_irqs)
+> + *
+> + * Get the number of irqs supported by the fpga AFU interrupt private
+> + * feature.
+> + * Return: 0 on success, -errno on failure.
+> + */
+> +#define DFL_FPGA_PORT_UINT_GET_IRQ_NUM	_IOR(DFL_FPGA_MAGIC,	\
+> +					     DFL_PORT_BASE + 7, __u32)
+> +
+> +/**
+> + * DFL_FPGA_PORT_UINT_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_PORT_BASE + 8,
+> + *						struct dfl_fpga_irq_set)
+> + *
+> + * Set fpga AFU interrupt trigger if evtfds[n] is valid.
+> + * Unset related interrupt trigger if evtfds[n] is a negative value.
+> + * Return: 0 on success, -errno on failure.
+> + */
+> +#define DFL_FPGA_PORT_UINT_SET_IRQ	_IOW(DFL_FPGA_MAGIC,	\
+> +					     DFL_PORT_BASE + 8,	\
+> +					     struct dfl_fpga_irq_set)
+> +
+>  /* IOCTLs for FME file descriptor */
+>  
+>  /**
+> -- 
+> 2.7.4
+> 
 
-  Linux 5.8-rc5 (2020-07-12 16:34:50 -0700)
+Applied to for-next,
 
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git fpga-late-fixes-for-5.8
-
-for you to fetch changes up to 8614afd689df59d9ce019439389be20bd788a897:
-
-  fpga: dfl: fix bug in port reset handshake (2020-07-13 22:11:17 -0700)
-
-----------------------------------------------------------------
-FPGA manager fixes for 5.8
-
-Here are two (late) dfl fixes for the the 5.8 release.
-
-Matthew's fix addresses an issue in the reset of a port.
-
-Xu'x fix addresses a linter warning.
-
-All patches have been reviewed on the mailing list, and have been in the
-last few linux-next releases (as part of my fixes branch) without issues.
-
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
-
-----------------------------------------------------------------
-Matthew Gerlach (1):
-      fpga: dfl: fix bug in port reset handshake
-
-Xu Yilun (1):
-      fpga: dfl: pci: reduce the scope of variable 'ret'
-
- drivers/fpga/dfl-afu-main.c | 3 ++-
- drivers/fpga/dfl-pci.c      | 3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+Thanks!
