@@ -1,157 +1,119 @@
-Date: Mon, 6 Jul 2020 21:39:19 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v7 4/7] fpga: dfl: afu: add interrupt support for port
- error reporting
-Message-ID: <20200707043917.GA10464@epycbox.lan>
-References: <1592280528-6350-1-git-send-email-yilun.xu@intel.com>
- <1592280528-6350-5-git-send-email-yilun.xu@intel.com>
+Return-Path: <SRS0=jLHL=AW=redhat.com=trix@kernel.org>
+Return-Path: <SRS0=jLHL=AW=redhat.com=trix@kernel.org>
+Subject: Re: [RESEND PATCH 1/2] fpga: dfl: pci: reduce the scope of variable
+ 'ret'
+References: <1594282337-32125-1-git-send-email-yilun.xu@intel.com>
+ <1594282337-32125-2-git-send-email-yilun.xu@intel.com>
+ <ef506ec6-d857-736b-e9e2-46077ab7d778@redhat.com>
+ <20200710051600.GA8689@yilunxu-OptiPlex-7050>
+From: Tom Rix <trix@redhat.com>
+Message-ID: <85d84892-14d0-3097-c4f9-cbb9092c9a5f@redhat.com>
+Date: Sat, 11 Jul 2020 09:21:07 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1592280528-6350-5-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <20200710051600.GA8689@yilunxu-OptiPlex-7050>
+Content-Language: en-US
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 To: Xu Yilun <yilun.xu@intel.com>
-Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, trix@redhat.com, bhu@redhat.com, mtosatti@redhat.com, gregkh@linuxfoundation.org, Luwei Kang <luwei.kang@intel.com>, Wu Hao <hao.wu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, lgoncalv@redhat.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Tue, Jun 16, 2020 at 12:08:45PM +0800, Xu Yilun wrote:
-> Error reporting interrupt is very useful to notify users that some
-> errors are detected by the hardware. Once users are notified, they
-> could query hardware logged error states, no need to continuously
-> poll on these states.
-> 
-> This patch adds interrupt support for port error reporting sub feature.
-> It follows the common DFL interrupt notification and handling mechanism,
-> implements two ioctl commands below for user to query number of irqs
-> supported, and set/unset interrupt triggers.
-> 
->  Ioctls:
->  * DFL_FPGA_PORT_ERR_GET_IRQ_NUM
->    get the number of irqs, which is used to determine whether/how many
->    interrupts error reporting feature supports.
-> 
->  * DFL_FPGA_PORT_ERR_SET_IRQ
->    set/unset given eventfds as error interrupt triggers.
-> 
-> Signed-off-by: Luwei Kang <luwei.kang@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Reviewed-by: Marcelo Tosatti <mtosatti@redhat.com>
-> Acked-by: Wu Hao <hao.wu@intel.com>
-> ---
-> v2: use DFL_FPGA_PORT_ERR_GET_IRQ_NUM instead of
->     DFL_FPGA_PORT_ERR_GET_INFO
->     Delete flag field for DFL_FPGA_PORT_ERR_SET_IRQ param
-> v3: put_user() instead of copy_to_user()
->     improves comments
-> v4: use common functions to handle irq ioctls
-> v5: minor fixes for Hao's comments
-> v6: No change
-> v7: No change
-> ---
->  drivers/fpga/dfl-afu-error.c  | 17 +++++++++++++++++
->  drivers/fpga/dfl-afu-main.c   |  4 ++++
->  include/uapi/linux/fpga-dfl.h | 23 +++++++++++++++++++++++
->  3 files changed, 44 insertions(+)
-> 
-> diff --git a/drivers/fpga/dfl-afu-error.c b/drivers/fpga/dfl-afu-error.c
-> index c1467ae..c469118 100644
-> --- a/drivers/fpga/dfl-afu-error.c
-> +++ b/drivers/fpga/dfl-afu-error.c
-> @@ -14,6 +14,7 @@
->   *   Mitchel Henry <henry.mitchel@intel.com>
->   */
->  
-> +#include <linux/fpga-dfl.h>
->  #include <linux/uaccess.h>
->  
->  #include "dfl-afu.h"
-> @@ -219,6 +220,21 @@ static void port_err_uinit(struct platform_device *pdev,
->  	afu_port_err_mask(&pdev->dev, true);
->  }
->  
-> +static long
-> +port_err_ioctl(struct platform_device *pdev, struct dfl_feature *feature,
-> +	       unsigned int cmd, unsigned long arg)
-> +{
-> +	switch (cmd) {
-> +	case DFL_FPGA_PORT_ERR_GET_IRQ_NUM:
-> +		return dfl_feature_ioctl_get_num_irqs(pdev, feature, arg);
-> +	case DFL_FPGA_PORT_ERR_SET_IRQ:
-> +		return dfl_feature_ioctl_set_irq(pdev, feature, arg);
-> +	default:
-> +		dev_dbg(&pdev->dev, "%x cmd not handled", cmd);
-> +		return -ENODEV;
-> +	}
-> +}
-> +
->  const struct dfl_feature_id port_err_id_table[] = {
->  	{.id = PORT_FEATURE_ID_ERROR,},
->  	{0,}
-> @@ -227,4 +243,5 @@ const struct dfl_feature_id port_err_id_table[] = {
->  const struct dfl_feature_ops port_err_ops = {
->  	.init = port_err_init,
->  	.uinit = port_err_uinit,
-> +	.ioctl = port_err_ioctl,
->  };
-> diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-> index b0c3178..357cd5d 100644
-> --- a/drivers/fpga/dfl-afu-main.c
-> +++ b/drivers/fpga/dfl-afu-main.c
-> @@ -577,6 +577,7 @@ static int afu_release(struct inode *inode, struct file *filp)
->  {
->  	struct platform_device *pdev = filp->private_data;
->  	struct dfl_feature_platform_data *pdata;
-> +	struct dfl_feature *feature;
->  
->  	dev_dbg(&pdev->dev, "Device File Release\n");
->  
-> @@ -586,6 +587,9 @@ static int afu_release(struct inode *inode, struct file *filp)
->  	dfl_feature_dev_use_end(pdata);
->  
->  	if (!dfl_feature_dev_use_count(pdata)) {
-> +		dfl_fpga_dev_for_each_feature(pdata, feature)
-> +			dfl_fpga_set_irq_triggers(feature, 0,
-> +						  feature->nr_irqs, NULL);
->  		__port_reset(pdev);
->  		afu_dma_region_destroy(pdata);
->  	}
-> diff --git a/include/uapi/linux/fpga-dfl.h b/include/uapi/linux/fpga-dfl.h
-> index 7331350..6c71c9d 100644
-> --- a/include/uapi/linux/fpga-dfl.h
-> +++ b/include/uapi/linux/fpga-dfl.h
-> @@ -164,6 +164,29 @@ struct dfl_fpga_irq_set {
->  	__s32 evtfds[];
->  };
->  
-> +/**
-> + * DFL_FPGA_PORT_ERR_GET_IRQ_NUM - _IOR(DFL_FPGA_MAGIC, DFL_PORT_BASE + 5,
-> + *								__u32 num_irqs)
-> + *
-> + * Get the number of irqs supported by the fpga port error reporting private
-> + * feature. Currently hardware supports up to 1 irq.
-> + * Return: 0 on success, -errno on failure.
-> + */
-> +#define DFL_FPGA_PORT_ERR_GET_IRQ_NUM	_IOR(DFL_FPGA_MAGIC,	\
-> +					     DFL_PORT_BASE + 5, __u32)
-> +
-> +/**
-> + * DFL_FPGA_PORT_ERR_SET_IRQ - _IOW(DFL_FPGA_MAGIC, DFL_PORT_BASE + 6,
-> + *						struct dfl_fpga_irq_set)
-> + *
-> + * Set fpga port error reporting interrupt trigger if evtfds[n] is valid.
-> + * Unset related interrupt trigger if evtfds[n] is a negative value.
-> + * Return: 0 on success, -errno on failure.
-> + */
-> +#define DFL_FPGA_PORT_ERR_SET_IRQ	_IOW(DFL_FPGA_MAGIC,	\
-> +					     DFL_PORT_BASE + 6,	\
-> +					     struct dfl_fpga_irq_set)
-> +
->  /* IOCTLs for FME file descriptor */
->  
->  /**
-> -- 
-> 2.7.4
-> 
-Applied to for-next,
+Ok, i take your point on the api.
 
-Thanks!
+However I still feel that this change should be improved so the return is not defined inside a block.
+
+I think this could be done better with
+
+int ret = num_vfs;
+
+...
+
+return ret;
+
+There is no consistency on this check with the other drivers' sriov_configure.
+
+I do not feel strongly about this change, your original change will work. So you may add.
+
+Reviewed-by: Tom Rix <trix@redhat.com>
+
+Tom
+
+On 7/9/20 10:16 PM, Xu Yilun wrote:
+> On Thu, Jul 09, 2020 at 06:18:18AM -0700, Tom Rix wrote:
+>> I think a better change is to use the ret variable, like this
+>>
+>> --- a/drivers/fpga/dfl-pci.c
+>> +++ b/drivers/fpga/dfl-pci.c
+>> @@ -312,7 +312,7 @@ static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
+>> Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â  }
+>> Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â  }
+>> Ã‚Â 
+>> -Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â  return num_vfs;
+>> +Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â Ã‚Â  return ret;
+>> Ã‚Â }
+>>
+>> The existing use of returning num_vfs is not right, the function should return 0/err not num_vfs. currently it is reusing the 0 passed in with num_vfs to mean disable as the 0 return status.Ã‚Â  it should be properly returning ret.
+> The sriov_configure callback should return negative value for error, and
+> return num_vfs if success.
+>
+> See the Documentation/PCI/pci-iov-howto.rst
+>
+> also in drivers/pci/iov.c:
+>
+>   static ssize_t sriov_numvfs_store(struct device *dev, ...)
+>   {
+> 	...
+>
+>         ret = pdev->driver->sriov_configure(pdev, num_vfs);
+>         if (ret < 0) 
+>                 goto exit;
+>
+>         if (ret != num_vfs)
+>                 pci_warn(pdev, "%d VFs requested; only %d enabled\n",
+>                          num_vfs, ret);
+>
+> 	...
+>   }
+>
+>> Tom
+>>
+>> On 7/9/20 1:12 AM, Xu Yilun wrote:
+>>> This is to fix lkp cppcheck warnings:
+>>>
+>>>  drivers/fpga/dfl-pci.c:230:6: warning: The scope of the variable 'ret' can be reduced. [variableScope]
+>>>     int ret = 0;
+>>>         ^
+>>>
+>>>  drivers/fpga/dfl-pci.c:230:10: warning: Variable 'ret' is assigned a value that is never used. [unreadVariable]
+>>>     int ret = 0;
+>>>             ^
+>>>
+>>> Fixes: 3c2760b78f90 ("fpga: dfl: pci: fix return value of cci_pci_sriov_configure")
+>>> Reported-by: kbuild test robot <lkp@intel.com>
+>>> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+>>> Acked-by: Wu Hao <hao.wu@intel.com>
+>>> ---
+>>>  drivers/fpga/dfl-pci.c | 3 ++-
+>>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+>>> index 4a14a24..73b5153 100644
+>>> --- a/drivers/fpga/dfl-pci.c
+>>> +++ b/drivers/fpga/dfl-pci.c
+>>> @@ -285,7 +285,6 @@ static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
+>>>  {
+>>>  	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
+>>>  	struct dfl_fpga_cdev *cdev = drvdata->cdev;
+>>> -	int ret = 0;
+>>>  
+>>>  	if (!num_vfs) {
+>>>  		/*
+>>> @@ -297,6 +296,8 @@ static int cci_pci_sriov_configure(struct pci_dev *pcidev, int num_vfs)
+>>>  		dfl_fpga_cdev_config_ports_pf(cdev);
+>>>  
+>>>  	} else {
+>>> +		int ret;
+>>> +
+>>>  		/*
+>>>  		 * before enable SRIOV, put released ports into VF access mode
+>>>  		 * first of all.
