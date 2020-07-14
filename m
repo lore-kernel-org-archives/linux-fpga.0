@@ -1,94 +1,39 @@
-Return-Path: <SRS0=4bLi=AS=linux.intel.com=richard.gong@kernel.org>
-Return-Path: <SRS0=4bLi=AS=linux.intel.com=richard.gong@kernel.org>
-From: richard.gong@linux.intel.com
-Subject: [PATCH] fpga: stratix10-soc: make FPGA task un-interruptible
-Date: Tue,  7 Jul 2020 11:14:07 -0500
-Message-Id: <1594138447-21488-1-git-send-email-richard.gong@linux.intel.com>
-To: mdf@kernel.org
-Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, dinguyen@kernel.org, richard.gong@linux.intel.com, richard.gong@intel.com
+Return-Path: <SRS0=/d1T=AZ=intel.com=yilun.xu@kernel.org>
+Return-Path: <SRS0=/d1T=AZ=intel.com=yilun.xu@kernel.org>
+Date: Tue, 14 Jul 2020 14:01:08 +0800
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: Re: [PATCH v2] fpga: dfl: pci: add device id for Intel FPGA PAC N3000
+Message-ID: <20200714060108.GA27430@yilunxu-OptiPlex-7050>
+References: <1594604866-30877-1-git-send-email-yilun.xu@intel.com>
+ <4efe6ee9-4e88-5b31-01a2-414f752a3d2e@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4efe6ee9-4e88-5b31-01a2-414f752a3d2e@redhat.com>
+To: Tom Rix <trix@redhat.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, lgoncalv@redhat.com, Wu Hao <hao.wu@intel.com>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Russ Weight <russell.h.weight@intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Richard Gong <richard.gong@intel.com>
+On Mon, Jul 13, 2020 at 07:36:26AM -0700, Tom Rix wrote:
+> 
+> > @@ -64,6 +64,7 @@ static void cci_pci_free_irq(struct pci_dev *pcidev)
+> >  #define PCIE_DEVICE_ID_PF_INT_5_X	0xBCBD
+> >  #define PCIE_DEVICE_ID_PF_INT_6_X	0xBCC0
+> >  #define PCIE_DEVICE_ID_PF_DSC_1_X	0x09C4
+> > +#define PCIE_DEVICE_ID_INTEL_PAC_N3000	0x0B30
+> 
+> My point about consistency.� These are all intel� and all should have their pf parts removed.
+> 
+>  #define PCIE_DEVICE_ID_INTEL_INT_5_X	0xBCBD
+>  #define PCIE_DEVICE_ID_INTEL_INT_6_X	0xBCC0
+>  #define PCIE_DEVICE_ID_INTEL_DSC_1_X	0x09C4
+> 
+> Let's revisit this for the d5005.
 
-When CTRL+C occurs during the process of FPGA reconfiguration, the FPGA
-reconfiguration process stops and the user can't perform a new FPGA
-reconfiguration properly.
+I agree that we should be consistent on the naming. I think we could
+reconsider the naming of previous cards and submit a new patch for them.
 
-Set FPGA complete task to be not interruptible so that the user can
-properly perform FPGA reconfiguration after CTRL+C event.
-
-Signed-off-by: Richard Gong <richard.gong@intel.com>
----
- drivers/fpga/stratix10-soc.c | 23 +++--------------------
- 1 file changed, 3 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
-index 44b7c56..657a70c 100644
---- a/drivers/fpga/stratix10-soc.c
-+++ b/drivers/fpga/stratix10-soc.c
-@@ -196,17 +196,13 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
- 	if (ret < 0)
- 		goto init_done;
- 
--	ret = wait_for_completion_interruptible_timeout(
-+	ret = wait_for_completion_timeout(
- 		&priv->status_return_completion, S10_RECONFIG_TIMEOUT);
- 	if (!ret) {
- 		dev_err(dev, "timeout waiting for RECONFIG_REQUEST\n");
- 		ret = -ETIMEDOUT;
- 		goto init_done;
- 	}
--	if (ret < 0) {
--		dev_err(dev, "error (%d) waiting for RECONFIG_REQUEST\n", ret);
--		goto init_done;
--	}
- 
- 	ret = 0;
- 	if (!test_and_clear_bit(SVC_STATUS_OK, &priv->status)) {
-@@ -318,7 +314,7 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
- 		 */
- 		wait_status = 1; /* not timed out */
- 		if (!priv->status)
--			wait_status = wait_for_completion_interruptible_timeout(
-+			wait_status = wait_for_completion_timeout(
- 				&priv->status_return_completion,
- 				S10_BUFFER_TIMEOUT);
- 
-@@ -340,13 +336,6 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
- 			ret = -ETIMEDOUT;
- 			break;
- 		}
--		if (wait_status < 0) {
--			ret = wait_status;
--			dev_err(dev,
--				"error (%d) waiting for svc layer buffers\n",
--				ret);
--			break;
--		}
- 	}
- 
- 	if (!s10_free_buffers(mgr))
-@@ -372,7 +361,7 @@ static int s10_ops_write_complete(struct fpga_manager *mgr,
- 		if (ret < 0)
- 			break;
- 
--		ret = wait_for_completion_interruptible_timeout(
-+		ret = wait_for_completion_timeout(
- 			&priv->status_return_completion, timeout);
- 		if (!ret) {
- 			dev_err(dev,
-@@ -380,12 +369,6 @@ static int s10_ops_write_complete(struct fpga_manager *mgr,
- 			ret = -ETIMEDOUT;
- 			break;
- 		}
--		if (ret < 0) {
--			dev_err(dev,
--				"error (%d) waiting for RECONFIG_COMPLETED\n",
--				ret);
--			break;
--		}
- 		/* Not error or timeout, so ret is # of jiffies until timeout */
- 		timeout = ret;
- 		ret = 0;
--- 
-2.7.4
+> 
+> trix
+> 
