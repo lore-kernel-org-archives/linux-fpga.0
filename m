@@ -1,152 +1,92 @@
-Return-Path: <SRS0=PeW4=A4=redhat.com=trix@kernel.org>
-Return-Path: <SRS0=PeW4=A4=redhat.com=trix@kernel.org>
-Subject: Re: [PATCH 0/2] Modularization of DFL private feature drivers
+Return-Path: <SRS0=W4OC=A4=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=W4OC=A4=intel.com=hao.wu@kernel.org>
+From: "Wu, Hao" <hao.wu@intel.com>
+Subject: RE: [PATCH 0/2] Modularization of DFL private feature drivers
+Date: Fri, 17 Jul 2020 03:48:22 +0000
+Message-ID: <DM6PR11MB38194C448ECCF1E6BF386D3F857C0@DM6PR11MB3819.namprd11.prod.outlook.com>
 References: <1594791498-14495-1-git-send-email-yilun.xu@intel.com>
  <0c7c63b8-5444-2deb-9fed-18956a5ad938@redhat.com>
- <DM6PR11MB38194C448ECCF1E6BF386D3F857C0@DM6PR11MB3819.namprd11.prod.outlook.com>
-From: Tom Rix <trix@redhat.com>
-Message-ID: <237c776b-8746-421d-26ad-eea7242a9172@redhat.com>
-Date: Fri, 17 Jul 2020 06:32:26 -0700
-MIME-Version: 1.0
-In-Reply-To: <DM6PR11MB38194C448ECCF1E6BF386D3F857C0@DM6PR11MB3819.namprd11.prod.outlook.com>
+In-Reply-To: <0c7c63b8-5444-2deb-9fed-18956a5ad938@redhat.com>
 Content-Language: en-US
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-To: "Wu, Hao" <hao.wu@intel.com>, "Xu, Yilun" <yilun.xu@intel.com>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+To: Tom Rix <trix@redhat.com>, "Xu, Yilun" <yilun.xu@intel.com>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Cc: "lgoncalv@redhat.com" <lgoncalv@redhat.com>, Matthew Gerlach <matthew.gerlach@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-
-On 7/16/20 8:48 PM, Wu, Hao wrote:
->> Subject: Re: [PATCH 0/2] Modularization of DFL private feature drivers
->>
->> Generally i think this is a good approach.
->>
->> However I do have concern.
->>
->> The feature_id in dfl is magic number, similar to pci id but without a vendor
->> id.
->>
->> Is it possible to add something like a vendor id so different vendors would
->> not have to be so careful to use a unique id ?
-> Hi Tom,
->
-> Thanks for the comments.
->
-> Here is only one field defined in spec, that is feature id to distinguish one
-> feature with another one. There is no vendor id here I think, and several
-> cards are using this for now and seems not possible to change DFH format
-> for these products. : (
-
-There looks like some unused bits in the first word, how about
-
-#define DFH_EOL            BIT_ULL(40)        /* End of list */
-
-+define DFH_VENDOR    GENMAKE_ULL(49,41) /* Vendor ID */
-
-#define DFH_TYPE        GENMASK_ULL(63, 60)    /* Feature type */
-
-And Intel gets id 0.
-
->
-> I fully understand the concern is the feature id management, and potential
-> conflicts there from different vendors. One possible method to resolve this
-> is managing the ids in a public place (web? Or just the driver header file for
-> feature id definition), all vendors can request some feature ids, and other
-> people can see which feature ids have been used so that they can avoid
-> using conflict ones with other people.
-
-The conflict will come in development when two vendors use the same unpublished feature id.
-
-Also keeping the truth of id's in the kernel source isn't that great because the public kernel always lags development repositories.
-
->
-> And in the later version DFH, this feature id will be replaced with GUID
-> I think, so it can resolve the conflict problems from different vendors?
-> But now, we still need to handle the existing ones. : )
-
-This is why I proposed needing to generalize the matching.
-
->
-> Thanks
-> Hao
->
->> This touches some of the matching function of the bus ops.  Could there be a
->> way for bus ops to be used so that there could be multiple matching
->> function.  Maybe the one in 0002 as a default so users could override it ?
->>
->> The use case I am worrying about is an OEM.  The OEM uses an unclaimed
->> feature_id and supplies their own platform device device driver to match the
->> feature_id.  But some later version of the kernel claims this feature_id and
->> the OEM's driver no longer works and since the value comes from pci config
->> space it is difficult to change.
->>
->> So looking for something like
->>
->> register_feature_matcher((*bus_match)(struct device *dev, struct
->> device_driver *drv))
->>
->> static int dfl_bus_match_default(struct device *dev, struct device_driver *drv)
->> {
->>     struct dfl_device *dfl_dev = to_dfl_dev(dev);
->>     struct dfl_driver *dfl_drv = to_dfl_drv(drv);
->>     const struct dfl_device_id *id_entry = dfl_drv->id_table;
->>
->>     while (id_entry->feature_id) {
->>         if (dfl_match_one_device(id_entry, dfl_dev)) {
->>             dfl_dev->id_entry = id_entry;
->>             return 1;
->>         }
->>         id_entry++;
->>     }
->>
->>     return 0;
->> }
->>
->> register_feature_matcher(&dfl_bus_match_default)
->>
->> static int dfl_bus_match(struct device *dev, struct device_driver *drv)
->> {
->>
->>     struct dfl_device *dfl_dev = to_dfl_dev(dev);
->>     struct dfl_driver *dfl_drv = to_dfl_drv(drv);
->>     const struct dfl_device_id *id_entry = dfl_drv->id_table;
->>
->>     while (id_entry->feature_id) {
->>
->>         matcher = Loop over matchers()
->>
->>         if (matcher(dev, drv)) {
->>             dfl_dev->id_entry = id_entry;
->>             return 1;
->>         }
->>         id_entry++;
->>     }
->>
->>     return 0;
->> }
->>
->> Or maybe use some of the unused bits in the dfl header to add a second
->> vendor-like id and change existing matcher to look feature_id and
->> vendor_like_id.
->>
->> Tom
->>
->>
->>
->> On 7/14/20 10:38 PM, Xu Yilun wrote:
->>> This patchset makes it possible to develop independent driver modules
->>> for DFL private features. It also helps to leverage existing kernel
->>> drivers to enable some IP blocks in DFL.
->>>
->>> Xu Yilun (2):
->>>   fpga: dfl: map feature mmio resources in their own feature drivers
->>>   fpga: dfl: create a dfl bus type to support DFL devices
->>>
->>>  Documentation/ABI/testing/sysfs-bus-dfl |  15 ++
->>>  drivers/fpga/dfl-pci.c                  |  21 +-
->>>  drivers/fpga/dfl.c                      | 435 +++++++++++++++++++++++++++-----
->>>  drivers/fpga/dfl.h                      |  91 ++++++-
->>>  4 files changed, 492 insertions(+), 70 deletions(-)
->>>  create mode 100644 Documentation/ABI/testing/sysfs-bus-dfl
->>>
+PiBTdWJqZWN0OiBSZTogW1BBVENIIDAvMl0gTW9kdWxhcml6YXRpb24gb2YgREZMIHByaXZhdGUg
+ZmVhdHVyZSBkcml2ZXJzDQo+IA0KPiBHZW5lcmFsbHkgaSB0aGluayB0aGlzIGlzIGEgZ29vZCBh
+cHByb2FjaC4NCj4gDQo+IEhvd2V2ZXIgSSBkbyBoYXZlIGNvbmNlcm4uDQo+IA0KPiBUaGUgZmVh
+dHVyZV9pZCBpbiBkZmwgaXMgbWFnaWMgbnVtYmVyLCBzaW1pbGFyIHRvIHBjaSBpZCBidXQgd2l0
+aG91dCBhIHZlbmRvcg0KPiBpZC4NCj4gDQo+IElzIGl0IHBvc3NpYmxlIHRvIGFkZCBzb21ldGhp
+bmcgbGlrZSBhIHZlbmRvciBpZCBzbyBkaWZmZXJlbnQgdmVuZG9ycyB3b3VsZA0KPiBub3QgaGF2
+ZSB0byBiZSBzbyBjYXJlZnVsIHRvIHVzZSBhIHVuaXF1ZSBpZCA/DQoNCkhpIFRvbSwNCg0KVGhh
+bmtzIGZvciB0aGUgY29tbWVudHMuDQoNCkhlcmUgaXMgb25seSBvbmUgZmllbGQgZGVmaW5lZCBp
+biBzcGVjLCB0aGF0IGlzIGZlYXR1cmUgaWQgdG8gZGlzdGluZ3Vpc2ggb25lDQpmZWF0dXJlIHdp
+dGggYW5vdGhlciBvbmUuIFRoZXJlIGlzIG5vIHZlbmRvciBpZCBoZXJlIEkgdGhpbmssIGFuZCBz
+ZXZlcmFsDQpjYXJkcyBhcmUgdXNpbmcgdGhpcyBmb3Igbm93IGFuZCBzZWVtcyBub3QgcG9zc2li
+bGUgdG8gY2hhbmdlIERGSCBmb3JtYXQNCmZvciB0aGVzZSBwcm9kdWN0cy4gOiAoDQoNCkkgZnVs
+bHkgdW5kZXJzdGFuZCB0aGUgY29uY2VybiBpcyB0aGUgZmVhdHVyZSBpZCBtYW5hZ2VtZW50LCBh
+bmQgcG90ZW50aWFsDQpjb25mbGljdHMgdGhlcmUgZnJvbSBkaWZmZXJlbnQgdmVuZG9ycy4gT25l
+IHBvc3NpYmxlIG1ldGhvZCB0byByZXNvbHZlIHRoaXMNCmlzIG1hbmFnaW5nIHRoZSBpZHMgaW4g
+YSBwdWJsaWMgcGxhY2UgKHdlYj8gT3IganVzdCB0aGUgZHJpdmVyIGhlYWRlciBmaWxlIGZvcg0K
+ZmVhdHVyZSBpZCBkZWZpbml0aW9uKSwgYWxsIHZlbmRvcnMgY2FuIHJlcXVlc3Qgc29tZSBmZWF0
+dXJlIGlkcywgYW5kIG90aGVyDQpwZW9wbGUgY2FuIHNlZSB3aGljaCBmZWF0dXJlIGlkcyBoYXZl
+IGJlZW4gdXNlZCBzbyB0aGF0IHRoZXkgY2FuIGF2b2lkDQp1c2luZyBjb25mbGljdCBvbmVzIHdp
+dGggb3RoZXIgcGVvcGxlLg0KDQpBbmQgaW4gdGhlIGxhdGVyIHZlcnNpb24gREZILCB0aGlzIGZl
+YXR1cmUgaWQgd2lsbCBiZSByZXBsYWNlZCB3aXRoIEdVSUQNCkkgdGhpbmssIHNvIGl0IGNhbiBy
+ZXNvbHZlIHRoZSBjb25mbGljdCBwcm9ibGVtcyBmcm9tIGRpZmZlcmVudCB2ZW5kb3JzPw0KQnV0
+IG5vdywgd2Ugc3RpbGwgbmVlZCB0byBoYW5kbGUgdGhlIGV4aXN0aW5nIG9uZXMuIDogKQ0KDQpU
+aGFua3MNCkhhbw0KDQo+IA0KPiBUaGlzIHRvdWNoZXMgc29tZSBvZiB0aGUgbWF0Y2hpbmcgZnVu
+Y3Rpb24gb2YgdGhlIGJ1cyBvcHMuwqAgQ291bGQgdGhlcmUgYmUgYQ0KPiB3YXkgZm9yIGJ1cyBv
+cHMgdG8gYmUgdXNlZCBzbyB0aGF0IHRoZXJlIGNvdWxkIGJlIG11bHRpcGxlIG1hdGNoaW5nDQo+
+IGZ1bmN0aW9uLsKgIE1heWJlIHRoZSBvbmUgaW4gMDAwMiBhcyBhIGRlZmF1bHQgc28gdXNlcnMg
+Y291bGQgb3ZlcnJpZGUgaXQgPw0KPiANCj4gVGhlIHVzZSBjYXNlIEkgYW0gd29ycnlpbmcgYWJv
+dXQgaXMgYW4gT0VNLsKgIFRoZSBPRU0gdXNlcyBhbiB1bmNsYWltZWQNCj4gZmVhdHVyZV9pZCBh
+bmQgc3VwcGxpZXMgdGhlaXIgb3duIHBsYXRmb3JtIGRldmljZSBkZXZpY2UgZHJpdmVyIHRvIG1h
+dGNoIHRoZQ0KPiBmZWF0dXJlX2lkLsKgIEJ1dCBzb21lIGxhdGVyIHZlcnNpb24gb2YgdGhlIGtl
+cm5lbCBjbGFpbXMgdGhpcyBmZWF0dXJlX2lkIGFuZA0KPiB0aGUgT0VNJ3MgZHJpdmVyIG5vIGxv
+bmdlciB3b3JrcyBhbmQgc2luY2UgdGhlIHZhbHVlIGNvbWVzIGZyb20gcGNpIGNvbmZpZw0KPiBz
+cGFjZSBpdCBpcyBkaWZmaWN1bHQgdG8gY2hhbmdlLg0KPiANCj4gU28gbG9va2luZyBmb3Igc29t
+ZXRoaW5nIGxpa2UNCj4gDQo+IHJlZ2lzdGVyX2ZlYXR1cmVfbWF0Y2hlcigoKmJ1c19tYXRjaCko
+c3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QNCj4gZGV2aWNlX2RyaXZlciAqZHJ2KSkNCj4gDQo+
+IHN0YXRpYyBpbnQgZGZsX2J1c19tYXRjaF9kZWZhdWx0KHN0cnVjdCBkZXZpY2UgKmRldiwgc3Ry
+dWN0IGRldmljZV9kcml2ZXIgKmRydikNCj4gew0KPiDCoMKgwqAgc3RydWN0IGRmbF9kZXZpY2Ug
+KmRmbF9kZXYgPSB0b19kZmxfZGV2KGRldik7DQo+IMKgwqDCoCBzdHJ1Y3QgZGZsX2RyaXZlciAq
+ZGZsX2RydiA9IHRvX2RmbF9kcnYoZHJ2KTsNCj4gwqDCoMKgIGNvbnN0IHN0cnVjdCBkZmxfZGV2
+aWNlX2lkICppZF9lbnRyeSA9IGRmbF9kcnYtPmlkX3RhYmxlOw0KPiANCj4gwqDCoMKgIHdoaWxl
+IChpZF9lbnRyeS0+ZmVhdHVyZV9pZCkgew0KPiDCoMKgwqAgwqDCoMKgIGlmIChkZmxfbWF0Y2hf
+b25lX2RldmljZShpZF9lbnRyeSwgZGZsX2RldikpIHsNCj4gwqDCoMKgIMKgwqDCoCDCoMKgwqAg
+ZGZsX2Rldi0+aWRfZW50cnkgPSBpZF9lbnRyeTsNCj4gwqDCoMKgIMKgwqDCoCDCoMKgwqAgcmV0
+dXJuIDE7DQo+IMKgwqDCoCDCoMKgwqAgfQ0KPiDCoMKgwqAgwqDCoMKgIGlkX2VudHJ5Kys7DQo+
+IMKgwqDCoCB9DQo+IA0KPiDCoMKgwqAgcmV0dXJuIDA7DQo+IH0NCj4gDQo+IHJlZ2lzdGVyX2Zl
+YXR1cmVfbWF0Y2hlcigmZGZsX2J1c19tYXRjaF9kZWZhdWx0KQ0KPiANCj4gc3RhdGljIGludCBk
+ZmxfYnVzX21hdGNoKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRldmljZV9kcml2ZXIgKmRy
+dikNCj4gew0KPiANCj4gwqDCoMKgIHN0cnVjdCBkZmxfZGV2aWNlICpkZmxfZGV2ID0gdG9fZGZs
+X2RldihkZXYpOw0KPiDCoMKgwqAgc3RydWN0IGRmbF9kcml2ZXIgKmRmbF9kcnYgPSB0b19kZmxf
+ZHJ2KGRydik7DQo+IMKgwqDCoCBjb25zdCBzdHJ1Y3QgZGZsX2RldmljZV9pZCAqaWRfZW50cnkg
+PSBkZmxfZHJ2LT5pZF90YWJsZTsNCj4gDQo+IMKgwqDCoCB3aGlsZSAoaWRfZW50cnktPmZlYXR1
+cmVfaWQpIHsNCj4gDQo+IMKgwqDCoCDCoMKgwqAgbWF0Y2hlciA9IExvb3Agb3ZlciBtYXRjaGVy
+cygpDQo+IA0KPiDCoMKgwqAgwqDCoMKgIGlmIChtYXRjaGVyKGRldiwgZHJ2KSkgew0KPiDCoMKg
+wqAgwqDCoMKgwqDCoMKgwqAgZGZsX2Rldi0+aWRfZW50cnkgPSBpZF9lbnRyeTsNCj4gwqDCoMKg
+IMKgwqDCoMKgwqDCoMKgIHJldHVybiAxOw0KPiDCoMKgwqDCoMKgwqDCoCB9DQo+IMKgwqDCoCDC
+oMKgwqAgaWRfZW50cnkrKzsNCj4gwqDCoMKgIH0NCj4gDQo+IMKgwqDCoCByZXR1cm4gMDsNCj4g
+fQ0KPiANCj4gT3IgbWF5YmUgdXNlIHNvbWUgb2YgdGhlIHVudXNlZCBiaXRzIGluIHRoZSBkZmwg
+aGVhZGVyIHRvIGFkZCBhIHNlY29uZA0KPiB2ZW5kb3ItbGlrZSBpZCBhbmQgY2hhbmdlIGV4aXN0
+aW5nIG1hdGNoZXIgdG8gbG9vayBmZWF0dXJlX2lkIGFuZA0KPiB2ZW5kb3JfbGlrZV9pZC4NCj4g
+DQo+IFRvbQ0KPiANCj4gDQo+IA0KPiBPbiA3LzE0LzIwIDEwOjM4IFBNLCBYdSBZaWx1biB3cm90
+ZToNCj4gPiBUaGlzIHBhdGNoc2V0IG1ha2VzIGl0IHBvc3NpYmxlIHRvIGRldmVsb3AgaW5kZXBl
+bmRlbnQgZHJpdmVyIG1vZHVsZXMNCj4gPiBmb3IgREZMIHByaXZhdGUgZmVhdHVyZXMuIEl0IGFs
+c28gaGVscHMgdG8gbGV2ZXJhZ2UgZXhpc3Rpbmcga2VybmVsDQo+ID4gZHJpdmVycyB0byBlbmFi
+bGUgc29tZSBJUCBibG9ja3MgaW4gREZMLg0KPiA+DQo+ID4gWHUgWWlsdW4gKDIpOg0KPiA+ICAg
+ZnBnYTogZGZsOiBtYXAgZmVhdHVyZSBtbWlvIHJlc291cmNlcyBpbiB0aGVpciBvd24gZmVhdHVy
+ZSBkcml2ZXJzDQo+ID4gICBmcGdhOiBkZmw6IGNyZWF0ZSBhIGRmbCBidXMgdHlwZSB0byBzdXBw
+b3J0IERGTCBkZXZpY2VzDQo+ID4NCj4gPiAgRG9jdW1lbnRhdGlvbi9BQkkvdGVzdGluZy9zeXNm
+cy1idXMtZGZsIHwgIDE1ICsrDQo+ID4gIGRyaXZlcnMvZnBnYS9kZmwtcGNpLmMgICAgICAgICAg
+ICAgICAgICB8ICAyMSArLQ0KPiA+ICBkcml2ZXJzL2ZwZ2EvZGZsLmMgICAgICAgICAgICAgICAg
+ICAgICAgfCA0MzUgKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0NCj4gPiAgZHJpdmVy
+cy9mcGdhL2RmbC5oICAgICAgICAgICAgICAgICAgICAgIHwgIDkxICsrKysrKy0NCj4gPiAgNCBm
+aWxlcyBjaGFuZ2VkLCA0OTIgaW5zZXJ0aW9ucygrKSwgNzAgZGVsZXRpb25zKC0pDQo+ID4gIGNy
+ZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0aW9uL0FCSS90ZXN0aW5nL3N5c2ZzLWJ1cy1kZmwN
+Cj4gPg0KDQo=
