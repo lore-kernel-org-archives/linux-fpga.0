@@ -1,64 +1,152 @@
-Return-Path: <SRS0=ETOp=A7=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=ETOp=A7=intel.com=hao.wu@kernel.org>
-From: "Wu, Hao" <hao.wu@intel.com>
-Subject: RE: [PATCH 0/2] Modularization of DFL private feature drivers
-Date: Mon, 20 Jul 2020 09:21:43 +0000
-Message-ID: <DM6PR11MB3819828C1C193087AC6A4629857B0@DM6PR11MB3819.namprd11.prod.outlook.com>
+Return-Path: <SRS0=PeW4=A4=redhat.com=trix@kernel.org>
+Return-Path: <SRS0=PeW4=A4=redhat.com=trix@kernel.org>
+Subject: Re: [PATCH 0/2] Modularization of DFL private feature drivers
 References: <1594791498-14495-1-git-send-email-yilun.xu@intel.com>
  <0c7c63b8-5444-2deb-9fed-18956a5ad938@redhat.com>
  <DM6PR11MB38194C448ECCF1E6BF386D3F857C0@DM6PR11MB3819.namprd11.prod.outlook.com>
- <237c776b-8746-421d-26ad-eea7242a9172@redhat.com>
-In-Reply-To: <237c776b-8746-421d-26ad-eea7242a9172@redhat.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Tom Rix <trix@redhat.com>
+Message-ID: <237c776b-8746-421d-26ad-eea7242a9172@redhat.com>
+Date: Fri, 17 Jul 2020 06:32:26 -0700
 MIME-Version: 1.0
-To: Tom Rix <trix@redhat.com>, "Xu, Yilun" <yilun.xu@intel.com>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <DM6PR11MB38194C448ECCF1E6BF386D3F857C0@DM6PR11MB3819.namprd11.prod.outlook.com>
+Content-Language: en-US
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+To: "Wu, Hao" <hao.wu@intel.com>, "Xu, Yilun" <yilun.xu@intel.com>, "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Cc: "lgoncalv@redhat.com" <lgoncalv@redhat.com>, Matthew Gerlach <matthew.gerlach@linux.intel.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-PiBPbiA3LzE2LzIwIDg6NDggUE0sIFd1LCBIYW8gd3JvdGU6DQo+ID4+IFN1YmplY3Q6IFJlOiBb
-UEFUQ0ggMC8yXSBNb2R1bGFyaXphdGlvbiBvZiBERkwgcHJpdmF0ZSBmZWF0dXJlIGRyaXZlcnMN
-Cj4gPj4NCj4gPj4gR2VuZXJhbGx5IGkgdGhpbmsgdGhpcyBpcyBhIGdvb2QgYXBwcm9hY2guDQo+
-ID4+DQo+ID4+IEhvd2V2ZXIgSSBkbyBoYXZlIGNvbmNlcm4uDQo+ID4+DQo+ID4+IFRoZSBmZWF0
-dXJlX2lkIGluIGRmbCBpcyBtYWdpYyBudW1iZXIsIHNpbWlsYXIgdG8gcGNpIGlkIGJ1dCB3aXRo
-b3V0IGENCj4gdmVuZG9yDQo+ID4+IGlkLg0KPiA+Pg0KPiA+PiBJcyBpdCBwb3NzaWJsZSB0byBh
-ZGQgc29tZXRoaW5nIGxpa2UgYSB2ZW5kb3IgaWQgc28gZGlmZmVyZW50IHZlbmRvcnMgd291bGQN
-Cj4gPj4gbm90IGhhdmUgdG8gYmUgc28gY2FyZWZ1bCB0byB1c2UgYSB1bmlxdWUgaWQgPw0KPiA+
-IEhpIFRvbSwNCj4gPg0KPiA+IFRoYW5rcyBmb3IgdGhlIGNvbW1lbnRzLg0KPiA+DQo+ID4gSGVy
-ZSBpcyBvbmx5IG9uZSBmaWVsZCBkZWZpbmVkIGluIHNwZWMsIHRoYXQgaXMgZmVhdHVyZSBpZCB0
-byBkaXN0aW5ndWlzaCBvbmUNCj4gPiBmZWF0dXJlIHdpdGggYW5vdGhlciBvbmUuIFRoZXJlIGlz
-IG5vIHZlbmRvciBpZCBoZXJlIEkgdGhpbmssIGFuZCBzZXZlcmFsDQo+ID4gY2FyZHMgYXJlIHVz
-aW5nIHRoaXMgZm9yIG5vdyBhbmQgc2VlbXMgbm90IHBvc3NpYmxlIHRvIGNoYW5nZSBERkggZm9y
-bWF0DQo+ID4gZm9yIHRoZXNlIHByb2R1Y3RzLiA6ICgNCj4gDQo+IFRoZXJlIGxvb2tzIGxpa2Ug
-c29tZSB1bnVzZWQgYml0cyBpbiB0aGUgZmlyc3Qgd29yZCwgaG93IGFib3V0DQo+IA0KPiAjZGVm
-aW5lIERGSF9FT0zCoMKgwqAgwqDCoMKgIMKgwqDCoCBCSVRfVUxMKDQwKcKgwqDCoCDCoMKgwqAg
-LyogRW5kIG9mIGxpc3QgKi8NCj4gDQo+ICtkZWZpbmUgREZIX1ZFTkRPUsKgwqDCoCBHRU5NQUtF
-X1VMTCg0OSw0MSkgLyogVmVuZG9yIElEICovDQo+IA0KPiAjZGVmaW5lIERGSF9UWVBFwqDCoMKg
-IMKgwqDCoCBHRU5NQVNLX1VMTCg2MywgNjApwqDCoMKgIC8qIEZlYXR1cmUgdHlwZSAqLw0KPiAN
-Cj4gQW5kIEludGVsIGdldHMgaWQgMC4NCj4gDQo+ID4NCj4gPiBJIGZ1bGx5IHVuZGVyc3RhbmQg
-dGhlIGNvbmNlcm4gaXMgdGhlIGZlYXR1cmUgaWQgbWFuYWdlbWVudCwgYW5kIHBvdGVudGlhbA0K
-PiA+IGNvbmZsaWN0cyB0aGVyZSBmcm9tIGRpZmZlcmVudCB2ZW5kb3JzLiBPbmUgcG9zc2libGUg
-bWV0aG9kIHRvIHJlc29sdmUgdGhpcw0KPiA+IGlzIG1hbmFnaW5nIHRoZSBpZHMgaW4gYSBwdWJs
-aWMgcGxhY2UgKHdlYj8gT3IganVzdCB0aGUgZHJpdmVyIGhlYWRlciBmaWxlIGZvcg0KPiA+IGZl
-YXR1cmUgaWQgZGVmaW5pdGlvbiksIGFsbCB2ZW5kb3JzIGNhbiByZXF1ZXN0IHNvbWUgZmVhdHVy
-ZSBpZHMsIGFuZCBvdGhlcg0KPiA+IHBlb3BsZSBjYW4gc2VlIHdoaWNoIGZlYXR1cmUgaWRzIGhh
-dmUgYmVlbiB1c2VkIHNvIHRoYXQgdGhleSBjYW4gYXZvaWQNCj4gPiB1c2luZyBjb25mbGljdCBv
-bmVzIHdpdGggb3RoZXIgcGVvcGxlLg0KPiANCj4gVGhlIGNvbmZsaWN0IHdpbGwgY29tZSBpbiBk
-ZXZlbG9wbWVudCB3aGVuIHR3byB2ZW5kb3JzIHVzZSB0aGUgc2FtZQ0KPiB1bnB1Ymxpc2hlZCBm
-ZWF0dXJlIGlkLg0KPiANCj4gQWxzbyBrZWVwaW5nIHRoZSB0cnV0aCBvZiBpZCdzIGluIHRoZSBr
-ZXJuZWwgc291cmNlIGlzbid0IHRoYXQgZ3JlYXQgYmVjYXVzZSB0aGUNCj4gcHVibGljIGtlcm5l
-bCBhbHdheXMgbGFncyBkZXZlbG9wbWVudCByZXBvc2l0b3JpZXMuDQoNCkkgZnVsbHkgdW5kZXJz
-dGFuZCB5b3VyIHBvaW50LCBhbmQgaXQncyBhIGdvb2QgaWRlYSB0byBtZSwgYnV0IEkgYW0gbm90
-IHN1cmUgaWYgDQp3ZSBjYW4gdXBkYXRlIHRoZSBzcGVjIGZvciBERkh2MCBhdCB0aGlzIG1vbWVu
-dC4gTGV0IG1lIGNoZWNrIHdpdGggc3BlYw0Kb3duZXIgYWJvdXQgdGhpcy4gQWN0dWFsbHkgSSBi
-ZWxpZXZlIHdlIGRvbid0IHdhbnQgdG8gYWRkIGFueXRoaW5nIGluIGRyaXZlcg0KY29kZSB3aGlj
-aCBpcyBub3QgZGVmaW5lZCBpbiB0aGUgc3BlYyBhdCBhbGwuIDogKCANCg0KPiANCj4gPg0KPiA+
-IEFuZCBpbiB0aGUgbGF0ZXIgdmVyc2lvbiBERkgsIHRoaXMgZmVhdHVyZSBpZCB3aWxsIGJlIHJl
-cGxhY2VkIHdpdGggR1VJRA0KPiA+IEkgdGhpbmssIHNvIGl0IGNhbiByZXNvbHZlIHRoZSBjb25m
-bGljdCBwcm9ibGVtcyBmcm9tIGRpZmZlcmVudCB2ZW5kb3JzPw0KPiA+IEJ1dCBub3csIHdlIHN0
-aWxsIG5lZWQgdG8gaGFuZGxlIHRoZSBleGlzdGluZyBvbmVzLiA6ICkNCj4gDQo+IFRoaXMgaXMg
-d2h5IEkgcHJvcG9zZWQgbmVlZGluZyB0byBnZW5lcmFsaXplIHRoZSBtYXRjaGluZy4NCg0KUGVy
-c29uYWxseSBJIHByZWZlciB0aGF0IHdlIGNhbiBoYXZlIHN0YW5kYXJkIG1hdGNoaW5nIGZ1bmN0
-aW9ucyBwZXIgREZIDQpzcGVjcy4NCg0KWWlsdW4sIGhvdyBkbyB5b3UgdGhpbmsgYWJvdXQgdGhp
-cz8NCg0KVGhhbmtzDQpIYW8NCg0K
+
+On 7/16/20 8:48 PM, Wu, Hao wrote:
+>> Subject: Re: [PATCH 0/2] Modularization of DFL private feature drivers
+>>
+>> Generally i think this is a good approach.
+>>
+>> However I do have concern.
+>>
+>> The feature_id in dfl is magic number, similar to pci id but without a vendor
+>> id.
+>>
+>> Is it possible to add something like a vendor id so different vendors would
+>> not have to be so careful to use a unique id ?
+> Hi Tom,
+>
+> Thanks for the comments.
+>
+> Here is only one field defined in spec, that is feature id to distinguish one
+> feature with another one. There is no vendor id here I think, and several
+> cards are using this for now and seems not possible to change DFH format
+> for these products. : (
+
+There looks like some unused bits in the first word, how about
+
+#define DFH_EOL            BIT_ULL(40)        /* End of list */
+
++define DFH_VENDOR    GENMAKE_ULL(49,41) /* Vendor ID */
+
+#define DFH_TYPE        GENMASK_ULL(63, 60)    /* Feature type */
+
+And Intel gets id 0.
+
+>
+> I fully understand the concern is the feature id management, and potential
+> conflicts there from different vendors. One possible method to resolve this
+> is managing the ids in a public place (web? Or just the driver header file for
+> feature id definition), all vendors can request some feature ids, and other
+> people can see which feature ids have been used so that they can avoid
+> using conflict ones with other people.
+
+The conflict will come in development when two vendors use the same unpublished feature id.
+
+Also keeping the truth of id's in the kernel source isn't that great because the public kernel always lags development repositories.
+
+>
+> And in the later version DFH, this feature id will be replaced with GUID
+> I think, so it can resolve the conflict problems from different vendors?
+> But now, we still need to handle the existing ones. : )
+
+This is why I proposed needing to generalize the matching.
+
+>
+> Thanks
+> Hao
+>
+>> This touches some of the matching function of the bus ops.  Could there be a
+>> way for bus ops to be used so that there could be multiple matching
+>> function.  Maybe the one in 0002 as a default so users could override it ?
+>>
+>> The use case I am worrying about is an OEM.  The OEM uses an unclaimed
+>> feature_id and supplies their own platform device device driver to match the
+>> feature_id.  But some later version of the kernel claims this feature_id and
+>> the OEM's driver no longer works and since the value comes from pci config
+>> space it is difficult to change.
+>>
+>> So looking for something like
+>>
+>> register_feature_matcher((*bus_match)(struct device *dev, struct
+>> device_driver *drv))
+>>
+>> static int dfl_bus_match_default(struct device *dev, struct device_driver *drv)
+>> {
+>>     struct dfl_device *dfl_dev = to_dfl_dev(dev);
+>>     struct dfl_driver *dfl_drv = to_dfl_drv(drv);
+>>     const struct dfl_device_id *id_entry = dfl_drv->id_table;
+>>
+>>     while (id_entry->feature_id) {
+>>         if (dfl_match_one_device(id_entry, dfl_dev)) {
+>>             dfl_dev->id_entry = id_entry;
+>>             return 1;
+>>         }
+>>         id_entry++;
+>>     }
+>>
+>>     return 0;
+>> }
+>>
+>> register_feature_matcher(&dfl_bus_match_default)
+>>
+>> static int dfl_bus_match(struct device *dev, struct device_driver *drv)
+>> {
+>>
+>>     struct dfl_device *dfl_dev = to_dfl_dev(dev);
+>>     struct dfl_driver *dfl_drv = to_dfl_drv(drv);
+>>     const struct dfl_device_id *id_entry = dfl_drv->id_table;
+>>
+>>     while (id_entry->feature_id) {
+>>
+>>         matcher = Loop over matchers()
+>>
+>>         if (matcher(dev, drv)) {
+>>             dfl_dev->id_entry = id_entry;
+>>             return 1;
+>>         }
+>>         id_entry++;
+>>     }
+>>
+>>     return 0;
+>> }
+>>
+>> Or maybe use some of the unused bits in the dfl header to add a second
+>> vendor-like id and change existing matcher to look feature_id and
+>> vendor_like_id.
+>>
+>> Tom
+>>
+>>
+>>
+>> On 7/14/20 10:38 PM, Xu Yilun wrote:
+>>> This patchset makes it possible to develop independent driver modules
+>>> for DFL private features. It also helps to leverage existing kernel
+>>> drivers to enable some IP blocks in DFL.
+>>>
+>>> Xu Yilun (2):
+>>>   fpga: dfl: map feature mmio resources in their own feature drivers
+>>>   fpga: dfl: create a dfl bus type to support DFL devices
+>>>
+>>>  Documentation/ABI/testing/sysfs-bus-dfl |  15 ++
+>>>  drivers/fpga/dfl-pci.c                  |  21 +-
+>>>  drivers/fpga/dfl.c                      | 435 +++++++++++++++++++++++++++-----
+>>>  drivers/fpga/dfl.h                      |  91 ++++++-
+>>>  4 files changed, 492 insertions(+), 70 deletions(-)
+>>>  create mode 100644 Documentation/ABI/testing/sysfs-bus-dfl
+>>>
