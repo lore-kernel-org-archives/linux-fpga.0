@@ -1,44 +1,49 @@
-Return-Path: <SRS0=10uA=AY=intel.com=yilun.xu@kernel.org>
-Return-Path: <SRS0=10uA=AY=intel.com=yilun.xu@kernel.org>
-From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH v2] fpga: dfl: pci: add device id for Intel FPGA PAC N3000
-Date: Mon, 13 Jul 2020 09:47:46 +0800
-Message-Id: <1594604866-30877-1-git-send-email-yilun.xu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com, Wu Hao <hao.wu@intel.com>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Russ Weight <russell.h.weight@intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
+Return-Path: <SRS0=OAol=A7=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=OAol=A7=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:35908 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725815AbgGTIBB (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 20 Jul 2020 04:01:01 -0400
+Date: Mon, 20 Jul 2020 10:01:11 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [GIT PULL] FPGA Manager (late) fixes for 5.8
+Message-ID: <20200720080111.GA553171@kroah.com>
+References: <20200717234408.GA4556@epycbox.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200717234408.GA4556@epycbox.lan>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Moritz Fischer <mdf@kernel.org>
+Cc: linux-fpga@vger.kernel.org, moritzf@google.com, linux-kernel@vger.kernel.org
 
-Add PCIe Device ID for Intel FPGA PAC N3000.
+On Fri, Jul 17, 2020 at 04:44:08PM -0700, Moritz Fischer wrote:
+> The following changes since commit 11ba468877bb23f28956a35e896356252d63c983:
+> 
+>   Linux 5.8-rc5 (2020-07-12 16:34:50 -0700)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git fpga-late-fixes-for-5.8
+> 
+> for you to fetch changes up to 8614afd689df59d9ce019439389be20bd788a897:
+> 
+>   fpga: dfl: fix bug in port reset handshake (2020-07-13 22:11:17 -0700)
+> 
+> ----------------------------------------------------------------
+> FPGA manager fixes for 5.8
+> 
+> Here are two (late) dfl fixes for the the 5.8 release.
+> 
+> Matthew's fix addresses an issue in the reset of a port.
+> 
+> Xu'x fix addresses a linter warning.
 
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Reviewed-by: Wu Hao <hao.wu@intel.com>
-Reviewed-by: Tom Rix <trix@redhat.com>
----
- drivers/fpga/dfl-pci.c | 2 ++
- 1 file changed, 2 insertions(+)
+That's not a "real" issue, and should have waited until 5.9-rc1 as there
+is no bug being fixed there at all.  I'll take it for now, but be more
+careful in the future.
 
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index 73b5153..e220bec 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -64,6 +64,7 @@ static void cci_pci_free_irq(struct pci_dev *pcidev)
- #define PCIE_DEVICE_ID_PF_INT_5_X	0xBCBD
- #define PCIE_DEVICE_ID_PF_INT_6_X	0xBCC0
- #define PCIE_DEVICE_ID_PF_DSC_1_X	0x09C4
-+#define PCIE_DEVICE_ID_INTEL_PAC_N3000	0x0B30
- /* VF Device */
- #define PCIE_DEVICE_ID_VF_INT_5_X	0xBCBF
- #define PCIE_DEVICE_ID_VF_INT_6_X	0xBCC1
-@@ -76,6 +77,7 @@ static struct pci_device_id cci_pcie_id_tbl[] = {
- 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_VF_INT_6_X),},
- 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_PF_DSC_1_X),},
- 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_VF_DSC_1_X),},
-+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_PAC_N3000),},
- 	{0,}
- };
- MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
--- 
-2.7.4
+thanks,
+
+greg k-h
