@@ -1,159 +1,143 @@
-Return-Path: <SRS0=tOn4=BB=intel.com=yilun.xu@kernel.org>
-Return-Path: <SRS0=tOn4=BB=intel.com=yilun.xu@kernel.org>
-Date: Wed, 22 Jul 2020 14:51:07 +0800
+Return-Path: <SRS0=6+9k=BA=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=6+9k=BA=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:33980 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726389AbgGUHng (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 21 Jul 2020 03:43:36 -0400
+Date: Tue, 21 Jul 2020 15:40:25 +0800
 From: Xu Yilun <yilun.xu@intel.com>
 Subject: Re: [PATCH 1/2] fpga: dfl: map feature mmio resources in their own
   feature drivers
-Message-ID: <20200722065107.GA7791@yilunxu-OptiPlex-7050>
+Message-ID: <20200721074025.GF17091@yilunxu-OptiPlex-7050>
 References: <1594791498-14495-1-git-send-email-yilun.xu@intel.com>
  <1594791498-14495-2-git-send-email-yilun.xu@intel.com>
- <9cec52cb-13aa-8b99-ef75-22eefa9f1710@redhat.com>
+ <DM6PR11MB381928806B8E65BEEF66D07F857B0@DM6PR11MB3819.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9cec52cb-13aa-8b99-ef75-22eefa9f1710@redhat.com>
-To: Tom Rix <trix@redhat.com>
-Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, lgoncalv@redhat.com, Wu Hao <hao.wu@intel.com>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Russ Weight <russell.h.weight@intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
+In-Reply-To: <DM6PR11MB381928806B8E65BEEF66D07F857B0@DM6PR11MB3819.namprd11.prod.outlook.com>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: "Wu, Hao" <hao.wu@intel.com>
+Cc: "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "trix@redhat.com" <trix@redhat.com>, "lgoncalv@redhat.com" <lgoncalv@redhat.com>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, "Weight, Russell H" <russell.h.weight@intel.com>
 
-Sorry, I missed some comments. Reply inline.
-
-> > +	/* release I/O mappings for next step enumeration */
-> > +	cci_pci_iounmap_bars(pcidev, mapped_bars);
-> There is no iounmap_bars in error handling, likely need to add this.
-
-The memory allocated by pcim_iomap_xxx will be released along with
-pcidev destory.
-
-> > +
-> >  	/* start enumeration with prepared enumeration information */
-> >  	cdev = dfl_fpga_feature_devs_enumerate(info);
-> >  	if (IS_ERR(cdev)) {
-> > diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-> > index 649958a..7dc6411 100644
-> > --- a/drivers/fpga/dfl.c
-> > +++ b/drivers/fpga/dfl.c
-> > @@ -250,6 +250,11 @@ int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id)
+On Mon, Jul 20, 2020 at 05:09:35PM +0800, Wu, Hao wrote:
+> > Subject: [PATCH 1/2] fpga: dfl: map feature mmio resources in their own
+> > feature drivers
+> >
+> > This patch makes preparation for modularization of DFL sub feature
+> > drivers.
+> >
+> > Currently, if we need to support a new DFL sub feature, an entry should
+> > be added to fme/port_feature_drvs[] in dfl-fme/port-main.c. And we need
+> > to re-compile the whole DFL modules. That make the DFL drivers hard to be
+> > extended.
+> >
+> > Another consideration is that DFL may contain some IP blocks which are
+> > already supported by kernel, most of them are supported by platform
+> > device drivers. We could create platform devices for these IP blocks and
+> > get them supported by these drivers.
+> >
+> > An important issue is that platform device drivers usually requests mmio
+> > resources on probe. But now dfl mmio is mapped in dfl bus driver (e.g.
+> > dfl-pci) as a whole region. Then platform device drivers for sub features
+> > can't request their own mmio resources again. This is what the patch
+> > trying to resolve.
+> >
+> > This patch changes the DFL enumeration. DFL bus driver will unmap mmio
+> > resources after first step enumeration and pass enumeration info to DFL
+> > framework. Then DFL framework will map the mmio resources again, do 2nd
+> > step enumeration, and also unmap the mmio resources. In this way, sub
+> > feature drivers could then request their own mmio resources as needed.
+> >
+> > An exception is that mmio resource of FIU headers are still mapped in dfl
+> > bus driver. The FIU headers have some fundamental functions (sriov set,
+> > port enable/disable) needed for dfl bus devices and other sub features.
+> > They should not be unmapped as long as dfl bus device is alive.
+> >
+> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > Signed-off-by: Wu Hao <hao.wu@intel.com>
+> > Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+> > Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+> > ---
+> >  drivers/fpga/dfl-pci.c |  21 ++++--
+> >  drivers/fpga/dfl.c     | 187 +++++++++++++++++++++++++++++++++++-----------
+> > ---
+> >  drivers/fpga/dfl.h     |   6 +-
+> >  3 files changed, 152 insertions(+), 62 deletions(-)
+> >
+> > diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+> > index e220bec..22dc025 100644
+> > --- a/drivers/fpga/dfl-pci.c
+> > +++ b/drivers/fpga/dfl-pci.c
+> > @@ -39,6 +39,11 @@ static void __iomem *cci_pci_ioremap_bar(struct
+> > pci_dev *pcidev, int bar)
+> >  return pcim_iomap_table(pcidev)[bar];
 > >  }
-> >  EXPORT_SYMBOL_GPL(dfl_fpga_check_port_id);
-> >  
-> > +static bool is_header_feature(struct dfl_feature *feature)
+> >
+> > +static void cci_pci_iounmap_bars(struct pci_dev *pcidev, int mapped_bars)
 > > +{
-> > +	return feature->id == FEATURE_ID_FIU_HEADER;
-> Could this be a macro ?
-
-Yes
-
+> > +pcim_iounmap_regions(pcidev, mapped_bars);
 > > +}
 > > +
-> >  /**
-> >   * dfl_fpga_dev_feature_uinit - uinit for sub features of dfl feature device
-> >   * @pdev: feature device.
-> > @@ -273,8 +278,20 @@ static int dfl_feature_instance_init(struct platform_device *pdev,
-> >  				     struct dfl_feature *feature,
-> >  				     struct dfl_feature_driver *drv)
+> >  static int cci_pci_alloc_irq(struct pci_dev *pcidev)
 > >  {
-> > +	void __iomem *base;
-> >  	int ret = 0;
-> >  
-> > +	if (!is_header_feature(feature)) {
-> > +		base = devm_platform_ioremap_resource(pdev,
-> > +						      feature->resource_index);
-> > +		if (IS_ERR(base)) {
-> > +			dev_err(&pdev->dev, "fail to get iomem resource!\n");
-> > +			return PTR_ERR(base);
-> > +		}
+> >  int ret, nvec = pci_msix_vec_count(pcidev);
+> > @@ -123,7 +128,7 @@ static int *cci_pci_create_irq_table(struct pci_dev
+> > *pcidev, unsigned int nvec)
+> >  static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+> >  {
+> >  struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
+> > -int port_num, bar, i, nvec, ret = 0;
+> > +int port_num, bar, i, nvec, mapped_bars, ret = 0;
+> >  struct dfl_fpga_enum_info *info;
+> >  struct dfl_fpga_cdev *cdev;
+> >  resource_size_t start, len;
+> > @@ -163,6 +168,8 @@ static int cci_enumerate_feature_devs(struct pci_dev
+> > *pcidev)
+> >  goto irq_free_exit;
+> >  }
+> >
+> > +mapped_bars = BIT(0);
 > > +
-> > +		feature->ioaddr = base;
-> > +	}
+> >  /*
+> >   * PF device has FME and Ports/AFUs, and VF device only has one
+> >   * Port/AFU. Check them and add related "Device Feature List" info
+> > @@ -172,7 +179,7 @@ static int cci_enumerate_feature_devs(struct pci_dev
+> > *pcidev)
+> >  start = pci_resource_start(pcidev, 0);
+> >  len = pci_resource_len(pcidev, 0);
+> >
+> > -dfl_fpga_enum_info_add_dfl(info, start, len, base);
+> > +dfl_fpga_enum_info_add_dfl(info, start, len);
+> >
+> >  /*
+> >   * find more Device Feature Lists (e.g. Ports) per information
+> > @@ -200,22 +207,26 @@ static int cci_enumerate_feature_devs(struct
+> > pci_dev *pcidev)
+> >  if (!base)
+> >  continue;
+> >
+> > +mapped_bars |= BIT(bar);
 > > +
-> >  	if (drv->ops->init) {
-> >  		ret = drv->ops->init(pdev, feature);
-> >  		if (ret)
-> > @@ -427,7 +444,9 @@ EXPORT_SYMBOL_GPL(dfl_fpga_dev_ops_unregister);
-> >   * @irq_table: Linux IRQ numbers for all irqs, indexed by local irq index of
-> >   *	       this device.
-> >   * @feature_dev: current feature device.
-> > - * @ioaddr: header register region address of feature device in enumeration.
-> > + * @ioaddr: header register region address of current FIU in enumeration.
-> > + * @start: register resource start of current FIU.
-> > + * @len: max register resource length of current FIU.
-> >   * @sub_features: a sub features linked list for feature device in enumeration.
-> >   * @feature_num: number of sub features for feature device in enumeration.
-> >   */
-> > @@ -439,6 +458,9 @@ struct build_feature_devs_info {
-> >  
-> >  	struct platform_device *feature_dev;
-> >  	void __iomem *ioaddr;
-> > +	resource_size_t start;
-> > +	resource_size_t len;
-> > +
-> extra whitespace, remove
+> 
+> One more place,
+> 
+> As you removed base addr usage below, so ideally we don't need to map
+> more bars for port here? is my understanding correct?
 
-Yes
-
-> >  	struct list_head sub_features;
-> >  	int feature_num;
-> >  };
-> > @@ -484,10 +506,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
-> >  	struct dfl_feature_platform_data *pdata;
-> >  	struct dfl_feature_info *finfo, *p;
-> >  	enum dfl_id_type type;
-> > -	int ret, index = 0;
-> > -
-> > -	if (!fdev)
-> > -		return 0;
-> > +	int ret, index = 0, res_idx = 0;
-> >  
-> >  	type = feature_dev_id_type(fdev);
-> >  	if (WARN_ON_ONCE(type >= DFL_ID_MAX))
-> > @@ -530,16 +549,30 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
-> >  
-> >  	/* fill features and resource information for feature dev */
-> >  	list_for_each_entry_safe(finfo, p, &binfo->sub_features, node) {
-> > -		struct dfl_feature *feature = &pdata->features[index];
-> > +		struct dfl_feature *feature = &pdata->features[index++];
-> >  		struct dfl_feature_irq_ctx *ctx;
-> >  		unsigned int i;
-> >  
-> >  		/* save resource information for each feature */
-> >  		feature->dev = fdev;
-> >  		feature->id = finfo->fid;
-> > -		feature->resource_index = index;
-> > -		feature->ioaddr = finfo->ioaddr;
-> > -		fdev->resource[index++] = finfo->mmio_res;
-> > +
-> > +		/*
-> > +		 * map header resource for dfl bus device. Don't add header
-> > +		 * resource to feature devices, or the resource tree will be
-> > +		 * disordered and cause warning on resource release
-> > +		 */
-> > +		if (is_header_feature(feature)) {
-> > +			feature->resource_index = -1;
-> > +			feature->ioaddr =
-> > +				devm_ioremap_resource(binfo->dev,
-> > +						      &finfo->mmio_res);
-> > +			if (IS_ERR(feature->ioaddr))
-> > +				return PTR_ERR(feature->ioaddr);
-> feature->ioaddr is garbage, is this ok ?
-
-It should be OK. We will not touch this field during cleaning up.
-
-> > +static bool is_feature_dev_detected(struct build_feature_devs_info *binfo)
-> > +{
-> > +	return !!binfo->feature_dev;
-> Another macro.
-
-Yes
-
-> > +}
-> > +
-> > +static void dfl_binfo_shift(struct build_feature_devs_info *binfo,
-> > +			    resource_size_t ofst)
-> shift? where is shifting happening.� A better name would be dfl_binfo_update or dfl_binfo_increment
-
-I'll delete this function, it is not useful.
+Exactly, thanks for the catching. This makes the code much simpler.
 
 Thanks,
 Yilun
+
+> 
+> >  start = pci_resource_start(pcidev, bar) + offset;
+> >  len = pci_resource_len(pcidev, bar) - offset;
+> >
+> > -dfl_fpga_enum_info_add_dfl(info, start, len,
+> > -   base + offset);
+> > +dfl_fpga_enum_info_add_dfl(info, start, len);
+> 
+> Thanks
+> Hao
