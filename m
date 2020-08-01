@@ -1,106 +1,105 @@
-Return-Path: <moritz.fischer.private@gmail.com>
-Date: Tue, 4 Aug 2020 09:43:58 -0700
-From: Moritz Fischer <mdf@kernel.org>
-Subject: Re: [RESEND PATCHv1] fpga: stratix10-soc: make FPGA task
- un-interruptible
-Message-ID: <20200804164358.GB1499313@epycbox.lan>
-References: <1595607009-2065-1-git-send-email-richard.gong@linux.intel.com>
+Return-Path: <SRS0=nrHP=BL=redhat.com=trix@kernel.org>
+Return-Path: <SRS0=nrHP=BL=redhat.com=trix@kernel.org>
+Subject: Re: [PATCH v2 1/4] fpga: dfl: change data type of feature id to u16
+References: <1595556555-9903-1-git-send-email-yilun.xu@intel.com>
+ <1595556555-9903-2-git-send-email-yilun.xu@intel.com>
+ <316f86d4-7bba-f0c7-3dde-794df80d32e7@redhat.com>
+ <20200731074837.GE1781@yilunxu-OptiPlex-7050>
+From: Tom Rix <trix@redhat.com>
+Message-ID: <1d8198f3-10d6-118c-f767-cef88fa871c6@redhat.com>
+Date: Sat, 1 Aug 2020 08:40:54 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1595607009-2065-1-git-send-email-richard.gong@linux.intel.com>
-To: richard.gong@linux.intel.com
-Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, trix@redhat.com, dinguyen@kernel.org, Richard Gong <richard.gong@intel.com>
+In-Reply-To: <20200731074837.GE1781@yilunxu-OptiPlex-7050>
+Content-Language: en-US
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+To: Xu Yilun <yilun.xu@intel.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, lgoncalv@redhat.com
 List-ID: <linux-fpga@vger.kernel.org>
 
-On Fri, Jul 24, 2020 at 11:10:09AM -0500, richard.gong@linux.intel.com wrote:
-> From: Richard Gong <richard.gong@intel.com>
-> 
-> When CTRL+C occurs during the process of FPGA reconfiguration, the FPGA
-> reconfiguration process stops and the user can't perform a new FPGA
-> reconfiguration properly.
-> 
-> Set FPGA task to be not interruptible so that the user can properly
-> perform FPGA reconfiguration after CTRL+C event.
-> 
-> Signed-off-by: Richard Gong <richard.gong@intel.com>
-> Reviewed-by: Tom Rix <trix@redhat.com>
-> ---
->  drivers/fpga/stratix10-soc.c | 23 +++--------------------
->  1 file changed, 3 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
-> index 44b7c56..657a70c 100644
-> --- a/drivers/fpga/stratix10-soc.c
-> +++ b/drivers/fpga/stratix10-soc.c
-> @@ -196,17 +196,13 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
->  	if (ret < 0)
->  		goto init_done;
->  
-> -	ret = wait_for_completion_interruptible_timeout(
-> +	ret = wait_for_completion_timeout(
->  		&priv->status_return_completion, S10_RECONFIG_TIMEOUT);
->  	if (!ret) {
->  		dev_err(dev, "timeout waiting for RECONFIG_REQUEST\n");
->  		ret = -ETIMEDOUT;
->  		goto init_done;
->  	}
-> -	if (ret < 0) {
-> -		dev_err(dev, "error (%d) waiting for RECONFIG_REQUEST\n", ret);
-> -		goto init_done;
-> -	}
->  
->  	ret = 0;
->  	if (!test_and_clear_bit(SVC_STATUS_OK, &priv->status)) {
-> @@ -318,7 +314,7 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
->  		 */
->  		wait_status = 1; /* not timed out */
->  		if (!priv->status)
-> -			wait_status = wait_for_completion_interruptible_timeout(
-> +			wait_status = wait_for_completion_timeout(
->  				&priv->status_return_completion,
->  				S10_BUFFER_TIMEOUT);
->  
-> @@ -340,13 +336,6 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
->  			ret = -ETIMEDOUT;
->  			break;
->  		}
-> -		if (wait_status < 0) {
-> -			ret = wait_status;
-> -			dev_err(dev,
-> -				"error (%d) waiting for svc layer buffers\n",
-> -				ret);
-> -			break;
-> -		}
->  	}
->  
->  	if (!s10_free_buffers(mgr))
-> @@ -372,7 +361,7 @@ static int s10_ops_write_complete(struct fpga_manager *mgr,
->  		if (ret < 0)
->  			break;
->  
-> -		ret = wait_for_completion_interruptible_timeout(
-> +		ret = wait_for_completion_timeout(
->  			&priv->status_return_completion, timeout);
->  		if (!ret) {
->  			dev_err(dev,
-> @@ -380,12 +369,6 @@ static int s10_ops_write_complete(struct fpga_manager *mgr,
->  			ret = -ETIMEDOUT;
->  			break;
->  		}
-> -		if (ret < 0) {
-> -			dev_err(dev,
-> -				"error (%d) waiting for RECONFIG_COMPLETED\n",
-> -				ret);
-> -			break;
-> -		}
->  		/* Not error or timeout, so ret is # of jiffies until timeout */
->  		timeout = ret;
->  		ret = 0;
-> -- 
-> 2.7.4
-> 
 
-Sorry that one slipped through the cracks, will apply to for-next.
+On 7/31/20 12:48 AM, Xu Yilun wrote:
+> On Sat, Jul 25, 2020 at 06:29:53AM -0700, Tom Rix wrote:
+>> It would be good if the variable or element for the feature id had a consistent name.
+>>
+>>
+>>> @@ -197,7 +197,7 @@ int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id);
+>>>   * @id: unique dfl private feature id.
+>>>   */
+>>>  struct dfl_feature_id {
+>>> -	u64 id;
+>>> +	u16 id;
+>>>  };
+>> Is this structure needed ?
+>>
+>> Here is how it could be changed to 
+>>
+>> struct dfl_feature_driver {
+>>
+>> -    const dfl_feature_id *
+>>
+>> +    const u16 *id_table;
+> This structure is to represent an id type, which is used to match
+> fme/port owned features. It could be extended if some feature drivers
+> needs driver_data.
+>
+> Actually I see some example of device_ids with similar structure, like:
+>
+>   struct mips_cdmm_device_id {
+>   	__u8	type;
+>   };
+>
+>   struct tee_client_device_id {
+> 	uuid_t uuid;
+>   };
+>
+Ok.
 
-Thanks!
+Reviewed-by: Tom Rix <trix@redhat.com>
+
+> Thanks,
+> Yilun.
+>
+>> ...
+>>
+>> Tom
+>>
+>>
+>>>  
+>>>  /**
+>>> @@ -240,7 +240,7 @@ struct dfl_feature_irq_ctx {
+>>>   */
+>>>  struct dfl_feature {
+>>>  	struct platform_device *dev;
+>>> -	u64 id;
+>>> +	u16 id;
+>>>  	int resource_index;
+>>>  	void __iomem *ioaddr;
+>>>  	struct dfl_feature_irq_ctx *irq_ctx;
+>>> @@ -371,7 +371,7 @@ struct platform_device *dfl_fpga_inode_to_feature_dev(struct inode *inode)
+>>>  	   (feature) < (pdata)->features + (pdata)->num; (feature)++)
+>>>  
+>>>  static inline
+>>> -struct dfl_feature *dfl_get_feature_by_id(struct device *dev, u64 id)
+>>> +struct dfl_feature *dfl_get_feature_by_id(struct device *dev, u16 id)
+>>>  {
+>>>  	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
+>>>  	struct dfl_feature *feature;
+>>> @@ -384,7 +384,7 @@ struct dfl_feature *dfl_get_feature_by_id(struct device *dev, u64 id)
+>>>  }
+>>>  
+>>>  static inline
+>>> -void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u64 id)
+>>> +void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u16 id)
+>>>  {
+>>>  	struct dfl_feature *feature = dfl_get_feature_by_id(dev, id);
+>>>  
+>>> @@ -395,7 +395,7 @@ void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u64 id)
+>>>  	return NULL;
+>>>  }
+>>>  
+>>> -static inline bool is_dfl_feature_present(struct device *dev, u64 id)
+>>> +static inline bool is_dfl_feature_present(struct device *dev, u16 id)
+>>>  {
+>>>  	return !!dfl_get_feature_ioaddr_by_id(dev, id);
+>>>  }
