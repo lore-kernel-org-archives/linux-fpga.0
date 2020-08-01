@@ -1,142 +1,124 @@
-Return-Path: <SRS0=jh9I=BK=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=BuYj=BL=vger.kernel.org=linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC300C433E0
-	for <linux-fpga@archiver.kernel.org>; Fri, 31 Jul 2020 07:52:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9678BC433E0
+	for <linux-fpga@archiver.kernel.org>; Sat,  1 Aug 2020 12:25:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A072720829
-	for <linux-fpga@archiver.kernel.org>; Fri, 31 Jul 2020 07:52:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7393A2076A
+	for <linux-fpga@archiver.kernel.org>; Sat,  1 Aug 2020 12:25:39 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P98yQ73Q"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731706AbgGaHwB (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 31 Jul 2020 03:52:01 -0400
-Received: from mga17.intel.com ([192.55.52.151]:13718 "EHLO mga17.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731644AbgGaHwB (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 31 Jul 2020 03:52:01 -0400
-IronPort-SDR: 6F57SUpNbWNTm40CXnJtdn1M05WFAUOtrSL0Ul1g4cvc2uwA5hJXTwr3MBxhEMHHmJs5+1FrVM
- scSaeswrG8fA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9698"; a="131814521"
-X-IronPort-AV: E=Sophos;i="5.75,417,1589266800"; 
-   d="scan'208";a="131814521"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jul 2020 00:52:01 -0700
-IronPort-SDR: M8ti5At6xlNbOSGTKMfP8IK/cxxE22unkj68z36ICBUkGC8VCRBD0WThjuxVIbb1ml6gDxvL8k
- 1zdznFCc+EMA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,417,1589266800"; 
-   d="scan'208";a="490942058"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.141])
-  by fmsmga006.fm.intel.com with ESMTP; 31 Jul 2020 00:51:59 -0700
-Date:   Fri, 31 Jul 2020 15:48:37 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Tom Rix <trix@redhat.com>
-Cc:     mdf@kernel.org, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org, lgoncalv@redhat.com
-Subject: Re: [PATCH v2 1/4] fpga: dfl: change data type of feature id to u16
-Message-ID: <20200731074837.GE1781@yilunxu-OptiPlex-7050>
-References: <1595556555-9903-1-git-send-email-yilun.xu@intel.com>
- <1595556555-9903-2-git-send-email-yilun.xu@intel.com>
- <316f86d4-7bba-f0c7-3dde-794df80d32e7@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <316f86d4-7bba-f0c7-3dde-794df80d32e7@redhat.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+        id S1729250AbgHAMZ3 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sat, 1 Aug 2020 08:25:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54208 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729012AbgHAMYe (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sat, 1 Aug 2020 08:24:34 -0400
+Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75374C06179E;
+        Sat,  1 Aug 2020 05:24:34 -0700 (PDT)
+Received: by mail-ej1-x644.google.com with SMTP id l4so33946565ejd.13;
+        Sat, 01 Aug 2020 05:24:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=I8dAqn3oyLTlTqhf29Z52aIjqvD0eEwBI3IdJNmTAKE=;
+        b=P98yQ73QpNAHyJH0DhgL+VteQsL8cJWvez4VBskT+6Zy0ViH186MuBu4nRvGYARUqd
+         PDUMf38OLCl5PvGAT/41B7GiPvDcOBsaM4Y1R+BKMYY18/LuAuqv44mpAEG6r1fYWcfY
+         QMKLZygpMvWntgZg8e/oF7zNlaPq9OSG4dNlG19C7ej6vNjo4PPJFjvpXAMHr399/xBl
+         DpMbGY848f6RaiM4HfSP1a5QFTkzZ4mmVUxFUE7Gz2pAIE0+Lq9sZeuQW4ZeMeTnwEFo
+         1ZSzd6yuE5ADI8ephhkCQ2Wubpv7kQZm+Cihm/tzF0n0DyDFoVPmGuUYNiBglsxS6GpR
+         f1fQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=I8dAqn3oyLTlTqhf29Z52aIjqvD0eEwBI3IdJNmTAKE=;
+        b=r7xOiiXnrp1GqNkyZZUCZd041mhMXrTUzS5SRHaX3kS8TLomgPuNYX9/qNTGercbBU
+         DK7ksOUBQjJd4gcFc855O7qi8HAAWXAiGiiwSwTh/yGY9DVa4zM58i7NR1VSPrCx8FVN
+         K3zOf2m0OtEYso9dT5AdNX99y7Pzw2hPf/gVYCZg+J+ub7L/WwO0RLsi8gE8SERgoQlX
+         vo7bx9j7BO15t+dEF9Ry257Kghtvn0aZ1Dc1yhDOvyRmpEhFbcOELeO1La94lXVaaCv5
+         n6uN1CKTPsW997QrlUO/bXQ0ed+CFqknnwiGh0IwYVPVlaD0GwoXxjX+d4ACIVr50/MZ
+         yUYQ==
+X-Gm-Message-State: AOAM532ElYbnRbZaFLQcLaL+CKuBEutbB4eGTpn+m0E8g+poqmAnnKMD
+        j63gSkDqLNa6W5wqwm797BM=
+X-Google-Smtp-Source: ABdhPJyaQUgDgaB0qqpXNRYm/8ED4kbE0a2gf50gNexDXYKCzC2jeZw2r4pLhpg9owqfBDJdG1DmpA==
+X-Received: by 2002:a17:906:6a5b:: with SMTP id n27mr8123629ejs.221.1596284673233;
+        Sat, 01 Aug 2020 05:24:33 -0700 (PDT)
+Received: from net.saheed (95C84E0A.dsl.pool.telekom.hu. [149.200.78.10])
+        by smtp.gmail.com with ESMTPSA id a101sm12083131edf.76.2020.08.01.05.24.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 01 Aug 2020 05:24:32 -0700 (PDT)
+From:   "Saheed O. Bolarinwa" <refactormyself@gmail.com>
+To:     helgaas@kernel.org, Moritz Fischer <mdf@kernel.org>
+Cc:     "Saheed O. Bolarinwa" <refactormyself@gmail.com>,
+        bjorn@helgaas.com, skhan@linuxfoundation.org,
+        linux-kernel-mentees@lists.linuxfoundation.org,
+        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-fpga@vger.kernel.org
+Subject: [RFC PATCH 07/17] fpga: altera-cvp: Drop uses of pci_read_config_*() return value
+Date:   Sat,  1 Aug 2020 13:24:36 +0200
+Message-ID: <20200801112446.149549-8-refactormyself@gmail.com>
+X-Mailer: git-send-email 2.18.4
+In-Reply-To: <20200801112446.149549-1-refactormyself@gmail.com>
+References: <20200801112446.149549-1-refactormyself@gmail.com>
 Sender: linux-fpga-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
-Message-ID: <20200731074837.2SGjEFUPIx0wDUt-BDe2hLzslXkzQDtvNZYVRSCEQfQ@z>
+Message-ID: <20200801112436.RxMIIhdT-tW1k32TvPyLMMcdzw8AGevZPUpk57QH3Rc@z>
 
-On Sat, Jul 25, 2020 at 06:29:53AM -0700, Tom Rix wrote:
-> It would be good if the variable or element for the feature id had a consistent name.
-> 
-> 
-> > @@ -197,7 +197,7 @@ int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id);
-> >   * @id: unique dfl private feature id.
-> >   */
-> >  struct dfl_feature_id {
-> > -	u64 id;
-> > +	u16 id;
-> >  };
-> 
-> Is this structure needed ?
-> 
-> Here is how it could be changed to 
-> 
-> struct dfl_feature_driver {
-> 
-> -    const dfl_feature_id *
-> 
-> +    const u16 *id_table;
+The return value of pci_read_config_*() may not indicate a device error.
+However, the value read by these functions is more likely to indicate
+this kind of error. This presents two overlapping ways of reporting
+errors and complicates error checking.
 
-This structure is to represent an id type, which is used to match
-fme/port owned features. It could be extended if some feature drivers
-needs driver_data.
+It is possible to move to one single way of checking for error if the
+dependency on the return value of these functions is removed, then it
+can later be made to return void.
 
-Actually I see some example of device_ids with similar structure, like:
+Remove all uses of the return value of pci_read_config_*().
+Check the actual value read for ~0. In this case, ~0 is an invalid
+value thus it indicates some kind of error.
 
-  struct mips_cdmm_device_id {
-  	__u8	type;
-  };
+Suggested-by: Bjorn Helgaas <bjorn@helgaas.com>
+Signed-off-by: Saheed O. Bolarinwa <refactormyself@gmail.com>
+---
+ drivers/fpga/altera-cvp.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-  struct tee_client_device_id {
-	uuid_t uuid;
-  };
+diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+index 4e0edb60bfba..99c6e0754f8b 100644
+--- a/drivers/fpga/altera-cvp.c
++++ b/drivers/fpga/altera-cvp.c
+@@ -96,15 +96,15 @@ struct cvp_priv {
+ static int altera_read_config_byte(struct altera_cvp_conf *conf,
+ 				   int where, u8 *val)
+ {
+-	return pci_read_config_byte(conf->pci_dev, conf->vsec_offset + where,
+-				    val);
++	pci_read_config_byte(conf->pci_dev, conf->vsec_offset + where, val);
++	return (val == (u8)~0) ? -ENODEV : 0;
+ }
+ 
+ static int altera_read_config_dword(struct altera_cvp_conf *conf,
+ 				    int where, u32 *val)
+ {
+-	return pci_read_config_dword(conf->pci_dev, conf->vsec_offset + where,
+-				     val);
++	pci_read_config_dword(conf->pci_dev, conf->vsec_offset + where, val);
++	return (val == (u32)~0) ? -ENODEV : 0;
+ }
+ 
+ static int altera_write_config_dword(struct altera_cvp_conf *conf,
+-- 
+2.18.4
 
-
-Thanks,
-Yilun.
-
-> 
-> ...
-> 
-> Tom
-> 
-> 
-> >  
-> >  /**
-> > @@ -240,7 +240,7 @@ struct dfl_feature_irq_ctx {
-> >   */
-> >  struct dfl_feature {
-> >  	struct platform_device *dev;
-> > -	u64 id;
-> > +	u16 id;
-> >  	int resource_index;
-> >  	void __iomem *ioaddr;
-> >  	struct dfl_feature_irq_ctx *irq_ctx;
-> > @@ -371,7 +371,7 @@ struct platform_device *dfl_fpga_inode_to_feature_dev(struct inode *inode)
-> >  	   (feature) < (pdata)->features + (pdata)->num; (feature)++)
-> >  
-> >  static inline
-> > -struct dfl_feature *dfl_get_feature_by_id(struct device *dev, u64 id)
-> > +struct dfl_feature *dfl_get_feature_by_id(struct device *dev, u16 id)
-> >  {
-> >  	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
-> >  	struct dfl_feature *feature;
-> > @@ -384,7 +384,7 @@ struct dfl_feature *dfl_get_feature_by_id(struct device *dev, u64 id)
-> >  }
-> >  
-> >  static inline
-> > -void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u64 id)
-> > +void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u16 id)
-> >  {
-> >  	struct dfl_feature *feature = dfl_get_feature_by_id(dev, id);
-> >  
-> > @@ -395,7 +395,7 @@ void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u64 id)
-> >  	return NULL;
-> >  }
-> >  
-> > -static inline bool is_dfl_feature_present(struct device *dev, u64 id)
-> > +static inline bool is_dfl_feature_present(struct device *dev, u16 id)
-> >  {
-> >  	return !!dfl_get_feature_ioaddr_by_id(dev, id);
-> >  }
