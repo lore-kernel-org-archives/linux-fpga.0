@@ -1,39 +1,81 @@
 Return-Path: <SRS0=Ty8l=BM=vger.kernel.org=linux-fpga-owner@kernel.org>
 Return-Path: <SRS0=Ty8l=BM=vger.kernel.org=linux-fpga-owner@kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:36902 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725917AbgHBTOJ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Sun, 2 Aug 2020 15:14:09 -0400
-Date: Sun, 2 Aug 2020 14:14:06 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49026 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725801AbgHBSrW (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sun, 2 Aug 2020 14:47:22 -0400
+Date: Sun, 2 Aug 2020 20:46:48 +0200
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: [RFC PATCH 00/17] Drop uses of pci_read_config_*() return value
-Message-ID: <20200802191406.GA248232@bjorn-Precision-5520>
+Message-ID: <20200802184648.GA23190@nazgul.tnic>
+References: <20200801112446.149549-1-refactormyself@gmail.com>
+ <20200801125657.GA25391@nazgul.tnic>
+ <b720aa44-895a-203b-e220-ecdb3acd9278@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20200802184648.GA23190@nazgul.tnic>
+In-Reply-To: <b720aa44-895a-203b-e220-ecdb3acd9278@gmail.com>
 Sender: linux-fpga-owner@vger.kernel.org
 List-Id: linux-fpga@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Saheed Bolarinwa <refactormyself@gmail.com>, trix@redhat.com, Kalle Valo <kvalo@codeaurora.org>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Wolfgang Grandegger <wg@grandegger.com>, Marc Kleine-Budde <mkl@pengutronix.de>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, Joerg Roedel <joro@8bytes.org>, bjorn@helgaas.com, skhan@linuxfoundation.org, linux-kernel-mentees@lists.linuxfoundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, iommu@lists.linux-foundation.org, linux-rdma@vger.kernel.org, linux-ide@vger.kernel.org, linux-i2c@vger.kernel.org, linux-hwmon@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-gpio@vger.kernel.org, linux-fpga@vger.kernel.org, linux-edac@vger.kernel.org, dmaengine@vger.kernel.org, linux-crypto@vger.kernel.org, linux-atm-general@lists.sourceforge.net
+To: Saheed Bolarinwa <refactormyself@gmail.com>
+Cc: trix@redhat.com, helgaas@kernel.org, Kalle Valo <kvalo@codeaurora.org>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Wolfgang Grandegger <wg@grandegger.com>, Marc Kleine-Budde <mkl@pengutronix.de>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, Joerg Roedel <joro@8bytes.org>, bjorn@helgaas.com, skhan@linuxfoundation.org, linux-kernel-mentees@lists.linuxfoundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, iommu@lists.linux-foundation.org, linux-rdma@vger.kernel.org, linux-ide@vger.kernel.org, linux-i2c@vger.kernel.org, linux-hwmon@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-gpio@vger.kernel.org, linux-fpga@vger.kernel.org, linux-edac@vger.kernel.org, dmaengine@vger.kernel.org, linux-crypto@vger.kernel.org, linux-atm-general@lists.sourceforge.net
 
-On Sun, Aug 02, 2020 at 08:46:48PM +0200, Borislav Petkov wrote:
-> On Sun, Aug 02, 2020 at 07:28:00PM +0200, Saheed Bolarinwa wrote:
-> > Because the value ~0 has a meaning to some drivers and only
-> 
-> No, ~0 means that the PCI read failed. For *every* PCI device I know.
+On Sun, Aug 02, 2020 at 07:28:00PM +0200, Saheed Bolarinwa wrote:
+> Because the value ~0 has a meaning to some drivers and only
 
-Wait, I'm not convinced yet.  I know that if a PCI read fails, you
-normally get ~0 data because the host bridge fabricates it to complete
-the CPU load.
+No, ~0 means that the PCI read failed. For *every* PCI device I know.
 
-But what guarantees that a PCI config register cannot contain ~0?
-If there's something about that in the spec I'd love to know where it
-is because it would simplify a lot of things.
+Here's me reading from 0xf0 offset of my hostbridge:
 
-I don't think we should merge any of these patches as-is.  If we *do*
-want to go this direction, we at least need some kind of macro or
-function that tests for ~0 so we have a clue about what's happening
-and can grep for it.
+# setpci -s 00:00.0 0xf0.l
+01000000
 
-Bjorn
+That device doesn't have extended config space, so the last valid byte
+is 0xff. Let's read beyond that:
+
+# setpci -s 00:00.0 0x100.l
+ffffffff
+
+> Again, only the drivers can determine if ~0 is a valid value. This
+> information is not available inside pci_config_read*().
+
+Of course it is.
+
+*every* change you've done in 6/17 - this is the only patch I have
+received - checks for == ~0. So that check can just as well be moved
+inside pci_config_read_*().
+
+Here's how one could do it:
+
+#define PCI_OP_READ(size, type, len) \
+int noinline pci_bus_read_config_##size \
+	(struct pci_bus *bus, unsigned int devfn, int pos, type *value)	\
+{									\
+	int res;							\
+	unsigned long flags;						\
+	u32 data = 0;							\
+	if (PCI_##size##_BAD) return PCIBIOS_BAD_REGISTER_NUMBER;	\
+	pci_lock_config(flags);						\
+	res = bus->ops->read(bus, devfn, pos, len, &data);		\
+
+	/* Check we actually read something which is not all 1s.*/
+	if (data == ~0)
+		return PCIBIOS_READ_FAILED;
+
+	*value = (type)data;						\
+	pci_unlock_config(flags);					\
+	return res;							\
+}
+
+Also, I'd prefer a function to *not* return void but return either
+an error or success. In the success case, the @value argument can be
+consumed by the caller and otherwise not.
+
+In any case, that change is a step in the wrong direction and I don't
+like it, sorry.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
