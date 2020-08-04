@@ -1,206 +1,41 @@
-Return-Path: <SRS0=eNah=BO=intel.com=yilun.xu@kernel.org>
-Return-Path: <SRS0=eNah=BO=intel.com=yilun.xu@kernel.org>
-From: Xu Yilun <yilun.xu@intel.com>
-Subject: [PATCH v3 1/4] fpga: dfl: change data type of feature id to u16
-Date: Tue,  4 Aug 2020 15:05:12 +0800
-Message-Id: <1596524715-18038-2-git-send-email-yilun.xu@intel.com>
-In-Reply-To: <1596524715-18038-1-git-send-email-yilun.xu@intel.com>
-References: <1596524715-18038-1-git-send-email-yilun.xu@intel.com>
-To: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com
+Return-Path: <SRS0=IFE+=BO=analog.com=alexandru.Ardelean@kernel.org>
+Return-Path: <SRS0=IFE+=BO=analog.com=alexandru.Ardelean@kernel.org>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Subject: [PATCH 3/6] clk: axi-clkgen: add support for ZynqMP (UltraScale)
+Date: Tue, 4 Aug 2020 14:06:55 +0300
+Message-ID: <20200804110658.40911-4-alexandru.ardelean@analog.com>
+In-Reply-To: <20200804110658.40911-1-alexandru.ardelean@analog.com>
+References: <20200804110658.40911-1-alexandru.ardelean@analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+To: linux-clk@vger.kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: mturquette@baylibre.com, sboyd@kernel.org, mdf@kernel.org, Dragos Bogdan <dragos.bogdan@analog.com>, Alexandru Ardelean <alexandru.ardelean@analog.com>
 List-ID: <linux-fpga@vger.kernel.org>
 
-The feature id is stored in a 12 bit field in DFH. So a u16 variable is
-enough for feature id.
+From: Dragos Bogdan <dragos.bogdan@analog.com>
 
-This patch changes all feature id related places to fit u16.
+This IP core also works and is supported on the Xilinx ZynqMP (UltraScale)
+FPGA boards.
+This patch enables the driver to be available on these platforms as well.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Reviewed-by: Tom Rix <trix@redhat.com>
+Signed-off-by: Dragos Bogdan <dragos.bogdan@analog.com>
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
-v3: no change.
----
- drivers/fpga/dfl-fme-perf.c |  2 +-
- drivers/fpga/dfl.c          | 29 +++++++++++++++--------------
- drivers/fpga/dfl.h          | 10 +++++-----
- 3 files changed, 21 insertions(+), 20 deletions(-)
+ drivers/clk/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-fme-perf.c b/drivers/fpga/dfl-fme-perf.c
-index 6ce1ed2..5312662 100644
---- a/drivers/fpga/dfl-fme-perf.c
-+++ b/drivers/fpga/dfl-fme-perf.c
-@@ -148,7 +148,7 @@ struct fme_perf_priv {
- 	struct device *dev;
- 	void __iomem *ioaddr;
- 	struct pmu pmu;
--	u64 id;
-+	u16 id;
+diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+index 69934c0c3dd8..eaabc758a7e4 100644
+--- a/drivers/clk/Kconfig
++++ b/drivers/clk/Kconfig
+@@ -240,7 +240,7 @@ config CLK_TWL6040
  
- 	u32 fab_users;
- 	u32 fab_port_id;
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 649958a..18575d9 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -58,7 +58,7 @@ static const char *dfl_pdata_key_strings[DFL_ID_MAX] = {
-  */
- struct dfl_dev_info {
- 	const char *name;
--	u32 dfh_id;
-+	u16 dfh_id;
- 	struct idr id;
- 	enum dfl_fpga_devt_type devt_type;
- };
-@@ -134,7 +134,7 @@ static enum dfl_id_type feature_dev_id_type(struct platform_device *pdev)
- 	return DFL_ID_MAX;
- }
- 
--static enum dfl_id_type dfh_id_to_type(u32 id)
-+static enum dfl_id_type dfh_id_to_type(u16 id)
- {
- 	int i;
- 
-@@ -454,7 +454,7 @@ struct build_feature_devs_info {
-  * @nr_irqs: number of irqs of this sub feature.
-  */
- struct dfl_feature_info {
--	u64 fid;
-+	u16 fid;
- 	struct resource mmio_res;
- 	void __iomem *ioaddr;
- 	struct list_head node;
-@@ -649,7 +649,7 @@ static inline u32 feature_size(void __iomem *start)
- 	return ofst ? ofst : 4096;
- }
- 
--static u64 feature_id(void __iomem *start)
-+static u16 feature_id(void __iomem *start)
- {
- 	u64 v = readq(start + DFH);
- 	u16 id = FIELD_GET(DFH_ID, v);
-@@ -667,7 +667,7 @@ static u64 feature_id(void __iomem *start)
- }
- 
- static int parse_feature_irqs(struct build_feature_devs_info *binfo,
--			      resource_size_t ofst, u64 fid,
-+			      resource_size_t ofst, u16 fid,
- 			      unsigned int *irq_base, unsigned int *nr_irqs)
- {
- 	void __iomem *base = binfo->ioaddr + ofst;
-@@ -713,12 +713,12 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
- 		return 0;
- 	}
- 
--	dev_dbg(binfo->dev, "feature: 0x%llx, irq_base: %u, nr_irqs: %u\n",
-+	dev_dbg(binfo->dev, "feature: 0x%x, irq_base: %u, nr_irqs: %u\n",
- 		fid, ibase, inr);
- 
- 	if (ibase + inr > binfo->nr_irqs) {
- 		dev_err(binfo->dev,
--			"Invalid interrupt number in feature 0x%llx\n", fid);
-+			"Invalid interrupt number in feature 0x%x\n", fid);
- 		return -EINVAL;
- 	}
- 
-@@ -726,7 +726,7 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
- 		virq = binfo->irq_table[ibase + i];
- 		if (virq < 0 || virq > NR_IRQS) {
- 			dev_err(binfo->dev,
--				"Invalid irq table entry for feature 0x%llx\n",
-+				"Invalid irq table entry for feature 0x%x\n",
- 				fid);
- 			return -EINVAL;
- 		}
-@@ -748,7 +748,7 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
- static int
- create_feature_instance(struct build_feature_devs_info *binfo,
- 			struct dfl_fpga_enum_dfl *dfl, resource_size_t ofst,
--			resource_size_t size, u64 fid)
-+			resource_size_t size, u16 fid)
- {
- 	unsigned int irq_base, nr_irqs;
- 	struct dfl_feature_info *finfo;
-@@ -819,9 +819,10 @@ static int parse_feature_fiu(struct build_feature_devs_info *binfo,
- 			     struct dfl_fpga_enum_dfl *dfl,
- 			     resource_size_t ofst)
- {
--	u32 id, offset;
--	u64 v;
- 	int ret = 0;
-+	u32 offset;
-+	u16 id;
-+	u64 v;
- 
- 	v = readq(dfl->ioaddr + ofst + DFH);
- 	id = FIELD_GET(DFH_ID, v);
-@@ -855,8 +856,8 @@ static int parse_feature_private(struct build_feature_devs_info *binfo,
- 				 resource_size_t ofst)
- {
- 	if (!binfo->feature_dev) {
--		dev_err(binfo->dev, "the private feature %llx does not belong to any AFU.\n",
--			(unsigned long long)feature_id(dfl->ioaddr + ofst));
-+		dev_err(binfo->dev, "the private feature 0x%x does not belong to any AFU.\n",
-+			feature_id(dfl->ioaddr + ofst));
- 		return -EINVAL;
- 	}
- 
-@@ -1424,7 +1425,7 @@ static int do_set_irq_trigger(struct dfl_feature *feature, unsigned int idx,
- 		return 0;
- 
- 	feature->irq_ctx[idx].name =
--		kasprintf(GFP_KERNEL, "fpga-irq[%u](%s-%llx)", idx,
-+		kasprintf(GFP_KERNEL, "fpga-irq[%u](%s-%x)", idx,
- 			  dev_name(&pdev->dev), feature->id);
- 	if (!feature->irq_ctx[idx].name)
- 		return -ENOMEM;
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index a32dfba..bc61942 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -197,7 +197,7 @@ int dfl_fpga_check_port_id(struct platform_device *pdev, void *pport_id);
-  * @id: unique dfl private feature id.
-  */
- struct dfl_feature_id {
--	u64 id;
-+	u16 id;
- };
- 
- /**
-@@ -240,7 +240,7 @@ struct dfl_feature_irq_ctx {
-  */
- struct dfl_feature {
- 	struct platform_device *dev;
--	u64 id;
-+	u16 id;
- 	int resource_index;
- 	void __iomem *ioaddr;
- 	struct dfl_feature_irq_ctx *irq_ctx;
-@@ -365,7 +365,7 @@ struct platform_device *dfl_fpga_inode_to_feature_dev(struct inode *inode)
- 	   (feature) < (pdata)->features + (pdata)->num; (feature)++)
- 
- static inline
--struct dfl_feature *dfl_get_feature_by_id(struct device *dev, u64 id)
-+struct dfl_feature *dfl_get_feature_by_id(struct device *dev, u16 id)
- {
- 	struct dfl_feature_platform_data *pdata = dev_get_platdata(dev);
- 	struct dfl_feature *feature;
-@@ -378,7 +378,7 @@ struct dfl_feature *dfl_get_feature_by_id(struct device *dev, u64 id)
- }
- 
- static inline
--void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u64 id)
-+void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u16 id)
- {
- 	struct dfl_feature *feature = dfl_get_feature_by_id(dev, id);
- 
-@@ -389,7 +389,7 @@ void __iomem *dfl_get_feature_ioaddr_by_id(struct device *dev, u64 id)
- 	return NULL;
- }
- 
--static inline bool is_dfl_feature_present(struct device *dev, u64 id)
-+static inline bool is_dfl_feature_present(struct device *dev, u16 id)
- {
- 	return !!dfl_get_feature_ioaddr_by_id(dev, id);
- }
+ config COMMON_CLK_AXI_CLKGEN
+ 	tristate "AXI clkgen driver"
+-	depends on ARCH_ZYNQ || MICROBLAZE || COMPILE_TEST
++	depends on ARCH_ZYNQ || ARCH_ZYNQMP || MICROBLAZE || COMPILE_TEST
+ 	help
+ 	  Support for the Analog Devices axi-clkgen pcore clock generator for Xilinx
+ 	  FPGAs. It is commonly used in Analog Devices' reference designs.
 -- 
-2.7.4
+2.17.1
