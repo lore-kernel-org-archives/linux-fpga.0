@@ -1,89 +1,70 @@
-Return-Path: <SRS0=IFE+=BO=analog.com=alexandru.Ardelean@kernel.org>
-Return-Path: <SRS0=IFE+=BO=analog.com=alexandru.Ardelean@kernel.org>
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Subject: [PATCH 5/6] include: fpga: adi-axi-common.h: add definitions for supported FPGAs
-Date: Tue, 4 Aug 2020 14:06:57 +0300
-Message-ID: <20200804110658.40911-6-alexandru.ardelean@analog.com>
-In-Reply-To: <20200804110658.40911-1-alexandru.ardelean@analog.com>
-References: <20200804110658.40911-1-alexandru.ardelean@analog.com>
+Return-Path: <SRS0=xNcZ=BP=intel.com=hao.wu@kernel.org>
+Return-Path: <SRS0=xNcZ=BP=intel.com=hao.wu@kernel.org>
+From: "Wu, Hao" <hao.wu@intel.com>
+Subject: RE: [PATCH] MAINTAINERS: Add Tom Rix as fpga reviewer
+Date: Wed, 5 Aug 2020 07:58:21 +0000
+Message-ID: <DM6PR11MB3819024D3EE4913E0AA97680854B0@DM6PR11MB3819.namprd11.prod.outlook.com>
+References: <20200804162003.19402-1-trix@redhat.com>
+ <20200804164133.GA1499313@epycbox.lan>
+In-Reply-To: <20200804164133.GA1499313@epycbox.lan>
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain
-To: linux-clk@vger.kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: mturquette@baylibre.com, sboyd@kernel.org, mdf@kernel.org, "Mircea Caprioru  <mircea.caprioru@analog.com>, Alexandru Ardelean" <alexandru.ardelean@analog.com>
+To: Moritz Fischer <mdf@kernel.org>, "trix@redhat.com" <trix@redhat.com>
+Cc: "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-ID: <linux-fpga@vger.kernel.org>
 
-From: Mircea Caprioru <mircea.caprioru@analog.com>
+> Subject: Re: [PATCH] MAINTAINERS: Add Tom Rix as fpga reviewer
+>=20
+> Hi Tom,
+>=20
+> On Tue, Aug 04, 2020 at 09:20:03AM -0700, trix@redhat.com wrote:
+> > From: Tom Rix <trix@redhat.com>
+> >
+> > I take care of fpga kernel and userspace for Red Hat and would
+> > like help out more with the mainline kernel.
+> >
+> > Signed-off-by: Tom Rix <trix@redhat.com>
+> > ---
+> >  MAINTAINERS | 2 ++
+> >  1 file changed, 2 insertions(+)
+> >
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index ce2737b1feb5..6fdb01776413 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -6805,6 +6805,7 @@ F:	drivers/net/ethernet/nvidia/*
+> >
+> >  FPGA DFL DRIVERS
+> >  M:	Wu Hao <hao.wu@intel.com>
+> > +R:	Tom Rix <trix@redhat.com>
+> >  L:	linux-fpga@vger.kernel.org
+> >  S:	Maintained
+> >  F:	Documentation/fpga/dfl.rst
+> > @@ -6813,6 +6814,7 @@ F:	include/uapi/linux/fpga-dfl.h
+> >
+> >  FPGA MANAGER FRAMEWORK
+> >  M:	Moritz Fischer <mdf@kernel.org>
+> > +R:	Tom Rix <trix@redhat.com>
+> >  L:	linux-fpga@vger.kernel.org
+> >  S:	Maintained
+> >  W:	http://www.rocketboards.org
+> > --
+> > 2.18.1
+> >
+> Acked-by: Moritz Fischer <mdf@kernel.org>
+>=20
+> I can take the patch, can I get an Acked-by from Hao?
 
-All (newer) FPGA IP cores supported by Analog Devices, store information in
-the synthesized designs. This information describes various parameters,
-including the family of boards on which this is deployed, speed-grade, and
-so on.
+Sure. : )=20
 
-Currently, some of these definitions are deployed mostly on Xilinx boards,
-but they have been considered also for FPGA boards from other vendors.
+Acked-by: Wu Hao <hao.wu@intel.com>
 
-The register definitions are described at this link:
-  https://wiki.analog.com/resources/fpga/docs/hdl/regmap
-(the 'Base (common to all cores)' section).
+Thanks!
+Hao
 
-Signed-off-by: Mircea Caprioru <mircea.caprioru@analog.com>
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
----
- include/linux/fpga/adi-axi-common.h | 37 +++++++++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
-
-diff --git a/include/linux/fpga/adi-axi-common.h b/include/linux/fpga/adi-axi-common.h
-index 141ac3f251e6..7cca2d62cc45 100644
---- a/include/linux/fpga/adi-axi-common.h
-+++ b/include/linux/fpga/adi-axi-common.h
-@@ -13,6 +13,9 @@
- 
- #define ADI_AXI_REG_VERSION			0x0000
- 
-+#define ADI_AXI_REG_FPGA_INFO			0x001C
-+#define ADI_AXI_REG_FPGA_VOLTAGE		0x0140
-+
- #define ADI_AXI_PCORE_VER(major, minor, patch)	\
- 	(((major) << 16) | ((minor) << 8) | (patch))
- 
-@@ -20,4 +23,38 @@
- #define ADI_AXI_PCORE_VER_MINOR(version)	(((version) >> 8) & 0xff)
- #define ADI_AXI_PCORE_VER_PATCH(version)	((version) & 0xff)
- 
-+#define ADI_AXI_INFO_FPGA_VOLTAGE(val)		((val) & 0xffff)
-+
-+#define ADI_AXI_INFO_FPGA_TECH(info)		(((info) >> 24) & 0xff)
-+#define ADI_AXI_INFO_FPGA_FAMILY(info)		(((info) >> 16) & 0xff)
-+#define ADI_AXI_INFO_FPGA_SPEED_GRADE(info)	(((info) >> 8) & 0xff)
-+
-+enum adi_axi_fgpa_technology {
-+	ADI_AXI_FPGA_TECH_UNKNOWN = 0,
-+	ADI_AXI_FPGA_TECH_SERIES7,
-+	ADI_AXI_FPGA_TECH_ULTRASCALE,
-+	ADI_AXI_FPGA_TECH_ULTRASCALE_PLUS,
-+};
-+
-+enum adi_axi_fpga_family {
-+	ADI_AXI_FPGA_FAMILY_UNKNOWN = 0,
-+	ADI_AXI_FPGA_FAMILY_ARTIX,
-+	ADI_AXI_FPGA_FAMILY_KINTEX,
-+	ADI_AXI_FPGA_FAMILY_VIRTEX,
-+	ADI_AXI_FPGA_FAMILY_ZYNQ,
-+};
-+
-+enum adi_axi_fpga_speed_grade {
-+	ADI_AXI_FPGA_SPEED_UNKNOWN	= 0,
-+	ADI_AXI_FPGA_SPEED_1		= 10,
-+	ADI_AXI_FPGA_SPEED_1L		= 11,
-+	ADI_AXI_FPGA_SPEED_1H		= 12,
-+	ADI_AXI_FPGA_SPEED_1HV		= 13,
-+	ADI_AXI_FPGA_SPEED_1LV		= 14,
-+	ADI_AXI_FPGA_SPEED_2		= 20,
-+	ADI_AXI_FPGA_SPEED_2L		= 21,
-+	ADI_AXI_FPGA_SPEED_2LV		= 22,
-+	ADI_AXI_FPGA_SPEED_3		= 30,
-+};
-+
- #endif /* ADI_AXI_COMMON_H_ */
--- 
-2.17.1
+>=20
+> Thanks!
+>=20
+> Moritz
