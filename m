@@ -1,78 +1,90 @@
-Return-Path: <SRS0=xNcZ=BP=intel.com=hao.wu@kernel.org>
-Return-Path: <SRS0=xNcZ=BP=intel.com=hao.wu@kernel.org>
-From: "Wu, Hao" <hao.wu@intel.com>
-Subject: RE: [PATCH v3 4/4] fpga: dfl: add support for N3000 nios private
+Return-Path: <SRS0=n/6d=BP=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=n/6d=BP=vger.kernel.org=linux-fpga-owner@kernel.org>
+Received: from mga12.intel.com ([192.55.52.136]:46257 "EHLO mga12.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725963AbgHEIjf (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 5 Aug 2020 04:39:35 -0400
+Date: Wed, 5 Aug 2020 16:36:05 +0800
+From: Xu Yilun <yilun.xu@intel.com>
+Subject: Re: [PATCH v3 4/4] fpga: dfl: add support for N3000 nios private
   feature
-Date: Wed, 5 Aug 2020 09:11:24 +0000
-Message-ID: <DM6PR11MB38198586126644A058A681D5854B0@DM6PR11MB3819.namprd11.prod.outlook.com>
+Message-ID: <20200805083605.GB20262@yilunxu-OptiPlex-7050>
 References: <1596524715-18038-1-git-send-email-yilun.xu@intel.com>
  <1596524715-18038-5-git-send-email-yilun.xu@intel.com>
- <DM6PR11MB38196B703EA0772783466AA9854A0@DM6PR11MB3819.namprd11.prod.outlook.com>
- <20200805083504.GA20262@yilunxu-OptiPlex-7050>
-In-Reply-To: <20200805083504.GA20262@yilunxu-OptiPlex-7050>
-Content-Language: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ <b5d4157b-1bdf-445c-58a7-abd2f485a5ff@redhat.com>
 MIME-Version: 1.0
-To: "Xu, Yilun" <yilun.xu@intel.com>
-Cc: "mdf@kernel.org" <mdf@kernel.org>, "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "trix@redhat.com" <trix@redhat.com>, "lgoncalv@redhat.com" <lgoncalv@redhat.com>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, "Weight, Russell H" <russell.h.weight@intel.com>
-List-ID: <linux-fpga@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b5d4157b-1bdf-445c-58a7-abd2f485a5ff@redhat.com>
+Sender: linux-fpga-owner@vger.kernel.org
+List-Id: linux-fpga@vger.kernel.org
+To: Tom Rix <trix@redhat.com>
+Cc: mdf@kernel.org, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org, lgoncalv@redhat.com, Wu Hao <hao.wu@intel.com>, Matthew Gerlach <matthew.gerlach@linux.intel.com>, Russ Weight <russell.h.weight@intel.com>
 
-> Subject: Re: [PATCH v3 4/4] fpga: dfl: add support for N3000 nios private
-> feature
->=20
-> Thanks for your quick response, I'm OK with most changes. Some comments
-> inline.
->=20
-> On Tue, Aug 04, 2020 at 08:56:12PM +0800, Wu, Hao wrote:
-> > > Subject: [PATCH v3 4/4] fpga: dfl: add support for N3000 nios private
-> feature
-> >
-> > > +#define NIOS_INIT0x1000
-> > > +#define NIOS_INIT_DONEBIT(0)
-> > > +#define NIOS_INIT_STARTBIT(1)
-> > > +/* Mode for PKVL A, link 0, the same below */
-> > > +#define REQ_FEC_MODE_A0_MSKGENMASK(9, 8)
-> > > +#define REQ_FEC_MODE_A1_MSKGENMASK(11, 10)
-> > > +#define REQ_FEC_MODE_A2_MSKGENMASK(13, 12)
-> > > +#define REQ_FEC_MODE_A3_MSKGENMASK(15, 14)
-> > > +#define REQ_FEC_MODE_B0_MSKGENMASK(17, 16)
-> > > +#define REQ_FEC_MODE_B1_MSKGENMASK(19, 18)
-> > > +#define REQ_FEC_MODE_B2_MSKGENMASK(21, 20)
-> > > +#define REQ_FEC_MODE_B3_MSKGENMASK(23, 22)
-> > > +#define REQ_FEC_MODE_NO0x0
-> > > +#define REQ_FEC_MODE_KR0x1
-> > > +#define REQ_FEC_MODE_RS0x2
-> >
-> > What does REQ mean?
->=20
-> It's the abbreviation of REQUEST, on spec these fields names
-> REQUEST_FEC_MODE_X_X
+Thanks for the word smith. I'll add these changes.
 
-Ok, got it.
+Thanks,
+Yilun
 
->=20
-> > > +/* ns is the abbreviation of nios_spi */
-> > > +static int ns_bus_poll_stat_timeout(void __iomem *base, u64 *v)
-> >
-> > Why adding "bus" here? I just see it's polling on register bits, right?
-> > It's a little confusing on ns_bus.
->=20
-> It is the polling for regmap read/write, the regmap is also called
-> regbus, so I name ns_bus here.
->=20
-> I could change the name, do you think there is confusing also for
-> ns_bus_reg_read & ns_bus_reg_write?
-
-This regmap is only used to access the SPI master shared with Nios
-core, right? If we compare nios_spi_bus_reg_read with=20
-nios_spi_reg_read, I think nios_spi/ns_reg_read is better,=20
-
-how do you think?
-
-Thanks
-Hao
-
->=20
-> Thanks,
-> Yilun.
+On Tue, Aug 04, 2020 at 11:45:33AM -0700, Tom Rix wrote:
+> Some minor edits.
+> 
+> I have added definitions for fec, kr, and rs.
+> 
+> Reviewed-by: Tom Rix <trix@redhat.com>
+> 
+> Tom
+> 
+> > --- /dev/null
+> > +++ b/Documentation/fpga/dfl-n3000-nios.rst
+> > @@ -0,0 +1,39 @@
+> > +.. SPDX-License-Identifier: GPL-2.0
+> > +
+> > +=====================================
+> > +DFL N3000 Nios Private Feature Driver
+> > +=====================================
+> > +
+> > +The dfl n3000 nios driver supports for the nios handshake private feature on
+> > +Intel N3000 FPGA Card.
+> > +
+> > +This private feature provides a handshake interface to FPGA NIOS firmware,
+> > +which receives the ethernet retimer configuration command from host and
+> > +do the configuration via an internal SPI master. When nios finished the
+> 
+> does the configuration..
+> 
+> When nios finishes the ..
+> 
+> > +configuration, host takes over the ownership of the SPI master to control an
+> > +Intel MAX10 BMC Chip on the SPI bus.
+> > +
+> > +So the driver does 2 major tasks on probe, requires NIOS firmware to configure
+> , uses the NIOS firmware to configure the ethernet retimer, and then ..
+> > +the ethernet retimer by operating the handshake interfaces, and then creates a
+> > +spi master platform device with the MAX10 device info in spi_board_info.
+> > +
+> > +Module Parameters
+> > +=================
+> > +
+> > +The dfl n3000 nios driver supports the following module parameters:
+> > +
+> > +* fec_mode: string
+> > +  Require the NIOS firmware to set the FEC mode of the ethernet retimer on
+> the FEC (Forward Error Correction) mode
+> > +  the PAC N3000 FPGA card. The possible values could be:
+> > +
+> > +  - "rs": RS FEC mode (default)
+> - "rs" : Reed Solomon FEC (default)
+> > +  - "kr": KR FEC mode
+> - "kr": Fire Code FEC
+> > +  - "no": NO FEC mode
+> > +
+> > +  The configuration could only be set once after the board powers up, the
+> The configuration can only be ..
+> > +  firmware will not accept a second configuration afterward. So the fec mode
+> second configuration.
+> > +  will not be changed if the module is reloaded with a different param value.
+> > +
+> > +  The configured value of the fec mode could be queried from sysfs node:
+> > +
+> > +  /sys/bus/dfl/devices/dfl-fme.X.X/fec_mode
