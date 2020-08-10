@@ -4,52 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D815C433E0
-	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4133AC433E0
+	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 66FDC206E9
-	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 13D7D20734
+	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726968AbgHJNmB (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 10 Aug 2020 09:42:01 -0400
-Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:54292 "EHLO
+        id S1726914AbgHJNmH (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 10 Aug 2020 09:42:07 -0400
+Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:3488 "EHLO
         mx0a-00128a01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726955AbgHJNl5 (ORCPT
+        by vger.kernel.org with ESMTP id S1726996AbgHJNmH (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 10 Aug 2020 09:41:57 -0400
+        Mon, 10 Aug 2020 09:42:07 -0400
 Received: from pps.filterd (m0167088.ppops.net [127.0.0.1])
-        by mx0a-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 07ADe9TM004919;
-        Mon, 10 Aug 2020 09:41:43 -0400
+        by mx0a-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 07ADduHH004659;
+        Mon, 10 Aug 2020 09:42:05 -0400
 Received: from nwd2mta4.analog.com ([137.71.173.58])
-        by mx0a-00128a01.pphosted.com with ESMTP id 32snw56v2n-1
+        by mx0a-00128a01.pphosted.com with ESMTP id 32snw56v3j-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 10 Aug 2020 09:41:43 -0400
+        Mon, 10 Aug 2020 09:42:05 -0400
 Received: from ASHBMBX9.ad.analog.com (ashbmbx9.ad.analog.com [10.64.17.10])
-        by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 07ADfgkS061477
+        by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 07ADg3Yr061563
         (version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=FAIL);
-        Mon, 10 Aug 2020 09:41:42 -0400
+        Mon, 10 Aug 2020 09:42:03 -0400
 Received: from ASHBMBX9.ad.analog.com (10.64.17.10) by ASHBMBX9.ad.analog.com
  (10.64.17.10) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1779.2; Mon, 10 Aug
- 2020 09:41:41 -0400
+ 2020 09:42:02 -0400
 Received: from zeus.spd.analog.com (10.64.82.11) by ASHBMBX9.ad.analog.com
  (10.64.17.10) with Microsoft SMTP Server id 15.1.1779.2 via Frontend
- Transport; Mon, 10 Aug 2020 09:41:41 -0400
+ Transport; Mon, 10 Aug 2020 09:42:02 -0400
 Received: from localhost.localdomain ([10.48.65.12])
-        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 07ADfY3e030109;
-        Mon, 10 Aug 2020 09:41:39 -0400
+        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 07ADfY3p030109;
+        Mon, 10 Aug 2020 09:41:59 -0400
 From:   Alexandru Ardelean <alexandru.ardelean@analog.com>
 To:     <linux-clk@vger.kernel.org>, <linux-fpga@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
 CC:     <mturquette@baylibre.com>, <sboyd@kernel.org>, <mdf@kernel.org>,
-        <ardeleanalex@gmail.com>, Lars-Peter Clausen <lars@metafoo.de>,
+        <ardeleanalex@gmail.com>,
+        Mircea Caprioru <mircea.caprioru@analog.com>,
         Alexandru Ardelean <alexandru.ardelean@analog.com>
-Subject: [PATCH v2 2/6] clk: axi-clkgen: Set power bits for fractional mode
-Date:   Mon, 10 Aug 2020 16:42:41 +0300
-Message-ID: <20200810134252.68614-3-alexandru.ardelean@analog.com>
+Subject: [PATCH v2 6/6] clk: axi-clkgen: Add support for FPGA info
+Date:   Mon, 10 Aug 2020 16:42:52 +0300
+Message-ID: <20200810134252.68614-14-alexandru.ardelean@analog.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200810134252.68614-1-alexandru.ardelean@analog.com>
 References: <20200810134252.68614-1-alexandru.ardelean@analog.com>
@@ -68,53 +69,128 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Lars-Peter Clausen <lars@metafoo.de>
+From: Mircea Caprioru <mircea.caprioru@analog.com>
 
-Using the fractional dividers requires some additional power bits to be
-set.
+This patch adds support for vco maximum and minimum ranges in accordance
+with fpga speed grade, voltage, device package, technology and family. This
+new information is extracted from two new registers implemented in the ip
+core: ADI_REG_FPGA_INFO and ADI_REG_FPGA_VOLTAGE, which are stored in the
+'include/linux/fpga/adi-axi-common.h' file as they are common to all ADI
+FPGA cores.
 
-The fractional power bits are not documented and the current heuristic
-for setting them seems be insufficient for some cases. Just always set all
-the fractional power bits when in fractional mode.
-
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+Signed-off-by: Mircea Caprioru <mircea.caprioru@analog.com>
 Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
- drivers/clk/clk-axi-clkgen.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/clk/clk-axi-clkgen.c | 67 +++++++++++++++++++++++++++++++-----
+ 1 file changed, 59 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/clk/clk-axi-clkgen.c b/drivers/clk/clk-axi-clkgen.c
-index 1df03cc6d089..14d803e6af62 100644
+index 6ffc19e9d850..b03ea28270cb 100644
 --- a/drivers/clk/clk-axi-clkgen.c
 +++ b/drivers/clk/clk-axi-clkgen.c
-@@ -37,6 +37,7 @@
- #define MMCM_REG_LOCK1		0x18
- #define MMCM_REG_LOCK2		0x19
- #define MMCM_REG_LOCK3		0x1a
-+#define MMCM_REG_POWER		0x28
- #define MMCM_REG_FILTER1	0x4e
- #define MMCM_REG_FILTER2	0x4f
+@@ -8,6 +8,7 @@
  
-@@ -320,6 +321,7 @@ static int axi_clkgen_set_rate(struct clk_hw *clk_hw,
- 	struct axi_clkgen *axi_clkgen = clk_hw_to_axi_clkgen(clk_hw);
- 	unsigned int d, m, dout;
- 	struct axi_clkgen_div_params params;
-+	uint32_t power = 0;
- 	uint32_t filter;
- 	uint32_t lock;
+ #include <linux/platform_device.h>
+ #include <linux/clk-provider.h>
++#include <linux/fpga/adi-axi-common.h>
+ #include <linux/slab.h>
+ #include <linux/io.h>
+ #include <linux/of.h>
+@@ -49,6 +50,7 @@
+ struct axi_clkgen {
+ 	void __iomem *base;
+ 	struct clk_hw clk_hw;
++	unsigned int pcore_version;
+ };
  
-@@ -331,6 +333,11 @@ static int axi_clkgen_set_rate(struct clk_hw *clk_hw,
- 	if (d == 0 || dout == 0 || m == 0)
+ static uint32_t axi_clkgen_lookup_filter(unsigned int m)
+@@ -101,15 +103,15 @@ static uint32_t axi_clkgen_lookup_lock(unsigned int m)
+ }
+ 
+ #ifdef ARCH_ZYNQMP
+-static const unsigned int fpfd_min = 10000;
+-static const unsigned int fpfd_max = 450000;
+-static const unsigned int fvco_min = 800000;
+-static const unsigned int fvco_max = 1600000;
++static unsigned int fpfd_min = 10000;
++static unsigned int fpfd_max = 450000;
++static unsigned int fvco_min = 800000;
++static unsigned int fvco_max = 1600000;
+ #else
+-static const unsigned int fpfd_min = 10000;
+-static const unsigned int fpfd_max = 300000;
+-static const unsigned int fvco_min = 600000;
+-static const unsigned int fvco_max = 1200000;
++static unsigned int fpfd_min = 10000;
++static unsigned int fpfd_max = 300000;
++static unsigned int fvco_min = 600000;
++static unsigned int fvco_max = 1200000;
+ #endif
+ 
+ static void axi_clkgen_calc_params(unsigned long fin, unsigned long fout,
+@@ -229,6 +231,49 @@ static void axi_clkgen_read(struct axi_clkgen *axi_clkgen,
+ 	*val = readl(axi_clkgen->base + reg);
+ }
+ 
++static void axi_clkgen_setup_ranges(struct axi_clkgen *axi_clkgen)
++{
++	unsigned int reg_value;
++	unsigned int tech, family, speed_grade, voltage;
++
++	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_FPGA_INFO, &reg_value);
++	tech = ADI_AXI_INFO_FPGA_TECH(reg_value);
++	family = ADI_AXI_INFO_FPGA_FAMILY(reg_value);
++	speed_grade = ADI_AXI_INFO_FPGA_SPEED_GRADE(reg_value);
++
++	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_FPGA_VOLTAGE, &reg_value);
++	voltage = ADI_AXI_INFO_FPGA_VOLTAGE(reg_value);
++
++	switch (speed_grade) {
++	case ADI_AXI_FPGA_SPEED_GRADE_XILINX_1 ... ADI_AXI_FPGA_SPEED_GRADE_XILINX_1LV:
++		fvco_max = 1200000;
++		fpfd_max = 450000;
++		break;
++	case ADI_AXI_FPGA_SPEED_GRADE_XILINX_2 ... ADI_AXI_FPGA_SPEED_GRADE_XILINX_2LV:
++		fvco_max = 1440000;
++		fpfd_max = 500000;
++		if ((family == ADI_AXI_FPGA_FAMILY_XILINX_KINTEX) |
++		    (family == ADI_AXI_FPGA_FAMILY_XILINX_ARTIX)) {
++			if (voltage < 950) {
++				fvco_max = 1200000;
++				fpfd_max = 450000;
++			}
++		}
++		break;
++	case ADI_AXI_FPGA_SPEED_GRADE_XILINX_3:
++		fvco_max = 1600000;
++		fpfd_max = 550000;
++		break;
++	default:
++		break;
++	};
++
++	if (tech == ADI_AXI_FPGA_TECH_XILINX_ULTRASCALE_PLUS) {
++		fvco_max = 1600000;
++		fvco_min = 800000;
++	}
++}
++
+ static int axi_clkgen_wait_non_busy(struct axi_clkgen *axi_clkgen)
+ {
+ 	unsigned int timeout = 10000;
+@@ -524,6 +569,12 @@ static int axi_clkgen_probe(struct platform_device *pdev)
+ 	if (IS_ERR(axi_clkgen->base))
+ 		return PTR_ERR(axi_clkgen->base);
+ 
++	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_VERSION,
++			&axi_clkgen->pcore_version);
++
++	if (ADI_AXI_PCORE_VER_MAJOR(axi_clkgen->pcore_version) > 0x04)
++		axi_clkgen_setup_ranges(axi_clkgen);
++
+ 	init.num_parents = of_clk_get_parent_count(pdev->dev.of_node);
+ 	if (init.num_parents < 1 || init.num_parents > 2)
  		return -EINVAL;
- 
-+	if ((dout & 0x7) != 0 || (m & 0x7) != 0)
-+		power |= 0x9800;
-+
-+	axi_clkgen_mmcm_write(axi_clkgen, MMCM_REG_POWER, power, 0x9800);
-+
- 	filter = axi_clkgen_lookup_filter(m - 1);
- 	lock = axi_clkgen_lookup_lock(m - 1);
- 
 -- 
 2.17.1
 
