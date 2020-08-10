@@ -2,58 +2,54 @@ Return-Path: <SRS0=KYGM=BU=vger.kernel.org=linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51708C433E0
-	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D815C433E0
+	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2BA2420729
-	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 66FDC206E9
+	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726946AbgHJNl4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 10 Aug 2020 09:41:56 -0400
-Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:51656 "EHLO
+        id S1726968AbgHJNmB (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 10 Aug 2020 09:42:01 -0400
+Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:54292 "EHLO
         mx0a-00128a01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726845AbgHJNlz (ORCPT
+        by vger.kernel.org with ESMTP id S1726955AbgHJNl5 (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 10 Aug 2020 09:41:55 -0400
+        Mon, 10 Aug 2020 09:41:57 -0400
 Received: from pps.filterd (m0167088.ppops.net [127.0.0.1])
-        by mx0a-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 07ADdwKr004706;
-        Mon, 10 Aug 2020 09:41:53 -0400
+        by mx0a-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 07ADe9TM004919;
+        Mon, 10 Aug 2020 09:41:43 -0400
 Received: from nwd2mta4.analog.com ([137.71.173.58])
-        by mx0a-00128a01.pphosted.com with ESMTP id 32snw56v32-1
+        by mx0a-00128a01.pphosted.com with ESMTP id 32snw56v2n-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 10 Aug 2020 09:41:53 -0400
-Received: from ASHBMBX8.ad.analog.com (ashbmbx8.ad.analog.com [10.64.17.5])
-        by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 07ADfqZV061524
+        Mon, 10 Aug 2020 09:41:43 -0400
+Received: from ASHBMBX9.ad.analog.com (ashbmbx9.ad.analog.com [10.64.17.10])
+        by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 07ADfgkS061477
         (version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=FAIL);
-        Mon, 10 Aug 2020 09:41:52 -0400
-Received: from ASHBCASHYB5.ad.analog.com (10.64.17.133) by
- ASHBMBX8.ad.analog.com (10.64.17.5) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1779.2; Mon, 10 Aug 2020 09:41:51 -0400
-Received: from ASHBMBX9.ad.analog.com (10.64.17.10) by
- ASHBCASHYB5.ad.analog.com (10.64.17.133) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1779.2; Mon, 10 Aug 2020 09:41:51 -0400
+        Mon, 10 Aug 2020 09:41:42 -0400
+Received: from ASHBMBX9.ad.analog.com (10.64.17.10) by ASHBMBX9.ad.analog.com
+ (10.64.17.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1779.2; Mon, 10 Aug
+ 2020 09:41:41 -0400
 Received: from zeus.spd.analog.com (10.64.82.11) by ASHBMBX9.ad.analog.com
  (10.64.17.10) with Microsoft SMTP Server id 15.1.1779.2 via Frontend
- Transport; Mon, 10 Aug 2020 09:41:51 -0400
+ Transport; Mon, 10 Aug 2020 09:41:41 -0400
 Received: from localhost.localdomain ([10.48.65.12])
-        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 07ADfY3j030109;
-        Mon, 10 Aug 2020 09:41:49 -0400
+        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 07ADfY3e030109;
+        Mon, 10 Aug 2020 09:41:39 -0400
 From:   Alexandru Ardelean <alexandru.ardelean@analog.com>
 To:     <linux-clk@vger.kernel.org>, <linux-fpga@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
 CC:     <mturquette@baylibre.com>, <sboyd@kernel.org>, <mdf@kernel.org>,
-        <ardeleanalex@gmail.com>,
+        <ardeleanalex@gmail.com>, Lars-Peter Clausen <lars@metafoo.de>,
         Alexandru Ardelean <alexandru.ardelean@analog.com>
-Subject: [PATCH v2 0/6] clk: axi-clk-gen: misc updates to the driver
-Date:   Mon, 10 Aug 2020 16:42:46 +0300
-Message-ID: <20200810134252.68614-8-alexandru.ardelean@analog.com>
+Subject: [PATCH v2 2/6] clk: axi-clkgen: Set power bits for fractional mode
+Date:   Mon, 10 Aug 2020 16:42:41 +0300
+Message-ID: <20200810134252.68614-3-alexandru.ardelean@analog.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200810134252.68614-1-alexandru.ardelean@analog.com>
 References: <20200810134252.68614-1-alexandru.ardelean@analog.com>
@@ -64,7 +60,7 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
  definitions=2020-08-10_09:2020-08-06,2020-08-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 phishscore=0
  clxscore=1015 impostorscore=0 mlxscore=0 adultscore=0 suspectscore=0
- priorityscore=1501 lowpriorityscore=0 mlxlogscore=943 spamscore=0
+ priorityscore=1501 lowpriorityscore=0 mlxlogscore=999 spamscore=0
  bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2006250000 definitions=main-2008100102
 Sender: linux-fpga-owner@vger.kernel.org
@@ -72,48 +68,53 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-These patches synchronize the driver with the current state in the
-Analog Devices Linux tree:
-  https://github.com/analogdevicesinc/linux/
+From: Lars-Peter Clausen <lars@metafoo.de>
 
-They have been in the tree for about 2-3, so they did receive some
-testing.
+Using the fractional dividers requires some additional power bits to be
+set.
 
-Highlights are:
-* Add support for fractional dividers (Lars-Peter Clausen)
-* Enable support for ZynqMP (UltraScale) (Dragos Bogdan)
-* Support frequency limits for ZynqMP (Mathias Tausen)
-  - And continued by Mircea Caprioru, to read them from the IP cores
+The fractional power bits are not documented and the current heuristic
+for setting them seems be insufficient for some cases. Just always set all
+the fractional power bits when in fractional mode.
 
-Changelog v1 -> v2:
-- in patch 'include: fpga: adi-axi-common.h: add definitions for supported FPGAs'
-  * converted enums to #define
-  * added Intel FPGA definitions
-  * added Device-Package definitions
-  * added INTEL / XILINX in the define names
- definitions according to:
- https://github.com/analogdevicesinc/hdl/blob/4e438261aa319b1dda4c593c155218a93b1d869b/library/scripts/adi_intel_device_info_enc.tcl
- https://github.com/analogdevicesinc/hdl/blob/4e438261aa319b1dda4c593c155218a93b1d869b/library/scripts/adi_xilinx_device_info_enc.tcl
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
+---
+ drivers/clk/clk-axi-clkgen.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Dragos Bogdan (1):
-  clk: axi-clkgen: add support for ZynqMP (UltraScale)
-
-Lars-Peter Clausen (2):
-  clk: axi-clkgen: Add support for fractional dividers
-  clk: axi-clkgen: Set power bits for fractional mode
-
-Mathias Tausen (1):
-  clk: axi-clkgen: Respect ZYNQMP PFD/VCO frequency limits
-
-Mircea Caprioru (2):
-  include: fpga: adi-axi-common.h: add definitions for supported FPGAs
-  clk: axi-clkgen: Add support for FPGA info
-
- drivers/clk/Kconfig                 |   2 +-
- drivers/clk/clk-axi-clkgen.c        | 253 ++++++++++++++++++++++------
- include/linux/fpga/adi-axi-common.h | 103 +++++++++++
- 3 files changed, 302 insertions(+), 56 deletions(-)
-
+diff --git a/drivers/clk/clk-axi-clkgen.c b/drivers/clk/clk-axi-clkgen.c
+index 1df03cc6d089..14d803e6af62 100644
+--- a/drivers/clk/clk-axi-clkgen.c
++++ b/drivers/clk/clk-axi-clkgen.c
+@@ -37,6 +37,7 @@
+ #define MMCM_REG_LOCK1		0x18
+ #define MMCM_REG_LOCK2		0x19
+ #define MMCM_REG_LOCK3		0x1a
++#define MMCM_REG_POWER		0x28
+ #define MMCM_REG_FILTER1	0x4e
+ #define MMCM_REG_FILTER2	0x4f
+ 
+@@ -320,6 +321,7 @@ static int axi_clkgen_set_rate(struct clk_hw *clk_hw,
+ 	struct axi_clkgen *axi_clkgen = clk_hw_to_axi_clkgen(clk_hw);
+ 	unsigned int d, m, dout;
+ 	struct axi_clkgen_div_params params;
++	uint32_t power = 0;
+ 	uint32_t filter;
+ 	uint32_t lock;
+ 
+@@ -331,6 +333,11 @@ static int axi_clkgen_set_rate(struct clk_hw *clk_hw,
+ 	if (d == 0 || dout == 0 || m == 0)
+ 		return -EINVAL;
+ 
++	if ((dout & 0x7) != 0 || (m & 0x7) != 0)
++		power |= 0x9800;
++
++	axi_clkgen_mmcm_write(axi_clkgen, MMCM_REG_POWER, power, 0x9800);
++
+ 	filter = axi_clkgen_lookup_filter(m - 1);
+ 	lock = axi_clkgen_lookup_lock(m - 1);
+ 
 -- 
 2.17.1
 
