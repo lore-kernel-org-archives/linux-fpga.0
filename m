@@ -2,59 +2,58 @@ Return-Path: <SRS0=KYGM=BU=vger.kernel.org=linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UPPERCASE_50_75,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 729D7C433E0
-	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:41:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51708C433E0
+	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4233B206E9
-	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:41:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2BA2420729
+	for <linux-fpga@archiver.kernel.org>; Mon, 10 Aug 2020 13:42:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726927AbgHJNlw (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 10 Aug 2020 09:41:52 -0400
-Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:46536 "EHLO
+        id S1726946AbgHJNl4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 10 Aug 2020 09:41:56 -0400
+Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:51656 "EHLO
         mx0a-00128a01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726845AbgHJNlw (ORCPT
+        by vger.kernel.org with ESMTP id S1726845AbgHJNlz (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 10 Aug 2020 09:41:52 -0400
+        Mon, 10 Aug 2020 09:41:55 -0400
 Received: from pps.filterd (m0167088.ppops.net [127.0.0.1])
-        by mx0a-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 07ADe6cg004883;
-        Mon, 10 Aug 2020 09:41:50 -0400
+        by mx0a-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 07ADdwKr004706;
+        Mon, 10 Aug 2020 09:41:53 -0400
 Received: from nwd2mta4.analog.com ([137.71.173.58])
-        by mx0a-00128a01.pphosted.com with ESMTP id 32snw56v2w-1
+        by mx0a-00128a01.pphosted.com with ESMTP id 32snw56v32-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 10 Aug 2020 09:41:50 -0400
-Received: from ASHBMBX9.ad.analog.com (ashbmbx9.ad.analog.com [10.64.17.10])
-        by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 07ADfnwR061503
+        Mon, 10 Aug 2020 09:41:53 -0400
+Received: from ASHBMBX8.ad.analog.com (ashbmbx8.ad.analog.com [10.64.17.5])
+        by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 07ADfqZV061524
         (version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=FAIL);
-        Mon, 10 Aug 2020 09:41:49 -0400
-Received: from ASHBCASHYB4.ad.analog.com (10.64.17.132) by
- ASHBMBX9.ad.analog.com (10.64.17.10) with Microsoft SMTP Server
+        Mon, 10 Aug 2020 09:41:52 -0400
+Received: from ASHBCASHYB5.ad.analog.com (10.64.17.133) by
+ ASHBMBX8.ad.analog.com (10.64.17.5) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1779.2; Mon, 10 Aug 2020 09:41:47 -0400
+ 15.1.1779.2; Mon, 10 Aug 2020 09:41:51 -0400
 Received: from ASHBMBX9.ad.analog.com (10.64.17.10) by
- ASHBCASHYB4.ad.analog.com (10.64.17.132) with Microsoft SMTP Server
+ ASHBCASHYB5.ad.analog.com (10.64.17.133) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1779.2; Mon, 10 Aug 2020 09:41:47 -0400
+ 15.1.1779.2; Mon, 10 Aug 2020 09:41:51 -0400
 Received: from zeus.spd.analog.com (10.64.82.11) by ASHBMBX9.ad.analog.com
  (10.64.17.10) with Microsoft SMTP Server id 15.1.1779.2 via Frontend
- Transport; Mon, 10 Aug 2020 09:41:47 -0400
+ Transport; Mon, 10 Aug 2020 09:41:51 -0400
 Received: from localhost.localdomain ([10.48.65.12])
-        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 07ADfY3h030109;
-        Mon, 10 Aug 2020 09:41:45 -0400
+        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 07ADfY3j030109;
+        Mon, 10 Aug 2020 09:41:49 -0400
 From:   Alexandru Ardelean <alexandru.ardelean@analog.com>
 To:     <linux-clk@vger.kernel.org>, <linux-fpga@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
 CC:     <mturquette@baylibre.com>, <sboyd@kernel.org>, <mdf@kernel.org>,
         <ardeleanalex@gmail.com>,
-        Mircea Caprioru <mircea.caprioru@analog.com>,
         Alexandru Ardelean <alexandru.ardelean@analog.com>
-Subject: [PATCH v2 5/6] include: fpga: adi-axi-common.h: add definitions for supported FPGAs
-Date:   Mon, 10 Aug 2020 16:42:44 +0300
-Message-ID: <20200810134252.68614-6-alexandru.ardelean@analog.com>
+Subject: [PATCH v2 0/6] clk: axi-clk-gen: misc updates to the driver
+Date:   Mon, 10 Aug 2020 16:42:46 +0300
+Message-ID: <20200810134252.68614-8-alexandru.ardelean@analog.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200810134252.68614-1-alexandru.ardelean@analog.com>
 References: <20200810134252.68614-1-alexandru.ardelean@analog.com>
@@ -65,7 +64,7 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
  definitions=2020-08-10_09:2020-08-06,2020-08-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 phishscore=0
  clxscore=1015 impostorscore=0 mlxscore=0 adultscore=0 suspectscore=0
- priorityscore=1501 lowpriorityscore=0 mlxlogscore=867 spamscore=0
+ priorityscore=1501 lowpriorityscore=0 mlxlogscore=943 spamscore=0
  bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2006250000 definitions=main-2008100102
 Sender: linux-fpga-owner@vger.kernel.org
@@ -73,145 +72,48 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Mircea Caprioru <mircea.caprioru@analog.com>
+These patches synchronize the driver with the current state in the
+Analog Devices Linux tree:
+  https://github.com/analogdevicesinc/linux/
 
-All (newer) FPGA IP cores supported by Analog Devices, store information in
-the synthesized designs. This information describes various parameters,
-including the family of boards on which this is deployed, speed-grade, and
-so on.
+They have been in the tree for about 2-3, so they did receive some
+testing.
 
-Currently, some of these definitions are deployed mostly on Xilinx boards,
-but they have been considered also for FPGA boards from other vendors.
+Highlights are:
+* Add support for fractional dividers (Lars-Peter Clausen)
+* Enable support for ZynqMP (UltraScale) (Dragos Bogdan)
+* Support frequency limits for ZynqMP (Mathias Tausen)
+  - And continued by Mircea Caprioru, to read them from the IP cores
 
-The register definitions are described at this link:
-  https://wiki.analog.com/resources/fpga/docs/hdl/regmap
-(the 'Base (common to all cores)' section).
+Changelog v1 -> v2:
+- in patch 'include: fpga: adi-axi-common.h: add definitions for supported FPGAs'
+  * converted enums to #define
+  * added Intel FPGA definitions
+  * added Device-Package definitions
+  * added INTEL / XILINX in the define names
+ definitions according to:
+ https://github.com/analogdevicesinc/hdl/blob/4e438261aa319b1dda4c593c155218a93b1d869b/library/scripts/adi_intel_device_info_enc.tcl
+ https://github.com/analogdevicesinc/hdl/blob/4e438261aa319b1dda4c593c155218a93b1d869b/library/scripts/adi_xilinx_device_info_enc.tcl
 
-Signed-off-by: Mircea Caprioru <mircea.caprioru@analog.com>
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
----
- include/linux/fpga/adi-axi-common.h | 103 ++++++++++++++++++++++++++++
- 1 file changed, 103 insertions(+)
+Dragos Bogdan (1):
+  clk: axi-clkgen: add support for ZynqMP (UltraScale)
 
-diff --git a/include/linux/fpga/adi-axi-common.h b/include/linux/fpga/adi-axi-common.h
-index 141ac3f251e6..5c7d212a5d4a 100644
---- a/include/linux/fpga/adi-axi-common.h
-+++ b/include/linux/fpga/adi-axi-common.h
-@@ -13,6 +13,9 @@
- 
- #define ADI_AXI_REG_VERSION			0x0000
- 
-+#define ADI_AXI_REG_FPGA_INFO			0x001C
-+#define ADI_AXI_REG_FPGA_VOLTAGE		0x0140
-+
- #define ADI_AXI_PCORE_VER(major, minor, patch)	\
- 	(((major) << 16) | ((minor) << 8) | (patch))
- 
-@@ -20,4 +23,104 @@
- #define ADI_AXI_PCORE_VER_MINOR(version)	(((version) >> 8) & 0xff)
- #define ADI_AXI_PCORE_VER_PATCH(version)	((version) & 0xff)
- 
-+#define ADI_AXI_INFO_FPGA_VOLTAGE(val)		((val) & 0xffff)
-+
-+#define ADI_AXI_INFO_FPGA_TECH(info)		(((info) >> 24) & 0xff)
-+#define ADI_AXI_INFO_FPGA_FAMILY(info)		(((info) >> 16) & 0xff)
-+#define ADI_AXI_INFO_FPGA_SPEED_GRADE(info)	(((info) >> 8) & 0xff)
-+#define ADI_AXI_INFO_FPGA_DEV_PACKAGE(info)	((info) & 0xff)
-+
-+/**
-+ * FPGA Technology definitions
-+ */
-+#define ADI_AXI_FPGA_TECH_XILINX_UNKNOWN 		0
-+#define ADI_AXI_FPGA_TECH_XILINS_SERIES7		1
-+#define ADI_AXI_FPGA_TECH_XILINX_ULTRASCALE		2
-+#define ADI_AXI_FPGA_TECH_XILINX_ULTRASCALE_PLUS	3
-+
-+#define ADI_AXI_FPGA_TECH_INTEL_UNKNOWN			100
-+#define ADI_AXI_FPGA_TECH_INTEL_CYCLONE_5		101
-+#define ADI_AXI_FPGA_TECH_INTEL_CYCLONE_10		102
-+#define ADI_AXI_FPGA_TECH_INTEL_ARRIA_10		103
-+#define ADI_AXI_FPGA_TECH_INTEL_STRATIX_10		104
-+
-+/**
-+ * FPGA Family definitions
-+ */
-+#define ADI_AXI_FPGA_FAMILY_UNKNOWN			0
-+
-+#define ADI_AXI_FPGA_FAMILY_XILINX_ARTIX		1
-+#define ADI_AXI_FPGA_FAMILY_XILINX_KINTEX		2
-+#define ADI_AXI_FPGA_FAMILY_XILINX_VIRTEX		3
-+#define ADI_AXI_FPGA_FAMILY_XILINX_ZYNQ			4
-+
-+#define ADI_AXI_FPGA_FAMILY_INTEL_SX			1
-+#define ADI_AXI_FPGA_FAMILY_INTEL_GX			2
-+#define ADI_AXI_FPGA_FAMILY_INTEL_GT			3
-+#define ADI_AXI_FPGA_FAMILY_INTEL_GZ			4
-+
-+/**
-+ * FPGA Speed-grade definitions
-+ */
-+#define ADI_AXI_FPGA_SPEED_GRADE_UNKNOWN		0
-+
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1		10
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1L		11
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1H		12
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1HV		13
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1LV		14
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_2		20
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_2L		21
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_2LV		22
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_3		30
-+
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_1		1
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_2		2
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_3		3
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_4		4
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_5		5
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_6		6
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_7		7
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_8		8
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_9		9
-+
-+/**
-+ * FPGA Device Package definitions
-+ */
-+#define ADI_AXI_FPGA_DEV_PACKAGE_UNKNOWN		0
-+
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_RF		1
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FL		2
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FF		3
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FB		4
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_HC		5
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FH		6
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_CS		7
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_CP		8
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FT		9
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FG		10
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_SB		11
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_RB		12
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_RS		13
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_CL		14
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_SF		15
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_BA		16
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FA		17
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FS		18
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FI		19
-+
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_BGA		1
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_PGA		2
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_FBGA		3
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_HBGA		4
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_PDIP		5
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_EQFP		6
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_PLCC		7
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_PQFP		8
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_RQFP		9
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_TQFP		10
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_UBGA		11
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_UFBGA		12
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_MBGA		13
-+
- #endif /* ADI_AXI_COMMON_H_ */
+Lars-Peter Clausen (2):
+  clk: axi-clkgen: Add support for fractional dividers
+  clk: axi-clkgen: Set power bits for fractional mode
+
+Mathias Tausen (1):
+  clk: axi-clkgen: Respect ZYNQMP PFD/VCO frequency limits
+
+Mircea Caprioru (2):
+  include: fpga: adi-axi-common.h: add definitions for supported FPGAs
+  clk: axi-clkgen: Add support for FPGA info
+
+ drivers/clk/Kconfig                 |   2 +-
+ drivers/clk/clk-axi-clkgen.c        | 253 ++++++++++++++++++++++------
+ include/linux/fpga/adi-axi-common.h | 103 +++++++++++
+ 3 files changed, 302 insertions(+), 56 deletions(-)
+
 -- 
 2.17.1
 
