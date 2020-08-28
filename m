@@ -7,23 +7,23 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16B1AC433E2
-	for <linux-fpga@archiver.kernel.org>; Fri, 28 Aug 2020 19:58:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64A7CC433E2
+	for <linux-fpga@archiver.kernel.org>; Fri, 28 Aug 2020 19:59:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F401D20897
-	for <linux-fpga@archiver.kernel.org>; Fri, 28 Aug 2020 19:58:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4DD3D208A9
+	for <linux-fpga@archiver.kernel.org>; Fri, 28 Aug 2020 19:59:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726687AbgH1T60 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 28 Aug 2020 15:58:26 -0400
-Received: from hostingweb31-40.netsons.net ([89.40.174.40]:39759 "EHLO
+        id S1727043AbgH1T6x (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 28 Aug 2020 15:58:53 -0400
+Received: from hostingweb31-40.netsons.net ([89.40.174.40]:35451 "EHLO
         hostingweb31-40.netsons.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726338AbgH1T6W (ORCPT
+        by vger.kernel.org with ESMTP id S1726396AbgH1T6X (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 28 Aug 2020 15:58:22 -0400
+        Fri, 28 Aug 2020 15:58:23 -0400
 Received: from [78.134.86.56] (port=54992 helo=melee.dev.aim)
         by hostingweb31.netsons.net with esmtpa (Exim 4.93)
         (envelope-from <luca@lucaceresoli.net>)
-        id 1kBkVw-0008I1-Qo; Fri, 28 Aug 2020 21:58:20 +0200
+        id 1kBkVw-0008I1-8V; Fri, 28 Aug 2020 21:58:20 +0200
 From:   Luca Ceresoli <luca@lucaceresoli.net>
 To:     linux-fpga@vger.kernel.org
 Cc:     Luca Ceresoli <luca@lucaceresoli.net>,
@@ -31,9 +31,9 @@ Cc:     Luca Ceresoli <luca@lucaceresoli.net>,
         Michal Simek <michal.simek@xilinx.com>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v3 4/5] fpga manager: xilinx-spi: add error checking after gpiod_get_value()
-Date:   Fri, 28 Aug 2020 21:58:07 +0200
-Message-Id: <20200828195808.27975-4-luca@lucaceresoli.net>
+Subject: [PATCH v3 2/5] fpga manager: xilinx-spi: remove final dot from dev_err() strings
+Date:   Fri, 28 Aug 2020 21:58:05 +0200
+Message-Id: <20200828195808.27975-2-luca@lucaceresoli.net>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200828195808.27975-1-luca@lucaceresoli.net>
 References: <20200828195808.27975-1-luca@lucaceresoli.net>
@@ -54,99 +54,44 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Current code calls gpiod_get_value() without error checking. Should the
-GPIO controller fail, execution would continue without any error message.
+Most dev_err messages in this file have no final dot. Remove the only two
+exceptions to make them consistent.
 
-Fix by checking for negative error values.
-
-Reported-by: Tom Rix <trix@redhat.com>
 Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
 
 ---
 
-Changes in v3:
- - rebase on previous patches
+Changes in v3: none.
 
-This patch is new in v2
+Changes in v2:
+ - move before the "provide better diagnostics on programming failure"
+   patch for clarity
 ---
- drivers/fpga/xilinx-spi.c | 35 +++++++++++++++++++++++++++--------
- 1 file changed, 27 insertions(+), 8 deletions(-)
+ drivers/fpga/xilinx-spi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/fpga/xilinx-spi.c b/drivers/fpga/xilinx-spi.c
-index a7b919eb0b2a..9488c8fbaefd 100644
+index 502fae0d1d85..01f494172379 100644
 --- a/drivers/fpga/xilinx-spi.c
 +++ b/drivers/fpga/xilinx-spi.c
-@@ -27,11 +27,22 @@ struct xilinx_spi_conf {
- 	struct gpio_desc *done;
- };
+@@ -77,7 +77,7 @@ static int xilinx_spi_write_init(struct fpga_manager *mgr,
+ 	int err;
  
--static enum fpga_mgr_states xilinx_spi_state(struct fpga_manager *mgr)
-+static int get_done_gpio(struct fpga_manager *mgr)
- {
- 	struct xilinx_spi_conf *conf = mgr->priv;
-+	int ret;
-+
-+	ret = gpiod_get_value(conf->done);
-+
-+	if (ret < 0)
-+		dev_err(&mgr->dev, "Error reading DONE (%d)\n", ret);
- 
--	if (!gpiod_get_value(conf->done))
-+	return ret;
-+}
-+
-+static enum fpga_mgr_states xilinx_spi_state(struct fpga_manager *mgr)
-+{
-+	if (!get_done_gpio(mgr))
- 		return FPGA_MGR_STATE_RESET;
- 
- 	return FPGA_MGR_STATE_UNKNOWN;
-@@ -57,10 +68,21 @@ static int wait_for_init_b(struct fpga_manager *mgr, int value,
- 
- 	if (conf->init_b) {
- 		while (time_before(jiffies, timeout)) {
--			if (gpiod_get_value(conf->init_b) == value)
-+			int ret = gpiod_get_value(conf->init_b);
-+
-+			if (ret == value)
- 				return 0;
-+
-+			if (ret < 0) {
-+				dev_err(&mgr->dev, "Error reading INIT_B (%d)\n", ret);
-+				return ret;
-+			}
-+
- 			usleep_range(100, 400);
- 		}
-+
-+		dev_err(&mgr->dev, "Timeout waiting for INIT_B to %s\n",
-+			value ? "assert" : "deassert");
- 		return -ETIMEDOUT;
+ 	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
+-		dev_err(&mgr->dev, "Partial reconfiguration not supported.\n");
++		dev_err(&mgr->dev, "Partial reconfiguration not supported\n");
+ 		return -EINVAL;
  	}
  
-@@ -85,7 +107,6 @@ static int xilinx_spi_write_init(struct fpga_manager *mgr,
- 
- 	err = wait_for_init_b(mgr, 1, 1); /* min is 500 ns */
- 	if (err) {
--		dev_err(&mgr->dev, "INIT_B pin did not go low\n");
- 		gpiod_set_value(conf->prog_b, 0);
- 		return err;
+@@ -169,7 +169,7 @@ static int xilinx_spi_write_complete(struct fpga_manager *mgr,
+ 			return xilinx_spi_apply_cclk_cycles(conf);
  	}
-@@ -93,12 +114,10 @@ static int xilinx_spi_write_init(struct fpga_manager *mgr,
- 	gpiod_set_value(conf->prog_b, 0);
  
- 	err = wait_for_init_b(mgr, 0, 0);
--	if (err) {
--		dev_err(&mgr->dev, "INIT_B pin did not go high\n");
-+	if (err)
- 		return err;
--	}
+-	dev_err(&mgr->dev, "Timeout after config data transfer.\n");
++	dev_err(&mgr->dev, "Timeout after config data transfer\n");
+ 	return -ETIMEDOUT;
+ }
  
--	if (gpiod_get_value(conf->done)) {
-+	if (get_done_gpio(mgr)) {
- 		dev_err(&mgr->dev, "Unexpected DONE pin state...\n");
- 		return -EIO;
- 	}
 -- 
 2.28.0
 
