@@ -2,126 +2,104 @@ Return-Path: <SRS0=SXyL=CG=vger.kernel.org=linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ADC0C2BB4D
-	for <linux-fpga@archiver.kernel.org>; Fri, 28 Aug 2020 19:59:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C31DC433E2
+	for <linux-fpga@archiver.kernel.org>; Fri, 28 Aug 2020 20:18:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 051E021532
-	for <linux-fpga@archiver.kernel.org>; Fri, 28 Aug 2020 19:59:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7A60B20897
+	for <linux-fpga@archiver.kernel.org>; Fri, 28 Aug 2020 20:18:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Whppa+bZ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726939AbgH1T6x (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 28 Aug 2020 15:58:53 -0400
-Received: from hostingweb31-40.netsons.net ([89.40.174.40]:50248 "EHLO
-        hostingweb31-40.netsons.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726146AbgH1T6X (ORCPT
+        id S1726338AbgH1USG (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 28 Aug 2020 16:18:06 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:51466 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726033AbgH1USD (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 28 Aug 2020 15:58:23 -0400
-Received: from [78.134.86.56] (port=54992 helo=melee.dev.aim)
-        by hostingweb31.netsons.net with esmtpa (Exim 4.93)
-        (envelope-from <luca@lucaceresoli.net>)
-        id 1kBkVw-0008I1-I6; Fri, 28 Aug 2020 21:58:20 +0200
-From:   Luca Ceresoli <luca@lucaceresoli.net>
-To:     linux-fpga@vger.kernel.org
-Cc:     Luca Ceresoli <luca@lucaceresoli.net>,
-        Moritz Fischer <mdf@kernel.org>, Tom Rix <trix@redhat.com>,
+        Fri, 28 Aug 2020 16:18:03 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1598645882;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=KWyHfTHifX4s3mVQhhcUAJcvryyZ6mo0hzR0AcO35fk=;
+        b=Whppa+bZpo+1zTU+t5CcmD1uwl+LQRfHX8YHKtIpJ/1ZtwwD5mytcx7yJBJxB0WG0ZrpAu
+        0TJxVEjveRLF5jH9QKYxqNfe3W9C9jwz3CTBRDf5kqIGCa+Z3pgi0PMLbd0tZXRoOHZTCW
+        h2moTccYeGQrn1sBFF29m+ykQSCOOQ8=
+Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com
+ [209.85.167.198]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-35-8zmgSkpNPd2amr-rl0JwsQ-1; Fri, 28 Aug 2020 16:18:00 -0400
+X-MC-Unique: 8zmgSkpNPd2amr-rl0JwsQ-1
+Received: by mail-oi1-f198.google.com with SMTP id l6so186156oia.15
+        for <linux-fpga@vger.kernel.org>; Fri, 28 Aug 2020 13:18:00 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-transfer-encoding
+         :content-language;
+        bh=KWyHfTHifX4s3mVQhhcUAJcvryyZ6mo0hzR0AcO35fk=;
+        b=kz9rO1i5MXDoBaFpacCzPBUv6ZdXGQU4t40LXl2k0tL/ppYpZ23sZV3Xe35QsN2Ih4
+         iHyAkzeIaQYjP5Tn+HJodvwL2v3gnmwA/X2JsW4vKiquOJeNsmTpiX37bLQzDkIHnA04
+         wP7gyXDfitU3sDVs01LdOMuIWjrKWNo8k1V9OyQF/EVUjB+Ypyyz49KaymltsJg6w6GU
+         FLh9x0zjr4PKeWTgKBWItGWvzc0GIQ6lX0IoIq+5tCdFgxr9FjnYVNHpBNp18+yz8xGL
+         fh/+/SwCuugUNVx9pQZd4msuEnfdXNNvDt/SUo5vMCvBcpGGGzIIiq32vRju3PZzQfWN
+         963w==
+X-Gm-Message-State: AOAM532dXVQap4srRCWe56MUP6RGxat55i5fm+Z//CKcxUOf37kcVI5V
+        ZeTaoO4Ergvk4ZDulXzZ9kcLA5j0bxEStJzv6u2eKyFirAnT77C0udYRtg4XLh2y/SSVrkcP97D
+        qYI/J6iKoBioDMB2QKA0LPQ==
+X-Received: by 2002:a05:6830:20d1:: with SMTP id z17mr263793otq.179.1598645879654;
+        Fri, 28 Aug 2020 13:17:59 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJw0nfNYShd/fLaNgYR9tr4qsn5gYzr5yuS0DTc5RPzbGI202F6TSa9iWZ9O85GKeYOjvc4HsA==
+X-Received: by 2002:a05:6830:20d1:: with SMTP id z17mr263783otq.179.1598645879392;
+        Fri, 28 Aug 2020 13:17:59 -0700 (PDT)
+Received: from trix.remote.csb (075-142-250-213.res.spectrum.com. [75.142.250.213])
+        by smtp.gmail.com with ESMTPSA id z13sm62938oia.30.2020.08.28.13.17.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 28 Aug 2020 13:17:58 -0700 (PDT)
+Subject: Re: [PATCH v3 5/5] fpga manager: xilinx-spi: provide better
+ diagnostics on programming failure
+To:     Luca Ceresoli <luca@lucaceresoli.net>, linux-fpga@vger.kernel.org
+Cc:     Moritz Fischer <mdf@kernel.org>,
         Michal Simek <michal.simek@xilinx.com>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v3 3/5] fpga manager: xilinx-spi: fix write_complete timeout handling
-Date:   Fri, 28 Aug 2020 21:58:06 +0200
-Message-Id: <20200828195808.27975-3-luca@lucaceresoli.net>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200828195808.27975-1-luca@lucaceresoli.net>
 References: <20200828195808.27975-1-luca@lucaceresoli.net>
+ <20200828195808.27975-5-luca@lucaceresoli.net>
+From:   Tom Rix <trix@redhat.com>
+Message-ID: <20e0b1e3-938e-9020-a4b5-02e24692557d@redhat.com>
+Date:   Fri, 28 Aug 2020 13:17:57 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - hostingweb31.netsons.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - lucaceresoli.net
-X-Get-Message-Sender-Via: hostingweb31.netsons.net: authenticated_id: luca+lucaceresoli.net/only user confirmed/virtual account not confirmed
-X-Authenticated-Sender: hostingweb31.netsons.net: luca@lucaceresoli.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+In-Reply-To: <20200828195808.27975-5-luca@lucaceresoli.net>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 Sender: linux-fpga-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-If this routine sleeps because it was scheduled out, it might miss DONE
-going asserted and consider it a timeout. This would potentially make the
-code return an error even when programming succeeded. Rewrite the loop to
-always check DONE after checking if timeout expired so this cannot happen
-anymore.
 
-While there, also add error checking for gpiod_get_value(). Also avoid
-checking the DONE GPIO in two places, which would make the error-checking
-code duplicated and more annoying.
+On 8/28/20 12:58 PM, Luca Ceresoli wrote:
+> When the DONE pin does not go high after programming to confirm programming
+> success, the INIT_B pin provides some info on the reason. Use it if
+> available to provide a more explanatory error message.
+>
+> Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
 
-The new loop it written to still guarantee that we apply 8 extra CCLK
-cycles after DONE has gone asserted, which is required by the hardware.
+This patch set looks good to me.
 
-Reported-by: Tom Rix <trix@redhat.com>
-Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
+Thanks
 
----
+Tom
 
-Changes in v3:
- - completely rewrite the loop after Tom pointed out the 'sleep' bug
+Reviewed-by: Tom Rix <trix@redhat.com>
 
-This patch is new in v2
----
- drivers/fpga/xilinx-spi.c | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/fpga/xilinx-spi.c b/drivers/fpga/xilinx-spi.c
-index 01f494172379..a7b919eb0b2a 100644
---- a/drivers/fpga/xilinx-spi.c
-+++ b/drivers/fpga/xilinx-spi.c
-@@ -151,22 +151,29 @@ static int xilinx_spi_write_complete(struct fpga_manager *mgr,
- 				     struct fpga_image_info *info)
- {
- 	struct xilinx_spi_conf *conf = mgr->priv;
--	unsigned long timeout;
-+	unsigned long timeout = jiffies + usecs_to_jiffies(info->config_complete_timeout_us);
-+	bool expired;
-+	int done;
- 	int ret;
- 
--	if (gpiod_get_value(conf->done))
--		return xilinx_spi_apply_cclk_cycles(conf);
-+	/*
-+	 * This loop is carefully written such that if the driver is
-+	 * scheduled out for more than 'timeout', we still check for DONE
-+	 * before giving up and we apply 8 extra CCLK cycles in all cases.
-+	 */
-+	while (!expired) {
-+		expired = time_after(jiffies, timeout);
- 
--	timeout = jiffies + usecs_to_jiffies(info->config_complete_timeout_us);
--
--	while (time_before(jiffies, timeout)) {
-+		done = get_done_gpio(mgr);
-+		if (done < 0)
-+			return done;
- 
- 		ret = xilinx_spi_apply_cclk_cycles(conf);
- 		if (ret)
- 			return ret;
- 
--		if (gpiod_get_value(conf->done))
--			return xilinx_spi_apply_cclk_cycles(conf);
-+		if (done)
-+			return 0;
- 	}
- 
- 	dev_err(&mgr->dev, "Timeout after config data transfer\n");
--- 
-2.28.0
 
