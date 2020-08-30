@@ -7,23 +7,23 @@ X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 309C3C433E2
-	for <linux-fpga@archiver.kernel.org>; Sun, 30 Aug 2020 16:39:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63917C433E2
+	for <linux-fpga@archiver.kernel.org>; Sun, 30 Aug 2020 16:39:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1234220714
-	for <linux-fpga@archiver.kernel.org>; Sun, 30 Aug 2020 16:39:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 45B5D20714
+	for <linux-fpga@archiver.kernel.org>; Sun, 30 Aug 2020 16:39:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726629AbgH3QjK (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 30 Aug 2020 12:39:10 -0400
-Received: from hostingweb31-40.netsons.net ([89.40.174.40]:57002 "EHLO
+        id S1726565AbgH3QjJ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 30 Aug 2020 12:39:09 -0400
+Received: from hostingweb31-40.netsons.net ([89.40.174.40]:42195 "EHLO
         hostingweb31-40.netsons.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726478AbgH3QjH (ORCPT
+        by vger.kernel.org with ESMTP id S1726505AbgH3QjH (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
         Sun, 30 Aug 2020 12:39:07 -0400
 Received: from [78.134.86.56] (port=34202 helo=melee.dev.aim)
         by hostingweb31.netsons.net with esmtpa (Exim 4.93)
         (envelope-from <luca@lucaceresoli.net>)
-        id 1kCQMC-000E3G-Dm; Sun, 30 Aug 2020 18:39:04 +0200
+        id 1kCQMB-000E3G-O1; Sun, 30 Aug 2020 18:39:03 +0200
 From:   Luca Ceresoli <luca@lucaceresoli.net>
 To:     linux-fpga@vger.kernel.org
 Cc:     Luca Ceresoli <luca@lucaceresoli.net>,
@@ -31,12 +31,10 @@ Cc:     Luca Ceresoli <luca@lucaceresoli.net>,
         Michal Simek <michal.simek@xilinx.com>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v4 3/5] fpga manager: xilinx-spi: fix write_complete timeout handling
-Date:   Sun, 30 Aug 2020 18:38:48 +0200
-Message-Id: <20200830163850.8380-3-luca@lucaceresoli.net>
+Subject: [PATCH v4 1/5] fpga manager: xilinx-spi: remove stray comment
+Date:   Sun, 30 Aug 2020 18:38:46 +0200
+Message-Id: <20200830163850.8380-1-luca@lucaceresoli.net>
 X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200830163850.8380-1-luca@lucaceresoli.net>
-References: <20200830163850.8380-1-luca@lucaceresoli.net>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
@@ -54,20 +52,9 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-If this routine sleeps because it was scheduled out, it might miss DONE
-going asserted and consider it a timeout. This would potentially make the
-code return an error even when programming succeeded. Rewrite the loop to
-always check DONE after checking if timeout expired so this cannot happen
-anymore.
+Remove comment committed by mistake.
 
-While there, also add error checking for gpiod_get_value(). Also avoid
-checking the DONE GPIO in two places, which would make the error-checking
-code duplicated and more annoying.
-
-The new loop it written to still guarantee that we apply 8 extra CCLK
-cycles after DONE has gone asserted, which is required by the hardware.
-
-Reported-by: Tom Rix <trix@redhat.com>
+Fixes: dd2784c01d93 ("fpga manager: xilinx-spi: check INIT_B pin during write_init")
 Reviewed-by: Tom Rix <trix@redhat.com>
 Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
 
@@ -75,59 +62,26 @@ Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
 
 Changes in v4:
  - add Reviewed-by Tom Rix
- - fix uninitialized variable
-   (Reported-by: kernel test robot <lkp@intel.com>)
 
-Changes in v3:
- - completely rewrite the loop after Tom pointed out the 'sleep' bug
+Changes in v3: none.
 
-This patch is new in v2
+Changes in v2: none.
 ---
- drivers/fpga/xilinx-spi.c | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+ drivers/fpga/xilinx-spi.c | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/drivers/fpga/xilinx-spi.c b/drivers/fpga/xilinx-spi.c
-index 01f494172379..fba8eb4866a7 100644
+index 2967aa2a74e2..502fae0d1d85 100644
 --- a/drivers/fpga/xilinx-spi.c
 +++ b/drivers/fpga/xilinx-spi.c
-@@ -151,22 +151,29 @@ static int xilinx_spi_write_complete(struct fpga_manager *mgr,
- 				     struct fpga_image_info *info)
- {
- 	struct xilinx_spi_conf *conf = mgr->priv;
--	unsigned long timeout;
-+	unsigned long timeout = jiffies + usecs_to_jiffies(info->config_complete_timeout_us);
-+	bool expired = false;
-+	int done;
- 	int ret;
+@@ -57,7 +57,6 @@ static int wait_for_init_b(struct fpga_manager *mgr, int value,
  
--	if (gpiod_get_value(conf->done))
--		return xilinx_spi_apply_cclk_cycles(conf);
-+	/*
-+	 * This loop is carefully written such that if the driver is
-+	 * scheduled out for more than 'timeout', we still check for DONE
-+	 * before giving up and we apply 8 extra CCLK cycles in all cases.
-+	 */
-+	while (!expired) {
-+		expired = time_after(jiffies, timeout);
- 
--	timeout = jiffies + usecs_to_jiffies(info->config_complete_timeout_us);
--
--	while (time_before(jiffies, timeout)) {
-+		done = get_done_gpio(mgr);
-+		if (done < 0)
-+			return done;
- 
- 		ret = xilinx_spi_apply_cclk_cycles(conf);
- 		if (ret)
- 			return ret;
- 
--		if (gpiod_get_value(conf->done))
--			return xilinx_spi_apply_cclk_cycles(conf);
-+		if (done)
-+			return 0;
- 	}
- 
- 	dev_err(&mgr->dev, "Timeout after config data transfer\n");
+ 	if (conf->init_b) {
+ 		while (time_before(jiffies, timeout)) {
+-			/* dump_state(conf, "wait for init_d .."); */
+ 			if (gpiod_get_value(conf->init_b) == value)
+ 				return 0;
+ 			usleep_range(100, 400);
 -- 
 2.28.0
 
