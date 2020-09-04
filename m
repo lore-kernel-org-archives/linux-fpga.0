@@ -7,43 +7,43 @@ X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F186C43461
-	for <linux-fpga@archiver.kernel.org>; Fri,  4 Sep 2020 23:53:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB98EC43461
+	for <linux-fpga@archiver.kernel.org>; Fri,  4 Sep 2020 23:54:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DC0372100A
-	for <linux-fpga@archiver.kernel.org>; Fri,  4 Sep 2020 23:53:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7FA4C206CB
+	for <linux-fpga@archiver.kernel.org>; Fri,  4 Sep 2020 23:54:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728326AbgIDXxx (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        id S1728323AbgIDXxx (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
         Fri, 4 Sep 2020 19:53:53 -0400
-Received: from mga06.intel.com ([134.134.136.31]:64701 "EHLO mga06.intel.com"
+Received: from mga06.intel.com ([134.134.136.31]:64696 "EHLO mga06.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728140AbgIDXxW (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S1727986AbgIDXxW (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
         Fri, 4 Sep 2020 19:53:22 -0400
-IronPort-SDR: doP+68r8rgUHiqkTlLIKyXDHSIc0o/wMYYCgPJ+9Blgky4T1XmdO39kIBVJ+KM7/f9+zxpzRox
- xobsD8KGzwxw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9734"; a="219386211"
+IronPort-SDR: 1YX5vJfTKfFfiqrzel1W/JioLSrHhlJx80LzFe5u7pgZ4i4gxpg/DXFwLuK4Y1Eiu6Bh2qqeE4
+ BzuEZ13RkQCg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9734"; a="219386204"
 X-IronPort-AV: E=Sophos;i="5.76,391,1592895600"; 
-   d="scan'208";a="219386211"
+   d="scan'208";a="219386204"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2020 16:53:19 -0700
-IronPort-SDR: Gz2Iu1HvC9zc10GPl92UMGLimuHP7T6K2IGDJelknZg+t6pCwhI37rnZyCH3L9sP7Y8C8TRtd+
- /5dNMnGjya6A==
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2020 16:53:18 -0700
+IronPort-SDR: 8e6BVrpMDBtTw+YGicNcmBo8lnTKNNODJYoY1X9YATr8Exb0YVbuHJggiwA1bjWLsXrFBeWrzE
+ RCJ4r4ouHI3A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.76,391,1592895600"; 
-   d="scan'208";a="284656440"
+   d="scan'208";a="284656352"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.251.151.80])
-  by fmsmga008.fm.intel.com with ESMTP; 04 Sep 2020 16:53:18 -0700
+  by fmsmga008.fm.intel.com with ESMTP; 04 Sep 2020 16:53:17 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, lee.jones@linaro.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v1 09/12] fpga: expose sec-mgr update size
-Date:   Fri,  4 Sep 2020 16:53:02 -0700
-Message-Id: <20200904235305.6254-10-russell.h.weight@intel.com>
+Subject: [PATCH v1 07/12] fpga: expose sec-mgr update status
+Date:   Fri,  4 Sep 2020 16:53:00 -0700
+Message-Id: <20200904235305.6254-8-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200904235305.6254-1-russell.h.weight@intel.com>
 References: <20200904235305.6254-1-russell.h.weight@intel.com>
@@ -52,66 +52,121 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend the Intel Security Manager class driver to include
-an update/remaining_size sysfs node that can be read to
-determine how much data remains to be transferred to the
-secure update engine. This file can be used to monitor
-progress during the "writing" phase of an update.
+Extend the Intel Security Manager class driver to
+include an update/status sysfs node that can be polled
+and read to monitor the progress of an ongoing secure
+update. Sysfs_notify() is used to signal transitions
+between different phases of the update process.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Reviewed-by: Wu Hao <hao.wu@intel.com>
 ---
- Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr | 11 +++++++++++
- drivers/fpga/ifpga-sec-mgr.c                        | 10 ++++++++++
- 2 files changed, 21 insertions(+)
+ .../ABI/testing/sysfs-class-ifpga-sec-mgr     | 11 ++++++
+ drivers/fpga/ifpga-sec-mgr.c                  | 34 ++++++++++++++++---
+ 2 files changed, 41 insertions(+), 4 deletions(-)
 
 diff --git a/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr b/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr
-index e7b1b02bf7ee..cf1967f1b3e3 100644
+index a476504b7ae9..849ccb2802f8 100644
 --- a/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr
 +++ b/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr
-@@ -98,6 +98,17 @@ Description:	Read-only. Returns a string describing the current
- 		as it will be signaled by sysfs_notify() on each
- 		state change.
- 
-+What: 		/sys/class/ifpga_sec_mgr/ifpga_secX/update/remaining_size
+@@ -86,3 +86,14 @@ Description:	Write only. Write the filename of an Intel image
+ 		BMC images, BMC firmware, Static Region images,
+ 		and Root Entry Hashes, and to cancel Code Signing
+ 		Keys (CSK).
++
++What: 		/sys/class/ifpga_sec_mgr/ifpga_secX/update/status
 +Date:		Sep 2020
 +KernelVersion:  5.10
 +Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read-only. Returns the size of data that remains to
-+		be written to the secure update engine. The size
-+		value is initialized to the full size of the file
-+		image and the value is updated periodically during
-+		the "writing" phase of the update.
-+		Format: "%u".
-+
- What: 		/sys/class/ifpga_sec_mgr/ifpga_secX/update/error
- Date:		Sep 2020
- KernelVersion:  5.10
++Description:	Read-only. Returns a string describing the current
++		status of an update. The string will be one of the
++		following: idle, read_file, preparing, writing,
++		programming. Userspace code can poll on this file,
++		as it will be signaled by sysfs_notify() on each
++		state change.
 diff --git a/drivers/fpga/ifpga-sec-mgr.c b/drivers/fpga/ifpga-sec-mgr.c
-index a7718bd8ee61..4ca5d13e5656 100644
+index 73173badbe96..5fe3d85e2963 100644
 --- a/drivers/fpga/ifpga-sec-mgr.c
 +++ b/drivers/fpga/ifpga-sec-mgr.c
-@@ -325,6 +325,15 @@ error_show(struct device *dev, struct device_attribute *attr, char *buf)
- }
- static DEVICE_ATTR_RO(error);
+@@ -139,6 +139,13 @@ static struct attribute *sec_mgr_security_attrs[] = {
+ 	NULL,
+ };
  
-+static ssize_t remaining_size_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
++static void update_progress(struct ifpga_sec_mgr *imgr,
++			    enum ifpga_sec_prog new_progress)
++{
++	imgr->progress = new_progress;
++	sysfs_notify(&imgr->dev.kobj, "update", "status");
++}
++
+ static void ifpga_sec_dev_error(struct ifpga_sec_mgr *imgr,
+ 				enum ifpga_sec_err err_code)
+ {
+@@ -149,7 +156,7 @@ static void ifpga_sec_dev_error(struct ifpga_sec_mgr *imgr,
+ static void progress_complete(struct ifpga_sec_mgr *imgr)
+ {
+ 	mutex_lock(&imgr->lock);
+-	imgr->progress = IFPGA_SEC_PROG_IDLE;
++	update_progress(imgr, IFPGA_SEC_PROG_IDLE);
+ 	complete_all(&imgr->update_done);
+ 	mutex_unlock(&imgr->lock);
+ }
+@@ -177,14 +184,14 @@ static void ifpga_sec_mgr_update(struct work_struct *work)
+ 		goto release_fw_exit;
+ 	}
+ 
+-	imgr->progress = IFPGA_SEC_PROG_PREPARING;
++	update_progress(imgr, IFPGA_SEC_PROG_PREPARING);
+ 	ret = imgr->iops->prepare(imgr);
+ 	if (ret) {
+ 		ifpga_sec_dev_error(imgr, ret);
+ 		goto modput_exit;
+ 	}
+ 
+-	imgr->progress = IFPGA_SEC_PROG_WRITING;
++	update_progress(imgr, IFPGA_SEC_PROG_WRITING);
+ 	size = imgr->remaining_size;
+ 	while (size) {
+ 		blk_size = min_t(u32, size, WRITE_BLOCK_SIZE);
+@@ -199,7 +206,7 @@ static void ifpga_sec_mgr_update(struct work_struct *work)
+ 		offset += blk_size;
+ 	}
+ 
+-	imgr->progress = IFPGA_SEC_PROG_PROGRAMMING;
++	update_progress(imgr, IFPGA_SEC_PROG_PROGRAMMING);
+ 	ret = imgr->iops->poll_complete(imgr);
+ 	if (ret) {
+ 		ifpga_sec_dev_error(imgr, ret);
+@@ -251,6 +258,24 @@ static struct attribute_group sec_mgr_security_attr_group = {
+ 	.is_visible = sec_mgr_visible,
+ };
+ 
++static const char * const sec_mgr_prog_str[] = {
++	"idle",			/* IFPGA_SEC_PROG_IDLE */
++	"read_file",		/* IFPGA_SEC_PROG_READ_FILE */
++	"preparing",		/* IFPGA_SEC_PROG_PREPARING */
++	"writing",		/* IFPGA_SEC_PROG_WRITING */
++	"programming"		/* IFPGA_SEC_PROG_PROGRAMMING */
++};
++
++static ssize_t
++status_show(struct device *dev, struct device_attribute *attr, char *buf)
 +{
 +	struct ifpga_sec_mgr *imgr = to_sec_mgr(dev);
 +
-+	return sprintf(buf, "%u\n", imgr->remaining_size);
++	return sprintf(buf, "%s\n", (imgr->progress < IFPGA_SEC_PROG_MAX) ?
++		       sec_mgr_prog_str[imgr->progress] : "unknown-status");
 +}
-+static DEVICE_ATTR_RO(remaining_size);
++static DEVICE_ATTR_RO(status);
 +
  static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
  			      const char *buf, size_t count)
  {
-@@ -364,6 +373,7 @@ static struct attribute *sec_mgr_update_attrs[] = {
+@@ -288,6 +313,7 @@ static DEVICE_ATTR_WO(filename);
+ 
+ static struct attribute *sec_mgr_update_attrs[] = {
  	&dev_attr_filename.attr,
- 	&dev_attr_status.attr,
- 	&dev_attr_error.attr,
-+	&dev_attr_remaining_size.attr,
++	&dev_attr_status.attr,
  	NULL,
  };
  
