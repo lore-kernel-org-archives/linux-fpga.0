@@ -7,43 +7,43 @@ X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2E97C433E2
-	for <linux-fpga@archiver.kernel.org>; Fri,  4 Sep 2020 23:53:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8D55C2D0A7
+	for <linux-fpga@archiver.kernel.org>; Fri,  4 Sep 2020 23:53:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7E3E1206CB
-	for <linux-fpga@archiver.kernel.org>; Fri,  4 Sep 2020 23:53:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A035120DD4
+	for <linux-fpga@archiver.kernel.org>; Fri,  4 Sep 2020 23:53:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728241AbgIDXx2 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 4 Sep 2020 19:53:28 -0400
-Received: from mga06.intel.com ([134.134.136.31]:64696 "EHLO mga06.intel.com"
+        id S1728258AbgIDXx3 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 4 Sep 2020 19:53:29 -0400
+Received: from mga06.intel.com ([134.134.136.31]:64693 "EHLO mga06.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728210AbgIDXxY (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S1728197AbgIDXxY (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
         Fri, 4 Sep 2020 19:53:24 -0400
-IronPort-SDR: QpNcjZNP9wvgadeR55Efh2M3kw9Ym1n3IJokRGpORpBp2R7s8h+EtsVxmyTwFeAjzxxw225Xqb
- P3cjMSoQJ2/w==
-X-IronPort-AV: E=McAfee;i="6000,8403,9734"; a="219386219"
+IronPort-SDR: D330fQ94ovp7BUPR+pLzR3n/rc+OS5KGYLURUeemmAmRwwT4i/OLLu3f3P2WyFqLa9qVTv1O7N
+ wryHb6lKpupw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9734"; a="219386215"
 X-IronPort-AV: E=Sophos;i="5.76,391,1592895600"; 
-   d="scan'208";a="219386219"
+   d="scan'208";a="219386215"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2020 16:53:20 -0700
-IronPort-SDR: EMeUMxuTkHFBA2CB9KPJpLPRA22Udhc1zLg8PlndRF++SF0ck+vTnBM1M0otE0A5MPwIUa+fGO
- taflrfMea+ug==
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2020 16:53:19 -0700
+IronPort-SDR: WLbPsB2SjpX7rtkaXev1/3oqiLUThGZrGNA2osd6bG/2LvHss3+AzGUdjXLAnTmqgqpdO/cBae
+ W6Zx07x+aDCA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.76,391,1592895600"; 
-   d="scan'208";a="284656595"
+   d="scan'208";a="284656510"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.251.151.80])
-  by fmsmga008.fm.intel.com with ESMTP; 04 Sep 2020 16:53:20 -0700
+  by fmsmga008.fm.intel.com with ESMTP; 04 Sep 2020 16:53:19 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, lee.jones@linaro.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v1 12/12] fpga: add max10 get_hw_errinfo callback func
-Date:   Fri,  4 Sep 2020 16:53:05 -0700
-Message-Id: <20200904235305.6254-13-russell.h.weight@intel.com>
+Subject: [PATCH v1 10/12] fpga: enable sec-mgr update cancel
+Date:   Fri,  4 Sep 2020 16:53:03 -0700
+Message-Id: <20200904235305.6254-11-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200904235305.6254-1-russell.h.weight@intel.com>
 References: <20200904235305.6254-1-russell.h.weight@intel.com>
@@ -52,63 +52,167 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend the MAX10 BMC Security Engine driver to include
-a function that returns 64 bits of additional HW specific
-data for errors that require additional information.
-This callback function enables the hw_errinfo sysfs
-node in the Intel Security Manager class driver.
+Extend the Intel Security Manager class driver to include
+an update/cancel sysfs file that can be written to request
+that an update be canceled. The write may return EBUSY if
+the update has progressed to the point that it cannot be
+canceled by software or ENODEV if there is no update in
+progress.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Reviewed-by: Wu Hao <hao.wu@intel.com>
 ---
- drivers/fpga/intel-m10-bmc-secure.c | 27 ++++++++++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
+ .../ABI/testing/sysfs-class-ifpga-sec-mgr     | 10 ++++
+ drivers/fpga/ifpga-sec-mgr.c                  | 59 +++++++++++++++++--
+ include/linux/fpga/ifpga-sec-mgr.h            |  1 +
+ 3 files changed, 66 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/fpga/intel-m10-bmc-secure.c b/drivers/fpga/intel-m10-bmc-secure.c
-index 4a66c2d448eb..7fb1c805f654 100644
---- a/drivers/fpga/intel-m10-bmc-secure.c
-+++ b/drivers/fpga/intel-m10-bmc-secure.c
-@@ -450,6 +450,30 @@ static enum ifpga_sec_err m10bmc_sec_cancel(struct ifpga_sec_mgr *imgr)
- 	return ret ? IFPGA_SEC_ERR_RW_ERROR : IFPGA_SEC_ERR_NONE;
+diff --git a/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr b/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr
+index cf1967f1b3e3..762a7dee9453 100644
+--- a/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr
++++ b/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr
+@@ -87,6 +87,16 @@ Description:	Write only. Write the filename of an Intel image
+ 		and Root Entry Hashes, and to cancel Code Signing
+ 		Keys (CSK).
+ 
++What: 		/sys/class/ifpga_sec_mgr/ifpga_secX/update/cancel
++Date:		Sep 2020
++KernelVersion:  5.10
++Contact:	Russ Weight <russell.h.weight@intel.com>
++Description:	Write-only. Write a "1" to this file to request
++		that a current update be canceled. This request
++		will be rejected (EBUSY) if the programming phase
++		has already started or (ENODEV) if there is no
++		update in progress.
++
+ What: 		/sys/class/ifpga_sec_mgr/ifpga_secX/update/status
+ Date:		Sep 2020
+ KernelVersion:  5.10
+diff --git a/drivers/fpga/ifpga-sec-mgr.c b/drivers/fpga/ifpga-sec-mgr.c
+index 4ca5d13e5656..afd97c135ebe 100644
+--- a/drivers/fpga/ifpga-sec-mgr.c
++++ b/drivers/fpga/ifpga-sec-mgr.c
+@@ -159,6 +159,23 @@ static void ifpga_sec_dev_error(struct ifpga_sec_mgr *imgr,
+ 	imgr->iops->cancel(imgr);
  }
  
-+static u64 m10bmc_sec_hw_errinfo(struct ifpga_sec_mgr *imgr)
++static int progress_transition(struct ifpga_sec_mgr *imgr,
++			       enum ifpga_sec_prog new_progress)
 +{
-+	struct m10bmc_sec *sec = imgr->priv;
-+	u32 doorbell = 0, auth_result = 0;
-+	u64 hw_errinfo = 0;
++	int ret = 0;
 +
-+	switch (imgr->err_code) {
-+	case IFPGA_SEC_ERR_HW_ERROR:
-+	case IFPGA_SEC_ERR_TIMEOUT:
-+	case IFPGA_SEC_ERR_BUSY:
-+	case IFPGA_SEC_ERR_WEAROUT:
-+		if (!m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell))
-+			hw_errinfo = (u64)doorbell << 32;
-+
-+		if (!m10bmc_sys_read(sec->m10bmc, M10BMC_AUTH_RESULT,
-+				     &auth_result))
-+			hw_errinfo |= (u64)auth_result;
-+
-+		return hw_errinfo;
-+	default:
-+		return 0;
++	mutex_lock(&imgr->lock);
++	if (imgr->request_cancel) {
++		set_error(imgr, IFPGA_SEC_ERR_CANCELED);
++		imgr->iops->cancel(imgr);
++		ret = -ECANCELED;
++	} else {
++		update_progress(imgr, new_progress);
 +	}
++	mutex_unlock(&imgr->lock);
++	return ret;
 +}
 +
- static const struct ifpga_sec_mgr_ops m10bmc_iops = {
- 	.user_flash_count = get_qspi_flash_count,
- 	.bmc_root_entry_hash = get_bmc_root_entry_hash,
-@@ -467,7 +491,8 @@ static const struct ifpga_sec_mgr_ops m10bmc_iops = {
- 	.prepare = m10bmc_sec_prepare,
- 	.write_blk = m10bmc_sec_write_blk,
- 	.poll_complete = m10bmc_sec_poll_complete,
--	.cancel = m10bmc_sec_cancel
-+	.cancel = m10bmc_sec_cancel,
-+	.get_hw_errinfo = m10bmc_sec_hw_errinfo
- };
+ static void progress_complete(struct ifpga_sec_mgr *imgr)
+ {
+ 	mutex_lock(&imgr->lock);
+@@ -190,16 +207,20 @@ static void ifpga_sec_mgr_update(struct work_struct *work)
+ 		goto release_fw_exit;
+ 	}
  
- static void ifpga_sec_mgr_uinit(struct m10bmc_sec *sec)
+-	update_progress(imgr, IFPGA_SEC_PROG_PREPARING);
++	if (progress_transition(imgr, IFPGA_SEC_PROG_PREPARING))
++		goto modput_exit;
++
+ 	ret = imgr->iops->prepare(imgr);
+ 	if (ret) {
+ 		ifpga_sec_dev_error(imgr, ret);
+ 		goto modput_exit;
+ 	}
+ 
+-	update_progress(imgr, IFPGA_SEC_PROG_WRITING);
++	if (progress_transition(imgr, IFPGA_SEC_PROG_WRITING))
++		goto done;
++
+ 	size = imgr->remaining_size;
+-	while (size) {
++	while (size && !imgr->request_cancel) {
+ 		blk_size = min_t(u32, size, WRITE_BLOCK_SIZE);
+ 		size -= blk_size;
+ 		ret = imgr->iops->write_blk(imgr, offset, blk_size);
+@@ -212,7 +233,9 @@ static void ifpga_sec_mgr_update(struct work_struct *work)
+ 		offset += blk_size;
+ 	}
+ 
+-	update_progress(imgr, IFPGA_SEC_PROG_PROGRAMMING);
++	if (progress_transition(imgr, IFPGA_SEC_PROG_PROGRAMMING))
++		goto done;
++
+ 	ret = imgr->iops->poll_complete(imgr);
+ 	if (ret) {
+ 		ifpga_sec_dev_error(imgr, ret);
+@@ -359,6 +382,7 @@ static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
+ 		imgr->filename[strlen(imgr->filename) - 1] = '\0';
+ 
+ 	imgr->err_code = IFPGA_SEC_ERR_NONE;
++	imgr->request_cancel = false;
+ 	imgr->progress = IFPGA_SEC_PROG_READ_FILE;
+ 	reinit_completion(&imgr->update_done);
+ 	schedule_work(&imgr->work);
+@@ -369,8 +393,32 @@ static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
+ }
+ static DEVICE_ATTR_WO(filename);
+ 
++static ssize_t cancel_store(struct device *dev, struct device_attribute *attr,
++			    const char *buf, size_t count)
++{
++	struct ifpga_sec_mgr *imgr = to_sec_mgr(dev);
++	bool cancel;
++	int ret = 0;
++
++	if (kstrtobool(buf, &cancel) || !cancel)
++		return -EINVAL;
++
++	mutex_lock(&imgr->lock);
++	if (imgr->progress == IFPGA_SEC_PROG_PROGRAMMING)
++		ret = -EBUSY;
++	else if (imgr->progress == IFPGA_SEC_PROG_IDLE)
++		ret = -ENODEV;
++	else
++		imgr->request_cancel = true;
++	mutex_unlock(&imgr->lock);
++
++	return ret ? : count;
++}
++static DEVICE_ATTR_WO(cancel);
++
+ static struct attribute *sec_mgr_update_attrs[] = {
+ 	&dev_attr_filename.attr,
++	&dev_attr_cancel.attr,
+ 	&dev_attr_status.attr,
+ 	&dev_attr_error.attr,
+ 	&dev_attr_remaining_size.attr,
+@@ -536,6 +584,9 @@ void ifpga_sec_mgr_unregister(struct ifpga_sec_mgr *imgr)
+ 		goto unregister;
+ 	}
+ 
++	if (imgr->progress != IFPGA_SEC_PROG_PROGRAMMING)
++		imgr->request_cancel = true;
++
+ 	mutex_unlock(&imgr->lock);
+ 	wait_for_completion(&imgr->update_done);
+ 
+diff --git a/include/linux/fpga/ifpga-sec-mgr.h b/include/linux/fpga/ifpga-sec-mgr.h
+index f04bf9e30c67..f51ed663a723 100644
+--- a/include/linux/fpga/ifpga-sec-mgr.h
++++ b/include/linux/fpga/ifpga-sec-mgr.h
+@@ -183,6 +183,7 @@ struct ifpga_sec_mgr {
+ 	enum ifpga_sec_prog progress;
+ 	enum ifpga_sec_prog err_state;	/* progress state at time of failure */
+ 	enum ifpga_sec_err err_code;	/* security manager error code */
++	bool request_cancel;
+ 	bool driver_unload;
+ 	void *priv;
+ };
 -- 
 2.17.1
 
