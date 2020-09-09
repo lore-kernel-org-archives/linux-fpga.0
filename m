@@ -2,167 +2,127 @@ Return-Path: <SRS0=n33Y=CS=vger.kernel.org=linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FF55C43461
-	for <linux-fpga@archiver.kernel.org>; Wed,  9 Sep 2020 14:25:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86C7AC43461
+	for <linux-fpga@archiver.kernel.org>; Wed,  9 Sep 2020 21:14:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 31E4C22251
-	for <linux-fpga@archiver.kernel.org>; Wed,  9 Sep 2020 14:25:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 48E5D21D7A
+	for <linux-fpga@archiver.kernel.org>; Wed,  9 Sep 2020 21:14:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="A+xuqe5h"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="CzuGjdSU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730532AbgIIOZr (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 9 Sep 2020 10:25:47 -0400
-Received: from us-smtp-2.mimecast.com ([207.211.31.81]:54947 "EHLO
+        id S1726414AbgIIVOS (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 9 Sep 2020 17:14:18 -0400
+Received: from us-smtp-2.mimecast.com ([207.211.31.81]:43630 "EHLO
         us-smtp-delivery-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1728663AbgIIM67 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 9 Sep 2020 08:58:59 -0400
+        by vger.kernel.org with ESMTP id S1730030AbgIIVOK (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 9 Sep 2020 17:14:10 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1599656343;
+        s=mimecast20190719; t=1599686046;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=1/8nQXqMfzr63L9sc34nY6dq0v4DgYlu4G8KpQeRN64=;
-        b=A+xuqe5hb5AtgwmYcC62b6Yax4TN5N791ICesrqUsPT1y9UJHHFoImamZPzi6XEZ9whykJ
-        ojQr8BthJ5Wc12YaM/TFCrCHc70nQaDdzUwTQTrSGATKpj280tsv94wJ0eUv8u12LRQd3k
-        JDNTrd2MAPv+Nc5rSFOxPetd5hyhLHo=
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com
- [209.85.222.198]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-425-ZOL9KoeXM7uvZ2jzEMVDHw-1; Wed, 09 Sep 2020 08:59:01 -0400
-X-MC-Unique: ZOL9KoeXM7uvZ2jzEMVDHw-1
-Received: by mail-qk1-f198.google.com with SMTP id v16so1301005qka.18
-        for <linux-fpga@vger.kernel.org>; Wed, 09 Sep 2020 05:59:01 -0700 (PDT)
+        bh=flt0vZjtupO4BhZTnrF4cJuXNpxXUArPDdGRHgaQJh8=;
+        b=CzuGjdSUJSLmkTU5b/gRMoxmyOFnCuFpYqJbIHu3sH9Lntn3VQSkfASCgyFmxyoDkbn2eF
+        DoBiMdZVUAo6nRIW+S+Od8+oVdWDAH21OpqSCfLFblhU2dEgbzHYNn5Gb/tuLKKiwJF7wd
+        obpKf/Ga7EB0p+z2WsayNqxuHpVts+Q=
+Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com
+ [209.85.160.199]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-229-i-OUcKpeOBy406feKRMayQ-1; Wed, 09 Sep 2020 17:14:05 -0400
+X-MC-Unique: i-OUcKpeOBy406feKRMayQ-1
+Received: by mail-qt1-f199.google.com with SMTP id j35so2706706qtk.14
+        for <linux-fpga@vger.kernel.org>; Wed, 09 Sep 2020 14:14:05 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-transfer-encoding
          :content-language;
-        bh=1/8nQXqMfzr63L9sc34nY6dq0v4DgYlu4G8KpQeRN64=;
-        b=jjP/a2usARTsKcbY655zEO+SdFqJwa6iIyHBwYzc99yrLHKwUtLslTTJ597QHOm/xt
-         UXe/7V9k6IUVhZ+Q2c0el3YAtL6113TqEHNhHg4iG4C5McJMaKN/knM7ltjpQbMqsB5K
-         1tTtyhAZPIZzqVi/ObClEpQu+dbMY+8lceRYXZU7JHzX4vkw476gMp5O+VksC5lzqCMN
-         LOp8ET0L0lmdgvW6VQd6SKimF8Vw35ueqagKbxPlkR1TTQeswyTCpmB05b4aBcoQ2swA
-         zE1nkc/BQN55bx8FHWRYKjp+b9LxQbWpu5Gv3dCv25LTb/mTjlWvzGXsrU0hCq+kw4pe
-         zuSQ==
-X-Gm-Message-State: AOAM530RinkLTNG8Fqlb/dRGgqux/j1hdWcV/4X5j3FI1eHY/hyTTZqS
-        s/9FWxK+LkJxHDQStCBkTlURlYXUVQlN+f/n6zkGye/GK8CWWYuzAAx+2STa7YQmaqIP8jeW8w1
-        VYO+7R7/YPW+VdDRFSoaxRg==
-X-Received: by 2002:aed:35c4:: with SMTP id d4mr2989779qte.151.1599656341210;
-        Wed, 09 Sep 2020 05:59:01 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJw4qqVvyKXPZHWb/Vt+ESzI0NqJrnhykvAageDbUvqZgLaFMO1gRVF6I1UCUh0UGu9Ofe529A==
-X-Received: by 2002:aed:35c4:: with SMTP id d4mr2989765qte.151.1599656340954;
-        Wed, 09 Sep 2020 05:59:00 -0700 (PDT)
+        bh=flt0vZjtupO4BhZTnrF4cJuXNpxXUArPDdGRHgaQJh8=;
+        b=DkjaVkUIscvkkTAUMOGtTPsK/Csr1vZdHLjoi6iLz7kIzYfyWQCucNywhhDoWEkjBu
+         0353uNE3g8qQWdJiszghYOL5dSx53z4TWsanU+1zooc2dP9se8w8D6NmCkrnCppX5aPp
+         hEgfM/Yx2Ahw5fsFZHZXTuoRh7inSkcfKdg4IdKh/3OG5OIHrNETnxvb4Eit67zrG1a5
+         t2W6JU8lQBZcigYS+jSd2Hwj1zl4jC/x24elRXoJT0OHEp87qNqbkMKdPko/SBMIV0jK
+         +fm839ff3sfJIuPHI+HYE8sxQ15uZZb1LIq1k1Xsx3VQprMNuLkZM8nz//M/gI5vQrtS
+         WDKA==
+X-Gm-Message-State: AOAM532BMvuaxmvM4+nYqDWwfI+U47BTg3Jv0JYxMXCFpC7GXh1Jar0n
+        tfTDHy52ZRZXpJ+HGlo/3iIKMmpVxpuErmAOPnhwY2Ic8A16ADqvdP8hO/QAlyyx6snRWWzyWNS
+        dl1OyPiNCTkBq5OAc5/+zbQ==
+X-Received: by 2002:a05:620a:567:: with SMTP id p7mr5307792qkp.164.1599686042139;
+        Wed, 09 Sep 2020 14:14:02 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxelahEbXCJiVWCSYD1eRWMhxmTJwjtxCSAXIXQuZh3Dl5ebQkWRsonB1gBL69zicWzPYE1UA==
+X-Received: by 2002:a05:620a:567:: with SMTP id p7mr5307772qkp.164.1599686041865;
+        Wed, 09 Sep 2020 14:14:01 -0700 (PDT)
 Received: from trix.remote.csb (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id i7sm2553075qkb.131.2020.09.09.05.58.59
+        by smtp.gmail.com with ESMTPSA id m68sm2009028qkd.105.2020.09.09.14.14.00
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Sep 2020 05:59:00 -0700 (PDT)
-Subject: Re: [PATCH 2/3] dfl: add dfl bus support to MODULE_DEVICE_TABLE()
+        Wed, 09 Sep 2020 14:14:01 -0700 (PDT)
+Subject: Re: [PATCH 0/3] add VFIO mdev support for DFL devices
 To:     Xu Yilun <yilun.xu@intel.com>, mdf@kernel.org,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        masahiroy@kernel.org
-Cc:     lgoncalv@redhat.com, Wu Hao <hao.wu@intel.com>,
-        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
-        Russ Weight <russell.h.weight@intel.com>
-References: <1599544129-17594-1-git-send-email-yilun.xu@intel.com>
- <1599544129-17594-3-git-send-email-yilun.xu@intel.com>
+        alex.williamson@redhat.com, kwankhede@nvidia.com,
+        linux-fpga@vger.kernel.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     lgoncalv@redhat.com
+References: <1599549212-24253-1-git-send-email-yilun.xu@intel.com>
 From:   Tom Rix <trix@redhat.com>
-Message-ID: <31cffdc2-ed70-8f96-5501-08965d701535@redhat.com>
-Date:   Wed, 9 Sep 2020 05:58:58 -0700
+Message-ID: <93200a4f-55a3-0798-3ef2-e0467288d5ba@redhat.com>
+Date:   Wed, 9 Sep 2020 14:13:59 -0700
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.6.0
 MIME-Version: 1.0
-In-Reply-To: <1599544129-17594-3-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <1599549212-24253-1-git-send-email-yilun.xu@intel.com>
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Content-Language: en-US
 Sender: linux-fpga-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
+This is a new interface, the documentation needs to go
 
-On 9/7/20 10:48 PM, Xu Yilun wrote:
-> Device Feature List (DFL) is a linked list of feature headers within the
-> device MMIO space. It is used by FPGA to enumerate multiple sub features
-Do you mean a linked list in the pci config space ?
-> within it. Each feature can be uniquely identified by DFL type and
-> feature id, which can be read out from feature headers.
->
-> A dfl bus helps DFL framework modularize DFL device drivers for different
-> sub features. The dfl bus matches its devices and drivers by DFL type and
-> feature id.
->
-> This patch add dfl bus support to MODULE_DEVICE_TABLE() by adding info
-> about struct dfl_device_id in devicetable-offsets.c and add a dfl entry
-> point in file2alias.c.
->
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> Signed-off-by: Wu Hao <hao.wu@intel.com>
-> Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-> Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-> ---
->  scripts/mod/devicetable-offsets.c |  4 ++++
->  scripts/mod/file2alias.c          | 13 +++++++++++++
->  2 files changed, 17 insertions(+)
->
-> diff --git a/scripts/mod/devicetable-offsets.c b/scripts/mod/devicetable-offsets.c
-> index 27007c1..d8350ee 100644
-> --- a/scripts/mod/devicetable-offsets.c
-> +++ b/scripts/mod/devicetable-offsets.c
-> @@ -243,5 +243,9 @@ int main(void)
->  	DEVID(mhi_device_id);
->  	DEVID_FIELD(mhi_device_id, chan);
->  
-> +	DEVID(dfl_device_id);
-> +	DEVID_FIELD(dfl_device_id, type);
-> +	DEVID_FIELD(dfl_device_id, feature_id);
-> +
->  	return 0;
->  }
-> diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-> index 2417dd1..0753fc2 100644
-> --- a/scripts/mod/file2alias.c
-> +++ b/scripts/mod/file2alias.c
-> @@ -1368,6 +1368,18 @@ static int do_mhi_entry(const char *filename, void *symval, char *alias)
->  	return 1;
->  }
->  
-> +/* Looks like: dfl:tNfN */
-> +static int do_dfl_entry(const char *filename, void *symval, char *alias)
-> +{
-> +	DEF_FIELD(symval, dfl_device_id, type);
-> +	DEF_FIELD(symval, dfl_device_id, feature_id);
-> +
-> +	sprintf(alias, "dfl:t%01Xf%03X", type, feature_id);
+into greater detail. I am particularly interested in the user workflow.
 
-Is it necessary to constrain the output here ?
+This seems like it would work only for kernel modules. 
 
-If you do not want to use the full width of the types,
+Please describe both in the documentation.
 
-a comment would be helpful.
+A sample of a user mode driver would be helpful.
+
+Is putting driver_override using sysfs for each device scalable ? would a list sets of {feature id,files}'s the vfio driver respond to better ? 
+
+To be consistent the mdev driver file name should be dfl-vfio-mdev.c
+
+There should be an opt-in flag for drivers being overridden instead of blanket approval of all drivers.
 
 Tom
 
-> +
-> +	add_wildcard(alias);
-> +	return 1;
-> +}
-> +
->  /* Does namelen bytes of name exactly match the symbol? */
->  static bool sym_is(const char *name, unsigned namelen, const char *symbol)
->  {
-> @@ -1442,6 +1454,7 @@ static const struct devtable devtable[] = {
->  	{"tee", SIZE_tee_client_device_id, do_tee_entry},
->  	{"wmi", SIZE_wmi_device_id, do_wmi_entry},
->  	{"mhi", SIZE_mhi_device_id, do_mhi_entry},
-> +	{"dfl", SIZE_dfl_device_id, do_dfl_entry},
->  };
->  
->  /* Create MODULE_ALIAS() statements.
+On 9/8/20 12:13 AM, Xu Yilun wrote:
+> These patches depend on the patchset: "Modularization of DFL private
+> feature drivers" & "add dfl bus support to MODULE_DEVICE_TABLE()"
+>
+> https://lore.kernel.org/linux-fpga/1599488581-16386-1-git-send-email-yilun.xu@intel.com/
+>
+> This patchset provides an VFIO Mdev driver for dfl devices. It makes
+> possible for dfl devices be direct accessed from userspace.
+>
+> Xu Yilun (3):
+>   fpga: dfl: add driver_override support
+>   fpga: dfl: VFIO mdev support for DFL devices
+>   Documentation: fpga: dfl: Add description for VFIO Mdev support
+>
+>  Documentation/ABI/testing/sysfs-bus-dfl |  20 ++
+>  Documentation/fpga/dfl.rst              |  20 ++
+>  drivers/fpga/Kconfig                    |   9 +
+>  drivers/fpga/Makefile                   |   1 +
+>  drivers/fpga/dfl.c                      |  54 ++++-
+>  drivers/fpga/vfio-mdev-dfl.c            | 391 ++++++++++++++++++++++++++++++++
+>  include/linux/fpga/dfl-bus.h            |   2 +
+>  7 files changed, 496 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/fpga/vfio-mdev-dfl.c
+>
 
