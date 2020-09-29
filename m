@@ -2,216 +2,134 @@ Return-Path: <SRS0=Cx7V=DG=vger.kernel.org=linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UPPERCASE_50_75,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB7E9C4741F
-	for <linux-fpga@archiver.kernel.org>; Tue, 29 Sep 2020 14:41:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EDD5C47420
+	for <linux-fpga@archiver.kernel.org>; Tue, 29 Sep 2020 15:30:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 87BE221924
-	for <linux-fpga@archiver.kernel.org>; Tue, 29 Sep 2020 14:41:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BE41B20773
+	for <linux-fpga@archiver.kernel.org>; Tue, 29 Sep 2020 15:30:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1601393443;
+	bh=V15LBJUSu1l0/JyH7HW52wV5R2A1BYXyMldB/DQeSw4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=nypaR4sQbVS4sf4M1YW2zK2Mj1DuNMEWwoBxpBjSMH9Q//1ze+412tg3CHYIkvyeN
+	 3io/PjjPMnvsytbWnlPnJv1oyn8n0IohmLRCX5h7NqRMJt3z/3GO+xNfSBpIpKUbhh
+	 4IXwyjvaFwnl01m1LEqcT0UmeSKFF+RPKd+Dub4w=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730884AbgI2OkM (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 29 Sep 2020 10:40:12 -0400
-Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:51830 "EHLO
-        mx0a-00128a01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1730519AbgI2OkM (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 29 Sep 2020 10:40:12 -0400
-Received: from pps.filterd (m0167088.ppops.net [127.0.0.1])
-        by mx0a-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 08TEdJjk008158;
-        Tue, 29 Sep 2020 10:40:09 -0400
-Received: from nwd2mta3.analog.com ([137.71.173.56])
-        by mx0a-00128a01.pphosted.com with ESMTP id 33syg63kka-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 29 Sep 2020 10:40:09 -0400
-Received: from SCSQMBX10.ad.analog.com (scsqmbx10.ad.analog.com [10.77.17.5])
-        by nwd2mta3.analog.com (8.14.7/8.14.7) with ESMTP id 08TEe7JC053378
-        (version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=FAIL);
-        Tue, 29 Sep 2020 10:40:08 -0400
-Received: from SCSQCASHYB7.ad.analog.com (10.77.17.133) by
- SCSQMBX10.ad.analog.com (10.77.17.5) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1779.2; Tue, 29 Sep 2020 07:40:00 -0700
-Received: from SCSQMBX10.ad.analog.com (10.77.17.5) by
- SCSQCASHYB7.ad.analog.com (10.77.17.133) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1779.2; Tue, 29 Sep 2020 07:39:59 -0700
-Received: from zeus.spd.analog.com (10.66.68.11) by SCSQMBX10.ad.analog.com
- (10.77.17.5) with Microsoft SMTP Server id 15.1.1779.2 via Frontend
- Transport; Tue, 29 Sep 2020 07:39:59 -0700
-Received: from localhost.localdomain ([10.48.65.12])
-        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 08TEdkbx028450;
-        Tue, 29 Sep 2020 10:40:01 -0400
-From:   Alexandru Ardelean <alexandru.ardelean@analog.com>
-To:     <linux-clk@vger.kernel.org>, <linux-fpga@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     <mturquette@baylibre.com>, <sboyd@kernel.org>, <mdf@kernel.org>,
-        <ardeleanalex@gmail.com>,
-        Mircea Caprioru <mircea.caprioru@analog.com>,
-        Alexandru Ardelean <alexandru.ardelean@analog.com>
-Subject: [PATCH v4 6/7] include: fpga: adi-axi-common.h: add definitions for supported FPGAs
-Date:   Tue, 29 Sep 2020 17:44:08 +0300
-Message-ID: <20200929144417.89816-7-alexandru.ardelean@analog.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200929144417.89816-1-alexandru.ardelean@analog.com>
+        id S1725765AbgI2Pan (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 29 Sep 2020 11:30:43 -0400
+Received: from mail-pj1-f68.google.com ([209.85.216.68]:53170 "EHLO
+        mail-pj1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725497AbgI2Pan (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 29 Sep 2020 11:30:43 -0400
+Received: by mail-pj1-f68.google.com with SMTP id ml18so21882pjb.2;
+        Tue, 29 Sep 2020 08:30:42 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=aWsRNGEYWNS1FOlIs3a6BRy9lNpu3+jVuprEQmGm558=;
+        b=OeuwqgpYCfRfagPKO+b2cc1EsVsuzNHKWZMS8mhuydA6PyvtsFPk8QiZuAEi6h5oku
+         c7d465VG/xGC6hNdyuZf6ZHAQ8NBUUdDCRrIn2Klu1Sw9Ib19GbmV2uF9YkzE7Eud/aF
+         1L+LBMqiQ/ddomXYhwd3vDTsvezau5Tl0khJmwfp9bv3OhAH4ELnnCoHdjrT6kOoHzrf
+         yHWCd+pTqJbCrq8k4FfvjgE26y5dBITY1J66SeXVdHUYiNoTCgfKcI1EmcaK/g4jGUCx
+         CuOfn2from1OEez5wNnTlgcrgiWecz6FCai4NiLpYcs/Dj2xITc9578yis4HrCbs82tX
+         Ldgg==
+X-Gm-Message-State: AOAM532cWHnytd1YblAvFxViScNGEFYVPLdtcnLaRcPK9Kr9dbq+Tom7
+        Zrk022QsSR2qNgXgGHGT4x8=
+X-Google-Smtp-Source: ABdhPJw5BlNaN3pSF96qwEnIL8dGCXUqwG8oGgJpCFD6AsIPGoIrPO+DcbMR2zsgvf5a1G5dujk4ZQ==
+X-Received: by 2002:a17:90a:d986:: with SMTP id d6mr4327116pjv.108.1601393442163;
+        Tue, 29 Sep 2020 08:30:42 -0700 (PDT)
+Received: from localhost ([2601:647:5b00:1162:1ac0:17a6:4cc6:d1ef])
+        by smtp.gmail.com with ESMTPSA id b15sm5731377pft.84.2020.09.29.08.30.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 29 Sep 2020 08:30:41 -0700 (PDT)
+Date:   Tue, 29 Sep 2020 08:30:40 -0700
+From:   Moritz Fischer <mdf@kernel.org>
+To:     Alexandru Ardelean <alexandru.ardelean@analog.com>
+Cc:     linux-clk@vger.kernel.org, linux-fpga@vger.kernel.org,
+        linux-kernel@vger.kernel.org, mturquette@baylibre.com,
+        sboyd@kernel.org, mdf@kernel.org, ardeleanalex@gmail.com,
+        Mathias Tausen <mta@gomspace.com>
+Subject: Re: [PATCH v4 5/7] clk: axi-clkgen: Respect ZYNQMP PFD/VCO frequency
+ limits
+Message-ID: <20200929153040.GA114067@archbook>
 References: <20200929144417.89816-1-alexandru.ardelean@analog.com>
+ <20200929144417.89816-14-alexandru.ardelean@analog.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-ADIRoutedOnPrem: True
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
- definitions=2020-09-29_07:2020-09-29,2020-09-29 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 malwarescore=0
- priorityscore=1501 impostorscore=0 suspectscore=0 lowpriorityscore=0
- spamscore=0 bulkscore=0 mlxscore=0 clxscore=1015 mlxlogscore=801
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2009290130
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200929144417.89816-14-alexandru.ardelean@analog.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Mircea Caprioru <mircea.caprioru@analog.com>
+Hi Alexandru,
 
-All (newer) FPGA IP cores supported by Analog Devices, store information in
-the synthesized designs. This information describes various parameters,
-including the family of boards on which this is deployed, speed-grade, and
-so on.
+On Tue, Sep 29, 2020 at 05:44:15PM +0300, Alexandru Ardelean wrote:
+> From: Mathias Tausen <mta@gomspace.com>
+> 
+> Since axi-clkgen is now supported on ZYNQMP, make sure the max/min
+> frequencies of the PFD and VCO are respected.
+> 
+> Signed-off-by: Mathias Tausen <mta@gomspace.com>
+> Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 
-Currently, some of these definitions are deployed mostly on Xilinx boards,
-but they have been considered also for FPGA boards from other vendors.
+This patch still does not cover the PCIe Zynq plugged into ZynqMP linux
+machine case.
 
-The register definitions are described at this link:
-  https://wiki.analog.com/resources/fpga/docs/hdl/regmap
-(the 'Base (common to all cores)' section).
+> ---
+>  drivers/clk/clk-axi-clkgen.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/drivers/clk/clk-axi-clkgen.c b/drivers/clk/clk-axi-clkgen.c
+> index 4342b7735590..2319bb1c5c08 100644
+> --- a/drivers/clk/clk-axi-clkgen.c
+> +++ b/drivers/clk/clk-axi-clkgen.c
+> @@ -108,12 +108,21 @@ static uint32_t axi_clkgen_lookup_lock(unsigned int m)
+>  	return 0x1f1f00fa;
+>  }
+>  
+> +#ifdef ARCH_ZYNQMP
+> +static const struct axi_clkgen_limits axi_clkgen_default_limits = {
+> +	.fpfd_min = 10000,
+> +	.fpfd_max = 450000,
+> +	.fvco_min = 800000,
+> +	.fvco_max = 1600000,
+> +};
+> +#else
+>  static const struct axi_clkgen_limits axi_clkgen_default_limits = {
+>  	.fpfd_min = 10000,
+>  	.fpfd_max = 300000,
+>  	.fvco_min = 600000,
+>  	.fvco_max = 1200000,
+>  };
+> +#endif
 
-Acked-by: Moritz Fischer <mdf@kernel.org>
-Signed-off-by: Mircea Caprioru <mircea.caprioru@analog.com>
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
----
- include/linux/fpga/adi-axi-common.h | 103 ++++++++++++++++++++++++++++
- 1 file changed, 103 insertions(+)
+I still don't understand this. You have a way to determine which fabric
+you are looking at with the FPGA info. Why not:
 
-diff --git a/include/linux/fpga/adi-axi-common.h b/include/linux/fpga/adi-axi-common.h
-index 141ac3f251e6..1a7f18e3a384 100644
---- a/include/linux/fpga/adi-axi-common.h
-+++ b/include/linux/fpga/adi-axi-common.h
-@@ -13,6 +13,9 @@
- 
- #define ADI_AXI_REG_VERSION			0x0000
- 
-+#define ADI_AXI_REG_FPGA_INFO			0x001C
-+#define ADI_AXI_REG_FPGA_VOLTAGE		0x0140
-+
- #define ADI_AXI_PCORE_VER(major, minor, patch)	\
- 	(((major) << 16) | ((minor) << 8) | (patch))
- 
-@@ -20,4 +23,104 @@
- #define ADI_AXI_PCORE_VER_MINOR(version)	(((version) >> 8) & 0xff)
- #define ADI_AXI_PCORE_VER_PATCH(version)	((version) & 0xff)
- 
-+#define ADI_AXI_INFO_FPGA_VOLTAGE(val)		((val) & 0xffff)
-+
-+#define ADI_AXI_INFO_FPGA_TECH(info)		(((info) >> 24) & 0xff)
-+#define ADI_AXI_INFO_FPGA_FAMILY(info)		(((info) >> 16) & 0xff)
-+#define ADI_AXI_INFO_FPGA_SPEED_GRADE(info)	(((info) >> 8) & 0xff)
-+#define ADI_AXI_INFO_FPGA_DEV_PACKAGE(info)	((info) & 0xff)
-+
-+/**
-+ * FPGA Technology definitions
-+ */
-+#define ADI_AXI_FPGA_TECH_XILINX_UNKNOWN		0
-+#define ADI_AXI_FPGA_TECH_XILINS_SERIES7		1
-+#define ADI_AXI_FPGA_TECH_XILINX_ULTRASCALE		2
-+#define ADI_AXI_FPGA_TECH_XILINX_ULTRASCALE_PLUS	3
-+
-+#define ADI_AXI_FPGA_TECH_INTEL_UNKNOWN			100
-+#define ADI_AXI_FPGA_TECH_INTEL_CYCLONE_5		101
-+#define ADI_AXI_FPGA_TECH_INTEL_CYCLONE_10		102
-+#define ADI_AXI_FPGA_TECH_INTEL_ARRIA_10		103
-+#define ADI_AXI_FPGA_TECH_INTEL_STRATIX_10		104
-+
-+/**
-+ * FPGA Family definitions
-+ */
-+#define ADI_AXI_FPGA_FAMILY_UNKNOWN			0
-+
-+#define ADI_AXI_FPGA_FAMILY_XILINX_ARTIX		1
-+#define ADI_AXI_FPGA_FAMILY_XILINX_KINTEX		2
-+#define ADI_AXI_FPGA_FAMILY_XILINX_VIRTEX		3
-+#define ADI_AXI_FPGA_FAMILY_XILINX_ZYNQ			4
-+
-+#define ADI_AXI_FPGA_FAMILY_INTEL_SX			1
-+#define ADI_AXI_FPGA_FAMILY_INTEL_GX			2
-+#define ADI_AXI_FPGA_FAMILY_INTEL_GT			3
-+#define ADI_AXI_FPGA_FAMILY_INTEL_GZ			4
-+
-+/**
-+ * FPGA Speed-grade definitions
-+ */
-+#define ADI_AXI_FPGA_SPEED_GRADE_UNKNOWN		0
-+
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1		10
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1L		11
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1H		12
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1HV		13
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_1LV		14
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_2		20
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_2L		21
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_2LV		22
-+#define ADI_AXI_FPGA_SPEED_GRADE_XILINX_3		30
-+
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_1		1
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_2		2
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_3		3
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_4		4
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_5		5
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_6		6
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_7		7
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_8		8
-+#define ADI_AXI_FPGA_SPEED_GRADE_INTEL_9		9
-+
-+/**
-+ * FPGA Device Package definitions
-+ */
-+#define ADI_AXI_FPGA_DEV_PACKAGE_UNKNOWN		0
-+
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_RF		1
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FL		2
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FF		3
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FB		4
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_HC		5
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FH		6
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_CS		7
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_CP		8
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FT		9
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FG		10
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_SB		11
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_RB		12
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_RS		13
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_CL		14
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_SF		15
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_BA		16
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FA		17
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FS		18
-+#define ADI_AXI_FPGA_DEV_PACKAGE_XILINX_FI		19
-+
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_BGA		1
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_PGA		2
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_FBGA		3
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_HBGA		4
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_PDIP		5
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_EQFP		6
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_PLCC		7
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_PQFP		8
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_RQFP		9
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_TQFP		10
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_UBGA		11
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_UFBGA		12
-+#define ADI_AXI_FPGA_DEV_PACKAGE_INTEL_MBGA		13
-+
- #endif /* ADI_AXI_COMMON_H_ */
--- 
-2.17.1
+[..] axi_clkgen_zynqmp_default_limits = {
+};
 
+[..] axi_clkgen_default_limits = {
+};
+
+Set them based on what you read back, i.e. determine which fabric you
+are looking at *per clock gen* and use that info, rather than making a
+compile time decision to support only one of them.
+
+Generally speaking #ifdef $ARCH should be a last resort solution.
+>  
+>  static void axi_clkgen_calc_params(const struct axi_clkgen_limits *limits,
+>  	unsigned long fin, unsigned long fout,
+> -- 
+> 2.17.1
+> 
+
+Cheers,
+Moritz
