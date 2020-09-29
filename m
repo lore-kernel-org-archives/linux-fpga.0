@@ -7,53 +7,54 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B175C4741F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5124EC47425
 	for <linux-fpga@archiver.kernel.org>; Tue, 29 Sep 2020 14:40:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C974920756
+	by mail.kernel.org (Postfix) with ESMTP id 024282074B
 	for <linux-fpga@archiver.kernel.org>; Tue, 29 Sep 2020 14:40:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731520AbgI2Oki (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 29 Sep 2020 10:40:38 -0400
-Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:29348 "EHLO
+        id S1731547AbgI2Okk (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 29 Sep 2020 10:40:40 -0400
+Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:28068 "EHLO
         mx0a-00128a01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1730303AbgI2Okd (ORCPT
+        by vger.kernel.org with ESMTP id S1731495AbgI2Okd (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
         Tue, 29 Sep 2020 10:40:33 -0400
 Received: from pps.filterd (m0167089.ppops.net [127.0.0.1])
-        by mx0a-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 08TEbcgU004650;
-        Tue, 29 Sep 2020 10:40:25 -0400
+        by mx0a-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 08TEbSg9004450;
+        Tue, 29 Sep 2020 10:40:31 -0400
 Received: from nwd2mta4.analog.com ([137.71.173.58])
-        by mx0a-00128a01.pphosted.com with ESMTP id 33t2j4kehp-1
+        by mx0a-00128a01.pphosted.com with ESMTP id 33t2j4kej4-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 29 Sep 2020 10:40:25 -0400
-Received: from ASHBMBX9.ad.analog.com (ashbmbx9.ad.analog.com [10.64.17.10])
-        by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 08TEeOMs041994
+        Tue, 29 Sep 2020 10:40:31 -0400
+Received: from SCSQMBX11.ad.analog.com (scsqmbx11.ad.analog.com [10.77.17.10])
+        by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 08TEeTEr042008
         (version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=FAIL);
-        Tue, 29 Sep 2020 10:40:24 -0400
-Received: from ASHBCASHYB4.ad.analog.com (10.64.17.132) by
- ASHBMBX9.ad.analog.com (10.64.17.10) with Microsoft SMTP Server
+        Tue, 29 Sep 2020 10:40:29 -0400
+Received: from SCSQCASHYB6.ad.analog.com (10.77.17.132) by
+ SCSQMBX11.ad.analog.com (10.77.17.10) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1779.2; Tue, 29 Sep 2020 10:40:17 -0400
-Received: from ASHBMBX9.ad.analog.com (10.64.17.10) by
- ASHBCASHYB4.ad.analog.com (10.64.17.132) with Microsoft SMTP Server
+ 15.1.1779.2; Tue, 29 Sep 2020 07:40:21 -0700
+Received: from SCSQMBX10.ad.analog.com (10.77.17.5) by
+ SCSQCASHYB6.ad.analog.com (10.77.17.132) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1779.2; Tue, 29 Sep 2020 10:40:16 -0400
-Received: from zeus.spd.analog.com (10.66.68.11) by ASHBMBX9.ad.analog.com
- (10.64.17.10) with Microsoft SMTP Server id 15.1.1779.2 via Frontend
- Transport; Tue, 29 Sep 2020 10:40:16 -0400
+ 15.1.1779.2; Tue, 29 Sep 2020 07:40:16 -0700
+Received: from zeus.spd.analog.com (10.66.68.11) by SCSQMBX10.ad.analog.com
+ (10.77.17.5) with Microsoft SMTP Server id 15.1.1779.2 via Frontend
+ Transport; Tue, 29 Sep 2020 07:40:21 -0700
 Received: from localhost.localdomain ([10.48.65.12])
-        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 08TEdkc6028450;
-        Tue, 29 Sep 2020 10:40:19 -0400
+        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 08TEdkc8028450;
+        Tue, 29 Sep 2020 10:40:24 -0400
 From:   Alexandru Ardelean <alexandru.ardelean@analog.com>
 To:     <linux-clk@vger.kernel.org>, <linux-fpga@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
 CC:     <mturquette@baylibre.com>, <sboyd@kernel.org>, <mdf@kernel.org>,
-        <ardeleanalex@gmail.com>, Mathias Tausen <mta@gomspace.com>,
-        "Alexandru Ardelean" <alexandru.ardelean@analog.com>
-Subject: [PATCH v4 5/7] clk: axi-clkgen: Respect ZYNQMP PFD/VCO frequency limits
-Date:   Tue, 29 Sep 2020 17:44:15 +0300
-Message-ID: <20200929144417.89816-14-alexandru.ardelean@analog.com>
+        <ardeleanalex@gmail.com>,
+        Mircea Caprioru <mircea.caprioru@analog.com>,
+        Alexandru Ardelean <alexandru.ardelean@analog.com>
+Subject: [PATCH v4 7/7] clk: axi-clkgen: Add support for FPGA info
+Date:   Tue, 29 Sep 2020 17:44:17 +0300
+Message-ID: <20200929144417.89816-16-alexandru.ardelean@analog.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200929144417.89816-1-alexandru.ardelean@analog.com>
 References: <20200929144417.89816-1-alexandru.ardelean@analog.com>
@@ -64,50 +65,112 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
  definitions=2020-09-29_07:2020-09-29,2020-09-29 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
  suspectscore=0 priorityscore=1501 phishscore=0 spamscore=0 malwarescore=0
- bulkscore=0 clxscore=1015 mlxlogscore=743 mlxscore=0 adultscore=0
+ bulkscore=0 clxscore=1015 mlxlogscore=850 mlxscore=0 adultscore=0
  lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2006250000 definitions=main-2009290130
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Mathias Tausen <mta@gomspace.com>
+From: Mircea Caprioru <mircea.caprioru@analog.com>
 
-Since axi-clkgen is now supported on ZYNQMP, make sure the max/min
-frequencies of the PFD and VCO are respected.
+This patch adds support for vco maximum and minimum ranges in accordance
+with fpga speed grade, voltage, device package, technology and family. This
+new information is extracted from two new registers implemented in the ip
+core: ADI_REG_FPGA_INFO and ADI_REG_FPGA_VOLTAGE, which are stored in the
+'include/linux/fpga/adi-axi-common.h' file as they are common to all ADI
+FPGA cores.
 
-Signed-off-by: Mathias Tausen <mta@gomspace.com>
+Signed-off-by: Mircea Caprioru <mircea.caprioru@analog.com>
 Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
- drivers/clk/clk-axi-clkgen.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/clk/clk-axi-clkgen.c | 52 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 51 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/clk/clk-axi-clkgen.c b/drivers/clk/clk-axi-clkgen.c
-index 4342b7735590..2319bb1c5c08 100644
+index 2319bb1c5c08..46fd228b0733 100644
 --- a/drivers/clk/clk-axi-clkgen.c
 +++ b/drivers/clk/clk-axi-clkgen.c
-@@ -108,12 +108,21 @@ static uint32_t axi_clkgen_lookup_lock(unsigned int m)
- 	return 0x1f1f00fa;
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/platform_device.h>
+ #include <linux/clk-provider.h>
++#include <linux/fpga/adi-axi-common.h>
+ #include <linux/slab.h>
+ #include <linux/io.h>
+ #include <linux/of.h>
+@@ -242,6 +243,50 @@ static void axi_clkgen_read(struct axi_clkgen *axi_clkgen,
+ 	*val = readl(axi_clkgen->base + reg);
  }
  
-+#ifdef ARCH_ZYNQMP
-+static const struct axi_clkgen_limits axi_clkgen_default_limits = {
-+	.fpfd_min = 10000,
-+	.fpfd_max = 450000,
-+	.fvco_min = 800000,
-+	.fvco_max = 1600000,
-+};
-+#else
- static const struct axi_clkgen_limits axi_clkgen_default_limits = {
- 	.fpfd_min = 10000,
- 	.fpfd_max = 300000,
- 	.fvco_min = 600000,
- 	.fvco_max = 1200000,
- };
-+#endif
++static void axi_clkgen_setup_ranges(struct axi_clkgen *axi_clkgen)
++{
++	struct axi_clkgen_limits *limits = &axi_clkgen->limits;
++	unsigned int reg_value;
++	unsigned int tech, family, speed_grade, voltage;
++
++	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_FPGA_INFO, &reg_value);
++	tech = ADI_AXI_INFO_FPGA_TECH(reg_value);
++	family = ADI_AXI_INFO_FPGA_FAMILY(reg_value);
++	speed_grade = ADI_AXI_INFO_FPGA_SPEED_GRADE(reg_value);
++
++	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_FPGA_VOLTAGE, &reg_value);
++	voltage = ADI_AXI_INFO_FPGA_VOLTAGE(reg_value);
++
++	switch (speed_grade) {
++	case ADI_AXI_FPGA_SPEED_GRADE_XILINX_1 ... ADI_AXI_FPGA_SPEED_GRADE_XILINX_1LV:
++		limits->fvco_max = 1200000;
++		limits->fpfd_max = 450000;
++		break;
++	case ADI_AXI_FPGA_SPEED_GRADE_XILINX_2 ... ADI_AXI_FPGA_SPEED_GRADE_XILINX_2LV:
++		limits->fvco_max = 1440000;
++		limits->fpfd_max = 500000;
++		if ((family == ADI_AXI_FPGA_FAMILY_XILINX_KINTEX) |
++		    (family == ADI_AXI_FPGA_FAMILY_XILINX_ARTIX)) {
++			if (voltage < 950) {
++				limits->fvco_max = 1200000;
++				limits->fpfd_max = 450000;
++			}
++		}
++		break;
++	case ADI_AXI_FPGA_SPEED_GRADE_XILINX_3:
++		limits->fvco_max = 1600000;
++		limits->fpfd_max = 550000;
++		break;
++	default:
++		break;
++	};
++
++	if (tech == ADI_AXI_FPGA_TECH_XILINX_ULTRASCALE_PLUS) {
++		limits->fvco_max = 1600000;
++		limits->fvco_min = 800000;
++	}
++}
++
+ static int axi_clkgen_wait_non_busy(struct axi_clkgen *axi_clkgen)
+ {
+ 	unsigned int timeout = 10000;
+@@ -521,7 +566,7 @@ static int axi_clkgen_probe(struct platform_device *pdev)
+ 	const char *parent_names[2];
+ 	const char *clk_name;
+ 	struct resource *mem;
+-	unsigned int i;
++	unsigned int i, ver;
+ 	int ret;
  
- static void axi_clkgen_calc_params(const struct axi_clkgen_limits *limits,
- 	unsigned long fin, unsigned long fout,
+ 	if (!pdev->dev.of_node)
+@@ -553,6 +598,11 @@ static int axi_clkgen_probe(struct platform_device *pdev)
+ 	memcpy(&axi_clkgen->limits, &axi_clkgen_default_limits,
+ 	       sizeof(axi_clkgen->limits));
+ 
++	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_VERSION, &ver);
++
++	if (ADI_AXI_PCORE_VER_MAJOR(ver) > 0x04)
++		axi_clkgen_setup_ranges(axi_clkgen);
++
+ 	clk_name = pdev->dev.of_node->name;
+ 	of_property_read_string(pdev->dev.of_node, "clock-output-names",
+ 		&clk_name);
 -- 
 2.17.1
 
