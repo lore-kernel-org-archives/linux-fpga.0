@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24C48C46466
-	for <linux-fpga@archiver.kernel.org>; Fri,  2 Oct 2020 22:37:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DAE4C35257
+	for <linux-fpga@archiver.kernel.org>; Fri,  2 Oct 2020 22:37:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EAFDD20719
-	for <linux-fpga@archiver.kernel.org>; Fri,  2 Oct 2020 22:37:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5D3282074B
+	for <linux-fpga@archiver.kernel.org>; Fri,  2 Oct 2020 22:37:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725283AbgJBWhZ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 2 Oct 2020 18:37:25 -0400
-Received: from mga11.intel.com ([192.55.52.93]:19241 "EHLO mga11.intel.com"
+        id S1725613AbgJBWhc (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 2 Oct 2020 18:37:32 -0400
+Received: from mga11.intel.com ([192.55.52.93]:19252 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725768AbgJBWhP (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 2 Oct 2020 18:37:15 -0400
-IronPort-SDR: cWVCvf5K4TGTetxXZwoiP7692xsQVm3BDsxOxzK7WsmADpdBnJd37uUDdpqJL6dWZX0v8M2Yaz
- 6cUslckg/6Hw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9762"; a="160415304"
+        id S1725801AbgJBWhS (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 2 Oct 2020 18:37:18 -0400
+IronPort-SDR: p6oD+FGLyTv/wGK+VikCUt307zEhNw08LEcsb3He0JHgWdDFlq6WWnN6iWGbuyrwIVwmONRqkP
+ //PJkNYIb0ew==
+X-IronPort-AV: E=McAfee;i="6000,8403,9762"; a="160415306"
 X-IronPort-AV: E=Sophos;i="5.77,329,1596524400"; 
-   d="scan'208";a="160415304"
+   d="scan'208";a="160415306"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2020 15:37:15 -0700
-IronPort-SDR: Fz6TKp52mDl+jV+t3reNH8lekcxHD7TE8uVESNhJY8d2aTFjLhFYXZuo7GPYBRfPZz3podqqzZ
- 7VF4Pww18WKg==
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2020 15:37:16 -0700
+IronPort-SDR: CFJCV6SKSbF+uvKKdCHnOyvOXRlCgSUHvNk04eguwh6cYPi2HJ/OpZ0CQM6kMzOpVah3mzQVHg
+ G0bCYip12DQQ==
 X-IronPort-AV: E=Sophos;i="5.77,329,1596524400"; 
-   d="scan'208";a="510808808"
+   d="scan'208";a="510808835"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.254.5.53])
-  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2020 15:37:14 -0700
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2020 15:37:16 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v2 4/7] fpga: sec-mgr: expose sec-mgr update errors
-Date:   Fri,  2 Oct 2020 15:36:58 -0700
-Message-Id: <20201002223701.1317-5-russell.h.weight@intel.com>
+Subject: [PATCH v2 6/7] fpga: sec-mgr: enable cancel of secure update
+Date:   Fri,  2 Oct 2020 15:37:00 -0700
+Message-Id: <20201002223701.1317-7-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20201002223701.1317-1-russell.h.weight@intel.com>
 References: <20201002223701.1317-1-russell.h.weight@intel.com>
@@ -50,191 +50,171 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend Intel Security Manager class driver to include
-an update/error sysfs node that can be read for error
-information when a secure update fails.
+Extend the Intel Security Manager class driver to include
+an update/cancel sysfs file that can be written to request
+that an update be canceled. The write may return EBUSY if
+the update has progressed to the point that it cannot be
+canceled by software or ENODEV if there is no update in
+progress.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 ---
 v2:
   - Bumped documentation date and version
-  - Added warning to sec_progress() for invalid progress status
-  - Added sec_error() function (similar to sec_progress())
+  - Minor code cleanup per review comments 
 ---
- .../ABI/testing/sysfs-class-ifpga-sec-mgr     | 17 ++++
- drivers/fpga/ifpga-sec-mgr.c                  | 81 ++++++++++++++++---
+ .../ABI/testing/sysfs-class-ifpga-sec-mgr     | 10 ++++
+ drivers/fpga/ifpga-sec-mgr.c                  | 59 +++++++++++++++++--
  include/linux/fpga/ifpga-sec-mgr.h            |  1 +
- 3 files changed, 89 insertions(+), 10 deletions(-)
+ 3 files changed, 66 insertions(+), 4 deletions(-)
 
 diff --git a/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr b/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr
-index 73a5246fea1b..1f9f2c215e0c 100644
+index ec51135fcb6a..caafe7eb7670 100644
 --- a/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr
 +++ b/Documentation/ABI/testing/sysfs-class-ifpga-sec-mgr
-@@ -89,3 +89,20 @@ Description:	Read-only. Returns a string describing the current
- 		programming. Userspace code can poll on this file,
- 		as it will be signaled by sysfs_notify() on each
- 		state change.
-+
-+What: 		/sys/class/ifpga_sec_mgr/ifpga_secX/update/error
+@@ -79,6 +79,16 @@ Description:	Write only. Write the filename of an Intel image
+ 		and Root Entry Hashes, and to cancel Code Signing
+ 		Keys (CSK).
+ 
++What: 		/sys/class/ifpga_sec_mgr/ifpga_secX/update/cancel
 +Date:		Oct 2020
 +KernelVersion:  5.11
 +Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read-only. Returns a string describing the failure
-+		of a secure update. This string will be in the form
-+		of <STATUS>:<ERROR>, where <STATUS> will be one of
-+		the status strings described for the status sysfs
-+		file and <ERROR> will be one of the following:
-+		hw-error, timeout, user-abort, device-busy,
-+		invalid-file-size, read-write-error, flash-wearout,
-+		file-read-error.  The error sysfs file is only
-+		meaningful when the secure update engine is in the
-+		idle state. If this file is read while a secure
-+		update is in progress, then the read will fail with
-+		EBUSY.
++Description:	Write-only. Write a "1" to this file to request
++		that a current update be canceled. This request
++		will be rejected (EBUSY) if the programming phase
++		has already started or (ENODEV) if there is no
++		update in progress.
++
+ What: 		/sys/class/ifpga_sec_mgr/ifpga_secX/update/status
+ Date:		Oct 2020
+ KernelVersion:  5.11
 diff --git a/drivers/fpga/ifpga-sec-mgr.c b/drivers/fpga/ifpga-sec-mgr.c
-index ad918fb42dc2..456ea0b71e3d 100644
+index d8ac863c1159..6267ac3a0780 100644
 --- a/drivers/fpga/ifpga-sec-mgr.c
 +++ b/drivers/fpga/ifpga-sec-mgr.c
-@@ -146,10 +146,16 @@ static void update_progress(struct ifpga_sec_mgr *imgr,
- 	sysfs_notify(&imgr->dev.kobj, "update", "status");
- }
- 
-+static void set_error(struct ifpga_sec_mgr *imgr, enum ifpga_sec_err err_code)
-+{
-+	imgr->err_state = imgr->progress;
-+	imgr->err_code = err_code;
-+}
-+
- static void ifpga_sec_dev_error(struct ifpga_sec_mgr *imgr,
- 				enum ifpga_sec_err err_code)
- {
--	imgr->err_code = err_code;
-+	set_error(imgr, err_code);
+@@ -159,6 +159,23 @@ static void ifpga_sec_dev_error(struct ifpga_sec_mgr *imgr,
  	imgr->iops->cancel(imgr);
  }
  
-@@ -172,7 +178,7 @@ static void ifpga_sec_mgr_update(struct work_struct *work)
- 
- 	get_device(&imgr->dev);
- 	if (request_firmware(&fw, imgr->filename, &imgr->dev)) {
--		imgr->err_code = IFPGA_SEC_ERR_FILE_READ;
-+		set_error(imgr, IFPGA_SEC_ERR_FILE_READ);
- 		goto idle_exit;
- 	}
- 
-@@ -180,7 +186,7 @@ static void ifpga_sec_mgr_update(struct work_struct *work)
- 	imgr->remaining_size = fw->size;
- 
- 	if (!try_module_get(imgr->dev.parent->driver->owner)) {
--		imgr->err_code = IFPGA_SEC_ERR_BUSY;
-+		set_error(imgr, IFPGA_SEC_ERR_BUSY);
++static int progress_transition(struct ifpga_sec_mgr *imgr,
++			       enum ifpga_sec_prog new_progress)
++{
++	int ret = 0;
++
++	mutex_lock(&imgr->lock);
++	if (imgr->request_cancel) {
++		set_error(imgr, IFPGA_SEC_ERR_CANCELED);
++		imgr->iops->cancel(imgr);
++		ret = -ECANCELED;
++	} else {
++		update_progress(imgr, new_progress);
++	}
++	mutex_unlock(&imgr->lock);
++	return ret;
++}
++
+ static void progress_complete(struct ifpga_sec_mgr *imgr)
+ {
+ 	mutex_lock(&imgr->lock);
+@@ -190,16 +207,20 @@ static void ifpga_sec_mgr_update(struct work_struct *work)
  		goto release_fw_exit;
  	}
  
-@@ -274,22 +280,76 @@ static const char * const sec_mgr_prog_str[] = {
- 	"programming"		/* IFPGA_SEC_PROG_PROGRAMMING */
- };
+-	update_progress(imgr, IFPGA_SEC_PROG_PREPARING);
++	if (progress_transition(imgr, IFPGA_SEC_PROG_PREPARING))
++		goto modput_exit;
++
+ 	ret = imgr->iops->prepare(imgr);
+ 	if (ret) {
+ 		ifpga_sec_dev_error(imgr, ret);
+ 		goto modput_exit;
+ 	}
  
--static ssize_t
--status_show(struct device *dev, struct device_attribute *attr, char *buf)
-+static const char * const sec_mgr_err_str[] = {
-+	"none",			/* IFPGA_SEC_ERR_NONE */
-+	"hw-error",		/* IFPGA_SEC_ERR_HW_ERROR */
-+	"timeout",		/* IFPGA_SEC_ERR_TIMEOUT */
-+	"user-abort",		/* IFPGA_SEC_ERR_CANCELED */
-+	"device-busy",		/* IFPGA_SEC_ERR_BUSY */
-+	"invalid-file-size",	/* IFPGA_SEC_ERR_INVALID_SIZE */
-+	"read-write-error",	/* IFPGA_SEC_ERR_RW_ERROR */
-+	"flash-wearout",	/* IFPGA_SEC_ERR_WEAROUT */
-+	"file-read-error"	/* IFPGA_SEC_ERR_FILE_READ */
-+};
+-	update_progress(imgr, IFPGA_SEC_PROG_WRITING);
++	if (progress_transition(imgr, IFPGA_SEC_PROG_WRITING))
++		goto done;
 +
-+static const char *sec_progress(struct device *dev, enum ifpga_sec_prog prog)
- {
--	struct ifpga_sec_mgr *imgr = to_sec_mgr(dev);
- 	const char *status = "unknown-status";
+ 	size = imgr->remaining_size;
+-	while (size) {
++	while (size && !imgr->request_cancel) {
+ 		blk_size = min_t(u32, size, WRITE_BLOCK_SIZE);
+ 		size -= blk_size;
+ 		ret = imgr->iops->write_blk(imgr, offset, blk_size);
+@@ -212,7 +233,9 @@ static void ifpga_sec_mgr_update(struct work_struct *work)
+ 		offset += blk_size;
+ 	}
  
--	if (imgr->progress < IFPGA_SEC_PROG_MAX)
--		status = sec_mgr_prog_str[imgr->progress];
-+	if (prog < IFPGA_SEC_PROG_MAX)
-+		status = sec_mgr_prog_str[prog];
- 	else
- 		dev_warn(dev, "Invalid status during secure update: %d\n",
--			 imgr->progress);
-+			 prog);
+-	update_progress(imgr, IFPGA_SEC_PROG_PROGRAMMING);
++	if (progress_transition(imgr, IFPGA_SEC_PROG_PROGRAMMING))
++		goto done;
 +
-+	return status;
-+}
-+
-+static const char *sec_error(struct device *dev, enum ifpga_sec_err err_code)
-+{
-+	const char *error = "unknown-error";
-+
-+	if (err_code < IFPGA_SEC_ERR_MAX)
-+		error = sec_mgr_err_str[err_code];
-+	else
-+		dev_warn(dev, "Invalid error code during secure update: %d\n",
-+			 err_code);
-+
-+	return error;
-+}
-+
-+static ssize_t
-+status_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct ifpga_sec_mgr *imgr = to_sec_mgr(dev);
+ 	ret = imgr->iops->poll_complete(imgr);
+ 	if (ret) {
+ 		ifpga_sec_dev_error(imgr, ret);
+@@ -381,6 +404,7 @@ static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
+ 	}
  
--	return sprintf(buf, "%s\n", status);
-+	return sprintf(buf, "%s\n", sec_progress(dev, imgr->progress));
+ 	imgr->err_code = IFPGA_SEC_ERR_NONE;
++	imgr->request_cancel = false;
+ 	imgr->progress = IFPGA_SEC_PROG_READING;
+ 	reinit_completion(&imgr->update_done);
+ 	schedule_work(&imgr->work);
+@@ -391,8 +415,32 @@ static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
  }
- static DEVICE_ATTR_RO(status);
+ static DEVICE_ATTR_WO(filename);
  
-+static ssize_t
-+error_show(struct device *dev, struct device_attribute *attr, char *buf)
++static ssize_t cancel_store(struct device *dev, struct device_attribute *attr,
++			    const char *buf, size_t count)
 +{
 +	struct ifpga_sec_mgr *imgr = to_sec_mgr(dev);
-+	int ret;
++	bool cancel;
++	int ret = count;
++
++	if (kstrtobool(buf, &cancel) || !cancel)
++		return -EINVAL;
 +
 +	mutex_lock(&imgr->lock);
-+
-+	if (imgr->progress != IFPGA_SEC_PROG_IDLE)
++	if (imgr->progress == IFPGA_SEC_PROG_PROGRAMMING)
 +		ret = -EBUSY;
-+	else if (!imgr->err_code)
-+		ret = 0;
++	else if (imgr->progress == IFPGA_SEC_PROG_IDLE)
++		ret = -ENODEV;
 +	else
-+		ret = sprintf(buf, "%s:%s\n",
-+			      sec_progress(dev, imgr->err_state),
-+			      sec_error(dev, imgr->err_code));
-+
++		imgr->request_cancel = true;
 +	mutex_unlock(&imgr->lock);
 +
 +	return ret;
 +}
-+static DEVICE_ATTR_RO(error);
++static DEVICE_ATTR_WO(cancel);
 +
- static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
- 			      const char *buf, size_t count)
- {
-@@ -325,6 +385,7 @@ static DEVICE_ATTR_WO(filename);
  static struct attribute *sec_mgr_update_attrs[] = {
  	&dev_attr_filename.attr,
++	&dev_attr_cancel.attr,
  	&dev_attr_status.attr,
-+	&dev_attr_error.attr,
- 	NULL,
- };
+ 	&dev_attr_error.attr,
+ 	&dev_attr_remaining_size.attr,
+@@ -653,6 +701,9 @@ void ifpga_sec_mgr_unregister(struct ifpga_sec_mgr *imgr)
+ 		goto unregister;
+ 	}
+ 
++	if (imgr->progress != IFPGA_SEC_PROG_PROGRAMMING)
++		imgr->request_cancel = true;
++
+ 	mutex_unlock(&imgr->lock);
+ 	wait_for_completion(&imgr->update_done);
  
 diff --git a/include/linux/fpga/ifpga-sec-mgr.h b/include/linux/fpga/ifpga-sec-mgr.h
-index 27008abd8e75..246e3d452c59 100644
+index 246e3d452c59..890be0800b05 100644
 --- a/include/linux/fpga/ifpga-sec-mgr.h
 +++ b/include/linux/fpga/ifpga-sec-mgr.h
-@@ -110,6 +110,7 @@ struct ifpga_sec_mgr {
- 	const u8 *data;			/* pointer to update data */
- 	u32 remaining_size;		/* size remaining to transfer */
+@@ -112,6 +112,7 @@ struct ifpga_sec_mgr {
  	enum ifpga_sec_prog progress;
-+	enum ifpga_sec_prog err_state;	/* progress state at time of failure */
+ 	enum ifpga_sec_prog err_state;	/* progress state at time of failure */
  	enum ifpga_sec_err err_code;	/* security manager error code */
++	bool request_cancel;
  	bool driver_unload;
  	void *priv;
+ };
 -- 
 2.17.1
 
