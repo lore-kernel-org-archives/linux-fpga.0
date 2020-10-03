@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADEF8C35257
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0ECAC47095
 	for <linux-fpga@archiver.kernel.org>; Sat,  3 Oct 2020 01:24:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 76EB92177B
+	by mail.kernel.org (Postfix) with ESMTP id 98BBD206FA
 	for <linux-fpga@archiver.kernel.org>; Sat,  3 Oct 2020 01:24:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725803AbgJCBY3 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        id S1725813AbgJCBY3 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
         Fri, 2 Oct 2020 21:24:29 -0400
-Received: from mga14.intel.com ([192.55.52.115]:5544 "EHLO mga14.intel.com"
+Received: from mga14.intel.com ([192.55.52.115]:5543 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725765AbgJCBYV (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S1725536AbgJCBYV (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
         Fri, 2 Oct 2020 21:24:21 -0400
-IronPort-SDR: stjaRaO019o7nIJbhuBdA30EMGROofH1ScNcaZi8l+P7GUz5UbUkASZxXo3fKnHkmBIDVu5Hle
- ViiBPWlPTSew==
-X-IronPort-AV: E=McAfee;i="6000,8403,9762"; a="162363111"
+IronPort-SDR: oJ6K9GMr9+Sw6oFJrjFBspQ7tkrmvnh3XgcyOUN8JxEQOXSohNr33bf9gnpbrDm7gHJCkOQsNd
+ ENWoEkmIawFA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9762"; a="162363109"
 X-IronPort-AV: E=Sophos;i="5.77,329,1596524400"; 
-   d="scan'208";a="162363111"
+   d="scan'208";a="162363109"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2020 18:24:21 -0700
-IronPort-SDR: W2X7FUpRtsZXHUAm/M94VlV5addCwN/AR4xQ3Mv+0qaDvwXOwlzFQDpoSIsDqgJnqHUI/KTaPQ
- uamKmdQUvXEw==
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2020 18:24:20 -0700
+IronPort-SDR: C4UkmbtByggALfSI66COSHvl/FWhenHPdlCi5lZOiqrZIdGEZFTOug2Zt8qD2HdA3zu/FHDcI8
+ WIStJDwias+Q==
 X-IronPort-AV: E=Sophos;i="5.77,329,1596524400"; 
-   d="scan'208";a="516097870"
+   d="scan'208";a="516097867"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.254.5.53])
-  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2020 18:24:20 -0700
+  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2020 18:24:19 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, lee.jones@linaro.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v2 5/6] fpga: m10bmc-sec: add max10 secure update functions
-Date:   Fri,  2 Oct 2020 18:24:11 -0700
-Message-Id: <20201003012412.16831-6-russell.h.weight@intel.com>
+Subject: [PATCH v2 4/6] fpga: m10bmc-sec: expose max10 canceled keys in sysfs
+Date:   Fri,  2 Oct 2020 18:24:10 -0700
+Message-Id: <20201003012412.16831-5-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20201003012412.16831-1-russell.h.weight@intel.com>
 References: <20201003012412.16831-1-russell.h.weight@intel.com>
@@ -50,338 +50,111 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend the MAX10 BMC Security Engine driver to include
-the functions that enable secure updates of BMC images,
-FPGA images, etc.
+Extend the MAX10 BMC Security Engine driver to provide a
+handler to expose the canceled code signing key (CSK) bit
+vectors in sysfs. These use the standard bitmap list format
+(e.g. 1,2-6,9).
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 ---
 v2:
-  - Reworked the rsu_start_done() function to make it more readable
-  - Reworked while-loop condition/content in rsu_prog_ready()
-  - Minor code cleanup per review comments
-  - Added a comment to the m10bmc_sec_poll_complete() function to
-    explain the context (could take 30+ minutes to complete).
+  - Replaced small function-creation macros for explicit function
+    declarations.
+  - Fixed get_csk_vector() function to properly apply the stride
+    variable in calls to m10bmc_raw_bulk_read()
   - Added m10bmc_ prefix to functions in m10bmc_iops structure
-  - Moved MAX10 BMC address and function definitions to a separate
-    patch.
 ---
- drivers/fpga/intel-m10-bmc-secure.c | 298 ++++++++++++++++++++++++++++
- 1 file changed, 298 insertions(+)
+ drivers/fpga/intel-m10-bmc-secure.c | 72 +++++++++++++++++++++++++++++
+ 1 file changed, 72 insertions(+)
 
 diff --git a/drivers/fpga/intel-m10-bmc-secure.c b/drivers/fpga/intel-m10-bmc-secure.c
-index 5bb45499b332..a9617c5b3845 100644
+index da61cfda3c50..5bb45499b332 100644
 --- a/drivers/fpga/intel-m10-bmc-secure.c
 +++ b/drivers/fpga/intel-m10-bmc-secure.c
-@@ -201,6 +201,300 @@ static int m10bmc_pr_canceled_csks(struct ifpga_sec_mgr *imgr,
- 			      csk_map, nbits);
+@@ -135,14 +135,86 @@ static int m10bmc_user_flash_count(struct ifpga_sec_mgr *imgr)
+ 	return ret;
  }
  
-+static void log_error_regs(struct m10bmc_sec *sec, u32 doorbell)
++#define CSK_BIT_LEN			128U
++#define CSK_32ARRAY_SIZE(_nbits)	DIV_ROUND_UP(_nbits, 32)
++
++static int m10bmc_csk_cancel_nbits(struct ifpga_sec_mgr *imgr)
 +{
-+	u32 auth_result;
-+
-+	dev_err(sec->dev, "RSU error status: 0x%08x\n", doorbell);
-+
-+	if (!m10bmc_sys_read(sec->m10bmc, M10BMC_AUTH_RESULT, &auth_result))
-+		dev_err(sec->dev, "RSU auth result: 0x%08x\n", auth_result);
++	return (int)CSK_BIT_LEN;
 +}
 +
-+static enum ifpga_sec_err rsu_check_idle(struct m10bmc_sec *sec)
++static int get_csk_vector(struct ifpga_sec_mgr *imgr, u32 addr,
++			  unsigned long *csk_map, unsigned int nbits)
 +{
-+	u32 doorbell;
-+	int ret;
-+
-+	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	if (ret)
-+		return IFPGA_SEC_ERR_RW_ERROR;
-+
-+	if (rsu_prog(doorbell) != RSU_PROG_IDLE &&
-+	    rsu_prog(doorbell) != RSU_PROG_RSU_DONE) {
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_BUSY;
-+	}
-+
-+	return IFPGA_SEC_ERR_NONE;
-+}
-+
-+static inline bool rsu_start_done(u32 doorbell)
-+{
-+	u32 status, progress;
-+
-+	if (doorbell & DRBL_RSU_REQUEST)
-+		return false;
-+
-+	status = rsu_stat(doorbell);
-+	if (status == RSU_STAT_ERASE_FAIL || status == RSU_STAT_WEAROUT)
-+		return true;
-+
-+	progress = rsu_prog(doorbell);
-+	if (progress != RSU_PROG_IDLE && progress != RSU_PROG_RSU_DONE)
-+		return true;
-+
-+	return false;
-+}
-+
-+static enum ifpga_sec_err rsu_update_init(struct m10bmc_sec *sec)
-+{
-+	u32 doorbell, status;
-+	int ret;
-+
-+	ret = m10bmc_sys_update_bits(sec->m10bmc, M10BMC_DOORBELL,
-+				     DRBL_RSU_REQUEST | DRBL_HOST_STATUS,
-+				     DRBL_RSU_REQUEST |
-+				     FIELD_PREP(DRBL_HOST_STATUS,
-+						HOST_STATUS_IDLE));
-+	if (ret)
-+		return IFPGA_SEC_ERR_RW_ERROR;
-+
-+	ret = regmap_read_poll_timeout(sec->m10bmc->regmap,
-+				       M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				       doorbell,
-+				       rsu_start_done(doorbell),
-+				       NIOS_HANDSHAKE_INTERVAL_US,
-+				       NIOS_HANDSHAKE_TIMEOUT_US);
-+
-+	if (ret == -ETIMEDOUT) {
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_TIMEOUT;
-+	} else if (ret) {
-+		return IFPGA_SEC_ERR_RW_ERROR;
-+	}
-+
-+	status = rsu_stat(doorbell);
-+	if (status == RSU_STAT_WEAROUT) {
-+		dev_warn(sec->dev, "Excessive flash update count detected\n");
-+		return IFPGA_SEC_ERR_WEAROUT;
-+	} else if (status == RSU_STAT_ERASE_FAIL) {
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_HW_ERROR;
-+	}
-+
-+	return IFPGA_SEC_ERR_NONE;
-+}
-+
-+static enum ifpga_sec_err rsu_prog_ready(struct m10bmc_sec *sec)
-+{
-+	unsigned long poll_timeout;
-+	u32 doorbell, progress;
-+	int ret;
-+
-+	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	if (ret)
-+		return IFPGA_SEC_ERR_RW_ERROR;
-+
-+	poll_timeout = jiffies + msecs_to_jiffies(RSU_PREP_TIMEOUT_MS);
-+	while (rsu_prog(doorbell) == RSU_PROG_PREPARE) {
-+		msleep(RSU_PREP_INTERVAL_MS);
-+		if (time_after(jiffies, poll_timeout))
-+			break;
-+
-+		ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+		if (ret)
-+			return IFPGA_SEC_ERR_RW_ERROR;
-+	}
-+
-+	progress = rsu_prog(doorbell);
-+	if (progress == RSU_PROG_PREPARE) {
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_TIMEOUT;
-+	} else if (progress != RSU_PROG_READY) {
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_HW_ERROR;
-+	}
-+
-+	return IFPGA_SEC_ERR_NONE;
-+}
-+
-+static enum ifpga_sec_err rsu_send_data(struct m10bmc_sec *sec)
-+{
-+	u32 doorbell;
-+	int ret;
-+
-+	ret = m10bmc_sys_update_bits(sec->m10bmc, M10BMC_DOORBELL,
-+				     DRBL_HOST_STATUS,
-+				     FIELD_PREP(DRBL_HOST_STATUS,
-+						HOST_STATUS_WRITE_DONE));
-+	if (ret)
-+		return IFPGA_SEC_ERR_RW_ERROR;
-+
-+	ret = regmap_read_poll_timeout(sec->m10bmc->regmap,
-+				       M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				       doorbell,
-+				       rsu_prog(doorbell) != RSU_PROG_READY,
-+				       NIOS_HANDSHAKE_INTERVAL_US,
-+				       NIOS_HANDSHAKE_TIMEOUT_US);
-+
-+	if (ret == -ETIMEDOUT) {
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_TIMEOUT;
-+	} else if (ret) {
-+		return IFPGA_SEC_ERR_RW_ERROR;
-+	}
-+
-+	switch (rsu_stat(doorbell)) {
-+	case RSU_STAT_NORMAL:
-+	case RSU_STAT_NIOS_OK:
-+	case RSU_STAT_USER_OK:
-+	case RSU_STAT_FACTORY_OK:
-+		break;
-+	default:
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_HW_ERROR;
-+	}
-+
-+	return IFPGA_SEC_ERR_NONE;
-+}
-+
-+static int rsu_check_complete(struct m10bmc_sec *sec, u32 *doorbell)
-+{
-+	if (m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, doorbell))
-+		return -EIO;
-+
-+	switch (rsu_stat(*doorbell)) {
-+	case RSU_STAT_NORMAL:
-+	case RSU_STAT_NIOS_OK:
-+	case RSU_STAT_USER_OK:
-+	case RSU_STAT_FACTORY_OK:
-+	case RSU_STAT_WEAROUT:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	switch (rsu_prog(*doorbell)) {
-+	case RSU_PROG_IDLE:
-+	case RSU_PROG_RSU_DONE:
-+		return 0;
-+	case RSU_PROG_AUTHENTICATING:
-+	case RSU_PROG_COPYING:
-+	case RSU_PROG_UPDATE_CANCEL:
-+	case RSU_PROG_PROGRAM_KEY_HASH:
-+		return -EAGAIN;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static enum ifpga_sec_err m10bmc_sec_prepare(struct ifpga_sec_mgr *imgr)
-+{
++	unsigned int i, size, arr_size = CSK_32ARRAY_SIZE(nbits);
 +	struct m10bmc_sec *sec = imgr->priv;
-+	enum ifpga_sec_err ret;
-+
-+	if (imgr->remaining_size > M10BMC_STAGING_SIZE)
-+		return IFPGA_SEC_ERR_INVALID_SIZE;
-+
-+	ret = rsu_check_idle(sec);
-+	if (ret)
-+		return ret;
-+
-+	ret = rsu_update_init(sec);
-+	if (ret)
-+		return ret;
-+
-+	return rsu_prog_ready(sec);
-+}
-+
-+static enum ifpga_sec_err
-+m10bmc_sec_write_blk(struct ifpga_sec_mgr *imgr, u32 offset, u32 size)
-+{
-+	struct m10bmc_sec *sec = imgr->priv;
-+	unsigned int stride = regmap_get_reg_stride(sec->m10bmc->regmap);
-+	u32 doorbell;
++	unsigned int stride;
++	u32 *csk32;
 +	int ret;
 +
-+	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
++	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
++	size = arr_size * sizeof(u32);
++	csk32 = vmalloc(size);
++	if (!csk32)
++		return -ENOMEM;
++
++	ret = m10bmc_raw_bulk_read(sec->m10bmc, addr, csk32, size / stride);
 +	if (ret) {
-+		return IFPGA_SEC_ERR_RW_ERROR;
-+	} else if (rsu_prog(doorbell) != RSU_PROG_READY) {
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_HW_ERROR;
++		dev_err(sec->dev, "%s failed to read %d\n", __func__, ret);
++		goto vfree_exit;
 +	}
 +
-+	ret = m10bmc_raw_bulk_write(sec->m10bmc, M10BMC_STAGING_BASE + offset,
-+				    (void *)imgr->data + offset, size / stride);
++	for (i = 0; i < arr_size; i++)
++		csk32[i] = le32_to_cpu(csk32[i]);
 +
-+	return ret ? IFPGA_SEC_ERR_RW_ERROR : IFPGA_SEC_ERR_NONE;
++	bitmap_from_arr32(csk_map, csk32, nbits);
++	bitmap_complement(csk_map, csk_map, nbits);
++
++vfree_exit:
++	vfree(csk32);
++	return ret;
 +}
 +
-+/*
-+ * m10bmc_sec_poll_complete() is called after handing things off to
-+ * the BMC firmware. Depending on the type of update, it could be
-+ * 30+ minutes before the BMC firmware completes the update. The
-+ * imgr->driver_unload check allows the driver to be unloaded,
-+ * but the BMC firmware will continue the update and no further
-+ * secure updates can be started for this device until the update
-+ * is complete.
-+ */
-+static enum ifpga_sec_err m10bmc_sec_poll_complete(struct ifpga_sec_mgr *imgr)
++#define CSK_VEC_OFFSET 0x34
++
++static int m10bmc_bmc_canceled_csks(struct ifpga_sec_mgr *imgr,
++				    unsigned long *csk_map,
++				    unsigned int nbits)
 +{
-+	struct m10bmc_sec *sec = imgr->priv;
-+	unsigned long poll_timeout;
-+	enum ifpga_sec_err result;
-+	u32 doorbell;
-+	int ret;
-+
-+	result = rsu_send_data(sec);
-+	if (result)
-+		return result;
-+
-+	ret = rsu_check_complete(sec, &doorbell);
-+	poll_timeout = jiffies + msecs_to_jiffies(RSU_COMPLETE_TIMEOUT_MS);
-+
-+	while (ret == -EAGAIN && !time_after(jiffies, poll_timeout)) {
-+		msleep(RSU_COMPLETE_INTERVAL_MS);
-+		ret = rsu_check_complete(sec, &doorbell);
-+		if (imgr->driver_unload)
-+			return IFPGA_SEC_ERR_CANCELED;
-+	}
-+
-+	if (ret == -EAGAIN) {
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_TIMEOUT;
-+	} else if (ret == -EIO) {
-+		return IFPGA_SEC_ERR_RW_ERROR;
-+	} else if (ret) {
-+		log_error_regs(sec, doorbell);
-+		return IFPGA_SEC_ERR_HW_ERROR;
-+	}
-+
-+	return IFPGA_SEC_ERR_NONE;
++	return get_csk_vector(imgr, BMC_PROG_ADDR + CSK_VEC_OFFSET,
++			      csk_map, nbits);
 +}
 +
-+static enum ifpga_sec_err m10bmc_sec_cancel(struct ifpga_sec_mgr *imgr)
++static int m10bmc_sr_canceled_csks(struct ifpga_sec_mgr *imgr,
++				   unsigned long *csk_map,
++				   unsigned int nbits)
 +{
-+	struct m10bmc_sec *sec = imgr->priv;
-+	u32 doorbell;
-+	int ret;
++	return get_csk_vector(imgr, SR_PROG_ADDR + CSK_VEC_OFFSET,
++			      csk_map, nbits);
++}
 +
-+	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	if (ret)
-+		return IFPGA_SEC_ERR_RW_ERROR;
-+
-+	if (rsu_prog(doorbell) != RSU_PROG_READY)
-+		return IFPGA_SEC_ERR_BUSY;
-+
-+	ret = m10bmc_sys_update_bits(sec->m10bmc, M10BMC_DOORBELL,
-+				     DRBL_HOST_STATUS,
-+				     FIELD_PREP(DRBL_HOST_STATUS,
-+						HOST_STATUS_ABORT_RSU));
-+
-+	return ret ? IFPGA_SEC_ERR_RW_ERROR : IFPGA_SEC_ERR_NONE;
++static int m10bmc_pr_canceled_csks(struct ifpga_sec_mgr *imgr,
++				   unsigned long *csk_map,
++				   unsigned int nbits)
++{
++	return get_csk_vector(imgr, PR_PROG_ADDR + CSK_VEC_OFFSET,
++			      csk_map, nbits);
 +}
 +
  static const struct ifpga_sec_mgr_ops m10bmc_iops = {
  	.user_flash_count = m10bmc_user_flash_count,
  	.bmc_root_entry_hash = m10bmc_bmc_root_entry_hash,
-@@ -215,6 +509,10 @@ static const struct ifpga_sec_mgr_ops m10bmc_iops = {
- 	.bmc_canceled_csk_nbits = m10bmc_csk_cancel_nbits,
- 	.sr_canceled_csk_nbits = m10bmc_csk_cancel_nbits,
- 	.pr_canceled_csk_nbits = m10bmc_csk_cancel_nbits,
-+	.prepare = m10bmc_sec_prepare,
-+	.write_blk = m10bmc_sec_write_blk,
-+	.poll_complete = m10bmc_sec_poll_complete,
-+	.cancel = m10bmc_sec_cancel,
+ 	.sr_root_entry_hash = m10bmc_sr_root_entry_hash,
+ 	.pr_root_entry_hash = m10bmc_pr_root_entry_hash,
++	.bmc_canceled_csks = m10bmc_bmc_canceled_csks,
++	.sr_canceled_csks = m10bmc_sr_canceled_csks,
++	.pr_canceled_csks = m10bmc_pr_canceled_csks,
+ 	.bmc_reh_size = m10bmc_bmc_reh_size,
+ 	.sr_reh_size = m10bmc_sr_reh_size,
+ 	.pr_reh_size = m10bmc_pr_reh_size,
++	.bmc_canceled_csk_nbits = m10bmc_csk_cancel_nbits,
++	.sr_canceled_csk_nbits = m10bmc_csk_cancel_nbits,
++	.pr_canceled_csk_nbits = m10bmc_csk_cancel_nbits,
  };
  
  static int m10bmc_secure_probe(struct platform_device *pdev)
