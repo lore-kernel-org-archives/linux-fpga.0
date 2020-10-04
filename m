@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF4A1C4727F
-	for <linux-fpga@archiver.kernel.org>; Sun,  4 Oct 2020 05:15:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FA9BC47420
+	for <linux-fpga@archiver.kernel.org>; Sun,  4 Oct 2020 05:15:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9FB372073A
-	for <linux-fpga@archiver.kernel.org>; Sun,  4 Oct 2020 05:15:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F1D332073A
+	for <linux-fpga@archiver.kernel.org>; Sun,  4 Oct 2020 05:15:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1601788517;
-	bh=W8Vr94+ee+6VVxayjjDcN3o7Roa5nfrrBRRzKIdvhKc=;
+	s=default; t=1601788519;
+	bh=KNZF82YpQ1bErA9WZh2Moah8leIuU9WDY2Uu9rFFWQo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=KRjm4ziwb+m+Y2LvD6ukqHSCn0QnCWnmRIkh6cPYTnxcFjxIs1LEATzBtp2R2QPug
-	 mqgN/Sgucn3XFT84z0eIWXYWuVqKyYflmKtV4sPYwVaJo/MkHrK1urheUCfpFdQ5wl
-	 NeuDC6lfReIaZZkso3PTjeSZOvqE/g3OMzJarZhI=
+	b=Os45Jn25R/l8DqdAKzFAYkb8GbKO8fsEwoeKoOJgIVeOk81Z47nZiMEFtbXtQPTpc
+	 gRfuHbR3ReYotwPlE53hm7Le/d19lXddkjRHyc6hs4UNRNOcfw1emyHn2CYKXeG8ZC
+	 3sLV0/zzpwE+94BLukwo2QAi11zgmC/BoQoqjOrg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725849AbgJDFPH (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 4 Oct 2020 01:15:07 -0400
-Received: from mail-pg1-f194.google.com ([209.85.215.194]:33144 "EHLO
+        id S1725909AbgJDFPS (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 4 Oct 2020 01:15:18 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:40890 "EHLO
         mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725857AbgJDFPA (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 4 Oct 2020 01:15:00 -0400
-Received: by mail-pg1-f194.google.com with SMTP id o25so3629311pgm.0;
-        Sat, 03 Oct 2020 22:15:00 -0700 (PDT)
+        with ESMTP id S1725866AbgJDFOz (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sun, 4 Oct 2020 01:14:55 -0400
+Received: by mail-pg1-f194.google.com with SMTP id q18so3611789pgk.7;
+        Sat, 03 Oct 2020 22:14:55 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=KEIkOfJmCkr+mhT8bgXa4RUyoZrWLuARarkprMlR8hc=;
-        b=OzyP89KzGNiBMLR3F+3dCT7FyS+OwNtCiVu+9jMaLZg5yUROePP+fc/2nR6SlFwQ5n
-         b6XtfjpFv55EGkWdMN3EA5JPN23zHZIiZ7as5ZUjrPf7UYRcwVMJv0FR6X+CTuarRVbd
-         IbUQuXUFgV1/dNnc/16PSanT0hlcBFwoiviOjaTsOzqw2iS3OxNVYhOyUsOuDRLoGhZQ
-         gUCxZ5Ntv8qcfdfs3h1ilGcnVVn1rvdEZST0npugvcp/sFrejV8BmGy4/Ee6rWtQHD94
-         ad/OpS9UJQ7IHtat1E6Fga82w4PzBAqqyXsCCLCUA0T+4Kpkeh6AbOyiLc5DXLAe2D8T
-         ZRYw==
-X-Gm-Message-State: AOAM532gSo/BM8ViewjwC210iDSy5TFrjVKArJ1ToQkUoVDNsSQgn8aw
-        jYbF3m7Y9SOJhNJdeZwmuvdOUdK8KPs=
-X-Google-Smtp-Source: ABdhPJxBFvc18Vo2CntFUWWe0qTHBP6EsWSvDe3RC70HKzn/p+q5e49ivi4n+Rtv76OD8E2enCUyiQ==
-X-Received: by 2002:a62:2581:0:b029:13f:ba38:b113 with SMTP id l123-20020a6225810000b029013fba38b113mr10296040pfl.15.1601788499350;
-        Sat, 03 Oct 2020 22:14:59 -0700 (PDT)
+        bh=YHhb/VGZB3JzU7sTnLssu5Jr3MlGXPj+7Lz+7APODO4=;
+        b=meaQnoxrohptcmHNyUC8uTsOZmmx0jHlD2E7BEQMOc31qJmv/v9g9pJeYxwUzBv2xa
+         lcfboU6Qpw6x9n85MWpzdIF5lE+8McaRJwH/uVSP4IgMeVMM2Z37hbZ26nseX46o4vSE
+         4Qsd+i0f64+BVZPfblCxRf/RxsoMMbuf3H7TblM8ZTr9twBdB8XAhs4yfcR7HVcMpPab
+         GOefpgEV4o0JHhjrfxX+6VmSLSFsiBs4ipWqyc4nfTISdzkWRrkaYQn1NtKV9QHzKTlk
+         v/ct4jUti+nVtF68/kVkOzC6w619K8cHPEX2V+rRNsajs5jdin0e9iMw+IM5YjysHfQG
+         vqAw==
+X-Gm-Message-State: AOAM532AuTOUWE9gjAxDcaIZRybfe8HgDZfuv+AhlYjoUTHD+Q0piHWM
+        +iqW6phmIEhavESvoYPD3PLolkCTwuw=
+X-Google-Smtp-Source: ABdhPJypO3sAzA2yTYLx70pX8unTTAwZWlujyB1hECE+9ksvS4oO4ztuZCuq9g4bz+o+Q+Ekpx0doQ==
+X-Received: by 2002:a62:2b8d:0:b029:151:d7b8:ad58 with SMTP id r135-20020a622b8d0000b0290151d7b8ad58mr10508110pfr.51.1601788494519;
+        Sat, 03 Oct 2020 22:14:54 -0700 (PDT)
 Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
-        by smtp.gmail.com with ESMTPSA id q15sm6177964pjp.26.2020.10.03.22.14.58
+        by smtp.gmail.com with ESMTPSA id b16sm6189565pgj.77.2020.10.03.22.14.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 03 Oct 2020 22:14:58 -0700 (PDT)
+        Sat, 03 Oct 2020 22:14:54 -0700 (PDT)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, hao.wu@intel.com, michal.simek@xilinx.com,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         russell.h.weight@intel.com, matthew.gerlach@intel.com,
         Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 10/10] fpga: fpga-mgr: altera-pr-ip: Simplify registration
-Date:   Sat,  3 Oct 2020 22:14:23 -0700
-Message-Id: <20201004051423.75879-11-mdf@kernel.org>
+Subject: [PATCH 06/10] fpga: fpga-mgr: socfpga: Simplify registration
+Date:   Sat,  3 Oct 2020 22:14:19 -0700
+Message-Id: <20201004051423.75879-7-mdf@kernel.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201004051423.75879-1-mdf@kernel.org>
 References: <20201004051423.75879-1-mdf@kernel.org>
@@ -67,91 +67,44 @@ List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
 Simplify registration using new devm_fpga_mgr_register() API.
-Remove the now obsolete altera_pr_unregister() function.
 
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
+ drivers/fpga/socfpga.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-We should take another look at this, IIRC correctly the point of
-splitting this up into a separate driver was to make it useable by a
-different (pci?) driver later on.
-
-It doesn't seem like this happened, and I think we should just make this
-a platform driver?
-
----
- drivers/fpga/altera-pr-ip-core-plat.c  | 10 ----------
- drivers/fpga/altera-pr-ip-core.c       | 14 +-------------
- include/linux/fpga/altera-pr-ip-core.h |  1 -
- 3 files changed, 1 insertion(+), 24 deletions(-)
-
-diff --git a/drivers/fpga/altera-pr-ip-core-plat.c b/drivers/fpga/altera-pr-ip-core-plat.c
-index 99b9cc0e70f0..b008a6b8d2d3 100644
---- a/drivers/fpga/altera-pr-ip-core-plat.c
-+++ b/drivers/fpga/altera-pr-ip-core-plat.c
-@@ -28,15 +28,6 @@ static int alt_pr_platform_probe(struct platform_device *pdev)
- 	return alt_pr_register(dev, reg_base);
- }
- 
--static int alt_pr_platform_remove(struct platform_device *pdev)
--{
--	struct device *dev = &pdev->dev;
--
--	alt_pr_unregister(dev);
--
--	return 0;
--}
--
- static const struct of_device_id alt_pr_of_match[] = {
- 	{ .compatible = "altr,a10-pr-ip", },
- 	{},
-@@ -46,7 +37,6 @@ MODULE_DEVICE_TABLE(of, alt_pr_of_match);
- 
- static struct platform_driver alt_pr_platform_driver = {
- 	.probe = alt_pr_platform_probe,
--	.remove = alt_pr_platform_remove,
- 	.driver = {
- 		.name	= "alt_a10_pr_ip",
- 		.of_match_table = alt_pr_of_match,
-diff --git a/drivers/fpga/altera-pr-ip-core.c b/drivers/fpga/altera-pr-ip-core.c
-index 2cf25fd5e897..dfdf21ed34c4 100644
---- a/drivers/fpga/altera-pr-ip-core.c
-+++ b/drivers/fpga/altera-pr-ip-core.c
-@@ -195,22 +195,10 @@ int alt_pr_register(struct device *dev, void __iomem *reg_base)
+diff --git a/drivers/fpga/socfpga.c b/drivers/fpga/socfpga.c
+index 4a8a2fcd4e6c..1f467173fc1f 100644
+--- a/drivers/fpga/socfpga.c
++++ b/drivers/fpga/socfpga.c
+@@ -576,18 +576,7 @@ static int socfpga_fpga_probe(struct platform_device *pdev)
  	if (!mgr)
  		return -ENOMEM;
  
--	dev_set_drvdata(dev, mgr);
+-	platform_set_drvdata(pdev, mgr);
 -
 -	return fpga_mgr_register(mgr);
-+	return devm_fpga_mgr_register(dev, mgr);
- }
- EXPORT_SYMBOL_GPL(alt_pr_register);
- 
--void alt_pr_unregister(struct device *dev)
--{
--	struct fpga_manager *mgr = dev_get_drvdata(dev);
+-}
 -
--	dev_dbg(dev, "%s\n", __func__);
+-static int socfpga_fpga_remove(struct platform_device *pdev)
+-{
+-	struct fpga_manager *mgr = platform_get_drvdata(pdev);
 -
 -	fpga_mgr_unregister(mgr);
--}
--EXPORT_SYMBOL_GPL(alt_pr_unregister);
 -
- MODULE_AUTHOR("Matthew Gerlach <matthew.gerlach@linux.intel.com>");
- MODULE_DESCRIPTION("Altera Partial Reconfiguration IP Core");
- MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/fpga/altera-pr-ip-core.h b/include/linux/fpga/altera-pr-ip-core.h
-index 0b08ac20ab16..a6b4c07858cc 100644
---- a/include/linux/fpga/altera-pr-ip-core.h
-+++ b/include/linux/fpga/altera-pr-ip-core.h
-@@ -13,6 +13,5 @@
- #include <linux/io.h>
+-	return 0;
++	return devm_fpga_mgr_register(dev, mgr);
+ }
  
- int alt_pr_register(struct device *dev, void __iomem *reg_base);
--void alt_pr_unregister(struct device *dev);
+ #ifdef CONFIG_OF
+@@ -601,7 +590,6 @@ MODULE_DEVICE_TABLE(of, socfpga_fpga_of_match);
  
- #endif /* _ALT_PR_IP_CORE_H */
+ static struct platform_driver socfpga_fpga_driver = {
+ 	.probe = socfpga_fpga_probe,
+-	.remove = socfpga_fpga_remove,
+ 	.driver = {
+ 		.name	= "socfpga_fpga_manager",
+ 		.of_match_table = of_match_ptr(socfpga_fpga_of_match),
 -- 
 2.28.0
 
