@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33DDEC4727F
-	for <linux-fpga@archiver.kernel.org>; Sun,  4 Oct 2020 05:15:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11D96C4363C
+	for <linux-fpga@archiver.kernel.org>; Sun,  4 Oct 2020 05:15:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 01974206DD
-	for <linux-fpga@archiver.kernel.org>; Sun,  4 Oct 2020 05:15:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C95A8206DD
+	for <linux-fpga@archiver.kernel.org>; Sun,  4 Oct 2020 05:15:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=default; t=1601788522;
-	bh=ziyLYkN4AQ62Ji2g2esVHCXw5jZAHwTNqcgH/FvlIMs=;
+	bh=/JJzqbv5aBMInZ5ipCV0cOlZFXi7e4RZDZfZFkxCzBA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=VvjmeCjrs0uEqXZM+3XI5Jkg+oP8Nd1JjC7MJqQf00mbvLZdD5+bPu+ztKtVWndKC
-	 ec0mS6A1SrQtXiDV+1d4CAoIZjOxTylAxdOPvDPdPjFs4Us6WQaJ0QA6dM8BnAjwJQ
-	 BagY798Fn+fRtI4RN6jQK3ajcxdpJOpz0d6Taha8=
+	b=esJwy2Mv//Sc4Y+kHSCl/bYOzJF6npshFImODne6H9o18+cq+Qabnneak1SMz6gWP
+	 JHpEGs6CneIPnUryXsvN6puY3Rkq5XQUWSHKp7XTnLPo5I5RQsnrGtPmEmWN+zUkwf
+	 yZ3u0dQqd2i/NXSiZg7/+GnIOD6p8uyBqT3rhK3Y=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725869AbgJDFOz (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 4 Oct 2020 01:14:55 -0400
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:41301 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725821AbgJDFOx (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 4 Oct 2020 01:14:53 -0400
-Received: by mail-pg1-f195.google.com with SMTP id g9so3102755pgh.8;
-        Sat, 03 Oct 2020 22:14:52 -0700 (PDT)
+        id S1725836AbgJDFOu (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 4 Oct 2020 01:14:50 -0400
+Received: from mail-pj1-f66.google.com ([209.85.216.66]:33761 "EHLO
+        mail-pj1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725818AbgJDFOt (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sun, 4 Oct 2020 01:14:49 -0400
+Received: by mail-pj1-f66.google.com with SMTP id t23so2387718pji.0;
+        Sat, 03 Oct 2020 22:14:48 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=E9sNHTAf1q0OCWdfYetz8n+dad/hcYWb7WiyvqFz4z8=;
-        b=ewqIkGEHgsoaibH0dhw6urDmrO4ue463MJjiF2liOidkErE6wFF7VZJFir9Ou+5w+Q
-         GwI/300Svz25Y3CG/9s4V5IhtAJ2lObvBVKd8RiT5s9ggXnNs4XRJQ91PjoCwZlp9xvk
-         lV8X90cTf0xyAsgWmCVry2MLFHhviVzWgEdx02C5D3MJupD+lvTDkEeIG2pKRxd7a61Y
-         2QVp2fRBycrgcXzeENrwJpsqZCuf5wWwUnRJwImzOcVunU0UIib5StgHk6XWg77kWkWv
-         Xx5/+nr9vOwGXosLxL9uTDlbwRtY9FBuQg9qlOWKksV4gZucTrXR3e1FFDAPrZKtA2i3
-         UEAg==
-X-Gm-Message-State: AOAM532bUYrTW4bqq82rIB5/peMDKzLpLYxzYhi4QmW219zfY0ie9mZ9
-        sLMY+B3Laobo7ronaknkjwsBRJt2gEg=
-X-Google-Smtp-Source: ABdhPJxdCnzWHV+RefxbAoMh95yMnrJqDl2iYdqjGpXGo5cYkqv+xJUq4Y6Ol3KlPXz1LZG6F2FSKw==
-X-Received: by 2002:a63:5006:: with SMTP id e6mr8795282pgb.338.1601788492032;
-        Sat, 03 Oct 2020 22:14:52 -0700 (PDT)
+        bh=e9dROueXo0BgEtMsBpPMHaAR3SvNMce1Uv/F/sJsEdw=;
+        b=SzXc1t8WmEaT4gPTa9Wu7Hh/XKANg2k7I9I7uzi3+rKbjbcPWov8ZrfJBwHqfvNZQ8
+         gd6E8aWN8ZP8tc5vAVvdzgUbuPPxc+5hmTdxdbxNHjSckBokDZL+UVxX5/FxSZqhD4KA
+         qg/J739XLeWCeWKrXMFgNYoXDzU3lZ4yeeEmEQNb7x9S7DnSOGnBOC/qzyjbmyD4jD9D
+         rwdJ8flg7IQrGCBCQUe4SV5CmxKOg8S619JSqEwQgWhIuwSU0aVHRkEFOURKrlfQ0MO5
+         uGo52rgYGuSUF+rGVdKOAostUfquVjywsEp+sJSgpBV4F3Rz2kjdd5Off/DwZFdrbFnQ
+         BfFw==
+X-Gm-Message-State: AOAM531nK8tHRxuJoif6N2mO6faCRNYZ2LaLN7Mc37I98BREZsFkj8zM
+        VxAYf/uKuQts/DDh+vHVLcTsMEQEVP4=
+X-Google-Smtp-Source: ABdhPJy8ZnJ4aY7II/coq6RV7KcdKTGw1X3kkzNwC1i68pFQCjiBz5fSZmzADaGy6b5tAgE/tMQzlQ==
+X-Received: by 2002:a17:90a:c28e:: with SMTP id f14mr10285907pjt.83.1601788488269;
+        Sat, 03 Oct 2020 22:14:48 -0700 (PDT)
 Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
-        by smtp.gmail.com with ESMTPSA id r14sm6588558pgm.7.2020.10.03.22.14.51
+        by smtp.gmail.com with ESMTPSA id d128sm7540251pfd.94.2020.10.03.22.14.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 03 Oct 2020 22:14:51 -0700 (PDT)
+        Sat, 03 Oct 2020 22:14:47 -0700 (PDT)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, hao.wu@intel.com, michal.simek@xilinx.com,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         russell.h.weight@intel.com, matthew.gerlach@intel.com,
         Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 04/10] fpga: fpga-mgr: ice40-spi: Simplify registration
-Date:   Sat,  3 Oct 2020 22:14:17 -0700
-Message-Id: <20201004051423.75879-5-mdf@kernel.org>
+Subject: [PATCH 01/10] fpga: fpga-mgr: Add devm_fpga_mgr_register() API
+Date:   Sat,  3 Oct 2020 22:14:14 -0700
+Message-Id: <20201004051423.75879-2-mdf@kernel.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201004051423.75879-1-mdf@kernel.org>
 References: <20201004051423.75879-1-mdf@kernel.org>
@@ -66,45 +66,138 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Simplify registration using new devm_fpga_mgr_register() API.
+Add a devm_fpga_mgr_register() API that can be used to register a FPGA
+Manager that was created using devm_fpga_mgr_create().
+
+Introduce a struct fpga_mgr_devres that makes the devres
+allocation a little bit more readable and gets reused for
+devm_fpga_mgr_create() devm_fpga_mgr_register().
 
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/ice40-spi.c | 14 +-------------
- 1 file changed, 1 insertion(+), 13 deletions(-)
+ drivers/fpga/fpga-mgr.c       | 76 ++++++++++++++++++++++++++++++-----
+ include/linux/fpga/fpga-mgr.h |  2 +
+ 2 files changed, 68 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
-index 8d689fea0dab..69dec5af23c3 100644
---- a/drivers/fpga/ice40-spi.c
-+++ b/drivers/fpga/ice40-spi.c
-@@ -183,18 +183,7 @@ static int ice40_fpga_probe(struct spi_device *spi)
- 	if (!mgr)
- 		return -ENOMEM;
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index f38bab01432e..774ac98fb69c 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -21,6 +21,10 @@
+ static DEFINE_IDA(fpga_mgr_ida);
+ static struct class *fpga_mgr_class;
  
--	spi_set_drvdata(spi, mgr);
--
--	return fpga_mgr_register(mgr);
--}
--
--static int ice40_fpga_remove(struct spi_device *spi)
--{
--	struct fpga_manager *mgr = spi_get_drvdata(spi);
--
--	fpga_mgr_unregister(mgr);
--
--	return 0;
-+	return devm_fpga_mgr_register(dev, mgr);
++struct fpga_mgr_devres {
++	struct fpga_manager *mgr;
++};
++
+ /**
+  * fpga_image_info_alloc - Allocate a FPGA image info struct
+  * @dev: owning device
+@@ -651,21 +655,21 @@ struct fpga_manager *devm_fpga_mgr_create(struct device *dev, const char *name,
+ 					  const struct fpga_manager_ops *mops,
+ 					  void *priv)
+ {
+-	struct fpga_manager **ptr, *mgr;
++	struct fpga_mgr_devres *dr;
+ 
+-	ptr = devres_alloc(devm_fpga_mgr_release, sizeof(*ptr), GFP_KERNEL);
+-	if (!ptr)
++	dr = devres_alloc(devm_fpga_mgr_release, sizeof(*dr), GFP_KERNEL);
++	if (!dr)
+ 		return NULL;
+ 
+-	mgr = fpga_mgr_create(dev, name, mops, priv);
+-	if (!mgr) {
+-		devres_free(ptr);
+-	} else {
+-		*ptr = mgr;
+-		devres_add(dev, ptr);
++	dr->mgr = fpga_mgr_create(dev, name, mops, priv);
++	if (!dr->mgr) {
++		devres_free(dr);
++		return NULL;
+ 	}
+ 
+-	return mgr;
++	devres_add(dev, dr);
++
++	return dr->mgr;
  }
+ EXPORT_SYMBOL_GPL(devm_fpga_mgr_create);
  
- static const struct of_device_id ice40_fpga_of_match[] = {
-@@ -205,7 +194,6 @@ MODULE_DEVICE_TABLE(of, ice40_fpga_of_match);
+@@ -722,6 +726,58 @@ void fpga_mgr_unregister(struct fpga_manager *mgr)
+ }
+ EXPORT_SYMBOL_GPL(fpga_mgr_unregister);
  
- static struct spi_driver ice40_fpga_driver = {
- 	.probe = ice40_fpga_probe,
--	.remove = ice40_fpga_remove,
- 	.driver = {
- 		.name = "ice40spi",
- 		.of_match_table = of_match_ptr(ice40_fpga_of_match),
++static int fpga_mgr_devres_match(struct device *dev, void *priv,
++				 void *match_data)
++{
++	struct fpga_mgr_devres *dr = priv;
++
++	return match_data == dr->mgr;
++}
++
++static void devm_fpga_mgr_unregister(struct device *dev, void *priv)
++{
++	struct fpga_mgr_devres *dr = priv;
++
++	fpga_mgr_unregister(dr->mgr);
++}
++
++/**
++ * devm_fpga_mgr_register - resource managed variant of fpga_mgr_register()
++ * @dev: managing device for this FPGA manager
++ * @mgr: fpga manager struct
++ *
++ * This is the devres variant of fpga_mgr_register() for which the unregister
++ * function will be called automatically when the managing device is detached.
++ */
++int devm_fpga_mgr_register(struct device *dev, struct fpga_manager *mgr)
++{
++	struct fpga_mgr_devres *dr;
++	int err;
++
++	/* Make sure that the struct fpga_manager * that is passed in is
++	 * managed itself.
++	 */
++	if (WARN_ON(!devres_find(dev, devm_fpga_mgr_release,
++				 fpga_mgr_devres_match, mgr)))
++		return -EINVAL;
++
++	dr = devres_alloc(devm_fpga_mgr_unregister, sizeof(*dr), GFP_KERNEL);
++	if (!dr)
++		return -ENOMEM;
++
++	err = fpga_mgr_register(mgr);
++	if (err) {
++		devres_free(dr);
++		return err;
++	}
++
++	dr->mgr = mgr;
++	devres_add(dev, dr);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(devm_fpga_mgr_register);
++
+ static void fpga_mgr_dev_release(struct device *dev)
+ {
+ }
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index e8ca62b2cb5b..2bc3030a69e5 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -198,6 +198,8 @@ void fpga_mgr_free(struct fpga_manager *mgr);
+ int fpga_mgr_register(struct fpga_manager *mgr);
+ void fpga_mgr_unregister(struct fpga_manager *mgr);
+ 
++int devm_fpga_mgr_register(struct device *dev, struct fpga_manager *mgr);
++
+ struct fpga_manager *devm_fpga_mgr_create(struct device *dev, const char *name,
+ 					  const struct fpga_manager_ops *mops,
+ 					  void *priv);
 -- 
 2.28.0
 
