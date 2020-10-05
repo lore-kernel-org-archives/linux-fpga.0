@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C193C4727D
-	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:37:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57A17C4363A
+	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:38:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CD10C2080A
-	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:37:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E46B2080A
+	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:38:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1601919476;
-	bh=IzS88frmHV/0Kvejejb4rLFBDQ4hiJR1mgHFKO8Ecxo=;
+	s=default; t=1601919483;
+	bh=WCq/vxO/PMTSrDtJxa3PzsBVJJuIHKuvjvB1HLIcc3o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=I6cmBe59X41Evt/2NIzhPKbI6AMucOU/Spw8w+dTDT2OlgZ5JKdgccwoRZ9GjWBJF
-	 N6FjJD7l+1in3Ha/lahYCpebo7BAlxUcZyKjbCfEOCyRmLeY8G2fji3iTr43G6nAF/
-	 wZXIzjh2/FwfLaJdhc5/cAQQeWwGgj5wjJe/nBpI=
+	b=CSL7NerX6BHsDbpVn/8+NHfEnJQRnokVG6dSauvHzOpBP5AxcQblhynru6aX0UMit
+	 eRHYGLgXEvJk54ayHML/dU+E5iu+4ksyPIqSN89JI6rycw0ghv9Qg5cgtQCLjEB9Nc
+	 UIT1DincBPB6J9Kmcqo9AAeMkQm7/YUKbI+477xE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729064AbgJERh4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        id S1729090AbgJERh4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
         Mon, 5 Oct 2020 13:37:56 -0400
-Received: from mail-pg1-f181.google.com ([209.85.215.181]:34718 "EHLO
-        mail-pg1-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729088AbgJERhz (ORCPT
+Received: from mail-pf1-f177.google.com ([209.85.210.177]:35429 "EHLO
+        mail-pf1-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729087AbgJERhz (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>); Mon, 5 Oct 2020 13:37:55 -0400
-Received: by mail-pg1-f181.google.com with SMTP id u24so6457097pgi.1;
-        Mon, 05 Oct 2020 10:37:54 -0700 (PDT)
+Received: by mail-pf1-f177.google.com with SMTP id k8so7422108pfk.2;
+        Mon, 05 Oct 2020 10:37:55 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=S5exJHrExp6hH+fiLalmCGHAHxK2W/BK4vVbjWgODn4=;
-        b=CAd7ejEaBXrxMRMsnW2WhJG0sd25eaKkG+RMlZJ7dL3Ww+I5yibSz5T/QRGgcJxqtG
-         JYTq8BV8cwqbFeLaROVHZ0qFQXBqbEkOqSBbb/v+5s/XhTyMHUmo4vKVrTLVtXKyAF3W
-         U/eINnIPYCLYn6vTPDEULPRTj7qpXXTml0v1ST6gXDi9vhIVZfQJjuOTk9KTZaKn9eTP
-         DJ7ZmuiFegNf2/o1/ol/8FE7ZKau4TS2j2j+G9Y8vZcfwrMwpWijQYADPAIc33QxvfUt
-         TuTgNiPWz0cs1PeppVibv0LxpToCz7+Xst8lhmZ83AG+f7h+QjJzlk1SQUSoo0fPN+Pe
-         XndA==
-X-Gm-Message-State: AOAM532+5A5RsLmEdEYhXEstxx9eZwRzSzr6JMYVm1BLJTPxuucf8UzK
-        +WrbdRk35ZlvaUvtdkxAcaYXrSaNkxY=
-X-Google-Smtp-Source: ABdhPJx+vPTMXgGqXUfLGXSmTwUGiHqJ1pGXF30jVnvKd2Kzjtnaau7tvdWmbper+dTMFbKEvw9Duw==
-X-Received: by 2002:a62:54c4:0:b029:142:2501:34d3 with SMTP id i187-20020a6254c40000b0290142250134d3mr871545pfb.44.1601919473565;
-        Mon, 05 Oct 2020 10:37:53 -0700 (PDT)
+        bh=J3XiBxLGBeSPFpAxZt+y5k3Cj/REy00FOrYxsXzSQuQ=;
+        b=uYGFVRH43eX3gLlICl5ihCn4o3B8OysOsbrufZLqHqMlBWBwMWCsmwtoHRjVGs++eq
+         jeo+jq5qJe5qqNXi0ye4cAMjl8duJ+UZhruUe8/sV9F4e0P+646SsJLw25rc1quk6oAP
+         cFN5zdh1PrzH4ibmifAeI58dQLnGGkZD/ZNNygSfScPdlzdffTyHKDu5dxB+k8TdMmiO
+         ewFtzAK4jbD8QwY6tEaM+H7kvF2qUiKEEHWKS4qV9hu/9vG5fGFO1/NeKCtyVrkrMkPE
+         6qEv3ym2QHEXwziJ5WB1mhMYL4+iky5ke6gAawCaf3h5mEttHxEH5vzuhb+TE1azlkS/
+         JQlQ==
+X-Gm-Message-State: AOAM531u3UEVxryLvTjBrTU+TqspN8H6Tr9tAU7UQVvc5eiBTjRTNoUK
+        +jQwUW2GDWuzrmuIHJTpOzJjn3ZQ/Fo=
+X-Google-Smtp-Source: ABdhPJyTtaSdPJRw1sHYWV0r1e3crx8Fd03UNMOyBkViknTat2ryvDRa43qd8CEpMlLrudH6Qa0F+w==
+X-Received: by 2002:a62:3541:0:b029:13f:ebd9:ad5c with SMTP id c62-20020a6235410000b029013febd9ad5cmr682191pfa.30.1601919474814;
+        Mon, 05 Oct 2020 10:37:54 -0700 (PDT)
 Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
-        by smtp.gmail.com with ESMTPSA id f17sm533028pfq.141.2020.10.05.10.37.52
+        by smtp.gmail.com with ESMTPSA id f17sm533065pfq.141.2020.10.05.10.37.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Oct 2020 10:37:53 -0700 (PDT)
+        Mon, 05 Oct 2020 10:37:54 -0700 (PDT)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, hao.wu@intel.com, michal.simek@xilinx.com,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         russell.h.weight@intel.com, matthew.gerlach@intel.com,
         Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH v2 08/10] fpga: fpga-mgr: xilinx-spi: Simplify registration
-Date:   Mon,  5 Oct 2020 10:37:33 -0700
-Message-Id: <20201005173735.162408-9-mdf@kernel.org>
+Subject: [PATCH v2 09/10] fpga: fpga-mgr: zynqmp: Simplify registration
+Date:   Mon,  5 Oct 2020 10:37:34 -0700
+Message-Id: <20201005173735.162408-10-mdf@kernel.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201005173735.162408-1-mdf@kernel.org>
 References: <20201005173735.162408-1-mdf@kernel.org>
@@ -71,41 +71,55 @@ Simplify registration using new devm_fpga_mgr_register() API.
 Reviewed-by: Tom Rix <trix@redhat.com>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/xilinx-spi.c | 14 +-------------
- 1 file changed, 1 insertion(+), 13 deletions(-)
+ drivers/fpga/zynqmp-fpga.c | 21 +--------------------
+ 1 file changed, 1 insertion(+), 20 deletions(-)
 
-diff --git a/drivers/fpga/xilinx-spi.c b/drivers/fpga/xilinx-spi.c
-index 824abbbd631e..27defa98092d 100644
---- a/drivers/fpga/xilinx-spi.c
-+++ b/drivers/fpga/xilinx-spi.c
-@@ -259,18 +259,7 @@ static int xilinx_spi_probe(struct spi_device *spi)
+diff --git a/drivers/fpga/zynqmp-fpga.c b/drivers/fpga/zynqmp-fpga.c
+index 4a1139e05280..125743c9797f 100644
+--- a/drivers/fpga/zynqmp-fpga.c
++++ b/drivers/fpga/zynqmp-fpga.c
+@@ -95,7 +95,6 @@ static int zynqmp_fpga_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct zynqmp_fpga_priv *priv;
+ 	struct fpga_manager *mgr;
+-	int ret;
+ 
+ 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+ 	if (!priv)
+@@ -108,24 +107,7 @@ static int zynqmp_fpga_probe(struct platform_device *pdev)
  	if (!mgr)
  		return -ENOMEM;
  
--	spi_set_drvdata(spi, mgr);
+-	platform_set_drvdata(pdev, mgr);
 -
--	return fpga_mgr_register(mgr);
+-	ret = fpga_mgr_register(mgr);
+-	if (ret) {
+-		dev_err(dev, "unable to register FPGA manager");
+-		return ret;
+-	}
+-
+-	return 0;
 -}
 -
--static int xilinx_spi_remove(struct spi_device *spi)
+-static int zynqmp_fpga_remove(struct platform_device *pdev)
 -{
--	struct fpga_manager *mgr = spi_get_drvdata(spi);
+-	struct fpga_manager *mgr = platform_get_drvdata(pdev);
 -
 -	fpga_mgr_unregister(mgr);
 -
 -	return 0;
-+	return devm_fpga_mgr_register(&spi->dev, mgr);
++	return devm_fpga_mgr_register(dev, mgr);
  }
  
- static const struct of_device_id xlnx_spi_of_match[] = {
-@@ -285,7 +274,6 @@ static struct spi_driver xilinx_slave_spi_driver = {
- 		.of_match_table = of_match_ptr(xlnx_spi_of_match),
- 	},
- 	.probe = xilinx_spi_probe,
--	.remove = xilinx_spi_remove,
- };
+ static const struct of_device_id zynqmp_fpga_of_match[] = {
+@@ -137,7 +119,6 @@ MODULE_DEVICE_TABLE(of, zynqmp_fpga_of_match);
  
- module_spi_driver(xilinx_slave_spi_driver)
+ static struct platform_driver zynqmp_fpga_driver = {
+ 	.probe = zynqmp_fpga_probe,
+-	.remove = zynqmp_fpga_remove,
+ 	.driver = {
+ 		.name = "zynqmp_fpga_manager",
+ 		.of_match_table = of_match_ptr(zynqmp_fpga_of_match),
 -- 
 2.28.0
 
