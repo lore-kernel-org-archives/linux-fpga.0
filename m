@@ -6,62 +6,64 @@ X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4208FC4363A
-	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:40:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5CE5C47095
+	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:38:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E75732080A
-	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:40:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 86D902080A
+	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:38:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1601919601;
-	bh=SsPwX4FDdCz1KLGnaQvU64vEa6D3q5pUgRFxdOeiE6g=;
+	s=default; t=1601919527;
+	bh=sLYP5GcFJv0mWJLUWQp7kVsT9HsTtPzOYlfF8cc1TIQ=;
 	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=2gGSkMCZb4rvI2wTC2He7rB/p0Wsj7atGYwmL7+Ns8QSRzFVu3kvOigffnzzgFv6C
-	 ee5iLjFh8B7roPYhjZzpDvktHa9II61lq5tzKj5X+zaD6FwRoT3AwpjxxdqDqtKRGq
-	 KLGPMswdMeXLV/AYZGoO6aNcZoj9kpxzDV5MWoUk=
+	b=1Ez8uJ8/IC2fBuFTJm3drACd5wLKqerHYxJ2NfN6IGOd3wMAU47TD7t04GvqZ70fA
+	 LNpPGOKVtJ6ZKYesuUlc7oyv6MwN22McK1Uq3XIbM/C6KWvWLM9B7620qC8ftBN6zA
+	 xD05QuRdRK90Po71imT/0ZT0JHQ6M8ZJU9170bzQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727896AbgJERkA (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 5 Oct 2020 13:40:00 -0400
-Received: from mail-pj1-f54.google.com ([209.85.216.54]:37673 "EHLO
-        mail-pj1-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727716AbgJERkA (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 5 Oct 2020 13:40:00 -0400
-Received: by mail-pj1-f54.google.com with SMTP id kk9so216204pjb.2;
-        Mon, 05 Oct 2020 10:40:00 -0700 (PDT)
+        id S1727344AbgJERio (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 5 Oct 2020 13:38:44 -0400
+Received: from mail-pg1-f180.google.com ([209.85.215.180]:42480 "EHLO
+        mail-pg1-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729070AbgJERho (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 5 Oct 2020 13:37:44 -0400
+Received: by mail-pg1-f180.google.com with SMTP id m34so6439807pgl.9;
+        Mon, 05 Oct 2020 10:37:43 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=GDA9XWEwfWUACRI3I02tabmvwJriNb6PloGbU7B9IZA=;
-        b=ZT97kNfIjo2nYxC9gdT9VBU9H1aD0kPYx1ewD3HhJWDzsUesm+rmg9xmnpEBRgOdTC
-         nsxeG3b3zO/Tc2LTpExAG+Q8d6Op1zq98UDbThsIDNB2NsA00AGD3ttzMqOm2xG3oVym
-         T+zihNNRfLNMn161xvMCa4jabc/ZValBQjJbWBuz+RCi/+9Z1JOfHN10GE8cGMQ8cqJg
-         KKOiYW4BPMtT54vpCDnvpFSwVbiPVhFIJEmgsA6NoIga+oWckhDCRh5QLU7+JCuKU7jx
-         Orefl7PxNJXhaxLobiZluNV0jRpVE4oyQKOM/T82oecVoZxMUYsOX5sAaLfD2/j0dbKk
-         FLDQ==
-X-Gm-Message-State: AOAM533BRuuLyzq/YVPxZMiLBMxcwQDfYTIwUHrGflq0hyn6VRDFAfkZ
-        TU1tLtJnlyMlxq19F+ONoECIE/7ckcA=
-X-Google-Smtp-Source: ABdhPJyP4uenJIHIL9ii7ZS1fb84Bg/SQbJU69tmKcumhfod92ZA08l23qgg+AiiuyheK4VfYa/h3w==
-X-Received: by 2002:a17:90a:8585:: with SMTP id m5mr488991pjn.69.1601919599534;
-        Mon, 05 Oct 2020 10:39:59 -0700 (PDT)
+        bh=aprF6xPNXCBOuFtymro1Q67MneG20sCa3QmW8wApzg0=;
+        b=Pb+afr6GQVteC2e0wjWMCMwy2Mvxxxj6MP0UKvec6gEIn0hy/kqFxahhpDmDDb5oVL
+         nx4MhFY6b2CpZ/0ijlMgyHdWhk7+0Z8Dn6rtRSDDbhX2y7May6MuhE0bjjBQzeThDtQl
+         ODCbfL5pRLr1BujIKpUKU26Qoa2/oShlP1bnxEKIYlhlR1Al48/3yPNruNa0ODgTcI2X
+         fsiNyntIpFBPdlEE7NLjBI/xauPA5eF3qYivT8/McmrOgU7S09u6/jnUo5NTUUPN05eu
+         RE78YQtEolF7OeQHdA8FHBsAuOmPlVadSr6d2U6dy9VSnfIMJGPdrM66v2Y4y/iHHgsR
+         z/bQ==
+X-Gm-Message-State: AOAM53362uOFAzy7XG+j52dGqX3QkwrPe9kw7eaP63jWOMmjaNYUsD38
+        RBqtN1d5snWoaX+pYfY9DdiBkahIXyU=
+X-Google-Smtp-Source: ABdhPJwniWOSMbFSjPxJ6/MdmZDNFYQCSiMqaAq/lQXov41zECxvvGSNwxqem1FZGOOeRI+Y8N5zGg==
+X-Received: by 2002:a63:5c19:: with SMTP id q25mr558011pgb.17.1601919462992;
+        Mon, 05 Oct 2020 10:37:42 -0700 (PDT)
 Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
-        by smtp.gmail.com with ESMTPSA id y12sm238029pga.53.2020.10.05.10.39.58
+        by smtp.gmail.com with ESMTPSA id b1sm528905pft.127.2020.10.05.10.37.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Oct 2020 10:39:58 -0700 (PDT)
+        Mon, 05 Oct 2020 10:37:42 -0700 (PDT)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, hao.wu@intel.com, michal.simek@xilinx.com,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         russell.h.weight@intel.com, matthew.gerlach@intel.com,
         Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH v2 00/10] Introduce devm_fpga_mgr_register()
-Date:   Mon,  5 Oct 2020 10:39:57 -0700
-Message-Id: <20201005173957.162690-1-mdf@kernel.org>
+Subject: 
+Date:   Mon,  5 Oct 2020 10:37:25 -0700
+Message-Id: <20201005173735.162408-1-mdf@kernel.org>
 X-Mailer: git-send-email 2.28.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
+
+Subject: [PATCH v2 00/10] Introduce devm_fpga_mgr_register()
 
 This patchset introduces the devm_fpga_mgr_register API,
 a devres managed version of fpga_mgr_register().
