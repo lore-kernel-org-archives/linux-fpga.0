@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E0F5C4363A
-	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:38:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89A3BC47095
+	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:38:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DD44F207EA
-	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:38:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4891D207BC
+	for <linux-fpga@archiver.kernel.org>; Mon,  5 Oct 2020 17:38:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1601919489;
-	bh=GGRWnIRMYVvbhIfOoLd98sNSsmoBZzxa9UW/3qZPpNY=;
+	s=default; t=1601919505;
+	bh=9uOvBRLf1I6IXMb1/mCwowS06jO5LUOYP/e7+K/04Ig=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=QxF/NrwitLNPUEF+KxAuJxiIJ7bDdxR9HooKHWsuivFeddvVqvtqzthwKhGxW6k7U
-	 qqZdzgjqDpIv+JH9WWHlY/7KYJMOIJ062OJAaVtxUgX9dHoF9RD4L9jIp/N+Iq04Gm
-	 54AB6fMPQvo0bmFHbCBuXLtObFnvnNVrNt75Nm9c=
+	b=FZsAb/1U9DG4/N030J1V96OEOAiBFX83+K/1lxFXYaJm7PbSxAf8iQl6hMNeOj2vd
+	 trPcxBv88Cj3q6OYLeq0oUlJtLc8pKkoDKfbjS0+9DNSCKHaN+zUorV3F/Lcuo05yR
+	 ns1XqFw3QLZUcSfv59rZ9UFOJMRDpS59KpLGVcjY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728053AbgJERiJ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 5 Oct 2020 13:38:09 -0400
-Received: from mail-pj1-f49.google.com ([209.85.216.49]:56196 "EHLO
-        mail-pj1-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729043AbgJERhx (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 5 Oct 2020 13:37:53 -0400
-Received: by mail-pj1-f49.google.com with SMTP id ds1so185537pjb.5;
-        Mon, 05 Oct 2020 10:37:52 -0700 (PDT)
+        id S1729125AbgJERiO (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 5 Oct 2020 13:38:14 -0400
+Received: from mail-pj1-f45.google.com ([209.85.216.45]:33453 "EHLO
+        mail-pj1-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729085AbgJERhu (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 5 Oct 2020 13:37:50 -0400
+Received: by mail-pj1-f45.google.com with SMTP id t23so346919pji.0;
+        Mon, 05 Oct 2020 10:37:50 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=/4TUUEH3mzxdF0JLPfTx+3VTCs6mAY0is3dcpH6g8XA=;
-        b=unSrdQ+aau+N4XCVEHakL7yJddhR0UMzXbhjCaT1dKf1qf3omUqZbkxc0Mfn80cPUN
-         7+XOlPFX6AiUtIkpxh5tBLvNDSdmzIPbNz75sBQl45QFXdxBIRIINMJp2ocCaCE97bwT
-         FUf8qbQjXG6hYl0cScHgN77IbRK+yj0bKLTkYxFbAwXdvxURaTv03jJxiefaWjyud4uh
-         6FWTW86EXtjSdL+AMRekKdXz8wo3CxJTqw/rnmUHDam4SK51NsTN4zgbFqvG8K8ujmeF
-         +oOszVOVdhjClgnzN28wpnxUGoVs4EMzEUu0Iy/lmW2rGAdZ2WydoXHTg4+DzFxoT936
-         zQqg==
-X-Gm-Message-State: AOAM531cMB6nsfW5d5mD5hxYJMyWOdijsFuCTy8Izxnsx9Aiu/nbTozu
-        7C2oZ4PaRQJzDm7kLZWbZFHqntEvqtk=
-X-Google-Smtp-Source: ABdhPJx4xXhbH1MWDvuiwBaaC/6SkRVdBbdml4IF7pL/5w77qJGI1HZWaZKi64MmXkAUtT5IDwCo6w==
-X-Received: by 2002:a17:90a:5588:: with SMTP id c8mr494907pji.224.1601919472219;
-        Mon, 05 Oct 2020 10:37:52 -0700 (PDT)
+        bh=PJinqLCKTDe+aRSItigFp/wrvpdMWTGVdNBIcRnfBzA=;
+        b=VE/0o6BDpOLu9ao59vZ3LCuk1IajfIR/w+lYnL2ZEi4wUdhWdfd9g+tRvr9pEs3OB8
+         j/FY72XvaaKtRmSFk+8AFAu793nojdTGjv6gS6OwGVRWCPq0WjvHAGQqQ9bRBJWSkJHa
+         64Pc2rgw2Ay2wj9+loPj+TM9y4q7yAN07sD6p7BkWNBgqDMS9Yt6znTC+fGxd7l7OJRb
+         UB6KeIJt/GI9TytrIOPrLhyr7RcmG5m5xWtTAPEPYwDo48XCsHUEZP+xr+Lx9Km9vW5I
+         OvwUxP/6ncjbCfnaySmMsD9lUqajwKXReCpKG5NJ+EO227emT7AgfoCYT8kOTMl8VIQJ
+         +K+w==
+X-Gm-Message-State: AOAM531c2uoVF/aEA8sZjaIym6OU6V3iMmeZz/Uy2GSWviLWl7ZcfFsV
+        NhgcPp0+QqLDfoyonB9hdoNw3Ac83b8=
+X-Google-Smtp-Source: ABdhPJwdvnEtZIDBh4qK3r1xDzccd0E4i+usLvtnb/8vdfe8iRjZfHrJt9UaCm9t4fceQLtH0RmFZA==
+X-Received: by 2002:a17:90b:f8b:: with SMTP id ft11mr544364pjb.8.1601919469830;
+        Mon, 05 Oct 2020 10:37:49 -0700 (PDT)
 Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
-        by smtp.gmail.com with ESMTPSA id v22sm497846pff.159.2020.10.05.10.37.51
+        by smtp.gmail.com with ESMTPSA id az18sm181250pjb.35.2020.10.05.10.37.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Oct 2020 10:37:51 -0700 (PDT)
+        Mon, 05 Oct 2020 10:37:49 -0700 (PDT)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, hao.wu@intel.com, michal.simek@xilinx.com,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         russell.h.weight@intel.com, matthew.gerlach@intel.com,
         Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH v2 07/10] fpga: fpga-mgr: ts73xx: Simplify registration
-Date:   Mon,  5 Oct 2020 10:37:32 -0700
-Message-Id: <20201005173735.162408-8-mdf@kernel.org>
+Subject: [PATCH v2 05/10] fpga: fpga-mgr: machxo2-spi: Simplify registration
+Date:   Mon,  5 Oct 2020 10:37:30 -0700
+Message-Id: <20201005173735.162408-6-mdf@kernel.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201005173735.162408-1-mdf@kernel.org>
 References: <20201005173735.162408-1-mdf@kernel.org>
@@ -71,40 +71,40 @@ Simplify registration using new devm_fpga_mgr_register() API.
 Reviewed-by: Tom Rix <trix@redhat.com>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/ts73xx-fpga.c | 14 +-------------
+ drivers/fpga/machxo2-spi.c | 14 +-------------
  1 file changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/drivers/fpga/ts73xx-fpga.c b/drivers/fpga/ts73xx-fpga.c
-index 2888ff000e4d..101f016c6ed8 100644
---- a/drivers/fpga/ts73xx-fpga.c
-+++ b/drivers/fpga/ts73xx-fpga.c
-@@ -127,18 +127,7 @@ static int ts73xx_fpga_probe(struct platform_device *pdev)
+diff --git a/drivers/fpga/machxo2-spi.c b/drivers/fpga/machxo2-spi.c
+index b316369156fe..114a64d2b7a4 100644
+--- a/drivers/fpga/machxo2-spi.c
++++ b/drivers/fpga/machxo2-spi.c
+@@ -371,18 +371,7 @@ static int machxo2_spi_probe(struct spi_device *spi)
  	if (!mgr)
  		return -ENOMEM;
  
--	platform_set_drvdata(pdev, mgr);
+-	spi_set_drvdata(spi, mgr);
 -
 -	return fpga_mgr_register(mgr);
 -}
 -
--static int ts73xx_fpga_remove(struct platform_device *pdev)
+-static int machxo2_spi_remove(struct spi_device *spi)
 -{
--	struct fpga_manager *mgr = platform_get_drvdata(pdev);
+-	struct fpga_manager *mgr = spi_get_drvdata(spi);
 -
 -	fpga_mgr_unregister(mgr);
 -
 -	return 0;
-+	return devm_fpga_mgr_register(kdev, mgr);
++	return devm_fpga_mgr_register(dev, mgr);
  }
  
- static struct platform_driver ts73xx_fpga_driver = {
-@@ -146,7 +135,6 @@ static struct platform_driver ts73xx_fpga_driver = {
- 		.name	= "ts73xx-fpga-mgr",
+ static const struct of_device_id of_match[] = {
+@@ -403,7 +392,6 @@ static struct spi_driver machxo2_spi_driver = {
+ 		.of_match_table = of_match_ptr(of_match),
  	},
- 	.probe	= ts73xx_fpga_probe,
--	.remove	= ts73xx_fpga_remove,
+ 	.probe = machxo2_spi_probe,
+-	.remove = machxo2_spi_remove,
+ 	.id_table = lattice_ids,
  };
- module_platform_driver(ts73xx_fpga_driver);
  
 -- 
 2.28.0
