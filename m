@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07DA4C4363D
-	for <linux-fpga@archiver.kernel.org>; Thu,  8 Oct 2020 00:16:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67640C43467
+	for <linux-fpga@archiver.kernel.org>; Thu,  8 Oct 2020 00:16:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A40E5212CC
-	for <linux-fpga@archiver.kernel.org>; Thu,  8 Oct 2020 00:16:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3540620872
+	for <linux-fpga@archiver.kernel.org>; Thu,  8 Oct 2020 00:16:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727261AbgJHAQv (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 7 Oct 2020 20:16:51 -0400
-Received: from mga01.intel.com ([192.55.52.88]:22302 "EHLO mga01.intel.com"
+        id S1727663AbgJHAQ6 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 7 Oct 2020 20:16:58 -0400
+Received: from mga01.intel.com ([192.55.52.88]:22311 "EHLO mga01.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726129AbgJHAQv (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 7 Oct 2020 20:16:51 -0400
-IronPort-SDR: aK1+65Oa5N2sGuVhyNX2HHTbrCFPSw1r/vQ4GaA/zqWT1WLdbvK5YpunffQ0f6YBBnc+JiWezm
- 4oxN15wDpIRg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9767"; a="182629342"
+        id S1726671AbgJHAQz (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 7 Oct 2020 20:16:55 -0400
+IronPort-SDR: E17kH3lsclOpS4Ha+8KRO0TmiRfdDys3uUMxL85bDn5yLNpkKqawXBKUBKORaFo3X8PWWwGPC3
+ XM/KDbFq1UTg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9767"; a="182629353"
 X-IronPort-AV: E=Sophos;i="5.77,348,1596524400"; 
-   d="scan'208";a="182629342"
+   d="scan'208";a="182629353"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2020 17:16:50 -0700
-IronPort-SDR: wcaFhQgEro2VqKlk3ii78ns1rfDxk6AYLk4xD6qbM4PnITLZumBNRjGf11vUx3Zki5BSHjiR9Z
- L4VZ88SVUR0Q==
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2020 17:16:53 -0700
+IronPort-SDR: BYlJ4QiM5Dc9HM4HbGpzV/czjzILGV1Kneyv+QadhyGP2/ASEdKKA+0sWIDGwSAdGceyC+Py0L
+ qBQPf2Js8zAQ==
 X-IronPort-AV: E=Sophos;i="5.77,348,1596524400"; 
-   d="scan'208";a="355169262"
+   d="scan'208";a="355169286"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.251.1.22])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2020 17:16:50 -0700
+  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2020 17:16:52 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v4 1/7] fpga: sec-mgr: intel fpga security manager class driver
-Date:   Wed,  7 Oct 2020 17:16:35 -0700
-Message-Id: <20201008001641.28305-2-russell.h.weight@intel.com>
+Subject: [PATCH v4 4/7] fpga: sec-mgr: expose sec-mgr update errors
+Date:   Wed,  7 Oct 2020 17:16:38 -0700
+Message-Id: <20201008001641.28305-5-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20201008001641.28305-1-russell.h.weight@intel.com>
 References: <20201008001641.28305-1-russell.h.weight@intel.com>
@@ -50,18 +50,11 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Create the FPGA Security Manager class driver. The security
-manager provides interfaces to manage secure updates for the
-FPGA and BMC images that are stored in FLASH. The driver can
-also be used to update root entry hashes and to cancel code
-signing keys.
-
-This patch creates the class driver and provides sysfs
-interfaces for displaying root entry hashes, canceled code
-signing keys and flash counts.
+Extend the FPGA Security Manager class driver to include
+an update/error sysfs node that can be read for error
+information when a secure update fails.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Reviewed-by: Tom Rix <trix@redhat.com>
 ---
 v4:
@@ -69,746 +62,188 @@ v4:
     and removed unnecessary references to "Intel".
   - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
 v3:
-  - Modified sysfs handler check in check_sysfs_handler() to make
-    it more readable.
+  - Use dev_err() for invalid error code in sec_error()
 v2:
-  - Bumped documentation dates and versions
-  - Added Documentation/fpga/ifpga-sec-mgr.rst 
-  - Removed references to bmc_flash_count & smbus_flash_count (not supported)
-  - Split ifpga_sec_mgr_register() into create() and register() functions
-  - Added devm_ifpga_sec_mgr_create()
-  - Removed typedefs for imgr ops
+  - Bumped documentation date and version
+  - Added warning to sec_progress() for invalid progress status
+  - Added sec_error() function (similar to sec_progress())
 ---
- .../ABI/testing/sysfs-class-fpga-sec-mgr      |  67 +++
- Documentation/fpga/fpga-sec-mgr.rst           |  50 ++
- Documentation/fpga/index.rst                  |   1 +
- MAINTAINERS                                   |   9 +
- drivers/fpga/Kconfig                          |   9 +
- drivers/fpga/Makefile                         |   3 +
- drivers/fpga/fpga-sec-mgr.c                   | 430 ++++++++++++++++++
- include/linux/fpga/fpga-sec-mgr.h             |  81 ++++
- 8 files changed, 650 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
- create mode 100644 Documentation/fpga/fpga-sec-mgr.rst
- create mode 100644 drivers/fpga/fpga-sec-mgr.c
- create mode 100644 include/linux/fpga/fpga-sec-mgr.h
+ .../ABI/testing/sysfs-class-fpga-sec-mgr      | 17 ++++
+ drivers/fpga/fpga-sec-mgr.c                   | 83 ++++++++++++++++---
+ include/linux/fpga/fpga-sec-mgr.h             |  1 +
+ 3 files changed, 89 insertions(+), 12 deletions(-)
 
 diff --git a/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr b/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
-new file mode 100644
-index 000000000000..843f0b58f171
---- /dev/null
+index 69b4cf7e1cd4..560513653c70 100644
+--- a/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
 +++ b/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
-@@ -0,0 +1,67 @@
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/name
+@@ -89,3 +89,20 @@ Description:	Read-only. Returns a string describing the current
+ 		programming. Userspace code can poll on this file,
+ 		as it will be signaled by sysfs_notify() on each
+ 		state change.
++
++What: 		/sys/class/fpga_sec_mgr/fpga_secX/update/error
 +Date:		Oct 2020
 +KernelVersion:  5.11
 +Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Name of low level fpga security manager driver.
-+
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/security/sr_root_entry_hash
-+Date:		Oct 2020
-+KernelVersion:  5.11
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns the root entry hash for the static
-+		region if one is programmed, else it returns the
-+		string: "hash not programmed".  This file is only
-+		visible if the underlying device supports it.
-+		Format: "0x%x".
-+
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/security/pr_root_entry_hash
-+Date:		Oct 2020
-+KernelVersion:  5.11
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns the root entry hash for the partial
-+		reconfiguration region if one is programmed, else it
-+		returns the string: "hash not programmed".  This file
-+		is only visible if the underlying device supports it.
-+		Format: "0x%x".
-+
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/security/bmc_root_entry_hash
-+Date:		Oct 2020
-+KernelVersion:  5.11
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns the root entry hash for the BMC image
-+		if one is programmed, else it returns the string:
-+		"hash not programmed".  This file is only visible if the
-+		underlying device supports it.
-+		Format: "0x%x".
-+
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/security/sr_canceled_csks
-+Date:		Oct 2020
-+KernelVersion:  5.11
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns a list of indices for canceled code
-+		signing keys for the static region. The standard bitmap
-+		list format is used (e.g. "1,2-6,9").
-+
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/security/pr_canceled_csks
-+Date:		Oct 2020
-+KernelVersion:  5.11
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns a list of indices for canceled code
-+		signing keys for the partial reconfiguration region. The
-+		standard bitmap list format is used (e.g. "1,2-6,9").
-+
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/security/bmc_canceled_csks
-+Date:		Oct 2020
-+KernelVersion:  5.11
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns a list of indices for canceled code
-+		signing keys for the BMC.  The standard bitmap list format
-+		is used (e.g. "1,2-6,9").
-+
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/security/user_flash_count
-+Date:		Oct 2020
-+KernelVersion:  5.11
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns number of times the user image for the
-+		static region has been flashed.
-+		Format: "%u".
-diff --git a/Documentation/fpga/fpga-sec-mgr.rst b/Documentation/fpga/fpga-sec-mgr.rst
-new file mode 100644
-index 000000000000..4a1d6519b1d3
---- /dev/null
-+++ b/Documentation/fpga/fpga-sec-mgr.rst
-@@ -0,0 +1,50 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+========================================
-+FPGA Security Manager Class Driver
-+========================================
-+
-+The FPGA Security Manager class driver provides a common
-+API for user-space tools to manage updates for secure FPGA
-+devices. Device drivers that instantiate the Security
-+Manager class driver will interact with a HW secure update
-+engine in order to transfer new FPGA and BMC images to FLASH so
-+that they will be automatically loaded when the FPGA card reboots.
-+
-+A significant difference between the FPGA Manager and the FPGA
-+Security Manager is that the FPGA Manager does a live update (Partial
-+Reconfiguration) to a device, whereas the FPGA Security Manager
-+updates the FLASH images for the Static Region and the BMC so that
-+they will be loaded the next time the FPGA card boots. Security is
-+enforced by hardware and firmware. The security manager interacts
-+with the firmware to initiate an update, pass in the necessary data,
-+and collect status on the update.
-+
-+In addition to managing secure updates of the FPGA and BMC images,
-+the FPGA Security Manager update process may also used to
-+program root entry hashes and cancellation keys for the FPGA static
-+region, the FPGA partial reconfiguration region, and the BMC.
-+
-+Secure updates make use of the request_firmware framework, which
-+requires that image files are accessible under /lib/firmware. A request
-+for a secure update returns immediately, while the update itself
-+proceeds in the context of a kernel worker thread. Sysfs files provide
-+a means for monitoring the progress of a secure update and for
-+retrieving error information in the event of a failure.
-+
-+Sysfs Attributes
-+================
-+
-+The API consists of two groups of sysfs attributes as described below.
-+
-+1. Files in the *security* sub-directory can be used to read security
-+   information including: Root Entry Hashes (REH), Cancelled Code
-+   Signing Keys (CSK), and the flash update count for FPGA images.
-+
-+2. Files in the *update* sub-directory can be used to instantiate and
-+   monitor a secure update.
-+
-+
-+See `<../ABI/testing/sysfs-class-fpga-sec-mgr>`__ for a full
-+description of the sysfs attributes for the FPGA Security
-+Manager.
-diff --git a/Documentation/fpga/index.rst b/Documentation/fpga/index.rst
-index f80f95667ca2..0b2f427042af 100644
---- a/Documentation/fpga/index.rst
-+++ b/Documentation/fpga/index.rst
-@@ -8,6 +8,7 @@ fpga
-     :maxdepth: 1
- 
-     dfl
-+    fpga-sec-mgr
- 
- .. only::  subproject and html
- 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 9ecb727f0a8f..135c78c93eaf 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6899,6 +6899,15 @@ F:	Documentation/fpga/
- F:	drivers/fpga/
- F:	include/linux/fpga/
- 
-+FPGA SECURITY MANAGER DRIVERS
-+M:	Russ Weight <russell.h.weight@intel.com>
-+L:	linux-fpga@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
-+F:	Documentation/fpga/fpga-sec-mgr.rst
-+F:	drivers/fpga/fpga-sec-mgr.c
-+F:	include/linux/fpga/fpga-sec-mgr.h
-+
- FPU EMULATOR
- M:	Bill Metzenthen <billm@melbpc.org.au>
- S:	Maintained
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 7cd5a29fc437..6810b23b178d 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -215,4 +215,13 @@ config FPGA_MGR_ZYNQMP_FPGA
- 	  to configure the programmable logic(PL) through PS
- 	  on ZynqMP SoC.
- 
-+config FPGA_SEC_MGR
-+	tristate "FPGA Security Manager"
-+	help
-+	  The Security Manager class driver presents a common
-+	  user API for managing secure updates for FPGA
-+	  devices, including flash images for the FPGA static
-+	  region and for the BMC. Select this option to enable
-+	  updates for secure FPGA devices.
-+
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index d8e21dfc6778..0e357262faed 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -21,6 +21,9 @@ obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+= zynqmp-fpga.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE)         += altera-pr-ip-core.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)    += altera-pr-ip-core-plat.o
- 
-+# FPGA Security Manager Framework
-+obj-$(CONFIG_FPGA_SEC_MGR)		+= fpga-sec-mgr.o
-+
- # FPGA Bridge Drivers
- obj-$(CONFIG_FPGA_BRIDGE)		+= fpga-bridge.o
- obj-$(CONFIG_SOCFPGA_FPGA_BRIDGE)	+= altera-hps2fpga.o altera-fpga2sdram.o
++Description:	Read-only. Returns a string describing the failure
++		of a secure update. This string will be in the form
++		of <STATUS>:<ERROR>, where <STATUS> will be one of
++		the status strings described for the status sysfs
++		file and <ERROR> will be one of the following:
++		hw-error, timeout, user-abort, device-busy,
++		invalid-file-size, read-write-error, flash-wearout,
++		file-read-error.  The error sysfs file is only
++		meaningful when the secure update engine is in the
++		idle state. If this file is read while a secure
++		update is in progress, then the read will fail with
++		EBUSY.
 diff --git a/drivers/fpga/fpga-sec-mgr.c b/drivers/fpga/fpga-sec-mgr.c
-new file mode 100644
-index 000000000000..5dff78c94d37
---- /dev/null
+index 0104f1af1409..bd6a15d25a01 100644
+--- a/drivers/fpga/fpga-sec-mgr.c
 +++ b/drivers/fpga/fpga-sec-mgr.c
-@@ -0,0 +1,430 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * FPGA Security Manager
-+ *
-+ * Copyright (C) 2019-2020 Intel Corporation, Inc.
-+ */
+@@ -146,10 +146,16 @@ static void update_progress(struct fpga_sec_mgr *smgr,
+ 	sysfs_notify(&smgr->dev.kobj, "update", "status");
+ }
+ 
++static void set_error(struct fpga_sec_mgr *smgr, enum fpga_sec_err err_code)
++{
++	smgr->err_state = smgr->progress;
++	smgr->err_code = err_code;
++}
 +
-+#include <linux/fpga/fpga-sec-mgr.h>
-+#include <linux/idr.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
+ static void fpga_sec_dev_error(struct fpga_sec_mgr *smgr,
+ 			       enum fpga_sec_err err_code)
+ {
+-	smgr->err_code = err_code;
++	set_error(smgr, err_code);
+ 	smgr->sops->cancel(smgr);
+ }
+ 
+@@ -172,7 +178,7 @@ static void fpga_sec_mgr_update(struct work_struct *work)
+ 
+ 	get_device(&smgr->dev);
+ 	if (request_firmware(&fw, smgr->filename, &smgr->dev)) {
+-		smgr->err_code = FPGA_SEC_ERR_FILE_READ;
++		set_error(smgr, FPGA_SEC_ERR_FILE_READ);
+ 		goto idle_exit;
+ 	}
+ 
+@@ -180,7 +186,7 @@ static void fpga_sec_mgr_update(struct work_struct *work)
+ 	smgr->remaining_size = fw->size;
+ 
+ 	if (!try_module_get(smgr->dev.parent->driver->owner)) {
+-		smgr->err_code = FPGA_SEC_ERR_BUSY;
++		set_error(smgr, FPGA_SEC_ERR_BUSY);
+ 		goto release_fw_exit;
+ 	}
+ 
+@@ -272,24 +278,76 @@ static const char * const sec_mgr_prog_str[] = {
+ 	"programming"		/* FPGA_SEC_PROG_PROGRAMMING */
+ };
+ 
+-static ssize_t
+-status_show(struct device *dev, struct device_attribute *attr, char *buf)
++static const char * const sec_mgr_err_str[] = {
++	"none",			/* FPGA_SEC_ERR_NONE */
++	"hw-error",		/* FPGA_SEC_ERR_HW_ERROR */
++	"timeout",		/* FPGA_SEC_ERR_TIMEOUT */
++	"user-abort",		/* FPGA_SEC_ERR_CANCELED */
++	"device-busy",		/* FPGA_SEC_ERR_BUSY */
++	"invalid-file-size",	/* FPGA_SEC_ERR_INVALID_SIZE */
++	"read-write-error",	/* FPGA_SEC_ERR_RW_ERROR */
++	"flash-wearout",	/* FPGA_SEC_ERR_WEAROUT */
++	"file-read-error"	/* FPGA_SEC_ERR_FILE_READ */
++};
 +
-+static DEFINE_IDA(fpga_sec_mgr_ida);
-+static struct class *fpga_sec_mgr_class;
++static const char *sec_progress(struct device *dev, enum fpga_sec_prog prog)
+ {
+-	struct fpga_sec_mgr *smgr = to_sec_mgr(dev);
+ 	const char *status = "unknown-status";
+-	enum fpga_sec_prog progress;
+ 
+-	progress = smgr->progress;
+-	if (progress < FPGA_SEC_PROG_MAX)
+-		status = sec_mgr_prog_str[progress];
++	if (prog < FPGA_SEC_PROG_MAX)
++		status = sec_mgr_prog_str[prog];
+ 	else
+ 		dev_err(dev, "Invalid status during secure update: %d\n",
+-			progress);
++			prog);
 +
-+#define to_sec_mgr(d) container_of(d, struct fpga_sec_mgr, dev)
++	return status;
++}
++
++static const char *sec_error(struct device *dev, enum fpga_sec_err err_code)
++{
++	const char *error = "unknown-error";
++
++	if (err_code < FPGA_SEC_ERR_MAX)
++		error = sec_mgr_err_str[err_code];
++	else
++		dev_err(dev, "Invalid error code during secure update: %d\n",
++			err_code);
++
++	return error;
++}
 +
 +static ssize_t
-+show_canceled_csk(struct fpga_sec_mgr *smgr,
-+		  int (*get_csk)(struct fpga_sec_mgr *smgr,
-+				 unsigned long *csk_map, unsigned int nbits),
-+		  int (*get_csk_nbits)(struct fpga_sec_mgr *smgr),
-+		  char *buf)
++status_show(struct device *dev, struct device_attribute *attr, char *buf)
 +{
-+	unsigned long *csk_map = NULL;
-+	unsigned int nbits;
-+	int ret;
-+
-+	ret = get_csk_nbits(smgr);
-+	if (ret < 0)
-+		return ret;
-+
-+	nbits = (unsigned int)ret;
-+	csk_map = vmalloc(sizeof(unsigned long) * BITS_TO_LONGS(nbits));
-+	if (!csk_map)
-+		return -ENOMEM;
-+
-+	ret = get_csk(smgr, csk_map, nbits);
-+	if (ret)
-+		goto vfree_exit;
-+
-+	ret = bitmap_print_to_pagebuf(1, buf, csk_map, nbits);
-+
-+vfree_exit:
-+	vfree(csk_map);
-+	return ret;
-+}
-+
++	struct fpga_sec_mgr *smgr = to_sec_mgr(dev);
+ 
+-	return sprintf(buf, "%s\n", status);
++	return sprintf(buf, "%s\n", sec_progress(dev, smgr->progress));
+ }
+ static DEVICE_ATTR_RO(status);
+ 
 +static ssize_t
-+show_root_entry_hash(struct fpga_sec_mgr *smgr,
-+		     int (*get_reh)(struct fpga_sec_mgr *smgr, u8 *hash,
-+				    unsigned int size),
-+		     int (*get_reh_size)(struct fpga_sec_mgr *smgr),
-+		     char *buf)
-+{
-+	int size, i, cnt, ret;
-+	u8 *hash;
-+
-+	ret = get_reh_size(smgr);
-+	if (ret < 0)
-+		return ret;
-+	else if (!ret)
-+		return sprintf(buf, "hash not programmed\n");
-+
-+	size = ret;
-+	hash = vmalloc(size);
-+	if (!hash)
-+		return -ENOMEM;
-+
-+	ret = get_reh(smgr, hash, size);
-+	if (ret)
-+		goto vfree_exit;
-+
-+	cnt = sprintf(buf, "0x");
-+	for (i = 0; i < size; i++)
-+		cnt += sprintf(buf + cnt, "%02x", hash[i]);
-+	cnt += sprintf(buf + cnt, "\n");
-+
-+vfree_exit:
-+	vfree(hash);
-+	return ret ? : cnt;
-+}
-+
-+#define DEVICE_ATTR_SEC_CSK(_name) \
-+static ssize_t _name##_canceled_csks_show(struct device *dev, \
-+					  struct device_attribute *attr, \
-+					  char *buf) \
-+{ \
-+	struct fpga_sec_mgr *smgr = to_sec_mgr(dev); \
-+	return show_canceled_csk(smgr, \
-+	       smgr->sops->_name##_canceled_csks, \
-+	       smgr->sops->_name##_canceled_csk_nbits, buf); \
-+} \
-+static DEVICE_ATTR_RO(_name##_canceled_csks)
-+
-+#define DEVICE_ATTR_SEC_ROOT_ENTRY_HASH(_name) \
-+static ssize_t _name##_root_entry_hash_show(struct device *dev, \
-+				     struct device_attribute *attr, \
-+				     char *buf) \
-+{ \
-+	struct fpga_sec_mgr *smgr = to_sec_mgr(dev); \
-+	return show_root_entry_hash(smgr, \
-+	       smgr->sops->_name##_root_entry_hash, \
-+	       smgr->sops->_name##_reh_size, buf); \
-+} \
-+static DEVICE_ATTR_RO(_name##_root_entry_hash)
-+
-+static ssize_t user_flash_count_show(struct device *dev,
-+				     struct device_attribute *attr, char *buf)
++error_show(struct device *dev, struct device_attribute *attr, char *buf)
 +{
 +	struct fpga_sec_mgr *smgr = to_sec_mgr(dev);
-+	int cnt = smgr->sops->user_flash_count(smgr);
-+
-+	return cnt < 0 ? cnt : sprintf(buf, "%u\n", cnt);
-+}
-+static DEVICE_ATTR_RO(user_flash_count);
-+
-+DEVICE_ATTR_SEC_ROOT_ENTRY_HASH(sr);
-+DEVICE_ATTR_SEC_ROOT_ENTRY_HASH(pr);
-+DEVICE_ATTR_SEC_ROOT_ENTRY_HASH(bmc);
-+DEVICE_ATTR_SEC_CSK(sr);
-+DEVICE_ATTR_SEC_CSK(pr);
-+DEVICE_ATTR_SEC_CSK(bmc);
-+
-+static struct attribute *sec_mgr_security_attrs[] = {
-+	&dev_attr_user_flash_count.attr,
-+	&dev_attr_bmc_root_entry_hash.attr,
-+	&dev_attr_sr_root_entry_hash.attr,
-+	&dev_attr_pr_root_entry_hash.attr,
-+	&dev_attr_sr_canceled_csks.attr,
-+	&dev_attr_pr_canceled_csks.attr,
-+	&dev_attr_bmc_canceled_csks.attr,
-+	NULL,
-+};
-+
-+#define check_attr(attribute, _name) \
-+	((attribute) == &dev_attr_##_name.attr && smgr->sops->_name)
-+
-+static umode_t sec_mgr_visible(struct kobject *kobj,
-+			       struct attribute *attr, int n)
-+{
-+	struct fpga_sec_mgr *smgr = to_sec_mgr(kobj_to_dev(kobj));
-+
-+	/*
-+	 * Only display optional sysfs attributes if a
-+	 * corresponding handler is provided
-+	 */
-+	if (check_attr(attr, user_flash_count) ||
-+	    check_attr(attr, bmc_root_entry_hash) ||
-+	    check_attr(attr, sr_root_entry_hash) ||
-+	    check_attr(attr, pr_root_entry_hash) ||
-+	    check_attr(attr, sr_canceled_csks) ||
-+	    check_attr(attr, pr_canceled_csks) ||
-+	    check_attr(attr, bmc_canceled_csks))
-+		return attr->mode;
-+
-+	return 0;
-+}
-+
-+static struct attribute_group sec_mgr_security_attr_group = {
-+	.name = "security",
-+	.attrs = sec_mgr_security_attrs,
-+	.is_visible = sec_mgr_visible,
-+};
-+
-+static ssize_t name_show(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	struct fpga_sec_mgr *smgr = to_sec_mgr(dev);
-+
-+	return sprintf(buf, "%s\n", smgr->name);
-+}
-+static DEVICE_ATTR_RO(name);
-+
-+static struct attribute *sec_mgr_attrs[] = {
-+	&dev_attr_name.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group sec_mgr_attr_group = {
-+	.attrs = sec_mgr_attrs,
-+};
-+
-+static const struct attribute_group *fpga_sec_mgr_attr_groups[] = {
-+	&sec_mgr_attr_group,
-+	&sec_mgr_security_attr_group,
-+	NULL,
-+};
-+
-+static bool check_sysfs_handler(struct device *dev,
-+				void *sysfs_handler, void *size_handler,
-+				const char *sysfs_handler_name,
-+				const char *size_handler_name)
-+{
-+	/*
-+	 * sysfs_handler and size_handler must either both be
-+	 * defined or both be NULL.
-+	 */
-+	if (sysfs_handler && !size_handler) {
-+		dev_err(dev, "%s registered without %s\n",
-+			sysfs_handler_name, size_handler_name);
-+		return false;
-+	} else if (!sysfs_handler && size_handler) {
-+		dev_err(dev, "%s registered without %s\n",
-+			size_handler_name, sysfs_handler_name);
-+		return false;
-+	}
-+	return true;
-+}
-+
-+#define check_reh_handler(_dev, _sops, _name) \
-+	check_sysfs_handler(_dev, (_sops)->_name##_root_entry_hash, \
-+			    (_sops)->_name##_reh_size, \
-+			    __stringify(_name##_root_entry_hash), \
-+			    __stringify(_name##_reh_size))
-+
-+#define check_csk_handler(_dev, _sops, _name) \
-+	check_sysfs_handler(_dev, (_sops)->_name##_canceled_csks, \
-+			    (_sops)->_name##_canceled_csk_nbits, \
-+			    __stringify(_name##_canceled_csks), \
-+			    __stringify(_name##_canceled_csk_nbits))
-+
-+/**
-+ * fpga_sec_mgr_create - create and initialize an FPGA
-+ *			  security manager struct
-+ *
-+ * @dev:  fpga security manager device from pdev
-+ * @name: fpga security manager name
-+ * @sops: pointer to a structure of fpga callback functions
-+ * @priv: fpga security manager private data
-+ *
-+ * The caller of this function is responsible for freeing the struct
-+ * with ifpg_sec_mgr_free(). Using devm_fpga_sec_mgr_create() instead
-+ * is recommended.
-+ *
-+ * Return: pointer to struct fpga_sec_mgr or NULL
-+ */
-+struct fpga_sec_mgr *
-+fpga_sec_mgr_create(struct device *dev, const char *name,
-+		    const struct fpga_sec_mgr_ops *sops, void *priv)
-+{
-+	struct fpga_sec_mgr *smgr;
-+	int id, ret;
-+
-+	if (!check_reh_handler(dev, sops, bmc) ||
-+	    !check_reh_handler(dev, sops, sr) ||
-+	    !check_reh_handler(dev, sops, pr) ||
-+	    !check_csk_handler(dev, sops, bmc) ||
-+	    !check_csk_handler(dev, sops, sr) ||
-+	    !check_csk_handler(dev, sops, pr)) {
-+		return NULL;
-+	}
-+
-+	if (!name || !strlen(name)) {
-+		dev_err(dev, "Attempt to register with no name!\n");
-+		return NULL;
-+	}
-+
-+	smgr = kzalloc(sizeof(*smgr), GFP_KERNEL);
-+	if (!smgr)
-+		return NULL;
-+
-+	id = ida_simple_get(&fpga_sec_mgr_ida, 0, 0, GFP_KERNEL);
-+	if (id < 0)
-+		goto error_kfree;
-+
-+	mutex_init(&smgr->lock);
-+
-+	smgr->name = name;
-+	smgr->priv = priv;
-+	smgr->sops = sops;
-+
-+	device_initialize(&smgr->dev);
-+	smgr->dev.class = fpga_sec_mgr_class;
-+	smgr->dev.parent = dev;
-+	smgr->dev.id = id;
-+
-+	ret = dev_set_name(&smgr->dev, "fpga_sec%d", id);
-+	if (ret) {
-+		dev_err(dev, "Failed to set device name: fpga_sec%d\n", id);
-+		goto error_device;
-+	}
-+
-+	return smgr;
-+
-+error_device:
-+	ida_simple_remove(&fpga_sec_mgr_ida, id);
-+
-+error_kfree:
-+	kfree(smgr);
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(fpga_sec_mgr_create);
-+
-+/**
-+ * fpga_sec_mgr_free - free an FPGA security manager created
-+ *			with fpga_sec_mgr_create()
-+ *
-+ * @smgr:	FPGA security manager structure
-+ */
-+void fpga_sec_mgr_free(struct fpga_sec_mgr *smgr)
-+{
-+	ida_simple_remove(&fpga_sec_mgr_ida, smgr->dev.id);
-+	kfree(smgr);
-+}
-+EXPORT_SYMBOL_GPL(fpga_sec_mgr_free);
-+
-+static void devm_fpga_sec_mgr_release(struct device *dev, void *res)
-+{
-+	struct fpga_sec_mgr *smgr = *(struct fpga_sec_mgr **)res;
-+
-+	fpga_sec_mgr_free(smgr);
-+}
-+
-+/**
-+ * devm_fpga_sec_mgr_create - create and initialize an FPGA
-+ *			       security manager struct
-+ *
-+ * @dev:  fpga security manager device from pdev
-+ * @name: fpga security manager name
-+ * @sops: pointer to a structure of fpga callback functions
-+ * @priv: fpga security manager private data
-+ *
-+ * This function is intended for use in a FPGA Security manager
-+ * driver's probe function.  After the security manager driver creates
-+ * the fpga_sec_mgr struct with devm_fpga_mgr_create(), it should
-+ * register it with fpga_sec_mgr_register().  The security manager
-+ * driver's remove function should call fpga_sec_mgr_unregister().
-+ * The fpga_sec_mgr struct allocated with this function will be freed
-+ * automatically on driver detach.  This includes the case of a probe
-+ * function returning error before calling fpga_mgr_register(), the
-+ * struct will still get cleaned up.
-+ *
-+ * Return: pointer to struct fpga_sec_mgr or NULL
-+ */
-+struct fpga_sec_mgr *
-+devm_fpga_sec_mgr_create(struct device *dev, const char *name,
-+			 const struct fpga_sec_mgr_ops *sops, void *priv)
-+{
-+	struct fpga_sec_mgr **ptr, *smgr;
-+
-+	ptr = devres_alloc(devm_fpga_sec_mgr_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return NULL;
-+
-+	smgr = fpga_sec_mgr_create(dev, name, sops, priv);
-+	if (!smgr) {
-+		devres_free(ptr);
-+	} else {
-+		*ptr = smgr;
-+		devres_add(dev, ptr);
-+	}
-+
-+	return smgr;
-+}
-+EXPORT_SYMBOL_GPL(devm_fpga_sec_mgr_create);
-+
-+/**
-+ * fpga_sec_mgr_register - register an FPGA security manager
-+ *
-+ * @smgr: fpga security manager struct
-+ *
-+ * Return: 0 on success, negative error code otherwise.
-+ */
-+int fpga_sec_mgr_register(struct fpga_sec_mgr *smgr)
-+{
 +	int ret;
 +
-+	ret = device_add(&smgr->dev);
-+	if (ret)
-+		goto error_device;
++	mutex_lock(&smgr->lock);
 +
-+	dev_info(&smgr->dev, "%s registered\n", smgr->name);
++	if (smgr->progress != FPGA_SEC_PROG_IDLE)
++		ret = -EBUSY;
++	else if (!smgr->err_code)
++		ret = 0;
++	else
++		ret = sprintf(buf, "%s:%s\n",
++			      sec_progress(dev, smgr->err_state),
++			      sec_error(dev, smgr->err_code));
 +
-+	return 0;
-+
-+error_device:
-+	ida_simple_remove(&fpga_sec_mgr_ida, smgr->dev.id);
++	mutex_unlock(&smgr->lock);
 +
 +	return ret;
 +}
-+EXPORT_SYMBOL_GPL(fpga_sec_mgr_register);
++static DEVICE_ATTR_RO(error);
 +
-+/**
-+ * fpga_sec_mgr_unregister - unregister an FPGA security manager
-+ *
-+ * @mgr: fpga manager struct
-+ *
-+ * This function is intended for use in an FPGA security manager
-+ * driver's remove() function.
-+ */
-+void fpga_sec_mgr_unregister(struct fpga_sec_mgr *smgr)
-+{
-+	dev_info(&smgr->dev, "%s %s\n", __func__, smgr->name);
-+
-+	device_unregister(&smgr->dev);
-+}
-+EXPORT_SYMBOL_GPL(fpga_sec_mgr_unregister);
-+
-+static void fpga_sec_mgr_dev_release(struct device *dev)
-+{
-+}
-+
-+static int __init fpga_sec_mgr_class_init(void)
-+{
-+	pr_info("FPGA Security Manager\n");
-+
-+	fpga_sec_mgr_class = class_create(THIS_MODULE, "fpga_sec_mgr");
-+	if (IS_ERR(fpga_sec_mgr_class))
-+		return PTR_ERR(fpga_sec_mgr_class);
-+
-+	fpga_sec_mgr_class->dev_groups = fpga_sec_mgr_attr_groups;
-+	fpga_sec_mgr_class->dev_release = fpga_sec_mgr_dev_release;
-+
-+	return 0;
-+}
-+
-+static void __exit fpga_sec_mgr_class_exit(void)
-+{
-+	class_destroy(fpga_sec_mgr_class);
-+	ida_destroy(&fpga_sec_mgr_ida);
-+}
-+
-+MODULE_DESCRIPTION("FPGA Security Manager Driver");
-+MODULE_LICENSE("GPL v2");
-+
-+subsys_initcall(fpga_sec_mgr_class_init);
-+module_exit(fpga_sec_mgr_class_exit)
+ static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
+ 			      const char *buf, size_t count)
+ {
+@@ -325,6 +383,7 @@ static DEVICE_ATTR_WO(filename);
+ static struct attribute *sec_mgr_update_attrs[] = {
+ 	&dev_attr_filename.attr,
+ 	&dev_attr_status.attr,
++	&dev_attr_error.attr,
+ 	NULL,
+ };
+ 
 diff --git a/include/linux/fpga/fpga-sec-mgr.h b/include/linux/fpga/fpga-sec-mgr.h
-new file mode 100644
-index 000000000000..1e0d5540e9e1
---- /dev/null
+index 13e90af76c45..6e46f18ad990 100644
+--- a/include/linux/fpga/fpga-sec-mgr.h
 +++ b/include/linux/fpga/fpga-sec-mgr.h
-@@ -0,0 +1,81 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Header file for FPGA Security Manager
-+ *
-+ * Copyright (C) 2019-2020 Intel Corporation, Inc.
-+ */
-+#ifndef _LINUX_FPGA_SEC_MGR_H
-+#define _LINUX_FPGA_SEC_MGR_H
-+
-+#include <linux/device.h>
-+#include <linux/mutex.h>
-+#include <linux/types.h>
-+
-+struct fpga_sec_mgr;
-+
-+/**
-+ * struct fpga_sec_mgr_ops - device specific operations
-+ * @user_flash_count:	    Optional: Return sysfs string output for FPGA
-+ *			    image flash count
-+ * @sr_root_entry_hash:	    Optional: Return sysfs string output for static
-+ *			    region root entry hash
-+ * @pr_root_entry_hash:	    Optional: Return sysfs string output for partial
-+ *			    reconfiguration root entry hash
-+ * @bmc_root_entry_hash:    Optional: Return sysfs string output for BMC
-+ *			    root entry hash
-+ * @sr_canceled_csks:	    Optional: Return sysfs string output for static
-+ *			    region canceled keys
-+ * @pr_canceled_csks:	    Optional: Return sysfs string output for partial
-+ *			    reconfiguration canceled keys
-+ * @bmc_canceled_csks:	    Optional: Return sysfs string output for bmc
-+ *			    canceled keys
-+ * @bmc_canceled_csk_nbits: Optional: Return BMC canceled csk vector bit count
-+ * @sr_canceled_csk_nbits:  Optional: Return SR canceled csk vector bit count
-+ * @pr_canceled_csk_nbits:  Optional: Return PR canceled csk vector bit count
-+ * @bmc_reh_size:	    Optional: Return byte size for BMC root entry hash
-+ * @sr_reh_size:	    Optional: Return byte size for SR root entry hash
-+ * @pr_reh_size:	    Optional: Return byte size for PR root entry hash
-+ */
-+struct fpga_sec_mgr_ops {
-+	int (*user_flash_count)(struct fpga_sec_mgr *smgr);
-+	int (*bmc_root_entry_hash)(struct fpga_sec_mgr *smgr, u8 *hash,
-+				   unsigned int size);
-+	int (*sr_root_entry_hash)(struct fpga_sec_mgr *smgr, u8 *hash,
-+				  unsigned int size);
-+	int (*pr_root_entry_hash)(struct fpga_sec_mgr *smgr, u8 *hash,
-+				  unsigned int size);
-+	int (*bmc_canceled_csks)(struct fpga_sec_mgr *smgr,
-+				 unsigned long *csk_map, unsigned int nbits);
-+	int (*sr_canceled_csks)(struct fpga_sec_mgr *smgr,
-+				unsigned long *csk_map, unsigned int nbits);
-+	int (*pr_canceled_csks)(struct fpga_sec_mgr *smgr,
-+				unsigned long *csk_map, unsigned int nbits);
-+	int (*bmc_reh_size)(struct fpga_sec_mgr *smgr);
-+	int (*sr_reh_size)(struct fpga_sec_mgr *smgr);
-+	int (*pr_reh_size)(struct fpga_sec_mgr *smgr);
-+	int (*bmc_canceled_csk_nbits)(struct fpga_sec_mgr *smgr);
-+	int (*sr_canceled_csk_nbits)(struct fpga_sec_mgr *smgr);
-+	int (*pr_canceled_csk_nbits)(struct fpga_sec_mgr *smgr);
-+};
-+
-+struct fpga_sec_mgr {
-+	const char *name;
-+	struct device dev;
-+	const struct fpga_sec_mgr_ops *sops;
-+	struct mutex lock;		/* protect data structure contents */
-+	void *priv;
-+};
-+
-+struct fpga_sec_mgr *
-+fpga_sec_mgr_create(struct device *dev, const char *name,
-+		    const struct fpga_sec_mgr_ops *sops, void *priv);
-+
-+struct fpga_sec_mgr *
-+devm_fpga_sec_mgr_create(struct device *dev, const char *name,
-+			 const struct fpga_sec_mgr_ops *sops, void *priv);
-+
-+int fpga_sec_mgr_register(struct fpga_sec_mgr *smgr);
-+void fpga_sec_mgr_unregister(struct fpga_sec_mgr *smgr);
-+void fpga_sec_mgr_free(struct fpga_sec_mgr *smgr);
-+
-+#endif
+@@ -110,6 +110,7 @@ struct fpga_sec_mgr {
+ 	const u8 *data;			/* pointer to update data */
+ 	u32 remaining_size;		/* size remaining to transfer */
+ 	enum fpga_sec_prog progress;
++	enum fpga_sec_prog err_state;	/* progress state at time of failure */
+ 	enum fpga_sec_err err_code;	/* security manager error code */
+ 	bool driver_unload;
+ 	void *priv;
 -- 
 2.17.1
 
