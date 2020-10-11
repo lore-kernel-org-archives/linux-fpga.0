@@ -1,177 +1,128 @@
-Return-Path: <SRS0=CNCj=DR=vger.kernel.org=linux-fpga-owner@kernel.org>
+Return-Path: <SRS0=8tPV=DS=vger.kernel.org=linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B780C4363D
-	for <linux-fpga@archiver.kernel.org>; Sat, 10 Oct 2020 23:07:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B28BCC433E7
+	for <linux-fpga@archiver.kernel.org>; Sun, 11 Oct 2020 14:43:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ED0FA208C7
-	for <linux-fpga@archiver.kernel.org>; Sat, 10 Oct 2020 23:07:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="NYVIOVV4"
+	by mail.kernel.org (Postfix) with ESMTP id 75352207F7
+	for <linux-fpga@archiver.kernel.org>; Sun, 11 Oct 2020 14:43:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1602427435;
+	bh=yv1yootdGiYZLb8MsWumj0gcQCzLP83X0Es/Fa8wdY4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=MHUjsEzXoI3eHX/Ayyiun16ezzWiBnLN2QqoML7eP40o0nl4Wo0D7/R8CJLKhuFJX
+	 cF8K20f+w4VSsh1i3M2sS70mldlM97joClrK7S3AVnqrruxn+TWMbgXTbCDKxaDS29
+	 YapR270q2p1JveS14KouZfgHBeLUHVmV9x9QttUI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731016AbgJJW5S (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sat, 10 Oct 2020 18:57:18 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:53569 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1732117AbgJJTkQ (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>);
-        Sat, 10 Oct 2020 15:40:16 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1602358807;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=lScSHb5GRh2T45yUL3D8Nuv4fLYCBkJXmfkPANcLZ0g=;
-        b=NYVIOVV4VW8r9DiQo8/O8YrsGMux6TnhUUlxHzv8wNllMHHM5lxcrVXIIjAQvsy92RjY+Q
-        /u1EVrsXchB3feMX4PKHusJpZBzI+44n8pb2qg7FUCLWIQ7bzcTNARR19XrViJ8BopDqLW
-        nMFrwF5gJ4wa7bUVpcmlgWRf7TocEDU=
-Received: from mail-oo1-f71.google.com (mail-oo1-f71.google.com
- [209.85.161.71]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-96-iK-1aNHiN9uteD2uKiS6ew-1; Sat, 10 Oct 2020 11:07:11 -0400
-X-MC-Unique: iK-1aNHiN9uteD2uKiS6ew-1
-Received: by mail-oo1-f71.google.com with SMTP id q189so5244391ooa.18
-        for <linux-fpga@vger.kernel.org>; Sat, 10 Oct 2020 08:07:11 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding
-         :content-language;
-        bh=lScSHb5GRh2T45yUL3D8Nuv4fLYCBkJXmfkPANcLZ0g=;
-        b=HwgQEDZ3xkrldc9xS5T7z5M9K2rTkX3iYFWc5aQGmXWjC9pfZS6wnlFAgMY0LpBFom
-         sTB4vrUhEGOBUgwPqCchEVw3mfZf09bSxMMTEe3v2p9GIj1KuHVgz2RYhq3NFsqBr0Es
-         H1TT+pxXE+DUzcqWGNs1QyzAgZ9+iD3w8Smfg/bqzxBjr+wl+4HLt7TqPES+j1txQCnc
-         X5cfZJu8SKEPQ3kc81TWUL30BRW/DiljkC2EYq6nad/fPTppleQW1fAscAr0+0OZEGeN
-         d4kWIv1uv/8BjqNXxc5nz1cX4hrpYH8JGxgiB7Ww3XWQtEVbQLMbcglPAFg+/dsIrfj9
-         wxnA==
-X-Gm-Message-State: AOAM532j3+Vn0o5lTx02B01UItN+fuLPMOOP6goRHJ0dHRuJbIiklEP+
-        2iBGqcOHu/mxNJtZJuRZFmn30tK4FEnNPJzoJIkc4PkXOZ0epAMIaWjmCgSVZrkESiaxTU2MPhW
-        uKq87/c4Q/2CZ6Q+v/f/TqA==
-X-Received: by 2002:a9d:3a64:: with SMTP id j91mr12166067otc.207.1602342430974;
-        Sat, 10 Oct 2020 08:07:10 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzh7nJmECAqmKKTRnHbW9vZsSCDKSoZMOAeBdsZ+p66fOBHFuqLBgjCWEN5eSrDmBz2yZ4aiQ==
-X-Received: by 2002:a9d:3a64:: with SMTP id j91mr12166054otc.207.1602342430696;
-        Sat, 10 Oct 2020 08:07:10 -0700 (PDT)
-Received: from trix.remote.csb (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id h3sm8936617oom.18.2020.10.10.08.07.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 10 Oct 2020 08:07:10 -0700 (PDT)
-Subject: Re: [PATCH v9 1/6] fpga: dfl: fix the definitions of type &
- feature_id for dfl devices
-To:     Xu Yilun <yilun.xu@intel.com>, mdf@kernel.org, krzk@kernel.org,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     gregkh@linuxfoundation.org, lgoncalv@redhat.com, hao.wu@intel.com
+        id S2388036AbgJKOnz (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 11 Oct 2020 10:43:55 -0400
+Received: from mail.kernel.org ([198.145.29.99]:35278 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2388019AbgJKOny (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Sun, 11 Oct 2020 10:43:54 -0400
+Received: from localhost (83-86-74-64.cable.dynamic.v4.ziggo.nl [83.86.74.64])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 974CB2078B;
+        Sun, 11 Oct 2020 14:43:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1602427434;
+        bh=yv1yootdGiYZLb8MsWumj0gcQCzLP83X0Es/Fa8wdY4=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=CK7lhPYTSm6ThQ6Pu10SkF/TjrCuV5cl4JabhLsPamuc4QfO67gvQJwfxgBhl8xyw
+         YJ8H+hbks3uKNOpME3BhqVqCAoq3RFskM+GIVuZlVUEHU94CssYt+6Jg9LZVJfnvsz
+         OJIIFpZ8cVwoISK97ZqdfCuZAQKgq8pIUBUSgd4o=
+Date:   Sun, 11 Oct 2020 16:43:51 +0200
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Xu Yilun <yilun.xu@intel.com>
+Cc:     mdf@kernel.org, krzk@kernel.org, linux-fpga@vger.kernel.org,
+        linux-kernel@vger.kernel.org, trix@redhat.com, lgoncalv@redhat.com,
+        hao.wu@intel.com,
+        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        Russ Weight <russell.h.weight@intel.com>
+Subject: Re: [PATCH v9 2/6] fpga: dfl: move dfl_device_id to mod_devicetable.h
+Message-ID: <20201011144351.GA271501@kroah.com>
 References: <1602313793-21421-1-git-send-email-yilun.xu@intel.com>
- <1602313793-21421-2-git-send-email-yilun.xu@intel.com>
-From:   Tom Rix <trix@redhat.com>
-Message-ID: <8786ca8f-7edd-d7b1-7eca-6447814c6e5e@redhat.com>
-Date:   Sat, 10 Oct 2020 08:07:07 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ <1602313793-21421-3-git-send-email-yilun.xu@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <1602313793-21421-2-git-send-email-yilun.xu@intel.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1602313793-21421-3-git-send-email-yilun.xu@intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-
-On 10/10/20 12:09 AM, Xu Yilun wrote:
-> The value of the field dfl_device.type comes from the 12 bits register
-> field DFH_ID according to DFL spec. So this patch changes the definition
-> of the type field to u16.
->
-> Also it is not necessary to illustrate the valid bits of the type field
-> in comments. Instead we should explicitly define the possible values in
-> the enumeration type for it, because they are shared by hardware spec.
-> We should not let the compiler decide these values.
->
-> Similar changes are also applied to dfl_device.feature_id.
->
-> This patch also fixed the MODALIAS format according to the changes
-> above.
->
+On Sat, Oct 10, 2020 at 03:09:49PM +0800, Xu Yilun wrote:
+> In order to support MODULE_DEVICE_TABLE() for dfl device driver, this
+> patch moves struct dfl_device_id to mod_devicetable.h
+> 
 > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Wu Hao <hao.wu@intel.com>
+> Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+> Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+> Reviewed-by: Tom Rix <trix@redhat.com>
+> Acked-by: Wu Hao <hao.wu@intel.com>
+> Signed-off-by: Moritz Fischer <mdf@kernel.org>
 > ---
-> v9: no change
+> v2: fix the order for the header file
+> v3: rebase the patch for dfl bus name change
+> v9: rebase the patch for dfl bus name changes back to "dfl"
 > ---
->  drivers/fpga/dfl.c |  3 +--
->  drivers/fpga/dfl.h | 14 +++++++-------
->  2 files changed, 8 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-> index b450870..5a6ba3b 100644
-> --- a/drivers/fpga/dfl.c
-> +++ b/drivers/fpga/dfl.c
-> @@ -298,8 +298,7 @@ static int dfl_bus_uevent(struct device *dev, struct kobj_uevent_env *env)
->  {
->  	struct dfl_device *ddev = to_dfl_dev(dev);
->  
-> -	/* The type has 4 valid bits and feature_id has 12 valid bits */
-> -	return add_uevent_var(env, "MODALIAS=dfl:t%01Xf%03X",
-> +	return add_uevent_var(env, "MODALIAS=dfl:t%04Xf%04X",
->  			      ddev->type, ddev->feature_id);
->  }
->  
+>  drivers/fpga/dfl.h              | 13 +------------
+>  include/linux/mod_devicetable.h | 12 ++++++++++++
+>  2 files changed, 13 insertions(+), 12 deletions(-)
+> 
 > diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-> index 5dc758f..ac373b1 100644
+> index ac373b1..549c790 100644
 > --- a/drivers/fpga/dfl.h
 > +++ b/drivers/fpga/dfl.h
-> @@ -520,19 +520,19 @@ long dfl_feature_ioctl_set_irq(struct platform_device *pdev,
->   * enum dfl_id_type - define the DFL FIU types
->   */
->  enum dfl_id_type {
-> -	FME_ID,
-> -	PORT_ID,
-> +	FME_ID = 0,
-> +	PORT_ID = 1,
-
-This is redundant, why make this change ?
-
-Tom
-
->  	DFL_ID_MAX,
+> @@ -22,6 +22,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/iopoll.h>
+>  #include <linux/io-64-nonatomic-lo-hi.h>
+> +#include <linux/mod_devicetable.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/slab.h>
+>  #include <linux/uuid.h>
+> @@ -526,18 +527,6 @@ enum dfl_id_type {
 >  };
 >  
 >  /**
->   * struct dfl_device_id -  dfl device identifier
-> - * @type: contains 4 bits DFL FIU type of the device. See enum dfl_id_type.
-> - * @feature_id: contains 12 bits feature identifier local to its DFL FIU type.
-> + * @type: DFL FIU type of the device. See enum dfl_id_type.
-> + * @feature_id: feature identifier local to its DFL FIU type.
->   * @driver_data: driver specific data.
->   */
->  struct dfl_device_id {
-> -	u8 type;
-> +	u16 type;
->  	u16 feature_id;
->  	unsigned long driver_data;
->  };
-> @@ -543,7 +543,7 @@ struct dfl_device_id {
+> - * struct dfl_device_id -  dfl device identifier
+> - * @type: DFL FIU type of the device. See enum dfl_id_type.
+> - * @feature_id: feature identifier local to its DFL FIU type.
+> - * @driver_data: driver specific data.
+> - */
+> -struct dfl_device_id {
+> -	u16 type;
+> -	u16 feature_id;
+> -	unsigned long driver_data;
+> -};
+> -
+> -/**
+>   * struct dfl_device - represent an dfl device on dfl bus
+>   *
 >   * @dev: generic device interface.
->   * @id: id of the dfl device.
->   * @type: type of DFL FIU of the device. See enum dfl_id_type.
-> - * @feature_id: 16 bits feature identifier local to its DFL FIU type.
-> + * @feature_id: feature identifier local to its DFL FIU type.
->   * @mmio_res: mmio resource of this dfl device.
->   * @irqs: list of Linux IRQ numbers of this dfl device.
->   * @num_irqs: number of IRQs supported by this dfl device.
-> @@ -553,7 +553,7 @@ struct dfl_device_id {
->  struct dfl_device {
->  	struct device dev;
->  	int id;
-> -	u8 type;
-> +	u16 type;
->  	u16 feature_id;
->  	struct resource mmio_res;
->  	int *irqs;
+> diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+> index 5b08a47..66e1405 100644
+> --- a/include/linux/mod_devicetable.h
+> +++ b/include/linux/mod_devicetable.h
+> @@ -838,4 +838,16 @@ struct mhi_device_id {
+>  	kernel_ulong_t driver_data;
+>  };
+>  
+> +/**
+> + * struct dfl_device_id -  dfl device identifier
 
+I still have no idea what "dfl" means.  Please at the very least,
+explain it here.
+
+thanks,
+
+greg k-h
