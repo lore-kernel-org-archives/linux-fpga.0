@@ -2,101 +2,106 @@ Return-Path: <SRS0=RP6+=D6=vger.kernel.org=linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 944ACC55178
-	for <linux-fpga@archiver.kernel.org>; Fri, 23 Oct 2020 08:52:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA858C4363A
+	for <linux-fpga@archiver.kernel.org>; Fri, 23 Oct 2020 15:37:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4F42D2168B
-	for <linux-fpga@archiver.kernel.org>; Fri, 23 Oct 2020 08:52:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 858C720E65
+	for <linux-fpga@archiver.kernel.org>; Fri, 23 Oct 2020 15:37:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S460798AbgJWIvd (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 23 Oct 2020 04:51:33 -0400
-Received: from mga04.intel.com ([192.55.52.120]:3681 "EHLO mga04.intel.com"
+        id S465911AbgJWPho (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 23 Oct 2020 11:37:44 -0400
+Received: from vps0.lunn.ch ([185.16.172.187]:41834 "EHLO vps0.lunn.ch"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S460748AbgJWIvc (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 23 Oct 2020 04:51:32 -0400
-IronPort-SDR: c5CT5yZ2pIQbKok5sZvAIzp05EM3u7J6L3i/RILt/Cd4gsXzqiuLV5LyYr4B4bE0jeMRUB9Qj4
- JQZTekCnA5eg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9782"; a="165055355"
-X-IronPort-AV: E=Sophos;i="5.77,407,1596524400"; 
-   d="scan'208";a="165055355"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2020 01:51:32 -0700
-IronPort-SDR: hDUlTG/KaLUMQTN6xxE8syzzmbKqwBq4XWZTOQAyXbCi07LvZLv/0kQ8k0awOP0/dlWUzuyPHH
- eaB55I3DSEtg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,407,1596524400"; 
-   d="scan'208";a="523436304"
-Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.141])
-  by fmsmga006.fm.intel.com with ESMTP; 23 Oct 2020 01:51:29 -0700
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
+        id S462875AbgJWPhn (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 23 Oct 2020 11:37:43 -0400
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94)
+        (envelope-from <andrew@lunn.ch>)
+        id 1kVz8F-0039CC-Gm; Fri, 23 Oct 2020 17:37:31 +0200
+Date:   Fri, 23 Oct 2020 17:37:31 +0200
+From:   Andrew Lunn <andrew@lunn.ch>
+To:     Xu Yilun <yilun.xu@intel.com>
+Cc:     jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
         davem@davemloft.net, kuba@kernel.org, mdf@kernel.org,
-        lee.jones@linaro.org
-Cc:     linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org,
-        netdev@vger.kernel.org, trix@redhat.com, lgoncalv@redhat.com,
-        yilun.xu@intel.com, hao.wu@intel.com
-Subject: [RFC PATCH 3/6] fpga: dfl: add an API to get the base device for dfl device
-Date:   Fri, 23 Oct 2020 16:45:42 +0800
-Message-Id: <1603442745-13085-4-git-send-email-yilun.xu@intel.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1603442745-13085-1-git-send-email-yilun.xu@intel.com>
+        lee.jones@linaro.org, linux-kernel@vger.kernel.org,
+        linux-fpga@vger.kernel.org, netdev@vger.kernel.org,
+        trix@redhat.com, lgoncalv@redhat.com, hao.wu@intel.com
+Subject: Re: [RFC PATCH 1/6] docs: networking: add the document for DFL Ether
+ Group driver
+Message-ID: <20201023153731.GC718124@lunn.ch>
 References: <1603442745-13085-1-git-send-email-yilun.xu@intel.com>
+ <1603442745-13085-2-git-send-email-yilun.xu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1603442745-13085-2-git-send-email-yilun.xu@intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-This patch adds an API for dfl devices to find which physical device
-owns the DFL.
+Hi Xu
 
-This patch makes preparation for supporting DFL Ether Group private
-feature driver. It uses this information to determine which retimer
-device physically connects to which ether group.
+Before i look at the other patches, i want to understand the
+architecture properly.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
----
- drivers/fpga/dfl.c  | 9 +++++++++
- include/linux/dfl.h | 1 +
- 2 files changed, 10 insertions(+)
+> +=======================================================================
+> +DFL device driver for Ether Group private feature on Intel(R) PAC N3000
+> +=======================================================================
+> +
+> +This is the driver for Ether Group private feature on Intel(R)
+> +PAC (Programmable Acceleration Card) N3000.
 
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index ca3c678..52d18e6 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -558,6 +558,15 @@ int dfl_dev_get_vendor_net_cfg(struct dfl_device *dfl_dev)
- }
- EXPORT_SYMBOL_GPL(dfl_dev_get_vendor_net_cfg);
- 
-+struct device *dfl_dev_get_base_dev(struct dfl_device *dfl_dev)
-+{
-+	if (!dfl_dev || !dfl_dev->cdev)
-+		return NULL;
-+
-+	return dfl_dev->cdev->parent;
-+}
-+EXPORT_SYMBOL_GPL(dfl_dev_get_base_dev);
-+
- #define is_header_feature(feature) ((feature)->id == FEATURE_ID_FIU_HEADER)
- 
- /**
-diff --git a/include/linux/dfl.h b/include/linux/dfl.h
-index 5ee2b1e..dd313f2 100644
---- a/include/linux/dfl.h
-+++ b/include/linux/dfl.h
-@@ -68,6 +68,7 @@ struct dfl_driver {
- #define to_dfl_drv(d) container_of(d, struct dfl_driver, drv)
- 
- int dfl_dev_get_vendor_net_cfg(struct dfl_device *dfl_dev);
-+struct device *dfl_dev_get_base_dev(struct dfl_device *dfl_dev);
- 
- /*
-  * use a macro to avoid include chaining to get THIS_MODULE.
--- 
-2.7.4
+I assume this is just one implementation. The FPGA could be placed on
+other boards. So some of the limitations you talk about with the BMC
+artificial, and the overall architecture of the drivers is more
+generic?
 
+> +The Intel(R) PAC N3000 is a FPGA based SmartNIC platform for multi-workload
+> +networking application acceleration. A simple diagram below to for the board:
+> +
+> +                     +----------------------------------------+
+> +                     |                  FPGA                  |
+> ++----+   +-------+   +-----------+  +----------+  +-----------+   +----------+
+> +|QSFP|---|retimer|---|Line Side  |--|User logic|--|Host Side  |---|XL710     |
+> ++----+   +-------+   |Ether Group|  |          |  |Ether Group|   |Ethernet  |
+> +                     |(PHY + MAC)|  |wiring &  |  |(MAC + PHY)|   |Controller|
+> +                     +-----------+  |offloading|  +-----------+   +----------+
+> +                     |              +----------+              |
+> +                     |                                        |
+> +                     +----------------------------------------+
+
+Is XL710 required? I assume any MAC with the correct MII interface
+will work?
+
+Do you really mean PHY? I actually expect it is PCS? 
+
+> +The DFL Ether Group driver registers netdev for each line side link. Users
+> +could use standard commands (ethtool, ip, ifconfig) for configuration and
+> +link state/statistics reading. For host side links, they are always connected
+> +to the host ethernet controller, so they should always have same features as
+> +the host ethernet controller. There is no need to register netdevs for them.
+
+So lets say the XL710 is eth0. The line side netif is eth1. Where do i
+put the IP address? What interface do i add to quagga OSPF? 
+
+> +The driver just enables these links on probe.
+> +
+> +The retimer chips are managed by onboard BMC (Board Management Controller)
+> +firmware, host driver is not capable to access them directly.
+
+What about the QSPF socket? Can the host get access to the I2C bus?
+The pins for TX enable, etc. ethtool -m?
+
+> +Speed/Duplex
+> +------------
+> +The Ether Group doesn't support auto-negotiation. The link speed is fixed to
+> +10G, 25G or 40G full duplex according to which Ether Group IP is programmed.
+
+So that means, if i pop out the SFP and put in a different one which
+supports a different speed, it is expected to be broken until the FPGA
+is reloaded?
+
+     Andrew
