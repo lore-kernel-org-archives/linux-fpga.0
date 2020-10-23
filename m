@@ -7,34 +7,34 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94CE6C55179
-	for <linux-fpga@archiver.kernel.org>; Fri, 23 Oct 2020 08:51:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73F91C55178
+	for <linux-fpga@archiver.kernel.org>; Fri, 23 Oct 2020 08:52:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4789D2168B
-	for <linux-fpga@archiver.kernel.org>; Fri, 23 Oct 2020 08:51:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2E89B2168B
+	for <linux-fpga@archiver.kernel.org>; Fri, 23 Oct 2020 08:52:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S460809AbgJWIvi (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 23 Oct 2020 04:51:38 -0400
+        id S460815AbgJWIvf (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 23 Oct 2020 04:51:35 -0400
 Received: from mga04.intel.com ([192.55.52.120]:3681 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S460830AbgJWIvg (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 23 Oct 2020 04:51:36 -0400
-IronPort-SDR: G1tB1EsaOvY48jp92P3QTHvBdKn0dJCameJJYCDqRpzmmulCoA4rhtQSvZvrPcsxRXZ7+ep9W0
- 1QgFJVgs3zCg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9782"; a="165055362"
+        id S460809AbgJWIvd (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 23 Oct 2020 04:51:33 -0400
+IronPort-SDR: SBu8VFUwrjfVCnbIH4qcZzEVgl240wmoQTdvLwK/1LHblayoGzWQI/wBDxbKx+oXqQXwxJAOLS
+ dsSQEGGpA0Ng==
+X-IronPort-AV: E=McAfee;i="6000,8403,9782"; a="165055343"
 X-IronPort-AV: E=Sophos;i="5.77,407,1596524400"; 
-   d="scan'208";a="165055362"
+   d="scan'208";a="165055343"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2020 01:51:36 -0700
-IronPort-SDR: LKSUG6fUMzJSsY5VukmUmOm2XiJXq1ETwzpZRwJAyju3Owfxp3ZzH1GeRTBRfCWSMMQkIQW+Q3
- RvdEp6VPnz4Q==
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2020 01:51:23 -0700
+IronPort-SDR: ITN+aGUIW2EVSTVKvOM48cwwJmkNgnDak9ms1HVqLuSbPBHxvYUg2Hr7+wikSnMBGIup7Ux+SS
+ Bb4Cf+0Hgq2A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.77,407,1596524400"; 
-   d="scan'208";a="523436313"
+   d="scan'208";a="523436275"
 Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.141])
-  by fmsmga006.fm.intel.com with ESMTP; 23 Oct 2020 01:51:33 -0700
+  by fmsmga006.fm.intel.com with ESMTP; 23 Oct 2020 01:51:20 -0700
 From:   Xu Yilun <yilun.xu@intel.com>
 To:     jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
         davem@davemloft.net, kuba@kernel.org, mdf@kernel.org,
@@ -42,9 +42,9 @@ To:     jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
 Cc:     linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org,
         netdev@vger.kernel.org, trix@redhat.com, lgoncalv@redhat.com,
         yilun.xu@intel.com, hao.wu@intel.com
-Subject: [RFC PATCH 4/6] ethernet: m10-retimer: add support for retimers on Intel MAX 10 BMC
-Date:   Fri, 23 Oct 2020 16:45:43 +0800
-Message-Id: <1603442745-13085-5-git-send-email-yilun.xu@intel.com>
+Subject: [RFC PATCH 1/6] docs: networking: add the document for DFL Ether Group driver
+Date:   Fri, 23 Oct 2020 16:45:40 +0800
+Message-Id: <1603442745-13085-2-git-send-email-yilun.xu@intel.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1603442745-13085-1-git-send-email-yilun.xu@intel.com>
 References: <1603442745-13085-1-git-send-email-yilun.xu@intel.com>
@@ -52,420 +52,135 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-This driver supports the ethernet retimers (Parkvale) for the Intel PAC
-(Programmable Acceleration Card) N3000, which is a FPGA based Smart NIC.
-
-Parkvale is an Intel(R) Ethernet serdes transceiver chip that supports up
-to 100G transfer. On Intel PAC N3000 there are 2 Parkvale chips managed
-by the Intel MAX 10 BMC firmware. They are configured in 4 ports 10G/25G
-retimer mode. Host could query their link status via retimer interfaces
-(Shared registers) on Intel MAX 10 BMC.
-
-The driver adds the phy device for each port of the 2 retimer chips.
-Since the phys are not accessed by the real MDIO bus, it creates a virtual
-mdio bus for each NIC device instance, and a dedicated phy driver which
-only provides the supported features and link state.
-
-A DFL Ether Group driver will create net devices and connect to these
-phys.
+This patch adds the document for DFL Ether Group driver.
 
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 ---
- drivers/fpga/dfl-n3000-nios.c                      |  11 +-
- drivers/mfd/intel-m10-bmc.c                        |  18 ++
- drivers/net/ethernet/intel/Kconfig                 |  12 ++
- drivers/net/ethernet/intel/Makefile                |   2 +
- drivers/net/ethernet/intel/intel-m10-bmc-retimer.c | 229 +++++++++++++++++++++
- include/linux/mfd/intel-m10-bmc.h                  |  16 ++
- 6 files changed, 286 insertions(+), 2 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/intel-m10-bmc-retimer.c
+ .../networking/device_drivers/ethernet/index.rst   |   1 +
+ .../ethernet/intel/dfl-eth-group.rst               | 102 +++++++++++++++++++++
+ 2 files changed, 103 insertions(+)
+ create mode 100644 Documentation/networking/device_drivers/ethernet/intel/dfl-eth-group.rst
 
-diff --git a/drivers/fpga/dfl-n3000-nios.c b/drivers/fpga/dfl-n3000-nios.c
-index 4983a2b..096931a 100644
---- a/drivers/fpga/dfl-n3000-nios.c
-+++ b/drivers/fpga/dfl-n3000-nios.c
-@@ -16,6 +16,7 @@
- #include <linux/io-64-nonatomic-lo-hi.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/mfd/intel-m10-bmc.h>
- #include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include <linux/stddef.h>
-@@ -159,6 +160,8 @@ struct n3000_nios {
- 	struct regmap *regmap;
- 	struct device *dev;
- 	struct platform_device *altera_spi;
-+	struct intel_m10bmc_platdata m10bmc_pdata;
-+	struct intel_m10bmc_retimer_pdata m10bmc_retimer_pdata;
- };
- 
- static ssize_t nios_fw_version_show(struct device *dev,
-@@ -412,7 +415,8 @@ static struct spi_board_info m10_n3000_info = {
- 	.chip_select = 0,
- };
- 
--static int create_altera_spi_controller(struct n3000_nios *nn)
-+static int create_altera_spi_controller(struct n3000_nios *nn,
-+					struct device *retimer_master)
- {
- 	struct altera_spi_platform_data pdata = { 0 };
- 	struct platform_device_info pdevinfo = { 0 };
-@@ -431,6 +435,9 @@ static int create_altera_spi_controller(struct n3000_nios *nn)
- 	pdata.bits_per_word_mask =
- 		SPI_BPW_RANGE_MASK(1, FIELD_GET(N3000_NS_PARAM_DATA_WIDTH, v));
- 
-+	nn->m10bmc_retimer_pdata.retimer_master = retimer_master;
-+	nn->m10bmc_pdata.retimer = &nn->m10bmc_retimer_pdata;
-+	m10_n3000_info.platform_data = &nn->m10bmc_pdata;
- 	pdata.num_devices = 1;
- 	pdata.devices = &m10_n3000_info;
- 
-@@ -549,7 +556,7 @@ static int n3000_nios_probe(struct dfl_device *ddev)
- 	if (ret)
- 		return ret;
- 
--	ret = create_altera_spi_controller(nn);
-+	ret = create_altera_spi_controller(nn, dfl_dev_get_base_dev(ddev));
- 	if (ret)
- 		dev_err(dev, "altera spi controller create failed: %d\n", ret);
- 
-diff --git a/drivers/mfd/intel-m10-bmc.c b/drivers/mfd/intel-m10-bmc.c
-index b84579b..adbfb177 100644
---- a/drivers/mfd/intel-m10-bmc.c
-+++ b/drivers/mfd/intel-m10-bmc.c
-@@ -23,6 +23,21 @@ static struct mfd_cell m10bmc_pacn3000_subdevs[] = {
- 	{ .name = "n3000bmc-secure" },
- };
- 
-+static void
-+m10bmc_init_cells_platdata(struct intel_m10bmc_platdata *pdata,
-+			   struct mfd_cell *cells, int n_cell)
-+{
-+	int i;
-+
-+	for (i = 0; i < n_cell; i++) {
-+		if (!strcmp(cells[i].name, "n3000bmc-retimer")) {
-+			cells[i].platform_data = pdata->retimer;
-+			cells[i].pdata_size =
-+				pdata->retimer ? sizeof(*pdata->retimer) : 0;
-+		}
-+	}
-+}
-+
- static struct regmap_config intel_m10bmc_regmap_config = {
- 	.reg_bits = 32,
- 	.val_bits = 32,
-@@ -97,6 +112,7 @@ static int check_m10bmc_version(struct intel_m10bmc *ddata)
- 
- static int intel_m10_bmc_spi_probe(struct spi_device *spi)
- {
-+	struct intel_m10bmc_platdata *pdata = dev_get_platdata(&spi->dev);
- 	const struct spi_device_id *id = spi_get_device_id(spi);
- 	struct device *dev = &spi->dev;
- 	struct mfd_cell *cells;
-@@ -134,6 +150,8 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
- 		return -ENODEV;
- 	}
- 
-+	m10bmc_init_cells_platdata(pdata, cells, n_cell);
-+
- 	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_AUTO, cells, n_cell,
- 				   NULL, 0, NULL);
- 	if (ret)
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 5aa8631..81c43d4 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -343,4 +343,16 @@ config IGC
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called igc.
- 
-+config INTEL_M10_BMC_RETIMER
-+	tristate "Intel(R) MAX 10 BMC ethernet retimer support"
-+	depends on MFD_INTEL_M10_BMC
-+	select PHYLIB
-+        help
-+          This driver supports the ethernet retimer (Parkvale) on
-+	  Intel(R) MAX 10 BMC, which is used by Intel PAC N3000 FPGA based
-+	  Smart NIC.
-+
-+	  To compile this driver as a module, choose M here. The module
-+	  will be called intel-m10-bmc-retimer.
-+
- endif # NET_VENDOR_INTEL
-diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
-index 3075290..5965447 100644
---- a/drivers/net/ethernet/intel/Makefile
-+++ b/drivers/net/ethernet/intel/Makefile
-@@ -16,3 +16,5 @@ obj-$(CONFIG_IXGB) += ixgb/
- obj-$(CONFIG_IAVF) += iavf/
- obj-$(CONFIG_FM10K) += fm10k/
- obj-$(CONFIG_ICE) += ice/
-+
-+obj-$(CONFIG_INTEL_M10_BMC_RETIMER) += intel-m10-bmc-retimer.o
-diff --git a/drivers/net/ethernet/intel/intel-m10-bmc-retimer.c b/drivers/net/ethernet/intel/intel-m10-bmc-retimer.c
+diff --git a/Documentation/networking/device_drivers/ethernet/index.rst b/Documentation/networking/device_drivers/ethernet/index.rst
+index cbb75a18..eb7c443 100644
+--- a/Documentation/networking/device_drivers/ethernet/index.rst
++++ b/Documentation/networking/device_drivers/ethernet/index.rst
+@@ -26,6 +26,7 @@ Contents:
+    freescale/gianfar
+    google/gve
+    huawei/hinic
++   intel/dfl-eth-group
+    intel/e100
+    intel/e1000
+    intel/e1000e
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/dfl-eth-group.rst b/Documentation/networking/device_drivers/ethernet/intel/dfl-eth-group.rst
 new file mode 100644
-index 0000000..c7b0558
+index 0000000..525807e
 --- /dev/null
-+++ b/drivers/net/ethernet/intel/intel-m10-bmc-retimer.c
-@@ -0,0 +1,229 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Intel Max10 BMC Retimer Interface Driver
-+ *
-+ * Copyright (C) 2018-2020 Intel Corporation. All rights reserved.
-+ *
-+ */
-+#include <linux/device.h>
-+#include <linux/mfd/intel-m10-bmc.h>
-+#include <linux/module.h>
-+#include <linux/phy.h>
-+#include <linux/platform_device.h>
++++ b/Documentation/networking/device_drivers/ethernet/intel/dfl-eth-group.rst
+@@ -0,0 +1,102 @@
++.. SPDX-License-Identifier: GPL-2.0+
 +
-+#define NUM_CHIP	2
-+#define MAX_LINK	4
++=======================================================================
++DFL device driver for Ether Group private feature on Intel(R) PAC N3000
++=======================================================================
 +
-+#define BITS_MASK(nbits)	((1 << (nbits)) - 1)
++This is the driver for Ether Group private feature on Intel(R)
++PAC (Programmable Acceleration Card) N3000.
 +
-+#define N3000BMC_RETIMER_DEV_NAME "n3000bmc-retimer"
-+#define M10BMC_RETIMER_MII_NAME "m10bmc retimer mii"
++The Intel(R) PAC N3000 is a FPGA based SmartNIC platform for multi-workload
++networking application acceleration. A simple diagram below to for the board:
 +
-+struct m10bmc_retimer {
-+	struct device *dev;
-+	struct intel_m10bmc *m10bmc;
-+	int num_devs;
-+	struct device *base_dev;
-+	struct mii_bus *retimer_mii_bus;
-+};
++                     +----------------------------------------+
++                     |                  FPGA                  |
+++----+   +-------+   +-----------+  +----------+  +-----------+   +----------+
++|QSFP|---|retimer|---|Line Side  |--|User logic|--|Host Side  |---|XL710     |
+++----+   +-------+   |Ether Group|  |          |  |Ether Group|   |Ethernet  |
++                     |(PHY + MAC)|  |wiring &  |  |(MAC + PHY)|   |Controller|
++                     +-----------+  |offloading|  +-----------+   +----------+
++                     |              +----------+              |
++                     |                                        |
++                     +----------------------------------------+
 +
-+#define RETIMER_LINK_STAT_BIT(retimer_id, link_id) \
-+	BIT(((retimer_id) << 2) + (link_id))
++The FPGA is composed of FPGA Interface Module (FIM) and Accelerated Function
++Unit (AFU). The FIM implements the basic functionalities for FPGA access,
++management and reprograming, while the AFU is the FPGA reprogramable region for
++users.
 +
-+static u32 retimer_get_link(struct m10bmc_retimer *retimer, int index)
-+{
-+	unsigned int val;
++The Line Side & Host Side Ether Groups are soft IP blocks embedded in FIM. They
++are internally wire connected to AFU and communicate with AFU with MAC packets.
++The user logic is developed by the FPGA users and re-programmed to AFU,
++providing the user defined wire connections between line side & host side data
++interfaces, as well as the MAC layer offloading.
 +
-+	if (m10bmc_sys_read(retimer->m10bmc, PKVL_LINK_STATUS, &val)) {
-+		dev_err(retimer->dev, "fail to read PKVL_LINK_STATUS\n");
-+		return 0;
-+	}
++There are 2 types of interfaces for the Ether Groups:
 +
-+	if (val & BIT(index))
-+		return 1;
++1. The data interfaces connects the Ether Groups and the AFU, host has no
++ability to control the data stream . So the FPGA is like a pipe between the
++host ethernet controller and the retimer chip.
 +
-+	return 0;
-+}
++2. The management interfaces connects the Ether Groups to the host, so host
++could access the Ether Group registers for configuration and statistics
++reading.
 +
-+static int m10bmc_retimer_phy_match(struct phy_device *phydev)
-+{
-+	if (phydev->mdio.bus->name &&
-+	    !strcmp(phydev->mdio.bus->name, M10BMC_RETIMER_MII_NAME)) {
-+		return 1;
-+	}
++The Intel(R) PAC N3000 could be programmed to various configurations (with
++different link numbers and speeds, e.g. 8x10G, 4x25G ...). It is done by
++programing different variants of the Ether Group IP blocks, and doing
++corresponding configuration to the retimer chips.
 +
-+	return 0;
-+}
++The DFL Ether Group driver registers netdev for each line side link. Users
++could use standard commands (ethtool, ip, ifconfig) for configuration and
++link state/statistics reading. For host side links, they are always connected
++to the host ethernet controller, so they should always have same features as
++the host ethernet controller. There is no need to register netdevs for them.
++The driver just enables these links on probe.
 +
-+static int m10bmc_retimer_phy_probe(struct phy_device *phydev)
-+{
-+	struct m10bmc_retimer *retimer = phydev->mdio.bus->priv;
++The retimer chips are managed by onboard BMC (Board Management Controller)
++firmware, host driver is not capable to access them directly. So it is mostly
++like an external fixed PHY. However the link states detected by the retimer
++chips can not be propagated to the Ether Groups for hardware limitation, in
++order to manage the link state, a PHY driver (intel-m10-bmc-retimer) is
++introduced to query the BMC for the retimer's link state. The Ether Group
++driver would connect to the PHY devices and get the link states. The
++intel-m10-bmc-retimer driver creates a peseudo MDIO bus for each board, so
++that the Ether Group driver could find the PHY devices by their peseudo PHY
++addresses.
 +
-+	phydev->priv = retimer;
 +
-+	return 0;
-+}
++2. Features supported
++=====================
 +
-+static void m10bmc_retimer_phy_remove(struct phy_device *phydev)
-+{
-+	if (phydev->attached_dev)
-+		phy_disconnect(phydev);
-+}
++Data Path
++---------
++Since the driver can't control the data stream, the Ether Group driver
++doesn't implement the valid tx/rx functions. Any transmit attempt on these
++links from host will be dropped, and no data could be received to host from
++these links. Users should operate on the netdev of host ethernet controller
++for networking data traffic.
 +
-+static int m10bmc_retimer_read_status(struct phy_device *phydev)
-+{
-+	struct m10bmc_retimer *retimer = phydev->priv;
 +
-+	phydev->link = retimer_get_link(retimer, phydev->mdio.addr);
++Speed/Duplex
++------------
++The Ether Group doesn't support auto-negotiation. The link speed is fixed to
++10G, 25G or 40G full duplex according to which Ether Group IP is programmed.
 +
-+	phydev->duplex = DUPLEX_FULL;
++Statistics
++----------
++The Ether Group IP has the statistics counters for ethernet traffic and errors.
++The user can obtain these MAC-level statistics using "ethtool -S" option.
 +
-+	return 0;
-+}
++MTU
++---
++The Ether Group IP is capable of detecting oversized packets. It will not drop
++the packet but pass it up and increment the tx/rx oversize counters. The MTU
++could be changed via ip or ifconfig commands.
 +
-+static int m10bmc_retimer_get_features(struct phy_device *phydev)
-+{
-+	linkmode_set_bit(ETHTOOL_LINK_MODE_10000baseT_Full_BIT,
-+			 phydev->supported);
-+	linkmode_set_bit(ETHTOOL_LINK_MODE_10000baseSR_Full_BIT,
-+			 phydev->supported);
-+	linkmode_set_bit(ETHTOOL_LINK_MODE_10000baseLR_Full_BIT,
-+			 phydev->supported);
-+
-+	linkmode_set_bit(ETHTOOL_LINK_MODE_25000baseCR_Full_BIT,
-+			 phydev->supported);
-+	linkmode_set_bit(ETHTOOL_LINK_MODE_25000baseSR_Full_BIT,
-+			 phydev->supported);
-+
-+	linkmode_set_bit(ETHTOOL_LINK_MODE_40000baseCR4_Full_BIT,
-+			 phydev->supported);
-+	linkmode_set_bit(ETHTOOL_LINK_MODE_40000baseSR4_Full_BIT,
-+			 phydev->supported);
-+	linkmode_set_bit(ETHTOOL_LINK_MODE_40000baseLR4_Full_BIT,
-+			 phydev->supported);
-+
-+	linkmode_set_bit(ETHTOOL_LINK_MODE_Asym_Pause_BIT, phydev->supported);
-+
-+	return 0;
-+}
-+
-+static struct phy_driver m10bmc_retimer_phy_driver = {
-+	.phy_id			= 0xffffffff,
-+	.phy_id_mask		= 0xffffffff,
-+	.name			= "m10bmc retimer PHY",
-+	.match_phy_device	= m10bmc_retimer_phy_match,
-+	.probe			= m10bmc_retimer_phy_probe,
-+	.remove			= m10bmc_retimer_phy_remove,
-+	.read_status		= m10bmc_retimer_read_status,
-+	.get_features		= m10bmc_retimer_get_features,
-+	.read_mmd		= genphy_read_mmd_unsupported,
-+	.write_mmd		= genphy_write_mmd_unsupported,
-+};
-+
-+static int m10bmc_retimer_read(struct mii_bus *bus, int addr, int regnum)
-+{
-+	struct m10bmc_retimer *retimer = bus->priv;
-+
-+	if (addr < retimer->num_devs &&
-+	    (regnum == MII_PHYSID1 || regnum == MII_PHYSID2))
-+		return 0;
-+
-+	return 0xffff;
-+}
-+
-+static int m10bmc_retimer_write(struct mii_bus *bus, int addr, int regnum, u16 val)
-+{
-+	return 0;
-+}
-+
-+static int m10bmc_retimer_mii_bus_init(struct m10bmc_retimer *retimer)
-+{
-+	struct mii_bus *bus;
-+	int ret;
-+
-+	bus = devm_mdiobus_alloc(retimer->dev);
-+	if (!bus)
-+		return -ENOMEM;
-+
-+	bus->priv = (void *)retimer;
-+	bus->name = M10BMC_RETIMER_MII_NAME;
-+	bus->read = m10bmc_retimer_read;
-+	bus->write = m10bmc_retimer_write;
-+	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-mii",
-+		 dev_name(retimer->base_dev));
-+	bus->parent = retimer->dev;
-+	bus->phy_mask = ~(BITS_MASK(retimer->num_devs));
-+
-+	ret = mdiobus_register(bus);
-+	if (ret)
-+		return ret;
-+
-+	retimer->retimer_mii_bus = bus;
-+
-+	return 0;
-+}
-+
-+static void m10bmc_retimer_mii_bus_uinit(struct m10bmc_retimer *retimer)
-+{
-+	mdiobus_unregister(retimer->retimer_mii_bus);
-+}
-+
-+static int intel_m10bmc_retimer_probe(struct platform_device *pdev)
-+{
-+	struct intel_m10bmc_retimer_pdata *pdata = dev_get_platdata(&pdev->dev);
-+	struct intel_m10bmc *m10bmc = dev_get_drvdata(pdev->dev.parent);
-+	struct m10bmc_retimer *retimer;
-+
-+	retimer = devm_kzalloc(&pdev->dev, sizeof(*retimer), GFP_KERNEL);
-+	if (!retimer)
-+		return -ENOMEM;
-+
-+	dev_set_drvdata(&pdev->dev, retimer);
-+
-+	retimer->dev = &pdev->dev;
-+	retimer->m10bmc = m10bmc;
-+	retimer->base_dev = pdata->retimer_master;
-+	retimer->num_devs = NUM_CHIP * MAX_LINK;
-+
-+	return m10bmc_retimer_mii_bus_init(retimer);
-+}
-+
-+static int intel_m10bmc_retimer_remove(struct platform_device *pdev)
-+{
-+	struct m10bmc_retimer *retimer = dev_get_drvdata(&pdev->dev);
-+
-+	m10bmc_retimer_mii_bus_uinit(retimer);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver intel_m10bmc_retimer_driver = {
-+	.probe = intel_m10bmc_retimer_probe,
-+	.remove = intel_m10bmc_retimer_remove,
-+	.driver = {
-+		.name = N3000BMC_RETIMER_DEV_NAME,
-+	},
-+};
-+
-+static int __init intel_m10bmc_retimer_init(void)
-+{
-+	int ret;
-+
-+	ret = phy_driver_register(&m10bmc_retimer_phy_driver, THIS_MODULE);
-+	if (ret)
-+		return ret;
-+
-+	return platform_driver_register(&intel_m10bmc_retimer_driver);
-+}
-+module_init(intel_m10bmc_retimer_init);
-+
-+static void __exit intel_m10bmc_retimer_exit(void)
-+{
-+	platform_driver_unregister(&intel_m10bmc_retimer_driver);
-+	phy_driver_unregister(&m10bmc_retimer_phy_driver);
-+}
-+module_exit(intel_m10bmc_retimer_exit);
-+
-+MODULE_ALIAS("platform:" N3000BMC_RETIMER_DEV_NAME);
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_DESCRIPTION("Intel MAX 10 BMC retimer driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
-index c8ef2f1..3d9d22c 100644
---- a/include/linux/mfd/intel-m10-bmc.h
-+++ b/include/linux/mfd/intel-m10-bmc.h
-@@ -21,6 +21,22 @@
- #define M10BMC_VER_PCB_INFO_MSK		GENMASK(31, 24)
- #define M10BMC_VER_LEGACY_INVALID	0xffffffff
- 
-+/* PKVL related registers, in system register region */
-+#define PKVL_LINK_STATUS		0x164
-+
-+/**
-+ * struct intel_m10bmc_retimer_pdata - subdev retimer platform data
-+ *
-+ * @retimer_master: the NIC device which connects to the retimers on m10bmc
-+ */
-+struct intel_m10bmc_retimer_pdata {
-+	struct device *retimer_master;
-+};
-+
-+struct intel_m10bmc_platdata {
-+	struct intel_m10bmc_retimer_pdata *retimer;
-+};
-+
- /**
-  * struct intel_m10bmc - Intel MAX 10 BMC parent driver data structure
-  * @dev: this device
++Flow Control
++------------
++Ethernet Flow Control (IEEE 802.3x) can be configured with ethtool to enable
++transmitting pause frames. Receiving pause request from outside to Ether Group
++MAC is not supported. The flow control auto-negotiation is not supported. The
++user can enable or disable Tx Flow Control using "ethtool -A eth? tx <on|off>"
 -- 
 2.7.4
 
