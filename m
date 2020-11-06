@@ -2,184 +2,124 @@ Return-Path: <SRS0=EncF=EM=vger.kernel.org=linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B7B9C55179
-	for <linux-fpga@archiver.kernel.org>; Fri,  6 Nov 2020 02:23:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCDD3C2D0A3
+	for <linux-fpga@archiver.kernel.org>; Fri,  6 Nov 2020 06:15:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D862220756
-	for <linux-fpga@archiver.kernel.org>; Fri,  6 Nov 2020 02:23:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6215521734
+	for <linux-fpga@archiver.kernel.org>; Fri,  6 Nov 2020 06:15:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725983AbgKFCXo (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 5 Nov 2020 21:23:44 -0500
-Received: from mga07.intel.com ([134.134.136.100]:20920 "EHLO mga07.intel.com"
+        id S1726174AbgKFGPO (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 6 Nov 2020 01:15:14 -0500
+Received: from mga07.intel.com ([134.134.136.100]:36328 "EHLO mga07.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725830AbgKFCXX (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 5 Nov 2020 21:23:23 -0500
-IronPort-SDR: 0vd9y3YMo7Ae4NDRnUWr8AhFu/6dWqcecMd6U5/VtZfFBilMNAAc5SNr6Z3nF1wGKgP+BKZD82
- NvW72QUx3SaQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9796"; a="233658513"
-X-IronPort-AV: E=Sophos;i="5.77,454,1596524400"; 
-   d="scan'208";a="233658513"
+        id S1726121AbgKFGPN (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 6 Nov 2020 01:15:13 -0500
+IronPort-SDR: eLBaG+RAzwdtFz1Xnv80BfoslzP7JmmbRy3du5sYiGQfZiaa2WSAx8u1XqKtLzGV/ffJtnG+oP
+ MaRpnaVn9t4A==
+X-IronPort-AV: E=McAfee;i="6000,8403,9796"; a="233673812"
+X-IronPort-AV: E=Sophos;i="5.77,455,1596524400"; 
+   d="scan'208";a="233673812"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Nov 2020 18:23:22 -0800
-IronPort-SDR: G3mHPtbiSuLzBoXEjNPUrfA0UYNw6bRKRcnO5avyzYDqtbWEyXfn/rQqWXpRZ3NhfjmUVuqx+b
- tSx2YwjCDVjA==
-X-IronPort-AV: E=Sophos;i="5.77,454,1596524400"; 
-   d="scan'208";a="364549663"
-Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.254.65.158])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Nov 2020 18:23:22 -0800
-From:   Russ Weight <russell.h.weight@intel.com>
-To:     mdf@kernel.org, lee.jones@linaro.org, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Nov 2020 22:15:12 -0800
+IronPort-SDR: ZTXBhs5NapIMl56U6JqPkiOInx6NFxkwEd7q8lKLXNauI63pOZOW5Gzle5sRDtJlNJUh/eU4TC
+ MYM48r+x39PQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.77,455,1596524400"; 
+   d="scan'208";a="529700003"
+Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.141])
+  by fmsmga005.fm.intel.com with ESMTP; 05 Nov 2020 22:15:10 -0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     mdf@kernel.org, krzk@kernel.org, gregkh@linuxfoundation.org,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
-        hao.wu@intel.com, matthew.gerlach@intel.com,
-        Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v4 1/6] mfd: intel-m10-bmc: support for MAX10 BMC Secure Updates
-Date:   Thu,  5 Nov 2020 18:23:14 -0800
-Message-Id: <20201106022319.13991-2-russell.h.weight@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201106022319.13991-1-russell.h.weight@intel.com>
-References: <20201106022319.13991-1-russell.h.weight@intel.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        hao.wu@intel.com
+Subject: [PATCH v12 0/6] add DFL bus support to MODULE_DEVICE_TABLE()
+Date:   Fri,  6 Nov 2020 14:09:28 +0800
+Message-Id: <1604642974-9541-1-git-send-email-yilun.xu@intel.com>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add macros and definitions required by the MAX10 BMC
-Secure Update driver.
+I added back the first 4 patches for DFL driver autoloading cause there are
+comments for them and I fixed one place.
 
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
----
-v4:
-  - No change
-v3:
-  - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure
-    Update driver"
-  - Removed wrapper functions (m10bmc_raw_*, m10bmc_sys_*). The
-    underlying functions will be called directly.
-v2:
-  - These functions and macros were previously distributed among
-    the patches that needed them. They are now grouped together
-    in a single patch containing changes to the Intel MAX10 BMC
-    driver.
-  - Added DRBL_ prefix to some definitions
-  - Some address definitions were moved here from the .c files that
-    use them.
----
- include/linux/mfd/intel-m10-bmc.h | 85 +++++++++++++++++++++++++++++++
- 1 file changed, 85 insertions(+)
+Maybe this patchset should be posted together in next pull request, so that
+maintainers could see the usecase of include/linux/dfl.h
 
-diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
-index c8ef2f1654a4..151b034fd59e 100644
---- a/include/linux/mfd/intel-m10-bmc.h
-+++ b/include/linux/mfd/intel-m10-bmc.h
-@@ -13,6 +13,9 @@
- #define M10BMC_SYS_BASE			0x300800
- #define M10BMC_MEM_END			0x200000fc
- 
-+#define M10BMC_STAGING_BASE		0x18000000
-+#define M10BMC_STAGING_SIZE		0x3800000
-+
- /* Register offset of system registers */
- #define NIOS2_FW_VERSION		0x0
- #define M10BMC_TEST_REG			0x3c
-@@ -21,6 +24,88 @@
- #define M10BMC_VER_PCB_INFO_MSK		GENMASK(31, 24)
- #define M10BMC_VER_LEGACY_INVALID	0xffffffff
- 
-+/* Secure update doorbell register, in system register region */
-+#define M10BMC_DOORBELL			0x400
-+
-+/* Authorization Result register, in system register region */
-+#define M10BMC_AUTH_RESULT		0x404
-+
-+/* Doorbell register fields */
-+#define DRBL_RSU_REQUEST		BIT(0)
-+#define DRBL_RSU_PROGRESS		GENMASK(7, 4)
-+#define DRBL_HOST_STATUS		GENMASK(11, 8)
-+#define DRBL_RSU_STATUS			GENMASK(23, 16)
-+#define DRBL_PKVL_EEPROM_LOAD_SEC	BIT(24)
-+#define DRBL_PKVL1_POLL_EN		BIT(25)
-+#define DRBL_PKVL2_POLL_EN		BIT(26)
-+#define DRBL_CONFIG_SEL			BIT(28)
-+#define DRBL_REBOOT_REQ			BIT(29)
-+#define DRBL_REBOOT_DISABLED		BIT(30)
-+
-+/* Progress states */
-+#define RSU_PROG_IDLE			0x0
-+#define RSU_PROG_PREPARE		0x1
-+#define RSU_PROG_READY			0x3
-+#define RSU_PROG_AUTHENTICATING		0x4
-+#define RSU_PROG_COPYING		0x5
-+#define RSU_PROG_UPDATE_CANCEL		0x6
-+#define RSU_PROG_PROGRAM_KEY_HASH	0x7
-+#define RSU_PROG_RSU_DONE		0x8
-+#define RSU_PROG_PKVL_PROM_DONE		0x9
-+
-+/* Device and error states */
-+#define RSU_STAT_NORMAL			0x0
-+#define RSU_STAT_TIMEOUT		0x1
-+#define RSU_STAT_AUTH_FAIL		0x2
-+#define RSU_STAT_COPY_FAIL		0x3
-+#define RSU_STAT_FATAL			0x4
-+#define RSU_STAT_PKVL_REJECT		0x5
-+#define RSU_STAT_NON_INC		0x6
-+#define RSU_STAT_ERASE_FAIL		0x7
-+#define RSU_STAT_WEAROUT		0x8
-+#define RSU_STAT_NIOS_OK		0x80
-+#define RSU_STAT_USER_OK		0x81
-+#define RSU_STAT_FACTORY_OK		0x82
-+#define RSU_STAT_USER_FAIL		0x83
-+#define RSU_STAT_FACTORY_FAIL		0x84
-+#define RSU_STAT_NIOS_FLASH_ERR		0x85
-+#define RSU_STAT_FPGA_FLASH_ERR		0x86
-+
-+#define HOST_STATUS_IDLE		0x0
-+#define HOST_STATUS_WRITE_DONE		0x1
-+#define HOST_STATUS_ABORT_RSU		0x2
-+
-+#define rsu_prog(doorbell)	FIELD_GET(DRBL_RSU_PROGRESS, doorbell)
-+#define rsu_stat(doorbell)	FIELD_GET(DRBL_RSU_STATUS, doorbell)
-+
-+/* interval 100ms and timeout 5s */
-+#define NIOS_HANDSHAKE_INTERVAL_US	(100 * 1000)
-+#define NIOS_HANDSHAKE_TIMEOUT_US	(5 * 1000 * 1000)
-+
-+/* RSU PREP Timeout (2 minutes) to erase flash staging area */
-+#define RSU_PREP_INTERVAL_MS		100
-+#define RSU_PREP_TIMEOUT_MS		(2 * 60 * 1000)
-+
-+/* RSU Complete Timeout (40 minutes) for full flash update */
-+#define RSU_COMPLETE_INTERVAL_MS	1000
-+#define RSU_COMPLETE_TIMEOUT_MS		(40 * 60 * 1000)
-+
-+/* Addresses for security related data in FLASH */
-+#define BMC_REH_ADDR	0x17ffc004
-+#define BMC_PROG_ADDR	0x17ffc000
-+#define BMC_PROG_MAGIC	0x5746
-+
-+#define SR_REH_ADDR	0x17ffd004
-+#define SR_PROG_ADDR	0x17ffd000
-+#define SR_PROG_MAGIC	0x5253
-+
-+#define PR_REH_ADDR	0x17ffe004
-+#define PR_PROG_ADDR	0x17ffe000
-+#define PR_PROG_MAGIC	0x5250
-+
-+/* Address of inverted bit vector containing user the image FLASH count */
-+#define USER_FLASH_COUNT 0x17ffb000
-+
- /**
-  * struct intel_m10bmc - Intel MAX 10 BMC parent driver data structure
-  * @dev: this device
+Main changes from v1:
+- A new patch (Patch #3) to fix the description.
+- Rename the dfl-bus.h to dfl.h
+- Updated the MAINTAINERS under FPGA DFL DRIVERS.
+- Improve comments and minor fixes.
+
+Main changes from v2:
+- Change the bus name from "dfl" to "fpga-dfl", also rename related
+  variables, functions ...
+- Changes the data type of fpga_dfl_device_id.type from u8 to u16
+- Explicitly defines the values of enum fpga_dfl_id_type
+- Delete the comments for the valid bits of type & feature_id
+- changes MODALIAS format for fpga dfl devices
+
+Main changes from v3:
+- Change the bus name back to "dfl".
+- Add 2 patches (#5, 6) for dfl drivers.
+- Delete the retimer FEC mode configuration via module_parameter for
+  Patch #5
+- Merge the patch "Make m10_n3000_info static" (https://lore.kernel.org/linux-fpga/52d8411e-13d8-1e91-756d-131802f5f445@huawei.com/T/#t)
+  into Patch #5
+- Add static prefix for emif attributes macro for Patch #6
+
+Main changes from v9:
+- Add the description for struct dfl_device_id in mod_devicetable.h
+- Move the dfl.h from include/linux/fpga to include/linux
+- some code refactor and minor fixes for dfl-n3000-nios
+
+Main changes from v10:
+- use sysfs_emit instead of sprintf for both patches
+- rebase to 5.10-rc1
+
+Main changes from v11:
+- Fix the type of driver_data from unsigned long to kernel_ulong_t
+- Fixed up header guards to match filename by Moritz
+- move the MODULE_DEVICE_TABLE() right after its definition
+
+Xu Yilun (6):
+  fpga: dfl: fix the definitions of type & feature_id for dfl devices
+  fpga: dfl: move dfl_device_id to mod_devicetable.h
+  fpga: dfl: add dfl bus support to MODULE_DEVICE_TABLE()
+  fpga: dfl: move dfl bus related APIs to include/linux/dfl.h
+  fpga: dfl: add support for N3000 Nios private feature
+  memory: dfl-emif: add the DFL EMIF private feature driver
+
+ .../ABI/testing/sysfs-bus-dfl-devices-emif         |  25 +
+ .../ABI/testing/sysfs-bus-dfl-devices-n3000-nios   |  47 ++
+ MAINTAINERS                                        |   3 +-
+ drivers/fpga/Kconfig                               |  11 +
+ drivers/fpga/Makefile                              |   2 +
+ drivers/fpga/dfl-n3000-nios.c                      | 588 +++++++++++++++++++++
+ drivers/fpga/dfl.c                                 |   4 +-
+ drivers/fpga/dfl.h                                 |  85 +--
+ drivers/memory/Kconfig                             |   9 +
+ drivers/memory/Makefile                            |   2 +
+ drivers/memory/dfl-emif.c                          | 207 ++++++++
+ include/linux/dfl.h                                |  86 +++
+ include/linux/mod_devicetable.h                    |  24 +
+ scripts/mod/devicetable-offsets.c                  |   4 +
+ scripts/mod/file2alias.c                           |  13 +
+ 15 files changed, 1023 insertions(+), 87 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-dfl-devices-emif
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-dfl-devices-n3000-nios
+ create mode 100644 drivers/fpga/dfl-n3000-nios.c
+ create mode 100644 drivers/memory/dfl-emif.c
+ create mode 100644 include/linux/dfl.h
+
 -- 
-2.25.1
+2.7.4
 
