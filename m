@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EC11C388F7
-	for <linux-fpga@archiver.kernel.org>; Fri,  6 Nov 2020 01:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38124C55178
+	for <linux-fpga@archiver.kernel.org>; Fri,  6 Nov 2020 01:10:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F23E02075A
-	for <linux-fpga@archiver.kernel.org>; Fri,  6 Nov 2020 01:10:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E382620759
+	for <linux-fpga@archiver.kernel.org>; Fri,  6 Nov 2020 01:10:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732843AbgKFBKW (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 5 Nov 2020 20:10:22 -0500
-Received: from mga11.intel.com ([192.55.52.93]:65178 "EHLO mga11.intel.com"
+        id S1732865AbgKFBKp (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 5 Nov 2020 20:10:45 -0500
+Received: from mga11.intel.com ([192.55.52.93]:65180 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732778AbgKFBKW (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 5 Nov 2020 20:10:22 -0500
-IronPort-SDR: 0hg3uvIf0+W0eMBXJZY9CzTPHOw6wMX2hLTBdzgmns6xPKTi3NjN/3/dJk6xefDJhuvaIE/LLA
- mOIZcK6IFEpg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9796"; a="165976161"
+        id S1732803AbgKFBKX (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 5 Nov 2020 20:10:23 -0500
+IronPort-SDR: 9GaGAOnzcRB4dC1AHx743EBrGxyScBqLH4DPntLWx3qtTzW1QVbF8RFW4NTx8saXfi/dIGDyN6
+ 1sFocV4kXSCw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9796"; a="165976167"
 X-IronPort-AV: E=Sophos;i="5.77,454,1596524400"; 
-   d="scan'208";a="165976161"
+   d="scan'208";a="165976167"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Nov 2020 17:10:20 -0800
-IronPort-SDR: GO6lBFYe/QCQqBNnpw5H9UNsGTV4veBw+ju1TTd2RZfh56nuLTTvtWpgYYNk8nRLVXiPF8bpFC
- Rrq2AtnyPPvg==
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Nov 2020 17:10:21 -0800
+IronPort-SDR: zM7wb1BHIRyfoE15GZySCNFLfs8WA2BzXc9APjQACsBF0wuttrCIztuIUI1DntfYPFLHCsf2+m
+ Ylbafd+ODwWA==
 X-IronPort-AV: E=Sophos;i="5.77,454,1596524400"; 
-   d="scan'208";a="528164633"
+   d="scan'208";a="528164646"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.254.65.158])
-  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Nov 2020 17:10:19 -0800
+  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Nov 2020 17:10:21 -0800
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v6 4/7] fpga: sec-mgr: expose sec-mgr update errors
-Date:   Thu,  5 Nov 2020 17:09:02 -0800
-Message-Id: <20201106010905.11935-5-russell.h.weight@intel.com>
+Subject: [PATCH v6 7/7] fpga: sec-mgr: expose hardware error info
+Date:   Thu,  5 Nov 2020 17:09:05 -0800
+Message-Id: <20201106010905.11935-8-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201106010905.11935-1-russell.h.weight@intel.com>
 References: <20201106010905.11935-1-russell.h.weight@intel.com>
@@ -53,8 +53,14 @@ List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
 Extend the FPGA Security Manager class driver to include
-an update/error sysfs node that can be read for error
-information when a secure update fails.
+an optional update/hw_errinfo sysfs node that can be used
+to retrieve 64 bits of device specific error information
+following a secure update failure.
+
+The underlying driver must provide a get_hw_errinfo() callback
+function to enable this feature. This data is treated as
+opaque by the class driver. It is left to user-space software
+or support personnel to interpret this data.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Reviewed-by: Tom Rix <trix@redhat.com>
@@ -62,192 +68,157 @@ Reviewed-by: Tom Rix <trix@redhat.com>
 v6:
   - No change
 v5:
-  - Use new function sysfs_emit() in the error_show() function
+  - No change
 v4:
   - Changed from "Intel FPGA Security Manager" to FPGA Security Manager"
     and removed unnecessary references to "Intel".
   - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
 v3:
-  - Use dev_err() for invalid error code in sec_error()
+  - No change
 v2:
   - Bumped documentation date and version
-  - Added warning to sec_progress() for invalid progress status
-  - Added sec_error() function (similar to sec_progress())
 ---
- .../ABI/testing/sysfs-class-fpga-sec-mgr      | 17 ++++
- drivers/fpga/fpga-sec-mgr.c                   | 83 ++++++++++++++++---
- include/linux/fpga/fpga-sec-mgr.h             |  1 +
- 3 files changed, 89 insertions(+), 12 deletions(-)
+ .../ABI/testing/sysfs-class-fpga-sec-mgr      | 14 +++++++
+ drivers/fpga/fpga-sec-mgr.c                   | 38 +++++++++++++++++++
+ include/linux/fpga/fpga-sec-mgr.h             |  5 +++
+ 3 files changed, 57 insertions(+)
 
 diff --git a/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr b/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
-index 82a7f8b3e9dd..9664f269ae8e 100644
+index 93e634bc695f..b70d1960e7ff 100644
 --- a/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
 +++ b/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
-@@ -27,3 +27,20 @@ Description:	Read-only. Returns a string describing the current
- 		programming. Userspace code can poll on this file,
- 		as it will be signaled by sysfs_notify() on each
- 		state change.
+@@ -65,3 +65,17 @@ Description:	Read-only. Returns a string describing the failure
+ 		idle state. If this file is read while a secure
+ 		update is in progress, then the read will fail with
+ 		EBUSY.
 +
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/update/error
++What: 		/sys/class/fpga_sec_mgr/fpga_secX/update/hw_errinfo
 +Date:		Oct 2020
 +KernelVersion:  5.11
 +Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read-only. Returns a string describing the failure
-+		of a secure update. This string will be in the form
-+		of <STATUS>:<ERROR>, where <STATUS> will be one of
-+		the status strings described for the status sysfs
-+		file and <ERROR> will be one of the following:
-+		hw-error, timeout, user-abort, device-busy,
-+		invalid-file-size, read-write-error, flash-wearout,
-+		file-read-error.  The error sysfs file is only
-+		meaningful when the secure update engine is in the
-+		idle state. If this file is read while a secure
-+		update is in progress, then the read will fail with
-+		EBUSY.
++Description:	Read-only. Returns a 64 bit error value providing
++		hardware specific information that may be useful in
++		debugging errors that occur during FPGA image updates.
++		This file is only visible if the underlying device
++		supports it. The hw_errinfo value is only accessible
++		when the secure update engine is in the idle state.
++		If this file is read while a secure update is in
++		progress, then the read will fail with EBUSY.
++		Format: "0x%llx".
 diff --git a/drivers/fpga/fpga-sec-mgr.c b/drivers/fpga/fpga-sec-mgr.c
-index 5d3538e8260a..f41a92d288c3 100644
+index cf78fec6dd19..c85b874afa40 100644
 --- a/drivers/fpga/fpga-sec-mgr.c
 +++ b/drivers/fpga/fpga-sec-mgr.c
-@@ -32,10 +32,16 @@ static void update_progress(struct fpga_sec_mgr *smgr,
- 	sysfs_notify(&smgr->dev.kobj, "update", "status");
+@@ -38,10 +38,17 @@ static void set_error(struct fpga_sec_mgr *smgr, enum fpga_sec_err err_code)
+ 	smgr->err_code = err_code;
  }
  
-+static void set_error(struct fpga_sec_mgr *smgr, enum fpga_sec_err err_code)
++static void set_hw_errinfo(struct fpga_sec_mgr *smgr)
 +{
-+	smgr->err_state = smgr->progress;
-+	smgr->err_code = err_code;
++	if (smgr->sops->get_hw_errinfo)
++		smgr->hw_errinfo = smgr->sops->get_hw_errinfo(smgr);
 +}
 +
  static void fpga_sec_dev_error(struct fpga_sec_mgr *smgr,
  			       enum fpga_sec_err err_code)
  {
--	smgr->err_code = err_code;
-+	set_error(smgr, err_code);
+ 	set_error(smgr, err_code);
++	set_hw_errinfo(smgr);
  	smgr->sops->cancel(smgr);
  }
  
-@@ -58,7 +64,7 @@ static void fpga_sec_mgr_update(struct work_struct *work)
- 
- 	get_device(&smgr->dev);
- 	if (request_firmware(&fw, smgr->filename, &smgr->dev)) {
--		smgr->err_code = FPGA_SEC_ERR_FILE_READ;
-+		set_error(smgr, FPGA_SEC_ERR_FILE_READ);
- 		goto idle_exit;
- 	}
- 
-@@ -66,7 +72,7 @@ static void fpga_sec_mgr_update(struct work_struct *work)
- 	smgr->remaining_size = fw->size;
- 
- 	if (!try_module_get(smgr->dev.parent->driver->owner)) {
--		smgr->err_code = FPGA_SEC_ERR_BUSY;
-+		set_error(smgr, FPGA_SEC_ERR_BUSY);
- 		goto release_fw_exit;
- 	}
- 
-@@ -128,24 +134,76 @@ static const char * const sec_mgr_prog_str[] = {
- 	"programming"		/* FPGA_SEC_PROG_PROGRAMMING */
- };
- 
--static ssize_t
--status_show(struct device *dev, struct device_attribute *attr, char *buf)
-+static const char * const sec_mgr_err_str[] = {
-+	"none",			/* FPGA_SEC_ERR_NONE */
-+	"hw-error",		/* FPGA_SEC_ERR_HW_ERROR */
-+	"timeout",		/* FPGA_SEC_ERR_TIMEOUT */
-+	"user-abort",		/* FPGA_SEC_ERR_CANCELED */
-+	"device-busy",		/* FPGA_SEC_ERR_BUSY */
-+	"invalid-file-size",	/* FPGA_SEC_ERR_INVALID_SIZE */
-+	"read-write-error",	/* FPGA_SEC_ERR_RW_ERROR */
-+	"flash-wearout",	/* FPGA_SEC_ERR_WEAROUT */
-+	"file-read-error"	/* FPGA_SEC_ERR_FILE_READ */
-+};
-+
-+static const char *sec_progress(struct device *dev, enum fpga_sec_prog prog)
- {
--	struct fpga_sec_mgr *smgr = to_sec_mgr(dev);
- 	const char *status = "unknown-status";
--	enum fpga_sec_prog progress;
- 
--	progress = smgr->progress;
--	if (progress < FPGA_SEC_PROG_MAX)
--		status = sec_mgr_prog_str[progress];
-+	if (prog < FPGA_SEC_PROG_MAX)
-+		status = sec_mgr_prog_str[prog];
- 	else
- 		dev_err(dev, "Invalid status during secure update: %d\n",
--			progress);
-+			prog);
-+
-+	return status;
-+}
-+
-+static const char *sec_error(struct device *dev, enum fpga_sec_err err_code)
-+{
-+	const char *error = "unknown-error";
-+
-+	if (err_code < FPGA_SEC_ERR_MAX)
-+		error = sec_mgr_err_str[err_code];
-+	else
-+		dev_err(dev, "Invalid error code during secure update: %d\n",
-+			err_code);
-+
-+	return error;
-+}
-+
-+static ssize_t
-+status_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct fpga_sec_mgr *smgr = to_sec_mgr(dev);
- 
--	return sysfs_emit(buf, "%s\n", status);
-+	return sysfs_emit(buf, "%s\n", sec_progress(dev, smgr->progress));
+@@ -227,6 +234,23 @@ error_show(struct device *dev, struct device_attribute *attr, char *buf)
  }
- static DEVICE_ATTR_RO(status);
+ static DEVICE_ATTR_RO(error);
  
 +static ssize_t
-+error_show(struct device *dev, struct device_attribute *attr, char *buf)
++hw_errinfo_show(struct device *dev, struct device_attribute *attr, char *buf)
 +{
 +	struct fpga_sec_mgr *smgr = to_sec_mgr(dev);
 +	int ret;
 +
 +	mutex_lock(&smgr->lock);
-+
 +	if (smgr->progress != FPGA_SEC_PROG_IDLE)
 +		ret = -EBUSY;
-+	else if (!smgr->err_code)
-+		ret = 0;
 +	else
-+		ret = sysfs_emit(buf, "%s:%s\n",
-+				 sec_progress(dev, smgr->err_state),
-+				 sec_error(dev, smgr->err_code));
-+
++		ret = sysfs_emit(buf, "0x%llx\n", smgr->hw_errinfo);
 +	mutex_unlock(&smgr->lock);
 +
 +	return ret;
 +}
-+static DEVICE_ATTR_RO(error);
++static DEVICE_ATTR_RO(hw_errinfo);
 +
- static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
- 			      const char *buf, size_t count)
+ static ssize_t remaining_size_show(struct device *dev,
+ 				   struct device_attribute *attr, char *buf)
  {
-@@ -181,6 +239,7 @@ static DEVICE_ATTR_WO(filename);
+@@ -258,6 +282,7 @@ static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
+ 	}
+ 
+ 	smgr->err_code = FPGA_SEC_ERR_NONE;
++	smgr->hw_errinfo = 0;
+ 	smgr->request_cancel = false;
+ 	smgr->progress = FPGA_SEC_PROG_READING;
+ 	reinit_completion(&smgr->update_done);
+@@ -292,18 +317,31 @@ static ssize_t cancel_store(struct device *dev, struct device_attribute *attr,
+ }
+ static DEVICE_ATTR_WO(cancel);
+ 
++static umode_t
++sec_mgr_update_visible(struct kobject *kobj, struct attribute *attr, int n)
++{
++	struct fpga_sec_mgr *smgr = to_sec_mgr(kobj_to_dev(kobj));
++
++	if (attr == &dev_attr_hw_errinfo.attr && !smgr->sops->get_hw_errinfo)
++		return 0;
++
++	return attr->mode;
++}
++
  static struct attribute *sec_mgr_update_attrs[] = {
  	&dev_attr_filename.attr,
+ 	&dev_attr_cancel.attr,
  	&dev_attr_status.attr,
-+	&dev_attr_error.attr,
+ 	&dev_attr_error.attr,
+ 	&dev_attr_remaining_size.attr,
++	&dev_attr_hw_errinfo.attr,
  	NULL,
  };
  
+ static struct attribute_group sec_mgr_update_attr_group = {
+ 	.name = "update",
+ 	.attrs = sec_mgr_update_attrs,
++	.is_visible = sec_mgr_update_visible,
+ };
+ 
+ static ssize_t name_show(struct device *dev,
 diff --git a/include/linux/fpga/fpga-sec-mgr.h b/include/linux/fpga/fpga-sec-mgr.h
-index e03de72134d6..78f8dc51a508 100644
+index e63e6437f394..04235fab8667 100644
 --- a/include/linux/fpga/fpga-sec-mgr.h
 +++ b/include/linux/fpga/fpga-sec-mgr.h
-@@ -71,6 +71,7 @@ struct fpga_sec_mgr {
- 	const u8 *data;			/* pointer to update data */
- 	u32 remaining_size;		/* size remaining to transfer */
+@@ -40,6 +40,9 @@ enum fpga_sec_err {
+  *			    function and is called at the completion
+  *			    of the update, whether success or failure,
+  *			    if the prepare function succeeded.
++ * @get_hw_errinfo:	    Optional: Return u64 hw specific error info.
++ *			    The software err_code may used to determine
++ *			    whether the hw error info is applicable.
+  */
+ struct fpga_sec_mgr_ops {
+ 	enum fpga_sec_err (*prepare)(struct fpga_sec_mgr *smgr);
+@@ -48,6 +51,7 @@ struct fpga_sec_mgr_ops {
+ 	enum fpga_sec_err (*poll_complete)(struct fpga_sec_mgr *smgr);
+ 	enum fpga_sec_err (*cancel)(struct fpga_sec_mgr *smgr);
+ 	void (*cleanup)(struct fpga_sec_mgr *smgr);
++	u64 (*get_hw_errinfo)(struct fpga_sec_mgr *smgr);
+ };
+ 
+ /* Update progress codes */
+@@ -73,6 +77,7 @@ struct fpga_sec_mgr {
  	enum fpga_sec_prog progress;
-+	enum fpga_sec_prog err_state;	/* progress state at time of failure */
+ 	enum fpga_sec_prog err_state;	/* progress state at time of failure */
  	enum fpga_sec_err err_code;	/* security manager error code */
++	u64 hw_errinfo;			/* 64 bits of HW specific error info */
+ 	bool request_cancel;
  	bool driver_unload;
  	void *priv;
 -- 
