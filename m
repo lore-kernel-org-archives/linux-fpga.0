@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 221E3C56202
-	for <linux-fpga@archiver.kernel.org>; Thu, 12 Nov 2020 17:47:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0CAEC5519F
+	for <linux-fpga@archiver.kernel.org>; Thu, 12 Nov 2020 17:47:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C7F6D21D7F
-	for <linux-fpga@archiver.kernel.org>; Thu, 12 Nov 2020 17:47:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A25C1221E9
+	for <linux-fpga@archiver.kernel.org>; Thu, 12 Nov 2020 17:47:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726430AbgKLRr1 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 12 Nov 2020 12:47:27 -0500
+        id S1726441AbgKLRrc (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 12 Nov 2020 12:47:32 -0500
 Received: from mga18.intel.com ([134.134.136.126]:5888 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726426AbgKLRr0 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 12 Nov 2020 12:47:26 -0500
-IronPort-SDR: gxJror6URQOLCCi4zraJc6B+1vRvvVEi4luDbIL3+DCklL0YTnwlq6Bc//c40JLfeuR2dwMJly
- pp3LGgvG6rWw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9803"; a="158128461"
+        id S1726437AbgKLRr3 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 12 Nov 2020 12:47:29 -0500
+IronPort-SDR: 44Cqq88NUqnawhIlZPlrr4dA3l84Gk8tkYLCXsO0lqQzzO6AhUN2uoIyBhF7e1uMyx/g+68tZL
+ QqMgTCKsYLgw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9803"; a="158128476"
 X-IronPort-AV: E=Sophos;i="5.77,472,1596524400"; 
-   d="scan'208";a="158128461"
+   d="scan'208";a="158128476"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Nov 2020 09:47:25 -0800
-IronPort-SDR: frS8isPJJskiIVBO+3vzhWXH+IVyBu9JlToavkLSf5RxQco4J5pYkZVITYf8aD6g/UxDSrwrFF
- oCPdeFM1MxIg==
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Nov 2020 09:47:29 -0800
+IronPort-SDR: 0hhUeegefhlOfHD8NoUPRm8H0jDAx1Gg6Aho3utfqwmckB1aFGgDdGCm4HJiJxXZlTJtKvCpNS
+ JEmOn7AxxQ1g==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.77,472,1596524400"; 
-   d="scan'208";a="328576364"
+   d="scan'208";a="328576387"
 Received: from marshy.an.intel.com ([10.122.105.143])
-  by orsmga006.jf.intel.com with ESMTP; 12 Nov 2020 09:47:24 -0800
+  by orsmga006.jf.intel.com with ESMTP; 12 Nov 2020 09:47:28 -0800
 From:   richard.gong@linux.intel.com
 To:     mdf@kernel.org, trix@redhat.com, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     dinguyen@kernel.org, sridhar.rajagopal@intel.com,
         richard.gong@linux.intel.com, Richard Gong <richard.gong@intel.com>
-Subject: [PATCHv1 1/4] fpga: fpga-mgr: add FPGA_MGR_BITSTREM_AUTHENTICATION flag
-Date:   Thu, 12 Nov 2020 12:06:40 -0600
-Message-Id: <1605204403-6663-2-git-send-email-richard.gong@linux.intel.com>
+Subject: [PATCHv1 3/4] dt-bindings: fpga: add authenticate-fpga-config property
+Date:   Thu, 12 Nov 2020 12:06:42 -0600
+Message-Id: <1605204403-6663-4-git-send-email-richard.gong@linux.intel.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1605204403-6663-1-git-send-email-richard.gong@linux.intel.com>
 References: <1605204403-6663-1-git-send-email-richard.gong@linux.intel.com>
@@ -52,34 +52,25 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Richard Gong <richard.gong@intel.com>
 
-Add FPGA_MGR_BITSTREM_AUTHENTICATION flag for FPGA bitstream
-authentication.
+Add authenticate-fpga-config property for FPGA bitstream authentication.
 
 Signed-off-by: Richard Gong <richard.gong@intel.com>
 ---
- include/linux/fpga/fpga-mgr.h | 3 +++
- 1 file changed, 3 insertions(+)
+ Documentation/devicetree/bindings/fpga/fpga-region.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 2bc3030..1d65814 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -67,12 +67,15 @@ enum fpga_mgr_states {
-  * %FPGA_MGR_BITSTREAM_LSB_FIRST: SPI bitstream bit order is LSB first
-  *
-  * %FPGA_MGR_COMPRESSED_BITSTREAM: FPGA bitstream is compressed
-+ *
-+ * %FPGA_MGR_BITSTREM_AUTHENTICATION: do FPGA bitstream authentication
-  */
- #define FPGA_MGR_PARTIAL_RECONFIG	BIT(0)
- #define FPGA_MGR_EXTERNAL_CONFIG	BIT(1)
- #define FPGA_MGR_ENCRYPTED_BITSTREAM	BIT(2)
- #define FPGA_MGR_BITSTREAM_LSB_FIRST	BIT(3)
- #define FPGA_MGR_COMPRESSED_BITSTREAM	BIT(4)
-+#define FPGA_MGR_BITSTREM_AUTHENTICATION BIT(5)
- 
- /**
-  * struct fpga_image_info - information specific to a FPGA image
+diff --git a/Documentation/devicetree/bindings/fpga/fpga-region.txt b/Documentation/devicetree/bindings/fpga/fpga-region.txt
+index e811cf8..7a512bc 100644
+--- a/Documentation/devicetree/bindings/fpga/fpga-region.txt
++++ b/Documentation/devicetree/bindings/fpga/fpga-region.txt
+@@ -187,6 +187,7 @@ Optional properties:
+ - external-fpga-config : boolean, set if the FPGA has already been configured
+ 	prior to OS boot up.
+ - encrypted-fpga-config : boolean, set if the bitstream is encrypted
++- authenticate-fpga-config : boolean, set if do bitstream authentication
+ - region-unfreeze-timeout-us : The maximum time in microseconds to wait for
+ 	bridges to successfully become enabled after the region has been
+ 	programmed.
 -- 
 2.7.4
 
