@@ -6,47 +6,47 @@ X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63436C64E7D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78C73C64E8A
 	for <linux-fpga@archiver.kernel.org>; Sun, 15 Nov 2020 19:51:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 315B32224B
+	by mail.kernel.org (Postfix) with ESMTP id 60A942419A
 	for <linux-fpga@archiver.kernel.org>; Sun, 15 Nov 2020 19:51:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727913AbgKOTvo (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 15 Nov 2020 14:51:44 -0500
-Received: from mail-pf1-f176.google.com ([209.85.210.176]:38350 "EHLO
-        mail-pf1-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727899AbgKOTvo (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 15 Nov 2020 14:51:44 -0500
-Received: by mail-pf1-f176.google.com with SMTP id 10so11372509pfp.5;
-        Sun, 15 Nov 2020 11:51:43 -0800 (PST)
+        id S1727863AbgKOTvl (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 15 Nov 2020 14:51:41 -0500
+Received: from mail-pf1-f173.google.com ([209.85.210.173]:36785 "EHLO
+        mail-pf1-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727874AbgKOTvl (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sun, 15 Nov 2020 14:51:41 -0500
+Received: by mail-pf1-f173.google.com with SMTP id a18so11378730pfl.3;
+        Sun, 15 Nov 2020 11:51:40 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=eHdU5oxW9fYEoWkH8yF79mOZPyoTqXNwEc+aAMEPYfM=;
-        b=l0lUcbtDvKVI+Vhf62WvTL5I778jNxXDeb27or4k5vs4eAFRDZBKfhwBgEyiGbC3Gh
-         V4/SrzCpBUn8/iyW94YOb/5aufG1zQB9jFyk40YImF9pkfO/gGCpmlf9wIojU1Z8ZNQS
-         8EPvkH/jV9rEha7GqO6h4zNy/uUdkAsgmdKFYmPWoxHbIu6VE2kOKTFuXPAbqlvlRrRN
-         nLFqnUw/hcob3A+H8Xv1wHdi1c94mLm95xhBHu6fiJSS5eFxSx3M7Hexx9Xb7Qg85LDP
-         k3Wfbzrb/fO2BUlX5eCMDRal/Bvg2DswLJbB9CrGn5zSZQeti8QALGAapBqcCTtfUXUR
-         v+Rg==
-X-Gm-Message-State: AOAM530SfpUs5Nk+BeCC7/uGFfLE6vEiKcyusZoQm5iYuaOyUZ/4W0u4
-        4Nay6mWaH0AfJ6nInbIzvGk=
-X-Google-Smtp-Source: ABdhPJxnNurbeDGCpGCPLiL/9ifN4GMgcB3yzHosfd3RB5CxhkxvOA4De9E8dWX6j0SUvkbyed1QVg==
-X-Received: by 2002:a05:6a00:1693:b029:155:abe5:caa2 with SMTP id k19-20020a056a001693b0290155abe5caa2mr11025955pfc.39.1605469903175;
-        Sun, 15 Nov 2020 11:51:43 -0800 (PST)
+        bh=r/2eDS20UzGAqGhaYPkcdC2pYUk22axFOkNxIUP22Xw=;
+        b=j4DfU2T9Ofna4UhVwYBE0FiyVvn6OmCW0z7hZ4Xs2Ad0jf7THrW7K3w+WGdG/qMCPN
+         f2sXRp1IuzdR6usBQtSaW5offiUH9fR8uuZoj2do4s00vUSUWnTIW7IPJDyi6L7AnF6p
+         s2ZH3TXuqvUPopYMPNp34qyt0SNDYhb5EK4dpArtTO3dE2NOC3lOoWr6vLMbMQSNNHcj
+         0phnKb3kbah+JrC/lnYfLw+cyWM0sEVTzso5XBdYHU+lEXX8EjGS/A/pkotHVxcIlsW3
+         Axw62cGsJ9CVGvTO1AQh27hy/LnUvFqgHkY6+MfcfOceBz+q3GRBS+7Sb3K/N3maDKWC
+         t5MQ==
+X-Gm-Message-State: AOAM533D6lnqV1o+UnqsaQckTVteIGHVzoooHpCp9RpPhsPYR7C1YEjo
+        /WNQWuxw0GC//2/ny5NCiOpD4Gg9aUA=
+X-Google-Smtp-Source: ABdhPJzjiI+oVHsUDWkWUoM7krc3mUOhSyRm2IdKh6sdo9UALFY69sK9PNWwAmcGDv5POWLWNFKspw==
+X-Received: by 2002:a63:570e:: with SMTP id l14mr9720158pgb.302.1605469900508;
+        Sun, 15 Nov 2020 11:51:40 -0800 (PST)
 Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
-        by smtp.gmail.com with ESMTPSA id e9sm14879167pgi.5.2020.11.15.11.51.42
+        by smtp.gmail.com with ESMTPSA id x18sm15415683pfi.206.2020.11.15.11.51.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Nov 2020 11:51:42 -0800 (PST)
+        Sun, 15 Nov 2020 11:51:40 -0800 (PST)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         trix@redhat.com, Moritz Fischer <mdf@kernel.org>
-Subject: [RESEND PATCH 10/10] fpga: fpga-mgr: altera-pr-ip: Simplify registration
-Date:   Sun, 15 Nov 2020 11:51:27 -0800
-Message-Id: <20201115195127.284487-11-mdf@kernel.org>
+Subject: [RESEND PATCH 08/10] fpga: fpga-mgr: xilinx-spi: Simplify registration
+Date:   Sun, 15 Nov 2020 11:51:25 -0800
+Message-Id: <20201115195127.284487-9-mdf@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201115195127.284487-1-mdf@kernel.org>
 References: <20201115195127.284487-1-mdf@kernel.org>
@@ -61,53 +61,41 @@ Simplify registration using new devm_fpga_mgr_register() API.
 Reviewed-by: Tom Rix <trix@redhat.com>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/altera-pr-ip-core-plat.c | 10 ----------
- drivers/fpga/altera-pr-ip-core.c      |  4 +---
- 2 files changed, 1 insertion(+), 13 deletions(-)
+ drivers/fpga/xilinx-spi.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/drivers/fpga/altera-pr-ip-core-plat.c b/drivers/fpga/altera-pr-ip-core-plat.c
-index 99b9cc0e70f0..b008a6b8d2d3 100644
---- a/drivers/fpga/altera-pr-ip-core-plat.c
-+++ b/drivers/fpga/altera-pr-ip-core-plat.c
-@@ -28,15 +28,6 @@ static int alt_pr_platform_probe(struct platform_device *pdev)
- 	return alt_pr_register(dev, reg_base);
- }
- 
--static int alt_pr_platform_remove(struct platform_device *pdev)
--{
--	struct device *dev = &pdev->dev;
--
--	alt_pr_unregister(dev);
--
--	return 0;
--}
--
- static const struct of_device_id alt_pr_of_match[] = {
- 	{ .compatible = "altr,a10-pr-ip", },
- 	{},
-@@ -46,7 +37,6 @@ MODULE_DEVICE_TABLE(of, alt_pr_of_match);
- 
- static struct platform_driver alt_pr_platform_driver = {
- 	.probe = alt_pr_platform_probe,
--	.remove = alt_pr_platform_remove,
- 	.driver = {
- 		.name	= "alt_a10_pr_ip",
- 		.of_match_table = alt_pr_of_match,
-diff --git a/drivers/fpga/altera-pr-ip-core.c b/drivers/fpga/altera-pr-ip-core.c
-index 2cf25fd5e897..5b130c4d9882 100644
---- a/drivers/fpga/altera-pr-ip-core.c
-+++ b/drivers/fpga/altera-pr-ip-core.c
-@@ -195,9 +195,7 @@ int alt_pr_register(struct device *dev, void __iomem *reg_base)
+diff --git a/drivers/fpga/xilinx-spi.c b/drivers/fpga/xilinx-spi.c
+index 824abbbd631e..27defa98092d 100644
+--- a/drivers/fpga/xilinx-spi.c
++++ b/drivers/fpga/xilinx-spi.c
+@@ -259,18 +259,7 @@ static int xilinx_spi_probe(struct spi_device *spi)
  	if (!mgr)
  		return -ENOMEM;
  
--	dev_set_drvdata(dev, mgr);
+-	spi_set_drvdata(spi, mgr);
 -
 -	return fpga_mgr_register(mgr);
-+	return devm_fpga_mgr_register(dev, mgr);
+-}
+-
+-static int xilinx_spi_remove(struct spi_device *spi)
+-{
+-	struct fpga_manager *mgr = spi_get_drvdata(spi);
+-
+-	fpga_mgr_unregister(mgr);
+-
+-	return 0;
++	return devm_fpga_mgr_register(&spi->dev, mgr);
  }
- EXPORT_SYMBOL_GPL(alt_pr_register);
  
+ static const struct of_device_id xlnx_spi_of_match[] = {
+@@ -285,7 +274,6 @@ static struct spi_driver xilinx_slave_spi_driver = {
+ 		.of_match_table = of_match_ptr(xlnx_spi_of_match),
+ 	},
+ 	.probe = xilinx_spi_probe,
+-	.remove = xilinx_spi_remove,
+ };
+ 
+ module_spi_driver(xilinx_slave_spi_driver)
 -- 
 2.29.2
 
