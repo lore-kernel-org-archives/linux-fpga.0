@@ -6,47 +6,47 @@ X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C19A6C64E90
-	for <linux-fpga@archiver.kernel.org>; Sun, 15 Nov 2020 19:51:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0450DC63697
+	for <linux-fpga@archiver.kernel.org>; Sun, 15 Nov 2020 19:51:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8EF562231B
+	by mail.kernel.org (Postfix) with ESMTP id D032F2231B
 	for <linux-fpga@archiver.kernel.org>; Sun, 15 Nov 2020 19:51:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727876AbgKOTvk (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 15 Nov 2020 14:51:40 -0500
-Received: from mail-pg1-f176.google.com ([209.85.215.176]:39809 "EHLO
-        mail-pg1-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727863AbgKOTvj (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 15 Nov 2020 14:51:39 -0500
-Received: by mail-pg1-f176.google.com with SMTP id p68so337950pga.6;
-        Sun, 15 Nov 2020 11:51:39 -0800 (PST)
+        id S1727770AbgKOTvg (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 15 Nov 2020 14:51:36 -0500
+Received: from mail-pl1-f174.google.com ([209.85.214.174]:41409 "EHLO
+        mail-pl1-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727698AbgKOTvf (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sun, 15 Nov 2020 14:51:35 -0500
+Received: by mail-pl1-f174.google.com with SMTP id 5so263066plj.8;
+        Sun, 15 Nov 2020 11:51:35 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=9kkAXw7Tt0cYJ71J1z6lzt/Cc75SkXOHsBVdYO06bFQ=;
-        b=G5qFB+tgscIML+UFLviy89v+oyQqOsFfp0/er8iouEBguvJ2PxC76CpxSyGb6FAw5w
-         x1qIsjI+8A+W1lxtzibm5uCF1kmpqzqYb7vgjcsBfv1U0NmjVEvS0R/pobgIRFOv12qf
-         QBL08imvSjd1/rXbV94NGMCNZyAkfOUW+7T13c7oSgN3+PoEC+t+ok9RSCy4i2RCX6qn
-         K4S9lb2AdZ6dIx0IM02xx18ROCFKEsKLo6kBcKVZcmln5/j6/UmoW2vAaM4lYBVhKRMO
-         sdGZX/G2UjQkc86G9gv51denAwqstVF3tR/AJBKrzJLe5JaDW/I6P0V9FI3BoFKlI2Yx
-         U02w==
-X-Gm-Message-State: AOAM531Et/wyroYcMUt3gwAo8RSxkPTZbQW1hqrwuFQKKfHAzqDl8MyB
-        YOXCT7Z5Ni7SnmZPYzUDjU0=
-X-Google-Smtp-Source: ABdhPJwCT35QiWLZ8cF7fflkonArqZ3NG2yXCPxUoCQpagWVp0kBhzcGONF7SWfiv6cHMDqM5LbX1w==
-X-Received: by 2002:a63:5d04:: with SMTP id r4mr9961186pgb.165.1605469899212;
-        Sun, 15 Nov 2020 11:51:39 -0800 (PST)
+        bh=7WDy5qn9Dd1AOqQC/fHx0aM5r8uAiocYkoWjGzpwBnU=;
+        b=tQBUpmNqvMrTBVo6lk0TQe02/w0gD4gTgcz+mXTnxa01K49602ECVU919Vs0q6JwFK
+         KJsZanBZBtgqvlkXc+zGQNJw9B0w2YVlkqbBN/4FnfkENwsqaf6OO2fV9UWjK95pVdHx
+         uM9N+IzTeuZrgP9cN2Cg118qXefThOOSf8pT4og42rVsHc0hfqUdGzFqKRWkOs9Qj3oU
+         1lCas+D+nJjr3DOLcLEuqxtfB+BB9cQ0ZL5PGUUUmyppt9aORIBt2duGPO/Dfq6CqF8c
+         I8lHIeLhgykJ+DSv9l1xtuINBMargppJqsBDZNbcqbnQYw1h+lGelf37OyZ7YJZo3N5z
+         S9iA==
+X-Gm-Message-State: AOAM532jxIObEL0CjW2lXFCozT5Fl9+nlnk9dAVEqsxZswsZycgDYCr7
+        1WKX3M9k3DpuQqI8KaRLHvk=
+X-Google-Smtp-Source: ABdhPJzUG79CU/5ncdOviY0t2iNblNcM60ZxI8b0FHt4iDbjvUt24w2inQziUUWNWuNWQGQFexFWkg==
+X-Received: by 2002:a17:902:8f88:b029:d6:d62c:e437 with SMTP id z8-20020a1709028f88b02900d6d62ce437mr10148743plo.73.1605469895187;
+        Sun, 15 Nov 2020 11:51:35 -0800 (PST)
 Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
-        by smtp.gmail.com with ESMTPSA id v196sm16148139pfc.34.2020.11.15.11.51.38
+        by smtp.gmail.com with ESMTPSA id q15sm14245092pgk.93.2020.11.15.11.51.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Nov 2020 11:51:38 -0800 (PST)
+        Sun, 15 Nov 2020 11:51:34 -0800 (PST)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         trix@redhat.com, Moritz Fischer <mdf@kernel.org>
-Subject: [RESEND PATCH 07/10] fpga: fpga-mgr: ts73xx: Simplify registration
-Date:   Sun, 15 Nov 2020 11:51:24 -0800
-Message-Id: <20201115195127.284487-8-mdf@kernel.org>
+Subject: [RESEND PATCH 04/10] fpga: fpga-mgr: ice40-spi: Simplify registration
+Date:   Sun, 15 Nov 2020 11:51:21 -0800
+Message-Id: <20201115195127.284487-5-mdf@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201115195127.284487-1-mdf@kernel.org>
 References: <20201115195127.284487-1-mdf@kernel.org>
@@ -61,41 +61,41 @@ Simplify registration using new devm_fpga_mgr_register() API.
 Reviewed-by: Tom Rix <trix@redhat.com>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/ts73xx-fpga.c | 14 +-------------
+ drivers/fpga/ice40-spi.c | 14 +-------------
  1 file changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/drivers/fpga/ts73xx-fpga.c b/drivers/fpga/ts73xx-fpga.c
-index 2888ff000e4d..101f016c6ed8 100644
---- a/drivers/fpga/ts73xx-fpga.c
-+++ b/drivers/fpga/ts73xx-fpga.c
-@@ -127,18 +127,7 @@ static int ts73xx_fpga_probe(struct platform_device *pdev)
+diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
+index 8d689fea0dab..69dec5af23c3 100644
+--- a/drivers/fpga/ice40-spi.c
++++ b/drivers/fpga/ice40-spi.c
+@@ -183,18 +183,7 @@ static int ice40_fpga_probe(struct spi_device *spi)
  	if (!mgr)
  		return -ENOMEM;
  
--	platform_set_drvdata(pdev, mgr);
+-	spi_set_drvdata(spi, mgr);
 -
 -	return fpga_mgr_register(mgr);
 -}
 -
--static int ts73xx_fpga_remove(struct platform_device *pdev)
+-static int ice40_fpga_remove(struct spi_device *spi)
 -{
--	struct fpga_manager *mgr = platform_get_drvdata(pdev);
+-	struct fpga_manager *mgr = spi_get_drvdata(spi);
 -
 -	fpga_mgr_unregister(mgr);
 -
 -	return 0;
-+	return devm_fpga_mgr_register(kdev, mgr);
++	return devm_fpga_mgr_register(dev, mgr);
  }
  
- static struct platform_driver ts73xx_fpga_driver = {
-@@ -146,7 +135,6 @@ static struct platform_driver ts73xx_fpga_driver = {
- 		.name	= "ts73xx-fpga-mgr",
- 	},
- 	.probe	= ts73xx_fpga_probe,
--	.remove	= ts73xx_fpga_remove,
- };
- module_platform_driver(ts73xx_fpga_driver);
+ static const struct of_device_id ice40_fpga_of_match[] = {
+@@ -205,7 +194,6 @@ MODULE_DEVICE_TABLE(of, ice40_fpga_of_match);
  
+ static struct spi_driver ice40_fpga_driver = {
+ 	.probe = ice40_fpga_probe,
+-	.remove = ice40_fpga_remove,
+ 	.driver = {
+ 		.name = "ice40spi",
+ 		.of_match_table = of_match_ptr(ice40_fpga_of_match),
 -- 
 2.29.2
 
