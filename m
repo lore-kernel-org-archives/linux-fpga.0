@@ -2,129 +2,152 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BA55C61DD8
-	for <linux-fpga@archiver.kernel.org>; Mon, 16 Nov 2020 14:18:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 974E3C5519F
+	for <linux-fpga@archiver.kernel.org>; Mon, 16 Nov 2020 15:12:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CCBC322265
-	for <linux-fpga@archiver.kernel.org>; Mon, 16 Nov 2020 14:18:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3353722240
+	for <linux-fpga@archiver.kernel.org>; Mon, 16 Nov 2020 15:12:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="CHlSrcZy"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728041AbgKPOSg (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 16 Nov 2020 09:18:36 -0500
-Received: from mga17.intel.com ([192.55.52.151]:44670 "EHLO mga17.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726321AbgKPOSg (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 16 Nov 2020 09:18:36 -0500
-IronPort-SDR: ecGEpSvUZTdJbUktNXYpS9f2RSyDdbn6jSX6vy0aQmDf2IpizZ2aH7mjwI3I7+jbnYB+/L9Sau
- ZNBrwwodM7/Q==
-X-IronPort-AV: E=McAfee;i="6000,8403,9806"; a="150599749"
-X-IronPort-AV: E=Sophos;i="5.77,482,1596524400"; 
-   d="scan'208";a="150599749"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Nov 2020 06:18:35 -0800
-IronPort-SDR: vS8QKsFuJV5rCELUzotlPEHJ/ufDutgE31elHl43XyOc5rl+Tf3XxSTnN9vGHjo7MOwi1LW6xY
- xB+oUHuc1tcw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,482,1596524400"; 
-   d="scan'208";a="531863793"
-Received: from marshy.an.intel.com (HELO [10.122.105.143]) ([10.122.105.143])
-  by fmsmga006.fm.intel.com with ESMTP; 16 Nov 2020 06:18:34 -0800
-Subject: Re: [PATCHv1 4/4] fpga: stratix10-soc: entend driver for bitstream
- authentication
-To:     Moritz Fischer <mdf@kernel.org>
-Cc:     trix@redhat.com, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dinguyen@kernel.org,
-        sridhar.rajagopal@intel.com, Richard Gong <richard.gong@intel.com>
+        id S1730696AbgKPPMM (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 16 Nov 2020 10:12:12 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:46762 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728029AbgKPPML (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 16 Nov 2020 10:12:11 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1605539530;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=OGx9VTVE9xrpd7TRsclbo/UztTFDKECkKQ0QsjPjJB8=;
+        b=CHlSrcZy8y6w/2vAgLuOjrn7GWhE3NuOXnTmLLgFGLJ0QLhseUlOgZPTv98Cw9hrz8sKFj
+        7Lqs9jhSoc3YsaD9mV31jPkI5HyMpzuBj+ykN+9G5YvjTOBIN5A0cW8UrwShYZFllH5QES
+        dEqSfgxP42HTw0ykM06Gvee849H5phc=
+Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com
+ [209.85.219.70]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-385-JVlqb4xwP0u1alP8Ph-c4w-1; Mon, 16 Nov 2020 10:11:52 -0500
+X-MC-Unique: JVlqb4xwP0u1alP8Ph-c4w-1
+Received: by mail-qv1-f70.google.com with SMTP id ek3so5205151qvb.0
+        for <linux-fpga@vger.kernel.org>; Mon, 16 Nov 2020 07:11:52 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-transfer-encoding
+         :content-language;
+        bh=OGx9VTVE9xrpd7TRsclbo/UztTFDKECkKQ0QsjPjJB8=;
+        b=HXHb+YUuiG2BV2UG/byU4Vc85urT84U9xn5JGTvMfMjrffx5i2x8GG96kW2Z/QDC/n
+         o60sAyuR3GWuqtnzHkaEaCGELYyGSXKz8/IxH/39jXTsRsgZZz8Vl9LTwh4jMBt1ATC2
+         0cbR8+BPPmN05qG/QQxA3pqf9BKrMpM+vv+9U00I+3XMtwuXaBK3GO+oulEXdLn+6Bwi
+         20SLyCJlbtywHBeq8iDEHUHySPUkNq+Gt8V0D5jltyZdsXc7UC2F7IZO5y1tNWt2VSO5
+         blasHS+LkjZeNwnW2/vDb6txQob1ym21KBJTjVtDiLK425EvE0zxXEo4kBv7dI3Z0gFJ
+         zqaQ==
+X-Gm-Message-State: AOAM531nh2Lpz7/sYxuvbPXAWd9M1WuGBl0wmYKebbtOLUNrv+NUmugp
+        63+Yc+byk6krLwk4MIvEOQNkIE6c6XCEGbH/xlrSIxVT84NadaFadoPXoX6nQUjFkYXq1Qw3zXy
+        eten/jC01fhQYw3woBVXCSQ==
+X-Received: by 2002:ac8:5c47:: with SMTP id j7mr15238832qtj.62.1605539511760;
+        Mon, 16 Nov 2020 07:11:51 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwOAN/fykwbTByJ3lPL54lAYfP0o9Whbe5l7+LWEx0FBqjIa2HK8fyxDntVIqhpaP38dkIenA==
+X-Received: by 2002:ac8:5c47:: with SMTP id j7mr15238799qtj.62.1605539511500;
+        Mon, 16 Nov 2020 07:11:51 -0800 (PST)
+Received: from trix.remote.csb (075-142-250-213.res.spectrum.com. [75.142.250.213])
+        by smtp.gmail.com with ESMTPSA id f202sm11870849qke.112.2020.11.16.07.11.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 16 Nov 2020 07:11:50 -0800 (PST)
+Subject: Re: [PATCHv1 3/4] dt-bindings: fpga: add authenticate-fpga-config
+ property
+To:     Richard Gong <richard.gong@linux.intel.com>, mdf@kernel.org,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     dinguyen@kernel.org, sridhar.rajagopal@intel.com,
+        Richard Gong <richard.gong@intel.com>
 References: <1605204403-6663-1-git-send-email-richard.gong@linux.intel.com>
- <1605204403-6663-5-git-send-email-richard.gong@linux.intel.com>
- <20201115191936.GA283592@epycbox.lan>
-From:   Richard Gong <richard.gong@linux.intel.com>
-Message-ID: <0eb7fa0d-30e6-099f-d104-8a9aea7d8030@linux.intel.com>
-Date:   Mon, 16 Nov 2020 08:39:36 -0600
+ <1605204403-6663-4-git-send-email-richard.gong@linux.intel.com>
+ <94ccfc8d-ecf9-7782-9044-d3c0cb862118@redhat.com>
+ <e7b815c1-e153-2bed-7793-0affd4d74f9e@linux.intel.com>
+ <a63cb1f6-4bb4-9f7d-e1b0-8054e8d4a21b@redhat.com>
+ <50204b8d-91dd-e1d4-45f0-9b3e21d7309b@linux.intel.com>
+From:   Tom Rix <trix@redhat.com>
+Message-ID: <30a35bbd-f1c1-4f80-c3b4-ae5aa409ec4c@redhat.com>
+Date:   Mon, 16 Nov 2020 07:11:49 -0800
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ Thunderbird/68.12.0
 MIME-Version: 1.0
-In-Reply-To: <20201115191936.GA283592@epycbox.lan>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <50204b8d-91dd-e1d4-45f0-9b3e21d7309b@linux.intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
 
-Hi Moritz,
-
-On 11/15/20 1:19 PM, Moritz Fischer wrote:
-> On Thu, Nov 12, 2020 at 12:06:43PM -0600, richard.gong@linux.intel.com wrote:
->> From: Richard Gong <richard.gong@intel.com>
+On 11/16/20 5:50 AM, Richard Gong wrote:
+> Hi Tom,
+>
+>
+> On 11/14/20 9:59 AM, Tom Rix wrote:
 >>
->> Exten FPGA manager driver to support FPGA bitstream authentication on
-> Nit: Extend
-
-Sorry, I will fix that in version 2.
-
->> Intel SocFPGA platforms.
+>> On 11/14/20 6:52 AM, Richard Gong wrote:
+>>> Hi Tom,
+>>>
+>>>>>        prior to OS boot up.
+>>>>>    - encrypted-fpga-config : boolean, set if the bitstream is encrypted
+>>>>> +- authenticate-fpga-config : boolean, set if do bitstream authentication
+>>>>
+>>>> The list is mostly in alphabetical order so the new 'authenticate-... ' should go at the top.
+>>>>
+>>>
+>>> The original list is not in alphabetical order. The order of partial-fpga-config, external-fpga-config and encrypted-fpga-config here follows the implementation in the of-fpga-region.c file.
+>>>
+>>> So authenticate-fpga-config should follow the way, correct?
+>>>
+>> This is why i say 'mostly' ..
 >>
->> Signed-off-by: Richard Gong <richard.gong@intel.com>
->> ---
->>   drivers/fpga/stratix10-soc.c | 5 ++++-
->>   1 file changed, 4 insertions(+), 1 deletion(-)
+>> In general when listing options for a user to read, you should make it easy for them to find
 >>
->> diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
->> index 657a70c..8a59365 100644
->> --- a/drivers/fpga/stratix10-soc.c
->> +++ b/drivers/fpga/stratix10-soc.c
->> @@ -185,7 +185,10 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
->>   	ctype.flags = 0;
->>   	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
->>   		dev_dbg(dev, "Requesting partial reconfiguration.\n");
->> -		ctype.flags |= BIT(COMMAND_RECONFIG_FLAG_PARTIAL);
->> +		ctype.flags |= FPGA_MGR_PARTIAL_RECONFIG;
-> I think we had this discussion during the original review of the
-> stratix10-soc driver?
-
-Yes, we discussed before.
-
-> 
-> Wasn't the point of using the BIT() to not assume alignment of FPGA_MGR
-> flags and firmware structure?
-> 
-
-Yes, we should use BIT().
-
-> The FPGA_MGR_* bits are kernel internal and can therefore change, it
-> would be unfortunate to end up in a situation where this breaks the FW
-> interface (assuming firmware uses the value in pass-through which it
-> looks like is what is happening).
-
-In that case, I should use the flag defined in stratix10-soc driver driver.
-
-> 
->> +	} else if (info->flags & FPGA_MGR_BITSTREM_AUTHENTICATION) {
->> +		dev_dbg(dev, "Requesting bitstream authentication.\n");
->> +		ctype.flags |= FPGA_MGR_BITSTREM_AUTHENTICATION;
-> Do you want to change this to BIT(COMMAND_AUTHENTICATE_BITSTREAM) or
-> something like that?
-
-OK, I will change to BIT(COMMAND_AUTHENTICATE_BITSTREAM).
-
-Regards,
-Richard
-
->>   	} else {
->>   		dev_dbg(dev, "Requesting full reconfiguration.\n");
->>   	}
->> -- 
->> 2.7.4
+>> the option they are looking for.  Ordering them alphabetically is an obvious but not the only
 >>
-> 
-> Thanks,
-> Moritz
-> 
+>> way.  I am not asking for you to fix the whole table, just what you are adding. If there is
+>>
+>> a better way to organize them please propose the method.
+>>
+>
+> How about put authenticate-fpga-config above partial-fpga-config? I would like to group all xxx-fpga-config flags together.
+
+Ok that sounds fine.
+
+Tom
+
+>
+>
+> Regards,
+> Richard
+>
+>> Tom
+>>
+>>>> Improve what you mean by 'authentication' similar to my comment in the first patch.
+>>>>
+>>>
+>>> Will do in the version 2 submission.
+>>>
+>>> Regards,
+>>> Richard
+>>>
+>>>> Tom
+>>>>
+>>>>>    - region-unfreeze-timeout-us : The maximum time in microseconds to wait for
+>>>>>        bridges to successfully become enabled after the region has been
+>>>>>        programmed.
+>>>>
+>>>
+>>
+>
+
