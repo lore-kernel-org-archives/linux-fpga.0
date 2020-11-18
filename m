@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65E89C5519F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66FF8C64E8A
 	for <linux-fpga@archiver.kernel.org>; Wed, 18 Nov 2020 14:09:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A4B1C246B9
-	for <linux-fpga@archiver.kernel.org>; Wed, 18 Nov 2020 14:09:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2CD0E2223D
+	for <linux-fpga@archiver.kernel.org>; Wed, 18 Nov 2020 14:09:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726736AbgKROJC (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 18 Nov 2020 09:09:02 -0500
-Received: from mga18.intel.com ([134.134.136.126]:44063 "EHLO mga18.intel.com"
+        id S1726915AbgKROJK (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 18 Nov 2020 09:09:10 -0500
+Received: from mga18.intel.com ([134.134.136.126]:44082 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726714AbgKROJB (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 18 Nov 2020 09:09:01 -0500
-IronPort-SDR: YhjaWQtYBjt23Pu/ecJprkCUl1kF1M6mpRPUqfRiuRttJQSiW90K7LjKvTTKCV1NpwKXtGotRU
- xkDFn0JT3v+g==
-X-IronPort-AV: E=McAfee;i="6000,8403,9808"; a="158892809"
+        id S1726721AbgKROJJ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 18 Nov 2020 09:09:09 -0500
+IronPort-SDR: ZRtLRxiXBJLKpIhA9+JRySOGYWAI6nV44JyP9Ws332985HWmOAd9Bx8jhoXEr6juKju+grzaRn
+ TQ3p31Ws9/GA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9808"; a="158892830"
 X-IronPort-AV: E=Sophos;i="5.77,486,1596524400"; 
-   d="scan'208";a="158892809"
+   d="scan'208";a="158892830"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 06:09:00 -0800
-IronPort-SDR: ucueP6mVYc0ts6qY3bgCufekTyY9JS9jQZvEa5x7xVA8scRHd27lSoXmV0zeb0Q2XPQSJyR6t5
- xIXZeo5kwESw==
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 06:09:08 -0800
+IronPort-SDR: Tm0ELrCvDRFEKrpSt5F23OrJXxIfOJ6tRx5LqJOPIIWasd4/grqgHS5f1EJnKtRorn0Nss/wxn
+ Y8x4N4vkw2+w==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.77,486,1596524400"; 
-   d="scan'208";a="325596896"
+   d="scan'208";a="325596943"
 Received: from marshy.an.intel.com ([10.122.105.143])
-  by orsmga003.jf.intel.com with ESMTP; 18 Nov 2020 06:08:59 -0800
+  by orsmga003.jf.intel.com with ESMTP; 18 Nov 2020 06:09:07 -0800
 From:   richard.gong@linux.intel.com
 To:     gregkh@linuxfoundation.org, mdf@kernel.org, trix@redhat.com,
         linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     dinguyen@kernel.org, sridhar.rajagopal@intel.com,
         richard.gong@linux.intel.com, richard.gong@intel.com
-Subject: [PATCHv2 2/5] fpga: fpga-mgr: add FPGA_MGR_BITSTREM_AUTHENTICATION flag
-Date:   Wed, 18 Nov 2020 08:29:10 -0600
-Message-Id: <1605709753-7800-3-git-send-email-richard.gong@linux.intel.com>
+Subject: [PATCHv2 5/5] fpga: stratix10-soc: extend driver for bitstream authentication
+Date:   Wed, 18 Nov 2020 08:29:13 -0600
+Message-Id: <1605709753-7800-6-git-send-email-richard.gong@linux.intel.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1605709753-7800-1-git-send-email-richard.gong@linux.intel.com>
 References: <1605709753-7800-1-git-send-email-richard.gong@linux.intel.com>
@@ -52,47 +52,30 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Richard Gong <richard.gong@intel.com>
 
-Add FPGA_MGR_BITSTREM_AUTHENTICATION flag for FPGA bitstream
-authentication, which makes sure a signed bitstream has valid signatures.
-
-Except for the actual configuration of the device, the authentication works
-the same way as FPGA configuration does. If the authentication passes, the
-bitstream will be programmed into QSPI flash and will be expected to boot
-without issues.
+Extend FPGA manager driver to support FPGA bitstream authentication on
+Intel SocFPGA platforms.
 
 Signed-off-by: Richard Gong <richard.gong@intel.com>
 ---
-v2: align all FPGA_MGR_* flags
-    update the commit messages
+v2: use flag defined in stratix10-svc driver
 ---
- include/linux/fpga/fpga-mgr.h | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/fpga/stratix10-soc.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 2bc3030..4fb3400 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -67,12 +67,15 @@ enum fpga_mgr_states {
-  * %FPGA_MGR_BITSTREAM_LSB_FIRST: SPI bitstream bit order is LSB first
-  *
-  * %FPGA_MGR_COMPRESSED_BITSTREAM: FPGA bitstream is compressed
-+ *
-+ * %FPGA_MGR_BITSTREM_AUTHENTICATION: do FPGA bitstream authentication only
-  */
--#define FPGA_MGR_PARTIAL_RECONFIG	BIT(0)
--#define FPGA_MGR_EXTERNAL_CONFIG	BIT(1)
--#define FPGA_MGR_ENCRYPTED_BITSTREAM	BIT(2)
--#define FPGA_MGR_BITSTREAM_LSB_FIRST	BIT(3)
--#define FPGA_MGR_COMPRESSED_BITSTREAM	BIT(4)
-+#define FPGA_MGR_PARTIAL_RECONFIG		BIT(0)
-+#define FPGA_MGR_EXTERNAL_CONFIG		BIT(1)
-+#define FPGA_MGR_ENCRYPTED_BITSTREAM		BIT(2)
-+#define FPGA_MGR_BITSTREAM_LSB_FIRST		BIT(3)
-+#define FPGA_MGR_COMPRESSED_BITSTREAM		BIT(4)
-+#define FPGA_MGR_BITSTREM_AUTHENTICATION	BIT(5)
- 
- /**
-  * struct fpga_image_info - information specific to a FPGA image
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index 657a70c..b77067e 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -186,6 +186,9 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
+ 	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
+ 		dev_dbg(dev, "Requesting partial reconfiguration.\n");
+ 		ctype.flags |= BIT(COMMAND_RECONFIG_FLAG_PARTIAL);
++	} else if (info->flags & FPGA_MGR_BITSTREM_AUTHENTICATION) {
++		dev_dbg(dev, "Requesting bitstream authentication.\n");
++		ctype.flags |= BIT(COMMAND_AUTHENTICATE_BITSTREAM);
+ 	} else {
+ 		dev_dbg(dev, "Requesting full reconfiguration.\n");
+ 	}
 -- 
 2.7.4
 
