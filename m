@@ -2,165 +2,100 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D577EC64E7D
-	for <linux-fpga@archiver.kernel.org>; Thu, 19 Nov 2020 01:26:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38A8EC388F9
+	for <linux-fpga@archiver.kernel.org>; Thu, 19 Nov 2020 08:22:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 882A824724
-	for <linux-fpga@archiver.kernel.org>; Thu, 19 Nov 2020 01:26:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B79C1246F2
+	for <linux-fpga@archiver.kernel.org>; Thu, 19 Nov 2020 08:22:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="iIo8gAb9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727430AbgKSBZq (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 18 Nov 2020 20:25:46 -0500
-Received: from mga04.intel.com ([192.55.52.120]:47679 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727271AbgKSBZo (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 18 Nov 2020 20:25:44 -0500
-IronPort-SDR: aI0MYwnUd5dz8oxH0bzEm5uDircbyGG1VYXK1n5s2Xr+xwSZEwWW/gQH3/uU5EbWcxaS//lQUF
- 3dJozb/+D1vg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9809"; a="168642115"
-X-IronPort-AV: E=Sophos;i="5.77,489,1596524400"; 
-   d="scan'208";a="168642115"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:44 -0800
-IronPort-SDR: 8KHGd4XNjsfNTp428H5Cvv6IS5Y6nWsv608CbDPVez1c+rsCEe4xfm+NoO9Z2/2MtJFzxbT9vB
- Bn/P/G/6o29A==
-X-IronPort-AV: E=Sophos;i="5.77,489,1596524400"; 
-   d="scan'208";a="532968605"
-Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.212.246.14])
-  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:43 -0800
-From:   Russ Weight <russell.h.weight@intel.com>
-To:     mdf@kernel.org, lee.jones@linaro.org, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
-        hao.wu@intel.com, matthew.gerlach@intel.com,
-        Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v6 3/6] fpga: m10bmc-sec: expose max10 flash update count
-Date:   Wed, 18 Nov 2020 17:25:29 -0800
-Message-Id: <20201119012532.138517-4-russell.h.weight@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201119012532.138517-1-russell.h.weight@intel.com>
-References: <20201119012532.138517-1-russell.h.weight@intel.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1726251AbgKSIW0 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 19 Nov 2020 03:22:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35392 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725843AbgKSIWY (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 19 Nov 2020 03:22:24 -0500
+Received: from mail-pg1-x54a.google.com (mail-pg1-x54a.google.com [IPv6:2607:f8b0:4864:20::54a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A231C0613CF
+        for <linux-fpga@vger.kernel.org>; Thu, 19 Nov 2020 00:22:24 -0800 (PST)
+Received: by mail-pg1-x54a.google.com with SMTP id e3so3465520pgu.1
+        for <linux-fpga@vger.kernel.org>; Thu, 19 Nov 2020 00:22:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=sender:date:message-id:mime-version:subject:from:to:cc;
+        bh=FWN8vtpAUFSliD9r5qA234EvoKipyGx7znJTwH2RLNs=;
+        b=iIo8gAb97kW2uaKXeJVL/GC07Lv3WshoQvzkpZdc4y57wIoJ4Y0ChoKojRuwjDxmx0
+         rlPtBF5nNSyMo+jvEtIhMp7647de8++C4cC00wIN8cEoE3tBoWwqtIPL0e2jkjoFsV+a
+         31W8DWRA1IEHuy1yINIlT6ypQCQj2nfg8Cnd6vizjfjlwI+kAhoEtAuEsKOpaLv7WsuA
+         bxoiTckskQM3jWzKZR4NgoqrYqedoZKseAsh7Vgdi89LxZm4rs98479B/vsPbUrvE3ha
+         U7VedZDxU3AiPH/wEzNSW8HMTtS9Sfy9kGmuKV1ynf86KTd6leuTMubYRGgp3Sp3d+LV
+         8cAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:date:message-id:mime-version:subject:from
+         :to:cc;
+        bh=FWN8vtpAUFSliD9r5qA234EvoKipyGx7znJTwH2RLNs=;
+        b=hPQIHmEhKI6MHMqeFb23igb9ZdR44OqRJYs+ec1pK0YY9/bdC6npoMdShonltX/XmV
+         d/CdJIBFD9cYup+BTBrTpRzvBV3qwZMIpGSIyvd4FjDy40Y/JE3wvNmknsYGHXH+6BeG
+         8vdhpXEHqejJfPsyRrqwM4UZbAgVkNQP85iBHJpDxxIwMlhPQjZ9IOKZEIVjsteACQHQ
+         bztQz8zoT9ZWPVfYDR9QysiDCN+FzPvOV1PM3SZDQQM015oN/ejTqoiqP/WDFf7cB2sk
+         F4i9y74fwv1iDv3Fc9GIYREYG/yUSf6WIsKahor+Rlyr/RZoyRjwIRZYS0G5vn0Zxe0p
+         c3bQ==
+X-Gm-Message-State: AOAM5302ADgMnO67VpG4U6rmAeOulokFIXgbzN01kgVcHam76rPfOSeV
+        Acuyngy2icQLN6zdhNhTu62nJLyBXJRIQA==
+X-Google-Smtp-Source: ABdhPJz2LnxoPXoTAaPRQABbIQtfV+cePysfoy8t13zqC6H1e5lIKV6Kr3YbTCdsY2+ho1C7fej25tjmEsW+gw==
+Sender: "davidgow via sendgmr" <davidgow@spirogrip.svl.corp.google.com>
+X-Received: from spirogrip.svl.corp.google.com ([2620:15c:2cb:201:42a8:f0ff:fe4d:3548])
+ (user=davidgow job=sendgmr) by 2002:a17:902:6acc:b029:d8:c6ee:6d6c with SMTP
+ id i12-20020a1709026accb02900d8c6ee6d6cmr7772518plt.7.1605774143537; Thu, 19
+ Nov 2020 00:22:23 -0800 (PST)
+Date:   Thu, 19 Nov 2020 00:22:09 -0800
+Message-Id: <20201119082209.3598354-1-davidgow@google.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.29.2.454.gaff20da3a2-goog
+Subject: [PATCH] drivers: fpga: Specify HAS_IOMEM dependency for FPGA_DFL
+From:   David Gow <davidgow@google.com>
+To:     Moritz Fischer <mdf@kernel.org>, Tom Rix <trix@redhat.com>
+Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-um@lists.infradead.org,
+        Brendan Higgins <brendanhiggins@google.com>,
+        David Gow <davidgow@google.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend the MAX10 BMC Secure Update driver to provide a
-sysfs file to expose the flash update count for the FPGA
-user image.
+Because dfl.c uses the 'devm_ioremap', 'devm_iounmap',
+'devm_ioremap_resource', and 'devm_platform_ioremap_resource'
+functions, it should depend on HAS_IOMEM.
 
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Reviewed-by: Tom Rix <trix@redhat.com>
----
-v6:
-  - Changed flash_count_show() parameter list to achieve
-    reverse-christmas tree format.
-  - Added WARN_ON() call for (FLASH_COUNT_SIZE / stride) to ensure
-    that the proper count is passed to regmap_bulk_read().
-v5:
-  - Renamed sysfs node user_flash_count to flash_count and updated the
-    sysfs documentation accordingly.
-v4:
-  - Moved the sysfs file for displaying the flash count from the
-    FPGA Security Manager class driver to here. The
-    m10bmc_user_flash_count() function is removed and the
-    functionality is moved into a user_flash_count_show()
-    function.
-  - Added ABI documentation for the new sysfs entry
-v3:
-  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
-  - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure Update
-    driver"
-  - Removed wrapper functions (m10bmc_raw_*, m10bmc_sys_*). The
-    underlying functions are now called directly.
-v2:
-  - Renamed get_qspi_flash_count() to m10bmc_user_flash_count()
-  - Minor code cleanup per review comments
-  - Added m10bmc_ prefix to functions in m10bmc_iops structure
----
- .../testing/sysfs-driver-intel-m10-bmc-secure |  8 ++++
- drivers/fpga/intel-m10-bmc-secure.c           | 37 +++++++++++++++++++
- 2 files changed, 45 insertions(+)
+This fixes make allyesconfig under UML (ARCH=um), which doesn't provide
+HAS_IOMEM.
 
-diff --git a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
-index 2992488b717a..73a3aba750e8 100644
---- a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
-+++ b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
-@@ -27,3 +27,11 @@ Description:	Read only. Returns the root entry hash for the BMC image
- 		"hash not programmed".  This file is only visible if the
- 		underlying device supports it.
- 		Format: "0x%x".
-+
-+What:		/sys/bus/platform/devices/n3000bmc-secure.*.auto/security/flash_count
-+Date:		Oct 2020
-+KernelVersion:  5.11
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns number of times the secure update
-+		staging area has been flashed.
-+		Format: "%u".
-diff --git a/drivers/fpga/intel-m10-bmc-secure.c b/drivers/fpga/intel-m10-bmc-secure.c
-index 5ac5f59b5731..ecd63c13cb2d 100644
---- a/drivers/fpga/intel-m10-bmc-secure.c
-+++ b/drivers/fpga/intel-m10-bmc-secure.c
-@@ -11,6 +11,7 @@
- #include <linux/mfd/intel-m10-bmc.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/slab.h>
- 
- struct m10bmc_sec {
- 	struct device *dev;
-@@ -78,7 +79,43 @@ DEVICE_ATTR_SEC_REH_RO(bmc, BMC_PROG_MAGIC, BMC_PROG_ADDR, BMC_REH_ADDR);
- DEVICE_ATTR_SEC_REH_RO(sr, SR_PROG_MAGIC, SR_PROG_ADDR, SR_REH_ADDR);
- DEVICE_ATTR_SEC_REH_RO(pr, PR_PROG_MAGIC, PR_PROG_ADDR, PR_REH_ADDR);
- 
-+#define FLASH_COUNT_SIZE 4096	/* count stored as inverted bit vector */
-+
-+static ssize_t flash_count_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct m10bmc_sec *sec = dev_get_drvdata(dev);
-+	unsigned int stride, num_bits;
-+	u8 *flash_buf;
-+	int cnt, ret;
-+
-+	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
-+	num_bits = FLASH_COUNT_SIZE * 8;
-+
-+	flash_buf = kmalloc(FLASH_COUNT_SIZE, GFP_KERNEL);
-+	if (!flash_buf)
-+		return -ENOMEM;
-+
-+	WARN_ON(FLASH_COUNT_SIZE % stride);
-+	ret = regmap_bulk_read(sec->m10bmc->regmap, STAGING_FLASH_COUNT,
-+			       flash_buf, FLASH_COUNT_SIZE / stride);
-+	if (ret) {
-+		dev_err(sec->dev,
-+			"failed to read flash count: %x cnt %x: %d\n",
-+			STAGING_FLASH_COUNT, FLASH_COUNT_SIZE / stride, ret);
-+		goto exit_free;
-+	}
-+	cnt = num_bits - bitmap_weight((unsigned long *)flash_buf, num_bits);
-+
-+exit_free:
-+	kfree(flash_buf);
-+
-+	return ret ? : sysfs_emit(buf, "%u\n", cnt);
-+}
-+static DEVICE_ATTR_RO(flash_count);
-+
- static struct attribute *m10bmc_security_attrs[] = {
-+	&dev_attr_flash_count.attr,
- 	&dev_attr_bmc_root_entry_hash.attr,
- 	&dev_attr_sr_root_entry_hash.attr,
- 	&dev_attr_pr_root_entry_hash.attr,
+Signed-off-by: David Gow <davidgow@google.com>
+---
+ drivers/fpga/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 7cd5a29fc437..5645226ca3ce 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -142,6 +142,7 @@ config FPGA_DFL
+ 	tristate "FPGA Device Feature List (DFL) support"
+ 	select FPGA_BRIDGE
+ 	select FPGA_REGION
++	depends on HAS_IOMEM
+ 	help
+ 	  Device Feature List (DFL) defines a feature list structure that
+ 	  creates a linked list of feature headers within the MMIO space
 -- 
-2.25.1
+2.29.2.454.gaff20da3a2-goog
 
