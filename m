@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A5BAC64E8A
-	for <linux-fpga@archiver.kernel.org>; Thu, 19 Nov 2020 01:26:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D577EC64E7D
+	for <linux-fpga@archiver.kernel.org>; Thu, 19 Nov 2020 01:26:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BCF5D24695
+	by mail.kernel.org (Postfix) with ESMTP id 882A824724
 	for <linux-fpga@archiver.kernel.org>; Thu, 19 Nov 2020 01:26:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727363AbgKSBZo (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 18 Nov 2020 20:25:44 -0500
-Received: from mga04.intel.com ([192.55.52.120]:47676 "EHLO mga04.intel.com"
+        id S1727430AbgKSBZq (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 18 Nov 2020 20:25:46 -0500
+Received: from mga04.intel.com ([192.55.52.120]:47679 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727271AbgKSBZn (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 18 Nov 2020 20:25:43 -0500
-IronPort-SDR: WeR1AMjy/qoZccpORpKpktG2WZweakC+tDMeba7/BzDiq1y5SB6pZJF6lZFQUdc/qx6pghHDFk
- xZdI6t68WpnQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9809"; a="168642112"
+        id S1727271AbgKSBZo (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 18 Nov 2020 20:25:44 -0500
+IronPort-SDR: aI0MYwnUd5dz8oxH0bzEm5uDircbyGG1VYXK1n5s2Xr+xwSZEwWW/gQH3/uU5EbWcxaS//lQUF
+ 3dJozb/+D1vg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9809"; a="168642115"
 X-IronPort-AV: E=Sophos;i="5.77,489,1596524400"; 
-   d="scan'208";a="168642112"
+   d="scan'208";a="168642115"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:43 -0800
-IronPort-SDR: CMt02MWC419uB6qBJhcyquZUdE1qINdwOM4xojFzmXshRBPtUb/R4UOWzwiceFSmUmLikh2mm4
- QUKEmMRZCT+A==
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:44 -0800
+IronPort-SDR: 8KHGd4XNjsfNTp428H5Cvv6IS5Y6nWsv608CbDPVez1c+rsCEe4xfm+NoO9Z2/2MtJFzxbT9vB
+ Bn/P/G/6o29A==
 X-IronPort-AV: E=Sophos;i="5.77,489,1596524400"; 
-   d="scan'208";a="532968596"
+   d="scan'208";a="532968605"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.212.246.14])
-  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:42 -0800
+  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:43 -0800
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, lee.jones@linaro.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v6 1/6] mfd: intel-m10-bmc: support for MAX10 BMC Secure Updates
-Date:   Wed, 18 Nov 2020 17:25:27 -0800
-Message-Id: <20201119012532.138517-2-russell.h.weight@intel.com>
+Subject: [PATCH v6 3/6] fpga: m10bmc-sec: expose max10 flash update count
+Date:   Wed, 18 Nov 2020 17:25:29 -0800
+Message-Id: <20201119012532.138517-4-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201119012532.138517-1-russell.h.weight@intel.com>
 References: <20201119012532.138517-1-russell.h.weight@intel.com>
@@ -52,138 +52,115 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add macros and definitions required by the MAX10 BMC
-Secure Update driver.
+Extend the MAX10 BMC Secure Update driver to provide a
+sysfs file to expose the flash update count for the FPGA
+user image.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
+Reviewed-by: Tom Rix <trix@redhat.com>
 ---
 v6:
-  - No change
+  - Changed flash_count_show() parameter list to achieve
+    reverse-christmas tree format.
+  - Added WARN_ON() call for (FLASH_COUNT_SIZE / stride) to ensure
+    that the proper count is passed to regmap_bulk_read().
 v5:
-  - Renamed USER_FLASH_COUNT to STAGING_FLASH_COUNT
+  - Renamed sysfs node user_flash_count to flash_count and updated the
+    sysfs documentation accordingly.
 v4:
-  - No change
+  - Moved the sysfs file for displaying the flash count from the
+    FPGA Security Manager class driver to here. The
+    m10bmc_user_flash_count() function is removed and the
+    functionality is moved into a user_flash_count_show()
+    function.
+  - Added ABI documentation for the new sysfs entry
 v3:
-  - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure
-    Update driver"
+  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
+  - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure Update
+    driver"
   - Removed wrapper functions (m10bmc_raw_*, m10bmc_sys_*). The
-    underlying functions will be called directly.
+    underlying functions are now called directly.
 v2:
-  - These functions and macros were previously distributed among
-    the patches that needed them. They are now grouped together
-    in a single patch containing changes to the Intel MAX10 BMC
-    driver.
-  - Added DRBL_ prefix to some definitions
-  - Some address definitions were moved here from the .c files that
-    use them.
+  - Renamed get_qspi_flash_count() to m10bmc_user_flash_count()
+  - Minor code cleanup per review comments
+  - Added m10bmc_ prefix to functions in m10bmc_iops structure
 ---
- include/linux/mfd/intel-m10-bmc.h | 85 +++++++++++++++++++++++++++++++
- 1 file changed, 85 insertions(+)
+ .../testing/sysfs-driver-intel-m10-bmc-secure |  8 ++++
+ drivers/fpga/intel-m10-bmc-secure.c           | 37 +++++++++++++++++++
+ 2 files changed, 45 insertions(+)
 
-diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
-index c8ef2f1654a4..ab8d78b92df9 100644
---- a/include/linux/mfd/intel-m10-bmc.h
-+++ b/include/linux/mfd/intel-m10-bmc.h
-@@ -13,6 +13,9 @@
- #define M10BMC_SYS_BASE			0x300800
- #define M10BMC_MEM_END			0x200000fc
+diff --git a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
+index 2992488b717a..73a3aba750e8 100644
+--- a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
++++ b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
+@@ -27,3 +27,11 @@ Description:	Read only. Returns the root entry hash for the BMC image
+ 		"hash not programmed".  This file is only visible if the
+ 		underlying device supports it.
+ 		Format: "0x%x".
++
++What:		/sys/bus/platform/devices/n3000bmc-secure.*.auto/security/flash_count
++Date:		Oct 2020
++KernelVersion:  5.11
++Contact:	Russ Weight <russell.h.weight@intel.com>
++Description:	Read only. Returns number of times the secure update
++		staging area has been flashed.
++		Format: "%u".
+diff --git a/drivers/fpga/intel-m10-bmc-secure.c b/drivers/fpga/intel-m10-bmc-secure.c
+index 5ac5f59b5731..ecd63c13cb2d 100644
+--- a/drivers/fpga/intel-m10-bmc-secure.c
++++ b/drivers/fpga/intel-m10-bmc-secure.c
+@@ -11,6 +11,7 @@
+ #include <linux/mfd/intel-m10-bmc.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
++#include <linux/slab.h>
  
-+#define M10BMC_STAGING_BASE		0x18000000
-+#define M10BMC_STAGING_SIZE		0x3800000
-+
- /* Register offset of system registers */
- #define NIOS2_FW_VERSION		0x0
- #define M10BMC_TEST_REG			0x3c
-@@ -21,6 +24,88 @@
- #define M10BMC_VER_PCB_INFO_MSK		GENMASK(31, 24)
- #define M10BMC_VER_LEGACY_INVALID	0xffffffff
+ struct m10bmc_sec {
+ 	struct device *dev;
+@@ -78,7 +79,43 @@ DEVICE_ATTR_SEC_REH_RO(bmc, BMC_PROG_MAGIC, BMC_PROG_ADDR, BMC_REH_ADDR);
+ DEVICE_ATTR_SEC_REH_RO(sr, SR_PROG_MAGIC, SR_PROG_ADDR, SR_REH_ADDR);
+ DEVICE_ATTR_SEC_REH_RO(pr, PR_PROG_MAGIC, PR_PROG_ADDR, PR_REH_ADDR);
  
-+/* Secure update doorbell register, in system register region */
-+#define M10BMC_DOORBELL			0x400
++#define FLASH_COUNT_SIZE 4096	/* count stored as inverted bit vector */
 +
-+/* Authorization Result register, in system register region */
-+#define M10BMC_AUTH_RESULT		0x404
++static ssize_t flash_count_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct m10bmc_sec *sec = dev_get_drvdata(dev);
++	unsigned int stride, num_bits;
++	u8 *flash_buf;
++	int cnt, ret;
 +
-+/* Doorbell register fields */
-+#define DRBL_RSU_REQUEST		BIT(0)
-+#define DRBL_RSU_PROGRESS		GENMASK(7, 4)
-+#define DRBL_HOST_STATUS		GENMASK(11, 8)
-+#define DRBL_RSU_STATUS			GENMASK(23, 16)
-+#define DRBL_PKVL_EEPROM_LOAD_SEC	BIT(24)
-+#define DRBL_PKVL1_POLL_EN		BIT(25)
-+#define DRBL_PKVL2_POLL_EN		BIT(26)
-+#define DRBL_CONFIG_SEL			BIT(28)
-+#define DRBL_REBOOT_REQ			BIT(29)
-+#define DRBL_REBOOT_DISABLED		BIT(30)
++	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
++	num_bits = FLASH_COUNT_SIZE * 8;
 +
-+/* Progress states */
-+#define RSU_PROG_IDLE			0x0
-+#define RSU_PROG_PREPARE		0x1
-+#define RSU_PROG_READY			0x3
-+#define RSU_PROG_AUTHENTICATING		0x4
-+#define RSU_PROG_COPYING		0x5
-+#define RSU_PROG_UPDATE_CANCEL		0x6
-+#define RSU_PROG_PROGRAM_KEY_HASH	0x7
-+#define RSU_PROG_RSU_DONE		0x8
-+#define RSU_PROG_PKVL_PROM_DONE		0x9
++	flash_buf = kmalloc(FLASH_COUNT_SIZE, GFP_KERNEL);
++	if (!flash_buf)
++		return -ENOMEM;
 +
-+/* Device and error states */
-+#define RSU_STAT_NORMAL			0x0
-+#define RSU_STAT_TIMEOUT		0x1
-+#define RSU_STAT_AUTH_FAIL		0x2
-+#define RSU_STAT_COPY_FAIL		0x3
-+#define RSU_STAT_FATAL			0x4
-+#define RSU_STAT_PKVL_REJECT		0x5
-+#define RSU_STAT_NON_INC		0x6
-+#define RSU_STAT_ERASE_FAIL		0x7
-+#define RSU_STAT_WEAROUT		0x8
-+#define RSU_STAT_NIOS_OK		0x80
-+#define RSU_STAT_USER_OK		0x81
-+#define RSU_STAT_FACTORY_OK		0x82
-+#define RSU_STAT_USER_FAIL		0x83
-+#define RSU_STAT_FACTORY_FAIL		0x84
-+#define RSU_STAT_NIOS_FLASH_ERR		0x85
-+#define RSU_STAT_FPGA_FLASH_ERR		0x86
++	WARN_ON(FLASH_COUNT_SIZE % stride);
++	ret = regmap_bulk_read(sec->m10bmc->regmap, STAGING_FLASH_COUNT,
++			       flash_buf, FLASH_COUNT_SIZE / stride);
++	if (ret) {
++		dev_err(sec->dev,
++			"failed to read flash count: %x cnt %x: %d\n",
++			STAGING_FLASH_COUNT, FLASH_COUNT_SIZE / stride, ret);
++		goto exit_free;
++	}
++	cnt = num_bits - bitmap_weight((unsigned long *)flash_buf, num_bits);
 +
-+#define HOST_STATUS_IDLE		0x0
-+#define HOST_STATUS_WRITE_DONE		0x1
-+#define HOST_STATUS_ABORT_RSU		0x2
++exit_free:
++	kfree(flash_buf);
 +
-+#define rsu_prog(doorbell)	FIELD_GET(DRBL_RSU_PROGRESS, doorbell)
-+#define rsu_stat(doorbell)	FIELD_GET(DRBL_RSU_STATUS, doorbell)
++	return ret ? : sysfs_emit(buf, "%u\n", cnt);
++}
++static DEVICE_ATTR_RO(flash_count);
 +
-+/* interval 100ms and timeout 5s */
-+#define NIOS_HANDSHAKE_INTERVAL_US	(100 * 1000)
-+#define NIOS_HANDSHAKE_TIMEOUT_US	(5 * 1000 * 1000)
-+
-+/* RSU PREP Timeout (2 minutes) to erase flash staging area */
-+#define RSU_PREP_INTERVAL_MS		100
-+#define RSU_PREP_TIMEOUT_MS		(2 * 60 * 1000)
-+
-+/* RSU Complete Timeout (40 minutes) for full flash update */
-+#define RSU_COMPLETE_INTERVAL_MS	1000
-+#define RSU_COMPLETE_TIMEOUT_MS		(40 * 60 * 1000)
-+
-+/* Addresses for security related data in FLASH */
-+#define BMC_REH_ADDR	0x17ffc004
-+#define BMC_PROG_ADDR	0x17ffc000
-+#define BMC_PROG_MAGIC	0x5746
-+
-+#define SR_REH_ADDR	0x17ffd004
-+#define SR_PROG_ADDR	0x17ffd000
-+#define SR_PROG_MAGIC	0x5253
-+
-+#define PR_REH_ADDR	0x17ffe004
-+#define PR_PROG_ADDR	0x17ffe000
-+#define PR_PROG_MAGIC	0x5250
-+
-+/* Address of 4KB inverted bit vector containing staging area FLASH count */
-+#define STAGING_FLASH_COUNT	0x17ffb000
-+
- /**
-  * struct intel_m10bmc - Intel MAX 10 BMC parent driver data structure
-  * @dev: this device
+ static struct attribute *m10bmc_security_attrs[] = {
++	&dev_attr_flash_count.attr,
+ 	&dev_attr_bmc_root_entry_hash.attr,
+ 	&dev_attr_sr_root_entry_hash.attr,
+ 	&dev_attr_pr_root_entry_hash.attr,
 -- 
 2.25.1
 
