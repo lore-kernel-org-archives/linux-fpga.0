@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FCB6C64E7C
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D0DDC64E7B
 	for <linux-fpga@archiver.kernel.org>; Thu, 19 Nov 2020 01:26:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3023C246EE
+	by mail.kernel.org (Postfix) with ESMTP id 5A7E724695
 	for <linux-fpga@archiver.kernel.org>; Thu, 19 Nov 2020 01:26:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727290AbgKSBZx (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 18 Nov 2020 20:25:53 -0500
-Received: from mga04.intel.com ([192.55.52.120]:47676 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727271AbgKSBZq (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S1727438AbgKSBZq (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
         Wed, 18 Nov 2020 20:25:46 -0500
-IronPort-SDR: r1D0wANb4ewfXa9FCEcnjun7Liwq93+zHaiUersPCdhPP/4YE4NAbkjl0/GrDvztiGBKfnR+j5
- dnZJenQzsVww==
-X-IronPort-AV: E=McAfee;i="6000,8403,9809"; a="168642123"
+Received: from mga04.intel.com ([192.55.52.120]:47680 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727412AbgKSBZp (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 18 Nov 2020 20:25:45 -0500
+IronPort-SDR: q3NYD+PZjg6g2VC5HYLiTlbqi2elY7JXqx9wtQQA9mPaBPhyES9b71pVsQ9+aR+rBxACaxTrGF
+ ZcGJP3krV73g==
+X-IronPort-AV: E=McAfee;i="6000,8403,9809"; a="168642117"
 X-IronPort-AV: E=Sophos;i="5.77,489,1596524400"; 
-   d="scan'208";a="168642123"
+   d="scan'208";a="168642117"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:46 -0800
-IronPort-SDR: l2GCVaIPHyU54S9XSXS8coz2NIcAVTXh0+dX+ZNWqPi+7AVYUn9JmPuyx+rc+ueUGxgXPYXYBW
- AJyWvkdWvZRQ==
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:44 -0800
+IronPort-SDR: gBQcT+LddkJ/9TYYS9HHMmtEEpvKThEGf7RhN7mGpq37EnxpsDl8Zzt5chG/W/i+ytaeA26PlG
+ 1BAKHymppgSw==
 X-IronPort-AV: E=Sophos;i="5.77,489,1596524400"; 
-   d="scan'208";a="532968620"
+   d="scan'208";a="532968608"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.212.246.14])
-  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:45 -0800
+  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2020 17:25:44 -0800
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, lee.jones@linaro.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v6 6/6] fpga: m10bmc-sec: add max10 get_hw_errinfo callback func
-Date:   Wed, 18 Nov 2020 17:25:32 -0800
-Message-Id: <20201119012532.138517-7-russell.h.weight@intel.com>
+Subject: [PATCH v6 4/6] fpga: m10bmc-sec: expose max10 canceled keys in sysfs
+Date:   Wed, 18 Nov 2020 17:25:30 -0800
+Message-Id: <20201119012532.138517-5-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201119012532.138517-1-russell.h.weight@intel.com>
 References: <20201119012532.138517-1-russell.h.weight@intel.com>
@@ -52,72 +52,146 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend the MAX10 BMC Secure Update driver to include
-a function that returns 64 bits of additional HW specific
-data for errors that require additional information.
-This callback function enables the hw_errinfo sysfs
-node in the Intel Security Manager class driver.
+Extend the MAX10 BMC Secure Update driver to provide sysfs
+files to expose the canceled code signing key (CSK) bit
+vectors. These use the standard bitmap list format
+(e.g. 1,2-6,9).
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+Reviewed-by: Tom Rix <trix@redhat.com>
 ---
 v6:
-  - Initialized auth_result and doorbell to HW_ERRINFO_POISON
-    in m10bmc_sec_hw_errinfo() and removed unnecessary if statements.
+  - Added WARN_ON() call for (size / stride) to ensure
+    that the proper count is passed to regmap_bulk_read().
 v5:
   - No change
 v4:
-  - No change
+  - Moved sysfs files for displaying the code-signing-key (CSK)
+    cancellation vectors from the FPGA Security Manger class driver
+    to here. The m10bmc_csk_vector() and m10bmc_csk_cancel_nbits()
+    functions are removed and the functionality from these functions
+    is moved into a show_canceled_csk() function for for displaying
+    the CSK vectors.
+  - Added ABI documentation for new sysfs entries
 v3:
   - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
   - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure Update
     driver"
+  - Removed wrapper functions (m10bmc_raw_*, m10bmc_sys_*). The
+    underlying functions are now called directly.
+  - Renamed get_csk_vector() to m10bmc_csk_vector()
 v2:
-  - Implemented HW_ERRINFO_POISON for m10bmc_sec_hw_errinfo() to
-    ensure that corresponding bits are set to 1 if we are unable
-    to read the doorbell or auth_result registers.
+  - Replaced small function-creation macros for explicit function
+    declarations.
+  - Fixed get_csk_vector() function to properly apply the stride
+    variable in calls to m10bmc_raw_bulk_read()
   - Added m10bmc_ prefix to functions in m10bmc_iops structure
 ---
- drivers/fpga/intel-m10-bmc-secure.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ .../testing/sysfs-driver-intel-m10-bmc-secure | 24 ++++++++++
+ drivers/fpga/intel-m10-bmc-secure.c           | 48 +++++++++++++++++++
+ 2 files changed, 72 insertions(+)
 
+diff --git a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
+index 73a3aba750e8..610f19569b5f 100644
+--- a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
++++ b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
+@@ -28,6 +28,30 @@ Description:	Read only. Returns the root entry hash for the BMC image
+ 		underlying device supports it.
+ 		Format: "0x%x".
+ 
++What:		/sys/bus/platform/devices/n3000bmc-secure.*.auto/security/sr_canceled_csks
++Date:		Oct 2020
++KernelVersion:  5.11
++Contact:	Russ Weight <russell.h.weight@intel.com>
++Description:	Read only. Returns a list of indices for canceled code
++		signing keys for the static region. The standard bitmap
++		list format is used (e.g. "1,2-6,9").
++
++What:		/sys/bus/platform/devices/n3000bmc-secure.*.auto/security/pr_canceled_csks
++Date:		Oct 2020
++KernelVersion:  5.11
++Contact:	Russ Weight <russell.h.weight@intel.com>
++Description:	Read only. Returns a list of indices for canceled code
++		signing keys for the partial reconfiguration region. The
++		standard bitmap list format is used (e.g. "1,2-6,9").
++
++What:		/sys/bus/platform/devices/n3000bmc-secure.*.auto/security/bmc_canceled_csks
++Date:		Oct 2020
++KernelVersion:  5.11
++Contact:	Russ Weight <russell.h.weight@intel.com>
++Description:	Read only. Returns a list of indices for canceled code
++		signing keys for the BMC.  The standard bitmap list format
++		is used (e.g. "1,2-6,9").
++
+ What:		/sys/bus/platform/devices/n3000bmc-secure.*.auto/security/flash_count
+ Date:		Oct 2020
+ KernelVersion:  5.11
 diff --git a/drivers/fpga/intel-m10-bmc-secure.c b/drivers/fpga/intel-m10-bmc-secure.c
-index a290fcc4df4a..3a049c98cf43 100644
+index ecd63c13cb2d..87e16c146569 100644
 --- a/drivers/fpga/intel-m10-bmc-secure.c
 +++ b/drivers/fpga/intel-m10-bmc-secure.c
-@@ -476,11 +476,33 @@ static enum fpga_sec_err m10bmc_sec_cancel(struct fpga_sec_mgr *smgr)
- 	return ret ? FPGA_SEC_ERR_RW_ERROR : FPGA_SEC_ERR_NONE;
- }
+@@ -79,6 +79,51 @@ DEVICE_ATTR_SEC_REH_RO(bmc, BMC_PROG_MAGIC, BMC_PROG_ADDR, BMC_REH_ADDR);
+ DEVICE_ATTR_SEC_REH_RO(sr, SR_PROG_MAGIC, SR_PROG_ADDR, SR_REH_ADDR);
+ DEVICE_ATTR_SEC_REH_RO(pr, PR_PROG_MAGIC, PR_PROG_ADDR, PR_REH_ADDR);
  
-+#define HW_ERRINFO_POISON	GENMASK(31, 0)
-+static u64 m10bmc_sec_hw_errinfo(struct fpga_sec_mgr *smgr)
++#define CSK_BIT_LEN		128U
++#define CSK_32ARRAY_SIZE	DIV_ROUND_UP(CSK_BIT_LEN, 32)
++
++static ssize_t
++show_canceled_csk(struct device *dev, u32 addr, char *buf)
 +{
-+	struct m10bmc_sec *sec = smgr->priv;
-+	u32 auth_result = HW_ERRINFO_POISON;
-+	u32 doorbell = HW_ERRINFO_POISON;
++	unsigned int i, stride, size = CSK_32ARRAY_SIZE * sizeof(u32);
++	struct m10bmc_sec *sec = dev_get_drvdata(dev);
++	DECLARE_BITMAP(csk_map, CSK_BIT_LEN);
++	__le32 csk_le32[CSK_32ARRAY_SIZE];
++	u32 csk32[CSK_32ARRAY_SIZE];
++	int ret;
 +
-+	switch (smgr->err_code) {
-+	case FPGA_SEC_ERR_HW_ERROR:
-+	case FPGA_SEC_ERR_TIMEOUT:
-+	case FPGA_SEC_ERR_BUSY:
-+	case FPGA_SEC_ERR_WEAROUT:
-+		m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+		m10bmc_sys_read(sec->m10bmc, M10BMC_AUTH_RESULT, &auth_result);
++	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
 +
-+		return (u64)doorbell << 32 | (u64)auth_result;
-+	default:
-+		return 0;
++	WARN_ON(size % stride);
++	ret = regmap_bulk_read(sec->m10bmc->regmap, addr, csk_le32,
++			       size / stride);
++	if (ret) {
++		dev_err(sec->dev, "failed to read CSK vector: %x cnt %x: %d\n",
++			addr, size / stride, ret);
++		return ret;
 +	}
++
++	for (i = 0; i < CSK_32ARRAY_SIZE; i++)
++		csk32[i] = le32_to_cpu(((csk_le32[i])));
++
++	bitmap_from_arr32(csk_map, csk32, CSK_BIT_LEN);
++	bitmap_complement(csk_map, csk_map, CSK_BIT_LEN);
++	return bitmap_print_to_pagebuf(1, buf, csk_map, CSK_BIT_LEN);
 +}
 +
- static const struct fpga_sec_mgr_ops m10bmc_sops = {
- 	.prepare = m10bmc_sec_prepare,
- 	.write_blk = m10bmc_sec_write_blk,
- 	.poll_complete = m10bmc_sec_poll_complete,
- 	.cancel = m10bmc_sec_cancel,
-+	.get_hw_errinfo = m10bmc_sec_hw_errinfo,
++#define DEVICE_ATTR_SEC_CSK_RO(_name, _addr) \
++static ssize_t _name##_canceled_csks_show(struct device *dev, \
++					  struct device_attribute *attr, \
++					  char *buf) \
++{ return show_canceled_csk(dev, _addr, buf); } \
++static DEVICE_ATTR_RO(_name##_canceled_csks)
++
++#define CSK_VEC_OFFSET 0x34
++
++DEVICE_ATTR_SEC_CSK_RO(bmc, BMC_PROG_ADDR + CSK_VEC_OFFSET);
++DEVICE_ATTR_SEC_CSK_RO(sr, SR_PROG_ADDR + CSK_VEC_OFFSET);
++DEVICE_ATTR_SEC_CSK_RO(pr, PR_PROG_ADDR + CSK_VEC_OFFSET);
++
+ #define FLASH_COUNT_SIZE 4096	/* count stored as inverted bit vector */
+ 
+ static ssize_t flash_count_show(struct device *dev,
+@@ -119,6 +164,9 @@ static struct attribute *m10bmc_security_attrs[] = {
+ 	&dev_attr_bmc_root_entry_hash.attr,
+ 	&dev_attr_sr_root_entry_hash.attr,
+ 	&dev_attr_pr_root_entry_hash.attr,
++	&dev_attr_sr_canceled_csks.attr,
++	&dev_attr_pr_canceled_csks.attr,
++	&dev_attr_bmc_canceled_csks.attr,
+ 	NULL,
  };
  
- static int m10bmc_secure_probe(struct platform_device *pdev)
 -- 
 2.25.1
 
