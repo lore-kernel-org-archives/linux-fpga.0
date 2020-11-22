@@ -2,106 +2,74 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48541C2D0E4
-	for <linux-fpga@archiver.kernel.org>; Fri, 20 Nov 2020 23:46:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA7E6C63697
+	for <linux-fpga@archiver.kernel.org>; Sun, 22 Nov 2020 00:16:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0AC812240C
-	for <linux-fpga@archiver.kernel.org>; Fri, 20 Nov 2020 23:46:59 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Xg2aFlLY"
+	by mail.kernel.org (Postfix) with ESMTP id 9231220760
+	for <linux-fpga@archiver.kernel.org>; Sun, 22 Nov 2020 00:16:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727993AbgKTXq6 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 20 Nov 2020 18:46:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34188 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727370AbgKTXq6 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 20 Nov 2020 18:46:58 -0500
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E80E6C0613CF
-        for <linux-fpga@vger.kernel.org>; Fri, 20 Nov 2020 15:46:56 -0800 (PST)
-Received: by mail-yb1-xb4a.google.com with SMTP id w8so13844905ybj.14
-        for <linux-fpga@vger.kernel.org>; Fri, 20 Nov 2020 15:46:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=sender:date:message-id:mime-version:subject:from:to:cc;
-        bh=5uh+PylmkNxXuAdVHU5SvFd12dZOCp0wIVK8TNXkHmA=;
-        b=Xg2aFlLYEUx1yHv0k78DcyOlwJ6puAYOCjBGjiXBNLn0wJnGveAMHKsrRk35eSXBbt
-         IySmZy7bXkR6dOjnsULEk/4Sx+tpESe+xs2m1pALdZzMhNAjWJJatrAXddOPMkmij8/p
-         L9e2jqDcpZozWgvzN2fFPQFuvnu3X+UJMs2TTADDq10/drtC+dsJ4CIE1710dGmx0Pbf
-         VYFDZNnSD/IFSWDAwlB45SeXja+wgKlF7RuVjQfjAdXRxc/6f2UK+yY5NjDxMrWUbYeo
-         SYXzI5iBSiXCb8Ax98x60kwLAORk7RwGJNjSuPQPbPQO4KN+jGEGlV8uxAzi6K1vC9BY
-         p4gQ==
+        id S1726335AbgKVAP4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sat, 21 Nov 2020 19:15:56 -0500
+Received: from mail-pf1-f179.google.com ([209.85.210.179]:45195 "EHLO
+        mail-pf1-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726398AbgKVAP4 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sat, 21 Nov 2020 19:15:56 -0500
+Received: by mail-pf1-f179.google.com with SMTP id b63so11447118pfg.12
+        for <linux-fpga@vger.kernel.org>; Sat, 21 Nov 2020 16:16:01 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:date:message-id:mime-version:subject:from
-         :to:cc;
-        bh=5uh+PylmkNxXuAdVHU5SvFd12dZOCp0wIVK8TNXkHmA=;
-        b=awn4I1gZNOm1NPh8gPfItZTYVyTySYpb90SIw9xDvV/oe8ROtASnmssr/53PZLhM9V
-         SX+p6m3/iYJCNvIrZCXfBlN+uC7iInFablaS7hX7AXySArDcwI+A1uQj94mWtZYzWa7y
-         RoeiHJ9zs79QEV1/Z9jFcOpM5g1snJ5DKwr16J1oHOV396w7l3kmhPNtPuhSN60TnUGM
-         q3jyjZ0K9GCkp+QlkuIESW24Qybgc5JFDRf1TXXyaFX68wPfCVZ3LVCQUrhsHsDIRDrq
-         rlsUj9A4hj+4iNkbCN+XW+NPWNGAizRkDPFv6BYh9DSL5+rl/zNCazmkM7v8EFTmk5xV
-         TjwA==
-X-Gm-Message-State: AOAM533UtCYqUMle8GTU1VnXVMOc8vS5RojptPG7TY0MfLhf3for8/5c
-        c2fJf+OEGhqmb3TQGzipinjdQtsejqz1zg==
-X-Google-Smtp-Source: ABdhPJwrtyGDCkqpaR+qNYk8jG5k7OxUoYzGuCPssdJyJNCYzI4HxqCvmhHAJlwI1RGuUgAA9I2rVqshbenXfg==
-Sender: "davidgow via sendgmr" <davidgow@spirogrip.svl.corp.google.com>
-X-Received: from spirogrip.svl.corp.google.com ([2620:15c:2cb:201:42a8:f0ff:fe4d:3548])
- (user=davidgow job=sendgmr) by 2002:a25:2a0a:: with SMTP id
- q10mr34014168ybq.453.1605916016059; Fri, 20 Nov 2020 15:46:56 -0800 (PST)
-Date:   Fri, 20 Nov 2020 15:46:48 -0800
-Message-Id: <20201120234648.4050910-1-davidgow@google.com>
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.29.2.454.gaff20da3a2-goog
-Subject: [PATCH v2] drivers: fpga: Specify HAS_IOMEM dependency for FPGA_DFL
-From:   David Gow <davidgow@google.com>
-To:     Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
-        Tom Rix <trix@redhat.com>
-Cc:     David Gow <davidgow@google.com>, linux-fpga@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-um <linux-um@lists.infradead.org>,
-        Brendan Higgins <brendanhiggins@google.com>
-Content-Type: text/plain; charset="UTF-8"
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=8K7iQGo4yv61l3g+o2fIKjS3QOtid1WNIFRfBk5mzoo=;
+        b=esYzUmOKS3ieRV0X0SQaKzKEVbf9FyK5wSyj2vEe2RMeoWV/lkCvbClH9LFbLLyvMG
+         JgyN/5xnLmWShSe1mKFhRJj+Jw2y4h0rFFeeLfDUIKbyWaEVmvAwQzhbHA+faaTrlpNF
+         nyy0kmu6zVfatU3A5scDmv0y5e8NaKQmPZ2s5Kf0VcRg2nOqPF9Ki1xBe3yw/B6LV6/H
+         ug4RxHZZYeB6b5gCNZLHSd8rXEKvJeWDr2S7eRXselTRj+AJcsNVCgsnMYNMRDFVlPDo
+         TzOa3SyDZYlgjZZ99TwB6XtAF+fv0jqg32FIPCzvD+1IJVhxcWuGb8LugVc9+qg92+hy
+         pGIA==
+X-Gm-Message-State: AOAM532AxjaAhESkzD+X06uTgibQAvge9RJ64oQb8Rxgo+2UqJ5BRHen
+        Bfl37eqQNbpp1Hln5v8H5Hc=
+X-Google-Smtp-Source: ABdhPJz1HxrBZJwwAaLKP+mQK3J9BSx8TPbCkxxYTnwbu75vUGohH7s4LUR26CYP61ildr4pU3DiEg==
+X-Received: by 2002:a63:780a:: with SMTP id t10mr10793860pgc.377.1606004161586;
+        Sat, 21 Nov 2020 16:16:01 -0800 (PST)
+Received: from localhost (c-73-235-149-126.hsd1.ca.comcast.net. [73.235.149.126])
+        by smtp.gmail.com with ESMTPSA id c8sm9051399pjd.13.2020.11.21.16.16.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 21 Nov 2020 16:16:01 -0800 (PST)
+From:   Moritz Fischer <mdf@kernel.org>
+To:     gregkh@linuxfoundation.org
+Cc:     linux-fpga@vger.kernel.org, trix@redhat.com, hao.wu@intel.com,
+        yilun.xu@intel.com, russell.h.weight@intel.com,
+        Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH 0/1] FPGA Manager Fix for 5.10
+Date:   Sat, 21 Nov 2020 16:15:48 -0800
+Message-Id: <20201122001549.107023-1-mdf@kernel.org>
+X-Mailer: git-send-email 2.29.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Because dfl.c uses the 'devm_ioremap', 'devm_iounmap',
-'devm_ioremap_resource', and 'devm_platform_ioremap_resource'
-functions, it should depend on HAS_IOMEM.
+Hi Greg,
 
-This fixes make allyesconfig under UML (ARCH=um), which doesn't provide
-HAS_IOMEM.
+This time as patchset, as requested last time.
 
-Fixes: 89eb35e810a8 ("fpga: dfl: map feature mmio resources in their own feature drivers")
-Signed-off-by: David Gow <davidgow@google.com>
----
+Please take this fix addressing a missing dependency FPGA_DFL.
 
-Changes since v1:
-( https://lore.kernel.org/linux-fpga/20201119082209.3598354-1-davidgow@google.com/ )
-- Add Fixes tag
+Thanks,
+Moritz
+
+David Gow (1):
+  fpga: Specify HAS_IOMEM dependency for FPGA_DFL
 
  drivers/fpga/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 7cd5a29fc437..5645226ca3ce 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -142,6 +142,7 @@ config FPGA_DFL
- 	tristate "FPGA Device Feature List (DFL) support"
- 	select FPGA_BRIDGE
- 	select FPGA_REGION
-+	depends on HAS_IOMEM
- 	help
- 	  Device Feature List (DFL) defines a feature list structure that
- 	  creates a linked list of feature headers within the MMIO space
 -- 
-2.29.2.454.gaff20da3a2-goog
+2.29.2
 
