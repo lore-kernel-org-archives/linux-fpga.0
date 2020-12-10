@@ -6,48 +6,49 @@ X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E25E8C4361B
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BD4CC4167B
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A90C0221E3
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3B79E221E3
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387776AbgLJQ7N (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 10 Dec 2020 11:59:13 -0500
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:38982 "EHLO
+        id S2392373AbgLJQ7T (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 10 Dec 2020 11:59:19 -0500
+Received: from mail-pf1-f193.google.com ([209.85.210.193]:40148 "EHLO
         mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391047AbgLJQ7L (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Dec 2020 11:59:11 -0500
-Received: by mail-pf1-f193.google.com with SMTP id i3so4665152pfd.6
-        for <linux-fpga@vger.kernel.org>; Thu, 10 Dec 2020 08:58:56 -0800 (PST)
+        with ESMTP id S2392369AbgLJQ7F (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Dec 2020 11:59:05 -0500
+Received: by mail-pf1-f193.google.com with SMTP id t7so4655495pfh.7
+        for <linux-fpga@vger.kernel.org>; Thu, 10 Dec 2020 08:58:50 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=8xrVQLkOkYqMOiYDbITEs6MQ6JjKj9uyPsCqicxADHU=;
-        b=HMJoNU8uFOoK3ixL3343nNn7092hLvkY5OXwxQXBDTAYg+SaPRDq9ndSqIeB2XBJIl
-         5T7krOQb3crMZaF4Hx99imjLOTyjaYBxqkiKDqzd4PaVe0AyUkc7blfNhfW5ZSFAyIx7
-         1sXiCWZOHFEATGG12+pN3K6K1b6hqQj//mDhMLzgGQblCB4mE5IZFWrlYpiAuMCpTb7f
-         qB+gu8IrLaoSUjvDHeOo3BP2ko+EAR6LD2EoXZKdXWplhpZ3cH8IvN5b55vd0Wq0kUcQ
-         /WuOgWzNPDT/n9242clyCCDKM2+Dg0jFhcKkk+9MCzvY8mDps2wjON08DrQPnmDECW4n
-         HFeg==
-X-Gm-Message-State: AOAM531Ro/cSldEf0kCbR4T1hSuv45T4Cc7d/o+Ho4ud4OVWZgrdt7fu
-        QRegEHyXR1X/3w/XTsO/59XtBRFC14TM6g==
-X-Google-Smtp-Source: ABdhPJwchHdNPm6g6Wh4QYJzqn9IPbocgUIHPFT8kn/jvG3CaZhIN9HUjgIyFuLi2A7df/Sl1Llqcw==
-X-Received: by 2002:a63:dd53:: with SMTP id g19mr7392522pgj.291.1607619510868;
-        Thu, 10 Dec 2020 08:58:30 -0800 (PST)
+        bh=X2GZ+ePoFiu9QiVFXfkzqTqbUH2vMpi+ch5sofOIR7Q=;
+        b=dzplKMQTvDRzZz/ldQGN9+0wHPRPVUmDG81sbJ8OqUsFlQZf03/unwVWl3TojR7j1n
+         Tv/xTpMUynvd/BtUDcvgejPBCd926X6J8luyMz6UXirDLMlCrWGVEI0QSsClj2IwperI
+         CQ2+pS6jGa+Zqc6axZGAGssl0xQkPqyUzEzu9sA9FspKx2vGOGXSgU0X4p7oQ6Lxt8zc
+         P6teUUTechDJFp34rS0CbvaN+EAtDC2Om698BA6XK356bTcaqqoJgokR/YJI/tYG59OW
+         5B7e9eJLgWTJTjYOgPmJZWjf1+QKAYgMyUh+6OjVts935621XdfSv9ctmOQIUDsPbDFX
+         8bGg==
+X-Gm-Message-State: AOAM5305yjKpmVacPFs6gTY6GWSwnJsz6fJt3cD7fSpRdj2SaQY/pY/z
+        A1yXV5YDLqG510kCTu/9/8M=
+X-Google-Smtp-Source: ABdhPJxYn72jlzshOuLIRhMdbvr/rsQ2gyHpHPcLykN9hYEGAxbP2oGzr58b7EGoXj3hZHIdKMRbdg==
+X-Received: by 2002:a62:7b86:0:b029:19d:f996:44f3 with SMTP id w128-20020a627b860000b029019df99644f3mr7591086pfc.65.1607619505042;
+        Thu, 10 Dec 2020 08:58:25 -0800 (PST)
 Received: from localhost ([2601:647:5b00:1162:1ac0:17a6:4cc6:d1ef])
-        by smtp.gmail.com with ESMTPSA id x12sm6954350pfj.25.2020.12.10.08.58.29
+        by smtp.gmail.com with ESMTPSA id k14sm6842070pfp.132.2020.12.10.08.58.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Dec 2020 08:58:30 -0800 (PST)
+        Thu, 10 Dec 2020 08:58:24 -0800 (PST)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-fpga@vger.kernel.org, trix@redhat.com, hao.wu@intel.com,
         yilun.xu@intel.com, russell.h.weight@intel.com,
+        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
         Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 6/8] fpga: dfl: move dfl bus related APIs to include/linux/dfl.h
-Date:   Thu, 10 Dec 2020 08:58:02 -0800
-Message-Id: <20201210165804.44234-7-mdf@kernel.org>
+Subject: [PATCH 4/8] fpga: dfl: move dfl_device_id to mod_devicetable.h
+Date:   Thu, 10 Dec 2020 08:58:00 -0800
+Message-Id: <20201210165804.44234-5-mdf@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201210165804.44234-1-mdf@kernel.org>
 References: <20201210165804.44234-1-mdf@kernel.org>
@@ -59,222 +60,88 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Xu Yilun <yilun.xu@intel.com>
 
-Now the dfl drivers could be made as independent modules and put in
-different folders according to their functionalities. In order for
-scattered dfl device drivers to include dfl bus APIs, move the
-dfl bus APIs to a new header file in the public folder.
+In order to support MODULE_DEVICE_TABLE() for dfl device driver, this
+patch moves struct dfl_device_id to mod_devicetable.h
 
-[mdf@kernel.org: Fixed up header guards to match filename]
+Some brief description for DFL (Device Feature List) is added to make
+the DFL known to the whole kernel.
 
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 Reviewed-by: Tom Rix <trix@redhat.com>
 Acked-by: Wu Hao <hao.wu@intel.com>
 ---
- MAINTAINERS         |  1 +
- drivers/fpga/dfl.c  |  1 +
- drivers/fpga/dfl.h  | 72 -------------------------------------
- include/linux/dfl.h | 86 +++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 88 insertions(+), 72 deletions(-)
- create mode 100644 include/linux/dfl.h
+ drivers/fpga/dfl.h              | 13 +------------
+ include/linux/mod_devicetable.h | 24 ++++++++++++++++++++++++
+ 2 files changed, 25 insertions(+), 12 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 52086876ce40..5fe658a6d846 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6895,6 +6895,7 @@ S:	Maintained
- F:	Documentation/ABI/testing/sysfs-bus-dfl
- F:	Documentation/fpga/dfl.rst
- F:	drivers/fpga/dfl*
-+F:	include/linux/dfl.h
- F:	include/uapi/linux/fpga-dfl.h
- 
- FPGA MANAGER FRAMEWORK
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 5a6ba3b2fa05..511b20ff35a3 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -10,6 +10,7 @@
-  *   Wu Hao <hao.wu@intel.com>
-  *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-  */
-+#include <linux/dfl.h>
- #include <linux/fpga-dfl.h>
- #include <linux/module.h>
- #include <linux/uaccess.h>
 diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 549c7900dcfd..2b82c96ba56c 100644
+index ac373b1fcff9..549c7900dcfd 100644
 --- a/drivers/fpga/dfl.h
 +++ b/drivers/fpga/dfl.h
-@@ -517,76 +517,4 @@ long dfl_feature_ioctl_set_irq(struct platform_device *pdev,
- 			       struct dfl_feature *feature,
- 			       unsigned long arg);
+@@ -22,6 +22,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/iopoll.h>
+ #include <linux/io-64-nonatomic-lo-hi.h>
++#include <linux/mod_devicetable.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+ #include <linux/uuid.h>
+@@ -525,18 +526,6 @@ enum dfl_id_type {
+ 	DFL_ID_MAX,
+ };
  
 -/**
-- * enum dfl_id_type - define the DFL FIU types
-- */
--enum dfl_id_type {
--	FME_ID = 0,
--	PORT_ID = 1,
--	DFL_ID_MAX,
--};
--
--/**
-- * struct dfl_device - represent an dfl device on dfl bus
-- *
-- * @dev: generic device interface.
-- * @id: id of the dfl device.
-- * @type: type of DFL FIU of the device. See enum dfl_id_type.
+- * struct dfl_device_id -  dfl device identifier
+- * @type: DFL FIU type of the device. See enum dfl_id_type.
 - * @feature_id: feature identifier local to its DFL FIU type.
-- * @mmio_res: mmio resource of this dfl device.
-- * @irqs: list of Linux IRQ numbers of this dfl device.
-- * @num_irqs: number of IRQs supported by this dfl device.
-- * @cdev: pointer to DFL FPGA container device this dfl device belongs to.
-- * @id_entry: matched id entry in dfl driver's id table.
+- * @driver_data: driver specific data.
 - */
--struct dfl_device {
--	struct device dev;
--	int id;
+-struct dfl_device_id {
 -	u16 type;
 -	u16 feature_id;
--	struct resource mmio_res;
--	int *irqs;
--	unsigned int num_irqs;
--	struct dfl_fpga_cdev *cdev;
--	const struct dfl_device_id *id_entry;
+-	unsigned long driver_data;
 -};
 -
--/**
-- * struct dfl_driver - represent an dfl device driver
-- *
-- * @drv: driver model structure.
-- * @id_table: pointer to table of device IDs the driver is interested in.
-- *	      { } member terminated.
-- * @probe: mandatory callback for device binding.
-- * @remove: callback for device unbinding.
-- */
--struct dfl_driver {
--	struct device_driver drv;
--	const struct dfl_device_id *id_table;
--
--	int (*probe)(struct dfl_device *dfl_dev);
--	void (*remove)(struct dfl_device *dfl_dev);
--};
--
--#define to_dfl_dev(d) container_of(d, struct dfl_device, dev)
--#define to_dfl_drv(d) container_of(d, struct dfl_driver, drv)
--
--/*
-- * use a macro to avoid include chaining to get THIS_MODULE.
-- */
--#define dfl_driver_register(drv) \
--	__dfl_driver_register(drv, THIS_MODULE)
--int __dfl_driver_register(struct dfl_driver *dfl_drv, struct module *owner);
--void dfl_driver_unregister(struct dfl_driver *dfl_drv);
--
--/*
-- * module_dfl_driver() - Helper macro for drivers that don't do
-- * anything special in module init/exit.  This eliminates a lot of
-- * boilerplate.  Each module may only use this macro once, and
-- * calling it replaces module_init() and module_exit().
-- */
--#define module_dfl_driver(__dfl_driver) \
--	module_driver(__dfl_driver, dfl_driver_register, \
--		      dfl_driver_unregister)
--
- #endif /* __FPGA_DFL_H */
-diff --git a/include/linux/dfl.h b/include/linux/dfl.h
-new file mode 100644
-index 000000000000..6cc10982351a
---- /dev/null
-+++ b/include/linux/dfl.h
-@@ -0,0 +1,86 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
+ /**
+  * struct dfl_device - represent an dfl device on dfl bus
+  *
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index 5b08a473cdba..7d36c8c0fdc2 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -838,4 +838,28 @@ struct mhi_device_id {
+ 	kernel_ulong_t driver_data;
+ };
+ 
 +/*
-+ * Header file for DFL driver and device API
++ * DFL (Device Feature List)
 + *
-+ * Copyright (C) 2020 Intel Corporation, Inc.
++ * DFL defines a linked list of feature headers within the device MMIO space to
++ * provide an extensible way of adding features. Software can walk through these
++ * predefined data structures to enumerate features. It is now used in the FPGA.
++ * See Documentation/fpga/dfl.rst for more information.
++ *
++ * The dfl bus type is introduced to match the individual feature devices (dfl
++ * devices) for specific dfl drivers.
 + */
 +
-+#ifndef __LINUX_DFL_H
-+#define __LINUX_DFL_H
-+
-+#include <linux/device.h>
-+#include <linux/mod_devicetable.h>
-+
 +/**
-+ * enum dfl_id_type - define the DFL FIU types
-+ */
-+enum dfl_id_type {
-+	FME_ID = 0,
-+	PORT_ID = 1,
-+	DFL_ID_MAX,
-+};
-+
-+/**
-+ * struct dfl_device - represent an dfl device on dfl bus
-+ *
-+ * @dev: generic device interface.
-+ * @id: id of the dfl device.
-+ * @type: type of DFL FIU of the device. See enum dfl_id_type.
++ * struct dfl_device_id -  dfl device identifier
++ * @type: DFL FIU type of the device. See enum dfl_id_type.
 + * @feature_id: feature identifier local to its DFL FIU type.
-+ * @mmio_res: mmio resource of this dfl device.
-+ * @irqs: list of Linux IRQ numbers of this dfl device.
-+ * @num_irqs: number of IRQs supported by this dfl device.
-+ * @cdev: pointer to DFL FPGA container device this dfl device belongs to.
-+ * @id_entry: matched id entry in dfl driver's id table.
++ * @driver_data: driver specific data.
 + */
-+struct dfl_device {
-+	struct device dev;
-+	int id;
-+	u16 type;
-+	u16 feature_id;
-+	struct resource mmio_res;
-+	int *irqs;
-+	unsigned int num_irqs;
-+	struct dfl_fpga_cdev *cdev;
-+	const struct dfl_device_id *id_entry;
++struct dfl_device_id {
++	__u16 type;
++	__u16 feature_id;
++	kernel_ulong_t driver_data;
 +};
 +
-+/**
-+ * struct dfl_driver - represent an dfl device driver
-+ *
-+ * @drv: driver model structure.
-+ * @id_table: pointer to table of device IDs the driver is interested in.
-+ *	      { } member terminated.
-+ * @probe: mandatory callback for device binding.
-+ * @remove: callback for device unbinding.
-+ */
-+struct dfl_driver {
-+	struct device_driver drv;
-+	const struct dfl_device_id *id_table;
-+
-+	int (*probe)(struct dfl_device *dfl_dev);
-+	void (*remove)(struct dfl_device *dfl_dev);
-+};
-+
-+#define to_dfl_dev(d) container_of(d, struct dfl_device, dev)
-+#define to_dfl_drv(d) container_of(d, struct dfl_driver, drv)
-+
-+/*
-+ * use a macro to avoid include chaining to get THIS_MODULE.
-+ */
-+#define dfl_driver_register(drv) \
-+	__dfl_driver_register(drv, THIS_MODULE)
-+int __dfl_driver_register(struct dfl_driver *dfl_drv, struct module *owner);
-+void dfl_driver_unregister(struct dfl_driver *dfl_drv);
-+
-+/*
-+ * module_dfl_driver() - Helper macro for drivers that don't do
-+ * anything special in module init/exit.  This eliminates a lot of
-+ * boilerplate.  Each module may only use this macro once, and
-+ * calling it replaces module_init() and module_exit().
-+ */
-+#define module_dfl_driver(__dfl_driver) \
-+	module_driver(__dfl_driver, dfl_driver_register, \
-+		      dfl_driver_unregister)
-+
-+#endif /* __LINUX_DFL_H */
+ #endif /* LINUX_MOD_DEVICETABLE_H */
 -- 
 2.29.2
 
