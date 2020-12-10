@@ -3,53 +3,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F983C4361B
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8079C433FE
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 504A7221E3
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 98736221E3
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731400AbgLJQ7a (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 10 Dec 2020 11:59:30 -0500
-Received: from mail-pf1-f173.google.com ([209.85.210.173]:43431 "EHLO
-        mail-pf1-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391047AbgLJQ7O (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Dec 2020 11:59:14 -0500
-Received: by mail-pf1-f173.google.com with SMTP id c12so4647922pfo.10
-        for <linux-fpga@vger.kernel.org>; Thu, 10 Dec 2020 08:58:58 -0800 (PST)
+        id S2390527AbgLJQ7p (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 10 Dec 2020 11:59:45 -0500
+Received: from mail-pf1-f193.google.com ([209.85.210.193]:44648 "EHLO
+        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2392160AbgLJQ7A (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Dec 2020 11:59:00 -0500
+Received: by mail-pf1-f193.google.com with SMTP id f9so4649212pfc.11
+        for <linux-fpga@vger.kernel.org>; Thu, 10 Dec 2020 08:58:45 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Cua7B9zQkM2RGISLzia4GjwCIyG7DxunT089SreDfzQ=;
-        b=e1IslZeP2FM/+/Fmb8daKRNcgP8S8VMZAPh6ZdQW6yDDwfQjqtPa3Mgrvd72+6OeHH
-         0sBJLeY6pU3QNbgd+VqzU3OZgFl8Bh1eftL7mfH6PUKjhcmEa+XFyr0jhhTdGMAiIbl4
-         3Jgd6IEd7QTbS+gZe5oNm9zPEDxxd1e9PCbqJQJRyXfIBZLYY73ndqnA6I1TSNA1hgqM
-         HHSbkS3faKQpKZpIsWYUrqJ79u7oIXHk2uvcLXuOAEa6zMDLmpMBjzVlnJreB6NS+V3E
-         qR8zU9ux4lKBhRoLufUvzsQofoFjAyBHUigV3pvugtMQWMs973r30Ogl18koHFOgiVVA
-         imZQ==
-X-Gm-Message-State: AOAM531IbKgk+AHeWVPliQGN4cVWPEcxnOOa4NpH1EbCJf63GKJHDDI7
-        BEiqKB5peqTM10dMeDbIj1Q=
-X-Google-Smtp-Source: ABdhPJxc4V8RZkEq8iPx/lef7M5rZDc8+i6Wj+hqe9UlRKEhgF0QA7KTEqCb9l3ojK0oGBjvXtMteQ==
-X-Received: by 2002:a17:90a:4209:: with SMTP id o9mr8596931pjg.75.1607619513006;
-        Thu, 10 Dec 2020 08:58:33 -0800 (PST)
+        bh=h2oSgYeQZxR87ohN6KF0gETYZLnwVlanqQCGgABmfao=;
+        b=LMB69VwPWmboPvdPNRelgc6iWnFkRbmOfY2Y2SV2NAOv3Nj0IS1UvFCcOkbhAlVc9y
+         aYPjmphfCZjfO4qsOqIm/aHxeANT0C8hUgj46D665t1r48liVzroMAx/GXUPQYB1vbxR
+         R3CaTcKvIny2zlSzUu5KFUpwGOUpa8AAOpaFcrAAI1fV3byO1RRLLQOwgDJSK79pZ/7X
+         HIztLTqSjT3m/cS6XfCAaZNXKAMTUxPNrWWpY/moRbcqCMXX1cvlkQ5Or5Fc2BATBn6e
+         baim3LAgepSDHfnETJp7sl+Zv47wU2w3holckikbnBavdVgzI0xN6NwEzrWcF5Lw1nDD
+         cIXQ==
+X-Gm-Message-State: AOAM5322skqC6Bm7PBgh0s2QcASXcgHc4luVBgkK97TRd1u6kGkNRYcK
+        lLJYrAy3ocGXWcGAR2uJDyk=
+X-Google-Smtp-Source: ABdhPJwIbgwUEEch9Rksk4U2BL24NjlR5RyLMOhEfnA9gzxCmSs9LspZu/hrHqhgbAtGqiBsw12WJA==
+X-Received: by 2002:a65:5b84:: with SMTP id i4mr7458053pgr.282.1607619499622;
+        Thu, 10 Dec 2020 08:58:19 -0800 (PST)
 Received: from localhost ([2601:647:5b00:1162:1ac0:17a6:4cc6:d1ef])
-        by smtp.gmail.com with ESMTPSA id i11sm6884812pjl.53.2020.12.10.08.58.31
+        by smtp.gmail.com with ESMTPSA id y19sm6784224pfp.211.2020.12.10.08.58.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Dec 2020 08:58:32 -0800 (PST)
+        Thu, 10 Dec 2020 08:58:18 -0800 (PST)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-fpga@vger.kernel.org, trix@redhat.com, hao.wu@intel.com,
         yilun.xu@intel.com, russell.h.weight@intel.com,
         Matthew Gerlach <matthew.gerlach@linux.intel.com>,
-        YueHaibing <yuehaibing@huawei.com>,
         Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 7/8] fpga: dfl: add support for N3000 Nios private feature
-Date:   Thu, 10 Dec 2020 08:58:03 -0800
-Message-Id: <20201210165804.44234-8-mdf@kernel.org>
+Subject: [PATCH 2/8] fpga: dfl-pci: locate DFLs by PCIe vendor specific capability
+Date:   Thu, 10 Dec 2020 08:57:58 -0800
+Message-Id: <20201210165804.44234-3-mdf@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201210165804.44234-1-mdf@kernel.org>
 References: <20201210165804.44234-1-mdf@kernel.org>
@@ -59,740 +58,168 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Xu Yilun <yilun.xu@intel.com>
+From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 
-This patch adds support for the Nios handshake private feature on Intel
-PAC (Programmable Acceleration Card) N3000.
+A PCIe vendor specific extended capability is introduced by Intel to
+specify the start of a number of DFLs.
 
-The Nios is the embedded processor on the FPGA card. This private feature
-provides a handshake interface to FPGA Nios firmware, which receives
-retimer configuration command from host and executes via an internal SPI
-master (spi-altera). When Nios finishes the configuration, host takes over
-the ownership of the SPI master to control an Intel MAX10 BMC (Board
-Management Controller) Chip on the SPI bus.
-
-For Nios firmware handshake part, this driver requests the retimer
-configuration for Nios firmware on probe, and adds some sysfs nodes for
-user to query the onboard retimer's working mode and Nios firmware
-version.
-
-For SPI part, this driver adds a spi-altera platform device as well as
-the MAX10 BMC spi slave info. A spi-altera driver will be matched to
-handle the following SPI work.
-
-[mdf@kernel.org: Fixed up MAINTAINERS file to include added ABI doc]
-
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
 Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Reviewed-by: Tom Rix <trix@redhat.com>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- .../testing/sysfs-bus-dfl-devices-n3000-nios  |  47 ++
- MAINTAINERS                                   |   2 +-
- drivers/fpga/Kconfig                          |  11 +
- drivers/fpga/Makefile                         |   2 +
- drivers/fpga/dfl-n3000-nios.c                 | 588 ++++++++++++++++++
- 5 files changed, 649 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-dfl-devices-n3000-nios
- create mode 100644 drivers/fpga/dfl-n3000-nios.c
+ Documentation/fpga/dfl.rst | 27 ++++++++++++
+ drivers/fpga/dfl-pci.c     | 87 +++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 113 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-dfl-devices-n3000-nios b/Documentation/ABI/testing/sysfs-bus-dfl-devices-n3000-nios
-new file mode 100644
-index 000000000000..a50553764654
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-bus-dfl-devices-n3000-nios
-@@ -0,0 +1,47 @@
-+What:		/sys/bus/dfl/devices/dfl_dev.X/fec_mode
-+Date:		Oct 2020
-+KernelVersion:	5.11
-+Contact:	Xu Yilun <yilun.xu@intel.com>
-+Description:	Read-only. Returns the FEC mode of the 25G links of the
-+		ethernet retimers configured by Nios firmware. "rs" for Reed
-+		Solomon FEC, "kr" for Fire Code FEC, "no" for NO FEC.
-+		"not supported" if the FEC mode setting is not supported, this
-+		happens when the Nios firmware version major < 3, or no link is
-+		configured to 25G.
-+		Format: string
-+
-+What:		/sys/bus/dfl/devices/dfl_dev.X/retimer_A_mode
-+Date:		Oct 2020
-+KernelVersion:	5.11
-+Contact:	Xu Yilun <yilun.xu@intel.com>
-+Description:	Read-only. Returns the enumeration value of the working mode of
-+		the retimer A configured by the Nios firmware. The value is
-+		read out from shared registers filled by the Nios firmware. Now
-+		the values could be:
-+
-+		- "0": Reset
-+		- "1": 4x10G
-+		- "2": 4x25G
-+		- "3": 2x25G
-+		- "4": 2x25G+2x10G
-+		- "5": 1x25G
-+
-+		If the Nios firmware is updated in future to support more
-+		retimer modes, more enumeration value is expected.
-+		Format: 0x%x
-+
-+What:		/sys/bus/dfl/devices/dfl_dev.X/retimer_B_mode
-+Date:		Oct 2020
-+KernelVersion:	5.11
-+Contact:	Xu Yilun <yilun.xu@intel.com>
-+Description:	Read-only. Returns the enumeration value of the working mode of
-+		the retimer B configured by the Nios firmware. The value format
-+		is the same as retimer_A_mode.
-+
-+What:		/sys/bus/dfl/devices/dfl_dev.X/nios_fw_version
-+Date:		Oct 2020
-+KernelVersion:	5.11
-+Contact:	Xu Yilun <yilun.xu@intel.com>
-+Description:	Read-only. Returns the version of the Nios firmware in the
-+		FPGA. Its format is "major.minor.patch".
-+		Format: %x.%x.%x
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5fe658a6d846..c1012a23f05a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6892,7 +6892,7 @@ M:	Wu Hao <hao.wu@intel.com>
- R:	Tom Rix <trix@redhat.com>
- L:	linux-fpga@vger.kernel.org
- S:	Maintained
--F:	Documentation/ABI/testing/sysfs-bus-dfl
-+F:	Documentation/ABI/testing/sysfs-bus-dfl*
- F:	Documentation/fpga/dfl.rst
- F:	drivers/fpga/dfl*
- F:	include/linux/dfl.h
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 5645226ca3ce..5ff9438b7b46 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -192,6 +192,17 @@ config FPGA_DFL_AFU
- 	  to the FPGA infrastructure via a Port. There may be more than one
- 	  Port/AFU per DFL based FPGA device.
+diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+index 0404fe6ffc74..ea8cefc18bdb 100644
+--- a/Documentation/fpga/dfl.rst
++++ b/Documentation/fpga/dfl.rst
+@@ -501,6 +501,33 @@ Developer only needs to provide a sub feature driver with matched feature id.
+ FME Partial Reconfiguration Sub Feature driver (see drivers/fpga/dfl-fme-pr.c)
+ could be a reference.
  
-+config FPGA_DFL_NIOS_INTEL_PAC_N3000
-+	tristate "FPGA DFL NIOS Driver for Intel PAC N3000"
-+	depends on FPGA_DFL
-+	select REGMAP
-+	help
-+	  This is the driver for the N3000 Nios private feature on Intel
-+	  PAC (Programmable Acceleration Card) N3000. It communicates
-+	  with the embedded Nios processor to configure the retimers on
-+	  the card. It also instantiates the SPI master (spi-altera) for
-+	  the card's BMC (Board Management Controller).
++Location of DFLs on a PCI Device
++===========================
++The original method for finding a DFL on a PCI device assumed the start of the
++first DFL to offset 0 of bar 0.  If the first node of the DFL is an FME,
++then further DFLs in the port(s) are specified in FME header registers.
++Alternatively, a PCIe vendor specific capability structure can be used to
++specify the location of all the DFLs on the device, providing flexibility
++for the type of starting node in the DFL.  Intel has reserved the
++VSEC ID of 0x43 for this purpose.  The vendor specific
++data begins with a 4 byte vendor specific register for the number of DFLs followed 4 byte
++Offset/BIR vendor specific registers for each DFL. Bits 2:0 of Offset/BIR register
++indicates the BAR, and bits 31:3 form the 8 byte aligned offset where bits 2:0 are
++zero.
 +
- config FPGA_DFL_PCI
- 	tristate "FPGA DFL PCIe Device Driver"
- 	depends on PCI && FPGA_DFL
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index d8e21dfc6778..18dc9885883a 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -44,5 +44,7 @@ dfl-fme-objs += dfl-fme-perf.o
- dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
- dfl-afu-objs += dfl-afu-error.o
++        +----------------------------+
++        |31     Number of DFLS      0|
++        +----------------------------+
++        |31     Offset     3|2 BIR  0|
++        +----------------------------+
++                      . . .
++        +----------------------------+
++        |31     Offset     3|2 BIR  0|
++        +----------------------------+
++
++Being able to specify more than one DFL per BAR has been considered, but it
++was determined the use case did not provide value.  Specifying a single DFL
++per BAR simplifies the implementation and allows for extra error checking.
  
-+obj-$(CONFIG_FPGA_DFL_NIOS_INTEL_PAC_N3000)	+= dfl-n3000-nios.o
+ Open discussion
+ ===============
+diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+index 5100695e27cd..04e47e266f26 100644
+--- a/drivers/fpga/dfl-pci.c
++++ b/drivers/fpga/dfl-pci.c
+@@ -27,6 +27,14 @@
+ #define DRV_VERSION	"0.8"
+ #define DRV_NAME	"dfl-pci"
+ 
++#define PCI_VSEC_ID_INTEL_DFLS 0x43
 +
- # Drivers for FPGAs which implement DFL
- obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
-diff --git a/drivers/fpga/dfl-n3000-nios.c b/drivers/fpga/dfl-n3000-nios.c
-new file mode 100644
-index 000000000000..7a95366f6516
---- /dev/null
-+++ b/drivers/fpga/dfl-n3000-nios.c
-@@ -0,0 +1,588 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * DFL device driver for Nios private feature on Intel PAC (Programmable
-+ * Acceleration Card) N3000
-+ *
-+ * Copyright (C) 2019-2020 Intel Corporation, Inc.
-+ *
-+ * Authors:
-+ *   Wu Hao <hao.wu@intel.com>
-+ *   Xu Yilun <yilun.xu@intel.com>
-+ */
-+#include <linux/bitfield.h>
-+#include <linux/dfl.h>
-+#include <linux/errno.h>
-+#include <linux/io.h>
-+#include <linux/io-64-nonatomic-lo-hi.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/stddef.h>
-+#include <linux/spi/altera.h>
-+#include <linux/spi/spi.h>
-+#include <linux/types.h>
++#define PCI_VNDR_DFLS_CNT 0x8
++#define PCI_VNDR_DFLS_RES 0xc
 +
-+/*
-+ * N3000 Nios private feature registers, named as NIOS_SPI_XX on spec.
-+ * NS is the abbreviation of NIOS_SPI.
-+ */
-+#define N3000_NS_PARAM				0x8
-+#define N3000_NS_PARAM_SHIFT_MODE_MSK		BIT_ULL(1)
-+#define N3000_NS_PARAM_SHIFT_MODE_MSB		0
-+#define N3000_NS_PARAM_SHIFT_MODE_LSB		1
-+#define N3000_NS_PARAM_DATA_WIDTH		GENMASK_ULL(7, 2)
-+#define N3000_NS_PARAM_NUM_CS			GENMASK_ULL(13, 8)
-+#define N3000_NS_PARAM_CLK_POL			BIT_ULL(14)
-+#define N3000_NS_PARAM_CLK_PHASE		BIT_ULL(15)
-+#define N3000_NS_PARAM_PERIPHERAL_ID		GENMASK_ULL(47, 32)
++#define PCI_VNDR_DFLS_RES_BAR_MASK GENMASK(2, 0)
++#define PCI_VNDR_DFLS_RES_OFF_MASK GENMASK(31, 3)
 +
-+#define N3000_NS_CTRL				0x10
-+#define N3000_NS_CTRL_WR_DATA			GENMASK_ULL(31, 0)
-+#define N3000_NS_CTRL_ADDR			GENMASK_ULL(44, 32)
-+#define N3000_NS_CTRL_CMD_MSK			GENMASK_ULL(63, 62)
-+#define N3000_NS_CTRL_CMD_NOP			0
-+#define N3000_NS_CTRL_CMD_RD			1
-+#define N3000_NS_CTRL_CMD_WR			2
-+
-+#define N3000_NS_STAT				0x18
-+#define N3000_NS_STAT_RD_DATA			GENMASK_ULL(31, 0)
-+#define N3000_NS_STAT_RW_VAL			BIT_ULL(32)
-+
-+/* Nios handshake registers, indirect access */
-+#define N3000_NIOS_INIT				0x1000
-+#define N3000_NIOS_INIT_DONE			BIT(0)
-+#define N3000_NIOS_INIT_START			BIT(1)
-+/* Mode for retimer A, link 0, the same below */
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_A0_MSK	GENMASK(9, 8)
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_A1_MSK	GENMASK(11, 10)
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_A2_MSK	GENMASK(13, 12)
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_A3_MSK	GENMASK(15, 14)
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_B0_MSK	GENMASK(17, 16)
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_B1_MSK	GENMASK(19, 18)
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_B2_MSK	GENMASK(21, 20)
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_B3_MSK	GENMASK(23, 22)
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_NO		0x0
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_KR		0x1
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_RS		0x2
-+
-+#define N3000_NIOS_FW_VERSION			0x1004
-+#define N3000_NIOS_FW_VERSION_PATCH		GENMASK(23, 20)
-+#define N3000_NIOS_FW_VERSION_MINOR		GENMASK(27, 24)
-+#define N3000_NIOS_FW_VERSION_MAJOR		GENMASK(31, 28)
-+
-+/* The retimers we use on Intel PAC N3000 is Parkvale, abbreviated to PKVL */
-+#define N3000_NIOS_PKVL_A_MODE_STS		0x1020
-+#define N3000_NIOS_PKVL_B_MODE_STS		0x1024
-+#define N3000_NIOS_PKVL_MODE_STS_GROUP_MSK	GENMASK(15, 8)
-+#define N3000_NIOS_PKVL_MODE_STS_GROUP_OK	0x0
-+#define N3000_NIOS_PKVL_MODE_STS_ID_MSK		GENMASK(7, 0)
-+/* When GROUP MASK field == GROUP_OK  */
-+#define N3000_NIOS_PKVL_MODE_ID_RESET		0x0
-+#define N3000_NIOS_PKVL_MODE_ID_4X10G		0x1
-+#define N3000_NIOS_PKVL_MODE_ID_4X25G		0x2
-+#define N3000_NIOS_PKVL_MODE_ID_2X25G		0x3
-+#define N3000_NIOS_PKVL_MODE_ID_2X25G_2X10G	0x4
-+#define N3000_NIOS_PKVL_MODE_ID_1X25G		0x5
-+
-+#define N3000_NIOS_REGBUS_RETRY_COUNT		10000	/* loop count */
-+
-+#define N3000_NIOS_INIT_TIMEOUT			10000000	/* usec */
-+#define N3000_NIOS_INIT_TIME_INTV		100000		/* usec */
-+
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_MSK_ALL	\
-+	(N3000_NIOS_INIT_REQ_FEC_MODE_A0_MSK |	\
-+	 N3000_NIOS_INIT_REQ_FEC_MODE_A1_MSK |	\
-+	 N3000_NIOS_INIT_REQ_FEC_MODE_A2_MSK |	\
-+	 N3000_NIOS_INIT_REQ_FEC_MODE_A3_MSK |	\
-+	 N3000_NIOS_INIT_REQ_FEC_MODE_B0_MSK |	\
-+	 N3000_NIOS_INIT_REQ_FEC_MODE_B1_MSK |	\
-+	 N3000_NIOS_INIT_REQ_FEC_MODE_B2_MSK |	\
-+	 N3000_NIOS_INIT_REQ_FEC_MODE_B3_MSK)
-+
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_NO_ALL			\
-+	(FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A0_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_NO) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A1_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_NO) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A2_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_NO) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A3_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_NO) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B0_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_NO) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B1_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_NO) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B2_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_NO) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B3_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_NO))
-+
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_KR_ALL			\
-+	(FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A0_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_KR) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A1_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_KR) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A2_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_KR) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A3_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_KR) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B0_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_KR) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B1_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_KR) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B2_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_KR) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B3_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_KR))
-+
-+#define N3000_NIOS_INIT_REQ_FEC_MODE_RS_ALL			\
-+	(FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A0_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_RS) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A1_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_RS) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A2_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_RS) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_A3_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_RS) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B0_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_RS) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B1_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_RS) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B2_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_RS) |		\
-+	 FIELD_PREP(N3000_NIOS_INIT_REQ_FEC_MODE_B3_MSK,	\
-+		    N3000_NIOS_INIT_REQ_FEC_MODE_RS))
-+
-+struct n3000_nios {
-+	void __iomem *base;
-+	struct regmap *regmap;
-+	struct device *dev;
-+	struct platform_device *altera_spi;
-+};
-+
-+static ssize_t nios_fw_version_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
+ struct cci_drvdata {
+ 	struct dfl_fpga_cdev *cdev;	/* container device */
+ };
+@@ -119,6 +127,80 @@ static int *cci_pci_create_irq_table(struct pci_dev *pcidev, unsigned int nvec)
+ 	return table;
+ }
+ 
++static int find_dfls_by_vsec(struct pci_dev *pcidev, struct dfl_fpga_enum_info *info)
 +{
-+	struct n3000_nios *nn = dev_get_drvdata(dev);
-+	unsigned int val;
-+	int ret;
++	u32 bir, offset, vndr_hdr, dfl_cnt, dfl_res;
++	int dfl_res_off, i, bars, voff = 0;
++	resource_size_t start, len;
 +
-+	ret = regmap_read(nn->regmap, N3000_NIOS_FW_VERSION, &val);
-+	if (ret)
-+		return ret;
++	while ((voff = pci_find_next_ext_capability(pcidev, voff, PCI_EXT_CAP_ID_VNDR))) {
++		vndr_hdr = 0;
++		pci_read_config_dword(pcidev, voff + PCI_VNDR_HEADER, &vndr_hdr);
 +
-+	return sysfs_emit(buf, "%x.%x.%x\n",
-+			  (u8)FIELD_GET(N3000_NIOS_FW_VERSION_MAJOR, val),
-+			  (u8)FIELD_GET(N3000_NIOS_FW_VERSION_MINOR, val),
-+			  (u8)FIELD_GET(N3000_NIOS_FW_VERSION_PATCH, val));
-+}
-+static DEVICE_ATTR_RO(nios_fw_version);
++		if (PCI_VNDR_HEADER_ID(vndr_hdr) == PCI_VSEC_ID_INTEL_DFLS &&
++		    pcidev->vendor == PCI_VENDOR_ID_INTEL)
++			break;
++	}
 +
-+#define IS_MODE_STATUS_OK(mode_stat)					\
-+	(FIELD_GET(N3000_NIOS_PKVL_MODE_STS_GROUP_MSK, (mode_stat)) ==	\
-+	 N3000_NIOS_PKVL_MODE_STS_GROUP_OK)
++	if (!voff) {
++		dev_dbg(&pcidev->dev, "%s no DFL VSEC found\n", __func__);
++		return -ENODEV;
++	}
 +
-+#define IS_RETIMER_FEC_SUPPORTED(retimer_mode)			\
-+	((retimer_mode) != N3000_NIOS_PKVL_MODE_ID_RESET &&	\
-+	 (retimer_mode) != N3000_NIOS_PKVL_MODE_ID_4X10G)
++	dfl_cnt = 0;
++	pci_read_config_dword(pcidev, voff + PCI_VNDR_DFLS_CNT, &dfl_cnt);
++	if (dfl_cnt > PCI_STD_NUM_BARS) {
++		dev_err(&pcidev->dev, "%s too many DFLs %d > %d\n",
++			__func__, dfl_cnt, PCI_STD_NUM_BARS);
++		return -EINVAL;
++	}
 +
-+static int get_retimer_mode(struct n3000_nios *nn, unsigned int mode_stat_reg,
-+			    unsigned int *retimer_mode)
-+{
-+	unsigned int val;
-+	int ret;
++	dfl_res_off = voff + PCI_VNDR_DFLS_RES;
++	if (dfl_res_off + (dfl_cnt * sizeof(u32)) > PCI_CFG_SPACE_EXP_SIZE) {
++		dev_err(&pcidev->dev, "%s DFL VSEC too big for PCIe config space\n",
++			__func__);
++		return -EINVAL;
++	}
 +
-+	ret = regmap_read(nn->regmap, mode_stat_reg, &val);
-+	if (ret)
-+		return ret;
++	for (i = 0, bars = 0; i < dfl_cnt; i++, dfl_res_off += sizeof(u32)) {
++		dfl_res = GENMASK(31, 0);
++		pci_read_config_dword(pcidev, dfl_res_off, &dfl_res);
 +
-+	if (!IS_MODE_STATUS_OK(val))
-+		return -EFAULT;
++		bir = dfl_res & PCI_VNDR_DFLS_RES_BAR_MASK;
++		if (bir >= PCI_STD_NUM_BARS) {
++			dev_err(&pcidev->dev, "%s bad bir number %d\n",
++				__func__, bir);
++			return -EINVAL;
++		}
 +
-+	*retimer_mode = FIELD_GET(N3000_NIOS_PKVL_MODE_STS_ID_MSK, val);
++		if (bars & BIT(bir)) {
++			dev_err(&pcidev->dev, "%s DFL for BAR %d already specified\n",
++				__func__, bir);
++			return -EINVAL;
++		}
++
++		bars |= BIT(bir);
++
++		len = pci_resource_len(pcidev, bir);
++		offset = dfl_res & PCI_VNDR_DFLS_RES_OFF_MASK;
++		if (offset >= len) {
++			dev_err(&pcidev->dev, "%s bad offset %u >= %pa\n",
++				__func__, offset, &len);
++			return -EINVAL;
++		}
++
++		dev_dbg(&pcidev->dev, "%s BAR %d offset 0x%x\n", __func__, bir, offset);
++
++		len -= offset;
++
++		start = pci_resource_start(pcidev, bir) + offset;
++
++		dfl_fpga_enum_info_add_dfl(info, start, len);
++	}
 +
 +	return 0;
 +}
 +
-+static ssize_t retimer_A_mode_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	struct n3000_nios *nn = dev_get_drvdata(dev);
-+	unsigned int mode;
-+	int ret;
-+
-+	ret = get_retimer_mode(nn, N3000_NIOS_PKVL_A_MODE_STS, &mode);
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "0x%x\n", mode);
-+}
-+static DEVICE_ATTR_RO(retimer_A_mode);
-+
-+static ssize_t retimer_B_mode_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	struct n3000_nios *nn = dev_get_drvdata(dev);
-+	unsigned int mode;
-+	int ret;
-+
-+	ret = get_retimer_mode(nn, N3000_NIOS_PKVL_B_MODE_STS, &mode);
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "0x%x\n", mode);
-+}
-+static DEVICE_ATTR_RO(retimer_B_mode);
-+
-+static ssize_t fec_mode_show(struct device *dev,
-+			     struct device_attribute *attr, char *buf)
-+{
-+	unsigned int val, retimer_a_mode, retimer_b_mode, fec_modes;
-+	struct n3000_nios *nn = dev_get_drvdata(dev);
-+	int ret;
-+
-+	/* FEC mode setting is not supported in early FW versions */
-+	ret = regmap_read(nn->regmap, N3000_NIOS_FW_VERSION, &val);
-+	if (ret)
-+		return ret;
-+
-+	if (FIELD_GET(N3000_NIOS_FW_VERSION_MAJOR, val) < 3)
-+		return sysfs_emit(buf, "not supported\n");
-+
-+	/* If no 25G links, FEC mode setting is not supported either */
-+	ret = get_retimer_mode(nn, N3000_NIOS_PKVL_A_MODE_STS, &retimer_a_mode);
-+	if (ret)
-+		return ret;
-+
-+	ret = get_retimer_mode(nn, N3000_NIOS_PKVL_B_MODE_STS, &retimer_b_mode);
-+	if (ret)
-+		return ret;
-+
-+	if (!IS_RETIMER_FEC_SUPPORTED(retimer_a_mode) &&
-+	    !IS_RETIMER_FEC_SUPPORTED(retimer_b_mode))
-+		return sysfs_emit(buf, "not supported\n");
-+
-+	/* get the valid FEC mode for 25G links */
-+	ret = regmap_read(nn->regmap, N3000_NIOS_INIT, &val);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * FEC mode should always be the same for all links, as we set them
-+	 * in this way.
-+	 */
-+	fec_modes = (val & N3000_NIOS_INIT_REQ_FEC_MODE_MSK_ALL);
-+	if (fec_modes == N3000_NIOS_INIT_REQ_FEC_MODE_NO_ALL)
-+		return sysfs_emit(buf, "no\n");
-+	else if (fec_modes == N3000_NIOS_INIT_REQ_FEC_MODE_KR_ALL)
-+		return sysfs_emit(buf, "kr\n");
-+	else if (fec_modes == N3000_NIOS_INIT_REQ_FEC_MODE_RS_ALL)
-+		return sysfs_emit(buf, "rs\n");
-+
-+	return -EFAULT;
-+}
-+static DEVICE_ATTR_RO(fec_mode);
-+
-+static struct attribute *n3000_nios_attrs[] = {
-+	&dev_attr_nios_fw_version.attr,
-+	&dev_attr_retimer_A_mode.attr,
-+	&dev_attr_retimer_B_mode.attr,
-+	&dev_attr_fec_mode.attr,
-+	NULL,
-+};
-+ATTRIBUTE_GROUPS(n3000_nios);
-+
-+static int n3000_nios_init_done_check(struct n3000_nios *nn)
-+{
-+	unsigned int val, state_a, state_b;
-+	struct device *dev = nn->dev;
-+	int ret, ret2;
-+
-+	/*
-+	 * The SPI is shared by the Nios core inside the FPGA, Nios will use
-+	 * this SPI master to do some one time initialization after power up,
-+	 * and then release the control to OS. The driver needs to poll on
-+	 * INIT_DONE to see when driver could take the control.
-+	 *
-+	 * Please note that after Nios firmware version 3.0.0, INIT_START is
-+	 * introduced, so driver needs to trigger START firstly and then check
-+	 * INIT_DONE.
-+	 */
-+
-+	ret = regmap_read(nn->regmap, N3000_NIOS_FW_VERSION, &val);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * If Nios version register is totally uninitialized(== 0x0), then the
-+	 * Nios firmware is missing. So host could take control of SPI master
-+	 * safely, but initialization work for Nios is not done. To restore the
-+	 * card, we need to reprogram a new Nios firmware via the BMC chip on
-+	 * SPI bus. So the driver doesn't error out, it continues to create the
-+	 * spi controller device and spi_board_info for BMC.
-+	 */
-+	if (val == 0) {
-+		dev_err(dev, "Nios version reg = 0x%x, skip INIT_DONE check, but the retimer may be uninitialized\n",
-+			val);
-+		return 0;
-+	}
-+
-+	if (FIELD_GET(N3000_NIOS_FW_VERSION_MAJOR, val) >= 3) {
-+		/* read NIOS_INIT to check if retimer initialization is done */
-+		ret = regmap_read(nn->regmap, N3000_NIOS_INIT, &val);
-+		if (ret)
-+			return ret;
-+
-+		/* check if retimers are initialized already */
-+		if (val & (N3000_NIOS_INIT_DONE | N3000_NIOS_INIT_START))
-+			goto nios_init_done;
-+
-+		/* configure FEC mode per module param */
-+		val = N3000_NIOS_INIT_START;
-+
-+		/*
-+		 * When the retimer is to be set to 10G mode, there is no FEC
-+		 * mode setting, so the REQ_FEC_MODE field will be ignored by
-+		 * Nios firmware in this case. But we should still fill the FEC
-+		 * mode field cause host could not get the retimer working mode
-+		 * until the Nios init is done.
-+		 *
-+		 * For now the driver doesn't support the retimer FEC mode
-+		 * switching per user's request. It is always set to Reed
-+		 * Solomon FEC.
-+		 *
-+		 * The driver will set the same FEC mode for all links.
-+		 */
-+		val |= N3000_NIOS_INIT_REQ_FEC_MODE_RS_ALL;
-+
-+		ret = regmap_write(nn->regmap, N3000_NIOS_INIT, val);
-+		if (ret)
-+			return ret;
-+	}
-+
-+nios_init_done:
-+	/* polls on NIOS_INIT_DONE */
-+	ret = regmap_read_poll_timeout(nn->regmap, N3000_NIOS_INIT, val,
-+				       val & N3000_NIOS_INIT_DONE,
-+				       N3000_NIOS_INIT_TIME_INTV,
-+				       N3000_NIOS_INIT_TIMEOUT);
-+	if (ret)
-+		dev_err(dev, "NIOS_INIT_DONE %s\n",
-+			(ret == -ETIMEDOUT) ? "timed out" : "check error");
-+
-+	ret2 = regmap_read(nn->regmap, N3000_NIOS_PKVL_A_MODE_STS, &state_a);
-+	if (ret2)
-+		return ret2;
-+
-+	ret2 = regmap_read(nn->regmap, N3000_NIOS_PKVL_B_MODE_STS, &state_b);
-+	if (ret2)
-+		return ret2;
-+
-+	if (!ret) {
-+		/*
-+		 * After INIT_DONE is detected, it still needs to check if the
-+		 * Nios firmware reports any error during the retimer
-+		 * configuration.
-+		 */
-+		if (IS_MODE_STATUS_OK(state_a) && IS_MODE_STATUS_OK(state_b))
-+			return 0;
-+
-+		/*
-+		 * If the retimer configuration is failed, the Nios firmware
-+		 * will still release the spi controller for host to
-+		 * communicate with the BMC. It makes possible for people to
-+		 * reprogram a new Nios firmware and restore the card. So the
-+		 * driver doesn't error out, it continues to create the spi
-+		 * controller device and spi_board_info for BMC.
-+		 */
-+		dev_err(dev, "NIOS_INIT_DONE OK, but err on retimer init\n");
-+	}
-+
-+	dev_err(nn->dev, "PKVL_A_MODE_STS 0x%x\n", state_a);
-+	dev_err(nn->dev, "PKVL_B_MODE_STS 0x%x\n", state_b);
-+
-+	return ret;
-+}
-+
-+static struct spi_board_info m10_n3000_info = {
-+	.modalias = "m10-n3000",
-+	.max_speed_hz = 12500000,
-+	.bus_num = 0,
-+	.chip_select = 0,
-+};
-+
-+static int create_altera_spi_controller(struct n3000_nios *nn)
-+{
-+	struct altera_spi_platform_data pdata = { 0 };
-+	struct platform_device_info pdevinfo = { 0 };
-+	void __iomem *base = nn->base;
-+	u64 v;
-+
-+	v = readq(base + N3000_NS_PARAM);
-+
-+	pdata.mode_bits = SPI_CS_HIGH;
-+	if (FIELD_GET(N3000_NS_PARAM_CLK_POL, v))
-+		pdata.mode_bits |= SPI_CPOL;
-+	if (FIELD_GET(N3000_NS_PARAM_CLK_PHASE, v))
-+		pdata.mode_bits |= SPI_CPHA;
-+
-+	pdata.num_chipselect = FIELD_GET(N3000_NS_PARAM_NUM_CS, v);
-+	pdata.bits_per_word_mask =
-+		SPI_BPW_RANGE_MASK(1, FIELD_GET(N3000_NS_PARAM_DATA_WIDTH, v));
-+
-+	pdata.num_devices = 1;
-+	pdata.devices = &m10_n3000_info;
-+
-+	dev_dbg(nn->dev, "%s cs %u bpm 0x%x mode 0x%x\n", __func__,
-+		pdata.num_chipselect, pdata.bits_per_word_mask,
-+		pdata.mode_bits);
-+
-+	pdevinfo.name = "subdev_spi_altera";
-+	pdevinfo.id = PLATFORM_DEVID_AUTO;
-+	pdevinfo.parent = nn->dev;
-+	pdevinfo.data = &pdata;
-+	pdevinfo.size_data = sizeof(pdata);
-+
-+	nn->altera_spi = platform_device_register_full(&pdevinfo);
-+	return PTR_ERR_OR_ZERO(nn->altera_spi);
-+}
-+
-+static void destroy_altera_spi_controller(struct n3000_nios *nn)
-+{
-+	platform_device_unregister(nn->altera_spi);
-+}
-+
-+static int n3000_nios_poll_stat_timeout(void __iomem *base, u64 *v)
-+{
-+	int loops;
-+
-+	/*
-+	 * We don't use the time based timeout here for performance.
-+	 *
-+	 * The regbus read/write is on the critical path of Intel PAC N3000
-+	 * image programing. The time based timeout checking will add too much
-+	 * overhead on it. Usually the state changes in 1 or 2 loops on the
-+	 * test server, and we set 10000 times loop here for safety.
-+	 */
-+	for (loops = N3000_NIOS_REGBUS_RETRY_COUNT; loops > 0 ; loops--) {
-+		*v = readq(base + N3000_NS_STAT);
-+		if (*v & N3000_NS_STAT_RW_VAL)
-+			break;
-+		cpu_relax();
-+	}
-+
-+	return (loops > 0) ? 0 : -ETIMEDOUT;
-+}
-+
-+static int n3000_nios_reg_write(void *context, unsigned int reg, unsigned int val)
-+{
-+	struct n3000_nios *nn = context;
-+	u64 v;
-+	int ret;
-+
-+	v = FIELD_PREP(N3000_NS_CTRL_CMD_MSK, N3000_NS_CTRL_CMD_WR) |
-+	    FIELD_PREP(N3000_NS_CTRL_ADDR, reg) |
-+	    FIELD_PREP(N3000_NS_CTRL_WR_DATA, val);
-+	writeq(v, nn->base + N3000_NS_CTRL);
-+
-+	ret = n3000_nios_poll_stat_timeout(nn->base, &v);
-+	if (ret)
-+		dev_err(nn->dev, "fail to write reg 0x%x val 0x%x: %d\n",
-+			reg, val, ret);
-+
-+	return ret;
-+}
-+
-+static int n3000_nios_reg_read(void *context, unsigned int reg, unsigned int *val)
-+{
-+	struct n3000_nios *nn = context;
-+	u64 v;
-+	int ret;
-+
-+	v = FIELD_PREP(N3000_NS_CTRL_CMD_MSK, N3000_NS_CTRL_CMD_RD) |
-+	    FIELD_PREP(N3000_NS_CTRL_ADDR, reg);
-+	writeq(v, nn->base + N3000_NS_CTRL);
-+
-+	ret = n3000_nios_poll_stat_timeout(nn->base, &v);
-+	if (ret)
-+		dev_err(nn->dev, "fail to read reg 0x%x: %d\n", reg, ret);
-+	else
-+		*val = FIELD_GET(N3000_NS_STAT_RD_DATA, v);
-+
-+	return ret;
-+}
-+
-+static const struct regmap_config n3000_nios_regbus_cfg = {
-+	.reg_bits = 32,
-+	.reg_stride = 4,
-+	.val_bits = 32,
-+	.fast_io = true,
-+
-+	.reg_write = n3000_nios_reg_write,
-+	.reg_read = n3000_nios_reg_read,
-+};
-+
-+static int n3000_nios_probe(struct dfl_device *ddev)
-+{
-+	struct device *dev = &ddev->dev;
-+	struct n3000_nios *nn;
-+	int ret;
-+
-+	nn = devm_kzalloc(dev, sizeof(*nn), GFP_KERNEL);
-+	if (!nn)
-+		return -ENOMEM;
-+
-+	dev_set_drvdata(&ddev->dev, nn);
-+
-+	nn->dev = dev;
-+
-+	nn->base = devm_ioremap_resource(&ddev->dev, &ddev->mmio_res);
-+	if (IS_ERR(nn->base))
-+		return PTR_ERR(nn->base);
-+
-+	nn->regmap = devm_regmap_init(dev, NULL, nn, &n3000_nios_regbus_cfg);
-+	if (IS_ERR(nn->regmap))
-+		return PTR_ERR(nn->regmap);
-+
-+	ret = n3000_nios_init_done_check(nn);
-+	if (ret)
-+		return ret;
-+
-+	ret = create_altera_spi_controller(nn);
-+	if (ret)
-+		dev_err(dev, "altera spi controller create failed: %d\n", ret);
-+
-+	return ret;
-+}
-+
-+static void n3000_nios_remove(struct dfl_device *ddev)
-+{
-+	struct n3000_nios *nn = dev_get_drvdata(&ddev->dev);
-+
-+	destroy_altera_spi_controller(nn);
-+}
-+
-+#define FME_FEATURE_ID_N3000_NIOS	0xd
-+
-+static const struct dfl_device_id n3000_nios_ids[] = {
-+	{ FME_ID, FME_FEATURE_ID_N3000_NIOS },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(dfl, n3000_nios_ids);
-+
-+static struct dfl_driver n3000_nios_driver = {
-+	.drv	= {
-+		.name       = "dfl-n3000-nios",
-+		.dev_groups = n3000_nios_groups,
-+	},
-+	.id_table = n3000_nios_ids,
-+	.probe   = n3000_nios_probe,
-+	.remove  = n3000_nios_remove,
-+};
-+
-+module_dfl_driver(n3000_nios_driver);
-+
-+MODULE_DESCRIPTION("Driver for Nios private feature on Intel PAC N3000");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
+ /* default method of finding dfls starting at offset 0 of bar 0 */
+ static int find_dfls_by_default(struct pci_dev *pcidev,
+ 				struct dfl_fpga_enum_info *info)
+@@ -220,7 +302,10 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
+ 			goto irq_free_exit;
+ 	}
+ 
+-	ret = find_dfls_by_default(pcidev, info);
++	ret = find_dfls_by_vsec(pcidev, info);
++	if (ret == -ENODEV)
++		ret = find_dfls_by_default(pcidev, info);
++
+ 	if (ret)
+ 		goto irq_free_exit;
+ 
 -- 
 2.29.2
 
