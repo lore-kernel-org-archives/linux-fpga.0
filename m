@@ -3,52 +3,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5067C4361B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E85AEC0018C
 	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A3F9E221E3
+	by mail.kernel.org (Postfix) with ESMTP id BE959230FC
 	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391024AbgLJQ7L (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        id S2392367AbgLJQ7L (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
         Thu, 10 Dec 2020 11:59:11 -0500
-Received: from mail-pl1-f195.google.com ([209.85.214.195]:46113 "EHLO
+Received: from mail-pl1-f195.google.com ([209.85.214.195]:46105 "EHLO
         mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387776AbgLJQ7J (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Dec 2020 11:59:09 -0500
-Received: by mail-pl1-f195.google.com with SMTP id v3so3058891plz.13
-        for <linux-fpga@vger.kernel.org>; Thu, 10 Dec 2020 08:58:54 -0800 (PST)
+        with ESMTP id S2391047AbgLJQ7C (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Dec 2020 11:59:02 -0500
+Received: by mail-pl1-f195.google.com with SMTP id v3so3058736plz.13
+        for <linux-fpga@vger.kernel.org>; Thu, 10 Dec 2020 08:58:46 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=3RjWYFS0t1qwCCykWF+LwjjyJCld4uAnADZtHP/eQeo=;
-        b=CKwvGYNwc0tHKJKGJkRaOBjsKG3jpp4DhX+eKdXfbqC6M6N8D6ehJKfuLXWgt4Tvh7
-         Y7W6crIvo8GGqwJH3RF1bQouAmXl9E/tBhxm1rj1MfDAwI9tqOw8P+C4Fua2/U5z71+i
-         +1HqsJb1yR8tYUcGVxTbVvDDkgbbZ6EWicFMy+p9dUQpXlbx4VqWyWjkdLHlksXyToZY
-         1jtjFNAyVOxpagOeoEsbD9fZrK6KL6sh1H2XNA9jwkAUpai6COVdfhNtu181HkMzG+1F
-         hCWu0z/RGickf62AT4ZhXhFAtBHUce8pPO4ykIqCuLjaFtwwgivb1Z9Avgg68yBIrlkr
-         9+Nw==
-X-Gm-Message-State: AOAM530TEvMiJWW4bj2DMwRk+8uETA3hzoZtJOfm7gFvCkMNhWEgzRFj
-        hmdWVB/2rUJUZzz+I8lnzu4=
-X-Google-Smtp-Source: ABdhPJww3r/MMhIvblrkwmJMxMP5jc9E/FBTV0hiZXleYhZVSa8+7DDBJXvz7/5xB9hN2OMynfMiIg==
-X-Received: by 2002:a17:902:a9c1:b029:da:8227:65f7 with SMTP id b1-20020a170902a9c1b02900da822765f7mr7216439plr.49.1607619508699;
-        Thu, 10 Dec 2020 08:58:28 -0800 (PST)
+        bh=FB/dx3m3KpkN+8L+NF1K6qL9jxEZGu8bEPcBWOE4EPE=;
+        b=IptAvlSAtFtqUGjFdiZwTeDr6n7vAkxLvmOuz/+rRp41IdE1QhLgKBwGtr9kbdmOIG
+         ORXJTOzYKxyGwUp58IWqDcg76M5bjc5xClIFIyaW77vI+1skZxz+fmHk0+42PLr4XY/b
+         k1k5Iv0Uy/fK8gxOtsbq7I3/3ABDcBMZo0icJKdKJWAPZJ64kxV5cHXmHFGk9gn7YmKE
+         uK2dnMgTwJCHeanVtfLBx7RTVWB2dAIWLW4EoPCMwUW8OOx/z1z5wmd8gK5QDJfl36Xw
+         eIxTX8beVlP/jJObEeg+bzQE3cDH9zJ6bhn1Z6hxaHM8W/N+FnIdil8gvhAbkyuFd4Mb
+         Rh4g==
+X-Gm-Message-State: AOAM532jT/xFmNRmMaTqF+CMUV6IAzxTe7a0+gRSRZa8KKHdBN+jKUaa
+        l4rrnUkxftHL5zOlsW3axgk=
+X-Google-Smtp-Source: ABdhPJyFFMcOtrRutS0+HYwS5RuXWLx1qzbyP1PbzP0tCFUu8hKcJp7MMk+LNxBidGG1Ku5K+Seuow==
+X-Received: by 2002:a17:902:8649:b029:d9:fcd9:522a with SMTP id y9-20020a1709028649b02900d9fcd9522amr7289863plt.83.1607619501431;
+        Thu, 10 Dec 2020 08:58:21 -0800 (PST)
 Received: from localhost ([2601:647:5b00:1162:1ac0:17a6:4cc6:d1ef])
-        by smtp.gmail.com with ESMTPSA id b20sm6235969pfi.218.2020.12.10.08.58.26
+        by smtp.gmail.com with ESMTPSA id c8sm7081791pgg.51.2020.12.10.08.58.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Dec 2020 08:58:27 -0800 (PST)
+        Thu, 10 Dec 2020 08:58:20 -0800 (PST)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-fpga@vger.kernel.org, trix@redhat.com, hao.wu@intel.com,
         yilun.xu@intel.com, russell.h.weight@intel.com,
-        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
         Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 5/8] fpga: dfl: add dfl bus support to MODULE_DEVICE_TABLE()
-Date:   Thu, 10 Dec 2020 08:58:01 -0800
-Message-Id: <20201210165804.44234-6-mdf@kernel.org>
+Subject: [PATCH 3/8] fpga: dfl: fix the definitions of type & feature_id for dfl devices
+Date:   Thu, 10 Dec 2020 08:57:59 -0800
+Message-Id: <20201210165804.44234-4-mdf@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201210165804.44234-1-mdf@kernel.org>
 References: <20201210165804.44234-1-mdf@kernel.org>
@@ -60,75 +59,89 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Xu Yilun <yilun.xu@intel.com>
 
-Device Feature List (DFL) is a linked list of feature headers within the
-device MMIO space. It is used by FPGA to enumerate multiple sub features
-within it. Each feature can be uniquely identified by DFL type and
-feature id, which can be read out from feature headers.
+The value of the field dfl_device.type comes from the 12 bits register
+field DFH_ID according to DFL spec. So this patch changes the definition
+of the type field to u16.
 
-A dfl bus helps DFL framework modularize DFL device drivers for
-different sub features. The dfl bus matches its devices and drivers by
-DFL type and feature id.
+Also it is not necessary to illustrate the valid bits of the type field
+in comments. Instead we should explicitly define the possible values in
+the enumeration type for it, because they are shared by hardware spec.
+We should not let the compiler decide these values.
 
-This patch adds dfl bus support to MODULE_DEVICE_TABLE() by adding info
-about struct dfl_device_id in devicetable-offsets.c and add a dfl entry
-point in file2alias.c.
+Similar changes are also applied to dfl_device.feature_id.
+
+This patch also fixed the MODALIAS format according to the changes
+above.
 
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
-Acked-by: Wu Hao <hao.wu@intel.com>
+Reviewed-by: Tom Rix <trix@redhat.com>
 ---
- scripts/mod/devicetable-offsets.c |  4 ++++
- scripts/mod/file2alias.c          | 13 +++++++++++++
- 2 files changed, 17 insertions(+)
+ drivers/fpga/dfl.c |  3 +--
+ drivers/fpga/dfl.h | 14 +++++++-------
+ 2 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/scripts/mod/devicetable-offsets.c b/scripts/mod/devicetable-offsets.c
-index 27007c18e754..d8350eea6d1a 100644
---- a/scripts/mod/devicetable-offsets.c
-+++ b/scripts/mod/devicetable-offsets.c
-@@ -243,5 +243,9 @@ int main(void)
- 	DEVID(mhi_device_id);
- 	DEVID_FIELD(mhi_device_id, chan);
- 
-+	DEVID(dfl_device_id);
-+	DEVID_FIELD(dfl_device_id, type);
-+	DEVID_FIELD(dfl_device_id, feature_id);
-+
- 	return 0;
- }
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index 2417dd1dee33..8a438c94dcd9 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -1368,6 +1368,18 @@ static int do_mhi_entry(const char *filename, void *symval, char *alias)
- 	return 1;
- }
- 
-+/* Looks like: dfl:tNfN */
-+static int do_dfl_entry(const char *filename, void *symval, char *alias)
-+{
-+	DEF_FIELD(symval, dfl_device_id, type);
-+	DEF_FIELD(symval, dfl_device_id, feature_id);
-+
-+	sprintf(alias, "dfl:t%04Xf%04X", type, feature_id);
-+
-+	add_wildcard(alias);
-+	return 1;
-+}
-+
- /* Does namelen bytes of name exactly match the symbol? */
- static bool sym_is(const char *name, unsigned namelen, const char *symbol)
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index b450870b75ed..5a6ba3b2fa05 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -298,8 +298,7 @@ static int dfl_bus_uevent(struct device *dev, struct kobj_uevent_env *env)
  {
-@@ -1442,6 +1454,7 @@ static const struct devtable devtable[] = {
- 	{"tee", SIZE_tee_client_device_id, do_tee_entry},
- 	{"wmi", SIZE_wmi_device_id, do_wmi_entry},
- 	{"mhi", SIZE_mhi_device_id, do_mhi_entry},
-+	{"dfl", SIZE_dfl_device_id, do_dfl_entry},
+ 	struct dfl_device *ddev = to_dfl_dev(dev);
+ 
+-	/* The type has 4 valid bits and feature_id has 12 valid bits */
+-	return add_uevent_var(env, "MODALIAS=dfl:t%01Xf%03X",
++	return add_uevent_var(env, "MODALIAS=dfl:t%04Xf%04X",
+ 			      ddev->type, ddev->feature_id);
+ }
+ 
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 5dc758f655b7..ac373b1fcff9 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -520,19 +520,19 @@ long dfl_feature_ioctl_set_irq(struct platform_device *pdev,
+  * enum dfl_id_type - define the DFL FIU types
+  */
+ enum dfl_id_type {
+-	FME_ID,
+-	PORT_ID,
++	FME_ID = 0,
++	PORT_ID = 1,
+ 	DFL_ID_MAX,
  };
  
- /* Create MODULE_ALIAS() statements.
+ /**
+  * struct dfl_device_id -  dfl device identifier
+- * @type: contains 4 bits DFL FIU type of the device. See enum dfl_id_type.
+- * @feature_id: contains 12 bits feature identifier local to its DFL FIU type.
++ * @type: DFL FIU type of the device. See enum dfl_id_type.
++ * @feature_id: feature identifier local to its DFL FIU type.
+  * @driver_data: driver specific data.
+  */
+ struct dfl_device_id {
+-	u8 type;
++	u16 type;
+ 	u16 feature_id;
+ 	unsigned long driver_data;
+ };
+@@ -543,7 +543,7 @@ struct dfl_device_id {
+  * @dev: generic device interface.
+  * @id: id of the dfl device.
+  * @type: type of DFL FIU of the device. See enum dfl_id_type.
+- * @feature_id: 16 bits feature identifier local to its DFL FIU type.
++ * @feature_id: feature identifier local to its DFL FIU type.
+  * @mmio_res: mmio resource of this dfl device.
+  * @irqs: list of Linux IRQ numbers of this dfl device.
+  * @num_irqs: number of IRQs supported by this dfl device.
+@@ -553,7 +553,7 @@ struct dfl_device_id {
+ struct dfl_device {
+ 	struct device dev;
+ 	int id;
+-	u8 type;
++	u16 type;
+ 	u16 feature_id;
+ 	struct resource mmio_res;
+ 	int *irqs;
 -- 
 2.29.2
 
