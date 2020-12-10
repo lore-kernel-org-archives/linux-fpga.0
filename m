@@ -3,52 +3,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BD4CC4167B
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9C71C433FE
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B79E221E3
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 76A3023BE5
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2392373AbgLJQ7T (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 10 Dec 2020 11:59:19 -0500
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:40148 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2392369AbgLJQ7F (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Dec 2020 11:59:05 -0500
-Received: by mail-pf1-f193.google.com with SMTP id t7so4655495pfh.7
-        for <linux-fpga@vger.kernel.org>; Thu, 10 Dec 2020 08:58:50 -0800 (PST)
+        id S2392369AbgLJQ7Y (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 10 Dec 2020 11:59:24 -0500
+Received: from mail-pf1-f180.google.com ([209.85.210.180]:42760 "EHLO
+        mail-pf1-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731400AbgLJQ7Q (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Dec 2020 11:59:16 -0500
+Received: by mail-pf1-f180.google.com with SMTP id 131so4653794pfb.9
+        for <linux-fpga@vger.kernel.org>; Thu, 10 Dec 2020 08:59:00 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=X2GZ+ePoFiu9QiVFXfkzqTqbUH2vMpi+ch5sofOIR7Q=;
-        b=dzplKMQTvDRzZz/ldQGN9+0wHPRPVUmDG81sbJ8OqUsFlQZf03/unwVWl3TojR7j1n
-         Tv/xTpMUynvd/BtUDcvgejPBCd926X6J8luyMz6UXirDLMlCrWGVEI0QSsClj2IwperI
-         CQ2+pS6jGa+Zqc6axZGAGssl0xQkPqyUzEzu9sA9FspKx2vGOGXSgU0X4p7oQ6Lxt8zc
-         P6teUUTechDJFp34rS0CbvaN+EAtDC2Om698BA6XK356bTcaqqoJgokR/YJI/tYG59OW
-         5B7e9eJLgWTJTjYOgPmJZWjf1+QKAYgMyUh+6OjVts935621XdfSv9ctmOQIUDsPbDFX
-         8bGg==
-X-Gm-Message-State: AOAM5305yjKpmVacPFs6gTY6GWSwnJsz6fJt3cD7fSpRdj2SaQY/pY/z
-        A1yXV5YDLqG510kCTu/9/8M=
-X-Google-Smtp-Source: ABdhPJxYn72jlzshOuLIRhMdbvr/rsQ2gyHpHPcLykN9hYEGAxbP2oGzr58b7EGoXj3hZHIdKMRbdg==
-X-Received: by 2002:a62:7b86:0:b029:19d:f996:44f3 with SMTP id w128-20020a627b860000b029019df99644f3mr7591086pfc.65.1607619505042;
-        Thu, 10 Dec 2020 08:58:25 -0800 (PST)
+        bh=9Jgm2nqfpaiT7ZHURhtzV6pP11aFn7fPtwRSdjvlJeQ=;
+        b=kiYe4XR77K+7WaA6N2R45eLc2C5pJ0gq3kFw1pMSp1DBUys/U58P+qGG+ohVXXmiJ7
+         545cZ1z4ho77uOT6cWQgzSW1HuwyLimTRY5obkHkX6uedoAVNGx7QBL6r55V8/uPBjqg
+         sHCEKS/BoK1eZ0Tpf6/CsKfX8jHpyajulUuTceNqq73GLfK2Drw4+Z2yU/l9NXEvQwvW
+         G6FEx+iTYZ7mPjgW9w6sBUDdX6VRFIDlSung6HmQGAi42ARjbI3zrgz8ZP8rkoDv9iNH
+         UpY0L9DWBxcz5zdh3/wKQKRDMZGAVFoaLGp7+FkbRtLnKmbTkV931uEM00r85FIkIPPd
+         MagQ==
+X-Gm-Message-State: AOAM533JQlG0TCFuEQKdsm/p3S6WjF2DzMhRqvw82pRrbSRohSyGJUf9
+        yVi2coiAG0/9MGuZqdzjDzU=
+X-Google-Smtp-Source: ABdhPJwtekABbysExT2vZ1BBNHAF++A4bgHRtW7W5f02VEC07Tfy9lVSzp8EFxNwJnMQmQHkz+Dz8w==
+X-Received: by 2002:a17:90b:2392:: with SMTP id mr18mr8436265pjb.225.1607619514925;
+        Thu, 10 Dec 2020 08:58:34 -0800 (PST)
 Received: from localhost ([2601:647:5b00:1162:1ac0:17a6:4cc6:d1ef])
-        by smtp.gmail.com with ESMTPSA id k14sm6842070pfp.132.2020.12.10.08.58.23
+        by smtp.gmail.com with ESMTPSA id y22sm6647626pgi.35.2020.12.10.08.58.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Dec 2020 08:58:24 -0800 (PST)
+        Thu, 10 Dec 2020 08:58:34 -0800 (PST)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-fpga@vger.kernel.org, trix@redhat.com, hao.wu@intel.com,
         yilun.xu@intel.com, russell.h.weight@intel.com,
-        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
         Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 4/8] fpga: dfl: move dfl_device_id to mod_devicetable.h
-Date:   Thu, 10 Dec 2020 08:58:00 -0800
-Message-Id: <20201210165804.44234-5-mdf@kernel.org>
+Subject: [PATCH 8/8] memory: dfl-emif: add the DFL EMIF private feature driver
+Date:   Thu, 10 Dec 2020 08:58:04 -0800
+Message-Id: <20201210165804.44234-9-mdf@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201210165804.44234-1-mdf@kernel.org>
 References: <20201210165804.44234-1-mdf@kernel.org>
@@ -60,88 +60,305 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Xu Yilun <yilun.xu@intel.com>
 
-In order to support MODULE_DEVICE_TABLE() for dfl device driver, this
-patch moves struct dfl_device_id to mod_devicetable.h
+This driver is for the EMIF private feature implemented under FPGA
+Device Feature List (DFL) framework. It is used to expose memory
+interface status information as well as memory clearing control.
 
-Some brief description for DFL (Device Feature List) is added to make
-the DFL known to the whole kernel.
+The purpose of memory clearing block is to zero out all private memory
+when FPGA is to be reprogrammed. This gives users a reliable method to
+prevent potential data leakage.
 
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Wu Hao <hao.wu@intel.com>
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
 Reviewed-by: Tom Rix <trix@redhat.com>
-Acked-by: Wu Hao <hao.wu@intel.com>
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/dfl.h              | 13 +------------
- include/linux/mod_devicetable.h | 24 ++++++++++++++++++++++++
- 2 files changed, 25 insertions(+), 12 deletions(-)
+ .../ABI/testing/sysfs-bus-dfl-devices-emif    |  25 +++
+ drivers/memory/Kconfig                        |   9 +
+ drivers/memory/Makefile                       |   2 +
+ drivers/memory/dfl-emif.c                     | 207 ++++++++++++++++++
+ 4 files changed, 243 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-dfl-devices-emif
+ create mode 100644 drivers/memory/dfl-emif.c
 
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index ac373b1fcff9..549c7900dcfd 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -22,6 +22,7 @@
- #include <linux/interrupt.h>
- #include <linux/iopoll.h>
- #include <linux/io-64-nonatomic-lo-hi.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/uuid.h>
-@@ -525,18 +526,6 @@ enum dfl_id_type {
- 	DFL_ID_MAX,
- };
- 
--/**
-- * struct dfl_device_id -  dfl device identifier
-- * @type: DFL FIU type of the device. See enum dfl_id_type.
-- * @feature_id: feature identifier local to its DFL FIU type.
-- * @driver_data: driver specific data.
-- */
--struct dfl_device_id {
--	u16 type;
--	u16 feature_id;
--	unsigned long driver_data;
--};
--
- /**
-  * struct dfl_device - represent an dfl device on dfl bus
-  *
-diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-index 5b08a473cdba..7d36c8c0fdc2 100644
---- a/include/linux/mod_devicetable.h
-+++ b/include/linux/mod_devicetable.h
-@@ -838,4 +838,28 @@ struct mhi_device_id {
- 	kernel_ulong_t driver_data;
- };
- 
-+/*
-+ * DFL (Device Feature List)
-+ *
-+ * DFL defines a linked list of feature headers within the device MMIO space to
-+ * provide an extensible way of adding features. Software can walk through these
-+ * predefined data structures to enumerate features. It is now used in the FPGA.
-+ * See Documentation/fpga/dfl.rst for more information.
-+ *
-+ * The dfl bus type is introduced to match the individual feature devices (dfl
-+ * devices) for specific dfl drivers.
-+ */
+diff --git a/Documentation/ABI/testing/sysfs-bus-dfl-devices-emif b/Documentation/ABI/testing/sysfs-bus-dfl-devices-emif
+new file mode 100644
+index 000000000000..1ae8ebd15b93
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-bus-dfl-devices-emif
+@@ -0,0 +1,25 @@
++What:		/sys/bus/dfl/devices/dfl_dev.X/infX_cal_fail
++Date:		Oct 2020
++KernelVersion:	5.11
++Contact:	Xu Yilun <yilun.xu@intel.com>
++Description:	Read-only. It indicates if the calibration failed on this
++		memory interface. "1" for calibration failure, "0" for OK.
++		Format: %u
 +
-+/**
-+ * struct dfl_device_id -  dfl device identifier
-+ * @type: DFL FIU type of the device. See enum dfl_id_type.
-+ * @feature_id: feature identifier local to its DFL FIU type.
-+ * @driver_data: driver specific data.
++What:		/sys/bus/dfl/devices/dfl_dev.X/infX_init_done
++Date:		Oct 2020
++KernelVersion:	5.11
++Contact:	Xu Yilun <yilun.xu@intel.com>
++Description:	Read-only. It indicates if the initialization completed on
++		this memory interface. "1" for initialization complete, "0"
++		for not yet.
++		Format: %u
++
++What:		/sys/bus/dfl/devices/dfl_dev.X/infX_clear
++Date:		Oct 2020
++KernelVersion:	5.11
++Contact:	Xu Yilun <yilun.xu@intel.com>
++Description:	Write-only. Writing "1" to this file will zero out all memory
++		data in this memory interface. Writing of other values is
++		invalid.
++		Format: %u
+diff --git a/drivers/memory/Kconfig b/drivers/memory/Kconfig
+index 00e013b14703..2495bc4913e2 100644
+--- a/drivers/memory/Kconfig
++++ b/drivers/memory/Kconfig
+@@ -137,6 +137,15 @@ config TI_EMIF_SRAM
+ 	  sequence so this driver provides several relocatable PM functions
+ 	  for the SoC PM code to use.
+ 
++config FPGA_DFL_EMIF
++	tristate "FPGA DFL EMIF Driver"
++	depends on FPGA_DFL && HAS_IOMEM
++	help
++	  This driver is for the EMIF private feature implemented under
++	  FPGA Device Feature List (DFL) framework. It is used to expose
++	  memory interface status information as well as memory clearing
++	  control.
++
+ config MVEBU_DEVBUS
+ 	bool "Marvell EBU Device Bus Controller"
+ 	default y if PLAT_ORION
+diff --git a/drivers/memory/Makefile b/drivers/memory/Makefile
+index e71cf7b99641..bc7663ed1c25 100644
+--- a/drivers/memory/Makefile
++++ b/drivers/memory/Makefile
+@@ -28,6 +28,8 @@ obj-$(CONFIG_STM32_FMC2_EBI)	+= stm32-fmc2-ebi.o
+ obj-$(CONFIG_SAMSUNG_MC)	+= samsung/
+ obj-$(CONFIG_TEGRA_MC)		+= tegra/
+ obj-$(CONFIG_TI_EMIF_SRAM)	+= ti-emif-sram.o
++obj-$(CONFIG_FPGA_DFL_EMIF)	+= dfl-emif.o
++
+ ti-emif-sram-objs		:= ti-emif-pm.o ti-emif-sram-pm.o
+ 
+ AFLAGS_ti-emif-sram-pm.o	:=-Wa,-march=armv7-a
+diff --git a/drivers/memory/dfl-emif.c b/drivers/memory/dfl-emif.c
+new file mode 100644
+index 000000000000..3f719816771d
+--- /dev/null
++++ b/drivers/memory/dfl-emif.c
+@@ -0,0 +1,207 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DFL device driver for EMIF private feature
++ *
++ * Copyright (C) 2020 Intel Corporation, Inc.
++ *
 + */
-+struct dfl_device_id {
-+	__u16 type;
-+	__u16 feature_id;
-+	kernel_ulong_t driver_data;
++#include <linux/bitfield.h>
++#include <linux/dfl.h>
++#include <linux/errno.h>
++#include <linux/io.h>
++#include <linux/iopoll.h>
++#include <linux/io-64-nonatomic-lo-hi.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/spinlock.h>
++#include <linux/types.h>
++
++#define FME_FEATURE_ID_EMIF		0x9
++
++#define EMIF_STAT			0x8
++#define EMIF_STAT_INIT_DONE_SFT		0
++#define EMIF_STAT_CALC_FAIL_SFT		8
++#define EMIF_STAT_CLEAR_BUSY_SFT	16
++#define EMIF_CTRL			0x10
++#define EMIF_CTRL_CLEAR_EN_SFT		0
++#define EMIF_CTRL_CLEAR_EN_MSK		GENMASK_ULL(3, 0)
++
++#define EMIF_POLL_INVL			10000 /* us */
++#define EMIF_POLL_TIMEOUT		5000000 /* us */
++
++struct dfl_emif {
++	struct device *dev;
++	void __iomem *base;
++	spinlock_t lock;	/* Serialises access to EMIF_CTRL reg */
 +};
 +
- #endif /* LINUX_MOD_DEVICETABLE_H */
++struct emif_attr {
++	struct device_attribute attr;
++	u32 shift;
++	u32 index;
++};
++
++#define to_emif_attr(dev_attr) \
++	container_of(dev_attr, struct emif_attr, attr)
++
++static ssize_t emif_state_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	struct emif_attr *eattr = to_emif_attr(attr);
++	struct dfl_emif *de = dev_get_drvdata(dev);
++	u64 val;
++
++	val = readq(de->base + EMIF_STAT);
++
++	return sysfs_emit(buf, "%u\n",
++			  !!(val & BIT_ULL(eattr->shift + eattr->index)));
++}
++
++static ssize_t emif_clear_store(struct device *dev,
++				struct device_attribute *attr,
++				const char *buf, size_t count)
++{
++	struct emif_attr *eattr = to_emif_attr(attr);
++	struct dfl_emif *de = dev_get_drvdata(dev);
++	u64 clear_busy_msk, clear_en_msk, val;
++	void __iomem *base = de->base;
++
++	if (!sysfs_streq(buf, "1"))
++		return -EINVAL;
++
++	clear_busy_msk = BIT_ULL(EMIF_STAT_CLEAR_BUSY_SFT + eattr->index);
++	clear_en_msk = BIT_ULL(EMIF_CTRL_CLEAR_EN_SFT + eattr->index);
++
++	spin_lock(&de->lock);
++	/* The CLEAR_EN field is WO, but other fields are RW */
++	val = readq(base + EMIF_CTRL);
++	val &= ~EMIF_CTRL_CLEAR_EN_MSK;
++	val |= clear_en_msk;
++	writeq(val, base + EMIF_CTRL);
++	spin_unlock(&de->lock);
++
++	if (readq_poll_timeout(base + EMIF_STAT, val,
++			       !(val & clear_busy_msk),
++			       EMIF_POLL_INVL, EMIF_POLL_TIMEOUT)) {
++		dev_err(de->dev, "timeout, fail to clear\n");
++		return -ETIMEDOUT;
++	}
++
++	return count;
++}
++
++#define emif_state_attr(_name, _shift, _index)				\
++	static struct emif_attr emif_attr_##inf##_index##_##_name =	\
++		{ .attr = __ATTR(inf##_index##_##_name, 0444,		\
++				 emif_state_show, NULL),		\
++		  .shift = (_shift), .index = (_index) }
++
++#define emif_clear_attr(_index)						\
++	static struct emif_attr emif_attr_##inf##_index##_clear =	\
++		{ .attr = __ATTR(inf##_index##_clear, 0200,		\
++				 NULL, emif_clear_store),		\
++		  .index = (_index) }
++
++emif_state_attr(init_done, EMIF_STAT_INIT_DONE_SFT, 0);
++emif_state_attr(init_done, EMIF_STAT_INIT_DONE_SFT, 1);
++emif_state_attr(init_done, EMIF_STAT_INIT_DONE_SFT, 2);
++emif_state_attr(init_done, EMIF_STAT_INIT_DONE_SFT, 3);
++
++emif_state_attr(cal_fail, EMIF_STAT_CALC_FAIL_SFT, 0);
++emif_state_attr(cal_fail, EMIF_STAT_CALC_FAIL_SFT, 1);
++emif_state_attr(cal_fail, EMIF_STAT_CALC_FAIL_SFT, 2);
++emif_state_attr(cal_fail, EMIF_STAT_CALC_FAIL_SFT, 3);
++
++emif_clear_attr(0);
++emif_clear_attr(1);
++emif_clear_attr(2);
++emif_clear_attr(3);
++
++static struct attribute *dfl_emif_attrs[] = {
++	&emif_attr_inf0_init_done.attr.attr,
++	&emif_attr_inf0_cal_fail.attr.attr,
++	&emif_attr_inf0_clear.attr.attr,
++
++	&emif_attr_inf1_init_done.attr.attr,
++	&emif_attr_inf1_cal_fail.attr.attr,
++	&emif_attr_inf1_clear.attr.attr,
++
++	&emif_attr_inf2_init_done.attr.attr,
++	&emif_attr_inf2_cal_fail.attr.attr,
++	&emif_attr_inf2_clear.attr.attr,
++
++	&emif_attr_inf3_init_done.attr.attr,
++	&emif_attr_inf3_cal_fail.attr.attr,
++	&emif_attr_inf3_clear.attr.attr,
++
++	NULL,
++};
++
++static umode_t dfl_emif_visible(struct kobject *kobj,
++				struct attribute *attr, int n)
++{
++	struct dfl_emif *de = dev_get_drvdata(kobj_to_dev(kobj));
++	struct emif_attr *eattr = container_of(attr, struct emif_attr,
++					       attr.attr);
++	u64 val;
++
++	/*
++	 * This device supports upto 4 memory interfaces, but not all
++	 * interfaces are used on different platforms. The read out value of
++	 * CLEAN_EN field (which is a bitmap) could tell how many interfaces
++	 * are available.
++	 */
++	val = FIELD_GET(EMIF_CTRL_CLEAR_EN_MSK, readq(de->base + EMIF_CTRL));
++
++	return (val & BIT_ULL(eattr->index)) ? attr->mode : 0;
++}
++
++static const struct attribute_group dfl_emif_group = {
++	.is_visible = dfl_emif_visible,
++	.attrs = dfl_emif_attrs,
++};
++
++static const struct attribute_group *dfl_emif_groups[] = {
++	&dfl_emif_group,
++	NULL,
++};
++
++static int dfl_emif_probe(struct dfl_device *ddev)
++{
++	struct device *dev = &ddev->dev;
++	struct dfl_emif *de;
++
++	de = devm_kzalloc(dev, sizeof(*de), GFP_KERNEL);
++	if (!de)
++		return -ENOMEM;
++
++	de->base = devm_ioremap_resource(dev, &ddev->mmio_res);
++	if (IS_ERR(de->base))
++		return PTR_ERR(de->base);
++
++	de->dev = dev;
++	spin_lock_init(&de->lock);
++	dev_set_drvdata(dev, de);
++
++	return 0;
++}
++
++static const struct dfl_device_id dfl_emif_ids[] = {
++	{ FME_ID, FME_FEATURE_ID_EMIF },
++	{ }
++};
++MODULE_DEVICE_TABLE(dfl, dfl_emif_ids);
++
++static struct dfl_driver dfl_emif_driver = {
++	.drv	= {
++		.name       = "dfl-emif",
++		.dev_groups = dfl_emif_groups,
++	},
++	.id_table = dfl_emif_ids,
++	.probe   = dfl_emif_probe,
++};
++module_dfl_driver(dfl_emif_driver);
++
++MODULE_DESCRIPTION("DFL EMIF driver");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL v2");
 -- 
 2.29.2
 
