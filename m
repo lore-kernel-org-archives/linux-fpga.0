@@ -2,80 +2,96 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5AACC4361B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5A3EC1B0D9
 	for <linux-fpga@archiver.kernel.org>; Mon, 14 Dec 2020 03:42:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7379322240
+	by mail.kernel.org (Postfix) with ESMTP id 8C2812389F
 	for <linux-fpga@archiver.kernel.org>; Mon, 14 Dec 2020 03:42:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2438378AbgLNDlt (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 13 Dec 2020 22:41:49 -0500
-Received: from mga02.intel.com ([134.134.136.20]:46083 "EHLO mga02.intel.com"
+        id S1725877AbgLNDl4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 13 Dec 2020 22:41:56 -0500
+Received: from mga03.intel.com ([134.134.136.65]:41628 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725877AbgLNDlm (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Sun, 13 Dec 2020 22:41:42 -0500
-IronPort-SDR: p1QKkcJXgXsslXXLzLYEpXNgfZNb2Dm9TivSBfjN652S0ChF3NZH2wzJu4KhB3hhugbKkJdlLu
- M1QcJYCFazYA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9834"; a="161700349"
+        id S2438375AbgLNDlt (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Sun, 13 Dec 2020 22:41:49 -0500
+IronPort-SDR: r7dvl32y3z8JBWnJ7iRu9/QQUeTiEIAsAxjwnFQ8wLtcMYG/sdWlK6A02ecrGiv3s/k+kM+IlC
+ SOgwveZMGMdw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9834"; a="174762712"
 X-IronPort-AV: E=Sophos;i="5.78,417,1599548400"; 
-   d="scan'208";a="161700349"
+   d="scan'208";a="174762712"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Dec 2020 19:40:42 -0800
-IronPort-SDR: Q0PNYYqksMTlZh/UWU4lYUnXXPgjZHF+4DmbWubbWOf7IC5bO4Jxs/BGfPHUXGTTTIQYmBHFLF
- 7ztQF4Z8SUxA==
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Dec 2020 19:41:03 -0800
+IronPort-SDR: z1wgAxhEXN3lValOlrPUkmvwVUfLqMmYoC2bZZ0uMSYkVeLED80F2zrriBXUMxP/b96adHc3ks
+ y7aql/dNs09A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.78,417,1599548400"; 
-   d="scan'208";a="331722939"
+   d="scan'208";a="331726438"
 Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.141])
-  by fmsmga008.fm.intel.com with ESMTP; 13 Dec 2020 19:40:40 -0800
+  by fmsmga008.fm.intel.com with ESMTP; 13 Dec 2020 19:41:01 -0800
 From:   Xu Yilun <yilun.xu@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     gregkh@linuxfoundation.org, trix@redhat.com, lgoncalv@redhat.com,
         yilun.xu@intel.com, hao.wu@intel.com
-Subject: [PATCH v2 0/2] UIO support for dfl devices
-Date:   Mon, 14 Dec 2020 11:36:19 +0800
-Message-Id: <1607916981-14782-1-git-send-email-yilun.xu@intel.com>
+Subject: [PATCH v2 2/2] Documentation: fpga: dfl: Add description for DFL UIO support
+Date:   Mon, 14 Dec 2020 11:36:21 +0800
+Message-Id: <1607916981-14782-3-git-send-email-yilun.xu@intel.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1607916981-14782-1-git-send-email-yilun.xu@intel.com>
+References: <1607916981-14782-1-git-send-email-yilun.xu@intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-This patchset supports some dfl device drivers written in userspace.
+This patch adds description for UIO support for dfl devices on DFL
+bus.
 
-In the patchset v1, the "driver_override" interface should be used to bind
-the DFL UIO driver to DFL devices. But there is concern that the
-"driver_override" interface is not OK itself. So in v2, we use a new
-matching algorithem. The "driver_override" interface is abandoned, the DFL
-UIO driver matches any DFL device which could not be handled by other DFL
-drivers. So the DFL UIO driver could be used for new DFL devices which are
-not supported by kernel, also it will not impact the devices which are
-already got supported.
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+---
+v2: no doc in v1, add it for v2.
+---
+ Documentation/fpga/dfl.rst | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-Main changes from v1:
-- switch to the new matching algorithem. It matches DFL devices which could
-  not be handled by other DFL drivers.
-- refacor the code about device resources filling.
-- add the documentation.
-
-
-Xu Yilun (2):
-  fpga: dfl: add the userspace I/O device support for DFL devices
-  Documentation: fpga: dfl: Add description for DFL UIO support
-
- Documentation/fpga/dfl.rst  |  23 ++++++++++
- drivers/fpga/Kconfig        |  10 ++++
- drivers/fpga/Makefile       |   1 +
- drivers/fpga/dfl-uio-pdev.c | 108 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/fpga/dfl.c          |  22 +++++++--
- include/linux/dfl.h         |   7 +++
- 6 files changed, 166 insertions(+), 5 deletions(-)
- create mode 100644 drivers/fpga/dfl-uio-pdev.c
-
+diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+index 0404fe6..a15e81e 100644
+--- a/Documentation/fpga/dfl.rst
++++ b/Documentation/fpga/dfl.rst
+@@ -502,6 +502,29 @@ FME Partial Reconfiguration Sub Feature driver (see drivers/fpga/dfl-fme-pr.c)
+ could be a reference.
+ 
+ 
++UIO support for DFL devices
++===========================
++The FPGA is open for users to be reprogramed with newly developed hardware
++components. They could instantiate a new private feature in the DFL, and then
++get a DFL device in their system. In some cases users may need a userspace
++driver for the DFL device:
++
++* Users may need to run some diagnostic test for their hardwares.
++* Some hardware is designed for specific purposes and does not fit into one of
++  the standard kernel subsystems.
++
++This requires the direct access to the MMIO space and interrupt handling in
++userspace. We implemented a dfl-uio-pdev module which exposes the UIO device
++interfaces. It adds the uio_pdrv_genirq platform device with the resources of
++the DFL device, and let the generic UIO platform device driver provide UIO
++support to userspace.
++
++The DFL UIO driver has a special matching algorithem. It will match any DFL
++device which could not be handled by other DFL drivers. In this way, it will
++not impact the functionality of the features which are already supported by the
++system.
++
++
+ Open discussion
+ ===============
+ FME driver exports one ioctl (DFL_FPGA_FME_PORT_PR) for partial reconfiguration
 -- 
 2.7.4
 
