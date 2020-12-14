@@ -2,224 +2,331 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8079C433FE
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37BB0C4361B
+	for <linux-fpga@archiver.kernel.org>; Mon, 14 Dec 2020 03:41:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 98736221E3
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Dec 2020 16:59:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BC7A82389F
+	for <linux-fpga@archiver.kernel.org>; Mon, 14 Dec 2020 03:41:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390527AbgLJQ7p (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 10 Dec 2020 11:59:45 -0500
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:44648 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2392160AbgLJQ7A (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Dec 2020 11:59:00 -0500
-Received: by mail-pf1-f193.google.com with SMTP id f9so4649212pfc.11
-        for <linux-fpga@vger.kernel.org>; Thu, 10 Dec 2020 08:58:45 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=h2oSgYeQZxR87ohN6KF0gETYZLnwVlanqQCGgABmfao=;
-        b=LMB69VwPWmboPvdPNRelgc6iWnFkRbmOfY2Y2SV2NAOv3Nj0IS1UvFCcOkbhAlVc9y
-         aYPjmphfCZjfO4qsOqIm/aHxeANT0C8hUgj46D665t1r48liVzroMAx/GXUPQYB1vbxR
-         R3CaTcKvIny2zlSzUu5KFUpwGOUpa8AAOpaFcrAAI1fV3byO1RRLLQOwgDJSK79pZ/7X
-         HIztLTqSjT3m/cS6XfCAaZNXKAMTUxPNrWWpY/moRbcqCMXX1cvlkQ5Or5Fc2BATBn6e
-         baim3LAgepSDHfnETJp7sl+Zv47wU2w3holckikbnBavdVgzI0xN6NwEzrWcF5Lw1nDD
-         cIXQ==
-X-Gm-Message-State: AOAM5322skqC6Bm7PBgh0s2QcASXcgHc4luVBgkK97TRd1u6kGkNRYcK
-        lLJYrAy3ocGXWcGAR2uJDyk=
-X-Google-Smtp-Source: ABdhPJwIbgwUEEch9Rksk4U2BL24NjlR5RyLMOhEfnA9gzxCmSs9LspZu/hrHqhgbAtGqiBsw12WJA==
-X-Received: by 2002:a65:5b84:: with SMTP id i4mr7458053pgr.282.1607619499622;
-        Thu, 10 Dec 2020 08:58:19 -0800 (PST)
-Received: from localhost ([2601:647:5b00:1162:1ac0:17a6:4cc6:d1ef])
-        by smtp.gmail.com with ESMTPSA id y19sm6784224pfp.211.2020.12.10.08.58.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Dec 2020 08:58:18 -0800 (PST)
-From:   Moritz Fischer <mdf@kernel.org>
-To:     gregkh@linuxfoundation.org
-Cc:     linux-fpga@vger.kernel.org, trix@redhat.com, hao.wu@intel.com,
-        yilun.xu@intel.com, russell.h.weight@intel.com,
-        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
-        Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 2/8] fpga: dfl-pci: locate DFLs by PCIe vendor specific capability
-Date:   Thu, 10 Dec 2020 08:57:58 -0800
-Message-Id: <20201210165804.44234-3-mdf@kernel.org>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201210165804.44234-1-mdf@kernel.org>
-References: <20201210165804.44234-1-mdf@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1726339AbgLNDl0 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 13 Dec 2020 22:41:26 -0500
+Received: from mga02.intel.com ([134.134.136.20]:46083 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725877AbgLNDl0 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Sun, 13 Dec 2020 22:41:26 -0500
+IronPort-SDR: LW+UkHlBMeGcQtGpRronGWml9CbeB2FfKDEcLlCv0D1kE/OJ1OcR9El+RVxnSlPsUuwbl5ijHg
+ 71MnlUCVpbrQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9834"; a="161700351"
+X-IronPort-AV: E=Sophos;i="5.78,417,1599548400"; 
+   d="scan'208";a="161700351"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Dec 2020 19:40:45 -0800
+IronPort-SDR: Wedw6dpPDtEBG3sUAsmJDvp92dYlHojO/JzS0BXp9PwDSQIz3SpftygbXwKQDife0ky0+L8RrN
+ 8oiNvHDRJ9/Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.78,417,1599548400"; 
+   d="scan'208";a="331723388"
+Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.141])
+  by fmsmga008.fm.intel.com with ESMTP; 13 Dec 2020 19:40:43 -0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     gregkh@linuxfoundation.org, trix@redhat.com, lgoncalv@redhat.com,
+        yilun.xu@intel.com, hao.wu@intel.com
+Subject: [PATCH v2 1/2] fpga: dfl: add the userspace I/O device support for DFL devices
+Date:   Mon, 14 Dec 2020 11:36:20 +0800
+Message-Id: <1607916981-14782-2-git-send-email-yilun.xu@intel.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1607916981-14782-1-git-send-email-yilun.xu@intel.com>
+References: <1607916981-14782-1-git-send-email-yilun.xu@intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+This patch supports the DFL drivers be written in userspace. This is
+realized by exposing the userspace I/O device interfaces.
 
-A PCIe vendor specific extended capability is introduced by Intel to
-specify the start of a number of DFLs.
+The driver leverages the uio_pdrv_genirq, it adds the uio_pdrv_genirq
+platform device with the DFL device's resources, and let the generic UIO
+platform device driver provide support to userspace access to kernel
+interrupts and memory locations.
 
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
+The driver matches DFL devices in a different way. It has no device id
+table, instead it matches any DFL device which could not be handled by
+other DFL drivers. For this purpose, a match() ops is added to the dfl
+driver, to allow dfl drivers have their own matching algorithem instead
+of the standard id_table matching.
+
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 ---
- Documentation/fpga/dfl.rst | 27 ++++++++++++
- drivers/fpga/dfl-pci.c     | 87 +++++++++++++++++++++++++++++++++++++-
- 2 files changed, 113 insertions(+), 1 deletion(-)
+v2: switch to the new matching algorithem. It matches DFL devices which
+     could not be handled by other DFL drivers.
+    refacor the code about device resources filling.
+    fix some comments.
+---
+ drivers/fpga/Kconfig        |  10 ++++
+ drivers/fpga/Makefile       |   1 +
+ drivers/fpga/dfl-uio-pdev.c | 108 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/fpga/dfl.c          |  22 +++++++--
+ include/linux/dfl.h         |   7 +++
+ 5 files changed, 143 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/fpga/dfl-uio-pdev.c
 
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index 0404fe6ffc74..ea8cefc18bdb 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -501,6 +501,33 @@ Developer only needs to provide a sub feature driver with matched feature id.
- FME Partial Reconfiguration Sub Feature driver (see drivers/fpga/dfl-fme-pr.c)
- could be a reference.
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 5d7f0ae..eb8a616 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -202,6 +202,16 @@ config FPGA_DFL_NIOS_INTEL_PAC_N3000
+ 	  the card. It also instantiates the SPI master (spi-altera) for
+ 	  the card's BMC (Board Management Controller).
  
-+Location of DFLs on a PCI Device
-+===========================
-+The original method for finding a DFL on a PCI device assumed the start of the
-+first DFL to offset 0 of bar 0.  If the first node of the DFL is an FME,
-+then further DFLs in the port(s) are specified in FME header registers.
-+Alternatively, a PCIe vendor specific capability structure can be used to
-+specify the location of all the DFLs on the device, providing flexibility
-+for the type of starting node in the DFL.  Intel has reserved the
-+VSEC ID of 0x43 for this purpose.  The vendor specific
-+data begins with a 4 byte vendor specific register for the number of DFLs followed 4 byte
-+Offset/BIR vendor specific registers for each DFL. Bits 2:0 of Offset/BIR register
-+indicates the BAR, and bits 31:3 form the 8 byte aligned offset where bits 2:0 are
-+zero.
++config FPGA_DFL_UIO_PDEV
++	tristate "FPGA DFL Driver for Userspace I/O platform devices"
++	depends on FPGA_DFL && UIO_PDRV_GENIRQ
++	help
++	  Enable this to allow some DFL drivers be written in userspace. It
++	  adds the uio_pdrv_genirq platform device with the DFL device's
++	  resources, and lets the generic UIO platform device driver provide
++	  support to userspace access to kernel interrupts and memory
++	  locations.
 +
-+        +----------------------------+
-+        |31     Number of DFLS      0|
-+        +----------------------------+
-+        |31     Offset     3|2 BIR  0|
-+        +----------------------------+
-+                      . . .
-+        +----------------------------+
-+        |31     Offset     3|2 BIR  0|
-+        +----------------------------+
-+
-+Being able to specify more than one DFL per BAR has been considered, but it
-+was determined the use case did not provide value.  Specifying a single DFL
-+per BAR simplifies the implementation and allows for extra error checking.
+ config FPGA_DFL_PCI
+ 	tristate "FPGA DFL PCIe Device Driver"
+ 	depends on PCI && FPGA_DFL
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index 18dc9885..e07b3d5 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -45,6 +45,7 @@ dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
+ dfl-afu-objs += dfl-afu-error.o
  
- Open discussion
- ===============
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index 5100695e27cd..04e47e266f26 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -27,6 +27,14 @@
- #define DRV_VERSION	"0.8"
- #define DRV_NAME	"dfl-pci"
+ obj-$(CONFIG_FPGA_DFL_NIOS_INTEL_PAC_N3000)	+= dfl-n3000-nios.o
++obj-$(CONFIG_FPGA_DFL_UIO_PDEV)	+= dfl-uio-pdev.o
  
-+#define PCI_VSEC_ID_INTEL_DFLS 0x43
+ # Drivers for FPGAs which implement DFL
+ obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
+diff --git a/drivers/fpga/dfl-uio-pdev.c b/drivers/fpga/dfl-uio-pdev.c
+new file mode 100644
+index 0000000..68ede04
+--- /dev/null
++++ b/drivers/fpga/dfl-uio-pdev.c
+@@ -0,0 +1,108 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DFL driver for Userspace I/O platform devices
++ *
++ * Copyright (C) 2020 Intel Corporation, Inc.
++ */
++#include <linux/dfl.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/uio_driver.h>
 +
-+#define PCI_VNDR_DFLS_CNT 0x8
-+#define PCI_VNDR_DFLS_RES 0xc
++#define DRIVER_NAME "dfl-uio-pdev"
 +
-+#define PCI_VNDR_DFLS_RES_BAR_MASK GENMASK(2, 0)
-+#define PCI_VNDR_DFLS_RES_OFF_MASK GENMASK(31, 3)
++static struct dfl_driver dfl_uio_pdev_driver;
 +
- struct cci_drvdata {
- 	struct dfl_fpga_cdev *cdev;	/* container device */
- };
-@@ -119,6 +127,80 @@ static int *cci_pci_create_irq_table(struct pci_dev *pcidev, unsigned int nvec)
- 	return table;
- }
- 
-+static int find_dfls_by_vsec(struct pci_dev *pcidev, struct dfl_fpga_enum_info *info)
++static int check_for_other_drv_match(struct device_driver *drv, void *data)
 +{
-+	u32 bir, offset, vndr_hdr, dfl_cnt, dfl_res;
-+	int dfl_res_off, i, bars, voff = 0;
-+	resource_size_t start, len;
++	struct dfl_driver *ddrv = to_dfl_drv(drv);
++	struct dfl_device *ddev = data;
 +
-+	while ((voff = pci_find_next_ext_capability(pcidev, voff, PCI_EXT_CAP_ID_VNDR))) {
-+		vndr_hdr = 0;
-+		pci_read_config_dword(pcidev, voff + PCI_VNDR_HEADER, &vndr_hdr);
++	/* skip myself */
++	if (ddrv == &dfl_uio_pdev_driver)
++		return 0;
 +
-+		if (PCI_VNDR_HEADER_ID(vndr_hdr) == PCI_VSEC_ID_INTEL_DFLS &&
-+		    pcidev->vendor == PCI_VENDOR_ID_INTEL)
-+			break;
-+	}
-+
-+	if (!voff) {
-+		dev_dbg(&pcidev->dev, "%s no DFL VSEC found\n", __func__);
-+		return -ENODEV;
-+	}
-+
-+	dfl_cnt = 0;
-+	pci_read_config_dword(pcidev, voff + PCI_VNDR_DFLS_CNT, &dfl_cnt);
-+	if (dfl_cnt > PCI_STD_NUM_BARS) {
-+		dev_err(&pcidev->dev, "%s too many DFLs %d > %d\n",
-+			__func__, dfl_cnt, PCI_STD_NUM_BARS);
-+		return -EINVAL;
-+	}
-+
-+	dfl_res_off = voff + PCI_VNDR_DFLS_RES;
-+	if (dfl_res_off + (dfl_cnt * sizeof(u32)) > PCI_CFG_SPACE_EXP_SIZE) {
-+		dev_err(&pcidev->dev, "%s DFL VSEC too big for PCIe config space\n",
-+			__func__);
-+		return -EINVAL;
-+	}
-+
-+	for (i = 0, bars = 0; i < dfl_cnt; i++, dfl_res_off += sizeof(u32)) {
-+		dfl_res = GENMASK(31, 0);
-+		pci_read_config_dword(pcidev, dfl_res_off, &dfl_res);
-+
-+		bir = dfl_res & PCI_VNDR_DFLS_RES_BAR_MASK;
-+		if (bir >= PCI_STD_NUM_BARS) {
-+			dev_err(&pcidev->dev, "%s bad bir number %d\n",
-+				__func__, bir);
-+			return -EINVAL;
-+		}
-+
-+		if (bars & BIT(bir)) {
-+			dev_err(&pcidev->dev, "%s DFL for BAR %d already specified\n",
-+				__func__, bir);
-+			return -EINVAL;
-+		}
-+
-+		bars |= BIT(bir);
-+
-+		len = pci_resource_len(pcidev, bir);
-+		offset = dfl_res & PCI_VNDR_DFLS_RES_OFF_MASK;
-+		if (offset >= len) {
-+			dev_err(&pcidev->dev, "%s bad offset %u >= %pa\n",
-+				__func__, offset, &len);
-+			return -EINVAL;
-+		}
-+
-+		dev_dbg(&pcidev->dev, "%s BAR %d offset 0x%x\n", __func__, bir, offset);
-+
-+		len -= offset;
-+
-+		start = pci_resource_start(pcidev, bir) + offset;
-+
-+		dfl_fpga_enum_info_add_dfl(info, start, len);
-+	}
-+
-+	return 0;
++	return dfl_match_device(ddev, ddrv);
 +}
 +
- /* default method of finding dfls starting at offset 0 of bar 0 */
- static int find_dfls_by_default(struct pci_dev *pcidev,
- 				struct dfl_fpga_enum_info *info)
-@@ -220,7 +302,10 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
- 			goto irq_free_exit;
- 	}
- 
--	ret = find_dfls_by_default(pcidev, info);
-+	ret = find_dfls_by_vsec(pcidev, info);
-+	if (ret == -ENODEV)
-+		ret = find_dfls_by_default(pcidev, info);
++static int dfl_uio_pdev_match(struct dfl_device *ddev)
++{
++	/*
++	 * If any other driver wants the device, leave the device to this other
++	 * driver.
++	 */
++	if (bus_for_each_drv(&dfl_bus_type, NULL, ddev, check_for_other_drv_match))
++		return 0;
 +
- 	if (ret)
- 		goto irq_free_exit;
++	return 1;
++}
++
++static int dfl_uio_pdev_probe(struct dfl_device *ddev)
++{
++	struct device *dev = &ddev->dev;
++	struct platform_device_info pdevinfo = { 0 };
++	struct uio_info uio_pdata = { 0 };
++	struct platform_device *uio_pdev;
++	struct resource *res;
++	int i;
++
++	pdevinfo.name = "uio_pdrv_genirq";
++
++	res = kcalloc(ddev->num_irqs + 1, sizeof(*res), GFP_KERNEL);
++	if (!res)
++		return -ENOMEM;
++
++	res[0].parent = &ddev->mmio_res;
++	res[0].flags = IORESOURCE_MEM;
++	res[0].start = ddev->mmio_res.start;
++	res[0].end = ddev->mmio_res.end;
++
++	/* then add irq resource */
++	for (i = 0; i < ddev->num_irqs; i++) {
++		res[i + 1].flags = IORESOURCE_IRQ;
++		res[i + 1].start = ddev->irqs[i];
++		res[i + 1].end = ddev->irqs[i];
++	}
++
++	uio_pdata.name = DRIVER_NAME;
++	uio_pdata.version = "0";
++
++	pdevinfo.res = res;
++	pdevinfo.num_res = ddev->num_irqs + 1;
++	pdevinfo.parent = &ddev->dev;
++	pdevinfo.id = PLATFORM_DEVID_AUTO;
++	pdevinfo.data = &uio_pdata;
++	pdevinfo.size_data = sizeof(uio_pdata);
++
++	uio_pdev = platform_device_register_full(&pdevinfo);
++	if (!IS_ERR(uio_pdev))
++		dev_set_drvdata(dev, uio_pdev);
++
++	kfree(res);
++
++	return PTR_ERR_OR_ZERO(uio_pdev);
++}
++
++static void dfl_uio_pdev_remove(struct dfl_device *ddev)
++{
++	struct platform_device *uio_pdev = dev_get_drvdata(&ddev->dev);
++
++	platform_device_unregister(uio_pdev);
++}
++
++static struct dfl_driver dfl_uio_pdev_driver = {
++	.drv	= {
++		.name       = DRIVER_NAME,
++	},
++	.match	= dfl_uio_pdev_match,
++	.probe	= dfl_uio_pdev_probe,
++	.remove	= dfl_uio_pdev_remove,
++};
++module_dfl_driver(dfl_uio_pdev_driver);
++
++MODULE_DESCRIPTION("DFL driver for Userspace I/O platform devices");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 511b20f..dd90111 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -256,12 +256,13 @@ dfl_match_one_device(const struct dfl_device_id *id, struct dfl_device *ddev)
+ 	return NULL;
+ }
  
+-static int dfl_bus_match(struct device *dev, struct device_driver *drv)
++int dfl_match_device(struct dfl_device *ddev, struct dfl_driver *ddrv)
+ {
+-	struct dfl_device *ddev = to_dfl_dev(dev);
+-	struct dfl_driver *ddrv = to_dfl_drv(drv);
+ 	const struct dfl_device_id *id_entry;
+ 
++	if (ddrv->match)
++		return ddrv->match(ddev);
++
+ 	id_entry = ddrv->id_table;
+ 	if (id_entry) {
+ 		while (id_entry->feature_id) {
+@@ -275,6 +276,15 @@ static int dfl_bus_match(struct device *dev, struct device_driver *drv)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(dfl_match_device);
++
++static int dfl_bus_match(struct device *dev, struct device_driver *drv)
++{
++	struct dfl_device *ddev = to_dfl_dev(dev);
++	struct dfl_driver *ddrv = to_dfl_drv(drv);
++
++	return dfl_match_device(ddev, ddrv);
++}
+ 
+ static int dfl_bus_probe(struct device *dev)
+ {
+@@ -328,7 +338,7 @@ static struct attribute *dfl_dev_attrs[] = {
+ };
+ ATTRIBUTE_GROUPS(dfl_dev);
+ 
+-static struct bus_type dfl_bus_type = {
++struct bus_type dfl_bus_type = {
+ 	.name		= "dfl",
+ 	.match		= dfl_bus_match,
+ 	.probe		= dfl_bus_probe,
+@@ -336,6 +346,7 @@ static struct bus_type dfl_bus_type = {
+ 	.uevent		= dfl_bus_uevent,
+ 	.dev_groups	= dfl_dev_groups,
+ };
++EXPORT_SYMBOL_GPL(dfl_bus_type);
+ 
+ static void release_dfl_dev(struct device *dev)
+ {
+@@ -469,7 +480,8 @@ static int dfl_devs_add(struct dfl_feature_platform_data *pdata)
+ 
+ int __dfl_driver_register(struct dfl_driver *dfl_drv, struct module *owner)
+ {
+-	if (!dfl_drv || !dfl_drv->probe || !dfl_drv->id_table)
++	if (!dfl_drv || !dfl_drv->probe ||
++	    (!dfl_drv->id_table && !dfl_drv->match))
+ 		return -EINVAL;
+ 
+ 	dfl_drv->drv.owner = owner;
+diff --git a/include/linux/dfl.h b/include/linux/dfl.h
+index 6cc1098..7bd97ec 100644
+--- a/include/linux/dfl.h
++++ b/include/linux/dfl.h
+@@ -11,6 +11,8 @@
+ #include <linux/device.h>
+ #include <linux/mod_devicetable.h>
+ 
++extern struct bus_type dfl_bus_type;
++
+ /**
+  * enum dfl_id_type - define the DFL FIU types
+  */
+@@ -51,6 +53,8 @@ struct dfl_device {
+  * @drv: driver model structure.
+  * @id_table: pointer to table of device IDs the driver is interested in.
+  *	      { } member terminated.
++ * @match: returns a positive value if given device can be handled by the
++ *	   driver and zero otherwise. If NULL, matching is based on id_table.
+  * @probe: mandatory callback for device binding.
+  * @remove: callback for device unbinding.
+  */
+@@ -58,6 +62,7 @@ struct dfl_driver {
+ 	struct device_driver drv;
+ 	const struct dfl_device_id *id_table;
+ 
++	int (*match)(struct dfl_device *dfl_dev);
+ 	int (*probe)(struct dfl_device *dfl_dev);
+ 	void (*remove)(struct dfl_device *dfl_dev);
+ };
+@@ -65,6 +70,8 @@ struct dfl_driver {
+ #define to_dfl_dev(d) container_of(d, struct dfl_device, dev)
+ #define to_dfl_drv(d) container_of(d, struct dfl_driver, drv)
+ 
++int dfl_match_device(struct dfl_device *ddev, struct dfl_driver *ddrv);
++
+ /*
+  * use a macro to avoid include chaining to get THIS_MODULE.
+  */
 -- 
-2.29.2
+2.7.4
 
