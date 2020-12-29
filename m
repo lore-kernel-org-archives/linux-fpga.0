@@ -7,40 +7,40 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C70BBC433E0
-	for <linux-fpga@archiver.kernel.org>; Tue, 29 Dec 2020 02:23:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96C36C4332B
+	for <linux-fpga@archiver.kernel.org>; Tue, 29 Dec 2020 02:23:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7A28420793
-	for <linux-fpga@archiver.kernel.org>; Tue, 29 Dec 2020 02:23:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 61B662079A
+	for <linux-fpga@archiver.kernel.org>; Tue, 29 Dec 2020 02:23:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727695AbgL2CWe (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 28 Dec 2020 21:22:34 -0500
+        id S1727363AbgL2CWT (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 28 Dec 2020 21:22:19 -0500
 Received: from mga14.intel.com ([192.55.52.115]:61440 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727629AbgL2CWc (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 28 Dec 2020 21:22:32 -0500
-IronPort-SDR: bqeh8TVNnNp+HGq9wxF4FuVPKMz8K+iXOnUoQLM64bMy0irijsM0Lekj3LAxSGNYcSE5y9+tf5
- mDhC2s+8Au+Q==
-X-IronPort-AV: E=McAfee;i="6000,8403,9848"; a="175672187"
+        id S1727213AbgL2CWQ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 28 Dec 2020 21:22:16 -0500
+IronPort-SDR: U5ecLMb7Gk5vpethzaHWkIS748ZPOKqCpYqHFpcKSjU2SUuk9Z0vDeLwcqn5VRwmV+xUai1pgD
+ xQ7MfvwD997w==
+X-IronPort-AV: E=McAfee;i="6000,8403,9848"; a="175672167"
 X-IronPort-AV: E=Sophos;i="5.78,456,1599548400"; 
-   d="scan'208";a="175672187"
+   d="scan'208";a="175672167"
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Dec 2020 18:21:47 -0800
-IronPort-SDR: xCPYWgwwkpdWLCxhNCy8u2h4gUo7UZT+k9/hwdYCff/dq1YuY3cwlNnJ942EY4FYMW+R2Y8+Ih
- G4rRed4qbB0A==
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Dec 2020 18:21:35 -0800
+IronPort-SDR: qOWbsqcgSBMk76dZ35iVD2kfMLL/c7TPFWhprfsANBxziac1s/OnoDDVd30yBcEXub2xCCIfOY
+ howa4v/T7FAA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.78,456,1599548400"; 
-   d="scan'208";a="419006188"
+   d="scan'208";a="419006085"
 Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.141])
-  by orsmga001.jf.intel.com with ESMTP; 28 Dec 2020 18:21:45 -0800
+  by orsmga001.jf.intel.com with ESMTP; 28 Dec 2020 18:21:33 -0800
 From:   Xu Yilun <yilun.xu@intel.com>
 To:     mdf@kernel.org, krzk@kernel.org, gregkh@linuxfoundation.org,
         linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com
-Subject: [PATCH v14 4/6] fpga: dfl: move dfl bus related APIs to include/linux/dfl.h
-Date:   Tue, 29 Dec 2020 10:16:46 +0800
-Message-Id: <1609208208-6697-5-git-send-email-yilun.xu@intel.com>
+Subject: [PATCH v14 1/6] fpga: dfl: fix the definitions of type & feature_id for dfl devices
+Date:   Tue, 29 Dec 2020 10:16:43 +0800
+Message-Id: <1609208208-6697-2-git-send-email-yilun.xu@intel.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1609208208-6697-1-git-send-email-yilun.xu@intel.com>
 References: <1609208208-6697-1-git-send-email-yilun.xu@intel.com>
@@ -48,232 +48,96 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Now the dfl drivers could be made as independent modules and put in
-different folders according to their functionalities. In order for
-scattered dfl device drivers to include dfl bus APIs, move the
-dfl bus APIs to a new header file in the public folder.
+The value of the field dfl_device.type comes from the 12 bits register
+field DFH_ID according to DFL spec. So this patch changes the definition
+of the type field to u16.
 
-[mdf@kernel.org: Fixed up header guards to match filename]
+Also it is not necessary to illustrate the valid bits of the type field
+in comments. Instead we should explicitly define the possible values in
+the enumeration type for it, because they are shared by hardware spec.
+We should not let the compiler decide these values.
+
+Similar changes are also applied to dfl_device.feature_id.
+
+This patch also fixed the MODALIAS format according to the changes
+above.
+
 Signed-off-by: Xu Yilun <yilun.xu@intel.com>
 Reviewed-by: Tom Rix <trix@redhat.com>
-Acked-by: Wu Hao <hao.wu@intel.com>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
-v2: updated the MAINTAINERS under FPGA DFL DRIVERS
-    improve the comments
-    rename the dfl-bus.h to dfl.h
-v3: rebase the patch for previous changes
-v9: rebase the patch for bus name changes back to "dfl"
-v10: move the head file from inlude/linux/fpga to include/linux
+v9: no change
+v10: no change
 v11: no change
-v12: Fixed up header guards to match filename by Moritz
+v12: no change
 v13: no change
 v14: no change, rebase to 5.11-rc1
 ---
- MAINTAINERS         |  1 +
- drivers/fpga/dfl.c  |  1 +
- drivers/fpga/dfl.h  | 72 --------------------------------------------
- include/linux/dfl.h | 86 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 88 insertions(+), 72 deletions(-)
- create mode 100644 include/linux/dfl.h
+ drivers/fpga/dfl.c |  3 +--
+ drivers/fpga/dfl.h | 14 +++++++-------
+ 2 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 546aa66..a044b58 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6957,6 +6957,7 @@ S:	Maintained
- F:	Documentation/ABI/testing/sysfs-bus-dfl
- F:	Documentation/fpga/dfl.rst
- F:	drivers/fpga/dfl*
-+F:	include/linux/dfl.h
- F:	include/uapi/linux/fpga-dfl.h
- 
- FPGA MANAGER FRAMEWORK
 diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 5a6ba3b..511b20f 100644
+index b450870..5a6ba3b 100644
 --- a/drivers/fpga/dfl.c
 +++ b/drivers/fpga/dfl.c
-@@ -10,6 +10,7 @@
-  *   Wu Hao <hao.wu@intel.com>
-  *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
-  */
-+#include <linux/dfl.h>
- #include <linux/fpga-dfl.h>
- #include <linux/module.h>
- #include <linux/uaccess.h>
+@@ -298,8 +298,7 @@ static int dfl_bus_uevent(struct device *dev, struct kobj_uevent_env *env)
+ {
+ 	struct dfl_device *ddev = to_dfl_dev(dev);
+ 
+-	/* The type has 4 valid bits and feature_id has 12 valid bits */
+-	return add_uevent_var(env, "MODALIAS=dfl:t%01Xf%03X",
++	return add_uevent_var(env, "MODALIAS=dfl:t%04Xf%04X",
+ 			      ddev->type, ddev->feature_id);
+ }
+ 
 diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 549c790..2b82c96 100644
+index 5dc758f..ac373b1 100644
 --- a/drivers/fpga/dfl.h
 +++ b/drivers/fpga/dfl.h
-@@ -517,76 +517,4 @@ long dfl_feature_ioctl_set_irq(struct platform_device *pdev,
- 			       struct dfl_feature *feature,
- 			       unsigned long arg);
- 
--/**
-- * enum dfl_id_type - define the DFL FIU types
-- */
--enum dfl_id_type {
--	FME_ID = 0,
--	PORT_ID = 1,
--	DFL_ID_MAX,
--};
--
--/**
-- * struct dfl_device - represent an dfl device on dfl bus
-- *
-- * @dev: generic device interface.
-- * @id: id of the dfl device.
-- * @type: type of DFL FIU of the device. See enum dfl_id_type.
-- * @feature_id: feature identifier local to its DFL FIU type.
-- * @mmio_res: mmio resource of this dfl device.
-- * @irqs: list of Linux IRQ numbers of this dfl device.
-- * @num_irqs: number of IRQs supported by this dfl device.
-- * @cdev: pointer to DFL FPGA container device this dfl device belongs to.
-- * @id_entry: matched id entry in dfl driver's id table.
-- */
--struct dfl_device {
--	struct device dev;
--	int id;
--	u16 type;
--	u16 feature_id;
--	struct resource mmio_res;
--	int *irqs;
--	unsigned int num_irqs;
--	struct dfl_fpga_cdev *cdev;
--	const struct dfl_device_id *id_entry;
--};
--
--/**
-- * struct dfl_driver - represent an dfl device driver
-- *
-- * @drv: driver model structure.
-- * @id_table: pointer to table of device IDs the driver is interested in.
-- *	      { } member terminated.
-- * @probe: mandatory callback for device binding.
-- * @remove: callback for device unbinding.
-- */
--struct dfl_driver {
--	struct device_driver drv;
--	const struct dfl_device_id *id_table;
--
--	int (*probe)(struct dfl_device *dfl_dev);
--	void (*remove)(struct dfl_device *dfl_dev);
--};
--
--#define to_dfl_dev(d) container_of(d, struct dfl_device, dev)
--#define to_dfl_drv(d) container_of(d, struct dfl_driver, drv)
--
--/*
-- * use a macro to avoid include chaining to get THIS_MODULE.
-- */
--#define dfl_driver_register(drv) \
--	__dfl_driver_register(drv, THIS_MODULE)
--int __dfl_driver_register(struct dfl_driver *dfl_drv, struct module *owner);
--void dfl_driver_unregister(struct dfl_driver *dfl_drv);
--
--/*
-- * module_dfl_driver() - Helper macro for drivers that don't do
-- * anything special in module init/exit.  This eliminates a lot of
-- * boilerplate.  Each module may only use this macro once, and
-- * calling it replaces module_init() and module_exit().
-- */
--#define module_dfl_driver(__dfl_driver) \
--	module_driver(__dfl_driver, dfl_driver_register, \
--		      dfl_driver_unregister)
--
- #endif /* __FPGA_DFL_H */
-diff --git a/include/linux/dfl.h b/include/linux/dfl.h
-new file mode 100644
-index 0000000..6cc1098
---- /dev/null
-+++ b/include/linux/dfl.h
-@@ -0,0 +1,86 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Header file for DFL driver and device API
-+ *
-+ * Copyright (C) 2020 Intel Corporation, Inc.
-+ */
-+
-+#ifndef __LINUX_DFL_H
-+#define __LINUX_DFL_H
-+
-+#include <linux/device.h>
-+#include <linux/mod_devicetable.h>
-+
-+/**
-+ * enum dfl_id_type - define the DFL FIU types
-+ */
-+enum dfl_id_type {
+@@ -520,19 +520,19 @@ long dfl_feature_ioctl_set_irq(struct platform_device *pdev,
+  * enum dfl_id_type - define the DFL FIU types
+  */
+ enum dfl_id_type {
+-	FME_ID,
+-	PORT_ID,
 +	FME_ID = 0,
 +	PORT_ID = 1,
-+	DFL_ID_MAX,
-+};
-+
-+/**
-+ * struct dfl_device - represent an dfl device on dfl bus
-+ *
-+ * @dev: generic device interface.
-+ * @id: id of the dfl device.
-+ * @type: type of DFL FIU of the device. See enum dfl_id_type.
+ 	DFL_ID_MAX,
+ };
+ 
+ /**
+  * struct dfl_device_id -  dfl device identifier
+- * @type: contains 4 bits DFL FIU type of the device. See enum dfl_id_type.
+- * @feature_id: contains 12 bits feature identifier local to its DFL FIU type.
++ * @type: DFL FIU type of the device. See enum dfl_id_type.
 + * @feature_id: feature identifier local to its DFL FIU type.
-+ * @mmio_res: mmio resource of this dfl device.
-+ * @irqs: list of Linux IRQ numbers of this dfl device.
-+ * @num_irqs: number of IRQs supported by this dfl device.
-+ * @cdev: pointer to DFL FPGA container device this dfl device belongs to.
-+ * @id_entry: matched id entry in dfl driver's id table.
-+ */
-+struct dfl_device {
-+	struct device dev;
-+	int id;
+  * @driver_data: driver specific data.
+  */
+ struct dfl_device_id {
+-	u8 type;
 +	u16 type;
-+	u16 feature_id;
-+	struct resource mmio_res;
-+	int *irqs;
-+	unsigned int num_irqs;
-+	struct dfl_fpga_cdev *cdev;
-+	const struct dfl_device_id *id_entry;
-+};
-+
-+/**
-+ * struct dfl_driver - represent an dfl device driver
-+ *
-+ * @drv: driver model structure.
-+ * @id_table: pointer to table of device IDs the driver is interested in.
-+ *	      { } member terminated.
-+ * @probe: mandatory callback for device binding.
-+ * @remove: callback for device unbinding.
-+ */
-+struct dfl_driver {
-+	struct device_driver drv;
-+	const struct dfl_device_id *id_table;
-+
-+	int (*probe)(struct dfl_device *dfl_dev);
-+	void (*remove)(struct dfl_device *dfl_dev);
-+};
-+
-+#define to_dfl_dev(d) container_of(d, struct dfl_device, dev)
-+#define to_dfl_drv(d) container_of(d, struct dfl_driver, drv)
-+
-+/*
-+ * use a macro to avoid include chaining to get THIS_MODULE.
-+ */
-+#define dfl_driver_register(drv) \
-+	__dfl_driver_register(drv, THIS_MODULE)
-+int __dfl_driver_register(struct dfl_driver *dfl_drv, struct module *owner);
-+void dfl_driver_unregister(struct dfl_driver *dfl_drv);
-+
-+/*
-+ * module_dfl_driver() - Helper macro for drivers that don't do
-+ * anything special in module init/exit.  This eliminates a lot of
-+ * boilerplate.  Each module may only use this macro once, and
-+ * calling it replaces module_init() and module_exit().
-+ */
-+#define module_dfl_driver(__dfl_driver) \
-+	module_driver(__dfl_driver, dfl_driver_register, \
-+		      dfl_driver_unregister)
-+
-+#endif /* __LINUX_DFL_H */
+ 	u16 feature_id;
+ 	unsigned long driver_data;
+ };
+@@ -543,7 +543,7 @@ struct dfl_device_id {
+  * @dev: generic device interface.
+  * @id: id of the dfl device.
+  * @type: type of DFL FIU of the device. See enum dfl_id_type.
+- * @feature_id: 16 bits feature identifier local to its DFL FIU type.
++ * @feature_id: feature identifier local to its DFL FIU type.
+  * @mmio_res: mmio resource of this dfl device.
+  * @irqs: list of Linux IRQ numbers of this dfl device.
+  * @num_irqs: number of IRQs supported by this dfl device.
+@@ -553,7 +553,7 @@ struct dfl_device_id {
+ struct dfl_device {
+ 	struct device dev;
+ 	int id;
+-	u8 type;
++	u16 type;
+ 	u16 feature_id;
+ 	struct resource mmio_res;
+ 	int *irqs;
 -- 
 2.7.4
 
