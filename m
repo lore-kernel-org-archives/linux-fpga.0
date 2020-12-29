@@ -2,122 +2,133 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED1E3C433E0
-	for <linux-fpga@archiver.kernel.org>; Tue, 29 Dec 2020 02:22:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1AAFC433E6
+	for <linux-fpga@archiver.kernel.org>; Tue, 29 Dec 2020 02:22:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AB5FF207DE
-	for <linux-fpga@archiver.kernel.org>; Tue, 29 Dec 2020 02:22:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 79618207A9
+	for <linux-fpga@archiver.kernel.org>; Tue, 29 Dec 2020 02:22:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727217AbgL2CWM (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 28 Dec 2020 21:22:12 -0500
+        id S1727630AbgL2CW3 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 28 Dec 2020 21:22:29 -0500
 Received: from mga14.intel.com ([192.55.52.115]:61435 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727213AbgL2CWM (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 28 Dec 2020 21:22:12 -0500
-IronPort-SDR: WFuB7dVkneKz5TKG4lpaFqj40Uj1SbsDYQukyXEv96Gm+mkosjtSydFKWCFSNC0LRJvn69WiFV
- /+q1F6nPbXRA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9848"; a="175672159"
+        id S1727629AbgL2CW2 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 28 Dec 2020 21:22:28 -0500
+IronPort-SDR: ZI2/Ps4baGRXNmUXlE4KzxfEA0q1vss3Dy8sF172oZ7RrlH1V1x7SSkHQz6GecjvJEXEFtXj6B
+ fMBu7NT79VxQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9848"; a="175672179"
 X-IronPort-AV: E=Sophos;i="5.78,456,1599548400"; 
-   d="scan'208";a="175672159"
+   d="scan'208";a="175672179"
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Dec 2020 18:21:31 -0800
-IronPort-SDR: 6v1FP23WRj3IXNCDP4lNIB7ejLIBkLRjkk8ditc1hOeKz9lWBAyRsx2Pqea6dQ2Iqv+GDNA8J/
- y0sqf30B8iQA==
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Dec 2020 18:21:43 -0800
+IronPort-SDR: 9BbhMvSPvMoYBi/mVDV2kviNqKsRCEODWhGPKIbsm1IWssC+sdnLqbSqQ8JAlhfFLABtIEPOj/
+ dT7h1U9nnsdA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.78,456,1599548400"; 
-   d="scan'208";a="419006047"
+   d="scan'208";a="419006156"
 Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.141])
-  by orsmga001.jf.intel.com with ESMTP; 28 Dec 2020 18:21:29 -0800
+  by orsmga001.jf.intel.com with ESMTP; 28 Dec 2020 18:21:41 -0800
 From:   Xu Yilun <yilun.xu@intel.com>
 To:     mdf@kernel.org, krzk@kernel.org, gregkh@linuxfoundation.org,
         linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
-        hao.wu@intel.com
-Subject: [PATCH v14 0/6] add DFL bus support to MODULE_DEVICE_TABLE()
-Date:   Tue, 29 Dec 2020 10:16:42 +0800
-Message-Id: <1609208208-6697-1-git-send-email-yilun.xu@intel.com>
+        hao.wu@intel.com,
+        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        Russ Weight <russell.h.weight@intel.com>
+Subject: [PATCH v14 3/6] fpga: dfl: add dfl bus support to MODULE_DEVICE_TABLE()
+Date:   Tue, 29 Dec 2020 10:16:45 +0800
+Message-Id: <1609208208-6697-4-git-send-email-yilun.xu@intel.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1609208208-6697-1-git-send-email-yilun.xu@intel.com>
+References: <1609208208-6697-1-git-send-email-yilun.xu@intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Main changes from v1:
-- A new patch (Patch #3) to fix the description.
-- Rename the dfl-bus.h to dfl.h
-- Updated the MAINTAINERS under FPGA DFL DRIVERS.
-- Improve comments and minor fixes.
+Device Feature List (DFL) is a linked list of feature headers within the
+device MMIO space. It is used by FPGA to enumerate multiple sub features
+within it. Each feature can be uniquely identified by DFL type and
+feature id, which can be read out from feature headers.
 
-Main changes from v2:
-- Change the bus name from "dfl" to "fpga-dfl", also rename related
-  variables, functions ...
-- Changes the data type of fpga_dfl_device_id.type from u8 to u16
-- Explicitly defines the values of enum fpga_dfl_id_type
-- Delete the comments for the valid bits of type & feature_id
-- changes MODALIAS format for fpga dfl devices
+A dfl bus helps DFL framework modularize DFL device drivers for
+different sub features. The dfl bus matches its devices and drivers by
+DFL type and feature id.
 
-Main changes from v3:
-- Change the bus name back to "dfl".
-- Add 2 patches (#5, 6) for dfl drivers.
-- Delete the retimer FEC mode configuration via module_parameter for
-  Patch #5
-- Merge the patch "Make m10_n3000_info static" (https://lore.kernel.org/linux-fpga/52d8411e-13d8-1e91-756d-131802f5f445@huawei.com/T/#t)
-  into Patch #5
-- Add static prefix for emif attributes macro for Patch #6
+This patch adds dfl bus support to MODULE_DEVICE_TABLE() by adding info
+about struct dfl_device_id in devicetable-offsets.c and add a dfl entry
+point in file2alias.c.
 
-Main changes from v9:
-- Add the description for struct dfl_device_id in mod_devicetable.h
-- Move the dfl.h from include/linux/fpga to include/linux
-- some code refactor and minor fixes for dfl-n3000-nios
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+---
+v2: add comments for the format of modalias
+v3: changes the names from dfl_XXX to fpga_dfl_XXX
+    delete the comments of valid bits for modalias format
+v9: rebase the patch for bus name changes back to "dfl"
+v10: no change
+v11: no change
+v12: no change
+v13: no change
+v14: no change, rebase to 5.11-rc1
+---
+ scripts/mod/devicetable-offsets.c |  4 ++++
+ scripts/mod/file2alias.c          | 13 +++++++++++++
+ 2 files changed, 17 insertions(+)
 
-Main changes from v10:
-- use sysfs_emit instead of sprintf for both patches
-- rebase to 5.10-rc1
-
-Main changes from v11:
-- Fix the type of driver_data from unsigned long to kernel_ulong_t
-- Fixed up header guards to match filename by Moritz
-- move the MODULE_DEVICE_TABLE() right after its definition
-
-Main changes from v12:
-- For patch #5, fix the wrong use of logical'||', should use '|'
-
-Main changes from v13:
-- Rebase to 5.11-rc1
-
-Xu Yilun (6):
-  fpga: dfl: fix the definitions of type & feature_id for dfl devices
-  fpga: dfl: move dfl_device_id to mod_devicetable.h
-  fpga: dfl: add dfl bus support to MODULE_DEVICE_TABLE()
-  fpga: dfl: move dfl bus related APIs to include/linux/dfl.h
-  fpga: dfl: add support for N3000 Nios private feature
-  memory: dfl-emif: add the DFL EMIF private feature driver
-
- .../ABI/testing/sysfs-bus-dfl-devices-emif         |  25 +
- .../ABI/testing/sysfs-bus-dfl-devices-n3000-nios   |  47 ++
- MAINTAINERS                                        |   3 +-
- drivers/fpga/Kconfig                               |  11 +
- drivers/fpga/Makefile                              |   2 +
- drivers/fpga/dfl-n3000-nios.c                      | 588 +++++++++++++++++++++
- drivers/fpga/dfl.c                                 |   4 +-
- drivers/fpga/dfl.h                                 |  85 +--
- drivers/memory/Kconfig                             |   9 +
- drivers/memory/Makefile                            |   2 +
- drivers/memory/dfl-emif.c                          | 207 ++++++++
- include/linux/dfl.h                                |  86 +++
- include/linux/mod_devicetable.h                    |  24 +
- scripts/mod/devicetable-offsets.c                  |   4 +
- scripts/mod/file2alias.c                           |  13 +
- 15 files changed, 1023 insertions(+), 87 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-dfl-devices-emif
- create mode 100644 Documentation/ABI/testing/sysfs-bus-dfl-devices-n3000-nios
- create mode 100644 drivers/fpga/dfl-n3000-nios.c
- create mode 100644 drivers/memory/dfl-emif.c
- create mode 100644 include/linux/dfl.h
-
+diff --git a/scripts/mod/devicetable-offsets.c b/scripts/mod/devicetable-offsets.c
+index e377f52..1b14f3c 100644
+--- a/scripts/mod/devicetable-offsets.c
++++ b/scripts/mod/devicetable-offsets.c
+@@ -246,5 +246,9 @@ int main(void)
+ 	DEVID(auxiliary_device_id);
+ 	DEVID_FIELD(auxiliary_device_id, name);
+ 
++	DEVID(dfl_device_id);
++	DEVID_FIELD(dfl_device_id, type);
++	DEVID_FIELD(dfl_device_id, feature_id);
++
+ 	return 0;
+ }
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index fb48270..7ebabeb 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -1375,6 +1375,18 @@ static int do_auxiliary_entry(const char *filename, void *symval, char *alias)
+ 	return 1;
+ }
+ 
++/* Looks like: dfl:tNfN */
++static int do_dfl_entry(const char *filename, void *symval, char *alias)
++{
++	DEF_FIELD(symval, dfl_device_id, type);
++	DEF_FIELD(symval, dfl_device_id, feature_id);
++
++	sprintf(alias, "dfl:t%04Xf%04X", type, feature_id);
++
++	add_wildcard(alias);
++	return 1;
++}
++
+ /* Does namelen bytes of name exactly match the symbol? */
+ static bool sym_is(const char *name, unsigned namelen, const char *symbol)
+ {
+@@ -1450,6 +1462,7 @@ static const struct devtable devtable[] = {
+ 	{"wmi", SIZE_wmi_device_id, do_wmi_entry},
+ 	{"mhi", SIZE_mhi_device_id, do_mhi_entry},
+ 	{"auxiliary", SIZE_auxiliary_device_id, do_auxiliary_entry},
++	{"dfl", SIZE_dfl_device_id, do_dfl_entry},
+ };
+ 
+ /* Create MODULE_ALIAS() statements.
 -- 
 2.7.4
 
