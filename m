@@ -3,53 +3,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 666E8C433E9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8AE9C4332B
 	for <linux-fpga@archiver.kernel.org>; Thu,  7 Jan 2021 04:39:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 262AC23123
+	by mail.kernel.org (Postfix) with ESMTP id A39FD22EBF
 	for <linux-fpga@archiver.kernel.org>; Thu,  7 Jan 2021 04:39:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726981AbhAGEjH (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 6 Jan 2021 23:39:07 -0500
-Received: from mail-pl1-f174.google.com ([209.85.214.174]:39500 "EHLO
-        mail-pl1-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726507AbhAGEjD (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 6 Jan 2021 23:39:03 -0500
-Received: by mail-pl1-f174.google.com with SMTP id x18so2853933pln.6;
-        Wed, 06 Jan 2021 20:38:47 -0800 (PST)
+        id S1727198AbhAGEjP (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 6 Jan 2021 23:39:15 -0500
+Received: from mail-pg1-f177.google.com ([209.85.215.177]:33509 "EHLO
+        mail-pg1-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726999AbhAGEjL (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 6 Jan 2021 23:39:11 -0500
+Received: by mail-pg1-f177.google.com with SMTP id n25so4017408pgb.0;
+        Wed, 06 Jan 2021 20:38:56 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=NwmWunHGhkPrYk7MHr8GcLmC4MK/zPG197Zcurd95FY=;
-        b=HgT3j+5HEfCdUJLm9gCAgF8UfxT9nMqhRD9IzTTdmTSJJTUxGvas+5coWNeQY0xoSD
-         jTuMdGSFgdMZzbGAhvrZccFikaHUCxz1/75loHvYXSzDhRHFbnbnGa56Gf9YkOdbg4+q
-         KZAKC4xh3m1x9hJ1ePvSEmcfMT3qEP+iawlfWJTneHPPT95OSIFhKmuYuas+iSTjCzRW
-         mFenv3DHg31AulHZJHyy3FMABME1gVp3BCIghiE1PXFSAfzZxQEreeHcgaayuITZnOpM
-         rJwxr1SXKJP8W5rt1tjRewjO5I0EX6uh+TlEtEi1NZ5Om2vuevNuSUz0YRuSK+9jSiSQ
-         Zltw==
-X-Gm-Message-State: AOAM5323pjSkjlGi/PcQ3LW84qghjh00GqVybB5ObZlbIbWrXxvmlBYJ
-        DV08paRlj7aepOE+TiJ8hgw=
-X-Google-Smtp-Source: ABdhPJwq0DH0ruhCLHSXwIHQrggZ9rAfy8TWY6+CmYy7t4GyB2KYW9D90rXD2eKhoehgdFFFBEq15A==
-X-Received: by 2002:a17:90a:9707:: with SMTP id x7mr7616920pjo.72.1609994302067;
-        Wed, 06 Jan 2021 20:38:22 -0800 (PST)
+        bh=TBDTjLqXnjue+H1Lja895qZAu8uFy98gC5n0j5B6d4M=;
+        b=SKAKU4d6KCBDH7nAYjDl8+/3JSfz9MCi5wLpRI9lIM26gbPnwqojSm4pmTkWc7rV/9
+         M/xXOce2QgjMfHOSI9ZnATaO5/iiOq3gXcjuv0UOj/qT8Ara9gjZVhYpBF7oHXDuqn0o
+         1oGDR54u/v/txYYBD71hTyipXU5erXLQkx2CNYZnDBqImMy+ohHO9w+tL3FUUOw8I3Xa
+         /2v6B+Q51FbwP6gGivv/WdNjdmQRY0e51WY/PAbBTebbfC77OPtOu2gsO6e+fq1j3ilY
+         BuZpWYhlW56oCHYp9UXeplun9h+O694XmEk7DBdwwR/ggTEe043QEGRYmxTNJ1UzE8Zk
+         6ONg==
+X-Gm-Message-State: AOAM531A5G3o6kl50RG9pk4PCtPd5P6szFuoDMyNMkwyr7zJWXodGELJ
+        c98ickGfO+gNV5JkM5M62Vw=
+X-Google-Smtp-Source: ABdhPJxpo9CKi2FU2HUgPnNycKRDfRKK62Atv5Kec9SyOM1iqf+7K0xVLoZM8EMJdevhCI/zRPKsvw==
+X-Received: by 2002:a62:7b84:0:b029:19c:7146:4bbb with SMTP id w126-20020a627b840000b029019c71464bbbmr7239661pfc.52.1609994310683;
+        Wed, 06 Jan 2021 20:38:30 -0800 (PST)
 Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
-        by smtp.gmail.com with ESMTPSA id ft19sm3538884pjb.44.2021.01.06.20.38.20
+        by smtp.gmail.com with ESMTPSA id ay21sm539408pjb.1.2021.01.06.20.38.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 Jan 2021 20:38:21 -0800 (PST)
+        Wed, 06 Jan 2021 20:38:30 -0800 (PST)
 From:   Moritz Fischer <mdf@kernel.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         trix@redhat.com, moritzf@google.com,
-        Moritz Fischer <mdf@kernel.org>,
-        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
         Wu Hao <hao.wu@intel.com>
-Subject: [PATCH 1/8] fpga: dfl: refactor cci_enumerate_feature_devs()
-Date:   Wed,  6 Jan 2021 20:37:07 -0800
-Message-Id: <20210107043714.991646-2-mdf@kernel.org>
+Subject: [PATCH 6/8] fpga: dfl: move dfl bus related APIs to include/linux/dfl.h
+Date:   Wed,  6 Jan 2021 20:37:12 -0800
+Message-Id: <20210107043714.991646-7-mdf@kernel.org>
 X-Mailer: git-send-email 2.30.0
 In-Reply-To: <20210107043714.991646-1-mdf@kernel.org>
 References: <20210107043714.991646-1-mdf@kernel.org>
@@ -59,133 +58,223 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+From: Xu Yilun <yilun.xu@intel.com>
 
-In preparation of looking for dfls based on a vendor specific pci
-capability, move the code for the default method of finding the first
-dfl at offset 0 of Bar 0 to its own function.
+Now the dfl drivers could be made as independent modules and put in
+different folders according to their functionalities. In order for
+scattered dfl device drivers to include dfl bus APIs, move the
+dfl bus APIs to a new header file in the public folder.
 
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+[mdf@kernel.org: Fixed up header guards to match filename]
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+Reviewed-by: Tom Rix <trix@redhat.com>
 Acked-by: Wu Hao <hao.wu@intel.com>
 Signed-off-by: Moritz Fischer <mdf@kernel.org>
 ---
- drivers/fpga/dfl-pci.c | 84 +++++++++++++++++++++++-------------------
- 1 file changed, 47 insertions(+), 37 deletions(-)
+ MAINTAINERS         |  1 +
+ drivers/fpga/dfl.c  |  1 +
+ drivers/fpga/dfl.h  | 72 -------------------------------------
+ include/linux/dfl.h | 86 +++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 88 insertions(+), 72 deletions(-)
+ create mode 100644 include/linux/dfl.h
 
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index a2203d03c9e2..5100695e27cd 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -119,49 +119,20 @@ static int *cci_pci_create_irq_table(struct pci_dev *pcidev, unsigned int nvec)
- 	return table;
- }
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 546aa66428c9..a044b58eb9ac 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6957,6 +6957,7 @@ S:	Maintained
+ F:	Documentation/ABI/testing/sysfs-bus-dfl
+ F:	Documentation/fpga/dfl.rst
+ F:	drivers/fpga/dfl*
++F:	include/linux/dfl.h
+ F:	include/uapi/linux/fpga-dfl.h
  
--/* enumerate feature devices under pci device */
--static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
-+/* default method of finding dfls starting at offset 0 of bar 0 */
-+static int find_dfls_by_default(struct pci_dev *pcidev,
-+				struct dfl_fpga_enum_info *info)
- {
--	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
--	int port_num, bar, i, nvec, ret = 0;
--	struct dfl_fpga_enum_info *info;
+ FPGA MANAGER FRAMEWORK
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 5a6ba3b2fa05..511b20ff35a3 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -10,6 +10,7 @@
+  *   Wu Hao <hao.wu@intel.com>
+  *   Xiao Guangrong <guangrong.xiao@linux.intel.com>
+  */
++#include <linux/dfl.h>
+ #include <linux/fpga-dfl.h>
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 549c7900dcfd..2b82c96ba56c 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -517,76 +517,4 @@ long dfl_feature_ioctl_set_irq(struct platform_device *pdev,
+ 			       struct dfl_feature *feature,
+ 			       unsigned long arg);
+ 
+-/**
+- * enum dfl_id_type - define the DFL FIU types
+- */
+-enum dfl_id_type {
+-	FME_ID = 0,
+-	PORT_ID = 1,
+-	DFL_ID_MAX,
+-};
+-
+-/**
+- * struct dfl_device - represent an dfl device on dfl bus
+- *
+- * @dev: generic device interface.
+- * @id: id of the dfl device.
+- * @type: type of DFL FIU of the device. See enum dfl_id_type.
+- * @feature_id: feature identifier local to its DFL FIU type.
+- * @mmio_res: mmio resource of this dfl device.
+- * @irqs: list of Linux IRQ numbers of this dfl device.
+- * @num_irqs: number of IRQs supported by this dfl device.
+- * @cdev: pointer to DFL FPGA container device this dfl device belongs to.
+- * @id_entry: matched id entry in dfl driver's id table.
+- */
+-struct dfl_device {
+-	struct device dev;
+-	int id;
+-	u16 type;
+-	u16 feature_id;
+-	struct resource mmio_res;
+-	int *irqs;
+-	unsigned int num_irqs;
 -	struct dfl_fpga_cdev *cdev;
-+	int port_num, bar, i, ret = 0;
- 	resource_size_t start, len;
- 	void __iomem *base;
--	int *irq_table;
- 	u32 offset;
- 	u64 v;
- 
--	/* allocate enumeration info via pci_dev */
--	info = dfl_fpga_enum_info_alloc(&pcidev->dev);
--	if (!info)
--		return -ENOMEM;
+-	const struct dfl_device_id *id_entry;
+-};
 -
--	/* add irq info for enumeration if the device support irq */
--	nvec = cci_pci_alloc_irq(pcidev);
--	if (nvec < 0) {
--		dev_err(&pcidev->dev, "Fail to alloc irq %d.\n", nvec);
--		ret = nvec;
--		goto enum_info_free_exit;
--	} else if (nvec) {
--		irq_table = cci_pci_create_irq_table(pcidev, nvec);
--		if (!irq_table) {
--			ret = -ENOMEM;
--			goto irq_free_exit;
--		}
+-/**
+- * struct dfl_driver - represent an dfl device driver
+- *
+- * @drv: driver model structure.
+- * @id_table: pointer to table of device IDs the driver is interested in.
+- *	      { } member terminated.
+- * @probe: mandatory callback for device binding.
+- * @remove: callback for device unbinding.
+- */
+-struct dfl_driver {
+-	struct device_driver drv;
+-	const struct dfl_device_id *id_table;
 -
--		ret = dfl_fpga_enum_info_add_irq(info, nvec, irq_table);
--		kfree(irq_table);
--		if (ret)
--			goto irq_free_exit;
--	}
+-	int (*probe)(struct dfl_device *dfl_dev);
+-	void (*remove)(struct dfl_device *dfl_dev);
+-};
 -
--	/* start to find Device Feature List in Bar 0 */
-+	/* start to find Device Feature List from Bar 0 */
- 	base = cci_pci_ioremap_bar0(pcidev);
--	if (!base) {
--		ret = -ENOMEM;
--		goto irq_free_exit;
--	}
-+	if (!base)
-+		return -ENOMEM;
- 
- 	/*
- 	 * PF device has FME and Ports/AFUs, and VF device only has one
-@@ -208,12 +179,51 @@ static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
- 		dfl_fpga_enum_info_add_dfl(info, start, len);
- 	} else {
- 		ret = -ENODEV;
--		goto irq_free_exit;
- 	}
- 
- 	/* release I/O mappings for next step enumeration */
- 	pcim_iounmap_regions(pcidev, BIT(0));
- 
-+	return ret;
-+}
+-#define to_dfl_dev(d) container_of(d, struct dfl_device, dev)
+-#define to_dfl_drv(d) container_of(d, struct dfl_driver, drv)
+-
+-/*
+- * use a macro to avoid include chaining to get THIS_MODULE.
+- */
+-#define dfl_driver_register(drv) \
+-	__dfl_driver_register(drv, THIS_MODULE)
+-int __dfl_driver_register(struct dfl_driver *dfl_drv, struct module *owner);
+-void dfl_driver_unregister(struct dfl_driver *dfl_drv);
+-
+-/*
+- * module_dfl_driver() - Helper macro for drivers that don't do
+- * anything special in module init/exit.  This eliminates a lot of
+- * boilerplate.  Each module may only use this macro once, and
+- * calling it replaces module_init() and module_exit().
+- */
+-#define module_dfl_driver(__dfl_driver) \
+-	module_driver(__dfl_driver, dfl_driver_register, \
+-		      dfl_driver_unregister)
+-
+ #endif /* __FPGA_DFL_H */
+diff --git a/include/linux/dfl.h b/include/linux/dfl.h
+new file mode 100644
+index 000000000000..6cc10982351a
+--- /dev/null
++++ b/include/linux/dfl.h
+@@ -0,0 +1,86 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Header file for DFL driver and device API
++ *
++ * Copyright (C) 2020 Intel Corporation, Inc.
++ */
 +
-+/* enumerate feature devices under pci device */
-+static int cci_enumerate_feature_devs(struct pci_dev *pcidev)
-+{
-+	struct cci_drvdata *drvdata = pci_get_drvdata(pcidev);
-+	struct dfl_fpga_enum_info *info;
++#ifndef __LINUX_DFL_H
++#define __LINUX_DFL_H
++
++#include <linux/device.h>
++#include <linux/mod_devicetable.h>
++
++/**
++ * enum dfl_id_type - define the DFL FIU types
++ */
++enum dfl_id_type {
++	FME_ID = 0,
++	PORT_ID = 1,
++	DFL_ID_MAX,
++};
++
++/**
++ * struct dfl_device - represent an dfl device on dfl bus
++ *
++ * @dev: generic device interface.
++ * @id: id of the dfl device.
++ * @type: type of DFL FIU of the device. See enum dfl_id_type.
++ * @feature_id: feature identifier local to its DFL FIU type.
++ * @mmio_res: mmio resource of this dfl device.
++ * @irqs: list of Linux IRQ numbers of this dfl device.
++ * @num_irqs: number of IRQs supported by this dfl device.
++ * @cdev: pointer to DFL FPGA container device this dfl device belongs to.
++ * @id_entry: matched id entry in dfl driver's id table.
++ */
++struct dfl_device {
++	struct device dev;
++	int id;
++	u16 type;
++	u16 feature_id;
++	struct resource mmio_res;
++	int *irqs;
++	unsigned int num_irqs;
 +	struct dfl_fpga_cdev *cdev;
-+	int nvec, ret = 0;
-+	int *irq_table;
++	const struct dfl_device_id *id_entry;
++};
 +
-+	/* allocate enumeration info via pci_dev */
-+	info = dfl_fpga_enum_info_alloc(&pcidev->dev);
-+	if (!info)
-+		return -ENOMEM;
++/**
++ * struct dfl_driver - represent an dfl device driver
++ *
++ * @drv: driver model structure.
++ * @id_table: pointer to table of device IDs the driver is interested in.
++ *	      { } member terminated.
++ * @probe: mandatory callback for device binding.
++ * @remove: callback for device unbinding.
++ */
++struct dfl_driver {
++	struct device_driver drv;
++	const struct dfl_device_id *id_table;
 +
-+	/* add irq info for enumeration if the device support irq */
-+	nvec = cci_pci_alloc_irq(pcidev);
-+	if (nvec < 0) {
-+		dev_err(&pcidev->dev, "Fail to alloc irq %d.\n", nvec);
-+		ret = nvec;
-+		goto enum_info_free_exit;
-+	} else if (nvec) {
-+		irq_table = cci_pci_create_irq_table(pcidev, nvec);
-+		if (!irq_table) {
-+			ret = -ENOMEM;
-+			goto irq_free_exit;
-+		}
++	int (*probe)(struct dfl_device *dfl_dev);
++	void (*remove)(struct dfl_device *dfl_dev);
++};
 +
-+		ret = dfl_fpga_enum_info_add_irq(info, nvec, irq_table);
-+		kfree(irq_table);
-+		if (ret)
-+			goto irq_free_exit;
-+	}
++#define to_dfl_dev(d) container_of(d, struct dfl_device, dev)
++#define to_dfl_drv(d) container_of(d, struct dfl_driver, drv)
 +
-+	ret = find_dfls_by_default(pcidev, info);
-+	if (ret)
-+		goto irq_free_exit;
++/*
++ * use a macro to avoid include chaining to get THIS_MODULE.
++ */
++#define dfl_driver_register(drv) \
++	__dfl_driver_register(drv, THIS_MODULE)
++int __dfl_driver_register(struct dfl_driver *dfl_drv, struct module *owner);
++void dfl_driver_unregister(struct dfl_driver *dfl_drv);
 +
- 	/* start enumeration with prepared enumeration information */
- 	cdev = dfl_fpga_feature_devs_enumerate(info);
- 	if (IS_ERR(cdev)) {
++/*
++ * module_dfl_driver() - Helper macro for drivers that don't do
++ * anything special in module init/exit.  This eliminates a lot of
++ * boilerplate.  Each module may only use this macro once, and
++ * calling it replaces module_init() and module_exit().
++ */
++#define module_dfl_driver(__dfl_driver) \
++	module_driver(__dfl_driver, dfl_driver_register, \
++		      dfl_driver_unregister)
++
++#endif /* __LINUX_DFL_H */
 -- 
 2.30.0
 
