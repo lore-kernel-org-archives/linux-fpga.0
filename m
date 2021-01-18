@@ -2,175 +2,230 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F224C43381
-	for <linux-fpga@archiver.kernel.org>; Mon, 18 Jan 2021 02:51:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6615FC433DB
+	for <linux-fpga@archiver.kernel.org>; Mon, 18 Jan 2021 02:53:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 19CDB20738
-	for <linux-fpga@archiver.kernel.org>; Mon, 18 Jan 2021 02:51:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 35F6A20738
+	for <linux-fpga@archiver.kernel.org>; Mon, 18 Jan 2021 02:53:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731205AbhARCup (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 17 Jan 2021 21:50:45 -0500
-Received: from mail-dm6nam10on2040.outbound.protection.outlook.com ([40.107.93.40]:53616
-        "EHLO NAM10-DM6-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1731128AbhARCub (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Sun, 17 Jan 2021 21:50:31 -0500
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ZBQHZ5mGMsuLfo18NlZ1FexpTPb5joTUmNmsg7mjUoP89f4rjincFM6H5ZVvBJS9+lcbTkl27sRky72QXnFeOwBum7Jq8mXI3Dp0nQZPfQnNCEvN3dHKW4tCNpjZEoi7Fx9yxKEkN3h1QysQf855tvqdTXi/YtNWI8+alkMfs60YSmK6up/c4KkA2geyoIZz0UuEy+wuzthRcs4wGiCyty6gDuBWtOtf58rm2lmnauhQ8D9qUQEGcq6Ro6OFiVaHZfrwRoVXMgKk8uHhJz+9CsyypfNafrzx93nTQO2MpmadsCRzN2qUmie0aZrFbwP+tubQmnYjoqrZI/qSL3/Htg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vJ7QZFmViWnhbsWLYMZ0rvdLX/ZWDBDwRUnlyU1ifws=;
- b=HBh3Pb1kNdYzGy+RmoWrq2Umvt08JJtHirws2QrDNBksYVS/cej5uBCKQMycqV9IsbhUmPI/wXfy1T1cepefy6Xk7BdpKI2eqJW8N781HZv+oVBnY13d0oNGn0EzuACkE1Owm2YqaMIhHPP8AQtZqUFVcSNl7tW+7ChI64k9A3+cDI1DYXbM3khFpj2sy+GqRnZes559YsQvt6NNzqAwe3kTgEkfozSAHx1yVtcszG10cxV7Zy9TKLyj7Bl/9Qz7kssyYgdIlPahyV7iait92/pWUxhfwRA3uDOahTa780VqzvGTlf9eP/r6xtQ1CwI73oMtJzLJtk25QpRocN/rcQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
- dmarc=bestguesspass action=none header.from=xilinx.com; dkim=none (message
- not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vJ7QZFmViWnhbsWLYMZ0rvdLX/ZWDBDwRUnlyU1ifws=;
- b=qthc3ZU6FE2C9Z3jeNuZO3pRIpwCmXgDlPuXTtdDeshPJBT+AZvinhjUpPH3SUrEpjOUTJwkcolKbhdjAH/3hMKUanzjE1Bdbo+xeqkte8tXqnqGBmec7uYck3nWJu1/qPAGgYeCOgNhy/8YIJ7BQfx8MEo83WHH7KANvNKaT4g=
-Received: from MN2PR05CA0017.namprd05.prod.outlook.com (2603:10b6:208:c0::30)
- by DM6PR02MB6348.namprd02.prod.outlook.com (2603:10b6:5:1f8::23) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3763.11; Mon, 18 Jan
- 2021 02:49:38 +0000
-Received: from BL2NAM02FT020.eop-nam02.prod.protection.outlook.com
- (2603:10b6:208:c0:cafe::2c) by MN2PR05CA0017.outlook.office365.com
- (2603:10b6:208:c0::30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3784.6 via Frontend
- Transport; Mon, 18 Jan 2021 02:49:38 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
- smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
- header.d=none;kernel.org; dmarc=bestguesspass action=none
- header.from=xilinx.com;
-Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
- 149.199.62.198 as permitted sender) receiver=protection.outlook.com;
- client-ip=149.199.62.198; helo=xsj-pvapexch02.xlnx.xilinx.com;
-Received: from xsj-pvapexch02.xlnx.xilinx.com (149.199.62.198) by
- BL2NAM02FT020.mail.protection.outlook.com (10.152.77.162) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.3763.12 via Frontend Transport; Mon, 18 Jan 2021 02:49:38 +0000
-Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
- xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1913.5; Sun, 17 Jan 2021 18:49:22 -0800
-Received: from smtp.xilinx.com (172.19.127.96) by
- xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.1913.5 via Frontend Transport; Sun, 17 Jan 2021 18:49:22 -0800
-Envelope-to: git@xilinx.com,
- michal.simek@xilinx.com,
- mdf@kernel.org,
- trix@redhat.com,
- robh+dt@kernel.org,
- linux-fpga@vger.kernel.org,
- devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org,
- chinnikishore369@gmail.com
-Received: from [10.140.6.60] (port=39926 helo=xhdnavam40.xilinx.com)
-        by smtp.xilinx.com with esmtp (Exim 4.90)
-        (envelope-from <nava.manne@xilinx.com>)
-        id 1l1KbY-0001PD-TM; Sun, 17 Jan 2021 18:49:21 -0800
-From:   Nava kishore Manne <nava.manne@xilinx.com>
-To:     <mdf@kernel.org>, <trix@redhat.com>, <robh+dt@kernel.org>,
-        <michal.simek@xilinx.com>, <linux-fpga@vger.kernel.org>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     <git@xilinx.com>, <chinnikishore369@gmail.com>,
-        "Appana Durga Kedareswara rao" <appana.durga.rao@xilinx.com>,
-        Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH 2/3] dt-bindings: fpga: Add binding doc for versal fpga manager
-Date:   Mon, 18 Jan 2021 08:13:17 +0530
-Message-ID: <20210118024318.9530-2-nava.manne@xilinx.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20210118024318.9530-1-nava.manne@xilinx.com>
-References: <20210118024318.9530-1-nava.manne@xilinx.com>
+        id S1730362AbhARCxw (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 17 Jan 2021 21:53:52 -0500
+Received: from mga11.intel.com ([192.55.52.93]:22551 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729794AbhARCxv (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Sun, 17 Jan 2021 21:53:51 -0500
+IronPort-SDR: Tm4jAKlQy6PmkChD9Kwwzii/JR2mKEn1Umpof5H+/f4oeQP12CV3DlOuYCXTSSA/xQNYzVZsdc
+ B8osP9Bcys6w==
+X-IronPort-AV: E=McAfee;i="6000,8403,9867"; a="175246521"
+X-IronPort-AV: E=Sophos;i="5.79,355,1602572400"; 
+   d="scan'208";a="175246521"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jan 2021 18:53:10 -0800
+IronPort-SDR: zvmiLsMvdgYUkatsrYUCGpjP+uNEHGMfZJ/IufESAwsRkv00vTID0TGorc1gwZ+IUyMPstIDw8
+ gTKk8jj85ENQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.79,355,1602572400"; 
+   d="scan'208";a="355033558"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.141])
+  by fmsmga008.fm.intel.com with ESMTP; 17 Jan 2021 18:53:08 -0800
+Date:   Mon, 18 Jan 2021 10:48:46 +0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     Moritz Fischer <mdf@kernel.org>
+Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        gregkh@linuxfoundation.org, trix@redhat.com, lgoncalv@redhat.com,
+        hao.wu@intel.com, yilun.xu@intel.com
+Subject: Re: [PATCH v6 1/2] fpga: dfl: add the userspace I/O device support
+  for DFL devices
+Message-ID: <20210118024846.GA8153@yilunxu-OptiPlex-7050>
+References: <1610502848-30345-1-git-send-email-yilun.xu@intel.com>
+ <1610502848-30345-2-git-send-email-yilun.xu@intel.com>
+ <YAO1WJGr2EBvF1rd@epycbox.lan>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-EOPAttributedMessage: 0
-X-MS-Office365-Filtering-HT: Tenant
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 1552cab0-9ec4-4a4c-796f-08d8bb5bb2a3
-X-MS-TrafficTypeDiagnostic: DM6PR02MB6348:
-X-Microsoft-Antispam-PRVS: <DM6PR02MB6348EFE282E31E82EC9216A3C2A40@DM6PR02MB6348.namprd02.prod.outlook.com>
-X-Auto-Response-Suppress: DR, RN, NRN, OOF, AutoReply
-X-MS-Oob-TLC-OOBClassifiers: OLM:2449;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: ExyduI4f8xrC42gzwdtWs01uYXGz/GIx8j22SoQOAIhrc+cMjwO7CUjRD0Glt5PD4pQLUjmFrFlMULyJv6zJFQqGKfVk9Ot8eBICWxXy9A17aDrmUK/T99O9hZ7/oNhk4VdfSpAMtwMGJwpT/mgKpgW8qZeG6PF0W+lp8FX7XsHZrW6x5wnuijGx5wScgLO8+fvQLn4eQxmaNKTV8Kzkvr2CTKTiZ5i3GCNzlkyONEivXbQXmwmfuNwO1ZFt/2mhUNVwGghJzg9rF05EwMkZ1cBBfvyPjNOBCOI0SnPkT08GTIzAtioWuYACeEUzsobZ3uueqE/s1duGLBJTYHm0d/Ek9tuRoB9Ndigq4qIpItZfh4ejyKnf6qon8VFxPnTFvNzfBdiyTbfxv7JQLSWXpCyp0v/hCC1uWZ3f3Xf9VVBNMzAf9c5B40wwUAKLFYE6IE0XfNaneeoG4t8nwFsNSsN0/TcZy6/k5Npgj8RcCMIjlQam5lBM3p8/Zr3ZceFuQR04vUV8x0H4tWCPytkbR0xbxiLsd1zFwqFx+lvaIaghNntAtysV181UCbL2pDSCbxxVCqxWyaJeLE5hA3DtnQ==
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(136003)(376002)(39850400004)(396003)(346002)(46966006)(47076005)(107886003)(82310400003)(8676002)(5660300002)(36756003)(7636003)(316002)(356005)(70206006)(70586007)(26005)(186003)(4326008)(966005)(82740400003)(7696005)(478600001)(1076003)(2616005)(9786002)(54906003)(2906002)(110136005)(8936002)(6666004)(336012)(36906005)(426003)(102446001)(2101003);DIR:OUT;SFP:1101;
-X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jan 2021 02:49:38.4991
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1552cab0-9ec4-4a4c-796f-08d8bb5bb2a3
-X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch02.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: BL2NAM02FT020.eop-nam02.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR02MB6348
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YAO1WJGr2EBvF1rd@epycbox.lan>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Appana Durga Kedareswara rao <appana.durga.rao@xilinx.com>
+On Sat, Jan 16, 2021 at 07:56:08PM -0800, Moritz Fischer wrote:
+> Hi Xu,
+> 
+> On Wed, Jan 13, 2021 at 09:54:07AM +0800, Xu Yilun wrote:
+> > This patch supports the DFL drivers be written in userspace. This is
+> > realized by exposing the userspace I/O device interfaces.
+> > 
+> > The driver leverages the uio_pdrv_genirq, it adds the uio_pdrv_genirq
+> > platform device with the DFL device's resources, and let the generic UIO
+> > platform device driver provide support to userspace access to kernel
+> > interrupts and memory locations.
+> > 
+> > The driver now supports the ether group feature. To support a new DFL
+> > feature been directly accessed via UIO, its feature id should be added to
+> > the driver's id_table.
+> > 
+> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > Reviewed-by: Tom Rix <trix@redhat.com>
+> > Acked-by: Wu Hao <hao.wu@intel.com>
+> > ---
+> > v2: switch to the new matching algorithem. It matches DFL devices which
+> >      could not be handled by other DFL drivers.
+> >     refacor the code about device resources filling.
+> >     fix some comments.
+> > v3: split the dfl.c changes out of this patch.
+> >     some minor fixes
+> > v4: drop the idea of a generic matching algorithem, instead we specify
+> >      each matching device in id_table.
+> >     to make clear that only one irq is supported, the irq handling code
+> >      is refactored.
+> > v5: refactor the irq resource code.
+> > v6: fix the res[] zero initialization issue.
+> >     improve the return code for probe().
+> > ---
+> >  drivers/fpga/Kconfig        | 10 +++++
+> >  drivers/fpga/Makefile       |  1 +
+> >  drivers/fpga/dfl-uio-pdev.c | 93 +++++++++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 104 insertions(+)
+> >  create mode 100644 drivers/fpga/dfl-uio-pdev.c
+> > 
+> > diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+> > index 5ff9438..61445be 100644
+> > --- a/drivers/fpga/Kconfig
+> > +++ b/drivers/fpga/Kconfig
+> > @@ -203,6 +203,16 @@ config FPGA_DFL_NIOS_INTEL_PAC_N3000
+> >  	  the card. It also instantiates the SPI master (spi-altera) for
+> >  	  the card's BMC (Board Management Controller).
+> >  
+> > +config FPGA_DFL_UIO_PDEV
+> > +	tristate "FPGA DFL Driver for Userspace I/O platform devices"
+> > +	depends on FPGA_DFL && UIO_PDRV_GENIRQ
+> > +	help
+> > +	  Enable this to allow some DFL drivers be written in userspace. It
+> Nit: Enable this to allow DFL drivers to be written in userspace.
 
-This patch adds binding doc for versal fpga manager driver.
+Yes, will fix it.
 
-Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
-Signed-off-by: Appana Durga Kedareswara rao <appana.durga.rao@xilinx.com>
----
- .../bindings/fpga/xlnx,versal-fpga.yaml       | 33 +++++++++++++++++++
- 1 file changed, 33 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,versal-fpga.yaml
+> > +	  adds the uio_pdrv_genirq platform device with the DFL feature's
+> > +	  resources, and lets the generic UIO platform device driver provide
+> > +	  support for userspace access to kernel interrupts and memory
+> > +	  locations.
+> > +
+> >  config FPGA_DFL_PCI
+> >  	tristate "FPGA DFL PCIe Device Driver"
+> >  	depends on PCI && FPGA_DFL
+> > diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+> > index 18dc9885..8847fe0 100644
+> > --- a/drivers/fpga/Makefile
+> > +++ b/drivers/fpga/Makefile
+> > @@ -45,6 +45,7 @@ dfl-afu-objs := dfl-afu-main.o dfl-afu-region.o dfl-afu-dma-region.o
+> >  dfl-afu-objs += dfl-afu-error.o
+> >  
+> >  obj-$(CONFIG_FPGA_DFL_NIOS_INTEL_PAC_N3000)	+= dfl-n3000-nios.o
+> > +obj-$(CONFIG_FPGA_DFL_UIO_PDEV)		+= dfl-uio-pdev.o
+> >  
+> >  # Drivers for FPGAs which implement DFL
+> >  obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
+> > diff --git a/drivers/fpga/dfl-uio-pdev.c b/drivers/fpga/dfl-uio-pdev.c
+> > new file mode 100644
+> > index 0000000..12b47bf
+> > --- /dev/null
+> > +++ b/drivers/fpga/dfl-uio-pdev.c
+> > @@ -0,0 +1,93 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * DFL driver for Userspace I/O platform devices
+> > + *
+> > + * Copyright (C) 2020 Intel Corporation, Inc.
+> > + */
+> > +#include <linux/dfl.h>
+> > +#include <linux/errno.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/uio_driver.h>
+> > +
+> > +#define DRIVER_NAME "dfl-uio-pdev"
+> > +
+> > +static int dfl_uio_pdev_probe(struct dfl_device *ddev)
+> > +{
+> > +	struct platform_device_info pdevinfo = { 0 };
+> > +	struct resource res[2] = { { 0 } };
+> > +	struct uio_info uio_pdata = { 0 };
+> > +	struct platform_device *uio_pdev;
+> > +	struct device *dev = &ddev->dev;
+> > +	unsigned int num_res = 1;
+> > +
+> > +	res[0].parent = &ddev->mmio_res;
+> > +	res[0].flags = IORESOURCE_MEM;
+> > +	res[0].start = ddev->mmio_res.start;
+> > +	res[0].end = ddev->mmio_res.end;
+> > +
+> > +	if (ddev->num_irqs) {
+> > +		if (ddev->num_irqs > 1)
+> > +			dev_warn(&ddev->dev,
+> > +				 "%d irqs for %s, but UIO only supports the first one\n",
+> > +				 ddev->num_irqs, dev_name(&ddev->dev));
+> > +
+> > +		res[1].flags = IORESOURCE_IRQ;
+> > +		res[1].start = ddev->irqs[0];
+> > +		res[1].end = ddev->irqs[0];
+> > +		num_res++;
+> > +	}
+> > +
+> > +	uio_pdata.name = DRIVER_NAME;
+> > +	uio_pdata.version = "0";
+> > +
+> > +	pdevinfo.name = "uio_pdrv_genirq";
+> > +	pdevinfo.res = res;
+> > +	pdevinfo.num_res = num_res;
+> > +	pdevinfo.parent = &ddev->dev;
+> > +	pdevinfo.id = PLATFORM_DEVID_AUTO;
+> > +	pdevinfo.data = &uio_pdata;
+> > +	pdevinfo.size_data = sizeof(uio_pdata);
+> > +
+> > +	uio_pdev = platform_device_register_full(&pdevinfo);
+> It looks like:
+> 	platform_device_register_resndata(&ddev->dev, "uio_pdrv_genirq",
+> 					  PLATFORM_DEVID_AUTO, res, num_res,
+> 					  &uio_pdata, sizeof(uio_pdata))
+> 
+> would work?
 
-diff --git a/Documentation/devicetree/bindings/fpga/xlnx,versal-fpga.yaml b/Documentation/devicetree/bindings/fpga/xlnx,versal-fpga.yaml
-new file mode 100644
-index 000000000000..cf3aa7917488
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xlnx,versal-fpga.yaml
-@@ -0,0 +1,33 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+
-+$id: http://devicetree.org/schemas/fpga/xilinx/xlnx,versal-fpga.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Xilinx versal-fpga driver.
-+
-+maintainers:
-+  - Nava kishore Manne <nava.manne@xilinx.com>
-+
-+description: |
-+Device Tree versal-fpga bindings for the Versal SOC, Controlled
-+using Versal SoC firmware interface.
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+        - xlnx,versal-fpga
-+
-+required:
-+  - compatible
-+
-+Required properties:
-+- compatible: should contain "xlnx,versal-fpga"
-+
-+examples:
-+  - |
-+    versal_fpga: fpga {
-+         compatible = "xlnx,versal-fpga";
-+    };
--- 
-2.18.0
+It works. I'll change it.
 
+> 
+> 
+> > +	if (IS_ERR(uio_pdev))
+> > +		return PTR_ERR(uio_pdev);
+> > +
+> > +	dev_set_drvdata(dev, uio_pdev);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void dfl_uio_pdev_remove(struct dfl_device *ddev)
+> > +{
+> > +	struct platform_device *uio_pdev = dev_get_drvdata(&ddev->dev);
+> > +
+> > +	platform_device_unregister(uio_pdev);
+> > +}
+> > +
+> > +#define FME_FEATURE_ID_ETH_GROUP	0x10
+> > +
+> > +static const struct dfl_device_id dfl_uio_pdev_ids[] = {
+> > +	{ FME_ID, FME_FEATURE_ID_ETH_GROUP },
+> > +
+> > +	/* Add your new id entries here to support uio for more dfl features */
+> This is fairly common, we can maybe drop this comment?
+
+Yes.
+
+Thanks,
+Yilun
