@@ -2,124 +2,112 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC25BC433DB
-	for <linux-fpga@archiver.kernel.org>; Wed, 20 Jan 2021 03:19:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65CEEC433DB
+	for <linux-fpga@archiver.kernel.org>; Thu, 21 Jan 2021 08:41:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 738DA23110
-	for <linux-fpga@archiver.kernel.org>; Wed, 20 Jan 2021 03:19:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 267DB2399A
+	for <linux-fpga@archiver.kernel.org>; Thu, 21 Jan 2021 08:41:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728716AbhATDTL (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 19 Jan 2021 22:19:11 -0500
-Received: from mga06.intel.com ([134.134.136.31]:46778 "EHLO mga06.intel.com"
+        id S1726434AbhAUIkw (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 21 Jan 2021 03:40:52 -0500
+Received: from mga05.intel.com ([192.55.52.43]:15806 "EHLO mga05.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726590AbhATDTA (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 19 Jan 2021 22:19:00 -0500
-IronPort-SDR: WLGwM5rTRnJmQAuxWTsR5FYkCjJu5GBqFSmi14pzQ0JIlOnpT/n3k2qJ7h5O+UMljmOGMgVTlX
- eq+nXQTCV0wA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9869"; a="240576459"
-X-IronPort-AV: E=Sophos;i="5.79,359,1602572400"; 
-   d="scan'208";a="240576459"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Jan 2021 19:18:19 -0800
-IronPort-SDR: wueZI4YOmOBr9YteD8PRuaouD0JLHSvruJsbYv5YIHpwzM9G07p7vrmzAjNJw7wDmmhKsZ36Pa
- 7yY89cfrjunA==
+        id S1726921AbhAUIkT (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 21 Jan 2021 03:40:19 -0500
+IronPort-SDR: geBZQXFjTpSWoTtYKMYjzqGLztNPwy0YUZsc/ykcgZAHx85Dd82oBS6iwo1ahzZbJOjBQVmAtB
+ q3006pDC7cBg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9870"; a="264051792"
+X-IronPort-AV: E=Sophos;i="5.79,363,1602572400"; 
+   d="scan'208";a="264051792"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jan 2021 00:39:33 -0800
+IronPort-SDR: HpP0pKPVGq+xCzkWcmbRAH1nF3cZYB39nFIxOMpPNh0tODUhU58Rj4ONTd/1RXrcVkb5UEO4qW
+ a7hU9SlTPNkw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,359,1602572400"; 
-   d="scan'208";a="355879853"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.141])
-  by fmsmga008.fm.intel.com with ESMTP; 19 Jan 2021 19:18:16 -0800
-Date:   Wed, 20 Jan 2021 11:13:52 +0800
+X-IronPort-AV: E=Sophos;i="5.79,363,1602572400"; 
+   d="scan'208";a="385215647"
+Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.141])
+  by orsmga008.jf.intel.com with ESMTP; 21 Jan 2021 00:39:28 -0800
 From:   Xu Yilun <yilun.xu@intel.com>
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     mdf@kernel.org, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org,
-        trix@redhat.com, lgoncalv@redhat.com, hao.wu@intel.com
-Subject: Re: [PATCH v7 2/2] Documentation: fpga: dfl: Add description for DFL
-  UIO support
-Message-ID: <20210120031352.GA10151@yilunxu-OptiPlex-7050>
-References: <1611110606-10380-1-git-send-email-yilun.xu@intel.com>
- <1611110606-10380-3-git-send-email-yilun.xu@intel.com>
- <4230b792-71e9-842d-ebdf-ad8bac8e11ef@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4230b792-71e9-842d-ebdf-ad8bac8e11ef@infradead.org>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     gregkh@linuxfoundation.org, trix@redhat.com, lgoncalv@redhat.com,
+        yilun.xu@intel.com, hao.wu@intel.com, rdunlap@infradead.org
+Subject: [PATCH v8 2/2] Documentation: fpga: dfl: Add description for DFL UIO support
+Date:   Thu, 21 Jan 2021 16:34:45 +0800
+Message-Id: <1611218085-28269-3-git-send-email-yilun.xu@intel.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1611218085-28269-1-git-send-email-yilun.xu@intel.com>
+References: <1611218085-28269-1-git-send-email-yilun.xu@intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Tue, Jan 19, 2021 at 07:12:24PM -0800, Randy Dunlap wrote:
-> Doc suggestions:
-> 
-> On 1/19/21 6:43 PM, Xu Yilun wrote:
-> > This patch adds description for UIO support for dfl devices on DFL
-> > bus.
-> > 
-> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> > ---
-> > v2: no doc in v1, add it for v2.
-> > v3: some documentation fixes.
-> > v4: documentation change since the driver matching is changed.
-> > v5: no change.
-> > v6: improve the title of the userspace driver support section.
-> >     some word improvement.
-> > v7: rebased to next-20210119
-> > ---
-> >  Documentation/fpga/dfl.rst | 25 +++++++++++++++++++++++++
-> >  1 file changed, 25 insertions(+)
-> > 
-> > diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-> > index c41ac76..f96a6fb 100644
-> > --- a/Documentation/fpga/dfl.rst
-> > +++ b/Documentation/fpga/dfl.rst
-> > @@ -7,6 +7,7 @@ Authors:
-> >  - Enno Luebbers <enno.luebbers@intel.com>
-> >  - Xiao Guangrong <guangrong.xiao@linux.intel.com>
-> >  - Wu Hao <hao.wu@intel.com>
-> > +- Xu Yilun <yilun.xu@intel.com>
-> >  
-> >  The Device Feature List (DFL) FPGA framework (and drivers according to
-> >  this framework) hides the very details of low layer hardwares and provides
-> > @@ -530,6 +531,30 @@ Being able to specify more than one DFL per BAR has been considered, but it
-> >  was determined the use case did not provide value.  Specifying a single DFL
-> >  per BAR simplifies the implementation and allows for extra error checking.
-> >  
-> > +
-> > +Userspace driver support for DFL devices
-> > +========================================
-> > +The purpose of an FPGA is to be reprogrammed with newly developed hardware
-> > +components. New hardware can instantiate a new private feature in the DFL, and
-> > +then get a DFL device in their system. In some cases users may need a userspace
-> 
->    then present a DFL device in the system.
-> 
-> > +driver for the DFL device:
-> > +
-> > +* Users may need to run some diagnostic test for their hardwares.
-> 
->                                                           hardware.
-> 
-> > +* Users may prototype the kernel driver in user space.
-> > +* Some hardware is designed for specific purposes and does not fit into one of
-> > +  the standard kernel subsystems.
-> > +
-> > +This requires direct access to MMIO space and interrupt handling from
-> > +userspace. The dfl-uio-pdev module exposes the UIO device interfaces for this
-> > +purpose. It adds the uio_pdrv_genirq platform device with the resources of
-> > +the DFL feature, and lets the generic UIO platform device driver provide UIO
-> > +support to userspace.
-> > +
-> > +FPGA_DFL_UIO_PDEV should be selected to enable the dfl-uio-pdev module driver.
-> > +To support a new DFL feature been directly accessed via UIO, its feature id
-> 
->    To support a new DFL feature via UIO direct access, its feature id
+This patch adds description for UIO support for dfl devices on DFL
+bus.
 
-Thanks for the fixes. Will fix them all.
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+---
+v2: no doc in v1, add it for v2.
+v3: some documentation fixes.
+v4: documentation change since the driver matching is changed.
+v5: no change.
+v6: improve the title of the userspace driver support section.
+    some word improvement.
+v7: rebased to next-20210119
+v8: some doc fixes.
+---
+ Documentation/fpga/dfl.rst | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-Yilun
+diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+index c41ac76..14b8413 100644
+--- a/Documentation/fpga/dfl.rst
++++ b/Documentation/fpga/dfl.rst
+@@ -7,6 +7,7 @@ Authors:
+ - Enno Luebbers <enno.luebbers@intel.com>
+ - Xiao Guangrong <guangrong.xiao@linux.intel.com>
+ - Wu Hao <hao.wu@intel.com>
++- Xu Yilun <yilun.xu@intel.com>
+ 
+ The Device Feature List (DFL) FPGA framework (and drivers according to
+ this framework) hides the very details of low layer hardwares and provides
+@@ -530,6 +531,30 @@ Being able to specify more than one DFL per BAR has been considered, but it
+ was determined the use case did not provide value.  Specifying a single DFL
+ per BAR simplifies the implementation and allows for extra error checking.
+ 
++
++Userspace driver support for DFL devices
++========================================
++The purpose of an FPGA is to be reprogrammed with newly developed hardware
++components. New hardware can instantiate a new private feature in the DFL, and
++then present a DFL device in the system. In some cases users may need a
++userspace driver for the DFL device:
++
++* Users may need to run some diagnostic test for their hardware.
++* Users may prototype the kernel driver in user space.
++* Some hardware is designed for specific purposes and does not fit into one of
++  the standard kernel subsystems.
++
++This requires direct access to MMIO space and interrupt handling from
++userspace. The dfl-uio-pdev module exposes the UIO device interfaces for this
++purpose. It adds the uio_pdrv_genirq platform device with the resources of
++the DFL feature, and lets the generic UIO platform device driver provide UIO
++support to userspace.
++
++FPGA_DFL_UIO_PDEV should be selected to enable the dfl-uio-pdev module driver.
++To support a new DFL feature via UIO direct access, its feature id should be
++added to the driver's id_table.
++
++
+ Open discussion
+ ===============
+ FME driver exports one ioctl (DFL_FPGA_FME_PORT_PR) for partial reconfiguration
+-- 
+2.7.4
+
