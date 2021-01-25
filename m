@@ -2,78 +2,91 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6FC9C433E0
-	for <linux-fpga@archiver.kernel.org>; Mon, 25 Jan 2021 20:40:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72647C433E0
+	for <linux-fpga@archiver.kernel.org>; Mon, 25 Jan 2021 20:41:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B1A862255F
-	for <linux-fpga@archiver.kernel.org>; Mon, 25 Jan 2021 20:40:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2A2692256F
+	for <linux-fpga@archiver.kernel.org>; Mon, 25 Jan 2021 20:41:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732405AbhAYUkO (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 25 Jan 2021 15:40:14 -0500
-Received: from mga04.intel.com ([192.55.52.120]:37458 "EHLO mga04.intel.com"
+        id S1732392AbhAYUj4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 25 Jan 2021 15:39:56 -0500
+Received: from mga04.intel.com ([192.55.52.120]:37450 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732402AbhAYUkF (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 25 Jan 2021 15:40:05 -0500
-IronPort-SDR: 1ZY6C/QmVuOdpJeM/T/ldEfe+pGDcfXmdi08zmzMmMxo0tLCOmxHtez6XaWlmKmLjR4bQvgL90
- 5IybOCHUkL5w==
-X-IronPort-AV: E=McAfee;i="6000,8403,9875"; a="177227342"
+        id S1732357AbhAYUij (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 25 Jan 2021 15:38:39 -0500
+IronPort-SDR: xnKOzKHeLTAjwnNVg+Z9C9lyJa2Y1QsYuaNQY9ThUG4KciJM4+1raGvpawUcfv+6jY8F4k83Ja
+ +bjT9onit5VQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9875"; a="177227322"
 X-IronPort-AV: E=Sophos;i="5.79,374,1602572400"; 
-   d="scan'208";a="177227342"
+   d="scan'208";a="177227322"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jan 2021 12:36:47 -0800
-IronPort-SDR: gmJAmLl88Tb59RyS4x4J9pqOS3mb05lsdzyT4bclu3kRQGPCItmmSY3H3O25BpHp3r31mya+Q3
- RLDRj+mJUyOw==
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jan 2021 12:36:44 -0800
+IronPort-SDR: MVCtqYm5vl8XbbMD+fKVdYFBpcIMRgpQPOABLUhI2XFv4WIWSzZZlKEofCsI0B651MICJHLjdT
+ AxhGBJHCBajg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.79,374,1602572400"; 
-   d="scan'208";a="504283195"
+   d="scan'208";a="504283142"
 Received: from marshy.an.intel.com ([10.122.105.143])
-  by orsmga004.jf.intel.com with ESMTP; 25 Jan 2021 12:36:46 -0800
+  by orsmga004.jf.intel.com with ESMTP; 25 Jan 2021 12:36:42 -0800
 From:   richard.gong@linux.intel.com
 To:     mdf@kernel.org, trix@redhat.com, gregkh@linuxfoundation.org,
         linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     dinguyen@kernel.org, sridhar.rajagopal@intel.com,
         Richard Gong <richard.gong@intel.com>
-Subject: [PATCHv3 5/6] dt-bindings: fpga: add authenticate-fpga-config property
-Date:   Mon, 25 Jan 2021 14:56:27 -0600
-Message-Id: <1611608188-25621-6-git-send-email-richard.gong@linux.intel.com>
+Subject: [PATCHv3 0/6] [PATCHv3 0/6] Extend Intel service layer, FPGA manager and region
+Date:   Mon, 25 Jan 2021 14:56:22 -0600
+Message-Id: <1611608188-25621-1-git-send-email-richard.gong@linux.intel.com>
 X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1611608188-25621-1-git-send-email-richard.gong@linux.intel.com>
-References: <1611608188-25621-1-git-send-email-richard.gong@linux.intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Richard Gong <richard.gong@intel.com>
 
-Add authenticate-fpga-config property for FPGA bitstream authentication,
-which makes sure a signed bitstream has valid signatures.
+This is 3rd submission of Intel service layer and FPGA patches.
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
----
-v3: no change
-v2: put authenticate-fpga-config above partial-fpga-config
-    update commit messages
----
- Documentation/devicetree/bindings/fpga/fpga-region.txt | 1 +
- 1 file changed, 1 insertion(+)
+This submission include additional changes for Intel service layer driver
+to get the firmware version running at FPGA SoC device. Then FPGA manager
+driver, one of Intel service layer driver's client, can decide whether to
+handle the newly added bitstream authentication function based on the
+retrieved firmware version. So that we can maintain FPGA manager driver
+the back compatible.
 
-diff --git a/Documentation/devicetree/bindings/fpga/fpga-region.txt b/Documentation/devicetree/bindings/fpga/fpga-region.txt
-index e811cf8..d0d3234 100644
---- a/Documentation/devicetree/bindings/fpga/fpga-region.txt
-+++ b/Documentation/devicetree/bindings/fpga/fpga-region.txt
-@@ -182,6 +182,7 @@ Optional properties:
- 	This property is optional if the FPGA Manager handles the bridges.
-         If the fpga-region is  the child of a fpga-bridge, the list should not
-         contain the parent bridge.
-+- authenticate-fpga-config : boolean, set if do bitstream authentication only.
- - partial-fpga-config : boolean, set if partial reconfiguration is to be done,
- 	otherwise full reconfiguration is done.
- - external-fpga-config : boolean, set if the FPGA has already been configured
+The customer wants to verify that a FPGA bitstream can be started properly
+before saving the bitstream to the QSPI flash memory.
+
+Bitstream authentication makes sure a signed bitstream has valid signatures.
+
+The customer sends the bitstream via FPGA framework and overlay, the
+firmware will authenticate the bitstream but not program the bitstream to
+device. If the authentication passes, the bitstream will be programmed into
+QSPI flash and will be expected to boot without issues.
+
+Extend Intel service layer, FPGA manager and region drivers to support the
+bitstream authentication feature. 
+
+Richard Gong (6):
+  firmware: stratix10-svc: add COMMAND_AUTHENTICATE_BITSTREAM flag
+  firmware: stratix10-svc: extend SVC driver to get the firmware version
+  fpga: fpga-mgr: add FPGA_MGR_BITSTREM_AUTHENTICATION flag
+  fpga: of-fpga-region: add authenticate-fpga-config property
+  dt-bindings: fpga: add authenticate-fpga-config property
+  fpga: stratix10-soc: extend driver for bitstream authentication
+
+ .../devicetree/bindings/fpga/fpga-region.txt       |  1 +
+ drivers/firmware/stratix10-svc.c                   | 12 ++++-
+ drivers/fpga/of-fpga-region.c                      |  3 ++
+ drivers/fpga/stratix10-soc.c                       | 62 +++++++++++++++++++---
+ include/linux/firmware/intel/stratix10-smc.h       | 21 +++++++-
+ .../linux/firmware/intel/stratix10-svc-client.h    | 15 ++++--
+ include/linux/fpga/fpga-mgr.h                      | 13 +++--
+ 7 files changed, 109 insertions(+), 18 deletions(-)
+
 -- 
 2.7.4
 
