@@ -2,122 +2,115 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D10C2C433E6
-	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 04:58:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92310C433E9
+	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 11:06:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8E54A22D58
-	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 04:58:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 637F223104
+	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 11:06:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730043AbhAZE6d (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 25 Jan 2021 23:58:33 -0500
-Received: from mga14.intel.com ([192.55.52.115]:36862 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732372AbhAZCpJ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 25 Jan 2021 21:45:09 -0500
-IronPort-SDR: 4FzgPWkLkKrJT5/46yApxVDuWLYoxOZISC7c+FeZ+SFUTJYfsP/gp4Z9mnDUW3DTP0fSFP4ohx
- 91WYDMD24kag==
-X-IronPort-AV: E=McAfee;i="6000,8403,9875"; a="179060470"
-X-IronPort-AV: E=Sophos;i="5.79,375,1602572400"; 
-   d="scan'208";a="179060470"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jan 2021 18:44:26 -0800
-IronPort-SDR: 0mLY8EDgJmwlZcGnqrZDfHjQ45RmKp4Li0V8hFPAUp7AlkxFr299tjqBpzpAv9WdtVfRLYETSj
- ilesyGXlUHmA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,375,1602572400"; 
-   d="scan'208";a="368954150"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.141])
-  by orsmga002.jf.intel.com with ESMTP; 25 Jan 2021 18:44:24 -0800
-Date:   Tue, 26 Jan 2021 10:40:05 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Moritz Fischer <mdf@kernel.org>
-Cc:     Tom Rix <trix@redhat.com>, gregkh@linuxfoundation.org,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        lgoncalv@redhat.com, hao.wu@intel.com
-Subject: Re: [PATCH v9 1/2] uio: uio_dfl: add userspace i/o driver for DFL bus
-Message-ID: <20210126024005.GB3907@yilunxu-OptiPlex-7050>
-References: <1611564563-9665-1-git-send-email-yilun.xu@intel.com>
- <1611564563-9665-2-git-send-email-yilun.xu@intel.com>
- <e9bb1ff8-f630-f1a3-985c-7e51369a733f@redhat.com>
- <YA98/8r+yOCurHAJ@epycbox.lan>
+        id S2404982AbhAZLGn (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 26 Jan 2021 06:06:43 -0500
+Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:5270 "EHLO
+        mx0a-00128a01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S2404527AbhAZLGd (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 26 Jan 2021 06:06:33 -0500
+Received: from pps.filterd (m0167089.ppops.net [127.0.0.1])
+        by mx0a-00128a01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 10QB1KK8001778;
+        Tue, 26 Jan 2021 06:05:36 -0500
+Received: from nwd2mta3.analog.com ([137.71.173.56])
+        by mx0a-00128a01.pphosted.com with ESMTP id 368hk9hnpv-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 26 Jan 2021 06:05:36 -0500
+Received: from ASHBMBX9.ad.analog.com (ASHBMBX9.ad.analog.com [10.64.17.10])
+        by nwd2mta3.analog.com (8.14.7/8.14.7) with ESMTP id 10QB5ZGT028972
+        (version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=FAIL);
+        Tue, 26 Jan 2021 06:05:35 -0500
+Received: from ASHBMBX8.ad.analog.com (10.64.17.5) by ASHBMBX9.ad.analog.com
+ (10.64.17.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1779.2; Tue, 26 Jan
+ 2021 06:05:34 -0500
+Received: from zeus.spd.analog.com (10.66.68.11) by ashbmbx8.ad.analog.com
+ (10.64.17.5) with Microsoft SMTP Server id 15.2.721.2 via Frontend Transport;
+ Tue, 26 Jan 2021 06:05:34 -0500
+Received: from localhost.localdomain ([10.48.65.12])
+        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 10QB5PQe007159;
+        Tue, 26 Jan 2021 06:05:30 -0500
+From:   Alexandru Ardelean <alexandru.ardelean@analog.com>
+To:     <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+CC:     <mturquette@baylibre.com>, <sboyd@kernel.org>,
+        <robh+dt@kernel.org>, <lars@metafoo.de>,
+        <linux-fpga@vger.kernel.org>, <mdf@kernel.org>,
+        Alexandru Ardelean <alexandru.ardelean@analog.com>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Mathias Tausen <mta@gomspace.com>
+Subject: [PATCH v2 2/3] clk: clk-axiclkgen: add ZynqMP PFD and VCO limits
+Date:   Tue, 26 Jan 2021 13:08:25 +0200
+Message-ID: <20210126110826.24221-3-alexandru.ardelean@analog.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210126110826.24221-1-alexandru.ardelean@analog.com>
+References: <20210126110826.24221-1-alexandru.ardelean@analog.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YA98/8r+yOCurHAJ@epycbox.lan>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Type: text/plain
+X-ADIRuleOP-NewSCL: Rule Triggered
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343,18.0.737
+ definitions=2021-01-26_06:2021-01-25,2021-01-26 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ malwarescore=0 impostorscore=0 mlxscore=0 priorityscore=1501 adultscore=0
+ mlxlogscore=829 suspectscore=0 spamscore=0 bulkscore=0 phishscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101260058
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Mon, Jan 25, 2021 at 06:22:55PM -0800, Moritz Fischer wrote:
-> On Mon, Jan 25, 2021 at 11:00:38AM -0800, Tom Rix wrote:
-> > 
-> > On 1/25/21 12:49 AM, Xu Yilun wrote:
-> > > This patch supports the DFL drivers be written in userspace. This is
-> > > realized by exposing the userspace I/O device interfaces.
-> > >
-> > > The driver now only binds the ether group feature, which has no irq. So
-> > > the irq support is not implemented yet.
-> > >
-> > > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> > > ---
-> > > v9: switch to add a uio driver in drivers/uio
-> > > ---
-> > >  drivers/uio/Kconfig   | 13 ++++++++++
-> > >  drivers/uio/Makefile  |  1 +
-> > >  drivers/uio/uio_dfl.c | 66 +++++++++++++++++++++++++++++++++++++++++++++++++++
-> > 
-> > You should add this to the MAINTAINERS file.
-> 
-> This is covered by MAINTAINERS under drivers/uio.
+For ZynqMP (Ultrascale) the PFD and VCO limits are different. In order to
+support these, this change adds a compatible string (i.e.
+'adi,zynqmp-axi-clkgen-2.00.a')  which will take into account for these
+limits and apply them.
 
-Yes. But is it OK I also add the file in "FPGA DFL DRIVERS"? So DFL
-developers would also be aware if there is change. It is a little
-different from other feature driver, it is like a generic driver for
-DFL bus.
+Signed-off-by: Dragos Bogdan <dragos.bogdan@analog.com>
+Signed-off-by: Mathias Tausen <mta@gomspace.com>
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
+---
+ drivers/clk/clk-axi-clkgen.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-> > 
-> > >  3 files changed, 80 insertions(+)
-> > >  create mode 100644 drivers/uio/uio_dfl.c
-> > >
-> > > diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-> > > index 202ee81..44778f8 100644
-> > > --- a/drivers/uio/Kconfig
-> > > +++ b/drivers/uio/Kconfig
-> > > @@ -165,4 +165,17 @@ config UIO_HV_GENERIC
-> > >  	  to network and storage devices from userspace.
-> > >  
-> > >  	  If you compile this as a module, it will be called uio_hv_generic.
-> > > +
-> > > +config UIO_DFL
-> > > +	tristate "Generic driver for DFL bus"
-> > 
-> > The term 'DFL' will be unknown to folks in drivers/uio
-> > 
-> > I think it would be better if DFL was always prefixed 'FPGA DFL'
-> > 
-> > > +	depends on FPGA_DFL
-> > > +	help
-> > > +	  Generic DFL (Device Feature List) driver for Userspace I/O devices.
-> > > +	  It is useful to provide direct access to DFL devices from userspace.
-> > > +	  A sample userspace application using this driver is available for
-> > > +	  download in a git repository:
-> > > +
-> > > +	    git clone https://github.com/OPAE/opae-sdk.git
-> > > +
-> > > +	  If you compile this as a module, it will be called uio_dfl.
-> 
-> I'm not sure KConfig is the right place for this.
+diff --git a/drivers/clk/clk-axi-clkgen.c b/drivers/clk/clk-axi-clkgen.c
+index ad86e031ba3e..9d1b0fc56c73 100644
+--- a/drivers/clk/clk-axi-clkgen.c
++++ b/drivers/clk/clk-axi-clkgen.c
+@@ -108,6 +108,13 @@ static uint32_t axi_clkgen_lookup_lock(unsigned int m)
+ 	return 0x1f1f00fa;
+ }
+ 
++static const struct axi_clkgen_limits axi_clkgen_zynqmp_default_limits = {
++	.fpfd_min = 10000,
++	.fpfd_max = 450000,
++	.fvco_min = 800000,
++	.fvco_max = 1600000,
++};
++
+ static const struct axi_clkgen_limits axi_clkgen_zynq_default_limits = {
+ 	.fpfd_min = 10000,
+ 	.fpfd_max = 300000,
+@@ -560,6 +567,10 @@ static int axi_clkgen_remove(struct platform_device *pdev)
+ }
+ 
+ static const struct of_device_id axi_clkgen_ids[] = {
++	{
++		.compatible = "adi,zynqmp-axi-clkgen-2.00.a",
++		.data = &axi_clkgen_zynqmp_default_limits,
++	},
+ 	{
+ 		.compatible = "adi,axi-clkgen-2.00.a",
+ 		.data = &axi_clkgen_zynq_default_limits,
+-- 
+2.17.1
 
-Do you mean the OPAE link? I see several uio drivers provide their
-userspace application link in Kconfig. I guess the uio drivers are
-selected for these applications so it may be better pointing out where
-they are.
-
-Thanks,
-Yilun
