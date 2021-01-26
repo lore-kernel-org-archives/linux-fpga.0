@@ -2,79 +2,79 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-22.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76578C433E0
-	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 20:56:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 245CAC433DB
+	for <linux-fpga@archiver.kernel.org>; Wed, 27 Jan 2021 04:46:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 47E50221F1
-	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 20:56:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DB2CE2070E
+	for <linux-fpga@archiver.kernel.org>; Wed, 27 Jan 2021 04:45:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729914AbhAZE6Q (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 25 Jan 2021 23:58:16 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:33680 "EHLO
+        id S239539AbhA0Epm (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 26 Jan 2021 23:45:42 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:36325 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1731457AbhAYTCa (ORCPT
+        by vger.kernel.org with ESMTP id S2388525AbhAZXX3 (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 25 Jan 2021 14:02:30 -0500
+        Tue, 26 Jan 2021 18:23:29 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1611601244;
+        s=mimecast20190719; t=1611703315;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=O7BOC85rb73+qqwAq+IoD7Q1q2UwHBTY7mnIQQYVBAQ=;
-        b=hFmksJzb86qdq/KvclKik8pLM4OC/6awReIUkXlSanCWbDpkOkHf+sH2ab6cM6tvafEuxR
-        x63f/V5aXV6LQ2FxpmfQtsJb6jIDaUdmwrJx7WFkzRaVCrDUVPhNkOwsyw1ucVUwrnxlff
-        mWeI637K5zKd2etSE64EWr3hbwACgsY=
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com
- [209.85.160.198]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-166--vWDk5e5PD2_tB0JjMWwrg-1; Mon, 25 Jan 2021 14:00:42 -0500
-X-MC-Unique: -vWDk5e5PD2_tB0JjMWwrg-1
-Received: by mail-qt1-f198.google.com with SMTP id f5so7865130qtf.15
-        for <linux-fpga@vger.kernel.org>; Mon, 25 Jan 2021 11:00:42 -0800 (PST)
+        bh=FFsgQkQMHGcNuO7prFnbNLIMkPeBzSiQZrxd3POXfNg=;
+        b=Kihxvzlqq1MbbO//yqVeXlI28T68f/yMLOkgQLQGqwxAr3EC59yoyeuZIJ9ki1NeL6VLbk
+        Jt72GxB8vjukeVG2vsZFYMp/hZYK+W1K1tKwmbwafkvMCQgb0tR2ZI4vaM8cYi9a2x9fZj
+        ZO4KoaXtLKXLUPD2GTa81ZV4ukjrg8Q=
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
+ [209.85.160.197]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-233-TkUWEMjKMuiI8N7s51Z--g-1; Tue, 26 Jan 2021 18:21:53 -0500
+X-MC-Unique: TkUWEMjKMuiI8N7s51Z--g-1
+Received: by mail-qt1-f197.google.com with SMTP id r18so6535479qta.19
+        for <linux-fpga@vger.kernel.org>; Tue, 26 Jan 2021 15:21:53 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-transfer-encoding
          :content-language;
-        bh=O7BOC85rb73+qqwAq+IoD7Q1q2UwHBTY7mnIQQYVBAQ=;
-        b=rnLj5drNIk5oHW27HJG13aAQKNfqOn6LpanRUabnrKDwrYHrW5gBBRLEVOX9CNhrQl
-         0RHx2a022OoB4pK4264a+7hoE7WaqW/DXMV/p83DtcaJqWJz5eLLMgU2NNX5LJ+orAx3
-         ppJiJ6YjfQh4I0zkjPNUFxMSptcCYuQXZDAq9eT5rCgOEXmLua6do0eozPTUkvjZyW9i
-         HMnuO9R6QbNYzzSpdUmRTuORF+BD5X7EINMiC0o1SMqsJcxkvqsyA2TT/mqlPL0fmjxW
-         ofTU41ghJ5e/A/Arljn2jm49W4+4DCWAYVRWhHUlVdVHqfSJUX6so8lvsjRk7+mKY/+j
-         A4fw==
-X-Gm-Message-State: AOAM533SYel7pTd135HEUn7VgAHJxiN0AtMpxuTOsXpJY8zoTEwu1TPI
-        O8I0+ErcT+B6u6+6c/NUdthpAThxsztu4ohzHqkjFHG+Tl/UvYxe35uA+nM5w3iOtrCq2rHmQp3
-        FOjcPYmBxHP2PL6R0k1gDvw==
-X-Received: by 2002:ac8:6c50:: with SMTP id z16mr1861817qtu.112.1611601241657;
-        Mon, 25 Jan 2021 11:00:41 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzhbVQKeiAUtKD0MhTm5WBE+l6/ubWfnVsRbL+ojSRynRNTNlU4ABWKDUOQ1kvHkNVDAnFgNw==
-X-Received: by 2002:ac8:6c50:: with SMTP id z16mr1861791qtu.112.1611601241353;
-        Mon, 25 Jan 2021 11:00:41 -0800 (PST)
+        bh=FFsgQkQMHGcNuO7prFnbNLIMkPeBzSiQZrxd3POXfNg=;
+        b=ASx/U/ID6ueJpdbV5YnQ2rtFPLh9uaNSncYdIW7w8YNjompwqdH1GD/uq464BErpme
+         57OS04fL5WtN2ms4Pj3yAnaEvuU8Fw+3NGEKEIN2jmbLJy1QJCdIsAKM2hKvgxDDUnho
+         OldpNzdPMzXuCCHAAF0Meli/woiJvdFLxVMXLRONxKUf2F16oArr8zfUUzTNDY0bmoiZ
+         CJ+OUeSg3xYdi4Je9TW4sUsLoolxaOOc4PeT4u2p1DanvPeSrZDNc1k10BhqNif+wcHW
+         ESjvynhUFlQp2U9hLDv0tLRA0IBAOQj2z8VagxrsXseHCZPJKbIP0oC3YwRCw9q/wsxf
+         ohOA==
+X-Gm-Message-State: AOAM532Pk7Bu9c/3JplwCHbCYEPPtvgy+S9qPvJiU74RG2jeJYqsZolE
+        Y8DxKOkRk4ztmX4nL2Dqq66H27dXr2kUTES2OgPiUKmFk7R9RYTIcsm+yaw1VCsafeT74nlGId+
+        HcsJAMeVpPGK+ZrRMpMPX8A==
+X-Received: by 2002:a0c:c384:: with SMTP id o4mr8011139qvi.21.1611703313446;
+        Tue, 26 Jan 2021 15:21:53 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJyQwxGlyfMcY1NOcyyinpE4uDbuVGu0DgI2XyVdUzWX/kxECSPbaveR0jaQIYaDyMXFFNGuVg==
+X-Received: by 2002:a0c:c384:: with SMTP id o4mr8011119qvi.21.1611703313228;
+        Tue, 26 Jan 2021 15:21:53 -0800 (PST)
 Received: from trix.remote.csb (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id 202sm9112533qkj.92.2021.01.25.11.00.39
+        by smtp.gmail.com with ESMTPSA id c12sm154500qtq.76.2021.01.26.15.21.51
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 25 Jan 2021 11:00:40 -0800 (PST)
-Subject: Re: [PATCH v9 1/2] uio: uio_dfl: add userspace i/o driver for DFL bus
-To:     Xu Yilun <yilun.xu@intel.com>, gregkh@linuxfoundation.org,
-        mdf@kernel.org, linux-fpga@vger.kernel.org,
+        Tue, 26 Jan 2021 15:21:52 -0800 (PST)
+Subject: Re: [PATCH v2 0/3] clk: clk-axiclgen: add support for ZynqMP
+To:     Alexandru Ardelean <alexandru.ardelean@analog.com>,
+        linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Cc:     lgoncalv@redhat.com, hao.wu@intel.com
-References: <1611564563-9665-1-git-send-email-yilun.xu@intel.com>
- <1611564563-9665-2-git-send-email-yilun.xu@intel.com>
+Cc:     mturquette@baylibre.com, sboyd@kernel.org, robh+dt@kernel.org,
+        lars@metafoo.de, linux-fpga@vger.kernel.org, mdf@kernel.org
+References: <20210126110826.24221-1-alexandru.ardelean@analog.com>
 From:   Tom Rix <trix@redhat.com>
-Message-ID: <e9bb1ff8-f630-f1a3-985c-7e51369a733f@redhat.com>
-Date:   Mon, 25 Jan 2021 11:00:38 -0800
+Message-ID: <eba46db2-b528-0f6f-7e23-f61fa3e265b2@redhat.com>
+Date:   Tue, 26 Jan 2021 15:21:50 -0800
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.6.0
 MIME-Version: 1.0
-In-Reply-To: <1611564563-9665-2-git-send-email-yilun.xu@intel.com>
+In-Reply-To: <20210126110826.24221-1-alexandru.ardelean@analog.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Content-Language: en-US
@@ -83,141 +83,31 @@ List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
 
-On 1/25/21 12:49 AM, Xu Yilun wrote:
-> This patch supports the DFL drivers be written in userspace. This is
-> realized by exposing the userspace I/O device interfaces.
+On 1/26/21 3:08 AM, Alexandru Ardelean wrote:
+> Previous set:
+>  https://lore.kernel.org/linux-clk/20201221144224.50814-1-alexandru.ardelean@analog.com/
 >
-> The driver now only binds the ether group feature, which has no irq. So
-> the irq support is not implemented yet.
+> Changelog v1 -> v2:
+> * split patch 'clk: axi-clkgen: add support for ZynqMP (UltraScale)'
+>   into:
+>    - clk: axi-clkgen: remove ARCH dependency in Kconfig
+>    - clk: clk-axiclkgen: add ZynqMP PFD and VCO limits
+> * essentially removed the 'adi,zynq-axi-clkgen-2.00.a' compat string
+> * removed architecture dependency on build for driver; the driver should
+>   be usable also on PCIe setups
 >
-> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> ---
-> v9: switch to add a uio driver in drivers/uio
-> ---
->  drivers/uio/Kconfig   | 13 ++++++++++
->  drivers/uio/Makefile  |  1 +
->  drivers/uio/uio_dfl.c | 66 +++++++++++++++++++++++++++++++++++++++++++++++++++
-
-You should add this to the MAINTAINERS file.
-
->  3 files changed, 80 insertions(+)
->  create mode 100644 drivers/uio/uio_dfl.c
+> Alexandru Ardelean (3):
+>   clk: axi-clkgen: remove ARCH dependency in Kconfig
+>   clk: clk-axiclkgen: add ZynqMP PFD and VCO limits
+>   dt-bindings: clock: adi,axi-clkgen: add compatible string for ZynqMP
+>     support
 >
-> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-> index 202ee81..44778f8 100644
-> --- a/drivers/uio/Kconfig
-> +++ b/drivers/uio/Kconfig
-> @@ -165,4 +165,17 @@ config UIO_HV_GENERIC
->  	  to network and storage devices from userspace.
->  
->  	  If you compile this as a module, it will be called uio_hv_generic.
-> +
-> +config UIO_DFL
-> +	tristate "Generic driver for DFL bus"
+>  .../devicetree/bindings/clock/adi,axi-clkgen.yaml     |  1 +
+>  drivers/clk/Kconfig                                   |  1 -
+>  drivers/clk/clk-axi-clkgen.c                          | 11 +++++++++++
+>  3 files changed, 12 insertions(+), 1 deletion(-)
 
-The term 'DFL' will be unknown to folks in drivers/uio
+This whole set looks fine.
 
-I think it would be better if DFL was always prefixed 'FPGA DFL'
-
-> +	depends on FPGA_DFL
-> +	help
-> +	  Generic DFL (Device Feature List) driver for Userspace I/O devices.
-> +	  It is useful to provide direct access to DFL devices from userspace.
-> +	  A sample userspace application using this driver is available for
-> +	  download in a git repository:
-> +
-> +	    git clone https://github.com/OPAE/opae-sdk.git
-> +
-> +	  If you compile this as a module, it will be called uio_dfl.
-
-opae-sdk is pretty large and uncovered in the Documentation/fpga/dfl.rst.
-
-Where in opae-sdk is this example ?
-
-If you can point me at the example, I will turn it into a selftest.
-
-Tom
-
->  endif
-> diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
-> index c285dd2..f2f416a1 100644
-> --- a/drivers/uio/Makefile
-> +++ b/drivers/uio/Makefile
-> @@ -11,3 +11,4 @@ obj-$(CONFIG_UIO_PRUSS)         += uio_pruss.o
->  obj-$(CONFIG_UIO_MF624)         += uio_mf624.o
->  obj-$(CONFIG_UIO_FSL_ELBC_GPCM)	+= uio_fsl_elbc_gpcm.o
->  obj-$(CONFIG_UIO_HV_GENERIC)	+= uio_hv_generic.o
-> +obj-$(CONFIG_UIO_DFL)	+= uio_dfl.o
-> diff --git a/drivers/uio/uio_dfl.c b/drivers/uio/uio_dfl.c
-> new file mode 100644
-> index 0000000..89c0fc7
-> --- /dev/null
-> +++ b/drivers/uio/uio_dfl.c
-> @@ -0,0 +1,66 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Generic DFL driver for Userspace I/O devicess
-> + *
-> + * Copyright (C) 2021 Intel Corporation, Inc.
-> + */
-> +#include <linux/dfl.h>
-> +#include <linux/errno.h>
-> +#include <linux/module.h>
-> +#include <linux/uio_driver.h>
-> +
-> +#define DRIVER_NAME "uio_dfl"
-> +
-> +static int uio_dfl_probe(struct dfl_device *ddev)
-> +{
-> +	struct resource *r = &ddev->mmio_res;
-> +	struct device *dev = &ddev->dev;
-> +	struct uio_info *uioinfo;
-> +	struct uio_mem *uiomem;
-> +	int ret;
-> +
-> +	uioinfo = devm_kzalloc(dev, sizeof(struct uio_info), GFP_KERNEL);
-> +	if (!uioinfo)
-> +		return -ENOMEM;
-> +
-> +	uioinfo->name = DRIVER_NAME;
-> +	uioinfo->version = "0";
-> +
-> +	uiomem = &uioinfo->mem[0];
-> +	uiomem->memtype = UIO_MEM_PHYS;
-> +	uiomem->addr = r->start & PAGE_MASK;
-> +	uiomem->offs = r->start & ~PAGE_MASK;
-> +	uiomem->size = (uiomem->offs + resource_size(r)
-> +			+ PAGE_SIZE - 1) & PAGE_MASK;
-> +	uiomem->name = r->name;
-> +
-> +	/* Irq is yet to be supported */
-> +	uioinfo->irq = UIO_IRQ_NONE;
-> +
-> +	ret = devm_uio_register_device(dev, uioinfo);
-> +	if (ret)
-> +		dev_err(dev, "unable to register uio device\n");
-> +
-> +	return ret;
-> +}
-> +
-> +#define FME_FEATURE_ID_ETH_GROUP	0x10
-> +
-> +static const struct dfl_device_id uio_dfl_ids[] = {
-> +	{ FME_ID, FME_FEATURE_ID_ETH_GROUP },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(dfl, uio_dfl_ids);
-> +
-> +static struct dfl_driver uio_dfl_driver = {
-> +	.drv = {
-> +		.name = DRIVER_NAME,
-> +	},
-> +	.id_table	= uio_dfl_ids,
-> +	.probe		= uio_dfl_probe,
-> +};
-> +module_dfl_driver(uio_dfl_driver);
-> +
-> +MODULE_DESCRIPTION("Generic DFL driver for Userspace I/O devices");
-> +MODULE_AUTHOR("Intel Corporation");
-> +MODULE_LICENSE("GPL v2");
+Reviewed-by: Tom Rix <trix@redhat.com>
 
