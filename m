@@ -2,171 +2,124 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-21.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-20.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12461C4332D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58889C43332
 	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 04:58:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EDB8D22D04
-	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 04:58:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2812B22EBF
+	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 04:58:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729900AbhAZE6O (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 25 Jan 2021 23:58:14 -0500
-Received: from mga06.intel.com ([134.134.136.31]:13347 "EHLO mga06.intel.com"
+        id S1729936AbhAZE6S (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 25 Jan 2021 23:58:18 -0500
+Received: from mga12.intel.com ([192.55.52.136]:15030 "EHLO mga12.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726316AbhAYJUO (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 25 Jan 2021 04:20:14 -0500
-IronPort-SDR: kVjbDa5jyErUlLo+DtGSkyKRo1EEQcomQnilysod0gXvOxXDa4jzEuRxyvUqDsVr2CQeFYxEhe
- 9BqD5cDMkoSg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9874"; a="241224938"
-X-IronPort-AV: E=Sophos;i="5.79,373,1602572400"; 
-   d="scan'208";a="241224938"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jan 2021 00:53:50 -0800
-IronPort-SDR: o5doBbkDT+8OCB50WofOLFXdGO1Rg8qqtTBZRxDg2MHmytxwbkXeZfzCv1B5cD+t7RiJSpWOhF
- tpgtQ61L7GJg==
+        id S1730961AbhAZBmy (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 25 Jan 2021 20:42:54 -0500
+IronPort-SDR: 2hZBl9ZYwJtE3YDDK3uIkdgpd0rLjiXSBbbgTtUntpC92imeLN0rTvuY/znC9UYluPhNbu7BSb
+ x5l/zhyULiew==
+X-IronPort-AV: E=McAfee;i="6000,8403,9875"; a="159010474"
+X-IronPort-AV: E=Sophos;i="5.79,375,1602572400"; 
+   d="scan'208";a="159010474"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jan 2021 17:42:01 -0800
+IronPort-SDR: 5MlRWDw70QwTghgTgw6xLgpclTJUgcqtcmx9Wwwl0rkmGHRqKJTpq8D0FsnxmYyFfdT+4MbYJA
+ QTZnQA9YnNaQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,373,1602572400"; 
-   d="scan'208";a="471979318"
-Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.141])
-  by fmsmga001.fm.intel.com with ESMTP; 25 Jan 2021 00:53:49 -0800
+X-IronPort-AV: E=Sophos;i="5.79,375,1602572400"; 
+   d="scan'208";a="429512742"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.141])
+  by orsmga001.jf.intel.com with ESMTP; 25 Jan 2021 17:41:58 -0800
+Date:   Tue, 26 Jan 2021 09:37:40 +0800
 From:   Xu Yilun <yilun.xu@intel.com>
-To:     gregkh@linuxfoundation.org, mdf@kernel.org,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
-        hao.wu@intel.com
-Subject: [PATCH v9 1/2] uio: uio_dfl: add userspace i/o driver for DFL bus
-Date:   Mon, 25 Jan 2021 16:49:22 +0800
-Message-Id: <1611564563-9665-2-git-send-email-yilun.xu@intel.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1611564563-9665-1-git-send-email-yilun.xu@intel.com>
+To:     Tom Rix <trix@redhat.com>
+Cc:     gregkh@linuxfoundation.org, mdf@kernel.org,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        lgoncalv@redhat.com, hao.wu@intel.com, yilun.xu@intel.com
+Subject: Re: [PATCH v9 1/2] uio: uio_dfl: add userspace i/o driver for DFL bus
+Message-ID: <20210126013740.GA3907@yilunxu-OptiPlex-7050>
 References: <1611564563-9665-1-git-send-email-yilun.xu@intel.com>
+ <1611564563-9665-2-git-send-email-yilun.xu@intel.com>
+ <e9bb1ff8-f630-f1a3-985c-7e51369a733f@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e9bb1ff8-f630-f1a3-985c-7e51369a733f@redhat.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-This patch supports the DFL drivers be written in userspace. This is
-realized by exposing the userspace I/O device interfaces.
+On Mon, Jan 25, 2021 at 11:00:38AM -0800, Tom Rix wrote:
+> 
+> On 1/25/21 12:49 AM, Xu Yilun wrote:
+> > This patch supports the DFL drivers be written in userspace. This is
+> > realized by exposing the userspace I/O device interfaces.
+> >
+> > The driver now only binds the ether group feature, which has no irq. So
+> > the irq support is not implemented yet.
+> >
+> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > ---
+> > v9: switch to add a uio driver in drivers/uio
+> > ---
+> >  drivers/uio/Kconfig   | 13 ++++++++++
+> >  drivers/uio/Makefile  |  1 +
+> >  drivers/uio/uio_dfl.c | 66 +++++++++++++++++++++++++++++++++++++++++++++++++++
+> 
+> You should add this to the MAINTAINERS file.
 
-The driver now only binds the ether group feature, which has no irq. So
-the irq support is not implemented yet.
+OK. I could add recored the file under "FPGA DFL DRIVERS"
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
----
-v9: switch to add a uio driver in drivers/uio
----
- drivers/uio/Kconfig   | 13 ++++++++++
- drivers/uio/Makefile  |  1 +
- drivers/uio/uio_dfl.c | 66 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 80 insertions(+)
- create mode 100644 drivers/uio/uio_dfl.c
+> 
+> >  3 files changed, 80 insertions(+)
+> >  create mode 100644 drivers/uio/uio_dfl.c
+> >
+> > diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+> > index 202ee81..44778f8 100644
+> > --- a/drivers/uio/Kconfig
+> > +++ b/drivers/uio/Kconfig
+> > @@ -165,4 +165,17 @@ config UIO_HV_GENERIC
+> >  	  to network and storage devices from userspace.
+> >  
+> >  	  If you compile this as a module, it will be called uio_hv_generic.
+> > +
+> > +config UIO_DFL
+> > +	tristate "Generic driver for DFL bus"
+> 
+> The term 'DFL' will be unknown to folks in drivers/uio
+> 
+> I think it would be better if DFL was always prefixed 'FPGA DFL'
 
-diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-index 202ee81..44778f8 100644
---- a/drivers/uio/Kconfig
-+++ b/drivers/uio/Kconfig
-@@ -165,4 +165,17 @@ config UIO_HV_GENERIC
- 	  to network and storage devices from userspace.
- 
- 	  If you compile this as a module, it will be called uio_hv_generic.
-+
-+config UIO_DFL
-+	tristate "Generic driver for DFL bus"
-+	depends on FPGA_DFL
-+	help
-+	  Generic DFL (Device Feature List) driver for Userspace I/O devices.
-+	  It is useful to provide direct access to DFL devices from userspace.
-+	  A sample userspace application using this driver is available for
-+	  download in a git repository:
-+
-+	    git clone https://github.com/OPAE/opae-sdk.git
-+
-+	  If you compile this as a module, it will be called uio_dfl.
- endif
-diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
-index c285dd2..f2f416a1 100644
---- a/drivers/uio/Makefile
-+++ b/drivers/uio/Makefile
-@@ -11,3 +11,4 @@ obj-$(CONFIG_UIO_PRUSS)         += uio_pruss.o
- obj-$(CONFIG_UIO_MF624)         += uio_mf624.o
- obj-$(CONFIG_UIO_FSL_ELBC_GPCM)	+= uio_fsl_elbc_gpcm.o
- obj-$(CONFIG_UIO_HV_GENERIC)	+= uio_hv_generic.o
-+obj-$(CONFIG_UIO_DFL)	+= uio_dfl.o
-diff --git a/drivers/uio/uio_dfl.c b/drivers/uio/uio_dfl.c
-new file mode 100644
-index 0000000..89c0fc7
---- /dev/null
-+++ b/drivers/uio/uio_dfl.c
-@@ -0,0 +1,66 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Generic DFL driver for Userspace I/O devicess
-+ *
-+ * Copyright (C) 2021 Intel Corporation, Inc.
-+ */
-+#include <linux/dfl.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/uio_driver.h>
-+
-+#define DRIVER_NAME "uio_dfl"
-+
-+static int uio_dfl_probe(struct dfl_device *ddev)
-+{
-+	struct resource *r = &ddev->mmio_res;
-+	struct device *dev = &ddev->dev;
-+	struct uio_info *uioinfo;
-+	struct uio_mem *uiomem;
-+	int ret;
-+
-+	uioinfo = devm_kzalloc(dev, sizeof(struct uio_info), GFP_KERNEL);
-+	if (!uioinfo)
-+		return -ENOMEM;
-+
-+	uioinfo->name = DRIVER_NAME;
-+	uioinfo->version = "0";
-+
-+	uiomem = &uioinfo->mem[0];
-+	uiomem->memtype = UIO_MEM_PHYS;
-+	uiomem->addr = r->start & PAGE_MASK;
-+	uiomem->offs = r->start & ~PAGE_MASK;
-+	uiomem->size = (uiomem->offs + resource_size(r)
-+			+ PAGE_SIZE - 1) & PAGE_MASK;
-+	uiomem->name = r->name;
-+
-+	/* Irq is yet to be supported */
-+	uioinfo->irq = UIO_IRQ_NONE;
-+
-+	ret = devm_uio_register_device(dev, uioinfo);
-+	if (ret)
-+		dev_err(dev, "unable to register uio device\n");
-+
-+	return ret;
-+}
-+
-+#define FME_FEATURE_ID_ETH_GROUP	0x10
-+
-+static const struct dfl_device_id uio_dfl_ids[] = {
-+	{ FME_ID, FME_FEATURE_ID_ETH_GROUP },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(dfl, uio_dfl_ids);
-+
-+static struct dfl_driver uio_dfl_driver = {
-+	.drv = {
-+		.name = DRIVER_NAME,
-+	},
-+	.id_table	= uio_dfl_ids,
-+	.probe		= uio_dfl_probe,
-+};
-+module_dfl_driver(uio_dfl_driver);
-+
-+MODULE_DESCRIPTION("Generic DFL driver for Userspace I/O devices");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
--- 
-2.7.4
+The bus is named as "DFL bus", how about we add the full name like the
+following help message.
 
+  tristate "Generic driver for DFL (Device Feature List) bus"
+
+> 
+> > +	depends on FPGA_DFL
+> > +	help
+> > +	  Generic DFL (Device Feature List) driver for Userspace I/O devices.
+> > +	  It is useful to provide direct access to DFL devices from userspace.
+> > +	  A sample userspace application using this driver is available for
+> > +	  download in a git repository:
+> > +
+> > +	    git clone https://github.com/OPAE/opae-sdk.git
+> > +
+> > +	  If you compile this as a module, it will be called uio_dfl.
+> 
+> opae-sdk is pretty large and uncovered in the Documentation/fpga/dfl.rst.
+> 
+> Where in opae-sdk is this example ?
+
+You can find the example in tools/libopaeuio/. I could add the path in
+help message.
+
+Thanks,
+Yilun
+
+> 
+> If you can point me at the example, I will turn it into a selftest.
