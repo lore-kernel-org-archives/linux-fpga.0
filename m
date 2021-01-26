@@ -6,102 +6,94 @@ X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FE66C433E9
-	for <linux-fpga@archiver.kernel.org>; Wed, 27 Jan 2021 04:47:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7543CC433E0
+	for <linux-fpga@archiver.kernel.org>; Wed, 27 Jan 2021 04:47:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EF3F32070C
-	for <linux-fpga@archiver.kernel.org>; Wed, 27 Jan 2021 04:47:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 340152070C
+	for <linux-fpga@archiver.kernel.org>; Wed, 27 Jan 2021 04:47:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239540AbhA0Epp (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 26 Jan 2021 23:45:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35856 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231732AbhA0C4H (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 26 Jan 2021 21:56:07 -0500
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74161C061356;
-        Tue, 26 Jan 2021 18:38:57 -0800 (PST)
-Received: by mail-pj1-x1030.google.com with SMTP id u4so410363pjn.4;
-        Tue, 26 Jan 2021 18:38:57 -0800 (PST)
+        id S238597AbhA0Epi (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 26 Jan 2021 23:45:38 -0500
+Received: from mail-pl1-f180.google.com ([209.85.214.180]:44890 "EHLO
+        mail-pl1-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728344AbhAZFLO (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 26 Jan 2021 00:11:14 -0500
+Received: by mail-pl1-f180.google.com with SMTP id r4so9154876pls.11;
+        Mon, 25 Jan 2021 21:10:54 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=vklqd1CpSD6MzJLSP3R3zsuOOkfooEPp/iNgXN0T0fo=;
-        b=c5RO3dEx0VxceY8JbhIgRQ/xXMdDVCmThzK2kX8xMsQV2hQzkAuCDGStm3l3mKKZqp
-         NQRfgfBI0Ny71HDkFwn7AMLYPJASdfB7lAkcTq2pRgyaEMBHFIDFvaSJF22mNaX8hasY
-         4pXonnSJRudWfOALOB1C1QLx9ZU6+aJhqBw6olQFZpFWrz8kN6jVwD2tssa16C9jNLps
-         pBRcfFFfOowBMW4pt4hwokzFUiNNoA6sJxokCCxTqQ7EJkDei61PFXKiC/2nF2MJsaD8
-         XRLr4pkITvoejI4Duhg8YFOaFR9lt+vhIKgLti6IuBHgDP4kD0lawhjaAEubTiZSb4ch
-         XAPw==
-X-Gm-Message-State: AOAM5321DbBE6z7BAMYa9k8fh3YdbS2jMr5RMzqu3yWvGhf52f4NfXS4
-        bwOBdIgDsJWUBvotdK/DY5o=
-X-Google-Smtp-Source: ABdhPJzDMFPavXxrd/pehJ8vKuy9+lAOm2D9rjspN+qou+kgmoZiHv+UcypGCMJcjC2bMLbacmaIHA==
-X-Received: by 2002:a17:90a:17c6:: with SMTP id q64mr2992388pja.65.1611715135226;
-        Tue, 26 Jan 2021 18:38:55 -0800 (PST)
+        bh=6Z2Az4u1rmOoRqGFz5sYMrMjNTGj+TrZ7aPQiL92Nhk=;
+        b=RitPwl4qQkjD5wZfuNGT0piIaW4nYktQ6f3NgfIO6N4wL7yVDDPV6CWMgrpQ9An1Ss
+         mKs0caym/BB6Y+zZGodhOb86UHllqM22fJ+mT91nMUn2AZnRCYVxlkZ3OB56UBds1cTE
+         lT/cFJ1HcYeacV8wurQTi5Mq7DB1f7jyXiaat2audI1yPSwJxufSwreQ/oQhL3GZLpa0
+         dMYdB8Afe7xr3aoQBB2p1NPMGtfzBjiNG9a/0n++qo+16IbmkjE7R5oRoIEj87y2UoIl
+         qkj78IrQNC/LZp1Xwt0O9akaE9p6c+ZLKAZShoWSN9NL+AaHigvyL87atJDgN/BQCSP6
+         pLdw==
+X-Gm-Message-State: AOAM531nvJrQh8HXNv1A59tJZn3Mnl3gmpnJ8FTZ96Ggp9wyRu+oOW0n
+        QMHeCf6k+jZKG80vgNoUbU8=
+X-Google-Smtp-Source: ABdhPJw09/4ipOIjz/d2bLbgzSBvb/gCPL7qBnCqneXCkDC9apPuIt+j3mO6mycM6pUDoS0ih2uAbg==
+X-Received: by 2002:a17:90a:c787:: with SMTP id gn7mr4067689pjb.222.1611637829060;
+        Mon, 25 Jan 2021 21:10:29 -0800 (PST)
 Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
-        by smtp.gmail.com with ESMTPSA id n15sm218388pjk.57.2021.01.26.18.38.54
+        by smtp.gmail.com with ESMTPSA id x67sm8088107pfd.106.2021.01.25.21.10.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Jan 2021 18:38:54 -0800 (PST)
-Date:   Tue, 26 Jan 2021 18:38:53 -0800
+        Mon, 25 Jan 2021 21:10:28 -0800 (PST)
+Date:   Mon, 25 Jan 2021 21:10:27 -0800
 From:   Moritz Fischer <mdf@kernel.org>
-To:     Alexandru Ardelean <alexandru.ardelean@analog.com>
-Cc:     linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, mturquette@baylibre.com,
-        sboyd@kernel.org, robh+dt@kernel.org, lars@metafoo.de,
-        linux-fpga@vger.kernel.org, mdf@kernel.org,
-        Dragos Bogdan <dragos.bogdan@analog.com>
-Subject: Re: [PATCH v2 1/3] clk: axi-clkgen: remove ARCH dependency in Kconfig
-Message-ID: <YBDSPVgmqD2JvPbk@epycbox.lan>
-References: <20210126110826.24221-1-alexandru.ardelean@analog.com>
- <20210126110826.24221-2-alexandru.ardelean@analog.com>
+To:     richard.gong@linux.intel.com
+Cc:     mdf@kernel.org, trix@redhat.com, gregkh@linuxfoundation.org,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dinguyen@kernel.org, sridhar.rajagopal@intel.com,
+        Richard Gong <richard.gong@intel.com>
+Subject: Re: [PATCHv3 4/6] fpga: of-fpga-region: add authenticate-fpga-config
+ property
+Message-ID: <YA+kQ2unznKRqp8p@epycbox.lan>
+References: <1611608188-25621-1-git-send-email-richard.gong@linux.intel.com>
+ <1611608188-25621-5-git-send-email-richard.gong@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210126110826.24221-2-alexandru.ardelean@analog.com>
+In-Reply-To: <1611608188-25621-5-git-send-email-richard.gong@linux.intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Alexandru,
-
-On Tue, Jan 26, 2021 at 01:08:24PM +0200, Alexandru Ardelean wrote:
-> The intent is to be able to run this driver to access the IP core in setups
-> where FPGA board is also connected via a PCIe bus. In such cases the number
-> of combinations explodes, where the host system can be an x86 with Xilinx
-> Zynq/ZynqMP/Microblaze board connected via PCIe.
-> Or even a ZynqMP board with a ZynqMP/Zynq/Microblaze connected via PCIe.
+On Mon, Jan 25, 2021 at 02:56:26PM -0600, richard.gong@linux.intel.com wrote:
+> From: Richard Gong <richard.gong@intel.com>
 > 
-> To accommodate for these cases, this change removes the limitation for this
-> driver to be compilable only on Zynq/Microblaze architectures.
+> Add authenticate-fpga-config property to support FPGA bitstream
+> authentication, which makes sure a signed bitstream has valid signatures.
 > 
-> Signed-off-by: Dragos Bogdan <dragos.bogdan@analog.com>
-> Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
+> Signed-off-by: Richard Gong <richard.gong@intel.com>
 > ---
->  drivers/clk/Kconfig | 1 -
->  1 file changed, 1 deletion(-)
+> v3: no change
+> v2: changed in alphabetical order
+> ---
+>  drivers/fpga/of-fpga-region.c | 3 +++
+>  1 file changed, 3 insertions(+)
 > 
-> diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
-> index 85856cff506c..d8c2d4593926 100644
-> --- a/drivers/clk/Kconfig
-> +++ b/drivers/clk/Kconfig
-> @@ -247,7 +247,6 @@ config CLK_TWL6040
+> diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+> index e405309..3840883 100644
+> --- a/drivers/fpga/of-fpga-region.c
+> +++ b/drivers/fpga/of-fpga-region.c
+> @@ -219,6 +219,9 @@ static struct fpga_image_info *of_fpga_region_parse_ov(
+>  	info->overlay = overlay;
 >  
->  config COMMON_CLK_AXI_CLKGEN
->  	tristate "AXI clkgen driver"
-> -	depends on ARCH_ZYNQ || MICROBLAZE || COMPILE_TEST
-Umhhh ... no dependencies? How are you accessing your registers? You
-seem to be using device tree, probably:
+>  	/* Read FPGA region properties from the overlay */
+> +	if (of_property_read_bool(overlay, "authenticate-fpga-config"))
+> +		info->flags |= FPGA_MGR_BITSTREM_AUTHENTICATION;
+> +
+Should you check here that no new nodes are being added as you *only*
+authenticate?
 
-	depends on HAS_IOMEM || COMPILE_TEST
-	depends on OF
-
-at least? Please double check your dependencies.
->  	help
->  	  Support for the Analog Devices axi-clkgen pcore clock generator for Xilinx
->  	  FPGAs. It is commonly used in Analog Devices' reference designs.
+>  	if (of_property_read_bool(overlay, "partial-fpga-config"))
+>  		info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
+>  
 > -- 
-> 2.17.1
+> 2.7.4
 > 
 
-- Moritz
+Thanks,
+Moritz
