@@ -2,159 +2,238 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-22.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2F6FC433E6
-	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 13:51:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE720C433DB
+	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 14:23:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 90A3B22B2C
-	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 13:51:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8C50D22D58
+	for <linux-fpga@archiver.kernel.org>; Tue, 26 Jan 2021 14:23:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2405516AbhAZNvB (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 26 Jan 2021 08:51:01 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:24469 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S2405514AbhAZNut (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 26 Jan 2021 08:50:49 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1611668960;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=MYu5BQ2EF91Z99K/GYTOY1vC6Pp9/D8PfbMST9otyFw=;
-        b=RFCNzvsvHmkrvGROSKFxFAkryJN1PPaHcF4D0niELkeC9q92OkIsAWczC6eBvdSQEIuRKV
-        f23VZEA0uaQCrxP+dDCshb8wm5gYRYJJHddOUYcbRmMBr11nrM+igGW+qQOgSIAdrpMxJa
-        Re2DvwRn6uOZfcAWIcDl0j+R8xy0L2Y=
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com
- [209.85.222.199]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-371-2T-GKp6qOd-noPU_7KM0AA-1; Tue, 26 Jan 2021 08:49:17 -0500
-X-MC-Unique: 2T-GKp6qOd-noPU_7KM0AA-1
-Received: by mail-qk1-f199.google.com with SMTP id y187so12401963qke.20
-        for <linux-fpga@vger.kernel.org>; Tue, 26 Jan 2021 05:49:17 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding
-         :content-language;
-        bh=MYu5BQ2EF91Z99K/GYTOY1vC6Pp9/D8PfbMST9otyFw=;
-        b=nHLuS9LtSomNj+SozTpEYKqIQfGLlRwjsSM9f8zO1zXDcukEYbS6kY5lwlePZly8YW
-         Dt8Gg4b/KPEmzIw6EU2S1wGB+HhH6eP9D8pX5J8wHoLa/Ga8OggOIdjDpkVCv+bEh+5+
-         CkXXfC9jO+Vlj3kW1ZQBq+Sa0rVKxaQLwtZE9Fgl53Cow18ISsAqmPHXvSUY4eMlgMPk
-         erlknbblnvJFljhe+BVW09QN9pZz8ChL56tWluN17+eLeiIOSgVV5r2o8HKZD78SE9ja
-         bbJA6dI0uxecO17Mvb2fDxB7qGtlQqXxt3CPTntjhF9Ee825pf98RxP7g0KiXiQeGXoH
-         qJag==
-X-Gm-Message-State: AOAM532B+6pGXV69JzKNIDq5pcIZu8f4LKNNIBACy3XHt+4B6tk8Mjis
-        RTgJ93CEg6zPjvgvqRgwT5uVxeG/SJYZ8THAR5YU3nkBa+27mHc5wRrFCqVpFi9zT7PeRU+vtu9
-        Md91G3Mgh1/QuXocI2d3a+A==
-X-Received: by 2002:a37:8344:: with SMTP id f65mr5590661qkd.398.1611668957155;
-        Tue, 26 Jan 2021 05:49:17 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzZDLsBwpdlQ4agI0cNfcNke8pZgQ77JzfLYMIDWdFaOKEFCetH7NP1xUkn9txwyk3OaxJ2ww==
-X-Received: by 2002:a37:8344:: with SMTP id f65mr5590638qkd.398.1611668956833;
-        Tue, 26 Jan 2021 05:49:16 -0800 (PST)
-Received: from trix.remote.csb (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id u5sm14547658qkb.120.2021.01.26.05.49.15
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 26 Jan 2021 05:49:16 -0800 (PST)
-Subject: Re: [PATCH v9 1/2] uio: uio_dfl: add userspace i/o driver for DFL bus
-To:     Xu Yilun <yilun.xu@intel.com>, Moritz Fischer <mdf@kernel.org>
-Cc:     gregkh@linuxfoundation.org, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org, lgoncalv@redhat.com, hao.wu@intel.com
-References: <1611564563-9665-1-git-send-email-yilun.xu@intel.com>
- <1611564563-9665-2-git-send-email-yilun.xu@intel.com>
- <e9bb1ff8-f630-f1a3-985c-7e51369a733f@redhat.com>
- <YA98/8r+yOCurHAJ@epycbox.lan> <20210126024005.GB3907@yilunxu-OptiPlex-7050>
-From:   Tom Rix <trix@redhat.com>
-Message-ID: <2453fe70-9459-f260-305c-3ca5d6fa8aff@redhat.com>
-Date:   Tue, 26 Jan 2021 05:49:14 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
+        id S2404103AbhAZOO4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 26 Jan 2021 09:14:56 -0500
+Received: from mga02.intel.com ([134.134.136.20]:7404 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2392688AbhAZNls (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 26 Jan 2021 08:41:48 -0500
+IronPort-SDR: MRL9Ttc//G+ifgUdQ1tG00y8KUVwWg8qUfg5yDAR68uvNVwGQ/Z045elmPD6ONs3nQSo9oV6oU
+ 5nVzvLac/w3Q==
+X-IronPort-AV: E=McAfee;i="6000,8403,9875"; a="167000411"
+X-IronPort-AV: E=Sophos;i="5.79,375,1602572400"; 
+   d="scan'208";a="167000411"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2021 05:40:00 -0800
+IronPort-SDR: QEPpNYvB7Nf0nr7yJw2c1Rbo8Iri/iNym0Adk43Mz5xovxm3lpIoUsF0AHBS+k1So0yyu2eveq
+ tBEmgUqBPepg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.79,375,1602572400"; 
+   d="scan'208";a="356725885"
+Received: from marshy.an.intel.com (HELO [10.122.105.143]) ([10.122.105.143])
+  by orsmga006.jf.intel.com with ESMTP; 26 Jan 2021 05:40:00 -0800
+Subject: Re: [PATCHv3 6/6] fpga: stratix10-soc: extend driver for bitstream
+ authentication
+To:     Moritz Fischer <mdf@kernel.org>
+Cc:     trix@redhat.com, gregkh@linuxfoundation.org,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dinguyen@kernel.org, sridhar.rajagopal@intel.com,
+        Richard Gong <richard.gong@intel.com>
+References: <1611608188-25621-1-git-send-email-richard.gong@linux.intel.com>
+ <1611608188-25621-7-git-send-email-richard.gong@linux.intel.com>
+ <YA+kDJ4gd1VIxQqE@epycbox.lan>
+From:   Richard Gong <richard.gong@linux.intel.com>
+Message-ID: <eb20a836-a6df-fb5f-f73d-74f1a7fb77dd@linux.intel.com>
+Date:   Tue, 26 Jan 2021 08:00:46 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <20210126024005.GB3907@yilunxu-OptiPlex-7050>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <YA+kDJ4gd1VIxQqE@epycbox.lan>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
+Hi Moritz,
 
-On 1/25/21 6:40 PM, Xu Yilun wrote:
-> On Mon, Jan 25, 2021 at 06:22:55PM -0800, Moritz Fischer wrote:
->> On Mon, Jan 25, 2021 at 11:00:38AM -0800, Tom Rix wrote:
->>> On 1/25/21 12:49 AM, Xu Yilun wrote:
->>>> This patch supports the DFL drivers be written in userspace. This is
->>>> realized by exposing the userspace I/O device interfaces.
->>>>
->>>> The driver now only binds the ether group feature, which has no irq. So
->>>> the irq support is not implemented yet.
->>>>
->>>> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
->>>> ---
->>>> v9: switch to add a uio driver in drivers/uio
->>>> ---
->>>>  drivers/uio/Kconfig   | 13 ++++++++++
->>>>  drivers/uio/Makefile  |  1 +
->>>>  drivers/uio/uio_dfl.c | 66 +++++++++++++++++++++++++++++++++++++++++++++++++++
->>> You should add this to the MAINTAINERS file.
->> This is covered by MAINTAINERS under drivers/uio.
-> Yes. But is it OK I also add the file in "FPGA DFL DRIVERS"? So DFL
-> developers would also be aware if there is change. It is a little
-> different from other feature driver, it is like a generic driver for
-> DFL bus.
+On 1/25/21 11:09 PM, Moritz Fischer wrote:
+> On Mon, Jan 25, 2021 at 02:56:28PM -0600, richard.gong@linux.intel.com wrote:
+>> From: Richard Gong <richard.gong@intel.com>
+>>
+>> Extend FPGA manager driver to support FPGA bitstream authentication on
+>> Intel SocFPGA platforms.
+>>
+>> Signed-off-by: Richard Gong <richard.gong@intel.com>
+>> ---
+>> v3: add handle to retriev the firmware version to keep driver
+>>      back compatible
+>> v2: use flag defined in stratix10-svc driver
+>> ---
+>>   drivers/fpga/stratix10-soc.c | 62 +++++++++++++++++++++++++++++++++++++++-----
+>>   1 file changed, 56 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+>> index 657a70c..59d738c 100644
+>> --- a/drivers/fpga/stratix10-soc.c
+>> +++ b/drivers/fpga/stratix10-soc.c
+>> @@ -24,6 +24,10 @@
+>>   #define S10_BUFFER_TIMEOUT (msecs_to_jiffies(SVC_RECONFIG_BUFFER_TIMEOUT_MS))
+>>   #define S10_RECONFIG_TIMEOUT (msecs_to_jiffies(SVC_RECONFIG_REQUEST_TIMEOUT_MS))
+>>   
+>> +#define INVALID_FIRMWARE_VERSION	0xFFFF
+>> +typedef void (*s10_callback)(struct stratix10_svc_client *client,
+>> +			     struct stratix10_svc_cb_data *data);
+>> +
+>>   /*
+>>    * struct s10_svc_buf
+>>    * buf:  virtual address of buf provided by service layer
+>> @@ -40,11 +44,13 @@ struct s10_priv {
+>>   	struct completion status_return_completion;
+>>   	struct s10_svc_buf svc_bufs[NUM_SVC_BUFS];
+>>   	unsigned long status;
+>> +	unsigned int fw_version;
+>>   };
+>>   
+>>   static int s10_svc_send_msg(struct s10_priv *priv,
+>>   			    enum stratix10_svc_command_code command,
+>> -			    void *payload, u32 payload_length)
+>> +			    void *payload, u32 payload_length,
+>> +			    s10_callback callback)
+>>   {
+>>   	struct stratix10_svc_chan *chan = priv->chan;
+>>   	struct device *dev = priv->client.dev;
+>> @@ -57,6 +63,7 @@ static int s10_svc_send_msg(struct s10_priv *priv,
+>>   	msg.command = command;
+>>   	msg.payload = payload;
+>>   	msg.payload_length = payload_length;
+>> +	priv->client.receive_cb = callback;
+>>   
+>>   	ret = stratix10_svc_send(chan, &msg);
+>>   	dev_dbg(dev, "stratix10_svc_send returned status %d\n", ret);
+>> @@ -134,6 +141,29 @@ static void s10_unlock_bufs(struct s10_priv *priv, void *kaddr)
+>>   }
+>>   
+>>   /*
+>> + * s10_fw_version_callback - callback for the version of running firmware
+>> + * @client: service layer client struct
+>> + * @data: message from service layer
+>> + */
+>> +static void s10_fw_version_callback(struct stratix10_svc_client *client,
+>> +				    struct stratix10_svc_cb_data *data)
+>> +{
+>> +	struct s10_priv *priv = client->priv;
+>> +	unsigned int *version = (unsigned int *)data->kaddr1;
+>> +
+>> +	if (data->status == BIT(SVC_STATUS_OK))
+>> +		priv->fw_version = *version;
+>> +	else if (data->status == BIT(SVC_STATUS_NO_SUPPORT))
+>> +		dev_warn(client->dev,
+>> +			 "FW doesn't support bitstream authentication\n");
+>> +	else
+>> +		dev_err(client->dev, "Failed to get FW version %lu\n",
+>> +			BIT(data->status));
+>> +
+>> +	complete(&priv->status_return_completion);
+>> +}
+>> +
+>> +/*
+>>    * s10_receive_callback - callback for service layer to use to provide client
+>>    * (this driver) messages received through the mailbox.
+>>    * client: service layer client struct
+>> @@ -186,13 +216,22 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
+>>   	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
+>>   		dev_dbg(dev, "Requesting partial reconfiguration.\n");
+>>   		ctype.flags |= BIT(COMMAND_RECONFIG_FLAG_PARTIAL);
+>> +	} else if (info->flags & FPGA_MGR_BITSTREM_AUTHENTICATION) {
+> BITSTREAM ;-)
+> 
+> Nit: Maybe the flag could be FPGA_MGR_BITSTREAM_AUTHENTICATE and/or
+> FPGA_MGR_BITSTREAM_AUTH_AND_PERSIST.
 
-I think the issue is which maintainer branch this gets merged into.
+Thanks, I will correct both in next submission.
 
-It would not be linux-fpga.
-
-It is this sort of driver I want to add to FPGA SUBDEVICES list described here
-
-https://lore.kernel.org/linux-fpga/96a9d3d9-6091-47c9-21f9-0cfdd9464732@redhat.com/
-
-Where the driver is maintained in the subsystem but reviewed in linux-fpga.
-
-Tom
-
->>>>  3 files changed, 80 insertions(+)
->>>>  create mode 100644 drivers/uio/uio_dfl.c
->>>>
->>>> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
->>>> index 202ee81..44778f8 100644
->>>> --- a/drivers/uio/Kconfig
->>>> +++ b/drivers/uio/Kconfig
->>>> @@ -165,4 +165,17 @@ config UIO_HV_GENERIC
->>>>  	  to network and storage devices from userspace.
->>>>  
->>>>  	  If you compile this as a module, it will be called uio_hv_generic.
->>>> +
->>>> +config UIO_DFL
->>>> +	tristate "Generic driver for DFL bus"
->>> The term 'DFL' will be unknown to folks in drivers/uio
->>>
->>> I think it would be better if DFL was always prefixed 'FPGA DFL'
->>>
->>>> +	depends on FPGA_DFL
->>>> +	help
->>>> +	  Generic DFL (Device Feature List) driver for Userspace I/O devices.
->>>> +	  It is useful to provide direct access to DFL devices from userspace.
->>>> +	  A sample userspace application using this driver is available for
->>>> +	  download in a git repository:
->>>> +
->>>> +	    git clone https://github.com/OPAE/opae-sdk.git
->>>> +
->>>> +	  If you compile this as a module, it will be called uio_dfl.
->> I'm not sure KConfig is the right place for this.
-> Do you mean the OPAE link? I see several uio drivers provide their
-> userspace application link in Kconfig. I guess the uio drivers are
-> selected for these applications so it may be better pointing out where
-> they are.
->
+>> +		if (priv->fw_version == INVALID_FIRMWARE_VERSION) {
+>> +			dev_err(dev, "FW doesn't support\n");
+>> +			return -EINVAL;
+>> +		}
+>> +
+>> +		dev_dbg(dev, "Requesting bitstream authentication.\n");
+>> +		ctype.flags |= BIT(COMMAND_AUTHENTICATE_BITSTREAM);
+>>   	} else {
+>>   		dev_dbg(dev, "Requesting full reconfiguration.\n");
+>>   	}
+>>   
+>>   	reinit_completion(&priv->status_return_completion);
+>>   	ret = s10_svc_send_msg(priv, COMMAND_RECONFIG,
+>> -			       &ctype, sizeof(ctype));
+>> +			       &ctype, sizeof(ctype),
+>> +			       s10_receive_callback);
+>>   	if (ret < 0)
+>>   		goto init_done;
+>>   
+>> @@ -259,7 +298,7 @@ static int s10_send_buf(struct fpga_manager *mgr, const char *buf, size_t count)
+>>   	svc_buf = priv->svc_bufs[i].buf;
+>>   	memcpy(svc_buf, buf, xfer_sz);
+>>   	ret = s10_svc_send_msg(priv, COMMAND_RECONFIG_DATA_SUBMIT,
+>> -			       svc_buf, xfer_sz);
+>> +			       svc_buf, xfer_sz, s10_receive_callback);
+>>   	if (ret < 0) {
+>>   		dev_err(dev,
+>>   			"Error while sending data to service layer (%d)", ret);
+>> @@ -303,7 +342,7 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
+>>   
+>>   			ret = s10_svc_send_msg(
+>>   				priv, COMMAND_RECONFIG_DATA_CLAIM,
+>> -				NULL, 0);
+>> +				NULL, 0, s10_receive_callback);
+>>   			if (ret < 0)
+>>   				break;
+>>   		}
+>> @@ -357,7 +396,8 @@ static int s10_ops_write_complete(struct fpga_manager *mgr,
+>>   	do {
+>>   		reinit_completion(&priv->status_return_completion);
+>>   
+>> -		ret = s10_svc_send_msg(priv, COMMAND_RECONFIG_STATUS, NULL, 0);
+>> +		ret = s10_svc_send_msg(priv, COMMAND_RECONFIG_STATUS,
+>> +				       NULL, 0, s10_receive_callback);
+>>   		if (ret < 0)
+>>   			break;
+>>   
+>> @@ -411,8 +451,9 @@ static int s10_probe(struct platform_device *pdev)
+>>   	if (!priv)
+>>   		return -ENOMEM;
+>>   
+>> +	priv->fw_version = INVALID_FIRMWARE_VERSION;
+>>   	priv->client.dev = dev;
+>> -	priv->client.receive_cb = s10_receive_callback;
+>> +	priv->client.receive_cb = NULL;
+>>   	priv->client.priv = priv;
+>>   
+>>   	priv->chan = stratix10_svc_request_channel_byname(&priv->client,
+>> @@ -440,6 +481,15 @@ static int s10_probe(struct platform_device *pdev)
+>>   		goto probe_err;
+>>   	}
+>>   
+>> +	/* get the running firmware version */
+>> +	ret = s10_svc_send_msg(priv, COMMAND_FIRMWARE_VERSION,
+>> +			       NULL, 0, s10_fw_version_callback);
+>> +	if (ret) {
+>> +		dev_err(dev, "couldn't get firmware version\n");
+>> +		fpga_mgr_free(mgr);
+>> +		goto probe_err;
+>> +	}
+>> +
+>>   	platform_set_drvdata(pdev, mgr);
+>>   	return ret;
+>>   
+>> -- 
+>> 2.7.4
+>>
 > Thanks,
-> Yilun
->
-
+> Moritz
+> 
+Regards,
+Richard
