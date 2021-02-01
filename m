@@ -2,91 +2,92 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98E3FC433DB
-	for <linux-fpga@archiver.kernel.org>; Mon,  1 Feb 2021 15:11:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 326FEC433DB
+	for <linux-fpga@archiver.kernel.org>; Mon,  1 Feb 2021 15:11:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 680FF64DAD
-	for <linux-fpga@archiver.kernel.org>; Mon,  1 Feb 2021 15:11:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EDFFC64DAF
+	for <linux-fpga@archiver.kernel.org>; Mon,  1 Feb 2021 15:11:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231269AbhBAPLA (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 1 Feb 2021 10:11:00 -0500
-Received: from mga06.intel.com ([134.134.136.31]:33931 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229786AbhBAPEA (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 1 Feb 2021 10:04:00 -0500
-IronPort-SDR: E0FLsjojSzS9M617j7D5VNPdrkyCnrB4gIO9ax4yLMq9vahepIhouUfU6bwKC1yj2Wd0s3MS8w
- pqbyZDulhRPA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9882"; a="242214675"
-X-IronPort-AV: E=Sophos;i="5.79,392,1602572400"; 
-   d="scan'208";a="242214675"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2021 07:02:31 -0800
-IronPort-SDR: 2ARkCyIwXa+X+eu0ld0ayvFlJlLt0OEvdfW1qzsXICfxmEdOvOLHRoS6SnwNqwLD/1sGy7L9ui
- w/nn0OxQTjEQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,392,1602572400"; 
-   d="scan'208";a="369891571"
-Received: from marshy.an.intel.com ([10.122.105.143])
-  by fmsmga008.fm.intel.com with ESMTP; 01 Feb 2021 07:02:31 -0800
-From:   richard.gong@linux.intel.com
-To:     mdf@kernel.org, trix@redhat.com, gregkh@linuxfoundation.org,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     Richard Gong <richard.gong@intel.com>
-Subject: [PATCHv4 3/6] fpga: fpga-mgr: add FPGA_MGR_BITSTREAM_AUTHENTICATE flag
-Date:   Mon,  1 Feb 2021 09:21:56 -0600
-Message-Id: <1612192919-4069-4-git-send-email-richard.gong@linux.intel.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1612192919-4069-1-git-send-email-richard.gong@linux.intel.com>
-References: <1612192919-4069-1-git-send-email-richard.gong@linux.intel.com>
+        id S231379AbhBAPLI (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 1 Feb 2021 10:11:08 -0500
+Received: from mx0a-00128a01.pphosted.com ([148.163.135.77]:43862 "EHLO
+        mx0a-00128a01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S229864AbhBAPK5 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 1 Feb 2021 10:10:57 -0500
+Received: from pps.filterd (m0167089.ppops.net [127.0.0.1])
+        by mx0a-00128a01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 111F994T000757;
+        Mon, 1 Feb 2021 10:10:01 -0500
+Received: from nwd2mta4.analog.com ([137.71.173.58])
+        by mx0a-00128a01.pphosted.com with ESMTP id 36dbucusdr-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 01 Feb 2021 10:10:01 -0500
+Received: from ASHBMBX8.ad.analog.com (ASHBMBX8.ad.analog.com [10.64.17.5])
+        by nwd2mta4.analog.com (8.14.7/8.14.7) with ESMTP id 111FA0ZN061902
+        (version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Mon, 1 Feb 2021 10:10:00 -0500
+Received: from ASHBCASHYB5.ad.analog.com (10.64.17.133) by
+ ASHBMBX8.ad.analog.com (10.64.17.5) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.721.2;
+ Mon, 1 Feb 2021 10:09:59 -0500
+Received: from ASHBMBX8.ad.analog.com (10.64.17.5) by
+ ASHBCASHYB5.ad.analog.com (10.64.17.133) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.721.2;
+ Mon, 1 Feb 2021 10:09:59 -0500
+Received: from zeus.spd.analog.com (10.66.68.11) by ashbmbx8.ad.analog.com
+ (10.64.17.5) with Microsoft SMTP Server id 15.2.721.2 via Frontend Transport;
+ Mon, 1 Feb 2021 10:09:59 -0500
+Received: from localhost.localdomain ([10.48.65.12])
+        by zeus.spd.analog.com (8.15.1/8.15.1) with ESMTP id 111F9uRY028808;
+        Mon, 1 Feb 2021 10:09:57 -0500
+From:   Alexandru Ardelean <alexandru.ardelean@analog.com>
+To:     <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+CC:     <mturquette@baylibre.com>, <sboyd@kernel.org>,
+        <robh+dt@kernel.org>, <lars@metafoo.de>,
+        <linux-fpga@vger.kernel.org>, <mdf@kernel.org>,
+        <ardeleanalex@gmail.com>,
+        Alexandru Ardelean <alexandru.ardelean@analog.com>
+Subject: [PATCH v3 0/4] clk: clk-axiclgen: add support for ZynqMP
+Date:   Mon, 1 Feb 2021 17:12:41 +0200
+Message-ID: <20210201151245.21845-1-alexandru.ardelean@analog.com>
+X-Mailer: git-send-email 2.17.1
+MIME-Version: 1.0
+Content-Type: text/plain
+X-ADIRuleOP-NewSCL: Rule Triggered
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369,18.0.737
+ definitions=2021-02-01_06:2021-01-29,2021-02-01 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ adultscore=0 clxscore=1011 suspectscore=0 malwarescore=0 mlxscore=0
+ priorityscore=1501 bulkscore=0 mlxlogscore=987 spamscore=0 phishscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2102010082
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Richard Gong <richard.gong@intel.com>
+https://lore.kernel.org/linux-clk/20210126110826.24221-1-alexandru.ardelean@analog.com/
 
-Add FPGA_MGR_BITSTREAM_AUTHENTICATE flag for FPGA bitstream
-authentication, which makes sure a signed bitstream has valid signatures.
+Changelog v2 -> v3:
+* added HAS_IOMEM || COMPILE_TEST and OF dependencies to driver in
+  Kconfig
+* added patch 'clk: axi-clkgen: use devm_platform_ioremap_resource() short-hand'
 
-Except for the actual configuration of the device, the authentication works
-the same way as FPGA configuration does. If the authentication passes, the
-bitstream will be programmed into QSPI flash and will be expected to boot
-without issues.
+Alexandru Ardelean (4):
+  clk: axi-clkgen: replace ARCH dependencies with driver deps
+  clk: clk-axiclkgen: add ZynqMP PFD and VCO limits
+  dt-bindings: clock: adi,axi-clkgen: add compatible string for ZynqMP
+    support
+  clk: axi-clkgen: use devm_platform_ioremap_resource() short-hand
 
-Signed-off-by: Richard Gong <richard.gong@intel.com>
----
-v4: s/FPGA_MGR_BITSTREM_AUTHENTICATION/FPGA_MGR_BITSTREAM_AUTHENTICATE
-v3: no change
-v2: align all FPGA_MGR_* flags
-    update the commit messages
----
- include/linux/fpga/fpga-mgr.h | 3 +++
- 1 file changed, 3 insertions(+)
+ .../devicetree/bindings/clock/adi,axi-clkgen.yaml |  1 +
+ drivers/clk/Kconfig                               |  3 ++-
+ drivers/clk/clk-axi-clkgen.c                      | 15 ++++++++++++---
+ 3 files changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 2bc3030..a81b3a7 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -67,12 +67,15 @@ enum fpga_mgr_states {
-  * %FPGA_MGR_BITSTREAM_LSB_FIRST: SPI bitstream bit order is LSB first
-  *
-  * %FPGA_MGR_COMPRESSED_BITSTREAM: FPGA bitstream is compressed
-+ *
-+ * %FPGA_MGR_BITSTREAM_AUTHENTICATE: do FPGA bitstream authentication only
-  */
- #define FPGA_MGR_PARTIAL_RECONFIG	BIT(0)
- #define FPGA_MGR_EXTERNAL_CONFIG	BIT(1)
- #define FPGA_MGR_ENCRYPTED_BITSTREAM	BIT(2)
- #define FPGA_MGR_BITSTREAM_LSB_FIRST	BIT(3)
- #define FPGA_MGR_COMPRESSED_BITSTREAM	BIT(4)
-+#define FPGA_MGR_BITSTREAM_AUTHENTICATE	BIT(5)
- 
- /**
-  * struct fpga_image_info - information specific to a FPGA image
 -- 
-2.7.4
+2.17.1
 
