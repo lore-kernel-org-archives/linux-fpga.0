@@ -7,26 +7,26 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7E4EC433E9
-	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 07:09:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A03AC433E0
+	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 07:11:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7B1E764DF0
-	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 07:09:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CA76D64E6F
+	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 07:11:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231129AbhBRHHF (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 18 Feb 2021 02:07:05 -0500
-Received: from mail-dm6nam10on2043.outbound.protection.outlook.com ([40.107.93.43]:4449
-        "EHLO NAM10-DM6-obe.outbound.protection.outlook.com"
+        id S230492AbhBRHJt (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 18 Feb 2021 02:09:49 -0500
+Received: from mail-eopbgr750080.outbound.protection.outlook.com ([40.107.75.80]:4595
+        "EHLO NAM02-BL2-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S230321AbhBRHEv (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 18 Feb 2021 02:04:51 -0500
+        id S231168AbhBRHGc (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 18 Feb 2021 02:06:32 -0500
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=A8UdA2AG+QCElCV3ucg4/HbZtcGe9Z4cFtrgKIwuyah7B/G56N7qIVlcbw4+dQbLaj5teWxhn4t2Grklc1iXviAT/JubGqjUHOR7bXMKm9RwN3hGhAzAXqy5mBGJbMsddndvWW9FsqDr8BPvzmyYypHoacYP150E/t6cCTP0CP8Eu8Zf2qpWuBlRE5SzBYow6oHw8PFNL51898BEqOi31RTjok1KacEahJHZktWXKGR5gcezHVZTQgoxr3hxKxmJS9GNKQdCGs6S7tpJlXpBIWCV4KK0Nlf0HZoEoKgxe7TAgDkC2Go65xLdAmF87ezhYjpdGYl9weW6ZUTt2XESmg==
+ b=XU83QVmHw/+b5aZ5zbpws8Bhicna70TcbLCqCSkrQoKIthAnvckM0vbd15nW8hA+ZWHtpi9skbvZvQz0uQC7toWPVUbSqTtswf9TJSzS8hirLJoFuXRbHSe2Yce4/Tfw6xwZtT9rpZwwp5hh/pd2pjC6kVJ46hKL2nv5deltJ+u6KpvxeXQ9ErHsCpDiVm9OntE8hev03RbT+J9xezlOOXIFynaCaBFr9fZWLADJt8fz/A4Nw/cs0xLPZXwt6xMCjopiftzbsYDcUrSgpgiE9S/J/EfXtkmafhrPGek7R8fEeFp5EDnLEi61WGay0bhlNIWS9VHwVMKi9W5szexxPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=aPsZqUqngQ6z5NtQb7WGfP1Px6O8uCV1bGf9qQnESvw=;
- b=MFAML7gI4693Ee0RnvWoy+58+/kjjHNRsJ0aZwGZyhzMsuyVSPkzwCv7N8E3cFVDrq7UPwG7KEdhzI7mzgUi4c4tdcHHC6EvWHWBYp4nY15jssek1amY8wjvtjGsjx0IFoM8ODsPtWG5bPIHpEDboOgkD+eAbmqsb8wrFJsS/p0P52MouDjGo9uq78sWZZY1xgGycgEaJPEcFqnSup1otsiEr2noutEEkbDk5EMJqXlkH94DdCcZ7Pz4fjyg7ILfU7AW58C7R9Lh64AwKCOb2qx9RoWz5Ge2KQYETvmgeM1MqepRDJgcqmVXR5LKLT0h5hSA4yOYGGC+bS/XcTaUtQ==
+ bh=0ZbFw/MxoWUpkZPb7ssXG+bPJeJnI1EaYLGzo96kVag=;
+ b=h7Dv0P40q1KIa32Pv62P+35unhYgwDBc+3Mu/XOnEPFTUbx1dKjS0JNlFwqkIhDtrcVs0hYL95inQ29gJGZuB/JIvNbyd9XwTxkWprAiDlqCAR0x8ObQDuRVy0Pp4GjVJHt8brLlax7Ho9w8yNU+bLtyyD/QARxf0gT8b7LfOq1PwB8fRrYmkSzeALCLdKORrKxA15UnER3B1lQSCYoYINSv4gmFODJUJZKGj+XhPBr4tA4Vr7WgZTiyqV1jwWgwPsM6t7bsAkkzs3d+ZZJSEsYdkdJW64UUpQyCz+K2KaoRiLM7bNUkSQ61udAcFsPzN7bLq86Feje8v89RgYbjmA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=bestguesspass action=none header.from=xilinx.com; dkim=none (message
@@ -34,18 +34,18 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=aPsZqUqngQ6z5NtQb7WGfP1Px6O8uCV1bGf9qQnESvw=;
- b=RbvAxiVcejH7TpGn/8vZi1JGTXIUqH2XTexJEV2IyAFJdaVqQtk7ZttwwM5EepkinBIby66VMfEfzxNPryY0SstQSSIJEXqO39Xnqf+F7xGts0f9sZ4G/ZgFwW4nKI7FaE/l5WiWi7PR1umcq/ek5o0mcAMB+hrJ0Z8/+/X3FXA=
-Received: from BLAPR03CA0027.namprd03.prod.outlook.com (2603:10b6:208:32b::32)
- by BYAPR02MB5493.namprd02.prod.outlook.com (2603:10b6:a03:9a::23) with
+ bh=0ZbFw/MxoWUpkZPb7ssXG+bPJeJnI1EaYLGzo96kVag=;
+ b=KhzzO5RaHET/boTRMY9RvrN9lU7BvxCFsAaYbLZMSWlfYaTlvhjcsDhTs2HjYZL+Q3y2xaV+haLEM10iY6AHVMl0hxpR5l50hOt04SV3SAk6yE8DyUc5ixRgNGlx1ztQl++mMugfRGkY4Y7mkxTKK5zgWT+XmBHvAkFLs9FGDeM=
+Received: from MN2PR04CA0015.namprd04.prod.outlook.com (2603:10b6:208:d4::28)
+ by BYAPR02MB4005.namprd02.prod.outlook.com (2603:10b6:a02:f8::29) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3846.25; Thu, 18 Feb
- 2021 06:44:52 +0000
-Received: from BL2NAM02FT051.eop-nam02.prod.protection.outlook.com
- (2603:10b6:208:32b:cafe::c2) by BLAPR03CA0027.outlook.office365.com
- (2603:10b6:208:32b::32) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3868.27; Thu, 18 Feb
+ 2021 06:45:53 +0000
+Received: from BL2NAM02FT036.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:208:d4:cafe::bb) by MN2PR04CA0015.outlook.office365.com
+ (2603:10b6:208:d4::28) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3868.27 via Frontend
- Transport; Thu, 18 Feb 2021 06:44:52 +0000
+ Transport; Thu, 18 Feb 2021 06:45:53 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=bestguesspass action=none
@@ -54,16 +54,16 @@ Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
  client-ip=149.199.62.198; helo=xsj-pvapexch01.xlnx.xilinx.com;
 Received: from xsj-pvapexch01.xlnx.xilinx.com (149.199.62.198) by
- BL2NAM02FT051.mail.protection.outlook.com (10.152.76.181) with Microsoft SMTP
+ BL2NAM02FT036.mail.protection.outlook.com (10.152.77.154) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.3868.27 via Frontend Transport; Thu, 18 Feb 2021 06:44:52 +0000
-Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
+ 15.20.3868.27 via Frontend Transport; Thu, 18 Feb 2021 06:45:52 +0000
+Received: from xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) by
  xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1913.5; Wed, 17 Feb 2021 22:44:52 -0800
+ 15.1.1913.5; Wed, 17 Feb 2021 22:45:52 -0800
 Received: from smtp.xilinx.com (172.19.127.96) by
- xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.1913.5 via Frontend Transport; Wed, 17 Feb 2021 22:44:52 -0800
+ xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server id
+ 15.1.1913.5 via Frontend Transport; Wed, 17 Feb 2021 22:45:52 -0800
 Envelope-to: maxz@xilinx.com,
  max.zhen@xilinx.com,
  michal.simek@xilinx.com,
@@ -76,12 +76,12 @@ Envelope-to: maxz@xilinx.com,
  devicetree@vger.kernel.org,
  linux-fpga@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Received: from [172.19.72.212] (port=40180 helo=xsj-xw9400.xilinx.com)
+Received: from [172.19.72.212] (port=40190 helo=xsj-xw9400.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <lizhi.hou@xilinx.com>)
-        id 1lCd3T-0000bV-TU; Wed, 17 Feb 2021 22:44:51 -0800
+        id 1lCd4S-0000mR-48; Wed, 17 Feb 2021 22:45:52 -0800
 Received: by xsj-xw9400.xilinx.com (Postfix, from userid 21952)
-        id 3834C600126; Wed, 17 Feb 2021 22:41:06 -0800 (PST)
+        id 96C4760012E; Wed, 17 Feb 2021 22:41:06 -0800 (PST)
 From:   Lizhi Hou <lizhi.hou@xilinx.com>
 To:     <linux-kernel@vger.kernel.org>
 CC:     Lizhi Hou <lizhih@xilinx.com>, <linux-fpga@vger.kernel.org>,
@@ -89,9 +89,9 @@ CC:     Lizhi Hou <lizhih@xilinx.com>, <linux-fpga@vger.kernel.org>,
         <michal.simek@xilinx.com>, <stefanos@xilinx.com>,
         <devicetree@vger.kernel.org>, <trix@redhat.com>, <mdf@kernel.org>,
         <robh@kernel.org>, Max Zhen <max.zhen@xilinx.com>
-Subject: [PATCH V3 XRT Alveo 10/18] fpga: xrt: VSEC platform driver
-Date:   Wed, 17 Feb 2021 22:40:11 -0800
-Message-ID: <20210218064019.29189-11-lizhih@xilinx.com>
+Subject: [PATCH V3 XRT Alveo 15/18] fpga: xrt: clock frequence counter platform driver
+Date:   Wed, 17 Feb 2021 22:40:16 -0800
+Message-ID: <20210218064019.29189-16-lizhih@xilinx.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210218064019.29189-1-lizhih@xilinx.com>
 References: <20210218064019.29189-1-lizhih@xilinx.com>
@@ -100,50 +100,81 @@ Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-Office365-Filtering-HT: Tenant
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 2bccd600-6892-45ab-475e-08d8d3d8b214
-X-MS-TrafficTypeDiagnostic: BYAPR02MB5493:
-X-Microsoft-Antispam-PRVS: <BYAPR02MB5493DC1200A3BD562832E84DA1859@BYAPR02MB5493.namprd02.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:3044;
+X-MS-Office365-Filtering-Correlation-Id: 2b0e9a2b-9231-4ccc-6c47-08d8d3d8d615
+X-MS-TrafficTypeDiagnostic: BYAPR02MB4005:
+X-Microsoft-Antispam-PRVS: <BYAPR02MB40052CCF6AFF13510D969433A1859@BYAPR02MB4005.namprd02.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:8882;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: jHznzJx+IqATj03qWE016GsRC7O4PRf4kkhXxQRWDsZAiFPwpjXg1+aPMrKBAEn39e7wubGraMg35jWRYuTH00ryMxHHEWcqqPys8v1yGVmwIwkEikSBUiglG1O4r7LB0PPM3e0KP8lmHQdC4asGVGKxqNNoxSu50UF79ZcL7iTOhFUPCIibm5P8pogUe/tcYrlBQ6WjJeDomKD8epaiJZFRyVzoy2hz1Ew4j/47me7HeWT728D+zkGuD9ba7qYX9zmLQ/bCGIdASklVUsGeIbRMjj9tjTf3eSnK0C76KPUc62zAhL4pVEkTScll+hcpN54XDzF2ryNk/yEii32JSK8h6GKUExuhnZig/ASDMf7K778uPYNkzc5pHGWe6FfvcJcm0BXtCv2yEhD6CIIJ749sHeYemxafnyl2y/0tvxuTWM+DLjkVUVp4knVA52VkJ0jJv7aYRo0/WElJFh6a4W4KByQjBGHw/99AUrVGVq5zUof2we7JsYqUe5XaCORlT7TNrG2VhdSRLCyiyILUwuo6P6r7n9wq6s8fsBFDW9tUw8pHBmUt/tuIPVFu47LwY4fWUQVRvEAjTTg4Lq+hFkUpHI2nDLX7c9yhR2gauuxZz1AfQuOJimErFe93c/Tz4wHUTdCFzhQu93Awl0egGHrViSCMLyt3Ut6hh+4H3Ns=
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(136003)(396003)(376002)(346002)(39860400002)(46966006)(36840700001)(70206006)(356005)(82740400003)(4326008)(8676002)(54906003)(47076005)(83380400001)(107886003)(2616005)(36906005)(5660300002)(36860700001)(70586007)(36756003)(6916009)(82310400003)(7636003)(186003)(336012)(8936002)(6266002)(6666004)(2906002)(26005)(1076003)(316002)(42186006)(478600001)(426003)(44832011);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: XY3aK/joJC42LeIRq8HI2gxzPxQyGyzQlEFP/XDdjxejd1gJBP+51NJVKZ/a4XcZ1puYUQ2eqRkeNTPBSkOzl+GiSamWMHoPbgEUPF3xJcFg3mYuh/KQbXqu75QLdz7g/BFZj3BKvKHiML+U0F1RLvQvWlVrx6L7GeafToK7VjsXDc0VDfXSqfSXKo5V6nWye3CqB80g2j3CUonHu2/lGRIYy20l0Vef/CgkqsKRhwoGSA2PLIkRHi4m2Cq8UKWTgIrzKlxl1kJASqj5jj2wjXEr3ZDtUOxb/cedX1WsWl+6YoriaTe4ljuW8nqk6hu78WGjk/R6Lyn1P2Bv06lUzagjYiRY9q2TxU/lrtYfUxo2Jt98cot4SWJP7TLFkFQlS9QdKj72qcmIy5XQivZtxYbk6Aon9nvhSkY4fnZVD+v3yPeXQAQHVdThfb7ozxGBWcNfF1EwpTvky6YgIPVzZ7NQ5Z/HpkBMMtjxeB6UeI5+WZC4aYn+zXLkx64iNNhGIEjP0xbOF+tU/rqozM0sutvdhV+ttfPhSREm3S//7U0ZeDfIYNazFrdcwcn/kwLbJBOw4WBbmzSSQsRuu0jKF6ALiWBqWURzxK+c0HcNjVrm9+wFNUa2V0ME3frextjFhWl3gIF26u1BDUJSivLmkn9aIHiU0C03tFiJ8m0jGY4=
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(39860400002)(136003)(346002)(396003)(376002)(46966006)(36840700001)(26005)(47076005)(186003)(2906002)(82310400003)(7636003)(70206006)(70586007)(6916009)(36756003)(83380400001)(36860700001)(107886003)(8676002)(4326008)(8936002)(6266002)(82740400003)(478600001)(356005)(36906005)(2616005)(6666004)(336012)(426003)(1076003)(54906003)(42186006)(316002)(5660300002)(44832011);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Feb 2021 06:44:52.5585
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Feb 2021 06:45:52.9620
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2bccd600-6892-45ab-475e-08d8d3d8b214
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2b0e9a2b-9231-4ccc-6c47-08d8d3d8d615
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch01.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: BL2NAM02FT051.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: BL2NAM02FT036.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR02MB5493
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR02MB4005
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add VSEC driver. VSEC is a hardware function discovered by walking
-PCI Express configure space. A platform device node will be created
-for it. VSEC provides board logic UUID and few offset of other hardware
-functions.
+Add clock frequence counter driver. Clock frequence counter is
+a hardware function discovered by walking xclbin metadata. A platform
+device node will be created for it. Other part of driver can read the
+actual clock frequence through clock frequence counter driver.
 
 Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
 Signed-off-by: Max Zhen <max.zhen@xilinx.com>
 Signed-off-by: Lizhi Hou <lizhih@xilinx.com>
 ---
- drivers/fpga/xrt/lib/xleaf/vsec.c | 359 ++++++++++++++++++++++++++++++
- 1 file changed, 359 insertions(+)
- create mode 100644 drivers/fpga/xrt/lib/xleaf/vsec.c
+ drivers/fpga/xrt/include/xleaf/clkfreq.h |  23 +++
+ drivers/fpga/xrt/lib/xleaf/clkfreq.c     | 221 +++++++++++++++++++++++
+ 2 files changed, 244 insertions(+)
+ create mode 100644 drivers/fpga/xrt/include/xleaf/clkfreq.h
+ create mode 100644 drivers/fpga/xrt/lib/xleaf/clkfreq.c
 
-diff --git a/drivers/fpga/xrt/lib/xleaf/vsec.c b/drivers/fpga/xrt/lib/xleaf/vsec.c
+diff --git a/drivers/fpga/xrt/include/xleaf/clkfreq.h b/drivers/fpga/xrt/include/xleaf/clkfreq.h
 new file mode 100644
-index 000000000000..8e5cb22522ec
+index 000000000000..29fc45e8a31b
 --- /dev/null
-+++ b/drivers/fpga/xrt/lib/xleaf/vsec.c
-@@ -0,0 +1,359 @@
++++ b/drivers/fpga/xrt/include/xleaf/clkfreq.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Header file for XRT Clock Counter Leaf Driver
++ *
++ * Copyright (C) 2020-2021 Xilinx, Inc.
++ *
++ * Authors:
++ *	Lizhi Hou <Lizhi.Hou@xilinx.com>
++ */
++
++#ifndef _XRT_CLKFREQ_H_
++#define _XRT_CLKFREQ_H_
++
++#include "xleaf.h"
++
++/*
++ * CLKFREQ driver IOCTL calls.
++ */
++enum xrt_clkfreq_ioctl_cmd {
++	XRT_CLKFREQ_READ = XRT_XLEAF_CUSTOM_BASE, /* See comments in xleaf.h */
++};
++
++#endif	/* _XRT_CLKFREQ_H_ */
+diff --git a/drivers/fpga/xrt/lib/xleaf/clkfreq.c b/drivers/fpga/xrt/lib/xleaf/clkfreq.c
+new file mode 100644
+index 000000000000..2482dd2cff47
+--- /dev/null
++++ b/drivers/fpga/xrt/lib/xleaf/clkfreq.c
+@@ -0,0 +1,221 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Xilinx Alveo FPGA VSEC Driver
++ * Xilinx Alveo FPGA Clock Frequency Counter Driver
 + *
 + * Copyright (C) 2020-2021 Xilinx, Inc.
 + *
@@ -151,321 +182,181 @@ index 000000000000..8e5cb22522ec
 + *      Lizhi Hou<Lizhi.Hou@xilinx.com>
 + */
 +
++#include <linux/mod_devicetable.h>
 +#include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <linux/io.h>
 +#include "metadata.h"
 +#include "xleaf.h"
++#include "xleaf/clkfreq.h"
 +
-+#define XRT_VSEC "xrt_vsec"
++#define CLKFREQ_ERR(clkfreq, fmt, arg...)   \
++	xrt_err((clkfreq)->pdev, fmt "\n", ##arg)
++#define CLKFREQ_WARN(clkfreq, fmt, arg...)  \
++	xrt_warn((clkfreq)->pdev, fmt "\n", ##arg)
++#define CLKFREQ_INFO(clkfreq, fmt, arg...)  \
++	xrt_info((clkfreq)->pdev, fmt "\n", ##arg)
++#define CLKFREQ_DBG(clkfreq, fmt, arg...)   \
++	xrt_dbg((clkfreq)->pdev, fmt "\n", ##arg)
 +
-+#define VSEC_TYPE_UUID		0x50
-+#define VSEC_TYPE_FLASH		0x51
-+#define VSEC_TYPE_PLATINFO	0x52
-+#define VSEC_TYPE_MAILBOX	0x53
-+#define VSEC_TYPE_END		0xff
++#define XRT_CLKFREQ		"xrt_clkfreq"
 +
-+#define VSEC_UUID_LEN		16
++#define OCL_CLKWIZ_STATUS_MASK		0xffff
 +
-+struct xrt_vsec_header {
-+	u32		format;
-+	u32		length;
-+	u32		entry_sz;
-+	u32		rsvd;
-+} __packed;
++#define OCL_CLKWIZ_STATUS_MEASURE_START	0x1
++#define OCL_CLKWIZ_STATUS_MEASURE_DONE	0x2
++#define OCL_CLK_FREQ_COUNTER_OFFSET	0x8
++#define OCL_CLK_FREQ_V5_COUNTER_OFFSET	0x10
++#define OCL_CLK_FREQ_V5_CLK0_ENABLED	0x10000
 +
-+#define head_rd(g, r)			\
-+	ioread32((void *)(g)->base + offsetof(struct xrt_vsec_header, r))
-+
-+#define GET_BAR(entry)	(((entry)->bar_rev >> 4) & 0xf)
-+#define GET_BAR_OFF(_entry)				\
-+	({ typeof(_entry) entry = (_entry);		\
-+	 ((entry)->off_lo | ((u64)(entry)->off_hi << 16)); })
-+#define GET_REV(entry)	((entry)->bar_rev & 0xf)
-+
-+struct xrt_vsec_entry {
-+	u8		type;
-+	u8		bar_rev;
-+	u16		off_lo;
-+	u32		off_hi;
-+	u8		ver_type;
-+	u8		minor;
-+	u8		major;
-+	u8		rsvd0;
-+	u32		rsvd1;
-+} __packed;
-+
-+#define read_entry(g, i, e)					\
-+	do {							\
-+		u32 *p = (u32 *)((g)->base +			\
-+			sizeof(struct xrt_vsec_header) +	\
-+			(i) * sizeof(struct xrt_vsec_entry));	\
-+		u32 off;					\
-+		for (off = 0;					\
-+		    off < sizeof(struct xrt_vsec_entry) / 4;	\
-+		    off++)					\
-+			*((u32 *)(e) + off) = ioread32(p + off);\
-+	} while (0)
-+
-+struct vsec_device {
-+	u8		type;
-+	char		*ep_name;
-+	ulong		size;
-+	char		*regmap;
-+};
-+
-+static struct vsec_device vsec_devs[] = {
-+	{
-+		.type = VSEC_TYPE_UUID,
-+		.ep_name = XRT_MD_NODE_BLP_ROM,
-+		.size = VSEC_UUID_LEN,
-+		.regmap = "vsec-uuid",
-+	},
-+	{
-+		.type = VSEC_TYPE_FLASH,
-+		.ep_name = XRT_MD_NODE_FLASH_VSEC,
-+		.size = 4096,
-+		.regmap = "vsec-flash",
-+	},
-+	{
-+		.type = VSEC_TYPE_PLATINFO,
-+		.ep_name = XRT_MD_NODE_PLAT_INFO,
-+		.size = 4,
-+		.regmap = "vsec-platinfo",
-+	},
-+	{
-+		.type = VSEC_TYPE_MAILBOX,
-+		.ep_name = XRT_MD_NODE_MAILBOX_VSEC,
-+		.size = 48,
-+		.regmap = "vsec-mbx",
-+	},
-+};
-+
-+struct xrt_vsec {
++struct clkfreq {
 +	struct platform_device	*pdev;
-+	void			*base;
-+	ulong			length;
-+
-+	char			*metadata;
-+	char			uuid[VSEC_UUID_LEN];
++	void __iomem		*clkfreq_base;
++	const char		*clkfreq_ep_name;
++	struct mutex		clkfreq_lock; /* clock counter dev lock */
 +};
 +
-+static char *type2epname(u32 type)
++static inline u32 reg_rd(struct clkfreq *clkfreq, u32 offset)
 +{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(vsec_devs); i++) {
-+		if (vsec_devs[i].type == type)
-+			return (vsec_devs[i].ep_name);
-+	}
-+
-+	return NULL;
++	return ioread32(clkfreq->clkfreq_base + offset);
 +}
 +
-+static ulong type2size(u32 type)
++static inline void reg_wr(struct clkfreq *clkfreq, u32 val, u32 offset)
 +{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(vsec_devs); i++) {
-+		if (vsec_devs[i].type == type)
-+			return (vsec_devs[i].size);
-+	}
-+
-+	return 0;
++	iowrite32(val, clkfreq->clkfreq_base + offset);
 +}
 +
-+static char *type2regmap(u32 type)
++static u32 clkfreq_read(struct clkfreq *clkfreq)
 +{
-+	int i;
++	u32 freq = 0, status;
++	int times = 10;
 +
-+	for (i = 0; i < ARRAY_SIZE(vsec_devs); i++) {
-+		if (vsec_devs[i].type == type)
-+			return (vsec_devs[i].regmap);
++	mutex_lock(&clkfreq->clkfreq_lock);
++	reg_wr(clkfreq, OCL_CLKWIZ_STATUS_MEASURE_START, 0);
++	while (times != 0) {
++		status = reg_rd(clkfreq, 0);
++		if ((status & OCL_CLKWIZ_STATUS_MASK) ==
++		    OCL_CLKWIZ_STATUS_MEASURE_DONE)
++			break;
++		mdelay(1);
++		times--;
++	};
++	if (times > 0) {
++		freq = (status & OCL_CLK_FREQ_V5_CLK0_ENABLED) ?
++			reg_rd(clkfreq, OCL_CLK_FREQ_V5_COUNTER_OFFSET) :
++			reg_rd(clkfreq, OCL_CLK_FREQ_COUNTER_OFFSET);
 +	}
++	mutex_unlock(&clkfreq->clkfreq_lock);
 +
-+	return NULL;
++	return freq;
 +}
 +
-+static int xrt_vsec_add_node(struct xrt_vsec *vsec,
-+			     void *md_blob, struct xrt_vsec_entry *p_entry)
++static ssize_t freq_show(struct device *dev, struct device_attribute *attr, char *buf)
 +{
-+	struct xrt_md_endpoint ep;
-+	char regmap_ver[64];
-+	int ret;
++	struct clkfreq *clkfreq = platform_get_drvdata(to_platform_device(dev));
++	u32 freq;
++	ssize_t count;
 +
-+	if (!type2epname(p_entry->type))
-+		return -EINVAL;
++	freq = clkfreq_read(clkfreq);
++	count = snprintf(buf, 64, "%d\n", freq);
 +
-+	/*
-+	 * VSEC may have more than 1 mailbox instance for the card
-+	 * which has more than 1 physical function.
-+	 * This is not supported for now. Assuming only one mailbox
-+	 */
-+
-+	snprintf(regmap_ver, sizeof(regmap_ver) - 1, "%d-%d.%d.%d",
-+		 p_entry->ver_type, p_entry->major, p_entry->minor,
-+		 GET_REV(p_entry));
-+	ep.ep_name = type2epname(p_entry->type);
-+	ep.bar = GET_BAR(p_entry);
-+	ep.bar_off = GET_BAR_OFF(p_entry);
-+	ep.size = type2size(p_entry->type);
-+	ep.regmap = type2regmap(p_entry->type);
-+	ep.regmap_ver = regmap_ver;
-+	ret = xrt_md_add_endpoint(DEV(vsec->pdev), vsec->metadata, &ep);
-+	if (ret) {
-+		xrt_err(vsec->pdev, "add ep failed, ret %d", ret);
-+		goto failed;
-+	}
-+
-+failed:
-+	return ret;
++	return count;
 +}
++static DEVICE_ATTR_RO(freq);
 +
-+static int xrt_vsec_create_metadata(struct xrt_vsec *vsec)
++static struct attribute *clkfreq_attrs[] = {
++	&dev_attr_freq.attr,
++	NULL,
++};
++
++static struct attribute_group clkfreq_attr_group = {
++	.attrs = clkfreq_attrs,
++};
++
++static int
++xrt_clkfreq_leaf_ioctl(struct platform_device *pdev, u32 cmd, void *arg)
 +{
-+	struct xrt_vsec_entry entry;
-+	int i, ret;
++	struct clkfreq		*clkfreq;
++	int			ret = 0;
 +
-+	ret = xrt_md_create(&vsec->pdev->dev, &vsec->metadata);
-+	if (ret) {
-+		xrt_err(vsec->pdev, "create metadata failed");
-+		return ret;
-+	}
-+
-+	for (i = 0; i * sizeof(entry) < vsec->length -
-+	    sizeof(struct xrt_vsec_header); i++) {
-+		read_entry(vsec, i, &entry);
-+		xrt_vsec_add_node(vsec, vsec->metadata, &entry);
-+	}
-+
-+	return 0;
-+}
-+
-+static int xrt_vsec_ioctl(struct platform_device *pdev, u32 cmd, void *arg)
-+{
-+	int ret = 0;
++	clkfreq = platform_get_drvdata(pdev);
 +
 +	switch (cmd) {
 +	case XRT_XLEAF_EVENT:
 +		/* Does not handle any event. */
 +		break;
-+	default:
-+		ret = -EINVAL;
-+		xrt_err(pdev, "should never been called");
++	case XRT_CLKFREQ_READ: {
++		*(u32 *)arg = clkfreq_read(clkfreq);
 +		break;
 +	}
++	default:
++		xrt_err(pdev, "unsupported cmd %d", cmd);
++		return -EINVAL;
++	}
 +
 +	return ret;
 +}
 +
-+static int xrt_vsec_mapio(struct xrt_vsec *vsec)
++static int clkfreq_remove(struct platform_device *pdev)
 +{
-+	struct xrt_subdev_platdata *pdata = DEV_PDATA(vsec->pdev);
-+	const u32 *bar;
-+	const u64 *bar_off;
-+	struct resource *res = NULL;
-+	ulong addr;
++	struct clkfreq *clkfreq;
++
++	clkfreq = platform_get_drvdata(pdev);
++	if (!clkfreq) {
++		xrt_err(pdev, "driver data is NULL");
++		return -EINVAL;
++	}
++
++	platform_set_drvdata(pdev, NULL);
++	devm_kfree(&pdev->dev, clkfreq);
++
++	CLKFREQ_INFO(clkfreq, "successfully removed clkfreq subdev");
++	return 0;
++}
++
++static int clkfreq_probe(struct platform_device *pdev)
++{
++	struct clkfreq *clkfreq = NULL;
++	struct resource *res;
 +	int ret;
 +
-+	if (!pdata || xrt_md_size(DEV(vsec->pdev), pdata->xsp_dtb) == XRT_MD_INVALID_LENGTH) {
-+		xrt_err(vsec->pdev, "empty metadata");
-+		return -EINVAL;
-+	}
-+
-+	ret = xrt_md_get_prop(DEV(vsec->pdev), pdata->xsp_dtb, XRT_MD_NODE_VSEC,
-+			      NULL, XRT_MD_PROP_BAR_IDX, (const void **)&bar, NULL);
-+	if (ret) {
-+		xrt_err(vsec->pdev, "failed to get bar idx, ret %d", ret);
-+		return -EINVAL;
-+	}
-+
-+	ret = xrt_md_get_prop(DEV(vsec->pdev), pdata->xsp_dtb, XRT_MD_NODE_VSEC,
-+			      NULL, XRT_MD_PROP_OFFSET, (const void **)&bar_off, NULL);
-+	if (ret) {
-+		xrt_err(vsec->pdev, "failed to get bar off, ret %d", ret);
-+		return -EINVAL;
-+	}
-+
-+	xrt_info(vsec->pdev, "Map vsec at bar %d, offset 0x%llx",
-+		 be32_to_cpu(*bar), be64_to_cpu(*bar_off));
-+
-+	xleaf_get_barres(vsec->pdev, &res, be32_to_cpu(*bar));
-+	if (!res) {
-+		xrt_err(vsec->pdev, "failed to get bar addr");
-+		return -EINVAL;
-+	}
-+
-+	addr = res->start + (ulong)be64_to_cpu(*bar_off);
-+
-+	vsec->base = ioremap(addr, sizeof(struct xrt_vsec_header));
-+	if (!vsec->base) {
-+		xrt_err(vsec->pdev, "Map header failed");
-+		return -EIO;
-+	}
-+
-+	vsec->length = head_rd(vsec, length);
-+	iounmap(vsec->base);
-+	vsec->base = ioremap(addr, vsec->length);
-+	if (!vsec->base) {
-+		xrt_err(vsec->pdev, "map failed");
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+static int xrt_vsec_remove(struct platform_device *pdev)
-+{
-+	struct xrt_vsec	*vsec;
-+
-+	vsec = platform_get_drvdata(pdev);
-+
-+	if (vsec->base) {
-+		iounmap(vsec->base);
-+		vsec->base = NULL;
-+	}
-+
-+	vfree(vsec->metadata);
-+
-+	return 0;
-+}
-+
-+static int xrt_vsec_probe(struct platform_device *pdev)
-+{
-+	struct xrt_vsec	*vsec;
-+	int			ret = 0;
-+
-+	vsec = devm_kzalloc(&pdev->dev, sizeof(*vsec), GFP_KERNEL);
-+	if (!vsec)
++	clkfreq = devm_kzalloc(&pdev->dev, sizeof(*clkfreq), GFP_KERNEL);
++	if (!clkfreq)
 +		return -ENOMEM;
 +
-+	vsec->pdev = pdev;
-+	platform_set_drvdata(pdev, vsec);
++	platform_set_drvdata(pdev, clkfreq);
++	clkfreq->pdev = pdev;
++	mutex_init(&clkfreq->clkfreq_lock);
 +
-+	ret = xrt_vsec_mapio(vsec);
-+	if (ret)
-+		goto failed;
-+
-+	ret = xrt_vsec_create_metadata(vsec);
-+	if (ret) {
-+		xrt_err(pdev, "create metadata failed, ret %d", ret);
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	clkfreq->clkfreq_base = ioremap(res->start, res->end - res->start + 1);
++	if (!clkfreq->clkfreq_base) {
++		CLKFREQ_ERR(clkfreq, "map base %pR failed", res);
++		ret = -EFAULT;
 +		goto failed;
 +	}
-+	ret = xleaf_create_group(pdev, vsec->metadata);
-+	if (ret < 0)
-+		xrt_err(pdev, "create group failed, ret %d", ret);
-+	else
-+		ret = 0;
++	clkfreq->clkfreq_ep_name = res->name;
++
++	ret = sysfs_create_group(&pdev->dev.kobj, &clkfreq_attr_group);
++	if (ret) {
++		CLKFREQ_ERR(clkfreq, "create clkfreq attrs failed: %d", ret);
++		goto failed;
++	}
++
++	CLKFREQ_INFO(clkfreq, "successfully initialized clkfreq subdev");
++
++	return 0;
 +
 +failed:
-+	if (ret)
-+		xrt_vsec_remove(pdev);
-+
++	clkfreq_remove(pdev);
 +	return ret;
 +}
 +
-+static struct xrt_subdev_endpoints xrt_vsec_endpoints[] = {
++static struct xrt_subdev_endpoints xrt_clkfreq_endpoints[] = {
 +	{
-+		.xse_names = (struct xrt_subdev_ep_names []){
-+			{ .ep_name = XRT_MD_NODE_VSEC },
++		.xse_names = (struct xrt_subdev_ep_names[]) {
++			{ .regmap_name = "freq_cnt" },
 +			{ NULL },
 +		},
 +		.xse_min_ep = 1,
@@ -473,32 +364,34 @@ index 000000000000..8e5cb22522ec
 +	{ 0 },
 +};
 +
-+static struct xrt_subdev_drvdata xrt_vsec_data = {
++static struct xrt_subdev_drvdata xrt_clkfreq_data = {
 +	.xsd_dev_ops = {
-+		.xsd_ioctl = xrt_vsec_ioctl,
++		.xsd_ioctl = xrt_clkfreq_leaf_ioctl,
 +	},
 +};
 +
-+static const struct platform_device_id xrt_vsec_table[] = {
-+	{ XRT_VSEC, (kernel_ulong_t)&xrt_vsec_data },
++static const struct platform_device_id xrt_clkfreq_table[] = {
++	{ XRT_CLKFREQ, (kernel_ulong_t)&xrt_clkfreq_data },
 +	{ },
 +};
 +
-+static struct platform_driver xrt_vsec_driver = {
++static struct platform_driver xrt_clkfreq_driver = {
 +	.driver = {
-+		.name = XRT_VSEC,
++		.name = XRT_CLKFREQ,
 +	},
-+	.probe = xrt_vsec_probe,
-+	.remove = xrt_vsec_remove,
-+	.id_table = xrt_vsec_table,
++	.probe = clkfreq_probe,
++	.remove = clkfreq_remove,
++	.id_table = xrt_clkfreq_table,
 +};
 +
-+void vsec_leaf_init_fini(bool init)
++void clkfreq_leaf_init_fini(bool init)
 +{
-+	if (init)
-+		xleaf_register_driver(XRT_SUBDEV_VSEC, &xrt_vsec_driver, xrt_vsec_endpoints);
-+	else
-+		xleaf_unregister_driver(XRT_SUBDEV_VSEC);
++	if (init) {
++		xleaf_register_driver(XRT_SUBDEV_CLKFREQ,
++				      &xrt_clkfreq_driver, xrt_clkfreq_endpoints);
++	} else {
++		xleaf_unregister_driver(XRT_SUBDEV_CLKFREQ);
++	}
 +}
 -- 
 2.18.4
