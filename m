@@ -7,26 +7,26 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A03AC433E0
-	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 07:11:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BF6DC433E0
+	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 07:12:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CA76D64E6F
-	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 07:11:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A994764E68
+	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 07:12:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230492AbhBRHJt (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 18 Feb 2021 02:09:49 -0500
-Received: from mail-eopbgr750080.outbound.protection.outlook.com ([40.107.75.80]:4595
-        "EHLO NAM02-BL2-obe.outbound.protection.outlook.com"
+        id S231132AbhBRHK2 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 18 Feb 2021 02:10:28 -0500
+Received: from mail-mw2nam12on2049.outbound.protection.outlook.com ([40.107.244.49]:54913
+        "EHLO NAM12-MW2-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S231168AbhBRHGc (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S231169AbhBRHGc (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
         Thu, 18 Feb 2021 02:06:32 -0500
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=XU83QVmHw/+b5aZ5zbpws8Bhicna70TcbLCqCSkrQoKIthAnvckM0vbd15nW8hA+ZWHtpi9skbvZvQz0uQC7toWPVUbSqTtswf9TJSzS8hirLJoFuXRbHSe2Yce4/Tfw6xwZtT9rpZwwp5hh/pd2pjC6kVJ46hKL2nv5deltJ+u6KpvxeXQ9ErHsCpDiVm9OntE8hev03RbT+J9xezlOOXIFynaCaBFr9fZWLADJt8fz/A4Nw/cs0xLPZXwt6xMCjopiftzbsYDcUrSgpgiE9S/J/EfXtkmafhrPGek7R8fEeFp5EDnLEi61WGay0bhlNIWS9VHwVMKi9W5szexxPw==
+ b=CLk5XP/XjtF9eUUcihwrjcEnAZcjzf0oTru/b5zUutCKLxdz2LTVeOPuHLGw/xqYbNHSBiPnPWEG6spn4KzOTbziUttcjxiYYVAJzTXQbIN7kgGmV7xrC91TZ+xwOqNr/HNFuGdfU1wkuerPkDXnoPcn6QB6bwhHJXRokc3vyyx1XJOpnMPhIeuNjUl8cn1PemHIuv/V5lWjioMaxmdg91YtYs5HC/Gh8y9E3UlUAvhIRhpYPpCc4Y3KhzNvMORg05a3LlPspsYUFn2OiM5YeVaqvmEesDaaCLVRFPFYoeSP7wTy6YZi++VVr4xPqup9QsqZAaaAkVKb06jvFN9heg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0ZbFw/MxoWUpkZPb7ssXG+bPJeJnI1EaYLGzo96kVag=;
- b=h7Dv0P40q1KIa32Pv62P+35unhYgwDBc+3Mu/XOnEPFTUbx1dKjS0JNlFwqkIhDtrcVs0hYL95inQ29gJGZuB/JIvNbyd9XwTxkWprAiDlqCAR0x8ObQDuRVy0Pp4GjVJHt8brLlax7Ho9w8yNU+bLtyyD/QARxf0gT8b7LfOq1PwB8fRrYmkSzeALCLdKORrKxA15UnER3B1lQSCYoYINSv4gmFODJUJZKGj+XhPBr4tA4Vr7WgZTiyqV1jwWgwPsM6t7bsAkkzs3d+ZZJSEsYdkdJW64UUpQyCz+K2KaoRiLM7bNUkSQ61udAcFsPzN7bLq86Feje8v89RgYbjmA==
+ bh=53y9HeTzKac5kwas2KBGgX1qiCpxLRxwPL99SGa/fHA=;
+ b=k1JKlf5n72My1fOmZCPB2uRQIDkR/hWvGFrAjhwETeI9WUYWsCakbY33RIdS7pnylz0JpuyQB6ty7F48QiskyTB3lQdu/y9PLecYIIRCZbNpHVkb8yxjTlHow0ovPO50gIYN6NtWA5+KAOxeTogQSxFU97FR3YX10vrOg7x5CyuZ9dau2YNJ51bBo/R8Qrcvm5k/sHAg8QenZUpvqvzPsBQi+vb0qU/EukcVRa3fYKGf6ltKrtCpgSSoqC2+1fnKSbMJa+9NnNJRCOVyUT+mlSRj5Vr4/iqGTezQ7lD1KPclG7W4zSLqfyWU4wl/7raBwcckpgyDxfOZVTTtCzgwgQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=bestguesspass action=none header.from=xilinx.com; dkim=none (message
@@ -34,18 +34,18 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0ZbFw/MxoWUpkZPb7ssXG+bPJeJnI1EaYLGzo96kVag=;
- b=KhzzO5RaHET/boTRMY9RvrN9lU7BvxCFsAaYbLZMSWlfYaTlvhjcsDhTs2HjYZL+Q3y2xaV+haLEM10iY6AHVMl0hxpR5l50hOt04SV3SAk6yE8DyUc5ixRgNGlx1ztQl++mMugfRGkY4Y7mkxTKK5zgWT+XmBHvAkFLs9FGDeM=
-Received: from MN2PR04CA0015.namprd04.prod.outlook.com (2603:10b6:208:d4::28)
- by BYAPR02MB4005.namprd02.prod.outlook.com (2603:10b6:a02:f8::29) with
+ bh=53y9HeTzKac5kwas2KBGgX1qiCpxLRxwPL99SGa/fHA=;
+ b=dNBxTR5OPfzS4UOUaapEwJPEsW0vAlJF6lPGlGxpWLjNS41SfxNIoMGcUmzokX8tmfnlW0Lz3qoQ/OJ+7cHxDJDWJcADo8cVUhA5veBQjKMRuiiPyDC9w3Ol9+9hXppBICh52yQwZJN6Ius/cdme+M+G8JvtWmMyNLjDfJ5EIHE=
+Received: from BLAPR03CA0058.namprd03.prod.outlook.com (2603:10b6:208:32d::33)
+ by MN2PR02MB7039.namprd02.prod.outlook.com (2603:10b6:208:209::8) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3868.27; Thu, 18 Feb
- 2021 06:45:53 +0000
-Received: from BL2NAM02FT036.eop-nam02.prod.protection.outlook.com
- (2603:10b6:208:d4:cafe::bb) by MN2PR04CA0015.outlook.office365.com
- (2603:10b6:208:d4::28) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3846.27; Thu, 18 Feb
+ 2021 06:45:08 +0000
+Received: from BL2NAM02FT061.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:208:32d:cafe::62) by BLAPR03CA0058.outlook.office365.com
+ (2603:10b6:208:32d::33) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3868.27 via Frontend
- Transport; Thu, 18 Feb 2021 06:45:53 +0000
+ Transport; Thu, 18 Feb 2021 06:45:08 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=bestguesspass action=none
@@ -54,16 +54,16 @@ Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
  client-ip=149.199.62.198; helo=xsj-pvapexch01.xlnx.xilinx.com;
 Received: from xsj-pvapexch01.xlnx.xilinx.com (149.199.62.198) by
- BL2NAM02FT036.mail.protection.outlook.com (10.152.77.154) with Microsoft SMTP
+ BL2NAM02FT061.mail.protection.outlook.com (10.152.77.7) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.3868.27 via Frontend Transport; Thu, 18 Feb 2021 06:45:52 +0000
+ 15.20.3868.27 via Frontend Transport; Thu, 18 Feb 2021 06:45:08 +0000
 Received: from xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) by
  xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1913.5; Wed, 17 Feb 2021 22:45:52 -0800
-Received: from smtp.xilinx.com (172.19.127.96) by
+ 15.1.1913.5; Wed, 17 Feb 2021 22:45:04 -0800
+Received: from smtp.xilinx.com (172.19.127.95) by
  xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server id
- 15.1.1913.5 via Frontend Transport; Wed, 17 Feb 2021 22:45:52 -0800
+ 15.1.1913.5 via Frontend Transport; Wed, 17 Feb 2021 22:45:04 -0800
 Envelope-to: maxz@xilinx.com,
  max.zhen@xilinx.com,
  michal.simek@xilinx.com,
@@ -76,12 +76,12 @@ Envelope-to: maxz@xilinx.com,
  devicetree@vger.kernel.org,
  linux-fpga@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Received: from [172.19.72.212] (port=40190 helo=xsj-xw9400.xilinx.com)
+Received: from [172.19.72.212] (port=40182 helo=xsj-xw9400.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <lizhi.hou@xilinx.com>)
-        id 1lCd4S-0000mR-48; Wed, 17 Feb 2021 22:45:52 -0800
+        id 1lCd3f-0001sR-Uv; Wed, 17 Feb 2021 22:45:03 -0800
 Received: by xsj-xw9400.xilinx.com (Postfix, from userid 21952)
-        id 96C4760012E; Wed, 17 Feb 2021 22:41:06 -0800 (PST)
+        id 49344600128; Wed, 17 Feb 2021 22:41:06 -0800 (PST)
 From:   Lizhi Hou <lizhi.hou@xilinx.com>
 To:     <linux-kernel@vger.kernel.org>
 CC:     Lizhi Hou <lizhih@xilinx.com>, <linux-fpga@vger.kernel.org>,
@@ -89,9 +89,9 @@ CC:     Lizhi Hou <lizhih@xilinx.com>, <linux-fpga@vger.kernel.org>,
         <michal.simek@xilinx.com>, <stefanos@xilinx.com>,
         <devicetree@vger.kernel.org>, <trix@redhat.com>, <mdf@kernel.org>,
         <robh@kernel.org>, Max Zhen <max.zhen@xilinx.com>
-Subject: [PATCH V3 XRT Alveo 15/18] fpga: xrt: clock frequence counter platform driver
-Date:   Wed, 17 Feb 2021 22:40:16 -0800
-Message-ID: <20210218064019.29189-16-lizhih@xilinx.com>
+Subject: [PATCH V3 XRT Alveo 11/18] fpga: xrt: UCS platform driver
+Date:   Wed, 17 Feb 2021 22:40:12 -0800
+Message-ID: <20210218064019.29189-12-lizhih@xilinx.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210218064019.29189-1-lizhih@xilinx.com>
 References: <20210218064019.29189-1-lizhih@xilinx.com>
@@ -100,52 +100,51 @@ Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-Office365-Filtering-HT: Tenant
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 2b0e9a2b-9231-4ccc-6c47-08d8d3d8d615
-X-MS-TrafficTypeDiagnostic: BYAPR02MB4005:
-X-Microsoft-Antispam-PRVS: <BYAPR02MB40052CCF6AFF13510D969433A1859@BYAPR02MB4005.namprd02.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:8882;
+X-MS-Office365-Filtering-Correlation-Id: 5eeeff88-51bb-4b93-0447-08d8d3d8bb9b
+X-MS-TrafficTypeDiagnostic: MN2PR02MB7039:
+X-Microsoft-Antispam-PRVS: <MN2PR02MB70396F39B0F6EBF3FA4FEC21A1859@MN2PR02MB7039.namprd02.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:9508;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: XY3aK/joJC42LeIRq8HI2gxzPxQyGyzQlEFP/XDdjxejd1gJBP+51NJVKZ/a4XcZ1puYUQ2eqRkeNTPBSkOzl+GiSamWMHoPbgEUPF3xJcFg3mYuh/KQbXqu75QLdz7g/BFZj3BKvKHiML+U0F1RLvQvWlVrx6L7GeafToK7VjsXDc0VDfXSqfSXKo5V6nWye3CqB80g2j3CUonHu2/lGRIYy20l0Vef/CgkqsKRhwoGSA2PLIkRHi4m2Cq8UKWTgIrzKlxl1kJASqj5jj2wjXEr3ZDtUOxb/cedX1WsWl+6YoriaTe4ljuW8nqk6hu78WGjk/R6Lyn1P2Bv06lUzagjYiRY9q2TxU/lrtYfUxo2Jt98cot4SWJP7TLFkFQlS9QdKj72qcmIy5XQivZtxYbk6Aon9nvhSkY4fnZVD+v3yPeXQAQHVdThfb7ozxGBWcNfF1EwpTvky6YgIPVzZ7NQ5Z/HpkBMMtjxeB6UeI5+WZC4aYn+zXLkx64iNNhGIEjP0xbOF+tU/rqozM0sutvdhV+ttfPhSREm3S//7U0ZeDfIYNazFrdcwcn/kwLbJBOw4WBbmzSSQsRuu0jKF6ALiWBqWURzxK+c0HcNjVrm9+wFNUa2V0ME3frextjFhWl3gIF26u1BDUJSivLmkn9aIHiU0C03tFiJ8m0jGY4=
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(39860400002)(136003)(346002)(396003)(376002)(46966006)(36840700001)(26005)(47076005)(186003)(2906002)(82310400003)(7636003)(70206006)(70586007)(6916009)(36756003)(83380400001)(36860700001)(107886003)(8676002)(4326008)(8936002)(6266002)(82740400003)(478600001)(356005)(36906005)(2616005)(6666004)(336012)(426003)(1076003)(54906003)(42186006)(316002)(5660300002)(44832011);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: U8VfxClfIUO1a9de77Yf2jCm3KfhFQSNVHZnUhsmUbmqa+lVD12zlTLeNctE5LN1AWxlTiObvaERcFJJEjE6y2TT1bwXB1CuojHOd+gN76TXZZWeSc6m7nXlRcn3BaM3M++S1kHUtvXsHhFOPJogebsXQ66ubpZtfuxOoYOlw0LbJb5jeTS3A377OHjOuyKHsZQx+hlzvMMJTBgQGZOKH9xv1EsaxZGBJppHymPjOvqWK6y7pG+y5d7lhRxIaTx2wKzKG4l7oLYGQ2xkRxk/wG87PA0f6yKIZGkB9A94Dbis8shloiZs2VcET4sYCZqhMXdWIQ2rlfIi6eDGdVCZO9ShrjTIt9OW7z/X+l4qz+qx2wHO6GPqGsoH7eNUOnGjcZXKqwSxdW5TsjYBmZakxp1VmHZSix6IkSSEDWuvp0oU8vejv9RvFl9KQJyaDpOKl9xJ8o2eOciAebPvee25Wi96EoKAnVrT76pntU2fj5ahSqHY7iDElxQBfCepV53eb/vUON1kUiOOA2R48fDytekXOodptaL4MpOnSRHOqArz//jgaQEk+fdDOqMr3tUSuWubsXz5Za1jU5YYqfxy3w86OoyS+MQvYCp3jA13tQbQ9oZg/uM4v8Hd07zT7XaCjwuGyfp83K00S4fxylbEPVbQVOKUR0MILlqlDKZ78rk=
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(346002)(396003)(136003)(39860400002)(376002)(46966006)(36840700001)(8676002)(82740400003)(83380400001)(8936002)(5660300002)(42186006)(54906003)(36906005)(336012)(6666004)(36860700001)(47076005)(2906002)(426003)(82310400003)(70206006)(70586007)(478600001)(6916009)(44832011)(26005)(1076003)(316002)(4326008)(356005)(186003)(7636003)(107886003)(2616005)(6266002)(36756003);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Feb 2021 06:45:52.9620
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Feb 2021 06:45:08.5391
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2b0e9a2b-9231-4ccc-6c47-08d8d3d8d615
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5eeeff88-51bb-4b93-0447-08d8d3d8bb9b
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch01.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: BL2NAM02FT036.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: BL2NAM02FT061.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR02MB4005
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR02MB7039
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add clock frequence counter driver. Clock frequence counter is
-a hardware function discovered by walking xclbin metadata. A platform
-device node will be created for it. Other part of driver can read the
-actual clock frequence through clock frequence counter driver.
+Add UCS driver. UCS is a hardware function discovered by walking xclbin
+metadata. A platform device node will be created for it.
+UCS enables/disables the dynamic region clocks.
 
 Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
 Signed-off-by: Max Zhen <max.zhen@xilinx.com>
 Signed-off-by: Lizhi Hou <lizhih@xilinx.com>
 ---
- drivers/fpga/xrt/include/xleaf/clkfreq.h |  23 +++
- drivers/fpga/xrt/lib/xleaf/clkfreq.c     | 221 +++++++++++++++++++++++
- 2 files changed, 244 insertions(+)
- create mode 100644 drivers/fpga/xrt/include/xleaf/clkfreq.h
- create mode 100644 drivers/fpga/xrt/lib/xleaf/clkfreq.c
+ drivers/fpga/xrt/include/xleaf/ucs.h |  24 +++
+ drivers/fpga/xrt/lib/xleaf/ucs.c     | 235 +++++++++++++++++++++++++++
+ 2 files changed, 259 insertions(+)
+ create mode 100644 drivers/fpga/xrt/include/xleaf/ucs.h
+ create mode 100644 drivers/fpga/xrt/lib/xleaf/ucs.c
 
-diff --git a/drivers/fpga/xrt/include/xleaf/clkfreq.h b/drivers/fpga/xrt/include/xleaf/clkfreq.h
+diff --git a/drivers/fpga/xrt/include/xleaf/ucs.h b/drivers/fpga/xrt/include/xleaf/ucs.h
 new file mode 100644
-index 000000000000..29fc45e8a31b
+index 000000000000..a5ef0e100e12
 --- /dev/null
-+++ b/drivers/fpga/xrt/include/xleaf/clkfreq.h
-@@ -0,0 +1,23 @@
++++ b/drivers/fpga/xrt/include/xleaf/ucs.h
+@@ -0,0 +1,24 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
-+ * Header file for XRT Clock Counter Leaf Driver
++ * Header file for XRT UCS Leaf Driver
 + *
 + * Copyright (C) 2020-2021 Xilinx, Inc.
 + *
@@ -153,28 +152,29 @@ index 000000000000..29fc45e8a31b
 + *	Lizhi Hou <Lizhi.Hou@xilinx.com>
 + */
 +
-+#ifndef _XRT_CLKFREQ_H_
-+#define _XRT_CLKFREQ_H_
++#ifndef _XRT_UCS_H_
++#define _XRT_UCS_H_
 +
 +#include "xleaf.h"
 +
 +/*
-+ * CLKFREQ driver IOCTL calls.
++ * UCS driver IOCTL calls.
 + */
-+enum xrt_clkfreq_ioctl_cmd {
-+	XRT_CLKFREQ_READ = XRT_XLEAF_CUSTOM_BASE, /* See comments in xleaf.h */
++enum xrt_ucs_ioctl_cmd {
++	XRT_UCS_CHECK = XRT_XLEAF_CUSTOM_BASE, /* See comments in xleaf.h */
++	XRT_UCS_ENABLE,
 +};
 +
-+#endif	/* _XRT_CLKFREQ_H_ */
-diff --git a/drivers/fpga/xrt/lib/xleaf/clkfreq.c b/drivers/fpga/xrt/lib/xleaf/clkfreq.c
++#endif	/* _XRT_UCS_H_ */
+diff --git a/drivers/fpga/xrt/lib/xleaf/ucs.c b/drivers/fpga/xrt/lib/xleaf/ucs.c
 new file mode 100644
-index 000000000000..2482dd2cff47
+index 000000000000..ae762c8fddbb
 --- /dev/null
-+++ b/drivers/fpga/xrt/lib/xleaf/clkfreq.c
-@@ -0,0 +1,221 @@
++++ b/drivers/fpga/xrt/lib/xleaf/ucs.c
+@@ -0,0 +1,235 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Xilinx Alveo FPGA Clock Frequency Counter Driver
++ * Xilinx Alveo FPGA UCS Driver
 + *
 + * Copyright (C) 2020-2021 Xilinx, Inc.
 + *
@@ -189,107 +189,129 @@ index 000000000000..2482dd2cff47
 +#include <linux/io.h>
 +#include "metadata.h"
 +#include "xleaf.h"
-+#include "xleaf/clkfreq.h"
++#include "xleaf/ucs.h"
++#include "xleaf/clock.h"
 +
-+#define CLKFREQ_ERR(clkfreq, fmt, arg...)   \
-+	xrt_err((clkfreq)->pdev, fmt "\n", ##arg)
-+#define CLKFREQ_WARN(clkfreq, fmt, arg...)  \
-+	xrt_warn((clkfreq)->pdev, fmt "\n", ##arg)
-+#define CLKFREQ_INFO(clkfreq, fmt, arg...)  \
-+	xrt_info((clkfreq)->pdev, fmt "\n", ##arg)
-+#define CLKFREQ_DBG(clkfreq, fmt, arg...)   \
-+	xrt_dbg((clkfreq)->pdev, fmt "\n", ##arg)
++#define UCS_ERR(ucs, fmt, arg...)   \
++	xrt_err((ucs)->pdev, fmt "\n", ##arg)
++#define UCS_WARN(ucs, fmt, arg...)  \
++	xrt_warn((ucs)->pdev, fmt "\n", ##arg)
++#define UCS_INFO(ucs, fmt, arg...)  \
++	xrt_info((ucs)->pdev, fmt "\n", ##arg)
++#define UCS_DBG(ucs, fmt, arg...)   \
++	xrt_dbg((ucs)->pdev, fmt "\n", ##arg)
 +
-+#define XRT_CLKFREQ		"xrt_clkfreq"
++#define XRT_UCS		"xrt_ucs"
 +
-+#define OCL_CLKWIZ_STATUS_MASK		0xffff
++#define CHANNEL1_OFFSET			0
++#define CHANNEL2_OFFSET			8
 +
-+#define OCL_CLKWIZ_STATUS_MEASURE_START	0x1
-+#define OCL_CLKWIZ_STATUS_MEASURE_DONE	0x2
-+#define OCL_CLK_FREQ_COUNTER_OFFSET	0x8
-+#define OCL_CLK_FREQ_V5_COUNTER_OFFSET	0x10
-+#define OCL_CLK_FREQ_V5_CLK0_ENABLED	0x10000
++#define CLK_MAX_VALUE			6400
 +
-+struct clkfreq {
++struct ucs_control_status_ch1 {
++	unsigned int shutdown_clocks_latched:1;
++	unsigned int reserved1:15;
++	unsigned int clock_throttling_average:14;
++	unsigned int reserved2:2;
++};
++
++struct xrt_ucs {
 +	struct platform_device	*pdev;
-+	void __iomem		*clkfreq_base;
-+	const char		*clkfreq_ep_name;
-+	struct mutex		clkfreq_lock; /* clock counter dev lock */
++	void __iomem		*ucs_base;
++	struct mutex		ucs_lock; /* ucs dev lock */
 +};
 +
-+static inline u32 reg_rd(struct clkfreq *clkfreq, u32 offset)
++static inline u32 reg_rd(struct xrt_ucs *ucs, u32 offset)
 +{
-+	return ioread32(clkfreq->clkfreq_base + offset);
++	return ioread32(ucs->ucs_base + offset);
 +}
 +
-+static inline void reg_wr(struct clkfreq *clkfreq, u32 val, u32 offset)
++static inline void reg_wr(struct xrt_ucs *ucs, u32 val, u32 offset)
 +{
-+	iowrite32(val, clkfreq->clkfreq_base + offset);
++	iowrite32(val, ucs->ucs_base + offset);
 +}
 +
-+static u32 clkfreq_read(struct clkfreq *clkfreq)
++static void xrt_ucs_event_cb(struct platform_device *pdev, void *arg)
 +{
-+	u32 freq = 0, status;
-+	int times = 10;
++	struct platform_device	*leaf;
++	struct xrt_event *evt = (struct xrt_event *)arg;
++	enum xrt_events e = evt->xe_evt;
++	enum xrt_subdev_id id = evt->xe_subdev.xevt_subdev_id;
++	int instance = evt->xe_subdev.xevt_subdev_instance;
 +
-+	mutex_lock(&clkfreq->clkfreq_lock);
-+	reg_wr(clkfreq, OCL_CLKWIZ_STATUS_MEASURE_START, 0);
-+	while (times != 0) {
-+		status = reg_rd(clkfreq, 0);
-+		if ((status & OCL_CLKWIZ_STATUS_MASK) ==
-+		    OCL_CLKWIZ_STATUS_MEASURE_DONE)
-+			break;
-+		mdelay(1);
-+		times--;
-+	};
-+	if (times > 0) {
-+		freq = (status & OCL_CLK_FREQ_V5_CLK0_ENABLED) ?
-+			reg_rd(clkfreq, OCL_CLK_FREQ_V5_COUNTER_OFFSET) :
-+			reg_rd(clkfreq, OCL_CLK_FREQ_COUNTER_OFFSET);
++	switch (e) {
++	case XRT_EVENT_POST_CREATION:
++		break;
++	default:
++		xrt_dbg(pdev, "ignored event %d", e);
++		return;
 +	}
-+	mutex_unlock(&clkfreq->clkfreq_lock);
 +
-+	return freq;
++	if (id != XRT_SUBDEV_CLOCK)
++		return;
++
++	leaf = xleaf_get_leaf_by_id(pdev, XRT_SUBDEV_CLOCK, instance);
++	if (!leaf) {
++		xrt_err(pdev, "does not get clock subdev");
++		return;
++	}
++
++	xleaf_ioctl(leaf, XRT_CLOCK_VERIFY, NULL);
++	xleaf_put_leaf(pdev, leaf);
 +}
 +
-+static ssize_t freq_show(struct device *dev, struct device_attribute *attr, char *buf)
++static void ucs_check(struct xrt_ucs *ucs, bool *latched)
 +{
-+	struct clkfreq *clkfreq = platform_get_drvdata(to_platform_device(dev));
-+	u32 freq;
-+	ssize_t count;
++	struct ucs_control_status_ch1 *ucs_status_ch1;
++	u32 status;
 +
-+	freq = clkfreq_read(clkfreq);
-+	count = snprintf(buf, 64, "%d\n", freq);
-+
-+	return count;
++	mutex_lock(&ucs->ucs_lock);
++	status = reg_rd(ucs, CHANNEL1_OFFSET);
++	ucs_status_ch1 = (struct ucs_control_status_ch1 *)&status;
++	if (ucs_status_ch1->shutdown_clocks_latched) {
++		UCS_ERR(ucs,
++			"Critical temperature or power event, kernel clocks have been stopped.");
++		UCS_ERR(ucs,
++			"run 'xbutil valiate -q' to continue. See AR 73398 for more details.");
++		/* explicitly indicate reset should be latched */
++		*latched = true;
++	} else if (ucs_status_ch1->clock_throttling_average >
++	    CLK_MAX_VALUE) {
++		UCS_ERR(ucs, "kernel clocks %d exceeds expected maximum value %d.",
++			ucs_status_ch1->clock_throttling_average,
++			CLK_MAX_VALUE);
++	} else if (ucs_status_ch1->clock_throttling_average) {
++		UCS_ERR(ucs, "kernel clocks throttled at %d%%.",
++			(ucs_status_ch1->clock_throttling_average /
++			 (CLK_MAX_VALUE / 100)));
++	}
++	mutex_unlock(&ucs->ucs_lock);
 +}
-+static DEVICE_ATTR_RO(freq);
 +
-+static struct attribute *clkfreq_attrs[] = {
-+	&dev_attr_freq.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group clkfreq_attr_group = {
-+	.attrs = clkfreq_attrs,
-+};
++static void ucs_enable(struct xrt_ucs *ucs)
++{
++	reg_wr(ucs, 1, CHANNEL2_OFFSET);
++}
 +
 +static int
-+xrt_clkfreq_leaf_ioctl(struct platform_device *pdev, u32 cmd, void *arg)
++xrt_ucs_leaf_ioctl(struct platform_device *pdev, u32 cmd, void *arg)
 +{
-+	struct clkfreq		*clkfreq;
++	struct xrt_ucs		*ucs;
 +	int			ret = 0;
 +
-+	clkfreq = platform_get_drvdata(pdev);
++	ucs = platform_get_drvdata(pdev);
 +
 +	switch (cmd) {
 +	case XRT_XLEAF_EVENT:
-+		/* Does not handle any event. */
++		xrt_ucs_event_cb(pdev, arg);
 +		break;
-+	case XRT_CLKFREQ_READ: {
-+		*(u32 *)arg = clkfreq_read(clkfreq);
++	case XRT_UCS_CHECK: {
++		ucs_check(ucs, (bool *)arg);
 +		break;
 +	}
++	case XRT_UCS_ENABLE:
++		ucs_enable(ucs);
++		break;
 +	default:
 +		xrt_err(pdev, "unsupported cmd %d", cmd);
 +		return -EINVAL;
@@ -298,65 +320,59 @@ index 000000000000..2482dd2cff47
 +	return ret;
 +}
 +
-+static int clkfreq_remove(struct platform_device *pdev)
++static int ucs_remove(struct platform_device *pdev)
 +{
-+	struct clkfreq *clkfreq;
++	struct xrt_ucs *ucs;
 +
-+	clkfreq = platform_get_drvdata(pdev);
-+	if (!clkfreq) {
++	ucs = platform_get_drvdata(pdev);
++	if (!ucs) {
 +		xrt_err(pdev, "driver data is NULL");
 +		return -EINVAL;
 +	}
 +
-+	platform_set_drvdata(pdev, NULL);
-+	devm_kfree(&pdev->dev, clkfreq);
++	if (ucs->ucs_base)
++		iounmap(ucs->ucs_base);
 +
-+	CLKFREQ_INFO(clkfreq, "successfully removed clkfreq subdev");
++	platform_set_drvdata(pdev, NULL);
++	devm_kfree(&pdev->dev, ucs);
++
 +	return 0;
 +}
 +
-+static int clkfreq_probe(struct platform_device *pdev)
++static int ucs_probe(struct platform_device *pdev)
 +{
-+	struct clkfreq *clkfreq = NULL;
++	struct xrt_ucs *ucs = NULL;
 +	struct resource *res;
 +	int ret;
 +
-+	clkfreq = devm_kzalloc(&pdev->dev, sizeof(*clkfreq), GFP_KERNEL);
-+	if (!clkfreq)
++	ucs = devm_kzalloc(&pdev->dev, sizeof(*ucs), GFP_KERNEL);
++	if (!ucs)
 +		return -ENOMEM;
 +
-+	platform_set_drvdata(pdev, clkfreq);
-+	clkfreq->pdev = pdev;
-+	mutex_init(&clkfreq->clkfreq_lock);
++	platform_set_drvdata(pdev, ucs);
++	ucs->pdev = pdev;
++	mutex_init(&ucs->ucs_lock);
 +
 +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	clkfreq->clkfreq_base = ioremap(res->start, res->end - res->start + 1);
-+	if (!clkfreq->clkfreq_base) {
-+		CLKFREQ_ERR(clkfreq, "map base %pR failed", res);
++	ucs->ucs_base = ioremap(res->start, res->end - res->start + 1);
++	if (!ucs->ucs_base) {
++		UCS_ERR(ucs, "map base %pR failed", res);
 +		ret = -EFAULT;
 +		goto failed;
 +	}
-+	clkfreq->clkfreq_ep_name = res->name;
-+
-+	ret = sysfs_create_group(&pdev->dev.kobj, &clkfreq_attr_group);
-+	if (ret) {
-+		CLKFREQ_ERR(clkfreq, "create clkfreq attrs failed: %d", ret);
-+		goto failed;
-+	}
-+
-+	CLKFREQ_INFO(clkfreq, "successfully initialized clkfreq subdev");
++	ucs_enable(ucs);
 +
 +	return 0;
 +
 +failed:
-+	clkfreq_remove(pdev);
++	ucs_remove(pdev);
 +	return ret;
 +}
 +
-+static struct xrt_subdev_endpoints xrt_clkfreq_endpoints[] = {
++static struct xrt_subdev_endpoints xrt_ucs_endpoints[] = {
 +	{
 +		.xse_names = (struct xrt_subdev_ep_names[]) {
-+			{ .regmap_name = "freq_cnt" },
++			{ .ep_name = XRT_MD_NODE_UCS_CONTROL_STATUS },
 +			{ NULL },
 +		},
 +		.xse_min_ep = 1,
@@ -364,34 +380,32 @@ index 000000000000..2482dd2cff47
 +	{ 0 },
 +};
 +
-+static struct xrt_subdev_drvdata xrt_clkfreq_data = {
++static struct xrt_subdev_drvdata xrt_ucs_data = {
 +	.xsd_dev_ops = {
-+		.xsd_ioctl = xrt_clkfreq_leaf_ioctl,
++		.xsd_ioctl = xrt_ucs_leaf_ioctl,
 +	},
 +};
 +
-+static const struct platform_device_id xrt_clkfreq_table[] = {
-+	{ XRT_CLKFREQ, (kernel_ulong_t)&xrt_clkfreq_data },
++static const struct platform_device_id xrt_ucs_table[] = {
++	{ XRT_UCS, (kernel_ulong_t)&xrt_ucs_data },
 +	{ },
 +};
 +
-+static struct platform_driver xrt_clkfreq_driver = {
++static struct platform_driver xrt_ucs_driver = {
 +	.driver = {
-+		.name = XRT_CLKFREQ,
++		.name = XRT_UCS,
 +	},
-+	.probe = clkfreq_probe,
-+	.remove = clkfreq_remove,
-+	.id_table = xrt_clkfreq_table,
++	.probe = ucs_probe,
++	.remove = ucs_remove,
++	.id_table = xrt_ucs_table,
 +};
 +
-+void clkfreq_leaf_init_fini(bool init)
++void ucs_leaf_init_fini(bool init)
 +{
-+	if (init) {
-+		xleaf_register_driver(XRT_SUBDEV_CLKFREQ,
-+				      &xrt_clkfreq_driver, xrt_clkfreq_endpoints);
-+	} else {
-+		xleaf_unregister_driver(XRT_SUBDEV_CLKFREQ);
-+	}
++	if (init)
++		xleaf_register_driver(XRT_SUBDEV_UCS, &xrt_ucs_driver, xrt_ucs_endpoints);
++	else
++		xleaf_unregister_driver(XRT_SUBDEV_UCS);
 +}
 -- 
 2.18.4
