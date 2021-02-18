@@ -5,28 +5,28 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9D0AC433DB
-	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 06:57:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75D2CC433DB
+	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 06:57:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5A55164E68
-	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 06:57:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E34064E3E
+	for <linux-fpga@archiver.kernel.org>; Thu, 18 Feb 2021 06:57:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230352AbhBRG4L (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 18 Feb 2021 01:56:11 -0500
-Received: from mail-mw2nam10on2052.outbound.protection.outlook.com ([40.107.94.52]:50144
-        "EHLO NAM10-MW2-obe.outbound.protection.outlook.com"
+        id S231230AbhBRG5F (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 18 Feb 2021 01:57:05 -0500
+Received: from mail-mw2nam12on2074.outbound.protection.outlook.com ([40.107.244.74]:54657
+        "EHLO NAM12-MW2-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S230467AbhBRGss (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S231208AbhBRGss (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
         Thu, 18 Feb 2021 01:48:48 -0500
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=HhivEzbpItUqYImjbzsP0lGd4y1u4oYi6sWhk1xpQLeEcIdG9uiEwPNCOrWzLR3SdHlyjjiTvI9WmmjynMS5FPxCVIAFV2U0lLdfOjsvYgiEpPSZXYZtKVmauq3cd4cRg7V6m0fYhtfLq7x+rrq23QtXMaVWKYsLeXVHFODgIKQltEHUcit6nYHvkOJpx9M4Q6bmtHRER1s2x/Q5MtDge26c3TJ0v1qimS5e6y/3HxwNSDtJY3BBqc7+R2WpYViGckUkGABiC0LVp7Ni6ERSkUnrOb87CVK00LFXPIZAZWTrUArU08STKnjMm8G+JiGChexbGUAoo3m1Lp2fwmqGow==
+ b=iOeiOahZjPtDa2hzj6riNRUmRxoHldS1oS0BiBXmxlV+SRuA9bxSNvtlB+iFLLihPxJ+6ghdir/Z2y1qU7A/m1/9kKp+iRqVj24j7mzPx7NWRn83SpImZVd7KAXZzCiAWY7yqIByNXW/fzRa3sndPBkmkHKAJ9FJe4aOjosmZHyUu3u0vYsY9idPBPzri7qpRjZWb4ixn7aUWjQWYK7CnXoD6scH5PW7iPpLDl4oDd5ladJVnAoLBPvOt2Yi/umbBB7goSch8xQkceTmxFzw41gY+7KJnBe1w3F+6FID00B/o0OIttHswndiCjR4uO3iAgvRj4vFowslSzJxWhwO/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FFmxObRlu7vI6/d49+grAeWEWeE2gFP+5ov7xRE3fJI=;
- b=WMuI148a5+SEifnFLvtHQX+yFXDtOVhuCvIVxDHsp8sjpfPUy5jAwHoXBm+FCz2RduysjdGArhxqpGo35wzwGGLUUlyx1CrN2YnkI7tWpAKfm3TEUCrxX4yqOKcTGldxDBPHRcaUPbM5jX3faZV6H/9QPx3lJxV7rOym7xWCicK4dxpnPabU/Cul7ZAbzl4dnXuxd42N649ElCsM9jZ5y8CL/M0YLhc1z1ISI7pzWf+H2YXZlYOhEhprsRFWAr/OFAgsxAjmn/GRHBQhOXzXwf03A3Mw0xFs9Rl1JndngRQqvQhVN93imbi53u9sZ0cat5tEorSkr53o7+ATV2eoeg==
+ bh=opoz9l2kxQpDO37rCGk39sXMeyyCo/WAwug4x0FIuVo=;
+ b=haOrkcQe0I7jygANzpP97MKIujtiG3ggFhWqu2CE21CR7j42lgFDN4gnpMOS852u4uFW7JrDitYkyWuPkFN2UOXYL2fkiPaYyVoKIp7024G03GaQC7huGIgh9iwwVdWOOTT2FNyRTHXfuByVcsmJjaYoTPivIm67O6a2wM1pItromRfj66hVtTMKdbWLGz42l+N1oLZXuvCJrDisEgP7t7Ia9u0dXKj6zJ46Z/o4WlueC8St1lzkDJlwX7g45vCKvMBXSYJhUFf5MUfN6tdwVMcep6J4rvNKgyf0BKiNokL4AUM0OmoYuES3cTkTKrxb2qqiIoBt8timGtEb6R4f+Q==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=bestguesspass action=none header.from=xilinx.com; dkim=none (message
@@ -34,17 +34,17 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FFmxObRlu7vI6/d49+grAeWEWeE2gFP+5ov7xRE3fJI=;
- b=r6+4Sxn0m5kGBALjF1FEoWYh6SxUqm3jDAZDsYD8zntFmuzHjVN+zzJb55vHEmYxWwMr9xsrK956G4H+aJW+VzVkDNljb7cQAd2QrtMLer9EPQYNbbbajd5NuFylDM6mQSAdE/YUyQEW+PTMvXU29ecyRZosR/l7xQ4SZ8pMfhE=
-Received: from DM5PR18CA0050.namprd18.prod.outlook.com (2603:10b6:3:22::12) by
- BYAPR02MB4485.namprd02.prod.outlook.com (2603:10b6:a03:58::15) with Microsoft
+ bh=opoz9l2kxQpDO37rCGk39sXMeyyCo/WAwug4x0FIuVo=;
+ b=eQ/TWyFp3V4csAnY0Q8Yylvl8iHfYAvoDX7AYKz7e068DsFUr1FcWbzJvlN3WPg/IBOkbdReyvmRM9LEEkhwVQCioIw703CppJPPdLy4iiw7OFFUptf5dMpFmXW+u95kc2GXXlgXYShPsH/ea98NtxcCYLldCxAhf6DgUhAVfCk=
+Received: from DS7PR03CA0062.namprd03.prod.outlook.com (2603:10b6:5:3bb::7) by
+ DM5PR02MB3387.namprd02.prod.outlook.com (2603:10b6:4:6a::35) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.3846.31; Thu, 18 Feb 2021 06:46:19 +0000
-Received: from CY1NAM02FT052.eop-nam02.prod.protection.outlook.com
- (2603:10b6:3:22:cafe::c0) by DM5PR18CA0050.outlook.office365.com
- (2603:10b6:3:22::12) with Microsoft SMTP Server (version=TLS1_2,
+ 15.20.3846.29; Thu, 18 Feb 2021 06:45:40 +0000
+Received: from CY1NAM02FT033.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:5:3bb:cafe::49) by DS7PR03CA0062.outlook.office365.com
+ (2603:10b6:5:3bb::7) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3868.27 via Frontend
- Transport; Thu, 18 Feb 2021 06:46:18 +0000
+ Transport; Thu, 18 Feb 2021 06:45:40 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=bestguesspass action=none
@@ -53,16 +53,16 @@ Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
  client-ip=149.199.62.198; helo=xsj-pvapexch02.xlnx.xilinx.com;
 Received: from xsj-pvapexch02.xlnx.xilinx.com (149.199.62.198) by
- CY1NAM02FT052.mail.protection.outlook.com (10.152.74.123) with Microsoft SMTP
+ CY1NAM02FT033.mail.protection.outlook.com (10.152.75.179) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.3868.27 via Frontend Transport; Thu, 18 Feb 2021 06:46:18 +0000
+ 15.20.3868.27 via Frontend Transport; Thu, 18 Feb 2021 06:45:39 +0000
 Received: from xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1913.5; Wed, 17 Feb 2021 22:46:04 -0800
+ 15.1.1913.5; Wed, 17 Feb 2021 22:45:28 -0800
 Received: from smtp.xilinx.com (172.19.127.95) by
  xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server id
- 15.1.1913.5 via Frontend Transport; Wed, 17 Feb 2021 22:46:04 -0800
+ 15.1.1913.5 via Frontend Transport; Wed, 17 Feb 2021 22:45:28 -0800
 Envelope-to: maxz@xilinx.com,
  max.zhen@xilinx.com,
  michal.simek@xilinx.com,
@@ -75,12 +75,12 @@ Envelope-to: maxz@xilinx.com,
  devicetree@vger.kernel.org,
  linux-fpga@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Received: from [172.19.72.212] (port=40192 helo=xsj-xw9400.xilinx.com)
+Received: from [172.19.72.212] (port=40186 helo=xsj-xw9400.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <lizhi.hou@xilinx.com>)
-        id 1lCd4e-0002FY-5r; Wed, 17 Feb 2021 22:46:04 -0800
+        id 1lCd44-00023N-1F; Wed, 17 Feb 2021 22:45:28 -0800
 Received: by xsj-xw9400.xilinx.com (Postfix, from userid 21952)
-        id A44BC60012C; Wed, 17 Feb 2021 22:41:06 -0800 (PST)
+        id 6CB38600129; Wed, 17 Feb 2021 22:41:06 -0800 (PST)
 From:   Lizhi Hou <lizhi.hou@xilinx.com>
 To:     <linux-kernel@vger.kernel.org>
 CC:     Lizhi Hou <lizhih@xilinx.com>, <linux-fpga@vger.kernel.org>,
@@ -88,9 +88,9 @@ CC:     Lizhi Hou <lizhih@xilinx.com>, <linux-fpga@vger.kernel.org>,
         <michal.simek@xilinx.com>, <stefanos@xilinx.com>,
         <devicetree@vger.kernel.org>, <trix@redhat.com>, <mdf@kernel.org>,
         <robh@kernel.org>, Max Zhen <max.zhen@xilinx.com>
-Subject: [PATCH V3 XRT Alveo 16/18] fpga: xrt: DDR calibration platform driver
-Date:   Wed, 17 Feb 2021 22:40:17 -0800
-Message-ID: <20210218064019.29189-17-lizhih@xilinx.com>
+Subject: [PATCH V3 XRT Alveo 13/18] fpga: xrt: devctl platform driver
+Date:   Wed, 17 Feb 2021 22:40:14 -0800
+Message-ID: <20210218064019.29189-14-lizhih@xilinx.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210218064019.29189-1-lizhih@xilinx.com>
 References: <20210218064019.29189-1-lizhih@xilinx.com>
@@ -99,310 +99,302 @@ Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-Office365-Filtering-HT: Tenant
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 420085f0-4c52-4d37-73b3-08d8d3d8e564
-X-MS-TrafficTypeDiagnostic: BYAPR02MB4485:
-X-Microsoft-Antispam-PRVS: <BYAPR02MB44851A360173BE5BB6C894E1A1859@BYAPR02MB4485.namprd02.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:534;
+X-MS-Office365-Filtering-Correlation-Id: cce6435f-9d32-4b1a-7973-08d8d3d8ce45
+X-MS-TrafficTypeDiagnostic: DM5PR02MB3387:
+X-Microsoft-Antispam-PRVS: <DM5PR02MB33878FA2E1E6374920658402A1859@DM5PR02MB3387.namprd02.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:1303;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: DxDsA9LQvhzhD4QE+dND72WDmFrSiGHAQgTrWsEc7XWhrz8KkDnZ0wiJp0gMNWPRaiBLonhilF1p3V6ZDN79yGfklWAnWWyMQc52LDYPQzdRoC0nB3tZ0Nwgys4MCspHyThamHbwDTC7AhQd6oe4k0P8plpSr3MpTQ3qSqO4DvG3d2TWmq4aCWKw8STTrIRbowjLQUu9ZsswjUJ1FPRpR2Wg+/VsW96VULlj2miu+QpYN+At8vTs34NEa3EI2eXiAJVmLOr7dysf8CotV4qM3aVdAG9wLEYvpOxKGJYUzR6nDnFSUYS1Lox6HILBX+OSWm7xOFbM4nOgrtFGmFuZz2/QUHhOKAYr9uEOPpfbrM5MqlmTTnSJuL37YmKhGEU1fO1MVUKMwkbHIDfSx49+89Q0TQiOMlYGFlPNNJm73ywvSVbbwG5dNtZJJ/n5g0dL8Vkd7b+aelSX48iTdMTlPmz6R2iYRS8VmSVI26E/cm3EUKOQLVObS1pDb8Ms4TMMfIWOYx1XuzTMlXDpO5PK1OSLs4fox9LA8Myv4IFdE7+nV3SCnVHn0bjuqMO9ztOcyt3B/nyLT+fesARwxB6uHaf60UdI+GxsQja7X5fvtYb5I1o1b7/H2TvtxjNEGySOLfhPUBu1CkQmGEu51tTMbJZFSJVvkRGoz2AV/2YAdk4=
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(346002)(376002)(39860400002)(136003)(396003)(36840700001)(46966006)(44832011)(82310400003)(47076005)(1076003)(426003)(83380400001)(5660300002)(6666004)(2616005)(6266002)(70206006)(316002)(36860700001)(36756003)(107886003)(36906005)(6916009)(336012)(70586007)(42186006)(7636003)(26005)(54906003)(186003)(478600001)(4326008)(356005)(8676002)(8936002)(82740400003)(2906002);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: CwZ35hPs1EZ/cN/xqQGb4z+9F0Hx27JnXIUoC5+uDXsIX17mp/sEXK/SEIH3JfacbUPKTue5/ZiGZQxdOENFNA/f91l11Y/AEuW494BLI9xgBwYpD9W9Efy3I2SKCF0RBAxaa7XGZo3KEl1QQ4X3kjYp1cNON/ERi+gCKevmd7fHSIncHeq6kXLEfZqicJF/fiqUpiK9jVjaM5JYvS9Cv6Pqpe5x8nIRhMyh4DtaFv6M88sWYIlAdpuFOArbpX7jfL7mtr+sifxl63GeX83Bhsn5K1c/oePaGT/lscDWOFiyGwI+mT+AsZxO3nH7YTcS4AgSMOscFv54mskeXPVY4DG1v2ax90jF/Ec6zlfMzIWYmtr3ycrQ8bkEO/WIp/94cmtzcrZz41GrsOeebQ8rYGSfyg40M5Gmwnjq3XXJ4gEhgGnFN7W++vivTJ3XG6nXjsUGIeEL5CXtFHjd9Iyw5yteeKZ9trcLoor7+tvm2QqssEpN68bnWpZfraHJbyNomvNVBT8YRfMFXgM0yDL2rfLUWA8t68E/XzE/c6fSBbwF3Ow6PmauYFHlQBdbs1f/3G+zNhWgJs4w5t9BokNKVmo/o7q7og2Iht9ZsOw5fqD3s3RrPbfArPlablwBejShLf3W5MggRFyasFcQ8TQCamjKG7+UgW1KH8ZuuTFud1o=
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(376002)(396003)(346002)(39860400002)(136003)(36840700001)(46966006)(26005)(2616005)(6666004)(44832011)(36860700001)(426003)(336012)(186003)(4326008)(54906003)(82740400003)(356005)(1076003)(82310400003)(8936002)(5660300002)(70586007)(7636003)(36906005)(8676002)(6266002)(478600001)(42186006)(107886003)(36756003)(6916009)(316002)(47076005)(2906002)(70206006);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Feb 2021 06:46:18.7247
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Feb 2021 06:45:39.9351
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 420085f0-4c52-4d37-73b3-08d8d3d8e564
+X-MS-Exchange-CrossTenant-Network-Message-Id: cce6435f-9d32-4b1a-7973-08d8d3d8ce45
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch02.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: CY1NAM02FT052.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: CY1NAM02FT033.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR02MB4485
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM5PR02MB3387
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add DDR calibration driver. DDR calibration is a hardware function
-discovered by walking firmware metadata. A platform device node will
-be created for it. Hardware provides DDR calibration status through
-this function.
+Add devctl driver. devctl is a type of hardware function which only has
+few registers to read or write. They are discovered by walking firmware
+metadata. A platform device node will be created for them.
 
 Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
 Signed-off-by: Max Zhen <max.zhen@xilinx.com>
 Signed-off-by: Lizhi Hou <lizhih@xilinx.com>
 ---
- drivers/fpga/xrt/include/xleaf/calib.h |  30 ++++
- drivers/fpga/xrt/lib/xleaf/calib.c     | 226 +++++++++++++++++++++++++
- 2 files changed, 256 insertions(+)
- create mode 100644 drivers/fpga/xrt/include/xleaf/calib.h
- create mode 100644 drivers/fpga/xrt/lib/xleaf/calib.c
+ drivers/fpga/xrt/include/xleaf/devctl.h |  43 +++++
+ drivers/fpga/xrt/lib/xleaf/devctl.c     | 206 ++++++++++++++++++++++++
+ 2 files changed, 249 insertions(+)
+ create mode 100644 drivers/fpga/xrt/include/xleaf/devctl.h
+ create mode 100644 drivers/fpga/xrt/lib/xleaf/devctl.c
 
-diff --git a/drivers/fpga/xrt/include/xleaf/calib.h b/drivers/fpga/xrt/include/xleaf/calib.h
+diff --git a/drivers/fpga/xrt/include/xleaf/devctl.h b/drivers/fpga/xrt/include/xleaf/devctl.h
 new file mode 100644
-index 000000000000..f8aba4594c58
+index 000000000000..96a40e066f83
 --- /dev/null
-+++ b/drivers/fpga/xrt/include/xleaf/calib.h
-@@ -0,0 +1,30 @@
++++ b/drivers/fpga/xrt/include/xleaf/devctl.h
+@@ -0,0 +1,43 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
-+ * Header file for XRT DDR Calibration Leaf Driver
++ * Header file for XRT DEVCTL Leaf Driver
 + *
 + * Copyright (C) 2020-2021 Xilinx, Inc.
 + *
 + * Authors:
-+ *	Cheng Zhen <maxz@xilinx.com>
++ *	Lizhi Hou <Lizhi.Hou@xilinx.com>
 + */
 +
-+#ifndef _XRT_CALIB_H_
-+#define _XRT_CALIB_H_
++#ifndef _XRT_DEVCTL_H_
++#define _XRT_DEVCTL_H_
 +
 +#include "xleaf.h"
-+#include <linux/xrt/xclbin.h>
 +
 +/*
-+ * Memory calibration driver IOCTL calls.
++ * DEVCTL driver IOCTL calls.
 + */
-+enum xrt_calib_results {
-+	XRT_CALIB_UNKNOWN,
-+	XRT_CALIB_SUCCEEDED,
-+	XRT_CALIB_FAILED,
++enum xrt_devctl_ioctl_cmd {
++	XRT_DEVCTL_READ = XRT_XLEAF_CUSTOM_BASE, /* See comments in xleaf.h */
++	XRT_DEVCTL_WRITE,
 +};
 +
-+enum xrt_calib_ioctl_cmd {
-+	XRT_CALIB_RESULT = XRT_XLEAF_CUSTOM_BASE, /* See comments in xleaf.h */
++enum xrt_devctl_id {
++	XRT_DEVCTL_ROM_UUID,
++	XRT_DEVCTL_DDR_CALIB,
++	XRT_DEVCTL_GOLDEN_VER,
++	XRT_DEVCTL_MAX
 +};
 +
-+#endif	/* _XRT_CALIB_H_ */
-diff --git a/drivers/fpga/xrt/lib/xleaf/calib.c b/drivers/fpga/xrt/lib/xleaf/calib.c
++struct xrt_devctl_ioctl_rw {
++	u32	xgir_id;
++	void	*xgir_buf;
++	u32	xgir_len;
++	u32	xgir_offset;
++};
++
++struct xrt_devctl_ioctl_intf_uuid {
++	u32	xgir_uuid_num;
++	uuid_t	*xgir_uuids;
++};
++
++#endif	/* _XRT_DEVCTL_H_ */
+diff --git a/drivers/fpga/xrt/lib/xleaf/devctl.c b/drivers/fpga/xrt/lib/xleaf/devctl.c
 new file mode 100644
-index 000000000000..fbb813636e76
+index 000000000000..caf8c6569f0f
 --- /dev/null
-+++ b/drivers/fpga/xrt/lib/xleaf/calib.c
-@@ -0,0 +1,226 @@
++++ b/drivers/fpga/xrt/lib/xleaf/devctl.c
+@@ -0,0 +1,206 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Xilinx Alveo FPGA memory calibration driver
++ * Xilinx Alveo FPGA devctl Driver
 + *
 + * Copyright (C) 2020-2021 Xilinx, Inc.
-+ *
-+ * memory calibration
 + *
 + * Authors:
 + *      Lizhi Hou<Lizhi.Hou@xilinx.com>
 + */
++
++#include <linux/mod_devicetable.h>
++#include <linux/platform_device.h>
 +#include <linux/delay.h>
-+#include "xclbin-helper.h"
++#include <linux/device.h>
++#include <linux/io.h>
 +#include "metadata.h"
-+#include "xleaf/calib.h"
++#include "xleaf.h"
++#include "xleaf/devctl.h"
 +
-+#define XRT_CALIB	"xrt_calib"
++#define XRT_DEVCTL "xrt_devctl"
 +
-+struct calib_cache {
-+	struct list_head	link;
-+	const char		*ep_name;
-+	char			*data;
-+	u32			data_size;
++struct xrt_name_id {
++	char *ep_name;
++	int id;
 +};
 +
-+struct calib {
++static struct xrt_name_id name_id[XRT_DEVCTL_MAX] = {
++	{ XRT_MD_NODE_BLP_ROM, XRT_DEVCTL_ROM_UUID },
++	{ XRT_MD_NODE_GOLDEN_VER, XRT_DEVCTL_GOLDEN_VER },
++};
++
++struct xrt_devctl {
 +	struct platform_device	*pdev;
-+	void			*calib_base;
-+	struct mutex		lock; /* calibration dev lock */
-+	struct list_head	cache_list;
-+	u32			cache_num;
-+	enum xrt_calib_results	result;
++	void		__iomem *base_addrs[XRT_DEVCTL_MAX];
++	ulong			sizes[XRT_DEVCTL_MAX];
 +};
 +
-+#define CALIB_DONE(calib)			\
-+	(ioread32((calib)->calib_base) & BIT(0))
-+
-+static void calib_cache_clean_nolock(struct calib *calib)
++static int xrt_devctl_name2id(struct xrt_devctl *devctl, const char *name)
 +{
-+	struct calib_cache *cache, *temp;
++	int	i;
 +
-+	list_for_each_entry_safe(cache, temp, &calib->cache_list, link) {
-+		vfree(cache->data);
-+		list_del(&cache->link);
-+		vfree(cache);
-+	}
-+	calib->cache_num = 0;
-+}
-+
-+static void calib_cache_clean(struct calib *calib)
-+{
-+	mutex_lock(&calib->lock);
-+	calib_cache_clean_nolock(calib);
-+	mutex_unlock(&calib->lock);
-+}
-+
-+static int calib_srsr(struct calib *calib, struct platform_device *srsr_leaf)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static int calib_calibration(struct calib *calib)
-+{
-+	int i;
-+
-+	for (i = 0; i < 20; i++) {
-+		if (CALIB_DONE(calib))
-+			break;
-+		msleep(500);
++	for (i = 0; i < XRT_DEVCTL_MAX && name_id[i].ep_name; i++) {
++		if (!strncmp(name_id[i].ep_name, name, strlen(name_id[i].ep_name) + 1))
++			return name_id[i].id;
 +	}
 +
-+	if (i == 20) {
-+		xrt_err(calib->pdev,
-+			"MIG calibration timeout after bitstream download");
-+		return -ETIMEDOUT;
-+	}
-+
-+	xrt_info(calib->pdev, "took %dms", i * 500);
-+	return 0;
++	return -EINVAL;
 +}
 +
-+static void xrt_calib_event_cb(struct platform_device *pdev, void *arg)
++static int
++xrt_devctl_leaf_ioctl(struct platform_device *pdev, u32 cmd, void *arg)
 +{
-+	struct calib *calib = platform_get_drvdata(pdev);
-+		struct xrt_event *evt = (struct xrt_event *)arg;
-+	enum xrt_events e = evt->xe_evt;
-+	enum xrt_subdev_id id = evt->xe_subdev.xevt_subdev_id;
-+	int instance = evt->xe_subdev.xevt_subdev_instance;
-+	struct platform_device *leaf;
-+	int ret;
++	struct xrt_devctl	*devctl;
++	int			ret = 0;
 +
-+	switch (e) {
-+	case XRT_EVENT_POST_CREATION: {
-+		if (id == XRT_SUBDEV_SRSR) {
-+			leaf = xleaf_get_leaf_by_id(pdev,
-+						    XRT_SUBDEV_SRSR,
-+						    instance);
-+			if (!leaf) {
-+				xrt_err(pdev, "does not get SRSR subdev");
-+				return;
-+			}
-+			ret = calib_srsr(calib, leaf);
-+			xleaf_put_leaf(pdev, leaf);
-+			calib->result =
-+				ret ? XRT_CALIB_FAILED : XRT_CALIB_SUCCEEDED;
-+		} else if (id == XRT_SUBDEV_UCS) {
-+			ret = calib_calibration(calib);
-+			calib->result =
-+				ret ? XRT_CALIB_FAILED : XRT_CALIB_SUCCEEDED;
++	devctl = platform_get_drvdata(pdev);
++
++	switch (cmd) {
++	case XRT_XLEAF_EVENT:
++		/* Does not handle any event. */
++		break;
++	case XRT_DEVCTL_READ: {
++		struct xrt_devctl_ioctl_rw	*rw_arg = arg;
++		u32				*p_src, *p_dst, i;
++
++		if (rw_arg->xgir_len & 0x3) {
++			xrt_err(pdev, "invalid len %d", rw_arg->xgir_len);
++			return -EINVAL;
++		}
++
++		if (rw_arg->xgir_id >= XRT_DEVCTL_MAX) {
++			xrt_err(pdev, "invalid id %d", rw_arg->xgir_id);
++			return -EINVAL;
++		}
++
++		p_src = devctl->base_addrs[rw_arg->xgir_id];
++		if (!p_src) {
++			xrt_err(pdev, "io not found, id %d",
++				rw_arg->xgir_id);
++			return -EINVAL;
++		}
++		if (rw_arg->xgir_offset + rw_arg->xgir_len >
++		    devctl->sizes[rw_arg->xgir_id]) {
++			xrt_err(pdev, "invalid argument, off %d, len %d",
++				rw_arg->xgir_offset, rw_arg->xgir_len);
++			return -EINVAL;
++		}
++		p_dst = rw_arg->xgir_buf;
++		for (i = 0; i < rw_arg->xgir_len / sizeof(u32); i++) {
++			u32 val = ioread32(p_src + rw_arg->xgir_offset + i);
++
++			memcpy(p_dst + i, &val, sizeof(u32));
 +		}
 +		break;
 +	}
 +	default:
-+		break;
-+	}
-+}
-+
-+static int xrt_calib_remove(struct platform_device *pdev)
-+{
-+	struct calib *calib = platform_get_drvdata(pdev);
-+
-+	calib_cache_clean(calib);
-+
-+	if (calib->calib_base)
-+		iounmap(calib->calib_base);
-+
-+	platform_set_drvdata(pdev, NULL);
-+	devm_kfree(&pdev->dev, calib);
-+
-+	return 0;
-+}
-+
-+static int xrt_calib_probe(struct platform_device *pdev)
-+{
-+	struct calib *calib;
-+	struct resource *res;
-+	int err = 0;
-+
-+	calib = devm_kzalloc(&pdev->dev, sizeof(*calib), GFP_KERNEL);
-+	if (!calib)
-+		return -ENOMEM;
-+
-+	calib->pdev = pdev;
-+	platform_set_drvdata(pdev, calib);
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res)
-+		goto failed;
-+
-+	calib->calib_base = ioremap(res->start, res->end - res->start + 1);
-+	if (!calib->calib_base) {
-+		err = -EIO;
-+		xrt_err(pdev, "Map iomem failed");
-+		goto failed;
-+	}
-+
-+	mutex_init(&calib->lock);
-+	INIT_LIST_HEAD(&calib->cache_list);
-+
-+	return 0;
-+
-+failed:
-+	xrt_calib_remove(pdev);
-+	return err;
-+}
-+
-+static int
-+xrt_calib_leaf_ioctl(struct platform_device *pdev, u32 cmd, void *arg)
-+{
-+	struct calib *calib = platform_get_drvdata(pdev);
-+	int ret = 0;
-+
-+	switch (cmd) {
-+	case XRT_XLEAF_EVENT:
-+		xrt_calib_event_cb(pdev, arg);
-+		break;
-+	case XRT_CALIB_RESULT: {
-+		enum xrt_calib_results *r = (enum xrt_calib_results *)arg;
-+		*r = calib->result;
-+		break;
-+	}
-+	default:
 +		xrt_err(pdev, "unsupported cmd %d", cmd);
-+		ret = -EINVAL;
++		return -EINVAL;
 +	}
++
 +	return ret;
 +}
 +
-+static struct xrt_subdev_endpoints xrt_calib_endpoints[] = {
++static int xrt_devctl_remove(struct platform_device *pdev)
++{
++	struct xrt_devctl	*devctl;
++	int			i;
++
++	devctl = platform_get_drvdata(pdev);
++
++	for (i = 0; i < XRT_DEVCTL_MAX; i++) {
++		if (devctl->base_addrs[i])
++			iounmap(devctl->base_addrs[i]);
++	}
++
++	platform_set_drvdata(pdev, NULL);
++	devm_kfree(&pdev->dev, devctl);
++
++	return 0;
++}
++
++static int xrt_devctl_probe(struct platform_device *pdev)
++{
++	struct xrt_devctl	*devctl;
++	int			i, id, ret = 0;
++	struct resource		*res;
++
++	devctl = devm_kzalloc(&pdev->dev, sizeof(*devctl), GFP_KERNEL);
++	if (!devctl)
++		return -ENOMEM;
++
++	devctl->pdev = pdev;
++	platform_set_drvdata(pdev, devctl);
++
++	xrt_info(pdev, "probing...");
++	for (i = 0, res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	    res;
++	    res = platform_get_resource(pdev, IORESOURCE_MEM, ++i)) {
++		id = xrt_devctl_name2id(devctl, res->name);
++		if (id < 0) {
++			xrt_err(pdev, "ep %s not found", res->name);
++			continue;
++		}
++		devctl->base_addrs[id] = ioremap(res->start, res->end - res->start + 1);
++		if (!devctl->base_addrs[id]) {
++			xrt_err(pdev, "map base failed %pR", res);
++			ret = -EIO;
++			goto failed;
++		}
++		devctl->sizes[id] = res->end - res->start + 1;
++	}
++
++failed:
++	if (ret)
++		xrt_devctl_remove(pdev);
++
++	return ret;
++}
++
++static struct xrt_subdev_endpoints xrt_devctl_endpoints[] = {
 +	{
 +		.xse_names = (struct xrt_subdev_ep_names[]) {
-+			{ .ep_name = XRT_MD_NODE_DDR_CALIB },
++			/* add name if ep is in same partition */
++			{ .ep_name = XRT_MD_NODE_BLP_ROM },
 +			{ NULL },
 +		},
 +		.xse_min_ep = 1,
 +	},
++	{
++		.xse_names = (struct xrt_subdev_ep_names[]) {
++			{ .ep_name = XRT_MD_NODE_GOLDEN_VER },
++			{ NULL },
++		},
++		.xse_min_ep = 1,
++	},
++	/* adding ep bundle generates devctl device instance */
 +	{ 0 },
 +};
 +
-+static struct xrt_subdev_drvdata xrt_calib_data = {
++static struct xrt_subdev_drvdata xrt_devctl_data = {
 +	.xsd_dev_ops = {
-+		.xsd_ioctl = xrt_calib_leaf_ioctl,
++		.xsd_ioctl = xrt_devctl_leaf_ioctl,
 +	},
 +};
 +
-+static const struct platform_device_id xrt_calib_table[] = {
-+	{ XRT_CALIB, (kernel_ulong_t)&xrt_calib_data },
++static const struct platform_device_id xrt_devctl_table[] = {
++	{ XRT_DEVCTL, (kernel_ulong_t)&xrt_devctl_data },
 +	{ },
 +};
 +
-+static struct platform_driver xrt_calib_driver = {
++static struct platform_driver xrt_devctl_driver = {
 +	.driver = {
-+		.name = XRT_CALIB,
++		.name = XRT_DEVCTL,
 +	},
-+	.probe = xrt_calib_probe,
-+	.remove = xrt_calib_remove,
-+	.id_table = xrt_calib_table,
++	.probe = xrt_devctl_probe,
++	.remove = xrt_devctl_remove,
++	.id_table = xrt_devctl_table,
 +};
 +
-+void calib_leaf_init_fini(bool init)
++void devctl_leaf_init_fini(bool init)
 +{
 +	if (init)
-+		xleaf_register_driver(XRT_SUBDEV_CALIB, &xrt_calib_driver, xrt_calib_endpoints);
++		xleaf_register_driver(XRT_SUBDEV_DEVCTL, &xrt_devctl_driver, xrt_devctl_endpoints);
 +	else
-+		xleaf_unregister_driver(XRT_SUBDEV_CALIB);
++		xleaf_unregister_driver(XRT_SUBDEV_DEVCTL);
 +}
 -- 
 2.18.4
