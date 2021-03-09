@@ -7,227 +7,121 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1764CC4332E
-	for <linux-fpga@archiver.kernel.org>; Tue,  9 Mar 2021 00:37:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2C5AC433E0
+	for <linux-fpga@archiver.kernel.org>; Tue,  9 Mar 2021 01:11:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EFF746528A
-	for <linux-fpga@archiver.kernel.org>; Tue,  9 Mar 2021 00:37:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9D74B6528D
+	for <linux-fpga@archiver.kernel.org>; Tue,  9 Mar 2021 01:11:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230488AbhCIAg1 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 8 Mar 2021 19:36:27 -0500
-Received: from mga18.intel.com ([134.134.136.126]:31803 "EHLO mga18.intel.com"
+        id S230112AbhCIBLD (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 8 Mar 2021 20:11:03 -0500
+Received: from mga12.intel.com ([192.55.52.136]:7462 "EHLO mga12.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231987AbhCIAgU (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 8 Mar 2021 19:36:20 -0500
-IronPort-SDR: oF+IK7g0ke0ibkF4UwNXEmuZBf5mhL6szWESaDeXTVucoLsRCkaprrY/H8TenQOXYYzyhE4X0h
- LMpgOCc9nBkQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9917"; a="175742099"
+        id S229750AbhCIBKw (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 8 Mar 2021 20:10:52 -0500
+IronPort-SDR: Gi6Pbjii3XXSoyC24hoVV6IyzF//763Qbidp3wPtNQEbJrnf29RBBsIgPxmAJWdIRiZN/c4kh4
+ CtgnlW94OgAQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9917"; a="167404361"
 X-IronPort-AV: E=Sophos;i="5.81,233,1610438400"; 
-   d="scan'208";a="175742099"
+   d="scan'208";a="167404361"
 Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2021 16:36:20 -0800
-IronPort-SDR: 89BoiiJNzj7Kbsj8vHFMrSr+/iyqFgQeE81xacIoHRdJPynLS6tSSi9i7vYgYgh3acXbfcSH7r
- AKcEhPhQg2OA==
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2021 17:10:52 -0800
+IronPort-SDR: HZlH5kRgW/2JvLAjH06w0wCjNTsnoYqU/KlgBxP13zDo4HmE6ks8Js3Oflx07Or7eFVAhtsle/
+ RjoQcbe1U7Hw==
 X-IronPort-AV: E=Sophos;i="5.81,233,1610438400"; 
-   d="scan'208";a="409511187"
+   d="scan'208";a="409521684"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.209.120.53])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2021 16:36:20 -0800
+  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2021 17:10:52 -0800
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v10 7/7] fpga: sec-mgr: expose hardware error info
-Date:   Mon,  8 Mar 2021 16:35:40 -0800
-Message-Id: <20210309003540.197600-8-russell.h.weight@intel.com>
+Subject: [PATCH v9 5/5] fpga: m10bmc-sec: add max10 get_hw_errinfo callback func
+Date:   Mon,  8 Mar 2021 17:10:48 -0800
+Message-Id: <20210309011048.200525-6-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210309003540.197600-1-russell.h.weight@intel.com>
-References: <20210309003540.197600-1-russell.h.weight@intel.com>
+In-Reply-To: <20210309011048.200525-1-russell.h.weight@intel.com>
+References: <20210309011048.200525-1-russell.h.weight@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend the FPGA Security Manager class driver to include
-an optional update/hw_errinfo sysfs node that can be used
-to retrieve 64 bits of device specific error information
-following a secure update failure.
-
-The underlying driver must provide a get_hw_errinfo() callback
-function to enable this feature. This data is treated as
-opaque by the class driver. It is left to user-space software
-or support personnel to interpret this data.
+Extend the MAX10 BMC Secure Update driver to include
+a function that returns 64 bits of additional HW specific
+data for errors that require additional information.
+This callback function enables the hw_errinfo sysfs
+node in the Intel Security Manager class driver.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Reviewed-by: Tom Rix <trix@redhat.com>
 ---
-v10:
-  - Rebased to 5.12-rc2 next
-  - Updated Date and KernelVersion in ABI documentation
 v9:
-  - Updated Date and KernelVersion in ABI documentation
+  - No change
 v8:
-  - No change
+  - Previously patch 6/6, otherwise no change
 v7:
-  - Changed Date in documentation file to December 2020
-v6:
   - No change
+v6:
+  - Initialized auth_result and doorbell to HW_ERRINFO_POISON
+    in m10bmc_sec_hw_errinfo() and removed unnecessary if statements.
 v5:
   - No change
 v4:
-  - Changed from "Intel FPGA Security Manager" to FPGA Security Manager"
-    and removed unnecessary references to "Intel".
-  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
-v3:
   - No change
+v3:
+  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
+  - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure Update
+    driver"
 v2:
-  - Bumped documentation date and version
+  - Implemented HW_ERRINFO_POISON for m10bmc_sec_hw_errinfo() to
+    ensure that corresponding bits are set to 1 if we are unable
+    to read the doorbell or auth_result registers.
+  - Added m10bmc_ prefix to functions in m10bmc_iops structure
 ---
- .../ABI/testing/sysfs-class-fpga-sec-mgr      | 14 +++++++
- drivers/fpga/fpga-sec-mgr.c                   | 38 +++++++++++++++++++
- include/linux/fpga/fpga-sec-mgr.h             |  5 +++
- 3 files changed, 57 insertions(+)
+ drivers/fpga/intel-m10-bmc-secure.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr b/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
-index fba3066e2b69..ff1458701def 100644
---- a/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
-+++ b/Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
-@@ -65,3 +65,17 @@ Description:	Read-only. Returns a string describing the failure
- 		idle state. If this file is read while a secure
- 		update is in progress, then the read will fail with
- 		EBUSY.
-+
-+What: 		/sys/class/fpga_sec_mgr/fpga_secX/update/hw_errinfo
-+Date:		April 2021
-+KernelVersion:  5.13
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read-only. Returns a 64 bit error value providing
-+		hardware specific information that may be useful in
-+		debugging errors that occur during FPGA image updates.
-+		This file is only visible if the underlying device
-+		supports it. The hw_errinfo value is only accessible
-+		when the secure update engine is in the idle state.
-+		If this file is read while a secure update is in
-+		progress, then the read will fail with EBUSY.
-+		Format: "0x%llx".
-diff --git a/drivers/fpga/fpga-sec-mgr.c b/drivers/fpga/fpga-sec-mgr.c
-index d354fe2ab582..aebe06d9a54a 100644
---- a/drivers/fpga/fpga-sec-mgr.c
-+++ b/drivers/fpga/fpga-sec-mgr.c
-@@ -38,10 +38,17 @@ static void set_error(struct fpga_sec_mgr *smgr, enum fpga_sec_err err_code)
- 	smgr->err_code = err_code;
+diff --git a/drivers/fpga/intel-m10-bmc-secure.c b/drivers/fpga/intel-m10-bmc-secure.c
+index a290fcc4df4a..3a049c98cf43 100644
+--- a/drivers/fpga/intel-m10-bmc-secure.c
++++ b/drivers/fpga/intel-m10-bmc-secure.c
+@@ -476,11 +476,33 @@ static enum fpga_sec_err m10bmc_sec_cancel(struct fpga_sec_mgr *smgr)
+ 	return ret ? FPGA_SEC_ERR_RW_ERROR : FPGA_SEC_ERR_NONE;
  }
  
-+static void set_hw_errinfo(struct fpga_sec_mgr *smgr)
++#define HW_ERRINFO_POISON	GENMASK(31, 0)
++static u64 m10bmc_sec_hw_errinfo(struct fpga_sec_mgr *smgr)
 +{
-+	if (smgr->sops->get_hw_errinfo)
-+		smgr->hw_errinfo = smgr->sops->get_hw_errinfo(smgr);
-+}
++	struct m10bmc_sec *sec = smgr->priv;
++	u32 auth_result = HW_ERRINFO_POISON;
++	u32 doorbell = HW_ERRINFO_POISON;
 +
- static void fpga_sec_dev_error(struct fpga_sec_mgr *smgr,
- 			       enum fpga_sec_err err_code)
- {
- 	set_error(smgr, err_code);
-+	set_hw_errinfo(smgr);
- 	smgr->sops->cancel(smgr);
- }
- 
-@@ -227,6 +234,23 @@ error_show(struct device *dev, struct device_attribute *attr, char *buf)
- }
- static DEVICE_ATTR_RO(error);
- 
-+static ssize_t
-+hw_errinfo_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct fpga_sec_mgr *smgr = to_sec_mgr(dev);
-+	int ret;
++	switch (smgr->err_code) {
++	case FPGA_SEC_ERR_HW_ERROR:
++	case FPGA_SEC_ERR_TIMEOUT:
++	case FPGA_SEC_ERR_BUSY:
++	case FPGA_SEC_ERR_WEAROUT:
++		m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
++		m10bmc_sys_read(sec->m10bmc, M10BMC_AUTH_RESULT, &auth_result);
 +
-+	mutex_lock(&smgr->lock);
-+	if (smgr->progress != FPGA_SEC_PROG_IDLE)
-+		ret = -EBUSY;
-+	else
-+		ret = sysfs_emit(buf, "0x%llx\n", smgr->hw_errinfo);
-+	mutex_unlock(&smgr->lock);
-+
-+	return ret;
-+}
-+static DEVICE_ATTR_RO(hw_errinfo);
-+
- static ssize_t remaining_size_show(struct device *dev,
- 				   struct device_attribute *attr, char *buf)
- {
-@@ -258,6 +282,7 @@ static ssize_t filename_store(struct device *dev, struct device_attribute *attr,
- 	}
- 
- 	smgr->err_code = FPGA_SEC_ERR_NONE;
-+	smgr->hw_errinfo = 0;
- 	smgr->request_cancel = false;
- 	smgr->progress = FPGA_SEC_PROG_READING;
- 	reinit_completion(&smgr->update_done);
-@@ -292,18 +317,31 @@ static ssize_t cancel_store(struct device *dev, struct device_attribute *attr,
- }
- static DEVICE_ATTR_WO(cancel);
- 
-+static umode_t
-+sec_mgr_update_visible(struct kobject *kobj, struct attribute *attr, int n)
-+{
-+	struct fpga_sec_mgr *smgr = to_sec_mgr(kobj_to_dev(kobj));
-+
-+	if (attr == &dev_attr_hw_errinfo.attr && !smgr->sops->get_hw_errinfo)
++		return (u64)doorbell << 32 | (u64)auth_result;
++	default:
 +		return 0;
-+
-+	return attr->mode;
++	}
 +}
 +
- static struct attribute *sec_mgr_update_attrs[] = {
- 	&dev_attr_filename.attr,
- 	&dev_attr_cancel.attr,
- 	&dev_attr_status.attr,
- 	&dev_attr_error.attr,
- 	&dev_attr_remaining_size.attr,
-+	&dev_attr_hw_errinfo.attr,
- 	NULL,
+ static const struct fpga_sec_mgr_ops m10bmc_sops = {
+ 	.prepare = m10bmc_sec_prepare,
+ 	.write_blk = m10bmc_sec_write_blk,
+ 	.poll_complete = m10bmc_sec_poll_complete,
+ 	.cancel = m10bmc_sec_cancel,
++	.get_hw_errinfo = m10bmc_sec_hw_errinfo,
  };
  
- static struct attribute_group sec_mgr_update_attr_group = {
- 	.name = "update",
- 	.attrs = sec_mgr_update_attrs,
-+	.is_visible = sec_mgr_update_visible,
- };
- 
- static ssize_t name_show(struct device *dev,
-diff --git a/include/linux/fpga/fpga-sec-mgr.h b/include/linux/fpga/fpga-sec-mgr.h
-index e63e6437f394..04235fab8667 100644
---- a/include/linux/fpga/fpga-sec-mgr.h
-+++ b/include/linux/fpga/fpga-sec-mgr.h
-@@ -40,6 +40,9 @@ enum fpga_sec_err {
-  *			    function and is called at the completion
-  *			    of the update, whether success or failure,
-  *			    if the prepare function succeeded.
-+ * @get_hw_errinfo:	    Optional: Return u64 hw specific error info.
-+ *			    The software err_code may used to determine
-+ *			    whether the hw error info is applicable.
-  */
- struct fpga_sec_mgr_ops {
- 	enum fpga_sec_err (*prepare)(struct fpga_sec_mgr *smgr);
-@@ -48,6 +51,7 @@ struct fpga_sec_mgr_ops {
- 	enum fpga_sec_err (*poll_complete)(struct fpga_sec_mgr *smgr);
- 	enum fpga_sec_err (*cancel)(struct fpga_sec_mgr *smgr);
- 	void (*cleanup)(struct fpga_sec_mgr *smgr);
-+	u64 (*get_hw_errinfo)(struct fpga_sec_mgr *smgr);
- };
- 
- /* Update progress codes */
-@@ -73,6 +77,7 @@ struct fpga_sec_mgr {
- 	enum fpga_sec_prog progress;
- 	enum fpga_sec_prog err_state;	/* progress state at time of failure */
- 	enum fpga_sec_err err_code;	/* security manager error code */
-+	u64 hw_errinfo;			/* 64 bits of HW specific error info */
- 	bool request_cancel;
- 	bool driver_unload;
- 	void *priv;
+ static int m10bmc_secure_probe(struct platform_device *pdev)
 -- 
 2.25.1
 
