@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D724C43603
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA94CC433DB
 	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:27:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 15B4864FA6
+	by mail.kernel.org (Postfix) with ESMTP id A5E9F64E59
 	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:27:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234111AbhCKP03 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 11 Mar 2021 10:26:29 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:33871 "EHLO
+        id S234238AbhCKP0b (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 11 Mar 2021 10:26:31 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:34055 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234136AbhCKPZ5 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 11 Mar 2021 10:25:57 -0500
-Received: from mail-ej1-f72.google.com ([209.85.218.72])
+        with ESMTP id S234253AbhCKP0K (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 11 Mar 2021 10:26:10 -0500
+Received: from mail-lj1-f199.google.com ([209.85.208.199])
         by youngberry.canonical.com with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <krzysztof.kozlowski@canonical.com>)
-        id 1lKNCG-0004ov-35
-        for linux-fpga@vger.kernel.org; Thu, 11 Mar 2021 15:25:56 +0000
-Received: by mail-ej1-f72.google.com with SMTP id gv58so8800554ejc.6
-        for <linux-fpga@vger.kernel.org>; Thu, 11 Mar 2021 07:25:56 -0800 (PST)
+        id 1lKNCT-00054K-4F
+        for linux-fpga@vger.kernel.org; Thu, 11 Mar 2021 15:26:09 +0000
+Received: by mail-lj1-f199.google.com with SMTP id u4so8654973ljo.6
+        for <linux-fpga@vger.kernel.org>; Thu, 11 Mar 2021 07:26:09 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=seRfZbNnrbt83A3lqfbME46rdPLUXBuaJIJzFEroJqM=;
-        b=Yh9TyrS5sZEf83S9e0gpA7vlG9R2TFOD0iqiDAd9BdNjqvzVaSsuDE+Il8bDiy9lka
-         AkdZ2P0I1vVq4C17RiZONOCcvWqRvpLrHTRvaZtKUa+8tsUuDZvZPof9mmfJ8m+1alwc
-         eVeNu/F20IsLRpIYMmhOqJcpkNN1tZSAf1XOCFMbv0SBYu4js5eoxWYY5nndUSno72FL
-         dnYj1r6f8Kk//1gT98j5QcxvaKJfl00wDRsIXId5fCCdsX+TW/FCRcDaDEeydLg16H4E
-         s0tB1p2VBIQiTV/vPx2kyHKU7FaHhOM+XXAJo3s6Fj7HjMO9weMck0FfjjSfrYMLWCrZ
-         HGPA==
-X-Gm-Message-State: AOAM5327fslMUQd2Y8fVwmkMWQUC9hZNLyX44t/C+VFzSVGKSU84soFy
-        cbmDjOKXnMBQafcs/gBJml3r/uEhMNuNpZ7RVhbhgMUZsyft3pgzXsLUooO9HLUsBaNdO4KtGJX
-        I94GjuDrTKwP53EQdfk5sWGyMMN1TgqKXj2EZsk0=
-X-Received: by 2002:a17:906:2c44:: with SMTP id f4mr3504725ejh.508.1615476355784;
-        Thu, 11 Mar 2021 07:25:55 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJyyTATyAQcbeENIUwKOgFEFyZfkouzkosm1a5SyTcN6wlVTiKi+ARuyDQUI5aUuLLjUtpz6tg==
-X-Received: by 2002:a17:906:2c44:: with SMTP id f4mr3504683ejh.508.1615476355579;
-        Thu, 11 Mar 2021 07:25:55 -0800 (PST)
+        bh=Xs6GGjw8nQu2H0zJNhMFfPjtjv4pASlZetLF+qPJ3jI=;
+        b=HCfYffddV4ho4BwmOCtHkJqbq4ookxH6Ca5MnsDr8g3d8KvOBM3IEPTQqHzF3VxRPg
+         /B8RxbUsvATO41aGqFZId3AjpaFi+0wtd7qVA0Yq+4BvuzB7dtXk5OwQLWeT1JKOKWLc
+         24QkkflqrJeyaI8pOmYmwtlmhyJyJaiSkk+h4LF8ZjYGdZ1OEgNSDjZ56N95hl/Iszgv
+         VTNePXXWVXqpYGTMN2Mff7oOcbuC9uzqkfdpsIBizeQhq5WRb0WbmYjGJH2IAQlo2cq9
+         bmVe64z6JVdhp1ZkK7rgtKG2+iAflPOYuc5vO7RvZvNdiNaZozen0d8751HXJVDkl23x
+         /nQg==
+X-Gm-Message-State: AOAM532w2yhIC4xBzFImMjY5kNDM0W7in1hpIoz1Cc81YXPXi/QfDIvV
+        Rd1q7U8A+8vy0ONnQsf47sEZl6i1PLyqE0Ga8+jd8Qlw4v+LnytOWzPC0tLdGVnvS38tPdex8Xs
+        Xqyjdp4MQPOErxZUS1wBqCWH7JTYdaWUGP7HRFf4=
+X-Received: by 2002:a05:6402:2070:: with SMTP id bd16mr9026001edb.133.1615476357799;
+        Thu, 11 Mar 2021 07:25:57 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJxEy/VWcYtVhHpWmtyv1K3JAU4Nmfhx02KoGEuoEu8P/ERdDmK4z05THjQn7v4EX/URDdO6zA==
+X-Received: by 2002:a05:6402:2070:: with SMTP id bd16mr9025945edb.133.1615476357547;
+        Thu, 11 Mar 2021 07:25:57 -0800 (PST)
 Received: from localhost.localdomain (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.gmail.com with ESMTPSA id v25sm1517826edr.18.2021.03.11.07.25.54
+        by smtp.gmail.com with ESMTPSA id v25sm1517826edr.18.2021.03.11.07.25.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Mar 2021 07:25:55 -0800 (PST)
+        Thu, 11 Mar 2021 07:25:57 -0800 (PST)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
 List-Id: <soc.lore.kernel.org>
 To:     Russell King <linux@armlinux.org.uk>,
@@ -78,9 +78,9 @@ To:     Russell King <linux@armlinux.org.uk>,
         linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org,
         netdev@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com
 Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-Subject: [PATCH v3 04/15] net: stmmac: merge ARCH_SOCFPGA and ARCH_STRATIX10
-Date:   Thu, 11 Mar 2021 16:25:34 +0100
-Message-Id: <20210311152545.1317581-5-krzysztof.kozlowski@canonical.com>
+Subject: [PATCH v3 06/15] clk: socfpga: merge ARCH_SOCFPGA and ARCH_STRATIX10
+Date:   Thu, 11 Mar 2021 16:25:36 +0100
+Message-Id: <20210311152545.1317581-7-krzysztof.kozlowski@canonical.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210311152545.1317581-1-krzysztof.kozlowski@canonical.com>
 References: <20210311152545.1317581-1-krzysztof.kozlowski@canonical.com>
@@ -97,24 +97,25 @@ from multiple vendors.
 
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
 ---
- drivers/net/ethernet/stmicro/stmmac/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/clk/Makefile | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/stmicro/stmmac/Kconfig b/drivers/net/ethernet/stmicro/stmmac/Kconfig
-index e675ba12fde2..7737e4d0bb9e 100644
---- a/drivers/net/ethernet/stmicro/stmmac/Kconfig
-+++ b/drivers/net/ethernet/stmicro/stmmac/Kconfig
-@@ -140,8 +140,8 @@ config DWMAC_ROCKCHIP
- 
- config DWMAC_SOCFPGA
- 	tristate "SOCFPGA dwmac support"
--	default (ARCH_SOCFPGA || ARCH_STRATIX10)
--	depends on OF && (ARCH_SOCFPGA || ARCH_STRATIX10 || COMPILE_TEST)
-+	default ARCH_INTEL_SOCFPGA
-+	depends on OF && (ARCH_INTEL_SOCFPGA || COMPILE_TEST)
- 	select MFD_SYSCON
- 	help
- 	  Support for ethernet controller on Altera SOCFPGA
+diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
+index 12e46b12e587..1e29e5ad107a 100644
+--- a/drivers/clk/Makefile
++++ b/drivers/clk/Makefile
+@@ -104,10 +104,9 @@ obj-y					+= renesas/
+ obj-$(CONFIG_ARCH_ROCKCHIP)		+= rockchip/
+ obj-$(CONFIG_COMMON_CLK_SAMSUNG)	+= samsung/
+ obj-$(CONFIG_CLK_SIFIVE)		+= sifive/
+-obj-$(CONFIG_ARCH_SOCFPGA)		+= socfpga/
++obj-$(CONFIG_ARCH_INTEL_SOCFPGA)	+= socfpga/
+ obj-$(CONFIG_ARCH_AGILEX)		+= socfpga/
+ obj-$(CONFIG_ARCH_N5X)			+= socfpga/
+-obj-$(CONFIG_ARCH_STRATIX10)		+= socfpga/
+ obj-$(CONFIG_PLAT_SPEAR)		+= spear/
+ obj-y					+= sprd/
+ obj-$(CONFIG_ARCH_STI)			+= st/
 -- 
 2.25.1
 
