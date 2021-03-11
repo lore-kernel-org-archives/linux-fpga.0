@@ -2,53 +2,54 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39282C43381
-	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:26:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CE24C433E0
+	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:26:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8B2D064FA6
-	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:26:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F114664FA6
+	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:26:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234008AbhCKPZy (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 11 Mar 2021 10:25:54 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:33795 "EHLO
+        id S234260AbhCKP01 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 11 Mar 2021 10:26:27 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:33826 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234149AbhCKPZx (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 11 Mar 2021 10:25:53 -0500
-Received: from mail-ed1-f70.google.com ([209.85.208.70])
+        with ESMTP id S234104AbhCKPZz (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 11 Mar 2021 10:25:55 -0500
+Received: from mail-ed1-f69.google.com ([209.85.208.69])
         by youngberry.canonical.com with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <krzysztof.kozlowski@canonical.com>)
-        id 1lKNCB-0004jQ-Fh
-        for linux-fpga@vger.kernel.org; Thu, 11 Mar 2021 15:25:51 +0000
-Received: by mail-ed1-f70.google.com with SMTP id i19so10095984edy.18
-        for <linux-fpga@vger.kernel.org>; Thu, 11 Mar 2021 07:25:51 -0800 (PST)
+        id 1lKNCD-0004m9-P5
+        for linux-fpga@vger.kernel.org; Thu, 11 Mar 2021 15:25:53 +0000
+Received: by mail-ed1-f69.google.com with SMTP id v27so10048919edx.1
+        for <linux-fpga@vger.kernel.org>; Thu, 11 Mar 2021 07:25:53 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=HH1upFGS1oxbv+vQ09D6VKarsXku0IAuIjEmvH7R4Kk=;
-        b=IvdS/6K6wpw1SMWvYwMQmWHqDcc7V8Z/y757mam1H16KSWZ5ef3jhkwvkDfe+dTEeK
-         iea2uhOu+Xn+ZkftguSwgamjAMt4tFlp13aK18PzGk6PBiJqFYAAkKbPlIkPejLkUi1b
-         TvMH7G6Dq88awRP8n7bivZISGyjBye5r0tbqnYQMO+kTu2q3ymcHJ6hJTOUZLclfY4l5
-         87woQmIs3uhspyE5x6oCGgHsyHLglvjd56K9OH0jtjdMMw2L0lxh/wg6/Wy17u7AKGDE
-         FT6un8DjcB67JSATfhhLZ9J0I/pQa5sFuPIFNy50JgoHN6KrBDpE9RvIgKP2P4FD9TPW
-         BLhw==
-X-Gm-Message-State: AOAM533dGoN09NvqA7F2PssApu7JQ5B6pxoLdqhQwNqUNdhU3qytbfCX
-        miWE/4b5SkqEQUiC6gLWsz1ehX1yM7FyQjAWQak2QTxPEelvTv62Gc6W10GB6W4sY/2aR8t5KKs
-        Kb5sIOjUJuuz1K52SWK3CaKpbiDWsIZGEXzfanQI=
-X-Received: by 2002:a17:906:4f8a:: with SMTP id o10mr3653356eju.484.1615476351084;
-        Thu, 11 Mar 2021 07:25:51 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwl4COb3xR5+Ql8luerMFoHdUQmjQDr8WhPDVtBN8ZjQzZ5RdBWXObNPvxwoLN6Q/QH+U5+ow==
-X-Received: by 2002:a17:906:4f8a:: with SMTP id o10mr3653311eju.484.1615476350782;
-        Thu, 11 Mar 2021 07:25:50 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=WNNBQoeYbiaXwIioLMfeHDmEpvN4s0z+f2iELsIEM3g=;
+        b=aPorlXEdDJviUmQ1DGVIQekvA9UvEYxtCLYZK8z2B3BpwYoYi3VeoBekwVCZpXKkZr
+         qWucXuu1MuuhHwHsIWMIsvaMJ0kHEjikdd+nEUeZnzWfrtZyIdg/QrToc7ujFjFH1mRx
+         9r+U00wZfGAq9MTh/g5inqd+NElq2npUrUVaoFuz0N82QJT9T2KHyZZnmeo+tLJFyLR8
+         Dn6UIn2qWKMbVg6rKlooUxENIQaatZO2EHW9ueF1UKTfSvnBHY0T2JjunTnO+Td98mgI
+         YTPD8f1XspiCDkiblNdMLl/oJlnYcgT29ZDgezv+fkPVxWggAhjtZFuHtLk00uzC+Bhu
+         4hFg==
+X-Gm-Message-State: AOAM5319fTqvSTWWX6nMIERd3cPo20tOuARzG8Cv8Ixx6T326cLMefwL
+        9Q2A0yJZx+C/otybVCgRJDTu7dkmSwyFKX0Nuh0flDZFMwCHrglVx4DI4AbcMrffP/7W2IaBb/j
+        3+KR+6YrmyusMnuf7GFBo/rA2xujQ2mkp9UWE59g=
+X-Received: by 2002:a05:6402:2215:: with SMTP id cq21mr9274788edb.281.1615476353415;
+        Thu, 11 Mar 2021 07:25:53 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJz84GEivsrxMtPNo4w3XJQXVZ55xsq/2JYDwU24XYid3WZpGznITM5djSJ6+HC1Qzj5FYXbTw==
+X-Received: by 2002:a05:6402:2215:: with SMTP id cq21mr9274760edb.281.1615476353246;
+        Thu, 11 Mar 2021 07:25:53 -0800 (PST)
 Received: from localhost.localdomain (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.gmail.com with ESMTPSA id v25sm1517826edr.18.2021.03.11.07.25.49
+        by smtp.gmail.com with ESMTPSA id v25sm1517826edr.18.2021.03.11.07.25.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Mar 2021 07:25:50 -0800 (PST)
+        Thu, 11 Mar 2021 07:25:52 -0800 (PST)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
 List-Id: <soc.lore.kernel.org>
 To:     Russell King <linux@armlinux.org.uk>,
@@ -77,123 +78,153 @@ To:     Russell King <linux@armlinux.org.uk>,
         linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org,
         netdev@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com
 Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-Subject: [PATCH v3 00/15] arm64 / clk: socfpga: simplifying, cleanups and compile testing
-Date:   Thu, 11 Mar 2021 16:25:30 +0100
-Message-Id: <20210311152545.1317581-1-krzysztof.kozlowski@canonical.com>
+Subject: [PATCH v3 02/15] ARM: socfpga: introduce common ARCH_INTEL_SOCFPGA
+Date:   Thu, 11 Mar 2021 16:25:32 +0100
+Message-Id: <20210311152545.1317581-3-krzysztof.kozlowski@canonical.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210311152545.1317581-1-krzysztof.kozlowski@canonical.com>
+References: <20210311152545.1317581-1-krzysztof.kozlowski@canonical.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Hi,
+Simplify 32-bit and 64-bit Intel SoCFPGA Kconfig options by having only
+one for both of them.  This the common practice for other platforms.
+Additionally, the ARCH_SOCFPGA is too generic as SoCFPGA designs come
+from multiple vendors.
 
-All three Intel arm64 SoCFPGA architectures (Agilex, N5X and Stratix 10)
-are basically flavors/platforms of the same architecture.  At least from
-the Linux point of view.  Up to a point that N5X and Agilex share DTSI.
-Having three top-level architectures for the same one barely makes
-sense and complicates driver selection.
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+---
+ arch/arm/Kconfig                    | 2 +-
+ arch/arm/Kconfig.debug              | 6 +++---
+ arch/arm/Makefile                   | 2 +-
+ arch/arm/boot/dts/Makefile          | 2 +-
+ arch/arm/mach-socfpga/Kconfig       | 4 ++++
+ arch/arm64/Kconfig.platforms        | 4 ++++
+ arch/arm64/boot/dts/altera/Makefile | 2 +-
+ 7 files changed, 15 insertions(+), 7 deletions(-)
 
-Additionally it was pointed out that ARCH_SOCFPGA name is too generic.
-There are other vendors making SoC+FPGA designs, so the name should be
-changed to have real vendor (currently: Intel).
-
-
-Dependencies / merging
-======================
-1. Patch 1 is used as base, so other changes depend on its hunks.
-   I put it at beginning as it is something close to a fix, so candidate
-   for stable (even though I did not mark it like that).
-2. Patch 2: everything depends on it.
-
-3. 64-bit path:
-3a. Patches 3-7: depend on patch 2, from 64-bit point of view.
-3b. Patch 8: depends on 2-7 as it finally removes 64-bit ARCH_XXX
-    symbols.
-
-4. 32-bit path:
-4a. Patches 9-14: depend on 2, from 32-bit point of view.
-4b. Patch 15: depends on 9-14 as it finally removes 32-bit ARCH_SOCFPGA
-    symbol.
-
-If the patches look good, proposed merging is via SoC tree (after
-getting acks from everyone). Sharing immutable branches is also a way.
-
-
-Changes since v2
-================
-1. Several new patches and changes.
-2. Rename ARCH_SOCFPGA to ARCH_INTEL_SOCFPGA on 32-bit and 64-bit.
-3. Enable compile testing of 32-bit socfpga clock drivers.
-4. Split changes per subsystems for easier review.
-5. I already received an ack from Lee Jones, but I did not add it as
-   there was big refactoring.  Please kindly ack one more time if it
-   looks good.
-
-Changes since v1
-================
-1. New patch 3: arm64: socfpga: rename ARCH_STRATIX10 to ARCH_SOCFPGA64.
-2. New patch 4: arm64: intel: merge Agilex and N5X into ARCH_SOCFPGA64.
-3. Fix build is.sue reported by kernel test robot (with ARCH_STRATIX10
-   and COMPILE_TEST but without selecting some of the clocks).
-
-
-RFT
-===
-I tested compile builds on few configurations, so I hope kbuild 0-day
-will check more options (please give it few days on the lists).
-I compare the generated autoconf.h and found no issues.  Testing on real
-hardware would be appreciated.
-
-Best regards,
-Krzysztof
-
-Krzysztof Kozlowski (15):
-  clk: socfpga: allow building N5X clocks with ARCH_N5X
-  ARM: socfpga: introduce common ARCH_INTEL_SOCFPGA
-  mfd: altera: merge ARCH_SOCFPGA and ARCH_STRATIX10
-  net: stmmac: merge ARCH_SOCFPGA and ARCH_STRATIX10
-  clk: socfpga: build together Stratix 10, Agilex and N5X clock drivers
-  clk: socfpga: merge ARCH_SOCFPGA and ARCH_STRATIX10
-  EDAC: altera: merge ARCH_SOCFPGA and ARCH_STRATIX10
-  arm64: socfpga: merge Agilex and N5X into ARCH_INTEL_SOCFPGA
-  clk: socfpga: allow compile testing of Stratix 10 / Agilex clocks
-  clk: socfpga: use ARCH_INTEL_SOCFPGA also for 32-bit ARM SoCs (and
-    compile test)
-  dmaengine: socfpga: use ARCH_INTEL_SOCFPGA also for 32-bit ARM SoCs
-  fpga: altera: use ARCH_INTEL_SOCFPGA also for 32-bit ARM SoCs
-  i2c: altera: use ARCH_INTEL_SOCFPGA also for 32-bit ARM SoCs
-  reset: socfpga: use ARCH_INTEL_SOCFPGA also for 32-bit ARM SoCs
-  ARM: socfpga: drop ARCH_SOCFPGA
-
- arch/arm/Kconfig                            |  2 +-
- arch/arm/Kconfig.debug                      |  6 +++---
- arch/arm/Makefile                           |  2 +-
- arch/arm/boot/dts/Makefile                  |  2 +-
- arch/arm/configs/multi_v7_defconfig         |  2 +-
- arch/arm/configs/socfpga_defconfig          |  2 +-
- arch/arm/mach-socfpga/Kconfig               |  4 ++--
- arch/arm64/Kconfig.platforms                | 17 ++++-------------
- arch/arm64/boot/dts/altera/Makefile         |  2 +-
- arch/arm64/boot/dts/intel/Makefile          |  6 +++---
- arch/arm64/configs/defconfig                |  3 +--
- drivers/clk/Kconfig                         |  1 +
- drivers/clk/Makefile                        |  4 +---
- drivers/clk/socfpga/Kconfig                 | 19 +++++++++++++++++++
- drivers/clk/socfpga/Makefile                | 11 +++++------
- drivers/dma/Kconfig                         |  2 +-
- drivers/edac/Kconfig                        |  2 +-
- drivers/edac/altera_edac.c                  | 17 +++++++++++------
- drivers/firmware/Kconfig                    |  2 +-
- drivers/fpga/Kconfig                        |  8 ++++----
- drivers/i2c/busses/Kconfig                  |  2 +-
- drivers/mfd/Kconfig                         |  4 ++--
- drivers/net/ethernet/stmicro/stmmac/Kconfig |  4 ++--
- drivers/reset/Kconfig                       |  6 +++---
- 24 files changed, 71 insertions(+), 59 deletions(-)
- create mode 100644 drivers/clk/socfpga/Kconfig
-
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 853aab5ab327..37f94cf0cfdb 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1320,7 +1320,7 @@ config ARM_PSCI
+ # selected platforms.
+ config ARCH_NR_GPIO
+ 	int
+-	default 2048 if ARCH_SOCFPGA
++	default 2048 if ARCH_INTEL_SOCFPGA
+ 	default 1024 if ARCH_BRCMSTB || ARCH_RENESAS || ARCH_TEGRA || \
+ 		ARCH_ZYNQ || ARCH_ASPEED
+ 	default 512 if ARCH_EXYNOS || ARCH_KEYSTONE || SOC_OMAP5 || \
+diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
+index 9e0b5e7f12af..36016497b1b3 100644
+--- a/arch/arm/Kconfig.debug
++++ b/arch/arm/Kconfig.debug
+@@ -1087,7 +1087,7 @@ choice
+ 		  on SD5203 UART.
+ 
+ 	config DEBUG_SOCFPGA_UART0
+-		depends on ARCH_SOCFPGA
++		depends on ARCH_INTEL_SOCFPGA
+ 		bool "Use SOCFPGA UART0 for low-level debug"
+ 		select DEBUG_UART_8250
+ 		help
+@@ -1095,7 +1095,7 @@ choice
+ 		  on SOCFPGA(Cyclone 5 and Arria 5) based platforms.
+ 
+ 	config DEBUG_SOCFPGA_ARRIA10_UART1
+-		depends on ARCH_SOCFPGA
++		depends on ARCH_INTEL_SOCFPGA
+ 		bool "Use SOCFPGA Arria10 UART1 for low-level debug"
+ 		select DEBUG_UART_8250
+ 		help
+@@ -1103,7 +1103,7 @@ choice
+ 		  on SOCFPGA(Arria 10) based platforms.
+ 
+ 	config DEBUG_SOCFPGA_CYCLONE5_UART1
+-		depends on ARCH_SOCFPGA
++		depends on ARCH_INTEL_SOCFPGA
+ 		bool "Use SOCFPGA Cyclone 5 UART1 for low-level debug"
+ 		select DEBUG_UART_8250
+ 		help
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index dad5502ecc28..415c3514573a 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -209,7 +209,7 @@ machine-$(CONFIG_PLAT_SAMSUNG)		+= s3c
+ machine-$(CONFIG_ARCH_S5PV210)		+= s5pv210
+ machine-$(CONFIG_ARCH_SA1100)		+= sa1100
+ machine-$(CONFIG_ARCH_RENESAS)	 	+= shmobile
+-machine-$(CONFIG_ARCH_SOCFPGA)		+= socfpga
++machine-$(CONFIG_ARCH_INTEL_SOCFPGA)	+= socfpga
+ machine-$(CONFIG_ARCH_STI)		+= sti
+ machine-$(CONFIG_ARCH_STM32)		+= stm32
+ machine-$(CONFIG_ARCH_SUNXI)		+= sunxi
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index 53b6e06bf19a..fe8f7c349f1d 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1033,7 +1033,7 @@ dtb-$(CONFIG_ARCH_S5PV210) += \
+ 	s5pv210-smdkc110.dtb \
+ 	s5pv210-smdkv210.dtb \
+ 	s5pv210-torbreck.dtb
+-dtb-$(CONFIG_ARCH_SOCFPGA) += \
++dtb-$(CONFIG_ARCH_INTEL_SOCFPGA) += \
+ 	socfpga_arria5_socdk.dtb \
+ 	socfpga_arria10_socdk_nand.dtb \
+ 	socfpga_arria10_socdk_qspi.dtb \
+diff --git a/arch/arm/mach-socfpga/Kconfig b/arch/arm/mach-socfpga/Kconfig
+index c3bb68d57cea..e43ed0ca6860 100644
+--- a/arch/arm/mach-socfpga/Kconfig
++++ b/arch/arm/mach-socfpga/Kconfig
+@@ -2,6 +2,7 @@
+ menuconfig ARCH_SOCFPGA
+ 	bool "Altera SOCFPGA family"
+ 	depends on ARCH_MULTI_V7
++	select ARCH_INTEL_SOCFPGA
+ 	select ARCH_SUPPORTS_BIG_ENDIAN
+ 	select ARM_AMBA
+ 	select ARM_GIC
+@@ -20,6 +21,9 @@ menuconfig ARCH_SOCFPGA
+ 	select PL310_ERRATA_769419
+ 
+ if ARCH_SOCFPGA
++config ARCH_INTEL_SOCFPGA
++	bool
++
+ config SOCFPGA_SUSPEND
+ 	bool "Suspend to RAM on SOCFPGA"
+ 	help
+diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
+index cdfd5fed457f..ecab67a1afb8 100644
+--- a/arch/arm64/Kconfig.platforms
++++ b/arch/arm64/Kconfig.platforms
+@@ -256,9 +256,13 @@ config ARCH_SEATTLE
+ 
+ config ARCH_STRATIX10
+ 	bool "Altera's Stratix 10 SoCFPGA Family"
++	select ARCH_INTEL_SOCFPGA
+ 	help
+ 	  This enables support for Altera's Stratix 10 SoCFPGA Family.
+ 
++config ARCH_INTEL_SOCFPGA
++	bool
++
+ config ARCH_SYNQUACER
+ 	bool "Socionext SynQuacer SoC Family"
+ 
+diff --git a/arch/arm64/boot/dts/altera/Makefile b/arch/arm64/boot/dts/altera/Makefile
+index 10119c7ab437..4db83fbeb115 100644
+--- a/arch/arm64/boot/dts/altera/Makefile
++++ b/arch/arm64/boot/dts/altera/Makefile
+@@ -1,3 +1,3 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-dtb-$(CONFIG_ARCH_STRATIX10) += socfpga_stratix10_socdk.dtb \
++dtb-$(CONFIG_ARCH_INTEL_SOCFPGA) += socfpga_stratix10_socdk.dtb \
+ 				socfpga_stratix10_socdk_nand.dtb
 -- 
 2.25.1
 
