@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEA55C43619
-	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:28:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99F8EC28D15
+	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:28:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 990E264FAB
-	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:28:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6EF7464FF3
+	for <linux-fpga@archiver.kernel.org>; Thu, 11 Mar 2021 15:28:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234223AbhCKP1d (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 11 Mar 2021 10:27:33 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:34142 "EHLO
+        id S234434AbhCKP2L (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 11 Mar 2021 10:28:11 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:34365 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234421AbhCKP1U (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 11 Mar 2021 10:27:20 -0500
-Received: from mail-ej1-f72.google.com ([209.85.218.72])
+        with ESMTP id S234195AbhCKP14 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 11 Mar 2021 10:27:56 -0500
+Received: from mail-lf1-f69.google.com ([209.85.167.69])
         by youngberry.canonical.com with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <krzysztof.kozlowski@canonical.com>)
-        id 1lKNDb-0005T8-HQ
-        for linux-fpga@vger.kernel.org; Thu, 11 Mar 2021 15:27:19 +0000
-Received: by mail-ej1-f72.google.com with SMTP id mj6so8853868ejb.11
-        for <linux-fpga@vger.kernel.org>; Thu, 11 Mar 2021 07:27:19 -0800 (PST)
+        id 1lKNEA-0005o7-3v
+        for linux-fpga@vger.kernel.org; Thu, 11 Mar 2021 15:27:55 +0000
+Received: by mail-lf1-f69.google.com with SMTP id m71so6851559lfa.5
+        for <linux-fpga@vger.kernel.org>; Thu, 11 Mar 2021 07:27:54 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=/3UhGLxhWacdcsSpVsIOhi7iq++tfBdPJwQmfZFh1zw=;
-        b=bEPRFBQZYc16sv8cHnCJkhS57R4knwSlw01Uva1ID4x4kJtZJKVTGAdF52P7isI5ch
-         KYyHcCpYjGHrGET7G0tKNTNjGI8bHy/Vfgij057kBtlPrikE1B3ka6FYbSsy8PzQ8I53
-         AiaWnT3nAdcvGLTijDna2pg65a9E38fXiN3NUYTderfURr0pE4UXXkYZzKCMLFu0fUsx
-         clYoMyPNqZu4Y9VaoRm0wgOJj8EYd+6mxd3mMiFTvpk2LlzUoR1/yp1rP5oeAfKp/++u
-         J8ePun74rKiQSt38zsXc0rPy6iOKf8B8NMrAS+fovn/MbMkaOJNCiG2OOjFDyNyJdPYe
-         I5ng==
-X-Gm-Message-State: AOAM5337JTWPd2uQ+sbZ90ecJO2XgGtArWfnt269VxD8NGU90aVjzX6g
-        CTZZ/v3AXq9ZwEXPrVV32Q4WRiQRiWnbNmMruRnH10SeWVY0DPnFFMNOzpKQtx0RoIE5L2Ugnry
-        aCTIIQ08yQVG90fsEbc4ZG5P00Vow40WK7D/pcAs=
-X-Received: by 2002:a05:6402:1103:: with SMTP id u3mr8916747edv.205.1615476439289;
-        Thu, 11 Mar 2021 07:27:19 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJykFYMegR7g3sofzBC+1YkJVaDapoNS+bRGUtFV8/I7aVJB5VDHjlbA8PWaxRhm9KLVG244sg==
-X-Received: by 2002:a05:6402:1103:: with SMTP id u3mr8916710edv.205.1615476439104;
-        Thu, 11 Mar 2021 07:27:19 -0800 (PST)
+        bh=RBN1O3Wcnz1uvA/bXXgFQO/02vpYiyGG/6WCSqIa6KY=;
+        b=XTwsoRqSToLhlT759srqGwDTVfJvECV/K4YAjmDI0MSoekb12h2MtDtQC4F94gQASI
+         GpGRSMR9/5msZiEaDuYv7BhewQaeYgSZgTlkkoeCQ9+5t7qxb5eBQeypoBRPROhDASms
+         PleDDFU5ABvVjOAP0qevjD+6Z7jmlw1I9VEpFBatx1X8NSGCpFYplslQsNfn1hdSN8OR
+         9kvdQnkcBAZadqL6WAeQfd7wTjf1hx4hbEmllMkpDe3ea/M1K69PsqbM70ORhCZE3rub
+         O3IoipG3CY3ebaSmkFNirvhLocZpwwWHJp9Jr8NtI4oVHIwfADOmC0/FIbEJK32/Uv+D
+         wQbw==
+X-Gm-Message-State: AOAM530S03zTwZoprEj2xGDTXQy/mD+jjxb2MBtDxSE/esErmX62lDAj
+        XGRVUFtM8HaJ1rBEgMxe3iSkVt4Tc5QnVcH9DjwjVdY0mwBnUn6Xqi9jxzYmRgv3tJ5JQyZFJ5Q
+        JbFOTex5jveH3FSeAmpSqjgoY6aHeQLzTuu1oZas=
+X-Received: by 2002:a05:6402:510b:: with SMTP id m11mr9145593edd.103.1615476463284;
+        Thu, 11 Mar 2021 07:27:43 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJzftQgQhm6JCnX7NkcREdfHxQ79cH5j2A8F4fhogge3Hb8YjiFCimex/EvBlWPVnkSsMSMXPQ==
+X-Received: by 2002:a05:6402:510b:: with SMTP id m11mr9145573edd.103.1615476463167;
+        Thu, 11 Mar 2021 07:27:43 -0800 (PST)
 Received: from localhost.localdomain (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.gmail.com with ESMTPSA id yk8sm1445697ejb.123.2021.03.11.07.27.18
+        by smtp.gmail.com with ESMTPSA id k9sm1567062edn.68.2021.03.11.07.27.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Mar 2021 07:27:18 -0800 (PST)
+        Thu, 11 Mar 2021 07:27:42 -0800 (PST)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
 List-Id: <soc.lore.kernel.org>
 To:     Russell King <linux@armlinux.org.uk>,
@@ -78,9 +78,9 @@ To:     Russell King <linux@armlinux.org.uk>,
         linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org,
         netdev@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com
 Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-Subject: [PATCH v3 10/15] clk: socfpga: use ARCH_INTEL_SOCFPGA also for 32-bit ARM SoCs (and compile test)
-Date:   Thu, 11 Mar 2021 16:27:15 +0100
-Message-Id: <20210311152715.1317848-1-krzysztof.kozlowski@canonical.com>
+Subject: [PATCH v3 14/15] reset: socfpga: use ARCH_INTEL_SOCFPGA also for 32-bit ARM SoCs
+Date:   Thu, 11 Mar 2021 16:27:41 +0100
+Message-Id: <20210311152741.1318599-1-krzysztof.kozlowski@canonical.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210311152545.1317581-1-krzysztof.kozlowski@canonical.com>
 References: <20210311152545.1317581-1-krzysztof.kozlowski@canonical.com>
@@ -93,51 +93,26 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 ARCH_SOCFPGA is being renamed to ARCH_INTEL_SOCFPGA so adjust the
 32-bit ARM drivers to rely on new symbol.
 
-There is little point to share clock controller drivers between 32-bit
-and 64-bit platforms because there will not be a generic image for both
-of them.  Therefore add a new Kconfig entry for building 32-bit clock
-driverss, similar to one for 64-bit.  This allows enabling compile
-testing.
-
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
 ---
- drivers/clk/socfpga/Kconfig  | 6 +++++-
- drivers/clk/socfpga/Makefile | 4 ++--
- 2 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/reset/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/clk/socfpga/Kconfig b/drivers/clk/socfpga/Kconfig
-index b62ede8cad01..0cf16b894efb 100644
---- a/drivers/clk/socfpga/Kconfig
-+++ b/drivers/clk/socfpga/Kconfig
-@@ -4,10 +4,14 @@ config CLK_INTEL_SOCFPGA
- 	default ARCH_INTEL_SOCFPGA
- 	help
- 	  Support for the clock controllers present on Intel SoCFPGA and eASIC
--	  devices like Stratix 10, Agilex and N5X eASIC.
-+	  devices like Aria, Cyclone, Stratix 10, Agilex and N5X eASIC.
+diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
+index b1e8efa16166..7043c7f6dcf0 100644
+--- a/drivers/reset/Kconfig
++++ b/drivers/reset/Kconfig
+@@ -205,8 +205,8 @@ config RESET_STM32MP157
+ 	  This enables the RCC reset controller driver for STM32 MPUs.
  
- if CLK_INTEL_SOCFPGA
- 
-+config CLK_INTEL_SOCFPGA32
-+	bool "Intel Aria / Cyclone clock controller support" if COMPILE_TEST && (!ARM || !ARCH_INTEL_SOCFPGA)
+ config RESET_SOCFPGA
+-	bool "SoCFPGA Reset Driver" if COMPILE_TEST && !ARCH_SOCFPGA
+-	default ARCH_SOCFPGA
++	bool "SoCFPGA Reset Driver" if COMPILE_TEST && (!ARM || !ARCH_INTEL_SOCFPGA)
 +	default ARM && ARCH_INTEL_SOCFPGA
-+
- config CLK_INTEL_SOCFPGA64
- 	bool "Intel Stratix / Agilex / N5X clock controller support" if COMPILE_TEST && (!ARM64 || !ARCH_INTEL_SOCFPGA)
- 	default ARM64 && ARCH_INTEL_SOCFPGA
-diff --git a/drivers/clk/socfpga/Makefile b/drivers/clk/socfpga/Makefile
-index ebd3538d12de..e8dfce339c91 100644
---- a/drivers/clk/socfpga/Makefile
-+++ b/drivers/clk/socfpga/Makefile
-@@ -1,6 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0
--obj-$(CONFIG_ARCH_SOCFPGA) += clk.o clk-gate.o clk-pll.o clk-periph.o
--obj-$(CONFIG_ARCH_SOCFPGA) += clk-pll-a10.o clk-periph-a10.o clk-gate-a10.o
-+obj-$(CONFIG_CLK_INTEL_SOCFPGA32) += clk.o clk-gate.o clk-pll.o clk-periph.o \
-+				     clk-pll-a10.o clk-periph-a10.o clk-gate-a10.o
- obj-$(CONFIG_CLK_INTEL_SOCFPGA64) += clk-s10.o \
- 				     clk-pll-s10.o clk-periph-s10.o clk-gate-s10.o \
- 				     clk-agilex.o
+ 	select RESET_SIMPLE
+ 	help
+ 	  This enables the reset driver for the SoCFPGA ARMv7 platforms. This
 -- 
 2.25.1
 
