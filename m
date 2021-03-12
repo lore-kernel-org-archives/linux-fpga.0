@@ -2,174 +2,427 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2886C4332D
-	for <linux-fpga@archiver.kernel.org>; Fri, 12 Mar 2021 19:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA5D1C433E9
+	for <linux-fpga@archiver.kernel.org>; Fri, 12 Mar 2021 23:44:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A2BD664F46
-	for <linux-fpga@archiver.kernel.org>; Fri, 12 Mar 2021 19:37:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C76D864F89
+	for <linux-fpga@archiver.kernel.org>; Fri, 12 Mar 2021 23:44:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234301AbhCLTg5 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 12 Mar 2021 14:36:57 -0500
-Received: from mga17.intel.com ([192.55.52.151]:44156 "EHLO mga17.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233940AbhCLTg1 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 12 Mar 2021 14:36:27 -0500
-IronPort-SDR: kgt7yGRSVUV8srtjw1DU/DqpIDUIviONbtJw3625TEr9Ejrbcx/Mw1ZAh7vP7amxc6+Q34tEYo
- TkLCQVTPhexQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9921"; a="168796315"
-X-IronPort-AV: E=Sophos;i="5.81,244,1610438400"; 
-   d="scan'208";a="168796315"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Mar 2021 11:36:27 -0800
-IronPort-SDR: MtPLN5Bd4l4YZ2kYAvuRMlyOwX+gRXEFnrj7d2RrdF5HHJkKWhbm7RhfyZXuvqkj261bM60Gsu
- EKqa8KUCYp1g==
-X-IronPort-AV: E=Sophos;i="5.81,244,1610438400"; 
-   d="scan'208";a="510426153"
-Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.209.51.149])
-  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Mar 2021 11:36:26 -0800
-From:   Russ Weight <russell.h.weight@intel.com>
-To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
-        hao.wu@intel.com, matthew.gerlach@intel.com,
-        Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v10 2/5] fpga: m10bmc-sec: expose max10 flash update count
-Date:   Fri, 12 Mar 2021 11:36:20 -0800
-Message-Id: <20210312193623.326306-3-russell.h.weight@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210312193623.326306-1-russell.h.weight@intel.com>
-References: <20210312193623.326306-1-russell.h.weight@intel.com>
+        id S235843AbhCLXoG (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 12 Mar 2021 18:44:06 -0500
+Received: from mail-bn8nam11on2077.outbound.protection.outlook.com ([40.107.236.77]:12352
+        "EHLO NAM11-BN8-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S235863AbhCLXn5 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 12 Mar 2021 18:43:57 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=R7Zz+DQ+6ELVJ2SQqHOHuOPqoFTuKMNMBXjskBKZ7eaToTfzN15kJXUgxcEuQYD39Z+f4WCs40iwIpah7kJGexS8h9mHJSmOwkSUJ+ZKl1KJjHghdAEdA87CZ+WeInnxxuvtsEui2ill8Sw4OenRsTXvaWqbJkuoYY76ZVbGIWmt27Hy78KF3USClVXBGNFnuiTDT1/2MQrYBveJxKNpwYr0l6c5yEPrtnwSjDL1PtBsSioiN01HnZlIZNv2MlYd48P/bhzsjoVsbDtC/z5IQkadaYmEDXRJ+bwoO8fNpsnvd260Rt0qPmR5nlifonKFAYh4n+/Q6DKejZwkWT09FQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=G497oqaaIeXa5NsTqmZQU/6GONH+b1ZwhWk5QxGIUnQ=;
+ b=YSQGr/L/LuikDbhCCFJejiARruZffKyXPzPy6PSxKGBV0Ma5WbF6kTGuWlbC5zjRxv+3w51+H2pfCo/bP4St5Fkd2e5XHbPITCc1wvlfad12ZhSrmycl+k5vgKDrMm7hwvNyh/qUDxlTK6iQsOe4riSWoFR7TS/LDA8tVpod8nNA/ckSuL13cpZ8z2HMtR0odKUFHux5zFdiVHM9b3gR5xRbIv9l9CWvEHx6sWgihA+BUfKBdNvocZKvtp30HLishZFOoSQHoRfiwwrsaPoDXoLb/pSdcCaEU41PMH1thK/abn1H45hsW4uwqsT0QjZxOA5u07AhIVZD1yZjTkrX5g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=G497oqaaIeXa5NsTqmZQU/6GONH+b1ZwhWk5QxGIUnQ=;
+ b=UlJ20yoMBSZLh2GtJgGiSGHo8xwveicLg5SmNxW0ARXbVHalio7dI0S/sAzQbsbvvoOfDsdxKQRgOfsbqln40Uh2hfPKX5IlnUI1yGoJIXkM11YrZy3pi4NXwRxGVIFI+1wsuT0iQtIsAU9oDEZ2X7IjGJNMMj5iBqn2PrTxpxM=
+Received: from CY4PR1201CA0004.namprd12.prod.outlook.com
+ (2603:10b6:910:16::14) by DM6PR02MB5419.namprd02.prod.outlook.com
+ (2603:10b6:5:79::30) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3933.31; Fri, 12 Mar
+ 2021 23:43:55 +0000
+Received: from CY1NAM02FT015.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:910:16:cafe::7c) by CY4PR1201CA0004.outlook.office365.com
+ (2603:10b6:910:16::14) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3912.17 via Frontend
+ Transport; Fri, 12 Mar 2021 23:43:55 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
+ smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
+ header.d=none;kernel.org; dmarc=pass action=none header.from=xilinx.com;
+Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
+ 149.199.62.198 as permitted sender) receiver=protection.outlook.com;
+ client-ip=149.199.62.198; helo=xsj-pvapexch02.xlnx.xilinx.com;
+Received: from xsj-pvapexch02.xlnx.xilinx.com (149.199.62.198) by
+ CY1NAM02FT015.mail.protection.outlook.com (10.152.75.146) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.3912.25 via Frontend Transport; Fri, 12 Mar 2021 23:43:55 +0000
+Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
+ xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2106.2; Fri, 12 Mar 2021 15:43:55 -0800
+Received: from smtp.xilinx.com (172.19.127.95) by
+ xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
+ 15.1.2106.2 via Frontend Transport; Fri, 12 Mar 2021 15:43:55 -0800
+Envelope-to: robh@kernel.org,
+ mdf@kernel.org,
+ devicetree@vger.kernel.org,
+ linux-fpga@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ trix@redhat.com
+Received: from [10.17.2.60] (port=45574)
+        by smtp.xilinx.com with esmtp (Exim 4.90)
+        (envelope-from <lizhi.hou@xilinx.com>)
+        id 1lKrRj-0002Xw-1R; Fri, 12 Mar 2021 15:43:55 -0800
+Subject: Re: [PATCH V3 XRT Alveo 15/18] fpga: xrt: clock frequence counter
+ platform driver
+To:     Tom Rix <trix@redhat.com>, Lizhi Hou <lizhi.hou@xilinx.com>,
+        <linux-kernel@vger.kernel.org>
+CC:     <linux-fpga@vger.kernel.org>, <maxz@xilinx.com>,
+        <sonal.santan@xilinx.com>, <michal.simek@xilinx.com>,
+        <stefanos@xilinx.com>, <devicetree@vger.kernel.org>,
+        <mdf@kernel.org>, <robh@kernel.org>, Max Zhen <max.zhen@xilinx.com>
+References: <20210218064019.29189-1-lizhih@xilinx.com>
+ <20210218064019.29189-16-lizhih@xilinx.com>
+ <85c34149-ccb4-31c9-4a7d-477b30effad2@redhat.com>
+From:   Lizhi Hou <lizhi.hou@xilinx.com>
+Message-ID: <4dcd1a9f-1d96-6c1e-8e70-13cbc312c7b5@xilinx.com>
+Date:   Fri, 12 Mar 2021 15:43:54 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.2.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <85c34149-ccb4-31c9-4a7d-477b30effad2@redhat.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-EOPAttributedMessage: 0
+X-MS-Office365-Filtering-HT: Tenant
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: e39ff261-c358-4f77-0feb-08d8e5b0b313
+X-MS-TrafficTypeDiagnostic: DM6PR02MB5419:
+X-Microsoft-Antispam-PRVS: <DM6PR02MB54198D899DC05B790950F05FA16F9@DM6PR02MB5419.namprd02.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:8882;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: q3URuf4bsYRFm+OfzG3WHBExYe6vUeskYC9RBSaKdErmavjaNLZB/D0bKNOlOmQa8n/JRrnF8WAXjkktLVXzykxa0DC4jGclZ+0v4Zne0InB+LbJqAD1dgOAE1jym8bWziIZ/p4V+sr5BHvpQ8/Wk5ZX8uS7QkSFCOo0K4HUt9xUVEsOnbWK1M++0M258Hku2Iplv4PjNNkmAeKpWaxJbXorTQHIBcoFfrVxWuDhZVBko8ZdpvlzH7gr5nrxo6tjSIpaFrNQptQC/dTsKyx/xjMxkQR7Ad4fV+jczLS3d2ZEOd2Eze38rqahZvGcDNpIBEzWApzSn7Ar+0fDdPrU3G9xR68ma7tFGELHaiKpzRayM+iqlyE3pC9C4z/NUGduMHZwBJXKDp8OpUapKuC8TXEETcT2ogKKO+8BGO8T3Kb9OOZehGqxsEqqLxS6zKEkUP10OrkoMO3GLZEPV7M2+LxQ8p/Mhi8szMv/kVYuRwM0ORyfwbSmOXVCmkGsOlrv/a8g/L1jHKuo6m+1b/srq6TPIx+yUOIXYtjWNRBfrXvne/Hq0E8zxCHPCGVi0KM7AOaYvJv/ZD3bONk71x8/XT37CnMh8aAOIY2VDCbe+/YoBbJ2/yMlIlobkRKylHzqIEsIQ6wd11gZxVUlZKxoUQIsmGwOf8GNSUyclRbs/aLSC0LhYZbFo9Pb7gWj7B7BXnoa33OfvWUizQVp0Wtq3jrC2TkSm5+Y4+aI2UZv/C8=
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(39860400002)(346002)(136003)(396003)(376002)(46966006)(36840700001)(336012)(36756003)(83380400001)(356005)(4326008)(7636003)(107886003)(26005)(426003)(186003)(36906005)(36860700001)(5660300002)(82310400003)(2616005)(316002)(110136005)(70206006)(44832011)(70586007)(31696002)(31686004)(47076005)(8676002)(8936002)(2906002)(53546011)(54906003)(478600001)(9786002)(82740400003)(50156003)(2101003)(43740500002);DIR:OUT;SFP:1101;
+X-OriginatorOrg: xilinx.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Mar 2021 23:43:55.3681
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: e39ff261-c358-4f77-0feb-08d8e5b0b313
+X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch02.xlnx.xilinx.com]
+X-MS-Exchange-CrossTenant-AuthSource: CY1NAM02FT015.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR02MB5419
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend the MAX10 BMC Secure Update driver to provide a
-sysfs file to expose the flash update count for the FPGA
-user image.
+Hi Tom,
 
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Reviewed-by: Tom Rix <trix@redhat.com>
----
-v10:
-  - Changed the path expression in the sysfs documentation to
-    replace the n3000 reference with something more generic to
-    accomodate other devices that use the same driver.
-v9:
-  - Rebased to 5.12-rc2 next
-  - Updated Date and KernelVersion in ABI documentation
-v8:
-  - Previously patch 3/6, otherwise no change
-v7:
-  - Updated Date and KernelVersion in ABI documentation
-v6:
-  - Changed flash_count_show() parameter list to achieve
-    reverse-christmas tree format.
-  - Added WARN_ON() call for (FLASH_COUNT_SIZE / stride) to ensure
-    that the proper count is passed to regmap_bulk_read().
-v5:
-  - Renamed sysfs node user_flash_count to flash_count and updated the
-    sysfs documentation accordingly.
-v4:
-  - Moved the sysfs file for displaying the flash count from the
-    FPGA Security Manager class driver to here. The
-    m10bmc_user_flash_count() function is removed and the
-    functionality is moved into a user_flash_count_show()
-    function.
-  - Added ABI documentation for the new sysfs entry
-v3:
-  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
-  - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure Update
-    driver"
-  - Removed wrapper functions (m10bmc_raw_*, m10bmc_sys_*). The
-    underlying functions are now called directly.
-v2:
-  - Renamed get_qspi_flash_count() to m10bmc_user_flash_count()
-  - Minor code cleanup per review comments
-  - Added m10bmc_ prefix to functions in m10bmc_iops structure
----
- .../testing/sysfs-driver-intel-m10-bmc-secure |  8 ++++
- drivers/fpga/intel-m10-bmc-secure.c           | 37 +++++++++++++++++++
- 2 files changed, 45 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
-index bd3ee9bc1a92..598db1116d34 100644
---- a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
-+++ b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
-@@ -27,3 +27,11 @@ Description:	Read only. Returns the root entry hash for the BMC image
- 		"hash not programmed".  This file is only visible if the
- 		underlying device supports it.
- 		Format: "0x%x".
-+
-+What:		/sys/bus/platform/drivers/intel-m10bmc-secure/.../security/flash_count
-+Date:		April 2021
-+KernelVersion:  5.13
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns number of times the secure update
-+		staging area has been flashed.
-+		Format: "%u".
-diff --git a/drivers/fpga/intel-m10-bmc-secure.c b/drivers/fpga/intel-m10-bmc-secure.c
-index 5ac5f59b5731..ecd63c13cb2d 100644
---- a/drivers/fpga/intel-m10-bmc-secure.c
-+++ b/drivers/fpga/intel-m10-bmc-secure.c
-@@ -11,6 +11,7 @@
- #include <linux/mfd/intel-m10-bmc.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/slab.h>
- 
- struct m10bmc_sec {
- 	struct device *dev;
-@@ -78,7 +79,43 @@ DEVICE_ATTR_SEC_REH_RO(bmc, BMC_PROG_MAGIC, BMC_PROG_ADDR, BMC_REH_ADDR);
- DEVICE_ATTR_SEC_REH_RO(sr, SR_PROG_MAGIC, SR_PROG_ADDR, SR_REH_ADDR);
- DEVICE_ATTR_SEC_REH_RO(pr, PR_PROG_MAGIC, PR_PROG_ADDR, PR_REH_ADDR);
- 
-+#define FLASH_COUNT_SIZE 4096	/* count stored as inverted bit vector */
-+
-+static ssize_t flash_count_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct m10bmc_sec *sec = dev_get_drvdata(dev);
-+	unsigned int stride, num_bits;
-+	u8 *flash_buf;
-+	int cnt, ret;
-+
-+	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
-+	num_bits = FLASH_COUNT_SIZE * 8;
-+
-+	flash_buf = kmalloc(FLASH_COUNT_SIZE, GFP_KERNEL);
-+	if (!flash_buf)
-+		return -ENOMEM;
-+
-+	WARN_ON(FLASH_COUNT_SIZE % stride);
-+	ret = regmap_bulk_read(sec->m10bmc->regmap, STAGING_FLASH_COUNT,
-+			       flash_buf, FLASH_COUNT_SIZE / stride);
-+	if (ret) {
-+		dev_err(sec->dev,
-+			"failed to read flash count: %x cnt %x: %d\n",
-+			STAGING_FLASH_COUNT, FLASH_COUNT_SIZE / stride, ret);
-+		goto exit_free;
-+	}
-+	cnt = num_bits - bitmap_weight((unsigned long *)flash_buf, num_bits);
-+
-+exit_free:
-+	kfree(flash_buf);
-+
-+	return ret ? : sysfs_emit(buf, "%u\n", cnt);
-+}
-+static DEVICE_ATTR_RO(flash_count);
-+
- static struct attribute *m10bmc_security_attrs[] = {
-+	&dev_attr_flash_count.attr,
- 	&dev_attr_bmc_root_entry_hash.attr,
- 	&dev_attr_sr_root_entry_hash.attr,
- 	&dev_attr_pr_root_entry_hash.attr,
--- 
-2.25.1
+On 03/06/2021 07:25 AM, Tom Rix wrote:
+> On 2/17/21 10:40 PM, Lizhi Hou wrote:
+>> Add clock frequence counter driver. Clock frequence counter is
+>> a hardware function discovered by walking xclbin metadata. A platform
+>> device node will be created for it. Other part of driver can read the
+>> actual clock frequence through clock frequence counter driver.
+>>
+>> Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
+>> Signed-off-by: Max Zhen <max.zhen@xilinx.com>
+>> Signed-off-by: Lizhi Hou <lizhih@xilinx.com>
+>> ---
+>>   drivers/fpga/xrt/include/xleaf/clkfreq.h |  23 +++
+>>   drivers/fpga/xrt/lib/xleaf/clkfreq.c     | 221 +++++++++++++++++++++++
+>>   2 files changed, 244 insertions(+)
+>>   create mode 100644 drivers/fpga/xrt/include/xleaf/clkfreq.h
+>>   create mode 100644 drivers/fpga/xrt/lib/xleaf/clkfreq.c
+>>
+>> diff --git a/drivers/fpga/xrt/include/xleaf/clkfreq.h b/drivers/fpga/xrt/include/xleaf/clkfreq.h
+>> new file mode 100644
+>> index 000000000000..29fc45e8a31b
+>> --- /dev/null
+>> +++ b/drivers/fpga/xrt/include/xleaf/clkfreq.h
+>> @@ -0,0 +1,23 @@
+>> +/* SPDX-License-Identifier: GPL-2.0 */
+>> +/*
+>> + * Header file for XRT Clock Counter Leaf Driver
+>> + *
+>> + * Copyright (C) 2020-2021 Xilinx, Inc.
+>> + *
+>> + * Authors:
+>> + *   Lizhi Hou <Lizhi.Hou@xilinx.com>
+>> + */
+>> +
+>> +#ifndef _XRT_CLKFREQ_H_
+>> +#define _XRT_CLKFREQ_H_
+>> +
+>> +#include "xleaf.h"
+>> +
+>> +/*
+>> + * CLKFREQ driver IOCTL calls.
+>> + */
+>> +enum xrt_clkfreq_ioctl_cmd {
+>> +     XRT_CLKFREQ_READ = XRT_XLEAF_CUSTOM_BASE, /* See comments in xleaf.h */
+>> +};
+>> +
+>> +#endif       /* _XRT_CLKFREQ_H_ */
+>> diff --git a/drivers/fpga/xrt/lib/xleaf/clkfreq.c b/drivers/fpga/xrt/lib/xleaf/clkfreq.c
+>> new file mode 100644
+>> index 000000000000..2482dd2cff47
+>> --- /dev/null
+>> +++ b/drivers/fpga/xrt/lib/xleaf/clkfreq.c
+>> @@ -0,0 +1,221 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Xilinx Alveo FPGA Clock Frequency Counter Driver
+>> + *
+>> + * Copyright (C) 2020-2021 Xilinx, Inc.
+>> + *
+>> + * Authors:
+>> + *      Lizhi Hou<Lizhi.Hou@xilinx.com>
+>> + */
+>> +
+>> +#include <linux/mod_devicetable.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/delay.h>
+>> +#include <linux/device.h>
+>> +#include <linux/io.h>
+>> +#include "metadata.h"
+>> +#include "xleaf.h"
+>> +#include "xleaf/clkfreq.h"
+>> +
+>> +#define CLKFREQ_ERR(clkfreq, fmt, arg...)   \
+>> +     xrt_err((clkfreq)->pdev, fmt "\n", ##arg)
+>> +#define CLKFREQ_WARN(clkfreq, fmt, arg...)  \
+>> +     xrt_warn((clkfreq)->pdev, fmt "\n", ##arg)
+>> +#define CLKFREQ_INFO(clkfreq, fmt, arg...)  \
+>> +     xrt_info((clkfreq)->pdev, fmt "\n", ##arg)
+>> +#define CLKFREQ_DBG(clkfreq, fmt, arg...)   \
+>> +     xrt_dbg((clkfreq)->pdev, fmt "\n", ##arg)
+>> +
+>> +#define XRT_CLKFREQ          "xrt_clkfreq"
+>> +
+>> +#define OCL_CLKWIZ_STATUS_MASK               0xffff
+>> +
+>> +#define OCL_CLKWIZ_STATUS_MEASURE_START      0x1
+>> +#define OCL_CLKWIZ_STATUS_MEASURE_DONE       0x2
+>> +#define OCL_CLK_FREQ_COUNTER_OFFSET  0x8
+>> +#define OCL_CLK_FREQ_V5_COUNTER_OFFSET       0x10
+>> +#define OCL_CLK_FREQ_V5_CLK0_ENABLED 0x10000
+> Similar to earlier, OCL -> XRT_CLKFREQ
+>
+> Use regmap
+Will change this.
+>
+>> +
+>> +struct clkfreq {
+>> +     struct platform_device  *pdev;
+>> +     void __iomem            *clkfreq_base;
+>> +     const char              *clkfreq_ep_name;
+>> +     struct mutex            clkfreq_lock; /* clock counter dev lock */
+>> +};
+>> +
+>> +static inline u32 reg_rd(struct clkfreq *clkfreq, u32 offset)
+>> +{
+>> +     return ioread32(clkfreq->clkfreq_base + offset);
+>> +}
+>> +
+>> +static inline void reg_wr(struct clkfreq *clkfreq, u32 val, u32 offset)
+>> +{
+>> +     iowrite32(val, clkfreq->clkfreq_base + offset);
+>> +}
+>> +
+>> +static u32 clkfreq_read(struct clkfreq *clkfreq)
+>> +{
+> failure returns 0, it would be better if -EINVAL or similar was returned.
+>
+> and u32 *freq added as a function parameter
+Will change this.
+>
+>> +     u32 freq = 0, status;
+>> +     int times = 10;
+> 10 is a config parameter, should be a #define
+Sure.
+>> +
+>> +     mutex_lock(&clkfreq->clkfreq_lock);
+>> +     reg_wr(clkfreq, OCL_CLKWIZ_STATUS_MEASURE_START, 0);
+>> +     while (times != 0) {
+>> +             status = reg_rd(clkfreq, 0);
+>> +             if ((status & OCL_CLKWIZ_STATUS_MASK) ==
+>> +                 OCL_CLKWIZ_STATUS_MEASURE_DONE)
+>> +                     break;
+>> +             mdelay(1);
+>> +             times--;
+>> +     };
+>> +     if (times > 0) {
+> I do not like tristate setting, convert to if-else
+Will change this.
+>> +             freq = (status & OCL_CLK_FREQ_V5_CLK0_ENABLED) ?
+>> +                     reg_rd(clkfreq, OCL_CLK_FREQ_V5_COUNTER_OFFSET) :
+>> +                     reg_rd(clkfreq, OCL_CLK_FREQ_COUNTER_OFFSET);
+>> +     }
+>> +     mutex_unlock(&clkfreq->clkfreq_lock);
+>> +
+>> +     return freq;
+>> +}
+>> +
+>> +static ssize_t freq_show(struct device *dev, struct device_attribute *attr, char *buf)
+>> +{
+>> +     struct clkfreq *clkfreq = platform_get_drvdata(to_platform_device(dev));
+>> +     u32 freq;
+>> +     ssize_t count;
+>> +
+>> +     freq = clkfreq_read(clkfreq);
+> unchecked error
+Will add check.
+>> +     count = snprintf(buf, 64, "%d\n", freq);
+> %u
+Sure.
+>> +
+>> +     return count;
+>> +}
+>> +static DEVICE_ATTR_RO(freq);
+>> +
+>> +static struct attribute *clkfreq_attrs[] = {
+>> +     &dev_attr_freq.attr,
+>> +     NULL,
+>> +};
+>> +
+>> +static struct attribute_group clkfreq_attr_group = {
+>> +     .attrs = clkfreq_attrs,
+>> +};
+>> +
+>> +static int
+>> +xrt_clkfreq_leaf_ioctl(struct platform_device *pdev, u32 cmd, void *arg)
+>> +{
+>> +     struct clkfreq          *clkfreq;
+>> +     int                     ret = 0;
+>> +
+>> +     clkfreq = platform_get_drvdata(pdev);
+>> +
+>> +     switch (cmd) {
+>> +     case XRT_XLEAF_EVENT:
+>> +             /* Does not handle any event. */
+>> +             break;
+>> +     case XRT_CLKFREQ_READ: {
+> brace not needed
+Will remove.
+>> +             *(u32 *)arg = clkfreq_read(clkfreq);
+> Unchecked error
+Will add check.
+>> +             break;
+>> +     }
+>> +     default:
+>> +             xrt_err(pdev, "unsupported cmd %d", cmd);
+>> +             return -EINVAL;
+>> +     }
+>> +
+>> +     return ret;
+>> +}
+>> +
+>> +static int clkfreq_remove(struct platform_device *pdev)
+>> +{
+>> +     struct clkfreq *clkfreq;
+>> +
+>> +     clkfreq = platform_get_drvdata(pdev);
+>> +     if (!clkfreq) {
+>> +             xrt_err(pdev, "driver data is NULL");
+>> +             return -EINVAL;
+>> +     }
+>> +
+>> +     platform_set_drvdata(pdev, NULL);
+>> +     devm_kfree(&pdev->dev, clkfreq);
+>> +
+>> +     CLKFREQ_INFO(clkfreq, "successfully removed clkfreq subdev");
+>> +     return 0;
+>> +}
+>> +
+>> +static int clkfreq_probe(struct platform_device *pdev)
+>> +{
+>> +     struct clkfreq *clkfreq = NULL;
+>> +     struct resource *res;
+>> +     int ret;
+>> +
+>> +     clkfreq = devm_kzalloc(&pdev->dev, sizeof(*clkfreq), GFP_KERNEL);
+>> +     if (!clkfreq)
+>> +             return -ENOMEM;
+>> +
+>> +     platform_set_drvdata(pdev, clkfreq);
+>> +     clkfreq->pdev = pdev;
+>> +     mutex_init(&clkfreq->clkfreq_lock);
+>> +
+>> +     res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>> +     clkfreq->clkfreq_base = ioremap(res->start, res->end - res->start + 1);
+>> +     if (!clkfreq->clkfreq_base) {
+>> +             CLKFREQ_ERR(clkfreq, "map base %pR failed", res);
+>> +             ret = -EFAULT;
+>> +             goto failed;
+>> +     }
+>> +     clkfreq->clkfreq_ep_name = res->name;
+>> +
+>> +     ret = sysfs_create_group(&pdev->dev.kobj, &clkfreq_attr_group);
+>> +     if (ret) {
+>> +             CLKFREQ_ERR(clkfreq, "create clkfreq attrs failed: %d", ret);
+>> +             goto failed;
+>> +     }
+>> +
+>> +     CLKFREQ_INFO(clkfreq, "successfully initialized clkfreq subdev");
+>> +
+>> +     return 0;
+>> +
+>> +failed:
+>> +     clkfreq_remove(pdev);
+>> +     return ret;
+>> +}
+>> +
+>> +static struct xrt_subdev_endpoints xrt_clkfreq_endpoints[] = {
+>> +     {
+>> +             .xse_names = (struct xrt_subdev_ep_names[]) {
+>> +                     { .regmap_name = "freq_cnt" },
+> name should be closer to filename, maybe 'clock_frequency' or 'clkfreq'
+'freq_cnt' is from firmware metadata. I will add #define in metadata.h.
+
+Thanks,
+Lizhi
+>
+> Tom
+>
+>> +                     { NULL },
+>> +             },
+>> +             .xse_min_ep = 1,
+>> +     },
+>> +     { 0 },
+>> +};
+>> +
+>> +static struct xrt_subdev_drvdata xrt_clkfreq_data = {
+>> +     .xsd_dev_ops = {
+>> +             .xsd_ioctl = xrt_clkfreq_leaf_ioctl,
+>> +     },
+>> +};
+>> +
+>> +static const struct platform_device_id xrt_clkfreq_table[] = {
+>> +     { XRT_CLKFREQ, (kernel_ulong_t)&xrt_clkfreq_data },
+>> +     { },
+>> +};
+>> +
+>> +static struct platform_driver xrt_clkfreq_driver = {
+>> +     .driver = {
+>> +             .name = XRT_CLKFREQ,
+>> +     },
+>> +     .probe = clkfreq_probe,
+>> +     .remove = clkfreq_remove,
+>> +     .id_table = xrt_clkfreq_table,
+>> +};
+>> +
+>> +void clkfreq_leaf_init_fini(bool init)
+>> +{
+>> +     if (init) {
+>> +             xleaf_register_driver(XRT_SUBDEV_CLKFREQ,
+>> +                                   &xrt_clkfreq_driver, xrt_clkfreq_endpoints);
+>> +     } else {
+>> +             xleaf_unregister_driver(XRT_SUBDEV_CLKFREQ);
+>> +     }
+>> +}
 
