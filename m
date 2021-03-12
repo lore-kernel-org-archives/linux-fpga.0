@@ -2,180 +2,128 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E8A8C433E6
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDAAEC433E9
 	for <linux-fpga@archiver.kernel.org>; Fri, 12 Mar 2021 19:37:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F386564F84
-	for <linux-fpga@archiver.kernel.org>; Fri, 12 Mar 2021 19:37:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8018D64F84
+	for <linux-fpga@archiver.kernel.org>; Fri, 12 Mar 2021 19:37:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234203AbhCLTg4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        id S234277AbhCLTg4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
         Fri, 12 Mar 2021 14:36:56 -0500
 Received: from mga17.intel.com ([192.55.52.151]:44156 "EHLO mga17.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233912AbhCLTg1 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 12 Mar 2021 14:36:27 -0500
-IronPort-SDR: MwAhzKIMxEhCb3mVpNbVnibIsp/McltJs8ySkPaywkfQkCTWh+21UxRcXX4wWF32dxzOlNJlSy
- 94+azQbj7tww==
-X-IronPort-AV: E=McAfee;i="6000,8403,9921"; a="168796313"
+        id S234236AbhCLTg2 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 12 Mar 2021 14:36:28 -0500
+IronPort-SDR: gyceshfzzzdXt8I7rjbSC4bSLGJCCvoeB0CZqRVo7ByIbUGlBq92nkkh4xJLn5PUANP8hvzEZS
+ T/m4BCNNx22g==
+X-IronPort-AV: E=McAfee;i="6000,8403,9921"; a="168796319"
 X-IronPort-AV: E=Sophos;i="5.81,244,1610438400"; 
-   d="scan'208";a="168796313"
+   d="scan'208";a="168796319"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Mar 2021 11:36:26 -0800
-IronPort-SDR: CP1MxkS3SqjLz7CkQ4dbPpOPW85e38nmi2DvBp8stsL32KvmRKOFOBdd55cv0ObqVSNm2H06Cy
- gP5D1D0JXN0w==
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Mar 2021 11:36:28 -0800
+IronPort-SDR: AXXRLLvEKXcClPKEoA8tf3GszEvhMuOCrKLFNnosMhc3pZgIlSBjczl/PAFsvvkWNLQFDzjGdU
+ 8lyjnIXAHSBQ==
 X-IronPort-AV: E=Sophos;i="5.81,244,1610438400"; 
-   d="scan'208";a="510426143"
+   d="scan'208";a="510426171"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.209.51.149])
-  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Mar 2021 11:36:25 -0800
+  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Mar 2021 11:36:28 -0800
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v10 0/5] Intel MAX10 BMC Secure Update Driver
-Date:   Fri, 12 Mar 2021 11:36:18 -0800
-Message-Id: <20210312193623.326306-1-russell.h.weight@intel.com>
+Subject: [PATCH v10 5/5] fpga: m10bmc-sec: add max10 get_hw_errinfo callback func
+Date:   Fri, 12 Mar 2021 11:36:23 -0800
+Message-Id: <20210312193623.326306-6-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210312193623.326306-1-russell.h.weight@intel.com>
+References: <20210312193623.326306-1-russell.h.weight@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The Intel MAX10 BMC Secure Update driver instantiates the FPGA
-Security Manager class driver and provides the callback functions
-required to support secure updates on Intel n3000 PAC devices.
-This driver is implemented as a sub-driver of the Intel MAX10 BMC
-mfd driver. Future instances of the MAX10 BMC will support other
-devices as well (e.g. d5005) and this same MAX10 BMC Secure
-Update driver will receive modifications to support that device.
+Extend the MAX10 BMC Secure Update driver to include
+a function that returns 64 bits of additional HW specific
+data for errors that require additional information.
+This callback function enables the hw_errinfo sysfs
+node in the Intel Security Manager class driver.
 
-This driver interacts with the HW secure update engine of the
-BMC in order to transfer new FPGA and BMC images to FLASH so
-that they will be automatically loaded when the FPGA card reboots.
-Security is enforced by hardware and firmware. The MAX10 BMC
-Secure Update driver interacts with the firmware to initiate
-an update, pass in the necessary data, and collect status on
-the update.
-
-This driver provides sysfs files for displaying the flash count,
-the root entry hashes (REH), and the code-signing-key (CSK)
-cancellation vectors.
-
-These patches are dependent on other patches that are under
-review. If you want to apply and compile these patches on
-linux-next, please apply these patches first:
-
-(1 patch)   https://marc.info/?l=linux-kernel&m=161126987101096&w=2
-(7 patches) https://marc.info/?l=linux-fpga&m=161525020621455&w=2
-
-Changelog v9 -> v10:
-  - Changed the path expressions in the sysfs documentation to
-    replace the n3000 reference with something more generic to
-    accomodate other devices that use the same driver.
-
-Changelog v8 -> v9:
-  - Rebased to 5.12-rc2 next
-  - Updated Date and KernelVersion in ABI documentation
-
-Changelog v7 -> v8:
-  - Spit out patch "mfd: intel-m10-bmc: support for MAX10 BMC Secure
-    Updates" and submitted it separately:
-    https://marc.info/?l=linux-kernel&m=161126987101096&w=2
-
-Changelog v6 -> v7:
-  - Rebased patches for 5.11-rc2
-  - Updated Date and KernelVersion in ABI documentation
-
-Changelog v5 -> v6:
-  - Added WARN_ON() prior to several calls to regmap_bulk_read()
-    to assert that the (SIZE / stride) calculations did not result
-    in remainders.
-  - Changed the (size / stride) calculation in regmap_bulk_write()
-    call to ensure that we don't write one less than intended.
-  - Changed flash_count_show() parameter list to achieve
-    reverse-christmas tree format.
-  - Removed unnecessary call to rsu_check_complete() in
-    m10bmc_sec_poll_complete() and changed while loop to
-    do/while loop.
+Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+---
+v10:
+  - No change
+v9:
+  - No change
+v8:
+  - Previously patch 6/6, otherwise no change
+v7:
+  - No change
+v6:
   - Initialized auth_result and doorbell to HW_ERRINFO_POISON
     in m10bmc_sec_hw_errinfo() and removed unnecessary if statements.
-
-Changelog v4 -> v5:
-  - Renamed sysfs node user_flash_count to flash_count and updated
-    the sysfs documentation accordingly to more accurately descirbe
-    the purpose of the count.
-
-Changelog v3 -> v4:
-  - Moved sysfs files for displaying the flash count, the root
-    entry hashes (REH), and the code-signing-key (CSK) cancellation
-    vectors from the FPGA Security Manager class driver to this
-    driver (as they are not generic enough for the class driver).
-  - Added a new ABI documentation file with informtaion about the
-    new sysfs entries: sysfs-driver-intel-m10-bmc-secure
-  - Updated the MAINTAINERS file to add the new ABI documentation
-    file: sysfs-driver-intel-m10-bmc-secure
-  - Removed unnecessary ret variable from m10bmc_secure_probe()
-  - Incorporated new devm_fpga_sec_mgr_register() function into
-    m10bmc_secure_probe() and removed the m10bmc_secure_remove()
-    function.
-
-Changelog v2 -> v3:
-  - Changed "MAX10 BMC Security Engine driver" to "MAX10 BMC Secure
-    Update driver"
-  - Changed from "Intel FPGA Security Manager" to FPGA Security Manager"
+v5:
+  - No change
+v4:
+  - No change
+v3:
   - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
-  - Removed wrapper functions (m10bmc_raw_*, m10bmc_sys_*). The
-    underlying functions are now called directly.
-  - Changed "_root_entry_hash" to "_reh", with a comment explaining
-    what reh is.
-  - Renamed get_csk_vector() to m10bmc_csk_vector()
-  - Changed calling functions of functions that return "enum fpga_sec_err"
-    to check for (ret != FPGA_SEC_ERR_NONE) instead of (ret)
-
-Changelog v1 -> v2:
-  - These patches were previously submitted as part of a larger V1
-    patch set under the title "Intel FPGA Security Manager Class Driver".
-  - Grouped all changes to include/linux/mfd/intel-m10-bmc.h into a
-    single patch: "mfd: intel-m10-bmc: support for MAX10 BMC Security
-    Engine".
-  - Removed ifpga_sec_mgr_init() and ifpga_sec_mgr_uinit() functions.
-  - Adapted to changes in the Intel FPGA Security Manager by splitting
-    the single call to ifpga_sec_mgr_register() into two function
-    calls: devm_ifpga_sec_mgr_create() and ifpga_sec_mgr_register().
-  - Replaced small function-creation macros for explicit function
-    declarations.
-  - Bug fix for the get_csk_vector() function to properly apply the
-    stride variable in calls to m10bmc_raw_bulk_read().
-  - Added m10bmc_ prefix to functions in m10bmc_iops structure
+  - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure Update
+    driver"
+v2:
   - Implemented HW_ERRINFO_POISON for m10bmc_sec_hw_errinfo() to
     ensure that corresponding bits are set to 1 if we are unable
     to read the doorbell or auth_result registers.
-  - Added comments and additional code cleanup per V1 review.
+  - Added m10bmc_ prefix to functions in m10bmc_iops structure
+---
+ drivers/fpga/intel-m10-bmc-secure.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-
-Russ Weight (5):
-  fpga: m10bmc-sec: create max10 bmc secure update driver
-  fpga: m10bmc-sec: expose max10 flash update count
-  fpga: m10bmc-sec: expose max10 canceled keys in sysfs
-  fpga: m10bmc-sec: add max10 secure update functions
-  fpga: m10bmc-sec: add max10 get_hw_errinfo callback func
-
- .../testing/sysfs-driver-intel-m10-bmc-secure |  61 ++
- MAINTAINERS                                   |   2 +
- drivers/fpga/Kconfig                          |  11 +
- drivers/fpga/Makefile                         |   3 +
- drivers/fpga/intel-m10-bmc-secure.c           | 543 ++++++++++++++++++
- 5 files changed, 620 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
- create mode 100644 drivers/fpga/intel-m10-bmc-secure.c
-
+diff --git a/drivers/fpga/intel-m10-bmc-secure.c b/drivers/fpga/intel-m10-bmc-secure.c
+index a290fcc4df4a..3a049c98cf43 100644
+--- a/drivers/fpga/intel-m10-bmc-secure.c
++++ b/drivers/fpga/intel-m10-bmc-secure.c
+@@ -476,11 +476,33 @@ static enum fpga_sec_err m10bmc_sec_cancel(struct fpga_sec_mgr *smgr)
+ 	return ret ? FPGA_SEC_ERR_RW_ERROR : FPGA_SEC_ERR_NONE;
+ }
+ 
++#define HW_ERRINFO_POISON	GENMASK(31, 0)
++static u64 m10bmc_sec_hw_errinfo(struct fpga_sec_mgr *smgr)
++{
++	struct m10bmc_sec *sec = smgr->priv;
++	u32 auth_result = HW_ERRINFO_POISON;
++	u32 doorbell = HW_ERRINFO_POISON;
++
++	switch (smgr->err_code) {
++	case FPGA_SEC_ERR_HW_ERROR:
++	case FPGA_SEC_ERR_TIMEOUT:
++	case FPGA_SEC_ERR_BUSY:
++	case FPGA_SEC_ERR_WEAROUT:
++		m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
++		m10bmc_sys_read(sec->m10bmc, M10BMC_AUTH_RESULT, &auth_result);
++
++		return (u64)doorbell << 32 | (u64)auth_result;
++	default:
++		return 0;
++	}
++}
++
+ static const struct fpga_sec_mgr_ops m10bmc_sops = {
+ 	.prepare = m10bmc_sec_prepare,
+ 	.write_blk = m10bmc_sec_write_blk,
+ 	.poll_complete = m10bmc_sec_poll_complete,
+ 	.cancel = m10bmc_sec_cancel,
++	.get_hw_errinfo = m10bmc_sec_hw_errinfo,
+ };
+ 
+ static int m10bmc_secure_probe(struct platform_device *pdev)
 -- 
 2.25.1
 
