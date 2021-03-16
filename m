@@ -2,356 +2,139 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACB49C4332D
-	for <linux-fpga@archiver.kernel.org>; Mon, 15 Mar 2021 23:36:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65ECEC433DB
+	for <linux-fpga@archiver.kernel.org>; Tue, 16 Mar 2021 05:15:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7BAC764F5E
-	for <linux-fpga@archiver.kernel.org>; Mon, 15 Mar 2021 23:36:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2E2D265139
+	for <linux-fpga@archiver.kernel.org>; Tue, 16 Mar 2021 05:15:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232134AbhCOXgH (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 15 Mar 2021 19:36:07 -0400
-Received: from mga14.intel.com ([192.55.52.115]:41776 "EHLO mga14.intel.com"
+        id S231877AbhCPFPS (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 16 Mar 2021 01:15:18 -0400
+Received: from mga11.intel.com ([192.55.52.93]:65211 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230228AbhCOXfh (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 15 Mar 2021 19:35:37 -0400
-IronPort-SDR: jbtzSaJ9BpSNisZcdR//oEONic5lMo6NYFWB3yT+kqvwlIXYnMmrrYj7FL0O9TInblbV0llBVa
- 3Dci0a4eWckg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9924"; a="188529299"
+        id S229880AbhCPFO5 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 16 Mar 2021 01:14:57 -0400
+IronPort-SDR: TvuJBqcQ7t1yp1powMOsAMtRLhGf2GTMjHdGLY1mdGzjzW1JYEF7pTm9SA0QvAI+IeBWgg7ZgT
+ 5Wl2i/OafSwg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9924"; a="185842038"
 X-IronPort-AV: E=Sophos;i="5.81,251,1610438400"; 
-   d="scan'208";a="188529299"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Mar 2021 16:35:36 -0700
-IronPort-SDR: 2QwyDRe2uYBwoHB5t2+dkGlrqeZmhzIZSWJqAHANnofdHzPk+VXo/FjC63Bp6iL2AEpG21Ou/r
- RozlPHHwDuiQ==
+   d="scan'208";a="185842038"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Mar 2021 22:14:57 -0700
+IronPort-SDR: s/Dg9UnRkeYdhS+2SmeU2B50FjEgcPPmSMzgPymdFTiRacMV1KpiK7qwCnd3VL4/STlfSlvKAP
+ 8j4niG7vgOzQ==
+X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.81,251,1610438400"; 
-   d="scan'208";a="405346609"
-Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.252.128.229])
-  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Mar 2021 16:35:35 -0700
-From:   Russ Weight <russell.h.weight@intel.com>
-To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
-        hao.wu@intel.com, matthew.gerlach@intel.com,
-        Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v11 1/5] fpga: m10bmc-sec: create max10 bmc secure update driver
-Date:   Mon, 15 Mar 2021 16:35:28 -0700
-Message-Id: <20210315233532.387145-2-russell.h.weight@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210315233532.387145-1-russell.h.weight@intel.com>
-References: <20210315233532.387145-1-russell.h.weight@intel.com>
+   d="scan'208";a="601701432"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.141])
+  by fmsmga006.fm.intel.com with ESMTP; 15 Mar 2021 22:14:55 -0700
+Date:   Tue, 16 Mar 2021 13:10:05 +0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     gregkh@linuxfoundation.org, mdf@kernel.org,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     trix@redhat.com, lgoncalv@redhat.com, hao.wu@intel.com,
+        yilun.xu@intel.com
+Subject: Re: [PATCH v12 0/2] UIO support for dfl devices
+Message-ID: <20210316051005.GA461@yilunxu-OptiPlex-7050>
+References: <1615168776-8553-1-git-send-email-yilun.xu@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1615168776-8553-1-git-send-email-yilun.xu@intel.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Create a platform driver that can be invoked as a sub
-driver for the Intel MAX10 BMC in order to support
-secure updates. This sub-driver will invoke an
-instance of the FPGA Security Manager class driver
-in order to expose sysfs interfaces for managing and
-monitoring secure updates to FPGA and BMC images.
+Hi Greg:
 
-This patch creates the MAX10 BMC Secure Update driver and
-provides sysfs files for displaying the current root entry hashes
-for the FPGA static region, the FPGA PR region, and the MAX10
-BMC.
+I listed below some answers from Moritz and Yilun from previous mails for
+your question.
 
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Reviewed-by: Tom Rix <trix@redhat.com>
----
-v11:
-  - Added Reviewed-by tag
-v10:
-  - Changed the path expressions in the sysfs documentation to
-    replace the n3000 reference with something more generic to
-    accomodate other devices that use the same driver.
-v9:
-  - Rebased to 5.12-rc2 next
-  - Updated Date and KernelVersion in ABI documentation
-v8:
-  - Previously patch 2/6, otherwise no change
-v7:
-  - Updated Date and KernelVersion in ABI documentation
-v6:
-  - Added WARN_ON() call for (sha_num_bytes / stride) to assert
-    that the proper count is passed to regmap_bulk_read().
-v5:
-  - No change
-v4:
-  - Moved sysfs files for displaying the root entry hashes (REH)
-    from the FPGA Security Manager class driver to here. The
-    m10bmc_reh() and m10bmc_reh_size() functions are removed and
-    the functionality from these functions is moved into a
-    show_root_entry_hash() function for displaying the REHs.
-  - Added ABI documentation for the new sysfs entries:
-    sysfs-driver-intel-m10-bmc-secure
-  - Updated the MAINTAINERS file to add the new ABI documentation
-    file: sysfs-driver-intel-m10-bmc-secure
-  - Removed unnecessary ret variable from m10bmc_secure_probe()
-  - Incorporated new devm_fpga_sec_mgr_register() function into
-    m10bmc_secure_probe() and removed the m10bmc_secure_remove()
-    function.
-v3:
-  - Changed from "Intel FPGA Security Manager" to FPGA Security Manager"
-  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
-  - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure
-    Update driver"
-  - Removed wrapper functions (m10bmc_raw_*, m10bmc_sys_*). The
-    underlying functions are now called directly.
-  - Changed "_root_entry_hash" to "_reh", with a comment explaining
-    what reh is.
-v2:
-  - Added drivers/fpga/intel-m10-bmc-secure.c file to MAINTAINERS.
-  - Switched to GENMASK(31, 16) for a couple of mask definitions.
-  - Moved MAX10 BMC address and function definitions to a separate
-    patch.
-  - Replaced small function-creation macros with explicit function
-    declarations.
-  - Removed ifpga_sec_mgr_init() and ifpga_sec_mgr_uinit() functions.
-  - Adapted to changes in the Intel FPGA Security Manager by splitting
-    the single call to ifpga_sec_mgr_register() into two function
-    calls: devm_ifpga_sec_mgr_create() and ifpga_sec_mgr_register().
----
- .../testing/sysfs-driver-intel-m10-bmc-secure |  29 ++++
- MAINTAINERS                                   |   2 +
- drivers/fpga/Kconfig                          |  11 ++
- drivers/fpga/Makefile                         |   3 +
- drivers/fpga/intel-m10-bmc-secure.c           | 135 ++++++++++++++++++
- 5 files changed, 180 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
- create mode 100644 drivers/fpga/intel-m10-bmc-secure.c
+Do you have more comments?
 
-diff --git a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
-new file mode 100644
-index 000000000000..bd3ee9bc1a92
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
-@@ -0,0 +1,29 @@
-+What:		/sys/bus/platform/drivers/intel-m10bmc-secure/.../security/sr_root_entry_hash
-+Date:		April 2021
-+KernelVersion:  5.13
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns the root entry hash for the static
-+		region if one is programmed, else it returns the
-+		string: "hash not programmed".  This file is only
-+		visible if the underlying device supports it.
-+		Format: "0x%x".
-+
-+What:		/sys/bus/platform/drivers/intel-m10bmc-secure/.../security/pr_root_entry_hash
-+Date:		April 2021
-+KernelVersion:  5.13
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns the root entry hash for the partial
-+		reconfiguration region if one is programmed, else it
-+		returns the string: "hash not programmed".  This file
-+		is only visible if the underlying device supports it.
-+		Format: "0x%x".
-+
-+What:		/sys/bus/platform/drivers/intel-m10bmc-secure/.../security/bmc_root_entry_hash
-+Date:		April 2021
-+KernelVersion:  5.13
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read only. Returns the root entry hash for the BMC image
-+		if one is programmed, else it returns the string:
-+		"hash not programmed".  This file is only visible if the
-+		underlying device supports it.
-+		Format: "0x%x".
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 2f016fe820d6..58738ccc05ad 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7029,8 +7029,10 @@ M:	Russ Weight <russell.h.weight@intel.com>
- L:	linux-fpga@vger.kernel.org
- S:	Maintained
- F:	Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
-+F:	Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-secure
- F:	Documentation/fpga/fpga-sec-mgr.rst
- F:	drivers/fpga/fpga-sec-mgr.c
-+F:	drivers/fpga/intel-m10-bmc-secure.c
- F:	include/linux/fpga/fpga-sec-mgr.h
- 
- FPU EMULATOR
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index c00a820bd35b..ed308108bbd7 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -243,4 +243,15 @@ config FPGA_SEC_MGR
- 	  region and for the BMC. Select this option to enable
- 	  updates for secure FPGA devices.
- 
-+config IFPGA_M10_BMC_SECURE
-+	tristate "Intel MAX10 BMC Secure Update driver"
-+	depends on MFD_INTEL_M10_BMC && FPGA_SEC_MGR
-+	help
-+	  Secure update support for the Intel MAX10 board management
-+	  controller.
-+
-+	  This is a subdriver of the Intel MAX10 board management controller
-+	  (BMC) and provides support for secure updates for the BMC image,
-+	  the FPGA image, the Root Entry Hashes, etc.
-+
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 22576d1a3996..7259f1ab2531 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -24,6 +24,9 @@ obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)    += altera-pr-ip-core-plat.o
- # FPGA Security Manager Framework
- obj-$(CONFIG_FPGA_SEC_MGR)		+= fpga-sec-mgr.o
- 
-+# FPGA Secure Update Drivers
-+obj-$(CONFIG_IFPGA_M10_BMC_SECURE)	+= intel-m10-bmc-secure.o
-+
- # FPGA Bridge Drivers
- obj-$(CONFIG_FPGA_BRIDGE)		+= fpga-bridge.o
- obj-$(CONFIG_SOCFPGA_FPGA_BRIDGE)	+= altera-hps2fpga.o altera-fpga2sdram.o
-diff --git a/drivers/fpga/intel-m10-bmc-secure.c b/drivers/fpga/intel-m10-bmc-secure.c
-new file mode 100644
-index 000000000000..5ac5f59b5731
---- /dev/null
-+++ b/drivers/fpga/intel-m10-bmc-secure.c
-@@ -0,0 +1,135 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Intel Max10 Board Management Controller Secure Update Driver
-+ *
-+ * Copyright (C) 2019-2020 Intel Corporation. All rights reserved.
-+ *
-+ */
-+#include <linux/bitfield.h>
-+#include <linux/device.h>
-+#include <linux/fpga/fpga-sec-mgr.h>
-+#include <linux/mfd/intel-m10-bmc.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+
-+struct m10bmc_sec {
-+	struct device *dev;
-+	struct intel_m10bmc *m10bmc;
-+};
-+
-+/* Root Entry Hash (REH) support */
-+#define REH_SHA256_SIZE		32
-+#define REH_SHA384_SIZE		48
-+#define REH_MAGIC		GENMASK(15, 0)
-+#define REH_SHA_NUM_BYTES	GENMASK(31, 16)
-+
-+static ssize_t
-+show_root_entry_hash(struct device *dev, u32 exp_magic,
-+		     u32 prog_addr, u32 reh_addr, char *buf)
-+{
-+	struct m10bmc_sec *sec = dev_get_drvdata(dev);
-+	unsigned int stride = regmap_get_reg_stride(sec->m10bmc->regmap);
-+	int sha_num_bytes, i, cnt, ret;
-+	u8 hash[REH_SHA384_SIZE];
-+	u32 magic;
-+
-+	ret = m10bmc_raw_read(sec->m10bmc, prog_addr, &magic);
-+	if (ret)
-+		return ret;
-+
-+	dev_dbg(dev, "%s magic 0x%08x\n", __func__, magic);
-+
-+	if (FIELD_GET(REH_MAGIC, magic) != exp_magic)
-+		return sysfs_emit(buf, "hash not programmed\n");
-+
-+	sha_num_bytes = FIELD_GET(REH_SHA_NUM_BYTES, magic) / 8;
-+	if (sha_num_bytes != REH_SHA256_SIZE &&
-+	    sha_num_bytes != REH_SHA384_SIZE)   {
-+		dev_err(sec->dev, "%s bad sha num bytes %d\n", __func__,
-+			sha_num_bytes);
-+		return -EINVAL;
-+	}
-+
-+	WARN_ON(sha_num_bytes % stride);
-+	ret = regmap_bulk_read(sec->m10bmc->regmap, reh_addr,
-+			       hash, sha_num_bytes / stride);
-+	if (ret) {
-+		dev_err(dev, "failed to read root entry hash: %x cnt %x: %d\n",
-+			reh_addr, sha_num_bytes / stride, ret);
-+		return ret;
-+	}
-+
-+	cnt = sprintf(buf, "0x");
-+	for (i = 0; i < sha_num_bytes; i++)
-+		cnt += sprintf(buf + cnt, "%02x", hash[i]);
-+	cnt += sprintf(buf + cnt, "\n");
-+
-+	return cnt;
-+}
-+
-+#define DEVICE_ATTR_SEC_REH_RO(_name, _magic, _prog_addr, _reh_addr) \
-+static ssize_t _name##_root_entry_hash_show(struct device *dev, \
-+					    struct device_attribute *attr, \
-+					    char *buf) \
-+{ return show_root_entry_hash(dev, _magic, _prog_addr, _reh_addr, buf); } \
-+static DEVICE_ATTR_RO(_name##_root_entry_hash)
-+
-+DEVICE_ATTR_SEC_REH_RO(bmc, BMC_PROG_MAGIC, BMC_PROG_ADDR, BMC_REH_ADDR);
-+DEVICE_ATTR_SEC_REH_RO(sr, SR_PROG_MAGIC, SR_PROG_ADDR, SR_REH_ADDR);
-+DEVICE_ATTR_SEC_REH_RO(pr, PR_PROG_MAGIC, PR_PROG_ADDR, PR_REH_ADDR);
-+
-+static struct attribute *m10bmc_security_attrs[] = {
-+	&dev_attr_bmc_root_entry_hash.attr,
-+	&dev_attr_sr_root_entry_hash.attr,
-+	&dev_attr_pr_root_entry_hash.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group m10bmc_security_attr_group = {
-+	.name = "security",
-+	.attrs = m10bmc_security_attrs,
-+};
-+
-+static const struct attribute_group *m10bmc_sec_attr_groups[] = {
-+	&m10bmc_security_attr_group,
-+	NULL,
-+};
-+
-+static const struct fpga_sec_mgr_ops m10bmc_sops = { };
-+
-+static int m10bmc_secure_probe(struct platform_device *pdev)
-+{
-+	struct fpga_sec_mgr *smgr;
-+	struct m10bmc_sec *sec;
-+
-+	sec = devm_kzalloc(&pdev->dev, sizeof(*sec), GFP_KERNEL);
-+	if (!sec)
-+		return -ENOMEM;
-+
-+	sec->dev = &pdev->dev;
-+	sec->m10bmc = dev_get_drvdata(pdev->dev.parent);
-+	dev_set_drvdata(&pdev->dev, sec);
-+
-+	smgr = devm_fpga_sec_mgr_create(sec->dev, "Max10 BMC Secure Update",
-+					&m10bmc_sops, sec);
-+	if (!smgr) {
-+		dev_err(sec->dev, "Security manager failed to start\n");
-+		return -ENOMEM;
-+	}
-+
-+	return devm_fpga_sec_mgr_register(sec->dev, smgr);
-+}
-+
-+static struct platform_driver intel_m10bmc_secure_driver = {
-+	.probe = m10bmc_secure_probe,
-+	.driver = {
-+		.name = "n3000bmc-secure",
-+		.dev_groups = m10bmc_sec_attr_groups,
-+	},
-+};
-+module_platform_driver(intel_m10bmc_secure_driver);
-+
-+MODULE_ALIAS("platform:n3000bmc-secure");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_DESCRIPTION("Intel MAX10 BMC Secure Update");
-+MODULE_LICENSE("GPL v2");
--- 
-2.25.1
+Thanks in advance,
+Yilun
 
+On Mon, Mar 08, 2021 at 09:59:34AM +0800, Xu Yilun wrote:
+> This patchset supports some dfl device drivers written in userspace.
+> 
+> There are some Q&A about why UIO driver is needed in v11:
+> 
+> >From Greg:
+>   Why are you saying that an ethernet driver should be using the UIO
+>   interface?
+> 
+>   And why can't you use the existing UIO drivers that bind to memory
+>   regions specified by firmware?  Without an interrupt being used, why is
+>   UIO needed at all?
+> 
+> >From Moritz:
+>   Essentially I see two options:
+>   - Have a DFL bus driver instantiate a platform driver (uio_pdrv_genirq)
+>     which I *think* you described above?
+>   - What this patch implements -- a UIO driver on the DFL bus
+> 
+>   These FPGA devices can on the fly change their contents and -- even if
+>   just for test -- being able to expose a bunch of registers via UIO can
+>   be extremely useful.
+> 
+>   Whether a device should expose registers or not should be up to the
+>   implemeneter of the FPGA design I think (policy). This patch (or the
+>   previous version) provides a mechanism to do so via DFL.
+> 
+>   This is similar in nature to uio_pdrv_genirq on a DT based platform, to
+>   expose the registers you instantiate the DT node.
+> 
+>   Re-implementing a new driver for each of these instances doesn't seem
+>   desirable and tying DFL as enumeration mechanism to UIO seems like a
+>   good compromise for enabling this kind of functionality.
+> 
+>   Note this is *not* an attempt to bypass the network stack or other
+>   existing subsystems.
+> 
+> See the original message in:
+>   https://lore.kernel.org/linux-fpga/YDvQ8aO8v3NhLKzx@epycbox.lan/T/#m66ba2c96848e3dea38d1a4f16dfea3cb291f7975
+> 
+> 
+> >From Yilun:
+>   The ETH GROUP IP is not designed as the full functional ethernet
+>   controller. It is specially developed for the Intel N3000 NIC. Since it
+>   is an FPGA based card, it is designed for the users to runtime reload
+>   part of the MAC layer logic developed by themselves, while the ETH GROUP
+>   is another part of the MAC which is not expected to be reloaded by
+>   customers, but it provides some configurations for software to work with
+>   the user logic.
+> 
+>   So I category the feature as the devices that "designed for specific
+>   purposes and does not fit into one of the standard kernel subsystems".
+>   Some related description could be found in Patch #2, to illustrate why
+>   using UIO for some DFL devices.
+> 
+>   There are now UIO drivers for PCI or platform devices, but in this case
+>   we are going to export a DFL(Device Feature List) bus device to
+>   userspace, a DFL driver for UIO is needed to bind to it.
+> 
+> See the original message in:
+>   https://lore.kernel.org/linux-fpga/YDvQ8aO8v3NhLKzx@epycbox.lan/T/#m91b303fd61485644353fad1e1e9c11d528844684
+> 
+> 
+> Xu Yilun (2):
+>   uio: uio_dfl: add userspace i/o driver for DFL bus
+>   Documentation: fpga: dfl: Add description for DFL UIO support
+> 
+>  Documentation/fpga/dfl.rst | 26 ++++++++++++++++++
+>  MAINTAINERS                |  1 +
+>  drivers/uio/Kconfig        | 17 ++++++++++++
+>  drivers/uio/Makefile       |  1 +
+>  drivers/uio/uio_dfl.c      | 66 ++++++++++++++++++++++++++++++++++++++++++++++
+>  5 files changed, 111 insertions(+)
+>  create mode 100644 drivers/uio/uio_dfl.c
+> 
+> -- 
+> 2.7.4
