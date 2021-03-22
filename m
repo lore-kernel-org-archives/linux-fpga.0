@@ -2,217 +2,174 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DF39C433C1
-	for <linux-fpga@archiver.kernel.org>; Mon, 22 Mar 2021 15:34:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ADAEC433C1
+	for <linux-fpga@archiver.kernel.org>; Mon, 22 Mar 2021 15:51:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0565A61990
-	for <linux-fpga@archiver.kernel.org>; Mon, 22 Mar 2021 15:34:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5E0556199E
+	for <linux-fpga@archiver.kernel.org>; Mon, 22 Mar 2021 15:51:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230262AbhCVPeG (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 22 Mar 2021 11:34:06 -0400
-Received: from mga07.intel.com ([134.134.136.100]:17396 "EHLO mga07.intel.com"
+        id S229871AbhCVPvK (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 22 Mar 2021 11:51:10 -0400
+Received: from mga07.intel.com ([134.134.136.100]:18755 "EHLO mga07.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230229AbhCVPeA (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 22 Mar 2021 11:34:00 -0400
-IronPort-SDR: ckA9H0KO5OdwDIsbma8IajrB+TLWu5lGFngnUus+SPQ6dhirQZnovqnzItbdR4Nsz4TUJH7zIU
- 0UlNQN5El6YA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9931"; a="254292624"
+        id S229665AbhCVPuh (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 22 Mar 2021 11:50:37 -0400
+IronPort-SDR: K+wpedHFaKSJ60mn7T+JS5sadHP9GZapVkoqW3YHJQW+jfHRUtJO0IWrEH3Fa/vh9agNoAMZ5s
+ KeE4MJfgvtJw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9931"; a="254295680"
 X-IronPort-AV: E=Sophos;i="5.81,269,1610438400"; 
-   d="scan'208";a="254292624"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Mar 2021 08:33:59 -0700
-IronPort-SDR: 8HQFG+oKBmQepwYUgnNp1PcZbF9HCd04pO/u4Uj7DX1yWIYL653rKeV+39dVyucxwDsUmlC7VI
- PTAjd2mVD8fA==
-X-ExtLoop1: 1
+   d="scan'208";a="254295680"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Mar 2021 08:50:36 -0700
+IronPort-SDR: dzWK9+ZLULKoSU4EjJwzYiwcKuvqoAVHuHLu3Kf8V+nSJAve6nC8NdnmDzPIpW3FdbYY3hv6x3
+ ACBvmVLq/6aA==
 X-IronPort-AV: E=Sophos;i="5.81,269,1610438400"; 
-   d="scan'208";a="441225140"
-Received: from marshy.an.intel.com (HELO [10.122.105.143]) ([10.122.105.143])
-  by fmsmga002.fm.intel.com with ESMTP; 22 Mar 2021 08:33:58 -0700
-Subject: Re: FW: [PATCHv5 0/7] Extend Intel service layer, FPGA manager and
- region
-To:     Tom Rix <trix@redhat.com>, Moritz Fischer <mdf@kernel.org>,
-        Greg KH <gregkh@linuxfoundation.org>,
-        "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-References: <1612909233-13867-1-git-send-email-richard.gong@linux.intel.com>
- <MWHPR11MB001577B17723C8A046398249879E9@MWHPR11MB0015.namprd11.prod.outlook.com>
- <21a8817a-e63e-6029-69a6-6bae5398439a@linux.intel.com>
- <1d7fd02b-4ef2-8d11-fba7-87a698699978@redhat.com>
- <MWHPR11MB0015516D86D02A0FE5423D6387669@MWHPR11MB0015.namprd11.prod.outlook.com>
- <7ef6739f-e2f6-d457-5498-1c6ed8ba2075@linux.intel.com>
- <f7a0c3fb-84f6-073c-ac41-45ce249cfa1e@redhat.com>
-From:   Richard Gong <richard.gong@linux.intel.com>
-Message-ID: <a7e19748-b8a0-430e-a1ea-dcdaa0d25853@linux.intel.com>
-Date:   Mon, 22 Mar 2021 10:53:48 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+   d="scan'208";a="524495768"
+Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.209.29.9])
+  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Mar 2021 08:50:36 -0700
+From:   Russ Weight <russell.h.weight@intel.com>
+To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
+        hao.wu@intel.com, matthew.gerlach@intel.com,
+        Russ Weight <russell.h.weight@intel.com>
+Subject: [RESEND PATCH v10 0/7] FPGA Security Manager Class Driver
+Date:   Mon, 22 Mar 2021 08:50:21 -0700
+Message-Id: <20210322155028.531323-1-russell.h.weight@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <f7a0c3fb-84f6-073c-ac41-45ce249cfa1e@redhat.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
+The FPGA Security Manager class driver provides a common
+API for user-space tools to manage updates for secure FPGA
+devices. Device drivers that instantiate the FPGA Security
+Manager class driver will interact with a HW secure update
+engine in order to transfer new FPGA and BMC images to FLASH so
+that they will be automatically loaded when the FPGA card reboots.
 
+A significant difference between the FPGA Manager and the FPGA 
+Security Manager is that the FPGA Manager does a live update (Partial
+Reconfiguration) to a device whereas the FPGA Security Manager
+updates the FLASH images for the Static Region and the BMC so that
+they will be loaded the next time the FPGA card boots. Security is
+enforced by hardware and firmware. The security manager interacts
+with the firmware to initiate an update, pass in the necessary data,
+and collect status on the update.
 
+The n3000bmc-secure driver is the first driver to use the FPGA
+Security Manager. This driver was previously submitted in the same
+patch set, but has been split out into a separate patch set starting
+with V2. Future devices will also make use of this common API for
+secure updates.
 
-Hi Tom,
+In addition to managing secure updates of the FPGA and BMC images,
+the FPGA Security Manager update process may also be used to
+program root entry hashes and cancellation keys for the FPGA static
+region, the FPGA partial reconfiguration region, and the BMC.
+The image files are self-describing, and contain a header describing
+the image type.
 
-On 3/22/21 8:53 AM, Tom Rix wrote:
-> 
-> On 3/21/21 2:05 PM, Richard Gong wrote:
->>
->> Hi Tom >>
->>>
->>>
->>> On 3/19/21 4:22 PM, Richard Gong wrote:
->>>>
->>>> Hi Moritz,
->>>>
->>>> Thanks for approving the 1st patch of my version 5 patchest, which submitted on 02/09/21.
->>>
->>> This change
->>>
->>> e23bd83368af ("firmware: stratix10-svc: fix kernel-doc markups")
->>
->> This patch e23bd83368af is not from my version 5 patch set.
-> 
-> Correct.
-> 
-> But since it is already in char-misc-next, your version 5 patchset will conflict with it.
-> 
-> I could not apply this patchset to my unoffical fpga-testing.
-> 
-> I am suggesting you do a test application of your patchset against char-misc-next.
-> 
-> And if you find there are issues, rebase your patchset.
-> 
+Secure updates make use of the request_firmware framework, which
+requires that image files are accessible under /lib/firmware. A request
+for a secure update returns immediately, while the update itself
+proceeds in the context of a kernel worker thread. Sysfs files provide
+a means for monitoring the progress of a secure update and for
+retrieving error information in the event of a failure.
 
-I tried to apply my patchset to the top of char-misc-next, but I didn't 
-see any conflicts.
+The API includes a "name" sysfs file to export the name of the parent
+driver. It also includes an "update" sub-directory containing files that
+that can be used to instantiate and monitor a secure update.
 
-c7582d1 fpga: stratix10-soc: extend driver for bitstream authentication
-2c9ecd3 dt-bindings: fpga: add authenticate-fpga-config property
-6244115 fpga: of-fpga-region: add authenticate-fpga-config property
-da274c9 fpga: fpga-mgr: add FPGA_MGR_BITSTREAM_AUTHENTICATE flag
-9f93cad firmware: stratix10-svc: extend SVC driver to get the firmware 
-version
-eda6b51 firmware: stratix10-svc: add COMMAND_AUTHENTICATE_BITSTREAM flag
-91aff09 firmware: stratix10-svc: reset COMMAND_RECONFIG_FLAG_PARTIAL to 0
-83be46e Merge v5.12-rc3 into char-misc-next
+Changelog v9 -> v10:
+  - Rebased to 5.12-rc2 next
+  - Updated Date and KernelVersion in ABI documentation
 
-Regards,
-Richard
+Changelog v8 -> v9:
+  - Rebased patches for 5.11-rc2
+  - Updated Date and KernelVersion in ABI documentation
 
->>>
->>> Makes a lot of formatting changes in the same files as this patchset, including the first patch.
->>>
->>> It would be good to try applying this patchset to char-misc-next and resubmit if there are conflicts.
->>>
->>>>
->>>> Can you help review the remaining 6 patches from the same version 5 patchset? I need your ACKs to move forward, or please let me know if additional work is need.
->>>
->>> These changes look good to me.
->>>
->>> I was looking at the patchset again seeing if the firmware/ parts could be split out.
->>
->> No, we can't split out the firmware parts.
-> 
-> ok
-> 
-> Tom
-> 
->>>
->>> Even though stratix10 is a fpga, from the MAINTAINERS file it is not clear to me if linux-fpga owns them and they come in on Moritz's branch.  I think this change is needed to the MAINTAINERS file to make that clearer.
->>>
->>> diff --git a/MAINTAINERS b/MAINTAINERS
->>> index aa84121c5611..1f68e9ff76de 100644
->>> --- a/MAINTAINERS
->>> +++ b/MAINTAINERS
->>> @@ -9193,7 +9193,8 @@ F:    tools/power/x86/intel-speed-select/
->>>      INTEL STRATIX10 FIRMWARE DRIVERS
->>>    M:    Richard Gong <richard.gong@linux.intel.com>
->>> -L:    linux-kernel@vger.kernel.org
->>> +R:    Tom Rix <trix@redhat.com>
->>> +L:    linux-fpga@vger.kernel.org
->>>    S:    Maintained
->>>    F:    Documentation/ABI/testing/sysfs-devices-platform-stratix10-rsu
->>>    F:    Documentation/devicetree/bindings/firmware/intel,stratix10-svc.txt
->>>
->>> I also added myself as a reviewer because I want to help out.
->>>
->>> Tom
->>>
->>
->> Regards,
->> Richard
->>
->>>
->>>>
->>>> Many thanks for your time again!
->>>>
->>>> Regards,
->>>> Richard
->>>>
->>>>
->>>> On 2/25/21 7:07 AM, Gong, Richard wrote:
->>>>> Hi Moritz,
->>>>>
->>>>> Sorry for asking.
->>>>>
->>>>> When you have chance, can you help review the version 5 patchset submitted on 02/09/21?
->>>>>
->>>>> Regards,
->>>>> Richard
->>>>>
->>>>> -----Original Message-----
->>>>> From: richard.gong@linux.intel.com <richard.gong@linux.intel.com>
->>>>> Sent: Tuesday, February 9, 2021 4:20 PM
->>>>> To: mdf@kernel.org; trix@redhat.com; gregkh@linuxfoundation.org; linux-fpga@vger.kernel.org; linux-kernel@vger.kernel.org
->>>>> Cc: Gong, Richard <richard.gong@intel.com>
->>>>> Subject: [PATCHv5 0/7] Extend Intel service layer, FPGA manager and region
->>>>>
->>>>> From: Richard Gong <richard.gong@intel.com>
->>>>>
->>>>> This is 5th submission of Intel service layer and FPGA patches, which includes the missing standalone patch in the 4th submission.
->>>>>
->>>>> This submission includes additional changes for Intel service layer driver to get the firmware version running at FPGA SoC device. Then FPGA manager driver, one of Intel service layer driver's client, can decide whether to handle the newly added bitstream authentication function based on the retrieved firmware version. So that we can maintain FPGA manager driver the back compatible.
->>>>>
->>>>> Bitstream authentication makes sure a signed bitstream has valid signatures.
->>>>>
->>>>> The customer sends the bitstream via FPGA framework and overlay, the firmware will authenticate the bitstream but not program the bitstream to device. If the authentication passes, the bitstream will be programmed into QSPI flash and will be expected to boot without issues.
->>>>>
->>>>> Extend Intel service layer, FPGA manager and region drivers to support the bitstream authentication feature.
->>>>>
->>>>> Richard Gong (7):
->>>>>      firmware: stratix10-svc: reset COMMAND_RECONFIG_FLAG_PARTIAL to 0
->>>>>      firmware: stratix10-svc: add COMMAND_AUTHENTICATE_BITSTREAM flag
->>>>>      firmware: stratix10-svc: extend SVC driver to get the firmware version
->>>>>      fpga: fpga-mgr: add FPGA_MGR_BITSTREAM_AUTHENTICATE flag
->>>>>      fpga: of-fpga-region: add authenticate-fpga-config property
->>>>>      dt-bindings: fpga: add authenticate-fpga-config property
->>>>>      fpga: stratix10-soc: extend driver for bitstream authentication
->>>>>
->>>>>     .../devicetree/bindings/fpga/fpga-region.txt       | 10 ++++
->>>>>     drivers/firmware/stratix10-svc.c                   | 12 ++++-
->>>>>     drivers/fpga/of-fpga-region.c                      | 24 ++++++---
->>>>>     drivers/fpga/stratix10-soc.c                       | 62 +++++++++++++++++++---
->>>>>     include/linux/firmware/intel/stratix10-smc.h       | 21 +++++++-
->>>>>     .../linux/firmware/intel/stratix10-svc-client.h    | 11 +++-
->>>>>     include/linux/fpga/fpga-mgr.h                      |  3 ++
->>>>>     7 files changed, 125 insertions(+), 18 deletions(-)
->>>>>
->>>>> -- 
->>>>> 2.7.4
->>>>>
->>>>
->>>
->>
-> 
+Changelog v7 -> v8:
+  - Fixed grammatical error in Documentation/fpga/fpga-sec-mgr.rst
+
+Changelog v6 -> v7:
+  - Changed dates in documentation file to December 2020
+  - Changed filename_store() to use kmemdup_nul() instead of
+    kstrndup() and changed the count to not assume a line-return.
+
+Changelog v5 -> v6:
+  - Removed sysfs support and documentation for the display of the
+    flash count, root entry hashes, and code-signing-key cancelation
+    vectors from the class driver. This information can vary by device
+    and will instead be displayed by the device-specific parent driver.
+
+Changelog v4 -> v5:
+  - Added the devm_fpga_sec_mgr_unregister() function, following recent
+    changes to the fpga_manager() implementation.
+  - Changed most of the *_show() functions to use sysfs_emit()
+    instead of sprintf(
+  - When checking the return values for functions of type enum
+    fpga_sec_err err_code, test for FPGA_SEC_ERR_NONE instead of 0
+
+Changelog v3 -> v4:
+  - This driver is generic enough that it could be used for non Intel
+    FPGA devices. Changed from "Intel FPGA Security Manager" to FPGA
+    Security Manager" and removed unnecessary references to "Intel".
+  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
+    Note that this also affects some filenames.
+
+Changelog v2 -> v3:
+  - Use dev_err() to report invalid progress in sec_progress()
+  - Use dev_err() to report invalid error code in sec_error()
+  - Modified sysfs handler check in check_sysfs_handler() to make
+    it more readable.
+  - Removed unnecessary "goto done"
+  - Added a comment to explain imgr->driver_unload in
+    ifpga_sec_mgr_unregister()
+
+Changelog v1 -> v2:
+  - Separated out the MAX10 BMC Security Engine to be submitted in
+    a separate patch-set.
+  - Bumped documentation dates and versions
+  - Split ifpga_sec_mgr_register() into create() and register() functions
+  - Added devm_ifpga_sec_mgr_create()
+  - Added Documentation/fpga/ifpga-sec-mgr.rst 
+  - Changed progress state "read_file" to "reading"
+  - Added sec_error() function (similar to sec_progress())
+  - Removed references to bmc_flash_count & smbus_flash_count (not supported)
+  - Removed typedefs for imgr ops
+  - Removed explicit value assignments in enums
+  - Other minor code cleanup per review comments 
+
+Russ Weight (7):
+  fpga: sec-mgr: fpga security manager class driver
+  fpga: sec-mgr: enable secure updates
+  fpga: sec-mgr: expose sec-mgr update status
+  fpga: sec-mgr: expose sec-mgr update errors
+  fpga: sec-mgr: expose sec-mgr update size
+  fpga: sec-mgr: enable cancel of secure update
+  fpga: sec-mgr: expose hardware error info
+
+ .../ABI/testing/sysfs-class-fpga-sec-mgr      |  81 +++
+ Documentation/fpga/fpga-sec-mgr.rst           |  44 ++
+ Documentation/fpga/index.rst                  |   1 +
+ MAINTAINERS                                   |   9 +
+ drivers/fpga/Kconfig                          |   9 +
+ drivers/fpga/Makefile                         |   3 +
+ drivers/fpga/fpga-sec-mgr.c                   | 652 ++++++++++++++++++
+ include/linux/fpga/fpga-sec-mgr.h             | 100 +++
+ 8 files changed, 899 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
+ create mode 100644 Documentation/fpga/fpga-sec-mgr.rst
+ create mode 100644 drivers/fpga/fpga-sec-mgr.c
+ create mode 100644 include/linux/fpga/fpga-sec-mgr.h
+
+-- 
+2.25.1
+
