@@ -2,31 +2,31 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD0F0C433B4
-	for <linux-fpga@archiver.kernel.org>; Fri,  2 Apr 2021 09:17:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58297C433ED
+	for <linux-fpga@archiver.kernel.org>; Fri,  2 Apr 2021 09:17:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9747A610FC
-	for <linux-fpga@archiver.kernel.org>; Fri,  2 Apr 2021 09:17:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2ECBC61107
+	for <linux-fpga@archiver.kernel.org>; Fri,  2 Apr 2021 09:17:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234594AbhDBJRd (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 2 Apr 2021 05:17:33 -0400
-Received: from mail-dm3nam07on2056.outbound.protection.outlook.com ([40.107.95.56]:64481
-        "EHLO NAM02-DM3-obe.outbound.protection.outlook.com"
+        id S234678AbhDBJRs (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 2 Apr 2021 05:17:48 -0400
+Received: from mail-bn7nam10on2044.outbound.protection.outlook.com ([40.107.92.44]:41680
+        "EHLO NAM10-BN7-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S229553AbhDBJRc (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 2 Apr 2021 05:17:32 -0400
+        id S229553AbhDBJRr (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 2 Apr 2021 05:17:47 -0400
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ZVQaZuLdSTWGbO/QHJ2reVRcnwh5rjRKadREhbOPiwCH6Xs/cIxiDTwGUvBR9zlhtDeULLcZVjsh/rG9g8nWkyMCapJsgUW3uuMOvDYt7qrWKG1hpSMyoY61LlaNWQfaCv6TiY2KgVHbLvH8ZG30S5pwV/huHtHTzlGsjQs2fS2l5cBb+inf39iadrZQ803gmm1pTwWDpVnlcHxD4jfiZosHSWxob4FA/e2YHx9XqqzKUcBnegOnk+XToOrQSfPIUX1jp2TPxF91hdfKLrHZR9hycAMZ76fS/3TCAlvyHmR/NrnnHn8KRRhPB7QAkknsOttpiRTY2JWFG6UmmT8GLw==
+ b=k/MFUz3oPXfDmsUlNNE4c4nPEnLTppk9Ja/y7nn7ysHeKgnb1/I6B00BuEyLNDdOpDoWNwAShuttsAQi9ayOTbxwAk7c9Alo2/oYSih+Q2iP3+d7mv7qJU3+1Pg9XUeWUzIHMfRR18IdYUYFsUF0og7IOEk54db5+WhbeJElmdnmFLRrHJqyM/xq5WxAvz4tTRDmfreNQ38RIuIOKWEV1lT8ntH6CcbLPdiODGGYQGDCxX/ZAvmKvWuH/5SMWqtoweK6r9RhVcrfDkE3fGfEDTTPswtitngqYerrAoNV3GdTKfWvj4KyRRd0ns3LcqbzFggESM9X+EEsV1z/4EzeLw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+DqhrWB8DXR45XGoK/bpvFIN6Pl71eAH2VVwuNZ16vI=;
- b=TFkj2cujhN+hbdMZFd9gEKLVPJPowC2aeFfNJq1+fl5E02ldgZEuz7KNVsC+Ku7eMBv5D3cS7VrDiEl9lv0+4ibUraHcPZn3XVuWViPKzalybTcIQ5FjR/BGWRRSyjjHm+c3NrIK4tOPhdV7sNqXY95VScxZl3N54zZjsdMQyhVbEX5lHaFU45Bn6i78i6uNsaZLWXUjVeVH5zADugHIOU4A2q3C+gPIXzELUeLjqywgiGt4fSXmXUWcnWrB9tWteYbNVqpurHXnLOUm60EA7isMyph34Gr4OoGzz//pq3YmnO1WRoGIVn5Ywg7a9hT5E/WqIAfXQQXg9pTVqezSRQ==
+ bh=0OA3EMeQtE3ViCLwk/i1eGuR66thZKoQTKtaiTEE4W8=;
+ b=Qk0CruArQPznk+C3d+yEUkuohMlLJv9NIzqsKuHurbttuAtlZ0SF7Y6MVO+sk3d07fpRLjWgiSPc/5loXlWWfiXci4AGT0vUPXNmGSU6PiIjfcnudU4gwY8K2ffesIGMz2eAzMPRgXWfHhPEIXCc0j1Ax4yZQNgc+Ybm8KYuI2b65bh8vSr9LSvl645sBSYg0+P9yD4P587QL7KaA83t1zDQobVZgdU4Fiv2W+yPdEbuueY4IV7hcJhwSZh6xvOCeq6ylsKSnc9g1IRJiiBi6kRSSv6tJeND8aKj07ulD0P0kUUFgGFH6NtX120YXygZDj9bT0gmEmNYG4KWcGR/VA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
@@ -34,18 +34,18 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+DqhrWB8DXR45XGoK/bpvFIN6Pl71eAH2VVwuNZ16vI=;
- b=OkDyP9w52bURKCkgIuFyHcMn+EWvXCfZL7RwIX+RgXn9TCEIeG9IjdwOOdXASrPCKk3I2GiXDfZGiDZgQEM7LL2P+mZ5ktMbzcevJiT3Uuz2AIEGz9sal7XxF+TFCYTfOzkMNa3N/0plbVpy6Vv9iod6RhNLlOOMDXNzKevwiFE=
-Received: from SN4PR0201CA0031.namprd02.prod.outlook.com
- (2603:10b6:803:2e::17) by SN6PR02MB5311.namprd02.prod.outlook.com
- (2603:10b6:805:6a::25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3999.27; Fri, 2 Apr
- 2021 09:17:30 +0000
-Received: from SN1NAM02FT052.eop-nam02.prod.protection.outlook.com
- (2603:10b6:803:2e:cafe::4b) by SN4PR0201CA0031.outlook.office365.com
- (2603:10b6:803:2e::17) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3999.27 via Frontend
- Transport; Fri, 2 Apr 2021 09:17:30 +0000
+ bh=0OA3EMeQtE3ViCLwk/i1eGuR66thZKoQTKtaiTEE4W8=;
+ b=M6YURlEbh5L2IltZq88U75UePRW2RO/eGiJxwnbLoTMI+5Kd3MYeh7qBu+EEQhJiZv4fB6u5Oehz6zW6wTrkTAbqQ2WgAO/XjpPixPuNiFVbnPAsppQSsjlsCp1uksdJttbSJKWYRzuiJ7f0dFkwNa71pHvKu7Uza8YoocXpdZw=
+Received: from SN1PR12CA0069.namprd12.prod.outlook.com (2603:10b6:802:20::40)
+ by CY4PR0201MB3553.namprd02.prod.outlook.com (2603:10b6:910:8e::24) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3977.33; Fri, 2 Apr
+ 2021 09:17:43 +0000
+Received: from SN1NAM02FT041.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:802:20:cafe::e5) by SN1PR12CA0069.outlook.office365.com
+ (2603:10b6:802:20::40) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3999.29 via Frontend
+ Transport; Fri, 2 Apr 2021 09:17:42 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=pass action=none header.from=xilinx.com;
@@ -53,16 +53,16 @@ Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
  client-ip=149.199.62.198; helo=xsj-pvapexch01.xlnx.xilinx.com;
 Received: from xsj-pvapexch01.xlnx.xilinx.com (149.199.62.198) by
- SN1NAM02FT052.mail.protection.outlook.com (10.152.72.146) with Microsoft SMTP
+ SN1NAM02FT041.mail.protection.outlook.com (10.152.72.217) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.3999.28 via Frontend Transport; Fri, 2 Apr 2021 09:17:30 +0000
+ 15.20.3999.28 via Frontend Transport; Fri, 2 Apr 2021 09:17:42 +0000
 Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
  xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2106.2; Fri, 2 Apr 2021 02:17:28 -0700
+ 15.1.2106.2; Fri, 2 Apr 2021 02:17:36 -0700
 Received: from smtp.xilinx.com (172.19.127.96) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.2106.2 via Frontend Transport; Fri, 2 Apr 2021 02:17:28 -0700
+ 15.1.2106.2 via Frontend Transport; Fri, 2 Apr 2021 02:17:36 -0700
 Envelope-to: git@xilinx.com,
  mdf@kernel.org,
  trix@redhat.com,
@@ -79,7 +79,7 @@ Envelope-to: git@xilinx.com,
 Received: from [10.140.6.60] (port=55560 helo=xhdnavam40.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <nava.manne@xilinx.com>)
-        id 1lSFvi-0005T9-UX; Fri, 02 Apr 2021 02:17:27 -0700
+        id 1lSFvq-0005T9-VT; Fri, 02 Apr 2021 02:17:35 -0700
 From:   Nava kishore Manne <nava.manne@xilinx.com>
 To:     <mdf@kernel.org>, <trix@redhat.com>, <robh+dt@kernel.org>,
         <michal.simek@xilinx.com>, <sumit.semwal@linaro.org>,
@@ -89,49 +89,289 @@ To:     <mdf@kernel.org>, <trix@redhat.com>, <robh+dt@kernel.org>,
         <linux-media@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
         <linaro-mm-sig@lists.linaro.org>, <git@xilinx.com>
 CC:     Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH RFC 0/3] Adds support to allow the bitstream configuration from pre-allocated dma-buffer 
-Date:   Fri, 2 Apr 2021 14:39:30 +0530
-Message-ID: <20210402090933.32276-1-nava.manne@xilinx.com>
+Subject: [PATCH RFC 2/3] fpga: support loading from a pre-allocated buffer
+Date:   Fri, 2 Apr 2021 14:39:32 +0530
+Message-ID: <20210402090933.32276-3-nava.manne@xilinx.com>
 X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20210402090933.32276-1-nava.manne@xilinx.com>
+References: <20210402090933.32276-1-nava.manne@xilinx.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: c9a67be1-367a-4da0-5ebc-08d8f5b8242b
-X-MS-TrafficTypeDiagnostic: SN6PR02MB5311:
-X-Microsoft-Antispam-PRVS: <SN6PR02MB5311E7BBC9275297688B36E0C27A9@SN6PR02MB5311.namprd02.prod.outlook.com>
+X-MS-Office365-Filtering-Correlation-Id: cebefaa1-d417-42b4-037c-08d8f5b82ba7
+X-MS-TrafficTypeDiagnostic: CY4PR0201MB3553:
+X-Microsoft-Antispam-PRVS: <CY4PR0201MB3553FCD9E024B8D32905A5E4C27A9@CY4PR0201MB3553.namprd02.prod.outlook.com>
 X-Auto-Response-Suppress: DR, RN, NRN, OOF, AutoReply
-X-MS-Oob-TLC-OOBClassifiers: OLM:3513;
+X-MS-Oob-TLC-OOBClassifiers: OLM:9508;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: EPSzuJ3Drx3VSzkheIoUzSzLo0W2gph0kEzOOUkzLyJcOIx4NNfEQRA59Rlnh6TSoSmSJz0LEAjvdhS8ic0EAiUv9Nh9pnuoQ6xONoQ6puGp55UotXTGT5wVo77Y+YnrdUIxXoTz+CeXnMtkNMnkP3QlUXmh2P8mkVTPPim5YM99js2hqlP/7inqzeq8EIpCb7t4DOt3aLcmmeAVVyjZ1wImlkulCIZa9jS+dqUIJbopslmXjQ6T88MrVIAcGuYoinX3lm9QQ6Y9sIulu1GdOJ3R4tqr2S5VIod3NrEDzXID9fcUT7SxSdTfJG8usGoDAP4jTaSvfDKiXgfFmgJSfT/uyQIhEjM1dAFElSg/fHyk8zbc3iUKnil3W3IJo04hEsUz5I/4xUgGvGHRJy8gfIR79kMT+i8LajGpeqmGNDTOwvIOgGRGC7Q9A8aCCppf065puS1fhSSK/AtRtaMYTPPFAfFvwpK58xyZ5USQW0otLNqu8YdA/nCEedhzY9xcbkpamUhTqug3mE5HGzJO4Q1iwG41SNZ7p7BwaO6sZF02hgR1QDnF6v6T6wTsaDqvLAOtChpqvusFputMo7IjcuVE+Pk7Ic5jsAi8OdKP63zAt1rzp6fKkY4MhnWFIUUHXSdj5xHau6wU8M8aO0vSiveihO/AgxFva2NZN19Ut/3ilv8glfZ23W4Uv2ddJRVjDHCbcTpQMdaSms5HXxVL28qV2hPZ0l6Aj381XzDk01cfe0myNSy5R1QutgqOzv60
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(396003)(346002)(376002)(136003)(39860400002)(36840700001)(46966006)(4744005)(26005)(7636003)(356005)(921005)(186003)(7416002)(8676002)(107886003)(4326008)(2906002)(83380400001)(82310400003)(4743002)(8936002)(7696005)(70586007)(5660300002)(36756003)(1076003)(82740400003)(6636002)(70206006)(36906005)(47076005)(36860700001)(6666004)(2616005)(336012)(9786002)(316002)(426003)(478600001)(110136005)(102446001)(83996005)(2101003);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: FEQnJOKG5mmZFp8INBRmHVLzSdK2LY9Vc9XIwSgQ6NbIBVOfGcCu8NI2NKEXXehjmr8K65XvkTScoht4lkkuROq3HfHHOy7+HpPPwaIhO3wH6iyWdh65eddPDtX8x+BpUFQQEGD14ub+un3PHh2iDnAGiYo1rlfeFD1Kisk0o72X2Hj2MFqawRCPT8KaGnE7giQ4PuELqqQy6Tcc4Fzbx3g/YyFeLK0Mlnx72Abz/W1nbFwThFybgfPdZgmRVV+TWG68lEheNj2e8QLZE8wj0Q45/hiOuQQfjOzYghmILWD++LscB8mLi5lqo+PL/RZIlNHyFgB6RX/I6o/pGLDOxrhXRefzRMsyus1huJKI3pqM8bIPTm8enrnf3lQGpYutbBCuw8WF2Dezjz2n4ZjCIU809AEUx0Wn5mILjQSamCjfdKhfSLk3GemPj+Nqq757zkzgTe1dJCX+zJxVDfFOSDSNxQDyxmYOV4aTpGwa/uj3+umjVFTK61C2YesmdhG6m5hCHTDuCR1UBv/xfUforSjOx9rsLyhjSgkZv9B+gguie2V9vN7IGEeLC7bY4sWaJearI3A3SPHHqepzacs04VwRj1Mc4Ra7YnmxzxJ+gGgJSwkuRf99mBOpiUIZoqsrYDSX0NN1zqqnMZaUrKdfq/PtifA/QTlR0lNigOHWsDzOhw/crjvHXI4pvFVRWu7MaRULuchzBAfNjS7I9/riefy13ZUmr7CEe1/3cruL9jU8ayC4n7Ly1ne8Tv/+xdGv
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(376002)(396003)(136003)(39860400002)(346002)(36840700001)(46966006)(8676002)(47076005)(36860700001)(1076003)(4326008)(9786002)(82310400003)(336012)(7636003)(8936002)(36906005)(26005)(6636002)(7416002)(186003)(921005)(83380400001)(2616005)(6666004)(478600001)(2906002)(5660300002)(356005)(316002)(36756003)(7696005)(82740400003)(107886003)(70586007)(426003)(110136005)(70206006)(102446001)(83996005)(2101003);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Apr 2021 09:17:30.1735
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Apr 2021 09:17:42.7268
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: c9a67be1-367a-4da0-5ebc-08d8f5b8242b
+X-MS-Exchange-CrossTenant-Network-Message-Id: cebefaa1-d417-42b4-037c-08d8f5b82ba7
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch01.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: SN1NAM02FT052.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: SN1NAM02FT041.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR02MB5311
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY4PR0201MB3553
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Nava kishore Manne (3):
-  fpga: region: Add fpga-region property 'fpga-config-from-dmabuf'
-  fpga: support loading from a pre-allocated buffer
-  fpga: zynqmp: Use the scatterlist interface
+Some systems are memory constrained but they need to load very
+large Configuration files. The FPGA subsystem allows drivers to
+request this Configuration image be loaded from the filesystem,
+but this requires that the entire configuration data be loaded
+into kernel memory first before it's provided to the driver.
+This can lead to a situation where we map the configuration
+data twice, once to load the configuration data into kernel
+memory and once to copy the configuration data into the final
+resting place which is nothing but a dma-able continuous buffer.
 
- .../devicetree/bindings/fpga/fpga-region.txt  |   2 +
- drivers/fpga/fpga-mgr.c                       | 126 +++++++++++++++++-
- drivers/fpga/of-fpga-region.c                 |   3 +
- drivers/fpga/zynqmp-fpga.c                    |  35 +++++
- include/linux/fpga/fpga-mgr.h                 |   6 +-
- 5 files changed, 169 insertions(+), 3 deletions(-)
+This creates needless memory pressure and delays due to multiple
+copies. Let's add a dmabuf handling support to the fpga manager
+framework that allows drivers to load the Configuration data
+directly from a pre-allocated buffer. This skips the intermediate
+step of allocating a buffer in kernel memory to hold the
+Configuration data.
 
+Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+---
+ drivers/fpga/fpga-mgr.c       | 126 +++++++++++++++++++++++++++++++++-
+ drivers/fpga/of-fpga-region.c |   3 +
+ include/linux/fpga/fpga-mgr.h |   6 +-
+ 3 files changed, 132 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index b85bc47c91a9..13faed61af62 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -8,6 +8,8 @@
+  * With code from the mailing list:
+  * Copyright (C) 2013 Xilinx, Inc.
+  */
++#include <linux/dma-buf.h>
++#include <linux/dma-map-ops.h>
+ #include <linux/firmware.h>
+ #include <linux/fpga/fpga-mgr.h>
+ #include <linux/idr.h>
+@@ -306,6 +308,51 @@ static int fpga_mgr_buf_load(struct fpga_manager *mgr,
+ 	return rc;
+ }
+ 
++/**
++ * fpga_mgr_buf_load - load fpga from image in dma buffer
++ * @mgr:        fpga manager
++ * @info:       fpga image info
++ *
++ * Step the low level fpga manager through the device-specific steps of getting
++ * an FPGA ready to be configured, writing the image to it, then doing whatever
++ * post-configuration steps necessary.  This code assumes the caller got the
++ * mgr pointer from of_fpga_mgr_get() and checked that it is not an error code.
++ *
++ * Return: 0 on success, negative error code otherwise.
++ */
++static int fpga_dmabuf_load(struct fpga_manager *mgr,
++			    struct fpga_image_info *info)
++{
++	struct dma_buf_attachment *attach;
++	struct sg_table *sgt;
++	int ret;
++
++	/* create attachment for dmabuf with the user device */
++	attach = dma_buf_attach(mgr->dmabuf, &mgr->dev);
++	if (IS_ERR(attach)) {
++		pr_err("failed to attach dmabuf\n");
++		ret = PTR_ERR(attach);
++		goto fail_put;
++	}
++
++	sgt = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
++	if (IS_ERR(sgt)) {
++		ret = PTR_ERR(sgt);
++		goto fail_detach;
++	}
++
++	info->sgt = sgt;
++	ret = fpga_mgr_buf_load_sg(mgr, info, info->sgt);
++	dma_buf_unmap_attachment(attach, sgt, DMA_BIDIRECTIONAL);
++
++fail_detach:
++	dma_buf_detach(mgr->dmabuf, attach);
++fail_put:
++	dma_buf_put(mgr->dmabuf);
++
++	return ret;
++}
++
+ /**
+  * fpga_mgr_firmware_load - request firmware and load to fpga
+  * @mgr:	fpga manager
+@@ -358,6 +405,8 @@ static int fpga_mgr_firmware_load(struct fpga_manager *mgr,
+  */
+ int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info)
+ {
++	if (info->flags & FPGA_MGR_CONFIG_DMA_BUF)
++		return fpga_dmabuf_load(mgr, info);
+ 	if (info->sgt)
+ 		return fpga_mgr_buf_load_sg(mgr, info, info->sgt);
+ 	if (info->buf && info->count)
+@@ -549,6 +598,62 @@ void fpga_mgr_unlock(struct fpga_manager *mgr)
+ }
+ EXPORT_SYMBOL_GPL(fpga_mgr_unlock);
+ 
++static int fpga_dmabuf_fd_get(struct file *file, char __user *argp)
++{
++	struct fpga_manager *mgr =  (struct fpga_manager *)(file->private_data);
++	int buffd;
++
++	if (copy_from_user(&buffd, argp, sizeof(buffd)))
++		return -EFAULT;
++
++	mgr->dmabuf = dma_buf_get(buffd);
++	if (IS_ERR_OR_NULL(mgr->dmabuf))
++		return -EINVAL;
++
++	return 0;
++}
++
++static int fpga_device_open(struct inode *inode, struct file *file)
++{
++	struct miscdevice *miscdev = file->private_data;
++	struct fpga_manager *mgr = container_of(miscdev,
++						struct fpga_manager, miscdev);
++
++	file->private_data = mgr;
++
++	return 0;
++}
++
++static int fpga_device_release(struct inode *inode, struct file *file)
++{
++	return 0;
++}
++
++static long fpga_device_ioctl(struct file *file, unsigned int cmd,
++			      unsigned long arg)
++{
++	char __user *argp = (char __user *)arg;
++	int err;
++
++	switch (cmd) {
++	case FPGA_IOCTL_LOAD_DMA_BUFF:
++		err = fpga_dmabuf_fd_get(file, argp);
++		break;
++	default:
++		err = -ENOTTY;
++	}
++
++	return err;
++}
++
++static const struct file_operations fpga_fops = {
++	.owner		= THIS_MODULE,
++	.open		= fpga_device_open,
++	.release	= fpga_device_release,
++	.unlocked_ioctl	= fpga_device_ioctl,
++	.compat_ioctl	= fpga_device_ioctl,
++};
++
+ /**
+  * fpga_mgr_create - create and initialize a FPGA manager struct
+  * @dev:	fpga manager device from pdev
+@@ -569,8 +674,7 @@ struct fpga_manager *fpga_mgr_create(struct device *dev, const char *name,
+ 	int id, ret;
+ 
+ 	if (!mops || !mops->write_complete || !mops->state ||
+-	    !mops->write_init || (!mops->write && !mops->write_sg) ||
+-	    (mops->write && mops->write_sg)) {
++	    !mops->write_init || (!mops->write && !mops->write_sg)) {
+ 		dev_err(dev, "Attempt to register without fpga_manager_ops\n");
+ 		return NULL;
+ 	}
+@@ -601,10 +705,28 @@ struct fpga_manager *fpga_mgr_create(struct device *dev, const char *name,
+ 	mgr->dev.of_node = dev->of_node;
+ 	mgr->dev.id = id;
+ 
++	/* Make device dma capable by inheriting from parent's */
++	set_dma_ops(&mgr->dev, get_dma_ops(dev));
++	ret = dma_coerce_mask_and_coherent(&mgr->dev, dma_get_mask(dev));
++	if (ret) {
++		dev_warn(dev,
++			 "Failed to set DMA mask %llx.Trying to continue.%x\n",
++			 dma_get_mask(dev), ret);
++	}
++
+ 	ret = dev_set_name(&mgr->dev, "fpga%d", id);
+ 	if (ret)
+ 		goto error_device;
+ 
++	mgr->miscdev.minor = MISC_DYNAMIC_MINOR;
++	mgr->miscdev.name = kobject_name(&mgr->dev.kobj);
++	mgr->miscdev.fops = &fpga_fops;
++	ret = misc_register(&mgr->miscdev);
++	if (ret) {
++		pr_err("fpga: failed to register misc device.\n");
++		goto error_device;
++	}
++
+ 	return mgr;
+ 
+ error_device:
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index 35fc2f3d4bd8..698e3e42ccba 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -229,6 +229,9 @@ static struct fpga_image_info *of_fpga_region_parse_ov(
+ 	if (of_property_read_bool(overlay, "encrypted-fpga-config"))
+ 		info->flags |= FPGA_MGR_ENCRYPTED_BITSTREAM;
+ 
++	if (of_property_read_bool(overlay, "fpga-config-from-dmabuf"))
++		info->flags |= FPGA_MGR_CONFIG_DMA_BUF;
++
+ 	if (!of_property_read_string(overlay, "firmware-name",
+ 				     &firmware_name)) {
+ 		info->firmware_name = devm_kstrdup(dev, firmware_name,
+diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
+index 2bc3030a69e5..6208c22f7bed 100644
+--- a/include/linux/fpga/fpga-mgr.h
++++ b/include/linux/fpga/fpga-mgr.h
+@@ -9,6 +9,7 @@
+ #define _LINUX_FPGA_MGR_H
+ 
+ #include <linux/mutex.h>
++#include <linux/miscdevice.h>
+ #include <linux/platform_device.h>
+ 
+ struct fpga_manager;
+@@ -73,7 +74,7 @@ enum fpga_mgr_states {
+ #define FPGA_MGR_ENCRYPTED_BITSTREAM	BIT(2)
+ #define FPGA_MGR_BITSTREAM_LSB_FIRST	BIT(3)
+ #define FPGA_MGR_COMPRESSED_BITSTREAM	BIT(4)
+-
++#define FPGA_MGR_CONFIG_DMA_BUF		BIT(5)
+ /**
+  * struct fpga_image_info - information specific to a FPGA image
+  * @flags: boolean flags as defined above
+@@ -167,6 +168,8 @@ struct fpga_compat_id {
+ struct fpga_manager {
+ 	const char *name;
+ 	struct device dev;
++	struct miscdevice miscdev;
++	struct dma_buf *dmabuf;
+ 	struct mutex ref_mutex;
+ 	enum fpga_mgr_states state;
+ 	struct fpga_compat_id *compat_id;
+@@ -204,4 +207,5 @@ struct fpga_manager *devm_fpga_mgr_create(struct device *dev, const char *name,
+ 					  const struct fpga_manager_ops *mops,
+ 					  void *priv);
+ 
++#define FPGA_IOCTL_LOAD_DMA_BUFF	_IOWR('R', 1, __u32)
+ #endif /*_LINUX_FPGA_MGR_H */
 -- 
 2.18.0
 
