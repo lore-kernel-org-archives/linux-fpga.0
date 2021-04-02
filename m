@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AB51C433B4
-	for <linux-fpga@archiver.kernel.org>; Fri,  2 Apr 2021 09:18:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA7DAC433B4
+	for <linux-fpga@archiver.kernel.org>; Fri,  2 Apr 2021 09:18:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 109B061008
-	for <linux-fpga@archiver.kernel.org>; Fri,  2 Apr 2021 09:18:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A3CED61008
+	for <linux-fpga@archiver.kernel.org>; Fri,  2 Apr 2021 09:18:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234818AbhDBJSS (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 2 Apr 2021 05:18:18 -0400
-Received: from mail-dm6nam12on2055.outbound.protection.outlook.com ([40.107.243.55]:5258
-        "EHLO NAM12-DM6-obe.outbound.protection.outlook.com"
+        id S234894AbhDBJSZ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 2 Apr 2021 05:18:25 -0400
+Received: from mail-bn7nam10on2049.outbound.protection.outlook.com ([40.107.92.49]:35297
+        "EHLO NAM10-BN7-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S234430AbhDBJSR (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 2 Apr 2021 05:18:17 -0400
+        id S234430AbhDBJSY (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 2 Apr 2021 05:18:24 -0400
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=TNP1FdX60U2bQu31mXU+2R8IQn3NpmCMO7FC8XIjhdx9yyiV+EsRlk2UXkUnkbhINJl1Ha6IWDH0yxzlRcluvv0h4a8zv18+aO2s2BhOufPHP+P8Co0Um9/bzRzl5cGDCPBpYXhm0AEnqDj0aVuP5x/tcy1q4Z9iYK6GTKesgj/i/KyZ3V9I481VUKdqmA6A05j0qP9/WNsObb2xyWX7IimqNmxY5D+M0F/C5ysCy0CdPD0RpaOBy5fLUOXb/g0xhp7U4bE3C8S/Bop0ZHMnkXsON0b8bBDcptTR4Q9gW2mst9CczjVrBXGuPXB1HtWo7m5vuGs+ZtFwSwY8/AfuKQ==
+ b=QTAshxxfY3Ioed/xARTtZRyEAv3zI+ifmnAhqMSZtAjUWmqVt4aAX4jxugbds232XKz1HcPBlZFUQV4lU6iCRLNSVdYLILhMwYh9AoghR7cgMrI4FvTFcIYbGFgT2cxIY+3HlgvvzcyRXDXUKuPMKfnJibS+JpBoLhh/JdZgX8NaDBxBOoHvDYDOiGD+IReLXNYfsN8XnAAqWd2ZllwB4qM4euRbtEqPqhK621p/Nw2vWDDVUPBuO5uznXxiZyGm/51dwpF/eged9GrTFT2Opamac8PDGcBg3Pk2I5Wa8z7bVKTianBpBNr6hvimI4Y73RU/rqY/gsAwTDz3W3If9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=mQ3v1l0wYs0BpTdbdERVQU3Hp1actc+I3HDz0FQ5mnw=;
- b=Tl3vKCG4sRYgw5CNcQzPLJDq+ut6GudWzJIHhL7q5qPguakxNwKx/Je33Q6wBGaSbIVaVjklkd10PycIKFD2hnB2I/sFICBxiTtMaMxQ2NMKhUU8EJKGgVGErmPbZpVH0qWla2xl0VETdYBYF9JnWjSg3i3YHOyImyWiXb2M+sELovfvrXAFTAMggaSu2oxua1g7pXv1iTc5I4lFmLw7pIgScCJcAAgx4v7fA0Jy/gyExR5pR3S7+T19rqwc5al2SJa7C7K4+YHX5MoNIw1DE4XGJcg6LX8Q6iM59PYZjW44mQRjijwjHgYt3+ArLKTiEQCSzxC2ITragQvMmIY2xQ==
+ bh=HSG16FGYCEn7frSXGp5wcQSDZauhGuvbz2pwvlyI9zY=;
+ b=moawFm2ay00Q1zvyYWsZhYkvsNnvQcFa+UQclXkV2AxwFkCHswTA6rMs7r3vOKWVZxRFrdwmmRsoXRLmVostWyzYSrXmwmTORyfD1TC7PaE5H3+FSOPvj+lQIBLmTG0wbcWMVzsDTRLQYHYe6gx+OcRk7GtJClckOEePhYLjq9wyQhQcncwhkXVJtbLDWaTo27490WIf3saCNakOL+K72H7SHy521d3lVbWAq6uhji6J3gvzEwmHplh+9hxgco+D6NpF+3Nc0Jmi1e0DrVhjdfmbv3Vmhw82oSeiFjhbYaVOow90M04+R3VuBbWRc0Dr0s1ehQAugY/7vHlu/8kmCw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
@@ -34,18 +34,18 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=mQ3v1l0wYs0BpTdbdERVQU3Hp1actc+I3HDz0FQ5mnw=;
- b=mgXZth7Zj3aVqIZj92mgC/981P7/B9rT5aQlZIZhbJO/Q/RIBCp74tLoKvR8CfwwvH/7qg8k47nzUfT1ChbYM9n/jO97ndUc7pciUFPbTPDuCHt5qANfBQ5/1mTxxpSix9ALVKQIs1Qo70sndW+hNKBWWAN8//+FcX0MM073RCU=
-Received: from CY4PR04CA0035.namprd04.prod.outlook.com (2603:10b6:903:c6::21)
- by BN8PR02MB5778.namprd02.prod.outlook.com (2603:10b6:408:b1::26) with
+ bh=HSG16FGYCEn7frSXGp5wcQSDZauhGuvbz2pwvlyI9zY=;
+ b=Lp5+skYfC2XzhYCpmZRSley9IQofyHu4ajjckfYPqGkwFOY2VLijkp+Co42qVGpk+b+eVBr6bjqKhxW3oC/rIwmQwDLY121jRdVtkLlmUIduFcDqCqsuzwLQGM88bBK3n0q0iQh+KQMn8M3XlWsLu7EoFMDCZ2nlzdi+tP0DlQ8=
+Received: from CY4PR04CA0040.namprd04.prod.outlook.com (2603:10b6:903:c6::26)
+ by BN7PR02MB4065.namprd02.prod.outlook.com (2603:10b6:406:fe::27) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3999.27; Fri, 2 Apr
- 2021 09:18:14 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3999.28; Fri, 2 Apr
+ 2021 09:18:22 +0000
 Received: from CY1NAM02FT050.eop-nam02.prod.protection.outlook.com
- (2603:10b6:903:c6:cafe::9d) by CY4PR04CA0035.outlook.office365.com
- (2603:10b6:903:c6::21) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10b6:903:c6:cafe::23) by CY4PR04CA0040.outlook.office365.com
+ (2603:10b6:903:c6::26) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3999.26 via Frontend
- Transport; Fri, 2 Apr 2021 09:18:14 +0000
+ Transport; Fri, 2 Apr 2021 09:18:21 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=pass action=none header.from=xilinx.com;
@@ -55,14 +55,14 @@ Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
 Received: from xsj-pvapexch02.xlnx.xilinx.com (149.199.62.198) by
  CY1NAM02FT050.mail.protection.outlook.com (10.152.75.65) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.3999.28 via Frontend Transport; Fri, 2 Apr 2021 09:18:13 +0000
+ 15.20.3999.28 via Frontend Transport; Fri, 2 Apr 2021 09:18:21 +0000
 Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2106.2; Fri, 2 Apr 2021 02:17:32 -0700
+ 15.1.2106.2; Fri, 2 Apr 2021 02:17:40 -0700
 Received: from smtp.xilinx.com (172.19.127.96) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.2106.2 via Frontend Transport; Fri, 2 Apr 2021 02:17:32 -0700
+ 15.1.2106.2 via Frontend Transport; Fri, 2 Apr 2021 02:17:40 -0700
 Envelope-to: git@xilinx.com,
  mdf@kernel.org,
  trix@redhat.com,
@@ -79,7 +79,7 @@ Envelope-to: git@xilinx.com,
 Received: from [10.140.6.60] (port=55560 helo=xhdnavam40.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <nava.manne@xilinx.com>)
-        id 1lSFvm-0005T9-Uy; Fri, 02 Apr 2021 02:17:31 -0700
+        id 1lSFvu-0005T9-Vz; Fri, 02 Apr 2021 02:17:39 -0700
 From:   Nava kishore Manne <nava.manne@xilinx.com>
 To:     <mdf@kernel.org>, <trix@redhat.com>, <robh+dt@kernel.org>,
         <michal.simek@xilinx.com>, <sumit.semwal@linaro.org>,
@@ -89,9 +89,9 @@ To:     <mdf@kernel.org>, <trix@redhat.com>, <robh+dt@kernel.org>,
         <linux-media@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
         <linaro-mm-sig@lists.linaro.org>, <git@xilinx.com>
 CC:     Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH RFC 1/3] fpga: region: Add fpga-region property 'fpga-config-from-dmabuf'
-Date:   Fri, 2 Apr 2021 14:39:31 +0530
-Message-ID: <20210402090933.32276-2-nava.manne@xilinx.com>
+Subject: [PATCH RFC 3/3] fpga: zynqmp: Use the scatterlist interface
+Date:   Fri, 2 Apr 2021 14:39:33 +0530
+Message-ID: <20210402090933.32276-4-nava.manne@xilinx.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20210402090933.32276-1-nava.manne@xilinx.com>
 References: <20210402090933.32276-1-nava.manne@xilinx.com>
@@ -99,50 +99,92 @@ MIME-Version: 1.0
 Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 75f76c55-42ba-4c07-31c9-08d8f5b83e3a
-X-MS-TrafficTypeDiagnostic: BN8PR02MB5778:
-X-Microsoft-Antispam-PRVS: <BN8PR02MB577822EF27D55F89CDA6C455C27A9@BN8PR02MB5778.namprd02.prod.outlook.com>
+X-MS-Office365-Filtering-Correlation-Id: 699600dd-5eef-4dec-17fc-08d8f5b842f4
+X-MS-TrafficTypeDiagnostic: BN7PR02MB4065:
+X-Microsoft-Antispam-PRVS: <BN7PR02MB40658FE68691540BE8584334C27A9@BN7PR02MB4065.namprd02.prod.outlook.com>
 X-Auto-Response-Suppress: DR, RN, NRN, OOF, AutoReply
-X-MS-Oob-TLC-OOBClassifiers: OLM:7219;
+X-MS-Oob-TLC-OOBClassifiers: OLM:411;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: PsTnWbnRwTmN8R7/V2wMUnLMEq0tGmUQ5MBgbq4MbQMu5SDfzm5jwVGiKOp9ubNEqpULHbyx65Otb93cZEAneVtarnkm9PwBa707evpaWQAaZzIB2XsITVKRAkAJPGS747D4X1iZd3UsjpNXuHM52uE//Hv4iHrURR0l+mWW2z/NxZmCB/LDuC6cj4a6yWzAEzdmZxSbpMGEPbM9tpvt1Q5SyTmyZq/dxEZqICEYUXso1hBYWsFrOmoOzKeUh9wI5f6mTXc6O9z7pf5tZx9PZx7VtJdCuIw4OCO76Kvir4ln3gV+NtEQNO0JXzsr3BS3pCdTzPxbOgs9mEyLPlFxdo6j7xI3e4IkR8NJYK2BpM0mJRt0Gpk5Q/5MyuVAsznjMqrPp3jkTaFXgPulqpvGG2FdEFGoVrQRS2yRfPixgdKaOwyg6Dup+JN7pO4SFG4yaBflBxc7DkTXhvql2XlgdL0A0xoEdFh+o483eGpziejmWd5qfmYFMC7M5cmAubYxUaGDkGIhBONFpZJQYdlOp3f79LYOT9drkmx0jN1iGXrZJjpwXf5pAgbd7Bein3Bn1RHaG3gPZzvq+LPRduYQAHXoTWadE+So3jHoONu2XgA7td3QuxFkBdG9uE/pEYUjONXwAzEHp2aubVjhyCRHJTUGH8Jph2EdxQrj32xwfQ6TXJImSKSCbcAlUfCMkE3T0HKcvpgiML+Tq920R7z4zVYEaZ0dDysJUy29hdT42UHVf1fRByBmCo2S8IHrWj9L
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(39860400002)(346002)(376002)(136003)(396003)(36840700001)(46966006)(83380400001)(110136005)(5660300002)(7636003)(8676002)(7696005)(107886003)(6636002)(7416002)(9786002)(82740400003)(82310400003)(36860700001)(356005)(8936002)(47076005)(921005)(186003)(4326008)(478600001)(1076003)(2906002)(316002)(70206006)(336012)(36906005)(26005)(426003)(36756003)(70586007)(2616005)(102446001)(2101003)(83996005);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: Q+3cuuQ5FwBsI38HD7PyC16LojWg0cPR9kKbaoUPy85TpM29LI6KQLf6t8DavxR7pRFpF9ECy7LYlYiA5lgY47g8DnNPRgHAuiXfLoAHHEP7MLSZvJYd6dAAht4+tdKl1XMCDOA4zYOZvWLvEx+NZ2vKrTaeWDAE9poUNjYDgMtZmV14BN5TT3uivIk3fWdbxy2Hpm+flk+YnHo2xwDDfUvgNrsrcHf1qWIDd5HP/KuU7g99yx2I/yGBDEB3RSmQH4BJxuTqayfAGpl9YEQcnZn319OenMU7geeDP202lGqWF0ZVrUp7cmbPDF1pfVT5fg+sEjxNUU+of0ryqSVQpOZAWOLK2K9vDHRzS8O6KhG0L8fEiktID0Fuh6xOhtjf2nKYiy8+txtfPzFxVk7r8TQnX4Cuqp4b5QiIEuAyvL5Eriml2OmGNJUTZ6yBKYKpsnkzlmigHOZA8Fh59efYEdL66z7ekFDz3aAp0fAbBM62KqqlUSz/u1BByBIRhsEG5y2auePYSDe6e3J3no42XihrT/2Qhr0IX0HzgjNGnCFAXyFTzlg8tP9Xty25QIGWsFW0iAB+ByDVS1eLsTGub47pVEc+ZvnHTjzDeQrktG1jGJGxXpVGlIao9t+BXwv/oFMhR5fXt6IZbt7eJOynrXSWlbj+lrWLpPoDWSGHFG3SkTyDFAQM7X7sbI+5DgbKfeDei21/5P4tOE/yTbmTHpiqeGryMPXEAipFme18J/m8sn3ntwQY9ZHE6jGMlEoi
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(39860400002)(346002)(376002)(136003)(396003)(36840700001)(46966006)(47076005)(336012)(36906005)(6666004)(7416002)(9786002)(316002)(426003)(2906002)(1076003)(110136005)(5660300002)(82310400003)(83380400001)(356005)(7636003)(36756003)(478600001)(26005)(186003)(107886003)(8936002)(4326008)(7696005)(6636002)(8676002)(70586007)(70206006)(921005)(82740400003)(36860700001)(2616005)(102446001)(2101003)(83996005);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Apr 2021 09:18:13.9034
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Apr 2021 09:18:21.8366
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 75f76c55-42ba-4c07-31c9-08d8f5b83e3a
+X-MS-Exchange-CrossTenant-Network-Message-Id: 699600dd-5eef-4dec-17fc-08d8f5b842f4
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch02.xlnx.xilinx.com]
 X-MS-Exchange-CrossTenant-AuthSource: CY1NAM02FT050.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN8PR02MB5778
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PR02MB4065
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add "fpga-config-from-dmabuf" property to allow the bitstream
-configuration from pre-allocated dma-buffer.
+Allows drivers to request the Configuration image
+be loaded from dma-able continuous buffer to avoid
+needless memory pressure and delays due to multiple
+copies.
 
 Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
 ---
- Documentation/devicetree/bindings/fpga/fpga-region.txt | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/fpga/zynqmp-fpga.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/fpga/fpga-region.txt b/Documentation/devicetree/bindings/fpga/fpga-region.txt
-index 969ca53bb65e..c573cf258d60 100644
---- a/Documentation/devicetree/bindings/fpga/fpga-region.txt
-+++ b/Documentation/devicetree/bindings/fpga/fpga-region.txt
-@@ -177,6 +177,8 @@ Optional properties:
- 	it indicates that the FPGA has already been programmed with this image.
- 	If this property is in an overlay targeting a FPGA region, it is a
- 	request to program the FPGA with that image.
-+- fpga-config-from-dmabuf : boolean, set if the FPGA configured done from the
-+	pre-allocated dma-buffer.
- - fpga-bridges : should contain a list of phandles to FPGA Bridges that must be
- 	controlled during FPGA programming along with the parent FPGA bridge.
- 	This property is optional if the FPGA Manager handles the bridges.
+diff --git a/drivers/fpga/zynqmp-fpga.c b/drivers/fpga/zynqmp-fpga.c
+index 125743c9797f..3bb6bd520d71 100644
+--- a/drivers/fpga/zynqmp-fpga.c
++++ b/drivers/fpga/zynqmp-fpga.c
+@@ -66,6 +66,40 @@ static int zynqmp_fpga_ops_write(struct fpga_manager *mgr,
+ 	return ret;
+ }
+ 
++static unsigned long zynqmp_fpga_get_contiguous_size(struct sg_table *sgt)
++{
++	dma_addr_t expected = sg_dma_address(sgt->sgl);
++	unsigned long size = 0;
++	struct scatterlist *s;
++	unsigned int i;
++
++	for_each_sg(sgt->sgl, s, sgt->nents, i) {
++		if (sg_dma_address(s) != expected)
++			break;
++		expected = sg_dma_address(s) + sg_dma_len(s);
++		size += sg_dma_len(s);
++	}
++
++	return size;
++}
++
++static int zynqmp_fpga_ops_write_sg(struct fpga_manager *mgr,
++				    struct sg_table *sgt)
++{
++	struct zynqmp_fpga_priv *priv;
++	unsigned long contig_size;
++	dma_addr_t dma_addr;
++	u32 eemi_flags = 0;
++
++	priv = mgr->priv;
++	dma_addr = sg_dma_address(sgt->sgl);
++	contig_size = zynqmp_fpga_get_contiguous_size(sgt);
++	if (priv->flags & FPGA_MGR_PARTIAL_RECONFIG)
++		eemi_flags |= XILINX_ZYNQMP_PM_FPGA_PARTIAL;
++
++	return zynqmp_pm_fpga_load(dma_addr, contig_size, eemi_flags);
++}
++
+ static int zynqmp_fpga_ops_write_complete(struct fpga_manager *mgr,
+ 					  struct fpga_image_info *info)
+ {
+@@ -87,6 +121,7 @@ static const struct fpga_manager_ops zynqmp_fpga_ops = {
+ 	.state = zynqmp_fpga_ops_state,
+ 	.write_init = zynqmp_fpga_ops_write_init,
+ 	.write = zynqmp_fpga_ops_write,
++	.write_sg = zynqmp_fpga_ops_write_sg,
+ 	.write_complete = zynqmp_fpga_ops_write_complete,
+ };
+ 
 -- 
 2.18.0
 
