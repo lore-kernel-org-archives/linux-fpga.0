@@ -2,942 +2,239 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEFC8C43461
-	for <linux-fpga@archiver.kernel.org>; Fri, 16 Apr 2021 16:55:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3221C433B4
+	for <linux-fpga@archiver.kernel.org>; Mon, 19 Apr 2021 05:18:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AF6846121F
-	for <linux-fpga@archiver.kernel.org>; Fri, 16 Apr 2021 16:55:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B8CED61159
+	for <linux-fpga@archiver.kernel.org>; Mon, 19 Apr 2021 05:18:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236515AbhDPQ4P (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 16 Apr 2021 12:56:15 -0400
-Received: from mga01.intel.com ([192.55.52.88]:11721 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S236466AbhDPQ4P (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 16 Apr 2021 12:56:15 -0400
-IronPort-SDR: ftxq8cMrONI0oFAYKL9jW552ZejFjItkUEITgxc7FwJyzL5HKD7FckuD0/dQ/WzcTCRlIMZ7AD
- /ujcj859rKvg==
-X-IronPort-AV: E=McAfee;i="6200,9189,9956"; a="215606434"
-X-IronPort-AV: E=Sophos;i="5.82,226,1613462400"; 
-   d="scan'208";a="215606434"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Apr 2021 09:55:50 -0700
-IronPort-SDR: Np3jfFkpz4IaRsvwZ8P64MVe1L5dWja+HhV7P/jmFdaQ9D7HBKGYOphQbLGy49mHTKJ3Fd6xwW
- aoGXa29uFNUw==
-X-IronPort-AV: E=Sophos;i="5.82,226,1613462400"; 
-   d="scan'208";a="425655936"
-Received: from rhweight-wrk1.ra.intel.com ([137.102.106.42])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Apr 2021 09:55:49 -0700
-From:   matthew.gerlach@linux.intel.com
-To:     hao.wu@intel.com, trix@redhat.com, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org, yilun.xu@intel.com,
-        russell.h.weight@intel.com, broonie@kernel.org,
-        linux-spi@vger.kernel.org
-Cc:     Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Subject: [PATCH v3 1/2] spi: altera: separate core code from platform code
-Date:   Fri, 16 Apr 2021 09:57:19 -0700
-Message-Id: <20210416165720.554144-2-matthew.gerlach@linux.intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210416165720.554144-1-matthew.gerlach@linux.intel.com>
-References: <20210416165720.554144-1-matthew.gerlach@linux.intel.com>
+        id S230111AbhDSFTO (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 19 Apr 2021 01:19:14 -0400
+Received: from mail-co1nam11on2079.outbound.protection.outlook.com ([40.107.220.79]:52064
+        "EHLO NAM11-CO1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S229473AbhDSFTN (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 19 Apr 2021 01:19:13 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=XbbrHRJDNCObFqy2aPZ/UtdUwdC1Ps9oNM3sekDdwUWYMIdJVgc4d0R9BXaKP0Kt1UKo/mWxcD+CTmXf2WxaPeNul3KUZhscNEUIwCQ4D+qwSh3qzJr9N2hnroT6+Gmr540xLX0YA4gd+sDhJC5ouVqAFGv19GFqceKVHJYjhrepA+W/HH1lOZapkuUgff1B5VdpGGHcWyX3A4ytflLAZuFld4OcCPLTni1R1oV6YvlEVM08/Q35s4AUWE2LVP8Z+W3YRD9YaZphm1tqRGWlFThC6vDZ8N2zIluKGE5ZAtEt6kP5dXLgDtQm0Q1RwaSSnJfEfBzT8L9jmGWRkbAzyg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=JXC9e93PUyqYnqSD5wuRx8MAaMfdfW5g6MI/GTUnsLg=;
+ b=ig+gTIRxyl+cJC1ekVNjayWa2RmLeQxO2TJWBPI5ua/KPN/elceeQQNA1kw6Ur5ChJrqccdeyniEaRUqcN786losEHxYSBZP1RbU03589pRBMdliLUfkjvCrtO1dwVNZi/OKlN7pPCxPKY9T/itjtGwY/FpJ/Zmpdj+I8a1iATIYTQdY8S6Aq4GHA/16TWOVit0nYXvJ0OvaYxG/I6ks3XNzy9L2oTmZ5psZi6u5lEbDRkuIdJDdbsLndn9kFqP4LSTehZDKdegX/ZQgT5Voxfc6jXusYJOQYyCigypK4qTeH7kBgVMBlXgAWAWsbdo2Z/fTwTFqhwPV55mN+3VnAQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=xilinx.com; dmarc=pass action=none header.from=xilinx.com;
+ dkim=pass header.d=xilinx.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=JXC9e93PUyqYnqSD5wuRx8MAaMfdfW5g6MI/GTUnsLg=;
+ b=knTkONKY314ceENk0kSdqKTOF0s97rDwsInrmyAfNV7DU+QsgO1Bml28oCZ5yHCYXtRlZb89Lkcdu7+ZSCBjTSEwqBhXRffQlClBk78piprFQBAeJl5NM2B1R4lWIOPy/25gsmKS2MC9pB6sJ+RK/oRIeT3+SxF9W3ACoyFiOi4=
+Received: from MWHPR02MB2623.namprd02.prod.outlook.com (2603:10b6:300:44::9)
+ by CO6PR02MB7604.namprd02.prod.outlook.com (2603:10b6:303:a5::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4042.16; Mon, 19 Apr
+ 2021 05:18:41 +0000
+Received: from MWHPR02MB2623.namprd02.prod.outlook.com
+ ([fe80::297d:1fb:ad07:1b26]) by MWHPR02MB2623.namprd02.prod.outlook.com
+ ([fe80::297d:1fb:ad07:1b26%9]) with mapi id 15.20.4042.024; Mon, 19 Apr 2021
+ 05:18:41 +0000
+From:   Nava kishore Manne <navam@xilinx.com>
+To:     Moritz Fischer <mdf@kernel.org>
+CC:     "trix@redhat.com" <trix@redhat.com>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        Michal Simek <michals@xilinx.com>,
+        "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>, git <git@xilinx.com>
+Subject: RE: [PATCH 3/3] fpga: region: Adds runtime PM support
+Thread-Topic: [PATCH 3/3] fpga: region: Adds runtime PM support
+Thread-Index: AQHXJ6KdTpEiWN/+bESGWLEVPH0Elqqsv+2AgA6mmuA=
+Date:   Mon, 19 Apr 2021 05:18:41 +0000
+Message-ID: <MWHPR02MB2623E61ABFBB478E95DC863FC2499@MWHPR02MB2623.namprd02.prod.outlook.com>
+References: <20210402092049.479-1-nava.manne@xilinx.com>
+ <20210402092049.479-4-nava.manne@xilinx.com> <YHDHhf1tQo6vI49W@epycbox.lan>
+In-Reply-To: <YHDHhf1tQo6vI49W@epycbox.lan>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-Auto-Response-Suppress: DR, RN, NRN, OOF, AutoReply
+X-MS-TNEF-Correlator: 
+authentication-results: kernel.org; dkim=none (message not signed)
+ header.d=none;kernel.org; dmarc=none action=none header.from=xilinx.com;
+x-originating-ip: [149.199.50.130]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: b96d5d46-32f6-4637-505e-08d902f298aa
+x-ms-traffictypediagnostic: CO6PR02MB7604:
+x-ld-processed: 657af505-d5df-48d0-8300-c31994686c5c,ExtAddr
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <CO6PR02MB760433E2181CD013108C884CC2499@CO6PR02MB7604.namprd02.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:2803;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: vMlmY87CPkqGkGQntW5QJMACW/d29FUKQ/KQhuCDUYdA13mQCEE9l8E2l6vZiZGExJgifKzr+4eONZYpLaoBNNPt2Ilo7qFF2DuQ8kBr0gt3amhxmDpI5DaWmx2woCA2rUiZgwY+t4+rPmkBscZSQBJBL/WJWH6m1VqhRTGRpfTqrpx0T3aBUQhxRztRONNhBb4FvLMdO5qCtLd6F99YQ019zNwewIbIQFi1+0+7uhIMoWulW+k5auHrvnaJ2TglEr6JtLE7TZZQOHZb8F7fpmF44At5Lmja5J0xt0mqNZVh2OnlI5jD8xa5b6e9hWDFoGqXOfhFEeq8WYrY0FarD6ZP47FDSyAUxbOg+inwa2d/h31O20QEvw4tpWDz+YGHcPXZTfWCeURvpnDgEtJ+jNmpUhOmTXRTImPd56ZRXbAOpzyUwwfkGtqMtVtXcuAL5pE0L6YmQvny0BiaIoAT4UIZmseKkkgSNsgHyuoEmYvugy2W0Ap1RlaWoKz+3iVrcYIU55Z175H4OLhNDchMaQZL0ERRgNMD+nuK2d5aiHRZoxWnypX9ycOfD98FWJ80sKsQKYYQCivUyQywL7zF0Ipj80DcSY/IUUF+nbFoL7I=
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MWHPR02MB2623.namprd02.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(346002)(376002)(366004)(39850400004)(396003)(136003)(71200400001)(26005)(52536014)(122000001)(4326008)(54906003)(186003)(478600001)(33656002)(8676002)(8936002)(38100700002)(86362001)(7696005)(55016002)(53546011)(6506007)(64756008)(316002)(2906002)(66946007)(9686003)(66446008)(5660300002)(107886003)(83380400001)(66476007)(6916009)(76116006)(66556008);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata: =?us-ascii?Q?C6G/rwHftHk4MxTu8T23wIucioeLD2kFjas6LaffkZ4A97kuEL/l+z4SAzR/?=
+ =?us-ascii?Q?Unq8eMAxKlte6tk0l78JCRcQcHWDgnufbNYRLp41EcL1HIEmx/hfdjrifDzg?=
+ =?us-ascii?Q?2enEy0lLrxuqG69zLC4X77Qj1TnNOd3+By31/EAKR9JBWQ5RuQFkOuMbledf?=
+ =?us-ascii?Q?HVKAp8v5KV4KukxynjDuFq446dQ55bmBbtWytRUGRAZrbhTVDrjv/JZFZU+T?=
+ =?us-ascii?Q?ta4E7jaPeUQv1aqapjHKnFaU07N8Gkgk5c2jKA6KSZ4zpGBYVVabv6MxMM6i?=
+ =?us-ascii?Q?Erp0G6Vky3Ikg7Eymq8v1btQZ+n/zJebKt2qfCi7AWQOQeM95Mt0JVZiLG38?=
+ =?us-ascii?Q?UOZnms7yGeMTfJkTVVUOiZy66imRDbZTPYrMeTBfGbuyY5zsvLOICQ06TQq1?=
+ =?us-ascii?Q?0Ebd5BCzPyq29yArdDYQyEdU9EH25m+KXYvG/dQ6PADwaYJkOMTAEKMfHs14?=
+ =?us-ascii?Q?AdgOrtt/9F209tHspwCOVf9iChE6W8oMkzGxlb9zkqvi1M3xJLV18wTaMR7i?=
+ =?us-ascii?Q?9QI0RVkRHYv65c9ipHokysuUJcW8vcx0HAocAzSYphx4ZY8h764RXezXjxA9?=
+ =?us-ascii?Q?5YoJJB7CXErjrZ2PCEdXgjGdm2cf7L40FapkHOKZXYMmLPPLGs+6xAMUiKQB?=
+ =?us-ascii?Q?YSNUHBbEU/UrRSSmJNteTB6ththqhzmqp7WF05k4YVD5guFkQGSHoKki+/ol?=
+ =?us-ascii?Q?HvyskyCey3QwnxSLPzemm9rzxRZ4lprD5dCXJ8hWYjEi5Ffs9pzmCWJSq1b0?=
+ =?us-ascii?Q?JuUciL/xyBe+dFsxCsWszSBcmN+Xyo6AO4YSJFGANldvCwYt3yo/2T9brALK?=
+ =?us-ascii?Q?/F6VUxE63OKszHcCPfehadVcLvnA76fiyba3TKNTe93d0OT+YeGlKBGACmN2?=
+ =?us-ascii?Q?NSPERumpyaakAwbuV725K5ZvnbSf2T1NWy8IHmkoDwb3luI3qRfxNiysrkb5?=
+ =?us-ascii?Q?AmjatCRE981g19/irUF7JcVu9OTZxr8ZWGMf0pBUUSUiIfoVv2bQYxqToF2A?=
+ =?us-ascii?Q?T3Of17ljM+K18nyYWsBZ5gs1bBYJ1GxxaPzr7lmZ8LAO9jkEelLcr7aURQeL?=
+ =?us-ascii?Q?7QonP1xrI0LASvTFse7EtbxJbePL/TVRfck6frvjeHkDscmon6uNAKHAt+aP?=
+ =?us-ascii?Q?jL4jw+Yxc/PJdML4NW8ZjcePmo4R6IocraJKPXRecPX2m0uxskrySA7Pivo3?=
+ =?us-ascii?Q?pevdLELiDWJtRftbD/YhSQpdQ19iY+ogFgPljlcq7ZGtQEtNY2boSkOjSZcH?=
+ =?us-ascii?Q?HTwfoCnCykZeFssEIPiBMZLWWETkoULhybiCK/9/1s8fGj3x8q/q8Y6RFTIV?=
+ =?us-ascii?Q?EYUOZ3iWIk06154WENk/DbNk?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: xilinx.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MWHPR02MB2623.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b96d5d46-32f6-4637-505e-08d902f298aa
+X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Apr 2021 05:18:41.4926
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 657af505-d5df-48d0-8300-c31994686c5c
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: qHWVW2IgtRVRP205eZZy7vq017Hdg3WnZo/Yo5xiZZPiY+yJfrQ4KtLxRcQa9JG4u2b0fFEKPd/C7D7PoBwV6g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO6PR02MB7604
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Hi Moritz,
 
-In preparation of adding support for a new bus type,
-separate the core spi-altera code from the platform
-driver code.
+	Please find my response inline.
 
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
----
- drivers/spi/Kconfig               |   9 +-
- drivers/spi/Makefile              |   3 +-
- drivers/spi/spi-altera-core.c     | 222 ++++++++++++++++++++++
- drivers/spi/spi-altera-platform.c | 172 +++++++++++++++++
- drivers/spi/spi-altera.c          | 378 --------------------------------------
- include/linux/spi/altera.h        |  21 +++
- 6 files changed, 425 insertions(+), 380 deletions(-)
- create mode 100644 drivers/spi/spi-altera-core.c
- create mode 100644 drivers/spi/spi-altera-platform.c
- delete mode 100644 drivers/spi/spi-altera.c
+> -----Original Message-----
+> From: Moritz Fischer <mdf@kernel.org>
+> Sent: Saturday, April 10, 2021 3:01 AM
+> To: Nava kishore Manne <navam@xilinx.com>
+> Cc: mdf@kernel.org; trix@redhat.com; robh+dt@kernel.org; Michal Simek
+> <michals@xilinx.com>; linux-fpga@vger.kernel.org;
+> devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; linux-arm-
+> kernel@lists.infradead.org; git <git@xilinx.com>
+> Subject: Re: [PATCH 3/3] fpga: region: Adds runtime PM support
+>=20
+> On Fri, Apr 02, 2021 at 02:50:49PM +0530, Nava kishore Manne wrote:
+> > Adds support to handle FPGA/PL power domain. With this patch, the PL
+> > power domain will be turned on before loading the bitstream and turned
+> > off while removing/unloading the bitstream using overlays.
+> > This can be achieved by adding the runtime PM support.
+> >
+> > Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+> > ---
+> >  drivers/fpga/of-fpga-region.c | 18 +++++++++++++++++-
+> >  1 file changed, 17 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/fpga/of-fpga-region.c
+> > b/drivers/fpga/of-fpga-region.c index e405309baadc..35fc2f3d4bd8
+> > 100644
+> > --- a/drivers/fpga/of-fpga-region.c
+> > +++ b/drivers/fpga/of-fpga-region.c
+> > @@ -15,6 +15,7 @@
+> >  #include <linux/of_platform.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/spinlock.h>
+> > +#include <linux/pm_runtime.h>
+> >
+> >  static const struct of_device_id fpga_region_of_match[] =3D {
+> >  	{ .compatible =3D "fpga-region", },
+> > @@ -302,6 +303,7 @@ static int of_fpga_region_notify_pre_apply(struct
+> fpga_region *region,
+> >  	}
+> >
+> >  	region->info =3D info;
+> > +	pm_runtime_get_sync(dev->parent);
+> >  	ret =3D fpga_region_program_fpga(region);
+> >  	if (ret) {
+> >  		/* error; reject overlay */
+> > @@ -324,10 +326,13 @@ static int
+> > of_fpga_region_notify_pre_apply(struct fpga_region *region,  static voi=
+d
+> of_fpga_region_notify_post_remove(struct fpga_region *region,
+> >  					      struct of_overlay_notify_data
+> *nd)  {
+> > +	struct device *dev =3D &region->dev;
+> > +
+> >  	fpga_bridges_disable(&region->bridge_list);
+> >  	fpga_bridges_put(&region->bridge_list);
+> >  	fpga_image_info_free(region->info);
+> >  	region->info =3D NULL;
+> > +	pm_runtime_put(dev->parent);
+> >  }
+> >
+> >  /**
+> > @@ -411,9 +416,16 @@ static int of_fpga_region_probe(struct
+> platform_device *pdev)
+> >  		goto eprobe_mgr_put;
+> >  	}
+> >
+> > +	pm_runtime_enable(&pdev->dev);
+> > +	ret =3D pm_runtime_get_sync(&pdev->dev);
+> > +	if (ret < 0)
+> > +		goto err_pm;
+> > +
+> > +	pm_runtime_put(&pdev->dev);
+> > +
+> >  	ret =3D fpga_region_register(region);
+> >  	if (ret)
+> > -		goto eprobe_mgr_put;
+> > +		goto err_pm;
+> >
+> >  	of_platform_populate(np, fpga_region_of_match, NULL, &region-
+> >dev);
+> >  	platform_set_drvdata(pdev, region);
+> > @@ -422,6 +434,9 @@ static int of_fpga_region_probe(struct
+> > platform_device *pdev)
+> >
+> >  	return 0;
+> >
+> > +err_pm:
+> > +	pm_runtime_put(&pdev->dev);
+> > +	pm_runtime_disable(&pdev->dev);
+> >  eprobe_mgr_put:
+> >  	fpga_mgr_put(mgr);
+> >  	return ret;
+> > @@ -434,6 +449,7 @@ static int of_fpga_region_remove(struct
+> > platform_device *pdev)
+> >
+> >  	fpga_region_unregister(region);
+> >  	fpga_mgr_put(mgr);
+> > +	pm_runtime_disable(region->dev.parent);
+> >
+> >  	return 0;
+> >  }
+> > --
+> > 2.18.0
+> >
+>=20
+> Does this add a dependency on CONFIG_PM?
+>=20
+Yes, the newly added functionality has a dependency on CONFIG_PM if it's di=
+sabled the expected power domain (in our cases it's PL) will not powered ON=
+/OFF dynamically at runtime and this is as an expected behavior. Other than=
+ this it will not impact the any of the driver existing functionality.
 
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 853cf4c..e59f548 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -58,11 +58,18 @@ config SPI_MEM
- comment "SPI Master Controller Drivers"
- 
- config SPI_ALTERA
--	tristate "Altera SPI Controller"
-+	tristate "Altera SPI Controller platform driver"
-+	select SPI_ALTERA_CORE
- 	select REGMAP_MMIO
- 	help
- 	  This is the driver for the Altera SPI Controller.
- 
-+config SPI_ALTERA_CORE
-+	tristate "Altera SPI Controller core code"
-+	select REGMAP
-+	help
-+	  "The core code for the Altera SPI Controller"
-+
- config SPI_AR934X
- 	tristate "Qualcomm Atheros AR934X/QCA95XX SPI controller driver"
- 	depends on ATH79 || COMPILE_TEST
-diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
-index 29fee71..e6be348 100644
---- a/drivers/spi/Makefile
-+++ b/drivers/spi/Makefile
-@@ -14,7 +14,8 @@ obj-$(CONFIG_SPI_SPIDEV)		+= spidev.o
- obj-$(CONFIG_SPI_LOOPBACK_TEST)		+= spi-loopback-test.o
- 
- # SPI master controller drivers (bus)
--obj-$(CONFIG_SPI_ALTERA)		+= spi-altera.o
-+obj-$(CONFIG_SPI_ALTERA)		+= spi-altera-platform.o
-+obj-$(CONFIG_SPI_ALTERA_CORE)		+= spi-altera-core.o
- obj-$(CONFIG_SPI_AR934X)		+= spi-ar934x.o
- obj-$(CONFIG_SPI_ARMADA_3700)		+= spi-armada-3700.o
- obj-$(CONFIG_SPI_ATMEL)			+= spi-atmel.o
-diff --git a/drivers/spi/spi-altera-core.c b/drivers/spi/spi-altera-core.c
-new file mode 100644
-index 0000000..de4d31c
---- /dev/null
-+++ b/drivers/spi/spi-altera-core.c
-@@ -0,0 +1,222 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Altera SPI driver
-+ *
-+ * Copyright (C) 2008 Thomas Chou <thomas@wytron.com.tw>
-+ *
-+ * Based on spi_s3c24xx.c, which is:
-+ * Copyright (c) 2006 Ben Dooks
-+ * Copyright (c) 2006 Simtec Electronics
-+ *	Ben Dooks <ben@simtec.co.uk>
-+ */
-+
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/spi/altera.h>
-+#include <linux/spi/spi.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+
-+#define DRV_NAME "spi_altera"
-+
-+#define ALTERA_SPI_RXDATA	0
-+#define ALTERA_SPI_TXDATA	4
-+#define ALTERA_SPI_STATUS	8
-+#define ALTERA_SPI_CONTROL	12
-+#define ALTERA_SPI_SLAVE_SEL	20
-+
-+#define ALTERA_SPI_STATUS_ROE_MSK	0x8
-+#define ALTERA_SPI_STATUS_TOE_MSK	0x10
-+#define ALTERA_SPI_STATUS_TMT_MSK	0x20
-+#define ALTERA_SPI_STATUS_TRDY_MSK	0x40
-+#define ALTERA_SPI_STATUS_RRDY_MSK	0x80
-+#define ALTERA_SPI_STATUS_E_MSK		0x100
-+
-+#define ALTERA_SPI_CONTROL_IROE_MSK	0x8
-+#define ALTERA_SPI_CONTROL_ITOE_MSK	0x10
-+#define ALTERA_SPI_CONTROL_ITRDY_MSK	0x40
-+#define ALTERA_SPI_CONTROL_IRRDY_MSK	0x80
-+#define ALTERA_SPI_CONTROL_IE_MSK	0x100
-+#define ALTERA_SPI_CONTROL_SSO_MSK	0x400
-+
-+static int altr_spi_writel(struct altera_spi *hw, unsigned int reg,
-+			   unsigned int val)
-+{
-+	int ret;
-+
-+	ret = regmap_write(hw->regmap, hw->regoff + reg, val);
-+	if (ret)
-+		dev_err(hw->dev, "fail to write reg 0x%x val 0x%x: %d\n",
-+			reg, val, ret);
-+
-+	return ret;
-+}
-+
-+static int altr_spi_readl(struct altera_spi *hw, unsigned int reg,
-+			  unsigned int *val)
-+{
-+	int ret;
-+
-+	ret = regmap_read(hw->regmap, hw->regoff + reg, val);
-+	if (ret)
-+		dev_err(hw->dev, "fail to read reg 0x%x: %d\n", reg, ret);
-+
-+	return ret;
-+}
-+
-+static inline struct altera_spi *altera_spi_to_hw(struct spi_device *sdev)
-+{
-+	return spi_master_get_devdata(sdev->master);
-+}
-+
-+static void altera_spi_set_cs(struct spi_device *spi, bool is_high)
-+{
-+	struct altera_spi *hw = altera_spi_to_hw(spi);
-+
-+	if (is_high) {
-+		hw->imr &= ~ALTERA_SPI_CONTROL_SSO_MSK;
-+		altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
-+		altr_spi_writel(hw, ALTERA_SPI_SLAVE_SEL, 0);
-+	} else {
-+		altr_spi_writel(hw, ALTERA_SPI_SLAVE_SEL,
-+				BIT(spi->chip_select));
-+		hw->imr |= ALTERA_SPI_CONTROL_SSO_MSK;
-+		altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
-+	}
-+}
-+
-+static void altera_spi_tx_word(struct altera_spi *hw)
-+{
-+	unsigned int txd = 0;
-+
-+	if (hw->tx) {
-+		switch (hw->bytes_per_word) {
-+		case 1:
-+			txd = hw->tx[hw->count];
-+			break;
-+		case 2:
-+			txd = (hw->tx[hw->count * 2]
-+				| (hw->tx[hw->count * 2 + 1] << 8));
-+			break;
-+		case 4:
-+			txd = (hw->tx[hw->count * 4]
-+				| (hw->tx[hw->count * 4 + 1] << 8)
-+				| (hw->tx[hw->count * 4 + 2] << 16)
-+				| (hw->tx[hw->count * 4 + 3] << 24));
-+			break;
-+
-+		}
-+	}
-+
-+	altr_spi_writel(hw, ALTERA_SPI_TXDATA, txd);
-+}
-+
-+static void altera_spi_rx_word(struct altera_spi *hw)
-+{
-+	unsigned int rxd;
-+
-+	altr_spi_readl(hw, ALTERA_SPI_RXDATA, &rxd);
-+	if (hw->rx) {
-+		switch (hw->bytes_per_word) {
-+		case 1:
-+			hw->rx[hw->count] = rxd;
-+			break;
-+		case 2:
-+			hw->rx[hw->count * 2] = rxd;
-+			hw->rx[hw->count * 2 + 1] = rxd >> 8;
-+			break;
-+		case 4:
-+			hw->rx[hw->count * 4] = rxd;
-+			hw->rx[hw->count * 4 + 1] = rxd >> 8;
-+			hw->rx[hw->count * 4 + 2] = rxd >> 16;
-+			hw->rx[hw->count * 4 + 3] = rxd >> 24;
-+			break;
-+
-+		}
-+	}
-+
-+	hw->count++;
-+}
-+
-+static int altera_spi_txrx(struct spi_master *master,
-+	struct spi_device *spi, struct spi_transfer *t)
-+{
-+	struct altera_spi *hw = spi_master_get_devdata(master);
-+	u32 val;
-+
-+	hw->tx = t->tx_buf;
-+	hw->rx = t->rx_buf;
-+	hw->count = 0;
-+	hw->bytes_per_word = DIV_ROUND_UP(t->bits_per_word, 8);
-+	hw->len = t->len / hw->bytes_per_word;
-+
-+	if (hw->irq >= 0) {
-+		/* enable receive interrupt */
-+		hw->imr |= ALTERA_SPI_CONTROL_IRRDY_MSK;
-+		altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
-+
-+		/* send the first byte */
-+		altera_spi_tx_word(hw);
-+
-+		return 1;
-+	}
-+
-+	while (hw->count < hw->len) {
-+		altera_spi_tx_word(hw);
-+
-+		for (;;) {
-+			altr_spi_readl(hw, ALTERA_SPI_STATUS, &val);
-+			if (val & ALTERA_SPI_STATUS_RRDY_MSK)
-+				break;
-+
-+			cpu_relax();
-+		}
-+
-+		altera_spi_rx_word(hw);
-+	}
-+	spi_finalize_current_transfer(master);
-+
-+	return 0;
-+}
-+
-+irqreturn_t altera_spi_irq(int irq, void *dev)
-+{
-+	struct spi_master *master = dev;
-+	struct altera_spi *hw = spi_master_get_devdata(master);
-+
-+	altera_spi_rx_word(hw);
-+
-+	if (hw->count < hw->len) {
-+		altera_spi_tx_word(hw);
-+	} else {
-+		/* disable receive interrupt */
-+		hw->imr &= ~ALTERA_SPI_CONTROL_IRRDY_MSK;
-+		altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
-+
-+		spi_finalize_current_transfer(master);
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+EXPORT_SYMBOL_GPL(altera_spi_irq);
-+
-+void altera_spi_init_master(struct spi_master *master)
-+{
-+	struct altera_spi *hw = spi_master_get_devdata(master);
-+	u32 val;
-+
-+	master->transfer_one = altera_spi_txrx;
-+	master->set_cs = altera_spi_set_cs;
-+
-+	/* program defaults into the registers */
-+	hw->imr = 0;		/* disable spi interrupts */
-+	altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
-+	altr_spi_writel(hw, ALTERA_SPI_STATUS, 0);	/* clear status reg */
-+	altr_spi_readl(hw, ALTERA_SPI_STATUS, &val);
-+	if (val & ALTERA_SPI_STATUS_RRDY_MSK)
-+		altr_spi_readl(hw, ALTERA_SPI_RXDATA, &val); /* flush rxdata */
-+}
-+EXPORT_SYMBOL_GPL(altera_spi_init_master);
-+
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/spi/spi-altera-platform.c b/drivers/spi/spi-altera-platform.c
-new file mode 100644
-index 0000000..f7a7c14
---- /dev/null
-+++ b/drivers/spi/spi-altera-platform.c
-@@ -0,0 +1,172 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Altera SPI driver
-+ *
-+ * Copyright (C) 2008 Thomas Chou <thomas@wytron.com.tw>
-+ *
-+ * Based on spi_s3c24xx.c, which is:
-+ * Copyright (c) 2006 Ben Dooks
-+ * Copyright (c) 2006 Simtec Electronics
-+ *	Ben Dooks <ben@simtec.co.uk>
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/spi/altera.h>
-+#include <linux/spi/spi.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+
-+#define DRV_NAME "spi_altera"
-+
-+enum altera_spi_type {
-+	ALTERA_SPI_TYPE_UNKNOWN,
-+	ALTERA_SPI_TYPE_SUBDEV,
-+};
-+
-+static const struct regmap_config spi_altera_config = {
-+	.reg_bits = 32,
-+	.reg_stride = 4,
-+	.val_bits = 32,
-+	.fast_io = true,
-+};
-+
-+static int altera_spi_probe(struct platform_device *pdev)
-+{
-+	const struct platform_device_id *platid = platform_get_device_id(pdev);
-+	struct altera_spi_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+	enum altera_spi_type type = ALTERA_SPI_TYPE_UNKNOWN;
-+	struct altera_spi *hw;
-+	struct spi_master *master;
-+	int err = -ENODEV;
-+	u16 i;
-+
-+	master = spi_alloc_master(&pdev->dev, sizeof(struct altera_spi));
-+	if (!master)
-+		return err;
-+
-+	/* setup the master state. */
-+	master->bus_num = pdev->id;
-+
-+	if (pdata) {
-+		if (pdata->num_chipselect > ALTERA_SPI_MAX_CS) {
-+			dev_err(&pdev->dev,
-+				"Invalid number of chipselect: %u\n",
-+				pdata->num_chipselect);
-+			err = -EINVAL;
-+			goto exit;
-+		}
-+
-+		master->num_chipselect = pdata->num_chipselect;
-+		master->mode_bits = pdata->mode_bits;
-+		master->bits_per_word_mask = pdata->bits_per_word_mask;
-+	} else {
-+		master->num_chipselect = 16;
-+		master->mode_bits = SPI_CS_HIGH;
-+		master->bits_per_word_mask = SPI_BPW_RANGE_MASK(1, 16);
-+	}
-+
-+	master->dev.of_node = pdev->dev.of_node;
-+
-+	hw = spi_master_get_devdata(master);
-+	hw->dev = &pdev->dev;
-+
-+	if (platid)
-+		type = platid->driver_data;
-+
-+	/* find and map our resources */
-+	if (type == ALTERA_SPI_TYPE_SUBDEV) {
-+		struct resource *regoff;
-+
-+		hw->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+		if (!hw->regmap) {
-+			dev_err(&pdev->dev, "get regmap failed\n");
-+			goto exit;
-+		}
-+
-+		regoff = platform_get_resource(pdev, IORESOURCE_REG, 0);
-+		if (regoff)
-+			hw->regoff = regoff->start;
-+	} else {
-+		void __iomem *res;
-+
-+		res = devm_platform_ioremap_resource(pdev, 0);
-+		if (IS_ERR(res)) {
-+			err = PTR_ERR(res);
-+			goto exit;
-+		}
-+
-+		hw->regmap = devm_regmap_init_mmio(&pdev->dev, res,
-+						   &spi_altera_config);
-+		if (IS_ERR(hw->regmap)) {
-+			dev_err(&pdev->dev, "regmap mmio init failed\n");
-+			err = PTR_ERR(hw->regmap);
-+			goto exit;
-+		}
-+	}
-+
-+	altera_spi_init_master(master);
-+
-+	/* irq is optional */
-+	hw->irq = platform_get_irq(pdev, 0);
-+	if (hw->irq >= 0) {
-+		err = devm_request_irq(&pdev->dev, hw->irq, altera_spi_irq, 0,
-+				       pdev->name, master);
-+		if (err)
-+			goto exit;
-+	}
-+
-+	err = devm_spi_register_master(&pdev->dev, master);
-+	if (err)
-+		goto exit;
-+
-+	if (pdata) {
-+		for (i = 0; i < pdata->num_devices; i++) {
-+			if (!spi_new_device(master, pdata->devices + i))
-+				dev_warn(&pdev->dev,
-+					 "unable to create SPI device: %s\n",
-+					 pdata->devices[i].modalias);
-+		}
-+	}
-+
-+	dev_info(&pdev->dev, "regoff %u, irq %d\n", hw->regoff, hw->irq);
-+
-+	return 0;
-+exit:
-+	spi_master_put(master);
-+	return err;
-+}
-+
-+#ifdef CONFIG_OF
-+static const struct of_device_id altera_spi_match[] = {
-+	{ .compatible = "ALTR,spi-1.0", },
-+	{ .compatible = "altr,spi-1.0", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, altera_spi_match);
-+#endif /* CONFIG_OF */
-+
-+static const struct platform_device_id altera_spi_ids[] = {
-+	{ DRV_NAME,		ALTERA_SPI_TYPE_UNKNOWN },
-+	{ "subdev_spi_altera",	ALTERA_SPI_TYPE_SUBDEV },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, altera_spi_ids);
-+
-+static struct platform_driver altera_spi_driver = {
-+	.probe = altera_spi_probe,
-+	.driver = {
-+		.name = DRV_NAME,
-+		.pm = NULL,
-+		.of_match_table = of_match_ptr(altera_spi_match),
-+	},
-+	.id_table	= altera_spi_ids,
-+};
-+module_platform_driver(altera_spi_driver);
-+
-+MODULE_DESCRIPTION("Altera SPI driver");
-+MODULE_AUTHOR("Thomas Chou <thomas@wytron.com.tw>");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:" DRV_NAME);
-diff --git a/drivers/spi/spi-altera.c b/drivers/spi/spi-altera.c
-deleted file mode 100644
-index 62ea0c9..0000000
---- a/drivers/spi/spi-altera.c
-+++ /dev/null
-@@ -1,378 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Altera SPI driver
-- *
-- * Copyright (C) 2008 Thomas Chou <thomas@wytron.com.tw>
-- *
-- * Based on spi_s3c24xx.c, which is:
-- * Copyright (c) 2006 Ben Dooks
-- * Copyright (c) 2006 Simtec Electronics
-- *	Ben Dooks <ben@simtec.co.uk>
-- */
--
--#include <linux/interrupt.h>
--#include <linux/errno.h>
--#include <linux/module.h>
--#include <linux/platform_device.h>
--#include <linux/spi/altera.h>
--#include <linux/spi/spi.h>
--#include <linux/io.h>
--#include <linux/of.h>
--
--#define DRV_NAME "spi_altera"
--
--#define ALTERA_SPI_RXDATA	0
--#define ALTERA_SPI_TXDATA	4
--#define ALTERA_SPI_STATUS	8
--#define ALTERA_SPI_CONTROL	12
--#define ALTERA_SPI_SLAVE_SEL	20
--
--#define ALTERA_SPI_STATUS_ROE_MSK	0x8
--#define ALTERA_SPI_STATUS_TOE_MSK	0x10
--#define ALTERA_SPI_STATUS_TMT_MSK	0x20
--#define ALTERA_SPI_STATUS_TRDY_MSK	0x40
--#define ALTERA_SPI_STATUS_RRDY_MSK	0x80
--#define ALTERA_SPI_STATUS_E_MSK		0x100
--
--#define ALTERA_SPI_CONTROL_IROE_MSK	0x8
--#define ALTERA_SPI_CONTROL_ITOE_MSK	0x10
--#define ALTERA_SPI_CONTROL_ITRDY_MSK	0x40
--#define ALTERA_SPI_CONTROL_IRRDY_MSK	0x80
--#define ALTERA_SPI_CONTROL_IE_MSK	0x100
--#define ALTERA_SPI_CONTROL_SSO_MSK	0x400
--
--#define ALTERA_SPI_MAX_CS		32
--
--enum altera_spi_type {
--	ALTERA_SPI_TYPE_UNKNOWN,
--	ALTERA_SPI_TYPE_SUBDEV,
--};
--
--struct altera_spi {
--	int irq;
--	int len;
--	int count;
--	int bytes_per_word;
--	u32 imr;
--
--	/* data buffers */
--	const unsigned char *tx;
--	unsigned char *rx;
--
--	struct regmap *regmap;
--	u32 regoff;
--	struct device *dev;
--};
--
--static const struct regmap_config spi_altera_config = {
--	.reg_bits = 32,
--	.reg_stride = 4,
--	.val_bits = 32,
--	.fast_io = true,
--};
--
--static int altr_spi_writel(struct altera_spi *hw, unsigned int reg,
--			   unsigned int val)
--{
--	int ret;
--
--	ret = regmap_write(hw->regmap, hw->regoff + reg, val);
--	if (ret)
--		dev_err(hw->dev, "fail to write reg 0x%x val 0x%x: %d\n",
--			reg, val, ret);
--
--	return ret;
--}
--
--static int altr_spi_readl(struct altera_spi *hw, unsigned int reg,
--			  unsigned int *val)
--{
--	int ret;
--
--	ret = regmap_read(hw->regmap, hw->regoff + reg, val);
--	if (ret)
--		dev_err(hw->dev, "fail to read reg 0x%x: %d\n", reg, ret);
--
--	return ret;
--}
--
--static inline struct altera_spi *altera_spi_to_hw(struct spi_device *sdev)
--{
--	return spi_master_get_devdata(sdev->master);
--}
--
--static void altera_spi_set_cs(struct spi_device *spi, bool is_high)
--{
--	struct altera_spi *hw = altera_spi_to_hw(spi);
--
--	if (is_high) {
--		hw->imr &= ~ALTERA_SPI_CONTROL_SSO_MSK;
--		altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
--		altr_spi_writel(hw, ALTERA_SPI_SLAVE_SEL, 0);
--	} else {
--		altr_spi_writel(hw, ALTERA_SPI_SLAVE_SEL,
--				BIT(spi->chip_select));
--		hw->imr |= ALTERA_SPI_CONTROL_SSO_MSK;
--		altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
--	}
--}
--
--static void altera_spi_tx_word(struct altera_spi *hw)
--{
--	unsigned int txd = 0;
--
--	if (hw->tx) {
--		switch (hw->bytes_per_word) {
--		case 1:
--			txd = hw->tx[hw->count];
--			break;
--		case 2:
--			txd = (hw->tx[hw->count * 2]
--				| (hw->tx[hw->count * 2 + 1] << 8));
--			break;
--		case 4:
--			txd = (hw->tx[hw->count * 4]
--				| (hw->tx[hw->count * 4 + 1] << 8)
--				| (hw->tx[hw->count * 4 + 2] << 16)
--				| (hw->tx[hw->count * 4 + 3] << 24));
--			break;
--
--		}
--	}
--
--	altr_spi_writel(hw, ALTERA_SPI_TXDATA, txd);
--}
--
--static void altera_spi_rx_word(struct altera_spi *hw)
--{
--	unsigned int rxd;
--
--	altr_spi_readl(hw, ALTERA_SPI_RXDATA, &rxd);
--	if (hw->rx) {
--		switch (hw->bytes_per_word) {
--		case 1:
--			hw->rx[hw->count] = rxd;
--			break;
--		case 2:
--			hw->rx[hw->count * 2] = rxd;
--			hw->rx[hw->count * 2 + 1] = rxd >> 8;
--			break;
--		case 4:
--			hw->rx[hw->count * 4] = rxd;
--			hw->rx[hw->count * 4 + 1] = rxd >> 8;
--			hw->rx[hw->count * 4 + 2] = rxd >> 16;
--			hw->rx[hw->count * 4 + 3] = rxd >> 24;
--			break;
--
--		}
--	}
--
--	hw->count++;
--}
--
--static int altera_spi_txrx(struct spi_master *master,
--	struct spi_device *spi, struct spi_transfer *t)
--{
--	struct altera_spi *hw = spi_master_get_devdata(master);
--	u32 val;
--
--	hw->tx = t->tx_buf;
--	hw->rx = t->rx_buf;
--	hw->count = 0;
--	hw->bytes_per_word = DIV_ROUND_UP(t->bits_per_word, 8);
--	hw->len = t->len / hw->bytes_per_word;
--
--	if (hw->irq >= 0) {
--		/* enable receive interrupt */
--		hw->imr |= ALTERA_SPI_CONTROL_IRRDY_MSK;
--		altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
--
--		/* send the first byte */
--		altera_spi_tx_word(hw);
--
--		return 1;
--	}
--
--	while (hw->count < hw->len) {
--		altera_spi_tx_word(hw);
--
--		for (;;) {
--			altr_spi_readl(hw, ALTERA_SPI_STATUS, &val);
--			if (val & ALTERA_SPI_STATUS_RRDY_MSK)
--				break;
--
--			cpu_relax();
--		}
--
--		altera_spi_rx_word(hw);
--	}
--	spi_finalize_current_transfer(master);
--
--	return 0;
--}
--
--static irqreturn_t altera_spi_irq(int irq, void *dev)
--{
--	struct spi_master *master = dev;
--	struct altera_spi *hw = spi_master_get_devdata(master);
--
--	altera_spi_rx_word(hw);
--
--	if (hw->count < hw->len) {
--		altera_spi_tx_word(hw);
--	} else {
--		/* disable receive interrupt */
--		hw->imr &= ~ALTERA_SPI_CONTROL_IRRDY_MSK;
--		altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
--
--		spi_finalize_current_transfer(master);
--	}
--
--	return IRQ_HANDLED;
--}
--
--static int altera_spi_probe(struct platform_device *pdev)
--{
--	const struct platform_device_id *platid = platform_get_device_id(pdev);
--	struct altera_spi_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	enum altera_spi_type type = ALTERA_SPI_TYPE_UNKNOWN;
--	struct altera_spi *hw;
--	struct spi_master *master;
--	int err = -ENODEV;
--	u32 val;
--	u16 i;
--
--	master = spi_alloc_master(&pdev->dev, sizeof(struct altera_spi));
--	if (!master)
--		return err;
--
--	/* setup the master state. */
--	master->bus_num = pdev->id;
--
--	if (pdata) {
--		if (pdata->num_chipselect > ALTERA_SPI_MAX_CS) {
--			dev_err(&pdev->dev,
--				"Invalid number of chipselect: %hu\n",
--				pdata->num_chipselect);
--			err = -EINVAL;
--			goto exit;
--		}
--
--		master->num_chipselect = pdata->num_chipselect;
--		master->mode_bits = pdata->mode_bits;
--		master->bits_per_word_mask = pdata->bits_per_word_mask;
--	} else {
--		master->num_chipselect = 16;
--		master->mode_bits = SPI_CS_HIGH;
--		master->bits_per_word_mask = SPI_BPW_RANGE_MASK(1, 16);
--	}
--
--	master->dev.of_node = pdev->dev.of_node;
--	master->transfer_one = altera_spi_txrx;
--	master->set_cs = altera_spi_set_cs;
--
--	hw = spi_master_get_devdata(master);
--	hw->dev = &pdev->dev;
--
--	if (platid)
--		type = platid->driver_data;
--
--	/* find and map our resources */
--	if (type == ALTERA_SPI_TYPE_SUBDEV) {
--		struct resource *regoff;
--
--		hw->regmap = dev_get_regmap(pdev->dev.parent, NULL);
--		if (!hw->regmap) {
--			dev_err(&pdev->dev, "get regmap failed\n");
--			goto exit;
--		}
--
--		regoff = platform_get_resource(pdev, IORESOURCE_REG, 0);
--		if (regoff)
--			hw->regoff = regoff->start;
--	} else {
--		void __iomem *res;
--
--		res = devm_platform_ioremap_resource(pdev, 0);
--		if (IS_ERR(res)) {
--			err = PTR_ERR(res);
--			goto exit;
--		}
--
--		hw->regmap = devm_regmap_init_mmio(&pdev->dev, res,
--						   &spi_altera_config);
--		if (IS_ERR(hw->regmap)) {
--			dev_err(&pdev->dev, "regmap mmio init failed\n");
--			err = PTR_ERR(hw->regmap);
--			goto exit;
--		}
--	}
--
--	/* program defaults into the registers */
--	hw->imr = 0;		/* disable spi interrupts */
--	altr_spi_writel(hw, ALTERA_SPI_CONTROL, hw->imr);
--	altr_spi_writel(hw, ALTERA_SPI_STATUS, 0);	/* clear status reg */
--	altr_spi_readl(hw, ALTERA_SPI_STATUS, &val);
--	if (val & ALTERA_SPI_STATUS_RRDY_MSK)
--		altr_spi_readl(hw, ALTERA_SPI_RXDATA, &val); /* flush rxdata */
--	/* irq is optional */
--	hw->irq = platform_get_irq(pdev, 0);
--	if (hw->irq >= 0) {
--		err = devm_request_irq(&pdev->dev, hw->irq, altera_spi_irq, 0,
--				       pdev->name, master);
--		if (err)
--			goto exit;
--	}
--
--	err = devm_spi_register_master(&pdev->dev, master);
--	if (err)
--		goto exit;
--
--	if (pdata) {
--		for (i = 0; i < pdata->num_devices; i++) {
--			if (!spi_new_device(master, pdata->devices + i))
--				dev_warn(&pdev->dev,
--					 "unable to create SPI device: %s\n",
--					 pdata->devices[i].modalias);
--		}
--	}
--
--	dev_info(&pdev->dev, "regoff %u, irq %d\n", hw->regoff, hw->irq);
--
--	return 0;
--exit:
--	spi_master_put(master);
--	return err;
--}
--
--#ifdef CONFIG_OF
--static const struct of_device_id altera_spi_match[] = {
--	{ .compatible = "ALTR,spi-1.0", },
--	{ .compatible = "altr,spi-1.0", },
--	{},
--};
--MODULE_DEVICE_TABLE(of, altera_spi_match);
--#endif /* CONFIG_OF */
--
--static const struct platform_device_id altera_spi_ids[] = {
--	{ DRV_NAME,		ALTERA_SPI_TYPE_UNKNOWN },
--	{ "subdev_spi_altera",	ALTERA_SPI_TYPE_SUBDEV },
--	{ }
--};
--MODULE_DEVICE_TABLE(platform, altera_spi_ids);
--
--static struct platform_driver altera_spi_driver = {
--	.probe = altera_spi_probe,
--	.driver = {
--		.name = DRV_NAME,
--		.pm = NULL,
--		.of_match_table = of_match_ptr(altera_spi_match),
--	},
--	.id_table	= altera_spi_ids,
--};
--module_platform_driver(altera_spi_driver);
--
--MODULE_DESCRIPTION("Altera SPI driver");
--MODULE_AUTHOR("Thomas Chou <thomas@wytron.com.tw>");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:" DRV_NAME);
-diff --git a/include/linux/spi/altera.h b/include/linux/spi/altera.h
-index 2d42641..2e2a622 100644
---- a/include/linux/spi/altera.h
-+++ b/include/linux/spi/altera.h
-@@ -5,10 +5,13 @@
- #ifndef __LINUX_SPI_ALTERA_H
- #define __LINUX_SPI_ALTERA_H
- 
-+#include <linux/interrupt.h>
- #include <linux/regmap.h>
- #include <linux/spi/spi.h>
- #include <linux/types.h>
- 
-+#define ALTERA_SPI_MAX_CS		32
-+
- /**
-  * struct altera_spi_platform_data - Platform data of the Altera SPI driver
-  * @mode_bits:		Mode bits of SPI master.
-@@ -26,4 +29,22 @@ struct altera_spi_platform_data {
- 	struct spi_board_info		*devices;
- };
- 
-+struct altera_spi {
-+	int irq;
-+	int len;
-+	int count;
-+	int bytes_per_word;
-+	u32 imr;
-+
-+	/* data buffers */
-+	const unsigned char *tx;
-+	unsigned char *rx;
-+
-+	struct regmap *regmap;
-+	u32 regoff;
-+	struct device *dev;
-+};
-+
-+extern irqreturn_t altera_spi_irq(int irq, void *dev);
-+extern void altera_spi_init_master(struct spi_master *master);
- #endif /* __LINUX_SPI_ALTERA_H */
--- 
-1.8.3.1
-
+Regards,
+Navakishore.
