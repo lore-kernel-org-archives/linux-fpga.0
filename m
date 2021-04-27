@@ -2,31 +2,31 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92779C43461
-	for <linux-fpga@archiver.kernel.org>; Tue, 27 Apr 2021 21:00:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 293FAC433ED
+	for <linux-fpga@archiver.kernel.org>; Tue, 27 Apr 2021 21:00:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6DEE4613E5
-	for <linux-fpga@archiver.kernel.org>; Tue, 27 Apr 2021 21:00:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 014C3613F3
+	for <linux-fpga@archiver.kernel.org>; Tue, 27 Apr 2021 21:00:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239077AbhD0VBb (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 27 Apr 2021 17:01:31 -0400
-Received: from mail-dm6nam11on2079.outbound.protection.outlook.com ([40.107.223.79]:48629
-        "EHLO NAM11-DM6-obe.outbound.protection.outlook.com"
+        id S239260AbhD0VBh (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 27 Apr 2021 17:01:37 -0400
+Received: from mail-co1nam11on2061.outbound.protection.outlook.com ([40.107.220.61]:18433
+        "EHLO NAM11-CO1-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S239033AbhD0VBa (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 27 Apr 2021 17:01:30 -0400
+        id S237009AbhD0VBb (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 27 Apr 2021 17:01:31 -0400
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=eNOf54S9/GloPyrYtwP5c/4q2C+xlUX98sh4esMmMRWmD/ruUcEHIpMuzmpQEMwS0gRNvh5mriinMbEtmidds+p+gi+lff/eX+CCLZveJpoAajuv87fFutBQJUve54vX5XZcgtyErWDQ/Q9qLP+oF6cGmYO9sOlnWYFpGxtmFoPKfJ7yvwLkCs6322JFv1KXu+/RxfVR9IrkpVh/gYQShYiqRtRsgXv9RWPuGhoErWgvwHB4FC7V1fW5dyj94t7JtAn+kVwF0iI/FBG0fjMOjdELtTLza6F3XqRqC3ISkBXBNPyPQhR5iqr7EgNhqbBog3bT/ban/UOtxU8GJVThOQ==
+ b=ICwmShAlzVN3ZqFrZwJm3BACwS1VIWGjLSKVmmRbEJx6mYzQN5w3eLDpeB8GOCyRAB/GFeSClEQlplhS2fee3jEdyMK3BgZFeXnEMKmPk9S2gBtQ25zImwfupG578wpEgcyeSawRtcQbAjL2tZXuwpyUp+pSUXO8Afs32AczLF+CRdKvWmELKj+YLsW8PqHDVqnxsRY+d7eYqdLvQHU3haGu59lUyctdFtd0tU29ELV+1N2bDg82mELTaWI+ZBrHeeZKaDgI8SpZY10POycWGJbi+M6KAtOGeySZ9pTF/PEgDanwy8mStuQJz3MpMcsBRI2fpvgrx8zi9qxzmK/dyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=H8RScGIDoWdluaumJYlIDkx0teTWbdmTltU+s7uRyFo=;
- b=A4DuIsq1MpTzLjoxuk0wfm1e2P4i+3gmv209zQQyxwVTnGVvh9Ruh9dQyh3SZoYRuQ7RYjo0rsSWAAE7XeiDGUHGIPFb2fTB+iOglLMZjLKOMrNUC3axMD2UrSmRsKz0U8pkxiocBZ5fI0VFFTKgYKJQeIkp2/XDxZvGEKaBQIddNPnv+3hNGvzwLi0INwzWlj4cQgYsRlMs70bEac7bTnL0oPNCYq/aWU6cVReB/galel/7AclPOd0nMlCm8sLrmBTuPsl13jd98dQEgzuhuyg3HpCNYiH4Vd5qfAlD3oKWSp4/ix3t/4sQFG1hO/I7jcszVMwB7/MK1CLwgRtnfQ==
+ bh=XqL0Xqvmd1CZgGiaQDpxp6XzQobHydQe/gzRd+h+AWU=;
+ b=n+pmU7GIyYSN5vogFT6qbona1bh43tQLPkvV3ra1YoeEzs4SfExaYzJLpbnbMTPQJjL4EcteBP3bf+mk23FDfjXCraIexFPEEj5BMP/fNnFyWcdpLgnCb5xOypjktMv7/29w602epRNufd+jFe1dlkAxUNMYVI9TawtuS1y2LyaaDbemHjWVRJKrBKZmeRfc/4kl6NgoALMuGnKvs8/41BvCpHbdkYGh/eO7sP95D73oCblMnq2jmagKfYFtGAxGTH4fXy+3zHe59grM8pRQSCh6wzjejHWVxj/AGbVbfrfNVvb2aoiyIjXIGbTc5xfmqQ0i9lv0BQlkCAd9ocgWPw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
@@ -34,47 +34,47 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=H8RScGIDoWdluaumJYlIDkx0teTWbdmTltU+s7uRyFo=;
- b=KvBR7e+cNwhEA9I6LMfDoiR4DcqHQTHvMbFS6PMF3ZAXHRNfSNXXJJgEfv8b9mbBXQWsoSBGRwKjbGfyFCuDojWADUmf6QMHESyPD8aPeID7FzIzCQZCA6XzD1ZZJ0mlS85ktg2zE1oxI7rQImgNtXf2uVlvf21CrMhyBND9Jl4=
-Received: from CY4PR1101CA0003.namprd11.prod.outlook.com
- (2603:10b6:910:15::13) by CO6PR02MB7794.namprd02.prod.outlook.com
- (2603:10b6:303:b1::9) with Microsoft SMTP Server (version=TLS1_2,
+ bh=XqL0Xqvmd1CZgGiaQDpxp6XzQobHydQe/gzRd+h+AWU=;
+ b=Y9gmYhz94eE2AE7FJyOOUae6tMtVhCvlDQuoCd9/aCaz/7JRqG55BvT39LSou4KTHv+SkZZ/ub7E4WNO3CtGHQ7aXI2iyYQzlvvNNssLBj1+aYcyQ3G/7kDKe9qi9GaMhUxibmO0nLOSXMk8Ouf2mA+wHnc5EYz/PUBVZEV31RA=
+Received: from BLAPR03CA0098.namprd03.prod.outlook.com (2603:10b6:208:32a::13)
+ by BN7PR02MB4178.namprd02.prod.outlook.com (2603:10b6:406:fc::13) with
+ Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4065.20; Tue, 27 Apr
  2021 21:00:45 +0000
-Received: from CY1NAM02FT052.eop-nam02.prod.protection.outlook.com
- (2603:10b6:910:15:cafe::ab) by CY4PR1101CA0003.outlook.office365.com
- (2603:10b6:910:15::13) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4087.26 via Frontend
+Received: from BL2NAM02FT004.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:208:32a:cafe::4e) by BLAPR03CA0098.outlook.office365.com
+ (2603:10b6:208:32a::13) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4087.25 via Frontend
  Transport; Tue, 27 Apr 2021 21:00:45 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=pass action=none header.from=xilinx.com;
 Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
- client-ip=149.199.62.198; helo=xsj-pvapexch02.xlnx.xilinx.com;
-Received: from xsj-pvapexch02.xlnx.xilinx.com (149.199.62.198) by
- CY1NAM02FT052.mail.protection.outlook.com (10.152.74.123) with Microsoft SMTP
+ client-ip=149.199.62.198; helo=xsj-pvapexch01.xlnx.xilinx.com;
+Received: from xsj-pvapexch01.xlnx.xilinx.com (149.199.62.198) by
+ BL2NAM02FT004.mail.protection.outlook.com (10.152.76.168) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4065.21 via Frontend Transport; Tue, 27 Apr 2021 21:00:44 +0000
+ 15.20.4065.21 via Frontend Transport; Tue, 27 Apr 2021 21:00:45 +0000
 Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
- xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server
+ xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Tue, 27 Apr 2021 13:59:38 -0700
+ 15.1.2176.2; Tue, 27 Apr 2021 14:00:27 -0700
 Received: from smtp.xilinx.com (172.19.127.96) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.2176.2 via Frontend Transport; Tue, 27 Apr 2021 13:59:38 -0700
+ 15.1.2176.2 via Frontend Transport; Tue, 27 Apr 2021 14:00:27 -0700
 Envelope-to: mdf@kernel.org,
  robh@kernel.org,
  trix@redhat.com,
  devicetree@vger.kernel.org,
  linux-fpga@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Received: from [172.19.72.212] (port=52014 helo=xsj-xw9400.xilinx.com)
+Received: from [172.19.72.212] (port=52022 helo=xsj-xw9400.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <lizhi.hou@xilinx.com>)
-        id 1lbUny-0001qO-0m; Tue, 27 Apr 2021 13:59:38 -0700
+        id 1lbUok-00025G-Sx; Tue, 27 Apr 2021 14:00:26 -0700
 Received: by xsj-xw9400.xilinx.com (Postfix, from userid 21952)
-        id E32B260012C; Tue, 27 Apr 2021 13:54:35 -0700 (PDT)
+        id 3223E60012F; Tue, 27 Apr 2021 13:54:36 -0700 (PDT)
 From:   Lizhi Hou <lizhi.hou@xilinx.com>
 To:     <linux-kernel@vger.kernel.org>
 CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
@@ -82,9 +82,9 @@ CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
         <michal.simek@xilinx.com>, <stefanos@xilinx.com>,
         <devicetree@vger.kernel.org>, <trix@redhat.com>, <mdf@kernel.org>,
         <robh@kernel.org>, Max Zhen <max.zhen@xilinx.com>
-Subject: [PATCH V5 XRT Alveo 09/20] fpga: xrt: management physical function driver (root)
-Date:   Tue, 27 Apr 2021 13:54:20 -0700
-Message-ID: <20210427205431.23896-10-lizhi.hou@xilinx.com>
+Subject: [PATCH V5 XRT Alveo 13/20] fpga: xrt: User Clock Subsystem driver
+Date:   Tue, 27 Apr 2021 13:54:24 -0700
+Message-ID: <20210427205431.23896-14-lizhi.hou@xilinx.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210427205431.23896-1-lizhi.hou@xilinx.com>
 References: <20210427205431.23896-1-lizhi.hou@xilinx.com>
@@ -92,466 +92,198 @@ MIME-Version: 1.0
 Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 1a1d1d8d-520b-4cc3-97c7-08d909bf868e
-X-MS-TrafficTypeDiagnostic: CO6PR02MB7794:
-X-Microsoft-Antispam-PRVS: <CO6PR02MB77946C0E9D936970D03165DEA1419@CO6PR02MB7794.namprd02.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:326;
+X-MS-Office365-Filtering-Correlation-Id: 87902db9-1ef7-4839-7bd7-08d909bf86ef
+X-MS-TrafficTypeDiagnostic: BN7PR02MB4178:
+X-Microsoft-Antispam-PRVS: <BN7PR02MB4178CCDD590686D324C17FA9A1419@BN7PR02MB4178.namprd02.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:2399;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: F5sasERKQXxOlM7q7QDD0AWMgiHctcj63t5A8+tLvZ1Guo9IBh9cNLBv1SnKr/9QY2H2WA4BgEh6O79n6tnQuUqE0j/qK4dwGxfGfc5zWKtjyiWERlFLTe//iz2CjC797YCRrL4KRHtycyjVDQOvqwTwPyO1wuPUGn3NpAO2grThgs90NKMWk2ZGu/CKHxOoh0AsHekJLr0WhNOAGdWLtM37w/9YiLLrowCJCtt19a7EVzVG/rmqV+LIPKLOPCM4njLr4vomiOidTlD3cHSldQigtyBw9oRtstEYbbdiqVvbKhG/+/TmEWHBts7Jvn/5fCjcLxDqJBbdIci/YDWOHFw7gja6WA3VW/4yeyi1i8r4fiCMin6zeXJxOn/2HEru8fCU1kkqt73Drc3VRhrp9ThYzzom46z+DQLG5JbX+ROtimHQVBRLo+NAY4SHuRvOxvuc2NHr7HBmExbrM03mPnYYIYg+B3XJ0ysT76OURwdvsloYL5EFwiWnqEYfcB687kLQiH0YGWLfLN0j6tPD7b91eW026fQadF2agb36XBaBDIzlzLLs+lgyjSpT0etrUuXHwbOOSBI3z9KYY32uyqTp4S/yOszr7cDCR8aviSmuhXfr4jAdpz2T7mV+wqxmobirDyyS8qVFgmb4rwQiIYFKG1DmNQjlhnKWTZ386HE=
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(396003)(39850400004)(136003)(346002)(376002)(46966006)(36840700001)(7636003)(426003)(107886003)(26005)(36756003)(356005)(1076003)(30864003)(44832011)(70206006)(70586007)(2906002)(83380400001)(6666004)(316002)(42186006)(8676002)(478600001)(8936002)(4326008)(36906005)(6916009)(336012)(82310400003)(47076005)(54906003)(36860700001)(186003)(5660300002)(6266002)(2616005)(82740400003);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 7vwbTSb6l83wtpYHPisnRpFwb2iCqIQN34UA8wCskI5ApQ7Z9t/kTzkTidQi6GrXkJLmI+IBxHxDGkdaMTx+48WIL6F2clj57emjsD0DQquqJWkl4ya2mJJNsO/uSsCEgiCLdoX7+L75Z0pZd8LDVBeTUe8uGSl2C3cmyANxRsWltM+aaxB2cPsVrPXKhLU91E1RgBaehTaYurXams9w8JMmlui2BXj0/UE7TXvWvKEViWF9kAqdEFPP/QtsISYIS2MAQHUUhBIW2BJz8hOnqu+qD1VxUkFERrxTeU4Dpt8wcqyXSEhweU1XaSj3oiiEwPGROEMVfNOntbP40DiwvlIBhU9K+/mrKpPMrd9NvaSGNwXQVpcCjQuvLEAwWsPxAjo+K2Y7nbFBQoz2S1uwEBjPPzh58NoTbvP4ZVOVAFS8NMDVq6RXd7s9FUYmKCKpda80qAh2OUOlLujhrZM2LZdZEAK57G0wgI5lukD2B4lN477LOUHWH6ZWfGKajm6afbtTAtNQ5UkxYh3rACPpt4nEI2sJTqKmDXGdCWY03YjwIHlBcE6YGRaSklrpnF0dfSsnAHr06Up4cSlFHEaoUvXhlmPSImoW1YONlt311RHtlJDEMrNf5cIFzPDkvEXihyLtHvgD5+tWksyvQITubSNx1Go+wdKzQSQzCjSn7AU=
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(376002)(39860400002)(346002)(136003)(396003)(36840700001)(46966006)(186003)(8676002)(42186006)(5660300002)(2906002)(336012)(36756003)(8936002)(44832011)(6266002)(478600001)(1076003)(7636003)(70206006)(316002)(6916009)(47076005)(26005)(70586007)(83380400001)(426003)(2616005)(4326008)(82740400003)(54906003)(107886003)(36906005)(36860700001)(6666004)(82310400003)(356005);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Apr 2021 21:00:44.9902
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Apr 2021 21:00:45.5401
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1a1d1d8d-520b-4cc3-97c7-08d909bf868e
+X-MS-Exchange-CrossTenant-Network-Message-Id: 87902db9-1ef7-4839-7bd7-08d909bf86ef
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch02.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: CY1NAM02FT052.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch01.xlnx.xilinx.com]
+X-MS-Exchange-CrossTenant-AuthSource: BL2NAM02FT004.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO6PR02MB7794
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PR02MB4178
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The PCIE device driver which attaches to management function on Alveo
-devices. It instantiates one or more group drivers which, in turn,
-instantiate xrt drivers. The instantiation of group and xrt drivers is
-completely dtb driven.
+Add User Clock Subsystem (UCS) driver. UCS is a hardware function
+discovered by walking xclbin metadata. A xrt device node will be
+created for it.  UCS enables/disables the dynamic region clocks.
 
 Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
 Signed-off-by: Max Zhen <max.zhen@xilinx.com>
 Signed-off-by: Lizhi Hou <lizhi.hou@xilinx.com>
 ---
- drivers/fpga/xrt/mgnt/root.c | 419 +++++++++++++++++++++++++++++++++++
- 1 file changed, 419 insertions(+)
- create mode 100644 drivers/fpga/xrt/mgnt/root.c
+ drivers/fpga/xrt/lib/xleaf/ucs.c | 152 +++++++++++++++++++++++++++++++
+ 1 file changed, 152 insertions(+)
+ create mode 100644 drivers/fpga/xrt/lib/xleaf/ucs.c
 
-diff --git a/drivers/fpga/xrt/mgnt/root.c b/drivers/fpga/xrt/mgnt/root.c
+diff --git a/drivers/fpga/xrt/lib/xleaf/ucs.c b/drivers/fpga/xrt/lib/xleaf/ucs.c
 new file mode 100644
-index 000000000000..6e362e9d4b59
+index 000000000000..a7a96ddde44f
 --- /dev/null
-+++ b/drivers/fpga/xrt/mgnt/root.c
-@@ -0,0 +1,419 @@
++++ b/drivers/fpga/xrt/lib/xleaf/ucs.c
+@@ -0,0 +1,152 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Xilinx Alveo Management Function Driver
++ * Xilinx Alveo FPGA UCS Driver
 + *
 + * Copyright (C) 2020-2021 Xilinx, Inc.
 + *
 + * Authors:
-+ *	Cheng Zhen <maxz@xilinx.com>
++ *      Lizhi Hou<Lizhi.Hou@xilinx.com>
 + */
 +
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/aer.h>
-+#include <linux/vmalloc.h>
++#include <linux/mod_devicetable.h>
 +#include <linux/delay.h>
-+
-+#include "xroot.h"
-+#include "xmgnt.h"
++#include <linux/device.h>
++#include <linux/regmap.h>
++#include <linux/io.h>
 +#include "metadata.h"
++#include "xleaf.h"
++#include "xleaf/clock.h"
 +
-+#define XMGNT_MODULE_NAME	"xrt-mgnt"
-+#define XMGNT_DRIVER_VERSION	"4.0.0"
++#define UCS_ERR(ucs, fmt, arg...)   \
++	xrt_err((ucs)->xdev, fmt "\n", ##arg)
++#define UCS_WARN(ucs, fmt, arg...)  \
++	xrt_warn((ucs)->xdev, fmt "\n", ##arg)
++#define UCS_INFO(ucs, fmt, arg...)  \
++	xrt_info((ucs)->xdev, fmt "\n", ##arg)
++#define UCS_DBG(ucs, fmt, arg...)   \
++	xrt_dbg((ucs)->xdev, fmt "\n", ##arg)
 +
-+#define XMGNT_PDEV(xm)		((xm)->pdev)
-+#define XMGNT_DEV(xm)		(&(XMGNT_PDEV(xm)->dev))
-+#define xmgnt_err(xm, fmt, args...)	\
-+	dev_err(XMGNT_DEV(xm), "%s: " fmt, __func__, ##args)
-+#define xmgnt_warn(xm, fmt, args...)	\
-+	dev_warn(XMGNT_DEV(xm), "%s: " fmt, __func__, ##args)
-+#define xmgnt_info(xm, fmt, args...)	\
-+	dev_info(XMGNT_DEV(xm), "%s: " fmt, __func__, ##args)
-+#define xmgnt_dbg(xm, fmt, args...)	\
-+	dev_dbg(XMGNT_DEV(xm), "%s: " fmt, __func__, ##args)
-+#define XMGNT_DEV_ID(_pcidev)			\
-+	({ typeof(_pcidev) (pcidev) = (_pcidev);	\
-+	((pci_domain_nr((pcidev)->bus) << 16) |	\
-+	PCI_DEVID((pcidev)->bus->number, 0)); })
-+#define XRT_VSEC_ID		0x20
-+#define XRT_MAX_READRQ		512
++#define XRT_UCS		"xrt_ucs"
 +
-+static struct class *xmgnt_class;
++#define XRT_UCS_CHANNEL1_REG			0
++#define XRT_UCS_CHANNEL2_REG			8
 +
-+/* PCI Device IDs */
-+/*
-+ * Golden image is preloaded on the device when it is shipped to customer.
-+ * Then, customer can load other shells (from Xilinx or some other vendor).
-+ * If something goes wrong with the shell, customer can always go back to
-+ * golden and start over again.
-+ */
-+#define PCI_DEVICE_ID_U50_GOLDEN	0xD020
-+#define PCI_DEVICE_ID_U50		0x5020
-+static const struct pci_device_id xmgnt_pci_ids[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_XILINX, PCI_DEVICE_ID_U50_GOLDEN), }, /* Alveo U50 (golden) */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_XILINX, PCI_DEVICE_ID_U50), }, /* Alveo U50 */
-+	{ 0, }
++#define CLK_MAX_VALUE			6400
++
++XRT_DEFINE_REGMAP_CONFIG(ucs_regmap_config);
++
++struct xrt_ucs {
++	struct xrt_device	*xdev;
++	struct regmap		*regmap;
++	struct mutex		ucs_lock; /* ucs dev lock */
 +};
 +
-+struct xmgnt {
-+	struct pci_dev *pdev;
-+	void *root;
-+
-+	bool ready;
-+};
-+
-+static int xmgnt_config_pci(struct xmgnt *xm)
++static void xrt_ucs_event_cb(struct xrt_device *xdev, void *arg)
 +{
-+	struct pci_dev *pdev = XMGNT_PDEV(xm);
-+	int rc;
++	struct xrt_event *evt = (struct xrt_event *)arg;
++	enum xrt_events e = evt->xe_evt;
++	struct xrt_device *leaf;
++	enum xrt_subdev_id id;
++	int instance;
 +
-+	rc = pcim_enable_device(pdev);
-+	if (rc < 0) {
-+		xmgnt_err(xm, "failed to enable device: %d", rc);
-+		return rc;
++	id = evt->xe_subdev.xevt_subdev_id;
++	instance = evt->xe_subdev.xevt_subdev_instance;
++
++	if (e != XRT_EVENT_POST_CREATION) {
++		xrt_dbg(xdev, "ignored event %d", e);
++		return;
 +	}
 +
-+	rc = pci_enable_pcie_error_reporting(pdev);
-+	if (rc)
-+		xmgnt_warn(xm, "failed to enable AER: %d", rc);
++	if (id != XRT_SUBDEV_CLOCK)
++		return;
 +
-+	pci_set_master(pdev);
++	leaf = xleaf_get_leaf_by_id(xdev, XRT_SUBDEV_CLOCK, instance);
++	if (!leaf) {
++		xrt_err(xdev, "does not get clock subdev");
++		return;
++	}
 +
-+	rc = pcie_get_readrq(pdev);
-+	if (rc > XRT_MAX_READRQ)
-+		pcie_set_readrq(pdev, XRT_MAX_READRQ);
-+	return 0;
++	xleaf_call(leaf, XRT_CLOCK_VERIFY, NULL);
++	xleaf_put_leaf(xdev, leaf);
 +}
 +
-+static int xmgnt_match_slot_and_save(struct device *dev, void *data)
++static int ucs_enable(struct xrt_ucs *ucs)
 +{
-+	struct xmgnt *xm = data;
-+	struct pci_dev *pdev = to_pci_dev(dev);
++	int ret;
 +
-+	if (XMGNT_DEV_ID(pdev) == XMGNT_DEV_ID(xm->pdev)) {
-+		pci_cfg_access_lock(pdev);
-+		pci_save_state(pdev);
-+	}
++	mutex_lock(&ucs->ucs_lock);
++	ret = regmap_write(ucs->regmap, XRT_UCS_CHANNEL2_REG, 1);
++	mutex_unlock(&ucs->ucs_lock);
 +
-+	return 0;
-+}
-+
-+static void xmgnt_pci_save_config_all(struct xmgnt *xm)
-+{
-+	bus_for_each_dev(&pci_bus_type, NULL, xm, xmgnt_match_slot_and_save);
-+}
-+
-+static int xmgnt_match_slot_and_restore(struct device *dev, void *data)
-+{
-+	struct xmgnt *xm = data;
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+
-+	if (XMGNT_DEV_ID(pdev) == XMGNT_DEV_ID(xm->pdev)) {
-+		pci_restore_state(pdev);
-+		pci_cfg_access_unlock(pdev);
-+	}
-+
-+	return 0;
-+}
-+
-+static void xmgnt_pci_restore_config_all(struct xmgnt *xm)
-+{
-+	bus_for_each_dev(&pci_bus_type, NULL, xm, xmgnt_match_slot_and_restore);
-+}
-+
-+static void xmgnt_root_hot_reset(struct device *dev)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct pci_bus *bus;
-+	u16 pci_cmd, devctl;
-+	struct xmgnt *xm;
-+	u8 pci_bctl;
-+	int i, ret;
-+
-+	xm = pci_get_drvdata(pdev);
-+	xmgnt_info(xm, "hot reset start");
-+	xmgnt_pci_save_config_all(xm);
-+	pci_disable_device(pdev);
-+	bus = pdev->bus;
-+
-+	/*
-+	 * When flipping the SBR bit, device can fall off the bus. This is
-+	 * usually no problem at all so long as drivers are working properly
-+	 * after SBR. However, some systems complain bitterly when the device
-+	 * falls off the bus.
-+	 * The quick solution is to temporarily disable the SERR reporting of
-+	 * switch port during SBR.
-+	 */
-+
-+	pci_read_config_word(bus->self, PCI_COMMAND, &pci_cmd);
-+	pci_write_config_word(bus->self, PCI_COMMAND, (pci_cmd & ~PCI_COMMAND_SERR));
-+	pcie_capability_read_word(bus->self, PCI_EXP_DEVCTL, &devctl);
-+	pcie_capability_write_word(bus->self, PCI_EXP_DEVCTL, (devctl & ~PCI_EXP_DEVCTL_FERE));
-+	pci_read_config_byte(bus->self, PCI_BRIDGE_CONTROL, &pci_bctl);
-+	pci_write_config_byte(bus->self, PCI_BRIDGE_CONTROL, pci_bctl | PCI_BRIDGE_CTL_BUS_RESET);
-+	msleep(100);
-+	pci_write_config_byte(bus->self, PCI_BRIDGE_CONTROL, pci_bctl);
-+	ssleep(1);
-+
-+	pcie_capability_write_word(bus->self, PCI_EXP_DEVCTL, devctl);
-+	pci_write_config_word(bus->self, PCI_COMMAND, pci_cmd);
-+
-+	ret = pci_enable_device(pdev);
-+	if (ret)
-+		xmgnt_err(xm, "failed to enable device, ret %d", ret);
-+
-+	for (i = 0; i < 300; i++) {
-+		pci_read_config_word(pdev, PCI_COMMAND, &pci_cmd);
-+		if (pci_cmd != 0xffff)
-+			break;
-+		msleep(20);
-+	}
-+	if (i == 300)
-+		xmgnt_err(xm, "timed out waiting for device to be online after reset");
-+
-+	xmgnt_info(xm, "waiting for %d ms", i * 20);
-+	xmgnt_pci_restore_config_all(xm);
-+	xmgnt_config_pci(xm);
-+}
-+
-+static int xmgnt_add_vsec_node(struct xmgnt *xm, char *dtb)
-+{
-+	u32 off_low, off_high, vsec_bar, header;
-+	struct pci_dev *pdev = XMGNT_PDEV(xm);
-+	struct xrt_md_endpoint ep = { 0 };
-+	struct device *dev = DEV(pdev);
-+	int cap = 0, ret = 0;
-+	u64 vsec_off;
-+
-+	while ((cap = pci_find_next_ext_capability(pdev, cap, PCI_EXT_CAP_ID_VNDR))) {
-+		pci_read_config_dword(pdev, cap + PCI_VNDR_HEADER, &header);
-+		if (PCI_VNDR_HEADER_ID(header) == XRT_VSEC_ID)
-+			break;
-+	}
-+	if (!cap) {
-+		xmgnt_info(xm, "No Vendor Specific Capability.");
-+		return -ENOENT;
-+	}
-+
-+	if (pci_read_config_dword(pdev, cap + 8, &off_low) ||
-+	    pci_read_config_dword(pdev, cap + 12, &off_high)) {
-+		xmgnt_err(xm, "pci_read vendor specific failed.");
-+		return -EINVAL;
-+	}
-+
-+	ep.ep_name = XRT_MD_NODE_VSEC;
-+	ret = xrt_md_add_endpoint(dev, dtb, &ep);
-+	if (ret) {
-+		xmgnt_err(xm, "add vsec metadata failed, ret %d", ret);
-+		goto failed;
-+	}
-+
-+	vsec_bar = cpu_to_be32(off_low & 0xf);
-+	ret = xrt_md_set_prop(dev, dtb, XRT_MD_NODE_VSEC, NULL,
-+			      XRT_MD_PROP_BAR_IDX, &vsec_bar, sizeof(vsec_bar));
-+	if (ret) {
-+		xmgnt_err(xm, "add vsec bar idx failed, ret %d", ret);
-+		goto failed;
-+	}
-+
-+	vsec_off = cpu_to_be64(((u64)off_high << 32) | (off_low & ~0xfU));
-+	ret = xrt_md_set_prop(dev, dtb, XRT_MD_NODE_VSEC, NULL,
-+			      XRT_MD_PROP_OFFSET, &vsec_off, sizeof(vsec_off));
-+	if (ret) {
-+		xmgnt_err(xm, "add vsec offset failed, ret %d", ret);
-+		goto failed;
-+	}
-+
-+failed:
 +	return ret;
 +}
 +
-+static int xmgnt_create_root_metadata(struct xmgnt *xm, char **root_dtb)
++static int
++xrt_ucs_leaf_call(struct xrt_device *xdev, u32 cmd, void *arg)
 +{
-+	char *dtb = NULL;
-+	int ret;
-+
-+	ret = xrt_md_create(XMGNT_DEV(xm), &dtb);
-+	if (ret) {
-+		xmgnt_err(xm, "create metadata failed, ret %d", ret);
-+		goto failed;
-+	}
-+
-+	ret = xmgnt_add_vsec_node(xm, dtb);
-+	if (ret == -ENOENT) {
-+		/*
-+		 * We may be dealing with a MFG board.
-+		 * Try vsec-golden which will bring up all hard-coded leaves
-+		 * at hard-coded offsets.
-+		 */
-+		ret = xroot_add_simple_node(xm->root, dtb, XRT_MD_NODE_VSEC_GOLDEN);
-+	} else if (ret == 0) {
-+		ret = xroot_add_simple_node(xm->root, dtb, XRT_MD_NODE_MGNT_MAIN);
-+	}
-+	if (ret)
-+		goto failed;
-+
-+	*root_dtb = dtb;
-+	return 0;
-+
-+failed:
-+	vfree(dtb);
-+	return ret;
-+}
-+
-+static ssize_t ready_show(struct device *dev,
-+			  struct device_attribute *da,
-+			  char *buf)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct xmgnt *xm = pci_get_drvdata(pdev);
-+
-+	return sprintf(buf, "%d\n", xm->ready);
-+}
-+static DEVICE_ATTR_RO(ready);
-+
-+static struct attribute *xmgnt_root_attrs[] = {
-+	&dev_attr_ready.attr,
-+	NULL
-+};
-+
-+static struct attribute_group xmgnt_root_attr_group = {
-+	.attrs = xmgnt_root_attrs,
-+};
-+
-+static void xmgnt_root_get_id(struct device *dev, struct xrt_root_get_id *rid)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+
-+	rid->xpigi_vendor_id = pdev->vendor;
-+	rid->xpigi_device_id = pdev->device;
-+	rid->xpigi_sub_vendor_id = pdev->subsystem_vendor;
-+	rid->xpigi_sub_device_id = pdev->subsystem_device;
-+}
-+
-+static int xmgnt_root_get_resource(struct device *dev, struct xrt_root_get_res *res)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct xmgnt *xm;
-+
-+	xm = pci_get_drvdata(pdev);
-+	if (res->xpigr_region_id > PCI_STD_RESOURCE_END) {
-+		xmgnt_err(xm, "Invalid bar idx %d", res->xpigr_region_id);
++	switch (cmd) {
++	case XRT_XLEAF_EVENT:
++		xrt_ucs_event_cb(xdev, arg);
++		break;
++	default:
++		xrt_err(xdev, "unsupported cmd %d", cmd);
 +		return -EINVAL;
 +	}
 +
-+	res->xpigr_res = &pdev->resource[res->xpigr_region_id];
 +	return 0;
 +}
 +
-+static struct xroot_physical_function_callback xmgnt_xroot_pf_cb = {
-+	.xpc_get_id = xmgnt_root_get_id,
-+	.xpc_get_resource = xmgnt_root_get_resource,
-+	.xpc_hot_reset = xmgnt_root_hot_reset,
-+};
-+
-+static int xmgnt_probe(struct pci_dev *pdev, const struct pci_device_id *id)
++static int ucs_probe(struct xrt_device *xdev)
 +{
-+	int ret;
-+	struct device *dev = &pdev->dev;
-+	struct xmgnt *xm = devm_kzalloc(dev, sizeof(*xm), GFP_KERNEL);
-+	char *dtb = NULL;
++	struct xrt_ucs *ucs = NULL;
++	void __iomem *base = NULL;
++	struct resource *res;
 +
-+	if (!xm)
++	ucs = devm_kzalloc(&xdev->dev, sizeof(*ucs), GFP_KERNEL);
++	if (!ucs)
 +		return -ENOMEM;
-+	xm->pdev = pdev;
-+	pci_set_drvdata(pdev, xm);
 +
-+	ret = xmgnt_config_pci(xm);
-+	if (ret)
-+		goto failed;
++	xrt_set_drvdata(xdev, ucs);
++	ucs->xdev = xdev;
++	mutex_init(&ucs->ucs_lock);
 +
-+	ret = xroot_probe(&pdev->dev, &xmgnt_xroot_pf_cb, &xm->root);
-+	if (ret)
-+		goto failed;
++	res = xrt_get_resource(xdev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -EINVAL;
 +
-+	ret = xmgnt_create_root_metadata(xm, &dtb);
-+	if (ret)
-+		goto failed_metadata;
++	base = devm_ioremap_resource(&xdev->dev, res);
++	if (IS_ERR(base))
++		return PTR_ERR(base);
 +
-+	ret = xroot_create_group(xm->root, dtb);
-+	vfree(dtb);
-+	if (ret)
-+		xmgnt_err(xm, "failed to create root group: %d", ret);
-+
-+	if (!xroot_wait_for_bringup(xm->root))
-+		xmgnt_err(xm, "failed to bringup all groups");
-+	else
-+		xm->ready = true;
-+
-+	ret = sysfs_create_group(&pdev->dev.kobj, &xmgnt_root_attr_group);
-+	if (ret) {
-+		/* Warning instead of failing the probe. */
-+		xmgnt_warn(xm, "create xmgnt root attrs failed: %d", ret);
++	ucs->regmap = devm_regmap_init_mmio(&xdev->dev, base, &ucs_regmap_config);
++	if (IS_ERR(ucs->regmap)) {
++		UCS_ERR(ucs, "map base %pR failed", res);
++		return PTR_ERR(ucs->regmap);
 +	}
++	ucs_enable(ucs);
 +
-+	xroot_broadcast(xm->root, XRT_EVENT_POST_CREATION);
-+	xmgnt_info(xm, "%s started successfully", XMGNT_MODULE_NAME);
 +	return 0;
-+
-+failed_metadata:
-+	xroot_remove(xm->root);
-+failed:
-+	pci_set_drvdata(pdev, NULL);
-+	return ret;
 +}
 +
-+static void xmgnt_remove(struct pci_dev *pdev)
-+{
-+	struct xmgnt *xm = pci_get_drvdata(pdev);
-+
-+	xroot_broadcast(xm->root, XRT_EVENT_PRE_REMOVAL);
-+	sysfs_remove_group(&pdev->dev.kobj, &xmgnt_root_attr_group);
-+	xroot_remove(xm->root);
-+	pci_disable_pcie_error_reporting(xm->pdev);
-+	xmgnt_info(xm, "%s cleaned up successfully", XMGNT_MODULE_NAME);
-+}
-+
-+static struct pci_driver xmgnt_driver = {
-+	.name = XMGNT_MODULE_NAME,
-+	.id_table = xmgnt_pci_ids,
-+	.probe = xmgnt_probe,
-+	.remove = xmgnt_remove,
++static struct xrt_dev_endpoints xrt_ucs_endpoints[] = {
++	{
++		.xse_names = (struct xrt_dev_ep_names[]) {
++			{ .ep_name = XRT_MD_NODE_UCS_CONTROL_STATUS },
++			{ NULL },
++		},
++		.xse_min_ep = 1,
++	},
++	{ 0 },
 +};
 +
-+static int __init xmgnt_init(void)
-+{
-+	int res = 0;
++static struct xrt_driver xrt_ucs_driver = {
++	.driver = {
++		.name = XRT_UCS,
++	},
++	.subdev_id = XRT_SUBDEV_UCS,
++	.endpoints = xrt_ucs_endpoints,
++	.probe = ucs_probe,
++	.leaf_call = xrt_ucs_leaf_call,
++};
 +
-+	res = xmgnt_register_leaf();
-+	if (res)
-+		return res;
-+
-+	xmgnt_class = class_create(THIS_MODULE, XMGNT_MODULE_NAME);
-+	if (IS_ERR(xmgnt_class))
-+		return PTR_ERR(xmgnt_class);
-+
-+	res = pci_register_driver(&xmgnt_driver);
-+	if (res) {
-+		class_destroy(xmgnt_class);
-+		return res;
-+	}
-+
-+	return 0;
-+}
-+
-+static __exit void xmgnt_exit(void)
-+{
-+	pci_unregister_driver(&xmgnt_driver);
-+	class_destroy(xmgnt_class);
-+	xmgnt_unregister_leaf();
-+}
-+
-+module_init(xmgnt_init);
-+module_exit(xmgnt_exit);
-+
-+MODULE_DEVICE_TABLE(pci, xmgnt_pci_ids);
-+MODULE_VERSION(XMGNT_DRIVER_VERSION);
-+MODULE_AUTHOR("XRT Team <runtime@xilinx.com>");
-+MODULE_DESCRIPTION("Xilinx Alveo management function driver");
-+MODULE_LICENSE("GPL v2");
++XRT_LEAF_INIT_FINI_FUNC(ucs);
 -- 
 2.27.0
 
