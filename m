@@ -2,31 +2,31 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BE54C433ED
-	for <linux-fpga@archiver.kernel.org>; Wed, 12 May 2021 02:00:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0724FC433ED
+	for <linux-fpga@archiver.kernel.org>; Wed, 12 May 2021 02:00:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4662361925
-	for <linux-fpga@archiver.kernel.org>; Wed, 12 May 2021 02:00:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CCE1661934
+	for <linux-fpga@archiver.kernel.org>; Wed, 12 May 2021 02:00:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230075AbhELCBO (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 11 May 2021 22:01:14 -0400
-Received: from mail-bn8nam11on2041.outbound.protection.outlook.com ([40.107.236.41]:14976
-        "EHLO NAM11-BN8-obe.outbound.protection.outlook.com"
+        id S230011AbhELCBm (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 11 May 2021 22:01:42 -0400
+Received: from mail-dm6nam12on2081.outbound.protection.outlook.com ([40.107.243.81]:4193
+        "EHLO NAM12-DM6-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S230370AbhELCBL (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 11 May 2021 22:01:11 -0400
+        id S230104AbhELCBl (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 11 May 2021 22:01:41 -0400
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=WHinleQkOWziCxr5F5gzoOz67+tcwv70aSxXTfpLSw2ueFNQRuKA1hd0eWUt5/u7ARImnYZqrIAkWPTnk8yV6dhauBI4af+pUatLQE/BpwLubpjFqAc6epXFr9gZBhiMXl7APNcXWl9IgJQpEs/nPS7UZfc9QAci6XlWUksziE6vfy+WZxRg0mUPCsR1EVgrii9fvo6+C34sz/1rT09KcmjW76U/SYfRd0ITLvwbK+VU1joJjWqO2KKD7ibTCp7abGW4UTxYvNaaR8O0N9hRgKfzxbx7URmMh7ospu/v1hO/B+Wqfom3k3OQBrlvJHsqgC5/XvBM1PimapI/9NQHyA==
+ b=lsLuMcUiPMt9P2fdoy6ipXeJNs+KIBkZF50ofaD4zIqpM0+8i/DoLeM+WdWPwWBg/Vf2dVcgM6wHXvZ1kR3ugfkXd/ERlZeXqx9hsy2xrURgXIGLAKcuk0RGOwJ7JvFRVFEobocJ5KXHBxrp8hcQ+7dkWlXlFxKe/Zv3waysI8oATVqDOD1RLAbmQTo6nX6meDOdW9bcuE10haiHX1UDidVArUE3eJRtUVl+kaWyEnVBZ+X9b+tsisMdy2K1SNRIEoL/OJqu3podksOTATS1EX5rR2oc2IoNMER+tluI8mjLqxQCk8esvyiUszYZJMmxOKVUsY9BR1lF5/ghiE5RWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=V9mJsve++LQwM6u/mJHRmEXlxHFFBqypjeFWgYcz4aQ=;
- b=nmLr9VP7yzOeClkzVXc0ZMTvBUlsI7nLs7pkIBqTPX+z5a3NClqy8mVW+/QRQYa1XT8fjN5RbuCCmu5bd3eB1nOWOR3O6ncbReU3rt+V5Sp1E2zJS6Z0SjojXVbVtbZo+vEtDExDp2GXeLnxMHXQFbVWZ2y73Fz5bt0oPAd9M/URucE7Zats1Gk1SkYCkapDyQOR0N336njatYVsxZWdIOj9S9JllifgWnTTPXEC3uMQXdyy2dksmWTJElALuVxWhLnLTJWZRoWOeMt5+tQDX6YRhrVlSaocausbiS+hiw0lcmgIViyC1pyTjVCXNwFgcWaUAPnhpgW6tVW/J5R3ZA==
+ bh=u10gwilFHCTukmuwgnK2AOqu253QrWQEu1f93XxT5PM=;
+ b=jNmifTp0y/Tiz/cJU6/8y1vyVsjbkpeJuCBqzxa+AZDojxO3VBnHYJmtOiAXLP7Ik2XavFo7bAtDDo9hfgVvLyLmFeqzAc9QayCGjcpoyeJY2Gf7VQpjTekQtos+Am9rlxoV9KGEZY25E0dGMwK1JTWaJqSrcfF/YNoIhp+Fw+CXsPsmLwOQ1U0BqsjPVvAOhcXBTCd/3PhR5Y6m990j4CnUTs7RCG1e9fZpUB8nwo1PegFX9rnumwCyEyKM+3a7zIbJ+guWCgARRxdZXPYTRczB5QtHyPQxAvWZhRnKS2oIrFPGp05AR+iRiTHVAhiUt5osuTgRtdvsgRVj7xktFw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
@@ -34,47 +34,47 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=V9mJsve++LQwM6u/mJHRmEXlxHFFBqypjeFWgYcz4aQ=;
- b=XEdwGvOYvNZ1RhCAyNDHvjrOPL2oT5LkYbWeYmn5KYfMmezjxVlP8PIAUTOw2hqRrK2Lsq/Gamb0cTgWWp3+cHlg4fdYMKYNyQa9jLpDQxMqRFgcW8zZlZt3TRTDOrAFlsqgyk5244FUAwAjuruU6AvP7cPSsC1xPY4qZwMQKaw=
-Received: from BN6PR18CA0003.namprd18.prod.outlook.com (2603:10b6:404:121::13)
- by BN6PR02MB2323.namprd02.prod.outlook.com (2603:10b6:404:36::16) with
+ bh=u10gwilFHCTukmuwgnK2AOqu253QrWQEu1f93XxT5PM=;
+ b=n++oMxOjxBly9W8+DHrXje3Lv5r1Bj66GDJFv0Iaoz/LKbfac3POvMlWxlLwF3dVhpnnbY7iXcnL5cx7FOTeRGNjjOByi9T9oQVznfTmAPek8QsxjD6p7psSVPyr5b87Iwpt3Mg++j+e7IZKQZoN4Aj8uqgPTeckkQpv6CAZF/k=
+Received: from DM6PR18CA0002.namprd18.prod.outlook.com (2603:10b6:5:15b::15)
+ by SJ0PR02MB7598.namprd02.prod.outlook.com (2603:10b6:a03:327::18) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4108.27; Wed, 12 May
- 2021 02:00:01 +0000
-Received: from BN1NAM02FT035.eop-nam02.prod.protection.outlook.com
- (2603:10b6:404:121:cafe::f) by BN6PR18CA0003.outlook.office365.com
- (2603:10b6:404:121::13) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4108.25 via Frontend
- Transport; Wed, 12 May 2021 02:00:00 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4129.25; Wed, 12 May
+ 2021 02:00:32 +0000
+Received: from DM3NAM02FT052.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:5:15b:cafe::48) by DM6PR18CA0002.outlook.office365.com
+ (2603:10b6:5:15b::15) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4129.25 via Frontend
+ Transport; Wed, 12 May 2021 02:00:32 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=pass action=none header.from=xilinx.com;
 Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
- client-ip=149.199.62.198; helo=xsj-pvapexch01.xlnx.xilinx.com;
-Received: from xsj-pvapexch01.xlnx.xilinx.com (149.199.62.198) by
- BN1NAM02FT035.mail.protection.outlook.com (10.13.2.81) with Microsoft SMTP
+ client-ip=149.199.62.198; helo=xsj-pvapexch02.xlnx.xilinx.com;
+Received: from xsj-pvapexch02.xlnx.xilinx.com (149.199.62.198) by
+ DM3NAM02FT052.mail.protection.outlook.com (10.13.5.134) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4065.21 via Frontend Transport; Wed, 12 May 2021 02:00:00 +0000
+ 15.20.4065.21 via Frontend Transport; Wed, 12 May 2021 02:00:32 +0000
 Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
- xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server
+ xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Tue, 11 May 2021 18:59:43 -0700
-Received: from smtp.xilinx.com (172.19.127.96) by
+ 15.1.2176.2; Tue, 11 May 2021 19:00:20 -0700
+Received: from smtp.xilinx.com (172.19.127.95) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.2176.2 via Frontend Transport; Tue, 11 May 2021 18:59:43 -0700
+ 15.1.2176.2 via Frontend Transport; Tue, 11 May 2021 19:00:20 -0700
 Envelope-to: mdf@kernel.org,
  robh@kernel.org,
  trix@redhat.com,
  devicetree@vger.kernel.org,
  linux-fpga@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Received: from [172.19.72.212] (port=35736 helo=xsj-xw9400.xilinx.com)
+Received: from [172.19.72.212] (port=35742 helo=xsj-xw9400.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <lizhi.hou@xilinx.com>)
-        id 1lgeA3-0005ba-Bj; Tue, 11 May 2021 18:59:43 -0700
+        id 1lgeAe-00020m-Lz; Tue, 11 May 2021 19:00:20 -0700
 Received: by xsj-xw9400.xilinx.com (Postfix, from userid 21952)
-        id 994BA60012F; Tue, 11 May 2021 18:53:45 -0700 (PDT)
+        id D22EE600134; Tue, 11 May 2021 18:53:45 -0700 (PDT)
 From:   Lizhi Hou <lizhi.hou@xilinx.com>
 To:     <linux-kernel@vger.kernel.org>
 CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
@@ -82,9 +82,9 @@ CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
         <michal.simek@xilinx.com>, <stefanos@xilinx.com>,
         <devicetree@vger.kernel.org>, <trix@redhat.com>, <mdf@kernel.org>,
         <robh@kernel.org>, Max Zhen <max.zhen@xilinx.com>
-Subject: [PATCH V6 XRT Alveo 12/20] fpga: xrt: VSEC driver
-Date:   Tue, 11 May 2021 18:53:31 -0700
-Message-ID: <20210512015339.5649-13-lizhi.hou@xilinx.com>
+Subject: [PATCH V6 XRT Alveo 15/20] fpga: xrt: devctl xrt driver
+Date:   Tue, 11 May 2021 18:53:34 -0700
+Message-ID: <20210512015339.5649-16-lizhi.hou@xilinx.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210512015339.5649-1-lizhi.hou@xilinx.com>
 References: <20210512015339.5649-1-lizhi.hou@xilinx.com>
@@ -92,50 +92,98 @@ MIME-Version: 1.0
 Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 86ff74dd-9a9d-46e5-227c-08d914e9a6ed
-X-MS-TrafficTypeDiagnostic: BN6PR02MB2323:
-X-Microsoft-Antispam-PRVS: <BN6PR02MB23235CC853AE175AC670099EA1529@BN6PR02MB2323.namprd02.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:4714;
+X-MS-Office365-Filtering-Correlation-Id: f163618e-5f23-4303-762c-08d914e9b9d9
+X-MS-TrafficTypeDiagnostic: SJ0PR02MB7598:
+X-Microsoft-Antispam-PRVS: <SJ0PR02MB7598CD6E16A4D2F78F20617CA1529@SJ0PR02MB7598.namprd02.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:765;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: BOWcNV7yKbu5cw3DvLllr7QTvR2kCwnSoTOT5KsJ5jgCQYURt8pnVJBB2EJrN49e3K+2lNVEZRkjkMw9ziS7tjYFx4hT4rgOr9JN96gXSTQ+STFOCb1iCyG40iOlLkDcTbDAvnsUMgoQF8Ld2HdPBAy4uJvYMluQwI04W9zF5demD2LblHA/P2d5MXA3pPBTKp1zZVWLNPCNwWdydzg7VQhGsXqm7xeLvFmcP/fZ7RKH4M/7A2Te1j4Dr5yMYNLmLz9+RxSBDoRWWLsqFALtNIn5LJU0/2RnXdV6gRWHA7wEiGhyAWqaFTPsCje32MiXa0hDOnEQ0o9fVWUSiMz6eEV8MkOEKjFvOULv/FL/L4BWzLVhvacG/+ydn7PwP1b7p1wKdq9M6vMjjykmoYtwYANuuryQ6kNuAvIhxBRi1BXHNhclyEhxnKYwf8yJWH6AKwwjyTiMogbjkcMIJRgn75iC+kgYgJvD+pNCpEnM+dls5dvMLBjeMm+sGKEfpyoXAEjDnfGtulxG7Zg3QE+wQScwGgJitYcmqPfTH8d7BW6TlDVQYepCVaDGDZBePidLoK0d7A3ImvPa0vk4v/CV24oovjl/mY7i/JJ4MAZwzDyKMdBbi2DNzlna1eI5vf/GX+p/YBDaotIT/BK8wZg2nY3OYiuPNmlkkoyh7uLibEM=
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(136003)(396003)(376002)(346002)(39860400002)(46966006)(36840700001)(186003)(36860700001)(82310400003)(336012)(426003)(2906002)(6666004)(1076003)(44832011)(83380400001)(70206006)(6916009)(6266002)(107886003)(5660300002)(2616005)(8676002)(70586007)(8936002)(82740400003)(356005)(478600001)(7636003)(47076005)(4326008)(316002)(54906003)(36906005)(42186006)(36756003)(26005);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: nUyWRbw+Ehbz1w2dZamasw2t2nPIutdrNUymu2uvVS4rBCmjZ9cRFohFJpSpjyJ1Ci5jsOqL4iELbpvcaECvtBdJmu4/ja4CQqXL+9JBPcL2dzcUB/ShCRLdX2+EaZ9K8zk2MUn83feKvNqIsufpJlfdPN7gqNj+4WK15CT1YQh8TTEGiVq/J3n+vxCjPEfAqoikHhgl6/ZxeXd4Iyx5+z+G1s/oEJqPilDE4AzjWdhgv3U2fuKI5mW8v69vtRCJpqFT36SBAouhxq/8dD22GO/zLutLK6XFPlOJLQ/2eBQ64mgeA5o7H0ldS9uZWS598DFN3tyRPoCp5TbzmRL/6dFW6q4mewg10JECOXrNxqWxUnk9dljOxwqly9ddlpeGW7kA2PBlAwp2UiNODe+rXj2gBlVT7UobRfBCbcIK5TAwkJr9Iy9j/EDGo/qtxKU/JKfSPRjBE9qVBEb7YvcjInu6kJYplgl3mvtLAoEbyEFkiPc3inuxLRGCrGXhMOOcfNBtdPoLZWq5tz4zWYnsGboCiB6zbMTEVIMUu82/E2FXzI1itdXjjYs4MD0punITQlhDT7wlEDEU4qd8JslciWECEOettK/jfa8M5tlCCT0wkyMaCwF9snc5il1gPERdBfPI/qO4G/kwDz8BiLFqJsYcrA2XOGhxxd7k6lckjV0=
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(346002)(396003)(136003)(39860400002)(376002)(46966006)(36840700001)(36860700001)(426003)(478600001)(8676002)(7636003)(6266002)(6666004)(5660300002)(356005)(8936002)(2616005)(36756003)(54906003)(6916009)(26005)(336012)(4326008)(2906002)(82740400003)(107886003)(36906005)(70206006)(70586007)(186003)(42186006)(44832011)(316002)(1076003)(82310400003)(47076005);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 May 2021 02:00:00.8650
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 May 2021 02:00:32.6708
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 86ff74dd-9a9d-46e5-227c-08d914e9a6ed
+X-MS-Exchange-CrossTenant-Network-Message-Id: f163618e-5f23-4303-762c-08d914e9b9d9
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch01.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN1NAM02FT035.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch02.xlnx.xilinx.com]
+X-MS-Exchange-CrossTenant-AuthSource: DM3NAM02FT052.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN6PR02MB2323
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR02MB7598
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add VSEC driver. VSEC is a hardware function discovered by walking
-PCI Express configure space. A xrt device node will be created for it.
-VSEC provides board logic UUID and few offset of other hardware functions.
+Add devctl driver. devctl is a type of hardware function which only has
+few registers to read or write. They are discovered by walking firmware
+metadata. A xrt device node will be created for them.
 
 Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
 Signed-off-by: Max Zhen <max.zhen@xilinx.com>
 Signed-off-by: Lizhi Hou <lizhi.hou@xilinx.com>
 Reviewed-by: Tom Rix <trix@redhat.com>
 ---
- drivers/fpga/xrt/lib/xleaf/vsec.c | 372 ++++++++++++++++++++++++++++++
- 1 file changed, 372 insertions(+)
- create mode 100644 drivers/fpga/xrt/lib/xleaf/vsec.c
+ drivers/fpga/xrt/include/xleaf/devctl.h |  40 ++++++
+ drivers/fpga/xrt/lib/xleaf/devctl.c     | 169 ++++++++++++++++++++++++
+ 2 files changed, 209 insertions(+)
+ create mode 100644 drivers/fpga/xrt/include/xleaf/devctl.h
+ create mode 100644 drivers/fpga/xrt/lib/xleaf/devctl.c
 
-diff --git a/drivers/fpga/xrt/lib/xleaf/vsec.c b/drivers/fpga/xrt/lib/xleaf/vsec.c
+diff --git a/drivers/fpga/xrt/include/xleaf/devctl.h b/drivers/fpga/xrt/include/xleaf/devctl.h
 new file mode 100644
-index 000000000000..a6fa4f2ec832
+index 000000000000..b97f3b6d9326
 --- /dev/null
-+++ b/drivers/fpga/xrt/lib/xleaf/vsec.c
-@@ -0,0 +1,372 @@
++++ b/drivers/fpga/xrt/include/xleaf/devctl.h
+@@ -0,0 +1,40 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (C) 2020-2021 Xilinx, Inc.
++ *
++ * Authors:
++ *	Lizhi Hou <Lizhi.Hou@xilinx.com>
++ */
++
++#ifndef _XRT_DEVCTL_H_
++#define _XRT_DEVCTL_H_
++
++#include "xleaf.h"
++
++/*
++ * DEVCTL driver leaf calls.
++ */
++enum xrt_devctl_leaf_cmd {
++	XRT_DEVCTL_READ = XRT_XLEAF_CUSTOM_BASE, /* See comments in xleaf.h */
++};
++
++enum xrt_devctl_id {
++	XRT_DEVCTL_ROM_UUID = 0,
++	XRT_DEVCTL_DDR_CALIB,
++	XRT_DEVCTL_GOLDEN_VER,
++	XRT_DEVCTL_MAX
++};
++
++struct xrt_devctl_rw {
++	u32	xdr_id;
++	void	*xdr_buf;
++	u32	xdr_len;
++	u32	xdr_offset;
++};
++
++struct xrt_devctl_intf_uuid {
++	u32	uuid_num;
++	uuid_t	*uuids;
++};
++
++#endif	/* _XRT_DEVCTL_H_ */
+diff --git a/drivers/fpga/xrt/lib/xleaf/devctl.c b/drivers/fpga/xrt/lib/xleaf/devctl.c
+new file mode 100644
+index 000000000000..fb2122be7e56
+--- /dev/null
++++ b/drivers/fpga/xrt/lib/xleaf/devctl.c
+@@ -0,0 +1,169 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Xilinx Alveo FPGA VSEC Driver
++ * Xilinx Alveo FPGA devctl Driver
 + *
 + * Copyright (C) 2020-2021 Xilinx, Inc.
 + *
@@ -143,368 +191,165 @@ index 000000000000..a6fa4f2ec832
 + *      Lizhi Hou<Lizhi.Hou@xilinx.com>
 + */
 +
++#include <linux/mod_devicetable.h>
++#include <linux/delay.h>
++#include <linux/device.h>
 +#include <linux/regmap.h>
++#include <linux/io.h>
 +#include "metadata.h"
-+#include "xdevice.h"
 +#include "xleaf.h"
++#include "xleaf/devctl.h"
 +
-+#define XRT_VSEC "xrt_vsec"
++#define XRT_DEVCTL "xrt_devctl"
 +
-+#define VSEC_TYPE_UUID		0x50
-+#define VSEC_TYPE_FLASH		0x51
-+#define VSEC_TYPE_PLATINFO	0x52
-+#define VSEC_TYPE_MAILBOX	0x53
-+#define VSEC_TYPE_END		0xff
-+
-+#define VSEC_UUID_LEN		16
-+
-+#define VSEC_REG_FORMAT		0x0
-+#define VSEC_REG_LENGTH		0x4
-+#define VSEC_REG_ENTRY		0x8
-+
-+struct xrt_vsec_header {
-+	u32		format;
-+	u32		length;
-+	u32		entry_sz;
-+	u32		rsvd;
-+} __packed;
-+
-+struct xrt_vsec_entry {
-+	u8		type;
-+	u8		bar_rev;
-+	u16		off_lo;
-+	u32		off_hi;
-+	u8		ver_type;
-+	u8		minor;
-+	u8		major;
-+	u8		rsvd0;
-+	u32		rsvd1;
-+} __packed;
-+
-+struct vsec_device {
-+	u8		type;
-+	char		*ep_name;
-+	ulong		size;
-+	char		*compat;
++struct xrt_name_id {
++	char *ep_name;
++	int id;
 +};
 +
-+static struct vsec_device vsec_devs[] = {
-+	{
-+		.type = VSEC_TYPE_UUID,
-+		.ep_name = XRT_MD_NODE_BLP_ROM,
-+		.size = VSEC_UUID_LEN,
-+		.compat = "vsec-uuid",
-+	},
-+	{
-+		.type = VSEC_TYPE_FLASH,
-+		.ep_name = XRT_MD_NODE_FLASH_VSEC,
-+		.size = 4096,
-+		.compat = "vsec-flash",
-+	},
-+	{
-+		.type = VSEC_TYPE_PLATINFO,
-+		.ep_name = XRT_MD_NODE_PLAT_INFO,
-+		.size = 4,
-+		.compat = "vsec-platinfo",
-+	},
-+	{
-+		.type = VSEC_TYPE_MAILBOX,
-+		.ep_name = XRT_MD_NODE_MAILBOX_VSEC,
-+		.size = 48,
-+		.compat = "vsec-mbx",
-+	},
++static struct xrt_name_id name_id[XRT_DEVCTL_MAX] = {
++	{ XRT_MD_NODE_BLP_ROM, XRT_DEVCTL_ROM_UUID },
++	{ XRT_MD_NODE_GOLDEN_VER, XRT_DEVCTL_GOLDEN_VER },
 +};
 +
-+XRT_DEFINE_REGMAP_CONFIG(vsec_regmap_config);
++XRT_DEFINE_REGMAP_CONFIG(devctl_regmap_config);
 +
-+struct xrt_vsec {
++struct xrt_devctl {
 +	struct xrt_device	*xdev;
-+	struct regmap		*regmap;
-+	u32			length;
-+
-+	char			*metadata;
-+	char			uuid[VSEC_UUID_LEN];
-+	int			group;
++	struct regmap		*regmap[XRT_DEVCTL_MAX];
++	ulong			sizes[XRT_DEVCTL_MAX];
 +};
 +
-+static inline int vsec_read_entry(struct xrt_vsec *vsec, u32 index, struct xrt_vsec_entry *entry)
-+{
-+	int ret;
-+
-+	ret = regmap_bulk_read(vsec->regmap, sizeof(struct xrt_vsec_header) +
-+			       index * sizeof(struct xrt_vsec_entry), entry,
-+			       sizeof(struct xrt_vsec_entry) /
-+			       vsec_regmap_config.reg_stride);
-+
-+	return ret;
-+}
-+
-+static inline u32 vsec_get_bar(struct xrt_vsec_entry *entry)
-+{
-+	return (entry->bar_rev >> 4) & 0xf;
-+}
-+
-+static inline u64 vsec_get_bar_off(struct xrt_vsec_entry *entry)
-+{
-+	return entry->off_lo | ((u64)entry->off_hi << 16);
-+}
-+
-+static inline u32 vsec_get_rev(struct xrt_vsec_entry *entry)
-+{
-+	return entry->bar_rev & 0xf;
-+}
-+
-+static char *type2epname(u32 type)
++static int xrt_devctl_name2id(struct xrt_devctl *devctl, const char *name)
 +{
 +	int i;
 +
-+	for (i = 0; i < ARRAY_SIZE(vsec_devs); i++) {
-+		if (vsec_devs[i].type == type)
-+			return (vsec_devs[i].ep_name);
++	for (i = 0; i < XRT_DEVCTL_MAX && name_id[i].ep_name; i++) {
++		if (!strncmp(name_id[i].ep_name, name, strlen(name_id[i].ep_name) + 1))
++			return name_id[i].id;
 +	}
 +
-+	return NULL;
++	return -EINVAL;
 +}
 +
-+static ulong type2size(u32 type)
++static int
++xrt_devctl_leaf_call(struct xrt_device *xdev, u32 cmd, void *arg)
 +{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(vsec_devs); i++) {
-+		if (vsec_devs[i].type == type)
-+			return (vsec_devs[i].size);
-+	}
-+
-+	return 0;
-+}
-+
-+static char *type2compat(u32 type)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(vsec_devs); i++) {
-+		if (vsec_devs[i].type == type)
-+			return (vsec_devs[i].compat);
-+	}
-+
-+	return NULL;
-+}
-+
-+static int xrt_vsec_add_node(struct xrt_vsec *vsec,
-+			     void *md_blob, struct xrt_vsec_entry *p_entry)
-+{
-+	struct xrt_md_endpoint ep;
-+	char compat_ver[64];
-+	int ret;
-+
-+	if (!type2epname(p_entry->type))
-+		return -EINVAL;
-+
-+	/*
-+	 * VSEC may have more than 1 mailbox instance for the card
-+	 * which has more than 1 physical function.
-+	 * This is not supported for now. Assuming only one mailbox
-+	 */
-+
-+	snprintf(compat_ver, sizeof(compat_ver) - 1, "%d-%d.%d.%d",
-+		 p_entry->ver_type, p_entry->major, p_entry->minor,
-+		 vsec_get_rev(p_entry));
-+	ep.ep_name = type2epname(p_entry->type);
-+	ep.bar_index = vsec_get_bar(p_entry);
-+	ep.bar_off = vsec_get_bar_off(p_entry);
-+	ep.size = type2size(p_entry->type);
-+	ep.compat = type2compat(p_entry->type);
-+	ep.compat_ver = compat_ver;
-+	ret = xrt_md_add_endpoint(DEV(vsec->xdev), vsec->metadata, &ep);
-+	if (ret)
-+		xrt_err(vsec->xdev, "add ep failed, ret %d", ret);
-+
-+	return ret;
-+}
-+
-+static int xrt_vsec_create_metadata(struct xrt_vsec *vsec)
-+{
-+	struct xrt_vsec_entry entry;
-+	int i, ret;
-+
-+	ret = xrt_md_create(&vsec->xdev->dev, &vsec->metadata);
-+	if (ret) {
-+		xrt_err(vsec->xdev, "create metadata failed");
-+		return ret;
-+	}
-+
-+	for (i = 0; i * sizeof(entry) < vsec->length -
-+	    sizeof(struct xrt_vsec_header); i++) {
-+		ret = vsec_read_entry(vsec, i, &entry);
-+		if (ret) {
-+			xrt_err(vsec->xdev, "failed read entry %d, ret %d", i, ret);
-+			goto fail;
-+		}
-+
-+		if (entry.type == VSEC_TYPE_END)
-+			break;
-+		ret = xrt_vsec_add_node(vsec, vsec->metadata, &entry);
-+		if (ret)
-+			goto fail;
-+	}
-+
-+	return 0;
-+
-+fail:
-+	vfree(vsec->metadata);
-+	vsec->metadata = NULL;
-+	return ret;
-+}
-+
-+static int xrt_vsec_leaf_call(struct xrt_device *xdev, u32 cmd, void *arg)
-+{
++	struct xrt_devctl *devctl;
 +	int ret = 0;
++
++	devctl = xrt_get_drvdata(xdev);
 +
 +	switch (cmd) {
 +	case XRT_XLEAF_EVENT:
 +		/* Does not handle any event. */
 +		break;
-+	default:
-+		ret = -EINVAL;
-+		xrt_err(xdev, "should never been called");
++	case XRT_DEVCTL_READ: {
++		struct xrt_devctl_rw *rw_arg = arg;
++
++		if (rw_arg->xdr_len & 0x3) {
++			xrt_err(xdev, "invalid len %d", rw_arg->xdr_len);
++			return -EINVAL;
++		}
++
++		if (rw_arg->xdr_id >= XRT_DEVCTL_MAX) {
++			xrt_err(xdev, "invalid id %d", rw_arg->xdr_id);
++			return -EINVAL;
++		}
++
++		if (!devctl->regmap[rw_arg->xdr_id]) {
++			xrt_err(xdev, "io not found, id %d",
++				rw_arg->xdr_id);
++			return -EINVAL;
++		}
++
++		ret = regmap_bulk_read(devctl->regmap[rw_arg->xdr_id], rw_arg->xdr_offset,
++				       rw_arg->xdr_buf,
++				       rw_arg->xdr_len / devctl_regmap_config.reg_stride);
 +		break;
 +	}
++	default:
++		xrt_err(xdev, "unsupported cmd %d", cmd);
++		return -EINVAL;
++	}
 +
 +	return ret;
 +}
 +
-+static int xrt_vsec_mapio(struct xrt_vsec *vsec)
++static int xrt_devctl_probe(struct xrt_device *xdev)
 +{
-+	struct xrt_subdev_platdata *pdata = DEV_PDATA(vsec->xdev);
-+	struct resource *res = NULL;
++	struct xrt_devctl *devctl = NULL;
 +	void __iomem *base = NULL;
-+	const __be64 *bar_off;
-+	const __be32 *bar;
-+	u64 addr;
-+	int ret;
++	struct resource *res;
++	int i, id, ret = 0;
 +
-+	if (!pdata || xrt_md_size(DEV(vsec->xdev), pdata->xsp_dtb) == XRT_MD_INVALID_LENGTH) {
-+		xrt_err(vsec->xdev, "empty metadata");
-+		return -EINVAL;
-+	}
-+
-+	ret = xrt_md_get_prop(DEV(vsec->xdev), pdata->xsp_dtb, XRT_MD_NODE_VSEC,
-+			      NULL, XRT_MD_PROP_BAR_IDX, (const void **)&bar, NULL);
-+	if (ret) {
-+		xrt_err(vsec->xdev, "failed to get bar idx, ret %d", ret);
-+		return -EINVAL;
-+	}
-+
-+	ret = xrt_md_get_prop(DEV(vsec->xdev), pdata->xsp_dtb, XRT_MD_NODE_VSEC,
-+			      NULL, XRT_MD_PROP_OFFSET, (const void **)&bar_off, NULL);
-+	if (ret) {
-+		xrt_err(vsec->xdev, "failed to get bar off, ret %d", ret);
-+		return -EINVAL;
-+	}
-+
-+	xrt_info(vsec->xdev, "Map vsec at bar %d, offset 0x%llx",
-+		 be32_to_cpu(*bar), be64_to_cpu(*bar_off));
-+
-+	xleaf_get_root_res(vsec->xdev, be32_to_cpu(*bar), &res);
-+	if (!res) {
-+		xrt_err(vsec->xdev, "failed to get bar addr");
-+		return -EINVAL;
-+	}
-+
-+	addr = res->start + be64_to_cpu(*bar_off);
-+
-+	base = devm_ioremap(&vsec->xdev->dev, addr, vsec_regmap_config.max_register);
-+	if (!base) {
-+		xrt_err(vsec->xdev, "Map failed");
-+		return -EIO;
-+	}
-+
-+	vsec->regmap = devm_regmap_init_mmio(&vsec->xdev->dev, base, &vsec_regmap_config);
-+	if (IS_ERR(vsec->regmap)) {
-+		xrt_err(vsec->xdev, "regmap %pR failed", res);
-+		return PTR_ERR(vsec->regmap);
-+	}
-+
-+	ret = regmap_read(vsec->regmap, VSEC_REG_LENGTH, &vsec->length);
-+	if (ret) {
-+		xrt_err(vsec->xdev, "failed to read length %d", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static void xrt_vsec_remove(struct xrt_device *xdev)
-+{
-+	struct xrt_vsec	*vsec;
-+
-+	vsec = xrt_get_drvdata(xdev);
-+
-+	if (vsec->group >= 0)
-+		xleaf_destroy_group(xdev, vsec->group);
-+	vfree(vsec->metadata);
-+}
-+
-+static int xrt_vsec_probe(struct xrt_device *xdev)
-+{
-+	struct xrt_vsec	*vsec;
-+	int ret = 0;
-+
-+	vsec = devm_kzalloc(&xdev->dev, sizeof(*vsec), GFP_KERNEL);
-+	if (!vsec)
++	devctl = devm_kzalloc(&xdev->dev, sizeof(*devctl), GFP_KERNEL);
++	if (!devctl)
 +		return -ENOMEM;
 +
-+	vsec->xdev = xdev;
-+	vsec->group = -1;
-+	xrt_set_drvdata(xdev, vsec);
++	devctl->xdev = xdev;
++	xrt_set_drvdata(xdev, devctl);
 +
-+	ret = xrt_vsec_mapio(vsec);
-+	if (ret)
-+		goto failed;
++	xrt_info(xdev, "probing...");
++	for (i = 0, res = xrt_get_resource(xdev, IORESOURCE_MEM, 0);
++	    res;
++	    res = xrt_get_resource(xdev, IORESOURCE_MEM, ++i)) {
++		struct regmap_config config = devctl_regmap_config;
 +
-+	ret = xrt_vsec_create_metadata(vsec);
-+	if (ret) {
-+		xrt_err(xdev, "create metadata failed, ret %d", ret);
-+		goto failed;
++		id = xrt_devctl_name2id(devctl, res->name);
++		if (id < 0) {
++			xrt_err(xdev, "ep %s not found", res->name);
++			continue;
++		}
++		base = devm_ioremap_resource(&xdev->dev, res);
++		if (IS_ERR(base)) {
++			ret = PTR_ERR(base);
++			break;
++		}
++		config.max_register = res->end - res->start + 1;
++		devctl->regmap[id] = devm_regmap_init_mmio(&xdev->dev, base, &config);
++		if (IS_ERR(devctl->regmap[id])) {
++			xrt_err(xdev, "map base failed %pR", res);
++			ret = PTR_ERR(devctl->regmap[id]);
++			break;
++		}
++		devctl->sizes[id] = res->end - res->start + 1;
 +	}
-+	ret = xleaf_create_group(xdev, vsec->metadata);
-+	if (ret < 0) {
-+		xrt_err(xdev, "create group failed, ret %d", vsec->group);
-+		goto failed;
-+	}
-+	vsec->group = ret;
-+
-+	return 0;
-+
-+failed:
-+	xrt_vsec_remove(xdev);
 +
 +	return ret;
 +}
 +
-+static struct xrt_dev_endpoints xrt_vsec_endpoints[] = {
++static struct xrt_dev_endpoints xrt_devctl_endpoints[] = {
 +	{
-+		.xse_names = (struct xrt_dev_ep_names []){
-+			{ .ep_name = XRT_MD_NODE_VSEC },
++		.xse_names = (struct xrt_dev_ep_names[]) {
++			/* add name if ep is in same partition */
++			{ .ep_name = XRT_MD_NODE_BLP_ROM },
 +			{ NULL },
 +		},
 +		.xse_min_ep = 1,
 +	},
++	{
++		.xse_names = (struct xrt_dev_ep_names[]) {
++			{ .ep_name = XRT_MD_NODE_GOLDEN_VER },
++			{ NULL },
++		},
++		.xse_min_ep = 1,
++	},
++	/* adding ep bundle generates devctl device instance */
 +	{ 0 },
 +};
 +
-+static struct xrt_driver xrt_vsec_driver = {
++static struct xrt_driver xrt_devctl_driver = {
 +	.driver = {
-+		.name = XRT_VSEC,
++		.name = XRT_DEVCTL,
 +	},
-+	.subdev_id = XRT_SUBDEV_VSEC,
-+	.endpoints = xrt_vsec_endpoints,
-+	.probe = xrt_vsec_probe,
-+	.remove = xrt_vsec_remove,
-+	.leaf_call = xrt_vsec_leaf_call,
++	.subdev_id = XRT_SUBDEV_DEVCTL,
++	.endpoints = xrt_devctl_endpoints,
++	.probe = xrt_devctl_probe,
++	.leaf_call = xrt_devctl_leaf_call,
 +};
 +
-+XRT_LEAF_INIT_FINI_FUNC(vsec);
++XRT_LEAF_INIT_FINI_FUNC(devctl);
 -- 
 2.27.0
 
