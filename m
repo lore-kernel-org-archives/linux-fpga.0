@@ -2,414 +2,95 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44C76C4708E
-	for <linux-fpga@archiver.kernel.org>; Fri, 28 May 2021 22:11:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB94EC4708C
+	for <linux-fpga@archiver.kernel.org>; Fri, 28 May 2021 22:14:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 26BD26128B
-	for <linux-fpga@archiver.kernel.org>; Fri, 28 May 2021 22:11:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9111B6128B
+	for <linux-fpga@archiver.kernel.org>; Fri, 28 May 2021 22:14:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229528AbhE1WNM (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 28 May 2021 18:13:12 -0400
-Received: from mga05.intel.com ([192.55.52.43]:43021 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229665AbhE1WNM (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 28 May 2021 18:13:12 -0400
-IronPort-SDR: tE2pepX80uJmS/f6nAeG0+5Lqe5QIa/QvLhA9ocggtDv0+XiFGQPE+qt6ioBYTIirNENrh+dT4
- yDR0LnDmJk3g==
-X-IronPort-AV: E=McAfee;i="6200,9189,9998"; a="288643749"
-X-IronPort-AV: E=Sophos;i="5.83,231,1616482800"; 
-   d="scan'208";a="288643749"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2021 15:11:36 -0700
-IronPort-SDR: h9I17hb2Yrbxudr3bzGRKWsYwBwY+yai+cZ/1S0gKNOmaWOqHTqPVLkpJpbJlhWUs1MD0lRtfh
- sEF3sr0EATHw==
-X-IronPort-AV: E=Sophos;i="5.83,231,1616482800"; 
-   d="scan'208";a="548124237"
-Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.209.50.238])
-  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2021 15:11:34 -0700
-From:   Russ Weight <russell.h.weight@intel.com>
-To:     mdf@kernel.org, linux-fpga@vger.kernel.org
-Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
-        hao.wu@intel.com, matthew.gerlach@intel.com,
-        richard.gong@intel.com, Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v4 2/3] fpga: bridge: Use standard dev_release for class driver
-Date:   Fri, 28 May 2021 14:57:54 -0700
-Message-Id: <20210528215755.839712-3-russell.h.weight@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210528215755.839712-1-russell.h.weight@intel.com>
-References: <20210528215755.839712-1-russell.h.weight@intel.com>
+        id S229539AbhE1WP4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 28 May 2021 18:15:56 -0400
+Received: from mail-pg1-f176.google.com ([209.85.215.176]:35530 "EHLO
+        mail-pg1-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229494AbhE1WPz (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 28 May 2021 18:15:55 -0400
+Received: by mail-pg1-f176.google.com with SMTP id m190so3577811pga.2;
+        Fri, 28 May 2021 15:14:20 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=JNGpts24AsddyGX9anj8MvAz3SLVAw0SCqNJwlDSL/c=;
+        b=sVlSJ+Nn0CELjGBUc66QccYv6/XJLxQi3xCZZJHQF3zTmwc0eHiZldaR/3B2FZqnyQ
+         mdA4xbbvLrjcrZ98d/cTRf14KkRY/EnqxidE08a0F3D468fu3Rw7vyn8NPtxYm9Vzvlc
+         K/S1BbPhM1R4ry6n6BNCQaGx6zzB5UApC2aZf7z1pWJ53AYiI/qnHl1Im5ORhDzD741e
+         to/rR2PikgwtIvnUJVZW82aaajgjOdYnxXKmCec0m0K9zKwOI/2yQxAGutu9vYXwilY1
+         9KB0OohrPhNoB9LWkf4nE1bEKlbnNJsf2466Y/6ZRBO3/BA8mm8NrKulwJB5I8hkSYDL
+         EgQA==
+X-Gm-Message-State: AOAM531mbfLIO6B1oCbTcd1/vnPJjUDUOo34cn5VwWNS/7bHRrEW7v5P
+        3CHknYfaP6wmlRoyVUV07JI=
+X-Google-Smtp-Source: ABdhPJy6SCN6YWQU2XAi34y1EHfmfd2cb1NOhApHM2dylkDGI7hyzVplHD3S8m33pKULjL0HnHSdZw==
+X-Received: by 2002:a63:5a64:: with SMTP id k36mr11130858pgm.365.1622240060434;
+        Fri, 28 May 2021 15:14:20 -0700 (PDT)
+Received: from localhost ([2601:647:5b00:1161:a4cc:eef9:fbc0:2781])
+        by smtp.gmail.com with ESMTPSA id 191sm5034851pfx.121.2021.05.28.15.14.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 28 May 2021 15:14:19 -0700 (PDT)
+Date:   Fri, 28 May 2021 15:14:18 -0700
+From:   Moritz Fischer <mdf@kernel.org>
+To:     Navin Sankar Velliangiri <navin@linumiz.com>
+Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        mdf@kernel.org, trix@redhat.com
+Subject: Re: [PATCH] fpga: fpga-bridge: removed repeated word
+Message-ID: <YLFrOm09nVevsafh@epycbox.lan>
+References: <20210528150557.22970-1-navin@linumiz.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210528150557.22970-1-navin@linumiz.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The FPGA bridge class driver data structure is being treated as a
-managed resource instead of using standard dev_release call-back
-to release the class data structure. This change removes the
-managed resource code and combines the create() and register()
-functions into a single register() function.
+On Fri, May 28, 2021 at 08:35:57PM +0530, Navin Sankar Velliangiri wrote:
+> Removed repeated word and.
+> Reported by checkpatch.
+> 
+> Signed-off-by: Navin Sankar Velliangiri <navin@linumiz.com>
+> ---
+>  drivers/fpga/fpga-bridge.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+> index e9266b2a357f..9ada1126faf7 100644
+> --- a/drivers/fpga/fpga-bridge.c
+> +++ b/drivers/fpga/fpga-bridge.c
+> @@ -228,7 +228,7 @@ EXPORT_SYMBOL_GPL(fpga_bridges_put);
+>   * @info: fpga image specific information
+>   * @bridge_list: list of FPGA bridges
+>   *
+> - * Get an exclusive reference to the bridge and and it to the list.
+> + * Get an exclusive reference to the bridge and it to the list.
+>   *
+>   * Return 0 for success, error code from of_fpga_bridge_get() othewise.
+>   */
+> @@ -258,7 +258,7 @@ EXPORT_SYMBOL_GPL(of_fpga_bridge_get_to_list);
+>   * @info: fpga image specific information
+>   * @bridge_list: list of FPGA bridges
+>   *
+> - * Get an exclusive reference to the bridge and and it to the list.
+> + * Get an exclusive reference to the bridge and it to the list.
+>   *
+>   * Return 0 for success, error code from fpga_bridge_get() othewise.
+>   */
+> -- 
+> 2.31.1
+> 
 
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
----
-v4:
-  - Restore the previous format for the Return value in the comment header
-    for fpga_bridge_register()
-v3:
-  - Cleaned up comment header for fpga_bridge_register()
-  - Fix error return values for fpga_bridge_register()
-v2:
-  - No changes
----
- drivers/fpga/altera-fpga2sdram.c    |  12 +--
- drivers/fpga/altera-freeze-bridge.c |  10 +--
- drivers/fpga/altera-hps2fpga.c      |  12 +--
- drivers/fpga/dfl-fme-br.c           |  10 +--
- drivers/fpga/fpga-bridge.c          | 119 ++++++----------------------
- drivers/fpga/xilinx-pr-decoupler.c  |  17 ++--
- include/linux/fpga/fpga-bridge.h    |  12 +--
- 7 files changed, 52 insertions(+), 140 deletions(-)
+Didn't apply on top of Tom's change, so I fixed it up. Queued.
 
-diff --git a/drivers/fpga/altera-fpga2sdram.c b/drivers/fpga/altera-fpga2sdram.c
-index a78e49c63c64..66063507116b 100644
---- a/drivers/fpga/altera-fpga2sdram.c
-+++ b/drivers/fpga/altera-fpga2sdram.c
-@@ -121,17 +121,13 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 	/* Get f2s bridge configuration saved in handoff register */
- 	regmap_read(sysmgr, SYSMGR_ISWGRP_HANDOFF3, &priv->mask);
- 
--	br = devm_fpga_bridge_create(dev, F2S_BRIDGE_NAME,
--				     &altera_fpga2sdram_br_ops, priv);
--	if (!br)
--		return -ENOMEM;
-+	br = fpga_bridge_register(dev, F2S_BRIDGE_NAME,
-+				  &altera_fpga2sdram_br_ops, priv);
-+	if (IS_ERR(br))
-+		return PTR_ERR(mgr);
- 
- 	platform_set_drvdata(pdev, br);
- 
--	ret = fpga_bridge_register(br);
--	if (ret)
--		return ret;
--
- 	dev_info(dev, "driver initialized with handoff %08x\n", priv->mask);
- 
- 	if (!of_property_read_u32(dev->of_node, "bridge-enable", &enable)) {
-diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
-index dd58c4aea92e..bfbfa43cd05b 100644
---- a/drivers/fpga/altera-freeze-bridge.c
-+++ b/drivers/fpga/altera-freeze-bridge.c
-@@ -244,14 +244,14 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
- 
- 	priv->base_addr = base_addr;
- 
--	br = devm_fpga_bridge_create(dev, FREEZE_BRIDGE_NAME,
--				     &altera_freeze_br_br_ops, priv);
--	if (!br)
--		return -ENOMEM;
-+	br = fpga_bridge_register(dev, FREEZE_BRIDGE_NAME,
-+				  &altera_freeze_br_br_ops, priv);
-+	if (IS_ERR(br))
-+		return PTR_ERR(br);
- 
- 	platform_set_drvdata(pdev, br);
- 
--	return fpga_bridge_register(br);
-+	return 0;
- }
- 
- static int altera_freeze_br_remove(struct platform_device *pdev)
-diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
-index 77b95f251821..aa758426c22b 100644
---- a/drivers/fpga/altera-hps2fpga.c
-+++ b/drivers/fpga/altera-hps2fpga.c
-@@ -180,19 +180,15 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	br = devm_fpga_bridge_create(dev, priv->name,
--				     &altera_hps2fpga_br_ops, priv);
--	if (!br) {
--		ret = -ENOMEM;
-+	br = fpga_bridge_register(dev, priv->name,
-+				  &altera_hps2fpga_br_ops, priv);
-+	if (IS_ERR(br)) {
-+		ret = PTR_ERR(br);
- 		goto err;
- 	}
- 
- 	platform_set_drvdata(pdev, br);
- 
--	ret = fpga_bridge_register(br);
--	if (ret)
--		goto err;
--
- 	return 0;
- 
- err:
-diff --git a/drivers/fpga/dfl-fme-br.c b/drivers/fpga/dfl-fme-br.c
-index 3ff9f3a687ce..808d1f4d76df 100644
---- a/drivers/fpga/dfl-fme-br.c
-+++ b/drivers/fpga/dfl-fme-br.c
-@@ -68,14 +68,14 @@ static int fme_br_probe(struct platform_device *pdev)
- 
- 	priv->pdata = dev_get_platdata(dev);
- 
--	br = devm_fpga_bridge_create(dev, "DFL FPGA FME Bridge",
--				     &fme_bridge_ops, priv);
--	if (!br)
--		return -ENOMEM;
-+	br = fpga_bridge_register(dev, "DFL FPGA FME Bridge",
-+				  &fme_bridge_ops, priv);
-+	if (IS_ERR(br))
-+		return PTR_ERR(br);
- 
- 	platform_set_drvdata(pdev, br);
- 
--	return fpga_bridge_register(br);
-+	return 0;
- }
- 
- static int fme_br_remove(struct platform_device *pdev)
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index e9266b2a357f..3d5026244c7c 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -312,36 +312,35 @@ static struct attribute *fpga_bridge_attrs[] = {
- ATTRIBUTE_GROUPS(fpga_bridge);
- 
- /**
-- * fpga_bridge_create - create and initialize a struct fpga_bridge
-+ * fpga_bridge_register - create and register a FPGA Bridge device
-  * @dev:	FPGA bridge device from pdev
-  * @name:	FPGA bridge name
-  * @br_ops:	pointer to structure of fpga bridge ops
-  * @priv:	FPGA bridge private data
-  *
-- * The caller of this function is responsible for freeing the bridge with
-- * fpga_bridge_free().  Using devm_fpga_bridge_create() instead is recommended.
-- *
-- * Return: struct fpga_bridge or NULL
-+ * Return: struct fpga_bridge pointer on success, or ERR_PTR() on error.
-  */
--struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
--				       const struct fpga_bridge_ops *br_ops,
--				       void *priv)
-+struct fpga_bridge *fpga_bridge_register(struct device *dev, const char *name,
-+					 const struct fpga_bridge_ops *br_ops,
-+					 void *priv)
- {
- 	struct fpga_bridge *bridge;
- 	int id, ret;
- 
- 	if (!name || !strlen(name)) {
- 		dev_err(dev, "Attempt to register with no name!\n");
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 	}
- 
- 	bridge = kzalloc(sizeof(*bridge), GFP_KERNEL);
- 	if (!bridge)
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 
- 	id = ida_simple_get(&fpga_bridge_ida, 0, 0, GFP_KERNEL);
--	if (id < 0)
-+	if (id < 0) {
-+		ret = id;
- 		goto error_kfree;
-+	}
- 
- 	mutex_init(&bridge->mutex);
- 	INIT_LIST_HEAD(&bridge->node);
-@@ -350,7 +349,6 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
- 	bridge->br_ops = br_ops;
- 	bridge->priv = priv;
- 
--	device_initialize(&bridge->dev);
- 	bridge->dev.groups = br_ops->groups;
- 	bridge->dev.class = fpga_bridge_class;
- 	bridge->dev.parent = dev;
-@@ -361,6 +359,16 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
- 	if (ret)
- 		goto error_device;
- 
-+	ret = device_register(&bridge->dev);
-+	if (ret) {
-+		put_device(&bridge->dev);
-+		return ERR_PTR(ret);
-+	}
-+
-+	of_platform_populate(dev->of_node, NULL, NULL, dev);
-+
-+	dev_info(dev->parent, "fpga bridge [%s] registered\n", bridge->name);
-+
- 	return bridge;
- 
- error_device:
-@@ -368,88 +376,7 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
- error_kfree:
- 	kfree(bridge);
- 
--	return NULL;
--}
--EXPORT_SYMBOL_GPL(fpga_bridge_create);
--
--/**
-- * fpga_bridge_free - free a fpga bridge created by fpga_bridge_create()
-- * @bridge:	FPGA bridge struct
-- */
--void fpga_bridge_free(struct fpga_bridge *bridge)
--{
--	ida_simple_remove(&fpga_bridge_ida, bridge->dev.id);
--	kfree(bridge);
--}
--EXPORT_SYMBOL_GPL(fpga_bridge_free);
--
--static void devm_fpga_bridge_release(struct device *dev, void *res)
--{
--	struct fpga_bridge *bridge = *(struct fpga_bridge **)res;
--
--	fpga_bridge_free(bridge);
--}
--
--/**
-- * devm_fpga_bridge_create - create and init a managed struct fpga_bridge
-- * @dev:	FPGA bridge device from pdev
-- * @name:	FPGA bridge name
-- * @br_ops:	pointer to structure of fpga bridge ops
-- * @priv:	FPGA bridge private data
-- *
-- * This function is intended for use in a FPGA bridge driver's probe function.
-- * After the bridge driver creates the struct with devm_fpga_bridge_create(), it
-- * should register the bridge with fpga_bridge_register().  The bridge driver's
-- * remove function should call fpga_bridge_unregister().  The bridge struct
-- * allocated with this function will be freed automatically on driver detach.
-- * This includes the case of a probe function returning error before calling
-- * fpga_bridge_register(), the struct will still get cleaned up.
-- *
-- *  Return: struct fpga_bridge or NULL
-- */
--struct fpga_bridge
--*devm_fpga_bridge_create(struct device *dev, const char *name,
--			 const struct fpga_bridge_ops *br_ops, void *priv)
--{
--	struct fpga_bridge **ptr, *bridge;
--
--	ptr = devres_alloc(devm_fpga_bridge_release, sizeof(*ptr), GFP_KERNEL);
--	if (!ptr)
--		return NULL;
--
--	bridge = fpga_bridge_create(dev, name, br_ops, priv);
--	if (!bridge) {
--		devres_free(ptr);
--	} else {
--		*ptr = bridge;
--		devres_add(dev, ptr);
--	}
--
--	return bridge;
--}
--EXPORT_SYMBOL_GPL(devm_fpga_bridge_create);
--
--/**
-- * fpga_bridge_register - register a FPGA bridge
-- *
-- * @bridge: FPGA bridge struct
-- *
-- * Return: 0 for success, error code otherwise.
-- */
--int fpga_bridge_register(struct fpga_bridge *bridge)
--{
--	struct device *dev = &bridge->dev;
--	int ret;
--
--	ret = device_add(dev);
--	if (ret)
--		return ret;
--
--	of_platform_populate(dev->of_node, NULL, NULL, dev);
--
--	dev_info(dev->parent, "fpga bridge [%s] registered\n", bridge->name);
--
--	return 0;
-+	return ERR_PTR(ret);
- }
- EXPORT_SYMBOL_GPL(fpga_bridge_register);
- 
-@@ -475,6 +402,10 @@ EXPORT_SYMBOL_GPL(fpga_bridge_unregister);
- 
- static void fpga_bridge_dev_release(struct device *dev)
- {
-+	struct fpga_bridge *bridge = to_fpga_bridge(dev);
-+
-+	ida_simple_remove(&fpga_bridge_ida, bridge->dev.id);
-+	kfree(bridge);
- }
- 
- static int __init fpga_bridge_dev_init(void)
-diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
-index ea2bde6e5bc4..c004e52b9464 100644
---- a/drivers/fpga/xilinx-pr-decoupler.c
-+++ b/drivers/fpga/xilinx-pr-decoupler.c
-@@ -138,22 +138,17 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
- 
- 	clk_disable(priv->clk);
- 
--	br = devm_fpga_bridge_create(&pdev->dev, priv->ipconfig->name,
--				     &xlnx_pr_decoupler_br_ops, priv);
--	if (!br) {
--		err = -ENOMEM;
--		goto err_clk;
--	}
--
--	platform_set_drvdata(pdev, br);
--
--	err = fpga_bridge_register(br);
--	if (err) {
-+	br = fpga_bridge_register(&pdev->dev, priv->ipconfig->name,
-+				  &xlnx_pr_decoupler_br_ops, priv);
-+	if (IS_ERR(br)) {
-+		err = PTR_ERR(br);
- 		dev_err(&pdev->dev, "unable to register %s",
- 			priv->ipconfig->name);
- 		goto err_clk;
- 	}
- 
-+	platform_set_drvdata(pdev, br);
-+
- 	return 0;
- 
- err_clk:
-diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
-index 817600a32c93..86f306c99fa5 100644
---- a/include/linux/fpga/fpga-bridge.h
-+++ b/include/linux/fpga/fpga-bridge.h
-@@ -62,15 +62,9 @@ int of_fpga_bridge_get_to_list(struct device_node *np,
- 			       struct fpga_image_info *info,
- 			       struct list_head *bridge_list);
- 
--struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
--				       const struct fpga_bridge_ops *br_ops,
--				       void *priv);
--void fpga_bridge_free(struct fpga_bridge *br);
--int fpga_bridge_register(struct fpga_bridge *br);
-+struct fpga_bridge *fpga_bridge_register(struct device *dev, const char *name,
-+					 const struct fpga_bridge_ops *br_ops,
-+					 void *priv);
- void fpga_bridge_unregister(struct fpga_bridge *br);
- 
--struct fpga_bridge
--*devm_fpga_bridge_create(struct device *dev, const char *name,
--			 const struct fpga_bridge_ops *br_ops, void *priv);
--
- #endif /* _LINUX_FPGA_BRIDGE_H */
--- 
-2.25.1
-
+- Moritz
