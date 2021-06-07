@@ -7,64 +7,64 @@ X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3EEBC47094
-	for <linux-fpga@archiver.kernel.org>; Mon,  7 Jun 2021 17:24:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF2B0C47095
+	for <linux-fpga@archiver.kernel.org>; Mon,  7 Jun 2021 17:24:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BD86E610A2
-	for <linux-fpga@archiver.kernel.org>; Mon,  7 Jun 2021 17:24:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 916FB610A2
+	for <linux-fpga@archiver.kernel.org>; Mon,  7 Jun 2021 17:24:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231474AbhFGR02 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 7 Jun 2021 13:26:28 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:54819 "EHLO
+        id S231493AbhFGR03 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 7 Jun 2021 13:26:29 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:34436 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S230522AbhFGR0Z (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 7 Jun 2021 13:26:25 -0400
+        by vger.kernel.org with ESMTP id S231419AbhFGR02 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 7 Jun 2021 13:26:28 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1623086673;
+        s=mimecast20190719; t=1623086676;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=SEbyFeW80QMIpdYKjW+aZzDgMZUI77VaMOflkO8h6rs=;
-        b=GW1lMzHPTGO39PfVkZcUm/e5iTDwAj5AuVcrDayyhICPYKMTE6hMtHYXg6nVuojOF0A3i9
-        mtiOL5C4P5rInJTxsy/KJjgTYNQzkuRtkSUvLHSa2nldQzwf6vIP+JyfF/ZPL9NDrtVtiL
-        vUDEmreSZPD4ndAn+Y2oxVNzQkcOXs8=
-Received: from mail-oi1-f199.google.com (mail-oi1-f199.google.com
- [209.85.167.199]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-587-5qVw1Mn_O3SsO70dTuZ1pg-1; Mon, 07 Jun 2021 13:24:32 -0400
-X-MC-Unique: 5qVw1Mn_O3SsO70dTuZ1pg-1
-Received: by mail-oi1-f199.google.com with SMTP id l123-20020acad4810000b02901f1fb44dca7so4959676oig.15
-        for <linux-fpga@vger.kernel.org>; Mon, 07 Jun 2021 10:24:32 -0700 (PDT)
+        bh=G5k+k/BkzK0E2Fb8ne6IfEyRpjN4V1PdloHP6kDhHkg=;
+        b=Fwx/+C/nkOgPIKyr9MjehFDGHSWV3mHMTjCKjrAKODwMf1Eq0CkyWeLyg525X9gmcQkSTk
+        M4A5qwmoN7925pXdtJxwgraxrmyb23Fr2G1I5bQ2A1Pi0jZBHrHf/60ACEk22PA2+56mMl
+        oGJzC1YAdLtg5koR9GRFHHb7Y3gLayo=
+Received: from mail-ot1-f70.google.com (mail-ot1-f70.google.com
+ [209.85.210.70]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-191-AKB6oE_ePPeRWzG1rBNPMQ-1; Mon, 07 Jun 2021 13:24:35 -0400
+X-MC-Unique: AKB6oE_ePPeRWzG1rBNPMQ-1
+Received: by mail-ot1-f70.google.com with SMTP id p4-20020a9d45440000b02903cf162bb628so9725452oti.17
+        for <linux-fpga@vger.kernel.org>; Mon, 07 Jun 2021 10:24:35 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=SEbyFeW80QMIpdYKjW+aZzDgMZUI77VaMOflkO8h6rs=;
-        b=rjsNW0B05AIZHNORJc0oSEcH4g1cpmqnjlKoHGIeyVDnBajUuZ2j58vlfI0+nCsZz8
-         fXlOA2nt3fWD5gjzFtVn0i6QFFPEhPLWnX5+2unskrLVAYxWr6mmlXuGU7KkZ0MC+F1j
-         fQ+nicag0mqBQf0M29RXUV9uslUSfvsl+SKBGJkBiMHsTUfrazEKObjFw0DIe+XAnrFb
-         NKpeJefMWck+i+AuiPrBRuebnkDXIePt8ZbGdMcVjnnMy8wRm+/Q2ljb+fzXYmfo4gF+
-         leZ253N1k0dVC+x98U8V9mEy+xJrfPFIbzk5r/jorA+h7LPXUikE6qKMnGIt8U/CyOf6
-         DKZw==
-X-Gm-Message-State: AOAM533zmQXwS3jyCmufXRMuNc4m1wo+qWqTJmr1hgVKpIog+ajLcqsx
-        kghPihP/yLZ5jk1O6vrqU6Iepp6I9JfsC+j+YoYjCgRik4XvM7ivg16YPfKNOCwvePNM1S9mvaa
-        h5FlZRI0kcSagx91AyS+rLw==
-X-Received: by 2002:a4a:952b:: with SMTP id m40mr14054024ooi.69.1623086672036;
-        Mon, 07 Jun 2021 10:24:32 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzU4iBtCJ074OuzGQTVAEsS9VugipnW5FrZyj5UcXmgr+HN+HU4/UgZKKLwOvSNn74uqAKqVw==
-X-Received: by 2002:a4a:952b:: with SMTP id m40mr14054006ooi.69.1623086671810;
-        Mon, 07 Jun 2021 10:24:31 -0700 (PDT)
+        bh=G5k+k/BkzK0E2Fb8ne6IfEyRpjN4V1PdloHP6kDhHkg=;
+        b=UPig/sgaj0J2fAvQ8PgFNi/vTa9jAnCdJXOmMg5YA37R0+WYUp/Vy370LgRNL9ykF6
+         7iJtHAVXEB690tJs03Pu9cenN5koMqsPkkQ7sSV55nTbLxh2VHC81DAQAvmb4P3mN+vC
+         HZU171/zD+NCXTo3UHsryTN3UPrq9ftbrxMRCk1x3I1f8BfZic/CA/xzhF4VPHgOh2yc
+         srSOqpD9qBvK3FiZ0l2v3gMp2RnJpMVATnCpdmZpGSyuB+PbTaHyDcK/Ls19J2NKTn/r
+         B3VMysOjJQdgs/LAz4WGx827ukpTFgicTWphOKtT7vm6Pn8LtmgkIKuTWs2tQRzr1FvA
+         J/2w==
+X-Gm-Message-State: AOAM533YTYF83LQdiK/ydlglYYANvGoGmoGCknqRD4wCN7AnYTc+8qPa
+        KAS+ex6znHGE9kZr3iH7PG4CWd/2UtvXEqpZ7znFvJyTAdGwYLkqlkNg2tQKZ9nvBB3u2/oLybZ
+        sfhg6Uo6fKAeCb2rcdLT37A==
+X-Received: by 2002:a9d:29:: with SMTP id 38mr14916717ota.30.1623086674615;
+        Mon, 07 Jun 2021 10:24:34 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJzdkpS0Guz//cpGeFC9kznpgrVRbhlD0K8fyi/LgsZtWiEH9dfWzy9fSlnLDe0GSy4E+y4ipQ==
+X-Received: by 2002:a9d:29:: with SMTP id 38mr14916708ota.30.1623086674460;
+        Mon, 07 Jun 2021 10:24:34 -0700 (PDT)
 Received: from localhost.localdomain.com (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id 15sm2409859oij.26.2021.06.07.10.24.30
+        by smtp.gmail.com with ESMTPSA id 15sm2409859oij.26.2021.06.07.10.24.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Jun 2021 10:24:31 -0700 (PDT)
+        Mon, 07 Jun 2021 10:24:34 -0700 (PDT)
 From:   trix@redhat.com
 To:     hao.wu@intel.com, mdf@kernel.org, michal.simek@xilinx.com
 Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, Tom Rix <trix@redhat.com>
-Subject: [PATCH 3/7] fpga: wrap the write() op
-Date:   Mon,  7 Jun 2021 10:23:58 -0700
-Message-Id: <20210607172402.2938697-4-trix@redhat.com>
+Subject: [PATCH 5/7] fpga: wrap the state() op
+Date:   Mon,  7 Jun 2021 10:24:00 -0700
+Message-Id: <20210607172402.2938697-6-trix@redhat.com>
 X-Mailer: git-send-email 2.26.3
 In-Reply-To: <20210607172402.2938697-1-trix@redhat.com>
 References: <20210607172402.2938697-1-trix@redhat.com>
@@ -76,63 +76,122 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Tom Rix <trix@redhat.com>
 
-The board should not be required to provide a
-write function. Move the op check to the wrapper.
-Default to -EOPNOTSUP so its users will fail
-gracefully.
+The board should not be required to provide a state() op.
+Add a wrapper consistent with the other op wrappers.
+Move op check to wrapper.
+Default to FPGA_MGR_STATE_UNKNOWN, what noop state() uses.
+Remove unneeded noop state() ops
 
 Signed-off-by: Tom Rix <trix@redhat.com>
 ---
- drivers/fpga/fpga-mgr.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/fpga/dfl-fme-mgr.c   |  6 ------
+ drivers/fpga/fpga-mgr.c      | 11 +++++++++--
+ drivers/fpga/stratix10-soc.c |  6 ------
+ drivers/fpga/ts73xx-fpga.c   |  6 ------
+ 4 files changed, 9 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index dadad2401502..c484b4309b2f 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -167,6 +167,13 @@ static int fpga_mgr_write_complete(struct fpga_manager *mgr,
+diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
+index d5861d13b306..313420405d5e 100644
+--- a/drivers/fpga/dfl-fme-mgr.c
++++ b/drivers/fpga/dfl-fme-mgr.c
+@@ -252,11 +252,6 @@ static int fme_mgr_write_complete(struct fpga_manager *mgr,
  	return 0;
  }
  
-+static int fpga_mgr_write(struct fpga_manager *mgr, const char *buf, size_t count)
-+{
-+	if (mgr->mops && mgr->mops->write)
-+		return  mgr->mops->write(mgr, buf, count);
-+	return -EOPNOTSUPP;
-+}
-+
- /**
-  * fpga_mgr_buf_load_sg - load fpga from image in buffer from a scatter list
-  * @mgr:	fpga manager
-@@ -203,7 +210,7 @@ static int fpga_mgr_buf_load_sg(struct fpga_manager *mgr,
+-static enum fpga_mgr_states fme_mgr_state(struct fpga_manager *mgr)
+-{
+-	return FPGA_MGR_STATE_UNKNOWN;
+-}
+-
+ static u64 fme_mgr_status(struct fpga_manager *mgr)
+ {
+ 	struct fme_mgr_priv *priv = mgr->priv;
+@@ -268,7 +263,6 @@ static const struct fpga_manager_ops fme_mgr_ops = {
+ 	.write_init = fme_mgr_write_init,
+ 	.write = fme_mgr_write,
+ 	.write_complete = fme_mgr_write_complete,
+-	.state = fme_mgr_state,
+ 	.status = fme_mgr_status,
+ };
  
- 		sg_miter_start(&miter, sgt->sgl, sgt->nents, SG_MITER_FROM_SG);
- 		while (sg_miter_next(&miter)) {
--			ret = mgr->mops->write(mgr, miter.addr, miter.length);
-+			ret = fpga_mgr_write(mgr, miter.addr, miter.length);
- 			if (ret)
- 				break;
- 		}
-@@ -233,7 +240,7 @@ static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
- 	 * Write the FPGA image to the FPGA.
- 	 */
- 	mgr->state = FPGA_MGR_STATE_WRITE;
--	ret = mgr->mops->write(mgr, buf, count);
-+	ret = fpga_mgr_write(mgr, buf, count);
- 	if (ret) {
- 		dev_err(&mgr->dev, "Error while writing image data to FPGA\n");
- 		mgr->state = FPGA_MGR_STATE_WRITE_ERR;
-@@ -577,9 +584,7 @@ struct fpga_manager *fpga_mgr_create(struct device *dev, const char *name,
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index cc531f0537ac..d06752be9c6e 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -589,7 +589,7 @@ struct fpga_manager *fpga_mgr_create(struct device *dev, const char *name,
  	struct fpga_manager *mgr;
  	int id, ret;
  
--	if (!mops || !mops->state ||
--	    (!mops->write && !mops->write_sg) ||
--	    (mops->write && mops->write_sg)) {
-+	if (!mops || !mops->state) {
+-	if (!mops || !mops->state) {
++	if (!mops) {
  		dev_err(dev, "Attempt to register without fpga_manager_ops\n");
  		return NULL;
  	}
+@@ -692,6 +692,13 @@ struct fpga_manager *devm_fpga_mgr_create(struct device *dev, const char *name,
+ }
+ EXPORT_SYMBOL_GPL(devm_fpga_mgr_create);
+ 
++static enum fpga_mgr_states fpga_mgr_state(struct fpga_manager *mgr)
++{
++	if (mgr->mops && mgr->mops->state)
++		return  mgr->mops->state(mgr);
++	return FPGA_MGR_STATE_UNKNOWN;
++}
++
+ /**
+  * fpga_mgr_register - register a FPGA manager
+  * @mgr: fpga manager struct
+@@ -707,7 +714,7 @@ int fpga_mgr_register(struct fpga_manager *mgr)
+ 	 * from device.  FPGA may be in reset mode or may have been programmed
+ 	 * by bootloader or EEPROM.
+ 	 */
+-	mgr->state = mgr->mops->state(mgr);
++	mgr->state = fpga_mgr_state(mgr);
+ 
+ 	ret = device_add(&mgr->dev);
+ 	if (ret)
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index 657a70c5fc99..5219fa1b555a 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -388,13 +388,7 @@ static int s10_ops_write_complete(struct fpga_manager *mgr,
+ 	return ret;
+ }
+ 
+-static enum fpga_mgr_states s10_ops_state(struct fpga_manager *mgr)
+-{
+-	return FPGA_MGR_STATE_UNKNOWN;
+-}
+-
+ static const struct fpga_manager_ops s10_ops = {
+-	.state = s10_ops_state,
+ 	.write_init = s10_ops_write_init,
+ 	.write = s10_ops_write,
+ 	.write_complete = s10_ops_write_complete,
+diff --git a/drivers/fpga/ts73xx-fpga.c b/drivers/fpga/ts73xx-fpga.c
+index 101f016c6ed8..167abb0b08d4 100644
+--- a/drivers/fpga/ts73xx-fpga.c
++++ b/drivers/fpga/ts73xx-fpga.c
+@@ -32,11 +32,6 @@ struct ts73xx_fpga_priv {
+ 	struct device	*dev;
+ };
+ 
+-static enum fpga_mgr_states ts73xx_fpga_state(struct fpga_manager *mgr)
+-{
+-	return FPGA_MGR_STATE_UNKNOWN;
+-}
+-
+ static int ts73xx_fpga_write_init(struct fpga_manager *mgr,
+ 				  struct fpga_image_info *info,
+ 				  const char *buf, size_t count)
+@@ -98,7 +93,6 @@ static int ts73xx_fpga_write_complete(struct fpga_manager *mgr,
+ }
+ 
+ static const struct fpga_manager_ops ts73xx_fpga_ops = {
+-	.state		= ts73xx_fpga_state,
+ 	.write_init	= ts73xx_fpga_write_init,
+ 	.write		= ts73xx_fpga_write,
+ 	.write_complete	= ts73xx_fpga_write_complete,
 -- 
 2.26.3
 
