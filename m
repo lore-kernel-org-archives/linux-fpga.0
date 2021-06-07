@@ -7,64 +7,64 @@ X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A065C47082
-	for <linux-fpga@archiver.kernel.org>; Mon,  7 Jun 2021 17:24:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D72B8C47094
+	for <linux-fpga@archiver.kernel.org>; Mon,  7 Jun 2021 17:24:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 559F861073
-	for <linux-fpga@archiver.kernel.org>; Mon,  7 Jun 2021 17:24:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BF8E8610A8
+	for <linux-fpga@archiver.kernel.org>; Mon,  7 Jun 2021 17:24:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231504AbhFGR0a (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 7 Jun 2021 13:26:30 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:50657 "EHLO
+        id S231519AbhFGR0c (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 7 Jun 2021 13:26:32 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:37148 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S231347AbhFGR02 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 7 Jun 2021 13:26:28 -0400
+        by vger.kernel.org with ESMTP id S231480AbhFGR03 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 7 Jun 2021 13:26:29 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1623086676;
+        s=mimecast20190719; t=1623086677;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=sw7849LMLQbMNBNh72cG9DpmFetu7hYYk7CqmCZ+A8c=;
-        b=WT5C8IG2zvNoAdRGRmgV9XTBr5vPBr9p1wP0Ff6XCIhKjhZoJQV7S8WZVQCr3/9KSPKXYf
-        XlzqlUb4WVpqxRKXRBnEVUt9Act6ueIK4hWLnz+sjpz1Dq+drxHzl6y3520VKIfvbCZ2A4
-        O0Zv40ESkx1lozzxfTdKRobxUfOSYFk=
-Received: from mail-ot1-f72.google.com (mail-ot1-f72.google.com
- [209.85.210.72]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-160-pUG0U7nRMMSkgaIf1odxvw-1; Mon, 07 Jun 2021 13:24:33 -0400
-X-MC-Unique: pUG0U7nRMMSkgaIf1odxvw-1
-Received: by mail-ot1-f72.google.com with SMTP id w1-20020a0568304101b02902fc17224cf5so12035140ott.3
-        for <linux-fpga@vger.kernel.org>; Mon, 07 Jun 2021 10:24:33 -0700 (PDT)
+        bh=laSi6Idv6MJlRydvvlMqTdjYXdoIYW3EUNa0fNYB5JY=;
+        b=OveqWjvpBEAseSyH2/RrB/h/706n0cfVit98UBk6v0xA3U+Zx5slvH3g2xk8h8jiXmW3Pr
+        NLGA7dSDSgba4zlVVFfxzIPE+D7ZOXeYVK2chXZ3fEki+O9E3wKlXwhrc2h2uHQvGIb+NM
+        qkvC+uxg2EEOvcrl5xPtI9iqprDkNoY=
+Received: from mail-oo1-f72.google.com (mail-oo1-f72.google.com
+ [209.85.161.72]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-355-92HK_s9SN_qj6XXYXDCWIQ-1; Mon, 07 Jun 2021 13:24:36 -0400
+X-MC-Unique: 92HK_s9SN_qj6XXYXDCWIQ-1
+Received: by mail-oo1-f72.google.com with SMTP id 3-20020a4a03030000b029024950bdb69dso6435214ooi.3
+        for <linux-fpga@vger.kernel.org>; Mon, 07 Jun 2021 10:24:36 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=sw7849LMLQbMNBNh72cG9DpmFetu7hYYk7CqmCZ+A8c=;
-        b=VNFlxUX5kszuJoQ3XN8KfGfk4fR/IYg+MDwNCCZawVrCBmyY5tznl/kPkjCFn5LQ/i
-         NvTeYCbT+v5QPjgXSZfLdVmDqhjF71Jv6XzcGzLiqD859xy4p4YuM5r9uXO9x+rUlPV0
-         Tyn5bOpHUl62jqOJJvD6xbozhTormzOtYbtuaHfWOo4zu4EsieWVBq0B9HemqO4VfGuq
-         refQXsA9KlsEdVP9D+qJnMrXR+9AMycdakFEOk7AppUog1af/kQ67RzpAywTV6YbBfjQ
-         sgJ9Xaf+PNoDf4VkuQEzEEr8CCYB5opTKLa9BQV4sy7OkJSHuFKPqlPbbJi2b8Dq6axF
-         dt0Q==
-X-Gm-Message-State: AOAM532FDSoGfRXKS/o2sPz7HsYkSDZt4bu2OWSonZIG1uGlCtsWfmkE
-        iuUzaHO8AA7rg0t4WVrN1SBB/xKDGzM8WWDKh3jLJLt3SVNlLdAt+aUmWwyjhYWBltLEnUaHWDS
-        2xs2X0FuucbA3IYE+TzAMDQ==
-X-Received: by 2002:a9d:249:: with SMTP id 67mr14552434otb.356.1623086673292;
-        Mon, 07 Jun 2021 10:24:33 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJwaxynMSyVdOH834Xr+aDUn5sjwj9lSK2uSYH4p7kRGsbU3UK3AsLkYepvXRVkAP7p0oedWLA==
-X-Received: by 2002:a9d:249:: with SMTP id 67mr14552418otb.356.1623086673160;
-        Mon, 07 Jun 2021 10:24:33 -0700 (PDT)
+        bh=laSi6Idv6MJlRydvvlMqTdjYXdoIYW3EUNa0fNYB5JY=;
+        b=Tl+AJiKqJRNwTZla5Yk9qzEcsLOY6QKaYZwTivIzV7YSlvg4RYAPgtDQtqgPLBT43e
+         VXgsnXgQdwK8ujQQarzCij9dal5ypBIiR2YzavtsYLp5Dvowbc/CbxDaZ/BSwYRk8PXJ
+         icerZUU5E+gmUntEHB37AV5Hs9ck07HawwWtRvyaMwXvOokpem7oIiGSfatyAzN7OEhk
+         0W1cGZGUc4VgOJNQ7GcsEqwHt+JV4qNstW21TGPgkoOMQ8YSozvJNIbM8u/r/xQ3vFlO
+         VZ8VbDjRKz0qPHyHawdy1a59cHvS0xgSZLCt+Gsgq+A2htb7pZviUzmhFZZA9ch9Jaim
+         zy1g==
+X-Gm-Message-State: AOAM531F/pBApHGV5jT/TKVoADv0PIji4F5tsmnyj2aRR7ZxzIgNgp/z
+        8pnLSZpT2hjMwZWEqV45I/fuh1IArClawUgxskiRmToCBPpkPIUroC4eouSbRqAHnox6wkDvhVM
+        M8Q63sa3hBhKVeXnFtXoWiw==
+X-Received: by 2002:a9d:289:: with SMTP id 9mr14127917otl.10.1623086675885;
+        Mon, 07 Jun 2021 10:24:35 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJy0Mxu9OWeXq29nlPkEMpqQQx4J506+qxFfVHTsHRyJukzcKWG9aLTPxri3PNB8lw79Q0A/dw==
+X-Received: by 2002:a9d:289:: with SMTP id 9mr14127899otl.10.1623086675698;
+        Mon, 07 Jun 2021 10:24:35 -0700 (PDT)
 Received: from localhost.localdomain.com (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id 15sm2409859oij.26.2021.06.07.10.24.31
+        by smtp.gmail.com with ESMTPSA id 15sm2409859oij.26.2021.06.07.10.24.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Jun 2021 10:24:32 -0700 (PDT)
+        Mon, 07 Jun 2021 10:24:35 -0700 (PDT)
 From:   trix@redhat.com
 To:     hao.wu@intel.com, mdf@kernel.org, michal.simek@xilinx.com
 Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, Tom Rix <trix@redhat.com>
-Subject: [PATCH 4/7] fpga: wrap the status() op
-Date:   Mon,  7 Jun 2021 10:23:59 -0700
-Message-Id: <20210607172402.2938697-5-trix@redhat.com>
+Subject: [PATCH 6/7] fpga: wrap the fpga_remove() op
+Date:   Mon,  7 Jun 2021 10:24:01 -0700
+Message-Id: <20210607172402.2938697-7-trix@redhat.com>
 X-Mailer: git-send-email 2.26.3
 In-Reply-To: <20210607172402.2938697-1-trix@redhat.com>
 References: <20210607172402.2938697-1-trix@redhat.com>
@@ -76,47 +76,42 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Tom Rix <trix@redhat.com>
 
-The board is not required to provide a status() op.
+The board is not required to provide a fpga_remove() op.
 Add a wrapper consistent with the other op wrappers.
-Move the op check to the wrapper.
-Default to 0, no errors to report.
+Move op check to wrapper.
 
 Signed-off-by: Tom Rix <trix@redhat.com>
 ---
- drivers/fpga/fpga-mgr.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ drivers/fpga/fpga-mgr.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index c484b4309b2f..cc531f0537ac 100644
+index d06752be9c6e..84808c7ca440 100644
 --- a/drivers/fpga/fpga-mgr.c
 +++ b/drivers/fpga/fpga-mgr.c
-@@ -426,6 +426,14 @@ static ssize_t state_show(struct device *dev,
- 	return sprintf(buf, "%s\n", state_str[mgr->state]);
+@@ -731,6 +731,12 @@ int fpga_mgr_register(struct fpga_manager *mgr)
  }
+ EXPORT_SYMBOL_GPL(fpga_mgr_register);
  
-+static u64 fpga_mgr_status(struct fpga_manager *mgr)
++static void fpga_mgr_fpga_remove(struct fpga_manager *mgr)
 +{
-+	if (mgr->mops && mgr->mops->status)
-+		return mgr->mops->status(mgr);
-+
-+	return 0;
++	if (mgr->mops && mgr->mops->fpga_remove)
++		mgr->mops->fpga_remove(mgr);
 +}
 +
- static ssize_t status_show(struct device *dev,
- 			   struct device_attribute *attr, char *buf)
- {
-@@ -433,10 +441,7 @@ static ssize_t status_show(struct device *dev,
- 	u64 status;
- 	int len = 0;
+ /**
+  * fpga_mgr_unregister - unregister a FPGA manager
+  * @mgr: fpga manager struct
+@@ -745,8 +751,7 @@ void fpga_mgr_unregister(struct fpga_manager *mgr)
+ 	 * If the low level driver provides a method for putting fpga into
+ 	 * a desired state upon unregister, do it.
+ 	 */
+-	if (mgr->mops->fpga_remove)
+-		mgr->mops->fpga_remove(mgr);
++	fpga_mgr_fpga_remove(mgr);
  
--	if (!mgr->mops->status)
--		return -ENOENT;
--
--	status = mgr->mops->status(mgr);
-+	status = fpga_mgr_status(mgr);
- 
- 	if (status & FPGA_MGR_STATUS_OPERATION_ERR)
- 		len += sprintf(buf + len, "reconfig operation error\n");
+ 	device_unregister(&mgr->dev);
+ }
 -- 
 2.26.3
 
