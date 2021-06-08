@@ -2,72 +2,76 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1036C4743D
-	for <linux-fpga@archiver.kernel.org>; Tue,  8 Jun 2021 19:55:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5443C4743F
+	for <linux-fpga@archiver.kernel.org>; Tue,  8 Jun 2021 21:24:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C63661375
-	for <linux-fpga@archiver.kernel.org>; Tue,  8 Jun 2021 19:55:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 89BAF613BC
+	for <linux-fpga@archiver.kernel.org>; Tue,  8 Jun 2021 21:24:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234915AbhFHT5d (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 8 Jun 2021 15:57:33 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:28887 "EHLO
+        id S234102AbhFHVZ4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 8 Jun 2021 17:25:56 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:30813 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S234719AbhFHT5S (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 8 Jun 2021 15:57:18 -0400
+        by vger.kernel.org with ESMTP id S231760AbhFHVZz (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 8 Jun 2021 17:25:55 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1623182124;
+        s=mimecast20190719; t=1623187442;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=ub84QQXk/80gOx9jVYvQgeu9ZbjU0KtFBnV/GBkRc70=;
-        b=V3ThtLMcL6fuXSRwKkZ56m/m60A9yhH+fPvD6I51FZY1Iq9YzlxCPySnskiUDyNDBPD1Rs
-        d5EUKR+WpFgM4QeK0XlTyNeCd+gKjR9CEUv4fGHICBocI8DS6FRKVKVaE0HO4yPqezgUZI
-        xK0eypU2jIXjRGaxtKJ9U/EG9qwLF/Y=
-Received: from mail-oi1-f200.google.com (mail-oi1-f200.google.com
- [209.85.167.200]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-364-nleR9qMRPB6Iehy7fu7wBg-1; Tue, 08 Jun 2021 15:55:21 -0400
-X-MC-Unique: nleR9qMRPB6Iehy7fu7wBg-1
-Received: by mail-oi1-f200.google.com with SMTP id p5-20020acabf050000b02901eed1481b82so8830730oif.20
-        for <linux-fpga@vger.kernel.org>; Tue, 08 Jun 2021 12:55:20 -0700 (PDT)
+         content-transfer-encoding:content-transfer-encoding;
+        bh=9WOcYtG36rVjuPEj8K6lgDL7dCdoY9WpL7jwDyU54B8=;
+        b=hf8TuVNUxlOb3fZf9W2UmJjeP2tx9r5ULxnLWr1fgeeAcl3nUsKgB6qbwwmOOGoxafd5gy
+        68BxruCA49xa7ZbJr81Rgh9YaKQvYJ5JNaTEP4iwp9V9hxaX7thUYCwJCHp7h+hl2+dzy6
+        6M5AUoofCswL6qQdbqSwRqCVnEIA1n4=
+Received: from mail-ot1-f69.google.com (mail-ot1-f69.google.com
+ [209.85.210.69]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-428-4wxcU3FUPniAOTNy5jT0dw-1; Tue, 08 Jun 2021 17:24:01 -0400
+X-MC-Unique: 4wxcU3FUPniAOTNy5jT0dw-1
+Received: by mail-ot1-f69.google.com with SMTP id 88-20020a9d06e10000b029030513a66c79so14819461otx.0
+        for <linux-fpga@vger.kernel.org>; Tue, 08 Jun 2021 14:24:00 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ub84QQXk/80gOx9jVYvQgeu9ZbjU0KtFBnV/GBkRc70=;
-        b=LHgh/FPH0hdmKMcv9dmRUXk2P+M22xlS9oKB9XCVMo9OE1/uFrGJB42AEpdvAQ7N8d
-         Awm6qn4zyGOFBSr1cSqWPkjKC47LxD9FoLk1alUV4npCNSYE3JNDKrn6qBNffF+akEsp
-         0k+k4+Sd/Ul9rdn9IQBtIGlu14G/XaMT0ViJ9lp9Iu4dO2J4hIETT3jiMsFnH8Ts4UDa
-         x1G38vSRY/ckyJ1kIoDKjPp+FLwaL6zqoCzQ0P48ZhLiFphnHLd7JalLf1ftsU52R9l/
-         8fKnLfRKnEw7sCawmANwoXPtVN6hyOTyVZE4UlBEErml+zXza04f7mF3KWo436E1fqo6
-         6Aqg==
-X-Gm-Message-State: AOAM530sa0x6M9gAAJK0AJzOx6ePvcNI+nSDa5LTB8K/bowaqgYyufop
-        CfLctfPcowhL8j8hr35YARuQAzunl/2gHz2fcroG+61LoV03ErNr44PYPG8klNZDJVO/B7OTaLj
-        eyhTLWHVd4YWmI0j2H4aONg==
-X-Received: by 2002:a9d:2904:: with SMTP id d4mr19095276otb.238.1623182120325;
-        Tue, 08 Jun 2021 12:55:20 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJxmGhb5zky/LBefjfpgPpDFor2hP6i0wi5WpKPdZompoRWYG/9Z6TmmFlW3LXeN5nlet8+wrw==
-X-Received: by 2002:a9d:2904:: with SMTP id d4mr19095265otb.238.1623182120144;
-        Tue, 08 Jun 2021 12:55:20 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=9WOcYtG36rVjuPEj8K6lgDL7dCdoY9WpL7jwDyU54B8=;
+        b=RHZigwWucOmXd+uLrbGoRh1/L097kdzBVg/4wqtuLGo34psecQC4E5QZ9CVTSxB3CF
+         8ELN/a6MViVGj4ZK/6w7ukSzHCrMKIOVPSndiBrD6KKv6WqfGm9UKJI/fLD+YJRLfG99
+         miIoZtheIM7lfPU8T1hn/XaZTk6FnVJT5d2RDeR8MSTqphg0SZH88FOJnCTlREaP6/WB
+         7bVmPBB1Nta3n45SAdeVi5waMSuYQjVXSHbOWp9SrMXivijLhsVdAEHz4aPMKz3e4WV9
+         6jsQAwro862WGNMdJpPRaM7anonJOblxtrDQee2jqD5lhIzMA8klEGUExUQSXydNB0AV
+         9gSg==
+X-Gm-Message-State: AOAM530f1eqOz2vmThQMQYXRgvipFd53YojDoBJ8+dcHatge6FOogTfv
+        On26xcyxQ1oTZVw9Ow/Ikx5sXdioXMS23fmEAyuJHMnTAg9AZIONhIs+wEmymRG0etgxt/+t10C
+        8h08/0f3ocjMj8k9FluKBGg==
+X-Received: by 2002:a54:4091:: with SMTP id i17mr4211779oii.96.1623187439561;
+        Tue, 08 Jun 2021 14:23:59 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJw/slvYeAdnbZ/SPI7BCq6DWlaOdgzks9roBFKWnERshaA7TkLI+lr32K9zzB6m1V9KMz0o0A==
+X-Received: by 2002:a54:4091:: with SMTP id i17mr4211765oii.96.1623187439400;
+        Tue, 08 Jun 2021 14:23:59 -0700 (PDT)
 Received: from localhost.localdomain.com (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id s17sm3024046oog.31.2021.06.08.12.55.18
+        by smtp.gmail.com with ESMTPSA id x199sm1954310oif.5.2021.06.08.14.23.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Jun 2021 12:55:19 -0700 (PDT)
+        Tue, 08 Jun 2021 14:23:59 -0700 (PDT)
 From:   trix@redhat.com
-To:     hao.wu@intel.com, mdf@kernel.org, michal.simek@xilinx.com
-Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, Tom Rix <trix@redhat.com>
-Subject: [PATCH v2 6/7] fpga-mgr: wrap the fpga_remove() op
-Date:   Tue,  8 Jun 2021 12:55:05 -0700
-Message-Id: <20210608195506.3022550-8-trix@redhat.com>
+To:     mdf@kernel.org, robh+dt@kernel.org, hao.wu@intel.com,
+        corbet@lwn.net, fbarrat@linux.ibm.com, ajd@linux.ibm.com,
+        bbrezillon@kernel.org, arno@natisbad.org, schalla@marvell.com,
+        herbert@gondor.apana.org.au, davem@davemloft.net,
+        gregkh@linuxfoundation.org, Sven.Auhagen@voleatech.de,
+        grandmaster@al2klimov.de
+Cc:     linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+        linux-staging@lists.linux.dev, Tom Rix <trix@redhat.com>
+Subject: [PATCH 00/11] fpga: change FPGA indirect article to an
+Date:   Tue,  8 Jun 2021 14:23:38 -0700
+Message-Id: <20210608212350.3029742-1-trix@redhat.com>
 X-Mailer: git-send-email 2.26.3
-In-Reply-To: <20210608195506.3022550-1-trix@redhat.com>
-References: <20210608195506.3022550-1-trix@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -76,42 +80,53 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Tom Rix <trix@redhat.com>
 
-An FPGA manager is not required to provide a fpga_remove() op.
-Add a wrapper consistent with the other op wrappers.
-Move op check to wrapper.
+A treewide followup of
+https://lore.kernel.org/linux-fpga/2faf6ccb-005b-063a-a2a3-e177082c4b3c@silicom.dk/
 
-Signed-off-by: Tom Rix <trix@redhat.com>
----
- drivers/fpga/fpga-mgr.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+Change the use of 'a fpga' to 'an fpga'
+Ref usage in wiki
+https://en.wikipedia.org/wiki/Field-programmable_gate_array
+and Intel's 'FPGAs For Dummies'
+https://plan.seek.intel.com/PSG_WW_NC_LPCD_FR_2018_FPGAforDummiesbook
 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index d06752be9c6ef..84808c7ca4406 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -731,6 +731,12 @@ int fpga_mgr_register(struct fpga_manager *mgr)
- }
- EXPORT_SYMBOL_GPL(fpga_mgr_register);
- 
-+static void fpga_mgr_fpga_remove(struct fpga_manager *mgr)
-+{
-+	if (mgr->mops && mgr->mops->fpga_remove)
-+		mgr->mops->fpga_remove(mgr);
-+}
-+
- /**
-  * fpga_mgr_unregister - unregister a FPGA manager
-  * @mgr: fpga manager struct
-@@ -745,8 +751,7 @@ void fpga_mgr_unregister(struct fpga_manager *mgr)
- 	 * If the low level driver provides a method for putting fpga into
- 	 * a desired state upon unregister, do it.
- 	 */
--	if (mgr->mops->fpga_remove)
--		mgr->mops->fpga_remove(mgr);
-+	fpga_mgr_fpga_remove(mgr);
- 
- 	device_unregister(&mgr->dev);
- }
+Change was mechanical
+ !/bin/sh                                                        
+ for f in `find . -type f`; do
+   sed -i.bak 's/ a fpga/ an fpga/g' $f
+   sed -i.bak 's/ A fpga/ An fpga/g' $f
+   sed -i.bak 's/ a FPGA/ an FPGA/g' $f
+   sed -i.bak 's/ A FPGA/ An FPGA/g' $f
+ done
+
+
+Tom Rix (11):
+  dt-bindings: fpga: fpga-region: change FPGA indirect article to an
+  Documentation: fpga: dfl: change FPGA indirect article to an
+  Documentation: ocxl.rst: change FPGA indirect article to an
+  crypto: marvell: cesa: change FPGA indirect article to an
+  fpga: change FPGA indirect article to an
+  fpga: bridge: change FPGA indirect article to an
+  fpga-mgr: change FPGA indirect article to an
+  fpga: region: change FPGA indirect article to an
+  fpga: of-fpga-region: change FPGA indirect article to an
+  fpga: stratix10-soc: change FPGA indirect article to an
+  staging: fpgaboot: change FPGA indirect article to an
+
+ .../devicetree/bindings/fpga/fpga-region.txt  | 22 +++++++++----------
+ Documentation/fpga/dfl.rst                    |  4 ++--
+ .../userspace-api/accelerators/ocxl.rst       |  2 +-
+ drivers/crypto/marvell/cesa/cesa.h            |  2 +-
+ drivers/fpga/Kconfig                          |  4 ++--
+ drivers/fpga/fpga-bridge.c                    | 22 +++++++++----------
+ drivers/fpga/fpga-mgr.c                       | 22 +++++++++----------
+ drivers/fpga/fpga-region.c                    | 14 ++++++------
+ drivers/fpga/of-fpga-region.c                 |  8 +++----
+ drivers/fpga/stratix10-soc.c                  |  2 +-
+ drivers/staging/gs_fpgaboot/README            |  2 +-
+ include/linux/fpga/fpga-bridge.h              |  2 +-
+ include/linux/fpga/fpga-mgr.h                 |  2 +-
+ 13 files changed, 54 insertions(+), 54 deletions(-)
+
 -- 
 2.26.3
 
