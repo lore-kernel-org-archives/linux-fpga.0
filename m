@@ -2,208 +2,127 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-6.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA088C48BCD
-	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 16:11:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85158C48BCD
+	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 16:38:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C15C260FDC
-	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 16:11:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6F2D6613C0
+	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 16:38:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230058AbhFIQNA (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 9 Jun 2021 12:13:00 -0400
-Received: from mga05.intel.com ([192.55.52.43]:19064 "EHLO mga05.intel.com"
+        id S231783AbhFIQkP (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 9 Jun 2021 12:40:15 -0400
+Received: from mail.kernel.org ([198.145.29.99]:37700 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229935AbhFIQNA (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 9 Jun 2021 12:13:00 -0400
-IronPort-SDR: a1IuFNlq+aHUvTUqL/ze9Y4akXRxlG8y2Xz9vFSNpNU4DKn/A9kCoZIeNqlmEPsJ6kXkLkCAH2
- kMurBLL4IBPg==
-X-IronPort-AV: E=McAfee;i="6200,9189,10010"; a="290733363"
-X-IronPort-AV: E=Sophos;i="5.83,261,1616482800"; 
-   d="scan'208";a="290733363"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2021 09:07:24 -0700
-IronPort-SDR: Zz9IXZBmGRJFpwbMFxTdqGgUMf7FcN6EQeCLePnLzMupKbbUqxd5LIjVJDIUqgVIJs116M477e
- UHj4Pff8TDjw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.83,261,1616482800"; 
-   d="scan'208";a="482437411"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.162])
-  by orsmga001.jf.intel.com with ESMTP; 09 Jun 2021 09:07:19 -0700
-Date:   Thu, 10 Jun 2021 00:01:40 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Russ Weight <russell.h.weight@intel.com>
-Cc:     mdf@kernel.org, linux-fpga@vger.kernel.org, trix@redhat.com,
-        lgoncalv@redhat.com, hao.wu@intel.com, matthew.gerlach@intel.com,
-        richard.gong@intel.com
-Subject: Re: [PATCH v1 5/5] fpga: region: Use standard dev_release for class
- driver
-Message-ID: <20210609160140.GE1994229@yilunxu-OptiPlex-7050>
-References: <20210609004925.238044-1-russell.h.weight@intel.com>
- <20210609004925.238044-6-russell.h.weight@intel.com>
+        id S230027AbhFIQkO (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 9 Jun 2021 12:40:14 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 6F56B610A1;
+        Wed,  9 Jun 2021 16:38:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1623256700;
+        bh=+RFAsW+BaB3yvovWMXUbFjPkdC4MfCKQ/OHeDLLypOo=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=Gz1l5VeehUfuEU6uicGlld1GwqCqBHYgpO85Pmfr4E/YdbaxulWCSv6b0/qeNw1WG
+         UrWc8Fiy6UDCIU06XQ6J/0l8agXXwVZkozQ+6KSMd/MYgVjPGu+PkjH5Koa7dHPA7N
+         U3d3ykLDZGypq2nCWAzNdvniD/CGFax2paWCvLI4=
+Date:   Wed, 9 Jun 2021 18:38:17 +0200
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Tom Rix <trix@redhat.com>
+Cc:     mdf@kernel.org, hao.wu@intel.com, michal.simek@xilinx.com,
+        nava.manne@xilinx.com, dinguyen@kernel.org,
+        krzysztof.kozlowski@canonical.com, yilun.xu@intel.com,
+        arnd@arndb.de, fpacheco@redhat.com, richard.gong@intel.com,
+        luca@lucaceresoli.net, linux-kernel@vger.kernel.org,
+        linux-fpga@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 0/4] fpga: reorganize to subdirs
+Message-ID: <YMDueTEHGWuAcknP@kroah.com>
+References: <20210609142208.3085451-1-trix@redhat.com>
+ <YMDV7R52QUTFhpHH@kroah.com>
+ <2738ee7a-448f-c327-c430-13fb44da45ec@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210609004925.238044-6-russell.h.weight@intel.com>
+In-Reply-To: <2738ee7a-448f-c327-c430-13fb44da45ec@redhat.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Tue, Jun 08, 2021 at 05:49:25PM -0700, Russ Weight wrote:
-> The FPGA region class driver data structure is being treated as a managed
-> resource instead of using standard dev_release call-back to release the
-> class data structure. This change populates the class.dev_release function
-> and changes the fpga_region_free() function to call put_device().
-> It also changes fpga_region_unregister() to call device_del() instead
-> of device_unregister().
+On Wed, Jun 09, 2021 at 08:08:06AM -0700, Tom Rix wrote:
 > 
-> Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-> ---
->  drivers/fpga/fpga-region.c | 46 +++++++++++++++++++-------------------
->  1 file changed, 23 insertions(+), 23 deletions(-)
+> On 6/9/21 7:53 AM, Greg KH wrote:
+> > On Wed, Jun 09, 2021 at 07:22:03AM -0700, trix@redhat.com wrote:
+> > > From: Tom Rix <trix@redhat.com>
+> > > 
+> > > The incoming xrt patchset has a toplevel subdir xrt/
+> > > The current fpga/ uses a single dir with filename prefixes to subdivide owners
+> > > For consistency, there should be only one way to organize the fpga/ dir.
+> > > Because the subdir model scales better, refactor to use it.
+> > > The discussion wrt xrt is here:
+> > > https://lore.kernel.org/linux-fpga/68e85a4f-4a10-1ff9-0443-aa565878c855@redhat.com/
+> > > 
+> > > Follow drivers/net/ethernet/ which has control configs
+> > > NET_VENDOR_BLA that map to drivers/net/ethernet/bla
+> > > Since fpgas do not have many vendors, drop the 'VENDOR' and use
+> > > FPGA_BLA.
+> > > 
+> > > There are several new subdirs
+> > > altera/
+> > > dfl/
+> > > lattice/
+> > > xilinx/
+> > > 
+> > > Each subdir has a Kconfig that has a new/reused
+> > > 
+> > > if FPGA_BLA
+> > >    ... existing configs ...
+> > > endif FPGA_BLA
+> > > 
+> > > Which is sourced into the main fpga/Kconfig
+> > > 
+> > > Each subdir has a Makefile whose transversal is controlled in the
+> > > fpga/Makefile by
+> > > 
+> > > obj-$(CONFIG_FPGA_BLA) += bla/
+> > > 
+> > > Some cleanup to arrange thing alphabetically and make fpga/Makefile's
+> > > whitespace look more like net/'s
+> > > 
+> > > Changes from
+> > > v1
+> > >    Drop renaming files
+> > >    Cleanup makefiles
+> > You can rename the files, you just can not rename the .ko objects
+> > without everyone knowing what you are doing and you trying to bury it in
+> > the middle of a differently described patch.
+> > 
+> > If you want to do that, do you?  I don't really understand why you want
+> > to move things around right now other than "we have 40 files in one
+> > directory, ick!".
 > 
-> diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-> index c3134b89c3fe..31836fba559b 100644
-> --- a/drivers/fpga/fpga-region.c
-> +++ b/drivers/fpga/fpga-region.c
-> @@ -181,7 +181,7 @@ ATTRIBUTE_GROUPS(fpga_region);
->  
->  /**
->   * fpga_region_create - alloc and init a struct fpga_region
-> - * @dev: device parent
-> + * @parent: device parent
->   * @mgr: manager that programs this region
->   * @get_bridges: optional function to get bridges to a list
->   *
-> @@ -192,7 +192,7 @@ ATTRIBUTE_GROUPS(fpga_region);
->   * Return: struct fpga_region or NULL
->   */
->  struct fpga_region
-> -*fpga_region_create(struct device *dev,
-> +*fpga_region_create(struct device *parent,
+> I am trying to resolve the layout inconsistency between what we have and
+> what the xrt patchset does.
 
-Same concern, split the renaming changes out.
+Why does it matter?  New stuff can be added to a new dir, why worry
+about old stuff?  What does it hurt?
 
->  		    struct fpga_manager *mgr,
->  		    int (*get_bridges)(struct fpga_region *))
->  {
-> @@ -204,8 +204,10 @@ struct fpga_region
->  		return NULL;
->  
->  	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
-> -	if (id < 0)
-> -		goto err_free;
-> +	if (id < 0) {
-> +		kfree(region);
-> +		return NULL;
-> +	}
->  
->  	region->mgr = mgr;
->  	region->get_bridges = get_bridges;
-> @@ -214,22 +216,17 @@ struct fpga_region
->  
->  	device_initialize(&region->dev);
->  	region->dev.class = fpga_region_class;
-> -	region->dev.parent = dev;
-> -	region->dev.of_node = dev->of_node;
-> +	region->dev.parent = parent;
-> +	region->dev.of_node = parent->of_node;
->  	region->dev.id = id;
->  
->  	ret = dev_set_name(&region->dev, "region%d", id);
-> -	if (ret)
-> -		goto err_remove;
-> +	if (ret) {
-> +		put_device(&region->dev);
-> +		return NULL;
-> +	}
->  
->  	return region;
-> -
-> -err_remove:
-> -	ida_simple_remove(&fpga_region_ida, id);
-> -err_free:
-> -	kfree(region);
-> -
-> -	return NULL;
->  }
->  EXPORT_SYMBOL_GPL(fpga_region_create);
->  
-> @@ -239,8 +236,7 @@ EXPORT_SYMBOL_GPL(fpga_region_create);
->   */
->  void fpga_region_free(struct fpga_region *region)
->  {
-> -	ida_simple_remove(&fpga_region_ida, region->dev.id);
-> -	kfree(region);
-> +	put_device(&region->dev);
->  }
->  EXPORT_SYMBOL_GPL(fpga_region_free);
->  
-> @@ -248,12 +244,12 @@ static void devm_fpga_region_release(struct device *dev, void *res)
->  {
->  	struct fpga_region *region = *(struct fpga_region **)res;
->  
-> -	fpga_region_free(region);
-> +	put_device(&region->dev);
+> The big issue is the files vs dirs.
+> 
+> Over specified filenames is secondary, so I dropped them.
+> 
+> 40 files in one dir is itself not a problem.
+> 
+> having 40 files and an xrt/ is.
 
-Same concern, I prefer to keep it unchanged.
+Why is that a "problem"?
 
-Thanks,
-Yilun
+> fpga/ layout should be consistent so the Makefile and Kconfig are easier to
+> maintain.
 
->  }
->  
->  /**
->   * devm_fpga_region_create - create and initialize a managed FPGA region struct
-> - * @dev: device parent
-> + * @parent: device parent
->   * @mgr: manager that programs this region
->   * @get_bridges: optional function to get bridges to a list
->   *
-> @@ -268,7 +264,7 @@ static void devm_fpga_region_release(struct device *dev, void *res)
->   * Return: struct fpga_region or NULL
->   */
->  struct fpga_region
-> -*devm_fpga_region_create(struct device *dev,
-> +*devm_fpga_region_create(struct device *parent,
->  			 struct fpga_manager *mgr,
->  			 int (*get_bridges)(struct fpga_region *))
->  {
-> @@ -278,12 +274,12 @@ struct fpga_region
->  	if (!ptr)
->  		return NULL;
->  
-> -	region = fpga_region_create(dev, mgr, get_bridges);
-> +	region = fpga_region_create(parent, mgr, get_bridges);
->  	if (!region) {
->  		devres_free(ptr);
->  	} else {
->  		*ptr = region;
-> -		devres_add(dev, ptr);
-> +		devres_add(parent, ptr);
->  	}
->  
->  	return region;
-> @@ -310,12 +306,16 @@ EXPORT_SYMBOL_GPL(fpga_region_register);
->   */
->  void fpga_region_unregister(struct fpga_region *region)
->  {
-> -	device_unregister(&region->dev);
-> +	device_del(&region->dev);
->  }
->  EXPORT_SYMBOL_GPL(fpga_region_unregister);
->  
->  static void fpga_region_dev_release(struct device *dev)
->  {
-> +	struct fpga_region *region = to_fpga_region(dev);
-> +
-> +	ida_simple_remove(&fpga_region_ida, region->dev.id);
-> +	kfree(region);
->  }
->  
->  /**
-> -- 
-> 2.25.1
+Is it somehow hard to maintain today?  Seems pretty trivial to me...
+
+thanks,
+
+greg k-h
