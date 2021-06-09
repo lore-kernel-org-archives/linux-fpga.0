@@ -2,44 +2,44 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48426C48BDF
-	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 22:14:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDA88C48BCD
+	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 22:14:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 324CB613E1
-	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 22:14:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C77AA613E1
+	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 22:14:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229942AbhFIWQp (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        id S229931AbhFIWQp (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
         Wed, 9 Jun 2021 18:16:45 -0400
-Received: from mga18.intel.com ([134.134.136.126]:22626 "EHLO mga18.intel.com"
+Received: from mga18.intel.com ([134.134.136.126]:22632 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229740AbhFIWQo (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S229535AbhFIWQo (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
         Wed, 9 Jun 2021 18:16:44 -0400
-IronPort-SDR: S3zmwZQWZjGuu7JNZj+XrO/MXcoUhQmivat9ychKyyjjJTkyoVq/C9iCZBpGKb1sRZvrn8VHHU
- AybpCADf2mLA==
-X-IronPort-AV: E=McAfee;i="6200,9189,10010"; a="192496217"
+IronPort-SDR: ii1kxKR3+Ieh/8GscXvOsTmt66/dtqZewPZFt+IbnOWVvWGI8mcy7aiJ6r8vOgpv32Ylu72zG4
+ 68BCo94rafmQ==
+X-IronPort-AV: E=McAfee;i="6200,9189,10010"; a="192496216"
 X-IronPort-AV: E=Sophos;i="5.83,261,1616482800"; 
-   d="scan'208";a="192496217"
+   d="scan'208";a="192496216"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2021 15:14:42 -0700
-IronPort-SDR: iEFdpliOxYY7Qtg7U3fOdUrGzN/3md93jlZVuUW7P2dJMgxYlixdbPkyQIhbpdu1Q0V/9C1byR
- dBNF2FB0SaPA==
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2021 15:14:41 -0700
+IronPort-SDR: 7NatYFxQTHRMVebEsIrFrYY7i9/dvFcHr5kLGffjlodUBWMQMrgdYv6dO7A15j/aksgKqzf/cG
+ tUw71CuNMcEA==
 X-IronPort-AV: E=Sophos;i="5.83,261,1616482800"; 
-   d="scan'208";a="477095332"
+   d="scan'208";a="477095326"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.251.20.114])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2021 15:14:41 -0700
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2021 15:14:40 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         richard.gong@intel.com, Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v2 5/8] fpga: region: Rename dev to parent for parent device
-Date:   Wed,  9 Jun 2021 15:11:32 -0700
-Message-Id: <20210609221135.261837-6-russell.h.weight@intel.com>
+Subject: [PATCH v2 4/8] fpga: bridge: Rename dev to parent for parent device
+Date:   Wed,  9 Jun 2021 15:11:31 -0700
+Message-Id: <20210609221135.261837-5-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210609221135.261837-1-russell.h.weight@intel.com>
 References: <20210609221135.261837-1-russell.h.weight@intel.com>
@@ -56,68 +56,86 @@ Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 ---
 v2:
   - This patch contains the renaming of "dev" to "parent" that was previously
-    part of the patch: "fpga: region: Use standard dev_release for class driver"
+    part of the patch: "fpga: bridge: Use standard dev_release for class driver"
 ---
- drivers/fpga/fpga-region.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/fpga/fpga-bridge.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index c3134b89c3fe..563626d66e56 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -181,7 +181,7 @@ ATTRIBUTE_GROUPS(fpga_region);
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index 05c6d4f2d043..6c56afc66a6d 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -313,7 +313,7 @@ ATTRIBUTE_GROUPS(fpga_bridge);
  
  /**
-  * fpga_region_create - alloc and init a struct fpga_region
-- * @dev: device parent
-+ * @parent: device parent
-  * @mgr: manager that programs this region
-  * @get_bridges: optional function to get bridges to a list
+  * fpga_bridge_create - create and initialize a struct fpga_bridge
+- * @dev:	FPGA bridge device from pdev
++ * @parent:	FPGA bridge device from pdev
+  * @name:	FPGA bridge name
+  * @br_ops:	pointer to structure of fpga bridge ops
+  * @priv:	FPGA bridge private data
+@@ -323,7 +323,7 @@ ATTRIBUTE_GROUPS(fpga_bridge);
   *
-@@ -192,7 +192,7 @@ ATTRIBUTE_GROUPS(fpga_region);
-  * Return: struct fpga_region or NULL
+  * Return: struct fpga_bridge or NULL
   */
- struct fpga_region
--*fpga_region_create(struct device *dev,
-+*fpga_region_create(struct device *parent,
- 		    struct fpga_manager *mgr,
- 		    int (*get_bridges)(struct fpga_region *))
+-struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
++struct fpga_bridge *fpga_bridge_create(struct device *parent, const char *name,
+ 				       const struct fpga_bridge_ops *br_ops,
+ 				       void *priv)
  {
-@@ -214,8 +214,8 @@ struct fpga_region
+@@ -331,7 +331,7 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
+ 	int id, ret;
  
- 	device_initialize(&region->dev);
- 	region->dev.class = fpga_region_class;
--	region->dev.parent = dev;
--	region->dev.of_node = dev->of_node;
-+	region->dev.parent = parent;
-+	region->dev.of_node = parent->of_node;
- 	region->dev.id = id;
+ 	if (!name || !strlen(name)) {
+-		dev_err(dev, "Attempt to register with no name!\n");
++		dev_err(parent, "Attempt to register with no name!\n");
+ 		return NULL;
+ 	}
  
- 	ret = dev_set_name(&region->dev, "region%d", id);
-@@ -268,7 +268,7 @@ static void devm_fpga_region_release(struct device *dev, void *res)
-  * Return: struct fpga_region or NULL
+@@ -353,8 +353,8 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
+ 	device_initialize(&bridge->dev);
+ 	bridge->dev.groups = br_ops->groups;
+ 	bridge->dev.class = fpga_bridge_class;
+-	bridge->dev.parent = dev;
+-	bridge->dev.of_node = dev->of_node;
++	bridge->dev.parent = parent;
++	bridge->dev.of_node = parent->of_node;
+ 	bridge->dev.id = id;
+ 
+ 	ret = dev_set_name(&bridge->dev, "br%d", id);
+@@ -392,7 +392,7 @@ static void devm_fpga_bridge_release(struct device *dev, void *res)
+ 
+ /**
+  * devm_fpga_bridge_create - create and init a managed struct fpga_bridge
+- * @dev:	FPGA bridge device from pdev
++ * @parent:	FPGA bridge device from pdev
+  * @name:	FPGA bridge name
+  * @br_ops:	pointer to structure of fpga bridge ops
+  * @priv:	FPGA bridge private data
+@@ -408,7 +408,7 @@ static void devm_fpga_bridge_release(struct device *dev, void *res)
+  *  Return: struct fpga_bridge or NULL
   */
- struct fpga_region
--*devm_fpga_region_create(struct device *dev,
-+*devm_fpga_region_create(struct device *parent,
- 			 struct fpga_manager *mgr,
- 			 int (*get_bridges)(struct fpga_region *))
+ struct fpga_bridge
+-*devm_fpga_bridge_create(struct device *dev, const char *name,
++*devm_fpga_bridge_create(struct device *parent, const char *name,
+ 			 const struct fpga_bridge_ops *br_ops, void *priv)
  {
-@@ -278,12 +278,12 @@ struct fpga_region
+ 	struct fpga_bridge **ptr, *bridge;
+@@ -417,12 +417,12 @@ struct fpga_bridge
  	if (!ptr)
  		return NULL;
  
--	region = fpga_region_create(dev, mgr, get_bridges);
-+	region = fpga_region_create(parent, mgr, get_bridges);
- 	if (!region) {
+-	bridge = fpga_bridge_create(dev, name, br_ops, priv);
++	bridge = fpga_bridge_create(parent, name, br_ops, priv);
+ 	if (!bridge) {
  		devres_free(ptr);
  	} else {
- 		*ptr = region;
+ 		*ptr = bridge;
 -		devres_add(dev, ptr);
 +		devres_add(parent, ptr);
  	}
  
- 	return region;
+ 	return bridge;
 -- 
 2.25.1
 
