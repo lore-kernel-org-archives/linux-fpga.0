@@ -7,39 +7,39 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BF8CC48BD1
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D196C48BE5
 	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 22:14:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4DE7E61377
+	by mail.kernel.org (Postfix) with ESMTP id 8627B613E3
 	for <linux-fpga@archiver.kernel.org>; Wed,  9 Jun 2021 22:14:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229705AbhFIWQq (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 9 Jun 2021 18:16:46 -0400
-Received: from mga18.intel.com ([134.134.136.126]:22626 "EHLO mga18.intel.com"
+        id S229941AbhFIWQr (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 9 Jun 2021 18:16:47 -0400
+Received: from mga18.intel.com ([134.134.136.126]:22632 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229941AbhFIWQp (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S229535AbhFIWQp (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
         Wed, 9 Jun 2021 18:16:45 -0400
-IronPort-SDR: WwDG5hdqOvuu19Y2/z0HpMad40Dbd0Ug0rl0cagkZttsv42m0EozZlhWnPuUIbY+/AJCoYWHHk
- d1d+CkWBQZtw==
-X-IronPort-AV: E=McAfee;i="6200,9189,10010"; a="192496220"
+IronPort-SDR: qCYL81gop8nssK1NUFTmxhk6WhnPoXx9roEJ/fCz+WXGNPJ3AThuQrDwjZtRK61DjCXh+4memj
+ 60S327RFjDIA==
+X-IronPort-AV: E=McAfee;i="6200,9189,10010"; a="192496224"
 X-IronPort-AV: E=Sophos;i="5.83,261,1616482800"; 
-   d="scan'208";a="192496220"
+   d="scan'208";a="192496224"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2021 15:14:42 -0700
-IronPort-SDR: cUXJ2l064KQs4AVlbFw1pIjzeGl5RlgkG1xFIAqzNwUfnbazNIjT2P6Yc3QKcmDzficNz2LC9p
- bBjiCeT6ZGyw==
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2021 15:14:44 -0700
+IronPort-SDR: nBw5Cza1AKQ3ns9FJBQLYlQXbOPpbYqXYwKgXFmx1zrauNnAGUMVXyUaLEdfbHklEsuDmtG2cU
+ WERXK7X/ajpA==
 X-IronPort-AV: E=Sophos;i="5.83,261,1616482800"; 
-   d="scan'208";a="477095335"
+   d="scan'208";a="477095344"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.251.20.114])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2021 15:14:42 -0700
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2021 15:14:44 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         richard.gong@intel.com, Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v2 6/8] fpga: mgr: Use standard dev_release for class driver
-Date:   Wed,  9 Jun 2021 15:11:33 -0700
-Message-Id: <20210609221135.261837-7-russell.h.weight@intel.com>
+Subject: [PATCH v2 8/8] fpga: region: Use standard dev_release for class driver
+Date:   Wed,  9 Jun 2021 15:11:35 -0700
+Message-Id: <20210609221135.261837-9-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210609221135.261837-1-russell.h.weight@intel.com>
 References: <20210609221135.261837-1-russell.h.weight@intel.com>
@@ -49,109 +49,98 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The FPGA manager class driver data structure is being treated as a
-managed resource instead of using the class.dev_release call-back
-function to release the class data structure. This change populates
-the class.dev_release function, changes the fpga_mgr_free() function
-to call put_device() and changes the fpga_mgr_unregister() function
-to call device_del() instead of device_unregister().
+The FPGA region class driver data structure is being treated as a managed
+resource instead of using standard dev_release call-back to release the
+class data structure. This change populates the class.dev_release function
+and changes the fpga_region_free() function to call put_device().
+It also changes fpga_region_unregister() to call device_del() instead
+of device_unregister().
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 ---
 v2:
   - Moved the renaming of "dev" to "parent" to a separate patch
-  - Call fpga_mgr_free() in devm_fpga_mgr_release() instead of put_device()
+  - Call fpga_region_free() in devm_fpga_region_release() instead of put_device()
 ---
- drivers/fpga/fpga-mgr.c | 35 +++++++++++++++--------------------
- 1 file changed, 15 insertions(+), 20 deletions(-)
+ drivers/fpga/fpga-region.c | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 42ddc0844781..9f6c3760b6ff 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -585,8 +585,10 @@ struct fpga_manager *fpga_mgr_create(struct device *parent, const char *name,
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index 563626d66e56..bdc15fab60c0 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -204,8 +204,10 @@ struct fpga_region
  		return NULL;
  
- 	id = ida_simple_get(&fpga_mgr_ida, 0, 0, GFP_KERNEL);
+ 	id = ida_simple_get(&fpga_region_ida, 0, 0, GFP_KERNEL);
 -	if (id < 0)
--		goto error_kfree;
+-		goto err_free;
 +	if (id < 0) {
-+		kfree(mgr);
++		kfree(region);
 +		return NULL;
 +	}
  
- 	mutex_init(&mgr->ref_mutex);
+ 	region->mgr = mgr;
+ 	region->get_bridges = get_bridges;
+@@ -219,17 +221,12 @@ struct fpga_region
+ 	region->dev.id = id;
  
-@@ -602,17 +604,12 @@ struct fpga_manager *fpga_mgr_create(struct device *parent, const char *name,
- 	mgr->dev.id = id;
- 
- 	ret = dev_set_name(&mgr->dev, "fpga%d", id);
+ 	ret = dev_set_name(&region->dev, "region%d", id);
 -	if (ret)
--		goto error_device;
+-		goto err_remove;
 +	if (ret) {
-+		put_device(&mgr->dev);
++		put_device(&region->dev);
 +		return NULL;
 +	}
  
- 	return mgr;
+ 	return region;
 -
--error_device:
--	ida_simple_remove(&fpga_mgr_ida, id);
--error_kfree:
--	kfree(mgr);
+-err_remove:
+-	ida_simple_remove(&fpga_region_ida, id);
+-err_free:
+-	kfree(region);
 -
 -	return NULL;
  }
- EXPORT_SYMBOL_GPL(fpga_mgr_create);
+ EXPORT_SYMBOL_GPL(fpga_region_create);
  
-@@ -622,8 +619,7 @@ EXPORT_SYMBOL_GPL(fpga_mgr_create);
+@@ -239,8 +236,7 @@ EXPORT_SYMBOL_GPL(fpga_region_create);
   */
- void fpga_mgr_free(struct fpga_manager *mgr)
+ void fpga_region_free(struct fpga_region *region)
  {
--	ida_simple_remove(&fpga_mgr_ida, mgr->dev.id);
--	kfree(mgr);
-+	put_device(&mgr->dev);
+-	ida_simple_remove(&fpga_region_ida, region->dev.id);
+-	kfree(region);
++	put_device(&region->dev);
  }
- EXPORT_SYMBOL_GPL(fpga_mgr_free);
+ EXPORT_SYMBOL_GPL(fpga_region_free);
  
-@@ -692,16 +688,11 @@ int fpga_mgr_register(struct fpga_manager *mgr)
+@@ -253,7 +249,7 @@ static void devm_fpga_region_release(struct device *dev, void *res)
  
- 	ret = device_add(&mgr->dev);
- 	if (ret)
--		goto error_device;
-+		return ret;
- 
- 	dev_info(&mgr->dev, "%s registered\n", mgr->name);
- 
- 	return 0;
--
--error_device:
--	ida_simple_remove(&fpga_mgr_ida, mgr->dev.id);
--
--	return ret;
- }
- EXPORT_SYMBOL_GPL(fpga_mgr_register);
- 
-@@ -722,7 +713,7 @@ void fpga_mgr_unregister(struct fpga_manager *mgr)
- 	if (mgr->mops->fpga_remove)
- 		mgr->mops->fpga_remove(mgr);
- 
--	device_unregister(&mgr->dev);
-+	device_del(&mgr->dev);
- }
- EXPORT_SYMBOL_GPL(fpga_mgr_unregister);
- 
-@@ -781,6 +772,10 @@ EXPORT_SYMBOL_GPL(devm_fpga_mgr_register);
- 
- static void fpga_mgr_dev_release(struct device *dev)
+ /**
+  * devm_fpga_region_create - create and initialize a managed FPGA region struct
+- * @dev: device parent
++ * @parent: device parent
+  * @mgr: manager that programs this region
+  * @get_bridges: optional function to get bridges to a list
+  *
+@@ -310,12 +306,16 @@ EXPORT_SYMBOL_GPL(fpga_region_register);
+  */
+ void fpga_region_unregister(struct fpga_region *region)
  {
-+	struct fpga_manager *mgr = to_fpga_manager(dev);
+-	device_unregister(&region->dev);
++	device_del(&region->dev);
+ }
+ EXPORT_SYMBOL_GPL(fpga_region_unregister);
+ 
+ static void fpga_region_dev_release(struct device *dev)
+ {
++	struct fpga_region *region = to_fpga_region(dev);
 +
-+	ida_simple_remove(&fpga_mgr_ida, mgr->dev.id);
-+	kfree(mgr);
++	ida_simple_remove(&fpga_region_ida, region->dev.id);
++	kfree(region);
  }
  
- static int __init fpga_mgr_class_init(void)
+ /**
 -- 
 2.25.1
 
