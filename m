@@ -2,44 +2,44 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C0E0C48BE6
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Jun 2021 19:34:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D4E2C48BE5
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Jun 2021 19:34:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E53096141D
+	by mail.kernel.org (Postfix) with ESMTP id 0ACEF61419
 	for <linux-fpga@archiver.kernel.org>; Thu, 10 Jun 2021 19:34:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230478AbhFJTgc (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        id S230322AbhFJTgc (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
         Thu, 10 Jun 2021 15:36:32 -0400
 Received: from mga17.intel.com ([192.55.52.151]:36545 "EHLO mga17.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230462AbhFJTgc (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 10 Jun 2021 15:36:32 -0400
-IronPort-SDR: ugJ/TnypSr5v709c5kREWrWAIeFYF60dHFqMdGHR2Lyeys4QociW5U6H+Y7Ftsv3mJmJHi8HLm
- bgk/IL6o2w5A==
-X-IronPort-AV: E=McAfee;i="6200,9189,10011"; a="185756081"
+        id S230462AbhFJTgb (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 10 Jun 2021 15:36:31 -0400
+IronPort-SDR: HYVwLFb3MaHAsexnOuaiyZUyGLm/ZgJq++52O/ov2EbGpArElIaabzGDT8iOY0Tb3y8L3IKXOn
+ 0wvD8dIa7BQw==
+X-IronPort-AV: E=McAfee;i="6200,9189,10011"; a="185756072"
 X-IronPort-AV: E=Sophos;i="5.83,264,1616482800"; 
-   d="scan'208";a="185756081"
+   d="scan'208";a="185756072"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2021 12:34:32 -0700
-IronPort-SDR: bxhmxWsGHqQmxdCKzm2LXiX+1Jv0yA3aXqRLIslgg1NQmOOxVuzI3dQD9mOc6IikV7Mr5nXrKU
- ojxcSH65jnow==
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2021 12:34:28 -0700
+IronPort-SDR: y82jeO9v9SFrcwnrw4gVjWpBwuOMoq9dYiwUExMoWsLrxWpe9Yd+EAIP3+xlfbLZqE1fbtGItw
+ e9M462aaSL8A==
 X-IronPort-AV: E=Sophos;i="5.83,264,1616482800"; 
-   d="scan'208";a="477458097"
+   d="scan'208";a="477458080"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.212.184.121])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2021 12:34:29 -0700
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2021 12:34:28 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         richard.gong@intel.com, Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v3 4/8] fpga: bridge: Rename dev to parent for parent device
-Date:   Thu, 10 Jun 2021 12:34:18 -0700
-Message-Id: <20210610193422.286835-5-russell.h.weight@intel.com>
+Subject: [PATCH v3 2/8] fpga: stratix10-soc: Add missing fpga_mgr_free() call
+Date:   Thu, 10 Jun 2021 12:34:16 -0700
+Message-Id: <20210610193422.286835-3-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210610193422.286835-1-russell.h.weight@intel.com>
 References: <20210610193422.286835-1-russell.h.weight@intel.com>
@@ -49,96 +49,33 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Rename variable "dev" to "parent" in cases where it represents the parent
-device.
+The stratix10-soc driver uses fpga_mgr_create() function and is therefore
+responsible to call fpga_mgr_free() to release the class driver resources.
+Add a missing call to fpga_mgr_free in the s10_remove() function.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Reviewed-by: Xu Yilun <yilun.xu@intel.com>
 ---
 v3:
-  - Added Reviewed-by tag
+  - No change
 v2:
-  - This patch contains the renaming of "dev" to "parent" that was previously
-    part of the patch: "fpga: bridge: Use standard dev_release for class driver"
+  - Added reviewed-by tag
 ---
- drivers/fpga/fpga-bridge.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/fpga/stratix10-soc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index 05c6d4f2d043..6c56afc66a6d 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -313,7 +313,7 @@ ATTRIBUTE_GROUPS(fpga_bridge);
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index 657a70c5fc99..9e34bbbce26e 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -454,6 +454,7 @@ static int s10_remove(struct platform_device *pdev)
+ 	struct s10_priv *priv = mgr->priv;
  
- /**
-  * fpga_bridge_create - create and initialize a struct fpga_bridge
-- * @dev:	FPGA bridge device from pdev
-+ * @parent:	FPGA bridge device from pdev
-  * @name:	FPGA bridge name
-  * @br_ops:	pointer to structure of fpga bridge ops
-  * @priv:	FPGA bridge private data
-@@ -323,7 +323,7 @@ ATTRIBUTE_GROUPS(fpga_bridge);
-  *
-  * Return: struct fpga_bridge or NULL
-  */
--struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
-+struct fpga_bridge *fpga_bridge_create(struct device *parent, const char *name,
- 				       const struct fpga_bridge_ops *br_ops,
- 				       void *priv)
- {
-@@ -331,7 +331,7 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
- 	int id, ret;
+ 	fpga_mgr_unregister(mgr);
++	fpga_mgr_free(mgr);
+ 	stratix10_svc_free_channel(priv->chan);
  
- 	if (!name || !strlen(name)) {
--		dev_err(dev, "Attempt to register with no name!\n");
-+		dev_err(parent, "Attempt to register with no name!\n");
- 		return NULL;
- 	}
- 
-@@ -353,8 +353,8 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
- 	device_initialize(&bridge->dev);
- 	bridge->dev.groups = br_ops->groups;
- 	bridge->dev.class = fpga_bridge_class;
--	bridge->dev.parent = dev;
--	bridge->dev.of_node = dev->of_node;
-+	bridge->dev.parent = parent;
-+	bridge->dev.of_node = parent->of_node;
- 	bridge->dev.id = id;
- 
- 	ret = dev_set_name(&bridge->dev, "br%d", id);
-@@ -392,7 +392,7 @@ static void devm_fpga_bridge_release(struct device *dev, void *res)
- 
- /**
-  * devm_fpga_bridge_create - create and init a managed struct fpga_bridge
-- * @dev:	FPGA bridge device from pdev
-+ * @parent:	FPGA bridge device from pdev
-  * @name:	FPGA bridge name
-  * @br_ops:	pointer to structure of fpga bridge ops
-  * @priv:	FPGA bridge private data
-@@ -408,7 +408,7 @@ static void devm_fpga_bridge_release(struct device *dev, void *res)
-  *  Return: struct fpga_bridge or NULL
-  */
- struct fpga_bridge
--*devm_fpga_bridge_create(struct device *dev, const char *name,
-+*devm_fpga_bridge_create(struct device *parent, const char *name,
- 			 const struct fpga_bridge_ops *br_ops, void *priv)
- {
- 	struct fpga_bridge **ptr, *bridge;
-@@ -417,12 +417,12 @@ struct fpga_bridge
- 	if (!ptr)
- 		return NULL;
- 
--	bridge = fpga_bridge_create(dev, name, br_ops, priv);
-+	bridge = fpga_bridge_create(parent, name, br_ops, priv);
- 	if (!bridge) {
- 		devres_free(ptr);
- 	} else {
- 		*ptr = bridge;
--		devres_add(dev, ptr);
-+		devres_add(parent, ptr);
- 	}
- 
- 	return bridge;
+ 	return 0;
 -- 
 2.25.1
 
