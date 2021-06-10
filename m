@@ -2,44 +2,44 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B303C48BE0
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Jun 2021 19:34:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C0E0C48BE6
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Jun 2021 19:34:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0532A6141D
-	for <linux-fpga@archiver.kernel.org>; Thu, 10 Jun 2021 19:34:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E53096141D
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Jun 2021 19:34:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230117AbhFJTgb (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 10 Jun 2021 15:36:31 -0400
+        id S230478AbhFJTgc (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 10 Jun 2021 15:36:32 -0400
 Received: from mga17.intel.com ([192.55.52.151]:36545 "EHLO mga17.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230322AbhFJTga (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 10 Jun 2021 15:36:30 -0400
-IronPort-SDR: l92XTwMw0Kq/QyPTCFP2lS8W1/V9d9BOpBEpljL7X7luHKLfNQfbw/NhTWZ2AEPFqndNy0dLEq
- E0Yek1HAaTEg==
-X-IronPort-AV: E=McAfee;i="6200,9189,10011"; a="185756070"
+        id S230462AbhFJTgc (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Thu, 10 Jun 2021 15:36:32 -0400
+IronPort-SDR: ugJ/TnypSr5v709c5kREWrWAIeFYF60dHFqMdGHR2Lyeys4QociW5U6H+Y7Ftsv3mJmJHi8HLm
+ bgk/IL6o2w5A==
+X-IronPort-AV: E=McAfee;i="6200,9189,10011"; a="185756081"
 X-IronPort-AV: E=Sophos;i="5.83,264,1616482800"; 
-   d="scan'208";a="185756070"
+   d="scan'208";a="185756081"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2021 12:34:28 -0700
-IronPort-SDR: Tng3ZgZVaUyIDZ+2gx1oxxELsoBCK1TqWp/U3Z5GaAMX7Tr+o61kOk2THjPohpUGVDa/GaKMkG
- Ivz9VHIP+KLQ==
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2021 12:34:32 -0700
+IronPort-SDR: bxhmxWsGHqQmxdCKzm2LXiX+1Jv0yA3aXqRLIslgg1NQmOOxVuzI3dQD9mOc6IikV7Mr5nXrKU
+ ojxcSH65jnow==
 X-IronPort-AV: E=Sophos;i="5.83,264,1616482800"; 
-   d="scan'208";a="477458076"
+   d="scan'208";a="477458097"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.212.184.121])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2021 12:34:27 -0700
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2021 12:34:29 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         richard.gong@intel.com, Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v3 1/8] fpga: altera-pr-ip: Remove function alt_pr_unregister
-Date:   Thu, 10 Jun 2021 12:34:15 -0700
-Message-Id: <20210610193422.286835-2-russell.h.weight@intel.com>
+Subject: [PATCH v3 4/8] fpga: bridge: Rename dev to parent for parent device
+Date:   Thu, 10 Jun 2021 12:34:18 -0700
+Message-Id: <20210610193422.286835-5-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210610193422.286835-1-russell.h.weight@intel.com>
 References: <20210610193422.286835-1-russell.h.weight@intel.com>
@@ -49,7 +49,8 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Remove the alt_pr_unregister() function; it is no longer used.
+Rename variable "dev" to "parent" in cases where it represents the parent
+device.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Reviewed-by: Xu Yilun <yilun.xu@intel.com>
@@ -57,47 +58,87 @@ Reviewed-by: Xu Yilun <yilun.xu@intel.com>
 v3:
   - Added Reviewed-by tag
 v2:
-  - The first version of this patch was entitled:
-    "fpga: altera-pr-ip: Remove function alt_pr_unregister". This version of the
-    patch removes the alt_pr_unregister() function altogether, instead of just
-    removing portions of it.
+  - This patch contains the renaming of "dev" to "parent" that was previously
+    part of the patch: "fpga: bridge: Use standard dev_release for class driver"
 ---
- drivers/fpga/altera-pr-ip-core.c       | 10 ----------
- include/linux/fpga/altera-pr-ip-core.h |  1 -
- 2 files changed, 11 deletions(-)
+ drivers/fpga/fpga-bridge.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/fpga/altera-pr-ip-core.c b/drivers/fpga/altera-pr-ip-core.c
-index 5b130c4d9882..dfdf21ed34c4 100644
---- a/drivers/fpga/altera-pr-ip-core.c
-+++ b/drivers/fpga/altera-pr-ip-core.c
-@@ -199,16 +199,6 @@ int alt_pr_register(struct device *dev, void __iomem *reg_base)
- }
- EXPORT_SYMBOL_GPL(alt_pr_register);
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index 05c6d4f2d043..6c56afc66a6d 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -313,7 +313,7 @@ ATTRIBUTE_GROUPS(fpga_bridge);
  
--void alt_pr_unregister(struct device *dev)
--{
--	struct fpga_manager *mgr = dev_get_drvdata(dev);
--
--	dev_dbg(dev, "%s\n", __func__);
--
--	fpga_mgr_unregister(mgr);
--}
--EXPORT_SYMBOL_GPL(alt_pr_unregister);
--
- MODULE_AUTHOR("Matthew Gerlach <matthew.gerlach@linux.intel.com>");
- MODULE_DESCRIPTION("Altera Partial Reconfiguration IP Core");
- MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/fpga/altera-pr-ip-core.h b/include/linux/fpga/altera-pr-ip-core.h
-index 0b08ac20ab16..a6b4c07858cc 100644
---- a/include/linux/fpga/altera-pr-ip-core.h
-+++ b/include/linux/fpga/altera-pr-ip-core.h
-@@ -13,6 +13,5 @@
- #include <linux/io.h>
+ /**
+  * fpga_bridge_create - create and initialize a struct fpga_bridge
+- * @dev:	FPGA bridge device from pdev
++ * @parent:	FPGA bridge device from pdev
+  * @name:	FPGA bridge name
+  * @br_ops:	pointer to structure of fpga bridge ops
+  * @priv:	FPGA bridge private data
+@@ -323,7 +323,7 @@ ATTRIBUTE_GROUPS(fpga_bridge);
+  *
+  * Return: struct fpga_bridge or NULL
+  */
+-struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
++struct fpga_bridge *fpga_bridge_create(struct device *parent, const char *name,
+ 				       const struct fpga_bridge_ops *br_ops,
+ 				       void *priv)
+ {
+@@ -331,7 +331,7 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
+ 	int id, ret;
  
- int alt_pr_register(struct device *dev, void __iomem *reg_base);
--void alt_pr_unregister(struct device *dev);
+ 	if (!name || !strlen(name)) {
+-		dev_err(dev, "Attempt to register with no name!\n");
++		dev_err(parent, "Attempt to register with no name!\n");
+ 		return NULL;
+ 	}
  
- #endif /* _ALT_PR_IP_CORE_H */
+@@ -353,8 +353,8 @@ struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
+ 	device_initialize(&bridge->dev);
+ 	bridge->dev.groups = br_ops->groups;
+ 	bridge->dev.class = fpga_bridge_class;
+-	bridge->dev.parent = dev;
+-	bridge->dev.of_node = dev->of_node;
++	bridge->dev.parent = parent;
++	bridge->dev.of_node = parent->of_node;
+ 	bridge->dev.id = id;
+ 
+ 	ret = dev_set_name(&bridge->dev, "br%d", id);
+@@ -392,7 +392,7 @@ static void devm_fpga_bridge_release(struct device *dev, void *res)
+ 
+ /**
+  * devm_fpga_bridge_create - create and init a managed struct fpga_bridge
+- * @dev:	FPGA bridge device from pdev
++ * @parent:	FPGA bridge device from pdev
+  * @name:	FPGA bridge name
+  * @br_ops:	pointer to structure of fpga bridge ops
+  * @priv:	FPGA bridge private data
+@@ -408,7 +408,7 @@ static void devm_fpga_bridge_release(struct device *dev, void *res)
+  *  Return: struct fpga_bridge or NULL
+  */
+ struct fpga_bridge
+-*devm_fpga_bridge_create(struct device *dev, const char *name,
++*devm_fpga_bridge_create(struct device *parent, const char *name,
+ 			 const struct fpga_bridge_ops *br_ops, void *priv)
+ {
+ 	struct fpga_bridge **ptr, *bridge;
+@@ -417,12 +417,12 @@ struct fpga_bridge
+ 	if (!ptr)
+ 		return NULL;
+ 
+-	bridge = fpga_bridge_create(dev, name, br_ops, priv);
++	bridge = fpga_bridge_create(parent, name, br_ops, priv);
+ 	if (!bridge) {
+ 		devres_free(ptr);
+ 	} else {
+ 		*ptr = bridge;
+-		devres_add(dev, ptr);
++		devres_add(parent, ptr);
+ 	}
+ 
+ 	return bridge;
 -- 
 2.25.1
 
