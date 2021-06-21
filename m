@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F898C49EAF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA25DC49EA2
 	for <linux-fpga@archiver.kernel.org>; Mon, 21 Jun 2021 07:06:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 47AEC611C1
+	by mail.kernel.org (Postfix) with ESMTP id D6F8661156
 	for <linux-fpga@archiver.kernel.org>; Mon, 21 Jun 2021 07:06:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230306AbhFUHIy (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 21 Jun 2021 03:08:54 -0400
-Received: from first.geanix.com ([116.203.34.67]:54118 "EHLO first.geanix.com"
+        id S230311AbhFUHIz (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 21 Jun 2021 03:08:55 -0400
+Received: from first.geanix.com ([116.203.34.67]:54084 "EHLO first.geanix.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230170AbhFUHIt (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 21 Jun 2021 03:08:49 -0400
+        id S229583AbhFUHIq (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 21 Jun 2021 03:08:46 -0400
 Received: from 185.17.218.86 (unknown [185.17.218.86])
-        by first.geanix.com (Postfix) with ESMTPSA id AAC414C3BBA;
-        Mon, 21 Jun 2021 07:06:33 +0000 (UTC)
+        by first.geanix.com (Postfix) with ESMTPSA id 178754C3BB8;
+        Mon, 21 Jun 2021 07:06:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=silicom.dk; s=first;
-        t=1624259193; bh=FQ6OmgXuxLP0LFgo3KI2yKErrT4d+o1nxrmrp3bEEeo=;
+        t=1624259190; bh=e3h4F5C3FTTVvZujv41AeP7Sff71JQ2Cctc9Xe9XIFs=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=biRmxCoeMc1eeHhzn66fWqS0A12JgTku2fYxF3bgQQIRzqoLFUSYIqsWG0Kx5fP5x
-         FkcojwIlBNEaMBpqsiyObxZalGB0RuF5EUpUlcrUewIC5B8Ynu0NQO7uVNWT75mN6V
-         ilVLQu1z3gesU7I4gXA6G+FM8oyzz1gi634dBv/+W969vn0PZH/MYV2be6jJJSdBjr
-         OWorwkB/TJJ1ESJxiK/GR1TgowlbzY7JfEDpdlwoapD9LTMxggvC8le0xtxGYzwRVS
-         g2GODuB8S0EeY61Hrda6yt9ZDvvZMHnv4+7P100+X3pkEJ0voYaY0VpQIcyuD00v0g
-         vnGlL8xJXbfWg==
+        b=K+fM+uVUJKzZqm93n6/x114b/dsA0eaUMioKpKEdZvL0JHN4fMDBi3REyC5Zq7GqZ
+         v4GylqkFXGTsKjVPImUInd66OLG2qbTp80wOIdTtp/FwMi+IMktUkLfcoy2ZIgumN4
+         0pwlvxxhYnDUTeOARSOwDpeKzB1AwDtVHA2M5Oh94MR6yUPNFY8YXoGbctKqLWviHz
+         JWNZtEiyBKhIYW8EPXQc/Tdn7inaHWkjeXY4usy9k4LwOd2IkBPjrmnn6taf86kp3a
+         A/w/AQsb3fVLb+uDJ4Mech467WmpGANOU+JeCoGbudw6oUyF3tsLkc9/WAlZDGfS/J
+         tcwOpTRQg85mQ==
 From:   =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <mhu@silicom.dk>
 To:     Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
         Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
@@ -42,9 +42,9 @@ Cc:     =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <mhu@geanix.com>,
         linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-hwmon@vger.kernel.org, linux-spi@vger.kernel.org,
         =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <mhu@silicom.dk>
-Subject: [PATCH 3/4] spi: spi-altera-dfl: support n5010 feature revision
-Date:   Mon, 21 Jun 2021 09:06:20 +0200
-Message-Id: <20210621070621.431482-4-mhu@silicom.dk>
+Subject: [PATCH 1/4] fpga: dfl: pci: add device IDs for Silicom N501x PAC cards
+Date:   Mon, 21 Jun 2021 09:06:18 +0200
+Message-Id: <20210621070621.431482-2-mhu@silicom.dk>
 X-Mailer: git-send-email 2.31.0
 In-Reply-To: <20210621070621.431482-1-mhu@silicom.dk>
 References: <20210621070621.431482-1-mhu@silicom.dk>
@@ -55,55 +55,37 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The Max10 BMC on the Silicom n5010 PAC is slightly different than the
-existing BMC's, so use a dedicated feature revision detect it.
+This adds the approved PCI Express Device IDs for the
+Silicom PAC N5010 and N5011 cards.
 
 Signed-off-by: Martin Hundebøll <mhu@silicom.dk>
 ---
- drivers/spi/spi-altera-dfl.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ drivers/fpga/dfl-pci.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/spi/spi-altera-dfl.c b/drivers/spi/spi-altera-dfl.c
-index 3e32e4fe5895..d4908db39d87 100644
---- a/drivers/spi/spi-altera-dfl.c
-+++ b/drivers/spi/spi-altera-dfl.c
-@@ -111,6 +111,13 @@ static struct spi_board_info m10_bmc_info = {
- 	.chip_select = 0,
+diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+index b44523ea8c91..4d68719e608f 100644
+--- a/drivers/fpga/dfl-pci.c
++++ b/drivers/fpga/dfl-pci.c
+@@ -74,6 +74,9 @@ static void cci_pci_free_irq(struct pci_dev *pcidev)
+ #define PCIE_DEVICE_ID_PF_DSC_1_X		0x09C4
+ #define PCIE_DEVICE_ID_INTEL_PAC_N3000		0x0B30
+ #define PCIE_DEVICE_ID_INTEL_PAC_D5005		0x0B2B
++#define PCIE_DEVICE_ID_SILICOM_PAC_N5010	0x1000
++#define PCIE_DEVICE_ID_SILICOM_PAC_N5011	0x1001
++
+ /* VF Device */
+ #define PCIE_DEVICE_ID_VF_INT_5_X		0xBCBF
+ #define PCIE_DEVICE_ID_VF_INT_6_X		0xBCC1
+@@ -90,6 +93,8 @@ static struct pci_device_id cci_pcie_id_tbl[] = {
+ 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_PAC_N3000),},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_PAC_D5005),},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_PAC_D5005_VF),},
++	{PCI_DEVICE(PCI_VENDOR_ID_SILICOM_DENMARK, PCIE_DEVICE_ID_SILICOM_PAC_N5010),},
++	{PCI_DEVICE(PCI_VENDOR_ID_SILICOM_DENMARK, PCIE_DEVICE_ID_SILICOM_PAC_N5011),},
+ 	{0,}
  };
- 
-+static struct spi_board_info m10_n5010_bmc_info = {
-+	.modalias = "m10-n5010",
-+	.max_speed_hz = 12500000,
-+	.bus_num = 0,
-+	.chip_select = 0,
-+};
-+
- static void config_spi_master(void __iomem *base, struct spi_master *master)
- {
- 	u64 v;
-@@ -130,6 +137,7 @@ static void config_spi_master(void __iomem *base, struct spi_master *master)
- 
- static int dfl_spi_altera_probe(struct dfl_device *dfl_dev)
- {
-+	struct spi_board_info *board_info = &m10_bmc_info;
- 	struct device *dev = &dfl_dev->dev;
- 	struct spi_master *master;
- 	struct altera_spi *hw;
-@@ -172,9 +180,12 @@ static int dfl_spi_altera_probe(struct dfl_device *dfl_dev)
- 		goto exit;
- 	}
- 
--	if (!spi_new_device(master,  &m10_bmc_info)) {
-+	if (dfl_feature_revision(base) == FME_FEATURE_REV_MAX10_SPI_N5010)
-+		board_info = &m10_n5010_bmc_info;
-+
-+	if (!spi_new_device(master, board_info)) {
- 		dev_err(dev, "%s failed to create SPI device: %s\n",
--			__func__, m10_bmc_info.modalias);
-+			__func__, board_info->modalias);
- 	}
- 
- 	return 0;
+ MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
 -- 
 2.31.0
 
