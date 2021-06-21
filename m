@@ -2,35 +2,35 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA25DC49EA2
-	for <linux-fpga@archiver.kernel.org>; Mon, 21 Jun 2021 07:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1590C49EA5
+	for <linux-fpga@archiver.kernel.org>; Mon, 21 Jun 2021 07:06:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D6F8661156
-	for <linux-fpga@archiver.kernel.org>; Mon, 21 Jun 2021 07:06:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CF3E461205
+	for <linux-fpga@archiver.kernel.org>; Mon, 21 Jun 2021 07:06:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230311AbhFUHIz (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 21 Jun 2021 03:08:55 -0400
-Received: from first.geanix.com ([116.203.34.67]:54084 "EHLO first.geanix.com"
+        id S230379AbhFUHJA (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 21 Jun 2021 03:09:00 -0400
+Received: from first.geanix.com ([116.203.34.67]:54126 "EHLO first.geanix.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229583AbhFUHIq (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 21 Jun 2021 03:08:46 -0400
+        id S230215AbhFUHIw (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 21 Jun 2021 03:08:52 -0400
 Received: from 185.17.218.86 (unknown [185.17.218.86])
-        by first.geanix.com (Postfix) with ESMTPSA id 178754C3BB8;
-        Mon, 21 Jun 2021 07:06:30 +0000 (UTC)
+        by first.geanix.com (Postfix) with ESMTPSA id 76C904C3BBC;
+        Mon, 21 Jun 2021 07:06:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=silicom.dk; s=first;
-        t=1624259190; bh=e3h4F5C3FTTVvZujv41AeP7Sff71JQ2Cctc9Xe9XIFs=;
+        t=1624259195; bh=1YwLc2H2BckkRj4vXarfWOOaU87sQ2pkK5QQqGvScrs=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=K+fM+uVUJKzZqm93n6/x114b/dsA0eaUMioKpKEdZvL0JHN4fMDBi3REyC5Zq7GqZ
-         v4GylqkFXGTsKjVPImUInd66OLG2qbTp80wOIdTtp/FwMi+IMktUkLfcoy2ZIgumN4
-         0pwlvxxhYnDUTeOARSOwDpeKzB1AwDtVHA2M5Oh94MR6yUPNFY8YXoGbctKqLWviHz
-         JWNZtEiyBKhIYW8EPXQc/Tdn7inaHWkjeXY4usy9k4LwOd2IkBPjrmnn6taf86kp3a
-         A/w/AQsb3fVLb+uDJ4Mech467WmpGANOU+JeCoGbudw6oUyF3tsLkc9/WAlZDGfS/J
-         tcwOpTRQg85mQ==
+        b=ljBIetRDvDNk1Wi57+NSQK2gErXzawHV/SpY31t300IVoZP58COWVdymENVN5Duvk
+         LR2HJaPm6Me5lTjgShpi9xsz0GbjabCcGZsXUkRZGYOkLxNiBg4ccBRInpkXN5+dcE
+         TIP6Mn2wisOAZtKZBqIrx6Ly7uQoU/lKzMOumYQAiS47IHO6GUv9XIvtC0xuyX8f6P
+         CzvSW7+ePHI2GfLln/pumcqNc50v+xmJliTPi/YFiEo80+EcIJhcGRXPcgqYO8Y1CN
+         RMEJgBcSI8UrwBPjDiCO8OFcx8KLBNeMDmnTYztgO2VT3ZfcBvrSZ5BwQh5A7o8TTZ
+         URNdd7I8Noezg==
 From:   =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <mhu@silicom.dk>
 To:     Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
         Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
@@ -42,9 +42,9 @@ Cc:     =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <mhu@geanix.com>,
         linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-hwmon@vger.kernel.org, linux-spi@vger.kernel.org,
         =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <mhu@silicom.dk>
-Subject: [PATCH 1/4] fpga: dfl: pci: add device IDs for Silicom N501x PAC cards
-Date:   Mon, 21 Jun 2021 09:06:18 +0200
-Message-Id: <20210621070621.431482-2-mhu@silicom.dk>
+Subject: [PATCH 4/4] hwmon: intel-m10-bmc: add sensor support for Silicom N5010 card
+Date:   Mon, 21 Jun 2021 09:06:21 +0200
+Message-Id: <20210621070621.431482-5-mhu@silicom.dk>
 X-Mailer: git-send-email 2.31.0
 In-Reply-To: <20210621070621.431482-1-mhu@silicom.dk>
 References: <20210621070621.431482-1-mhu@silicom.dk>
@@ -55,37 +55,193 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-This adds the approved PCI Express Device IDs for the
-Silicom PAC N5010 and N5011 cards.
+The Silicom N5010 PAC is similar to Intel N3000 and D5005. Enable
+monitoring of its sensors like it is done for the two Intel cards.
 
 Signed-off-by: Martin Hundebøll <mhu@silicom.dk>
 ---
- drivers/fpga/dfl-pci.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/hwmon/intel-m10-bmc-hwmon.c | 116 ++++++++++++++++++++++++++++
+ drivers/mfd/intel-m10-bmc.c         |  12 ++-
+ 2 files changed, 127 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index b44523ea8c91..4d68719e608f 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -74,6 +74,9 @@ static void cci_pci_free_irq(struct pci_dev *pcidev)
- #define PCIE_DEVICE_ID_PF_DSC_1_X		0x09C4
- #define PCIE_DEVICE_ID_INTEL_PAC_N3000		0x0B30
- #define PCIE_DEVICE_ID_INTEL_PAC_D5005		0x0B2B
-+#define PCIE_DEVICE_ID_SILICOM_PAC_N5010	0x1000
-+#define PCIE_DEVICE_ID_SILICOM_PAC_N5011	0x1001
-+
- /* VF Device */
- #define PCIE_DEVICE_ID_VF_INT_5_X		0xBCBF
- #define PCIE_DEVICE_ID_VF_INT_6_X		0xBCC1
-@@ -90,6 +93,8 @@ static struct pci_device_id cci_pcie_id_tbl[] = {
- 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_PAC_N3000),},
- 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_PAC_D5005),},
- 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_PAC_D5005_VF),},
-+	{PCI_DEVICE(PCI_VENDOR_ID_SILICOM_DENMARK, PCIE_DEVICE_ID_SILICOM_PAC_N5010),},
-+	{PCI_DEVICE(PCI_VENDOR_ID_SILICOM_DENMARK, PCIE_DEVICE_ID_SILICOM_PAC_N5011),},
- 	{0,}
+diff --git a/drivers/hwmon/intel-m10-bmc-hwmon.c b/drivers/hwmon/intel-m10-bmc-hwmon.c
+index bd7ed2ed3a1e..7a08e4c44a4b 100644
+--- a/drivers/hwmon/intel-m10-bmc-hwmon.c
++++ b/drivers/hwmon/intel-m10-bmc-hwmon.c
+@@ -228,6 +228,118 @@ static const struct m10bmc_hwmon_board_data d5005bmc_hwmon_bdata = {
+ 	.hinfo = d5005bmc_hinfo,
  };
- MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
+ 
++static const struct m10bmc_sdata n5010bmc_temp_tbl[] = {
++	{ 0x100, 0x0, 0x104, 0x0, 0x0, 1000, "Board Local Temperature" },
++	{ 0x108, 0x0, 0x10c, 0x0, 0x0, 1000, "FPGA 1 Temperature" },
++	{ 0x110, 0x0, 0x114, 0x0, 0x0, 1000, "FPGA 2 Temperature" },
++	{ 0x118, 0x0, 0x0, 0x0, 0x0, 1000, "Card Top Temperature" },
++	{ 0x11c, 0x0, 0x0, 0x0, 0x0, 1000, "Card Bottom Temperature" },
++	{ 0x128, 0x0, 0x0, 0x0, 0x0, 1000, "FPGA 1.2V Temperature" },
++	{ 0x134, 0x0, 0x0, 0x0, 0x0, 1000, "FPGA 5V Temperature" },
++	{ 0x140, 0x0, 0x0, 0x0, 0x0, 1000, "FPGA 0.9V Temperature" },
++	{ 0x14c, 0x0, 0x0, 0x0, 0x0, 1000, "FPGA 0.85V Temperature" },
++	{ 0x158, 0x0, 0x0, 0x0, 0x0, 1000, "AUX 12V Temperature" },
++	{ 0x164, 0x0, 0x0, 0x0, 0x0, 1000, "Backplane 12V Temperature" },
++	{ 0x1a8, 0x0, 0x0, 0x0, 0x0, 1000, "QSFP28-1 Temperature" },
++	{ 0x1ac, 0x0, 0x0, 0x0, 0x0, 1000, "QSFP28-2 Temperature" },
++	{ 0x1b0, 0x0, 0x0, 0x0, 0x0, 1000, "QSFP28-3 Temperature" },
++	{ 0x1b4, 0x0, 0x0, 0x0, 0x0, 1000, "QSFP28-4 Temperature" },
++	{ 0x1b8, 0x0, 0x0, 0x0, 0x0, 1000, "CVL1 Internal Temperature" },
++	{ 0x1bc, 0x0, 0x0, 0x0, 0x0, 1000, "CVL2 Internal Temperature" },
++};
++
++static const struct m10bmc_sdata n5010bmc_in_tbl[] = {
++	{ 0x120, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 1.2V Voltage" },
++	{ 0x12c, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 5V Voltage" },
++	{ 0x138, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 0.9V Voltage" },
++	{ 0x144, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 0.85V Voltage" },
++	{ 0x150, 0x0, 0x0, 0x0, 0x0, 1, "AUX 12V Voltage" },
++	{ 0x15c, 0x0, 0x0, 0x0, 0x0, 1, "Backplane 12V Voltage" },
++	{ 0x16c, 0x0, 0x0, 0x0, 0x0, 1, "DDR4 1.2V Voltage" },
++	{ 0x17c, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 1.8V Voltage" },
++	{ 0x184, 0x0, 0x0, 0x0, 0x0, 1, "QDR 1.3V Voltage" },
++	{ 0x18c, 0x0, 0x0, 0x0, 0x0, 1, "CVL1 0.8V Voltage" },
++	{ 0x194, 0x0, 0x0, 0x0, 0x0, 1, "CVL1 1.05V Voltage" },
++	{ 0x19c, 0x0, 0x0, 0x0, 0x0, 1, "CVL2 1.05V Voltage" },
++	{ 0x1a4, 0x0, 0x0, 0x0, 0x0, 1, "CVL2 0.8V Voltage" },
++};
++
++static const struct m10bmc_sdata n5010bmc_curr_tbl[] = {
++	{ 0x124, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 1.2V Current" },
++	{ 0x130, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 5V Current" },
++	{ 0x13c, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 0.9V Current" },
++	{ 0x148, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 0.85V Current" },
++	{ 0x154, 0x0, 0x0, 0x0, 0x0, 1, "AUX 12V Current" },
++	{ 0x160, 0x0, 0x0, 0x0, 0x0, 1, "Backplane 12V Current" },
++	{ 0x168, 0x0, 0x0, 0x0, 0x0, 1, "DDR4 1.2V Current" },
++	{ 0x178, 0x0, 0x0, 0x0, 0x0, 1, "FPGA 1.8V Current" },
++	{ 0x180, 0x0, 0x0, 0x0, 0x0, 1, "QDR 1.3V Current" },
++	{ 0x188, 0x0, 0x0, 0x0, 0x0, 1, "CVL1 0.8V Current" },
++	{ 0x190, 0x0, 0x0, 0x0, 0x0, 1, "CVL1 1.05V Current" },
++	{ 0x198, 0x0, 0x0, 0x0, 0x0, 1, "CVL2 1.05V Current" },
++	{ 0x1a0, 0x0, 0x0, 0x0, 0x0, 1, "CVL2 0.8V Current" },
++};
++
++static const struct hwmon_channel_info *n5010bmc_hinfo[] = {
++	HWMON_CHANNEL_INFO(temp,
++			   HWMON_T_INPUT | HWMON_T_CRIT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_CRIT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_CRIT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL,
++			   HWMON_T_INPUT | HWMON_T_LABEL),
++	HWMON_CHANNEL_INFO(in,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL,
++			   HWMON_I_INPUT | HWMON_I_LABEL),
++	HWMON_CHANNEL_INFO(curr,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL,
++			   HWMON_C_INPUT | HWMON_C_LABEL),
++	NULL
++};
++
++static const struct m10bmc_hwmon_board_data n5010bmc_hwmon_bdata = {
++	.tables = {
++		[hwmon_temp] = n5010bmc_temp_tbl,
++		[hwmon_in] = n5010bmc_in_tbl,
++		[hwmon_curr] = n5010bmc_curr_tbl,
++	},
++
++	.hinfo = n5010bmc_hinfo,
++};
++
+ static umode_t
+ m10bmc_hwmon_is_visible(const void *data, enum hwmon_sensor_types type,
+ 			u32 attr, int channel)
+@@ -438,6 +550,10 @@ static const struct platform_device_id intel_m10bmc_hwmon_ids[] = {
+ 		.name = "d5005bmc-hwmon",
+ 		.driver_data = (unsigned long)&d5005bmc_hwmon_bdata,
+ 	},
++	{
++		.name = "n5010bmc-hwmon",
++		.driver_data = (unsigned long)&n5010bmc_hwmon_bdata,
++	},
+ 	{ }
+ };
+ 
+diff --git a/drivers/mfd/intel-m10-bmc.c b/drivers/mfd/intel-m10-bmc.c
+index 1a9bfb7f48cd..8db3bcf5fccc 100644
+--- a/drivers/mfd/intel-m10-bmc.c
++++ b/drivers/mfd/intel-m10-bmc.c
+@@ -15,7 +15,8 @@
+ 
+ enum m10bmc_type {
+ 	M10_N3000,
+-	M10_D5005
++	M10_D5005,
++	M10_N5010,
+ };
+ 
+ static struct mfd_cell m10bmc_d5005_subdevs[] = {
+@@ -28,6 +29,10 @@ static struct mfd_cell m10bmc_pacn3000_subdevs[] = {
+ 	{ .name = "n3000bmc-secure" },
+ };
+ 
++static struct mfd_cell m10bmc_n5010_subdevs[] = {
++	{ .name = "n5010bmc-hwmon" },
++};
++
+ static const struct regmap_range m10bmc_regmap_range[] = {
+ 	regmap_reg_range(M10BMC_LEGACY_BUILD_VER, M10BMC_LEGACY_BUILD_VER),
+ 	regmap_reg_range(M10BMC_SYS_BASE, M10BMC_SYS_END),
+@@ -192,6 +197,10 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
+ 		cells = m10bmc_d5005_subdevs;
+ 		n_cell = ARRAY_SIZE(m10bmc_d5005_subdevs);
+ 		break;
++	case M10_N5010:
++		cells = m10bmc_n5010_subdevs;
++		n_cell = ARRAY_SIZE(m10bmc_n5010_subdevs);
++		break;
+ 	default:
+ 		return -ENODEV;
+ 	}
+@@ -207,6 +216,7 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
+ static const struct spi_device_id m10bmc_spi_id[] = {
+ 	{ "m10-n3000", M10_N3000 },
+ 	{ "m10-d5005", M10_D5005 },
++	{ "m10-n5010", M10_N5010 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(spi, m10bmc_spi_id);
 -- 
 2.31.0
 
