@@ -2,151 +2,113 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78CCDC4743C
-	for <linux-fpga@archiver.kernel.org>; Wed, 23 Jun 2021 13:38:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B48A6C4743C
+	for <linux-fpga@archiver.kernel.org>; Wed, 23 Jun 2021 18:24:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5E2E361075
-	for <linux-fpga@archiver.kernel.org>; Wed, 23 Jun 2021 13:38:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 931EB61185
+	for <linux-fpga@archiver.kernel.org>; Wed, 23 Jun 2021 18:24:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230291AbhFWNka (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 23 Jun 2021 09:40:30 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:51487 "EHLO
+        id S229688AbhFWS0j (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 23 Jun 2021 14:26:39 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:21194 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S230163AbhFWNk3 (ORCPT
+        by vger.kernel.org with ESMTP id S229660AbhFWS0j (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 23 Jun 2021 09:40:29 -0400
+        Wed, 23 Jun 2021 14:26:39 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1624455491;
+        s=mimecast20190719; t=1624472661;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=ayosJHzto3Nl337sThWluxXrKp5Ovvc0yF/Tu5r9k3g=;
-        b=imHZEtmXNjfrr38+nN6XQbcKxWRALBVWJ4WVtjg/rv8TdVT7MirP1PIi9OFMyDrTTJdCzw
-        3syWX/zijPTdFQ3nWdHjgm4C0TGFMrLWQn5ZKap0YgYUd4Ky8zwLEk1OdorC5RRPs41JEV
-        FNUeMj+GYlSQ56DixSJjmEaZ/CrliAQ=
-Received: from mail-oo1-f71.google.com (mail-oo1-f71.google.com
- [209.85.161.71]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-289-MBl9Sl7XNga-zBzL6ZZEkA-1; Wed, 23 Jun 2021 09:38:10 -0400
-X-MC-Unique: MBl9Sl7XNga-zBzL6ZZEkA-1
-Received: by mail-oo1-f71.google.com with SMTP id q14-20020a4adc4e0000b0290249480f62d9so1764285oov.0
-        for <linux-fpga@vger.kernel.org>; Wed, 23 Jun 2021 06:38:10 -0700 (PDT)
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=GrJNB3F5Xa+3Y8OXY7VwcTtiFdRpMIB1S8U9GBXw92s=;
+        b=ZTi1HOZdEj0zI4aziqgNhdbPEd+nV67mxpcPrQw8WkQ/y1dQ48s8Wl4Ef9+wXh2vJcY+oX
+        UJu01tI11QWJVnY6/Qfsooznuowvz8/mnK8iBrNTKCnfy3E/y0Z72yzZiF147LoM1BSWmZ
+        WGxIv2Z/kjkgn/8PwGExsCF0pkaBenQ=
+Received: from mail-ot1-f70.google.com (mail-ot1-f70.google.com
+ [209.85.210.70]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-214-4HBmKPU-OleIV7b8B8m1kQ-1; Wed, 23 Jun 2021 14:24:19 -0400
+X-MC-Unique: 4HBmKPU-OleIV7b8B8m1kQ-1
+Received: by mail-ot1-f70.google.com with SMTP id l13-20020a9d734d0000b02903db3d2b53faso1814814otk.6
+        for <linux-fpga@vger.kernel.org>; Wed, 23 Jun 2021 11:24:19 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding
-         :content-language;
-        bh=ayosJHzto3Nl337sThWluxXrKp5Ovvc0yF/Tu5r9k3g=;
-        b=nNVDWe200qknNbgLbkhZhuMWcNT1TKUvsJI6BrYDzUGbjTP9TPnuTwsArkK9Tp3Mv7
-         bZbhwEeCBlFI3kM03i14rlU5Ev4VCkvcn8/3lP0+mDO7DQUNPbphGr/8iSgAcjOPomQg
-         BNQ9HhBMDyDj2TIKXvwrz1qQXacYRb1Pv24w6MdnQzQLySlhqJc2bPkIZdJ9IXiJjZRw
-         G2J5rneL0SN8phgKemMqNKxrI1zWsQrbIKW8uI5iABRzmn7AWB93HB6TwULoLUV91yxB
-         SNIiL4evHSqMB/6QyFZx4eZIavWMbWbxxjP+aDTlAyT1g03Oj0icRUESLHmuNhBPIwKO
-         hosA==
-X-Gm-Message-State: AOAM5324NkdW9isz8WIKA8HbdN6qVBCSsd+Spe0Xz/IrtlA7nwgOnd1J
-        wug3LaRRj7hlXLUKhJehlZ0D9bNS7ZlFuZLSxsIHUbDDIeJePX28pMpqWMui97XhPY/LARcuyem
-        HDXsUbAvLLseLCTvSgJr0Zw==
-X-Received: by 2002:a9d:baa:: with SMTP id 39mr7603972oth.159.1624455489666;
-        Wed, 23 Jun 2021 06:38:09 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJwlXyWHG5pyZpeayDKedl3jn/cHEnHebPyntDXCkLWrrUxenbpooc7H5uW2VJ/PBltOy/+i9Q==
-X-Received: by 2002:a9d:baa:: with SMTP id 39mr7603952oth.159.1624455489491;
-        Wed, 23 Jun 2021 06:38:09 -0700 (PDT)
-Received: from localhost.localdomain (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id m10sm5008296oig.9.2021.06.23.06.38.07
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 23 Jun 2021 06:38:09 -0700 (PDT)
-Subject: Re: [PATCH 2/4] fpga: dfl: Move DFH header register macros to
- linux/dfl.h
-To:     =?UTF-8?Q?Martin_Hundeb=c3=b8ll?= <mhu@silicom.dk>,
-        Wu Hao <hao.wu@intel.com>, Moritz Fischer <mdf@kernel.org>,
-        Xu Yilun <yilun.xu@intel.com>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Lee Jones <lee.jones@linaro.org>,
-        Mark Brown <broonie@kernel.org>
-Cc:     =?UTF-8?Q?Martin_Hundeb=c3=b8ll?= <mhu@geanix.com>,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-hwmon@vger.kernel.org, linux-spi@vger.kernel.org,
-        Debarati Biswas <debaratix.biswas@intel.com>,
-        Russ Weight <russell.h.weight@intel.com>
-References: <20210621070621.431482-1-mhu@silicom.dk>
- <20210621070621.431482-3-mhu@silicom.dk>
- <81975a85-e9d6-bd4b-7666-56d1d1d581bc@redhat.com>
- <7c6021cc-69c5-7c3f-9e37-30c933535835@silicom.dk>
-From:   Tom Rix <trix@redhat.com>
-Message-ID: <77aa43c1-6d94-bf08-13cf-ec405916b4b7@redhat.com>
-Date:   Wed, 23 Jun 2021 06:38:06 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=GrJNB3F5Xa+3Y8OXY7VwcTtiFdRpMIB1S8U9GBXw92s=;
+        b=CldtbZheJAoOQVIMKHsLwdPP8SWoPg4fY3auW664D0VutmT7iwKYMlL9lVM+ClzOdE
+         Xqc5gOzLTiNqmkSWtUcQCoMW27RGh+og2QyXuEeoSIdl0J7OogJc+wskNWmfweaaodw9
+         YuFiAY7Kh58Efb747qV3YiN2IMGg4eqme+UrxgpAKwUZX40BZox82aE3BD/EAKIXlhxl
+         wq828TmF6yhaqrpqIT+XjHd5qU+xW5wyUi8BGU0xA3UPI7KWSEjFvoeYjk/5GUqXN6Tn
+         N8/jnf7rqjrIw0kJQx7girP8hSraER6O9WifcvIQn11EzqLQhrY0akDern/nVO4DS4TZ
+         /wrw==
+X-Gm-Message-State: AOAM530sfhT0/Ue03quAdwzZGcilZXCzLBbFv0DtEq4k/rl15qE8WYJT
+        5TF4Bd04Jsu3wzO8BiLieaBP0Wd5UcwsJOTwAXIYdmOyvNZnp8qwWigrGiQspnVqvyI1Ey/yky6
+        Sca/PjozjnwYQhObD1gX4lQ==
+X-Received: by 2002:a9d:1b4f:: with SMTP id l73mr1114571otl.21.1624472659095;
+        Wed, 23 Jun 2021 11:24:19 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJzg5ir0u+uONkcYSiNdhPznngImJRhHue1OFRj781vKuQhdCxHokiOVjGkujqp5MU0GiKAItw==
+X-Received: by 2002:a9d:1b4f:: with SMTP id l73mr1114558otl.21.1624472658915;
+        Wed, 23 Jun 2021 11:24:18 -0700 (PDT)
+Received: from localhost.localdomain.com (075-142-250-213.res.spectrum.com. [75.142.250.213])
+        by smtp.gmail.com with ESMTPSA id l24sm105186oii.45.2021.06.23.11.24.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 23 Jun 2021 11:24:18 -0700 (PDT)
+From:   trix@redhat.com
+To:     hao.wu@intel.com, mdf@kernel.org, michal.simek@xilinx.com
+Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, Tom Rix <trix@redhat.com>
+Subject: [PATCH v3 0/7] wrappers for fpga_manager_ops
+Date:   Wed, 23 Jun 2021 11:24:02 -0700
+Message-Id: <20210623182410.3787784-1-trix@redhat.com>
+X-Mailer: git-send-email 2.26.3
 MIME-Version: 1.0
-In-Reply-To: <7c6021cc-69c5-7c3f-9e37-30c933535835@silicom.dk>
-Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Language: en-US
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
+From: Tom Rix <trix@redhat.com>
 
-On 6/23/21 4:44 AM, Martin Hundebøll wrote:
-> On 21/06/2021 15.56, Tom Rix wrote:
->>
->> On 6/21/21 12:06 AM, Martin Hundebøll wrote:
->>> From: Debarati Biswas <debaratix.biswas@intel.com>
->>>
->>> Device Feature List (DFL) drivers may be defined in subdirectories 
->>> other
->>> than drivers/fpga, and each DFL driver should have access to the Device
->>> Feature Header (DFH) register, which contains revision and type
->>> information. This change moves the macros specific to the DFH register
->>> from drivers/fpga/dfl.h to include/linux/dfl.h.
->>>
->>> Signed-off-by: Debarati Biswas <debaratix.biswas@intel.com>
->>> Signed-off-by: Russ Weight <russell.h.weight@intel.com>
->>> Signed-off-by: Martin Hundebøll <mhu@silicom.dk>
->>> ---
->>>   drivers/fpga/dfl.h  | 48 +----------------------------------------
->>>   include/linux/dfl.h | 52 
->>> +++++++++++++++++++++++++++++++++++++++++++++
->>>   2 files changed, 53 insertions(+), 47 deletions(-)
->>>
->>> diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
->>> index 2b82c96ba56c..6ed0353e9a99 100644
->>> --- a/drivers/fpga/dfl.h
->>> +++ b/drivers/fpga/dfl.h
->>> @@ -17,6 +17,7 @@
->>>   #include <linux/bitfield.h>
->>
->> bitfield.h was added to linux/dfl.h
->>
->> Likely both aren't needed, try removing this one.
->
-> After this patch both headers use GENMASK_ULL() and BIT_ULL(), which 
-> are both defined in linux/bits.h, so I would expect both to include 
-> that instead. A lot of the users of dfl.h uses FIELD_GET(), which is 
-> defined in linux/bitfield.h, so I would expect that to be included 
-> there instead.
->
-> I can prepare a patch to fix that up, if you like?
+As followup from
+https://lore.kernel.org/linux-fpga/06301910-10a1-0e62-45a0-d28ab5a787ed@redhat.com/
 
-A rule of thumb, if your commit says 'A and B' , likely it should only be A.
+Boards should not be required to have noop functions.
+So improve or create fpga-mgr wrappers for the fpga_manager_ops.  
+Remove the noop functions.
+Refactor fpga-mgr to use the wrappers.
 
-Remove the the linux/bitfield.h from drivers/fpga/dfl.h
+write_sg op was not wrapped on purpose.  Its checking / use in
+fpga_mgr_buf_load_sg() did not warrant a wrapper.
 
-Leave the linux/bitfield.h as-is in include/linux/dfl.h
+Changes from
 
-If you feel include/linux/dfl.h can be optimized by the reduction of 
-linux/bitfield.h to linux/bits.h, do that as a follow on patchset.
+v1:
+  commit subject,log
 
-Tom
+v2:
+  rebase to next-20210623
 
->
-> // Martin
->
+Tom Rix (7):
+  fpga-mgr: wrap the write_init() op
+  fpga-mgr: make write_complete() op optional
+  fpga-mgr: wrap the write() op
+  fpga-mgr: wrap the status() op
+  fpga-mgr: wrap the state() op
+  fpga-mgr: wrap the fpga_remove() op
+  fpga-mgr: collect wrappers and change to inline
+
+ drivers/fpga/dfl-fme-mgr.c   |   6 ---
+ drivers/fpga/fpga-mgr.c      | 102 +++++++++++++++++++++++------------
+ drivers/fpga/stratix10-soc.c |   6 ---
+ drivers/fpga/ts73xx-fpga.c   |   6 ---
+ drivers/fpga/zynqmp-fpga.c   |   7 ---
+ 5 files changed, 67 insertions(+), 60 deletions(-)
+
+-- 
+2.26.3
 
