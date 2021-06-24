@@ -7,65 +7,65 @@ X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A67C8C49EA5
-	for <linux-fpga@archiver.kernel.org>; Thu, 24 Jun 2021 21:18:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 184C1C49EA6
+	for <linux-fpga@archiver.kernel.org>; Thu, 24 Jun 2021 21:18:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 872C1613D6
-	for <linux-fpga@archiver.kernel.org>; Thu, 24 Jun 2021 21:18:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 05848613CB
+	for <linux-fpga@archiver.kernel.org>; Thu, 24 Jun 2021 21:18:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232716AbhFXVUU (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 24 Jun 2021 17:20:20 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:25208 "EHLO
+        id S232760AbhFXVU1 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 24 Jun 2021 17:20:27 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:36197 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S232695AbhFXVUR (ORCPT
+        by vger.kernel.org with ESMTP id S232732AbhFXVU0 (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>);
-        Thu, 24 Jun 2021 17:20:17 -0400
+        Thu, 24 Jun 2021 17:20:26 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1624569477;
+        s=mimecast20190719; t=1624569485;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Dvny/Z8JO1gF6YOzXRWiGKmJY7imlNZkUp/yYJtEF1w=;
-        b=BAxadA1F2y3ExErYQJ1QD5DPg17hQB/qmkOl52gtkLGaZAKkyiRb0ihnPbvnYJiAaWeFv9
-        c4vojHAF9p21UgVzppM7CxnZARDzs/psZcQE9j+lIh9KGlaUdbbJ2gvlMfj+dohtH49czr
-        kH5JZ+FQri1Lcu6LHyCBZ/Mxv/EGfQs=
-Received: from mail-ot1-f69.google.com (mail-ot1-f69.google.com
- [209.85.210.69]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-108--rbVrmE3PnGh123xFO-TyA-1; Thu, 24 Jun 2021 17:17:56 -0400
-X-MC-Unique: -rbVrmE3PnGh123xFO-TyA-1
-Received: by mail-ot1-f69.google.com with SMTP id e24-20020a9d63d80000b029045ea018532dso4297544otl.9
-        for <linux-fpga@vger.kernel.org>; Thu, 24 Jun 2021 14:17:55 -0700 (PDT)
+        bh=QEL5AZ4mSr0YqB6XpyjJsxT+Qv98DMEzNJZysot2Lnw=;
+        b=ZwiE+HjbygU4UT7UJqDB+kuXKYSD0docsyNbPgzNRfuNoEbFAfrMJs1t8qLaMhxfAdpcEk
+        7ZdVQR6JUrixw/0CuD0qJG7RdAFClzkKc+VrU75Z5Bv9RluteZf7mTR9FN4AU3Lo854Q4E
+        ncN1GTGXg1Sv1dcM9TGcFBZtCvtDRZE=
+Received: from mail-oi1-f197.google.com (mail-oi1-f197.google.com
+ [209.85.167.197]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-60-8QNwk_Y_Mjyi-l_2TlV2DQ-1; Thu, 24 Jun 2021 17:18:02 -0400
+X-MC-Unique: 8QNwk_Y_Mjyi-l_2TlV2DQ-1
+Received: by mail-oi1-f197.google.com with SMTP id v142-20020acaac940000b02901f80189ca30so4543546oie.22
+        for <linux-fpga@vger.kernel.org>; Thu, 24 Jun 2021 14:18:02 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Dvny/Z8JO1gF6YOzXRWiGKmJY7imlNZkUp/yYJtEF1w=;
-        b=LXm/AhYwKstbb+9kTUu/PXklk0kRc+QURXse3dwIGaKw6fP+i2YSKY31WXnmJtQKmQ
-         EQmcXGLKA5HET49Csp2FPDjBDv0d8EN/XkrpHBb/rF5cDSlkfDxbZPy3spOb1J8C4yLo
-         zJ6A1rDn21wuLic4y0fvYRI/00HmawfSmJCxxA5D9Q9A3TD7lchBYPEHpQRojDIEBstI
-         GLvBCceGV1ui4UEF9H66vnwP1+uUBNcdbSNJgEQ46Df7UtHSqlplXHBGhmeWP1Vwlnru
-         ewAnSjd8297vc9rW7kiEHXSR7069PfAtOdoO6S91n3q81YsjSqqRlfvrbWWdK3AWu7/N
-         d1IQ==
-X-Gm-Message-State: AOAM532red0NaSGWBJ9la844JfKN0qRYYwJY6xvPUGFrw6OWiqghZb4s
-        jaakrPEvmZ09jVDwG0bYs0zSpXSgitLQPB0Neu5X003q+Pz9IziTxwkXwIwwVdpbJ0p+wikrzib
-        p4FyToT5d8LBgStFRmrF2mA==
-X-Received: by 2002:a05:6830:1598:: with SMTP id i24mr6482135otr.52.1624569475275;
-        Thu, 24 Jun 2021 14:17:55 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJwIAj1zRYvZi/2zh/ImgA6QnOGx0FLivp52DXK6MEzD+rDyJnMSz3qaflcHdOfoIDyNuEYFJA==
-X-Received: by 2002:a05:6830:1598:: with SMTP id i24mr6482115otr.52.1624569475077;
-        Thu, 24 Jun 2021 14:17:55 -0700 (PDT)
+        bh=QEL5AZ4mSr0YqB6XpyjJsxT+Qv98DMEzNJZysot2Lnw=;
+        b=WMbL0BWJ94Vzk+yarMntFHTMQfvij80+S4mrmSIzXGPGIc3iks4fcVywv1xY4LdwWM
+         XqM6xvhceKrS5v9nwpL781J7PRYAsTwFSImyLZ5Ef6Oqqd6JrbvCA/hGkCb35Jvz3UxP
+         HVddh7NHUqvvLjLRTDbDpD9yTgwRwaVattg5Jbd/J8CfujcThu6ry/Povh/kmNfyu9il
+         fRAcyOfitfyJVxC6fou7zGpCQlmJPqDygKYf7eS5VCqPOOSwwuZgYgodd5G/F2zil1yK
+         nbCiJ9zHzn6v6Uk4bsVtwXceniIhLvb6Lk7SVBM0KaHhlDyffJYltwKKfgijDFbFAF2g
+         KOoA==
+X-Gm-Message-State: AOAM531EH/nCeZM28DQRow2rPgpsFX7HAFmUBx7Gdfuy9afJRVIQMtw6
+        cwbYTYwdRmPYHpP3CvRdP/Zx63qg0mJbBuf8bevy3SrAfLOpTdnrhMmom2WJszu4hBa8rutkymd
+        icV0xDdoAkoJccm7LBWWjGA==
+X-Received: by 2002:a05:6830:270b:: with SMTP id j11mr6370723otu.161.1624569481796;
+        Thu, 24 Jun 2021 14:18:01 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJzOtcE8iHvqrMnsAhoUJeiWnBz2O5EA2IJu/b1p2L7kvKl5sId+fviItFlU87dzuMw8Y+u/bg==
+X-Received: by 2002:a05:6830:270b:: with SMTP id j11mr6370708otu.161.1624569481664;
+        Thu, 24 Jun 2021 14:18:01 -0700 (PDT)
 Received: from localhost.localdomain.com (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id 94sm915513otj.33.2021.06.24.14.17.52
+        by smtp.gmail.com with ESMTPSA id 94sm915513otj.33.2021.06.24.14.17.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Jun 2021 14:17:54 -0700 (PDT)
+        Thu, 24 Jun 2021 14:18:00 -0700 (PDT)
 From:   trix@redhat.com
 To:     mdf@kernel.org, hao.wu@intel.com, michal.simek@xilinx.com
 Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, Tom Rix <trix@redhat.com>
-Subject: [PATCH v4 3/5] fpga: pass fpga_manager_update_ops to the fpga_manager_write functions
-Date:   Thu, 24 Jun 2021 14:17:25 -0700
-Message-Id: <20210624211727.501019-5-trix@redhat.com>
+Subject: [PATCH v4 5/5] fpga: fpga-mgr: simplify mops check in wrappers
+Date:   Thu, 24 Jun 2021 14:17:27 -0700
+Message-Id: <20210624211727.501019-7-trix@redhat.com>
 X-Mailer: git-send-email 2.26.3
 In-Reply-To: <20210624211727.501019-1-trix@redhat.com>
 References: <20210624211727.501019-1-trix@redhat.com>
@@ -77,293 +77,44 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Tom Rix <trix@redhat.com>
 
-Refactor fpga_manager_write* functions for reimaging, pass
-the update_ops as a parameter.  Continue the passing of the update_ops
-to the write wrapper functions.  Only do the reconfig ops.
-
-Add a wrapper for write_sg, so the update ops are handled consistently.
+The mops value is checked in fpga_mgr_create,
+do not check it twice.
 
 Signed-off-by: Tom Rix <trix@redhat.com>
 ---
- drivers/fpga/fpga-mgr.c | 94 ++++++++++++++++++++++++++---------------
- 1 file changed, 59 insertions(+), 35 deletions(-)
+ drivers/fpga/fpga-mgr.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 9d17779cac7e3..a785b7dc5dba0 100644
+index 2abb7043858dc..21b4fd34b1dbf 100644
 --- a/drivers/fpga/fpga-mgr.c
 +++ b/drivers/fpga/fpga-mgr.c
-@@ -42,17 +42,29 @@ static inline u64 fpga_mgr_status(struct fpga_manager *mgr)
- 
- static inline int fpga_mgr_write_init(struct fpga_manager *mgr,
- 				      struct fpga_image_info *info,
--				      const char *buf, size_t count)
-+				      const char *buf, size_t count,
-+				      const struct fpga_manager_update_ops *uops)
+@@ -28,14 +28,14 @@ struct fpga_mgr_devres {
+ /* mops wrappers */
+ static inline enum fpga_mgr_states fpga_mgr_state(struct fpga_manager *mgr)
  {
--	if (mgr->mops && mgr->mops->reconfig.write_init)
--		return  mgr->mops->reconfig.write_init(mgr, info, buf, count);
-+	if (uops && uops->write_init)
-+		return  uops->write_init(mgr, info, buf, count);
+-	if (mgr->mops && mgr->mops->state)
++	if (mgr->mops->state)
+ 		return  mgr->mops->state(mgr);
+ 	return FPGA_MGR_STATE_UNKNOWN;
+ }
+ 
+ static inline u64 fpga_mgr_status(struct fpga_manager *mgr)
+ {
+-	if (mgr->mops && mgr->mops->status)
++	if (mgr->mops->status)
+ 		return mgr->mops->status(mgr);
  	return 0;
  }
+@@ -93,7 +93,7 @@ static inline int fpga_mgr_write_complete(struct fpga_manager *mgr,
  
--static inline int fpga_mgr_write(struct fpga_manager *mgr, const char *buf, size_t count)
-+static inline int fpga_mgr_write(struct fpga_manager *mgr,
-+				 const char *buf, size_t count,
-+				 const struct fpga_manager_update_ops *uops)
+ static inline void fpga_mgr_fpga_remove(struct fpga_manager *mgr)
  {
--	if (mgr->mops && mgr->mops->reconfig.write)
--		return  mgr->mops->reconfig.write(mgr, buf, count);
-+	if (uops && uops->write)
-+		return  uops->write(mgr, buf, count);
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline int fpga_mgr_write_sg(struct fpga_manager *mgr,
-+				    struct sg_table *sgt,
-+				    const struct fpga_manager_update_ops *uops)
-+{
-+	if (uops && uops->write_sg)
-+		return  uops->write_sg(mgr, sgt);
- 	return -EOPNOTSUPP;
+-	if (mgr->mops && mgr->mops->fpga_remove)
++	if (mgr->mops->fpga_remove)
+ 		mgr->mops->fpga_remove(mgr);
  }
  
-@@ -61,13 +73,14 @@ static inline int fpga_mgr_write(struct fpga_manager *mgr, const char *buf, size
-  * finish and set the FPGA into operating mode.
-  */
- static inline int fpga_mgr_write_complete(struct fpga_manager *mgr,
--					  struct fpga_image_info *info)
-+					  struct fpga_image_info *info,
-+					  const struct fpga_manager_update_ops *uops)
- {
- 	int ret = 0;
- 
- 	mgr->state = FPGA_MGR_STATE_WRITE_COMPLETE;
--	if (mgr->mops && mgr->mops->reconfig.write_complete)
--		ret = mgr->mops->reconfig.write_complete(mgr, info);
-+	if (uops && uops->write_complete)
-+		ret = uops->write_complete(mgr, info);
- 	if (ret) {
- 		dev_err(&mgr->dev, "Error after writing image data to FPGA\n");
- 		mgr->state = FPGA_MGR_STATE_WRITE_COMPLETE_ERR;
-@@ -136,16 +149,17 @@ EXPORT_SYMBOL_GPL(fpga_image_info_free);
-  */
- static int fpga_mgr_write_init_buf(struct fpga_manager *mgr,
- 				   struct fpga_image_info *info,
--				   const char *buf, size_t count)
-+				   const char *buf, size_t count,
-+				   const struct fpga_manager_update_ops *uops)
- {
- 	int ret;
- 
- 	mgr->state = FPGA_MGR_STATE_WRITE_INIT;
- 	if (!mgr->mops->initial_header_size)
--		ret = fpga_mgr_write_init(mgr, info, NULL, 0);
-+		ret = fpga_mgr_write_init(mgr, info, NULL, 0, uops);
- 	else
- 		ret = fpga_mgr_write_init(
--		    mgr, info, buf, min(mgr->mops->initial_header_size, count));
-+		    mgr, info, buf, min(mgr->mops->initial_header_size, count), uops);
- 
- 	if (ret) {
- 		dev_err(&mgr->dev, "Error preparing FPGA for writing\n");
-@@ -158,7 +172,8 @@ static int fpga_mgr_write_init_buf(struct fpga_manager *mgr,
- 
- static int fpga_mgr_write_init_sg(struct fpga_manager *mgr,
- 				  struct fpga_image_info *info,
--				  struct sg_table *sgt)
-+				  struct sg_table *sgt,
-+				  const struct fpga_manager_update_ops *uops)
- {
- 	struct sg_mapping_iter miter;
- 	size_t len;
-@@ -166,7 +181,7 @@ static int fpga_mgr_write_init_sg(struct fpga_manager *mgr,
- 	int ret;
- 
- 	if (!mgr->mops->initial_header_size)
--		return fpga_mgr_write_init_buf(mgr, info, NULL, 0);
-+		return fpga_mgr_write_init_buf(mgr, info, NULL, 0, uops);
- 
- 	/*
- 	 * First try to use miter to map the first fragment to access the
-@@ -176,7 +191,7 @@ static int fpga_mgr_write_init_sg(struct fpga_manager *mgr,
- 	if (sg_miter_next(&miter) &&
- 	    miter.length >= mgr->mops->initial_header_size) {
- 		ret = fpga_mgr_write_init_buf(mgr, info, miter.addr,
--					      miter.length);
-+					      miter.length, uops);
- 		sg_miter_stop(&miter);
- 		return ret;
- 	}
-@@ -189,7 +204,7 @@ static int fpga_mgr_write_init_sg(struct fpga_manager *mgr,
- 
- 	len = sg_copy_to_buffer(sgt->sgl, sgt->nents, buf,
- 				mgr->mops->initial_header_size);
--	ret = fpga_mgr_write_init_buf(mgr, info, buf, len);
-+	ret = fpga_mgr_write_init_buf(mgr, info, buf, len, uops);
- 
- 	kfree(buf);
- 
-@@ -201,6 +216,7 @@ static int fpga_mgr_write_init_sg(struct fpga_manager *mgr,
-  * @mgr:	fpga manager
-  * @info:	fpga image specific information
-  * @sgt:	scatterlist table
-+ * @uops:       which update ops to use
-  *
-  * Step the low level fpga manager through the device-specific steps of getting
-  * an FPGA ready to be configured, writing the image to it, then doing whatever
-@@ -215,24 +231,25 @@ static int fpga_mgr_write_init_sg(struct fpga_manager *mgr,
-  */
- static int fpga_mgr_buf_load_sg(struct fpga_manager *mgr,
- 				struct fpga_image_info *info,
--				struct sg_table *sgt)
-+				struct sg_table *sgt,
-+				const struct fpga_manager_update_ops *uops)
- {
- 	int ret;
- 
--	ret = fpga_mgr_write_init_sg(mgr, info, sgt);
-+	ret = fpga_mgr_write_init_sg(mgr, info, sgt, uops);
- 	if (ret)
- 		return ret;
- 
- 	/* Write the FPGA image to the FPGA. */
- 	mgr->state = FPGA_MGR_STATE_WRITE;
--	if (mgr->mops->reconfig.write_sg) {
--		ret = mgr->mops->reconfig.write_sg(mgr, sgt);
-+	if (uops->write_sg) {
-+		ret = fpga_mgr_write_sg(mgr, sgt, uops);
- 	} else {
- 		struct sg_mapping_iter miter;
- 
- 		sg_miter_start(&miter, sgt->sgl, sgt->nents, SG_MITER_FROM_SG);
- 		while (sg_miter_next(&miter)) {
--			ret = fpga_mgr_write(mgr, miter.addr, miter.length);
-+			ret = fpga_mgr_write(mgr, miter.addr, miter.length, uops);
- 			if (ret)
- 				break;
- 		}
-@@ -245,16 +262,17 @@ static int fpga_mgr_buf_load_sg(struct fpga_manager *mgr,
- 		return ret;
- 	}
- 
--	return fpga_mgr_write_complete(mgr, info);
-+	return fpga_mgr_write_complete(mgr, info, uops);
- }
- 
- static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
- 				    struct fpga_image_info *info,
--				    const char *buf, size_t count)
-+				    const char *buf, size_t count,
-+				    const struct fpga_manager_update_ops *uops)
- {
- 	int ret;
- 
--	ret = fpga_mgr_write_init_buf(mgr, info, buf, count);
-+	ret = fpga_mgr_write_init_buf(mgr, info, buf, count, uops);
- 	if (ret)
- 		return ret;
- 
-@@ -262,14 +280,14 @@ static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
- 	 * Write the FPGA image to the FPGA.
- 	 */
- 	mgr->state = FPGA_MGR_STATE_WRITE;
--	ret = fpga_mgr_write(mgr, buf, count);
-+	ret = fpga_mgr_write(mgr, buf, count, uops);
- 	if (ret) {
- 		dev_err(&mgr->dev, "Error while writing image data to FPGA\n");
- 		mgr->state = FPGA_MGR_STATE_WRITE_ERR;
- 		return ret;
- 	}
- 
--	return fpga_mgr_write_complete(mgr, info);
-+	return fpga_mgr_write_complete(mgr, info, uops);
- }
- 
- /**
-@@ -278,6 +296,7 @@ static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
-  * @info:	fpga image info
-  * @buf:	buffer contain fpga image
-  * @count:	byte count of buf
-+ * @uops:       which update ops to use
-  *
-  * Step the low level fpga manager through the device-specific steps of getting
-  * an FPGA ready to be configured, writing the image to it, then doing whatever
-@@ -288,7 +307,8 @@ static int fpga_mgr_buf_load_mapped(struct fpga_manager *mgr,
-  */
- static int fpga_mgr_buf_load(struct fpga_manager *mgr,
- 			     struct fpga_image_info *info,
--			     const char *buf, size_t count)
-+			     const char *buf, size_t count,
-+			     const struct fpga_manager_update_ops *uops)
- {
- 	struct page **pages;
- 	struct sg_table sgt;
-@@ -302,8 +322,8 @@ static int fpga_mgr_buf_load(struct fpga_manager *mgr,
- 	 * contiguous kernel buffer and the driver doesn't require SG, non-SG
- 	 * drivers will still work on the slow path.
- 	 */
--	if (mgr->mops->reconfig.write)
--		return fpga_mgr_buf_load_mapped(mgr, info, buf, count);
-+	if (uops && uops->write)
-+		return fpga_mgr_buf_load_mapped(mgr, info, buf, count, uops);
- 
- 	/*
- 	 * Convert the linear kernel pointer into a sg_table of pages for use
-@@ -338,7 +358,7 @@ static int fpga_mgr_buf_load(struct fpga_manager *mgr,
- 	if (rc)
- 		return rc;
- 
--	rc = fpga_mgr_buf_load_sg(mgr, info, &sgt);
-+	rc = fpga_mgr_buf_load_sg(mgr, info, &sgt, uops);
- 	sg_free_table(&sgt);
- 
- 	return rc;
-@@ -349,6 +369,7 @@ static int fpga_mgr_buf_load(struct fpga_manager *mgr,
-  * @mgr:	fpga manager
-  * @info:	fpga image specific information
-  * @image_name:	name of image file on the firmware search path
-+ * @uops:       which update ops to use
-  *
-  * Request an FPGA image using the firmware class, then write out to the FPGA.
-  * Update the state before each step to provide info on what step failed if
-@@ -360,7 +381,8 @@ static int fpga_mgr_buf_load(struct fpga_manager *mgr,
-  */
- static int fpga_mgr_firmware_load(struct fpga_manager *mgr,
- 				  struct fpga_image_info *info,
--				  const char *image_name)
-+				  const char *image_name,
-+				  const struct fpga_manager_update_ops *uops)
- {
- 	struct device *dev = &mgr->dev;
- 	const struct firmware *fw;
-@@ -377,7 +399,7 @@ static int fpga_mgr_firmware_load(struct fpga_manager *mgr,
- 		return ret;
- 	}
- 
--	ret = fpga_mgr_buf_load(mgr, info, fw->data, fw->size);
-+	ret = fpga_mgr_buf_load(mgr, info, fw->data, fw->size, uops);
- 
- 	release_firmware(fw);
- 
-@@ -396,12 +418,14 @@ static int fpga_mgr_firmware_load(struct fpga_manager *mgr,
-  */
- int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info)
- {
-+	const struct fpga_manager_update_ops *uops = &mgr->mops->reconfig;
-+
- 	if (info->sgt)
--		return fpga_mgr_buf_load_sg(mgr, info, info->sgt);
-+		return fpga_mgr_buf_load_sg(mgr, info, info->sgt, uops);
- 	if (info->buf && info->count)
--		return fpga_mgr_buf_load(mgr, info, info->buf, info->count);
-+		return fpga_mgr_buf_load(mgr, info, info->buf, info->count, uops);
- 	if (info->firmware_name)
--		return fpga_mgr_firmware_load(mgr, info, info->firmware_name);
-+		return fpga_mgr_firmware_load(mgr, info, info->firmware_name, uops);
- 	return -EINVAL;
- }
- EXPORT_SYMBOL_GPL(fpga_mgr_load);
 -- 
 2.26.3
 
