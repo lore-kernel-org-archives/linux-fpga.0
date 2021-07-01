@@ -2,522 +2,177 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 052D9C11F66
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 803B9C11F6B
 	for <linux-fpga@archiver.kernel.org>; Thu,  1 Jul 2021 01:38:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D595E6145B
-	for <linux-fpga@archiver.kernel.org>; Thu,  1 Jul 2021 01:38:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 648DD61469
+	for <linux-fpga@archiver.kernel.org>; Thu,  1 Jul 2021 01:38:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234174AbhGABlF (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 30 Jun 2021 21:41:05 -0400
+        id S236603AbhGABlI (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 30 Jun 2021 21:41:08 -0400
 Received: from mga11.intel.com ([192.55.52.93]:27212 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S236603AbhGABlF (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S237179AbhGABlF (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
         Wed, 30 Jun 2021 21:41:05 -0400
-X-IronPort-AV: E=McAfee;i="6200,9189,10031"; a="205450243"
+X-IronPort-AV: E=McAfee;i="6200,9189,10031"; a="205450241"
 X-IronPort-AV: E=Sophos;i="5.83,312,1616482800"; 
-   d="scan'208";a="205450243"
+   d="scan'208";a="205450241"
 Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2021 18:38:08 -0700
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2021 18:38:07 -0700
 X-IronPort-AV: E=Sophos;i="5.83,312,1616482800"; 
-   d="scan'208";a="447693183"
+   d="scan'208";a="447693175"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.212.255.81])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2021 18:38:07 -0700
+  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2021 18:38:06 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         richard.gong@intel.com, Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v9 2/3] fpga: bridge: Use standard dev_release for class driver
-Date:   Wed, 30 Jun 2021 18:37:32 -0700
-Message-Id: <20210701013733.75483-3-russell.h.weight@intel.com>
+Subject: [PATCH v9 0/3] fpga: Use standard class dev_release function
+Date:   Wed, 30 Jun 2021 18:37:30 -0700
+Message-Id: <20210701013733.75483-1-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210701013733.75483-1-russell.h.weight@intel.com>
-References: <20210701013733.75483-1-russell.h.weight@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The FPGA bridge class driver data structure is being treated as a
-managed resource instead of using the standard dev_release call-back
-function to release the class data structure. This change removes
-the managed resource code and combines the create() and register()
-functions into a single register() or register_simple() function.
+The FPGA framework has a convention of using managed resource functions
+to allow parent drivers to manage the data structures allocated by the
+class drivers. They use an empty *_dev_release() function to satisfy the
+class driver.
 
-The register() function accepts an info data structure to provide
-flexibility in passing optional parameters. The register_simple()
-function supports the current parameter list for users that don't
-require the use of optional parameters.
+This is inconsistent with linux driver model.
 
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Reviewed-by: Xu Yilun <yilun.xu@intel.com>
----
-v9:
-  - Cleaned up documentation for the FPGA Bridge register functions
-  - Renamed fpga_bridge_register() to fpga_bridge_register_full()
-  - Renamed fpga_bridge_register_simple() to fpga_bridge_register()
-v8:
-  - Added reviewed-by tag.
-  - Updated Documentation/driver-api/fpga/fpga-bridge.rst documentation.
-v7:
-  - Update the commit message to describe the new parameters for the
-    fpga_bridge_register() function and to mention the
-    fpga_bridge_register_simple() function.
+These changes remove the managed resource functions and populate the class
+dev_release callback functions. They also merge the create() and register()
+functions into a single register() or register_full() function for each of
+the fpga-mgr, fpga-region, and fpga-bridge class drivers.
+
+The new *register_full() functions accept an info data structure to provide
+flexibility in passing optional parameters. The *register() functions
+support the legacy parameter list for users that don't require the use of
+optional parameters.
+
+For more context, refer to this email thread:
+
+https://marc.info/?l=linux-fpga&m=162127412218557&w=2
+
+I turned on the configs assocated with each of the modified files, but I
+must have been missing some dependencies, because not all of them compiled.
+I did a run-time test specifically with the dfl-fme infrastructure. This
+would have exercised the region, bridge, and fpga-mgr frameworks.
+
+Changelog v8 -> v9:
+  - Cleaned up documentation for the FPGA Manager, Bridge, and Region
+    register functions
+  - Renamed fpga_*_register() to fpga_*_register_full()
+  - Renamed fpga_*_register_simple() to fpga_*_register()
+  - Renamed devm_fpga_mgr_register() to devm_fpga_mgr_register_full()
+  - Renamed devm_fpga_mgr_register_simple() to devm_fpga_mgr_register()
+
+Changelog v7 -> v8:
+  - Added reviewed-by tags.
+  - Updated Documentation/driver-api/fpga/ files: fpga-mgr.rst,
+    fpga-bridge.rst, and fpga-region.rst.
+
+Changelog v6 -> v7:
+  - Update the commit messages to describe the new parameters for the
+    *register() functions and to mention the *register_simple() functions.
   - Fix function prototypes in header file to rename dev to parent.
+  - Make use of the PTR_ERR_OR_ZERO() macro when possible.
   - Some cleanup of comments.
-  - Update function defintions/prototypes to apply const to the new info
+  - Update function definitions/prototypes to apply const to the new info
     parameter.
-  - Verify that info->br_ops is non-null in register functions.
-v6:
-  - Changed fpga_bridge_register() parameters to accept an info data
+  - Verify that info->br_ops is non-null in the fpga_bridge_register()
+    function.
+  - Verify a non-null info pointer in the fpga_region_register() function.
+
+Changelog v5 -> v6:
+  - Moved FPGA manager/bridge/region optional parameters out of the ops
+    structure and back into the FPGA class driver structure.
+  - Changed fpga_*_register() function parameters to accept an info data
     structure to provide flexibility in passing optional parameters.
-  - Added fpga_bridge_register_simple() function to support current
-    parameters for users that don't require the use of optional
-    parameters.
-v5:
+  - Added fpga_*_register_simple() functions to support current parameters
+    for users that don't require use of optional parameters.
+
+Changelog v4 -> v5:
   - Rebased on top of recently accepted patches.
-v4:
-  - Restore the previous format for the Return value in the comment header
-    for fpga_bridge_register()
-v3:
-  - Cleaned up comment header for fpga_bridge_register()
-  - Fix error return values for fpga_bridge_register()
-v2:
-  - No changes
----
+  - Removed compat_id from the fpga_mgr_register() parameter list
+    and added it to the fpga_manager_ops structure. This also required
+    dynamically allocating the dfl-fme-ops structure in order to add
+    the appropriate compat_id.
+  - Created the fpga_region_ops data structure which is optionally passed
+    to fpga_region_register(). compat_id, the get_bridges() pointer, and
+    the priv pointer are included in the fpga_region_ops structure.
+
+Changelog v3 -> v4:
+  - Added the compat_id parameter to fpga_mgr_register() and
+    devm_fpga_mgr_register() to ensure that the compat_id is set before
+    the device_register() call.
+  - Added the compat_id parameter to fpga_region_register() to ensure
+    that the compat_id is set before the device_register() call.
+  - Modified the dfl_fpga_feature_devs_enumerate() function to restore
+    the fpga_region_register() call to the correct location.
+
+Changelog v2 -> v3:
+  - Cleaned up comment headers for fpga_mgr_register(), fpga_bridge_register(),
+    and fpga_region_register().
+  - Fixed error return on ida_simple_get() failure for fpga_mgr_register(),
+    fpga_bridge_register(), and fpga_region_register().
+  - Fixed error return value for fpga_bridge_register(): ERR_PTR(ret) instead
+    of NULL.
+
+Changelog v1 -> v2:
+  - Restored devm_fpga_mgr_register() functionality to the fpga-mgr
+    class driver, adapted for the combined create/register functionality.
+  - All previous callers of devm_fpga_mgr_register() will continue to call
+    devm_fpga_mgr_register().
+  - replaced unnecessary ternary operators in return statements with
+    standard if conditions.
+
+Russ Weight (3):
+  fpga: mgr: Use standard dev_release for class driver
+  fpga: bridge: Use standard dev_release for class driver
+  fpga: region: Use standard dev_release for class driver
+
  Documentation/driver-api/fpga/fpga-bridge.rst |   8 +-
+ Documentation/driver-api/fpga/fpga-mgr.rst    |  34 ++-
+ Documentation/driver-api/fpga/fpga-region.rst |   8 +-
+ drivers/fpga/altera-cvp.c                     |  12 +-
  drivers/fpga/altera-fpga2sdram.c              |  12 +-
  drivers/fpga/altera-freeze-bridge.c           |  10 +-
  drivers/fpga/altera-hps2fpga.c                |  12 +-
+ drivers/fpga/altera-pr-ip-core.c              |   7 +-
+ drivers/fpga/altera-ps-spi.c                  |   9 +-
  drivers/fpga/dfl-fme-br.c                     |  10 +-
- drivers/fpga/fpga-bridge.c                    | 137 ++++++------------
- drivers/fpga/xilinx-pr-decoupler.c            |  17 +--
- include/linux/fpga/fpga-bridge.h              |  33 +++--
- 8 files changed, 101 insertions(+), 138 deletions(-)
+ drivers/fpga/dfl-fme-mgr.c                    |  22 +-
+ drivers/fpga/dfl-fme-region.c                 |  17 +-
+ drivers/fpga/dfl.c                            |  12 +-
+ drivers/fpga/fpga-bridge.c                    | 137 ++++-------
+ drivers/fpga/fpga-mgr.c                       | 215 ++++++++----------
+ drivers/fpga/fpga-region.c                    | 119 ++++------
+ drivers/fpga/ice40-spi.c                      |   9 +-
+ drivers/fpga/machxo2-spi.c                    |   9 +-
+ drivers/fpga/of-fpga-region.c                 |  10 +-
+ drivers/fpga/socfpga-a10.c                    |  16 +-
+ drivers/fpga/socfpga.c                        |   9 +-
+ drivers/fpga/stratix10-soc.c                  |  16 +-
+ drivers/fpga/ts73xx-fpga.c                    |   9 +-
+ drivers/fpga/xilinx-pr-decoupler.c            |  17 +-
+ drivers/fpga/xilinx-spi.c                     |  11 +-
+ drivers/fpga/zynq-fpga.c                      |  16 +-
+ drivers/fpga/zynqmp-fpga.c                    |   9 +-
+ include/linux/fpga/fpga-bridge.h              |  33 ++-
+ include/linux/fpga/fpga-mgr.h                 |  62 +++--
+ include/linux/fpga/fpga-region.h              |  36 ++-
+ 30 files changed, 402 insertions(+), 504 deletions(-)
 
-diff --git a/Documentation/driver-api/fpga/fpga-bridge.rst b/Documentation/driver-api/fpga/fpga-bridge.rst
-index 8d650b4e2ce6..38e3bac8e877 100644
---- a/Documentation/driver-api/fpga/fpga-bridge.rst
-+++ b/Documentation/driver-api/fpga/fpga-bridge.rst
-@@ -6,8 +6,10 @@ API to implement a new FPGA bridge
- 
- * struct fpga_bridge - The FPGA Bridge structure
- * struct fpga_bridge_ops - Low level Bridge driver ops
--* devm_fpga_bridge_create() - Allocate and init a bridge struct
--* fpga_bridge_register() - Register a bridge
-+* fpga_bridge_register_full() - Create and register a bridge using the
-+  fpga_bridge_info structure to provide the full flexibility of options
-+* fpga_bridge_register() - Create and register a bridge using standard
-+  arguments
- * fpga_bridge_unregister() - Unregister a bridge
- 
- .. kernel-doc:: include/linux/fpga/fpga-bridge.h
-@@ -17,7 +19,7 @@ API to implement a new FPGA bridge
-    :functions: fpga_bridge_ops
- 
- .. kernel-doc:: drivers/fpga/fpga-bridge.c
--   :functions: devm_fpga_bridge_create
-+   :functions: fpga_bridge_register_full
- 
- .. kernel-doc:: drivers/fpga/fpga-bridge.c
-    :functions: fpga_bridge_register
-diff --git a/drivers/fpga/altera-fpga2sdram.c b/drivers/fpga/altera-fpga2sdram.c
-index a78e49c63c64..66063507116b 100644
---- a/drivers/fpga/altera-fpga2sdram.c
-+++ b/drivers/fpga/altera-fpga2sdram.c
-@@ -121,17 +121,13 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 	/* Get f2s bridge configuration saved in handoff register */
- 	regmap_read(sysmgr, SYSMGR_ISWGRP_HANDOFF3, &priv->mask);
- 
--	br = devm_fpga_bridge_create(dev, F2S_BRIDGE_NAME,
--				     &altera_fpga2sdram_br_ops, priv);
--	if (!br)
--		return -ENOMEM;
-+	br = fpga_bridge_register(dev, F2S_BRIDGE_NAME,
-+				  &altera_fpga2sdram_br_ops, priv);
-+	if (IS_ERR(br))
-+		return PTR_ERR(mgr);
- 
- 	platform_set_drvdata(pdev, br);
- 
--	ret = fpga_bridge_register(br);
--	if (ret)
--		return ret;
--
- 	dev_info(dev, "driver initialized with handoff %08x\n", priv->mask);
- 
- 	if (!of_property_read_u32(dev->of_node, "bridge-enable", &enable)) {
-diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
-index dd58c4aea92e..bfbfa43cd05b 100644
---- a/drivers/fpga/altera-freeze-bridge.c
-+++ b/drivers/fpga/altera-freeze-bridge.c
-@@ -244,14 +244,14 @@ static int altera_freeze_br_probe(struct platform_device *pdev)
- 
- 	priv->base_addr = base_addr;
- 
--	br = devm_fpga_bridge_create(dev, FREEZE_BRIDGE_NAME,
--				     &altera_freeze_br_br_ops, priv);
--	if (!br)
--		return -ENOMEM;
-+	br = fpga_bridge_register(dev, FREEZE_BRIDGE_NAME,
-+				  &altera_freeze_br_br_ops, priv);
-+	if (IS_ERR(br))
-+		return PTR_ERR(br);
- 
- 	platform_set_drvdata(pdev, br);
- 
--	return fpga_bridge_register(br);
-+	return 0;
- }
- 
- static int altera_freeze_br_remove(struct platform_device *pdev)
-diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
-index 77b95f251821..aa758426c22b 100644
---- a/drivers/fpga/altera-hps2fpga.c
-+++ b/drivers/fpga/altera-hps2fpga.c
-@@ -180,19 +180,15 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	br = devm_fpga_bridge_create(dev, priv->name,
--				     &altera_hps2fpga_br_ops, priv);
--	if (!br) {
--		ret = -ENOMEM;
-+	br = fpga_bridge_register(dev, priv->name,
-+				  &altera_hps2fpga_br_ops, priv);
-+	if (IS_ERR(br)) {
-+		ret = PTR_ERR(br);
- 		goto err;
- 	}
- 
- 	platform_set_drvdata(pdev, br);
- 
--	ret = fpga_bridge_register(br);
--	if (ret)
--		goto err;
--
- 	return 0;
- 
- err:
-diff --git a/drivers/fpga/dfl-fme-br.c b/drivers/fpga/dfl-fme-br.c
-index 3ff9f3a687ce..808d1f4d76df 100644
---- a/drivers/fpga/dfl-fme-br.c
-+++ b/drivers/fpga/dfl-fme-br.c
-@@ -68,14 +68,14 @@ static int fme_br_probe(struct platform_device *pdev)
- 
- 	priv->pdata = dev_get_platdata(dev);
- 
--	br = devm_fpga_bridge_create(dev, "DFL FPGA FME Bridge",
--				     &fme_bridge_ops, priv);
--	if (!br)
--		return -ENOMEM;
-+	br = fpga_bridge_register(dev, "DFL FPGA FME Bridge",
-+				  &fme_bridge_ops, priv);
-+	if (IS_ERR(br))
-+		return PTR_ERR(br);
- 
- 	platform_set_drvdata(pdev, br);
- 
--	return fpga_bridge_register(br);
-+	return 0;
- }
- 
- static int fme_br_remove(struct platform_device *pdev)
-diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
-index 798f55670646..e6d98be8531b 100644
---- a/drivers/fpga/fpga-bridge.c
-+++ b/drivers/fpga/fpga-bridge.c
-@@ -312,55 +312,63 @@ static struct attribute *fpga_bridge_attrs[] = {
- ATTRIBUTE_GROUPS(fpga_bridge);
- 
- /**
-- * fpga_bridge_create - create and initialize a struct fpga_bridge
-+ * fpga_bridge_register_full - create and register an FPGA Bridge device
-  * @parent:	FPGA bridge device from pdev
-- * @name:	FPGA bridge name
-- * @br_ops:	pointer to structure of fpga bridge ops
-- * @priv:	FPGA bridge private data
-+ * @info:	parameters for FPGA Bridge
-  *
-- * The caller of this function is responsible for freeing the bridge with
-- * fpga_bridge_free().  Using devm_fpga_bridge_create() instead is recommended.
-- *
-- * Return: struct fpga_bridge or NULL
-+ * Return: struct fpga_bridge pointer or ERR_PTR()
-  */
--struct fpga_bridge *fpga_bridge_create(struct device *parent, const char *name,
--				       const struct fpga_bridge_ops *br_ops,
--				       void *priv)
-+struct fpga_bridge *
-+fpga_bridge_register_full(struct device *parent,
-+			  const struct fpga_bridge_info *info)
- {
- 	struct fpga_bridge *bridge;
- 	int id, ret;
- 
--	if (!name || !strlen(name)) {
-+	if (!info->br_ops) {
-+		dev_err(parent, "Attempt to register without fpga_bridge_ops\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	if (!info->name || !strlen(info->name)) {
- 		dev_err(parent, "Attempt to register with no name!\n");
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 	}
- 
- 	bridge = kzalloc(sizeof(*bridge), GFP_KERNEL);
- 	if (!bridge)
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 
- 	id = ida_simple_get(&fpga_bridge_ida, 0, 0, GFP_KERNEL);
--	if (id < 0)
-+	if (id < 0) {
-+		ret = id;
- 		goto error_kfree;
-+	}
- 
- 	mutex_init(&bridge->mutex);
- 	INIT_LIST_HEAD(&bridge->node);
- 
--	bridge->name = name;
--	bridge->br_ops = br_ops;
--	bridge->priv = priv;
-+	bridge->name = info->name;
-+	bridge->br_ops = info->br_ops;
-+	bridge->priv = info->priv;
- 
--	device_initialize(&bridge->dev);
--	bridge->dev.groups = br_ops->groups;
-+	bridge->dev.groups = info->br_ops->groups;
- 	bridge->dev.class = fpga_bridge_class;
- 	bridge->dev.parent = parent;
- 	bridge->dev.of_node = parent->of_node;
- 	bridge->dev.id = id;
-+	of_platform_populate(bridge->dev.of_node, NULL, NULL, &bridge->dev);
- 
- 	ret = dev_set_name(&bridge->dev, "br%d", id);
- 	if (ret)
- 		goto error_device;
- 
-+	ret = device_register(&bridge->dev);
-+	if (ret) {
-+		put_device(&bridge->dev);
-+		return ERR_PTR(ret);
-+	}
-+
- 	return bridge;
- 
- error_device:
-@@ -368,88 +376,35 @@ struct fpga_bridge *fpga_bridge_create(struct device *parent, const char *name,
- error_kfree:
- 	kfree(bridge);
- 
--	return NULL;
--}
--EXPORT_SYMBOL_GPL(fpga_bridge_create);
--
--/**
-- * fpga_bridge_free - free an fpga bridge created by fpga_bridge_create()
-- * @bridge:	FPGA bridge struct
-- */
--void fpga_bridge_free(struct fpga_bridge *bridge)
--{
--	ida_simple_remove(&fpga_bridge_ida, bridge->dev.id);
--	kfree(bridge);
--}
--EXPORT_SYMBOL_GPL(fpga_bridge_free);
--
--static void devm_fpga_bridge_release(struct device *dev, void *res)
--{
--	struct fpga_bridge *bridge = *(struct fpga_bridge **)res;
--
--	fpga_bridge_free(bridge);
-+	return ERR_PTR(ret);
- }
-+EXPORT_SYMBOL_GPL(fpga_bridge_register_full);
- 
- /**
-- * devm_fpga_bridge_create - create and init a managed struct fpga_bridge
-+ * fpga_bridge_register - create and register an FPGA Bridge device
-  * @parent:	FPGA bridge device from pdev
-  * @name:	FPGA bridge name
-  * @br_ops:	pointer to structure of fpga bridge ops
-  * @priv:	FPGA bridge private data
-  *
-- * This function is intended for use in an FPGA bridge driver's probe function.
-- * After the bridge driver creates the struct with devm_fpga_bridge_create(), it
-- * should register the bridge with fpga_bridge_register().  The bridge driver's
-- * remove function should call fpga_bridge_unregister().  The bridge struct
-- * allocated with this function will be freed automatically on driver detach.
-- * This includes the case of a probe function returning error before calling
-- * fpga_bridge_register(), the struct will still get cleaned up.
-+ * This simple version of the register should be sufficient for most users.
-+ * The fpga_bridge_register_full() function is available for users that need to pass
-+ * additional, optional parameters.
-  *
-- *  Return: struct fpga_bridge or NULL
-+ * Return: struct fpga_bridge pointer or ERR_PTR()
-  */
--struct fpga_bridge
--*devm_fpga_bridge_create(struct device *parent, const char *name,
--			 const struct fpga_bridge_ops *br_ops, void *priv)
-+struct fpga_bridge *
-+fpga_bridge_register(struct device *parent, const char *name,
-+		     const struct fpga_bridge_ops *br_ops,
-+		     void *priv)
- {
--	struct fpga_bridge **ptr, *bridge;
--
--	ptr = devres_alloc(devm_fpga_bridge_release, sizeof(*ptr), GFP_KERNEL);
--	if (!ptr)
--		return NULL;
--
--	bridge = fpga_bridge_create(parent, name, br_ops, priv);
--	if (!bridge) {
--		devres_free(ptr);
--	} else {
--		*ptr = bridge;
--		devres_add(parent, ptr);
--	}
-+	struct fpga_bridge_info info = { 0 };
- 
--	return bridge;
--}
--EXPORT_SYMBOL_GPL(devm_fpga_bridge_create);
-+	info.name = name;
-+	info.br_ops = br_ops;
-+	info.priv = priv;
- 
--/**
-- * fpga_bridge_register - register an FPGA bridge
-- *
-- * @bridge: FPGA bridge struct
-- *
-- * Return: 0 for success, error code otherwise.
-- */
--int fpga_bridge_register(struct fpga_bridge *bridge)
--{
--	struct device *dev = &bridge->dev;
--	int ret;
--
--	ret = device_add(dev);
--	if (ret)
--		return ret;
--
--	of_platform_populate(dev->of_node, NULL, NULL, dev);
--
--	dev_info(dev->parent, "fpga bridge [%s] registered\n", bridge->name);
--
--	return 0;
-+	return fpga_bridge_register_full(parent, &info);
- }
- EXPORT_SYMBOL_GPL(fpga_bridge_register);
- 
-@@ -475,6 +430,10 @@ EXPORT_SYMBOL_GPL(fpga_bridge_unregister);
- 
- static void fpga_bridge_dev_release(struct device *dev)
- {
-+	struct fpga_bridge *bridge = to_fpga_bridge(dev);
-+
-+	ida_simple_remove(&fpga_bridge_ida, bridge->dev.id);
-+	kfree(bridge);
- }
- 
- static int __init fpga_bridge_dev_init(void)
-diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
-index ea2bde6e5bc4..c004e52b9464 100644
---- a/drivers/fpga/xilinx-pr-decoupler.c
-+++ b/drivers/fpga/xilinx-pr-decoupler.c
-@@ -138,22 +138,17 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
- 
- 	clk_disable(priv->clk);
- 
--	br = devm_fpga_bridge_create(&pdev->dev, priv->ipconfig->name,
--				     &xlnx_pr_decoupler_br_ops, priv);
--	if (!br) {
--		err = -ENOMEM;
--		goto err_clk;
--	}
--
--	platform_set_drvdata(pdev, br);
--
--	err = fpga_bridge_register(br);
--	if (err) {
-+	br = fpga_bridge_register(&pdev->dev, priv->ipconfig->name,
-+				  &xlnx_pr_decoupler_br_ops, priv);
-+	if (IS_ERR(br)) {
-+		err = PTR_ERR(br);
- 		dev_err(&pdev->dev, "unable to register %s",
- 			priv->ipconfig->name);
- 		goto err_clk;
- 	}
- 
-+	platform_set_drvdata(pdev, br);
-+
- 	return 0;
- 
- err_clk:
-diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
-index 6c3c28806ff1..f0a4d99d9c8e 100644
---- a/include/linux/fpga/fpga-bridge.h
-+++ b/include/linux/fpga/fpga-bridge.h
-@@ -22,6 +22,23 @@ struct fpga_bridge_ops {
- 	const struct attribute_group **groups;
- };
- 
-+/**
-+ * struct fpga_bridge_info - collection of parameters an FPGA Bridge
-+ * @name: fpga bridge name
-+ * @br_ops: pointer to structure of fpga bridge ops
-+ * @priv: fpga bridge private data
-+ *
-+ * fpga_bridge_info contains parameters for the register function. These
-+ * are separated into an info structure because they some are optional
-+ * others could be added to in the future. The info structure facilitates
-+ * maintaining a stable API.
-+ */
-+struct fpga_bridge_info {
-+	const char *name;
-+	const struct fpga_bridge_ops *br_ops;
-+	void *priv;
-+};
-+
- /**
-  * struct fpga_bridge - FPGA bridge structure
-  * @name: name of low level FPGA bridge
-@@ -62,15 +79,13 @@ int of_fpga_bridge_get_to_list(struct device_node *np,
- 			       struct fpga_image_info *info,
- 			       struct list_head *bridge_list);
- 
--struct fpga_bridge *fpga_bridge_create(struct device *dev, const char *name,
--				       const struct fpga_bridge_ops *br_ops,
--				       void *priv);
--void fpga_bridge_free(struct fpga_bridge *br);
--int fpga_bridge_register(struct fpga_bridge *br);
--void fpga_bridge_unregister(struct fpga_bridge *br);
-+struct fpga_bridge *
-+fpga_bridge_register_full(struct device *parent, const struct fpga_bridge_info *info);
- 
--struct fpga_bridge
--*devm_fpga_bridge_create(struct device *dev, const char *name,
--			 const struct fpga_bridge_ops *br_ops, void *priv);
-+struct fpga_bridge *
-+fpga_bridge_register(struct device *parent, const char *name,
-+		     const struct fpga_bridge_ops *br_ops,
-+		     void *priv);
-+void fpga_bridge_unregister(struct fpga_bridge *br);
- 
- #endif /* _LINUX_FPGA_BRIDGE_H */
 -- 
 2.25.1
 
