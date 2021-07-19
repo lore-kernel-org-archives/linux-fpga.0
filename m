@@ -2,31 +2,31 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A4C3C636C9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59C1FC6377B
 	for <linux-fpga@archiver.kernel.org>; Mon, 19 Jul 2021 23:53:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 09881611C1
-	for <linux-fpga@archiver.kernel.org>; Mon, 19 Jul 2021 23:53:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 217AE60BBB
+	for <linux-fpga@archiver.kernel.org>; Mon, 19 Jul 2021 23:53:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234294AbhGSXLh (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 19 Jul 2021 19:11:37 -0400
-Received: from mail-dm6nam10on2080.outbound.protection.outlook.com ([40.107.93.80]:55904
-        "EHLO NAM10-DM6-obe.outbound.protection.outlook.com"
+        id S236201AbhGSXMP (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 19 Jul 2021 19:12:15 -0400
+Received: from mail-sn1anam02on2051.outbound.protection.outlook.com ([40.107.96.51]:60260
+        "EHLO NAM02-SN1-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1388044AbhGSUm3 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 19 Jul 2021 16:42:29 -0400
+        id S1388227AbhGSUqj (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 19 Jul 2021 16:46:39 -0400
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=g9S5AaiU51JlKffYSArFp7DiuaXqda/iuooRW0onCIo9j3hSr5aW8DRgiBkG4OiHNUMz+x4WNe3aWD928DL12/J1OKwjj5caWWrXgCDAxEa2gcZvRRB6WEUdQoDz1lgY+QmUIAkEuiBzUO2iKAGGjVF/P9yyRnLn47NYDY8DeSZhHI4qvPWQFYtSQ3luO3BvLqMRsmV/aLYmTIWG94euwdQL8D2IkmMswP0r3z7nDx4+M473J9XxkC8dD1HZJl6ab3rN1XpUIvXjAG1Ure1tWUsMKkvqBNiszv++c/dSOlb4Wbvg7O7HiSFDotBKfC3MvS7rjLN34KmCbpa89u0ySg==
+ b=eWZjTkHJmDbl/27RxhTyHfGFHhzLLV0/5lSPn/6zK2B9fiI6af49ccd2mGZRYv4S9mn/J5cvWPRPTil+CIEOPwkykuPhcpR5c0czfWRbJgMrZsxghlqx2wbe1D93SsP5fibPlRLoPM0wczxkGp0w0O/iWlOcm3toeEn0Ncl1l9oZgF0j3UfZE+zHNE4bdo2n+G2NVeQ+e0geQH6RR9LlIeyn9j9Szxf/RvJyZjMTKmAdkUcfeTct+/Jd3ivpBF3C4Vp+UWzV9jtO3v8IHQDNlGm1tSO4tpXjc5H6rV7rGhFALzEO/HYrfV3axNUOEGGHjMrzriWBPbg0SLbEUvsJMA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dNHitPp+R64nKFTNsPKVhyw5i79DxU19QWXIu4NuuiM=;
- b=ILJHElFY3w2zX1VvCScw3BqWolOkooVwP6LChysx9rtfxxSQBYn/I/PJQ+MKSuJFbZW2Cb3r4EV+LuLckILYJlcwFX4MMnF2OV8VndD4UhLPpenAxBw1twdCL9L4pyrCQCFuJPgijQOUO+3xPrYHtjhKRkXiX6fWMkB6T943IDULgGb/yKWsLoUe1NAgXjX5nOVHEbYajiF5kcxlYd9kSnOSEFMPRPf5DGAS6apuG2ndjZMTPlwdO4Y8TFHJrQiGlEdALim/JHagCjuJDnO8PGYk67v+D5YVb63UHT/hjR2PLY7xf6sEaTWry8iw19+db5CM8vJ4CfDQxPDKOE7HLg==
+ bh=8aculnYNcbYtJ/YX+CXlSMntVEwyU0cas/MeOV7Fz+U=;
+ b=V835xbVIsfq9Has0QMqp2utMZha1F5Ns7MOeM7+yfCfEODNlOJxd2jmTaUMHHQHVaVPnQaI+Yc+BtMwrCwzp808NZnkOAUZWVntF/S6avIEW6Y8iXTmcowGirlK25cnsHncOGYaQDHt37z5J9BdERpz5TYjzn3W4fJMFlxoEgLO1d+YJ+4ZCGb5dY45jLstFMrsZuv0FdqLSUP8egYz2rB66GuRjM2gKrRMBjp3it0eALGaDQF6SiVP6uiOJ4RNFMNoq5EcS9VrYVpvmb2d3gmZAX3isByLpjTEMXn6cJ+qVLQf8Ro2TY60GCE2rP8GVXsXD+sEywJU6yNZXSsQL7w==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
@@ -34,18 +34,18 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dNHitPp+R64nKFTNsPKVhyw5i79DxU19QWXIu4NuuiM=;
- b=DKPeHmhivDTO7rNy218bxGc0gN1PTdZYBtB0o60I6dxU7YSO3sbgWe4Hl1d9ASIleNH8J5vjROtv4ADyeZr180hkJkVxp+SDJYzM4ZGz4vnmulLK3QITtOm6+PqRa1m725HLRuaJyL5LyQJ6HEqsACx88jouixMVrKU3YwxYbx0=
-Received: from SN7PR04CA0005.namprd04.prod.outlook.com (2603:10b6:806:f2::10)
- by DM6PR02MB4330.namprd02.prod.outlook.com (2603:10b6:5:2a::27) with
+ bh=8aculnYNcbYtJ/YX+CXlSMntVEwyU0cas/MeOV7Fz+U=;
+ b=ion7eoJJayEPqqUjcnWOuTKL5GyI/Cs3dDaZeUREowbDmNAO+Ldj1sJtejcx2++YGSlhkS4AyTDhbPUVS4CHmy3NvccNzt/6B7xll/aFhCQ1/I4WQEhXNw6kyPqvAf0afjuGwlRpGJyc2gUxQBxDLefZyd3uky/aKNH7kZ8Apkg=
+Received: from DM6PR12CA0034.namprd12.prod.outlook.com (2603:10b6:5:1c0::47)
+ by CH0PR02MB8108.namprd02.prod.outlook.com (2603:10b6:610:10d::7) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4331.30; Mon, 19 Jul
- 2021 21:22:22 +0000
-Received: from SN1NAM02FT0028.eop-nam02.prod.protection.outlook.com
- (2603:10b6:806:f2:cafe::33) by SN7PR04CA0005.outlook.office365.com
- (2603:10b6:806:f2::10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4331.21; Mon, 19 Jul
+ 2021 21:27:16 +0000
+Received: from DM3NAM02FT012.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:5:1c0:cafe::ac) by DM6PR12CA0034.outlook.office365.com
+ (2603:10b6:5:1c0::47) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4331.22 via Frontend
- Transport; Mon, 19 Jul 2021 21:22:22 +0000
+ Transport; Mon, 19 Jul 2021 21:27:16 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=pass action=none header.from=xilinx.com;
@@ -53,671 +53,961 @@ Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
  client-ip=149.199.62.198; helo=xsj-pvapexch01.xlnx.xilinx.com;
 Received: from xsj-pvapexch01.xlnx.xilinx.com (149.199.62.198) by
- SN1NAM02FT0028.mail.protection.outlook.com (10.97.4.206) with Microsoft SMTP
+ DM3NAM02FT012.mail.protection.outlook.com (10.13.5.125) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4331.21 via Frontend Transport; Mon, 19 Jul 2021 21:22:22 +0000
+ 15.20.4331.21 via Frontend Transport; Mon, 19 Jul 2021 21:27:16 +0000
 Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
  xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 19 Jul 2021 14:22:20 -0700
+ 15.1.2176.2; Mon, 19 Jul 2021 14:27:08 -0700
 Received: from smtp.xilinx.com (172.19.127.96) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.2176.2 via Frontend Transport; Mon, 19 Jul 2021 14:22:20 -0700
-Envelope-to: robh@kernel.org,
+ 15.1.2176.2 via Frontend Transport; Mon, 19 Jul 2021 14:27:08 -0700
+Envelope-to: mdf@kernel.org,
+ robh@kernel.org,
+ trix@redhat.com,
  devicetree@vger.kernel.org,
  linux-fpga@vger.kernel.org,
- mdf@kernel.org,
- linux-kernel@vger.kernel.org,
- trix@redhat.com
-Received: from [10.17.2.60] (port=59566)
+ linux-kernel@vger.kernel.org
+Received: from [172.19.73.109] (port=38270 helo=xsj-xw9400.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <lizhi.hou@xilinx.com>)
-        id 1m5aiS-000EsZ-Sl; Mon, 19 Jul 2021 14:22:20 -0700
-Subject: Re: [PATCH V7 XRT Alveo 00/20] XRT Alveo driver overview
-To:     Tom Rix <trix@redhat.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "mdf@kernel.org" <mdf@kernel.org>
-CC:     "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
-        Max Zhen <maxz@xilinx.com>, Sonal Santan <sonals@xilinx.com>,
-        Yu Liu <yliu@xilinx.com>, Michal Simek <michals@xilinx.com>,
-        Stefano Stabellini <stefanos@xilinx.com>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "robh@kernel.org" <robh@kernel.org>
-References: <20210528004959.61354-1-lizhi.hou@xilinx.com>
- <0677c3b8-87a8-7092-0c63-36de55a4de4d@redhat.com>
- <7290da0c-0e6f-81e3-e1b8-087536110569@redhat.com>
- <66B9450C-056E-4B2D-85B8-CBAC1D820EAA@xilinx.com>
- <4ba4479f-190b-c118-a39a-6d93edd2f455@redhat.com>
+        id 1m5an6-000F7s-1U; Mon, 19 Jul 2021 14:27:08 -0700
+Received: by xsj-xw9400.xilinx.com (Postfix, from userid 21952)
+        id 740136020BA; Mon, 19 Jul 2021 14:26:31 -0700 (PDT)
 From:   Lizhi Hou <lizhi.hou@xilinx.com>
-Message-ID: <5bedea0d-be48-27ee-4091-3231edc86f4e@xilinx.com>
-Date:   Mon, 19 Jul 2021 14:22:20 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.2.0
+To:     <linux-kernel@vger.kernel.org>
+CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
+        <maxz@xilinx.com>, <sonal.santan@xilinx.com>, <yliu@xilinx.com>,
+        <michal.simek@xilinx.com>, <stefanos@xilinx.com>,
+        <devicetree@vger.kernel.org>, <trix@redhat.com>, <mdf@kernel.org>,
+        <robh@kernel.org>, Max Zhen <max.zhen@xilinx.com>
+Subject: [PATCH V8 XRT Alveo 03/14] fpga: xrt: xclbin file helper functions
+Date:   Mon, 19 Jul 2021 14:26:17 -0700
+Message-ID: <20210719212628.134129-4-lizhi.hou@xilinx.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210719212628.134129-1-lizhi.hou@xilinx.com>
+References: <20210719212628.134129-1-lizhi.hou@xilinx.com>
 MIME-Version: 1.0
-In-Reply-To: <4ba4479f-190b-c118-a39a-6d93edd2f455@redhat.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Language: en-US
+Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 6ced7aec-a6c9-43cc-fa6d-08d94afb4c2b
-X-MS-TrafficTypeDiagnostic: DM6PR02MB4330:
-X-Microsoft-Antispam-PRVS: <DM6PR02MB43303063079EBAD0C8B91699A1E19@DM6PR02MB4330.namprd02.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:9508;
+X-MS-Office365-Filtering-Correlation-Id: 8f9ab168-7a2f-44d0-8c80-08d94afbfba5
+X-MS-TrafficTypeDiagnostic: CH0PR02MB8108:
+X-Microsoft-Antispam-PRVS: <CH0PR02MB8108C6C0D9ED2C8091A16266A1E19@CH0PR02MB8108.namprd02.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:1824;
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: RaqsvS94dnx6llpwZ/kv+q0uB/c4xesEQZ8dL1Y78ZYEP8BSAPyfT9iyeKIXxeLpojhhGwEir2P7+aX/dLFwQthQIsq4sBSC46XXwNSgGUD55vhh+FZbPksOzzxulaCFlt3ieOuJwwgZ+on6Ggd0CRMJ0wKvVQbedr4UsHiR38zXh0CmR359BDw1cmb07QW/XB7wqmW+gY+6MuFgL4VsKnx0bEY5BurNe6H6xNiV25oRh3Pn0jJEiJz10gEDwF37h8499lnaQ7kPhVJ8rLIVZcmVuwE4y6xEBv5VwUUynUwOYuSGzU8ngNG7w69sFB2uAj/6uver0ThSBlHYMaGJYqgdYtovbrhgHg8aVPYBrJLfu7G10jjLCrdnDwShA+moBBCrcAoRCdV3J6cb6a5R7WmfFe687pBBhcgxNFoOlUg+6h2mbk2aBnv7AU9J9UYiGRItmwZDp3YojF8mrsGsXoBRx+jfcOcZxPuFJMP48btXyvMRgKh5TFzDJN56uAlU0VdX6HfO62Z//q78VEqu56kNOixG837ApPaspDNdDWXP6D7ag7Yk8EEXUStWqW7kmyz6oC+/7y3XhXTgEjow9Kd/v2MWGNqJ2hE/9X55OE0uKhypEzXTJvp/NUPZZk4tjx0+8knTVtLvTxm8YgTOKroNKrasksIocp8MQ6AZzXzJYagBjQmCpdR0FgbEKLYwef0HSkxT9mla8UGFLe/wddIV2UC5AoSmx1UIVjFrJfL6CglzQEWydWlDPXpIQOBolUNuiozqQb/DuXhnyG7e8NFWV6nz3sTfjZcxFizMCNfPm7xmiUnc2/uUSnyogZmyJohg+Vu0sfE8ncvavqxA+4bZYF+Ncal4NhDLriXS18P+PBCeJxtRJH4QwHjxU9Pc
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(39860400002)(376002)(396003)(346002)(136003)(46966006)(36840700001)(9786002)(316002)(36906005)(36756003)(31696002)(8676002)(8936002)(54906003)(186003)(26005)(110136005)(53546011)(2616005)(30864003)(966005)(4326008)(83380400001)(336012)(5660300002)(82310400003)(36860700001)(44832011)(478600001)(2906002)(356005)(31686004)(7636003)(426003)(82740400003)(70206006)(70586007)(47076005)(50156003)(43740500002);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: P7R1P+hH2z3UhSWNiLIVXoSLp3kvEamxcm8L7sjHUZY8s+NYwc/QBS19WNb3YOM4R9A2F/U1r+aOPn8EAYXooEKlAYkkMCOrf3AW+jhuOTUH0EN4yxEnBZnkMVNss1NqYDgBz0RbAoe4fsRL3Hr1WTcCLnTU3KH/IVyXqkaBxIRVP5hAmJegUGsiM6kDKSv54tT65ydb9UZuXIhF8kQuUV8R3jLSI+RJD/ktrhjVVtCidrkx4rtt4weUDxHjVvC03sMNTS/eeEqyVS4T7nglvUPQ3v0XBd3MVQLOMW7GRsdef5rq+GJAg8z4gXdTDh00MWpf4ifplO5ezc7Lj2Tct7tpit4B+WElrmNLrhcfkG1ApMQ4KNME4gX2V8he3iiDTaXXhkqwtnXqGPfRweFZbUU/QO34Ul8Qyqt8nbtSIHKD8gGF5UZ7wYZD7aPcX3ay+VJm0nVZHW0O+3DG158sIcaZTq4WcIYAGlzKzfv/SaVAKn8GGNYTjhmdgKNzUp4mX5PjVSkmKbJFz0nsBBq/anNc9RnZyWMk3PVvabK9RN3O1zdzAepKy1zU//mm5VJEmVw7ZyjcrAw9U147m4/6PXw9oByKBqrijnMcKUUHXtdrWlx/91uxoseOYf/NroqhtIeyKrW21GHNAIkqn/TGH00Y/lVUhPXCJqQt7L6dKRLPXujePQ1I/i78iX+GBmYR2q4WlIrolwSkzY1yFO/A3g==
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(39860400002)(346002)(136003)(376002)(396003)(36840700001)(46966006)(26005)(107886003)(316002)(6916009)(70206006)(70586007)(6666004)(8936002)(5660300002)(1076003)(6266002)(4326008)(83380400001)(36906005)(36860700001)(186003)(2906002)(82310400003)(42186006)(82740400003)(30864003)(54906003)(426003)(336012)(478600001)(8676002)(2616005)(44832011)(7636003)(356005)(47076005)(36756003);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jul 2021 21:22:22.4023
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jul 2021 21:27:16.7893
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6ced7aec-a6c9-43cc-fa6d-08d94afb4c2b
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8f9ab168-7a2f-44d0-8c80-08d94afbfba5
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch01.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: SN1NAM02FT0028.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: DM3NAM02FT012.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR02MB4330
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH0PR02MB8108
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Hi Tom,
+Alveo FPGA firmware and partial reconfigure file are in xclbin format. This
+code enumerates and extracts sections from xclbin files. xclbin.h is cross
+platform and used across all platforms and OS.
 
-Sure. I will send out a V8 set just dropping listed xleafs and doing the 
-cleanups.
+Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
+Signed-off-by: Max Zhen <max.zhen@xilinx.com>
+Signed-off-by: Lizhi Hou <lizhi.hou@xilinx.com>
+Reviewed-by: Tom Rix <trix@redhat.com>
+---
+ drivers/fpga/xrt/include/xclbin-helper.h |  48 +++
+ drivers/fpga/xrt/lib/xclbin.c            | 381 ++++++++++++++++++++
+ include/uapi/linux/fpga-xrt.h            | 428 +++++++++++++++++++++++
+ 3 files changed, 857 insertions(+)
+ create mode 100644 drivers/fpga/xrt/include/xclbin-helper.h
+ create mode 100644 drivers/fpga/xrt/lib/xclbin.c
+ create mode 100644 include/uapi/linux/fpga-xrt.h
 
-Thanks,
-
-Lizhi
-
-
-On 07/16/2021 01:36 PM, Tom Rix wrote:
-> CAUTION: This message has originated from an External Source. Please 
-> use proper judgment and caution when opening attachments, clicking 
-> links, or responding to this email.
->
->
-> On 7/16/21 12:14 PM, Lizhi Hou wrote:
->> Hi Tom,
->>
->> I am working on v8 patchset which I followed your guidance to move 
->> the listed xleaf to suggested subsystems. And the spelling error 
->> fixes, and fpga-xrt.h cleanup are all included.
->> Does that make senses to you? If yes, I may send the V8 patchset 
->> early next week for you to review.
->
-> Can handling the move be done in a followup ?
->
-> AFAIK, there are no other problems with v7 and I would rather see a
-> smaller subset of v7 make it intree sooner.
->
-> This would mean dropping the (maybe) contentious xleafs from v8 just
-> doing the cleanups.
->
-> Tom
->
->>
->> Thanks,
->> Lizhi
->>
->> ﻿On 7/16/21, 11:27 AM, "Tom Rix" <trix@redhat.com> wrote:
->>
->>      CAUTION: This message has originated from an External Source. 
->> Please use proper judgment and caution when opening attachments, 
->> clicking links, or responding to this email.
->>
->>
->>      On 7/1/21 1:32 PM, Tom Rix wrote:
->>      > Lizhi,
->>      >
->>      > Sorry for the delay in reviewing v7.
->>      >
->>      > Is it too early to blame it on the July 4 holiday here ?!? :)
->>      >
->>      >
->>      > All the small stuff looks fine to me.  In this pass I looked 
->> at issues
->>      > that would need a refactoring.  Since it would be a lot of 
->> work and I
->>      > am not the final word on this, it would be good if some others to
->>      > chime in. Also a couple of new spelling fixes at the end.
->>
->>      Lizhi
->>
->>      This pathset has stalled.
->>
->>      The spelling changes should be fixed.
->>
->>      Some of xleafs may need to be moved and reworked.
->>
->>      The addition of building outside of fpga/xrt is a new feature, 
->> and I
->>      think is best considered when the first foundational change (this
->>      patchset) is in tree.
->>
->>      Could the xleafs' below be dropped from this set ?
->>
->>      Tom
->>
->>      >
->>      > Tom
->>      >
->>      >
->>      > Having xrt/ dir
->>      > ok with it or it will follow the subdir reorg of fpga/, afaik 
->> not a
->>      > blocker
->>      >
->>      > Location of xrt_bus_type
->>      > ok, similar to dfl_bus_type
->>      >
->>      > Non fpga subdevices should go to other subsystems.
->>      > looking in drivers/fpga/xrt/lib/xleaf
->>      >
->>      > clock clkfrq ucs these are clocks
->>      > should move to drivers/clk/xilinx/
->>      >
->>      > axigate, for fpga partitioning
->>      > ok to stay
->>      >
->>      > ddr_calibaration, a memory status checker
->>      > should move drivers/memory dfl-emif is similar
->>      >
->>      > devctl, a general purpose misc driver
->>      > should move to drivers/mfd
->>      >
->>      > icap, for fpga bitstream writing
->>      > ok to stay
->>      >
->>      > vsec, misc small drivers discovered via pci config vsec
->>      > should move to drivers/mfd
->>      >
->>      > For include/uapi/linux
->>      > collapse include/uapi/linux/xrt/*.h into 
->> include/uapi/linux/fpga-xrt.h
->>      > There are only 2 files, one really small. fpga-xrt.h follows 
->> fpga-dfl.h
->>      > The comments are pretty messy, user should be able to scan them.
->>      > Try cleaning them up.
->>      >
->>      > Spelling mistakes
->>      >
->>      > diff --git a/Documentation/fpga/xrt.rst 
->> b/Documentation/fpga/xrt.rst
->>      > index 5a5b4d5a3bc6..84eb41be9ac1 100644
->>      > --- a/Documentation/fpga/xrt.rst
->>      > +++ b/Documentation/fpga/xrt.rst
->>      > @@ -275,7 +275,7 @@ fpga_bridge and fpga_region for the next 
->> region in
->>      > the chain.
->>      >  fpga_bridge
->>      >  -----------
->>      >
->>      > -Like the fpga_region, a fpga_bridge is created by walking the 
->> device
->>      > tree
->>      > +Like the fpga_region, an fpga_bridge is created by walking 
->> the device
->>      > tree
->>      >  of the parent group. The bridge is used for isolation between a
->>      > parent and
->>      >  its child.
->>      >
->>      > @@ -416,7 +416,7 @@ xclbin is compiled by end user using
->>      >  `Vitis
->>      > 
->> <https://www.xilinx.com/products/design-tools/vitis/vitis-platform.html>`_
->>      >  tool set from Xilinx. The xclbin contains sections describing 
->> user
->>      > compiled
->>      >  acceleration engines/kernels, memory subsystems, clocking 
->> information
->>      > etc. It also
->>      > -contains a FPGA bitstream for the user partition, UUIDs, 
->> platform
->>      > name, etc.
->>      > +contains an FPGA bitstream for the user partition, UUIDs, 
->> platform
->>      > name, etc.
->>      >
->>      >
->>      >  .. _xsabin_xclbin_container_format:
->>      > diff --git a/drivers/fpga/xrt/include/metadata.h
->>      > b/drivers/fpga/xrt/include/metadata.h
->>      > index c4df88262f8a..f48d6d42f5ef 100644
->>      > --- a/drivers/fpga/xrt/include/metadata.h
->>      > +++ b/drivers/fpga/xrt/include/metadata.h
->>      > @@ -194,7 +194,7 @@ int xrt_md_get_interface_uuids(struct 
->> device *dev,
->>      > const char *blob,
->>      >  /*
->>      >   * The firmware provides a 128 bit hash string as a unique id 
->> to the
->>      >   * partition/interface.
->>      > - * Existing hw does not yet use the cononical form, so it is
->>      > necessary to
->>      > + * Existing hw does not yet use the canonical form, so it is
->>      > necessary to
->>      >   * use a translation function.
->>      >   */
->>      >  static inline void xrt_md_trans_uuid2str(const uuid_t *uuid, 
->> char
->>      > *uuidstr)
->>      > diff --git a/drivers/fpga/xrt/lib/xroot.c 
->> b/drivers/fpga/xrt/lib/xroot.c
->>      > index 7b3e540dd6c0..f324a25e1d4d 100644
->>      > --- a/drivers/fpga/xrt/lib/xroot.c
->>      > +++ b/drivers/fpga/xrt/lib/xroot.c
->>      > @@ -427,7 +427,7 @@ static void xroot_bringup_group_work(struct
->>      > work_struct *work)
->>      >                 r = xleaf_call(xdev, XRT_GROUP_INIT_CHILDREN, 
->> NULL);
->>      >                 xroot_put_group(xr, xdev);
->>      >                 if (r == -EEXIST)
->>      > -                       continue; /* Already brough up, 
->> nothing to do. */
->>      > +                       continue; /* Already brought up, 
->> nothing to
->>      > do. */
->>      >                 if (r)
->>      > atomic_inc(&xr->groups.bringup_failed_cnt);
->>      >
->>      > diff --git a/drivers/fpga/xrt/mgmt/xmgmt-main.c
->>      > b/drivers/fpga/xrt/mgmt/xmgmt-main.c
->>      > index 820c888e7918..9077254e0f8a 100644
->>      > --- a/drivers/fpga/xrt/mgmt/xmgmt-main.c
->>      > +++ b/drivers/fpga/xrt/mgmt/xmgmt-main.c
->>      > @@ -142,7 +142,7 @@ static ssize_t VBNV_show(struct device *dev,
->>      > struct device_attribute *da, char *
->>      >  }
->>      >  static DEVICE_ATTR_RO(VBNV);
->>      >
->>      > -/* logic uuid is the uuid uniquely identfy the partition */
->>      > +/* logic uuid is the uuid uniquely identify the partition */
->>      >  static ssize_t logic_uuids_show(struct device *dev, struct
->>      > device_attribute *da, char *buf)
->>      >  {
->>      >         struct xrt_device *xdev = to_xrt_dev(dev);
->>      > diff --git a/drivers/fpga/xrt/mgmt/xrt-mgr.c
->>      > b/drivers/fpga/xrt/mgmt/xrt-mgr.c
->>      > index 41263a033d9d..ab253b516e8d 100644
->>      > --- a/drivers/fpga/xrt/mgmt/xrt-mgr.c
->>      > +++ b/drivers/fpga/xrt/mgmt/xrt-mgr.c
->>      > @@ -115,7 +115,7 @@ static int xmgmt_pr_write_init(struct 
->> fpga_manager
->>      > *mgr,
->>      >  }
->>      >
->>      >  /*
->>      > - * The implementation requries full xclbin image before we 
->> can start
->>      > + * The implementation requires full xclbin image before we 
->> can start
->>      >   * programming the hardware via ICAP subsystem. The full 
->> image is
->>      > required
->>      >   * for checking the validity of xclbin and walking the 
->> sections to
->>      >   * discover the bitstream.
->>      >
->>      > On 5/27/21 5:49 PM, Lizhi Hou wrote:
->>      >> Hello,
->>      >>
->>      >> This is V7 of patch series which adds management physical 
->> function
->>      >> driver
->>      >> for Xilinx Alveo PCIe accelerator cards.
->>      >> https://www.xilinx.com/products/boards-and-kits/alveo.html
->>      >>
->>      >> This driver is part of Xilinx Runtime (XRT) open source stack.
->>      >>
->>      >> XILINX ALVEO PLATFORM ARCHITECTURE
->>      >>
->>      >> Alveo PCIe FPGA based platforms have a static *shell* 
->> partition and a
->>      >> partial re-configurable *user* partition. The shell partition is
->>      >> automatically loaded from flash when host is booted and PCIe is
->>      >> enumerated
->>      >> by BIOS. Shell cannot be changed till the next cold reboot. 
->> The shell
->>      >> exposes two PCIe physical functions:
->>      >>
->>      >> 1. management physical function
->>      >> 2. user physical function
->>      >>
->>      >> The patch series includes Documentation/xrt.rst which 
->> describes Alveo
->>      >> platform, XRT driver architecture and deployment model in 
->> more detail.
->>      >>
->>      >> Users compile their high level design in C/C++/OpenCL or RTL 
->> into FPGA
->>      >> image using Vitis tools.
->>      >> 
->> https://www.xilinx.com/products/design-tools/vitis/vitis-platform.html
->>      >>
->>      >> The compiled image is packaged as xclbin which contains partial
->>      >> bitstream
->>      >> for the user partition and necessary metadata. Users can 
->> dynamically
->>      >> swap
->>      >> the image running on the user partition in order to switch 
->> between
->>      >> different workloads by loading different xclbins.
->>      >>
->>      >> XRT DRIVERS FOR XILINX ALVEO
->>      >>
->>      >> XRT Linux kernel driver *xrt-mgmt* binds to management physical
->>      >> function of
->>      >> Alveo platform. The modular driver framework is organized 
->> into several
->>      >> platform drivers which primarily handle the following 
->> functionality:
->>      >>
->>      >> 1.  Loading firmware container also called xsabin at driver 
->> attach time
->>      >> 2.  Loading of user compiled xclbin with FPGA Manager 
->> integration
->>      >> 3.  Clock scaling of image running on user partition
->>      >> 4.  In-band sensors: temp, voltage, power, etc.
->>      >> 5.  Device reset and rescan
->>      >>
->>      >> The platform drivers are packaged into *xrt-lib* helper 
->> module with well
->>      >> defined interfaces. The module provides a pseudo-bus 
->> implementation
->>      >> for the
->>      >> platform drivers. More details on the driver model can be 
->> found in
->>      >> Documentation/xrt.rst.
->>      >>
->>      >> User physical function driver is not included in this patch 
->> series.
->>      >>
->>      >> LIBFDT REQUIREMENT
->>      >>
->>      >> XRT driver infrastructure uses Device Tree as a metadata 
->> format to
->>      >> discover
->>      >> HW subsystems in the Alveo PCIe device. The Device Tree 
->> schema used
->>      >> by XRT
->>      >> is documented in Documentation/xrt.rst.
->>      >>
->>      >> TESTING AND VALIDATION
->>      >>
->>      >> xrt-mgmt driver can be tested with full XRT open source stack 
->> which
->>      >> includes user space libraries, board utilities and (out of 
->> tree) first
->>      >> generation user physical function driver xocl. XRT open 
->> source runtime
->>      >> stack is available at https://github.com/Xilinx/XRT
->>      >>
->>      >> Complete documentation for XRT open source stack including 
->> sections on
->>      >> Alveo/XRT security and platform architecture can be found here:
->>      >>
->>      >> https://xilinx.github.io/XRT/master/html/index.html
->>      >> https://xilinx.github.io/XRT/master/html/security.html
->>      >> 
->> https://xilinx.github.io/XRT/master/html/platforms_partitions.html
->>      >>
->>      >> Changes since v6:
->>      >> - Resolved grammatical errors and cleaned up taxonomy in xrt.rst
->>      >>    documentation.
->>      >> - Fixed clang warnings.
->>      >> - Updated code base to include v6 code review comments.
->>      >>
->>      >> Changes since v5:
->>      >> - Revert all changes 'mgnt/MGNT' back to 'mgmt/MGMT'
->>      >> - Updated code base to include v5 code review comments.
->>      >>     xrt.rst: address grammar and taxonomy
->>      >>     subdev_id.h: defines XRT_SUBDEV_INVALID = 0
->>      >>     xclbin.c: change shift operation to be_to_cpu
->>      >> - Resolved kernel test robot errors.
->>      >>
->>      >> Changes since v4:
->>      >> - Added xrt_bus_type and xrt_device. All sub devices were 
->> changed from
->>      >>    platform_bus_type/platform_device to xrt_bus_type/xrt_device.
->>      >> - Renamed xrt-mgmt driver to xrt-mgnt driver.
->>      >> - Replaced 'MGMT' with 'MGNT' and 'mgmt' with 'mgnt' in code 
->> and file
->>      >> names
->>      >> - Moved pci function calls from infrastructure to xrt-mgnt 
->> driver.
->>      >> - Renamed files: mgmt/main.c -> mgnt/xmgnt-main.c
->>      >>                   mgmt/main-region.c -> mgnt/xmgnt-main-region.c
->>      >>                   include/xmgmt-main.h -> include/xmgnt-main.h
->>      >>                   mgmt/fmgr-drv.c -> mgnt/xrt-mgr.c
->>      >>                   mgmt/fmgr.h -> mgnt/xrt-mgr.h
->>      >> - Updated code base to include v4 code review comments.
->>      >>
->>      >> Changes since v3:
->>      >> - Leaf drivers use regmap-mmio to access hardware registers.
->>      >> - Renamed driver module: xmgmt.ko -> xrt-mgmt.ko
->>      >> - Renamed files: calib.[c|h] -> ddr_calibration.[c|h],
->>      >>                   lib/main.[c|h] -> lib/lib-drv.[c|h],
->>      >>                   mgmt/main-impl.h - > mgmt/xmgnt.h
->>      >> - Updated code base to include v3 code review comments.
->>      >>
->>      >> Changes since v2:
->>      >> - Streamlined the driver framework into *xleaf*, *group* and 
->> *xroot*
->>      >> - Updated documentation to show the driver model with examples
->>      >> - Addressed kernel test robot errors
->>      >> - Added a selftest for basic driver framework
->>      >> - Documented device tree schema
->>      >> - Removed need to export libfdt symbols
->>      >>
->>      >> Changes since v1:
->>      >> - Updated the driver to use fpga_region and fpga_bridge for FPGA
->>      >>    programming
->>      >> - Dropped platform drivers not related to PR programming to 
->> focus on XRT
->>      >>    core framework
->>      >> - Updated Documentation/fpga/xrt.rst with information on XRT 
->> core
->>      >> framework
->>      >> - Addressed checkpatch issues
->>      >> - Dropped xrt- prefix from some header files
->>      >>
->>      >> For reference V6 version of patch series can be found here:
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-1-lizhi.hou@xilinx.com/
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-2-lizhi.hou@xilinx.com/
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-3-lizhi.hou@xilinx.com/
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-4-lizhi.hou@xilinx.com/
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-5-lizhi.hou@xilinx.com/
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-6-lizhi.hou@xilinx.com/
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-7-lizhi.hou@xilinx.com/
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-8-lizhi.hou@xilinx.com/
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-9-lizhi.hou@xilinx.com/
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-10-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-11-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-12-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-13-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-14-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-15-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-16-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-17-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-18-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-19-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-20-lizhi.hou@xilinx.com/
->>      >>
->>      >> 
->> https://lore.kernel.org/lkml/20210512015339.5649-21-lizhi.hou@xilinx.com/
->>      >>
->>      >>
->>      >> Lizhi Hou (20):
->>      >>    Documentation: fpga: Add a document describing XRT Alveo 
->> drivers
->>      >>    fpga: xrt: driver metadata helper functions
->>      >>    fpga: xrt: xclbin file helper functions
->>      >>    fpga: xrt: xrt-lib driver manager
->>      >>    fpga: xrt: group driver
->>      >>    fpga: xrt: char dev node helper functions
->>      >>    fpga: xrt: root driver infrastructure
->>      >>    fpga: xrt: driver infrastructure
->>      >>    fpga: xrt: management physical function driver (root)
->>      >>    fpga: xrt: main driver for management function device
->>      >>    fpga: xrt: fpga-mgr and region implementation for xclbin 
->> download
->>      >>    fpga: xrt: VSEC driver
->>      >>    fpga: xrt: User Clock Subsystem driver
->>      >>    fpga: xrt: ICAP driver
->>      >>    fpga: xrt: devctl xrt driver
->>      >>    fpga: xrt: clock driver
->>      >>    fpga: xrt: clock frequency counter driver
->>      >>    fpga: xrt: DDR calibration driver
->>      >>    fpga: xrt: partition isolation driver
->>      >>    fpga: xrt: Kconfig and Makefile updates for XRT drivers
->>      >>
->>      >>   Documentation/fpga/index.rst |   1 +
->>      >>   Documentation/fpga/xrt.rst                    | 870 
->> ++++++++++++++++++
->>      >>   MAINTAINERS                                   | 11 +
->>      >>   drivers/Makefile |   1 +
->>      >>   drivers/fpga/Kconfig |   2 +
->>      >>   drivers/fpga/Makefile |   5 +
->>      >>   drivers/fpga/xrt/Kconfig |   8 +
->>      >>   drivers/fpga/xrt/include/events.h             | 45 +
->>      >>   drivers/fpga/xrt/include/group.h              | 25 +
->>      >>   drivers/fpga/xrt/include/metadata.h           | 236 +++++
->>      >>   drivers/fpga/xrt/include/subdev_id.h          | 39 +
->>      >>   drivers/fpga/xrt/include/xclbin-helper.h      | 48 +
->>      >>   drivers/fpga/xrt/include/xdevice.h            | 131 +++
->>      >>   drivers/fpga/xrt/include/xleaf.h              | 205 +++++
->>      >>   drivers/fpga/xrt/include/xleaf/axigate.h      | 23 +
->>      >>   drivers/fpga/xrt/include/xleaf/clkfreq.h      | 21 +
->>      >>   drivers/fpga/xrt/include/xleaf/clock.h        | 29 +
->>      >>   .../fpga/xrt/include/xleaf/ddr_calibration.h  | 28 +
->>      >>   drivers/fpga/xrt/include/xleaf/devctl.h       | 40 +
->>      >>   drivers/fpga/xrt/include/xleaf/icap.h         | 27 +
->>      >>   drivers/fpga/xrt/include/xmgmt-main.h         | 34 +
->>      >>   drivers/fpga/xrt/include/xroot.h              | 117 +++
->>      >>   drivers/fpga/xrt/lib/Kconfig                  | 17 +
->>      >>   drivers/fpga/xrt/lib/Makefile                 | 30 +
->>      >>   drivers/fpga/xrt/lib/cdev.c                   | 209 +++++
->>      >>   drivers/fpga/xrt/lib/group.c                  | 278 ++++++
->>      >>   drivers/fpga/xrt/lib/lib-drv.c                | 328 +++++++
->>      >>   drivers/fpga/xrt/lib/lib-drv.h                | 21 +
->>      >>   drivers/fpga/xrt/lib/subdev.c                 | 859 
->> +++++++++++++++++
->>      >>   drivers/fpga/xrt/lib/subdev_pool.h            | 53 ++
->>      >>   drivers/fpga/xrt/lib/xclbin.c                 | 381 ++++++++
->>      >>   drivers/fpga/xrt/lib/xleaf/axigate.c          | 325 +++++++
->>      >>   drivers/fpga/xrt/lib/xleaf/clkfreq.c          | 223 +++++
->>      >>   drivers/fpga/xrt/lib/xleaf/clock.c            | 652 
->> +++++++++++++
->>      >>   drivers/fpga/xrt/lib/xleaf/ddr_calibration.c  | 210 +++++
->>      >>   drivers/fpga/xrt/lib/xleaf/devctl.c           | 169 ++++
->>      >>   drivers/fpga/xrt/lib/xleaf/icap.c             | 328 +++++++
->>      >>   drivers/fpga/xrt/lib/xleaf/ucs.c              | 152 +++
->>      >>   drivers/fpga/xrt/lib/xleaf/vsec.c             | 372 ++++++++
->>      >>   drivers/fpga/xrt/lib/xroot.c                  | 536 
->> +++++++++++
->>      >>   drivers/fpga/xrt/metadata/Kconfig             | 12 +
->>      >>   drivers/fpga/xrt/metadata/Makefile            | 16 +
->>      >>   drivers/fpga/xrt/metadata/metadata.c          | 578 
->> ++++++++++++
->>      >>   drivers/fpga/xrt/mgmt/Kconfig                 | 15 +
->>      >>   drivers/fpga/xrt/mgmt/Makefile                | 19 +
->>      >>   drivers/fpga/xrt/mgmt/root.c                  | 420 +++++++++
->>      >>   drivers/fpga/xrt/mgmt/xmgmt-main-region.c     | 483 ++++++++++
->>      >>   drivers/fpga/xrt/mgmt/xmgmt-main.c            | 662 
->> +++++++++++++
->>      >>   drivers/fpga/xrt/mgmt/xmgmt.h                 | 33 +
->>      >>   drivers/fpga/xrt/mgmt/xrt-mgr.c               | 190 ++++
->>      >>   drivers/fpga/xrt/mgmt/xrt-mgr.h               | 16 +
->>      >>   include/uapi/linux/xrt/xclbin.h               | 409 ++++++++
->>      >>   include/uapi/linux/xrt/xmgmt-ioctl.h          | 46 +
->>      >>   53 files changed, 9988 insertions(+)
->>      >>   create mode 100644 Documentation/fpga/xrt.rst
->>      >>   create mode 100644 drivers/fpga/xrt/Kconfig
->>      >>   create mode 100644 drivers/fpga/xrt/include/events.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/group.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/metadata.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/subdev_id.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xclbin-helper.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xdevice.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xleaf.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xleaf/axigate.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xleaf/clkfreq.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xleaf/clock.h
->>      >>   create mode 100644 
->> drivers/fpga/xrt/include/xleaf/ddr_calibration.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xleaf/devctl.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xleaf/icap.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xmgmt-main.h
->>      >>   create mode 100644 drivers/fpga/xrt/include/xroot.h
->>      >>   create mode 100644 drivers/fpga/xrt/lib/Kconfig
->>      >>   create mode 100644 drivers/fpga/xrt/lib/Makefile
->>      >>   create mode 100644 drivers/fpga/xrt/lib/cdev.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/group.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/lib-drv.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/lib-drv.h
->>      >>   create mode 100644 drivers/fpga/xrt/lib/subdev.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/subdev_pool.h
->>      >>   create mode 100644 drivers/fpga/xrt/lib/xclbin.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/xleaf/axigate.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/xleaf/clkfreq.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/xleaf/clock.c
->>      >>   create mode 100644 
->> drivers/fpga/xrt/lib/xleaf/ddr_calibration.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/xleaf/devctl.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/xleaf/icap.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/xleaf/ucs.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/xleaf/vsec.c
->>      >>   create mode 100644 drivers/fpga/xrt/lib/xroot.c
->>      >>   create mode 100644 drivers/fpga/xrt/metadata/Kconfig
->>      >>   create mode 100644 drivers/fpga/xrt/metadata/Makefile
->>      >>   create mode 100644 drivers/fpga/xrt/metadata/metadata.c
->>      >>   create mode 100644 drivers/fpga/xrt/mgmt/Kconfig
->>      >>   create mode 100644 drivers/fpga/xrt/mgmt/Makefile
->>      >>   create mode 100644 drivers/fpga/xrt/mgmt/root.c
->>      >>   create mode 100644 drivers/fpga/xrt/mgmt/xmgmt-main-region.c
->>      >>   create mode 100644 drivers/fpga/xrt/mgmt/xmgmt-main.c
->>      >>   create mode 100644 drivers/fpga/xrt/mgmt/xmgmt.h
->>      >>   create mode 100644 drivers/fpga/xrt/mgmt/xrt-mgr.c
->>      >>   create mode 100644 drivers/fpga/xrt/mgmt/xrt-mgr.h
->>      >>   create mode 100644 include/uapi/linux/xrt/xclbin.h
->>      >>   create mode 100644 include/uapi/linux/xrt/xmgmt-ioctl.h
->>      >>
->>
->>
->
+diff --git a/drivers/fpga/xrt/include/xclbin-helper.h b/drivers/fpga/xrt/include/xclbin-helper.h
+new file mode 100644
+index 000000000000..518d55f74c25
+--- /dev/null
++++ b/drivers/fpga/xrt/include/xclbin-helper.h
+@@ -0,0 +1,48 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (C) 2020-2021 Xilinx, Inc.
++ *
++ * Authors:
++ *    David Zhang <davidzha@xilinx.com>
++ *    Sonal Santan <sonal.santan@xilinx.com>
++ */
++
++#ifndef _XCLBIN_HELPER_H_
++#define _XCLBIN_HELPER_H_
++
++#include <linux/types.h>
++#include <linux/device.h>
++#include <linux/fpga-xrt.h>
++
++#define XCLBIN_VERSION2	"xclbin2"
++#define XCLBIN_HWICAP_BITFILE_BUF_SZ 1024
++#define XCLBIN_MAX_SZ_1G (1024 * 1024 * 1024) /* Assuming xclbin <= 1G, always */
++
++enum axlf_section_kind;
++struct axlf;
++
++/**
++ * Bitstream header information as defined by Xilinx tools.
++ * Please note that this struct definition is not owned by the driver.
++ */
++struct xclbin_bit_head_info {
++	u32 header_length;		/* Length of header in 32 bit words */
++	u32 bitstream_length;		/* Length of bitstream to read in bytes */
++	const unchar *design_name;	/* Design name get from bitstream */
++	const unchar *part_name;	/* Part name read from bitstream */
++	const unchar *date;		/* Date read from bitstream header */
++	const unchar *time;		/* Bitstream creation time */
++	u32 magic_length;		/* Length of the magic numbers */
++	const unchar *version;		/* Version string */
++};
++
++/* caller must free the allocated memory for **data. len could be NULL. */
++int xrt_xclbin_get_section(struct device *dev,  const struct axlf *xclbin,
++			   enum axlf_section_kind kind, void **data,
++			   uint64_t *len);
++int xrt_xclbin_get_metadata(struct device *dev, const struct axlf *xclbin, char **dtb);
++int xrt_xclbin_parse_bitstream_header(struct device *dev, const unchar *data,
++				      u32 size, struct xclbin_bit_head_info *head_info);
++const char *xrt_clock_type2epname(enum XCLBIN_CLOCK_TYPE type);
++
++#endif /* _XCLBIN_HELPER_H_ */
+diff --git a/drivers/fpga/xrt/lib/xclbin.c b/drivers/fpga/xrt/lib/xclbin.c
+new file mode 100644
+index 000000000000..6edac3d418be
+--- /dev/null
++++ b/drivers/fpga/xrt/lib/xclbin.c
+@@ -0,0 +1,381 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Xilinx Alveo FPGA Driver XCLBIN parser
++ *
++ * Copyright (C) 2020-2021 Xilinx, Inc.
++ *
++ * Authors: David Zhang <davidzha@xilinx.com>
++ */
++
++#include <asm/errno.h>
++#include <linux/vmalloc.h>
++#include <linux/device.h>
++#include "xclbin-helper.h"
++#include "metadata.h"
++
++/* Used for parsing bitstream header */
++#define BITSTREAM_EVEN_MAGIC_BYTE	0x0f
++#define BITSTREAM_ODD_MAGIC_BYTE	0xf0
++
++static inline u16 bitstream_read16(const char *data, u32 *offset)
++{
++	u16 val;
++
++	val = be16_to_cpu(*(__be16 *)(data + *offset));
++	*offset += sizeof(__be16);
++
++	return val;
++}
++
++static inline u32 bitstream_read32(const char *data, u32 *offset)
++{
++	u32 val;
++
++	val = be32_to_cpu(*(__be32 *)(data + *offset));
++	*offset += sizeof(__be32);
++
++	return val;
++}
++
++static int xrt_xclbin_get_section_hdr(const struct axlf *xclbin,
++				      enum axlf_section_kind kind,
++				      const struct axlf_section_header **header)
++{
++	const struct axlf_section_header *phead = NULL;
++	u64 xclbin_len;
++	int i;
++
++	*header = NULL;
++	for (i = 0; i < xclbin->header.num_sections; i++) {
++		if (xclbin->sections[i].section_kind == kind) {
++			phead = &xclbin->sections[i];
++			break;
++		}
++	}
++
++	if (!phead)
++		return -ENOENT;
++
++	xclbin_len = xclbin->header.length;
++	if (xclbin_len > XCLBIN_MAX_SZ_1G || !phead->section_size ||
++	    phead->section_offset + phead->section_size > xclbin_len)
++		return -EINVAL;
++
++	*header = phead;
++	return 0;
++}
++
++static int xrt_xclbin_section_info(const struct axlf *xclbin,
++				   enum axlf_section_kind kind,
++				   u64 *offset, u64 *size)
++{
++	const struct axlf_section_header *mem_header = NULL;
++	int rc;
++
++	rc = xrt_xclbin_get_section_hdr(xclbin, kind, &mem_header);
++	if (rc)
++		return rc;
++
++	*offset = mem_header->section_offset;
++	*size = mem_header->section_size;
++
++	return 0;
++}
++
++/* caller must free the allocated memory for **data */
++int xrt_xclbin_get_section(struct device *dev,
++			   const struct axlf *buf,
++			   enum axlf_section_kind kind,
++			   void **data, u64 *len)
++{
++	const struct axlf *xclbin = (const struct axlf *)buf;
++	void *section = NULL;
++	u64 offset;
++	u64 size;
++	int err;
++
++	if (!data) {
++		dev_err(dev, "invalid data pointer");
++		return -EINVAL;
++	}
++
++	err = xrt_xclbin_section_info(xclbin, kind, &offset, &size);
++	if (err) {
++		dev_dbg(dev, "parsing section failed. kind %d, err = %d", kind, err);
++		return err;
++	}
++
++	section = vzalloc(size);
++	if (!section)
++		return -ENOMEM;
++
++	memcpy(section, ((const char *)xclbin) + offset, size);
++
++	*data = section;
++	if (len)
++		*len = size;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xrt_xclbin_get_section);
++
++static inline int xclbin_bit_get_string(const unchar *data, u32 size,
++					u32 offset, unchar prefix,
++					const unchar **str)
++{
++	int len;
++	u32 tmp;
++
++	/* prefix and length will be 3 bytes */
++	if (offset + 3  > size)
++		return -EINVAL;
++
++	/* Read prefix */
++	tmp = data[offset++];
++	if (tmp != prefix)
++		return -EINVAL;
++
++	/* Get string length */
++	len = bitstream_read16(data, &offset);
++	if (offset + len > size)
++		return -EINVAL;
++
++	if (data[offset + len - 1] != '\0')
++		return -EINVAL;
++
++	*str = data + offset;
++
++	return len + 3;
++}
++
++/* parse bitstream header */
++int xrt_xclbin_parse_bitstream_header(struct device *dev, const unchar *data,
++				      u32 size, struct xclbin_bit_head_info *head_info)
++{
++	u32 offset = 0;
++	int len, i;
++	u16 magic;
++
++	memset(head_info, 0, sizeof(*head_info));
++
++	/* Get "Magic" length */
++	if (size < sizeof(u16)) {
++		dev_err(dev, "invalid size");
++		return -EINVAL;
++	}
++
++	len = bitstream_read16(data, &offset);
++	if (offset + len > size) {
++		dev_err(dev, "invalid magic len");
++		return -EINVAL;
++	}
++	head_info->magic_length = len;
++
++	for (i = 0; i < head_info->magic_length - 1; i++) {
++		magic = data[offset++];
++		if (!(i % 2) && magic != BITSTREAM_EVEN_MAGIC_BYTE) {
++			dev_err(dev, "invalid magic even byte at %d", offset);
++			return -EINVAL;
++		}
++
++		if ((i % 2) && magic != BITSTREAM_ODD_MAGIC_BYTE) {
++			dev_err(dev, "invalid magic odd byte at %d", offset);
++			return -EINVAL;
++		}
++	}
++
++	if (offset + 3 > size) {
++		dev_err(dev, "invalid length of magic end");
++		return -EINVAL;
++	}
++	/* Read null end of magic data. */
++	if (data[offset++]) {
++		dev_err(dev, "invalid magic end");
++		return -EINVAL;
++	}
++
++	/* Read 0x01 (short) */
++	magic = bitstream_read16(data, &offset);
++
++	/* Check the "0x01" half word */
++	if (magic != 0x01) {
++		dev_err(dev, "invalid magic end");
++		return -EINVAL;
++	}
++
++	len = xclbin_bit_get_string(data, size, offset, 'a', &head_info->design_name);
++	if (len < 0) {
++		dev_err(dev, "get design name failed");
++		return -EINVAL;
++	}
++
++	head_info->version = strstr(head_info->design_name, "Version=") + strlen("Version=");
++	offset += len;
++
++	len = xclbin_bit_get_string(data, size, offset, 'b', &head_info->part_name);
++	if (len < 0) {
++		dev_err(dev, "get part name failed");
++		return -EINVAL;
++	}
++	offset += len;
++
++	len = xclbin_bit_get_string(data, size, offset, 'c', &head_info->date);
++	if (len < 0) {
++		dev_err(dev, "get data failed");
++		return -EINVAL;
++	}
++	offset += len;
++
++	len = xclbin_bit_get_string(data, size, offset, 'd', &head_info->time);
++	if (len < 0) {
++		dev_err(dev, "get time failed");
++		return -EINVAL;
++	}
++	offset += len;
++
++	if (offset + 5 >= size) {
++		dev_err(dev, "can not get bitstream length");
++		return -EINVAL;
++	}
++
++	/* Read 'e' */
++	if (data[offset++] != 'e') {
++		dev_err(dev, "invalid prefix of bitstream length");
++		return -EINVAL;
++	}
++
++	/* Get byte length of bitstream */
++	head_info->bitstream_length = bitstream_read32(data, &offset);
++
++	head_info->header_length = offset;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xrt_xclbin_parse_bitstream_header);
++
++static struct xrt_clock_desc {
++	char	*clock_ep_name;
++	u32	clock_xclbin_type;
++	char	*clkfreq_ep_name;
++} clock_desc[] = {
++	{
++		.clock_ep_name = XRT_MD_NODE_CLK_KERNEL1,
++		.clock_xclbin_type = CT_DATA,
++		.clkfreq_ep_name = XRT_MD_NODE_CLKFREQ_K1,
++	},
++	{
++		.clock_ep_name = XRT_MD_NODE_CLK_KERNEL2,
++		.clock_xclbin_type = CT_KERNEL,
++		.clkfreq_ep_name = XRT_MD_NODE_CLKFREQ_K2,
++	},
++	{
++		.clock_ep_name = XRT_MD_NODE_CLK_KERNEL3,
++		.clock_xclbin_type = CT_SYSTEM,
++		.clkfreq_ep_name = XRT_MD_NODE_CLKFREQ_HBM,
++	},
++};
++
++const char *xrt_clock_type2epname(enum XCLBIN_CLOCK_TYPE type)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(clock_desc); i++) {
++		if (clock_desc[i].clock_xclbin_type == type)
++			return clock_desc[i].clock_ep_name;
++	}
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(xrt_clock_type2epname);
++
++static const char *clock_type2clkfreq_name(enum XCLBIN_CLOCK_TYPE type)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(clock_desc); i++) {
++		if (clock_desc[i].clock_xclbin_type == type)
++			return clock_desc[i].clkfreq_ep_name;
++	}
++	return NULL;
++}
++
++static int xrt_xclbin_add_clock_metadata(struct device *dev,
++					 const struct axlf *xclbin,
++					 char *dtb)
++{
++	struct clock_freq_topology *clock_topo;
++	u16 freq;
++	int rc;
++	int i;
++
++	/* if clock section does not exist, add nothing and return success */
++	rc = xrt_xclbin_get_section(dev, xclbin, CLOCK_FREQ_TOPOLOGY,
++				    (void **)&clock_topo, NULL);
++	if (rc == -ENOENT)
++		return 0;
++	else if (rc)
++		return rc;
++
++	for (i = 0; i < clock_topo->count; i++) {
++		u8 type = clock_topo->clock_freq[i].type;
++		const char *ep_name = xrt_clock_type2epname(type);
++		const char *counter_name = clock_type2clkfreq_name(type);
++
++		if (!ep_name || !counter_name)
++			continue;
++
++		freq = be16_to_cpu((__force __be16)clock_topo->clock_freq[i].freq_MHZ);
++		rc = xrt_md_set_prop(dev, dtb, ep_name, NULL, XRT_MD_PROP_CLK_FREQ,
++				     &freq, sizeof(freq));
++		if (rc)
++			break;
++
++		rc = xrt_md_set_prop(dev, dtb, ep_name, NULL, XRT_MD_PROP_CLK_CNT,
++				     counter_name, strlen(counter_name) + 1);
++		if (rc)
++			break;
++	}
++
++	vfree(clock_topo);
++
++	return rc;
++}
++
++int xrt_xclbin_get_metadata(struct device *dev, const struct axlf *xclbin, char **dtb)
++{
++	char *md = NULL, *newmd = NULL;
++	u64 len, md_len;
++	int rc;
++
++	*dtb = NULL;
++
++	rc = xrt_xclbin_get_section(dev, xclbin, PARTITION_METADATA, (void **)&md, &len);
++	if (rc)
++		goto done;
++
++	md_len = xrt_md_size(dev, md);
++
++	/* Sanity check the dtb section. */
++	if (md_len > len) {
++		rc = -EINVAL;
++		goto done;
++	}
++
++	/* use dup function here to convert incoming metadata to writable */
++	newmd = xrt_md_dup(dev, md);
++	if (!newmd) {
++		rc = -EFAULT;
++		goto done;
++	}
++
++	/* Convert various needed xclbin sections into dtb. */
++	rc = xrt_xclbin_add_clock_metadata(dev, xclbin, newmd);
++
++	if (!rc)
++		*dtb = newmd;
++	else
++		vfree(newmd);
++done:
++	vfree(md);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(xrt_xclbin_get_metadata);
+diff --git a/include/uapi/linux/fpga-xrt.h b/include/uapi/linux/fpga-xrt.h
+new file mode 100644
+index 000000000000..ace7d3d09897
+--- /dev/null
++++ b/include/uapi/linux/fpga-xrt.h
+@@ -0,0 +1,428 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++/*
++ *  Xilinx FPGA compiled binary container format
++ *
++ *  Copyright (C) 2015-2021, Xilinx Inc
++ */
++
++#ifndef _UAPI_LINUX_FPGA_XRT_H
++#define _UAPI_LINUX_FPGA_XRT_H
++
++#if defined(__KERNEL__)
++
++#include <linux/types.h>
++
++#elif defined(__cplusplus)
++
++#include <cstdlib>
++#include <cstdint>
++#include <algorithm>
++#include <uuid/uuid.h>
++
++#else
++
++#include <stdlib.h>
++#include <stdint.h>
++#include <uuid/uuid.h>
++
++#endif
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include <linux/ioctl.h>
++
++/**
++ * DOC: Container format for Xilinx FPGA images
++ * The container stores bitstreams, metadata and firmware images.
++ * xclbin/xsabin is an ELF-like binary container format. It is a structured
++ * series of sections. There is a file header followed by several section
++ * headers which is followed by sections. A section header points to an
++ * actual section. There is an optional signature at the end. The
++ * following figure illustrates a typical xclbin:
++ *
++ *     +---------------------+
++ *     |                     |
++ *     |       HEADER        |
++ *     +---------------------+
++ *     |   SECTION  HEADER   |
++ *     |                     |
++ *     +---------------------+
++ *     |        ...          |
++ *     |                     |
++ *     +---------------------+
++ *     |   SECTION  HEADER   |
++ *     |                     |
++ *     +---------------------+
++ *     |       SECTION       |
++ *     |                     |
++ *     +---------------------+
++ *     |         ...         |
++ *     |                     |
++ *     +---------------------+
++ *     |       SECTION       |
++ *     |                     |
++ *     +---------------------+
++ *     |      SIGNATURE      |
++ *     |      (OPTIONAL)     |
++ *     +---------------------+
++ */
++
++enum XCLBIN_MODE {
++	XCLBIN_FLAT = 0,
++	XCLBIN_PR,
++	XCLBIN_TANDEM_STAGE2,
++	XCLBIN_TANDEM_STAGE2_WITH_PR,
++	XCLBIN_HW_EMU,
++	XCLBIN_SW_EMU,
++	XCLBIN_MODE_MAX
++};
++
++enum axlf_section_kind {
++	BITSTREAM = 0,
++	CLEARING_BITSTREAM,
++	EMBEDDED_METADATA,
++	FIRMWARE,
++	DEBUG_DATA,
++	SCHED_FIRMWARE,
++	MEM_TOPOLOGY,
++	CONNECTIVITY,
++	IP_LAYOUT,
++	DEBUG_IP_LAYOUT,
++	DESIGN_CHECK_POINT,
++	CLOCK_FREQ_TOPOLOGY,
++	MCS,
++	BMC,
++	BUILD_METADATA,
++	KEYVALUE_METADATA,
++	USER_METADATA,
++	DNA_CERTIFICATE,
++	PDI,
++	BITSTREAM_PARTIAL_PDI,
++	PARTITION_METADATA,
++	EMULATION_DATA,
++	SYSTEM_METADATA,
++	SOFT_KERNEL,
++	ASK_FLASH,
++	AIE_METADATA,
++	ASK_GROUP_TOPOLOGY,
++	ASK_GROUP_CONNECTIVITY
++};
++
++enum MEM_TYPE {
++	MEM_DDR3 = 0,
++	MEM_DDR4,
++	MEM_DRAM,
++	MEM_STREAMING,
++	MEM_PREALLOCATED_GLOB,
++	MEM_ARE,
++	MEM_HBM,
++	MEM_BRAM,
++	MEM_URAM,
++	MEM_STREAMING_CONNECTION
++};
++
++enum IP_TYPE {
++	IP_MB = 0,
++	IP_KERNEL,
++	IP_DNASC,
++	IP_DDR4_CONTROLLER,
++	IP_MEM_DDR4,
++	IP_MEM_HBM
++};
++
++struct axlf_section_header {
++	uint32_t section_kind;			/* Section type */
++	char section_name[16];			/* Section name */
++	char rsvd[4];
++	uint64_t section_offset;		/* File offset of section data */
++	uint64_t section_size;			/* Size of section data */
++} __packed;
++
++struct axlf_header {
++	uint64_t length;			/* Total size of the xclbin file */
++	uint64_t time_stamp;			/* Timestamp when xclbin was created */
++	uint64_t feature_rom_timestamp;		/* TimeSinceEpoch of the featureRom */
++	uint16_t version_patch;			/* Patch Version */
++	uint8_t version_major;			/* Major Version */
++	uint8_t version_minor;			/* Minor Version */
++	uint32_t mode;				/* Xclbin mode. See enum XCLBIN_MODE */
++	union {
++		struct {
++			uint64_t platform_id;	/* 64 bit platform ID */
++			uint64_t feature_id;	/* 64 bit feature ID */
++		} rom;
++		unsigned char rom_uuid[16];	/* feature ROM UUID */
++	};
++	unsigned char platform_vbnv[64];	/* String of Vendor:Board:Name:Version */
++	union {
++		char next_axlf[16];		/* Name of next xclbin file */
++		unsigned char uuid[16];		/* uuid of this xclbin */
++	};
++	char debug_bin[16];			/* Name of binary with debug information */
++	uint32_t num_sections;			/* Number of section headers */
++	char rsvd[4];
++} __packed;
++
++struct axlf {
++	char magic[8];				/* Magic word: xclbin2\0 */
++	int32_t signature_length;		/* Length. -1 indicates no signature */
++	uint8_t reserved[28];
++	uint8_t key_block[256];			/* Signature for validation of binary */
++	uint64_t unique_id;			/* Unique ID */
++	struct axlf_header header;		/* Inline header */
++	struct axlf_section_header sections[1];	/* One or more section headers follow */
++} __packed;
++
++/* bitstream information */
++struct xlnx_bitstream {
++	uint8_t freq[8];
++	char bits[1];
++} __packed;
++
++/****	MEMORY TOPOLOGY SECTION ****/
++struct mem_data {
++	uint8_t type;				/* Memory type. See enum MEM_TYPE */
++	uint8_t used;				/* Memory presence. 0 means not present */
++	uint8_t rsvd[6];
++	union {
++		uint64_t size;			/* Memory size. Counted in KB */
++		uint64_t route_id;		/* Stream route ID */
++	};
++	union {
++		uint64_t base_address;		/* Memory base address */
++		uint64_t flow_id;		/* Stream flow ID */
++	};
++	unsigned char tag[16];			/* Memory tag string */
++} __packed;
++
++struct mem_topology {
++	int32_t count;				/* Number of mem_data */
++	struct mem_data mem_data[1];		/* mem_data array, sorted on mem_type */
++} __packed;
++
++/****	CONNECTIVITY SECTION ****/
++/* Connectivity of each argument of CU(Compute Unit). It will be in terms
++ * of argument index associated. For associating CU instances with arguments
++ * and banks, start at the connectivity section. Using the ip_layout_index
++ * access the ip_data.name. Now we can associate this CU instance with its
++ * original CU name and get the connectivity as well. This enables us to form
++ * related groups of CU instances.
++ */
++
++struct connection {
++	int32_t arg_index;			/* Index of CU argument */
++	int32_t ip_layout_index;		/* Index into the ip_layout section */
++	int32_t mem_data_index;			/* Index into the mem_data section */
++} __packed;
++
++struct connectivity {
++	int32_t count;
++	struct connection connection[1];
++} __packed;
++
++/****	IP_LAYOUT SECTION ****/
++
++/* IP Kernel */
++#define IP_INT_ENABLE_MASK	  0x0001
++#define IP_INTERRUPT_ID_MASK  0x00FE
++#define IP_INTERRUPT_ID_SHIFT 0x1
++
++enum IP_CONTROL {
++	AP_CTRL_HS = 0,
++	AP_CTRL_CHAIN,
++	AP_CTRL_NONE,
++	AP_CTRL_ME,
++	ACCEL_ADAPTER
++};
++
++#define IP_CONTROL_MASK	 0xFF00
++#define IP_CONTROL_SHIFT 0x8
++
++/*
++ * IPs on AXI lite - their types, names, and base addresses.
++ *
++ * The defination of 32-bit follows IP_TYPE is based on IP_TYPE
++ *   For IP_KERNEL
++ *	    int_enable   : Bit  - 0x0000_0001;
++ *	    interrupt_id : Bits - 0x0000_00FE;
++ *	    ip_control   : Bits - 0x0000_FF00;
++ *   For IP_MEM_*
++ *	    index        : Bits - 0x0000_FFFF;
++ *	    pc_index     : Bits - 0x00FF_0000;
++ */
++struct ip_data {
++	uint32_t type;				/* Type. See enum IP_TYPE */
++	union {
++		uint32_t properties;
++		struct {
++			uint16_t index;
++			uint8_t pc_index;
++			uint8_t unused;
++		} indices;
++	};
++	uint64_t base_address;
++	uint8_t name[64];			/* Name of IP */
++} __packed;
++
++struct ip_layout {
++	int32_t count;
++	struct ip_data ip_data[1];		/* ip_data array, sorted by base_address */
++} __packed;
++
++/*** Debug IP section layout ****/
++enum DEBUG_IP_TYPE {
++	UNDEFINED = 0,
++	LAPC,
++	ILA,
++	AXI_MM_MONITOR,
++	AXI_TRACE_FUNNEL,
++	AXI_MONITOR_FIFO_LITE,
++	AXI_MONITOR_FIFO_FULL,
++	ACCEL_MONITOR,
++	AXI_STREAM_MONITOR,
++	AXI_STREAM_PROTOCOL_CHECKER,
++	TRACE_S2MM,
++	AXI_DMA,
++	TRACE_S2MM_FULL
++};
++
++struct debug_ip_data {
++	uint8_t type;				/* Type. See enum DEBUG_IP_TYPE */
++	uint8_t index_lowbyte;
++	uint8_t properties;
++	uint8_t major;
++	uint8_t minor;
++	uint8_t index_highbyte;
++	uint8_t reserved[2];
++	uint64_t base_address;
++	char	name[128];
++} __packed;
++
++struct debug_ip_layout {
++	uint16_t count;
++	struct debug_ip_data debug_ip_data[1];
++} __packed;
++
++/* Supported clock frequency types */
++enum XCLBIN_CLOCK_TYPE {
++	CT_UNUSED = 0,				/* Initialized value */
++	CT_DATA	  = 1,				/* Data clock */
++	CT_KERNEL = 2,				/* Kernel clock */
++	CT_SYSTEM = 3				/* System Clock */
++};
++
++/* Clock Frequency Entry */
++struct clock_freq {
++	uint16_t freq_MHZ;			/* Frequency in MHz */
++	uint8_t type;				/* Clock type (enum CLOCK_TYPE) */
++	uint8_t unused[5];
++	char name[128];				/* Clock Name */
++} __packed;
++
++/* Clock frequency section */
++struct clock_freq_topology {
++	int16_t count;				/* Number of entries */
++	struct clock_freq clock_freq[1];	/* Clock array */
++} __packed;
++
++/* Supported MCS file types */
++enum MCS_TYPE {
++	MCS_UNKNOWN = 0,			/* Initialized value */
++	MCS_PRIMARY = 1,			/* The primary mcs file data */
++	MCS_SECONDARY = 2,			/* The secondary mcs file data */
++};
++
++/* One chunk of MCS data */
++struct mcs_chunk {
++	uint8_t type;				/* MCS data type */
++	uint8_t unused[7];
++	uint64_t offset;			/* Data offset */
++	uint64_t size;				/* Data size */
++} __packed;
++
++/* MCS data section */
++struct mcs {
++	int8_t count;				/* Number of chunks */
++	int8_t unused[7];
++	struct mcs_chunk chunk[1];		/* MCS chunks followed by data */
++} __packed;
++
++/* bmc data section */
++struct bmc {
++	uint64_t offset;			/* Data offset */
++	uint64_t size;				/* Data size (bytes) */
++	char image_name[64];			/* Name of the image */
++	char device_name[64];			/* Name of the device */
++	char version[64];
++	char md5value[33];			/* MD5 checksum */
++	char padding[7];
++} __packed;
++
++/*
++ * soft kernel data section, used by classic driver
++ * Prefix Syntax:
++ *  mpo - member, pointer, offset
++ *  This variable represents a zero terminated string
++ *  that is offseted from the beginning of the section.
++ *  The pointer to access the string is initialized as follows:
++ *  char * pCharString = (address_of_section) + (mpo value)
++ */
++struct soft_kernel {
++	uint32_t mpo_name;			/* Name of the soft kernel */
++	uint32_t image_offset;			/* Image offset */
++	uint32_t image_size;			/* Image size */
++	uint32_t mpo_version;			/* Version */
++	uint32_t mpo_md5_value;			/* MD5 checksum */
++	uint32_t mpo_symbol_name;		/* Symbol name */
++	uint32_t num_instances;			/* Number of instances */
++	uint8_t padding[36];			/* Reserved for future use */
++	uint8_t reserved_ext[16];		/* Reserved for future extended data */
++} __packed;
++
++enum CHECKSUM_TYPE {
++	CST_UNKNOWN = 0,
++	CST_SDBM = 1,
++	CST_LAST
++};
++
++/**
++ * DOC: PCIe Kernel Driver for Management Physical Function
++ * Interfaces exposed by *xrt-mgmt* driver are defined in file, *xmgmt-ioctl.h*.
++ * Core functionality provided by *xrt-mgmt* driver is described in the following table:
++ *
++ * =========== ============================== ==================================
++ * Functionality           ioctl request code           data format
++ * =========== ============================== ==================================
++ * 1 FPGA image download   XMGMT_IOCICAPDOWNLOAD_AXLF xmgmt_ioc_bitstream_axlf
++ * =========== ============================== ==================================
++ */
++
++#define XMGMT_IOC_MAGIC 'X'
++#define XMGMT_IOC_ICAP_DOWNLOAD_AXLF 0x6
++
++/**
++ * struct xmgmt_ioc_bitstream_axlf - load xclbin (AXLF) device image
++ * used with XMGMT_IOCICAPDOWNLOAD_AXLF ioctl
++ *
++ * @xclbin:     Pointer to user's xclbin structure in memory
++ */
++struct xmgmt_ioc_bitstream_axlf {
++	struct axlf *xclbin;
++};
++
++#define XMGMT_IOCICAPDOWNLOAD_AXLF                              \
++	_IOW(XMGMT_IOC_MAGIC, XMGMT_IOC_ICAP_DOWNLOAD_AXLF, struct xmgmt_ioc_bitstream_axlf)
++
++/*
++ * The following definitions are for binary compatibility with classic XRT management driver
++ */
++#define XCLMGMT_IOCICAPDOWNLOAD_AXLF XMGMT_IOCICAPDOWNLOAD_AXLF
++#define xclmgmt_ioc_bitstream_axlf xmgmt_ioc_bitstream_axlf
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+-- 
+2.27.0
 
