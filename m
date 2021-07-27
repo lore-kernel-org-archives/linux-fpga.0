@@ -2,189 +2,285 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-21.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-8.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3659C4338F
-	for <linux-fpga@archiver.kernel.org>; Tue, 27 Jul 2021 16:45:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B780EC4338F
+	for <linux-fpga@archiver.kernel.org>; Tue, 27 Jul 2021 16:55:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A6368610D1
-	for <linux-fpga@archiver.kernel.org>; Tue, 27 Jul 2021 16:45:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 87EFA60240
+	for <linux-fpga@archiver.kernel.org>; Tue, 27 Jul 2021 16:55:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230230AbhG0Qpf (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 27 Jul 2021 12:45:35 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45734 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229520AbhG0Qpe (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 27 Jul 2021 12:45:34 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 3F28361037;
-        Tue, 27 Jul 2021 16:45:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1627404334;
-        bh=UW9NckUvM+/IEnMlFBz5eViVnt91qZ3rACQJm7GtjhE=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=xGAoiezRYb1atXC5NSSCAw/kObXYTFRZ0fkrS1ytZm/SSGRHfCR7+msZ7HDumZwVP
-         p0MhzydinBBkgxmHtL25eLZeTZ1z9kGfpITwwhhr8E5LWhDQAmdI7qOOp9JBQU8zp1
-         kEXw+PKPDNphl4y18gUJYh5hwhj/Riq68Bdnzdeg=
-Date:   Tue, 27 Jul 2021 18:45:26 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Moritz Fischer <mdf@kernel.org>
-Cc:     linux-fpga@vger.kernel.org
-Subject: Re: [GIT PULL] FPGA Manager changes for 5.15-rc1
-Message-ID: <YQA4JoS/CUG8JbTb@kroah.com>
-References: <YP4kHpn7CDzCYrbU@epycbox.lan>
- <YP4lYQAedSyF2zAe@epycbox.lan>
- <YQAasvgaqFxPexLf@kroah.com>
- <YQAwszw/HLBUXmti@epycbox.lan>
+        id S229494AbhG0QzK (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 27 Jul 2021 12:55:10 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:26104 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S229497AbhG0QzJ (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 27 Jul 2021 12:55:09 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1627404908;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=6n8tWaNhloDMeIgcQYJHd36kKBFoVdOznxiFljQuvoQ=;
+        b=TzAb9i/VVetwji9ReD4PL1R922DAQXHtl0O41HsLR5IXnghBK4Ov2QKBz7mV2w1/DZJAJ4
+        u0ny2ij3CEovqeG8VQxPFNs6z5H6Fppp+42oyNdjBXNzqfXtke39iPN18P0kpXobthE5sj
+        zt9juRqWfLhz70HXNfkHu+GbHmuZvMA=
+Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com
+ [209.85.222.200]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-401-xT0f1lF2NvmLtrEb6VRsYA-1; Tue, 27 Jul 2021 12:55:07 -0400
+X-MC-Unique: xT0f1lF2NvmLtrEb6VRsYA-1
+Received: by mail-qk1-f200.google.com with SMTP id b9-20020a05620a1269b02903b8bd5c7d95so12014912qkl.12
+        for <linux-fpga@vger.kernel.org>; Tue, 27 Jul 2021 09:55:07 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-transfer-encoding
+         :content-language;
+        bh=6n8tWaNhloDMeIgcQYJHd36kKBFoVdOznxiFljQuvoQ=;
+        b=s4eDfIqiCL1RgXR5cO5BetcFpN0WfMw44zfeeL6dlHweexWEOxVjiw0zqPxPErXpGp
+         nOct1avcTgnFML7abFlHulRHQXz/sCn74SJ73aEfp9GowRkyNZn215BT5PzVTFuYM0YE
+         sH3h4SBkRHiUJc/07krSQN6QleayTQidIiyHts2NemyUYLXo22XW6P2qhx1mj2I3+O47
+         yStmOPNZCyFLxcjk1G931ADY9aeVjXM2YMacWVWAZQQTUftJsQ+tIffZayNef1d2ESbf
+         +D95oZqhAuYh9RSO6ryEIARFUd2Fj52PxTR/6d6+xgK1JNbRqYtkZsPDnPic/7LxB0kB
+         PE7g==
+X-Gm-Message-State: AOAM533YWg8eBinTRz5YNYiyq6tnF8WIFTVfOjmkctjXJRGNKhScFDdZ
+        5dDNbQzX7kuVYGLaM1iVu5aVkZvWg/PRmfU07pIc+pvFQKtwhV3JOuSpjdOZ0PUaxSWcLWihrQe
+        wDUK/Rmwc//dMhQLBd4S0MQ==
+X-Received: by 2002:ac8:5e4c:: with SMTP id i12mr20503436qtx.267.1627404907105;
+        Tue, 27 Jul 2021 09:55:07 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJzFJIbW+QR7ORwG3P4DB0xhdqXqjfLuKM9nXjb9UIZGAMJOwx3Gv7rP+SkmTHivZ7d+rQVG1A==
+X-Received: by 2002:ac8:5e4c:: with SMTP id i12mr20503420qtx.267.1627404906929;
+        Tue, 27 Jul 2021 09:55:06 -0700 (PDT)
+Received: from localhost.localdomain (075-142-250-213.res.spectrum.com. [75.142.250.213])
+        by smtp.gmail.com with ESMTPSA id h16sm1542200qtx.23.2021.07.27.09.55.05
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 27 Jul 2021 09:55:06 -0700 (PDT)
+Subject: Re: [RESEND PATCH v10 0/3] fpga: Use standard class dev_release
+ function
+To:     Russ Weight <russell.h.weight@intel.com>, mdf@kernel.org,
+        linux-fpga@vger.kernel.org, "Wu, Hao" <hao.wu@intel.com>
+Cc:     lgoncalv@redhat.com, yilun.xu@intel.com, matthew.gerlach@intel.com,
+        richard.gong@intel.com
+References: <20210726212750.121293-1-russell.h.weight@intel.com>
+ <39607b02-bad3-0f65-c1c8-efd6036ab4f3@intel.com>
+ <661d53d0-0ba4-d344-8da0-995a9b612905@redhat.com>
+ <f8c391e2-987a-916a-a0e9-7795f71ec76d@intel.com>
+ <8584c933-4482-446a-761c-9a5d511a81c5@redhat.com>
+ <add87155-6417-fd08-c3c5-b39e7b9662df@intel.com>
+From:   Tom Rix <trix@redhat.com>
+Message-ID: <c3c17e6e-9a57-eb90-fe00-c442c59ad921@redhat.com>
+Date:   Tue, 27 Jul 2021 09:55:04 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+In-Reply-To: <add87155-6417-fd08-c3c5-b39e7b9662df@intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <YQAwszw/HLBUXmti@epycbox.lan>
+Content-Language: en-US
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Tue, Jul 27, 2021 at 09:13:39AM -0700, Moritz Fischer wrote:
-> On Tue, Jul 27, 2021 at 04:39:46PM +0200, Greg KH wrote:
-> > On Sun, Jul 25, 2021 at 08:00:49PM -0700, Moritz Fischer wrote:
-> > > Hi Greg,
-> > > 
-> > > On Sun, Jul 25, 2021 at 07:55:26PM -0700, Moritz Fischer wrote:
-> > > > The following changes since commit e73f0f0ee7541171d89f2e2491130c7771ba58d3:
-> > > > 
-> > > >   Linux 5.14-rc1 (2021-07-11 15:07:40 -0700)
-> > > > 
-> > > > are available in the Git repository at:
-> > > > 
-> > > >   git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga tags/fpga-for-5.15
-> > > > 
-> > > > for you to fetch changes up to c485d3bf3cc7790faed2b90c799a38caa2f69268:
-> > > > 
-> > > >   fpga: fpga-mgr: wrap the write_sg() op (2021-07-18 08:05:00 -0700)
-> > > > 
-> > > > ----------------------------------------------------------------
-> > > > FPGA Manager Changes for 5.15-rc1
-> > > > 
-> > > > FPGA Manager
-> > > > 
-> > > > - Navin's change removes a duplicate word in a comment
-> > > > - Tom's change fixes a spelling mistake
-> > > > - Mauro's change fixes up documentation
-> > > > - Tom's second set adds wrappers to allow drivers not having to
-> > > >   implement empty functions by moving checks into fpga-mgr core code
-> > > > - My changes address a bunch of warnings
-> > > > 
-> > > > DFL
-> > > > 
-> > > > - Martin's change adds a new PCI ID for Silicom N501x PAC cards
-> > > > 
-> > > > All patches have been reviewed on the mailing list, and have been in the
-> > > > last linux-next releases (as part of my for-next branch).
-> > > > 
-> > > > I did get a complaint about one of the commit messages w/ a Fixes: tag
-> > > > which would need a rebase to fix.
-> > > > 
-> > > > Some of the earlier patches were originally meant for 5.14 but missed
-> > > > the merge window by a couple of days, hence the back-merge of 5.14-rc1.
-> > > > 
-> > > > Signed-offy-by: Moritz Fischer <mdf@kernel.org>
-> > > > 
-> > > > ----------------------------------------------------------------
-> > > > Martin Hundeb�ll (1):
-> > > >       fpga: dfl: pci: add device IDs for Silicom N501x PAC cards
-> > > > 
-> > > > Mauro Carvalho Chehab (1):
-> > > >       docs: driver-api: fpga: avoid using UTF-8 chars
-> > > > 
-> > > > Moritz Fischer (5):
-> > > >       Merge tag 'v5.14-rc1' into for-next
-> > > >       fpga: altera-freeze-bridge: Address warning about unused variable
-> > > >       fpga: xiilnx-spi: Address warning about unused variable
-> > > >       fpga: xilinx-pr-decoupler: Address warning about unused variable
-> > > >       fpga: zynqmp-fpga: Address warning about unused variable
-> > > > 
-> > > > Navin Sankar Velliangiri (1):
-> > > >       fpga: fpga-bridge: removed repeated word
-> > > > 
-> > > > Tom Rix (8):
-> > > >       fpga: fix spelling mistakes
-> > > >       fpga: fpga-mgr: wrap the write_init() op
-> > > >       fpga: fpga-mgr: make write_complete() op optional
-> > > >       fpga: fpga-mgr: wrap the write() op
-> > > >       fpga: fpga-mgr: wrap the status() op
-> > > >       fpga: fpga-mgr: wrap the state() op
-> > > >       fpga: fpga-mgr: wrap the fpga_remove() op
-> > > >       fpga: fpga-mgr: wrap the write_sg() op
-> > > > 
-> > > >  Documentation/driver-api/fpga/fpga-bridge.rst      |  10 +-
-> > > >  Documentation/driver-api/fpga/fpga-mgr.rst         |  12 +--
-> > > >  Documentation/driver-api/fpga/fpga-programming.rst |   8 +-
-> > > >  Documentation/driver-api/fpga/fpga-region.rst      |  20 ++--
-> > > >  Documentation/fpga/dfl.rst                         |   4 +-
-> > > >  drivers/fpga/altera-cvp.c                          |   2 +-
-> > > >  drivers/fpga/altera-freeze-bridge.c                |   2 +
-> > > >  drivers/fpga/dfl-fme-mgr.c                         |   6 --
-> > > >  drivers/fpga/dfl-fme-pr.c                          |   2 +-
-> > > >  drivers/fpga/dfl-n3000-nios.c                      |   2 +-
-> > > >  drivers/fpga/dfl-pci.c                             |   5 +
-> > > >  drivers/fpga/dfl.h                                 |   2 +-
-> > > >  drivers/fpga/fpga-bridge.c                         |   8 +-
-> > > >  drivers/fpga/fpga-mgr.c                            | 111 ++++++++++++++-------
-> > > >  drivers/fpga/stratix10-soc.c                       |   6 --
-> > > >  drivers/fpga/ts73xx-fpga.c                         |   6 --
-> > > >  drivers/fpga/xilinx-pr-decoupler.c                 |   2 +
-> > > >  drivers/fpga/xilinx-spi.c                          |   2 +
-> > > >  drivers/fpga/zynq-fpga.c                           |   6 +-
-> > > >  drivers/fpga/zynqmp-fpga.c                         |  10 +-
-> > > >  include/linux/fpga/fpga-mgr.h                      |   2 +-
-> > > >  21 files changed, 127 insertions(+), 101 deletions(-)
-> > > 
-> > > I realize the backwards merge is somewhat messy, as discussed you said
-> > > to not rebase.
-> > > 
-> > > Alternatively there's a tag (fpga-for-5.15-early) with the changes
-> > > rebased onto v5.14-rc1 that also addresses the 'Fixes: ' tag.
-> > > 
-> > > If you pull that instead then I could just merge that tag into my
-> > > for-next branch and linux-next should be fine again.
-> > > 
-> > > When I localy tried it seemed to resolve fine with merge either of the
-> > > branches involved (linux-next/master, char-misc-next, for-next).
-> > 
-> > I would take this, but I get the following warning (and if I ignore it,
-> > you will get it from linux-next):
-> > 
-> > Commit: 6c17b7ff1d11 ("fpga: zynqmp-fpga: Address warning about unused variable")
-> > 	Fixes tag: Fixes: c09f7471127e ("fpga manager: Adding FPGA Manager support for
-> > 	Has these problem(s):
-> > 	        - Subject has leading but no trailing parentheses
-> > 	        - Subject has leading but no trailing quotes
-> > 
-> > So can you fix this up?  Might as well just rebase and redo the whole
-> > tree, then you can add the additional patch you send after this to it as
-> > well.
-> 
-> The tag mentioned above 'fpga-for-5.15-early', is a rebase that fixes
-> this on top of v5.14-rc1 (which gets rid of the back-merge, too)
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga tags/fpga-for-5.15-early
 
-Ah, missed that, sorry.  Let me go try that tag...
+On 7/27/21 9:38 AM, Russ Weight wrote:
+>
+> On 7/27/21 9:22 AM, Tom Rix wrote:
+>> On 7/27/21 9:15 AM, Russ Weight wrote:
+>>> On 7/27/21 6:24 AM, Tom Rix wrote:
+>>>> On 7/26/21 2:33 PM, Russ Weight wrote:
+>>>>> Hi Moritz,
+>>>>>
+>>>>> I sent this version of the patchset out on July 8th. The only discussion has
+>>>>> been around the compat-id structure. I think there is agreement that this can
+>>>>> be treated separately. What are your thoughts? Do you think this patchset is
+>>>>> ready?
+>>>> While I agree the compat_id can be treated separately, i still have a problem with the 2 register functions.
+>>>>
+>>>> In this discussion,
+>>>>
+>>>> https://lore.kernel.org/linux-fpga/DM6PR11MB38194D113950FA4B75C7F2C485E49@DM6PR11MB3819.namprd11.prod.outlook.com/
+>>>>
+>>>> *register_full(..., *info) becomes
+>>>>
+>>>> *register(..., *info)
+>>>>
+>>>> and
+>>>>
+>>>> *register_simple() is moved out of the public api and becomes private to the subsystem.
+>>> Somehow I missed that part of the email. I'm not sure I understand the part about
+>>> register_simple() "becomes private to the subsystem". Most users would call the simple
+>>> version of the API. Is the proposal to replicate the register_simple() interface
+>>> for each driver that calls it?
+>> Still use *register_simple() internally, so most of your patchset is unchanged.
+>>
+>> Move it out the public api. include/linux/fpga-mgr.h into someplace appropriate in drivers/fpga/
+> Ok - I'll do another spin of the patch set.
+>
+> Just to be clear, *register_full() gets renamed back to *register(). The current *register()
+> goes back to *register_simple(). *register_simple() is an exported symbol, but the function
+> prototype moves out of the public header file into private header file under drivers/fpga.
 
-That worked, so I took that.
+Mostly.
 
-> I didn't add the patch because it depends on changes in your tree (the
-> versal driver you applied), which would make for a weird tree if I don't
-> pull in your changes?
-> 
-> Let me know if you prefer the patch inside anyways or not and I can
-> send out a new pull request.
+If register_simple does not need to be exported, it shouldn't be.
 
-I'll go take the patch now, no worries.
+Tom
 
-thanks,
+>
+> - Russ
+>
+>> Tom
+>>
+>>>> Tom
+>>>>
+>>>>> Thanks,
+>>>>> - Russ
+>>>>>
+>>>>>
+>>>>> On 7/26/21 2:27 PM, Russ Weight wrote:
+>>>>>> The FPGA framework has a convention of using managed resource functions
+>>>>>> to allow parent drivers to manage the data structures allocated by the
+>>>>>> class drivers. They use an empty *_dev_release() function to satisfy the
+>>>>>> class driver.
+>>>>>>
+>>>>>> This is inconsistent with linux driver model.
+>>>>>>
+>>>>>> These changes remove the managed resource functions and populate the class
+>>>>>> dev_release callback functions. They also merge the create() and register()
+>>>>>> functions into a single register() or register_full() function for each of
+>>>>>> the fpga-mgr, fpga-region, and fpga-bridge class drivers.
+>>>>>>
+>>>>>> The new *register_full() functions accept an info data structure to provide
+>>>>>> flexibility in passing optional parameters. The *register() functions
+>>>>>> support the legacy parameter list for users that don't require the use of
+>>>>>> optional parameters.
+>>>>>>
+>>>>>> For more context, refer to this email thread:
+>>>>>>
+>>>>>> https://marc.info/?l=linux-fpga&m=162127412218557&w=2
+>>>>>>
+>>>>>> I turned on the configs assocated with each of the modified files, but I
+>>>>>> must have been missing some dependencies, because not all of them compiled.
+>>>>>> I did a run-time test specifically with the dfl-fme infrastructure. This
+>>>>>> would have exercised the region, bridge, and fpga-mgr frameworks.
+>>>>>>
+>>>>>> Changelog v9 -> v10:
+>>>>>>      - Fixed commit messages to reference register_full() instead of
+>>>>>>        register_simple().
+>>>>>>      - Removed the fpga_bridge_register_full() function, because there is
+>>>>>>        not need for it yet. Updated the documentation and commit message
+>>>>>>        accordingly.
+>>>>>>      - Updated documentation to reference the fpga_manager_info and
+>>>>>>        fpga_region_info structures.
+>>>>>>
+>>>>>> Changelog v8 -> v9:
+>>>>>>      - Cleaned up documentation for the FPGA Manager, Bridge, and Region
+>>>>>>        register functions
+>>>>>>      - Renamed fpga_*_register() to fpga_*_register_full()
+>>>>>>      - Renamed fpga_*_register_simple() to fpga_*_register()
+>>>>>>      - Renamed devm_fpga_mgr_register() to devm_fpga_mgr_register_full()
+>>>>>>      - Renamed devm_fpga_mgr_register_simple() to devm_fpga_mgr_register()
+>>>>>>
+>>>>>> Changelog v7 -> v8:
+>>>>>>      - Added reviewed-by tags.
+>>>>>>      - Updated Documentation/driver-api/fpga/ files: fpga-mgr.rst,
+>>>>>>        fpga-bridge.rst, and fpga-region.rst.
+>>>>>>
+>>>>>> Changelog v6 -> v7:
+>>>>>>      - Update the commit messages to describe the new parameters for the
+>>>>>>        *register() functions and to mention the *register_simple() functions.
+>>>>>>      - Fix function prototypes in header file to rename dev to parent.
+>>>>>>      - Make use of the PTR_ERR_OR_ZERO() macro when possible.
+>>>>>>      - Some cleanup of comments.
+>>>>>>      - Update function definitions/prototypes to apply const to the new info
+>>>>>>        parameter.
+>>>>>>      - Verify that info->br_ops is non-null in the fpga_bridge_register()
+>>>>>>        function.
+>>>>>>      - Verify a non-null info pointer in the fpga_region_register() function.
+>>>>>>
+>>>>>> Changelog v5 -> v6:
+>>>>>>      - Moved FPGA manager/bridge/region optional parameters out of the ops
+>>>>>>        structure and back into the FPGA class driver structure.
+>>>>>>      - Changed fpga_*_register() function parameters to accept an info data
+>>>>>>        structure to provide flexibility in passing optional parameters.
+>>>>>>      - Added fpga_*_register_simple() functions to support current parameters
+>>>>>>        for users that don't require use of optional parameters.
+>>>>>>
+>>>>>> Changelog v4 -> v5:
+>>>>>>      - Rebased on top of recently accepted patches.
+>>>>>>      - Removed compat_id from the fpga_mgr_register() parameter list
+>>>>>>        and added it to the fpga_manager_ops structure. This also required
+>>>>>>        dynamically allocating the dfl-fme-ops structure in order to add
+>>>>>>        the appropriate compat_id.
+>>>>>>      - Created the fpga_region_ops data structure which is optionally passed
+>>>>>>        to fpga_region_register(). compat_id, the get_bridges() pointer, and
+>>>>>>        the priv pointer are included in the fpga_region_ops structure.
+>>>>>>
+>>>>>> Changelog v3 -> v4:
+>>>>>>      - Added the compat_id parameter to fpga_mgr_register() and
+>>>>>>        devm_fpga_mgr_register() to ensure that the compat_id is set before
+>>>>>>        the device_register() call.
+>>>>>>      - Added the compat_id parameter to fpga_region_register() to ensure
+>>>>>>        that the compat_id is set before the device_register() call.
+>>>>>>      - Modified the dfl_fpga_feature_devs_enumerate() function to restore
+>>>>>>        the fpga_region_register() call to the correct location.
+>>>>>>
+>>>>>> Changelog v2 -> v3:
+>>>>>>      - Cleaned up comment headers for fpga_mgr_register(), fpga_bridge_register(),
+>>>>>>        and fpga_region_register().
+>>>>>>      - Fixed error return on ida_simple_get() failure for fpga_mgr_register(),
+>>>>>>        fpga_bridge_register(), and fpga_region_register().
+>>>>>>      - Fixed error return value for fpga_bridge_register(): ERR_PTR(ret) instead
+>>>>>>        of NULL.
+>>>>>>
+>>>>>> Changelog v1 -> v2:
+>>>>>>      - Restored devm_fpga_mgr_register() functionality to the fpga-mgr
+>>>>>>        class driver, adapted for the combined create/register functionality.
+>>>>>>      - All previous callers of devm_fpga_mgr_register() will continue to call
+>>>>>>        devm_fpga_mgr_register().
+>>>>>>      - replaced unnecessary ternary operators in return statements with
+>>>>>>        standard if conditions.
+>>>>>>
+>>>>>> Russ Weight (3):
+>>>>>>      fpga: mgr: Use standard dev_release for class driver
+>>>>>>      fpga: bridge: Use standard dev_release for class driver
+>>>>>>      fpga: region: Use standard dev_release for class driver
+>>>>>>
+>>>>>>     Documentation/driver-api/fpga/fpga-bridge.rst |   6 +-
+>>>>>>     Documentation/driver-api/fpga/fpga-mgr.rst    |  38 +++-
+>>>>>>     Documentation/driver-api/fpga/fpga-region.rst |  12 +-
+>>>>>>     drivers/fpga/altera-cvp.c                     |  12 +-
+>>>>>>     drivers/fpga/altera-fpga2sdram.c              |  12 +-
+>>>>>>     drivers/fpga/altera-freeze-bridge.c           |  10 +-
+>>>>>>     drivers/fpga/altera-hps2fpga.c                |  12 +-
+>>>>>>     drivers/fpga/altera-pr-ip-core.c              |   7 +-
+>>>>>>     drivers/fpga/altera-ps-spi.c                  |   9 +-
+>>>>>>     drivers/fpga/dfl-fme-br.c                     |  10 +-
+>>>>>>     drivers/fpga/dfl-fme-mgr.c                    |  22 +-
+>>>>>>     drivers/fpga/dfl-fme-region.c                 |  17 +-
+>>>>>>     drivers/fpga/dfl.c                            |  12 +-
+>>>>>>     drivers/fpga/fpga-bridge.c                    | 122 +++-------
+>>>>>>     drivers/fpga/fpga-mgr.c                       | 215 ++++++++----------
+>>>>>>     drivers/fpga/fpga-region.c                    | 119 ++++------
+>>>>>>     drivers/fpga/ice40-spi.c                      |   9 +-
+>>>>>>     drivers/fpga/machxo2-spi.c                    |   9 +-
+>>>>>>     drivers/fpga/of-fpga-region.c                 |  10 +-
+>>>>>>     drivers/fpga/socfpga-a10.c                    |  16 +-
+>>>>>>     drivers/fpga/socfpga.c                        |   9 +-
+>>>>>>     drivers/fpga/stratix10-soc.c                  |  16 +-
+>>>>>>     drivers/fpga/ts73xx-fpga.c                    |   9 +-
+>>>>>>     drivers/fpga/xilinx-pr-decoupler.c            |  17 +-
+>>>>>>     drivers/fpga/xilinx-spi.c                     |  11 +-
+>>>>>>     drivers/fpga/zynq-fpga.c                      |  16 +-
+>>>>>>     drivers/fpga/zynqmp-fpga.c                    |   9 +-
+>>>>>>     include/linux/fpga/fpga-bridge.h              |  30 ++-
+>>>>>>     include/linux/fpga/fpga-mgr.h                 |  62 +++--
+>>>>>>     include/linux/fpga/fpga-region.h              |  36 ++-
+>>>>>>     30 files changed, 383 insertions(+), 511 deletions(-)
+>>>>>>
 
-greg k-h
