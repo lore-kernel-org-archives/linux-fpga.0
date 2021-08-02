@@ -2,497 +2,257 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,MSGID_FROM_MTA_HEADER,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C87D7C432BE
-	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 16:08:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38A5EC4338F
+	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 18:32:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B26FC60F58
-	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 16:08:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0B7C760F36
+	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 18:32:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232725AbhHBQIf (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 2 Aug 2021 12:08:35 -0400
-Received: from mail-bn8nam11on2058.outbound.protection.outlook.com ([40.107.236.58]:33184
-        "EHLO NAM11-BN8-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S232709AbhHBQId (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 2 Aug 2021 12:08:33 -0400
+        id S229537AbhHBScJ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 2 Aug 2021 14:32:09 -0400
+Received: from mga01.intel.com ([192.55.52.88]:54501 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229663AbhHBScI (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 2 Aug 2021 14:32:08 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10064"; a="235442357"
+X-IronPort-AV: E=Sophos;i="5.84,289,1620716400"; 
+   d="scan'208";a="235442357"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Aug 2021 11:31:59 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.84,289,1620716400"; 
+   d="scan'208";a="440674134"
+Received: from fmsmsx605.amr.corp.intel.com ([10.18.126.85])
+  by fmsmga007.fm.intel.com with ESMTP; 02 Aug 2021 11:31:58 -0700
+Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx605.amr.corp.intel.com (10.18.126.85) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2242.4; Mon, 2 Aug 2021 11:31:58 -0700
+Received: from fmsmsx601.amr.corp.intel.com (10.18.126.81) by
+ fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2242.10; Mon, 2 Aug 2021 11:31:58 -0700
+Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2242.10 via Frontend Transport; Mon, 2 Aug 2021 11:31:57 -0700
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (104.47.56.173)
+ by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2242.10; Mon, 2 Aug 2021 11:31:57 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=e5k9tVR2aouU3SkhYgLuEoCvFsFvPIZe79fQFUvbCdDA1mF2S4G1iyOPKS1L4+4+btLdXpoXUV59UtzI6/VgnH9egwmFIfblCEesWvaJeuI1zIn7PyMxVOD6xB5kcQMvCLzVfBAkKBfOJ5ZHbshsqHfLESCTe7FntrKIFcQHyFTY5DzQTf5hPyIqPcPqY993m3LzZ9Z61Pu6GV9Bj1StoNxdZzsaUeXH8m5Vo/8e0GbPJaWdMSehkLmjxSIlQ6uL5jAWRLU3P5EmpNnGYtG1Sr76R7FBfaA2mgXCjIqOqZx/r/1EbxD4wyckGzSApyPaW6ZJcT91YpXwuie6RnIN8g==
+ b=AIQ26PaoqmLA0NtniiHBjYFQUPly7rIzJA/KDHGDG1LWWLFh2WjwWEr6f3BLVW9w+p7uWvpR9Fcok+qNstLXvxcief1+6+uQmuzXIo17AZi2gicP0+scaJQTAQ6KjNY+lQmuOxpmAhm0iG54ogQTnE9ZKQ2rpU1RMW5YTlyqe0sROscnaeuM4Hy0hrvcPuH+rXyP9iQpuksygAjdlivO/Bs7h9hRXwRW1jVIygvGeJHF+SBlSYVOOCLdWYyWibRvgfIJcDF0kgn7T54AnQ/t7h/bgkVNFk1yoyBNzQWwmoNmZ7TOnWnArmFlMoktPjzkFtvhuhz55cDMHqEzls51nA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=HgIysCMmPg/Q49sXbfndlmHRD4oFRC9Mz4qe72WFBAY=;
- b=Nt9XxMLSEcKK18xD8w5rDh5QP/LeXh6XjBF1uW3LnzgTrIULBiCyzIWoTP/a2LK68gPynR8E8e9kcKHpFz4qTuAab2keR17TpKKs04cOc6y2k6IL90IIe9FNxh/61YN55mbKcWfNmyeilItHN0mXUea6knS4OVf2kxr2q83BVUCttQqxnEKQ6/SNgcRafAOxbYOg/DAUDSasQJqpfr9Yw0m7tzzbBPFetLiI46pHfxLuemuHCjpd3eej5kK5KP5imFkMcsxztJdSNFPZ80XdfApZDV1gnATUxZjy/3TZvjcYFPzQ6OeThxefyzjh9mFpRs/BAho9LYaLkze3lywizw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
- dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
+ bh=fd+7hO0dAxLmvFQoT4jEzRwodWAaWdWHgr5lkvcv3rI=;
+ b=bE0FTrXCcUsBwUwIlMJCcL5W55XM6R1o3vPfoU1DQSn4ZCF/miSY2BpIlPJgcgjSiy+OjlDJ4wSdy8vjQGkmCOU3NzyCW4COAOAal/qWYbQKya8fGiSuuFCXzXtJxmvldkB2kMksoE56JVn5bQNh+9bmJPVSJLKId38RJ+1VB88DJOZgg2QuwjjYb2X9qeyR8aoCFurJuOJA6BKZnM9R9bxpG9wyEoegT4gFWPdVPNpPhic6l3FazoSdokflyF4Vhhikf/GHwK6JoIaI4IqOQfY2wNOdOvX22nxfCgwgK81oXsAlYXr8uU8jveAZiVoQdIWxr9QbDPoE7HynfNvXLA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.onmicrosoft.com;
+ s=selector2-intel-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=HgIysCMmPg/Q49sXbfndlmHRD4oFRC9Mz4qe72WFBAY=;
- b=AqvaLwkeK+0RJXoHtEvSndjv8idlUP+ss0YZv6Lzto3tKE+Lokb4qZRt8kOCrZU+ssGaQk4BmzutOEqGGhQh+akgy7Gu1R+0Er1WFhc/n0fLEQafv+0XuHDYpcE4nYrcHPvrpnTvWnoktbYXf3XHmttSWCYet05IC3HinPn62m4=
-Received: from DM6PR04CA0001.namprd04.prod.outlook.com (2603:10b6:5:334::6) by
- CO1PR02MB8505.namprd02.prod.outlook.com (2603:10b6:303:158::20) with
+ bh=fd+7hO0dAxLmvFQoT4jEzRwodWAaWdWHgr5lkvcv3rI=;
+ b=iE1TsHMZ7HXnuWMD1M5CWZUkQtadjqdVdTEACDkDsbY3Qe7gx1Bsr1pLWqPvwurpsbIF/ZZdaVBlp9hHo3p+z73rF72zAyDIc3XozbREVimC12Rptlaios61XiBVyK55ZR/ANafSu4Y4SAZal6rCKoHQYiPeRVpXgU+P4UDEVbk=
+Authentication-Results: google.com; dkim=none (message not signed)
+ header.d=none;google.com; dmarc=none action=none header.from=intel.com;
+Received: from SA2PR11MB5163.namprd11.prod.outlook.com (2603:10b6:806:113::20)
+ by SA0PR11MB4592.namprd11.prod.outlook.com (2603:10b6:806:98::10) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4373.25; Mon, 2 Aug
- 2021 16:08:20 +0000
-Received: from DM3NAM02FT008.eop-nam02.prod.protection.outlook.com
- (2603:10b6:5:334:cafe::50) by DM6PR04CA0001.outlook.office365.com
- (2603:10b6:5:334::6) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4373.20 via Frontend
- Transport; Mon, 2 Aug 2021 16:08:20 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
- smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
- header.d=none;kernel.org; dmarc=pass action=none header.from=xilinx.com;
-Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
- 149.199.62.198 as permitted sender) receiver=protection.outlook.com;
- client-ip=149.199.62.198; helo=xsj-pvapexch02.xlnx.xilinx.com;
-Received: from xsj-pvapexch02.xlnx.xilinx.com (149.199.62.198) by
- DM3NAM02FT008.mail.protection.outlook.com (10.13.5.14) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4373.18 via Frontend Transport; Mon, 2 Aug 2021 16:08:20 +0000
-Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
- xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 2 Aug 2021 09:08:18 -0700
-Received: from smtp.xilinx.com (172.19.127.95) by
- xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.2176.2 via Frontend Transport; Mon, 2 Aug 2021 09:08:18 -0700
-Envelope-to: mdf@kernel.org,
- robh@kernel.org,
- trix@redhat.com,
- devicetree@vger.kernel.org,
- linux-fpga@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Received: from [10.23.145.232] (port=49076 helo=xsj-xw9400.xilinx.com)
-        by smtp.xilinx.com with esmtp (Exim 4.90)
-        (envelope-from <lizhi.hou@xilinx.com>)
-        id 1mAaUE-0004NQ-La; Mon, 02 Aug 2021 09:08:18 -0700
-Received: by xsj-xw9400.xilinx.com (Postfix, from userid 21952)
-        id 2FE3E601B3A; Mon,  2 Aug 2021 09:05:30 -0700 (PDT)
-From:   Lizhi Hou <lizhi.hou@xilinx.com>
-To:     <linux-kernel@vger.kernel.org>
-CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
-        <maxz@xilinx.com>, <sonal.santan@xilinx.com>, <yliu@xilinx.com>,
-        <michal.simek@xilinx.com>, <stefanos@xilinx.com>,
-        <devicetree@vger.kernel.org>, <trix@redhat.com>, <mdf@kernel.org>,
-        <robh@kernel.org>, Max Zhen <max.zhen@xilinx.com>
-Subject: [PATCH V9 XRT Alveo 13/14] fpga: xrt: partition isolation driver
-Date:   Mon, 2 Aug 2021 09:05:20 -0700
-Message-ID: <20210802160521.331031-14-lizhi.hou@xilinx.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210802160521.331031-1-lizhi.hou@xilinx.com>
-References: <20210802160521.331031-1-lizhi.hou@xilinx.com>
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4373.18; Mon, 2 Aug
+ 2021 18:31:56 +0000
+Received: from SA2PR11MB5163.namprd11.prod.outlook.com
+ ([fe80::51db:698d:e2e3:7fc8]) by SA2PR11MB5163.namprd11.prod.outlook.com
+ ([fe80::51db:698d:e2e3:7fc8%4]) with mapi id 15.20.4373.026; Mon, 2 Aug 2021
+ 18:31:56 +0000
+Subject: Re: [PATCH 02/12] fpga: sec-mgr: enable secure updates
+To:     Greg KH <gregkh@linuxfoundation.org>
+CC:     Tom Rix <trix@redhat.com>, Moritz Fischer <mdf@kernel.org>,
+        <linux-fpga@vger.kernel.org>, <moritzf@google.com>
+References: <20210517023200.52707-1-mdf@kernel.org>
+ <20210517023200.52707-3-mdf@kernel.org> <YKH/6xQ7bEwJzEsM@kroah.com>
+ <5d0552ce-d2bd-cca1-006e-8f11991fd378@intel.com>
+ <f3d474d2-f85d-4759-75b5-84af64fe5b3c@intel.com> <YQPgFn/z024U06HJ@kroah.com>
+From:   Russ Weight <russell.h.weight@intel.com>
+Message-ID: <85cd4801-ca1f-4482-6999-3d2e648b24e5@intel.com>
+Date:   Mon, 2 Aug 2021 11:31:47 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Firefox/78.0 Thunderbird/78.11.0
+In-Reply-To: <YQPgFn/z024U06HJ@kroah.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-ClientProxiedBy: MW4PR03CA0004.namprd03.prod.outlook.com
+ (2603:10b6:303:8f::9) To SA2PR11MB5163.namprd11.prod.outlook.com
+ (2603:10b6:806:113::20)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EOPAttributedMessage: 0
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from [10.0.2.4] (50.43.42.212) by MW4PR03CA0004.namprd03.prod.outlook.com (2603:10b6:303:8f::9) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4373.18 via Frontend Transport; Mon, 2 Aug 2021 18:31:55 +0000
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: bb04b0ed-b165-461b-bca3-08d955cfbf64
-X-MS-TrafficTypeDiagnostic: CO1PR02MB8505:
-X-Microsoft-Antispam-PRVS: <CO1PR02MB850536404EC40A7FF0822A24A1EF9@CO1PR02MB8505.namprd02.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:245;
+X-MS-Office365-Filtering-Correlation-Id: 55cfacc7-f711-4c6c-ba22-08d955e3ce65
+X-MS-TrafficTypeDiagnostic: SA0PR11MB4592:
+X-Microsoft-Antispam-PRVS: <SA0PR11MB4592A0B8E04E291EA4565BB2C5EF9@SA0PR11MB4592.namprd11.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:8882;
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: cLxTlKSNyL/GbCIoS43JbJcfIfnKg7rRsnZv7Cza6v/VQWoZEOlqLGoH9FXkSDgZgs+lvQk2dySc34elfeA0wffTiyQAVl3qlN2GfgzFIatXS+wJFVKFg9Ms05d3069V3AARJS0bOC2SqM7JuzrVlF6JYuOXFa+QnL3L+7gfafBDdO3jlNTBifLV24kIYc4hvzyFUhEdE9hUspOl4Wi7etJ7jrD2mrtIuU1TvExHwAT+Kmlwmw0jPe5vuTPWk6jB0Nvz1GV3Aq/u7dDilSMY9K9+fNmWGbxJPqQuKKpOAvai9pntBxKZKR4m+od8OElhPcHRI595qWrbACiCrGwO4uYpvtITZlT9yXQ/qw4+mKpkZT3WNxVoZIH2R1Xgb0r/6LIj3cbp+QPrz8hJQWVgLLNe6igfxd5C44bOHilKIAxvHnQ3QoqmvN1F2OiX12vnu6Y+uPJPfKg94ZW2b83Sb9qSBTEa6xWF12ataMJutKRkYdV6/O6wBVgh0F3xXvQgVXaGVi33st1FqdKgyZKw57Zxncu3pRPwakVddkhP/PH0T1mOxDJAirnytcN6Nd8b8UukKUJAUuA1fHyMoa31lySLxRcSZPEtzci88OqaqEKkdHqgLTRrcXKfsNT5yng/VAg4h6k78gR/lWudjYmPLRd2P6wMSh+FMPeYq8B8DjVeGHXk6fyZ1xA+Dd1k6qcAT9tEe/wOTf+dk3K70BHhzw==
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(36840700001)(46966006)(6916009)(2616005)(336012)(508600001)(7636003)(44832011)(26005)(186003)(82310400003)(8676002)(5660300002)(426003)(83380400001)(70586007)(70206006)(2906002)(316002)(36906005)(54906003)(42186006)(6266002)(107886003)(4326008)(1076003)(47076005)(36860700001)(356005)(8936002)(36756003)(6666004);DIR:OUT;SFP:1101;
-X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Aug 2021 16:08:20.6357
+X-Microsoft-Antispam-Message-Info: szxAGbfrGYN1HF1Akc2kWg4IV2v3BFUTCyO/EzrDuOKclYvoOk+mWTbAliZK9bKReCGLlAJbpAQcbTMGwq3B9VLHh8EvkPMmbxWUMjGORerLwk1HRGZPbA41bXWPNGLAWsIOy1fysPD8kJ/TQzM3T5svBqru43B8SawAgTuNxU1l3KRwYWi5z+U3JlPylQnT8I+HY+2vBwH0qfa9rjMXy+aWMAyHXKCaQ3rVViOyAtSMSpCi43McH1qwsflXkBBYpmt6UixrMQpWQWL9INiervyUB9Mnu5seYAzya6Tmd2FCtzA+KZ37baAjmwd5ca1AVNmGQIXcBAqsQMn2iqCJ32dNobZY8g2nnIhnCjlOYuMG71rq0aPlCXyyAVVxfBwu/LRrhKWx87iohHwNy17XmjyxOcK0dK+dMLBSRQVUbtev6yUhuhj7IGJMtOvvz1hDh0BKCrSPgABKDsVzMgl5ZckX9CWAggN8af77uQCEkZjnqdUsrWIkktT9+6KcHn3StGL54M3UMwQteuFeKVfoMcqLT4xsH4oboy5WpAaggcEYfpAvxRS0wyBC4qWugx7KC1TIwf9ejhhqmw54pNBLMvwCvDWE1RlNy3nTVGiHo0XXEvNyiQT1nmE0BpC0JjuDcr1JiInzdqXwfroxxGLVAZMCPUXsm5UoK6L99TSCUSpoSn+/7dZDBiHVZvyFfujDS2ZVuCVpZrlHan2ksjV+8pmZack7eAj24oOkK8XPq8yGNZzrV1iTnbZxXoTvvWfUHPahtkjzPfkSWjx9Odf818SYIGDWxHNiYbiTmeX6uLrtC7oG4GF8wRj5xlYGjwE9lmSjxmNwgE1Iqp5o+PKeBqb581B1igqT5v156tapaYw=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA2PR11MB5163.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(38100700002)(8676002)(8936002)(26005)(15650500001)(186003)(6916009)(53546011)(31696002)(6486002)(54906003)(31686004)(2616005)(956004)(83380400001)(16576012)(86362001)(66946007)(6666004)(36756003)(2906002)(508600001)(66556008)(966005)(66476007)(316002)(4326008)(5660300002)(43740500002)(45980500001);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?ZFJZaTJvZlhvRHZiemVZVXcxMUpNZ0Z1UzdwajY3WWRvRUhGYTFuT1o3aTg1?=
+ =?utf-8?B?U1NscHRIMytiRE5oOFZjMTBZTmNZbTh5WldsQ2lHOUhpUVVWMXVTdHdjeEN3?=
+ =?utf-8?B?bW56V1h2NGJ3cDV6M2s4K1VyaWl1Q3ZLM2gxK2tHV0w3bFIwcWZmS2plYk5Q?=
+ =?utf-8?B?NldScmJ2MU1ZcENlUTVaanJQbUpHZm5LWHdkbE8zZWNscFFQSG5iN3A0cm5s?=
+ =?utf-8?B?VmtRbDBHUmV0eS9WYmptdVRGY3Vsc1NKbE1UMFZ6Nml2SkJxWnhkYnMzZ0lS?=
+ =?utf-8?B?YmNUYkEvTE0ybzl6SzI2LzNINTNhMlpBYmZFVlBVSHJNRlhoYWRoMTZEMlhP?=
+ =?utf-8?B?enFETVloRUhwQkU3eXZMZjJFSGFkS1dHM2xCNXc4bG9yLzZxTlUyaVRPM05O?=
+ =?utf-8?B?ZjNjcW85eFpZVVQweHFMTVAzQWJvdWs4SjAxYXdpNGhLR0xjUTJVRktVcG9H?=
+ =?utf-8?B?eHZnN3ZBUFpiZmJaNWxzZnBibXEvUlBPRll0dGM5RW9Mc1ZycFBpQ1hxaURr?=
+ =?utf-8?B?ODI3OXI2Ym1DWDZwckxBQjd1NUE5RzI5RzZvbmdmK0tJZGJDV0ZMVGNtdWkr?=
+ =?utf-8?B?aHVvWW1URHNiZmdTZElnT0dUYnhTQWpDNUhBQ2pzbjIrbmJvZk9VM1RLcjg0?=
+ =?utf-8?B?MlpKTGpQYWxIa2dIU1VLMUVoYlRUVFNkdGh5cjhMTlR6TGwzZkY0UWF4L0Nt?=
+ =?utf-8?B?WXR6ZC92dUc1Q2s4U0VHSDVRSi80Q28zVXoxajhYMVlqUEI5TWF2WEd3Lzg3?=
+ =?utf-8?B?OFY3Z29ITGYxQjRJMDdGYlQ1QWplUnBCQUtjMnQ3UWJWRTRab0pwbzhLbnNQ?=
+ =?utf-8?B?MEU0NmRaV2FPL2srRE56dlRxdU14Z2hXNTRLT2NLUThtRTJZQ2ZXZDhCNFlX?=
+ =?utf-8?B?NEliWDlkNE1aTk9RNHJmN2h2RHRFdlBwMnZobTZtRE1TMkVGMkUzaXE3ZTVI?=
+ =?utf-8?B?ajNpY080WmRLdmZXbElBQnh2SVdPSHdWL2JsREhqM3Q3Si9JMEZzSFFHTkVx?=
+ =?utf-8?B?OTZwczJzOU8zLzVKNGZzR2NPQnpxdVpZN200U0taTDhabWdESEhQblozK09K?=
+ =?utf-8?B?TVcxcUZJNnI1MlhqWi80OVVZQ0Q5STJiVVVRQmQ2dlViRzQxVDhIdDIrRExy?=
+ =?utf-8?B?VnBsWkdOdWVXMjE0UmcrTFl3STV2NjlENXJBTTZtRThwUTdhNFhYTnpmeGlL?=
+ =?utf-8?B?WlpJOW5vNDZXS1lZN0VpVnZuTXdORnRqcjh3NldWYVJWdDhhbksvYnduN1dm?=
+ =?utf-8?B?Z1Nsek9EaWJHUTFtMGRYUnp3djZxdklScHJXZDU3bXhhVkVYNFpzeEN4Vy9i?=
+ =?utf-8?B?NHNlOEJhTnBwQ1FzSUFXUnd1SVJVYXExUlhHangyaEhkemtVbDVNdzNxdGtn?=
+ =?utf-8?B?eDV2bmpCUzRYWVZIWXl5S1VSYnRZTWdEc3VjNDhCYjRiZzMxdElaZ0RDWUpi?=
+ =?utf-8?B?NGZqd0xlTUxUVzV2VDAyVmlwaUFIWGtZNmk4azdBVmc1M3BQWFlNektoWnN0?=
+ =?utf-8?B?TFpVaXczSVFkVzBBd2RZWDIyTXdTYlBreXlRQVlXWS9lTDh2V3Q5QVNRdmNU?=
+ =?utf-8?B?MkxVdlE3UEkxZk03RGpQamNjM0dzRmJpOFFLS3FKSUkzRzhzT2E3ZGJJVEsw?=
+ =?utf-8?B?NXZTUVdNZ2Q2NWF6a2J5Skp6eXdlWWgvcFRNaDE0S05jVGRMM3pHVzdFVGtL?=
+ =?utf-8?B?NWp1Y1AwdUpJbTR3OUZLMlg5SmZVeWQ1eGNHdUp3Qkw3OTlEOTVSUzM3Vm5q?=
+ =?utf-8?Q?s3NA84s62xZBiLGt89scP4DEvWyObOsN4S4+DXg?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 55cfacc7-f711-4c6c-ba22-08d955e3ce65
+X-MS-Exchange-CrossTenant-AuthSource: SA2PR11MB5163.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Aug 2021 18:31:56.0058
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: bb04b0ed-b165-461b-bca3-08d955cfbf64
-X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch02.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM3NAM02FT008.eop-nam02.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO1PR02MB8505
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 9XvXccrLBM6B6Zsttg7HqQMHLKTyKn7a1mEoR9qtKHnoSU1C9fOCYJ95L7zTEYmhWsP2uxYvJX3r180tNaEFi4Jp94Rj0CRGmM5khAEy9xE=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR11MB4592
+X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add partition isolation xrt driver. partition isolation is
-a hardware function discovered by walking firmware metadata.
-A xrt device node will be created for it. Partition isolation
-function isolate the different fpga regions
 
-Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
-Signed-off-by: Max Zhen <max.zhen@xilinx.com>
-Signed-off-by: Lizhi Hou <lizhi.hou@xilinx.com>
-Reviewed-by: Tom Rix <trix@redhat.com>
----
- drivers/fpga/xrt/include/xleaf/axigate.h |  23 ++
- drivers/fpga/xrt/lib/xleaf/axigate.c     | 325 +++++++++++++++++++++++
- 2 files changed, 348 insertions(+)
- create mode 100644 drivers/fpga/xrt/include/xleaf/axigate.h
- create mode 100644 drivers/fpga/xrt/lib/xleaf/axigate.c
 
-diff --git a/drivers/fpga/xrt/include/xleaf/axigate.h b/drivers/fpga/xrt/include/xleaf/axigate.h
-new file mode 100644
-index 000000000000..58f32c76dca1
---- /dev/null
-+++ b/drivers/fpga/xrt/include/xleaf/axigate.h
-@@ -0,0 +1,23 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2020-2021 Xilinx, Inc.
-+ *
-+ * Authors:
-+ *	Lizhi Hou <Lizhi.Hou@xilinx.com>
-+ */
-+
-+#ifndef _XRT_AXIGATE_H_
-+#define _XRT_AXIGATE_H_
-+
-+#include "xleaf.h"
-+#include "metadata.h"
-+
-+/*
-+ * AXIGATE driver leaf calls.
-+ */
-+enum xrt_axigate_leaf_cmd {
-+	XRT_AXIGATE_CLOSE = XRT_XLEAF_CUSTOM_BASE, /* See comments in xleaf.h */
-+	XRT_AXIGATE_OPEN,
-+};
-+
-+#endif	/* _XRT_AXIGATE_H_ */
-diff --git a/drivers/fpga/xrt/lib/xleaf/axigate.c b/drivers/fpga/xrt/lib/xleaf/axigate.c
-new file mode 100644
-index 000000000000..493707b782e4
---- /dev/null
-+++ b/drivers/fpga/xrt/lib/xleaf/axigate.c
-@@ -0,0 +1,325 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Xilinx Alveo FPGA AXI Gate Driver
-+ *
-+ * Copyright (C) 2020-2021 Xilinx, Inc.
-+ *
-+ * Authors:
-+ *      Lizhi Hou<Lizhi.Hou@xilinx.com>
-+ */
-+
-+#include <linux/mod_devicetable.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/regmap.h>
-+#include <linux/io.h>
-+#include "metadata.h"
-+#include "xleaf.h"
-+#include "xleaf/axigate.h"
-+
-+#define XRT_AXIGATE "xrt_axigate"
-+
-+#define XRT_AXIGATE_WRITE_REG		0
-+#define XRT_AXIGATE_READ_REG		8
-+
-+#define XRT_AXIGATE_CTRL_CLOSE		0
-+#define XRT_AXIGATE_CTRL_OPEN_BIT0	1
-+#define XRT_AXIGATE_CTRL_OPEN_BIT1	2
-+
-+#define XRT_AXIGATE_INTERVAL		500 /* ns */
-+
-+struct xrt_axigate {
-+	struct xrt_device	*xdev;
-+	struct regmap		*regmap;
-+	struct mutex		gate_lock; /* gate dev lock */
-+	void			*evt_hdl;
-+	const char		*ep_name;
-+	bool			gate_closed;
-+};
-+
-+XRT_DEFINE_REGMAP_CONFIG(axigate_regmap_config);
-+
-+/* the ep names are in the order of hardware layers */
-+static const char * const xrt_axigate_epnames[] = {
-+	XRT_MD_NODE_GATE_PLP, /* PLP: Provider Logic Partition */
-+	XRT_MD_NODE_GATE_ULP  /* ULP: User Logic Partition */
-+};
-+
-+static inline int close_gate(struct xrt_axigate *gate)
-+{
-+	u32 val;
-+	int ret;
-+
-+	ret = regmap_write(gate->regmap, XRT_AXIGATE_WRITE_REG, XRT_AXIGATE_CTRL_CLOSE);
-+	if (ret) {
-+		xrt_err(gate->xdev, "write gate failed %d", ret);
-+		return ret;
-+	}
-+	ndelay(XRT_AXIGATE_INTERVAL);
-+	/*
-+	 * Legacy hardware requires extra read work properly.
-+	 * This is not on critical path, thus the extra read should not impact performance much.
-+	 */
-+	ret = regmap_read(gate->regmap, XRT_AXIGATE_READ_REG, &val);
-+	if (ret) {
-+		xrt_err(gate->xdev, "read gate failed %d", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static inline int open_gate(struct xrt_axigate *gate)
-+{
-+	u32 val;
-+	int ret;
-+
-+	ret = regmap_write(gate->regmap, XRT_AXIGATE_WRITE_REG, XRT_AXIGATE_CTRL_OPEN_BIT1);
-+	if (ret) {
-+		xrt_err(gate->xdev, "write 2 failed %d", ret);
-+		return ret;
-+	}
-+	ndelay(XRT_AXIGATE_INTERVAL);
-+	/*
-+	 * Legacy hardware requires extra read work properly.
-+	 * This is not on critical path, thus the extra read should not impact performance much.
-+	 */
-+	ret = regmap_read(gate->regmap, XRT_AXIGATE_READ_REG, &val);
-+	if (ret) {
-+		xrt_err(gate->xdev, "read 2 failed %d", ret);
-+		return ret;
-+	}
-+	ret = regmap_write(gate->regmap, XRT_AXIGATE_WRITE_REG,
-+			   XRT_AXIGATE_CTRL_OPEN_BIT0 | XRT_AXIGATE_CTRL_OPEN_BIT1);
-+	if (ret) {
-+		xrt_err(gate->xdev, "write 3 failed %d", ret);
-+		return ret;
-+	}
-+	ndelay(XRT_AXIGATE_INTERVAL);
-+	ret = regmap_read(gate->regmap, XRT_AXIGATE_READ_REG, &val);
-+	if (ret) {
-+		xrt_err(gate->xdev, "read 3 failed %d", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int xrt_axigate_epname_idx(struct xrt_device *xdev)
-+{
-+	struct resource	*res;
-+	int ret, i;
-+
-+	res = xrt_get_resource(xdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		xrt_err(xdev, "Empty Resource!");
-+		return -EINVAL;
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(xrt_axigate_epnames); i++) {
-+		ret = strncmp(xrt_axigate_epnames[i], res->name,
-+			      strlen(xrt_axigate_epnames[i]) + 1);
-+		if (!ret)
-+			return i;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int xrt_axigate_close(struct xrt_device *xdev)
-+{
-+	struct xrt_axigate *gate;
-+	u32 status = 0;
-+	int ret;
-+
-+	gate = xrt_get_drvdata(xdev);
-+
-+	mutex_lock(&gate->gate_lock);
-+	ret = regmap_read(gate->regmap, XRT_AXIGATE_READ_REG, &status);
-+	if (ret) {
-+		xrt_err(xdev, "read gate failed %d", ret);
-+		goto failed;
-+	}
-+	if (status) {		/* gate is opened */
-+		xleaf_broadcast_event(xdev, XRT_EVENT_PRE_GATE_CLOSE, false);
-+		ret = close_gate(gate);
-+		if (ret)
-+			goto failed;
-+	}
-+
-+	gate->gate_closed = true;
-+
-+failed:
-+	mutex_unlock(&gate->gate_lock);
-+
-+	xrt_info(xdev, "close gate %s", gate->ep_name);
-+	return ret;
-+}
-+
-+static int xrt_axigate_open(struct xrt_device *xdev)
-+{
-+	struct xrt_axigate *gate;
-+	u32 status;
-+	int ret;
-+
-+	gate = xrt_get_drvdata(xdev);
-+
-+	mutex_lock(&gate->gate_lock);
-+	ret = regmap_read(gate->regmap, XRT_AXIGATE_READ_REG, &status);
-+	if (ret) {
-+		xrt_err(xdev, "read gate failed %d", ret);
-+		goto failed;
-+	}
-+	if (!status) {		/* gate is closed */
-+		ret = open_gate(gate);
-+		if (ret)
-+			goto failed;
-+		xleaf_broadcast_event(xdev, XRT_EVENT_POST_GATE_OPEN, true);
-+		/* xrt_axigate_open() could be called in event cb, thus
-+		 * we can not wait for the completes
-+		 */
-+	}
-+
-+	gate->gate_closed = false;
-+
-+failed:
-+	mutex_unlock(&gate->gate_lock);
-+
-+	xrt_info(xdev, "open gate %s", gate->ep_name);
-+	return ret;
-+}
-+
-+static void xrt_axigate_event_cb(struct xrt_device *xdev, void *arg)
-+{
-+	struct xrt_axigate *gate = xrt_get_drvdata(xdev);
-+	struct xrt_event *evt = (struct xrt_event *)arg;
-+	enum xrt_events e = evt->xe_evt;
-+	struct xrt_device *leaf;
-+	enum xrt_subdev_id id;
-+	struct resource	*res;
-+	int instance;
-+
-+	if (e != XRT_EVENT_POST_CREATION)
-+		return;
-+
-+	instance = evt->xe_subdev.xevt_subdev_instance;
-+	id = evt->xe_subdev.xevt_subdev_id;
-+	if (id != XRT_SUBDEV_AXIGATE)
-+		return;
-+
-+	leaf = xleaf_get_leaf_by_id(xdev, id, instance);
-+	if (!leaf)
-+		return;
-+
-+	res = xrt_get_resource(leaf, IORESOURCE_MEM, 0);
-+	if (!res || !strncmp(res->name, gate->ep_name, strlen(res->name) + 1)) {
-+		xleaf_put_leaf(xdev, leaf);
-+		return;
-+	}
-+
-+	/* higher level axigate instance created, make sure the gate is opened. */
-+	if (xrt_axigate_epname_idx(leaf) > xrt_axigate_epname_idx(xdev))
-+		xrt_axigate_open(xdev);
-+	else
-+		xleaf_call(leaf, XRT_AXIGATE_OPEN, NULL);
-+
-+	xleaf_put_leaf(xdev, leaf);
-+}
-+
-+static int
-+xrt_axigate_leaf_call(struct xrt_device *xdev, u32 cmd, void *arg)
-+{
-+	int ret = 0;
-+
-+	switch (cmd) {
-+	case XRT_XLEAF_EVENT:
-+		xrt_axigate_event_cb(xdev, arg);
-+		break;
-+	case XRT_AXIGATE_CLOSE:
-+		ret = xrt_axigate_close(xdev);
-+		break;
-+	case XRT_AXIGATE_OPEN:
-+		ret = xrt_axigate_open(xdev);
-+		break;
-+	default:
-+		xrt_err(xdev, "unsupported cmd %d", cmd);
-+		return -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static int xrt_axigate_probe(struct xrt_device *xdev)
-+{
-+	struct xrt_axigate *gate = NULL;
-+	void __iomem *base = NULL;
-+	struct resource *res;
-+	int ret;
-+
-+	gate = devm_kzalloc(&xdev->dev, sizeof(*gate), GFP_KERNEL);
-+	if (!gate)
-+		return -ENOMEM;
-+
-+	gate->xdev = xdev;
-+	xrt_set_drvdata(xdev, gate);
-+
-+	xrt_info(xdev, "probing...");
-+	res = xrt_get_resource(xdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		xrt_err(xdev, "Empty resource 0");
-+		ret = -EINVAL;
-+		goto failed;
-+	}
-+
-+	base = devm_ioremap_resource(&xdev->dev, res);
-+	if (IS_ERR(base)) {
-+		xrt_err(xdev, "map base iomem failed");
-+		ret = PTR_ERR(base);
-+		goto failed;
-+	}
-+
-+	gate->regmap = devm_regmap_init_mmio(&xdev->dev, base, &axigate_regmap_config);
-+	if (IS_ERR(gate->regmap)) {
-+		xrt_err(xdev, "regmap %pR failed", res);
-+		ret = PTR_ERR(gate->regmap);
-+		goto failed;
-+	}
-+	gate->ep_name = res->name;
-+
-+	mutex_init(&gate->gate_lock);
-+
-+	return 0;
-+
-+failed:
-+	return ret;
-+}
-+
-+static struct xrt_dev_endpoints xrt_axigate_endpoints[] = {
-+	{
-+		.xse_names = (struct xrt_dev_ep_names[]) {
-+			{ .ep_name = XRT_MD_NODE_GATE_ULP },
-+			{ NULL },
-+		},
-+		.xse_min_ep = 1,
-+	},
-+	{
-+		.xse_names = (struct xrt_dev_ep_names[]) {
-+			{ .ep_name = XRT_MD_NODE_GATE_PLP },
-+			{ NULL },
-+		},
-+		.xse_min_ep = 1,
-+	},
-+	{ 0 },
-+};
-+
-+static struct xrt_driver xrt_axigate_driver = {
-+	.driver = {
-+		.name = XRT_AXIGATE,
-+	},
-+	.subdev_id = XRT_SUBDEV_AXIGATE,
-+	.endpoints = xrt_axigate_endpoints,
-+	.probe = xrt_axigate_probe,
-+	.leaf_call = xrt_axigate_leaf_call,
-+};
-+
-+XRT_LEAF_INIT_FINI_FUNC(axigate);
--- 
-2.27.0
+On 7/30/21 4:18 AM, Greg KH wrote:
+> On Thu, Jul 29, 2021 at 06:23:12PM -0700, Russ Weight wrote:
+>>
+>> On 5/17/21 12:37 PM, Russ Weight wrote:
+>>> On 5/16/21 10:32 PM, Greg KH wrote:
+>>>> On Sun, May 16, 2021 at 07:31:50PM -0700, Moritz Fischer wrote:
+>>>>> From: Russ Weight <russell.h.weight@intel.com>
+>>>>>
+>>>>> Extend the FPGA Security Manager class driver to
+>>>>> include an update/filename sysfs node that can be used
+>>>>> to initiate a secure update.  The filename of a secure
+>>>>> update file (BMC image, FPGA image, Root Entry Hash image,
+>>>>> or Code Signing Key cancellation image) can be written to
+>>>>> this sysfs entry to cause a secure update to occur.
+>>>> Why is userspace responsible for triggering this?  Passing a "filename"
+>>>> into the kernel and having it do something with it is ripe for major
+>>>> problems, please do not.
+>>>>
+>>> I am using the "request_firmware" framework, which accepts a filename
+>>> and finds the firmware file under /lib/firmware.
+>>>
+>>> Is this not an acceptable use for request_firmware?
+>>>
+>>> - Russ
+>> Hi Greg,
+>>
+>> The dev_release fixes that you asked for in the FPGA Manager, Bridge, and
+>> Region code are almost complete. I'm trying to get back to the FPGA
+>> security manager patch set. Your previous comments challenged some basic
+>> assumptions. If it is OK, I would like to get some clarity before I rework
+>> the patches.
+> Note, I do not have the time, nor the inclination, to help your company
+> out with design reviews at this point in time.  If you have questions
+> about this, please discuss it with the open source managers at Intel,
+> they know the current situation quite well.
+>
+> I am glad to review patches that have gone through the proper internal
+> Intel patch review process and then sent out to the community.
+
+For what it is worth, these patches _were_ reviewed internally before
+they were submitted to the public list. The first public submission
+(Sep 2020) included review tags. I was asked to remove them and let
+them be added back during the public review:
+
+https://marc.info/?l=linux-fpga&m=159926670526828&w=2
+
+Unfortunately, Intel review tags were not volunteered during the
+public review, and it didn't occur to me to solicit the tags before
+the patches were forwarded on to you by Moritz.
+
+Most notably, Yilun and Hao contributed to the review both internally
+and publicly. They are both listed in the MAINTAINERS file:
+
+Xu Yilun <yilun.xu@intel.com>
+Wu Hao <hao.wu@intel.com>
+
+All issues/comments were resolved before the patches were sent to you.
+
+> That being said, I will make one comment on your questions below:
+>
+>> (1) request_firmware(). We had assumed that making use of the existing
+>> request_firmware() would be preferred. This requires providing a filename
+>> under /lib/firmware to the framework. You commented (above): "Passing a
+>> 'filename' into the kernel and having it do something with it is ripe for
+>> problems, please do not." Unless you have additional comments on this, I
+>> will plan to NOT use the request_firmware framework.
+> request_firmware() should always be used for requesting firmware for a
+> device.  Having an api where you write a random filename to a sysfs file
+> and have that loaded by the kernel seems ripe for disaster though, I can
+> not think of any other in-kernel user of the firmware api that does
+> this.  Or are there examples that I have just missed?
+
+I found an instance of a driver that allows the firmware filename
+(under /lib/firmware) to be changed via sysfs:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/ABI/testing/sysfs-class-mic#n107
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/ABI/testing/sysfs-class-mic#n117
+
+I get why it seems dangerous to provide a /lib/firmware filename via
+sysfs and have the system automatically transfer that data to a device.
+I'm just trying to figure out if there is a preferred/less-dangerous
+way to do what we are trying to do.
+
+Our objective is to allow the user to provide a new, signed FPGA image
+that can be loaded on the fly (think cloud environment). The PCIe FPGA
+card authenticates the image data with encryption keys; the host-side
+software is not trusted by the device. So, other than checking the data
+size, host software just passes the data through.
+
+I think our usage is firmware-like, but it doesn't exactly fit the
+current usage of request_firmware(). The firmware filename isn't
+hardwired into the driver and the image isn't loaded at probe time.
+
+If the request_firmware() implementation is not acceptable, then would
+you agree that an IOCTL implementation is our best option?
+
+- Russ
+
+>
+> thanks,
+>
+> greg k-h
 
