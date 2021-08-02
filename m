@@ -5,28 +5,28 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07CB8C4338F
-	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 16:06:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5131C4338F
+	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 16:07:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DA69960F58
-	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 16:06:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B75E860F58
+	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 16:07:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229805AbhHBQHA (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 2 Aug 2021 12:07:00 -0400
-Received: from mail-mw2nam10on2083.outbound.protection.outlook.com ([40.107.94.83]:15136
+        id S232390AbhHBQHT (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 2 Aug 2021 12:07:19 -0400
+Received: from mail-mw2nam10on2087.outbound.protection.outlook.com ([40.107.94.87]:57775
         "EHLO NAM10-MW2-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S229946AbhHBQHA (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Mon, 2 Aug 2021 12:07:00 -0400
+        id S229946AbhHBQHS (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Mon, 2 Aug 2021 12:07:18 -0400
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=i5Gsnz40uuocNfT3vFpa8AxKUJZLBzU7nIyc1/LDw5dvvkp1fOGBTLwS9uI5lYTL1S47kvDVe37VKJ2oo9it/b8kb6D89S2WRDNo4BEd0ICvpbn3F1QGMgqg5kPgp0+44KlzciWM7RubgzT+Bjkrpz0rAOyuqGPaFZLAuUCeLABqlxUWb7QQoKaZNzCuC05o57b8mfRzuH/KoFc4dj+tJ1GmwPbpGM0hVuvXuV0kWtwnypzyiuOw0X6kvrOCPQUsekSDwgtnxkTK+JYEfVgasHW5fg3dvCSVYneC/71fwNukpSz439/hiTMKmRv9j8mkF+rwRRWbZxIg0Fa+QdFxvg==
+ b=fKa/ts7JPGo2ERNk60675vYudN6ZKjT/3MFF+yC2Sm7RknzfzetWjvkE9D27WJo/dXmsfyOsz93nIaZInM7BF8mBLcUMokOv/EAYOxt4rX3CfUHF1ZwZjMOeO3Qvlua7cQE5DeScHOW9UqtMOtxvGjxovlHLCNkr2yk3wtg0+mk56dZoHj8qo4CeOTAiZ8BqqODkXf4aLFwbCGM29fZAFS/16hR5nbtY0NfThQgF8jxIvfzDfK3syy0y85wRmWZWIa0ZD0Fg5l/lwMKVUIN4iuS2EejIMSOsNKAyQPMEx+oDfdKsBuc7iGGz6yxLxHVudQfAmwUQiK31wM++ovp5nQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8aculnYNcbYtJ/YX+CXlSMntVEwyU0cas/MeOV7Fz+U=;
- b=UZIFQSH3wYvLyVsuiOwoOsPT53Q+eEGypfHkDbL4wH8Y26TxTOkKiuUSPiRL+wJLo786L1jH8Z1TQ5O6aIrqlwmfZUfPzfaRCzZbBWvCKOubDZ5bLP5e2G5OECwF29vfaAJnfGFzkBMMpXbEN0B67e7PbubvOV/NaHD2aFjfjKDxN+xmjFJMQs+ggbf1VJU6wtQYCR8oQa9xe4ZbA5R+ETtMTMPnV/OrGfdq009zu11Wsfs1L2o6tP+gCHMGLvU9M8juVwO+sq4RSHszx9w+d2uORui70JW9/5a7cM58DkIwLBY3UeUCZuQ8t3vayDRurG+D7JS5Z2ByFCrlf42E4Q==
+ bh=PCX0uLyI8DyDALmjDSx/DCq6ZEGpSQm1m8kEhGOkgTs=;
+ b=Tk4Jjqv1vaigyyniwPMeltvf4imy2ggkS/iANxj0uEnwTydUc1wAaOmauR4aEhVmxrRdHg+cObxS0LsoUcnmKC1ltejJiSOLsp3Xf2k1SGdY/WnbtdjrP7oufpK7f0ea82GSRh2RKG4Dke/8x+NE4XH13IkP4btuU3qHxO9+kM96yobfzkIzTcizvJrDuPb8rRU5Lb8hsFLENIhlEJLIhaOkA9GY7de/X+5lmGVVpdxTq+1vfA/Vs+t7m7t/lOuy+3wUvL6E+8vJYSDI/BZICvjggCwx4aHkoL7WTS7erx5yp4BRMvaYlKkcLq2I6RB45sb9f+p8Xts6hXDzb0UBFA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
@@ -34,18 +34,17 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8aculnYNcbYtJ/YX+CXlSMntVEwyU0cas/MeOV7Fz+U=;
- b=ZPdwe24DykZTVhEzLsMs/H5bbxJuQlSyVQxAN6fRWq8oL/p4MPy/4GVAkgNKyardI8zqoIYawomDBaSrd6vA2ZoGtidlBENYtUFtUDCGl398Q1U6bn0X2fq/h989X2dChpXXiBhBWCrl5BD4p79UPAW/9ZilYMVQKAprsaRXMfc=
-Received: from DM6PR18CA0021.namprd18.prod.outlook.com (2603:10b6:5:15b::34)
- by BY5PR02MB6723.namprd02.prod.outlook.com (2603:10b6:a03:213::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4373.21; Mon, 2 Aug
- 2021 16:06:48 +0000
-Received: from DM3NAM02FT003.eop-nam02.prod.protection.outlook.com
- (2603:10b6:5:15b:cafe::d1) by DM6PR18CA0021.outlook.office365.com
- (2603:10b6:5:15b::34) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4373.17 via Frontend
- Transport; Mon, 2 Aug 2021 16:06:48 +0000
+ bh=PCX0uLyI8DyDALmjDSx/DCq6ZEGpSQm1m8kEhGOkgTs=;
+ b=aTGb31eCvRZ7Q+kl79/M8slysLf86p0GsHY4kxM1HyfAOCrvGqtfGZcGhqSJmMb/wzkR6Lp5bWTIdZiPK3GgqcAQ0+qbEt/IFofeGnZ9DiZZyKFuCWkJv7Th7Wct5lrw4ZK1FK5+rhNErQkGyNQiv00nTNTPfBwZTRD/LTz2DNs=
+Received: from DM5PR21CA0011.namprd21.prod.outlook.com (2603:10b6:3:ac::21) by
+ SN6PR02MB4910.namprd02.prod.outlook.com (2603:10b6:805:92::31) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.4373.25; Mon, 2 Aug 2021 16:07:06 +0000
+Received: from DM3NAM02FT047.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:3:ac:cafe::68) by DM5PR21CA0011.outlook.office365.com
+ (2603:10b6:3:ac::21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4415.0 via Frontend
+ Transport; Mon, 2 Aug 2021 16:07:06 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=pass action=none header.from=xilinx.com;
@@ -53,28 +52,28 @@ Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
  client-ip=149.199.62.198; helo=xsj-pvapexch01.xlnx.xilinx.com;
 Received: from xsj-pvapexch01.xlnx.xilinx.com (149.199.62.198) by
- DM3NAM02FT003.mail.protection.outlook.com (10.13.4.168) with Microsoft SMTP
+ DM3NAM02FT047.mail.protection.outlook.com (10.13.4.114) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4373.18 via Frontend Transport; Mon, 2 Aug 2021 16:06:48 +0000
+ 15.20.4373.18 via Frontend Transport; Mon, 2 Aug 2021 16:07:06 +0000
 Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
  xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 2 Aug 2021 09:06:06 -0700
+ 15.1.2176.2; Mon, 2 Aug 2021 09:06:30 -0700
 Received: from smtp.xilinx.com (172.19.127.96) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.2176.2 via Frontend Transport; Mon, 2 Aug 2021 09:06:06 -0700
+ 15.1.2176.2 via Frontend Transport; Mon, 2 Aug 2021 09:06:30 -0700
 Envelope-to: mdf@kernel.org,
  robh@kernel.org,
  trix@redhat.com,
  devicetree@vger.kernel.org,
  linux-fpga@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Received: from [10.23.145.232] (port=49052 helo=xsj-xw9400.xilinx.com)
+Received: from [10.23.145.232] (port=49058 helo=xsj-xw9400.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <lizhi.hou@xilinx.com>)
-        id 1mAaS6-00059n-3Z; Mon, 02 Aug 2021 09:06:06 -0700
+        id 1mAaSU-0005BQ-6W; Mon, 02 Aug 2021 09:06:30 -0700
 Received: by xsj-xw9400.xilinx.com (Postfix, from userid 21952)
-        id 4927D601B22; Mon,  2 Aug 2021 09:05:29 -0700 (PDT)
+        id 74C46601B26; Mon,  2 Aug 2021 09:05:30 -0700 (PDT)
 From:   Lizhi Hou <lizhi.hou@xilinx.com>
 To:     <linux-kernel@vger.kernel.org>
 CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
@@ -82,9 +81,9 @@ CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
         <michal.simek@xilinx.com>, <stefanos@xilinx.com>,
         <devicetree@vger.kernel.org>, <trix@redhat.com>, <mdf@kernel.org>,
         <robh@kernel.org>, Max Zhen <max.zhen@xilinx.com>
-Subject: [PATCH V9 XRT Alveo 03/14] fpga: xrt: xclbin file helper functions
-Date:   Mon, 2 Aug 2021 09:05:10 -0700
-Message-ID: <20210802160521.331031-4-lizhi.hou@xilinx.com>
+Subject: [PATCH V9 XRT Alveo 05/14] fpga: xrt: group driver
+Date:   Mon, 2 Aug 2021 09:05:12 -0700
+Message-ID: <20210802160521.331031-6-lizhi.hou@xilinx.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210802160521.331031-1-lizhi.hou@xilinx.com>
 References: <20210802160521.331031-1-lizhi.hou@xilinx.com>
@@ -93,921 +92,358 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 45e29b55-6602-4726-eb58-08d955cf887f
-X-MS-TrafficTypeDiagnostic: BY5PR02MB6723:
-X-Microsoft-Antispam-PRVS: <BY5PR02MB67233563F5744EED5BC24045A1EF9@BY5PR02MB6723.namprd02.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:1824;
+X-MS-Office365-Filtering-Correlation-Id: 56de68db-84df-4849-3855-08d955cf933a
+X-MS-TrafficTypeDiagnostic: SN6PR02MB4910:
+X-Microsoft-Antispam-PRVS: <SN6PR02MB4910C9364C8F63E2FD783577A1EF9@SN6PR02MB4910.namprd02.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:126;
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: fTXyIpuCJdmUIqzBpaok6zma7gWEU6odvPEnqI+Nb8CInQuCoz9v/04TkvINOE/KVGiIMxBWy85A2XeC/3EPwIBwuFVNnd4JdeHulM5zruFSh6bYLUx2daZYRb1GihC+UV4RVu7vvA8fUaGepJLtgz8pvZH9suH1/qvCZ/qO0XtPrIOxmc1puZH58GahpokupvlAbLKtGCL1/9j4Xh10sl7REC/0CXuEzq8uWxbNMZDNAWGxTR7XT9MDLLM9mqQaWH7R4RvHaaZtUp7vvkyNG44pao58I0nihvvyClOsJwUCIMYNPnnkG91mcgHlHlJjAkkq5nePiK52S9L3kcDOPR151QwmZFmiJBWtD4yBr+594QAch5efXfme3O5npTnHLST+PB5yXtyJPAC6bhuj4fEboRCcUrByjsSC8S/VJYdv1wEHtUejZPbKl+OM27tJEW+EIpVQbSFofDUOGqHyjsgYboGOfoQQ0w9L3Styeq0GKEU1Ns50aTOvtF2LGZlsn6bHS5KFgDRVhbz46XA1Pj8bC6pmAtl5CxDimiVZaFxGA/JSJ1dbyqJOKZ2HcfaaM3Nz8ZvvNBSFH/1oLM9gHh6Rve5WLIyQDLUGzpG5FED1HZFbzZkN82X6BjV5+k96/fesCIsp6yvyVD4loUCQBvtmG37fXp7pNtR0STyav3iqsxof90y0l5ROhzakH3AtxKXmFJmGs9ZrE7YThYSU5A==
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(39860400002)(346002)(136003)(396003)(376002)(46966006)(36840700001)(1076003)(36756003)(82310400003)(478600001)(44832011)(6666004)(6916009)(336012)(8936002)(4326008)(7636003)(82740400003)(316002)(36860700001)(42186006)(36906005)(54906003)(6266002)(107886003)(426003)(2616005)(5660300002)(47076005)(26005)(186003)(2906002)(30864003)(356005)(83380400001)(70586007)(8676002)(70206006);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: D0q7iYvY01sD4ALT+b5HegjjaBdw2k58BAD3OFEOrhtesl/GhnPAVvL8723Zmlx1RgYnTPqMMMwF/2/C5CdF5mXm9CIHt6imOZVqe31HqyGuVJmEGsuHC8qdFU68143jEDv0rjinzH0xpsKu6jJcdOQjxc5Vm9QEiwygryVGJi1Utbyco8vzD/JA6UVi8lPU0szdFuLyO2eNuitL0iZ8XbVttsV73gcO7z8chkBQfYZG2IkX25+4kN+W+JBaI9x+IZ62pBBQ4i2APavE6p5w1zu1bLA6AXB5d/+7A2GeqQsR2UKaJsqaWsFM7F241iAq2pyoJGv/YD34xpjoOJPCgJPo7OKQ1YhJybPs37yH+LnY0jk6bce5s1IjZIV8dlKE726VbCQpnw7IXlrCSnuaa52LoV/73kN1tfiCGsZl4wGEGgSUvR4S9DEizVEsgBNhPfzS82uH6qqZG1K1M4rLupzn0KeqvOkmJW5Vqh+EPhLbxenaaIXFKX87toh/3ZS9YbfMxuRUh4uggcC79kh9/vLLh8KubiTdkgdoxmNyWRk3PL2Cb6jTAeu3aS5Hqg0f+9hcPMILvur2aM0MnCg8T7AdvbNCyiC0irPyv5V0bHzKXBltVlT8YrzhGOP8syKDq49uIiN6nDejm0RUPECKWulhqXOk5H8nIS1vNS0mSA7U4Rr0HhVZfshx6eoy8vGKP7AulFTmdyRvDUIOo13VDw==
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(4636009)(376002)(346002)(39860400002)(396003)(136003)(46966006)(36840700001)(2906002)(36860700001)(6666004)(6266002)(186003)(107886003)(8676002)(44832011)(1076003)(336012)(26005)(8936002)(4326008)(6916009)(82310400003)(478600001)(47076005)(316002)(82740400003)(42186006)(70586007)(70206006)(7636003)(54906003)(83380400001)(36906005)(2616005)(5660300002)(356005)(426003)(36756003);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Aug 2021 16:06:48.5412
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Aug 2021 16:07:06.5383
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 45e29b55-6602-4726-eb58-08d955cf887f
+X-MS-Exchange-CrossTenant-Network-Message-Id: 56de68db-84df-4849-3855-08d955cf933a
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch01.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM3NAM02FT003.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: DM3NAM02FT047.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR02MB6723
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR02MB4910
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Alveo FPGA firmware and partial reconfigure file are in xclbin format. This
-code enumerates and extracts sections from xclbin files. xclbin.h is cross
-platform and used across all platforms and OS.
+group driver that manages life cycle of a bunch of leaf driver instances
+and bridges them with root.
 
 Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
 Signed-off-by: Max Zhen <max.zhen@xilinx.com>
 Signed-off-by: Lizhi Hou <lizhi.hou@xilinx.com>
 Reviewed-by: Tom Rix <trix@redhat.com>
 ---
- drivers/fpga/xrt/include/xclbin-helper.h |  48 +++
- drivers/fpga/xrt/lib/xclbin.c            | 381 ++++++++++++++++++++
- include/uapi/linux/fpga-xrt.h            | 428 +++++++++++++++++++++++
- 3 files changed, 857 insertions(+)
- create mode 100644 drivers/fpga/xrt/include/xclbin-helper.h
- create mode 100644 drivers/fpga/xrt/lib/xclbin.c
- create mode 100644 include/uapi/linux/fpga-xrt.h
+ drivers/fpga/xrt/include/group.h |  25 +++
+ drivers/fpga/xrt/lib/group.c     | 278 +++++++++++++++++++++++++++++++
+ 2 files changed, 303 insertions(+)
+ create mode 100644 drivers/fpga/xrt/include/group.h
+ create mode 100644 drivers/fpga/xrt/lib/group.c
 
-diff --git a/drivers/fpga/xrt/include/xclbin-helper.h b/drivers/fpga/xrt/include/xclbin-helper.h
+diff --git a/drivers/fpga/xrt/include/group.h b/drivers/fpga/xrt/include/group.h
 new file mode 100644
-index 000000000000..518d55f74c25
+index 000000000000..09e9d03f53fe
 --- /dev/null
-+++ b/drivers/fpga/xrt/include/xclbin-helper.h
-@@ -0,0 +1,48 @@
++++ b/drivers/fpga/xrt/include/group.h
+@@ -0,0 +1,25 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Copyright (C) 2020-2021 Xilinx, Inc.
 + *
 + * Authors:
-+ *    David Zhang <davidzha@xilinx.com>
-+ *    Sonal Santan <sonal.santan@xilinx.com>
++ *	Cheng Zhen <maxz@xilinx.com>
 + */
 +
-+#ifndef _XCLBIN_HELPER_H_
-+#define _XCLBIN_HELPER_H_
++#ifndef _XRT_GROUP_H_
++#define _XRT_GROUP_H_
 +
-+#include <linux/types.h>
-+#include <linux/device.h>
-+#include <linux/fpga-xrt.h>
++#include "xleaf.h"
 +
-+#define XCLBIN_VERSION2	"xclbin2"
-+#define XCLBIN_HWICAP_BITFILE_BUF_SZ 1024
-+#define XCLBIN_MAX_SZ_1G (1024 * 1024 * 1024) /* Assuming xclbin <= 1G, always */
-+
-+enum axlf_section_kind;
-+struct axlf;
-+
-+/**
-+ * Bitstream header information as defined by Xilinx tools.
-+ * Please note that this struct definition is not owned by the driver.
++/*
++ * Group driver leaf calls.
 + */
-+struct xclbin_bit_head_info {
-+	u32 header_length;		/* Length of header in 32 bit words */
-+	u32 bitstream_length;		/* Length of bitstream to read in bytes */
-+	const unchar *design_name;	/* Design name get from bitstream */
-+	const unchar *part_name;	/* Part name read from bitstream */
-+	const unchar *date;		/* Date read from bitstream header */
-+	const unchar *time;		/* Bitstream creation time */
-+	u32 magic_length;		/* Length of the magic numbers */
-+	const unchar *version;		/* Version string */
++enum xrt_group_leaf_cmd {
++	XRT_GROUP_GET_LEAF = XRT_XLEAF_CUSTOM_BASE, /* See comments in xleaf.h */
++	XRT_GROUP_PUT_LEAF,
++	XRT_GROUP_INIT_CHILDREN,
++	XRT_GROUP_FINI_CHILDREN,
++	XRT_GROUP_TRIGGER_EVENT,
 +};
 +
-+/* caller must free the allocated memory for **data. len could be NULL. */
-+int xrt_xclbin_get_section(struct device *dev,  const struct axlf *xclbin,
-+			   enum axlf_section_kind kind, void **data,
-+			   uint64_t *len);
-+int xrt_xclbin_get_metadata(struct device *dev, const struct axlf *xclbin, char **dtb);
-+int xrt_xclbin_parse_bitstream_header(struct device *dev, const unchar *data,
-+				      u32 size, struct xclbin_bit_head_info *head_info);
-+const char *xrt_clock_type2epname(enum XCLBIN_CLOCK_TYPE type);
-+
-+#endif /* _XCLBIN_HELPER_H_ */
-diff --git a/drivers/fpga/xrt/lib/xclbin.c b/drivers/fpga/xrt/lib/xclbin.c
++#endif	/* _XRT_GROUP_H_ */
+diff --git a/drivers/fpga/xrt/lib/group.c b/drivers/fpga/xrt/lib/group.c
 new file mode 100644
-index 000000000000..6edac3d418be
+index 000000000000..b45f05449e0b
 --- /dev/null
-+++ b/drivers/fpga/xrt/lib/xclbin.c
-@@ -0,0 +1,381 @@
++++ b/drivers/fpga/xrt/lib/group.c
+@@ -0,0 +1,278 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Xilinx Alveo FPGA Driver XCLBIN parser
++ * Xilinx Alveo FPGA Group Driver
 + *
 + * Copyright (C) 2020-2021 Xilinx, Inc.
 + *
-+ * Authors: David Zhang <davidzha@xilinx.com>
++ * Authors:
++ *	Cheng Zhen <maxz@xilinx.com>
 + */
 +
-+#include <asm/errno.h>
-+#include <linux/vmalloc.h>
-+#include <linux/device.h>
-+#include "xclbin-helper.h"
++#include <linux/mod_devicetable.h>
++#include "xleaf.h"
++#include "subdev_pool.h"
++#include "group.h"
 +#include "metadata.h"
++#include "lib-drv.h"
 +
-+/* Used for parsing bitstream header */
-+#define BITSTREAM_EVEN_MAGIC_BYTE	0x0f
-+#define BITSTREAM_ODD_MAGIC_BYTE	0xf0
++#define XRT_GRP "xrt_group"
 +
-+static inline u16 bitstream_read16(const char *data, u32 *offset)
-+{
-+	u16 val;
-+
-+	val = be16_to_cpu(*(__be16 *)(data + *offset));
-+	*offset += sizeof(__be16);
-+
-+	return val;
-+}
-+
-+static inline u32 bitstream_read32(const char *data, u32 *offset)
-+{
-+	u32 val;
-+
-+	val = be32_to_cpu(*(__be32 *)(data + *offset));
-+	*offset += sizeof(__be32);
-+
-+	return val;
-+}
-+
-+static int xrt_xclbin_get_section_hdr(const struct axlf *xclbin,
-+				      enum axlf_section_kind kind,
-+				      const struct axlf_section_header **header)
-+{
-+	const struct axlf_section_header *phead = NULL;
-+	u64 xclbin_len;
-+	int i;
-+
-+	*header = NULL;
-+	for (i = 0; i < xclbin->header.num_sections; i++) {
-+		if (xclbin->sections[i].section_kind == kind) {
-+			phead = &xclbin->sections[i];
-+			break;
-+		}
-+	}
-+
-+	if (!phead)
-+		return -ENOENT;
-+
-+	xclbin_len = xclbin->header.length;
-+	if (xclbin_len > XCLBIN_MAX_SZ_1G || !phead->section_size ||
-+	    phead->section_offset + phead->section_size > xclbin_len)
-+		return -EINVAL;
-+
-+	*header = phead;
-+	return 0;
-+}
-+
-+static int xrt_xclbin_section_info(const struct axlf *xclbin,
-+				   enum axlf_section_kind kind,
-+				   u64 *offset, u64 *size)
-+{
-+	const struct axlf_section_header *mem_header = NULL;
-+	int rc;
-+
-+	rc = xrt_xclbin_get_section_hdr(xclbin, kind, &mem_header);
-+	if (rc)
-+		return rc;
-+
-+	*offset = mem_header->section_offset;
-+	*size = mem_header->section_size;
-+
-+	return 0;
-+}
-+
-+/* caller must free the allocated memory for **data */
-+int xrt_xclbin_get_section(struct device *dev,
-+			   const struct axlf *buf,
-+			   enum axlf_section_kind kind,
-+			   void **data, u64 *len)
-+{
-+	const struct axlf *xclbin = (const struct axlf *)buf;
-+	void *section = NULL;
-+	u64 offset;
-+	u64 size;
-+	int err;
-+
-+	if (!data) {
-+		dev_err(dev, "invalid data pointer");
-+		return -EINVAL;
-+	}
-+
-+	err = xrt_xclbin_section_info(xclbin, kind, &offset, &size);
-+	if (err) {
-+		dev_dbg(dev, "parsing section failed. kind %d, err = %d", kind, err);
-+		return err;
-+	}
-+
-+	section = vzalloc(size);
-+	if (!section)
-+		return -ENOMEM;
-+
-+	memcpy(section, ((const char *)xclbin) + offset, size);
-+
-+	*data = section;
-+	if (len)
-+		*len = size;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(xrt_xclbin_get_section);
-+
-+static inline int xclbin_bit_get_string(const unchar *data, u32 size,
-+					u32 offset, unchar prefix,
-+					const unchar **str)
-+{
-+	int len;
-+	u32 tmp;
-+
-+	/* prefix and length will be 3 bytes */
-+	if (offset + 3  > size)
-+		return -EINVAL;
-+
-+	/* Read prefix */
-+	tmp = data[offset++];
-+	if (tmp != prefix)
-+		return -EINVAL;
-+
-+	/* Get string length */
-+	len = bitstream_read16(data, &offset);
-+	if (offset + len > size)
-+		return -EINVAL;
-+
-+	if (data[offset + len - 1] != '\0')
-+		return -EINVAL;
-+
-+	*str = data + offset;
-+
-+	return len + 3;
-+}
-+
-+/* parse bitstream header */
-+int xrt_xclbin_parse_bitstream_header(struct device *dev, const unchar *data,
-+				      u32 size, struct xclbin_bit_head_info *head_info)
-+{
-+	u32 offset = 0;
-+	int len, i;
-+	u16 magic;
-+
-+	memset(head_info, 0, sizeof(*head_info));
-+
-+	/* Get "Magic" length */
-+	if (size < sizeof(u16)) {
-+		dev_err(dev, "invalid size");
-+		return -EINVAL;
-+	}
-+
-+	len = bitstream_read16(data, &offset);
-+	if (offset + len > size) {
-+		dev_err(dev, "invalid magic len");
-+		return -EINVAL;
-+	}
-+	head_info->magic_length = len;
-+
-+	for (i = 0; i < head_info->magic_length - 1; i++) {
-+		magic = data[offset++];
-+		if (!(i % 2) && magic != BITSTREAM_EVEN_MAGIC_BYTE) {
-+			dev_err(dev, "invalid magic even byte at %d", offset);
-+			return -EINVAL;
-+		}
-+
-+		if ((i % 2) && magic != BITSTREAM_ODD_MAGIC_BYTE) {
-+			dev_err(dev, "invalid magic odd byte at %d", offset);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (offset + 3 > size) {
-+		dev_err(dev, "invalid length of magic end");
-+		return -EINVAL;
-+	}
-+	/* Read null end of magic data. */
-+	if (data[offset++]) {
-+		dev_err(dev, "invalid magic end");
-+		return -EINVAL;
-+	}
-+
-+	/* Read 0x01 (short) */
-+	magic = bitstream_read16(data, &offset);
-+
-+	/* Check the "0x01" half word */
-+	if (magic != 0x01) {
-+		dev_err(dev, "invalid magic end");
-+		return -EINVAL;
-+	}
-+
-+	len = xclbin_bit_get_string(data, size, offset, 'a', &head_info->design_name);
-+	if (len < 0) {
-+		dev_err(dev, "get design name failed");
-+		return -EINVAL;
-+	}
-+
-+	head_info->version = strstr(head_info->design_name, "Version=") + strlen("Version=");
-+	offset += len;
-+
-+	len = xclbin_bit_get_string(data, size, offset, 'b', &head_info->part_name);
-+	if (len < 0) {
-+		dev_err(dev, "get part name failed");
-+		return -EINVAL;
-+	}
-+	offset += len;
-+
-+	len = xclbin_bit_get_string(data, size, offset, 'c', &head_info->date);
-+	if (len < 0) {
-+		dev_err(dev, "get data failed");
-+		return -EINVAL;
-+	}
-+	offset += len;
-+
-+	len = xclbin_bit_get_string(data, size, offset, 'd', &head_info->time);
-+	if (len < 0) {
-+		dev_err(dev, "get time failed");
-+		return -EINVAL;
-+	}
-+	offset += len;
-+
-+	if (offset + 5 >= size) {
-+		dev_err(dev, "can not get bitstream length");
-+		return -EINVAL;
-+	}
-+
-+	/* Read 'e' */
-+	if (data[offset++] != 'e') {
-+		dev_err(dev, "invalid prefix of bitstream length");
-+		return -EINVAL;
-+	}
-+
-+	/* Get byte length of bitstream */
-+	head_info->bitstream_length = bitstream_read32(data, &offset);
-+
-+	head_info->header_length = offset;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(xrt_xclbin_parse_bitstream_header);
-+
-+static struct xrt_clock_desc {
-+	char	*clock_ep_name;
-+	u32	clock_xclbin_type;
-+	char	*clkfreq_ep_name;
-+} clock_desc[] = {
-+	{
-+		.clock_ep_name = XRT_MD_NODE_CLK_KERNEL1,
-+		.clock_xclbin_type = CT_DATA,
-+		.clkfreq_ep_name = XRT_MD_NODE_CLKFREQ_K1,
-+	},
-+	{
-+		.clock_ep_name = XRT_MD_NODE_CLK_KERNEL2,
-+		.clock_xclbin_type = CT_KERNEL,
-+		.clkfreq_ep_name = XRT_MD_NODE_CLKFREQ_K2,
-+	},
-+	{
-+		.clock_ep_name = XRT_MD_NODE_CLK_KERNEL3,
-+		.clock_xclbin_type = CT_SYSTEM,
-+		.clkfreq_ep_name = XRT_MD_NODE_CLKFREQ_HBM,
-+	},
++struct xrt_group {
++	struct xrt_device *xdev;
++	struct xrt_subdev_pool leaves;
++	bool leaves_created;
++	struct mutex lock; /* lock for group */
 +};
 +
-+const char *xrt_clock_type2epname(enum XCLBIN_CLOCK_TYPE type)
++static int xrt_grp_root_cb(struct device *dev, void *parg,
++			   enum xrt_root_cmd cmd, void *arg)
 +{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(clock_desc); i++) {
-+		if (clock_desc[i].clock_xclbin_type == type)
-+			return clock_desc[i].clock_ep_name;
-+	}
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(xrt_clock_type2epname);
-+
-+static const char *clock_type2clkfreq_name(enum XCLBIN_CLOCK_TYPE type)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(clock_desc); i++) {
-+		if (clock_desc[i].clock_xclbin_type == type)
-+			return clock_desc[i].clkfreq_ep_name;
-+	}
-+	return NULL;
-+}
-+
-+static int xrt_xclbin_add_clock_metadata(struct device *dev,
-+					 const struct axlf *xclbin,
-+					 char *dtb)
-+{
-+	struct clock_freq_topology *clock_topo;
-+	u16 freq;
 +	int rc;
-+	int i;
++	struct xrt_device *xdev =
++		container_of(dev, struct xrt_device, dev);
++	struct xrt_group *xg = (struct xrt_group *)parg;
 +
-+	/* if clock section does not exist, add nothing and return success */
-+	rc = xrt_xclbin_get_section(dev, xclbin, CLOCK_FREQ_TOPOLOGY,
-+				    (void **)&clock_topo, NULL);
-+	if (rc == -ENOENT)
-+		return 0;
-+	else if (rc)
-+		return rc;
++	switch (cmd) {
++	case XRT_ROOT_GET_LEAF_HOLDERS: {
++		struct xrt_root_get_holders *holders =
++			(struct xrt_root_get_holders *)arg;
++		rc = xrt_subdev_pool_get_holders(&xg->leaves,
++						 holders->xpigh_xdev,
++						 holders->xpigh_holder_buf,
++						 holders->xpigh_holder_buf_len);
++		break;
++	}
++	default:
++		/* Forward parent call to root. */
++		rc = xrt_subdev_root_request(xdev, cmd, arg);
++		break;
++	}
 +
-+	for (i = 0; i < clock_topo->count; i++) {
-+		u8 type = clock_topo->clock_freq[i].type;
-+		const char *ep_name = xrt_clock_type2epname(type);
-+		const char *counter_name = clock_type2clkfreq_name(type);
++	return rc;
++}
 +
-+		if (!ep_name || !counter_name)
++/*
++ * Cut subdev's dtb from group's dtb based on passed-in endpoint descriptor.
++ * Return the subdev's dtb through dtbp, if found.
++ */
++static int xrt_grp_cut_subdev_dtb(struct xrt_group *xg, struct xrt_dev_endpoints *eps,
++				  char *grp_dtb, char **dtbp)
++{
++	int ret, i, ep_count = 0;
++	char *dtb = NULL;
++
++	ret = xrt_md_create(DEV(xg->xdev), &dtb);
++	if (ret)
++		return ret;
++
++	for (i = 0; eps->xse_names[i].ep_name || eps->xse_names[i].compat; i++) {
++		const char *ep_name = eps->xse_names[i].ep_name;
++		const char *compat = eps->xse_names[i].compat;
++
++		if (!ep_name)
++			xrt_md_get_compatible_endpoint(DEV(xg->xdev), grp_dtb, compat, &ep_name);
++		if (!ep_name)
 +			continue;
 +
-+		freq = be16_to_cpu((__force __be16)clock_topo->clock_freq[i].freq_MHZ);
-+		rc = xrt_md_set_prop(dev, dtb, ep_name, NULL, XRT_MD_PROP_CLK_FREQ,
-+				     &freq, sizeof(freq));
-+		if (rc)
-+			break;
-+
-+		rc = xrt_md_set_prop(dev, dtb, ep_name, NULL, XRT_MD_PROP_CLK_CNT,
-+				     counter_name, strlen(counter_name) + 1);
-+		if (rc)
-+			break;
++		ret = xrt_md_copy_endpoint(DEV(xg->xdev), dtb, grp_dtb, ep_name, compat, NULL);
++		if (ret)
++			continue;
++		xrt_md_del_endpoint(DEV(xg->xdev), grp_dtb, ep_name, compat);
++		ep_count++;
++	}
++	/* Found enough endpoints, return the subdev's dtb. */
++	if (ep_count >= eps->xse_min_ep) {
++		*dtbp = dtb;
++		return 0;
 +	}
 +
-+	vfree(clock_topo);
-+
-+	return rc;
++	/* Cleanup - Restore all endpoints that has been deleted, if any. */
++	if (ep_count > 0) {
++		xrt_md_copy_endpoint(DEV(xg->xdev), grp_dtb, dtb,
++				     XRT_MD_NODE_ENDPOINTS, NULL, NULL);
++	}
++	vfree(dtb);
++	*dtbp = NULL;
++	return 0;
 +}
 +
-+int xrt_xclbin_get_metadata(struct device *dev, const struct axlf *xclbin, char **dtb)
++static int xrt_grp_create_leaves(struct xrt_group *xg)
 +{
-+	char *md = NULL, *newmd = NULL;
-+	u64 len, md_len;
-+	int rc;
++	struct xrt_subdev_platdata *pdata = DEV_PDATA(xg->xdev);
++	struct xrt_dev_endpoints *eps = NULL;
++	int ret = 0, failed = 0;
++	enum xrt_subdev_id did;
++	char *grp_dtb = NULL;
++	unsigned long mlen;
 +
-+	*dtb = NULL;
++	if (!pdata)
++		return -EINVAL;
 +
-+	rc = xrt_xclbin_get_section(dev, xclbin, PARTITION_METADATA, (void **)&md, &len);
-+	if (rc)
-+		goto done;
++	mlen = xrt_md_size(DEV(xg->xdev), pdata->xsp_dtb);
++	if (mlen == XRT_MD_INVALID_LENGTH) {
++		xrt_err(xg->xdev, "invalid dtb, len %ld", mlen);
++		return -EINVAL;
++	}
 +
-+	md_len = xrt_md_size(dev, md);
++	mutex_lock(&xg->lock);
 +
-+	/* Sanity check the dtb section. */
-+	if (md_len > len) {
++	if (xg->leaves_created) {
++		/*
++		 * This is expected since caller does not keep track of the state of the group
++		 * and may, in some cases, still try to create leaves after it has already been
++		 * created. This special error code will let the caller know what is going on.
++		 */
++		mutex_unlock(&xg->lock);
++		return -EEXIST;
++	}
++
++	grp_dtb = vmalloc(mlen);
++	if (!grp_dtb) {
++		mutex_unlock(&xg->lock);
++		return -ENOMEM;
++	}
++
++	/* Create all leaves based on dtb. */
++	xrt_info(xg->xdev, "bringing up leaves...");
++	memcpy(grp_dtb, pdata->xsp_dtb, mlen);
++	for (did = 0; did < XRT_SUBDEV_NUM; did++) {
++		eps = xrt_drv_get_endpoints(did);
++		while (eps && eps->xse_names) {
++			char *dtb = NULL;
++
++			ret = xrt_grp_cut_subdev_dtb(xg, eps, grp_dtb, &dtb);
++			if (ret) {
++				failed++;
++				xrt_err(xg->xdev, "failed to cut subdev dtb for drv %s: %d",
++					xrt_drv_name(did), ret);
++			}
++			if (!dtb) {
++				/*
++				 * No more dtb to cut or bad things happened for this instance,
++				 * switch to the next one.
++				 */
++				eps++;
++				continue;
++			}
++
++			/* Found a dtb for this instance, let's add it. */
++			ret = xrt_subdev_pool_add(&xg->leaves, did, xrt_grp_root_cb, xg, dtb);
++			if (ret < 0) {
++				/*
++				 * It is not a fatal error here. Some functionality is not usable
++				 * due to this missing device, but the error can be handled
++				 * when the functionality is used.
++				 */
++				failed++;
++				xrt_err(xg->xdev, "failed to add %s: %d", xrt_drv_name(did), ret);
++			}
++			vfree(dtb);
++			/* Continue searching for the same instance from grp_dtb. */
++		}
++	}
++
++	xg->leaves_created = true;
++	vfree(grp_dtb);
++	mutex_unlock(&xg->lock);
++	return failed == 0 ? 0 : -ECHILD;
++}
++
++static void xrt_grp_remove_leaves(struct xrt_group *xg)
++{
++	mutex_lock(&xg->lock);
++
++	if (!xg->leaves_created) {
++		mutex_unlock(&xg->lock);
++		return;
++	}
++
++	xrt_info(xg->xdev, "tearing down leaves...");
++	xrt_subdev_pool_fini(&xg->leaves);
++	xg->leaves_created = false;
++
++	mutex_unlock(&xg->lock);
++}
++
++static int xrt_grp_probe(struct xrt_device *xdev)
++{
++	struct xrt_group *xg;
++
++	xrt_info(xdev, "probing...");
++
++	xg = devm_kzalloc(&xdev->dev, sizeof(*xg), GFP_KERNEL);
++	if (!xg)
++		return -ENOMEM;
++
++	xg->xdev = xdev;
++	mutex_init(&xg->lock);
++	xrt_subdev_pool_init(DEV(xdev), &xg->leaves);
++	xrt_set_drvdata(xdev, xg);
++
++	return 0;
++}
++
++static void xrt_grp_remove(struct xrt_device *xdev)
++{
++	struct xrt_group *xg = xrt_get_drvdata(xdev);
++
++	xrt_info(xdev, "leaving...");
++	xrt_grp_remove_leaves(xg);
++}
++
++static int xrt_grp_leaf_call(struct xrt_device *xdev, u32 cmd, void *arg)
++{
++	int rc = 0;
++	struct xrt_group *xg = xrt_get_drvdata(xdev);
++
++	switch (cmd) {
++	case XRT_XLEAF_EVENT:
++		/* Simply forward to every child. */
++		xrt_subdev_pool_handle_event(&xg->leaves,
++					     (struct xrt_event *)arg);
++		break;
++	case XRT_GROUP_GET_LEAF: {
++		struct xrt_root_get_leaf *get_leaf =
++			(struct xrt_root_get_leaf *)arg;
++
++		rc = xrt_subdev_pool_get(&xg->leaves, get_leaf->xpigl_match_cb,
++					 get_leaf->xpigl_match_arg,
++					 DEV(get_leaf->xpigl_caller_xdev),
++					 &get_leaf->xpigl_tgt_xdev);
++		break;
++	}
++	case XRT_GROUP_PUT_LEAF: {
++		struct xrt_root_put_leaf *put_leaf =
++			(struct xrt_root_put_leaf *)arg;
++
++		rc = xrt_subdev_pool_put(&xg->leaves, put_leaf->xpipl_tgt_xdev,
++					 DEV(put_leaf->xpipl_caller_xdev));
++		break;
++	}
++	case XRT_GROUP_INIT_CHILDREN:
++		rc = xrt_grp_create_leaves(xg);
++		break;
++	case XRT_GROUP_FINI_CHILDREN:
++		xrt_grp_remove_leaves(xg);
++		break;
++	case XRT_GROUP_TRIGGER_EVENT:
++		xrt_subdev_pool_trigger_event(&xg->leaves, (enum xrt_events)(uintptr_t)arg);
++		break;
++	default:
++		xrt_err(xdev, "unknown IOCTL cmd %d", cmd);
 +		rc = -EINVAL;
-+		goto done;
++		break;
 +	}
-+
-+	/* use dup function here to convert incoming metadata to writable */
-+	newmd = xrt_md_dup(dev, md);
-+	if (!newmd) {
-+		rc = -EFAULT;
-+		goto done;
-+	}
-+
-+	/* Convert various needed xclbin sections into dtb. */
-+	rc = xrt_xclbin_add_clock_metadata(dev, xclbin, newmd);
-+
-+	if (!rc)
-+		*dtb = newmd;
-+	else
-+		vfree(newmd);
-+done:
-+	vfree(md);
 +	return rc;
 +}
-+EXPORT_SYMBOL_GPL(xrt_xclbin_get_metadata);
-diff --git a/include/uapi/linux/fpga-xrt.h b/include/uapi/linux/fpga-xrt.h
-new file mode 100644
-index 000000000000..ace7d3d09897
---- /dev/null
-+++ b/include/uapi/linux/fpga-xrt.h
-@@ -0,0 +1,428 @@
-+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-+/*
-+ *  Xilinx FPGA compiled binary container format
-+ *
-+ *  Copyright (C) 2015-2021, Xilinx Inc
-+ */
 +
-+#ifndef _UAPI_LINUX_FPGA_XRT_H
-+#define _UAPI_LINUX_FPGA_XRT_H
-+
-+#if defined(__KERNEL__)
-+
-+#include <linux/types.h>
-+
-+#elif defined(__cplusplus)
-+
-+#include <cstdlib>
-+#include <cstdint>
-+#include <algorithm>
-+#include <uuid/uuid.h>
-+
-+#else
-+
-+#include <stdlib.h>
-+#include <stdint.h>
-+#include <uuid/uuid.h>
-+
-+#endif
-+
-+#ifdef __cplusplus
-+extern "C" {
-+#endif
-+
-+#include <linux/ioctl.h>
-+
-+/**
-+ * DOC: Container format for Xilinx FPGA images
-+ * The container stores bitstreams, metadata and firmware images.
-+ * xclbin/xsabin is an ELF-like binary container format. It is a structured
-+ * series of sections. There is a file header followed by several section
-+ * headers which is followed by sections. A section header points to an
-+ * actual section. There is an optional signature at the end. The
-+ * following figure illustrates a typical xclbin:
-+ *
-+ *     +---------------------+
-+ *     |                     |
-+ *     |       HEADER        |
-+ *     +---------------------+
-+ *     |   SECTION  HEADER   |
-+ *     |                     |
-+ *     +---------------------+
-+ *     |        ...          |
-+ *     |                     |
-+ *     +---------------------+
-+ *     |   SECTION  HEADER   |
-+ *     |                     |
-+ *     +---------------------+
-+ *     |       SECTION       |
-+ *     |                     |
-+ *     +---------------------+
-+ *     |         ...         |
-+ *     |                     |
-+ *     +---------------------+
-+ *     |       SECTION       |
-+ *     |                     |
-+ *     +---------------------+
-+ *     |      SIGNATURE      |
-+ *     |      (OPTIONAL)     |
-+ *     +---------------------+
-+ */
-+
-+enum XCLBIN_MODE {
-+	XCLBIN_FLAT = 0,
-+	XCLBIN_PR,
-+	XCLBIN_TANDEM_STAGE2,
-+	XCLBIN_TANDEM_STAGE2_WITH_PR,
-+	XCLBIN_HW_EMU,
-+	XCLBIN_SW_EMU,
-+	XCLBIN_MODE_MAX
++static struct xrt_driver xrt_group_driver = {
++	.driver	= {
++		.name    = XRT_GRP,
++	},
++	.subdev_id = XRT_SUBDEV_GRP,
++	.probe = xrt_grp_probe,
++	.remove = xrt_grp_remove,
++	.leaf_call = xrt_grp_leaf_call,
 +};
 +
-+enum axlf_section_kind {
-+	BITSTREAM = 0,
-+	CLEARING_BITSTREAM,
-+	EMBEDDED_METADATA,
-+	FIRMWARE,
-+	DEBUG_DATA,
-+	SCHED_FIRMWARE,
-+	MEM_TOPOLOGY,
-+	CONNECTIVITY,
-+	IP_LAYOUT,
-+	DEBUG_IP_LAYOUT,
-+	DESIGN_CHECK_POINT,
-+	CLOCK_FREQ_TOPOLOGY,
-+	MCS,
-+	BMC,
-+	BUILD_METADATA,
-+	KEYVALUE_METADATA,
-+	USER_METADATA,
-+	DNA_CERTIFICATE,
-+	PDI,
-+	BITSTREAM_PARTIAL_PDI,
-+	PARTITION_METADATA,
-+	EMULATION_DATA,
-+	SYSTEM_METADATA,
-+	SOFT_KERNEL,
-+	ASK_FLASH,
-+	AIE_METADATA,
-+	ASK_GROUP_TOPOLOGY,
-+	ASK_GROUP_CONNECTIVITY
-+};
-+
-+enum MEM_TYPE {
-+	MEM_DDR3 = 0,
-+	MEM_DDR4,
-+	MEM_DRAM,
-+	MEM_STREAMING,
-+	MEM_PREALLOCATED_GLOB,
-+	MEM_ARE,
-+	MEM_HBM,
-+	MEM_BRAM,
-+	MEM_URAM,
-+	MEM_STREAMING_CONNECTION
-+};
-+
-+enum IP_TYPE {
-+	IP_MB = 0,
-+	IP_KERNEL,
-+	IP_DNASC,
-+	IP_DDR4_CONTROLLER,
-+	IP_MEM_DDR4,
-+	IP_MEM_HBM
-+};
-+
-+struct axlf_section_header {
-+	uint32_t section_kind;			/* Section type */
-+	char section_name[16];			/* Section name */
-+	char rsvd[4];
-+	uint64_t section_offset;		/* File offset of section data */
-+	uint64_t section_size;			/* Size of section data */
-+} __packed;
-+
-+struct axlf_header {
-+	uint64_t length;			/* Total size of the xclbin file */
-+	uint64_t time_stamp;			/* Timestamp when xclbin was created */
-+	uint64_t feature_rom_timestamp;		/* TimeSinceEpoch of the featureRom */
-+	uint16_t version_patch;			/* Patch Version */
-+	uint8_t version_major;			/* Major Version */
-+	uint8_t version_minor;			/* Minor Version */
-+	uint32_t mode;				/* Xclbin mode. See enum XCLBIN_MODE */
-+	union {
-+		struct {
-+			uint64_t platform_id;	/* 64 bit platform ID */
-+			uint64_t feature_id;	/* 64 bit feature ID */
-+		} rom;
-+		unsigned char rom_uuid[16];	/* feature ROM UUID */
-+	};
-+	unsigned char platform_vbnv[64];	/* String of Vendor:Board:Name:Version */
-+	union {
-+		char next_axlf[16];		/* Name of next xclbin file */
-+		unsigned char uuid[16];		/* uuid of this xclbin */
-+	};
-+	char debug_bin[16];			/* Name of binary with debug information */
-+	uint32_t num_sections;			/* Number of section headers */
-+	char rsvd[4];
-+} __packed;
-+
-+struct axlf {
-+	char magic[8];				/* Magic word: xclbin2\0 */
-+	int32_t signature_length;		/* Length. -1 indicates no signature */
-+	uint8_t reserved[28];
-+	uint8_t key_block[256];			/* Signature for validation of binary */
-+	uint64_t unique_id;			/* Unique ID */
-+	struct axlf_header header;		/* Inline header */
-+	struct axlf_section_header sections[1];	/* One or more section headers follow */
-+} __packed;
-+
-+/* bitstream information */
-+struct xlnx_bitstream {
-+	uint8_t freq[8];
-+	char bits[1];
-+} __packed;
-+
-+/****	MEMORY TOPOLOGY SECTION ****/
-+struct mem_data {
-+	uint8_t type;				/* Memory type. See enum MEM_TYPE */
-+	uint8_t used;				/* Memory presence. 0 means not present */
-+	uint8_t rsvd[6];
-+	union {
-+		uint64_t size;			/* Memory size. Counted in KB */
-+		uint64_t route_id;		/* Stream route ID */
-+	};
-+	union {
-+		uint64_t base_address;		/* Memory base address */
-+		uint64_t flow_id;		/* Stream flow ID */
-+	};
-+	unsigned char tag[16];			/* Memory tag string */
-+} __packed;
-+
-+struct mem_topology {
-+	int32_t count;				/* Number of mem_data */
-+	struct mem_data mem_data[1];		/* mem_data array, sorted on mem_type */
-+} __packed;
-+
-+/****	CONNECTIVITY SECTION ****/
-+/* Connectivity of each argument of CU(Compute Unit). It will be in terms
-+ * of argument index associated. For associating CU instances with arguments
-+ * and banks, start at the connectivity section. Using the ip_layout_index
-+ * access the ip_data.name. Now we can associate this CU instance with its
-+ * original CU name and get the connectivity as well. This enables us to form
-+ * related groups of CU instances.
-+ */
-+
-+struct connection {
-+	int32_t arg_index;			/* Index of CU argument */
-+	int32_t ip_layout_index;		/* Index into the ip_layout section */
-+	int32_t mem_data_index;			/* Index into the mem_data section */
-+} __packed;
-+
-+struct connectivity {
-+	int32_t count;
-+	struct connection connection[1];
-+} __packed;
-+
-+/****	IP_LAYOUT SECTION ****/
-+
-+/* IP Kernel */
-+#define IP_INT_ENABLE_MASK	  0x0001
-+#define IP_INTERRUPT_ID_MASK  0x00FE
-+#define IP_INTERRUPT_ID_SHIFT 0x1
-+
-+enum IP_CONTROL {
-+	AP_CTRL_HS = 0,
-+	AP_CTRL_CHAIN,
-+	AP_CTRL_NONE,
-+	AP_CTRL_ME,
-+	ACCEL_ADAPTER
-+};
-+
-+#define IP_CONTROL_MASK	 0xFF00
-+#define IP_CONTROL_SHIFT 0x8
-+
-+/*
-+ * IPs on AXI lite - their types, names, and base addresses.
-+ *
-+ * The defination of 32-bit follows IP_TYPE is based on IP_TYPE
-+ *   For IP_KERNEL
-+ *	    int_enable   : Bit  - 0x0000_0001;
-+ *	    interrupt_id : Bits - 0x0000_00FE;
-+ *	    ip_control   : Bits - 0x0000_FF00;
-+ *   For IP_MEM_*
-+ *	    index        : Bits - 0x0000_FFFF;
-+ *	    pc_index     : Bits - 0x00FF_0000;
-+ */
-+struct ip_data {
-+	uint32_t type;				/* Type. See enum IP_TYPE */
-+	union {
-+		uint32_t properties;
-+		struct {
-+			uint16_t index;
-+			uint8_t pc_index;
-+			uint8_t unused;
-+		} indices;
-+	};
-+	uint64_t base_address;
-+	uint8_t name[64];			/* Name of IP */
-+} __packed;
-+
-+struct ip_layout {
-+	int32_t count;
-+	struct ip_data ip_data[1];		/* ip_data array, sorted by base_address */
-+} __packed;
-+
-+/*** Debug IP section layout ****/
-+enum DEBUG_IP_TYPE {
-+	UNDEFINED = 0,
-+	LAPC,
-+	ILA,
-+	AXI_MM_MONITOR,
-+	AXI_TRACE_FUNNEL,
-+	AXI_MONITOR_FIFO_LITE,
-+	AXI_MONITOR_FIFO_FULL,
-+	ACCEL_MONITOR,
-+	AXI_STREAM_MONITOR,
-+	AXI_STREAM_PROTOCOL_CHECKER,
-+	TRACE_S2MM,
-+	AXI_DMA,
-+	TRACE_S2MM_FULL
-+};
-+
-+struct debug_ip_data {
-+	uint8_t type;				/* Type. See enum DEBUG_IP_TYPE */
-+	uint8_t index_lowbyte;
-+	uint8_t properties;
-+	uint8_t major;
-+	uint8_t minor;
-+	uint8_t index_highbyte;
-+	uint8_t reserved[2];
-+	uint64_t base_address;
-+	char	name[128];
-+} __packed;
-+
-+struct debug_ip_layout {
-+	uint16_t count;
-+	struct debug_ip_data debug_ip_data[1];
-+} __packed;
-+
-+/* Supported clock frequency types */
-+enum XCLBIN_CLOCK_TYPE {
-+	CT_UNUSED = 0,				/* Initialized value */
-+	CT_DATA	  = 1,				/* Data clock */
-+	CT_KERNEL = 2,				/* Kernel clock */
-+	CT_SYSTEM = 3				/* System Clock */
-+};
-+
-+/* Clock Frequency Entry */
-+struct clock_freq {
-+	uint16_t freq_MHZ;			/* Frequency in MHz */
-+	uint8_t type;				/* Clock type (enum CLOCK_TYPE) */
-+	uint8_t unused[5];
-+	char name[128];				/* Clock Name */
-+} __packed;
-+
-+/* Clock frequency section */
-+struct clock_freq_topology {
-+	int16_t count;				/* Number of entries */
-+	struct clock_freq clock_freq[1];	/* Clock array */
-+} __packed;
-+
-+/* Supported MCS file types */
-+enum MCS_TYPE {
-+	MCS_UNKNOWN = 0,			/* Initialized value */
-+	MCS_PRIMARY = 1,			/* The primary mcs file data */
-+	MCS_SECONDARY = 2,			/* The secondary mcs file data */
-+};
-+
-+/* One chunk of MCS data */
-+struct mcs_chunk {
-+	uint8_t type;				/* MCS data type */
-+	uint8_t unused[7];
-+	uint64_t offset;			/* Data offset */
-+	uint64_t size;				/* Data size */
-+} __packed;
-+
-+/* MCS data section */
-+struct mcs {
-+	int8_t count;				/* Number of chunks */
-+	int8_t unused[7];
-+	struct mcs_chunk chunk[1];		/* MCS chunks followed by data */
-+} __packed;
-+
-+/* bmc data section */
-+struct bmc {
-+	uint64_t offset;			/* Data offset */
-+	uint64_t size;				/* Data size (bytes) */
-+	char image_name[64];			/* Name of the image */
-+	char device_name[64];			/* Name of the device */
-+	char version[64];
-+	char md5value[33];			/* MD5 checksum */
-+	char padding[7];
-+} __packed;
-+
-+/*
-+ * soft kernel data section, used by classic driver
-+ * Prefix Syntax:
-+ *  mpo - member, pointer, offset
-+ *  This variable represents a zero terminated string
-+ *  that is offseted from the beginning of the section.
-+ *  The pointer to access the string is initialized as follows:
-+ *  char * pCharString = (address_of_section) + (mpo value)
-+ */
-+struct soft_kernel {
-+	uint32_t mpo_name;			/* Name of the soft kernel */
-+	uint32_t image_offset;			/* Image offset */
-+	uint32_t image_size;			/* Image size */
-+	uint32_t mpo_version;			/* Version */
-+	uint32_t mpo_md5_value;			/* MD5 checksum */
-+	uint32_t mpo_symbol_name;		/* Symbol name */
-+	uint32_t num_instances;			/* Number of instances */
-+	uint8_t padding[36];			/* Reserved for future use */
-+	uint8_t reserved_ext[16];		/* Reserved for future extended data */
-+} __packed;
-+
-+enum CHECKSUM_TYPE {
-+	CST_UNKNOWN = 0,
-+	CST_SDBM = 1,
-+	CST_LAST
-+};
-+
-+/**
-+ * DOC: PCIe Kernel Driver for Management Physical Function
-+ * Interfaces exposed by *xrt-mgmt* driver are defined in file, *xmgmt-ioctl.h*.
-+ * Core functionality provided by *xrt-mgmt* driver is described in the following table:
-+ *
-+ * =========== ============================== ==================================
-+ * Functionality           ioctl request code           data format
-+ * =========== ============================== ==================================
-+ * 1 FPGA image download   XMGMT_IOCICAPDOWNLOAD_AXLF xmgmt_ioc_bitstream_axlf
-+ * =========== ============================== ==================================
-+ */
-+
-+#define XMGMT_IOC_MAGIC 'X'
-+#define XMGMT_IOC_ICAP_DOWNLOAD_AXLF 0x6
-+
-+/**
-+ * struct xmgmt_ioc_bitstream_axlf - load xclbin (AXLF) device image
-+ * used with XMGMT_IOCICAPDOWNLOAD_AXLF ioctl
-+ *
-+ * @xclbin:     Pointer to user's xclbin structure in memory
-+ */
-+struct xmgmt_ioc_bitstream_axlf {
-+	struct axlf *xclbin;
-+};
-+
-+#define XMGMT_IOCICAPDOWNLOAD_AXLF                              \
-+	_IOW(XMGMT_IOC_MAGIC, XMGMT_IOC_ICAP_DOWNLOAD_AXLF, struct xmgmt_ioc_bitstream_axlf)
-+
-+/*
-+ * The following definitions are for binary compatibility with classic XRT management driver
-+ */
-+#define XCLMGMT_IOCICAPDOWNLOAD_AXLF XMGMT_IOCICAPDOWNLOAD_AXLF
-+#define xclmgmt_ioc_bitstream_axlf xmgmt_ioc_bitstream_axlf
-+
-+#ifdef __cplusplus
-+}
-+#endif
-+
-+#endif
++XRT_LEAF_INIT_FINI_FUNC(group);
 -- 
 2.27.0
 
