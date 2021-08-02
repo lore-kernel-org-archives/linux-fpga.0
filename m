@@ -2,211 +2,160 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D598C4338F
-	for <linux-fpga@archiver.kernel.org>; Fri, 30 Jul 2021 12:07:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1A63C4338F
+	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 07:45:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1120361057
-	for <linux-fpga@archiver.kernel.org>; Fri, 30 Jul 2021 12:07:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 94B6860FC1
+	for <linux-fpga@archiver.kernel.org>; Mon,  2 Aug 2021 07:45:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230355AbhG3MHL (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 30 Jul 2021 08:07:11 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:35040 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S238661AbhG3MHJ (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 30 Jul 2021 08:07:09 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1627646825;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=V6tBWswRo20M4gsY3/zERgUiGIaEat4LYcWxejLA/n4=;
-        b=Zw0aBePypbrM/TNsx9mT5iF4+BjBhDihdyU0DuN05rlD9o1tbsPipVLV9lobEWmV1xUl18
-        TEASEo09JAkt9SCkE/zrXDuDXBHdbl7O8KZ5YQ+9cdcBemDrHzT0qAMemYsmhOemohMAgJ
-        xLxBvGdgv/ocJ2tyQ7G4bMmLzFrkfe8=
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com
- [209.85.160.198]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-356-tMhKO8HwPvOFxSskGXGFsA-1; Fri, 30 Jul 2021 08:07:04 -0400
-X-MC-Unique: tMhKO8HwPvOFxSskGXGFsA-1
-Received: by mail-qt1-f198.google.com with SMTP id o4-20020ac86d040000b0290256a44e9034so4198012qtt.22
-        for <linux-fpga@vger.kernel.org>; Fri, 30 Jul 2021 05:07:03 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding
-         :content-language;
-        bh=V6tBWswRo20M4gsY3/zERgUiGIaEat4LYcWxejLA/n4=;
-        b=LJ436tr5agvtxjRTGPK8ptZxkoJ+9wnwKlFym/VNd8F7uotQSlzvAwSy6UFD77EpX8
-         SHIutSvCOl+wT8/3ijoPKvNreclKG4ceCD+eTy82TPJB/BczC0xOHGpskJuZOXC43UDE
-         4Dr7vrYoVAWiHaL+vvd4lQ5k8vDfdOr0wA2VcGp3TXcwxRUwSAz3DRcHpxscXt2AC1MA
-         dlCj0fwPvYd9sSrUmpojqizV1WOynQa21MmJ6+5T01SueyA25xtUNk4CNaBIiAyu+kab
-         j2XnPqisHfemdsInAX2coL0hm8xJPyAsoZi4fBWEmjENQ0kzdGyhFat7MQPio5v3BOhJ
-         Dfog==
-X-Gm-Message-State: AOAM531vrsdHCsntBdD6GFJQh5pmdhvd98lO+zZGiTy88o9S0Q/GyQz+
-        /y0TaSG+tQVAAPKO3HYm0a0BiAr6mXyqnn5F5DL6qYfEuI8ToguV8hkNcbbDxZbezT2DjRJxZtS
-        a+YgWYZQ+qw12WbI4T31ODx8gKf/OTJqGceF2iz6Ir8FJOTLhXdkqbeao2KoyQMmSCxwD
-X-Received: by 2002:ac8:7492:: with SMTP id v18mr1989724qtq.37.1627646822793;
-        Fri, 30 Jul 2021 05:07:02 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJx/5tIadzneWKvZPj8RmFv3mjXOSq09yI6S/TPvpShiIVBbFE5kfykC/pZAKZNy+j7ROXE+/A==
-X-Received: by 2002:ac8:7492:: with SMTP id v18mr1989699qtq.37.1627646822557;
-        Fri, 30 Jul 2021 05:07:02 -0700 (PDT)
-Received: from localhost.localdomain (075-142-250-213.res.spectrum.com. [75.142.250.213])
-        by smtp.gmail.com with ESMTPSA id j185sm787432qkf.28.2021.07.30.05.07.01
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 30 Jul 2021 05:07:02 -0700 (PDT)
-Subject: Re: [PATCH] fpga: region: handle compat_id as an uuid
-To:     Xu Yilun <yilun.xu@intel.com>
-Cc:     Moritz Fischer <mdf@kernel.org>, "Wu, Hao" <hao.wu@intel.com>,
-        "Weight, Russell H" <russell.h.weight@intel.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>
-References: <20210726202650.4074614-1-trix@redhat.com>
- <6f30a4c6-61a0-bb57-9f13-bcad3f3589b8@intel.com>
- <ba28bac6-9c6d-de73-523f-b8ba4bef84de@redhat.com>
- <DM6PR11MB38199F872DC94971D9C8A53885EA9@DM6PR11MB3819.namprd11.prod.outlook.com>
- <YQL4qyAmqj322HTz@epycbox.lan>
- <a5b4b303-7d9b-27d7-4c1e-cd29fea8cdb9@redhat.com>
- <20210730014859.GA436611@yilunxu-OptiPlex-7050>
-From:   Tom Rix <trix@redhat.com>
-Message-ID: <dd2bc08b-3610-b14f-59fc-ab444845d0f7@redhat.com>
-Date:   Fri, 30 Jul 2021 05:07:00 -0700
+        id S232520AbhHBHpb (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 2 Aug 2021 03:45:31 -0400
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:25942 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S232482AbhHBHp3 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 2 Aug 2021 03:45:29 -0400
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 1727Y5rd125744;
+        Mon, 2 Aug 2021 03:45:12 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=subject : to : cc :
+ references : from : message-id : date : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=3GTKSoYuyeI7amyWljKoeZqQ+nHMylTD/J3zpAbpSkU=;
+ b=opXA+N2F/OyCTrMckSbOQvv0dIelBOVELlf0qOm/01gfXdjEuvk6vCiHmojnt3SMYS8K
+ bxW+LNNfiXRU7UgPKtR4usSebN/rk1tanddBuxxEMvc8FRtczuLXIVPnjwSFJgxozrim
+ zD8r7WT5rh1J5mZs1h0CVY2lRQwX67Qo2K9kKqyBQp7M/LNmVWXi/5p3gxxnDiJaCLN9
+ rZs1ekfust89aikdjGSboEL5x7zhilaaveAazi3oEk70xDpx1YXVJKNxQDDkLJ3jZa23
+ DxTIk25KIE8o9mHofZKFkLQtN+Lxjp+q7mu/NEr2rJCrB2HANs6cVKDtn15Evjr5PfHQ iQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 3a5kjutct4-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 02 Aug 2021 03:45:12 -0400
+Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
+        by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1727cEhp137848;
+        Mon, 2 Aug 2021 03:45:11 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com [169.55.85.253])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 3a5kjutcs5-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 02 Aug 2021 03:45:11 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+        by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1727bmXr009344;
+        Mon, 2 Aug 2021 07:45:09 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com [9.57.198.25])
+        by ppma01wdc.us.ibm.com with ESMTP id 3a4x5a7t7y-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 02 Aug 2021 07:45:09 +0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com [9.57.199.108])
+        by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 1727j9XO21889420
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 2 Aug 2021 07:45:09 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id F3602B2064;
+        Mon,  2 Aug 2021 07:45:08 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 09D95B2068;
+        Mon,  2 Aug 2021 07:45:04 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.199.36.88])
+        by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+        Mon,  2 Aug 2021 07:45:03 +0000 (GMT)
+Subject: Re: [PATCH v3] fpga: dfl: fme: Fix cpu hotplug issue in performance
+ reporting
+To:     will@kernel.org, hao.wu@intel.com, mark.rutland@arm.com
+Cc:     trix@redhat.com, yilun.xu@intel.com, mdf@kernel.org,
+        linux-fpga@vger.kernel.org, maddy@linux.ibm.com,
+        atrajeev@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, rnsastry@linux.ibm.com,
+        linux-perf-users@vger.kernel.org, stable@vger.kernel.org
+References: <20210713074216.208391-1-kjain@linux.ibm.com>
+From:   kajoljain <kjain@linux.ibm.com>
+Message-ID: <61495dc0-f496-992c-1d2a-9229a04e6e44@linux.ibm.com>
+Date:   Mon, 2 Aug 2021 13:15:00 +0530
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
-MIME-Version: 1.0
-In-Reply-To: <20210730014859.GA436611@yilunxu-OptiPlex-7050>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+ Thunderbird/78.10.1
+In-Reply-To: <20210713074216.208391-1-kjain@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: RyHz5855e0unzEdNSw03Cg5mCfzhtRmF
+X-Proofpoint-GUID: W10U2EPBpxzuTFdcHfQHeMJ90pMtAAy-
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391,18.0.790
+ definitions=2021-08-02_01:2021-08-02,2021-08-02 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 phishscore=0 impostorscore=0 suspectscore=0 adultscore=0
+ mlxlogscore=999 bulkscore=0 mlxscore=0 clxscore=1015 lowpriorityscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2108020053
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
 
-On 7/29/21 6:48 PM, Xu Yilun wrote:
-> On Thu, Jul 29, 2021 at 12:16:47PM -0700, Tom Rix wrote:
->> On 7/29/21 11:51 AM, Moritz Fischer wrote:
->>> On Wed, Jul 28, 2021 at 01:36:56AM +0000, Wu, Hao wrote:
->>>>> On 7/26/21 3:12 PM, Russ Weight wrote:
->>>>>> On 7/26/21 1:26 PM, trix@redhat.com wrote:
->>>>>>> From: Tom Rix <trix@redhat.com>
->>>>>>>
->>>>>>> An fpga region's compat_id is exported by the sysfs
->>>>>>> as a 128 bit hex string formed by concatenating two
->>>>>>> 64 bit values together.
->>>>>>>
->>>>>>> The only user of compat_id is dfl.  Its user library
->>>>>>> opae converts this value into a uuid.
->>>>>>>
->>>>>>> ex/
->>>>>>> $ cat /sys/class/fpga_region/region1/compat_id
->>>>>>> f3c9941350814aadbced07eb84a6d0bb
->>>>>>>
->>>>>>> Is reported as
->>>>>>> $ fpgainfo bmc
->>>>>>> ...
->>>>>>> Pr Interface Id                  : f3c99413-5081-4aad-bced-07eb84a6d0bb
->>>>>>>
->>>>>>> Storing a uuid as 2 64 bit values is vendor specific.
->>>>>>> And concatenating them together is vendor specific.
->>>>>>>
->>>>>>> It is better to store and print out as a vendor neutral uuid.
->>>>>>>
->>>>>>> Change fpga_compat_id from a struct to a union.
->>>>>>> Keep the old 64 bit values for dfl.
->>>>>>> Sysfs output is now
->>>>>>> f3c99413-5081-4aad-bced-07eb84a6d0bb
->>>>>> I'm fowarding feedback from Tim Whisonant, one of the OPAE userspace
->>>>>> developers:
->>>>>>
->>>>>> I think that this change to the sysfs for the compat_id node will
->>>>>> end up breaking the SDK, which does not expect the '-' characters to
->>>>>> be included when parsing the sysfs value. Currently, it is parsed as
->>>>>> a raw hex string without regard to any '-' characters. This goes for
->>>>>> any "guid" currently exported by sysfs and for what we read in the
->>>>>> device MMIO space.
->>>>> Yes, it will.
->>>>>
->>>>> And there are other places, like dfl-afu-main.c:afu_id_show()
->>>>>
->>>>> outputs raw hex that sdk turns into a uuid.
->>>>>
->>>>>
->>>>> Some options.
->>>>>
->>>>> If no one but dfl will ever use it, then v1 of patchset.
->>>>>
->>>>> If others can use it but don't want to change dfl, then v2 of patchset,
->>>>> my favorite.
->>>>>
->>>>> Or this one for uuid for everyone, what have been v3 but changed too much.
->>>>>
->>>>>
->>>>> could dfl change generally to output uuid's to the sysfs ?
->>>>>
->>>>> this would be generally helpful and a one time disruption to the sdk.
->>>> This change limited the output format to uuid_t, but if any hardware doesn't
->>>> use uuid_t on hardware may have to convert it back from the sysfs output in
->>>> userspace. Leave it to print hardware values (e.g. from register), and convert
->>>> it in userspace should be fine too I think.
->>> I'm not entirely sure. I seem to recall there being examples of sysfs
->>> files returning different things for different drivers.
->>>
->>> That being said it seems largely cosmetic to add the '-' in between.
->>>
->>> If it breaks userspace, I'm against it. If you *need* it make a
->>> compat_uuid entry or something in that case?
->> My gripe is
->>
->> For a nominally common interface, compat_id has a vendor specific output.
->>
->> If for example another vendor wanted to use this field but their natural
->> format was an OF string.
->>
->> 16 bytes of raw hex would not work for them, so they would roll their own.
->>
->> which defeats the purpose of a common interface.
->>
->>
->> The language in the docs as-is is vague on the output format.
->>
->> DFL is the only user of the interface.
->>
->> So ver 2
->>
->> https://lore.kernel.org/linux-fpga/4ab7dd2d-c215-6333-6860-6f7d0ac64c3d@redhat.com/
->>
->> Keeps the output as-is for dfl, so nothing breaks in userspace
->>
->> And adds flexibility for vendors to output their appropriate natural form.
->>
->> So compat_id becomes generally useful.
-> Mixing types seems be strongly against in Documentation/filesystems/sysfs.rst.
-> So in my opinion there should be a determined format for the output. The
-> concern for this patch is which one is a better format, uuid style or
-> 128 bit raw hex?
->
-> And I vote for 128 bit raw hex, as other vendors may not use uuid_t as
-> the identifier, may be an OF string. So we don't have to force them
-> decorate it as the uuid style.
 
-So you would be ok with v2 of this patchset ?
+On 7/13/21 1:12 PM, Kajol Jain wrote:
+> The performance reporting driver added cpu hotplug
+> feature but it didn't add pmu migration call in cpu
+> offline function.
+> This can create an issue incase the current designated
+> cpu being used to collect fme pmu data got offline,
+> as based on current code we are not migrating fme pmu to
+> new target cpu. Because of that perf will still try to
+> fetch data from that offline cpu and hence we will not
+> get counter data.
+> 
+> Patch fixed this issue by adding pmu_migrate_context call
+> in fme_perf_offline_cpu function.
+> 
+> Fixes: 724142f8c42a ("fpga: dfl: fme: add performance reporting support")
+> Tested-by: Xu Yilun <yilun.xu@intel.com>
+> Acked-by: Wu Hao <hao.wu@intel.com>
+> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+> Cc: stable@vger.kernel.org
+> ---
 
-Tom
+Any update on this patch? Please let me know if any changes required.
 
->
-> Thanks
-> Yilun
->
->>
->> Tom
->>
->>
->>> - Moritz
->>>
+Thanks,
+Kajol Jain
 
+>  drivers/fpga/dfl-fme-perf.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> ---
+> Changelog:
+> v2 -> v3:
+> - Added Acked-by tag
+> - Removed comment as suggested by Wu Hao
+> - Link to patch v2: https://lkml.org/lkml/2021/7/9/143
+> 
+> v1 -> v2:
+> - Add stable@vger.kernel.org in cc list
+> - Link to patch v1: https://lkml.org/lkml/2021/6/28/275
+> 
+> RFC -> PATCH v1
+> - Remove RFC tag
+> - Did nits changes on subject and commit message as suggested by Xu Yilun
+> - Added Tested-by tag
+> - Link to rfc patch: https://lkml.org/lkml/2021/6/28/112
+> ---
+> 
+> diff --git a/drivers/fpga/dfl-fme-perf.c b/drivers/fpga/dfl-fme-perf.c
+> index 4299145ef347..587c82be12f7 100644
+> --- a/drivers/fpga/dfl-fme-perf.c
+> +++ b/drivers/fpga/dfl-fme-perf.c
+> @@ -953,6 +953,8 @@ static int fme_perf_offline_cpu(unsigned int cpu, struct hlist_node *node)
+>  		return 0;
+>  
+>  	priv->cpu = target;
+> +	perf_pmu_migrate_context(&priv->pmu, cpu, target);
+> +
+>  	return 0;
+>  }
+>  
+> 
