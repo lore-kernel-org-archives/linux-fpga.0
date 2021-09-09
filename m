@@ -2,220 +2,233 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A49FC4338F
-	for <linux-fpga@archiver.kernel.org>; Mon, 23 Aug 2021 03:03:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8354C433F5
+	for <linux-fpga@archiver.kernel.org>; Thu,  9 Sep 2021 02:19:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1421A6135F
-	for <linux-fpga@archiver.kernel.org>; Mon, 23 Aug 2021 03:03:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A8A3F61139
+	for <linux-fpga@archiver.kernel.org>; Thu,  9 Sep 2021 02:19:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231172AbhHWDDp (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 22 Aug 2021 23:03:45 -0400
-Received: from mga11.intel.com ([192.55.52.93]:33174 "EHLO mga11.intel.com"
+        id S236229AbhIICUP (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 8 Sep 2021 22:20:15 -0400
+Received: from mga04.intel.com ([192.55.52.120]:63717 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230474AbhHWDDo (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Sun, 22 Aug 2021 23:03:44 -0400
-X-IronPort-AV: E=McAfee;i="6200,9189,10084"; a="213894864"
-X-IronPort-AV: E=Sophos;i="5.84,343,1620716400"; 
-   d="scan'208";a="213894864"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2021 20:02:49 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.84,343,1620716400"; 
-   d="scan'208";a="525740173"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.162])
-  by FMSMGA003.fm.intel.com with ESMTP; 22 Aug 2021 20:02:47 -0700
-Date:   Mon, 23 Aug 2021 10:56:35 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] fpga: dfl: pci: switch from 'pci_' to 'dma_' API
-Message-ID: <20210823025635.GA620145@yilunxu-OptiPlex-7050>
-References: <c23cf1cfa058456da69849de22b957c6c414766d.1629643816.git.christophe.jaillet@wanadoo.fr>
+        id S234374AbhIICUM (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 8 Sep 2021 22:20:12 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10101"; a="218793850"
+X-IronPort-AV: E=Sophos;i="5.85,279,1624345200"; 
+   d="scan'208";a="218793850"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Sep 2021 19:18:55 -0700
+X-IronPort-AV: E=Sophos;i="5.85,279,1624345200"; 
+   d="scan'208";a="503916536"
+Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.212.194.237])
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Sep 2021 19:18:55 -0700
+From:   Russ Weight <russell.h.weight@intel.com>
+To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
+        hao.wu@intel.com, matthew.gerlach@intel.com,
+        Russ Weight <russell.h.weight@intel.com>
+Subject: [PATCH v15 4/6] fpga: image-load: add status ioctl
+Date:   Wed,  8 Sep 2021 19:18:44 -0700
+Message-Id: <20210909021846.681121-5-russell.h.weight@intel.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210909021846.681121-1-russell.h.weight@intel.com>
+References: <20210909021846.681121-1-russell.h.weight@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c23cf1cfa058456da69849de22b957c6c414766d.1629643816.git.christophe.jaillet@wanadoo.fr>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Sun, Aug 22, 2021 at 04:51:11PM +0200, Christophe JAILLET wrote:
-> The wrappers in include/linux/pci-dma-compat.h should go away.
-> 
-> The patch has been generated with the coccinelle script below.
-> 
-> It has been hand modified to use 'dma_set_mask_and_coherent()' instead of
-> 'pci_set_dma_mask()/pci_set_consistent_dma_mask()' when applicable.
-> This is less verbose.
-> 
-> The explicit 'ret = -EIO;' has been removed because
-> 'dma_set_mask_and_coherent()' returns 0 or -EIO, so its return code can be
-> used directly.
-> 
-> It has been compile tested.
-> 
-> 
-> @@
-> @@
-> -    PCI_DMA_BIDIRECTIONAL
-> +    DMA_BIDIRECTIONAL
-> 
-> @@
-> @@
-> -    PCI_DMA_TODEVICE
-> +    DMA_TO_DEVICE
-> 
-> @@
-> @@
-> -    PCI_DMA_FROMDEVICE
-> +    DMA_FROM_DEVICE
-> 
-> @@
-> @@
-> -    PCI_DMA_NONE
-> +    DMA_NONE
-> 
-> @@
-> expression e1, e2, e3;
-> @@
-> -    pci_alloc_consistent(e1, e2, e3)
-> +    dma_alloc_coherent(&e1->dev, e2, e3, GFP_)
-> 
-> @@
-> expression e1, e2, e3;
-> @@
-> -    pci_zalloc_consistent(e1, e2, e3)
-> +    dma_alloc_coherent(&e1->dev, e2, e3, GFP_)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_free_consistent(e1, e2, e3, e4)
-> +    dma_free_coherent(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_map_single(e1, e2, e3, e4)
-> +    dma_map_single(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_unmap_single(e1, e2, e3, e4)
-> +    dma_unmap_single(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4, e5;
-> @@
-> -    pci_map_page(e1, e2, e3, e4, e5)
-> +    dma_map_page(&e1->dev, e2, e3, e4, e5)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_unmap_page(e1, e2, e3, e4)
-> +    dma_unmap_page(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_map_sg(e1, e2, e3, e4)
-> +    dma_map_sg(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_unmap_sg(e1, e2, e3, e4)
-> +    dma_unmap_sg(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_dma_sync_single_for_cpu(e1, e2, e3, e4)
-> +    dma_sync_single_for_cpu(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_dma_sync_single_for_device(e1, e2, e3, e4)
-> +    dma_sync_single_for_device(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_dma_sync_sg_for_cpu(e1, e2, e3, e4)
-> +    dma_sync_sg_for_cpu(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_dma_sync_sg_for_device(e1, e2, e3, e4)
-> +    dma_sync_sg_for_device(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2;
-> @@
-> -    pci_dma_mapping_error(e1, e2)
-> +    dma_mapping_error(&e1->dev, e2)
-> 
-> @@
-> expression e1, e2;
-> @@
-> -    pci_set_dma_mask(e1, e2)
-> +    dma_set_mask(&e1->dev, e2)
-> 
-> @@
-> expression e1, e2;
-> @@
-> -    pci_set_consistent_dma_mask(e1, e2)
-> +    dma_set_coherent_mask(&e1->dev, e2)
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
-> If needed, see post from Christoph Hellwig on the kernel-janitors ML:
->    https://marc.info/?l=kernel-janitors&m=158745678307186&w=4
-> ---
->  drivers/fpga/dfl-pci.c | 14 ++++----------
->  1 file changed, 4 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-> index 4d68719e608f..96a11084bef4 100644
-> --- a/drivers/fpga/dfl-pci.c
-> +++ b/drivers/fpga/dfl-pci.c
-> @@ -354,16 +354,10 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
->  
->  	pci_set_master(pcidev);
->  
-> -	if (!pci_set_dma_mask(pcidev, DMA_BIT_MASK(64))) {
-> -		ret = pci_set_consistent_dma_mask(pcidev, DMA_BIT_MASK(64));
-> -		if (ret)
-> -			goto disable_error_report_exit;
-> -	} else if (!pci_set_dma_mask(pcidev, DMA_BIT_MASK(32))) {
-> -		ret = pci_set_consistent_dma_mask(pcidev, DMA_BIT_MASK(32));
-> -		if (ret)
-> -			goto disable_error_report_exit;
-> -	} else {
-> -		ret = -EIO;
-> +	ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(64));
-> +	if (ret)
-> +		ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(32));
-> +	if (ret) {
->  		dev_err(&pcidev->dev, "No suitable DMA support available.\n");
->  		goto disable_error_report_exit;
->  	}
+Extend the FPGA Image Load class driver to include an
+FPGA_IMAGE_LOAD_STATUS IOCTL that can be used to monitor the progress
+of an ongoing image load.  The status returned includes how much data
+remains to be transferred, the progress of the image load, and error
+information in the case of a failure.
 
-Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+---
+V15:
+ - This patch is new to the patchset and provides an FPGA_IMAGE_LOAD_STATUS
+   IOCTL to return the current values for: remaining_size, progress,
+   err_progress, and err_code.
+ - This patch has elements of the following three patches from the previous
+   patch-set:
+     [PATCH v14 3/6] fpga: sec-mgr: expose sec-mgr update status
+     [PATCH v14 4/6] fpga: sec-mgr: expose sec-mgr update errors
+     [PATCH v14 5/6] fpga: sec-mgr: expose sec-mgr update size
+ - Changed file, symbol, and config names to reflect the new driver name
+ - There are some minor changes to locking to enable this ioctl to return
+   coherent data.
+---
+ Documentation/fpga/fpga-image-load.rst |  6 +++
+ drivers/fpga/fpga-image-load.c         | 53 ++++++++++++++++++++++----
+ include/uapi/linux/fpga-image-load.h   | 18 +++++++++
+ 3 files changed, 70 insertions(+), 7 deletions(-)
 
-Thanks,
-Yilun
+diff --git a/Documentation/fpga/fpga-image-load.rst b/Documentation/fpga/fpga-image-load.rst
+index 739d735592a5..3d5eb51223e3 100644
+--- a/Documentation/fpga/fpga-image-load.rst
++++ b/Documentation/fpga/fpga-image-load.rst
+@@ -31,3 +31,9 @@ updated. This is an exclusive operation; an attempt to start concurrent image
+ load for the same device will fail with EBUSY. An eventfd file descriptor
+ parameter is provided to this IOCTL, and it will be signalled at the
+ completion of the image load.
++
++FPGA_IMAGE_LOAD_STATUS:
++
++Collect status for an on-going image upload. The status returned includes
++how much data remains to be transferred, the progress of the image load,
++and error information in the case of a failure.
+diff --git a/drivers/fpga/fpga-image-load.c b/drivers/fpga/fpga-image-load.c
+index b784456765b0..99a47b21c995 100644
+--- a/drivers/fpga/fpga-image-load.c
++++ b/drivers/fpga/fpga-image-load.c
+@@ -22,10 +22,27 @@ static dev_t fpga_image_devt;
+ 
+ #define to_image_load(d) container_of(d, struct fpga_image_load, dev)
+ 
+-static void fpga_image_dev_error(struct fpga_image_load *imgld,
++static void fpga_image_update_progress(struct fpga_image_load *imgld,
++				       enum fpga_image_prog new_progress)
++{
++	mutex_lock(&imgld->lock);
++	imgld->progress = new_progress;
++	mutex_unlock(&imgld->lock);
++}
++
++static void fpga_image_set_error(struct fpga_image_load *imgld,
+ 				 enum fpga_image_err err_code)
+ {
++	mutex_lock(&imgld->lock);
++	imgld->err_progress = imgld->progress;
+ 	imgld->err_code = err_code;
++	mutex_unlock(&imgld->lock);
++}
++
++static void fpga_image_dev_error(struct fpga_image_load *imgld,
++				 enum fpga_image_err err_code)
++{
++	fpga_image_set_error(imgld, err_code);
+ 	imgld->lops->cancel(imgld);
+ }
+ 
+@@ -49,18 +66,18 @@ static void fpga_image_do_load(struct work_struct *work)
+ 
+ 	get_device(&imgld->dev);
+ 	if (!try_module_get(imgld->dev.parent->driver->owner)) {
+-		imgld->err_code = FPGA_IMAGE_ERR_BUSY;
++		fpga_image_set_error(imgld, FPGA_IMAGE_ERR_BUSY);
+ 		goto idle_exit;
+ 	}
+ 
+-	imgld->progress = FPGA_IMAGE_PROG_PREPARING;
++	fpga_image_update_progress(imgld, FPGA_IMAGE_PROG_PREPARING);
+ 	ret = imgld->lops->prepare(imgld);
+ 	if (ret != FPGA_IMAGE_ERR_NONE) {
+ 		fpga_image_dev_error(imgld, ret);
+ 		goto modput_exit;
+ 	}
+ 
+-	imgld->progress = FPGA_IMAGE_PROG_WRITING;
++	fpga_image_update_progress(imgld, FPGA_IMAGE_PROG_WRITING);
+ 	while (imgld->remaining_size) {
+ 		ret = imgld->lops->write_blk(imgld, offset);
+ 		if (ret != FPGA_IMAGE_ERR_NONE) {
+@@ -71,7 +88,7 @@ static void fpga_image_do_load(struct work_struct *work)
+ 		offset = size - imgld->remaining_size;
+ 	}
+ 
+-	imgld->progress = FPGA_IMAGE_PROG_PROGRAMMING;
++	fpga_image_update_progress(imgld, FPGA_IMAGE_PROG_PROGRAMMING);
+ 	ret = imgld->lops->poll_complete(imgld);
+ 	if (ret != FPGA_IMAGE_ERR_NONE)
+ 		fpga_image_dev_error(imgld, ret);
+@@ -151,20 +168,42 @@ static int fpga_image_load_ioctl_write(struct fpga_image_load *imgld,
+ 	return ret;
+ }
+ 
++static int fpga_image_load_ioctl_status(struct fpga_image_load *imgld,
++					unsigned long arg)
++{
++	struct fpga_image_status status;
++
++	memset(&status, 0, sizeof(status));
++	status.progress = imgld->progress;
++	status.remaining_size = imgld->remaining_size;
++	status.err_progress = imgld->err_progress;
++	status.err_code = imgld->err_code;
++
++	if (copy_to_user((void __user *)arg, &status, sizeof(status)))
++		return -EFAULT;
++
++	return 0;
++}
++
+ static long fpga_image_load_ioctl(struct file *filp, unsigned int cmd,
+ 				  unsigned long arg)
+ {
+ 	struct fpga_image_load *imgld = filp->private_data;
+ 	int ret = -ENOTTY;
+ 
++	mutex_lock(&imgld->lock);
++
+ 	switch (cmd) {
+ 	case FPGA_IMAGE_LOAD_WRITE:
+-		mutex_lock(&imgld->lock);
+ 		ret = fpga_image_load_ioctl_write(imgld, arg);
+-		mutex_unlock(&imgld->lock);
++		break;
++	case FPGA_IMAGE_LOAD_STATUS:
++		ret = fpga_image_load_ioctl_status(imgld, arg);
+ 		break;
+ 	}
+ 
++	mutex_unlock(&imgld->lock);
++
+ 	return ret;
+ }
+ 
+diff --git a/include/uapi/linux/fpga-image-load.h b/include/uapi/linux/fpga-image-load.h
+index a60da115adf5..6a995bcc0fb7 100644
+--- a/include/uapi/linux/fpga-image-load.h
++++ b/include/uapi/linux/fpga-image-load.h
+@@ -38,6 +38,7 @@ enum fpga_image_err {
+ };
+ 
+ #define FPGA_IMAGE_LOAD_WRITE	_IOW(FPGA_IMAGE_LOAD_MAGIC, 0, struct fpga_image_write)
++#define FPGA_IMAGE_LOAD_STATUS	_IOR(FPGA_IMAGE_LOAD_MAGIC, 1, struct fpga_image_status)
+ 
+ /**
+  * FPGA_IMAGE_LOAD_WRITE - _IOW(FPGA_IMAGE_LOAD_MAGIC, 0,
+@@ -56,4 +57,21 @@ struct fpga_image_write {
+ 	__u64 buf;		/* User space address of source data */
+ };
+ 
++/**
++ * FPGA_IMAGE_LOAD_STATUS - _IOR(FPGA_IMAGE_LOAD_MAGIC, 1,
++ *				 struct fpga_image_status)
++ *
++ * Request status information for an ongoing update.
++ * data buffer, size, and an eventfd file descriptor.
++ *
++ * Return: 0 on success, -errno on failure.
++ */
++struct fpga_image_status {
++	/* Output */
++	__u32 remaining_size;			/* size remaining to transfer */
++	enum fpga_image_prog progress;		/* current progress of image load */
++	enum fpga_image_prog err_progress;	/* progress at time of error */
++	enum fpga_image_err err_code;		/* error code */
++};
++
+ #endif /* _UAPI_LINUX_FPGA_IMAGE_LOAD_H */
+-- 
+2.25.1
 
-> -- 
-> 2.30.2
