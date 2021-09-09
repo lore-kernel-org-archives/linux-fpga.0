@@ -2,180 +2,191 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6C9FC433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D5CCC433EF
 	for <linux-fpga@archiver.kernel.org>; Thu,  9 Sep 2021 02:19:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 903EA61139
+	by mail.kernel.org (Postfix) with ESMTP id 8021A60FE3
 	for <linux-fpga@archiver.kernel.org>; Thu,  9 Sep 2021 02:19:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237372AbhIICUQ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        id S237766AbhIICUQ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
         Wed, 8 Sep 2021 22:20:16 -0400
-Received: from mga04.intel.com ([192.55.52.120]:63720 "EHLO mga04.intel.com"
+Received: from mga04.intel.com ([192.55.52.120]:63717 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233710AbhIICUO (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        id S231660AbhIICUO (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
         Wed, 8 Sep 2021 22:20:14 -0400
-X-IronPort-AV: E=McAfee;i="6200,9189,10101"; a="218793851"
+X-IronPort-AV: E=McAfee;i="6200,9189,10101"; a="218793844"
 X-IronPort-AV: E=Sophos;i="5.85,279,1624345200"; 
-   d="scan'208";a="218793851"
+   d="scan'208";a="218793844"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Sep 2021 19:18:56 -0700
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Sep 2021 19:18:53 -0700
 X-IronPort-AV: E=Sophos;i="5.85,279,1624345200"; 
-   d="scan'208";a="503916539"
+   d="scan'208";a="503916517"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.212.194.237])
-  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Sep 2021 19:18:55 -0700
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Sep 2021 19:18:53 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v15 5/6] fpga: image-load: create status sysfs node
-Date:   Wed,  8 Sep 2021 19:18:45 -0700
-Message-Id: <20210909021846.681121-6-russell.h.weight@intel.com>
+Subject: [PATCH v15 0/6] FPGA Image Load (previously Security Manager)
+Date:   Wed,  8 Sep 2021 19:18:40 -0700
+Message-Id: <20210909021846.681121-1-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210909021846.681121-1-russell.h.weight@intel.com>
-References: <20210909021846.681121-1-russell.h.weight@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend the FPGA Image Load class driver to include a status sysfs node that
-can be viewed to determine from the command line if an image load is in
-progress. Status will be one of: idle, starting, preparing, writing, or
-programming.
+The FPGA Image Load class driver provides an API to upload image
+files to an FPGA device. Image files are self-describing. They could
+contain FPGA images, BMC images, Root Entry Hashes, or other device
+specific files. It is up to the lower-level device driver and the
+target device to authenticate and disposition the file data.
 
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
----
-v15:
- - Compare to previous patch:
-     [PATCH v14 3/6] fpga: sec-mgr: expose sec-mgr update status
+The n3000bmc-secure driver is the first driver to use the FPGA
+Security Manager. This driver was previously submitted in the same
+patch set, but was split into a separate patch set starting with v2.
+
+Changelog v14 -> v15:
+ - Changed the driver name from FPGA Security Manager to FPGA Image Load
  - Changed file, symbol, and config names to reflect the new driver name
- - Removed signed-off/reviewed-by tags
-v14:
+ - Rewrote documentation.
+ - Removed all sysfs files except for "status", which has moved to the
+   parent directory.
+ - Implemented FPGA_IMAGE_LOAD_WRITE, FPGA_IMAGE_LOAD_STATUS, and
+   FPGA_IMAGE_LOAD_CANCEL IOCTLs to initiate, monitor, and cancel image
+   uploads.
+ - Fixed some error return values in fpga_image_load_register()
+ - Added an eventfd which is signalled upon completion of an image load.
+ - Minor changes to locking to accommodate the FPGA_IMAGE_LOAD_STATUS IOCTL
+ - Removed signed-off/reviewed-by tags. Please resend as appropriate.
+
+Changelog v13 -> v14:
+ - Dropped the patch: fpga: sec-mgr: expose hardware error info
+ - Updated copyrights to 2021
  - Updated ABI documentation date and kernel version
-v13:
-  - No change
-v12:
+ - Removed the name sysfs entry from the class driver
+ - Use xa_alloc() instead of ida_simple_get()
+ - Rename dev to parent for parent devices
+ - Remove fpga_sec_mgr_create(), devm_fpga_sec_mgr_create(), and
+   fpga_sec_mgr_free() functions and update the fpga_sec_mgr_register()
+   function to both create and register a new security manager.
+ - Populate the fpga_sec_mgr_dev_release() function.
+ - Added MAINTAINERS reference for
+   Documentation/ABI/testing/sysfs-class-fpga-sec-mgr
+
+Changelog v12 -> v13:
+  - Change "if (count == 0 || " to "if (!count || "
+  - Improve error message: "Attempt to register without all required ops\n"
+  - Change set_error() to fpga_sec_set_error()
+  - Change set_hw_errinfo() to fpga_sec_set_hw_errinfo()
+
+Changelog v11 -> v12:
   - Updated Date and KernelVersion fields in ABI documentation
-  - Changed syntax of sec_mgr_prog_str[] array definition from:
+  - Removed size parameter from write_blk() op - it is now up to
+    the lower-level driver to determine the appropriate size and
+    to update smgr->remaining_size accordingly.
+  - Changed syntax of sec_mgr_prog_str[] and sec_mgr_err_str array definitions
+    from:
 	"idle",			/* FPGA_SEC_PROG_IDLE */
     to:
 	[FPGA_SEC_PROG_IDLE]	    = "idle",
-v11:
-  - No change
-v10:
+
+Changelog v10 -> v11:
+  - Fixed a spelling error in a comment
+  - Initialize smgr->err_code and smgr->progress explicitly in
+    fpga_sec_mgr_create() instead of accepting the default 0 value.
+
+Changelog v9 -> v10:
   - Rebased to 5.12-rc2 next
   - Updated Date and KernelVersion in ABI documentation
-v9:
-  - Updated Date and KernelVersion in ABI documentation
-v8:
-  - No change
-v7:
-  - Changed Date in documentation file to December 2020
-v6:
-  - No change
-v5:
-  - Use new function sysfs_emit() in the status_show() function
-v4:
-  - Changed from "Intel FPGA Security Manager" to FPGA Security Manager"
-    and removed unnecessary references to "Intel".
-  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
-v3:
-  - Use a local variable to read progress once in status_show()
-  - Use dev_err to report invalid progress status
-v2:
-  - Bumped documentation date and version
-  - Changed progress state "read_file" to "reading"
----
- .../ABI/testing/sysfs-class-fpga-image-load   |  7 ++++
- MAINTAINERS                                   |  1 +
- drivers/fpga/fpga-image-load.c                | 33 +++++++++++++++++++
- 3 files changed, 41 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-fpga-image-load
 
-diff --git a/Documentation/ABI/testing/sysfs-class-fpga-image-load b/Documentation/ABI/testing/sysfs-class-fpga-image-load
-new file mode 100644
-index 000000000000..6c04a49f01cc
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-fpga-image-load
-@@ -0,0 +1,7 @@
-+What: 		/sys/class/fpga_image_load/fpga_imageX/status
-+Date:		Aug 2021
-+KernelVersion:	5.15
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read-only. Returns a string describing the current status
-+		of an FPGA image upload. The string will be one of the
-+		following: idle, starting, preparing, writing, programming.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 637bc003ca81..e3fbc1bde9bc 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7362,6 +7362,7 @@ FPGA SECURITY MANAGER DRIVERS
- M:	Russ Weight <russell.h.weight@intel.com>
- L:	linux-fpga@vger.kernel.org
- S:	Maintained
-+F:	Documentation/ABI/testing/sysfs-class-fpga-image-load
- F:	Documentation/fpga/fpga-image-load.rst
- F:	drivers/fpga/fpga-image-load.c
- F:	include/linux/fpga/fpga-image-load.h
-diff --git a/drivers/fpga/fpga-image-load.c b/drivers/fpga/fpga-image-load.c
-index 99a47b21c995..6ec0a39f07b3 100644
---- a/drivers/fpga/fpga-image-load.c
-+++ b/drivers/fpga/fpga-image-load.c
-@@ -236,6 +236,38 @@ static const struct file_operations fpga_image_load_fops = {
- 	.unlocked_ioctl = fpga_image_load_ioctl,
- };
- 
-+static const char * const image_load_prog_str[] = {
-+	[FPGA_IMAGE_PROG_IDLE]	      = "idle",
-+	[FPGA_IMAGE_PROG_STARTING]    = "starting",
-+	[FPGA_IMAGE_PROG_PREPARING]   = "preparing",
-+	[FPGA_IMAGE_PROG_WRITING]     = "writing",
-+	[FPGA_IMAGE_PROG_PROGRAMMING] = "programming"
-+};
-+
-+static ssize_t
-+status_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct fpga_image_load *imgld = to_image_load(dev);
-+	const char *status = "unknown-status";
-+	enum fpga_image_prog progress;
-+
-+	progress = imgld->progress;
-+	if (progress < FPGA_IMAGE_PROG_MAX)
-+		status = image_load_prog_str[progress];
-+	else
-+		dev_err(dev, "Invalid status during secure update: %d\n",
-+			progress);
-+
-+	return sysfs_emit(buf, "%s\n", status);
-+}
-+static DEVICE_ATTR_RO(status);
-+
-+static struct attribute *fpga_image_load_attrs[] = {
-+	&dev_attr_status.attr,
-+	NULL,
-+};
-+ATTRIBUTE_GROUPS(fpga_image_load);
-+
- /**
-  * fpga_image_load_register - create and register an FPGA Image Load Device
-  *
-@@ -373,6 +405,7 @@ static int __init fpga_image_load_class_init(void)
- 	if (ret)
- 		goto exit_destroy_class;
- 
-+	fpga_image_load_class->dev_groups = fpga_image_load_groups;
- 	fpga_image_load_class->dev_release = fpga_image_load_dev_release;
- 
- 	return 0;
+Changelog v8 -> v9:
+  - Rebased patches for 5.11-rc2
+  - Updated Date and KernelVersion in ABI documentation
+
+Changelog v7 -> v8:
+  - Fixed grammatical error in Documentation/fpga/fpga-sec-mgr.rst
+
+Changelog v6 -> v7:
+  - Changed dates in documentation file to December 2020
+  - Changed filename_store() to use kmemdup_nul() instead of
+    kstrndup() and changed the count to not assume a line-return.
+
+Changelog v5 -> v6:
+  - Removed sysfs support and documentation for the display of the
+    flash count, root entry hashes, and code-signing-key cancellation
+    vectors from the class driver. This information can vary by device
+    and will instead be displayed by the device-specific parent driver.
+
+Changelog v4 -> v5:
+  - Added the devm_fpga_sec_mgr_unregister() function, following recent
+    changes to the fpga_manager() implementation.
+  - Changed most of the *_show() functions to use sysfs_emit()
+    instead of sprintf(
+  - When checking the return values for functions of type enum
+    fpga_sec_err err_code, test for FPGA_SEC_ERR_NONE instead of 0
+
+Changelog v3 -> v4:
+  - This driver is generic enough that it could be used for non Intel
+    FPGA devices. Changed from "Intel FPGA Security Manager" to FPGA
+    Security Manager" and removed unnecessary references to "Intel".
+  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
+    Note that this also affects some filenames.
+
+Changelog v2 -> v3:
+  - Use dev_err() to report invalid progress in sec_progress()
+  - Use dev_err() to report invalid error code in sec_error()
+  - Modified sysfs handler check in check_sysfs_handler() to make
+    it more readable.
+  - Removed unnecessary "goto done"
+  - Added a comment to explain imgr->driver_unload in
+    ifpga_sec_mgr_unregister()
+
+Changelog v1 -> v2:
+  - Separated out the MAX10 BMC Security Engine to be submitted in
+    a separate patch-set.
+  - Bumped documentation dates and versions
+  - Split ifpga_sec_mgr_register() into create() and register() functions
+  - Added devm_ifpga_sec_mgr_create()
+  - Added Documentation/fpga/ifpga-sec-mgr.rst 
+  - Changed progress state "read_file" to "reading"
+  - Added sec_error() function (similar to sec_progress())
+  - Removed references to bmc_flash_count & smbus_flash_count (not supported)
+  - Removed typedefs for imgr ops
+  - Removed explicit value assignments in enums
+  - Other minor code cleanup per review comments 
+
+Russ Weight (6):
+  fpga: image-load: fpga image load class driver
+  fpga: image-load: enable image loads
+  fpga: image-load: signal eventfd when complete
+  fpga: image-load: add status ioctl
+  fpga: image-load: create status sysfs node
+  fpga: image-load: enable cancel of image upload
+
+ .../ABI/testing/sysfs-class-fpga-image-load   |   7 +
+ Documentation/fpga/fpga-image-load.rst        |  45 ++
+ Documentation/fpga/index.rst                  |   1 +
+ MAINTAINERS                                   |  10 +
+ drivers/fpga/Kconfig                          |  10 +
+ drivers/fpga/Makefile                         |   3 +
+ drivers/fpga/fpga-image-load.c                | 466 ++++++++++++++++++
+ include/linux/fpga/fpga-image-load.h          |  67 +++
+ include/uapi/linux/fpga-image-load.h          |  78 +++
+ 9 files changed, 687 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-fpga-image-load
+ create mode 100644 Documentation/fpga/fpga-image-load.rst
+ create mode 100644 drivers/fpga/fpga-image-load.c
+ create mode 100644 include/linux/fpga/fpga-image-load.h
+ create mode 100644 include/uapi/linux/fpga-image-load.h
+
 -- 
 2.25.1
 
