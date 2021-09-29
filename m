@@ -2,253 +2,216 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95888C4332F
-	for <linux-fpga@archiver.kernel.org>; Wed, 29 Sep 2021 23:00:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A131C433F5
+	for <linux-fpga@archiver.kernel.org>; Wed, 29 Sep 2021 23:10:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7A10861507
-	for <linux-fpga@archiver.kernel.org>; Wed, 29 Sep 2021 23:00:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6288F6124F
+	for <linux-fpga@archiver.kernel.org>; Wed, 29 Sep 2021 23:10:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347369AbhI2XCV (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 29 Sep 2021 19:02:21 -0400
-Received: from mga09.intel.com ([134.134.136.24]:47379 "EHLO mga09.intel.com"
+        id S1347447AbhI2XLo (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 29 Sep 2021 19:11:44 -0400
+Received: from mga07.intel.com ([134.134.136.100]:62537 "EHLO mga07.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1347368AbhI2XCO (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Wed, 29 Sep 2021 19:02:14 -0400
-X-IronPort-AV: E=McAfee;i="6200,9189,10122"; a="225097219"
+        id S233873AbhI2XLn (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Wed, 29 Sep 2021 19:11:43 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10122"; a="288717018"
 X-IronPort-AV: E=Sophos;i="5.85,334,1624345200"; 
-   d="scan'208";a="225097219"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Sep 2021 16:00:31 -0700
+   d="scan'208";a="288717018"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Sep 2021 16:10:02 -0700
 X-IronPort-AV: E=Sophos;i="5.85,334,1624345200"; 
-   d="scan'208";a="617768040"
+   d="scan'208";a="438638779"
 Received: from rhweight-mobl2.amr.corp.intel.com (HELO rhweight-mobl2.ra.intel.com) ([10.255.230.76])
-  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Sep 2021 16:00:31 -0700
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Sep 2021 16:10:01 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     trix@redhat.com, lgoncalv@redhat.com, yilun.xu@intel.com,
         hao.wu@intel.com, matthew.gerlach@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v17 4/5] fpga: image-load: add status ioctl
-Date:   Wed, 29 Sep 2021 16:00:24 -0700
-Message-Id: <20210929230025.68961-5-russell.h.weight@intel.com>
+Subject: [PATCH v16 0/4] Intel MAX10 BMC Secure Update Driver
+Date:   Wed, 29 Sep 2021 16:09:50 -0700
+Message-Id: <20210929230954.69497-1-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210929230025.68961-1-russell.h.weight@intel.com>
-References: <20210929230025.68961-1-russell.h.weight@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Extend the FPGA Image Load framework to include an FPGA_IMAGE_LOAD_STATUS
-IOCTL that can be used to monitor the progress of an ongoing image upload.
-The status returned includes how much data remains to be transferred, the
-progress of the image upload, and error information in the case of a
-failure.
+The Intel MAX10 BMC Secure Update driver instantiates the FPGA Image
+Load framework and provides the callback functions required to
+support secure updates on Intel n3000 PAC devices. This driver is
+implemented as a sub-driver of the Intel MAX10 BMC mfd driver.
 
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
----
-v17:
- - Rebased for changes to earlier patches.
-v16:
- - Minor changes to adapt in changes in prevoius patches.
-v15:
- - This patch is new to the patchset and provides an FPGA_IMAGE_LOAD_STATUS
-   IOCTL to return the current values for: remaining_size, progress,
-   err_progress, and err_code.
- - This patch has elements of the following three patches from the previous
-   patch-set:
-     [PATCH v14 3/6] fpga: sec-mgr: expose sec-mgr update status
-     [PATCH v14 4/6] fpga: sec-mgr: expose sec-mgr update errors
-     [PATCH v14 5/6] fpga: sec-mgr: expose sec-mgr update size
- - Changed file, symbol, and config names to reflect the new driver name
- - There are some minor changes to locking to enable this ioctl to return
-   coherent data.
----
- Documentation/fpga/fpga-image-load.rst |  6 +++
- drivers/fpga/fpga-image-load.c         | 58 +++++++++++++++++++++-----
- include/linux/fpga/fpga-image-load.h   |  1 +
- include/uapi/linux/fpga-image-load.h   | 18 ++++++++
- 4 files changed, 73 insertions(+), 10 deletions(-)
+This driver interacts with the HW secure update engine of the FPGA
+card BMC in order to transfer new FPGA and BMC images to FLASH on
+the FPGA card so that they will be automatically loaded when the
+FPGA card reboots. Security is enforced by hardware and firmware.
+The MAX10 BMC Secure Update driver interacts with the firmware to
+initiate an update, pass in the necessary data, and collect status
+on the update.
 
-diff --git a/Documentation/fpga/fpga-image-load.rst b/Documentation/fpga/fpga-image-load.rst
-index 487b5466f67c..f64f5ee473b8 100644
---- a/Documentation/fpga/fpga-image-load.rst
-+++ b/Documentation/fpga/fpga-image-load.rst
-@@ -33,3 +33,9 @@ being updated. This is an exclusive operation; an attempt to start
- concurrent image uploads for the same device will fail with EBUSY. An
- eventfd file descriptor parameter is provided to this IOCTL. It will be
- signalled at the completion of the image upload.
-+
-+FPGA_IMAGE_LOAD_STATUS:
-+
-+Collect status for an on-going image upload. The status returned includes
-+how much data remains to be transferred, the progress of the image upload,
-+and error information in the case of a failure.
-diff --git a/drivers/fpga/fpga-image-load.c b/drivers/fpga/fpga-image-load.c
-index f04dfc71c190..58373b9e8c02 100644
---- a/drivers/fpga/fpga-image-load.c
-+++ b/drivers/fpga/fpga-image-load.c
-@@ -22,6 +22,22 @@ static dev_t fpga_image_devt;
- 
- #define to_image_load(d) container_of(d, struct fpga_image_load, dev)
- 
-+static void fpga_image_update_progress(struct fpga_image_load *imgld,
-+				       u32 new_progress)
-+{
-+	mutex_lock(&imgld->lock);
-+	imgld->progress = new_progress;
-+	mutex_unlock(&imgld->lock);
-+}
-+
-+static void fpga_image_set_error(struct fpga_image_load *imgld, u32 err_code)
-+{
-+	mutex_lock(&imgld->lock);
-+	imgld->err_progress = imgld->progress;
-+	imgld->err_code = err_code;
-+	mutex_unlock(&imgld->lock);
-+}
-+
- static void fpga_image_prog_complete(struct fpga_image_load *imgld)
- {
- 	mutex_lock(&imgld->lock);
-@@ -38,24 +54,24 @@ static void fpga_image_do_load(struct work_struct *work)
- 	imgld = container_of(work, struct fpga_image_load, work);
- 
- 	if (imgld->driver_unload) {
--		imgld->err_code = FPGA_IMAGE_ERR_CANCELED;
-+		fpga_image_set_error(imgld, FPGA_IMAGE_ERR_CANCELED);
- 		goto idle_exit;
- 	}
- 
- 	get_device(&imgld->dev);
- 	if (!try_module_get(imgld->dev.parent->driver->owner)) {
--		imgld->err_code = FPGA_IMAGE_ERR_BUSY;
-+		fpga_image_set_error(imgld, FPGA_IMAGE_ERR_BUSY);
- 		goto putdev_exit;
- 	}
- 
--	imgld->progress = FPGA_IMAGE_PROG_PREPARING;
-+	fpga_image_update_progress(imgld, FPGA_IMAGE_PROG_PREPARING);
- 	ret = imgld->ops->prepare(imgld, imgld->data, imgld->remaining_size);
- 	if (ret) {
--		imgld->err_code = ret;
-+		fpga_image_set_error(imgld, ret);
- 		goto modput_exit;
- 	}
- 
--	imgld->progress = FPGA_IMAGE_PROG_WRITING;
-+	fpga_image_update_progress(imgld, FPGA_IMAGE_PROG_WRITING);
- 	while (imgld->remaining_size) {
- 		ret = imgld->ops->write(imgld, imgld->data, offset,
- 					imgld->remaining_size);
-@@ -65,7 +81,7 @@ static void fpga_image_do_load(struct work_struct *work)
- 					 "write-op wrote zero data\n");
- 				ret = -FPGA_IMAGE_ERR_RW_ERROR;
- 			}
--			imgld->err_code = -ret;
-+			fpga_image_set_error(imgld, -ret);
- 			goto done;
- 		}
- 
-@@ -73,10 +89,10 @@ static void fpga_image_do_load(struct work_struct *work)
- 		offset += ret;
- 	}
- 
--	imgld->progress = FPGA_IMAGE_PROG_PROGRAMMING;
-+	fpga_image_update_progress(imgld, FPGA_IMAGE_PROG_PROGRAMMING);
- 	ret = imgld->ops->poll_complete(imgld);
- 	if (ret)
--		imgld->err_code = ret;
-+		fpga_image_set_error(imgld, ret);
- 
- done:
- 	if (imgld->ops->cleanup)
-@@ -151,20 +167,42 @@ static int fpga_image_load_ioctl_write(struct fpga_image_load *imgld,
- 	return ret;
- }
- 
-+static int fpga_image_load_ioctl_status(struct fpga_image_load *imgld,
-+					unsigned long arg)
-+{
-+	struct fpga_image_status status;
-+
-+	memset(&status, 0, sizeof(status));
-+	status.progress = imgld->progress;
-+	status.remaining_size = imgld->remaining_size;
-+	status.err_progress = imgld->err_progress;
-+	status.err_code = imgld->err_code;
-+
-+	if (copy_to_user((void __user *)arg, &status, sizeof(status)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
- static long fpga_image_load_ioctl(struct file *filp, unsigned int cmd,
- 				  unsigned long arg)
- {
- 	struct fpga_image_load *imgld = filp->private_data;
- 	int ret = -ENOTTY;
- 
-+	mutex_lock(&imgld->lock);
-+
- 	switch (cmd) {
- 	case FPGA_IMAGE_LOAD_WRITE:
--		mutex_lock(&imgld->lock);
- 		ret = fpga_image_load_ioctl_write(imgld, arg);
--		mutex_unlock(&imgld->lock);
-+		break;
-+	case FPGA_IMAGE_LOAD_STATUS:
-+		ret = fpga_image_load_ioctl_status(imgld, arg);
- 		break;
- 	}
- 
-+	mutex_unlock(&imgld->lock);
-+
- 	return ret;
- }
- 
-diff --git a/include/linux/fpga/fpga-image-load.h b/include/linux/fpga/fpga-image-load.h
-index 77b3c91ce073..366111d090fb 100644
---- a/include/linux/fpga/fpga-image-load.h
-+++ b/include/linux/fpga/fpga-image-load.h
-@@ -49,6 +49,7 @@ struct fpga_image_load {
- 	const u8 *data;			/* pointer to update data */
- 	u32 remaining_size;		/* size remaining to transfer */
- 	u32 progress;
-+	u32 err_progress;		/* progress at time of error */
- 	u32 err_code;			/* image load error code */
- 	bool driver_unload;
- 	struct eventfd_ctx *finished;
-diff --git a/include/uapi/linux/fpga-image-load.h b/include/uapi/linux/fpga-image-load.h
-index 8d2d3db92e87..1b91343961df 100644
---- a/include/uapi/linux/fpga-image-load.h
-+++ b/include/uapi/linux/fpga-image-load.h
-@@ -51,4 +51,22 @@ struct fpga_image_write {
- 
- #define FPGA_IMAGE_LOAD_WRITE	_IOW(FPGA_IMAGE_LOAD_MAGIC, 0, struct fpga_image_write)
- 
-+/**
-+ * FPGA_IMAGE_LOAD_STATUS - _IOR(FPGA_IMAGE_LOAD_MAGIC, 1,
-+ *				 struct fpga_image_status)
-+ *
-+ * Request status information for an ongoing update.
-+ *
-+ * Return: 0 on success, -errno on failure.
-+ */
-+struct fpga_image_status {
-+	/* Output */
-+	__u32 remaining_size;	/* size remaining to transfer */
-+	__u32 progress;		/* current progress of image load */
-+	__u32 err_progress;	/* progress at time of error */
-+	__u32 err_code;		/* error code */
-+};
-+
-+#define FPGA_IMAGE_LOAD_STATUS	_IOR(FPGA_IMAGE_LOAD_MAGIC, 1, struct fpga_image_status)
-+
- #endif /* _UAPI_LINUX_FPGA_IMAGE_LOAD_H */
+This driver provides sysfs files for displaying the flash count, the
+root entry hashes (REH), and the code-signing-key (CSK) cancellation
+vectors.
+
+These patches are dependent on other patches that are under review.
+If you want to apply and compile these patches on linux-next, please
+apply these patches first:
+
+(5 patches) https://lkml.org/lkml/2021/9/29/1033
+
+Changelog v15 -> v16:
+  - Use 0 instead of FPGA_IMAGE_ERR_NONE to indicate success.
+  - The size alignment check was moved from the FPGA Image Load framework
+    to the prepare() op.
+  - Added cancel_request boolean flag to struct m10bmc_sec.
+  - Moved the RSU cancellation logic from m10bmc_sec_cancel() to a new
+    rsu_cancel() function.
+  - The m10bmc_sec_cancel() function ONLY sets the cancel_request flag.
+    The cancel_request flag is checked at the beginning of the
+    m10bmc_sec_write() and m10bmc_sec_poll_complete() functions.
+  - Adapt to changed prototypes for the prepare() and write() ops. The
+    m10bmc_sec_write_blk() function has been renamed to
+    m10bmc_sec_write().
+  - Created a cleanup op, m10bmc_sec_cleanup(), to attempt to cancel an
+    ongoing op during when exiting the update process.
+
+Changelog v14 -> v15:
+  - Updated the Dates and KernelVersions in the ABI documentation
+  - Change driver name from "n3000bmc-secure" to "n3000bmc-sec-update".
+  - Change CONFIG_FPGA_M10_BMC_SECURE to CONFIG_FPGA_M10_BMC_SEC_UPDATE.
+  - Change instances of *bmc-secure to *bmc-sec-update in file name
+    and symbol names.
+  - Change instances of *m10bmc_secure* to *m10bmc-sec_update* in symbol
+    names.
+  - Adapted to changes in the FPGA Image Load framework:
+    (1) All enum types (progress and errors) are now type u32
+    (2) m10bmc_sec_write_blk() adds *blk_size and max_size parameters
+        and uses *blk_size as provided by the caller.
+    (3) m10bmc_sec_poll_complete() no long checks the driver_unload
+        flag.
+
+Changelog v13 -> v14:
+  - Changed symbol and text references to reflect the renaming of the
+    Security Manager Class driver to FPGA Image Load.
+
+Changelog v12 -> v13:
+  - Updated copyright to 2021
+  - Updated Date and KernelVersion fields in ABI documentation
+  - Call updated fpga_sec_mgr_register() and fpga_sec_mgr_unregister()
+    functions instead of devm_fpga_sec_mgr_create() and
+    devm_fpga_sec_mgr_register().
+
+Changelog v11 -> v12:
+  - Updated Date and KernelVersion fields in ABI documentation
+  - Removed size parameter from the write_blk() op. m10bmc_sec_write_blk()
+    no longer has a size parameter, and the block size is determined
+    in this (the lower-level) driver.
+
+Changelog v10 -> v11:
+  - Added Reviewed-by tag to patch #1
+
+Changelog v9 -> v10:
+  - Changed the path expressions in the sysfs documentation to
+    replace the n3000 reference with something more generic to
+    accommodate other devices that use the same driver.
+
+Changelog v8 -> v9:
+  - Rebased to 5.12-rc2 next
+  - Updated Date and KernelVersion in ABI documentation
+
+Changelog v7 -> v8:
+  - Split out patch "mfd: intel-m10-bmc: support for MAX10 BMC Secure
+    Updates" and submitted it separately:
+    https://marc.info/?l=linux-kernel&m=161126987101096&w=2
+
+Changelog v6 -> v7:
+  - Rebased patches for 5.11-rc2
+  - Updated Date and KernelVersion in ABI documentation
+
+Changelog v5 -> v6:
+  - Added WARN_ON() prior to several calls to regmap_bulk_read()
+    to assert that the (SIZE / stride) calculations did not result
+    in remainders.
+  - Changed the (size / stride) calculation in regmap_bulk_write()
+    call to ensure that we don't write one less than intended.
+  - Changed flash_count_show() parameter list to achieve
+    reverse-christmas tree format.
+  - Removed unnecessary call to rsu_check_complete() in
+    m10bmc_sec_poll_complete() and changed while loop to
+    do/while loop.
+  - Initialized auth_result and doorbell to HW_ERRINFO_POISON
+    in m10bmc_sec_hw_errinfo() and removed unnecessary if statements.
+
+Changelog v4 -> v5:
+  - Renamed sysfs node user_flash_count to flash_count and updated
+    the sysfs documentation accordingly to more accurately descirbe
+    the purpose of the count.
+
+Changelog v3 -> v4:
+  - Moved sysfs files for displaying the flash count, the root
+    entry hashes (REH), and the code-signing-key (CSK) cancellation
+    vectors from the FPGA Security Manager class driver to this
+    driver (as they are not generic enough for the class driver).
+  - Added a new ABI documentation file with informtaion about the
+    new sysfs entries: sysfs-driver-intel-m10-bmc-secure
+  - Updated the MAINTAINERS file to add the new ABI documentation
+    file: sysfs-driver-intel-m10-bmc-secure
+  - Removed unnecessary ret variable from m10bmc_secure_probe()
+  - Incorporated new devm_fpga_sec_mgr_register() function into
+    m10bmc_secure_probe() and removed the m10bmc_secure_remove()
+    function.
+
+Changelog v2 -> v3:
+  - Changed "MAX10 BMC Security Engine driver" to "MAX10 BMC Secure
+    Update driver"
+  - Changed from "Intel FPGA Security Manager" to FPGA Security Manager"
+  - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
+  - Removed wrapper functions (m10bmc_raw_*, m10bmc_sys_*). The
+    underlying functions are now called directly.
+  - Changed "_root_entry_hash" to "_reh", with a comment explaining
+    what reh is.
+  - Renamed get_csk_vector() to m10bmc_csk_vector()
+  - Changed calling functions of functions that return "enum fpga_sec_err"
+    to check for (ret != FPGA_SEC_ERR_NONE) instead of (ret)
+
+Changelog v1 -> v2:
+  - These patches were previously submitted as part of a larger V1
+    patch set under the title "Intel FPGA Security Manager Class Driver".
+  - Grouped all changes to include/linux/mfd/intel-m10-bmc.h into a
+    single patch: "mfd: intel-m10-bmc: support for MAX10 BMC Security
+    Engine".
+  - Removed ifpga_sec_mgr_init() and ifpga_sec_mgr_uinit() functions.
+  - Adapted to changes in the Intel FPGA Security Manager by splitting
+    the single call to ifpga_sec_mgr_register() into two function
+    calls: devm_ifpga_sec_mgr_create() and ifpga_sec_mgr_register().
+  - Replaced small function-creation macros for explicit function
+    declarations.
+  - Bug fix for the get_csk_vector() function to properly apply the
+    stride variable in calls to m10bmc_raw_bulk_read().
+  - Added m10bmc_ prefix to functions in m10bmc_iops structure
+  - Implemented HW_ERRINFO_POISON for m10bmc_sec_hw_errinfo() to
+    ensure that corresponding bits are set to 1 if we are unable
+    to read the doorbell or auth_result registers.
+  - Added comments and additional code cleanup per V1 review.
+
+Russ Weight (4):
+  fpga: m10bmc-sec: create max10 bmc secure update driver
+  fpga: m10bmc-sec: expose max10 flash update count
+  fpga: m10bmc-sec: expose max10 canceled keys in sysfs
+  fpga: m10bmc-sec: add max10 secure update functions
+
+ .../sysfs-driver-intel-m10-bmc-sec-update     |  61 ++
+ MAINTAINERS                                   |   2 +
+ drivers/fpga/Kconfig                          |  11 +
+ drivers/fpga/Makefile                         |   3 +
+ drivers/fpga/intel-m10-bmc-sec-update.c       | 558 ++++++++++++++++++
+ 5 files changed, 635 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
+ create mode 100644 drivers/fpga/intel-m10-bmc-sec-update.c
+
 -- 
 2.25.1
 
