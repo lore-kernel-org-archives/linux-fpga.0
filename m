@@ -2,91 +2,81 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEC3CC433EF
-	for <linux-fpga@archiver.kernel.org>; Fri,  1 Oct 2021 03:35:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0BBCC433EF
+	for <linux-fpga@archiver.kernel.org>; Sat,  2 Oct 2021 14:56:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 83427604DA
-	for <linux-fpga@archiver.kernel.org>; Fri,  1 Oct 2021 03:35:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8B22861353
+	for <linux-fpga@archiver.kernel.org>; Sat,  2 Oct 2021 14:56:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230348AbhJADg4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 30 Sep 2021 23:36:56 -0400
-Received: from mail-pl1-f175.google.com ([209.85.214.175]:38895 "EHLO
-        mail-pl1-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230346AbhJADgz (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 30 Sep 2021 23:36:55 -0400
-Received: by mail-pl1-f175.google.com with SMTP id x4so5424053pln.5
-        for <linux-fpga@vger.kernel.org>; Thu, 30 Sep 2021 20:35:12 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=GpG8iyMT3tj1lMFMaz84nBEthwQkjkDrnco/J0hYGTo=;
-        b=B2D+2YumMCCRc1eg2jlZysOwRK0gi8bu9SYA4PTt9F8jYnFq9uEn2czjN9+IK/QEC0
-         AZgt1zcSHvJ4XUOZ0PttvA22dMXnbvYb20kj+bwflU834wHTyt9t5zO5RkjF8m/H1e9f
-         GyaJB7kaaOJSN52kQ2c4PS3eONF/GOlBk7bwJts6PI/g69w0dUTuOdVizmZqu8pn72gY
-         mHV1m+WhbshA8NBu3HeH0iJmRtRrw5Yj2Z9jQZV2OUurvWqAvx1EFtf88BPo54ICgbRe
-         y8m0A6nIb33RTKzmib100m5GFTwkWv7gt9INSBsWM0l0mk9CvfMTrwv/vuE6FE5lax/d
-         ghTQ==
-X-Gm-Message-State: AOAM530IYOhtoa5R4Pl8UW76fo9baxOXdHEL+v44Ud2kbsSsSEHsvtrU
-        HrUdnyAK/bj2LftpcMdc8tjkAZiU+18=
-X-Google-Smtp-Source: ABdhPJx7EmGOyqZ+TRY0bLcBzYzuLtj1pEQWUA6B5lw463ss6txDI9m4rk5DpLz+tPTspy4xGEmn9Q==
-X-Received: by 2002:a17:90b:4c4f:: with SMTP id np15mr10314248pjb.18.1633059311904;
-        Thu, 30 Sep 2021 20:35:11 -0700 (PDT)
-Received: from localhost ([2601:647:5b00:6f70:be34:681b:b1e9:776f])
-        by smtp.gmail.com with ESMTPSA id b2sm4569071pfr.58.2021.09.30.20.35.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Sep 2021 20:35:11 -0700 (PDT)
-Date:   Thu, 30 Sep 2021 20:35:10 -0700
-From:   Moritz Fischer <mdf@kernel.org>
-To:     "Wu, Hao" <hao.wu@intel.com>
-Cc:     "Xu, Yilun" <yilun.xu@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Moritz Fischer <mdf@kernel.org>,
-        "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
-        "moritzf@google.com" <moritzf@google.com>
-Subject: Re: [PATCH 1/2] MAINTAINERS: Add Hao and Yilun as maintainers
-Message-ID: <YVaB7m9SrGyI05zd@epycbox.lan>
+        id S233429AbhJBO56 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sat, 2 Oct 2021 10:57:58 -0400
+Received: from mga17.intel.com ([192.55.52.151]:30472 "EHLO mga17.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229560AbhJBO56 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Sat, 2 Oct 2021 10:57:58 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10125"; a="205849320"
+X-IronPort-AV: E=Sophos;i="5.85,342,1624345200"; 
+   d="scan'208";a="205849320"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2021 07:56:12 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.85,341,1624345200"; 
+   d="scan'208";a="620015059"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.162])
+  by fmsmga001.fm.intel.com with ESMTP; 02 Oct 2021 07:56:11 -0700
+Date:   Sat, 2 Oct 2021 22:49:57 +0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     Moritz Fischer <mdf@kernel.org>
+Cc:     linux-fpga@vger.kernel.org, moritzf@google.com,
+        Wu Hao <hao.wu@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 2/2] MAINTAINERS: Drop outdated FPGA Manager website
+Message-ID: <20211002144957.GA53209@yilunxu-OptiPlex-7050>
 References: <20210928150227.22275-1-mdf@kernel.org>
- <YVM0p3xrck0zriHd@kroah.com>
- <20210929004235.GC6179@yilunxu-OptiPlex-7050>
- <DM6PR11MB38198AC7508C50D208281A0685A99@DM6PR11MB3819.namprd11.prod.outlook.com>
+ <20210928150227.22275-2-mdf@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <DM6PR11MB38198AC7508C50D208281A0685A99@DM6PR11MB3819.namprd11.prod.outlook.com>
+In-Reply-To: <20210928150227.22275-2-mdf@kernel.org>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Wed, Sep 29, 2021 at 01:04:54AM +0000, Wu, Hao wrote:
-> > On Tue, Sep 28, 2021 at 05:28:39PM +0200, Greg Kroah-Hartman wrote:
-> > > On Tue, Sep 28, 2021 at 08:02:25AM -0700, Moritz Fischer wrote:
-> > > > Hao and Yilun have agreed to help out with maintenance.
-> > > > Both have been active in the Linux FPGA community for a long time
-> > > > and we need backups for vacation and load-balancing.
-> > > >
-> > > > Cc: Xu Yilun <yilun.xu@intel.com>
-> > > > Cc: Wu Hao <hao.wu@intel.com>
-> > > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > >
-> > > I need an ack from the two new people here in order to take this :)
-> > 
-> > Acked-by: Xu Yilun <yilun.xu@intel.com>
+On Tue, Sep 28, 2021 at 08:02:26AM -0700, Moritz Fischer wrote:
+> The rocketboards website no longer really reflects a good landing
+> place for people interested in FPGA Manager.
 > 
-> Acked-by: Wu Hao <hao.wu@intel.com>
+> Cc: Xu Yilun <yilun.xu@intel.com>
+> Cc: Wu Hao <hao.wu@intel.com>
+> Signed-off-by: Moritz Fischer <mdf@kernel.org>
+> ---
+>  MAINTAINERS | 1 -
+>  1 file changed, 1 deletion(-)
 > 
-> Thanks
-> Hao
-> 
-> > 
-> > Thanks,
-> > Yilun
-> > 
-> > >
-> > > thanks,
-> > >
-> > > greg k-h
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 2ec4c2a2458a..c4eaac287edb 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -7342,7 +7342,6 @@ M:	Xu Yilun <yilun.xu@intel.com>
+>  R:	Tom Rix <trix@redhat.com>
+>  L:	linux-fpga@vger.kernel.org
+>  S:	Maintained
+> -W:	http://www.rocketboards.org
 
-Applied to for-next,
+The website is mostly about SOCFPGA architecture, while the FPGA Manager
+is mainly about the generic image loading and enumeration framework. So
+I'm good to this change.
 
-Moritz
+People could still find the website at ARM/SOCFPGA ARCHITECTURE, which is a
+better place for it.
+
+Acked-by: Xu Yilun <yilun.xu@intel.com>
+
+Thanks,
+Yilun
+
+>  Q:	http://patchwork.kernel.org/project/linux-fpga/list/
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga.git
+>  F:	Documentation/devicetree/bindings/fpga/
+> -- 
+> 2.33.0
