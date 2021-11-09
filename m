@@ -2,148 +2,92 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF445C433FE
-	for <linux-fpga@archiver.kernel.org>; Tue,  2 Nov 2021 17:06:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E460C433EF
+	for <linux-fpga@archiver.kernel.org>; Tue,  9 Nov 2021 15:41:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9593B60EE9
-	for <linux-fpga@archiver.kernel.org>; Tue,  2 Nov 2021 17:06:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2A68F611CA
+	for <linux-fpga@archiver.kernel.org>; Tue,  9 Nov 2021 15:41:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234759AbhKBRJT (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 2 Nov 2021 13:09:19 -0400
-Received: from mail.kernel.org ([198.145.29.99]:43192 "EHLO mail.kernel.org"
+        id S238194AbhKIPoR (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 9 Nov 2021 10:44:17 -0500
+Received: from mga17.intel.com ([192.55.52.151]:1675 "EHLO mga17.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229806AbhKBRJS (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 2 Nov 2021 13:09:18 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 02C7A60EB9;
-        Tue,  2 Nov 2021 17:06:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1635872803;
-        bh=+BMtRaPSNnNH8Mb/Ej1z7kOz1KvdUFxZVgerMSQbnGY=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=qJbUlL7G2JROb0rbO7Tmu9pUQr95lpq4O24xBE+4vgqqqg67AcPNj9NPIk9tuUZTC
-         iL70U2yAo0JA38Fisb98aJhQT33BPjUL/Oebs30p8Vxu1oW+ittzrbZvY1JjjqqJ8b
-         8eyrH4ly/lRnKByot4dwUALERzq952XZeAk/ANvM=
-Date:   Tue, 2 Nov 2021 18:06:30 +0100
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Russ Weight <russell.h.weight@intel.com>
-Cc:     Moritz Fischer <mdf@kernel.org>, Tom Rix <trix@redhat.com>,
-        linux-fpga@vger.kernel.org, moritzf@google.com
-Subject: Re: [PATCH 02/12] fpga: sec-mgr: enable secure updates
-Message-ID: <YYFwFleJXqqc9ZW/@kroah.com>
-References: <5d0552ce-d2bd-cca1-006e-8f11991fd378@intel.com>
- <f3d474d2-f85d-4759-75b5-84af64fe5b3c@intel.com>
- <YQPgFn/z024U06HJ@kroah.com>
- <85cd4801-ca1f-4482-6999-3d2e648b24e5@intel.com>
- <YQjY+KL59m51kucV@kroah.com>
- <3ba35b3c-3c85-394b-f404-130968587a6f@intel.com>
- <YQpDySXy0ASM5u9y@kroah.com>
- <YQqrGvwkf6bJ/5in@archbook>
- <YQquaUQCb0hIJmre@kroah.com>
- <62ae6249-8561-7e85-2aa8-3dd49646180a@intel.com>
+        id S237909AbhKIPoQ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Tue, 9 Nov 2021 10:44:16 -0500
+X-IronPort-AV: E=McAfee;i="6200,9189,10162"; a="213194792"
+X-IronPort-AV: E=Sophos;i="5.87,220,1631602800"; 
+   d="scan'208";a="213194792"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Nov 2021 07:41:30 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.87,220,1631602800"; 
+   d="scan'208";a="669442248"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by orsmga005.jf.intel.com with ESMTP; 09 Nov 2021 07:41:28 -0800
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+        id 1338E155; Tue,  9 Nov 2021 17:41:29 +0200 (EET)
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Moritz Fischer <mdf@kernel.org>,
+        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
+        Xu Yilun <yilun.xu@intel.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 1/1] fpga: dfl: pci: Use pci_find_vsec_capability() when looking for DFL
+Date:   Tue,  9 Nov 2021 17:41:27 +0200
+Message-Id: <20211109154127.18455-1-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.33.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <62ae6249-8561-7e85-2aa8-3dd49646180a@intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Tue, Nov 02, 2021 at 09:25:10AM -0700, Russ Weight wrote:
-> 
-> 
-> On 8/4/21 8:12 AM, Greg KH wrote:
-> > On Wed, Aug 04, 2021 at 07:58:34AM -0700, Moritz Fischer wrote:
-> >> On Wed, Aug 04, 2021 at 09:37:45AM +0200, Greg KH wrote:
-> >>> On Tue, Aug 03, 2021 at 12:02:24PM -0700, Russ Weight wrote:
-> >>>>
-> >>>> On 8/2/21 10:49 PM, Greg KH wrote:
-> >>>>>> If the request_firmware() implementation is not acceptable, then would
-> >>>>>> you agree that an IOCTL implementation is our best option?
-> >>>>> There is no difference in the end between using an ioctl, or a sysfs
-> >>>>> file, to provide the filename of your firmware, don't get hung up on
-> >>>>> that.
-> >>>> I meant to suggest that passing file data (not a filename) through an
-> >>>> IOCTL might be better for this use case than trying to use request_firmware.
-> >>>> We have to, somehow, allow the user to point us to the desired image
-> >>>> data (which could be a root-entry-hash, or an FPGA image). We can't
-> >>>> really use a fixed filename modified by device version as many of
-> >>>> the devices do.
-> >>> Ah, yes, a "normal" write command might be best for this as that can be
-> >>> properly containerized and controlled.
-> >>>
-> >>>>> By providing a "filename", you are going around all of the namespace and
-> >>>>> other "container" protection that the kernel provides, and allowing
-> >>>>> processes to potentially load files that are normally outside of their
-> >>>>> scope to the hardware.  If you are willing to allow that security
-> >>>>> "escape", wonderful, but you better document the heck out of it and
-> >>>>> explain why this is allowed for your special hardware and use case.
-> >>>>>
-> >>>>> As you are expecting this to work "in the cloud", I do not think that
-> >>>>> the operators of such hardware are really going to be all that happy to
-> >>>>> see this type of interface given these reasons.
-> >>>>>
-> >>>>> What is wrong with the current fpga firmware api that somehow is lacking
-> >>>>> for your special hardware, that other devices do not have to worry
-> >>>>> about?
-> >>>> The existing framework wants to update the live image in the FPGA,
-> >>>> whereas for this device, we are passing signed data to BMC firmware
-> >>>> which will store it in FLASH to be loaded on a subsequent boot of
-> >>>> the card.
-> >>>>
-> >>>> The existing framework needs to manage FPGA state, whereas for this
-> >>>> device, it is just a transfer of signed data. We also have to handle
-> >>>> a total transfer/authentication time of up to 45 minutes, so we are
-> >>>> using a kernel worker thread for the update.
-> >>>>
-> >>>> Perhaps the name, fpga security manager, is wrong? Maybe something
-> >>>> like fpga_sec_image_xfer is better?
-> >>> It does not sound like this has anything to do with "security", and
-> >>> rather is just a normal firmware upload, so "fpga_image_upload()"
-> >>> perhaps?
-> >> I had originally suggested 'load' and 'persist' or 'load' and 'update or
-> >> something of that sort.
-> >>
-> >> Taking one step back, maybe the case could be made for a generic
-> >> 'persistent firmware' update framework that addresses use-cases that
-> >> require updating firmware that may take extended periods of time.
-> > There should not be a problem with using the existing firmware layer for
-> > images that take long periods of time, as long as you are not wanting to
-> > see any potential progress :)
-> >
-> > So how about just adding anything missing to the existing firmware
-> > subsystem.  It's attempting to handle all use cases already, if it is
-> > missing one, no harm in adding more options there...
-> Hi Greg,
-> 
-> We have had a lot of internal (to Intel) discussion about how to
-> organize the support for uploading FPGA images. It would be helpful
-> to know which of the following two options you find the least
-> disturbing :-)
-> 
-> Background: We are uploading signed, self-describing images that are
-> authenticated and dispositioned by the Card BMC. These could result
-> in FLASH updates for FPGA images, BMC images, firmware, or security
-> keys.  They could also result in a temporary authentication
-> certificate being loaded into RAM as part of a multi-step key
-> provisioning process.
-> 
-> Options:
-> (a) A single API that facilitates the upload of a data stream
-> without analyzing the stream contents, relying on the lower-level
-> driver and/or HW to accept or reject the data.
+Currently the find_dfls_by_vsec() opens code pci_find_vsec_capability().
+Refactor the former to use the latter. No functional change intended.
 
-That is the firmware api we have today, please use that like all other
-drivers should be using.
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/fpga/dfl-pci.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
-> (b) Multiple, targeted APIs (e.g. IOCTL_FPGA_IMAGE_UPDATE,
-> IOCTL_BMC_IMAGE_UPDATE, IOCTL_KEY_UPDATE, IOCTL_KEY_CANCEL) that
-> each interpret the stream type and reject them if they don't
-> correspond to the API target.
+diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+index 4d68719e608f..52b5e94db9c3 100644
+--- a/drivers/fpga/dfl-pci.c
++++ b/drivers/fpga/dfl-pci.c
+@@ -27,7 +27,7 @@
+ #define DRV_VERSION	"0.8"
+ #define DRV_NAME	"dfl-pci"
+ 
+-#define PCI_VSEC_ID_INTEL_DFLS 0x43
++#define PCI_VSEC_ID_INTEL_DFLS	0x0043	/* FPGA Device Feature List */
+ 
+ #define PCI_VNDR_DFLS_CNT 0x8
+ #define PCI_VNDR_DFLS_RES 0xc
+@@ -138,19 +138,12 @@ static int *cci_pci_create_irq_table(struct pci_dev *pcidev, unsigned int nvec)
+ 
+ static int find_dfls_by_vsec(struct pci_dev *pcidev, struct dfl_fpga_enum_info *info)
+ {
+-	u32 bir, offset, vndr_hdr, dfl_cnt, dfl_res;
+-	int dfl_res_off, i, bars, voff = 0;
++	u32 bir, offset, dfl_cnt, dfl_res;
+ 	resource_size_t start, len;
++	int dfl_res_off, i, bars;
++	u16 voff;
+ 
+-	while ((voff = pci_find_next_ext_capability(pcidev, voff, PCI_EXT_CAP_ID_VNDR))) {
+-		vndr_hdr = 0;
+-		pci_read_config_dword(pcidev, voff + PCI_VNDR_HEADER, &vndr_hdr);
+-
+-		if (PCI_VNDR_HEADER_ID(vndr_hdr) == PCI_VSEC_ID_INTEL_DFLS &&
+-		    pcidev->vendor == PCI_VENDOR_ID_INTEL)
+-			break;
+-	}
+-
++	voff = pci_find_vsec_capability(dev, PCI_VENDOR_ID_INTEL, PCI_VSEC_ID_INTEL_DFLS);
+ 	if (!voff) {
+ 		dev_dbg(&pcidev->dev, "%s no DFL VSEC found\n", __func__);
+ 		return -ENODEV;
+-- 
+2.33.0
 
-Please no, do not make a zillion "custom" ioctls.  That way lies
-madness.  Will you want to maintain them all for the next 30+ years?
-
-thanks,
-
-greg k-h
