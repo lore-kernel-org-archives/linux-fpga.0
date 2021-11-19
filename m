@@ -2,23 +2,23 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DD29C433EF
-	for <linux-fpga@archiver.kernel.org>; Fri, 19 Nov 2021 22:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8150FC433F5
+	for <linux-fpga@archiver.kernel.org>; Fri, 19 Nov 2021 22:24:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234792AbhKSW1p (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 19 Nov 2021 17:27:45 -0500
-Received: from mail-bn8nam11on2050.outbound.protection.outlook.com ([40.107.236.50]:25057
-        "EHLO NAM11-BN8-obe.outbound.protection.outlook.com"
+        id S235003AbhKSW17 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 19 Nov 2021 17:27:59 -0500
+Received: from mail-bn8nam12on2057.outbound.protection.outlook.com ([40.107.237.57]:15520
+        "EHLO NAM12-BN8-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S234745AbhKSW1p (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Fri, 19 Nov 2021 17:27:45 -0500
+        id S234745AbhKSW17 (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
+        Fri, 19 Nov 2021 17:27:59 -0500
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Or+aHpJ4lbPrVgUthpDbxSfg8goRVPRR45aEmoH86Vt1KRBRcmDjxoENl8pJCNDBOzH875CTUN/WMdzA2K0ANAd+7/fbmEcyOb60Y9Jnq7k2jh2Nj+YBnI6DflCSMIjMbesRyJd3DR71EqgfbBFzbOaxZU3xzHeP8kmGSu0O4jDvZmXpFpu+qXq3Vb5T+OSAjczp685kUxgbQBoNoA+UgvGI7DZ14AhxmgRdq9vsLqFlN38byXNoQmeY2TyHBc5Y+tBUDiYu++OSL3PaFuiEnFYLjLgqo5N/ZPqncxj3Y5ABpH3ubxlnz5TPm3sTRrrzsVOCrUSyXFaGyebNlye8+Q==
+ b=WvRs8+fK6mpAwjmdCa6QOVg41kWLV2QW0N7QVuFxOW3Pcfrl5bJD0N8OU5CVuQ7nZVjScBvhZjA7QBofS6Q5deAhHyjnRXoAOS2VAh/e1yFnX9C8rXw4F0nihVu1y5zO3FDow48f7QLAIklqUILdiFLzrplUAJQcMPhCR09lhvmJrfHWjDXH0x6q3mbBK6S6jPjGmBSpVAUn9bsAQfc8KgLEc245TWCH0Dy77oO0dCxE0OPC0LqtfK6fm49a86mN5Jc81YBLF9s2upHMnXyVRJpd4SgRe1vLb2FHBxzw52BMsGYe2tiYJ40MGpxf30ILFxo8CzPAynHbILA9RSImuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=+n6r7W3TPGDH7Ay8PmUJGY+wlppbFthoFxtNRG2cJ2I=;
- b=bi0J8pjInmcLUZFCSyn4qUSnudVGNdZuK+0dxsEAYzlwI6/yrVHchxNfl3CrcZRLcmb8zxcq0ZyMQ9+xxb3wLHgn/J/jiU+qci+K6lAchZj48lsc+LaRdFHrim2whL8RRAAzpvImu7Hg8vuLfcNlZN6rUAFllUWcBE4UwvR6gdfj+xRnPlr+0KdyxT9YE+7AO0+BkmV22b3cqQvLGYA72EWnjuyFnq30Fm491gOLauJVU73pnETpmwrSlCQ+zRuNDRlAcBk6SbTt9QxTHBDF0zFiuTdkFJ9qFouoQzUYbNgI6WXdTnvANP/5ZALzKQyB5Bca09RU91X7VF0TzqNybw==
+ bh=dor8ozB7mx0oWaaCwou5aFQnENTnttIBANnGY2uccQ8=;
+ b=KXJ+h3r8fd0YQ+A5/QeBrYEmyDS9viVqCJo2dpJ9mOPvk4mDNu1+aCvLOGL6K6tIU1csGhZHFDkoJowyapDuY5GEjKuwyjfDP+hEuqzO5hMclp1pmOBws0RzsLfVh4oCkrVDKQCunQYaaac3IPG1q1Jvxa6DdUSrBiq9hwZx7hC5lGvUIhMQszH0iQCLRI8vHmGkoOBJ1iZ5hgUvfem+pQrt8A/aFaQWhqY+m5c/s6lGhFVZDYKPld+7+Gmg5E4IWVrJP8PfWwe8WAOIqXGt1VLU0h8F60U3bWpM4+hVHn1l8m2luaj9Ozk00Lw6rXX8Uo0IINfWlMM2f24B4mebtQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=infradead.org smtp.mailfrom=xilinx.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
@@ -26,35 +26,35 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+n6r7W3TPGDH7Ay8PmUJGY+wlppbFthoFxtNRG2cJ2I=;
- b=XApwNZc6yHHN20LxQL0XSoBmUqRdnc7LlXNOaTAtUJnARUI8JtqnGlxIZ3EhQJLuiF8q+QoI/XhwyB/B7bvMEPhSHBcCh98SXtLF68yTauWwWoJwwOnfpNIm01gNN9wpqIJdF93LxSfqT/v6p+2t5odmNuM2EWuuwiHNnmVRa7c=
-Received: from DM5PR07CA0137.namprd07.prod.outlook.com (2603:10b6:3:13e::27)
- by BY5PR02MB6551.namprd02.prod.outlook.com (2603:10b6:a03:1d2::8) with
+ bh=dor8ozB7mx0oWaaCwou5aFQnENTnttIBANnGY2uccQ8=;
+ b=iBmZ+WzvMUaBP/9t7V6KSHvcNj0HUxScsO4uhC1OvreLHs+k5t0RvcuG4q/afX6mA8gCPI+KWe0mSxmK5H5Z/j329y2EkNIy9vHggtmM29TQM5vjLFWW3/JyNb+7TqvLAQ/rFqDQs/ZLsjRohly2TBbVfC6Fz27OFU2zNssOM6c=
+Received: from DS7PR05CA0030.namprd05.prod.outlook.com (2603:10b6:5:3b9::35)
+ by BYAPR02MB5062.namprd02.prod.outlook.com (2603:10b6:a03:6f::17) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4713.19; Fri, 19 Nov
- 2021 22:24:39 +0000
-Received: from DM3NAM02FT053.eop-nam02.prod.protection.outlook.com
- (2603:10b6:3:13e:cafe::5) by DM5PR07CA0137.outlook.office365.com
- (2603:10b6:3:13e::27) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4713.21 via Frontend
- Transport; Fri, 19 Nov 2021 22:24:39 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4713.22; Fri, 19 Nov
+ 2021 22:24:52 +0000
+Received: from DM3NAM02FT031.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:5:3b9:cafe::cc) by DS7PR05CA0030.outlook.office365.com
+ (2603:10b6:5:3b9::35) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4734.11 via Frontend
+ Transport; Fri, 19 Nov 2021 22:24:52 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=xilinx.com;
 Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
- client-ip=149.199.62.198; helo=xsj-pvapexch01.xlnx.xilinx.com;
-Received: from xsj-pvapexch01.xlnx.xilinx.com (149.199.62.198) by
- DM3NAM02FT053.mail.protection.outlook.com (10.13.5.35) with Microsoft SMTP
+ client-ip=149.199.62.198; helo=xsj-pvapexch02.xlnx.xilinx.com;
+Received: from xsj-pvapexch02.xlnx.xilinx.com (149.199.62.198) by
+ DM3NAM02FT031.mail.protection.outlook.com (10.13.4.184) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4713.19 via Frontend Transport; Fri, 19 Nov 2021 22:24:39 +0000
+ 15.20.4713.19 via Frontend Transport; Fri, 19 Nov 2021 22:24:51 +0000
 Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
- xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server
+ xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.14; Fri, 19 Nov 2021 14:24:38 -0800
-Received: from smtp.xilinx.com (172.19.127.96) by
+ 15.1.2176.14; Fri, 19 Nov 2021 14:24:50 -0800
+Received: from smtp.xilinx.com (172.19.127.95) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.2176.14 via Frontend Transport; Fri, 19 Nov 2021 14:24:38 -0800
+ 15.1.2176.14 via Frontend Transport; Fri, 19 Nov 2021 14:24:50 -0800
 Envelope-to: dwmw2@infradead.org,
  mdf@kernel.org,
  robh@kernel.org,
@@ -62,12 +62,12 @@ Envelope-to: dwmw2@infradead.org,
  devicetree@vger.kernel.org,
  linux-fpga@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Received: from [172.19.72.93] (port=38934 helo=xsj-xw9400.xilinx.com)
+Received: from [172.19.72.93] (port=38936 helo=xsj-xw9400.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <lizhi.hou@xilinx.com>)
-        id 1moCJC-0001J1-MG; Fri, 19 Nov 2021 14:24:38 -0800
+        id 1moCJO-000ANC-Nh; Fri, 19 Nov 2021 14:24:50 -0800
 Received: by xsj-xw9400.xilinx.com (Postfix, from userid 21952)
-        id D74A060014A; Fri, 19 Nov 2021 14:24:14 -0800 (PST)
+        id ECEAE600147; Fri, 19 Nov 2021 14:24:14 -0800 (PST)
 From:   Lizhi Hou <lizhi.hou@xilinx.com>
 To:     <linux-kernel@vger.kernel.org>
 CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
@@ -76,602 +76,125 @@ CC:     Lizhi Hou <lizhi.hou@xilinx.com>, <linux-fpga@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <trix@redhat.com>, <mdf@kernel.org>,
         <robh@kernel.org>, <dwmw2@infradead.org>,
         Max Zhen <max.zhen@xilinx.com>
-Subject: [PATCH V2 XRT Alveo Infrastructure 1/9] Documentation: fpga: Add a document describing XRT Alveo driver infrastructure
-Date:   Fri, 19 Nov 2021 14:24:04 -0800
-Message-ID: <20211119222412.1092763-2-lizhi.hou@xilinx.com>
+Subject: [PATCH V2 XRT Alveo Infrastructure 4/9] of: create empty of root
+Date:   Fri, 19 Nov 2021 14:24:07 -0800
+Message-ID: <20211119222412.1092763-5-lizhi.hou@xilinx.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20211119222412.1092763-1-lizhi.hou@xilinx.com>
 References: <20211119222412.1092763-1-lizhi.hou@xilinx.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: fab5266e-83be-42ec-beaf-08d9abab605e
-X-MS-TrafficTypeDiagnostic: BY5PR02MB6551:
-X-Microsoft-Antispam-PRVS: <BY5PR02MB65518A189A8BC969738ABB1CA19C9@BY5PR02MB6551.namprd02.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:9508;
+X-MS-Office365-Filtering-Correlation-Id: 121281a7-92cd-4736-ca61-08d9abab678a
+X-MS-TrafficTypeDiagnostic: BYAPR02MB5062:
+X-Microsoft-Antispam-PRVS: <BYAPR02MB506286185DA3F40BE54A0365A19C9@BYAPR02MB5062.namprd02.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:1824;
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: bqtk+o6945s6qyItPAetLkMMbtzmFBwypm+gDrQuzk/nXLm4YFK6EAHcCSQOPeZPQ9o/BT7SYGClRxRSKrwkRymuUau2gJ+QiHzq0bw983kXjMah9qiASrVCEEoz6Bp3zHuJDhmgcZoFvHw1OpUb4N39B8l+h3rOeN7EI0xx92XBcRkCDP75+TBTCPDJROhyvxfu7yRQjAdWs2To318ooXdsP//EYnGyyCL7lV14wTgGpp+3xp42nf2qHiS6e/GIIwYHYTSTyCB4iB3X7zvpstdrd7fnxJllVQ5L62aQWCsxqo/fE8T/HUyl4niDhdfWxveZs6I+L/Wa1a23qK3JPRV0farMRebpfcVKY104/85L88FM3bstTiCyzp4bOS9oA0lY6TY4nXDgBo/ekcEdm3jXrs6xaPQSfjxgPUxTOFygXmrIitNCgxphY4JhqPeJSFzgTfbh9GgMSsyZdzBCVZGnqMU+9EZf9DOIBr8GCXWh4iP4514y6x/5zZwaJyVuOQ0aUveo3fBbhNxEffeqsVWNew8JYDzffbfx8CC3CuA2y3otRU7Lu2NobWv0cfIuRxFNzaAqaEa9+T0VmsIOoIEBv5ZfT9dCy876O9w4H4h9d/Zy+zq0sdznLSFxnhAs+31uom07qZwXvKKORCxvDh/g5EfioCnGeJFcXPDlDVVQDlATXzMSSLDEpv6pSgbIuLXuD1urDfDlMtakhFTOFPwvQkMg2huxNzEOn0hCaCFy2h49N8cYYGMPQox/Y95nsyMZrtCuogRnG7D4n0iqR2xf6L0bZLUCf118kskyKF69Xe4NgTLS6vktegVF3jtPAoAPtVSa53tBnhWMk1jAzw==
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(46966006)(36840700001)(36906005)(36860700001)(4326008)(966005)(8676002)(336012)(2906002)(54906003)(44832011)(70586007)(70206006)(82310400003)(83380400001)(7636003)(508600001)(6666004)(2616005)(356005)(42186006)(36756003)(107886003)(1076003)(26005)(47076005)(30864003)(6916009)(6266002)(316002)(426003)(5660300002)(8936002)(186003);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: jAfEHgx+B9160Mb/DN8mWfV/cXomRauH306W+sy/4NMGdF5V+QoqK50eeSMnIMDe0L6nQ+d0hqO+mluAlytJWqf+v+ElDDBwsu0dAuZb2X90lYTr2WEgNl+dZGZLcMwX+cgXoqLzvNLUK+IFn8UgBlVMRF7iRWgVz3lH4n24VcCcvVpiZt1Ju4j2ylPM3zGYN2wikSgx1C/TFyD+NELOd2uxfuI6ZYxICXnuzNX2OdLyXGm4cHr9l/imLd9mMIK17G/ZGsKmSFMy4Be0y4D+JraYtiDT8cPHY3iMJ1o3LFIwO0pqkRV7ldcZSZ2IlVC7QoMASFqFKPPgOPMJJzGXfA40B7RKhKK1UwQAlD5QTz+KqpSvzhd9glf2YPyJhSjTZJYFxxl6DZE/bkCRCit9DAwCUKOMSoIbC+NNOiV8dnISPFuv7jzGJNmCDo2xLACr/qaA+0H/L0xDLXEQMI5doLVHN8NcQZ7jwUjXTidfSWAjZ16cEATZQqp5jKP1Xucy06zIVutAnQ/2y6tT4m6csHKXjgHfh2mn5yTNbqW7c5eCcAF+3PFGR5CX0++nNDBN7lLTgSuYRTmyYCSeovwHMbluJwUzIcC0GOfS33nr7z0j1JjUHzrx4EshS88fcHNcEqCy/slWd86oh5i/5UEy4/YSPgO8AGicy1yv2KiJAaUaXYJb/bSqZZlN/RlyDQ7kcE4nES8HM+Y9kAc2tCn78g==
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(46966006)(36840700001)(36906005)(8936002)(82310400003)(42186006)(26005)(8676002)(508600001)(44832011)(2616005)(54906003)(316002)(6916009)(36756003)(4326008)(5660300002)(426003)(356005)(70586007)(70206006)(83380400001)(107886003)(2906002)(6666004)(36860700001)(1076003)(7636003)(6266002)(186003)(336012)(47076005);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Nov 2021 22:24:39.3305
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Nov 2021 22:24:51.3632
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: fab5266e-83be-42ec-beaf-08d9abab605e
+X-MS-Exchange-CrossTenant-Network-Message-Id: 121281a7-92cd-4736-ca61-08d9abab678a
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch01.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM3NAM02FT053.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch02.xlnx.xilinx.com]
+X-MS-Exchange-CrossTenant-AuthSource: DM3NAM02FT031.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR02MB6551
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR02MB5062
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Describe XRT driver architecture and provide basic overview of
-Xilinx Alveo platform.
+When OF_FLATTREE is selected and there is not a device tree, create an
+empty device tree root node. of/unittest.c code is referenced.
 
 Signed-off-by: Sonal Santan <sonal.santan@xilinx.com>
 Signed-off-by: Max Zhen <max.zhen@xilinx.com>
 Signed-off-by: Lizhi Hou <lizhi.hou@xilinx.com>
 ---
- Documentation/fpga/index.rst |   1 +
- Documentation/fpga/xrt.rst   | 510 +++++++++++++++++++++++++++++++++++
- MAINTAINERS                  |  10 +
- 3 files changed, 521 insertions(+)
- create mode 100644 Documentation/fpga/xrt.rst
+ drivers/of/Makefile        |  2 +-
+ drivers/of/fdt.c           | 20 ++++++++++++++++++++
+ drivers/of/fdt_default.dts |  5 +++++
+ drivers/of/of_private.h    |  5 +++++
+ 4 files changed, 31 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/of/fdt_default.dts
 
-diff --git a/Documentation/fpga/index.rst b/Documentation/fpga/index.rst
-index f80f95667ca2..30134357b70d 100644
---- a/Documentation/fpga/index.rst
-+++ b/Documentation/fpga/index.rst
-@@ -8,6 +8,7 @@ fpga
-     :maxdepth: 1
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index c13b982084a3..815f5220465b 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -2,7 +2,7 @@
+ obj-y = base.o device.o platform.o property.o
+ obj-$(CONFIG_OF_KOBJ) += kobj.o
+ obj-$(CONFIG_OF_DYNAMIC) += dynamic.o
+-obj-$(CONFIG_OF_FLATTREE) += fdt.o
++obj-$(CONFIG_OF_FLATTREE) += fdt.o fdt_default.dtb.o
+ obj-$(CONFIG_OF_EARLY_FLATTREE) += fdt_address.o
+ obj-$(CONFIG_OF_PROMTREE) += pdt.o
+ obj-$(CONFIG_OF_ADDRESS)  += address.o
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index d64445e43ceb..3d6e4543419e 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -481,6 +481,26 @@ void *of_fdt_unflatten_tree(const unsigned long *blob,
+ }
+ EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
  
-     dfl
-+    xrt
- 
- .. only::  subproject and html
- 
-diff --git a/Documentation/fpga/xrt.rst b/Documentation/fpga/xrt.rst
++static int __init of_fdt_root_init(void)
++{
++	struct device_node *np;
++
++	if (of_root)
++		return 0;
++
++	if (!of_fdt_unflatten_tree((const unsigned long *)__dtb_fdt_default_begin,
++				   NULL, &of_root)) {
++		pr_warn("%s: unflatten default tree failed\n", __func__);
++		return -ENODATA;
++	}
++
++	for_each_of_allnodes(np)
++		__of_attach_node_sysfs(np);
++
++	return 0;
++}
++late_initcall(of_fdt_root_init);
++
+ /* Everything below here references initial_boot_params directly. */
+ int __initdata dt_root_addr_cells;
+ int __initdata dt_root_size_cells;
+diff --git a/drivers/of/fdt_default.dts b/drivers/of/fdt_default.dts
 new file mode 100644
-index 000000000000..323ded5c0f4a
+index 000000000000..d1f12a76dfc6
 --- /dev/null
-+++ b/Documentation/fpga/xrt.rst
-@@ -0,0 +1,510 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+==================================
-+XRTV2 Linux Kernel Driver Overview
-+==================================
-+
-+Authors:
-+
-+* Sonal Santan <sonal.santan@xilinx.com>
-+* Max Zhen <max.zhen@xilinx.com>
-+* Lizhi Hou <lizhi.hou@xilinx.com>
-+
-+XRTV2 drivers are second generation `XRT <https://github.com/Xilinx/XRT>`_
-+drivers which support `Alveo <https://www.xilinx.com/products/boards-and-kits/alveo.html>`_
-+PCIe platforms from Xilinx.
-+
-+XRTV2 drivers support *subsystem* style data driven platforms where driver's
-+configuration and behavior are determined by metadata provided by the platform
-+(in *device tree* format). Primary management physical function (MPF) driver
-+is called **xrt-mgmt**. Primary user physical function (UPF) driver is called
-+**xrt-user** and is under development. xrt_driver framework and FPGA subsystem
-+drivers are packaged into a library module called **xrt-lib**, which is shared
-+by **xrt-mgmt** and **xrt-user** (under development). The xrt_driver framework
-+implements a ``bus_type`` called **xrt_bus_type** which is used to discover HW
-+subsystems and facilitate inter HW subsystem interaction.
-+
-+Driver Modules
-+==============
-+
-+xrt-lib.ko
-+----------
-+
-+xrt-lib is the repository of xrt drivers and pure software modules that can
-+potentially be shared between xrt-mgmt and xrt-user. All these drivers are
-+structured as **xrt_driver** and are instantiated by xrt-mgmt (or xrt-user under
-+development) based on the metadata associated with the hardware.  The metadata
-+is in the form of a device tree as mentioned before.
-+
-+xrt-lib relies on OF kernel APIs to unflatten the metadata and overlay the
-+unflattened device tree nodes to system device tree. In xrt-lib module initialization
-+routine, "/xrt-bus" is created in system device tree, all XRT device
-+tree nodes and properties will be under "/xrt-bus".
-+
-+The xrt-lib infrastructure provides hooks to xrt_drivers for device node
-+management, user file operations and ioctl callbacks. The core infrastructure also
-+provides a bus functionality called **xrt_bus_type** for xrt_driver registration,
-+discovery and inter xrt_driver calls. xrt-lib does not have any dependency on PCIe
-+subsystem.
-+
-+xrt-mgmt.ko
-+------------
-+
-+The xrt-mgmt driver is a PCIe device driver driving MPF found on Xilinx's Alveo
-+PCIe device. It creates one or more *group* device and one or more *xleaf* device.
-+The group and xleaf drivers are in xrt-lib and instantiations of the xrt_driver but
-+are called group and xleaf to symbolize the logical operation performed by them.
-+
-+The xrt-mgmt driver uses xrt-lib APIs to manages the life cycle of multiple group
-+drivers, which, in turn, manages multiple xleaf drivers. This flexibility allows
-+xrt-mgmt.ko and xrt-lib.ko to support various HW subsystems exposed by different
-+Alveo shells. The differences among these Alveo shells is handled in xleaf drivers.
-+The group driver is part of the infrastructure which provides common services to xleaf
-+drivers found on various Alveo shells. See :ref:`alveo_platform_overview`.
-+
-+The instantiation of specific group driver or xleaf drivers is completely data
-+driven based on metadata (mostly in device tree format) found through VSEC
-+capability and inside the firmware files, such as platform xsabin or user xclbin
-+file.
-+
-+
-+Driver Object Model
-+===================
-+
-+The driver object model looks like the following::
-+
-+                              +-----------+
-+                              |  of root  |
-+                              +-----+-----+
-+                                    |
-+                          +---------+---------+
-+                          |                   |
-+                    +-----------+        +----------+
-+                    |  xrt-bus  |        |   ...    |
-+                    +-----+-----+        +----------+
-+                          |
-+              +-----------+-----------+
-+              |                       |
-+              v                       v
-+        +-----------+          +-----------+
-+        |   group   |    ...   |   group   |
-+        +-----+-----+          +------+----+
-+              |                       |
-+              |                       |
-+        +-----+----+            +-----+----+
-+        |          |            |          |
-+        v          v            v          v
-+    +-------+  +-------+    +-------+  +-------+
-+    | xleaf |..| xleaf |    | xleaf |..| xleaf |
-+    +-------+  +-------+    +-------+  +-------+
-+
-+As an example, for Xilinx Alveo U50 before user xclbin download, the tree
-+looks like the following::
-+
-+                                +-----------+
-+                                |  xrt-bus  |
-+                                +-----+-----+
-+                                      |
-+            +-------------------------+--------------------+
-+            |                         |                    |
-+            v                         v                    v
-+       +--------+                +--------+            +--------+
-+       | group0 |                | group1 |            | group2 |
-+       +----+---+                +----+---+            +---+----+
-+            |                         |                    |
-+            |                         |                    |
-+      +-----+-----+        +----+-----+---+    +-----+-----+----+--------+
-+      |           |        |    |         |    |     |          |        |
-+      v           v        |    v         v    |     v          v        |
-+ +------------+  +------+  | +------+ +------+ |  +------+ +-----------+ |
-+ | xmgmt_main |  | VSEC |  | | GPIO | | QSPI | |  |  CMC | | AXI-GATE0 | |
-+ +------------+  +------+  | +------+ +------+ |  +------+ +-----------+ |
-+                           | +---------+       |  +------+ +-----------+ |
-+                           +>| MAILBOX |       +->| ICAP | | AXI-GATE1 |<+
-+                             +---------+       |  +------+ +-----------+
-+                                               |  +-------+
-+                                               +->| CALIB |
-+                                                  +-------+
-+
-+After a xclbin is downloaded, group3 will be added and the tree looks like the
-+following::
-+
-+                                +-----------+
-+                                |  xrt-bus  |
-+                                +-----+-----+
-+                                      |
-+            +-------------------------+--------------------+-----------------+
-+            |                         |                    |                 |
-+            v                         v                    v                 |
-+       +--------+                +--------+            +--------+            |
-+       | group0 |                | group1 |            | group2 |            |
-+       +----+---+                +----+---+            +---+----+            |
-+            |                         |                    |                 |
-+            |                         |                    |                 |
-+      +-----+-----+       +-----+-----+---+    +-----+-----+----+--------+   |
-+      |           |       |     |         |    |     |          |        |   |
-+      v           v       |     v         v    |     v          v        |   |
-+ +------------+  +------+ | +------+ +------+  |  +------+ +-----------+ |   |
-+ | xmgmt_main |  | VSEC | | | GPIO | | QSPI |  |  |  CMC | | AXI-GATE0 | |   |
-+ +------------+  +------+ | +------+ +------+  |  +------+ +-----------+ |   |
-+                          | +---------+        |  +------+ +-----------+ |   |
-+                          +>| MAILBOX |        +->| ICAP | | AXI-GATE1 |<+   |
-+                            +---------+        |  +------+ +-----------+     |
-+                                               |  +-------+                  |
-+                                               +->| CALIB |                  |
-+                                                  +-------+                  |
-+                      +---+----+                                             |
-+                      | group3 |<--------------------------------------------+
-+                      +--------+
-+                          |
-+                          |
-+     +-------+--------+---+--+--------+------+-------+
-+     |       |        |      |        |      |       |
-+     v       |        v      |        v      |       v
-+ +--------+  |   +--------+  |   +--------+  |    +-----+
-+ | CLOCK0 |  |   | CLOCK1 |  |   | CLOCK2 |  |    | UCS |
-+ +--------+  v   +--------+  v   +--------+  v    +-----+
-+ +-------------+ +-------------+ +-------------+
-+ | CLOCK-FREQ0 | | CLOCK-FREQ1 | | CLOCK-FREQ2 |
-+ +-------------+ +-------------+ +-------------+
-+
-+
-+group
-+-----
-+
-+The group driver represents a pseudo device whose life cycle is managed by
-+root and does not have real IO mem or IRQ resources. It's part of the
-+infrastructure of the MPF driver and resides in xrt-lib.ko. This driver
-+
-+* manages one or more xleaf drivers
-+* handle requests from xleaf drivers. For example event notifications and
-+  inter xleaf calls.
-+
-+In xrt-mgmt, an initial group driver instance will be created by the PCIe driver.
-+This instance contains xleaf drivers that will trigger group instances to be
-+created to manage groups of xleaf drivers found on different partitions of
-+hardware, such as VSEC, Shell, and User.
-+
-+xleaf
-+-----
-+
-+The xleaf driver is a xrt_driver whose life cycle is managed by
-+a group driver and may or may not have real IO mem or IRQ resources. They
-+manage HW subsystems they are attached to.
-+
-+A xleaf driver without real hardware resources manages in-memory states for
-+xrt-mgmt. These states are shareable by other xleaf drivers.
-+
-+Xleaf drivers assigned to specific hardware resources drive a specific subsystem
-+in the device. To manipulate the subsystem or carry out a task, a xleaf driver
-+may ask for help from the root via root calls and/or from other leaves via
-+inter xleaf calls.
-+
-+A xleaf can also broadcast events through infrastructure code for other leaves
-+to process. It can also receive event notification from infrastructure about
-+certain events, such as post-creation or pre-exit of a particular xleaf.
-+
-+xrt_bus_type
-+------------
-+
-+xrt_bus_type defines a virtual bus which handles xrt_driver probe, remove and match
-+operations. All xrt_drivers register with xrt_bus_type as part of xrt-lib driver
-+``module_init`` and un-register as part of xrt-lib driver ``module_exit``.
-+
-+FPGA Manager Interaction
-+========================
-+
-+fpga_manager
-+------------
-+
-+An instance of fpga_manager is created by xmgmt_main and is used for xclbin
-+image download. fpga_manager requires the full xclbin image before it can
-+start programming the FPGA configuration engine via Internal Configuration
-+Access Port (ICAP) xrt_driver.
-+
-+fpga_region
-+-----------
-+
-+For every interface exposed by the currently loaded xclbin/xsabin in the
-+*parent* fpga_region a new instance of fpga_region is created like a *child*
-+fpga_region. The device tree of the *parent* fpga_region defines the
-+resources for a new instance of fpga_bridge which isolates the parent from
-+child fpga_region. This new instance of fpga_bridge will be used when a
-+xclbin image is loaded on the child fpga_region. After the xclbin image is
-+downloaded to the fpga_region, an instance of a group is created for the
-+fpga_region using the device tree obtained as part of the xclbin. If this
-+device tree defines any child interfaces, it can trigger the creation of
-+fpga_bridge and fpga_region for the next region in the chain.
-+
-+fpga_bridge
-+-----------
-+
-+Like the fpga_region, an fpga_bridge is created by walking the device tree
-+of the parent group. The bridge is used for isolation between a parent and
-+its child.
-+
-+Driver Interfaces
-+=================
-+
-+xrt-mgmt Driver Ioctls
-+----------------------
-+
-+Ioctls exposed by the xrt-mgmt driver to user space are enumerated in the
-+following table:
-+
-+== ===================== ============================ ==========================
-+#  Functionality         ioctl request code            data format
-+== ===================== ============================ ==========================
-+1  FPGA image download   XMGMT_IOCICAPDOWNLOAD_AXLF    xmgmt_ioc_bitstream_axlf
-+== ===================== ============================ ==========================
-+
-+A user xclbin can be downloaded by using the xbmgmt tool from the XRT open source
-+suite. See example usage below::
-+
-+  xbmgmt partition --program --path /lib/firmware/xilinx/862c7020a250293e32036f19956669e5/test/verify.xclbin --force
-+
-+.. _alveo_platform_overview:
-+
-+Alveo Platform Overview
-+=======================
-+
-+Alveo platforms are architected as two physical FPGA partitions: *Shell* and
-+*User*. The Shell provides basic infrastructure for the Alveo platform like
-+PCIe connectivity, board management, Dynamic Function Exchange (DFX), sensors,
-+clocking, reset, and security. DFX, partial reconfiguration, is responsible for
-+loading the user compiled FPGA binary.
-+
-+For DFX to work properly, physical partitions require strict HW compatibility
-+with each other. Every physical partition has two interface UUIDs: the *parent*
-+UUID and the *child* UUID. For simple single stage platforms, Shell → User forms
-+the parent child relationship.
-+
-+.. note::
-+   Partition compatibility matching is a key design component of the Alveo platforms
-+   and XRT. Partitions have child and parent relationship. A loaded partition
-+   exposes child partition UUID to advertise its compatibility requirement. When
-+   loading a child partition, the xrt-mgmt driver matches the parent
-+   UUID of the child partition against the child UUID exported by the parent.
-+   The parent and child partition UUIDs are stored in the *xclbin* (for the user)
-+   and the *xsabin* (for the shell). Except for the root UUID exported by VSEC,
-+   the hardware itself does not know about the UUIDs. The UUIDs are stored in
-+   xsabin and xclbin. The image format has a special node called Partition UUIDs
-+   which define the compatibility UUIDs.
-+
-+
-+The physical partitions and their loading are illustrated below::
-+
-+           SHELL                               USER
-+        +-----------+                  +-------------------+
-+        |           |                  |                   |
-+        | VSEC UUID | CHILD     PARENT |    LOGIC UUID     |
-+        |           o------->|<--------o                   |
-+        |           | UUID       UUID  |                   |
-+        +-----+-----+                  +--------+----------+
-+              |                                 |
-+              .                                 .
-+              |                                 |
-+          +---+---+                      +------+--------+
-+          |  POR  |                      | USER COMPILED |
-+          | FLASH |                      |    XCLBIN     |
-+          +-------+                      +---------------+
-+
-+
-+Loading Sequence
-+----------------
-+
-+The Shell partition is loaded from flash at system boot time. It establishes the
-+PCIe link and exposes two physical functions to the BIOS. After the OS boots,
-+the xrt-mgmt driver attaches to the PCIe physical function 0 exposed by the Shell
-+and then looks for VSEC in the PCIe extended configuration space. Using VSEC, it
-+determines the logic UUID of the Shell and uses the UUID to load matching *xsabin*
-+file from Linux firmware directory. The xsabin file contains the metadata to
-+discover the peripherals that are part of the Shell and the firmware for any
-+embedded soft processors in the Shell. The xsabin file also contains Partition
-+UUIDs.
-+
-+The Shell exports a child interface UUID which is used for the compatibility
-+check when loading the user compiled xclbin over the User partition as part of DFX.
-+When a user requests loading of a specific xclbin, the xrt-mgmt driver reads
-+the parent interface UUID specified in the xclbin and matches it with the child
-+interface UUID exported by the Shell to determine if the xclbin is compatible with
-+the Shell. If the match fails, loading of xclbin is denied.
-+
-+xclbin loading is requested using the ICAP_DOWNLOAD_AXLF ioctl command. When loading
-+a xclbin, the xrt-mgmt driver performs the following *logical* operations:
-+
-+1. Copy xclbin from user to kernel memory
-+2. Sanity check the xclbin contents
-+3. Isolate the User partition
-+4. Download the bitstream using the FPGA config engine (ICAP)
-+5. De-isolate the User partition
-+6. Program the clocks (ClockWiz) driving the User partition
-+7. Wait for the memory controller (MIG) calibration
-+8. Return the loading status back to the caller
-+
-+`Platform Loading Overview <https://xilinx.github.io/XRT/master/html/platforms_partitions.html>`_
-+provides more detailed information on platform loading.
-+
-+
-+xsabin
-+------
-+
-+Each Alveo platform comes packaged with its own xsabin. The xsabin is a trusted
-+component of the platform. For format details refer to :ref:`xsabin_xclbin_container_format`
-+below. xsabin contains basic information like UUIDs, platform name and metadata in the
-+form of device tree. See :ref:`device_tree_usage` below for details and example.
-+
-+xclbin
-+------
-+
-+xclbin is compiled by end user using
-+`Vitis <https://www.xilinx.com/products/design-tools/vitis/vitis-platform.html>`_
-+tool set from Xilinx. The xclbin contains sections describing user compiled
-+acceleration engines/kernels, memory subsystems, clocking information etc. It also
-+contains an FPGA bitstream for the user partition, UUIDs, platform name, etc.
-+
-+
-+.. _xsabin_xclbin_container_format:
-+
-+xsabin/xclbin Container Format
-+------------------------------
-+
-+xclbin/xsabin is ELF-like binary container format. It is structured as series of
-+sections. There is a file header followed by several section headers which is
-+followed by sections. A section header points to an actual section. There is an
-+optional signature at the end. The format is defined by the header file ``xclbin.h``.
-+The following figure illustrates a typical xclbin::
-+
-+
-+           +---------------------+
-+           |                     |
-+           |       HEADER        |
-+           +---------------------+
-+           |   SECTION  HEADER   |
-+           |                     |
-+           +---------------------+
-+           |         ...         |
-+           |                     |
-+           +---------------------+
-+           |   SECTION  HEADER   |
-+           |                     |
-+           +---------------------+
-+           |       SECTION       |
-+           |                     |
-+           +---------------------+
-+           |         ...         |
-+           |                     |
-+           +---------------------+
-+           |       SECTION       |
-+           |                     |
-+           +---------------------+
-+           |      SIGNATURE      |
-+           |      (OPTIONAL)     |
-+           +---------------------+
-+
-+
-+xclbin/xsabin files can be packaged, un-packaged and inspected using an XRT
-+utility called **xclbinutil**. xclbinutil is part of the XRT open source
-+software stack. The source code for xclbinutil can be found at
-+https://github.com/Xilinx/XRT/tree/master/src/runtime_src/tools/xclbinutil
-+
-+For example, to enumerate the contents of a xclbin/xsabin use the *--info* switch
-+as shown below::
-+
-+
-+  xclbinutil --info --input /opt/xilinx/firmware/u50/gen3x16-xdma/blp/test/bandwidth.xclbin
-+  xclbinutil --info --input /lib/firmware/xilinx/862c7020a250293e32036f19956669e5/partition.xsabin
-+
-+
-+.. _device_tree_usage:
-+
-+Device Tree Usage
-+-----------------
-+
-+The xsabin file stores metadata which advertise HW subsystems present in a
-+partition. The metadata is stored in device tree format with a well defined
-+schema. XRT management driver uses this information to create *xrt_devices* and
-+bind *xrt_drivers* to them. The xrt_drivers could be independent modules or
-+found in **xrt-lib.ko** kernel module.
-+
-+Deployment Models
-+=================
-+
-+Baremetal
-+---------
-+
-+In bare-metal deployments, both MPF and UPF are visible and accessible. The
-+xrt-mgmt driver binds to MPF. The xrt-mgmt driver operations are privileged and
-+available to system administrator. The full stack is illustrated below::
-+
-+                            HOST
-+
-+               [XRT-MGMT]         [XRT-USER]
-+                    |                  |
-+                    |                  |
-+                 +-----+            +-----+
-+                 | MPF |            | UPF |
-+                 |     |            |     |
-+                 | PF0 |            | PF1 |
-+                 +--+--+            +--+--+
-+          ......... ^................. ^..........
-+                    |                  |
-+                    |   PCIe DEVICE    |
-+                    |                  |
-+                 +--+------------------+--+
-+                 |         SHELL          |
-+                 |                        |
-+                 +------------------------+
-+                 |         USER           |
-+                 |                        |
-+                 |                        |
-+                 |                        |
-+                 |                        |
-+                 +------------------------+
-+
-+
-+
-+Virtualized
-+-----------
-+
-+In virtualized deployments, the privileged MPF is assigned to the host but the
-+unprivileged UPF is assigned to a guest VM via PCIe pass-through. The xrt-mgmt
-+driver in host binds to MPF. The xrt-mgmt driver operations are privileged and
-+only accessible to the MPF. The full stack is illustrated below::
-+
-+
-+                                 ..............
-+                  HOST           .    VM      .
-+                                 .            .
-+               [XRT-MGMT]        . [XRT-USER] .
-+                    |            .     |      .
-+                    |            .     |      .
-+                 +-----+         .  +-----+   .
-+                 | MPF |         .  | UPF |   .
-+                 |     |         .  |     |   .
-+                 | PF0 |         .  | PF1 |   .
-+                 +--+--+         .  +--+--+   .
-+          ......... ^................. ^..........
-+                    |                  |
-+                    |   PCIe DEVICE    |
-+                    |                  |
-+                 +--+------------------+--+
-+                 |         SHELL          |
-+                 |                        |
-+                 +------------------------+
-+                 |         USER           |
-+                 |                        |
-+                 |                        |
-+                 |                        |
-+                 |                        |
-+                 +------------------------+
-+
-+
-+
-+
-+
-+Platform Security Considerations
-+================================
-+
-+`Security of Alveo Platform <https://xilinx.github.io/XRT/master/html/security.html>`_
-+discusses the deployment options and security implications in great detail.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 80eebc1d9ed5..fd7053bcfdb0 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7369,6 +7369,16 @@ F:	Documentation/fpga/
- F:	drivers/fpga/
- F:	include/linux/fpga/
++++ b/drivers/of/fdt_default.dts
+@@ -0,0 +1,5 @@
++// SPDX-License-Identifier: GPL-2.0
++/dts-v1/;
++
++/ {
++};
+diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
+index 631489f7f8c0..47c6bb47ef25 100644
+--- a/drivers/of/of_private.h
++++ b/drivers/of/of_private.h
+@@ -41,6 +41,11 @@ extern struct mutex of_mutex;
+ extern struct list_head aliases_lookup;
+ extern struct kset *of_kset;
  
-+FPGA XRT DRIVERS
-+M:	Lizhi Hou <lizhi.hou@xilinx.com>
-+R:	Max Zhen <max.zhen@xilinx.com>
-+R:	Sonal Santan <sonal.santan@xilinx.com>
-+L:	linux-fpga@vger.kernel.org
-+S:	Supported
-+W:	https://github.com/Xilinx/XRT
-+F:	Documentation/fpga/xrt.rst
-+F:	drivers/fpga/xrt/
++#if defined(CONFIG_OF_FLATTREE)
++extern u8 __dtb_fdt_default_begin[];
++extern u8 __dtb_fdt_default_end[];
++#endif
 +
- FPU EMULATOR
- M:	Bill Metzenthen <billm@melbpc.org.au>
- S:	Maintained
+ #if defined(CONFIG_OF_DYNAMIC)
+ extern int of_property_notify(int action, struct device_node *np,
+ 			      struct property *prop, struct property *old_prop);
 -- 
 2.27.0
 
