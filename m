@@ -2,86 +2,119 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1F0DC433EF
-	for <linux-fpga@archiver.kernel.org>; Wed, 15 Dec 2021 01:10:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92C9FC433F5
+	for <linux-fpga@archiver.kernel.org>; Fri, 17 Dec 2021 20:58:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231392AbhLOBKJ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 14 Dec 2021 20:10:09 -0500
-Received: from mga04.intel.com ([192.55.52.120]:11409 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231258AbhLOBKJ (ORCPT <rfc822;linux-fpga@vger.kernel.org>);
-        Tue, 14 Dec 2021 20:10:09 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1639530609; x=1671066609;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=p419YJnl6N9/x/smUi4dkMhI5rqPpm6B6apiobEu2QI=;
-  b=dNiin+iL+ZD8e7EGAP/UqYv3VcG0wCR3OLbXa5A4ji0tXq84gZGVf7bZ
-   b5QT255gEZwr9n+BO2W/Fsz51kXFM1ltY140Zt1oStdHf+1GtKYFOHPYL
-   ePDfYBx78hIVsPctHvu6JROQOPYuA3yrRWb3poGtZlnKfJE4k0IlLe7X7
-   k68Ve7eI6do1eUPs2In0lOr6Qb9jYsd89tgN+fWqoK52sHuaIdNdKBtFb
-   gg925Hiye5zhi2opoMwOxdaivyiL6UDln1pmBUHU9gBdAS/3CYVallgSj
-   rV9nE6J2+Cec7LoLnumtK0E+D55ZFdnBWhhh9RIqwkogMsW9pb+/N8+8C
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10197"; a="237855572"
-X-IronPort-AV: E=Sophos;i="5.88,207,1635231600"; 
-   d="scan'208";a="237855572"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Dec 2021 17:10:08 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.88,207,1635231600"; 
-   d="scan'208";a="545390647"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.68])
-  by orsmga001.jf.intel.com with ESMTP; 14 Dec 2021 17:10:07 -0800
-Date:   Wed, 15 Dec 2021 09:02:39 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Russ Weight <russell.h.weight@intel.com>
-Cc:     trix@redhat.com, mdf@kernel.org, hao.wu@intel.com,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fpga: stratix10-soc: cleanup double word in comment
-Message-ID: <20211215010239.GA787567@yilunxu-OptiPlex-7050>
-References: <20211214154749.2463147-1-trix@redhat.com>
- <6d5f9555-47c5-c84e-a62d-73fbee78a483@intel.com>
+        id S237155AbhLQU6B (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 17 Dec 2021 15:58:01 -0500
+Received: from mail-pj1-f43.google.com ([209.85.216.43]:35700 "EHLO
+        mail-pj1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S237096AbhLQU6A (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 17 Dec 2021 15:58:00 -0500
+Received: by mail-pj1-f43.google.com with SMTP id j6-20020a17090a588600b001a78a5ce46aso6837114pji.0
+        for <linux-fpga@vger.kernel.org>; Fri, 17 Dec 2021 12:58:00 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
+         :content-disposition;
+        bh=5OF+OC1yFihcGYEiym6LMwyOTzyuxH2ok1ferNGg4LY=;
+        b=Pu3Pa1eg4FMudO8XWEW4oajrleD8xyYKAqZiWLH1gBmUS3Rr5MAes2xsivmWwhzbuH
+         iLT1WcRsNN+6nBbDwyYZGkQgkS4E7uXY2BfJ5sxbdKaFUMzXrhFd2+5OyvsIVtxZDjaG
+         lG3XjEAUgH7X801gYXqCDPIwasWvIiJo7u4V3zagm4h0QNtcCLeZ70BkqnYwhymy3pwL
+         WRrx0NdESXqfgJG2IBX2kUfFn7iMROR/99cgUKdQ4rDDHzcjRnzmeHUli3mx28ZlUdY8
+         9md82HOr3SOMe8lRKKdd6YvPC97T0DkJIm2fkSS2DijrY8amFbaANQVgzj1FD5c8/0JN
+         z9Vg==
+X-Gm-Message-State: AOAM530JvFyXnx62AxVotEtgZoWtdugd+js68kXWpXl1uxgtq7w7LW9F
+        +P1siCVu68fD50dbjO1eYKY=
+X-Google-Smtp-Source: ABdhPJyuzBvM+q5cS36qBm3uM99Yk6ElvhqYkC+AqNRAtzDwnoFl9bSuxbRKB+OE6jVA1yt1ibRebg==
+X-Received: by 2002:a17:903:1252:b0:148:ef82:dd12 with SMTP id u18-20020a170903125200b00148ef82dd12mr463759plh.165.1639774680344;
+        Fri, 17 Dec 2021 12:58:00 -0800 (PST)
+Received: from localhost ([2601:647:5b00:ece0:aab:34ff:52ca:a7a5])
+        by smtp.gmail.com with ESMTPSA id s25sm876251pfg.208.2021.12.17.12.57.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 17 Dec 2021 12:57:59 -0800 (PST)
+Date:   Fri, 17 Dec 2021 12:57:58 -0800
+From:   Moritz Fischer <mdf@kernel.org>
+To:     gregkh@linuxfoundation.org
+Cc:     linux-fpga@vger.kernel.org, yilun.xu@intel.com, hao.wu@intel.com
+Subject: [GIT PULL] FPGA Manager changes for 5.17-rc1
+Message-ID: <Ybz51pwucMjutPsA@epycbox.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6d5f9555-47c5-c84e-a62d-73fbee78a483@intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Tue, Dec 14, 2021 at 08:59:45AM -0800, Russ Weight wrote:
-> 
-> 
-> On 12/14/21 7:47 AM, trix@redhat.com wrote:
-> > From: Tom Rix <trix@redhat.com>
-> >
-> > There are two that's in the comment, remove one.
-> >
-> > Signed-off-by: Tom Rix <trix@redhat.com>
-> Reviewed-by: Russ Weight <russell.h.weight@intel.com>
+The following changes since commit fa55b7dcdc43c1aa1ba12bca9d2dd4318c2a0dbf:
 
-Acked-by: Xu Yilun <yilun.xu@intel.com>
+  Linux 5.16-rc1 (2021-11-14 13:56:52 -0800)
 
-Thanks,
-Yilun
+are available in the Git repository at:
 
-> 
-> > ---
-> >  drivers/fpga/stratix10-soc.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
-> > index 357cea58ec98e..862069c95aa3c 100644
-> > --- a/drivers/fpga/stratix10-soc.c
-> > +++ b/drivers/fpga/stratix10-soc.c
-> > @@ -245,7 +245,7 @@ static int s10_send_buf(struct fpga_manager *mgr, const char *buf, size_t count)
-> >  	int ret;
-> >  	uint i;
-> >  
-> > -	/* get/lock a buffer that that's not being used */
-> > +	/* get/lock a buffer that is not being used */
-> >  	for (i = 0; i < NUM_SVC_BUFS; i++)
-> >  		if (!test_and_set_bit_lock(SVC_BUF_LOCK,
-> >  					   &priv->svc_bufs[i].lock))
+  git://git.kernel.org/pub/scm/linux/kernel/git/mdf/linux-fpga tags/fpga-for-5.17-rc1
+
+for you to fetch changes up to 98ceca2f29325d6114ea77be719a68c467c103d6:
+
+  fpga: region: fix kernel-doc (2021-12-09 20:06:54 -0800)
+
+----------------------------------------------------------------
+FPGA Manager changes for 5.17-rc1
+
+Russ' patches rework the way we register FPGA managers, regions and
+bridges by simplifying the functions into a single register call.
+
+Nathan's patch addresses an unused variable warning that was introduced
+by Russ' patches.
+
+Yang's patch addresses a kernel doc warning.
+
+All patches have been reviewed on the mailing list, and have been in the
+last few linux-next releases (as part of our for-next branch) without issues.
+
+Signed-off-by: Moritz Fischer <mdf@kernel.org>
+
+----------------------------------------------------------------
+Nathan Chancellor (1):
+      fpga: stratix10-soc: Do not use ret uninitialized in s10_probe()
+
+Russ Weight (3):
+      fpga: mgr: Use standard dev_release for class driver
+      fpga: bridge: Use standard dev_release for class driver
+      fpga: region: Use standard dev_release for class driver
+
+Yang Li (1):
+      fpga: region: fix kernel-doc
+
+ Documentation/driver-api/fpga/fpga-bridge.rst |   6 +-
+ Documentation/driver-api/fpga/fpga-mgr.rst    |  38 +++--
+ Documentation/driver-api/fpga/fpga-region.rst |  12 +-
+ drivers/fpga/altera-cvp.c                     |  12 +-
+ drivers/fpga/altera-fpga2sdram.c              |  12 +-
+ drivers/fpga/altera-freeze-bridge.c           |  10 +-
+ drivers/fpga/altera-hps2fpga.c                |  12 +-
+ drivers/fpga/altera-pr-ip-core.c              |   7 +-
+ drivers/fpga/altera-ps-spi.c                  |   9 +-
+ drivers/fpga/dfl-fme-br.c                     |  10 +-
+ drivers/fpga/dfl-fme-mgr.c                    |  22 ++-
+ drivers/fpga/dfl-fme-region.c                 |  17 +-
+ drivers/fpga/dfl.c                            |  12 +-
+ drivers/fpga/fpga-bridge.c                    | 122 ++++-----------
+ drivers/fpga/fpga-mgr.c                       | 215 +++++++++++---------------
+ drivers/fpga/fpga-region.c                    | 119 ++++++--------
+ drivers/fpga/ice40-spi.c                      |   9 +-
+ drivers/fpga/machxo2-spi.c                    |   9 +-
+ drivers/fpga/of-fpga-region.c                 |  12 +-
+ drivers/fpga/socfpga-a10.c                    |  16 +-
+ drivers/fpga/socfpga.c                        |   9 +-
+ drivers/fpga/stratix10-soc.c                  |  18 +--
+ drivers/fpga/ts73xx-fpga.c                    |   9 +-
+ drivers/fpga/versal-fpga.c                    |   9 +-
+ drivers/fpga/xilinx-pr-decoupler.c            |  17 +-
+ drivers/fpga/xilinx-spi.c                     |  11 +-
+ drivers/fpga/zynq-fpga.c                      |  16 +-
+ drivers/fpga/zynqmp-fpga.c                    |   9 +-
+ include/linux/fpga/fpga-bridge.h              |  30 ++--
+ include/linux/fpga/fpga-mgr.h                 |  62 +++++---
+ include/linux/fpga/fpga-region.h              |  36 +++--
+ 31 files changed, 388 insertions(+), 519 deletions(-)
