@@ -2,99 +2,92 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EB3DC4332F
-	for <linux-fpga@archiver.kernel.org>; Mon, 14 Feb 2022 11:42:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09210C43217
+	for <linux-fpga@archiver.kernel.org>; Mon, 14 Feb 2022 11:42:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352138AbiBNLjn (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 14 Feb 2022 06:39:43 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:42720 "EHLO
+        id S1352124AbiBNLjk (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 14 Feb 2022 06:39:40 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:42188 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1352013AbiBNLja (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 14 Feb 2022 06:39:30 -0500
+        with ESMTP id S1351964AbiBNLj3 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 14 Feb 2022 06:39:29 -0500
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79E3CDE8B;
-        Mon, 14 Feb 2022 03:29:42 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43814BC86;
+        Mon, 14 Feb 2022 03:29:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644838182; x=1676374182;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=L8LQgDjx0EOOe2M9p7V6FYObzOK0Cj9rYbobse8T9IQ=;
-  b=hwIot3nRZlzQeibazRS60y4VaAjyAAxVFr6W6tB2unGRT68e1Gsxwn3h
-   gSvb5kk2nM96FDGq4m17wKW2fz4uJWTtglYy9emUeGx6oA1m4pr4jeGD7
-   NdKVSmN/DQR9LVj4QCVsRKDjam5A7PqX2lpRL+oQ5txOAwqe1ozH3rOiF
-   cEXFl9SAHIVKFAzJML2n4lfObyuw370OZD8VUy6jdrgEOsxSjpXt7xwYJ
-   YffOIn0ATsEfBcya35jUGfVq0l7LUtPQ+m4d5yGBBAtstPnTsxL53SOUT
-   KS0EN1TPzKy6YjWNsOZAaDjnDXPtzgQYcZdYbeqCmR3PwLyOdGa17FR1z
-   g==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10257"; a="250276735"
+  t=1644838175; x=1676374175;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=xqXAjqj9UB3uzzHP4hrVah9w4aiJB22TXUi2vtc3JR4=;
+  b=bndRfRJgZAuW1GRN5IIqbeieYL5ioaa0Mlnc61PqzcrmWgbg0y+Z/oQ0
+   9aEbzDtvTCj226l1RvwVKLT50NX8q3qcqs0bRh/EiqrDKVZ6dPmsBRasX
+   lYj4jRi7cnsgneRboNhna52fmV+32J/f55bSw2GYAHymiadehgHF4nr8i
+   iIr+OxuURf1U/TAR4FSD2o+PIJ5IjAWz5mDd4E6+y4nrWWOCIhOBLh3KK
+   HGJFu4NZCAWNa2cIOoLAJW8tN95Qefq1g0veqaVzZEFfUStS3jAo7cqCH
+   BIqzy88aW6427ktsuUjVviKwtGRcnJeft+IrnNtAnUsyUQptoRXzpQq9L
+   w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10257"; a="250276718"
 X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
-   d="scan'208";a="250276735"
+   d="scan'208";a="250276718"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 03:29:42 -0800
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 03:29:35 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
-   d="scan'208";a="587167012"
+   d="scan'208";a="587166931"
 Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
-  by fmsmga008.fm.intel.com with ESMTP; 14 Feb 2022 03:29:39 -0800
+  by fmsmga008.fm.intel.com with ESMTP; 14 Feb 2022 03:29:32 -0800
 From:   Tianfei zhang <tianfei.zhang@intel.com>
 To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
         yilun.xu@intel.com, linux-fpga@vger.kernel.org,
         linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     corbet@lwn.net, Matthew Gerlach <matthew.gerlach@linux.intel.com>,
-        Tianfei Zhang <tianfei.zhang@intel.com>
-Subject: [PATCH v1 3/7] fpga: dfl: Allow for ports with no local bar space.
-Date:   Mon, 14 Feb 2022 06:26:15 -0500
-Message-Id: <20220214112619.219761-4-tianfei.zhang@intel.com>
+Cc:     corbet@lwn.net, Tianfei zhang <tianfei.zhang@intel.com>
+Subject: [PATCH v1 0/7] Add Intel OFS support for DFL driver
+Date:   Mon, 14 Feb 2022 06:26:12 -0500
+Message-Id: <20220214112619.219761-1-tianfei.zhang@intel.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20220214112619.219761-1-tianfei.zhang@intel.com>
-References: <20220214112619.219761-1-tianfei.zhang@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+This patchset adding IOFS (Intel Open FPGA stack) support for
+DFL driver. IOFS is Intel's version of a common core set of
+RTL to allow customers to easily interface to logic and IP
+on the FPGA. IOFS leverage the DFL for the implementation of
+the FPGA RTL design.
 
-From a fpga partial reconfiguration standpoint, a port
-may not be connected any local BAR space.  The port could
-be connected to a different PCIe Physical Function (PF) or
-Virtual Function (VF), in which case another driver instance
-would manage the endpoint.
+Patch 1, adds architecture description about IOFS support for DFL
+in documentation.
+Patch 2, checks feature type during the user interrupt enumeration.
+On IOFS, the Feature ID of the PMCI device and Port User Interrupts
+are identical.
+Patch 3, allows a port may not be connected any local BAR space.
+Patch 4 and 5, fix VF creation when ports have no local
+BAR space and no port connected to VF.
+Patch 6, handles dfl's starting with AFU and allows for VFs
+to be created.
+Patch 7, adds PCIe Device ID for OFS. 
 
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Signed-off-by: Tianfei Zhang <tianfei.zhang@intel.com>
----
- drivers/fpga/dfl-pci.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Matthew Gerlach (5):
+  fpga: dfl: Allow for ports with no local bar space.
+  fpga: dfl: fix VF creation when ports have no local BAR space
+  drivers: fpga: dfl: handle empty port list
+  fpga: dfl: Handle dfl's starting with AFU
+  fpga: dfl: pci: Add generic OFS PCI PID
 
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index 4d68719e608f..8abd9b408403 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -243,6 +243,7 @@ static int find_dfls_by_default(struct pci_dev *pcidev,
- 		v = readq(base + FME_HDR_CAP);
- 		port_num = FIELD_GET(FME_CAP_NUM_PORTS, v);
- 
-+		dev_info(&pcidev->dev, "port_num = %d\n", port_num);
- 		WARN_ON(port_num > MAX_DFL_FPGA_PORT_NUM);
- 
- 		for (i = 0; i < port_num; i++) {
-@@ -258,6 +259,13 @@ static int find_dfls_by_default(struct pci_dev *pcidev,
- 			 */
- 			bar = FIELD_GET(FME_PORT_OFST_BAR_ID, v);
- 			offset = FIELD_GET(FME_PORT_OFST_DFH_OFST, v);
-+			if (bar >= PCI_STD_NUM_BARS) {
-+				dev_info(&pcidev->dev, "skipping port without local BAR space %d\n",
-+					 bar);
-+				continue;
-+			} else {
-+				dev_info(&pcidev->dev, "BAR %d offset %u\n", bar, offset);
-+			}
- 			start = pci_resource_start(pcidev, bar) + offset;
- 			len = pci_resource_len(pcidev, bar) - offset;
- 
+Tianfei Zhang (2):
+  Documentation: fpga: dfl: add description of IOFS
+  fpga: dfl: check feature type before parse irq info
+
+ Documentation/fpga/dfl.rst | 99 +++++++++++++++++++++++++++++++++++++-
+ drivers/fpga/dfl-pci.c     | 19 +++++++-
+ drivers/fpga/dfl.c         | 47 +++++++++++++-----
+ 3 files changed, 151 insertions(+), 14 deletions(-)
+
+
+base-commit: f1baf68e1383f6ed93eb9cff2866d46562607a43
 -- 
 2.17.1
 
