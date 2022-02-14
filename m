@@ -2,103 +2,101 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79943C433F5
-	for <linux-fpga@archiver.kernel.org>; Thu, 27 Jan 2022 02:58:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82644C433EF
+	for <linux-fpga@archiver.kernel.org>; Mon, 14 Feb 2022 11:42:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235596AbiA0C4T (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 26 Jan 2022 21:56:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34170 "EHLO
+        id S1352179AbiBNLjn (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 14 Feb 2022 06:39:43 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:43628 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235614AbiA0C4Q (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 26 Jan 2022 21:56:16 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D799C06161C
-        for <linux-fpga@vger.kernel.org>; Wed, 26 Jan 2022 18:56:16 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id E9C7DB82103
-        for <linux-fpga@vger.kernel.org>; Thu, 27 Jan 2022 02:56:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 204FBC340E7;
-        Thu, 27 Jan 2022 02:56:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1643252173;
-        bh=6K5LRw/6eBLzwguKuZ4Ic8YCdbuKrVGa7fgHQ0790Nw=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=r1uxFpyMmqpV2pp9ijFGYaa+LyGW2MXQHdp8HWP8cnYPLkg2aFqIhp+SAlN69HEgM
-         yrjaQWGslLNAUKui5jXHAORZfQ2Eae/MQ/IhPqEPen6aiub8Mbacndnzyw5fGP02Iz
-         zVJqH6Y926PcbxXt/etrxhCqH7SIuMEhT6DCBFxXduAKZjyqc8miWR9RumTF+wI4rK
-         99L9eFIFg+pK+kO3PRsEvvBfz4Df4DiFeHDUxzaFh80HzUSjheoAqt4i9p1kViZqBq
-         oIIUWWyf5mwCKcKsJpEHa5WY8o7MChQXcGaXe359ui8WBe6Qlf/vPZnqAvas2VJ4Vc
-         cTgnFZIg1t13A==
-Message-ID: <1f6acc9f-da52-df60-e1fb-53b86419457a@kernel.org>
-Date:   Wed, 26 Jan 2022 20:56:11 -0600
+        with ESMTP id S1352021AbiBNLja (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 14 Feb 2022 06:39:30 -0500
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4D07DF40;
+        Mon, 14 Feb 2022 03:29:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1644838185; x=1676374185;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=LyVZUfq/4Kt0u89YufhzKsBwro574htmaUqau0RQcl0=;
+  b=bV7YjWRDXHWJeQFEoqNSyv7beWasxmTvNQB33sA6mqmBi/z0raVD8Tck
+   X+wxmHFswIP8z4CE2M8b3pGxh8xncZ3VD5IUvqsDNKhbHcAHv7Oesi9IX
+   W+q/TVfTehdEYK1zNrtXMCMhb2UL9UZg141z5AQThVSXdZvBo32EWwNqa
+   Shvl5CWJeE25o+LNPR1M84/qiKoVXOc9zq4OeRoYQFAQKsKFt/8jzyFgX
+   E/+w4vXb0iFR3s6Ol3QWntomASwZnZACMQasFI2ZldQG7OqQWFcd9545H
+   dLFHfxs9jijYX3Ciopc6wPivu3q30f7MJLWb7a/qUa5Fiuc6bsuvn9Uoh
+   w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10257"; a="250276737"
+X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
+   d="scan'208";a="250276737"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 03:29:45 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
+   d="scan'208";a="587167021"
+Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
+  by fmsmga008.fm.intel.com with ESMTP; 14 Feb 2022 03:29:42 -0800
+From:   Tianfei zhang <tianfei.zhang@intel.com>
+To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
+        yilun.xu@intel.com, linux-fpga@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     corbet@lwn.net, Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        Tianfei Zhang <tianfei.zhang@intel.com>
+Subject: [PATCH v1 4/7] fpga: dfl: fix VF creation when ports have no local BAR space
+Date:   Mon, 14 Feb 2022 06:26:16 -0500
+Message-Id: <20220214112619.219761-5-tianfei.zhang@intel.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20220214112619.219761-1-tianfei.zhang@intel.com>
+References: <20220214112619.219761-1-tianfei.zhang@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH] firmware: stratix10-svc: extend SVC driver to get the
- firmware version
-Content-Language: en-US
-To:     Xu Yilun <yilun.xu@intel.com>, Moritz Fischer <mdf@kernel.org>
-Cc:     hao.wu@intel.com, trix@redhat.com, linux-fpga@vger.kernel.org,
-        Richard Gong <richard.gong@intel.com>
-References: <20220125192853.1956486-1-dinguyen@kernel.org>
- <20220126010723.GA1139334@yilunxu-OptiPlex-7050>
- <5a1b6658-062c-d777-69d3-6a053d087ca6@kernel.org>
- <YfDUGD5+hqOnSNjP@epycbox.lan>
- <20220127003902.GA1144478@yilunxu-OptiPlex-7050>
-From:   Dinh Nguyen <dinguyen@kernel.org>
-In-Reply-To: <20220127003902.GA1144478@yilunxu-OptiPlex-7050>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
+From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 
+When a port is not connected to the same PCIe endpoint as
+the FME, the port does not need to be released before being
+virtualized.  Fix VF creation code to handle this new use
+case.
 
-On 1/26/22 18:39, Xu Yilun wrote:
-> On Tue, Jan 25, 2022 at 08:54:48PM -0800, Moritz Fischer wrote:
->> Dinh,
->>
->> On Tue, Jan 25, 2022 at 10:31:06PM -0600, Dinh Nguyen wrote:
->>>
->>>
->>> On 1/25/22 19:07, Xu Yilun wrote:
->>>> On Tue, Jan 25, 2022 at 01:28:53PM -0600, Dinh Nguyen wrote:
->>>>> From: Richard Gong <richard.gong@intel.com>
->>>>>
->>>>> Extend Intel service layer driver to get the firmware version running at
->>>>> FPGA device. Therefore FPGA manager driver, one of Intel service layer
->>>>> driver's client, can decide whether to handle the newly added bitstream
->>>>> authentication function based on the retrieved firmware version.
->>>>>
->>>>> Acked-by: Moritz Fischr <mdf@kernel.org>
->>>>
->>>> This is already acked and no more change, is it? So please just ping in
->>>> the original mail or add the [RESEND PATCH] prefix.
->>>>
->>>> The patch is good to me.
->>>>
->>>> Acked-by: Xu Yilun <yilun.xu@intel.com>
->>>>
->>>
->>> Thanks, I added Moritz Acked-by: is the only change.
->>>
->>> Dinh
->>
->> Did we traditionally take those through FPGA tree, did Greg pick those
->> up?
-> 
-> This patch was the 3rd one of a patchset. It is acked but the patchset
-> is not, so we didn't take the single one in FPGA tree. This is the last
-> conversation.
-> 
-> https://lore.kernel.org/linux-fpga/YGDsl3VlIAnyJDzd@epycbox.lan/
-> 
+Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Signed-off-by: Tianfei Zhang <tianfei.zhang@intel.com>
+---
+ drivers/fpga/dfl.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-Right, Richard has left Intel. So what I've done is gone back and try to 
-re-send patches that have been Acked, like this one, and split out the 
-other patches to a smaller series to restart the process.
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 26f8cf890700..cfc539a656f0 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -1705,15 +1705,22 @@ EXPORT_SYMBOL_GPL(dfl_fpga_cdev_config_ports_pf);
+ int dfl_fpga_cdev_config_ports_vf(struct dfl_fpga_cdev *cdev, int num_vfs)
+ {
+ 	struct dfl_feature_platform_data *pdata;
+-	int ret = 0;
++	int ret = 0, port_count = 0;
+ 
+ 	mutex_lock(&cdev->lock);
++
++	list_for_each_entry(pdata, &cdev->port_dev_list, node) {
++		if (pdata->dev)
++			continue;
++		port_count++;
++	}
++
+ 	/*
+ 	 * can't turn multiple ports into 1 VF device, only 1 port for 1 VF
+ 	 * device, so if released port number doesn't match VF device number,
+ 	 * then reject the request with -EINVAL error code.
+ 	 */
+-	if (cdev->released_port_num != num_vfs) {
++	if (port_count && cdev->released_port_num != num_vfs) {
+ 		ret = -EINVAL;
+ 		goto done;
+ 	}
+-- 
+2.17.1
 
-Dinh
