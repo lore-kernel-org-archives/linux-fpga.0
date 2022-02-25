@@ -2,130 +2,106 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0633C433EF
-	for <linux-fpga@archiver.kernel.org>; Fri, 25 Feb 2022 03:16:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF03CC433F5
+	for <linux-fpga@archiver.kernel.org>; Fri, 25 Feb 2022 16:02:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233737AbiBYDPI (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 24 Feb 2022 22:15:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42626 "EHLO
+        id S242434AbiBYQBY (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 25 Feb 2022 11:01:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52352 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236954AbiBYDN4 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 24 Feb 2022 22:13:56 -0500
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFB3E7DA91;
-        Thu, 24 Feb 2022 19:13:24 -0800 (PST)
+        with ESMTP id S237269AbiBYQBV (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 25 Feb 2022 11:01:21 -0500
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25A451F1244;
+        Fri, 25 Feb 2022 08:00:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1645758804; x=1677294804;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=+6kBKmZZxOFTdF4b8FToTP7Rqc52r8lXs4pLygIIL88=;
-  b=d82ae4h7WDvgclgehNofPHRWwAnzkHwGg0eYlzjiT/7gN0lmVsXxui/G
-   oxzArSMVesZlBYl40HDy5jSXZk+bCeXHvnISfDSq4BQkSIsckPQixP0me
-   rqHPrgyPytOhPemcDQbf09eTfT/N480R+rnvaEG4Ln+xmHv+elKnqmUVc
-   ERkHPS250OXQe6HKRfJiCw8OzA4r+h7M+50oYnTowuIDQDn8BIqcZeZSa
-   8uIB+sDAEF0zxPGNR+/rEbWULmCP89gCYC+5PMa0jzi3JVax2QJgHspGb
-   Hv+hbVbT7lm0G9/RiycYT5J5bUY+Aon1wXfftCmtC4BkSE8Y//kMeDN+l
+  t=1645804849; x=1677340849;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=K8VkR/kbOb0KBxltMFpm/So3glqC1wOwZKLM8ttnp2Q=;
+  b=mfHUs5xE4+Fv4pz5ToCOywZ/faV6RtODyr4dR0Y2FlbJcYOxAUzw5xE5
+   anh25m2VfiysZ4hK8/6KXl2nINzsVwWfJdwXd+Hdui5ibARUPW06aHaCh
+   VN+uFzzF+FAfyfwnhJ5aBUPwtYbRwXD6gaqNsHVegSSWUMBnGwF75vQ/v
+   sQqfQ1i5uhs+FBoGeyoudd93oCwJp/QJ64Ewr44QXukRABbXEiYpqWBLu
+   OGEhKWzjAsllVJMWGDQgZe/Iq0qB5s5wP7O8rnHstjYNBgyZ82WLgd6y0
+   iR3teCHu+AMudlUOScmv4lMOTWEwMQI+qx2VfN5sWaYp01VELfGgu3H5E
    g==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10268"; a="252603001"
-X-IronPort-AV: E=Sophos;i="5.90,135,1643702400"; 
-   d="scan'208";a="252603001"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Feb 2022 19:13:24 -0800
+X-IronPort-AV: E=McAfee;i="6200,9189,10268"; a="315737207"
+X-IronPort-AV: E=Sophos;i="5.90,136,1643702400"; 
+   d="scan'208";a="315737207"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Feb 2022 08:00:48 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,135,1643702400"; 
-   d="scan'208";a="684512494"
-Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
-  by fmsmga001.fm.intel.com with ESMTP; 24 Feb 2022 19:13:21 -0800
-From:   Tianfei zhang <tianfei.zhang@intel.com>
-To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
-        yilun.xu@intel.com, linux-fpga@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     corbet@lwn.net, Matthew Gerlach <matthew.gerlach@linux.intel.com>,
-        Tianfei Zhang <tianfei.zhang@intel.com>
-Subject: [PATCH v2 4/5] fpga: dfl: Handle dfl's starting with AFU
-Date:   Thu, 24 Feb 2022 22:10:01 -0500
-Message-Id: <20220225031002.261264-5-tianfei.zhang@intel.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20220225031002.261264-1-tianfei.zhang@intel.com>
-References: <20220225031002.261264-1-tianfei.zhang@intel.com>
+X-IronPort-AV: E=Sophos;i="5.90,136,1643702400"; 
+   d="scan'208";a="533615385"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.68])
+  by orsmga007.jf.intel.com with ESMTP; 25 Feb 2022 08:00:47 -0800
+Date:   Fri, 25 Feb 2022 23:52:08 +0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     Yusuf Khan <yusisamerican@gmail.com>
+Cc:     linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org,
+        mdf@kernel.org, trix@redhat.com, hao.wu@intel.com
+Subject: Re: [PATCH -next] pga: dfl: pci: Make sure DMA related error check
+ is  not done twice
+Message-ID: <20220225155208.GA1377611@yilunxu-OptiPlex-7050>
+References: <20220222042700.385001-1-yusisamerican@gmail.com>
+ <CAJoG2+-97KyWrxym2NXECRtjT9OxVQE_=DcNkUfOsPm_Ax90Aw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJoG2+-97KyWrxym2NXECRtjT9OxVQE_=DcNkUfOsPm_Ax90Aw@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+On Mon, Feb 21, 2022 at 08:39:48PM -0800, Yusuf Khan wrote:
+> Note: This bug was introduced here:
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/patch/?id=ada3caabaf6135150077c3f729bb06e8f3b5b8f6
+> I saw this commit inside the linux-next branch, it is not present in
+> the mainline branch.
+> The linux-next branch was last updated 5 days ago, so I am unsure
+> about the state of that commit.
+> 
+> On Mon, Feb 21, 2022 at 8:27 PM Yusuf Khan <yusisamerican@gmail.com> wrote:
+> >
+> > In the case that the DMA 64 bit bit mask error check does not fail,
+> > the error check will be done twice, this patch fixed that.
+> >
+> > NOTE: This patch is only for use in the linux-next branch as the
+> > commit that caused this bug happened there.
+> >
+> > Signed-off-by: Yusuf Khan <yusisamerican@gmail.com>
+> > ---
+> >  drivers/fpga/dfl-pci.c | 9 +++++----
+> >  1 file changed, 5 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+> > index 717ac9715970..6222f18aed4b 100644
+> > --- a/drivers/fpga/dfl-pci.c
+> > +++ b/drivers/fpga/dfl-pci.c
+> > @@ -356,11 +356,12 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
+> >         pci_set_master(pcidev);
+> >
+> >         ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(64));
+> > -       if (ret)
+> > -               ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(32));
+> >         if (ret) {
+> > -               dev_err(&pcidev->dev, "No suitable DMA support available.\n");
+> > -               goto disable_error_report_exit;
+> > +               ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(32));
+> > +               if (ret) {
+> > +                       dev_err(&pcidev->dev, "No suitable DMA support available.\n");
+> > +                       goto disable_error_report_exit;
+> > +               }
 
-Allow for a Device Feature List (DFL) to start with
-a Device Feature Header (DFH) of type Accelerator Function Unit (AFU)
-by doing nothing. This allows for PCIe VFs to be created.
+Looks good to me.
 
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Signed-off-by: Tianfei Zhang <tianfei.zhang@intel.com>
----
- drivers/fpga/dfl-pci.c |  7 ++++++-
- drivers/fpga/dfl.c     | 22 +++++++++++++---------
- 2 files changed, 19 insertions(+), 10 deletions(-)
+Acked-by: Xu Yilun <yilun.xu@intel.com>
 
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index 33545c999c06..e7d58e7b1bbd 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -275,7 +275,12 @@ static int find_dfls_by_default(struct pci_dev *pcidev,
- 
- 		dfl_fpga_enum_info_add_dfl(info, start, len);
- 	} else {
--		ret = -ENODEV;
-+		v = readq(base + DFH);
-+		if (FIELD_GET(DFH_TYPE, v) != DFH_TYPE_AFU) {
-+			dev_info(&pcidev->dev, "Unknown feature type 0x%llx id 0x%llx\n",
-+				 FIELD_GET(DFH_TYPE, v), FIELD_GET(DFH_ID, v));
-+			ret = -ENODEV;
-+		}
- 	}
- 
- 	/* release I/O mappings for next step enumeration */
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index afa9311c30d5..8a71ff6c3e2f 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -900,9 +900,11 @@ static void build_info_free(struct build_feature_devs_info *binfo)
- 		dfl_id_free(feature_dev_id_type(binfo->feature_dev),
- 			    binfo->feature_dev->id);
- 
--		list_for_each_entry_safe(finfo, p, &binfo->sub_features, node) {
--			list_del(&finfo->node);
--			kfree(finfo);
-+		if (!list_empty(&binfo->sub_features)) {
-+			list_for_each_entry_safe(finfo, p, &binfo->sub_features, node) {
-+				list_del(&finfo->node);
-+				kfree(finfo);
-+			}
- 		}
- 	}
- 
-@@ -1445,12 +1447,14 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
- 	 * start enumeration for all feature devices based on Device Feature
- 	 * Lists.
- 	 */
--	list_for_each_entry(dfl, &info->dfls, node) {
--		ret = parse_feature_list(binfo, dfl->start, dfl->len);
--		if (ret) {
--			remove_feature_devs(cdev);
--			build_info_free(binfo);
--			goto unregister_region_exit;
-+	if (!list_empty(&info->dfls)) {
-+		list_for_each_entry(dfl, &info->dfls, node) {
-+			ret = parse_feature_list(binfo, dfl->start, dfl->len);
-+			if (ret) {
-+				remove_feature_devs(cdev);
-+				build_info_free(binfo);
-+				goto unregister_region_exit;
-+			}
- 		}
- 	}
- 
--- 
-2.26.2
-
+> >         }
+> >
+> >         ret = cci_init_drvdata(pcidev);
+> > --
+> > 2.25.1
+> >
