@@ -2,154 +2,106 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21F65C433F5
-	for <linux-fpga@archiver.kernel.org>; Fri,  4 Mar 2022 18:30:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9560EC433EF
+	for <linux-fpga@archiver.kernel.org>; Mon,  7 Mar 2022 13:37:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241490AbiCDS3d (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 4 Mar 2022 13:29:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42270 "EHLO
+        id S240161AbiCGNgz (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 7 Mar 2022 08:36:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52324 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239963AbiCDS3c (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 4 Mar 2022 13:29:32 -0500
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DCF64C79B;
-        Fri,  4 Mar 2022 10:28:44 -0800 (PST)
+        with ESMTP id S231882AbiCGNgy (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 7 Mar 2022 08:36:54 -0500
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 91E747D028;
+        Mon,  7 Mar 2022 05:36:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1646418524; x=1677954524;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=GiSHayaTp3plS/8dF4tiE4fhYopJ+xm/lVEP2Z67CGk=;
-  b=EiDoe8kLGaOx5oA41UB+Nx9CHOqFoJm3GqEW2zqpNFMKTXyyfBZithAG
-   rV9X8pH+hkntnhMYR3jC6f1OVx1l9LRMlNzDk1MYqiJOVWZZlv1oi2u4z
-   urZZtD9mMb9P+We4dR0+BLBoC2ABYbql1uEM3Aj/2m7hYTNYiGO0igXeH
-   ql3bgNfT12BuUx7gXbiRSu0mGoFjGdos3ATbGAU+wb4IiK0O7jrSCGHk0
-   3opOcnALZXGaGaFaG3KjVw7c2e6FhvFxLPupW/2g/Ah8RmN4NrSuRNV3+
-   hdbIijUfgG5sewN/2gbGfB1UCWbZZEVy01ym1pUFQabu0ClhuiypeiRnR
+  t=1646660160; x=1678196160;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=tpHQxmvMKX2tSqizOVBvt64e2xRaZ7QMOV9omiltDXk=;
+  b=lUo7mn4pbLsek+7pav+bpqU/Ll4EG2Q29/RIg3Ra1j/X0+W2YDfvp2Ff
+   9bDrmjCOWXKUYXNO5gj8OLXh6DBBsSWqgt9+b18YOqnd7Z17xigUQSFPF
+   7SarOKghnrh66Tmc+vpZkh4fGPOy7vVhvQf8Gu5lb6szPE2sJxAF/wClK
+   5NdBTTxOHHB7CLwc4WoJ4IZgABqlQcTXzuCWgCv4SQmYlPLMpEz7oaSC9
+   DfFBFudqjILijBJ+V6LWu7PXPgU+gWB2Aw1Xpu2Ej0/IqhU17PRbh/L94
+   omDWz4NXglAlhVZrecKamybOP6YjiGnJkc9w6hwjGGVXtqhFnjVnnhTRs
    w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10276"; a="278726905"
-X-IronPort-AV: E=Sophos;i="5.90,155,1643702400"; 
-   d="scan'208";a="278726905"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Mar 2022 10:28:44 -0800
-X-IronPort-AV: E=Sophos;i="5.90,155,1643702400"; 
-   d="scan'208";a="552318052"
-Received: from rhweight-wrk1.ra.intel.com ([137.102.106.40])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Mar 2022 10:28:43 -0800
-Date:   Fri, 4 Mar 2022 10:30:47 -0800 (PST)
-From:   matthew.gerlach@linux.intel.com
-X-X-Sender: mgerlach@rhweight-WRK1
-To:     Russ Weight <russell.h.weight@intel.com>
-cc:     Tom Rix <trix@redhat.com>, hao.wu@intel.com, yilun.xu@intel.com,
-        basheer.ahmed.muddebihal@intel.com, mdf@kernel.org, corbet@lwn.net,
-        linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dan.j.williams@intel.com,
-        ashok.raj@intel.com, tianfei.zhang@intel.com
-Subject: Re: [PATCH v2 1/2] Documentation: fpga: dfl: add PCI Identification
- documentation
-In-Reply-To: <bc41bc12-0d88-771f-7e78-4e29361fcfd8@intel.com>
-Message-ID: <alpine.DEB.2.22.394.2203041021240.3408681@rhweight-WRK1>
-References: <20220303003534.3307971-1-matthew.gerlach@linux.intel.com> <20220303003534.3307971-2-matthew.gerlach@linux.intel.com> <6448f21f-7ce1-d9ce-1048-29aca14f9d3d@redhat.com> <bc41bc12-0d88-771f-7e78-4e29361fcfd8@intel.com>
-User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
+X-IronPort-AV: E=McAfee;i="6200,9189,10278"; a="254579313"
+X-IronPort-AV: E=Sophos;i="5.90,162,1643702400"; 
+   d="scan'208";a="254579313"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Mar 2022 05:36:00 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.90,162,1643702400"; 
+   d="scan'208";a="643246932"
+Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
+  by orsmga004.jf.intel.com with ESMTP; 07 Mar 2022 05:35:57 -0800
+From:   Tianfei zhang <tianfei.zhang@intel.com>
+To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
+        yilun.xu@intel.com, linux-fpga@vger.kernel.org,
+        linux-doc@vger.kernel.org
+Cc:     corbet@lwn.net, Tianfei zhang <tianfei.zhang@intel.com>
+Subject: [PATCH v4 0/6] Add OFS support for DFL driver
+Date:   Mon,  7 Mar 2022 08:32:37 -0500
+Message-Id: <20220307133243.1426300-1-tianfei.zhang@intel.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-2071792777-1646418653=:3408681"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+This is v4 patchset adding OFS (Open FPGA stack) support for
+DFL driver, based on v5.17-rc7. OFS is a collection of RTL
+and open software providing interface to access the instantiated
+RTL easily in FPGA. OFS leverages the DFL for the implementation
+of the FPGA RTL design.
 
---8323328-2071792777-1646418653=:3408681
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+Patch 1, allows for ports without local bar space for "multiple VFs per
+PR slot" model.
+Patch 2, uses some lowest bits of flags to track the port status which
+the AFU was connected to port device or not.
+Patch 3, checks the number of released port match the number of
+VFs or not in legacy model.
+Patch 4, configures port access mode for afu connected with port.
+Patch 5, handles dfl's starting with AFU.
+Patch 6, adds architecture description about OFS support for DFL
+in documentation.
 
+Changelog v3 -> v4:
+   - change "features" to "flags" in dfl_fpga_cdev to track the status
+     of port device.
+   - use dfl_fpga_cdev->flags to check if it need configure the port access
+     mode or not.
+   - add description about access the AFU on "multiple VFs per PR slot"
+     model.
+Changelog v2 -> v3:
+   - no code change, just change the name from IOFS to OFS.
 
+Changelog v1 -> v2:
+   - Introducing a new member "features" in dfl_fpga_cdev for feature
+     control.
+   - Adding new flag DFL_FEAT_PORT_CONNECTED_AFU for OFS legacy model.
+   - Updates the documentation for the access models about AFU in OFS.
+   - Drop the PCI PID patch and will send it later.
 
-On Fri, 4 Mar 2022, Russ Weight wrote:
+Matthew Gerlach (2):
+  fpga: dfl: Allow ports without local bar space.
+  fpga: dfl: support PF/VF starting with DFH
 
->
->
-> On 3/3/22 14:04, Tom Rix wrote:
->>
->> On 3/2/22 4:35 PM, matthew.gerlach@linux.intel.com wrote:
->>> From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
->>>
->>> Add documentation on identifying FPGA based PCI cards prompted
->>> by discussion on the linux-fpga@vger.kernel.org mailing list.
->>>
->>> Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
->>> ---
->>> v2: Introduced in v2.
->>> ---
->>>   Documentation/fpga/dfl.rst | 20 ++++++++++++++++++++
->>>   1 file changed, 20 insertions(+)
->>>
->>> diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
->>> index ef9eec71f6f3..5fb2ca8e76d7 100644
->>> --- a/Documentation/fpga/dfl.rst
->>> +++ b/Documentation/fpga/dfl.rst
->>> @@ -502,6 +502,26 @@ Developer only needs to provide a sub feature driver with matched feature id.
->>>   FME Partial Reconfiguration Sub Feature driver (see drivers/fpga/dfl-fme-pr.c)
->>>   could be a reference.
->>>   +PCI Device Identification
->>> +================================
->>> +Since FPGA based PCI cards can be reconfigured to a perform a completely
->>> +new function at runtime, properly identifying such cards and binding the
->>> +correct driver can be challenging. In many use cases, deployed FPGA based
->>> +PCI cards are essentially static and the PCI Product ID and Vendor ID pair
->>> +is sufficient to identify the card.  The DFL framework helps with the
->>> +dynamic case of deployed FPGA cards changing at run time by providing
->>> +more detailed information about card discoverable at runtime.
->>> +
->>> +At one level, the DFL on a PCI card describes the function of the card.
->>> +However, the same DFL could be instantiated on different physical cards.
->>> +Conversely, different DFLs could be instantiated on the same physical card.
->>> +Practical management of a cloud containing a heterogeneous set of such cards
->>> +requires a PCI level of card identification. While the PCI Product ID and
->>> +Vendor ID may be sufficient to bind the dfl-pci driver, it is expected
->>> +that FPGA PCI cards would advertise suitable Subsystem ID and Subsystem
->>> +Vendor ID values. PCI Vital Product Data (VPD) can also be used for
->>> +more granular information about the board.
->>
->> This describes a bit more of the problem, it should describe it wrt ofs dev id. The introduction of the ofs dev should be explicitly called out as a generic pci id.
+Tianfei zhang (4):
+  fpga: dfl: tracking port conntected with AFU
+  fpga: dfl: check released_port_num and num_vfs for legacy model
+  fpga: dfl: configure port access mode for afu connected with port
+  Documentation: fpga: dfl: add description of OFS
 
-The problem I'm describing exists for all FPGA based PCI cards; so I am 
-purposely trying to be abstract as much as possible.
+ Documentation/fpga/dfl.rst | 114 +++++++++++++++++++++++++++++++++++++
+ drivers/fpga/dfl-pci.c     |   9 +++
+ drivers/fpga/dfl.c         |  62 ++++++++++++++------
+ drivers/fpga/dfl.h         |  22 +++++++
+ 4 files changed, 191 insertions(+), 16 deletions(-)
 
->>
->> Why couldn't one of the old pci id's be reused ?
+-- 
+2.26.2
 
-Yes, old pci id's could be reused, and people have done just that.  We 
-thought a new PCI ID would minimize confusion with cards that have already 
-been deployed.
-
->>
->> How will the subvendor/subid be enforced ?
-
-Subvendor and Subid are managed just like any other PCI card with or 
-without a FPGA.
-
->>
->> Is the current security manager patchset smart enough to save the board from being bricked when a user doesn't look beyond the pci id ?
->
-> Yes - the security manager is invoked based of DFL feature ID and revision, and the functionality is differentiated based on the same information.
->
->>
->> What happens if a board uses this device id but doesn't have a max10 to do the update ?
-
-If a board doesn't have a max10, then there will be no DFH for a max10 in 
-the board's DFLs.  Presumeably, the board would need some update process, 
-and an approprate DFH would be in that board's DFL.
-
->>
->> Tom
->>
->>> +
->>>   Location of DFLs on a PCI Device
->>>   ================================
->>>   The original method for finding a DFL on a PCI device assumed the start of the
->>
->
->
---8323328-2071792777-1646418653=:3408681--
