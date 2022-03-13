@@ -2,203 +2,110 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE88BC433F5
-	for <linux-fpga@archiver.kernel.org>; Sun, 13 Mar 2022 11:00:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E634C4332F
+	for <linux-fpga@archiver.kernel.org>; Sun, 13 Mar 2022 11:00:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234446AbiCMK7l (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 13 Mar 2022 06:59:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39742 "EHLO
+        id S234354AbiCMK7n (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sun, 13 Mar 2022 06:59:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39342 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235052AbiCMK6c (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 13 Mar 2022 06:58:32 -0400
+        with ESMTP id S234991AbiCMK61 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sun, 13 Mar 2022 06:58:27 -0400
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF1E817925A;
-        Sun, 13 Mar 2022 03:57:22 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A901E652D9;
+        Sun, 13 Mar 2022 03:57:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1647169042; x=1678705042;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=ycxS6hXjlOl0lJYRTULrmUeJPYeloRwhDspTCAgJ33U=;
-  b=CXo+PN71PgEG/1+4Rt7csFtQucFtDtWshmheFvaa/LSKuGfyFBymMGqa
-   yUPhWKqm+5X1TYEUVYOJ7DCutKLiz16AbP54cXtRuDaIhMyo2lbC+4RcB
-   ckZ6EcO3xOV+qoaaeY170CUKpnv6dXEFLNh/5cTZRxTxJlvc9Tsyn6hQV
-   /xGiclnASa9P5scsshPjG2fxF8qD0PaUh3A59RfCHZseKbCwR5sSM08PA
-   vMtgCVKxeFGlPolf7QeEoDBGGJgJMYCsAlpTeumZEzlR6PkfBwNI8pVUW
-   wz9G3rfDftG6edQUBlZynW8tLPbJUHK9QMoYkPeodQ0xEBZ57KhCTfdgR
+  t=1647169030; x=1678705030;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=Hh5XhMuAq7bi0Dfz6t0Sx5ZQABmWKx2Mj51uf6kYWPo=;
+  b=eMdS3f1GnANJ8CU/vpiKOoA2suJ9WsUYkUF30CeCjK0MDqIExhgXRfI1
+   i01VAIKJu9oYw0KBwSd0VQrFx3SAdVSRXUoUjlej2fxD2ShvUOgLFhUP3
+   7/zgcE80WQoOfknJJR5DgLLFMMVct8RDHxLP6tvdLkxbh59l5VIxP91DJ
+   jg/iVRwz9cTGzCtZ+/EKLCgy6uAGJOfeGhAj3X2oGxKRN2YuFEvJ5qx+M
+   bRdDTkYnb/RLD76CJXTXo1yFyTgNe4OKAW1ggZVDvqrFgCNpPSQTuhCnH
+   RHB1becPk5AgT8lxE8CkQjS7hvivM0L6Fr937I+lhMvj7t8F/S9BwTeny
    g==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10284"; a="319086341"
+X-IronPort-AV: E=McAfee;i="6200,9189,10284"; a="319086322"
 X-IronPort-AV: E=Sophos;i="5.90,178,1643702400"; 
-   d="scan'208";a="319086341"
+   d="scan'208";a="319086322"
 Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Mar 2022 03:56:17 -0700
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Mar 2022 03:56:01 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.90,178,1643702400"; 
-   d="scan'208";a="713380345"
+   d="scan'208";a="713380308"
 Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
-  by orsmga005.jf.intel.com with ESMTP; 13 Mar 2022 03:56:15 -0700
+  by orsmga005.jf.intel.com with ESMTP; 13 Mar 2022 03:55:58 -0700
 From:   Tianfei Zhang <tianfei.zhang@intel.com>
 To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
         yilun.xu@intel.com, linux-fpga@vger.kernel.org,
         linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     corbet@lwn.net, Tianfei zhang <tianfei.zhang@intel.com>
-Subject: [PATCH v5 6/6] Documentation: fpga: dfl: add description of OFS
-Date:   Sun, 13 Mar 2022 06:52:42 -0400
-Message-Id: <20220313105242.1567774-7-tianfei.zhang@intel.com>
+Cc:     corbet@lwn.net, Tianfei Zhang <tianfei.zhang@intel.com>
+Subject: [PATCH v5 0/6] Add OFS support for DFL driver
+Date:   Sun, 13 Mar 2022 06:52:36 -0400
+Message-Id: <20220313105242.1567774-1-tianfei.zhang@intel.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20220313105242.1567774-1-tianfei.zhang@intel.com>
-References: <20220313105242.1567774-1-tianfei.zhang@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Tianfei zhang <tianfei.zhang@intel.com>
+This is v5 patchset adding OFS (Open FPGA Stack) support for
+DFL driver, based on v5.17-rc7. OFS is a collection of RTL
+and open software providing interface to access the instantiated
+RTL easily in FPGA. OFS leverages the DFL for the implementation
+of the FPGA RTL design.
 
-This patch adds description about OFS support for DFL.
+Patch 1, allows for ports without local bar space for "multiple VFs per
+PR slot" model.
+Patch 2, uses some lowest bits of flags to track the port status which
+the AFU was connected to port device or not.
+Patch 3, checks the number of released port match the number of
+VFs or not in legacy model.
+Patch 4, configures port access mode for afu connected with port.
+Patch 5, handles dfl's starting with AFU.
+Patch 6, adds architecture description about OFS support for DFL
+in documentation.
 
----
-v5:
-fix documentation with Matthew and Randy's comment.
-v4:
-add description about access the AFU on "multiple VFs per PR slot" model.
-v3:
-change IOFS to OFS in documentation.
-v2:
-* Fixs some typos.
-* Adds more detail description about the models of AFU access which supported in OFS.
+Changelog v4 -> v5:
+   - fix documentation with Matthew and Randy's comment.
 
-Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
----
+Changelog v3 -> v4:
+   - change "features" to "flags" in dfl_fpga_cdev to track the status
+     of port device.
+   - use dfl_fpga_cdev->flags to check if it need configure the port access
+     mode or not.
+   - add description about access the AFU on "multiple VFs per PR slot"
+     model.
+
+Changelog v2 -> v3:
+   - no code change, just change the name from IOFS to OFS.
+
+Changelog v1 -> v2:
+   - Introducing a new member "features" in dfl_fpga_cdev for feature
+     control.
+   - Adding new flag DFL_FEAT_PORT_CONNECTED_AFU for OFS legacy model.
+   - Updates the documentation for the access models about AFU in OFS.
+   - Drop the PCI PID patch and will send it later.
+
+Matthew Gerlach (2):
+  fpga: dfl: Allow ports without local bar space.
+  fpga: dfl: support PF/VF starting with DFH
+
+Tianfei zhang (4):
+  fpga: dfl: tracking port conntected with AFU
+  fpga: dfl: check released_port_num and num_vfs for legacy model
+  fpga: dfl: configure port access mode for afu connected with port
+  Documentation: fpga: dfl: add description of OFS
+
  Documentation/fpga/dfl.rst | 114 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 114 insertions(+)
+ drivers/fpga/dfl-pci.c     |   9 +++
+ drivers/fpga/dfl.c         |  62 ++++++++++++++------
+ drivers/fpga/dfl.h         |  22 +++++++
+ 4 files changed, 191 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index ef9eec71f6f3..4c1f9cb82ccb 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -556,6 +556,120 @@ new DFL feature via UIO direct access, its feature id should be added to the
- driver's id_table.
- 
- 
-+Open FPGA Stack
-+=====================
-+
-+Open FPGA Stack (OFS) is a collection of RTL and open source software providing
-+interfaces to access the instantiated RTL easily in an FPGA. OFS leverages the
-+DFL for the implementation of the FPGA RTL design.
-+
-+OFS designs allow for the arrangement of software interfaces across multiple
-+PCIe endpoints. Some of these interfaces may be PFs defined in the static region
-+that connect to interfaces in an IP that is loaded via Partial Reconfiguration (PR).
-+And some of these interfaces may be VFs defined in the PR region that can be
-+reconfigured by the end-user. Furthermore, these PFs/VFs may use DFLs such that
-+features may be discovered and accessed in user space (with the aid of a generic
-+kernel driver like vfio-pci). The diagram below depicts an example design with two
-+PFs and two VFs. In this example, it will export the management functions via PF0,
-+PF1 will bind with virtio-net driver presenting itself as a network interface to
-+the OS. The other functions, VF0 and VF1, leverage VFIO to export the MMIO space
-+to an application or assign to a VM.
-+::
-+
-+     +-----------------+  +--------------+  +-------------+  +------------+
-+     | FPGA Management |  |   VirtIO     |  |  User App   |  | Virtual    |
-+     |      App        |  |     App      |  |             |  | Machine    |
-+     +--------+--------+  +------+-------+  +------+------+  +-----+------+
-+              |                  |                 |               |
-+     +--------+--------+  +------+-------+  +------+------+        |
-+     |     DFL Driver  |  |VirtIO driver |  |    VFIO     |        |
-+     +--------+--------+  +------+-------+  +------+------+        |
-+              |                  |                 |               |
-+              |                  |                 |               |
-+     +--------+--------+  +------+-------+  +------+------+   +----+------+
-+     |     PF0         |  |     PF1      |  |   PF0_VF0   |   |  PF0_VF1  |
-+     +-----------------+  +--------------+  +-------------+   +-----------+
-+
-+As accelerators are specialized hardware, they are typically limited in the
-+number installed in a given system. Many use cases require them to be shared
-+across multiple software contexts or threads of software execution, either
-+through partitioning of individual dedicated resources, or virtualization of
-+shared resources. OFS provides several models to share the AFU resources via
-+PR mechanism and hardware-based virtualization schemes.
-+
-+1. Legacy model.
-+   With legacy model FPGA cards like Intel PAC N3000 or N5000,there is
-+   a notion that the boundary between the AFU and the shell is also the unit of
-+   PR for those FPGA platforms. This model can only able to handle a
-+   single context, because it only has one PR engine, and one PR region which
-+   has an associated Port device.
-+2. Multiple VFs per PR slot.
-+   In this model, available AFU resources may allow instantiation of many of VFs
-+   which has a dedicated PCIe function with their own dedicated MMIO space, or
-+   partition a region of MMIO space on a single PCIe function. Intel PAC N6000
-+   card has implemented this model.
-+   In this model, the AFU/PR slot was not connected to port device. For DFL's view,
-+   the Next_AFU pointer in FIU feature header of port device points to NULL in this
-+   model, so in AFU driver perspective, there are no AFU MMIO region managed by
-+   AFU driver. On the other hand, each VF can start with an AFU feature header without
-+   connected to a FIU Port feature header.
-+
-+In multiple VFs per PR slot model, the port device can still be accessed using
-+ioctls API which expose by /dev/dfl-port.n device node, like port reset, get
-+port info, whose APIs were mentioned in AFU section in this documentation. But
-+it cannot access the AFU MMIO space via AFU ioctl APIs like DFL_FPGA_PORT_DMA_MAP
-+because no AFU MMIO space managed in AFU driver. Users can access the AFU resource
-+by creating VF devices via PCIe SRIOV interface, and then access the VF via VFIO
-+driver or assign the VF to VM.
-+
-+In multiple VFs per PR slot model, the steps enable VFs are compatible with
-+legacy mode which mentioned in "FPGA virtualization - PCIe SRIOV" section
-+in this documentation.
-+
-+OFS provides the diversity for access the AFU resource to RTL developer.
-+An IP designer may choose to add more than one PF for interfacing with IP
-+on the FPGA and choose different model to access the AFU resource.
-+
-+There is one reference architecture design using the "Multiple VFs per PR slot"
-+model for OFS as illustrated below. In this reference design, it exports the
-+FPGA management functions via PF0. PF1 will bind with virtio-net driver
-+presenting itself as a network interface to the OS. PF2 will bound to the
-+vfio-pci driver allowing the user space software to discover and interface
-+with the specific workload like diagnostic test. To access the AFU resource,
-+it uses SR-IOV to partition workload interfaces across various VFs.
-+::
-+
-+                              +----------------------+
-+                              |   PF/VF mux/demux    |
-+                              +--+--+-----+------+-+-+
-+                                 |  |     |      | |
-+        +------------------------+  |     |      | |
-+  PF0   |                 +---------+   +-+      | |
-+    +---+---+             |         +---+----+   | |
-+    |  DFH  |             |         |   DFH  |   | |
-+    +-------+       +-----+----+    +--------+   | |
-+    |  FME  |       |  VirtIO  |    |  Test  |   | |
-+    +---+---+       +----------+    +--------+   | |
-+        |                PF1            PF2      | |
-+        |                                        | |
-+        |                             +----------+ |
-+        |                             |           ++
-+        |                             |           |
-+        |                             | PF0_VF0   | PF0_VF1
-+        |           +-----------------+-----------+------------+
-+        |           |           +-----+-----------+--------+   |
-+        |           |           |     |           |        |   |
-+        |           | +------+  |  +--+ -+     +--+---+    |   |
-+        |           | | Port |  |  | DFH |     |  DFH |    |   |
-+        +-----------+ +------+  |  +-----+     +------+    |   |
-+                    |           |  | DEV |     |  DEV |    |   |
-+                    |           |  +-----+     +------+    |   |
-+                    |           |            PR Slot       |   |
-+                    |           +--------------------------+   |
-+                    | Port Gasket                              |
-+                    +------------------------------------------+
-+
-+
- Open discussion
- ===============
- FME driver exports one ioctl (DFL_FPGA_FME_PORT_PR) for partial reconfiguration
 -- 
 2.26.2
 
