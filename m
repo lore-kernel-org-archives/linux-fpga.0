@@ -2,120 +2,113 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07209C433EF
-	for <linux-fpga@archiver.kernel.org>; Tue, 15 Mar 2022 16:17:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66B4BC433F5
+	for <linux-fpga@archiver.kernel.org>; Wed, 16 Mar 2022 07:13:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349943AbiCOQRH (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 15 Mar 2022 12:17:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41424 "EHLO
+        id S232916AbiCPHNK (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 16 Mar 2022 03:13:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44710 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240489AbiCOQRH (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 15 Mar 2022 12:17:07 -0400
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AECA749CA9;
-        Tue, 15 Mar 2022 09:15:55 -0700 (PDT)
+        with ESMTP id S1354174AbiCPHMw (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 16 Mar 2022 03:12:52 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B6505DE74;
+        Wed, 16 Mar 2022 00:11:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1647360955; x=1678896955;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=2GljXTe3wNrzf4qT4Ab198zPDt4+ZO0/lR6hJ/aDYaw=;
-  b=U/Gaevzzq5Mxys1ay4tvV/Tvc3E81tRaYw0pqQbqjyeyQwTB8K3Kl12S
-   8KfpEYuJkTbp2xzf29K0lauWXGAXtSnilDFoocIInhByGCPWQ5hbyFLvu
-   2M3hhRodNOgi9sxcSSDXVmWwNg5CnD9zqxUc0T48epQolhin6rMlCQ1FW
-   XfHTLmSSk3h6WMRZS89wPwQExu4H9G8pdojxaCYQ9l/EWe/FOEZ68Yd8H
-   DJxiJucRdifRTxm6Y9ez5Oa8/7Nr+5jnI6Io6pl28Q5yv2CzHcwQVG4nW
-   GMoHUEKCt5ucwkUFIEN2/Eu2QugWKRkCWWIrrECF74V3VGFMj2p1GUkra
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10286"; a="256074638"
-X-IronPort-AV: E=Sophos;i="5.90,184,1643702400"; 
-   d="scan'208";a="256074638"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Mar 2022 09:15:55 -0700
+  t=1647414699; x=1678950699;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=BLFuTRhqE482sqaHRif7NDKXQY4BaFJ4C/qrheqYfJs=;
+  b=Jv5MP3dlRFp8xrNGv1GrZIu2sytx29ZnFEpf2UHNS73fb2HxBvziY7oE
+   j0gD2uGrG9Ty+ehURzFcjIbwhoutcTMMt6MM6e1eGo3tIk3s9eI0Eu4nG
+   TDGtj7LrH6iSm+Mg5Zv9OqI01SIkitG3ZZMROCPhpHDyu4oxN47xdYlxC
+   Xt/z8B7eM2yOpE7BRJoR3HIA4/CeWb7uqmLrtEKPo1Sb+0yB7FT7Q+K9B
+   du4llyl6hv+okUbMfK39hdO8POF4Lps0UITI2HT+WOrsmqPX3rPQBrluT
+   a2ipnaR6AQclNUCawo7KrB33UXaIgsGhdNIkFJRIyfY7QAT9waIilzY46
+   A==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10286"; a="281289023"
+X-IronPort-AV: E=Sophos;i="5.90,186,1643702400"; 
+   d="scan'208";a="281289023"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Mar 2022 00:11:38 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,184,1643702400"; 
-   d="scan'208";a="556997948"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.135])
-  by orsmga008.jf.intel.com with ESMTP; 15 Mar 2022 09:15:53 -0700
-Date:   Wed, 16 Mar 2022 00:08:55 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Nava kishore Manne <navam@xilinx.com>
-Cc:     "mdf@kernel.org" <mdf@kernel.org>,
-        "hao.wu@intel.com" <hao.wu@intel.com>,
-        "trix@redhat.com" <trix@redhat.com>,
-        Michal Simek <michals@xilinx.com>,
-        "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH 2/6] fpga: zynqmp: Initialized variables before using it
-Message-ID: <20220315160855.GA121107@yilunxu-OptiPlex-7050>
-References: <20220308094519.1816649-1-nava.manne@xilinx.com>
- <20220308094519.1816649-3-nava.manne@xilinx.com>
- <20220311142814.GA97487@yilunxu-OptiPlex-7050>
- <SN6PR02MB4576FB4490F96E593E09D4B9C2109@SN6PR02MB4576.namprd02.prod.outlook.com>
+X-IronPort-AV: E=Sophos;i="5.90,186,1643702400"; 
+   d="scan'208";a="646538324"
+Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
+  by orsmga004.jf.intel.com with ESMTP; 16 Mar 2022 00:11:35 -0700
+From:   Tianfei Zhang <tianfei.zhang@intel.com>
+To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
+        yilun.xu@intel.com, linux-fpga@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        rdunlap@infradead.org
+Cc:     corbet@lwn.net, Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        Tianfei Zhang <tianfei.zhang@intel.com>
+Subject: [PATCH v6 1/6] fpga: dfl: Allow ports without local bar space.
+Date:   Wed, 16 Mar 2022 03:08:09 -0400
+Message-Id: <20220316070814.1916017-2-tianfei.zhang@intel.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20220316070814.1916017-1-tianfei.zhang@intel.com>
+References: <20220316070814.1916017-1-tianfei.zhang@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <SN6PR02MB4576FB4490F96E593E09D4B9C2109@SN6PR02MB4576.namprd02.prod.outlook.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Tue, Mar 15, 2022 at 11:48:11AM +0000, Nava kishore Manne wrote:
-> Hi Yilun,
-> 
-> 	Thanks for providing the review comments.
-> Please find my response inline.
-> 
-> > -----Original Message-----
-> > From: Xu Yilun <yilun.xu@intel.com>
-> > Sent: Friday, March 11, 2022 7:58 PM
-> > To: Nava kishore Manne <navam@xilinx.com>
-> > Cc: mdf@kernel.org; hao.wu@intel.com; trix@redhat.com; Michal Simek
-> > <michals@xilinx.com>; linux-fpga@vger.kernel.org; linux-
-> > kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org
-> > Subject: Re: [PATCH 2/6] fpga: zynqmp: Initialized variables before using it
-> > 
-> > On Tue, Mar 08, 2022 at 03:15:15PM +0530, Nava kishore Manne wrote:
-> > > This patch initialized variables with the proper value.
-> > > Addresses-Coverity: "uninit_use: Using uninitialized value"
-> > >
-> > > Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
-> > > ---
-> > >  drivers/fpga/zynqmp-fpga.c | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > >
-> > > diff --git a/drivers/fpga/zynqmp-fpga.c b/drivers/fpga/zynqmp-fpga.c
-> > > index c60f20949c47..e931d69819a7 100644
-> > > --- a/drivers/fpga/zynqmp-fpga.c
-> > > +++ b/drivers/fpga/zynqmp-fpga.c
-> > > @@ -41,7 +41,7 @@ static int zynqmp_fpga_ops_write(struct
-> > fpga_manager *mgr,
-> > >  				 const char *buf, size_t size)
-> > >  {
-> > >  	struct zynqmp_fpga_priv *priv;
-> > > -	dma_addr_t dma_addr;
-> > > +	dma_addr_t dma_addr = 0;
-> > 
-> > The first use of this variable is as an output parameter:
-> > 
-> > 	kbuf = dma_alloc_coherent(priv->dev, size, &dma_addr,
-> > GFP_KERNEL);
-> > 
-> > So I don't think it needs to be initialized as 0.
-> > 
-> 
-> This issue is found by Coverity Scan, Whether this param is input/output this fix will not impact the actual functionality.
-> In order to fix the issues reported by the Coverity tool, this fix is needed.
+From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 
-I didn't see issues about this piece of code, so I don't think we need
-the fix just to make the tool happy. Maybe the tool could be improved to
-help us better.
+In OFS, each PR slot (AFU) has one port device which include Port
+control, Port user clock control and Port errors. In legacy model,
+the AFU MMIO space was connected with Port device, so from port
+device point of view, there is a bar space associated with this
+port device. But in "Multiple VFs per PR slot" model, the AFU MMIO
+space was not connected with Port device. The BarID (3bits field) in
+PORTn_OFFSET register indicates which PCI bar space associated with
+this port device, the value 0b111 (FME_HDR_NO_PORT_BAR) means that
+no PCI bar for this port device.
 
-Thanks,
-Yilun
+---
+v3: add PCI bar number checking with PCI_STD_NUM_BARS.
+v2: use FME_HDR_NO_PORT_BAR instead of PCI_STD_NUM_BARS.
 
-> 
-> Regards,
-> Navakishore.
+Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Signed-off-by: Tianfei Zhang <tianfei.zhang@intel.com>
+---
+ drivers/fpga/dfl-pci.c | 7 +++++++
+ drivers/fpga/dfl.h     | 1 +
+ 2 files changed, 8 insertions(+)
+
+diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+index 4d68719e608f..2e9abeca3625 100644
+--- a/drivers/fpga/dfl-pci.c
++++ b/drivers/fpga/dfl-pci.c
+@@ -258,6 +258,13 @@ static int find_dfls_by_default(struct pci_dev *pcidev,
+ 			 */
+ 			bar = FIELD_GET(FME_PORT_OFST_BAR_ID, v);
+ 			offset = FIELD_GET(FME_PORT_OFST_DFH_OFST, v);
++			if (bar >= PCI_STD_NUM_BARS ||
++			    bar == FME_HDR_NO_PORT_BAR) {
++				dev_dbg(&pcidev->dev, "skipping port without local BAR space %d\n",
++					bar);
++				continue;
++			}
++
+ 			start = pci_resource_start(pcidev, bar) + offset;
+ 			len = pci_resource_len(pcidev, bar) - offset;
+ 
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 53572c7aced0..1fd493e82dd8 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -91,6 +91,7 @@
+ #define FME_HDR_PORT_OFST(n)	(0x38 + ((n) * 0x8))
+ #define FME_HDR_BITSTREAM_ID	0x60
+ #define FME_HDR_BITSTREAM_MD	0x68
++#define FME_HDR_NO_PORT_BAR	7
+ 
+ /* FME Fab Capability Register Bitfield */
+ #define FME_CAP_FABRIC_VERID	GENMASK_ULL(7, 0)	/* Fabric version ID */
+-- 
+2.26.2
+
