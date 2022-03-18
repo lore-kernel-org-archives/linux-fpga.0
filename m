@@ -2,81 +2,89 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 428D9C433F5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6583DC433FE
 	for <linux-fpga@archiver.kernel.org>; Fri, 18 Mar 2022 03:22:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231894AbiCRDVh (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 17 Mar 2022 23:21:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56726 "EHLO
+        id S232144AbiCRDVl (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 17 Mar 2022 23:21:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57004 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231215AbiCRDVg (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 17 Mar 2022 23:21:36 -0400
+        with ESMTP id S231215AbiCRDVk (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 17 Mar 2022 23:21:40 -0400
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA5BD19530D;
-        Thu, 17 Mar 2022 20:20:17 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4931D19530D;
+        Thu, 17 Mar 2022 20:20:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1647573617; x=1679109617;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=oQO5wErIlCM9YnkPEAv4OFlanCveA22VgbUuXCD6i5o=;
-  b=j6rz93JfgHmaFCakYhWeL2KUN75XeaCnyAwNC+FfE6N2lqJQDanq5Oe4
-   +ysDspZtgXyYox4J3iTxM/e7QUeLiRW+F+mAlOky/BIhdOzjpwNdsVvE3
-   7z2liGSsI8e3KA1DXdc0ed1hJK0QUFY26pfGchCxohVbEz+/Jt31NJ/eR
-   mRJ6PbxShkRr98G0HYwsZ+rL53wIzGbmuBqKDpD22P9z5vH2O/ZJwLnpZ
-   kj4OvkGNgC6F0BoOmweFDPvhhRVc42Q9w/RGqsaYacbzaJCz4aXwSCnJF
-   f+jaNE8VuatmTc0YRpuPSTmQUgm7TE2oJTTiqzqtTr9HIpNgxJLiTOMRz
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10289"; a="254592177"
+  t=1647573623; x=1679109623;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=OnTmGwB/jo8Byf97gpYrwv+AasqZzFhD6yfV0qnrtPc=;
+  b=dv2JV3qN75tcBYM+fQwU5XNWpWTS90BYntAu/Y8U8kCEzbRdfYdqz45R
+   TOPL7zTw6c7aNqXFwG1b8247hiI45/2CxoFrhH8YVnPphkGSI81Rw9bgO
+   lkLvlc10GXnzsW/xhcjiWIezFL1iXZHpAM/Bb16hM4WJJofCdxMUJOQDZ
+   KaW+iMn9p55iehjeo+WPqqB+3fEsMOpPSFA8lIZhcTs73MhMY74Mk/Y5R
+   pCjKvTWthVwBRJBNkAgRfVCnuIJFJMvlNl9PPOoWMj8UJ1aMpFiZcpZ4K
+   9RnUNH0B1XRimmb+9S8um7gBoa+UhQGfAPuS+iBoFR2/sFfb353+MbmxD
+   w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10289"; a="254592187"
 X-IronPort-AV: E=Sophos;i="5.90,191,1643702400"; 
-   d="scan'208";a="254592177"
+   d="scan'208";a="254592187"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2022 20:20:17 -0700
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2022 20:20:23 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.90,191,1643702400"; 
-   d="scan'208";a="647292884"
+   d="scan'208";a="647292897"
 Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
-  by orsmga004.jf.intel.com with ESMTP; 17 Mar 2022 20:20:14 -0700
+  by orsmga004.jf.intel.com with ESMTP; 17 Mar 2022 20:20:20 -0700
 From:   Tianfei Zhang <tianfei.zhang@intel.com>
 To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
         yilun.xu@intel.com, linux-fpga@vger.kernel.org,
         linux-doc@vger.kernel.org, rdunlap@infradead.org
-Cc:     corbet@lwn.net, Tianfei Zhang <tianfei.zhang@intel.com>
-Subject: [PATCH v4 0/2] check feature type for DFL irq parsing
-Date:   Thu, 17 Mar 2022 23:16:52 -0400
-Message-Id: <20220318031654.2130587-1-tianfei.zhang@intel.com>
+Cc:     corbet@lwn.net, Tianfei zhang <tianfei.zhang@intel.com>
+Subject: [PATCH v4 2/2] Documentation: fpga: dfl: add description of Feature ID
+Date:   Thu, 17 Mar 2022 23:16:54 -0400
+Message-Id: <20220318031654.2130587-3-tianfei.zhang@intel.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20220318031654.2130587-1-tianfei.zhang@intel.com>
+References: <20220318031654.2130587-1-tianfei.zhang@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-This patch set adds an extended usage of Feature ID for DFL.
-Previously the feature IDs defined are unique, no matter
-which feature type. But currently we want to extend its
-usage to have a per-type feature ID space.
+From: Tianfei zhang <tianfei.zhang@intel.com>
 
-Patch 1 adds feature type checking before parse the irq info.
-Patch 2 adds description about the Feature ID.
+This patch adds the description and registration of Feature ID
+in documentation.
 
-v4:
-  - Fix the git commit from Hao's comments.
-  - Split documentation into another patch.
-v3:
-  - Remove "Fixes" in commit log with Hao's comment, this is a
-    extension not a bug fix.
-v2:
-  - add DFL Feature ID Registry in documentation.
-
-Tianfei zhang (2):
-  fpga: dfl: check feature type before parse irq info
-  Documentation: fpga: dfl: add description of Feature ID
-
+Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
+---
  Documentation/fpga/dfl.rst | 10 ++++++++++
- drivers/fpga/dfl.c         | 38 ++++++++++++++++++++++----------------
- 2 files changed, 32 insertions(+), 16 deletions(-)
+ 1 file changed, 10 insertions(+)
 
+diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+index ef9eec71f6f3..260cac3b7215 100644
+--- a/Documentation/fpga/dfl.rst
++++ b/Documentation/fpga/dfl.rst
+@@ -502,6 +502,16 @@ Developer only needs to provide a sub feature driver with matched feature id.
+ FME Partial Reconfiguration Sub Feature driver (see drivers/fpga/dfl-fme-pr.c)
+ could be a reference.
+ 
++Individual DFL drivers are bound DFL devices based on Feature Type and Feature ID.
++The definition of Feature Type and Feature ID can be found:
++
++https://github.com/OPAE/linux-dfl-feature-id/blob/master/dfl-feature-ids.rst
++
++If you want to add a new feature ID for FPGA DFL feature device, you must use a pull
++request to register a feature ID for DFL. Here is the DFL Feature ID Registry:
++
++https://github.com/OPAE/linux-dfl-feature-id
++
+ Location of DFLs on a PCI Device
+ ================================
+ The original method for finding a DFL on a PCI device assumed the start of the
 -- 
 2.26.2
 
