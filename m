@@ -2,96 +2,139 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 593C9C433EF
-	for <linux-fpga@archiver.kernel.org>; Fri, 18 Mar 2022 01:01:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0B67C433EF
+	for <linux-fpga@archiver.kernel.org>; Fri, 18 Mar 2022 03:22:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230496AbiCRBBD (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 17 Mar 2022 21:01:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55748 "EHLO
+        id S232142AbiCRDVj (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 17 Mar 2022 23:21:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56824 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229599AbiCRBBB (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 17 Mar 2022 21:01:01 -0400
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 64C1325718B;
-        Thu, 17 Mar 2022 17:59:44 -0700 (PDT)
-Received: by mail-pj1-x1030.google.com with SMTP id e3so6277108pjm.5;
-        Thu, 17 Mar 2022 17:59:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=sPi7qafOCETIMPSsawZV1A+wzBisJGD5S6jwVe4yEdc=;
-        b=jYQfblf4upRN392OGvwkDOx0xqz0G8EI+KlIdMm9mA39eW2iabhwYbwmufQfeHCNVB
-         cik9WiAD49Dwp4z4WcNcjiVCu2lDP/ofIVRJMnk7XVtpkfy1cPnrPOq8pQsfAFzhYdD+
-         0vou01/zzOaxO/9PIa7vPf6lfwKHNVzm/q4j3Ith28S7Oh/3Pi62IpWK048OToZ3DRJC
-         itHxJscDtB8Zyd7TkrlO2uzZuJ86YTpeCyoQtmgbIjerlKx3VabNbfEtBvUGW9IQxw+p
-         GsZXvziFoHwB8gsUx3r3+wECjufpbzBQqgd0ZihoIwygQv8+L4uTHw2VD0KZxNNFPTB3
-         euEg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=sPi7qafOCETIMPSsawZV1A+wzBisJGD5S6jwVe4yEdc=;
-        b=CbTh2gDfBdf0nB4B/bxq9CVqwHxXkTZeRZK2GGroTVyMFqQIQZcnc9/bZKXp0o+I20
-         cNSd4AxMfqKX9ZXBdkqlAkX5ApdqrnoJx/8r4YYwRfVr4MZ4nvwgB9AEc0gLLXd+pdxL
-         HJN45IxEnyteEJOhce+2xAkgqJI7Jhso+q7tRp6fH5G7DVJf7Y4nNZe7faKuDGGrLwIy
-         0/gcCKdhShRtaFdbKj1OMIgsFriU6Bp61g7d3lahQC95pQw/XmPOM1dzi9U9J7ZYu+ur
-         TYuA+R32wMr8/ZmzYw1SWSEy4zR6e+eWNghbcuQPk2BPfloqfAomv4T3gzHcyQI+XtyC
-         5t9Q==
-X-Gm-Message-State: AOAM531LUm1xjVFG4qxgJJfVNrZw6AzCoOlu0eQQnfP8buX2QrbE7XsD
-        jOrCxpYVzqwIyi3RG+rOJJM=
-X-Google-Smtp-Source: ABdhPJxsXFpylByBwSZcWAou4WQqsUHrgo6k2ysdJfmwETpyA/5kamnWAhiEB9M+MPwoqD51z//7Hw==
-X-Received: by 2002:a17:902:8e82:b0:151:777b:6d7 with SMTP id bg2-20020a1709028e8200b00151777b06d7mr7843302plb.172.1647565183544;
-        Thu, 17 Mar 2022 17:59:43 -0700 (PDT)
-Received: from localhost.localdomain ([193.203.214.57])
-        by smtp.gmail.com with ESMTPSA id 63-20020a630942000000b00372a99c1821sm6160191pgj.21.2022.03.17.17.59.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Mar 2022 17:59:43 -0700 (PDT)
-From:   cgel.zte@gmail.com
-X-Google-Original-From: chi.minghao@zte.com.cn
-To:     hao.wu@intel.com
-Cc:     trix@redhat.com, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Minghao Chi <chi.minghao@zte.com.cn>,
-        Zeal Robot <zealci@zte.com.cn>
-Subject: [PATCH] fpga: dfl: pci: Remove useless DMA-32 fallback configuration
-Date:   Fri, 18 Mar 2022 00:59:38 +0000
-Message-Id: <20220318005938.2142028-1-chi.minghao@zte.com.cn>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S231215AbiCRDVi (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 17 Mar 2022 23:21:38 -0400
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CE49195311;
+        Thu, 17 Mar 2022 20:20:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1647573620; x=1679109620;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=27fhujJg9XeamIFp4xQX/ElmnkUA7hiBTOhcEq2lNV4=;
+  b=dHm8Cr5/E7FwuBHo1SIoGr4+JO2pMwMnkYVr1cuImaWlxNcG/N2B+GUD
+   2/oG5DVcRbk171cqfQ8uLZ/jj4lh6WI89eG6Rgsn66gI/7AZrCST99b52
+   5K8RwGe7eet3FAlo07TD6ak4KZH+Huelne8n5emed71PQsj9YpbpS2LS1
+   +3MVoHCta/hRWKImd5Q1ZPWDU3etxaKUd1trqpbBD7hZDvijk3ltlZYjh
+   XZ4FioeTISzPK1D3yejrTnaLvqU1jdDyS2oQBp9pletCgNjt60jzXa9s/
+   RdPFreRdmM5odeX7sL2cURI3Nzwzyaav01Pb3YZsUE1dEkx4fwXZkHb/I
+   A==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10289"; a="254592180"
+X-IronPort-AV: E=Sophos;i="5.90,191,1643702400"; 
+   d="scan'208";a="254592180"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2022 20:20:20 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.90,191,1643702400"; 
+   d="scan'208";a="647292891"
+Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
+  by orsmga004.jf.intel.com with ESMTP; 17 Mar 2022 20:20:17 -0700
+From:   Tianfei Zhang <tianfei.zhang@intel.com>
+To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
+        yilun.xu@intel.com, linux-fpga@vger.kernel.org,
+        linux-doc@vger.kernel.org, rdunlap@infradead.org
+Cc:     corbet@lwn.net, Tianfei zhang <tianfei.zhang@intel.com>
+Subject: [PATCH v4 1/2] fpga: dfl: check feature type before parse irq info
+Date:   Thu, 17 Mar 2022 23:16:53 -0400
+Message-Id: <20220318031654.2130587-2-tianfei.zhang@intel.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20220318031654.2130587-1-tianfei.zhang@intel.com>
+References: <20220318031654.2130587-1-tianfei.zhang@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Minghao Chi <chi.minghao@zte.com.cn>
+From: Tianfei zhang <tianfei.zhang@intel.com>
 
-As stated in [1], dma_set_mask() with a 64-bit mask will never fail if
-dev->dma_mask is non-NULL.
-So, if it fails, the 32 bits case will also fail for the same reason.
+Previously the feature IDs defined are unique, no matter
+which feature type. But currently we want to extend its
+usage to have a per-type feature ID space, so this patch
+adds feature type checking as well just before look into
+feature ID for different features which have irq info.
 
-Simplify code and remove some dead code accordingly.
-
-[1]: https://lkml.org/lkml/2021/6/7/398
-
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
+Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
 ---
- drivers/fpga/dfl-pci.c | 2 --
- 1 file changed, 2 deletions(-)
+v4:
+  - Fix the git commit from Hao's comments.
+  - Split documentation into another patch.
+v3:
+  - Remove "Fixes" in commit log with Hao's comment, this is a
+    extension not a bug fix.
+v2:
+  - add DFL Feature ID Registry in documentation.
+---
+ drivers/fpga/dfl.c | 38 ++++++++++++++++++++++----------------
+ 1 file changed, 22 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
-index 717ac9715970..42fdfa7a28d6 100644
---- a/drivers/fpga/dfl-pci.c
-+++ b/drivers/fpga/dfl-pci.c
-@@ -356,8 +356,6 @@ int cci_pci_probe(struct pci_dev *pcidev, const struct pci_device_id *pcidevid)
- 	pci_set_master(pcidev);
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 599bb21d86af..6bff39ff21a0 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -940,9 +940,12 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
+ {
+ 	void __iomem *base = binfo->ioaddr + ofst;
+ 	unsigned int i, ibase, inr = 0;
++	enum dfl_id_type type;
+ 	int virq;
+ 	u64 v;
  
- 	ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(64));
--	if (ret)
--		ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(32));
- 	if (ret) {
- 		dev_err(&pcidev->dev, "No suitable DMA support available.\n");
- 		goto disable_error_report_exit;
++	type = feature_dev_id_type(binfo->feature_dev);
++
+ 	/*
+ 	 * Ideally DFL framework should only read info from DFL header, but
+ 	 * current version DFL only provides mmio resources information for
+@@ -957,22 +960,25 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
+ 	 * code will be added. But in order to be compatible to old version
+ 	 * DFL, the driver may still fall back to these quirks.
+ 	 */
+-	switch (fid) {
+-	case PORT_FEATURE_ID_UINT:
+-		v = readq(base + PORT_UINT_CAP);
+-		ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
+-		inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
+-		break;
+-	case PORT_FEATURE_ID_ERROR:
+-		v = readq(base + PORT_ERROR_CAP);
+-		ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
+-		inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
+-		break;
+-	case FME_FEATURE_ID_GLOBAL_ERR:
+-		v = readq(base + FME_ERROR_CAP);
+-		ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
+-		inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
+-		break;
++	if (type == PORT_ID) {
++		switch (fid) {
++		case PORT_FEATURE_ID_UINT:
++			v = readq(base + PORT_UINT_CAP);
++			ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
++			inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
++			break;
++		case PORT_FEATURE_ID_ERROR:
++			v = readq(base + PORT_ERROR_CAP);
++			ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
++			inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
++			break;
++		}
++	} else if (type == FME_ID) {
++		if (fid == FME_FEATURE_ID_GLOBAL_ERR) {
++			v = readq(base + FME_ERROR_CAP);
++			ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
++			inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
++		}
+ 	}
+ 
+ 	if (!inr) {
 -- 
-2.25.1
+2.26.2
 
