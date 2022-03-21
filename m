@@ -2,34 +2,34 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 085C6C433F5
-	for <linux-fpga@archiver.kernel.org>; Mon, 21 Mar 2022 08:33:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CAC3C433EF
+	for <linux-fpga@archiver.kernel.org>; Mon, 21 Mar 2022 09:15:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345290AbiCUIdd (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 21 Mar 2022 04:33:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48028 "EHLO
+        id S1345728AbiCUJOm (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 21 Mar 2022 05:14:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50448 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345286AbiCUIda (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 21 Mar 2022 04:33:30 -0400
+        with ESMTP id S1345725AbiCUJOi (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 21 Mar 2022 05:14:38 -0400
 Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 07E995D1AA;
-        Mon, 21 Mar 2022 01:32:00 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15C6822536;
+        Mon, 21 Mar 2022 02:13:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
         d=metrotek.ru; s=mail;
         h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding;
-        bh=XMXNSMJsHoBcTaN7FyF3mPMBw90PZZ++kgwHn83Gnm0=;
-        b=e1ailRQkQmG95cN3IilLUATQppKcrC2KcRViJ75hIujDdjV7sAlKaVftRWQ+XNlquCjRQa05N7cPX
-         4Ft9e6TaxWfSZBemw2kYVhrwv4DCGEKgKe8yhZtBRXrYr/oGFqXExe2QR1uab3toW90LXPfvktIYfC
-         ToeMFuFxGZokY07OnP9LnB48CwG0z0MAizWLiJ5LTA5Hd170HnF6cAO088sNOtqm/uTezj6zRzOYPW
-         kBsKtJj0alNJMR+JVobx2FPauxPpHYAE0rsAfqxfQPqjqxcWvlUAkJvPXGuHJOyThGrjRNvQ1t3fa5
-         5Soy3fFgt9qydwbCgYKdZVljSV+gbrQ==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.2.1410, Stamp: 3], Multi: [Enabled, t: (0.000008,0.007038)], BW: [Enabled, t: (0.000018,0.000001)], RTDA: [Enabled, t: (0.063542), Hit: No, Details: v2.28.0; Id: 15.52kce0.1fulpl0km.306h; mclb], total: 0(700)
+        bh=kwm1/K+GoiGCtITPF5P1uygRjlMoM0iA7fuVQFLC+T8=;
+        b=hZnUrkiRYEar6Gdusyb6BAJgCjfnMYQGim3sFznl5Ir/WYr8l3LBprSB1Wp3mA1aWPoNaHpHoHZeU
+         2/XUA4QjXaIEQx9l75cjvUp7paVAHuXdHYLbYE21LPkfCBpao0v8Z/yXEJ03Ex4HL7J3jASZLekK4f
+         RumJZzMAO07ZGCEQBc/z1650U9gY3TYbygmtmvZ6j/lMz8CVXgLiXvj8OQvpn0E3qD2OsPZmkVCplM
+         inxNo1Ks+0nPuG9BJ2JDf3tkk3gCiDq7dtiZeMOBMngonMnLg8e+z5Xcb348pE7tMvkdHo0TU04O3y
+         Kbi8lH0Qu1kF2GejJsAj3Jv4SSd1jJQ==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.2.1410, Stamp: 3], Multi: [Enabled, t: (0.000008,0.007924)], BW: [Enabled, t: (0.000021,0.000002)], RTDA: [Enabled, t: (0.077207), Hit: No, Details: v2.28.0; Id: 15.52kce3.1fuls0elk.3s8m; mclb], total: 0(700)
 X-Footer: bWV0cm90ZWsucnU=
 Received: from localhost.localdomain ([85.143.252.66])
         (authenticated user i.bornyakov@metrotek.ru)
         by mail.pr-group.ru with ESMTPSA
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Mon, 21 Mar 2022 11:31:43 +0300
+        Mon, 21 Mar 2022 12:12:55 +0300
 From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
 Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>, mdf@kernel.org,
         hao.wu@intel.com, yilun.xu@intel.com, trix@redhat.com,
@@ -37,8 +37,8 @@ Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>, mdf@kernel.org,
         linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org,
         devicetree@vger.kernel.org
 Subject: [PATCH v5 0/2] Microchip Polarfire FPGA manager
-Date:   Mon, 21 Mar 2022 11:11:58 +0300
-Message-Id: <20220321081200.6912-1-i.bornyakov@metrotek.ru>
+Date:   Mon, 21 Mar 2022 11:53:40 +0300
+Message-Id: <20220321085342.22228-1-i.bornyakov@metrotek.ru>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -72,6 +72,10 @@ Changelog:
      also need to be reenterable. On the other hand,
      fpga_manager_ops.write_sg() is called once. Thus, rework usage of
      write() callback to write_sg().
+  v5 -> v6: fix patch applying
+     I forgot to clean up unrelated local changes which lead to error on
+     patch 0001-fpga-microchip-spi-add-Microchip-MPF-FPGA-manager.patch
+     applying on vanilla kernel.
 
 Ivan Bornyakov (2):
   fpga: microchip-spi: add Microchip MPF FPGA manager
