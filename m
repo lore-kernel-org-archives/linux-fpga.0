@@ -2,551 +2,195 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C34BC433F5
-	for <linux-fpga@archiver.kernel.org>; Tue, 22 Mar 2022 04:53:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE70EC433F5
+	for <linux-fpga@archiver.kernel.org>; Tue, 22 Mar 2022 06:57:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236593AbiCVExe (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 22 Mar 2022 00:53:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55818 "EHLO
+        id S237206AbiCVG5Q (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 22 Mar 2022 02:57:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42890 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236568AbiCVExc (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 22 Mar 2022 00:53:32 -0400
-Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCC1F9D075;
-        Mon, 21 Mar 2022 21:52:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-        d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
-         in-reply-to:references;
-        bh=wp6YDEtGmvOJRbpiBCsnns8aGOYikQhYupq2+9IK0ic=;
-        b=V+JYI/JUNOn80RWwU6k+uSpKudzzISjaC5dZrufUDxjRyGrSJNDdxI1I1RBXqnTi0IB0cjMf33srf
-         s/J5NDcEi36BMs99kq22bMB0Xp0Zg67WuIVUwqnyLWNPNy8DHW3d8UhIwYYoqFlqyaBQJQghscjknT
-         zm/qTKjmiyt7bFpmUASBnFXoFsbYILJHSd1pqXlyhITxZTQ+5Xkq0TWdT56XyTVcBAE+WyhHH2G/sp
-         wQzaHEN7KhqGy6oS+zQyAFCaYvpOO5AR/0dg+1jX3w1YnNMDevWta9R/GLELWmgTD7COCaUI/uEUxX
-         0mU7hJMCSQGmi/+cUQpjM3lnQusy8wg==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.2.1410, Stamp: 3], Multi: [Enabled, t: (0.000016,0.035662)], BW: [Enabled, t: (0.000021,0.000001)], RTDA: [Enabled, t: (0.065382), Hit: No, Details: v2.28.0; Id: 15.52k0jg.1funvetgs.uak; mclb], total: 0(700)
-X-Footer: bWV0cm90ZWsucnU=
-Received: from localhost.localdomain ([178.70.66.234])
-        (authenticated user i.bornyakov@metrotek.ru)
-        by mail.pr-group.ru with ESMTPSA
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Tue, 22 Mar 2022 07:51:44 +0300
-From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
-Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>, mdf@kernel.org,
-        hao.wu@intel.com, yilun.xu@intel.com, trix@redhat.com,
-        conor.dooley@microchip.com, robh+dt@kernel.org, system@metrotek.ru,
-        linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: [PATCH v7 1/2] fpga: microchip-spi: add Microchip MPF FPGA manager
-Date:   Tue, 22 Mar 2022 07:32:18 +0300
-Message-Id: <20220322043219.23770-2-i.bornyakov@metrotek.ru>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220322043219.23770-1-i.bornyakov@metrotek.ru>
-References: <20220322043219.23770-1-i.bornyakov@metrotek.ru>
+        with ESMTP id S237219AbiCVG5P (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 22 Mar 2022 02:57:15 -0400
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2081.outbound.protection.outlook.com [40.107.237.81])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60A3DE54;
+        Mon, 21 Mar 2022 23:55:48 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=kadU5SF9OnoH/A7WRZ1BKMIhesL1kEruo1/tlXhvjSOJvfr09WmSETb45RaERafObk2Q/WZyRtms/296GcN8qJG/OCemi8/7pcv8XKxoee8xIqLUnnbeLoZWAOKeg2V4X4bge4iGzxBzZKUX4wVrYwbOACC26P90R23XTSUY4VaujXYw1V8eZB0+NM5NXlydpNQLW6ZuHpOXZs7ZdjEfPSpSwpfwY2/agQCUlXVXZZ2kOQEwVDsAZ1hv2IzkzzQuFHo7oGWId/EdFMi8hsJqnQv2wdr5TRC//m/D2ybIJrsil6UcFNiV7nn9HkgGanigSB0v18v+MZZTm8Dq6cWQ3g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=JuI6yIdxLXTw/7bHl6I5izzXym1faE0XLsP1k+NVMRs=;
+ b=KW6z12R3yLPMLKCIzk3KE+AqbpXSKTCkeL1ZrPYlMVTjPEBK7vxjwZSKKlVYVk8C1bHc3rJoZJOG3qacaV/jM+KmKZPEl+2H8PjFfwLcDZDOQtXS4eNYl1BKHglfqpwYxqsr54KONzu32401CWfQznG4icG8qnc90IYWs6n0p6BxyBPypPdM9gT4yMrpnqPUxDcBU67t2nd1cSxJ8diHVPTjt7aF/B42z8qT3A3jXaUvCtPUAzDzRr926nyAZdSNc7P57HAinEzkdvifyhISDjSxNq85XaZnKU7pmpFK8O0qnanEIG3CEljQam0EMgngrpJwPpyhrqAImQt16kkTbA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=xilinx.com; dmarc=pass action=none header.from=xilinx.com;
+ dkim=pass header.d=xilinx.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=JuI6yIdxLXTw/7bHl6I5izzXym1faE0XLsP1k+NVMRs=;
+ b=eIRN3dCEYD1IeuVJRx7Or4xTuCJi5GRnoaj4We+T4w0NunAg3hncXBZ3LIFOkaddX/7fh6EXzqQvEQJmEAK0XVvwNedJnIp5aOhlDZCWWa3TN3Ww9sWkubR7RPfx0uGzljeKfTgiXxd49FP740Q+PzjkiW8LLuDe1TpQc2S3sNw=
+Received: from SN6PR02MB4576.namprd02.prod.outlook.com (2603:10b6:805:af::17)
+ by BL0PR02MB3650.namprd02.prod.outlook.com (2603:10b6:207:47::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5081.18; Tue, 22 Mar
+ 2022 06:55:46 +0000
+Received: from SN6PR02MB4576.namprd02.prod.outlook.com
+ ([fe80::6162:c36f:2c80:b4dd]) by SN6PR02MB4576.namprd02.prod.outlook.com
+ ([fe80::6162:c36f:2c80:b4dd%6]) with mapi id 15.20.5102.016; Tue, 22 Mar 2022
+ 06:55:44 +0000
+From:   Nava kishore Manne <navam@xilinx.com>
+To:     Xu Yilun <yilun.xu@intel.com>
+CC:     "mdf@kernel.org" <mdf@kernel.org>,
+        "hao.wu@intel.com" <hao.wu@intel.com>,
+        "trix@redhat.com" <trix@redhat.com>,
+        Michal Simek <michals@xilinx.com>,
+        "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH 2/6] fpga: zynqmp: Initialized variables before using it
+Thread-Topic: [PATCH 2/6] fpga: zynqmp: Initialized variables before using it
+Thread-Index: AQHYMtFNadCZe0VWu0OEcc9wpwDlOKy6QtkAgAYbAYCAAEp0gIAKZPXw
+Date:   Tue, 22 Mar 2022 06:55:44 +0000
+Message-ID: <SN6PR02MB45765A42BF873BDC02DF210EC2179@SN6PR02MB4576.namprd02.prod.outlook.com>
+References: <20220308094519.1816649-1-nava.manne@xilinx.com>
+ <20220308094519.1816649-3-nava.manne@xilinx.com>
+ <20220311142814.GA97487@yilunxu-OptiPlex-7050>
+ <SN6PR02MB4576FB4490F96E593E09D4B9C2109@SN6PR02MB4576.namprd02.prod.outlook.com>
+ <20220315160855.GA121107@yilunxu-OptiPlex-7050>
+In-Reply-To: <20220315160855.GA121107@yilunxu-OptiPlex-7050>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-Auto-Response-Suppress: DR, RN, NRN, OOF, AutoReply
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=xilinx.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: e041eb50-ae4b-497d-2e64-08da0bd0fc94
+x-ms-traffictypediagnostic: BL0PR02MB3650:EE_
+x-microsoft-antispam-prvs: <BL0PR02MB36502EE52637255D1B16304EC2179@BL0PR02MB3650.namprd02.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: tv6sXLJCDnSPfeDFLpUWBcNws4DYeXyjB7sEH0z2uUib1zHPCDQGD6N1dFNADy5qaqAB2Z3wcLCodnD8icB1RaLTCDzTkvwiFejs5w335n0pw7zbdvlUd6qYZ8eYAicINWMUNdMhZV/mWf87DBGH+Bim6xmd+4tdVnlrpH8zPtOi5ESOtz6E3bM0DOB4VFHN/ldvgHbihRzTCOyM71sy+qeQaKp7VIIp225AoTN/v6eHyEsNkFv/Z1q9QKebcw1e6CQCPrqJt0rAxpkZvaf1HBts2/vBDdKk8n2fx7KPbjus6WuScHwFZWZfk0edbDbgmCMEtv7qVfTGarD1VWg46QnwVTpceZed/XMh3WoZGanvSwYmf98UcMegDLMx3eeeGQv4ZGfl6/kK23bIfRJKzBPOma6ntRWmkm+cTqnERVSf6X6WzzI8doKk6kUwu75+LWUYMFMiqodvhnvXP5AuQ9K92wLKlNPZtrOutcOHyxmMEUIHNKSBHfMXA1zLxY66ZoLl1VzeSDwtDrDHysXVf6tkJupm0wRdYBx+AB/jKp2c1gaLVQVOFyA8byIvbgwmgjTh9ddX2eWReAARU+UNzmP4KTRTeON0hWqrQYAS3c9mEmISCjO/0FKhHxiw1hH8XCSC1eE45IrwSOV95Ad5Tw03hvgBXvhk7hjs+mjPFNsd1VMYBaMPNcQrML42GozL1/ACIs1ceyrpQuIDdnBxZQ==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR02MB4576.namprd02.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(5660300002)(8936002)(6506007)(52536014)(9686003)(33656002)(7696005)(53546011)(83380400001)(26005)(186003)(71200400001)(55016003)(508600001)(38100700002)(122000001)(38070700005)(86362001)(66446008)(54906003)(64756008)(2906002)(316002)(6916009)(66476007)(8676002)(66556008)(66946007)(76116006)(4326008);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?2V12AUjXCbjUrEuiDgkdIWvA9PRX1vS6jcg/7/c+cIVoOj8rL4gl8Fra84H9?=
+ =?us-ascii?Q?+MwpPUo1TP5JR3WgxB8Af1eHUgmKg3R4YT3CeMNnJQN/oSA+FhIg2R9EdbZS?=
+ =?us-ascii?Q?r8eEuvc/4Vo1utfWld+vxfQUcOYIz/BcAPQIylJcX+XG036174TDw2+ycSVh?=
+ =?us-ascii?Q?DosSFN7a+SFFUNrxOJCS4+c2Yj27MZt29+n+wLs2bICL4O/nY7YSAli8QNhr?=
+ =?us-ascii?Q?VxnTZAq7vbK2BxlOyZfy+Dt532LT9RaQqBHqOJL6D+zlZvfFJf9gD1jzh/sl?=
+ =?us-ascii?Q?hUllsPII0VM0uBtDH6ExjxFxkoWRgFnufvl8YkMatiyK0rdoxxxDiv89P3/D?=
+ =?us-ascii?Q?5qxvVQK03OmD08r51fFpzx/77cLWfvlD+wKWPeNUhm0NI24ksEX7KL98YJpl?=
+ =?us-ascii?Q?yOzIFmxtq5sy2e1n7dzC3lL6Am/KZY+0YTw3oWeIA7Fxd+52Az0ZSTFovVDE?=
+ =?us-ascii?Q?UyW+VUQmeQPkwy7Wxhl2trOxtWdkublfNXX8CYki70JnDGwapBAjhZh6or0+?=
+ =?us-ascii?Q?Zygs11Ul0wjcBC63J1SvkmEbvfD6KSyP9X2DPFKs3JpwJqjelPi3OKv/XJKD?=
+ =?us-ascii?Q?U/MbFu/E7Qya96DO17k7vdjL2/4qEM8pWGKxX8W1fgJBbJKDUCIe3o/U4hAs?=
+ =?us-ascii?Q?tR1QGeZ2o1FcX8SrwkdN+2NteR5yNumS5pL76BkieHpu4svMTebtQKW8nuE/?=
+ =?us-ascii?Q?a3zv4Guexapev5JuIzGujjBq6vziwW2SrEy9F8wo7LFJv8MGAnaNajXNJmbx?=
+ =?us-ascii?Q?HyqPZ1GEUauUgPQXZFB2ZrGfFZ0neM1Zp7RCNPss0cW0Jizw7snjqDQQnRx4?=
+ =?us-ascii?Q?VGL7+TwoXbrN2fW0ScoyuLqW+WZMqUXcHVs8Ja+xOVgdji4l5bmaz6CqKyYo?=
+ =?us-ascii?Q?HcMQMGV9VjIVyRiqrbZ7d/hUCKny3q1KUWqcZYskgUEwQFkqu9ZNpB+fNzOu?=
+ =?us-ascii?Q?8EgdqRCazdNrNfzNWkihNgrIcXAvaf6w/lLZn2nV8GGZ031kPgSQ35gyL8qi?=
+ =?us-ascii?Q?/x8iWp2GoGXmjMMhYQRNNNbiXn7uicc8N3rpiwlbJBRMx4kT0BiJulJl+vtC?=
+ =?us-ascii?Q?KMXmFteNtW1xyX3iB8aYeX8coA43K5WhUetJD6DoDSLE91xjFUbQeed7mFBl?=
+ =?us-ascii?Q?pFOFD18o1Vg9BF/fPRpvkARbFyvS8c8t0UITFUgM1zKgyhjWdMT3LJGpR8Fv?=
+ =?us-ascii?Q?Z3jbQb5izfkrPpTnNTAqUCxmOCPR5t4dwkvGMSyWsSGt7BhF+SzlXto9CGtL?=
+ =?us-ascii?Q?5iATZKxMX1GwTvzjPM1jwDfL6jgnNMvL9sj9bu4iDzZie9Vga8CiibadXf2d?=
+ =?us-ascii?Q?q+5RkkTwq/y/I6lmOl/td8pxUnObSIdYfqZbMdMSyJoYLkKbC2WU/dSFVYIi?=
+ =?us-ascii?Q?xsoDt4Ojo796xR3EjWgD5RU2Li+ND8A6HwYtdSYZELhSWXvy5hSHHKNJrwq5?=
+ =?us-ascii?Q?DfEQqhlMdXYKN+omn4ci1FLoUxY7HKZa?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+X-OriginatorOrg: xilinx.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4576.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e041eb50-ae4b-497d-2e64-08da0bd0fc94
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Mar 2022 06:55:44.4238
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 657af505-d5df-48d0-8300-c31994686c5c
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 6M8z4ALG0Fzz9qGT/m6R7qI3pu84imsYjJEGxbKQtwXXcPTwO3OcUtv8FmByBDUgr1fQgha88GJW+cJiizw8+w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL0PR02MB3650
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add support to the FPGA manager for programming Microchip Polarfire
-FPGAs over slave SPI interface with .dat formatted bitsream image.
+Hi Yilun,
 
-Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
----
- drivers/fpga/Kconfig         |  10 +
- drivers/fpga/Makefile        |   1 +
- drivers/fpga/microchip-spi.c | 448 +++++++++++++++++++++++++++++++++++
- 3 files changed, 459 insertions(+)
- create mode 100644 drivers/fpga/microchip-spi.c
+	Please find my response inline.
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 26025dbab353..791ecf48503a 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -248,4 +248,14 @@ config FPGA_MGR_VERSAL_FPGA
- 	  configure the programmable logic(PL).
- 
- 	  To compile this as a module, choose M here.
-+
-+config FPGA_MGR_MICROCHIP_SPI
-+	tristate "Microchip Polarfire SPI FPGA manager"
-+	depends on SPI
-+	select CRC_CCITT
-+	help
-+	  FPGA manager driver support for Microchip Polarfire FPGAs
-+	  programming over slave SPI interface with .dat formatted
-+	  bitstream image.
-+
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 4da5273948df..fcb389ca4873 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -19,6 +19,7 @@ obj-$(CONFIG_FPGA_MGR_XILINX_SPI)	+= xilinx-spi.o
- obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+= zynq-fpga.o
- obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+= zynqmp-fpga.o
- obj-$(CONFIG_FPGA_MGR_VERSAL_FPGA)      += versal-fpga.o
-+obj-$(CONFIG_FPGA_MGR_MICROCHIP_SPI)	+= microchip-spi.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE)         += altera-pr-ip-core.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)    += altera-pr-ip-core-plat.o
- 
-diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
-new file mode 100644
-index 000000000000..5e79677c29f4
---- /dev/null
-+++ b/drivers/fpga/microchip-spi.c
-@@ -0,0 +1,448 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Microchip Polarfire FPGA programming over slave SPI interface.
-+ */
-+
-+#include <linux/crc-ccitt.h>
-+#include <linux/delay.h>
-+#include <linux/fpga/fpga-mgr.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/spi/spi.h>
-+
-+#define	MPF_SPI_ISC_ENABLE	0x0B
-+#define	MPF_SPI_ISC_DISABLE	0x0C
-+#define	MPF_SPI_READ_STATUS	0x00
-+#define	MPF_SPI_READ_DATA	0x01
-+#define	MPF_SPI_FRAME_INIT	0xAE
-+#define	MPF_SPI_FRAME		0xEE
-+#define	MPF_SPI_PRG_MODE	0x01
-+#define	MPF_SPI_RELEASE		0x23
-+
-+#define	MPF_SPI_FRAME_SIZE	16
-+
-+#define	MPF_HEADER_SIZE_OFFSET	24
-+#define	MPF_DATA_SIZE_OFFSET	55
-+
-+#define	MPF_LOOKUP_TABLE_RECORD_SIZE		9
-+#define	MPF_LOOKUP_TABLE_BLOCK_ID_OFFSET	0
-+#define	MPF_LOOKUP_TABLE_BLOCK_START_OFFSET	1
-+
-+#define	MPF_COMPONENTS_SIZE_ID	5
-+#define	MPF_BITSTREAM_ID	8
-+
-+#define	MPF_BITS_PER_COMPONENT_SIZE	22
-+
-+#define	MPF_STATUS_POLL_TIMEOUT	1000
-+#define	MPF_STATUS_BUSY		BIT(0)
-+#define	MPF_STATUS_READY	BIT(1)
-+
-+struct mpf_priv {
-+	struct spi_device *spi;
-+	bool program_mode;
-+};
-+
-+static enum fpga_mgr_states mpf_ops_state(struct fpga_manager *mgr)
-+{
-+	struct mpf_priv *priv = mgr->priv;
-+	struct spi_device *spi;
-+	bool program_mode;
-+	ssize_t status;
-+
-+	program_mode = priv->program_mode;
-+	spi = priv->spi;
-+
-+	status = spi_w8r8(spi, MPF_SPI_READ_STATUS);
-+
-+	if (!program_mode && !status)
-+		return FPGA_MGR_STATE_OPERATING;
-+
-+	return FPGA_MGR_STATE_UNKNOWN;
-+}
-+
-+static int poll_status_not_busy(struct spi_device *spi, u8 mask)
-+{
-+	ssize_t status, timeout = MPF_STATUS_POLL_TIMEOUT;
-+
-+	while (timeout--) {
-+		status = spi_w8r8(spi, MPF_SPI_READ_STATUS);
-+		if (status < 0)
-+			return status;
-+
-+		if (!(status & MPF_STATUS_BUSY) && (!mask || (status & mask)))
-+			return status;
-+
-+		usleep_range(1000, 2000);
-+	}
-+
-+	return -EBUSY;
-+}
-+
-+static int mpf_spi_write(struct spi_device *spi, const void *buf, size_t buf_size)
-+{
-+	int status = poll_status_not_busy(spi, 0);
-+
-+	if (status < 0)
-+		return status;
-+
-+	return spi_write(spi, buf, buf_size);
-+}
-+
-+static int mpf_spi_write_then_read(struct spi_device *spi,
-+				   const void *txbuf, size_t txbuf_size,
-+				   void *rxbuf, size_t rxbuf_size)
-+{
-+	const u8 read_command[] = { MPF_SPI_READ_DATA };
-+	int ret;
-+
-+	ret = mpf_spi_write(spi, txbuf, txbuf_size);
-+	if (ret)
-+		return ret;
-+
-+	ret = poll_status_not_busy(spi, MPF_STATUS_READY);
-+	if (ret < 0)
-+		return ret;
-+
-+	return spi_write_then_read(spi, read_command, sizeof(read_command),
-+				   rxbuf, rxbuf_size);
-+}
-+
-+static int mpf_ops_write_init(struct fpga_manager *mgr,
-+			      struct fpga_image_info *info, const char *buf,
-+			      size_t count)
-+{
-+	const u8 program_mode[] = { MPF_SPI_FRAME_INIT, MPF_SPI_PRG_MODE };
-+	const u8 isc_en_command[] = { MPF_SPI_ISC_ENABLE };
-+	struct mpf_priv *priv = mgr->priv;
-+	struct device *dev = &mgr->dev;
-+	struct spi_device *spi;
-+	u32 isc_ret;
-+	int ret;
-+
-+	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
-+		dev_err(dev, "Partial reconfiguration is not supported\n");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	spi = priv->spi;
-+
-+	ret = mpf_spi_write_then_read(spi, isc_en_command, sizeof(isc_en_command),
-+				      &isc_ret, sizeof(isc_ret));
-+	if (ret || isc_ret) {
-+		dev_err(dev, "Failed to enable ISC: %d\n", ret ? : isc_ret);
-+		return -EFAULT;
-+	}
-+
-+	ret = mpf_spi_write(spi, program_mode, sizeof(program_mode));
-+	if (ret) {
-+		dev_err(dev, "Failed to enter program mode: %d\n", ret);
-+		return ret;
-+	}
-+
-+	priv->program_mode = true;
-+
-+	return 0;
-+}
-+
-+static int get_sgt_data(struct sg_table *sgt, size_t offset, void *data,
-+			size_t data_size)
-+{
-+	struct sg_mapping_iter miter;
-+	size_t remainder;
-+
-+	sg_miter_start(&miter, sgt->sgl, sgt->nents, SG_MITER_FROM_SG);
-+	while (sg_miter_next(&miter)) {
-+		if (offset < miter.length)
-+			break;
-+
-+		offset -= miter.length;
-+	}
-+
-+	if (!miter.addr) {
-+		sg_miter_stop(&miter);
-+		return -EFAULT;
-+	}
-+
-+	remainder = max((ssize_t)0, (ssize_t)offset + (ssize_t)data_size -
-+			(ssize_t)miter.length);
-+
-+	memcpy(data, miter.addr + offset, data_size - remainder);
-+
-+	while (remainder && sg_miter_next(&miter)) {
-+		memcpy(data + data_size - remainder, miter.addr,
-+		       min(remainder, miter.length));
-+		remainder = max((ssize_t)0,
-+				(ssize_t)remainder - (ssize_t)miter.length);
-+	}
-+	sg_miter_stop(&miter);
-+
-+	if (remainder)
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+static ssize_t lookup_block_start(struct sg_table *sgt, int id)
-+{
-+	size_t block_start_offset, block_id_offset, i;
-+	u8 header_size, blocks_num, block_id;
-+	u32 block_start;
-+	int ret;
-+
-+	ret = get_sgt_data(sgt, MPF_HEADER_SIZE_OFFSET, &header_size,
-+			   sizeof(header_size));
-+	if (ret)
-+		return ret;
-+
-+	ret = get_sgt_data(sgt, header_size - 1, &blocks_num,
-+			   sizeof(blocks_num));
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < blocks_num; i++) {
-+		block_id_offset = header_size +
-+				  i * MPF_LOOKUP_TABLE_RECORD_SIZE +
-+				  MPF_LOOKUP_TABLE_BLOCK_ID_OFFSET;
-+
-+		ret = get_sgt_data(sgt, block_id_offset, &block_id,
-+				   sizeof(block_id));
-+		if (ret)
-+			return ret;
-+
-+		if (block_id == id) {
-+			block_start_offset = header_size +
-+					     i * MPF_LOOKUP_TABLE_RECORD_SIZE +
-+					     MPF_LOOKUP_TABLE_BLOCK_START_OFFSET;
-+
-+			ret = get_sgt_data(sgt, block_start_offset, &block_start,
-+					   sizeof(block_start));
-+			if (ret)
-+				return ret;
-+
-+			return le32_to_cpu(block_start);
-+		}
-+	}
-+
-+	return -EFAULT;
-+}
-+
-+static ssize_t parse_bitstream_size(struct sg_table *sgt)
-+{
-+	size_t component_size_byte_num, component_size_byte_off,
-+	       i, bitstream_size = 0;
-+	ssize_t components_size_start;
-+	u16 components_num;
-+	u32 component_size;
-+	int ret;
-+
-+	ret = get_sgt_data(sgt, MPF_DATA_SIZE_OFFSET, &components_num,
-+			   sizeof(components_num));
-+	if (ret)
-+		return ret;
-+
-+	components_num = le16_to_cpu(components_num);
-+
-+	components_size_start = lookup_block_start(sgt, MPF_COMPONENTS_SIZE_ID);
-+	if (components_size_start < 0)
-+		return components_size_start;
-+
-+	for (i = 0; i < components_num; i++) {
-+		component_size_byte_num =
-+			(i * MPF_BITS_PER_COMPONENT_SIZE) / BITS_PER_BYTE;
-+		component_size_byte_off =
-+			(i * MPF_BITS_PER_COMPONENT_SIZE) % BITS_PER_BYTE;
-+
-+		ret = get_sgt_data(sgt, components_size_start +
-+				   component_size_byte_num,
-+				   &component_size, sizeof(component_size));
-+		if (ret)
-+			return ret;
-+
-+		component_size = le32_to_cpu(component_size);
-+		component_size >>= component_size_byte_off;
-+		component_size &= GENMASK(MPF_BITS_PER_COMPONENT_SIZE - 1, 0);
-+
-+		bitstream_size += component_size;
-+	}
-+
-+	return bitstream_size;
-+}
-+
-+static u16 crc_ccitt_sg(struct sg_table *sgt)
-+{
-+	struct sg_mapping_iter miter;
-+	u16 crc = 0;
-+
-+	sg_miter_start(&miter, sgt->sgl, sgt->nents, SG_MITER_FROM_SG);
-+	while (sg_miter_next(&miter))
-+		crc = crc_ccitt(crc, miter.addr, miter.length);
-+	sg_miter_stop(&miter);
-+
-+	return crc;
-+}
-+
-+static int mpf_ops_write_sg(struct fpga_manager *mgr, struct sg_table *sgt)
-+{
-+	u8 tmp_buf[MPF_SPI_FRAME_SIZE + 1] = { MPF_SPI_FRAME, };
-+	ssize_t bitstream_start, bitstream_size;
-+	struct mpf_priv *priv = mgr->priv;
-+	struct device *dev = &mgr->dev;
-+	struct sg_mapping_iter miter;
-+	struct spi_device *spi;
-+	size_t remainder;
-+	int ret, i;
-+
-+	if (crc_ccitt_sg(sgt)) {
-+		dev_err(dev, "CRC error\n");
-+		return -EINVAL;
-+	}
-+
-+	bitstream_start = lookup_block_start(sgt, MPF_BITSTREAM_ID);
-+	if (bitstream_start < 0) {
-+		dev_err(dev, "Failed to find bitstream start %zd\n",
-+			bitstream_start);
-+		return bitstream_start;
-+	}
-+
-+	bitstream_size = parse_bitstream_size(sgt);
-+	if (bitstream_size < 0) {
-+		dev_err(dev, "Failed to parse bitstream size %zd\n",
-+			bitstream_size);
-+		return bitstream_size;
-+	}
-+
-+	spi = priv->spi;
-+
-+	sg_miter_start(&miter, sgt->sgl, sgt->nents, SG_MITER_FROM_SG);
-+	for (i = 0; i < bitstream_size; i++) {
-+		do {
-+			if (bitstream_start < miter.length)
-+				break;
-+
-+			bitstream_start -= miter.length;
-+		} while (sg_miter_next(&miter));
-+
-+		remainder = max((ssize_t)0, bitstream_start +
-+				(ssize_t)MPF_SPI_FRAME_SIZE -
-+				(ssize_t)miter.length);
-+
-+		memcpy(tmp_buf + 1, miter.addr + bitstream_start,
-+		       MPF_SPI_FRAME_SIZE - remainder);
-+
-+		while (remainder) {
-+			bitstream_start -= miter.length;
-+
-+			if (sg_miter_next(&miter)) {
-+				memcpy(tmp_buf + 1 + MPF_SPI_FRAME_SIZE -
-+				       remainder, miter.addr,
-+				       min(remainder, miter.length));
-+				remainder = max((ssize_t)0, (ssize_t)remainder -
-+						(ssize_t)miter.length);
-+			} else {
-+				dev_err(dev,
-+					"Bitstream outruns firmware image. Frame %d of %zd\n",
-+					i, bitstream_size);
-+				sg_miter_stop(&miter);
-+				return -EFAULT;
-+			}
-+		}
-+
-+		bitstream_start += MPF_SPI_FRAME_SIZE;
-+
-+		ret = mpf_spi_write(spi, tmp_buf, sizeof(tmp_buf));
-+		if (ret) {
-+			dev_err(dev,
-+				"Failed to write bitstream frame number %d of %zd\n",
-+				i, bitstream_size);
-+			sg_miter_stop(&miter);
-+			return ret;
-+		}
-+	}
-+	sg_miter_stop(&miter);
-+
-+	return 0;
-+}
-+
-+static int mpf_ops_write_complete(struct fpga_manager *mgr,
-+				  struct fpga_image_info *info)
-+{
-+	const u8 isc_dis_command[] = { MPF_SPI_ISC_DISABLE };
-+	const u8 release_command[] = { MPF_SPI_RELEASE };
-+	struct mpf_priv *priv = mgr->priv;
-+	struct device *dev = &mgr->dev;
-+	struct spi_device *spi;
-+	int ret;
-+
-+	spi = priv->spi;
-+
-+	ret = mpf_spi_write(spi, isc_dis_command, sizeof(isc_dis_command));
-+	if (ret) {
-+		dev_err(dev, "Failed to disable ISC: %d\n", ret);
-+		return ret;
-+	}
-+
-+	usleep_range(1000, 2000);
-+
-+	ret = mpf_spi_write(spi, release_command, sizeof(release_command));
-+	if (ret) {
-+		dev_err(dev, "Failed to exit program mode: %d\n", ret);
-+		return ret;
-+	}
-+
-+	priv->program_mode = false;
-+
-+	return 0;
-+}
-+
-+static const struct fpga_manager_ops mpf_ops = {
-+	.state = mpf_ops_state,
-+	.write_init = mpf_ops_write_init,
-+	.write_sg = mpf_ops_write_sg,
-+	.write_complete = mpf_ops_write_complete,
-+};
-+
-+static int mpf_probe(struct spi_device *spi)
-+{
-+	struct device *dev = &spi->dev;
-+	struct fpga_manager *mgr;
-+	struct mpf_priv *priv;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->spi = spi;
-+
-+	mgr = devm_fpga_mgr_register(dev, "Microchip Polarfire SPI FPGA Manager",
-+				     &mpf_ops, priv);
-+
-+	return PTR_ERR_OR_ZERO(mgr);
-+}
-+
-+static const struct spi_device_id mpf_spi_ids[] = {
-+	{ .name = "mpf-spi-fpga-mgr", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(spi, mpf_spi_ids);
-+
-+#if IS_ENABLED(CONFIG_OF)
-+static const struct of_device_id mpf_of_ids[] = {
-+	{ .compatible = "microchip,mpf-spi-fpga-mgr" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, mpf_of_ids);
-+#endif /* IS_ENABLED(CONFIG_OF) */
-+
-+static struct spi_driver mpf_driver = {
-+	.probe = mpf_probe,
-+	.id_table = mpf_spi_ids,
-+	.driver = {
-+		.name = "microchip_mpf_spi_fpga_mgr",
-+		.of_match_table = of_match_ptr(mpf_of_ids),
-+	},
-+};
-+
-+module_spi_driver(mpf_driver);
-+
-+MODULE_DESCRIPTION("Microchip Polarfire SPI FPGA Manager");
-+MODULE_LICENSE("GPL");
--- 
-2.34.1
+> -----Original Message-----
+> From: Xu Yilun <yilun.xu@intel.com>
+> Sent: Tuesday, March 15, 2022 9:39 PM
+> To: Nava kishore Manne <navam@xilinx.com>
+> Cc: mdf@kernel.org; hao.wu@intel.com; trix@redhat.com; Michal Simek
+> <michals@xilinx.com>; linux-fpga@vger.kernel.org; linux-
+> kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org
+> Subject: Re: [PATCH 2/6] fpga: zynqmp: Initialized variables before using=
+ it
+>=20
+> On Tue, Mar 15, 2022 at 11:48:11AM +0000, Nava kishore Manne wrote:
+> > Hi Yilun,
+> >
+> > 	Thanks for providing the review comments.
+> > Please find my response inline.
+> >
+> > > -----Original Message-----
+> > > From: Xu Yilun <yilun.xu@intel.com>
+> > > Sent: Friday, March 11, 2022 7:58 PM
+> > > To: Nava kishore Manne <navam@xilinx.com>
+> > > Cc: mdf@kernel.org; hao.wu@intel.com; trix@redhat.com; Michal Simek
+> > > <michals@xilinx.com>; linux-fpga@vger.kernel.org; linux-
+> > > kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org
+> > > Subject: Re: [PATCH 2/6] fpga: zynqmp: Initialized variables before
+> > > using it
+> > >
+> > > On Tue, Mar 08, 2022 at 03:15:15PM +0530, Nava kishore Manne wrote:
+> > > > This patch initialized variables with the proper value.
+> > > > Addresses-Coverity: "uninit_use: Using uninitialized value"
+> > > >
+> > > > Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+> > > > ---
+> > > >  drivers/fpga/zynqmp-fpga.c | 2 +-
+> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > >
+> > > > diff --git a/drivers/fpga/zynqmp-fpga.c
+> > > > b/drivers/fpga/zynqmp-fpga.c index c60f20949c47..e931d69819a7
+> > > > 100644
+> > > > --- a/drivers/fpga/zynqmp-fpga.c
+> > > > +++ b/drivers/fpga/zynqmp-fpga.c
+> > > > @@ -41,7 +41,7 @@ static int zynqmp_fpga_ops_write(struct
+> > > fpga_manager *mgr,
+> > > >  				 const char *buf, size_t size)  {
+> > > >  	struct zynqmp_fpga_priv *priv;
+> > > > -	dma_addr_t dma_addr;
+> > > > +	dma_addr_t dma_addr =3D 0;
+> > >
+> > > The first use of this variable is as an output parameter:
+> > >
+> > > 	kbuf =3D dma_alloc_coherent(priv->dev, size, &dma_addr,
+> GFP_KERNEL);
+> > >
+> > > So I don't think it needs to be initialized as 0.
+> > >
+> >
+> > This issue is found by Coverity Scan, Whether this param is input/outpu=
+t
+> this fix will not impact the actual functionality.
+> > In order to fix the issues reported by the Coverity tool, this fix is n=
+eeded.
+>=20
+> I didn't see issues about this piece of code, so I don't think we need th=
+e fix
+> just to make the tool happy. Maybe the tool could be improved to help us
+> better.
+>=20
 
+Agreed, I will drop this patch in v2.
 
+Regards,
+Navakishore.
