@@ -2,114 +2,71 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD5DEC433F5
-	for <linux-fpga@archiver.kernel.org>; Sat, 26 Mar 2022 17:10:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 863B3C433F5
+	for <linux-fpga@archiver.kernel.org>; Tue, 29 Mar 2022 23:11:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229962AbiCZRKa (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sat, 26 Mar 2022 13:10:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49506 "EHLO
+        id S238927AbiC2XLV (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 29 Mar 2022 19:11:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232375AbiCZRK3 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sat, 26 Mar 2022 13:10:29 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 72CD93524D
-        for <linux-fpga@vger.kernel.org>; Sat, 26 Mar 2022 10:08:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1648314529;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=KsSrWIqPfk2quPBaJHDrYcj65RLxmIBGnRe4ZxcsCNw=;
-        b=d+9JL7PCZ+1k5JP6VvNQC22Tc8yVW9618+e/6qdktJOUTsOkpUwezC0sSM7jVyqB7s2yB9
-        beYI5EiL6zG78SDHc2+ap/1cOkCVTzI+rmnl24WWVK+sCWty7pivKzyZmZJLbtLN+zzmYc
-        56rIM97nvN5oiNfw4f8oGWqUTvrBIAw=
-Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com
- [209.85.160.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-524-OoBaoGTGMdeidVkJuCFAHQ-1; Sat, 26 Mar 2022 13:08:48 -0400
-X-MC-Unique: OoBaoGTGMdeidVkJuCFAHQ-1
-Received: by mail-qt1-f199.google.com with SMTP id x9-20020ac81209000000b002e0659131baso8339245qti.11
-        for <linux-fpga@vger.kernel.org>; Sat, 26 Mar 2022 10:08:48 -0700 (PDT)
+        with ESMTP id S236271AbiC2XLV (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 29 Mar 2022 19:11:21 -0400
+Received: from mail-ot1-f44.google.com (mail-ot1-f44.google.com [209.85.210.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C108AF1F7;
+        Tue, 29 Mar 2022 16:09:37 -0700 (PDT)
+Received: by mail-ot1-f44.google.com with SMTP id o20-20020a9d7194000000b005cb20cf4f1bso13775588otj.7;
+        Tue, 29 Mar 2022 16:09:37 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding
-         :content-language;
-        bh=KsSrWIqPfk2quPBaJHDrYcj65RLxmIBGnRe4ZxcsCNw=;
-        b=6YRtyGHdsz9QPEv8PvTaYYpVzJT/nlC2DKt3ms3JPC8UWhic4UDfhPdB0VGyQwy+WJ
-         Oe+utkQ9D9cAw26rhDsAdhTtSc8Y9ud2ANVHElCaSStH9gU/QzHcEvBZOeLdS3RkkL14
-         ceapJdS2Hrx2pj+rE42JsD4TNRxOb2qgLEIAl6W5Kj8ZVqVUBkSkUtQMIyfREJSQYZGz
-         BL0xaey7i27yvVw5A8Tc7+JK8unxcuBWvGtKpW66FK03JiMSj01KqUfvsfgxN/+WRqrH
-         sE/525fnP8pvMwjFDbFJ9+3kxKk8KYyx+kQVEnn95Aqj22t5XUkfZOA7Z3zC9rDt1iyS
-         Uvpw==
-X-Gm-Message-State: AOAM530e5iiC6+bmhKhhA5TLEdgytmsC2iVxCYbB7luRz5yOn/yueFsx
-        JLAL+rgHcvwVokhoeB1tMRkUIOdVvv6alVANhRlf1A2hZz2ON7RJDOhrAp9NB4cSMFvQwqyhNUZ
-        86Og0w2i6ce4buPw2VzF4nw==
-X-Received: by 2002:ac8:5e10:0:b0:2e1:cb3e:bb87 with SMTP id h16-20020ac85e10000000b002e1cb3ebb87mr14884473qtx.4.1648314528093;
-        Sat, 26 Mar 2022 10:08:48 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJxcTdcjSdnI+5liW0mpIFMK4UfyXML3yGh5wbmKsyzyWMx+AMLApJvYOFeehZbXiBNRUQclpQ==
-X-Received: by 2002:ac8:5e10:0:b0:2e1:cb3e:bb87 with SMTP id h16-20020ac85e10000000b002e1cb3ebb87mr14884462qtx.4.1648314527854;
-        Sat, 26 Mar 2022 10:08:47 -0700 (PDT)
-Received: from localhost.localdomain (024-205-208-113.res.spectrum.com. [24.205.208.113])
-        by smtp.gmail.com with ESMTPSA id r17-20020a05620a299100b00680b43004bfsm3273144qkp.45.2022.03.26.10.08.46
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 26 Mar 2022 10:08:47 -0700 (PDT)
-Subject: Re: [PATCH v2 4/5] fpga: Use tab instead of spaces for indentation
-To:     Nava kishore Manne <nava.manne@xilinx.com>, mdf@kernel.org,
-        hao.wu@intel.com, yilun.xu@intel.com, michal.simek@xilinx.com,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, git@xilinx.com
-References: <20220322082202.2007321-1-nava.manne@xilinx.com>
- <20220322082202.2007321-5-nava.manne@xilinx.com>
-From:   Tom Rix <trix@redhat.com>
-Message-ID: <f8929af9-daa4-2111-1dff-edbf1f2041e7@redhat.com>
-Date:   Sat, 26 Mar 2022 10:08:44 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=xtO41FFtsVppvhi60ir4ebFxoHFSsQTScElxpQB9J/w=;
+        b=6oKJS/jwwqN8QpbSqvtvIw9EoTLaDCh+5HcuMywBF3OQxT11gN/C7DH/fUb83l9Mwq
+         S/U6ak7eIl8CC1I0qveq6yZ+4w1YPyACFZPXbN4z054EQm/dHd4cvBaNgan/biWsYnxF
+         1rYfNzEHk2c6QniUtZ9i78LV5mRmCqBQxoIZQrlTXLvYLEJxoxnZny+Z5GQAalm0GH3A
+         Q+gjnlaGKueZskJROm8W60WAabxl/OvxUGLWKe/ci741yCy6t2S++xxE/omL1S7Uz3n9
+         s3ArICeYXNpUMpx7z1MKKvyCdDa2+x1rtM754tbe8lWXsT3ivtOP4sZIFD1+MLXFBU0l
+         XALg==
+X-Gm-Message-State: AOAM533kmrWL4+sIT4j4rB8lafiubLsjesq0J+JArGeV2PwmvLcEukod
+        BTGACSSq8rScCDGvLihBQw==
+X-Google-Smtp-Source: ABdhPJzEDpJMH1mPuGj7NKEY+O1n/LC+LymNnfwy0CuECx5bStXAvnD0S+0wrP/5p43RMQpuxEf/sw==
+X-Received: by 2002:a9d:6a84:0:b0:5cd:ad64:a50 with SMTP id l4-20020a9d6a84000000b005cdad640a50mr2128500otq.114.1648595376776;
+        Tue, 29 Mar 2022 16:09:36 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id 14-20020a056870134e00b000ddaf3927b1sm9124300oac.32.2022.03.29.16.09.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 29 Mar 2022 16:09:35 -0700 (PDT)
+Received: (nullmailer pid 1524452 invoked by uid 1000);
+        Tue, 29 Mar 2022 23:09:34 -0000
+Date:   Tue, 29 Mar 2022 18:09:34 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Ivan Bornyakov <i.bornyakov@metrotek.ru>
+Cc:     yilun.xu@intel.com, conor.dooley@microchip.com, trix@redhat.com,
+        devicetree@vger.kernel.org, hao.wu@intel.com,
+        linux-fpga@vger.kernel.org, robh+dt@kernel.org, system@metrotek.ru,
+        mdf@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v8 2/2] dt-bindings: fpga: add binding doc for
+ microchip-spi fpga mgr
+Message-ID: <YkORrgC1FdzaKCMW@robh.at.kernel.org>
+References: <20220322191552.13156-1-i.bornyakov@metrotek.ru>
+ <20220322191552.13156-3-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
-In-Reply-To: <20220322082202.2007321-5-nava.manne@xilinx.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220322191552.13156-3-i.bornyakov@metrotek.ru>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-
-On 3/22/22 1:22 AM, Nava kishore Manne wrote:
-> Trivial fix.
-
-This is not descriptive.
-
-Improve the commit log to explain the issue and solution.
-
-Tom
-
->
-> Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+On Tue, 22 Mar 2022 22:15:52 +0300, Ivan Bornyakov wrote:
+> Add Device Tree Binding doc for Microchip Polarfire FPGA Manager using
+> slave SPI to load .dat formatted bitstream image.
+> 
+> Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
 > ---
-> Changes for v2:
-> 		-None.
->
->   drivers/fpga/Makefile | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-> index 0bff783d1b61..5935b3d0abd5 100644
-> --- a/drivers/fpga/Makefile
-> +++ b/drivers/fpga/Makefile
-> @@ -18,9 +18,9 @@ obj-$(CONFIG_FPGA_MGR_TS73XX)		+= ts73xx-fpga.o
->   obj-$(CONFIG_FPGA_MGR_XILINX_SPI)	+= xilinx-spi.o
->   obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+= zynq-fpga.o
->   obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+= zynqmp-fpga.o
-> -obj-$(CONFIG_FPGA_MGR_VERSAL_FPGA)      += versal-fpga.o
-> -obj-$(CONFIG_ALTERA_PR_IP_CORE)         += altera-pr-ip-core.o
-> -obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)    += altera-pr-ip-core-plat.o
-> +obj-$(CONFIG_FPGA_MGR_VERSAL_FPGA)	+= versal-fpga.o
-> +obj-$(CONFIG_ALTERA_PR_IP_CORE)		+= altera-pr-ip-core.o
-> +obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)	+= altera-pr-ip-core-plat.o
->   
->   # FPGA Bridge Drivers
->   obj-$(CONFIG_FPGA_BRIDGE)		+= fpga-bridge.o
+>  .../fpga/microchip,mpf-spi-fpga-mgr.yaml      | 44 +++++++++++++++++++
+>  1 file changed, 44 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
+> 
 
+Reviewed-by: Rob Herring <robh@kernel.org>
