@@ -2,100 +2,126 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8EA6C433F5
-	for <linux-fpga@archiver.kernel.org>; Sat, 16 Apr 2022 16:56:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBC73C433EF
+	for <linux-fpga@archiver.kernel.org>; Sat, 16 Apr 2022 17:00:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232636AbiDPQ5f (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sat, 16 Apr 2022 12:57:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44580 "EHLO
+        id S232642AbiDPRBT (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sat, 16 Apr 2022 13:01:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232635AbiDPQ5e (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sat, 16 Apr 2022 12:57:34 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF5B61D0DD;
-        Sat, 16 Apr 2022 09:55:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1650128101; x=1681664101;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=YmPk/I4BaAwjhGm7zGUIvQ+YLO5l4e35OMj+a0vLnZM=;
-  b=SBkphYbR+VL5iRKIF8xab+zf+7NlTAcjv+jHcbJoPWuhkaioMPn10m+6
-   30H/tDJREw7yny+r5BGiNfvVyi7b+puRB02JeBszW2z8FRNp6b5e+K4ln
-   h57aZzaXhwcNfHhNZnqmpgM96Mkrtn6v1eaA5zUcfCQYRwr9ylAH8Gbm6
-   jyq7FjcC6hVQtjaQ9ZlarK/FJljAw8C5LOxGVWt1B+vZFDl228BWVpoSI
-   o8Rmhk8nAZsiyYqBmBSI39JELflyR7mfkoejRCyMekUpmPhRHxqVHAKey
-   oNiQGJNW8Stp731qNtX3OmTfwyYB1giVHRhcwRGJn9GmNPcpQroAFCD05
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10318"; a="263481141"
-X-IronPort-AV: E=Sophos;i="5.90,264,1643702400"; 
-   d="scan'208";a="263481141"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Apr 2022 09:55:01 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,264,1643702400"; 
-   d="scan'208";a="701369214"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.135])
-  by fmsmga001.fm.intel.com with ESMTP; 16 Apr 2022 09:54:56 -0700
-Date:   Sun, 17 Apr 2022 00:47:25 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Nava kishore Manne <nava.manne@xilinx.com>
-Cc:     mdf@kernel.org, hao.wu@intel.com, trix@redhat.com,
+        with ESMTP id S231799AbiDPRBR (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sat, 16 Apr 2022 13:01:17 -0400
+Received: from relay4.hostedemail.com (relay4.hostedemail.com [64.99.140.36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F08C84C411;
+        Sat, 16 Apr 2022 09:58:44 -0700 (PDT)
+Received: from omf06.hostedemail.com (a10.router.float.18 [10.200.18.1])
+        by unirelay06.hostedemail.com (Postfix) with ESMTP id 112E5223DA;
+        Sat, 16 Apr 2022 16:58:43 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by omf06.hostedemail.com (Postfix) with ESMTPA id 42FA32000E;
+        Sat, 16 Apr 2022 16:58:41 +0000 (UTC)
+Message-ID: <ac22068dad06fd61f2e82c0bf7c0f58a4e5df050.camel@perches.com>
+Subject: Re: [PATCH v4 2/5] fpga: fix for coding style issues
+From:   Joe Perches <joe@perches.com>
+To:     Nava kishore Manne <nava.manne@xilinx.com>, mdf@kernel.org,
+        hao.wu@intel.com, yilun.xu@intel.com, trix@redhat.com,
         michal.simek@xilinx.com, linux-fpga@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         git@xilinx.com
-Subject: Re: [PATCH v4 4/5] fpga: Use tab instead of space indentation
-Message-ID: <20220416164725.GF301222@yilunxu-OptiPlex-7050>
+Date:   Sat, 16 Apr 2022 09:58:40 -0700
+In-Reply-To: <20220416133719.3382895-3-nava.manne@xilinx.com>
 References: <20220416133719.3382895-1-nava.manne@xilinx.com>
- <20220416133719.3382895-5-nava.manne@xilinx.com>
+         <20220416133719.3382895-3-nava.manne@xilinx.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.40.4-1ubuntu2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220416133719.3382895-5-nava.manne@xilinx.com>
+Content-Transfer-Encoding: 7bit
+X-Stat-Signature: 5iasq51u9gsrfia9ayz48s37ztk95x9o
+X-Rspamd-Server: rspamout02
+X-Rspamd-Queue-Id: 42FA32000E
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-Session-ID: U2FsdGVkX18NXzAwtfsG6VD8cMuiMu8V8tvZafI+GT8=
+X-HE-Tag: 1650128321-724278
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Sat, Apr 16, 2022 at 07:07:18PM +0530, Nava kishore Manne wrote:
-> In FPGA Make file has both space and tab indentation to
+On Sat, 2022-04-16 at 19:07 +0530, Nava kishore Manne wrote:
+> fixes the below checks reported by checkpatch.pl
+> Lines should not end with a '('
+> Alignment should match open parenthesis
 
-          Makefile                         indentation, to
+in fpga-mgr:
+	Another possibillty would be to change the function arguments
 
-> make them align use tab instead of space indentation.
-> 
-> Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+and 
 
-With the minor fixes, please add my Acked-by
+in fpga-region:
+	Ideally keep the include declaration and definition styles synced
 
-Acked-by: Xu Yilun <yilun.xu@intel.com>
+Perhaps:
+---
+ drivers/fpga/fpga-mgr.c          | 13 ++++++++-----
+ drivers/fpga/fpga-region.c       |  6 +++---
+ include/linux/fpga/fpga-region.h |  6 +++---
+ 3 files changed, 14 insertions(+), 11 deletions(-)
 
-> ---
-> Changes for v2:
->                 -None.
-> Changes for v3:
->                 -Updated commit description.
-> Changes for v4:
->                 -None.
-> 
->  drivers/fpga/Makefile | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-> index 0bff783d1b61..5935b3d0abd5 100644
-> --- a/drivers/fpga/Makefile
-> +++ b/drivers/fpga/Makefile
-> @@ -18,9 +18,9 @@ obj-$(CONFIG_FPGA_MGR_TS73XX)		+= ts73xx-fpga.o
->  obj-$(CONFIG_FPGA_MGR_XILINX_SPI)	+= xilinx-spi.o
->  obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+= zynq-fpga.o
->  obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+= zynqmp-fpga.o
-> -obj-$(CONFIG_FPGA_MGR_VERSAL_FPGA)      += versal-fpga.o
-> -obj-$(CONFIG_ALTERA_PR_IP_CORE)         += altera-pr-ip-core.o
-> -obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)    += altera-pr-ip-core-plat.o
-> +obj-$(CONFIG_FPGA_MGR_VERSAL_FPGA)	+= versal-fpga.o
-> +obj-$(CONFIG_ALTERA_PR_IP_CORE)		+= altera-pr-ip-core.o
-> +obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)	+= altera-pr-ip-core-plat.o
->  
->  # FPGA Bridge Drivers
->  obj-$(CONFIG_FPGA_BRIDGE)		+= fpga-bridge.o
-> -- 
-> 2.25.1
+diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
+index d49a9ce34568..c65b97450a67 100644
+--- a/drivers/fpga/fpga-mgr.c
++++ b/drivers/fpga/fpga-mgr.c
+@@ -148,12 +148,15 @@ static int fpga_mgr_write_init_buf(struct fpga_manager *mgr,
+ 	int ret;
+ 
+ 	mgr->state = FPGA_MGR_STATE_WRITE_INIT;
+-	if (!mgr->mops->initial_header_size)
+-		ret = fpga_mgr_write_init(mgr, info, NULL, 0);
+-	else
+-		ret = fpga_mgr_write_init(
+-		    mgr, info, buf, min(mgr->mops->initial_header_size, count));
+ 
++	if (mgr->mops->initial_header_size) {
++		count = min(mgr->mops->initial_header_size, count);
++	} else {
++		buf = NULL;
++		count = 0;
++	}
++
++	ret = fpga_mgr_write_init(mgr, info, buf, count);
+ 	if (ret) {
+ 		dev_err(&mgr->dev, "Error preparing FPGA for writing\n");
+ 		mgr->state = FPGA_MGR_STATE_WRITE_INIT_ERR;
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index b0ac18de4885..485948e3c0db 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -18,9 +18,9 @@
+ static DEFINE_IDA(fpga_region_ida);
+ static struct class *fpga_region_class;
+ 
+-struct fpga_region *fpga_region_class_find(
+-	struct device *start, const void *data,
+-	int (*match)(struct device *, const void *))
++struct fpga_region *
++fpga_region_class_find(struct device *start, const void *data,
++		       int (*match)(struct device *, const void *))
+ {
+ 	struct device *dev;
+ 
+diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+index 3b87f232425c..9d4d32909340 100644
+--- a/include/linux/fpga/fpga-region.h
++++ b/include/linux/fpga/fpga-region.h
+@@ -52,9 +52,9 @@ struct fpga_region {
+ 
+ #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
+ 
+-struct fpga_region *fpga_region_class_find(
+-	struct device *start, const void *data,
+-	int (*match)(struct device *, const void *));
++struct fpga_region *
++fpga_region_class_find(struct device *start, const void *data,
++		       int (*match)(struct device *, const void *));
+ 
+ int fpga_region_program_fpga(struct fpga_region *region);
+ 
+
