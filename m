@@ -2,49 +2,53 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7BE8C433F5
-	for <linux-fpga@archiver.kernel.org>; Tue, 19 Apr 2022 03:09:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68B9EC433EF
+	for <linux-fpga@archiver.kernel.org>; Tue, 19 Apr 2022 03:35:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237758AbiDSDKi (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 18 Apr 2022 23:10:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38272 "EHLO
+        id S1347615AbiDSDf7 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 18 Apr 2022 23:35:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33634 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233759AbiDSDKg (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 18 Apr 2022 23:10:36 -0400
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C57222DA9D
-        for <linux-fpga@vger.kernel.org>; Mon, 18 Apr 2022 20:07:55 -0700 (PDT)
+        with ESMTP id S1348051AbiDSDfw (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 18 Apr 2022 23:35:52 -0400
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8645E2DA9D;
+        Mon, 18 Apr 2022 20:33:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1650337675; x=1681873675;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=5ikLuKQwN3tn9LL3ZhRo6bN8mdd0tzGw2MCw1FckcEw=;
-  b=Jb2vBmsrVOR2bz/b6NGdVTG8PHSMWajBLBKgCYw4N8O+J5MpVBhlkBzu
-   CC5Lu++gHf4fFKj0czMTuJ5uvXf2aK7kBGlTKDPPMSDdOXA9me3RZXyuS
-   9MtazDmh9CYGxh6AGH7dKrxBPa4aYavd2T9puWX7/mlcr8oPDX24lSZWv
-   4BMMLhYDW1FisWCIL/IuAAl3QWq2VLCD4JI7CGSq0KHH9DruyIt31ZJJg
-   LuR5/GLqN6RaALeIvgbRF7V7Rm/MHHg83OKmD6/Dr0jzrUmc6Mdm8MwH/
-   M+/AJlFQ5Kf6VwjYQRM2v+iNzRlx88xXxUnPHlcQrJzSM4PyFzjZrFj8Q
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10321"; a="350110898"
+  t=1650339190; x=1681875190;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=djxG0x7RAK5zzJsWM8Robr6GmjKCT8aMEu4eBoCiP/E=;
+  b=XxxN/eqZ6/AXv3diCML6sTv+zClP7ZnfJjfZ4G/4Hyiymn+QhHSgeHPr
+   rWL5rFZFE0zSw0ZceZ4WBgjkQTds7xKtFgt+A3miZOVnQE9Dy2mAMLZpp
+   /tjGVsc4IvfaBMxWSXFBttvftGeJ0ZYjM2dFpSXXkTK4fPjjt9dtwkTJk
+   BYmcVSUYxmRbFIGMVVnG9dmJ+i1LfAIW5Y6tkfMEdyRHi+km/l49xFtgG
+   Y6TbAQ1G1kU7WvSzB/mAKKST/rA6am1Xfv/s5lsfQeXPdkcBrCd8/VSG1
+   Kn0277SYZrLzP+eHlFLeyqmoMM0hCV8oQyEPCpG7DhOK2oktcLOsjIyGb
+   A==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10321"; a="263126791"
 X-IronPort-AV: E=Sophos;i="5.90,271,1643702400"; 
-   d="scan'208";a="350110898"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Apr 2022 20:07:55 -0700
+   d="scan'208";a="263126791"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Apr 2022 20:33:10 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.90,271,1643702400"; 
-   d="scan'208";a="657475507"
+   d="scan'208";a="726894615"
 Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
-  by fmsmga002.fm.intel.com with ESMTP; 18 Apr 2022 20:07:53 -0700
+  by orsmga005.jf.intel.com with ESMTP; 18 Apr 2022 20:33:07 -0700
 From:   Tianfei Zhang <tianfei.zhang@intel.com>
 To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
         yilun.xu@intel.com, linux-fpga@vger.kernel.org
-Cc:     Tianfei zhang <tianfei.zhang@intel.com>
-Subject: [PATCH v2] fpga: dfl: fme: adding reserved bits for revision of FME/Port error
-Date:   Mon, 18 Apr 2022 23:03:57 -0400
-Message-Id: <20220419030357.410495-1-tianfei.zhang@intel.com>
+Cc:     linux-doc@vger.kernel.org, corbet@lwn.net,
+        Tianfei zhang <tianfei.zhang@intel.com>,
+        Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Subject: [PATCH v7 1/2] fpga: dfl: check feature type before parse irq info
+Date:   Mon, 18 Apr 2022 23:29:41 -0400
+Message-Id: <20220419032942.427429-2-tianfei.zhang@intel.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20220419032942.427429-1-tianfei.zhang@intel.com>
+References: <20220419032942.427429-1-tianfei.zhang@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -53,203 +57,89 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Tianfei zhang <tianfei.zhang@intel.com>
 
-There are 2 different register layouts for FME/Port error
-registers. The new production like Intel PAC N6000 plans to
-deploy the new register format which it is more reasonable.
+Previously the feature IDs defined are unique, no matter
+which feature type. But currently we want to extend its
+usage to have a per-type feature ID space, so this patch
+adds feature type checking as well just before look into
+feature ID for different features which have irq info.
 
-To distinguish the register layouts,we provide another sysfs
-node for revision info, but it is a bad method that using one
-sysfs node's value to determine the usage of other sysfs node.
-
-This patch introduces 4 reserved bits (Bit[59:56]) which
-are reserved by HW, dfl driver appends the FME/Port error
-revision info on those bits for attribution on the readout
-value.
-
+Reviewed-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
 Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
 ---
+v7:
+  - Add Reviewed-by and Acked-by tag.
+v4:
+  - Fix the git commit from Hao's comments.
+  - Split documentation into another patch.
+v3:
+  - Remove "Fixes" in commit log with Hao's comment, this is a
+    extension not a bug fix.
 v2:
- - add documentation for this change.
- - fix the reverse xmas tree declaration.
+  - add DFL Feature ID Registry in documentation.
 ---
- .../ABI/testing/sysfs-platform-dfl-fme        | 37 ++++++++++++-------
- drivers/fpga/dfl-fme-error.c                  | 36 +++++++++++++++---
- 2 files changed, 54 insertions(+), 19 deletions(-)
+ drivers/fpga/dfl.c | 38 ++++++++++++++++++++++----------------
+ 1 file changed, 22 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-dfl-fme b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-index d6ab34e81b9b..b886568d6071 100644
---- a/Documentation/ABI/testing/sysfs-platform-dfl-fme
-+++ b/Documentation/ABI/testing/sysfs-platform-dfl-fme
-@@ -50,46 +50,57 @@ Date:		August 2019
- KernelVersion:  5.4
- Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-Write. Read this file for errors detected on pcie0 link.
--		Write this file to clear errors logged in pcie0_errors. Write
--		fails with -EINVAL if input parsing fails or input error code
--		doesn't match.
-+		The readout value has embedded 4 bits revision attribution
-+		in Bit[59:56] which reserved by hardware. Write this file to
-+		clear errors logged in pcie0_errors. Clean Bit[59:56] before
-+		write this file. Write fails with -EINVAL if input parsing
-+		fails or input error code doesn't match.
- 
- What:		/sys/bus/platform/devices/dfl-fme.0/errors/pcie1_errors
- Date:		August 2019
- KernelVersion:  5.4
- Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-Write. Read this file for errors detected on pcie1 link.
--		Write this file to clear errors logged in pcie1_errors. Write
--		fails with -EINVAL if input parsing fails or input error code
--		doesn't match.
-+		The readout value has embedded 4 bits revision attribution
-+		in Bit[59:56] which reserved by hardware. Write this file to
-+		clear errors logged in pcie1_errors. Clean Bit[59:56] before
-+		write this file. Write fails with -EINVAL if input parsing fails
-+		or input error code doesn't match.
- 
- What:		/sys/bus/platform/devices/dfl-fme.0/errors/nonfatal_errors
- Date:		August 2019
- KernelVersion:  5.4
- Contact:	Wu Hao <hao.wu@intel.com>
--Description:	Read-only. It returns non-fatal errors detected.
-+Description:	Read-only. It returns non-fatal errors detected. The readout
-+		value has embedded 4 bits revision attribution in Bit[59:56]
-+		which reserved by hardware.
- 
- What:		/sys/bus/platform/devices/dfl-fme.0/errors/catfatal_errors
- Date:		August 2019
- KernelVersion:  5.4
- Contact:	Wu Hao <hao.wu@intel.com>
- Description:	Read-only. It returns catastrophic and fatal errors detected.
-+		The readout value has embedded 4 bits revision attribution in
-+		Bit[59:56] which reserved by hardware.
- 
- What:		/sys/bus/platform/devices/dfl-fme.0/errors/inject_errors
- Date:		August 2019
- KernelVersion:  5.4
- Contact:	Wu Hao <hao.wu@intel.com>
--Description:	Read-Write. Read this file to check errors injected. Write this
--		file to inject errors for testing purpose. Write fails with
--		-EINVAL if input parsing fails or input inject error code isn't
--		supported.
-+Description:	Read-Write. Read this file to check errors injected. The readout
-+		value has embedded 4 bits revision attribution which reserved by
-+		hardware. Write this file to inject errors for testing purpose.
-+		Clean Bit[59:56] before write this file. Write fails with -EINVAL
-+		if input parsing fails or input inject error code isn't supported.
- 
- What:		/sys/bus/platform/devices/dfl-fme.0/errors/fme_errors
- Date:		August 2019
- KernelVersion:  5.4
- Contact:	Wu Hao <hao.wu@intel.com>
--Description:	Read-Write. Read this file to get errors detected on FME.
--		Write this file to clear errors logged in fme_errors. Write
-+Description:	Read-Write. Read this file to get errors detected on FME. The
-+		readout value has embedded 4 bits revision attribution which
-+		reserved by hardware. Write this file to clear errors logged
-+		in fme_errors. Clean Bit[59:56] before write this file. Write
- 		fials with -EINVAL if input parsing fails or input error code
- 		doesn't match.
- 
-diff --git a/drivers/fpga/dfl-fme-error.c b/drivers/fpga/dfl-fme-error.c
-index 51c2892ec06d..a440bc09938d 100644
---- a/drivers/fpga/dfl-fme-error.c
-+++ b/drivers/fpga/dfl-fme-error.c
-@@ -39,6 +39,22 @@
- 
- #define ERROR_MASK		GENMASK_ULL(63, 0)
- 
-+/* Bit[59:56] was reserved by software for error revision */
-+#define ERROR_SW_REVISION_MASK GENMASK_ULL(59, 56)
-+
-+static u64 set_error_revision(struct device *dev, u64 value)
-+{
-+	void __iomem *base;
-+	u64 revision;
-+	u64 dfh;
-+
-+	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+	dfh = readq(base);
-+	revision = FIELD_GET(DFH_REVISION, dfh);
-+
-+	return value | FIELD_PREP(ERROR_SW_REVISION_MASK, revision);
-+}
-+
- static ssize_t pcie0_errors_show(struct device *dev,
- 				 struct device_attribute *attr, char *buf)
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 599bb21d86af..6bff39ff21a0 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -940,9 +940,12 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
  {
-@@ -52,7 +68,8 @@ static ssize_t pcie0_errors_show(struct device *dev,
- 	value = readq(base + PCIE0_ERROR);
- 	mutex_unlock(&pdata->lock);
+ 	void __iomem *base = binfo->ioaddr + ofst;
+ 	unsigned int i, ibase, inr = 0;
++	enum dfl_id_type type;
+ 	int virq;
+ 	u64 v;
  
--	return sprintf(buf, "0x%llx\n", (unsigned long long)value);
-+	return sprintf(buf, "0x%llx\n",
-+		       (unsigned long long)set_error_revision(dev, value));
- }
++	type = feature_dev_id_type(binfo->feature_dev);
++
+ 	/*
+ 	 * Ideally DFL framework should only read info from DFL header, but
+ 	 * current version DFL only provides mmio resources information for
+@@ -957,22 +960,25 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
+ 	 * code will be added. But in order to be compatible to old version
+ 	 * DFL, the driver may still fall back to these quirks.
+ 	 */
+-	switch (fid) {
+-	case PORT_FEATURE_ID_UINT:
+-		v = readq(base + PORT_UINT_CAP);
+-		ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
+-		inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
+-		break;
+-	case PORT_FEATURE_ID_ERROR:
+-		v = readq(base + PORT_ERROR_CAP);
+-		ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
+-		inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
+-		break;
+-	case FME_FEATURE_ID_GLOBAL_ERR:
+-		v = readq(base + FME_ERROR_CAP);
+-		ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
+-		inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
+-		break;
++	if (type == PORT_ID) {
++		switch (fid) {
++		case PORT_FEATURE_ID_UINT:
++			v = readq(base + PORT_UINT_CAP);
++			ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
++			inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
++			break;
++		case PORT_FEATURE_ID_ERROR:
++			v = readq(base + PORT_ERROR_CAP);
++			ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
++			inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
++			break;
++		}
++	} else if (type == FME_ID) {
++		if (fid == FME_FEATURE_ID_GLOBAL_ERR) {
++			v = readq(base + FME_ERROR_CAP);
++			ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
++			inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
++		}
+ 	}
  
- static ssize_t pcie0_errors_store(struct device *dev,
-@@ -97,7 +114,8 @@ static ssize_t pcie1_errors_show(struct device *dev,
- 	value = readq(base + PCIE1_ERROR);
- 	mutex_unlock(&pdata->lock);
- 
--	return sprintf(buf, "0x%llx\n", (unsigned long long)value);
-+	return sprintf(buf, "0x%llx\n",
-+		       (unsigned long long)set_error_revision(dev, value));
- }
- 
- static ssize_t pcie1_errors_store(struct device *dev,
-@@ -133,11 +151,13 @@ static ssize_t nonfatal_errors_show(struct device *dev,
- 				    struct device_attribute *attr, char *buf)
- {
- 	void __iomem *base;
-+	u64 value;
- 
- 	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+	value = readq(base + RAS_NONFAT_ERROR);
- 
- 	return sprintf(buf, "0x%llx\n",
--		       (unsigned long long)readq(base + RAS_NONFAT_ERROR));
-+		       (unsigned long long)set_error_revision(dev, value));
- }
- static DEVICE_ATTR_RO(nonfatal_errors);
- 
-@@ -145,11 +165,13 @@ static ssize_t catfatal_errors_show(struct device *dev,
- 				    struct device_attribute *attr, char *buf)
- {
- 	void __iomem *base;
-+	u64 value;
- 
- 	base = dfl_get_feature_ioaddr_by_id(dev, FME_FEATURE_ID_GLOBAL_ERR);
-+	value = readq(base + RAS_CATFAT_ERROR);
- 
- 	return sprintf(buf, "0x%llx\n",
--		       (unsigned long long)readq(base + RAS_CATFAT_ERROR));
-+		       (unsigned long long)set_error_revision(dev, value));
- }
- static DEVICE_ATTR_RO(catfatal_errors);
- 
-@@ -165,9 +187,10 @@ static ssize_t inject_errors_show(struct device *dev,
- 	mutex_lock(&pdata->lock);
- 	v = readq(base + RAS_ERROR_INJECT);
- 	mutex_unlock(&pdata->lock);
-+	v = FIELD_GET(INJECT_ERROR_MASK, v);
- 
- 	return sprintf(buf, "0x%llx\n",
--		       (unsigned long long)FIELD_GET(INJECT_ERROR_MASK, v));
-+		       (unsigned long long)set_error_revision(dev, v));
- }
- 
- static ssize_t inject_errors_store(struct device *dev,
-@@ -211,7 +234,8 @@ static ssize_t fme_errors_show(struct device *dev,
- 	value = readq(base + FME_ERROR);
- 	mutex_unlock(&pdata->lock);
- 
--	return sprintf(buf, "0x%llx\n", (unsigned long long)value);
-+	return sprintf(buf, "0x%llx\n",
-+		       (unsigned long long)set_error_revision(dev, value));
- }
- 
- static ssize_t fme_errors_store(struct device *dev,
+ 	if (!inr) {
 -- 
 2.26.2
 
