@@ -2,25 +2,25 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13589C433EF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25B53C433FE
 	for <linux-fpga@archiver.kernel.org>; Sat, 23 Apr 2022 17:04:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236513AbiDWRGK (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sat, 23 Apr 2022 13:06:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55270 "EHLO
+        id S236515AbiDWRGJ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sat, 23 Apr 2022 13:06:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55132 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236526AbiDWRGJ (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sat, 23 Apr 2022 13:06:09 -0400
-Received: from NAM04-BN8-obe.outbound.protection.outlook.com (mail-bn8nam08on2050.outbound.protection.outlook.com [40.107.100.50])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17818AFADC;
+        with ESMTP id S236520AbiDWRGG (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sat, 23 Apr 2022 13:06:06 -0400
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2051.outbound.protection.outlook.com [40.107.236.51])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2381DAC92F;
         Sat, 23 Apr 2022 10:03:09 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=NSyCwVIhgWsKDSKqtWeik13koIv/40luRrcWuGP1bZJx8G/NxLrXnBhscf0uqhnRKYuq4iJeOvmZQs86P4Jt/bTaP8c4QFZggfXIJlNsZPpo5Ft9mCKpIFX/s48HFNw9T0A5GLwNxCr4R6cBE0WZy9BSuxDGY2VP5aFUe6hWzhRHITMHvs74cldr5lw//J8xWaYWvR3d4cYRVKzLYA7BmHDeIul3qoMDo1N9Gns5wfNDsUhDEzb2REBf9tx27Iqxzs+cyyLIUQ1lUSNgD4IAxZDVOb9SHZ68dfCMpv3Zav/Xm4LUtZlp0Joc7qHQZRL0ppmyjUcZnUTZpjU/AQHiVg==
+ b=fhFTelKM2hS/cqYXCA+gvfOKPJ4EmpXj+dHLR2pjgxIav4dFA54kNYAObCAiVlmoE353X1AGUne/lNvFOtn9w63LXojq1u8FKe82f5oh8P7PBnSkxlTxj/oZ8LLZrd2OzqM1RG2n5BuadDl/mwL28CJLTjjrzXNQc2bqk+t9rAB3Oky9pqLw7saklUKFL/Dkge2fLtN9YZSyld2gc4J2PKCv+39dW1wA0oV18T13fbWPsY1rwGUSvXLD9PI5QXH+iODx/ylFXJZtKLYCz5qK6kkbBAXQlY8m/zP2zzbt7RDUrAIw6Kek8UYPcsY0IFGac5iwTxmSVGkeUworGwqLEw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=KXhtSUcSvE+NykUjEighaqvGZMaGzM23ZZIWBFInkXc=;
- b=UZ2zrIg/rUBjuwj/C4TvqE+AeTfjjau1FIn5l+DzXNgjHqodnLgXaqKQBAQbjOpG8wBL8SvSAr3Nul9sfTQXFdQoyAlVaktjuPetf0L+DpCrYONH7vRo/EYdguQGR2cYtMZHrZt/8EBZ3yR63MetWN+sAl9JK4Fhh5kOMLVH5ZDKeBKzy/CqT5zgBPFqDKcoTz1uNgLXO4EuRDmwyFnWW7qwdOfIX0RnObP4q5pJDQMTjKLY3WaUwzR3A2KuxhHL18PwC7Kg4NlQJfL6JGfA2ZHmTgpi7Evt4aUpS0ZLXGVj2r3GUm4qyX8DsQfQXqauu/6LN8q4i7o8STha/OLMAw==
+ bh=gWxl3A7nKkKK9UuArPItKEN8cXGm/Fd9+3BOPvZ1pNc=;
+ b=KrUNeyLitJ6r0CZmMc3OdP6Xy19zFGYQTnLExIoTjvY6qxNtLT35LcpxT64pzDRkFIcpTi3IJmofaMBa5GMZ7bD2GQPuMnrD4P+ZZuZaRvwOscVnXTqtvSNJj0gZ7YKYCEGZ3DQMQr/43GwMcMiyLUejZ40qUOFOuRV3LYjJc3DSJUq7ObzB/u7LUcYMSkbdbvEL/N8xQ8eYFteNXMwgnATsb7IHt9gdvdvkcPAepF/fDoR9mpkdr+7q7+u/gY7pr84fNvPPB3gZcnsG3ml952qZWM1RgydTFEM/OotHdTKPRQc1yXYD77uWvCUDKI2yjd/Dv26uo2zLMfmWYmt04g==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  149.199.62.198) smtp.rcpttodomain=kernel.org smtp.mailfrom=xilinx.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=xilinx.com;
@@ -28,35 +28,34 @@ ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=KXhtSUcSvE+NykUjEighaqvGZMaGzM23ZZIWBFInkXc=;
- b=fuxiihp7BOPOE/FNaE92ba8SgX5N7TvDsvrE+qSlljAONbw1Y4riQbWsDTPGrDpgEUb4LGTj/c5hF+6IIERhFlxWXG6cU7dJCOtYJTsVMobtZW1e/FgzDfakoymIfT5MykF5t8hnB3+X/5ocJc89ReJJBLTF3E/ULNTm+Nn7e1w=
-Received: from DS7PR03CA0113.namprd03.prod.outlook.com (2603:10b6:5:3b7::28)
- by BL0PR02MB4802.namprd02.prod.outlook.com (2603:10b6:208:53::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5186.15; Sat, 23 Apr
- 2022 17:03:07 +0000
-Received: from DM3NAM02FT020.eop-nam02.prod.protection.outlook.com
- (2603:10b6:5:3b7:cafe::a1) by DS7PR03CA0113.outlook.office365.com
- (2603:10b6:5:3b7::28) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5186.15 via Frontend
- Transport; Sat, 23 Apr 2022 17:03:07 +0000
+ bh=gWxl3A7nKkKK9UuArPItKEN8cXGm/Fd9+3BOPvZ1pNc=;
+ b=LTIAj8bnfFOk3g8xeAqnwMyPDzexD41kE4nKo4IdZqgvwC5ARn24X2z59PoNvllrvkzWeM4eOVyY5OVDUDdhNyoogalHDxbf+2VtSIrlacuGFJDZDz7E2s9QQj3SRYqcToL53lAzL2uP7u54g8TelvQ9KRdT7uoJfIrUQeuN/rE=
+Received: from DS7PR05CA0052.namprd05.prod.outlook.com (2603:10b6:8:2f::30) by
+ PH0PR02MB7509.namprd02.prod.outlook.com (2603:10b6:510:5e::6) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.5186.14; Sat, 23 Apr 2022 17:03:05 +0000
+Received: from DM3NAM02FT056.eop-nam02.prod.protection.outlook.com
+ (2603:10b6:8:2f:cafe::25) by DS7PR05CA0052.outlook.office365.com
+ (2603:10b6:8:2f::30) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5206.6 via Frontend
+ Transport; Sat, 23 Apr 2022 17:03:04 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 149.199.62.198)
  smtp.mailfrom=xilinx.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=xilinx.com;
 Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
  149.199.62.198 as permitted sender) receiver=protection.outlook.com;
- client-ip=149.199.62.198; helo=xsj-pvapexch01.xlnx.xilinx.com;
-Received: from xsj-pvapexch01.xlnx.xilinx.com (149.199.62.198) by
- DM3NAM02FT020.mail.protection.outlook.com (10.13.4.146) with Microsoft SMTP
+ client-ip=149.199.62.198; helo=xsj-pvapexch02.xlnx.xilinx.com;
+Received: from xsj-pvapexch02.xlnx.xilinx.com (149.199.62.198) by
+ DM3NAM02FT056.mail.protection.outlook.com (10.13.4.177) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.5186.14 via Frontend Transport; Sat, 23 Apr 2022 17:03:06 +0000
+ 15.20.5186.14 via Frontend Transport; Sat, 23 Apr 2022 17:03:04 +0000
 Received: from xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) by
- xsj-pvapexch01.xlnx.xilinx.com (172.19.86.40) with Microsoft SMTP Server
+ xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.14; Sat, 23 Apr 2022 10:03:02 -0700
+ 15.1.2176.14; Sat, 23 Apr 2022 10:02:52 -0700
 Received: from smtp.xilinx.com (172.19.127.96) by
  xsj-pvapexch02.xlnx.xilinx.com (172.19.86.41) with Microsoft SMTP Server id
- 15.1.2176.14 via Frontend Transport; Sat, 23 Apr 2022 10:03:02 -0700
+ 15.1.2176.14 via Frontend Transport; Sat, 23 Apr 2022 10:02:52 -0700
 Envelope-to: git@xilinx.com,
  mdf@kernel.org,
  hao.wu@intel.com,
@@ -68,16 +67,16 @@ Envelope-to: git@xilinx.com,
 Received: from [10.140.6.60] (port=37114 helo=xhdnavam40.xilinx.com)
         by smtp.xilinx.com with esmtp (Exim 4.90)
         (envelope-from <nava.manne@xilinx.com>)
-        id 1niJ9x-000FkB-Pr; Sat, 23 Apr 2022 10:03:02 -0700
+        id 1niJ9o-000FkB-5Q; Sat, 23 Apr 2022 10:02:52 -0700
 From:   Nava kishore Manne <nava.manne@xilinx.com>
 To:     <mdf@kernel.org>, <hao.wu@intel.com>, <yilun.xu@intel.com>,
         <trix@redhat.com>, <michal.simek@xilinx.com>,
         <linux-fpga@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>, <git@xilinx.com>
 CC:     Nava kishore Manne <nava.manne@xilinx.com>
-Subject: [PATCH v6 3/5] fpga: fpga-mgr: fix kernel-doc warnings
-Date:   Sat, 23 Apr 2022 22:32:33 +0530
-Message-ID: <20220423170235.2115479-4-nava.manne@xilinx.com>
+Subject: [PATCH v6 1/5] fpga: zynq: Fix incorrect variable type
+Date:   Sat, 23 Apr 2022 22:32:31 +0530
+Message-ID: <20220423170235.2115479-2-nava.manne@xilinx.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220423170235.2115479-1-nava.manne@xilinx.com>
 References: <20220423170235.2115479-1-nava.manne@xilinx.com>
@@ -86,74 +85,66 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: cc2b9bde-b2d0-43c9-2f61-08da254b2333
-X-MS-TrafficTypeDiagnostic: BL0PR02MB4802:EE_
-X-Microsoft-Antispam-PRVS: <BL0PR02MB48027CAA55D8C61AB479F9F2C2F69@BL0PR02MB4802.namprd02.prod.outlook.com>
+X-MS-Office365-Filtering-Correlation-Id: 553e801b-aac0-45e4-7188-08da254b21ea
+X-MS-TrafficTypeDiagnostic: PH0PR02MB7509:EE_
+X-Microsoft-Antispam-PRVS: <PH0PR02MB75092CFB48360AA23D1B6195C2F69@PH0PR02MB7509.namprd02.prod.outlook.com>
 X-Auto-Response-Suppress: DR, RN, NRN, OOF, AutoReply
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 6fLgtGIVJq4lp3W9AF+s7sgThGQqkQgSqqd7GDTZ49ZGVM3DTIsc3FscU6hJIH/nhSwj/nrIawlX5OJbOhzooo7EiEMUW1i+Fw/8NFUdlUa7S2U2/LjgSF0hwOIuAd2VQ8TtYq3RRlg83+pObX9oUVE+ENbOmKf/RD/n1xWoZN3Rlf0jgRt7F1POk+zkBOnihM4AJaRKbVhwPePT7npo7oq0i6DxypZH7rvOoA7t12PFjYZODMXqjLNHSyyuA+a0x0nVP/2MoXVoJMj0WgdLpuDWgSF92WAfb+9ezrfC6SHTRzuGDdnz8ivjYplzVuudGx2RBd/V/3HcBhCnAcS0Guze4VcexY3tVK4PN/wj8Ov37cb2rsLPXv1R3/6f3t8a4Qx5b5ORy9L4ZjRyyz9NLs3JQDEsWb3G7b2Od9eQNlmETfK+xEaG3F6vGp/ngPU9fHfK+fbUJCBDVfEld1ewImkpNhrnZEdaEZKk6bwIeMNSlZ0z8ATzVIu0gygECRGm4uwwNZbDj1uW3P3hMvx5R/nbqiIaxzpfbYnhE0PVEiREa1bPeis7HCQ0Hu6NdQJ+dOOQIRMmQWYm4UFrIojN0S9HtXIy74qnNaLk704vpn0nu76cIwKz29gHS+4Z85AcWl1oZstBDwWWbaGgTdg5JmzrDvkn31eq0Mbjm9wNV8VIi4qak356Ekay+nbsDM+cQMMyojmXahfVkOFkL+pyorPnPjmKa4ag+28KCHaXu6riRYLKyf/iz03qt7JCheIS
-X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch01.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(13230001)(4636009)(46966006)(36840700001)(40470700004)(82310400005)(2616005)(107886003)(7696005)(1076003)(83380400001)(70586007)(70206006)(40460700003)(336012)(426003)(47076005)(8936002)(356005)(9786002)(316002)(110136005)(186003)(508600001)(6636002)(7636003)(26005)(5660300002)(6666004)(4326008)(8676002)(36756003)(2906002)(36860700001)(102446001)(21314003)(2101003);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: HUFPaM6hN7tQfPZAc1mFpjhcFb1NLScZEUwFSYU1aM6F04aMr6+bFQ1mL3ZnJcwb83w+K/r7iEuGvKMqoF72uEjNbSmnR8RlVYfidQD/5pSn7N7HJ6L5TKWIofSGvN2Qrsu6ljoFlH6QsYEefVji0KN/BaWnsG4geXY8/m/ZGGzXu73dQCWlHCKGPKdeQD9bxImvtMHrMUrDmCvH50z9o9rajP6sKV5TBc0EykPc3ny1Bj5aUJIL5H4HTA0mNPk+/Ct13bKuiWyWJ2F/Onh+xhrkPNhFZKI+91X3YEUE0Adz/PwIfFry6QUMwja+L7dkCnEJGb3B44brWYK5Jeed7qS7x4Nr5JjnW0o33bWFt87p2KYGvU4w6V/SPBh5+t8F+qTme5Z7vW98Zlz1p5vlvgdEJciq4m0VNo/Q2yZDqXCXO7tC8SrdJhak70e9T3vsQDPLrY236UzgFUMjZJ6U/5P/ONvM8O7jdHj/8mg5corL2lktItGREJNFoXay2pq7AdtIckkBmewiUEZ+2mOCB09DuKFr1yqVYjztz/8j2U9YmAGR/o9wEckUUSWzJzIIEouJT9GJy8+95eBTqSD7CajJ4yqDc8rkwWa8R2yrVhIQoyOL34cWioSF6xK5yA2UumtiEMC8JFJ4+leEap0Z2HYqSztdb6Gwe7VGiaZwsqRlQa5mnBDJms41hNwB1JlMEaxj5KxRmm2gvae8s+mtFc8hsVssK9Q/9oD62zxRhWQ=
+X-Forefront-Antispam-Report: CIP:149.199.62.198;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:xsj-pvapexch02.xlnx.xilinx.com;PTR:unknown-62-198.xilinx.com;CAT:NONE;SFS:(13230001)(4636009)(40470700004)(36840700001)(46966006)(336012)(426003)(508600001)(5660300002)(9786002)(8936002)(47076005)(2616005)(36860700001)(107886003)(26005)(186003)(82310400005)(1076003)(6666004)(2906002)(7696005)(40460700003)(4326008)(356005)(70586007)(70206006)(8676002)(316002)(83380400001)(6636002)(110136005)(36756003)(7636003)(102446001)(2101003);DIR:OUT;SFP:1101;
 X-OriginatorOrg: xilinx.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Apr 2022 17:03:06.8741
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Apr 2022 17:03:04.7196
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: cc2b9bde-b2d0-43c9-2f61-08da254b2333
+X-MS-Exchange-CrossTenant-Network-Message-Id: 553e801b-aac0-45e4-7188-08da254b21ea
 X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch01.xlnx.xilinx.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM3NAM02FT020.eop-nam02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c;Ip=[149.199.62.198];Helo=[xsj-pvapexch02.xlnx.xilinx.com]
+X-MS-Exchange-CrossTenant-AuthSource: DM3NAM02FT056.eop-nam02.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL0PR02MB4802
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR02MB7509
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-warnings: No description found for return value of 'xxx'
-
-In-order to fix the above kernel-doc warnings added the
-'Return' description for 'devm_fpga_mgr_register_full()'
-and 'devm_fpga_mgr_register()' APIs.
+zynq_fpga_has_sync () API is expecting "u8 *" but the
+formal parameter that was passed is of type "const char *".
+fix this issue by changing the buf type to "const char *"
 
 Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
 Acked-by: Xu Yilun <yilun.xu@intel.com>
 ---
 Changes for v2:
-               -Replaced s/@return:/Return:/
+                -None.
 Changes for v3:
-               -Updated commit description.
+               - Changed arg buf type to "const char *" as suggested by Tom.
+               - update zynq_fpga_has_sync () API description to align with API
+                 functionality.
 Changes for v4:
-               -Updated commit description.
+               - None.
+
 Changes for v5:
-               -Updated commit description.
+               - Dropped the irrelevant doc update changes.
 Changes for v6:
-               -None.
+               - None.
 
- drivers/fpga/fpga-mgr.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/fpga/zynq-fpga.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 24dee27c7897..a3595ecc3f79 100644
---- a/drivers/fpga/fpga-mgr.c
-+++ b/drivers/fpga/fpga-mgr.c
-@@ -731,6 +731,8 @@ static void devm_fpga_mgr_unregister(struct device *dev, void *res)
-  * @parent:	fpga manager device from pdev
-  * @info:	parameters for fpga manager
-  *
-+ * Return:  fpga manager pointer on success, negative error code otherwise.
-+ *
-  * This is the devres variant of fpga_mgr_register_full() for which the unregister
-  * function will be called automatically when the managing device is detached.
+diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
+index 426aa34c6a0d..6beaba9dfe97 100644
+--- a/drivers/fpga/zynq-fpga.c
++++ b/drivers/fpga/zynq-fpga.c
+@@ -239,7 +239,7 @@ static irqreturn_t zynq_fpga_isr(int irq, void *data)
+  * the correct byte order, and be dword aligned. The input is a Xilinx .bin
+  * file with every 32 bit quantity swapped.
   */
-@@ -764,6 +766,8 @@ EXPORT_SYMBOL_GPL(devm_fpga_mgr_register_full);
-  * @mops:	pointer to structure of fpga manager ops
-  * @priv:	fpga manager private data
-  *
-+ * Return:  fpga manager pointer on success, negative error code otherwise.
-+ *
-  * This is the devres variant of fpga_mgr_register() for which the
-  * unregister function will be called automatically when the managing
-  * device is detached.
+-static bool zynq_fpga_has_sync(const u8 *buf, size_t count)
++static bool zynq_fpga_has_sync(const char *buf, size_t count)
+ {
+ 	for (; count >= 4; buf += 4, count -= 4)
+ 		if (buf[0] == 0x66 && buf[1] == 0x55 && buf[2] == 0x99 &&
 -- 
 2.25.1
 
