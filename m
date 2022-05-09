@@ -2,472 +2,197 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F5F0C4332F
-	for <linux-fpga@archiver.kernel.org>; Sat,  7 May 2022 08:06:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6AD1C433EF
+	for <linux-fpga@archiver.kernel.org>; Mon,  9 May 2022 11:06:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1446057AbiEGIId (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sat, 7 May 2022 04:08:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60374 "EHLO
+        id S231925AbiEILIk (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 9 May 2022 07:08:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37976 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1446044AbiEGIIb (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sat, 7 May 2022 04:08:31 -0400
-Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 610095AED0;
-        Sat,  7 May 2022 01:04:41 -0700 (PDT)
+        with ESMTP id S232034AbiEILIe (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 9 May 2022 07:08:34 -0400
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00D7A2AC7;
+        Mon,  9 May 2022 04:04:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-        d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
-         in-reply-to:references;
-        bh=EMbgkigXFVeX3ojR2GUmH6dDnhSKafeAUjgxIuQjKEE=;
-        b=e1l1WQgQ6zaLr9Xln6wWA1y29+RqRC+XopbsK8q4SCXtdpDIcEip1gvNppMLbrDijvws8ZDgABzKf
-         EIpBtx8aTm/px/u4/2wdo0kfaHfid2Pl8nQH8O1LwFvBjy2v2bATRynFwTkaK2J3nrwc4RGcKRPCMz
-         L53NJlLtlLwp2ZLbvpVc6jDYctqVV1m1N2nRRHCWfxK+iE26REDnnwyWX9F0AIMorPzepJuUR3DD2w
-         HCUfQPr/ZozsVgvWORID19sBSLwz9l68HiTK0/OZaTce5aLKWUJU4jqJeZFIGAVWyFwoiH1MAQ/1+9
-         oXrPD+/csLW8ZdTQrR2Wn6E/reIVLJA==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1422, Stamp: 3], Multi: [Enabled, t: (0.000010,0.033709)], BW: [Enabled, t: (0.000029,0.000001)], RTDA: [Enabled, t: (0.113463), Hit: No, Details: v2.39.0; Id: 15.52k1d1.1g2eoop7t.2ja2; mclb], total: 0(700)
-X-Footer: bWV0cm90ZWsucnU=
-Received: from localhost.localdomain ([178.70.36.174])
-        (authenticated user i.bornyakov@metrotek.ru)
-        by mail.pr-group.ru with ESMTPSA
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Sat, 7 May 2022 11:04:22 +0300
-From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
-Cc:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
-        trix@redhat.com, conor.dooley@microchip.com, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, linux-fpga@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        system@metrotek.ru, Ivan Bornyakov <i.bornyakov@metrotek.ru>
-Subject: [PATCH v11 2/3] fpga: microchip-spi: add Microchip MPF FPGA manager
-Date:   Sat,  7 May 2022 10:43:03 +0300
-Message-Id: <20220507074304.11144-3-i.bornyakov@metrotek.ru>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220507074304.11144-1-i.bornyakov@metrotek.ru>
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1652094273; x=1683630273;
+  h=from:to:cc:subject:date:message-id:references:
+   in-reply-to:content-id:content-transfer-encoding:
+   mime-version;
+  bh=XdYabM9i4OKCPbcSvEymT6dG1qwngVwWRZbABfDR/7I=;
+  b=s8r0P9f6beF9BgHbHpV7h1Yukm/6Mwa2wRkpdd2fIAXknhEpfihx2RBr
+   UQOBuBefh20EuQSWgZsWM9qbWs99ylFq4+dpq8dZOAtCSedRLTs/Pkv30
+   grR6g2JUb8Yi+p53+hxun5wWDMDW/UXfEjwm7mJiyt3D6Vuc/RsyYlNF7
+   +LUBuYsEBfhfMXp0DczfXPdmjRwnFM8f4dk8wUEJ8XkizBh+Z2ivKFWeN
+   v1vxwiyZGb0HjOVA4fl+4WYChGEJkS9l+mA8O14EPI2t0dTfT7f8QG4a+
+   jpagahOhyy73DGcFoNpNdVVgetFqxnNX0Jmm+6flsR9jmr0J8zNknAA4E
+   Q==;
+X-IronPort-AV: E=Sophos;i="5.91,211,1647327600"; 
+   d="scan'208";a="155271194"
+Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
+  by esa4.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 09 May 2022 04:04:31 -0700
+Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
+ chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.17; Mon, 9 May 2022 04:04:30 -0700
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (10.10.215.89) by
+ email.microchip.com (10.10.87.72) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.17 via Frontend
+ Transport; Mon, 9 May 2022 04:04:30 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=hqLR9xlQLr2huwr/KiBGYCaqm2O1o5pxGlX/XqD3z6KRLeRS390/FymDZUkbFuko6vlolaCCcnZ1W5WTtNOonF0c6n/wjPkvBLtQhFfwBv+9l0EScnbj9ZNS+PD9ZiSGtkCmNZ6yYqTIEMR0jByA6d1oD2Xdh8FpzVVpooGtUAA9WOcV9uz04iI/SBeby61EzoGSdTOB12Kz3VgT9ohtnFRuYLE7sNU3QoK5UxW3tgWQVB4EyDx9dJhC+AzdpuaJJPrY3oBhDxO7MAFfLWiM73V8HTCwPPy4Nr/7OUikb5Ncr8k0mPvEmbx7bAtl9slQVy+blQMKnl3EuGqM2S7paw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=XdYabM9i4OKCPbcSvEymT6dG1qwngVwWRZbABfDR/7I=;
+ b=Jk5gkSaUhKlN07CRMT5pFXoW9Nvpv4218tUQ7tr7mHCcIRucf0jr5Jtm5ccEJ2pcqT2kKEiGm4LMZqaeila9Dizlw5oL1f4jmOAkjTgP6lf35lzMj0GiQIH4m8JVWGg7nuhSpwc+sJBU4ZwBzp2nW1yxm6zF+TFc50oJIC+sw0pmkCS6L9EhDxjrufCQ0sc/SwhQlV4YChq4pSu0kIjxEfeTgo5BpQG8kQwJXa/mdhL62NdDK6RSk9rSAECpi/IpAyjdoiX9qSzGP0CVvz+XE2g+ejzghpzaMeoN7aBZoU2vb+kkdM3HuYLkrnvha8/Ahid5hiDesCK6ZFDvdxBgnA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=microchip.com; dmarc=pass action=none
+ header.from=microchip.com; dkim=pass header.d=microchip.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=microchiptechnology.onmicrosoft.com;
+ s=selector2-microchiptechnology-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=XdYabM9i4OKCPbcSvEymT6dG1qwngVwWRZbABfDR/7I=;
+ b=YKM+53KnXrlwI5aj28vx/l+HsgJKp3ZFD1M+hf6yWInprjrGjBVDpX4LLJ6vA0Cep7VRe7si5FcqowE0oeVSn1NEw41BxhnOxVXYU3BDCrj1DDnTPnjrCqkkY6Y2jO0DnKl86xKmVK/eVksfU+eY1XsJC6BdB9jUOWX0ZBi70sU=
+Received: from CO1PR11MB5154.namprd11.prod.outlook.com (2603:10b6:303:95::7)
+ by MW4PR11MB5823.namprd11.prod.outlook.com (2603:10b6:303:186::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5227.21; Mon, 9 May
+ 2022 11:04:26 +0000
+Received: from CO1PR11MB5154.namprd11.prod.outlook.com
+ ([fe80::fcd4:8f8a:f0e9:8b18]) by CO1PR11MB5154.namprd11.prod.outlook.com
+ ([fe80::fcd4:8f8a:f0e9:8b18%9]) with mapi id 15.20.5206.025; Mon, 9 May 2022
+ 11:04:26 +0000
+From:   <Conor.Dooley@microchip.com>
+To:     <i.bornyakov@metrotek.ru>
+CC:     <mdf@kernel.org>, <hao.wu@intel.com>, <yilun.xu@intel.com>,
+        <trix@redhat.com>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <linux-fpga@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <system@metrotek.ru>, <robh@kernel.org>
+Subject: Re: [PATCH v11 3/3] dt-bindings: fpga: add binding doc for
+ microchip-spi fpga mgr
+Thread-Topic: [PATCH v11 3/3] dt-bindings: fpga: add binding doc for
+ microchip-spi fpga mgr
+Thread-Index: AQHYYekg9yR0xB36oU63bWZfc6n4yK0WZSyA
+Date:   Mon, 9 May 2022 11:04:26 +0000
+Message-ID: <38a6ffc1-6e28-8720-d165-9abad323a04f@microchip.com>
 References: <20220507074304.11144-1-i.bornyakov@metrotek.ru>
+ <20220507074304.11144-4-i.bornyakov@metrotek.ru>
+In-Reply-To: <20220507074304.11144-4-i.bornyakov@metrotek.ru>
+Accept-Language: en-IE, en-US
+Content-Language: en-IE
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.1
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=microchip.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 12592c75-72f4-4211-4a65-08da31abae6d
+x-ms-traffictypediagnostic: MW4PR11MB5823:EE_
+x-microsoft-antispam-prvs: <MW4PR11MB5823C10F79A321EA9731852A98C69@MW4PR11MB5823.namprd11.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: E5WubN0M/US0YaN9tq+ojRwmR8i/xWztQCNu07Ml/Nw4Gd8TNAXaXyJFMgej9M5bARlImjrtxOCsQFNGgi4Cng/XAGcQ3kxFSwHDrsu94xlK5H2UVppge12r7CIkxhrvqK37zoR/p1Ui8BdZ4gC0GuunPL3253UTdZFlULL/tXY12g60bj/iPG5KXm5q5i+25lcrPc4D4+J8Klz7CavH6QD9XNlMxoESTZNCik9lXWDN+amdWpxdPFRPXhQ1qYAuYav8Cub31uuut675Rc/etVbJvhMQMPu+uooJFW9dRBdGwCrL5EGIdf/0IQlr5WlU8xylEdhF2EEMjbcQvhyhIEDTF+EB7OPfeG9FUnJiSHUDi0aAVBNpiv1++6YY5Z5dlmSpFjppJSvMVRxgBXjLhuTCiG2CyUOSMuWmBO96IzsbTbAwmWaryuKrFuchtoP3fMUumWSu4vau6zYmz+q6dWUgyx8XteC8pFBSkS7j6RemTpn3J/YS/AzZrc3dmtzRC77bvX4SnRmlA36wPdI8QCxESTQp784ZocUi3vGqkiHIyPtmfW+jTRwuTB7NqCXMpkFRxe++Rn3SY2M8OFV5RwLddqH7uQmS0lenDINdnC71x3VCi7TzvpATogOlkirv6JloKaXbko+e2JZOFfQdq4ns9id5UFb//qDItpCrpPf8S36YIEdfBDKZXLcwUI5e7/q2gJ19VzW8GroEgwEuJmUygx//HQJSAxeR4cUvgNfs6fsfpP/3wUfvLc/YU1WhmioeNQ3KX1xnzZrsgW2CPqqn2zTIQyhucYNwDijtR2c4iut+9dJkHCaa8oo6W7nQpjsn76/gLouvb0UO2q3wlEiPMQSDjBW06IbnLm87XvrPzD5KTgEjbLsPg0dacDni8ciR3Pqi6yCBSW8WwXGLHw==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO1PR11MB5154.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(366004)(86362001)(91956017)(8676002)(2906002)(66446008)(4326008)(66476007)(76116006)(66946007)(66556008)(64756008)(5660300002)(7416002)(8936002)(38070700005)(38100700002)(122000001)(26005)(6512007)(31696002)(186003)(2616005)(53546011)(6506007)(6916009)(316002)(54906003)(966005)(6486002)(508600001)(36756003)(71200400001)(31686004)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?U3c3Yy93SDVsM05QTUdtRmJYMC9aZW0vR2xuNDNZMXJWeHpEckVBaFE4VEl1?=
+ =?utf-8?B?V0Z5UFhXOEk0SUpwUEVpUkVrTEtZbkhEbUplZkFtN2RpQ3QxZUJSZ1dyKzRU?=
+ =?utf-8?B?UEpmWmNlamFUaSt5WkYvTWVnbnBITTZ5Z1B3blN6WlFWVEdnN2Rsb3QxdWVR?=
+ =?utf-8?B?NlQ1ZlV1US9oc3prdEVjazdvZTU5cU5NR0RaNVoxcjlYZlZ3MzBhZzllR2NU?=
+ =?utf-8?B?ZjBnTFJReEJZY09iYnkzNzBCL0RmUVhHYS90TXdUVnEvanVtRlZJbmpGc1Fq?=
+ =?utf-8?B?VE9BdE9FbVZLd1NVNklENjJUY0lseEVjVS9LK1BwNjM2dWU0Z3ZGTThzYjFW?=
+ =?utf-8?B?Z3VvaWZVeGhRY1c2L1FaNDdPd2tkWm9IMXo4MU4zR1VQYW5md01RWTZwaUJs?=
+ =?utf-8?B?dVd3c1EraHJZLytFV2VHeWNUK0VLb0Z1Wk9iRFI5NXJPUnU0Wkd6dVlRSjVv?=
+ =?utf-8?B?OFM2Um03elA4ZzVkeU83MmVpMmFXRHZwbDhrcFRQQTcydkxvRmI5L0NtOXZF?=
+ =?utf-8?B?ZEtMVFo5elV5ekZJbUVJREd0ZkJ6Kzc4ei9Jbm1wbC9OdjhTTnpOYmpHcnpY?=
+ =?utf-8?B?eUlYdHZseGhJclYvY1dqby9NKzlWM2lSWEZoWVVTUmk0REVVUlZpSCswckpU?=
+ =?utf-8?B?ZVlpNER3OVErSXpyWlIwdTNvREhOT0lhUEdoU2JDZ2lUU0FuaE5ROUZwbHFj?=
+ =?utf-8?B?NWNJb1BmLzlKRm92YVR6T3VUMkhTU29Qa0xTYXk4Si9GWlR0aENDQm54UFA4?=
+ =?utf-8?B?NVBwRnZvWVlqM2VER0tNSDN0azhNNm9SbnNwc3dIN0xPWm5WSDN2TGNiUXJV?=
+ =?utf-8?B?NG9xeThYYVl1ZVdqTUZ5cXMwYnd3UGt1VmVjZThCYURlWStUKzNSMFBCdTBa?=
+ =?utf-8?B?RTU5VEdtUkJMOENDYURlRjVzcUxzbGhQOTljUUJPOTNsblJEbWF2Z2FnVWhs?=
+ =?utf-8?B?SWxXUytFMmhnMlArSmZienVHTW1OWTY0cTFlKzhhK2tab2tzdnBsS2hhOFRr?=
+ =?utf-8?B?UytVT3ZlNHA4L3F4RkRvazRCSGJIVEIzQ2V6WGk1MndidUNFTytGM3R5ZWxt?=
+ =?utf-8?B?L1lGRHU5enF4TjRSRVlzaHJTeVBycDR5Zmg1cml2WmFFVTgxeUpVSVhvUTVH?=
+ =?utf-8?B?S1hic1hPWFh5ckRlY0hxYXE2WWZRNURseXJ6UFhiSW1BbDI5Qit5dWJySUFo?=
+ =?utf-8?B?TXdGZXlEbkpIWHZCei90Q1hCS01mUlVoRkUyU2FpbVpHQzVwM3h4MG00SFNk?=
+ =?utf-8?B?bENMWHhUUXVqOG5obnlYZU5VclRzYzlXSzE1WTM1UEdRZUg3RHZWcHpMS0NT?=
+ =?utf-8?B?ZDdlQ0tYOExudDE4MnRPRWpWbTdyUFF4TGZ0dGJTTGg1SU01ME1OSDg0SWx3?=
+ =?utf-8?B?NUVxYVZlNjg3ekJnbVVLTkNPRHJZRnhvVEw2VSsrOHByZXZSaXNUQ3dGQXZR?=
+ =?utf-8?B?bUJDaUNoUFkwMnowa2VFMUg4WUc4dXB5UDFsOWQ2MWtic3c2cmszb0VkRnUv?=
+ =?utf-8?B?SGZMWm1JKzBDb09rMUdHNWM5a0VIc0txdE1hZWxhMGJFS1ZKS3MwajI4cURM?=
+ =?utf-8?B?ckp4cjJXaVFGN2FpS21OSVRsVGVYSW5udHorTHNBbG93WjVXNHdJWGxQM1ZF?=
+ =?utf-8?B?STVEcGlVbFcycDZTSHM4N1dNaGUzUUJ2V1ZsVGZ5dFcrR0k1N1NWUDdJVlBr?=
+ =?utf-8?B?UFZ3N0xvMzBkRExmOHdKV2FxVHgyMGNtRFB0aDdCWmRxN0JIWG01MFA4aDRX?=
+ =?utf-8?B?U09pZHR6b1gydVRINWVESjVwYjVoeTdDdVhBL3RkdFQ0WkRoQjhtcytqcERP?=
+ =?utf-8?B?V3Jta0NsTVhwSFErSXJrQkVvLzFsM0Z5T0hLRmxYcFg4ejc3WGhUZ1M4RlFt?=
+ =?utf-8?B?SzZlcHJEOHhqRkwrSCtUeDB2T21ZQitpamUvcjB6ekk4ZEg5VnlqT0JwaEt4?=
+ =?utf-8?B?dldGeHQ1Nlh6QWMrdFBjVHhrVXJuWHJKVU9mTXVYYlAraFhUSnQxbDcwc09y?=
+ =?utf-8?B?SmxjaU5jWnpCU3hNbnE1Y21abW1zRUNTYnp2dlBhQUtDYjZMWUNYc2dWWDB1?=
+ =?utf-8?B?cXR5R3B1QTh2aTNyMGtFNXhHVlUvMVBNMG5KNHc2dDRMYzJ1ckVVcUtMS0hI?=
+ =?utf-8?B?aHZsNEFjeHd6aVd2YzVNNmFYdXZiL2oxaHJQWko2eTJaWWJKODhvOHNBUC93?=
+ =?utf-8?B?VGg2NVZrVEZxbzZTMHZuSnB2VWhPaElTbHhraFJQQWxHVGNQY3pMMy8xZGZ6?=
+ =?utf-8?B?ZWNLM05TeFVkWXdUVHNQTW1YU3pMTGREaDc0QUthUk9MVHd3MU83MUdtMEgz?=
+ =?utf-8?B?VU5iV1F0c2ZOVmRMUDRVcndIMExmWFZNUnB0eXVEN2NKOGtYRmJ0QT09?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <36E51B03F24F854AA646453F0E0E142F@namprd11.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR11MB5154.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 12592c75-72f4-4211-4a65-08da31abae6d
+X-MS-Exchange-CrossTenant-originalarrivaltime: 09 May 2022 11:04:26.1444
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 3f4057f3-b418-4d4e-ba84-d55b4e897d88
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: HJNmKcspCEMWHFif93QyoxGB2oefqavgLwKOgobf8EGu15JwKawnfeBpsSRqrpsAbdrbP3zKnlz5ajqEBoYkuwfhUpJ3tj5vof9pJMbJQJE=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB5823
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add support to the FPGA manager for programming Microchip Polarfire
-FPGAs over slave SPI interface with .dat formatted bitsream image.
-
-Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
----
- drivers/fpga/Kconfig         |   9 +
- drivers/fpga/Makefile        |   1 +
- drivers/fpga/microchip-spi.c | 370 +++++++++++++++++++++++++++++++++++
- 3 files changed, 380 insertions(+)
- create mode 100644 drivers/fpga/microchip-spi.c
-
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 26025dbab353..75806ef5c9ea 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -248,4 +248,13 @@ config FPGA_MGR_VERSAL_FPGA
- 	  configure the programmable logic(PL).
- 
- 	  To compile this as a module, choose M here.
-+
-+config FPGA_MGR_MICROCHIP_SPI
-+	tristate "Microchip Polarfire SPI FPGA manager"
-+	depends on SPI
-+	help
-+	  FPGA manager driver support for Microchip Polarfire FPGAs
-+	  programming over slave SPI interface with .dat formatted
-+	  bitstream image.
-+
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index e32bfa90f968..5425a15892df 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -19,6 +19,7 @@ obj-$(CONFIG_FPGA_MGR_XILINX_SPI)	+= xilinx-spi.o
- obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+= zynq-fpga.o
- obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+= zynqmp-fpga.o
- obj-$(CONFIG_FPGA_MGR_VERSAL_FPGA)	+= versal-fpga.o
-+obj-$(CONFIG_FPGA_MGR_MICROCHIP_SPI)	+= microchip-spi.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE)		+= altera-pr-ip-core.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)	+= altera-pr-ip-core-plat.o
- 
-diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
-new file mode 100644
-index 000000000000..182471c88018
---- /dev/null
-+++ b/drivers/fpga/microchip-spi.c
-@@ -0,0 +1,370 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Microchip Polarfire FPGA programming over slave SPI interface.
-+ */
-+
-+#include <asm/unaligned.h>
-+#include <linux/delay.h>
-+#include <linux/fpga/fpga-mgr.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/spi/spi.h>
-+
-+#define	MPF_SPI_ISC_ENABLE	0x0B
-+#define	MPF_SPI_ISC_DISABLE	0x0C
-+#define	MPF_SPI_READ_STATUS	0x00
-+#define	MPF_SPI_READ_DATA	0x01
-+#define	MPF_SPI_FRAME_INIT	0xAE
-+#define	MPF_SPI_FRAME		0xEE
-+#define	MPF_SPI_PRG_MODE	0x01
-+#define	MPF_SPI_RELEASE		0x23
-+
-+#define	MPF_SPI_FRAME_SIZE	16
-+
-+#define	MPF_HEADER_SIZE_OFFSET	24
-+#define	MPF_DATA_SIZE_OFFSET	55
-+
-+#define	MPF_LOOKUP_TABLE_RECORD_SIZE		9
-+#define	MPF_LOOKUP_TABLE_BLOCK_ID_OFFSET	0
-+#define	MPF_LOOKUP_TABLE_BLOCK_START_OFFSET	1
-+
-+#define	MPF_COMPONENTS_SIZE_ID	5
-+#define	MPF_BITSTREAM_ID	8
-+
-+#define	MPF_BITS_PER_COMPONENT_SIZE	22
-+
-+#define	MPF_STATUS_POLL_TIMEOUT		1000
-+#define	MPF_STATUS_BUSY			BIT(0)
-+#define	MPF_STATUS_READY		BIT(1)
-+#define	MPF_STATUS_SPI_VIOLATION	BIT(2)
-+#define	MPF_STATUS_SPI_ERROR		BIT(3)
-+
-+struct mpf_priv {
-+	struct spi_device *spi;
-+	bool program_mode;
-+};
-+
-+static int mpf_read_status(struct spi_device *spi)
-+{
-+	u8 status, status_command = MPF_SPI_READ_STATUS;
-+	struct spi_transfer xfer = {
-+		.tx_buf = &status_command,
-+		.rx_buf = &status,
-+		.len = 1,
-+	};
-+	int ret = spi_sync_transfer(spi, &xfer, 1);
-+
-+	if ((status & MPF_STATUS_SPI_VIOLATION) ||
-+	    (status & MPF_STATUS_SPI_ERROR))
-+		ret = -EIO;
-+
-+	return ret ? : status;
-+}
-+
-+static enum fpga_mgr_states mpf_ops_state(struct fpga_manager *mgr)
-+{
-+	struct mpf_priv *priv = mgr->priv;
-+	struct spi_device *spi;
-+	bool program_mode;
-+	int status;
-+
-+	spi = priv->spi;
-+	program_mode = priv->program_mode;
-+	status = mpf_read_status(spi);
-+
-+	if (!program_mode && !status)
-+		return FPGA_MGR_STATE_OPERATING;
-+
-+	return FPGA_MGR_STATE_UNKNOWN;
-+}
-+
-+static int mpf_ops_parse_header(struct fpga_manager *mgr,
-+				struct fpga_image_info *info,
-+				const char *buf, size_t count)
-+{
-+	size_t component_size_byte_num, component_size_byte_off,
-+	       components_size_start = 0, bitstream_start = 0,
-+	       block_id_offset, block_start_offset, i;
-+	u8 header_size, blocks_num, block_id;
-+	u32 block_start, component_size;
-+	u16 components_num;
-+
-+	if (!buf) {
-+		dev_err(&mgr->dev, "Image buffer is not provided\n");
-+		return -EINVAL;
-+	}
-+
-+	header_size = *(buf + MPF_HEADER_SIZE_OFFSET);
-+	if (header_size > count) {
-+		info->header_size = header_size;
-+		return -EAGAIN;
-+	}
-+
-+	/*
-+	 * Go through look-up table to find out where actual bitstream starts
-+	 * and where sizes of components of the bitstream lies.
-+	 */
-+	blocks_num = *(buf + header_size - 1);
-+	block_id_offset = header_size + MPF_LOOKUP_TABLE_BLOCK_ID_OFFSET;
-+	block_start_offset = header_size + MPF_LOOKUP_TABLE_BLOCK_START_OFFSET;
-+
-+	header_size += blocks_num * MPF_LOOKUP_TABLE_RECORD_SIZE;
-+	if (header_size > count) {
-+		info->header_size = header_size;
-+		return -EAGAIN;
-+	}
-+
-+	while (blocks_num--) {
-+		block_id = *(buf + block_id_offset);
-+		block_start = get_unaligned_le32(buf + block_start_offset);
-+
-+		switch (block_id) {
-+		case MPF_BITSTREAM_ID:
-+			info->header_size = bitstream_start = block_start;
-+			if (block_start > count)
-+				return -EAGAIN;
-+
-+			break;
-+		case MPF_COMPONENTS_SIZE_ID:
-+			components_size_start = block_start;
-+			break;
-+		default:
-+			break;
-+		}
-+
-+		if (bitstream_start && components_size_start)
-+			break;
-+
-+		block_id_offset += MPF_LOOKUP_TABLE_RECORD_SIZE;
-+		block_start_offset += MPF_LOOKUP_TABLE_RECORD_SIZE;
-+	}
-+
-+	if (!bitstream_start || !components_size_start) {
-+		dev_err(&mgr->dev, "Failed to parse header look-up table\n");
-+		return -EFAULT;
-+	}
-+
-+	/*
-+	 * Parse bitstream size.
-+	 * Sizes of components of the bitstream are 22-bits long placed next
-+	 * to each other. Image header should be extended by now up to where
-+	 * actual bitstream starts, so no need for overflow check anymore.
-+	 */
-+	components_num = get_unaligned_le16(buf + MPF_DATA_SIZE_OFFSET);
-+
-+	for (i = 0; i < components_num; i++) {
-+		component_size_byte_num =
-+			(i * MPF_BITS_PER_COMPONENT_SIZE) / BITS_PER_BYTE;
-+		component_size_byte_off =
-+			(i * MPF_BITS_PER_COMPONENT_SIZE) % BITS_PER_BYTE;
-+
-+		component_size = get_unaligned_le32(buf +
-+						    components_size_start +
-+						    component_size_byte_num);
-+		component_size >>= component_size_byte_off;
-+		component_size &= GENMASK(MPF_BITS_PER_COMPONENT_SIZE - 1, 0);
-+
-+		info->data_size += component_size * MPF_SPI_FRAME_SIZE;
-+	}
-+
-+	return 0;
-+}
-+
-+static int poll_status_not_busy(struct spi_device *spi, u8 mask)
-+{
-+	int status, timeout = MPF_STATUS_POLL_TIMEOUT;
-+
-+	while (timeout--) {
-+		status = mpf_read_status(spi);
-+		if (status < 0 ||
-+		    (!(status & MPF_STATUS_BUSY) && (!mask || (status & mask))))
-+			return status;
-+
-+		usleep_range(1000, 2000);
-+	}
-+
-+	return -EBUSY;
-+}
-+
-+static int mpf_spi_write(struct spi_device *spi, const void *buf, size_t buf_size)
-+{
-+	int status = poll_status_not_busy(spi, 0);
-+
-+	if (status < 0)
-+		return status;
-+
-+	return spi_write(spi, buf, buf_size);
-+}
-+
-+static int mpf_spi_write_then_read(struct spi_device *spi,
-+				   const void *txbuf, size_t txbuf_size,
-+				   void *rxbuf, size_t rxbuf_size)
-+{
-+	const u8 read_command[] = { MPF_SPI_READ_DATA };
-+	int ret;
-+
-+	ret = mpf_spi_write(spi, txbuf, txbuf_size);
-+	if (ret)
-+		return ret;
-+
-+	ret = poll_status_not_busy(spi, MPF_STATUS_READY);
-+	if (ret < 0)
-+		return ret;
-+
-+	return spi_write_then_read(spi, read_command, sizeof(read_command),
-+				   rxbuf, rxbuf_size);
-+}
-+
-+static int mpf_ops_write_init(struct fpga_manager *mgr,
-+			      struct fpga_image_info *info, const char *buf,
-+			      size_t count)
-+{
-+	const u8 program_mode[] = { MPF_SPI_FRAME_INIT, MPF_SPI_PRG_MODE };
-+	const u8 isc_en_command[] = { MPF_SPI_ISC_ENABLE };
-+	struct mpf_priv *priv = mgr->priv;
-+	struct device *dev = &mgr->dev;
-+	struct spi_device *spi;
-+	u32 isc_ret;
-+	int ret;
-+
-+	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
-+		dev_err(dev, "Partial reconfiguration is not supported\n");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	spi = priv->spi;
-+
-+	ret = mpf_spi_write_then_read(spi, isc_en_command, sizeof(isc_en_command),
-+				      &isc_ret, sizeof(isc_ret));
-+	if (ret || isc_ret) {
-+		dev_err(dev, "Failed to enable ISC: %d\n", ret ? : isc_ret);
-+		return -EFAULT;
-+	}
-+
-+	ret = mpf_spi_write(spi, program_mode, sizeof(program_mode));
-+	if (ret) {
-+		dev_err(dev, "Failed to enter program mode: %d\n", ret);
-+		return ret;
-+	}
-+
-+	priv->program_mode = true;
-+
-+	return 0;
-+}
-+
-+static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count)
-+{
-+	u8 tmp_buf[MPF_SPI_FRAME_SIZE + 1] = { MPF_SPI_FRAME, };
-+	struct mpf_priv *priv = mgr->priv;
-+	struct device *dev = &mgr->dev;
-+	struct spi_device *spi;
-+	int ret, i;
-+
-+	if (count % MPF_SPI_FRAME_SIZE) {
-+		dev_err(dev, "Bitstream size is not a multiple of %d\n",
-+			MPF_SPI_FRAME_SIZE);
-+		return -EINVAL;
-+	}
-+
-+	spi = priv->spi;
-+
-+	for (i = 0; i < count / MPF_SPI_FRAME_SIZE; i++) {
-+		memcpy(tmp_buf + 1, buf + i * MPF_SPI_FRAME_SIZE,
-+		       MPF_SPI_FRAME_SIZE);
-+
-+		ret = mpf_spi_write(spi, tmp_buf, sizeof(tmp_buf));
-+		if (ret) {
-+			dev_err(dev, "Failed to write bitstream frame %d/%zd\n",
-+				i, count / MPF_SPI_FRAME_SIZE);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int mpf_ops_write_complete(struct fpga_manager *mgr,
-+				  struct fpga_image_info *info)
-+{
-+	const u8 isc_dis_command[] = { MPF_SPI_ISC_DISABLE };
-+	const u8 release_command[] = { MPF_SPI_RELEASE };
-+	struct mpf_priv *priv = mgr->priv;
-+	struct device *dev = &mgr->dev;
-+	struct spi_device *spi;
-+	int ret;
-+
-+	spi = priv->spi;
-+
-+	ret = mpf_spi_write(spi, isc_dis_command, sizeof(isc_dis_command));
-+	if (ret) {
-+		dev_err(dev, "Failed to disable ISC: %d\n", ret);
-+		return ret;
-+	}
-+
-+	usleep_range(1000, 2000);
-+
-+	ret = mpf_spi_write(spi, release_command, sizeof(release_command));
-+	if (ret) {
-+		dev_err(dev, "Failed to exit program mode: %d\n", ret);
-+		return ret;
-+	}
-+
-+	priv->program_mode = false;
-+
-+	return 0;
-+}
-+
-+static const struct fpga_manager_ops mpf_ops = {
-+	.state = mpf_ops_state,
-+	.initial_header_size = 71,
-+	.parse_header = mpf_ops_parse_header,
-+	.write_init = mpf_ops_write_init,
-+	.write = mpf_ops_write,
-+	.write_complete = mpf_ops_write_complete,
-+};
-+
-+static int mpf_probe(struct spi_device *spi)
-+{
-+	struct device *dev = &spi->dev;
-+	struct fpga_manager *mgr;
-+	struct mpf_priv *priv;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->spi = spi;
-+
-+	mgr = devm_fpga_mgr_register(dev, "Microchip Polarfire SPI FPGA Manager",
-+				     &mpf_ops, priv);
-+
-+	return PTR_ERR_OR_ZERO(mgr);
-+}
-+
-+static const struct spi_device_id mpf_spi_ids[] = {
-+	{ .name = "mpf-spi-fpga-mgr", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(spi, mpf_spi_ids);
-+
-+#if IS_ENABLED(CONFIG_OF)
-+static const struct of_device_id mpf_of_ids[] = {
-+	{ .compatible = "microchip,mpf-spi-fpga-mgr" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, mpf_of_ids);
-+#endif /* IS_ENABLED(CONFIG_OF) */
-+
-+static struct spi_driver mpf_driver = {
-+	.probe = mpf_probe,
-+	.id_table = mpf_spi_ids,
-+	.driver = {
-+		.name = "microchip_mpf_spi_fpga_mgr",
-+		.of_match_table = of_match_ptr(mpf_of_ids),
-+	},
-+};
-+
-+module_spi_driver(mpf_driver);
-+
-+MODULE_DESCRIPTION("Microchip Polarfire SPI FPGA Manager");
-+MODULE_LICENSE("GPL");
--- 
-2.35.1
-
-
+SGV5IEl2YW4sDQpPbmUgY29tbWVudCBoZXJlLg0KVGhhbmtzLA0KQ29ub3IuDQoNCk9uIDA3LzA1
+LzIwMjIgMDg6NDMsIEl2YW4gQm9ybnlha292IHdyb3RlOg0KPiBFWFRFUk5BTCBFTUFJTDogRG8g
+bm90IGNsaWNrIGxpbmtzIG9yIG9wZW4gYXR0YWNobWVudHMgdW5sZXNzIHlvdSBrbm93IHRoZSBj
+b250ZW50IGlzIHNhZmUNCj4gDQo+IEFkZCBEZXZpY2UgVHJlZSBCaW5kaW5nIGRvYyBmb3IgTWlj
+cm9jaGlwIFBvbGFyZmlyZSBGUEdBIE1hbmFnZXIgdXNpbmcNCj4gc2xhdmUgU1BJIHRvIGxvYWQg
+LmRhdCBmb3JtYXR0ZWQgYml0c3RyZWFtIGltYWdlLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogSXZh
+biBCb3JueWFrb3YgPGkuYm9ybnlha292QG1ldHJvdGVrLnJ1Pg0KPiBSZXZpZXdlZC1ieTogUm9i
+IEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4NCj4gLS0tDQo+ICAgLi4uL2ZwZ2EvbWljcm9jaGlw
+LG1wZi1zcGktZnBnYS1tZ3IueWFtbCAgICAgIHwgNDQgKysrKysrKysrKysrKysrKysrKw0KPiAg
+IDEgZmlsZSBjaGFuZ2VkLCA0NCBpbnNlcnRpb25zKCspDQo+ICAgY3JlYXRlIG1vZGUgMTAwNjQ0
+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9mcGdhL21pY3JvY2hpcCxtcGYtc3Bp
+LWZwZ2EtbWdyLnlhbWwNCj4gDQo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRy
+ZWUvYmluZGluZ3MvZnBnYS9taWNyb2NoaXAsbXBmLXNwaS1mcGdhLW1nci55YW1sIGIvRG9jdW1l
+bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2ZwZ2EvbWljcm9jaGlwLG1wZi1zcGktZnBnYS1t
+Z3IueWFtbA0KPiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiBpbmRleCAwMDAwMDAwMDAwMDAuLmFl
+ZTQ1Y2IxNTU5Mg0KPiAtLS0gL2Rldi9udWxsDQo+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNl
+dHJlZS9iaW5kaW5ncy9mcGdhL21pY3JvY2hpcCxtcGYtc3BpLWZwZ2EtbWdyLnlhbWwNCj4gQEAg
+LTAsMCArMSw0NCBAQA0KPiArIyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogKEdQTC0yLjAtb25s
+eSBPUiBCU0QtMi1DbGF1c2UpDQo+ICslWUFNTCAxLjINCj4gKy0tLQ0KPiArJGlkOiBodHRwOi8v
+ZGV2aWNldHJlZS5vcmcvc2NoZW1hcy9mcGdhL21pY3JvY2hpcCxtcGYtc3BpLWZwZ2EtbWdyLnlh
+bWwjDQo+ICskc2NoZW1hOiBodHRwOi8vZGV2aWNldHJlZS5vcmcvbWV0YS1zY2hlbWFzL2NvcmUu
+eWFtbCMNCj4gKw0KPiArdGl0bGU6IE1pY3JvY2hpcCBQb2xhcmZpcmUgRlBHQSBtYW5hZ2VyLg0K
+PiArDQo+ICttYWludGFpbmVyczoNCj4gKyAgLSBJdmFuIEJvcm55YWtvdiA8aS5ib3JueWFrb3ZA
+bWV0cm90ZWsucnU+DQo+ICsNCj4gK2Rlc2NyaXB0aW9uOg0KPiArICBEZXZpY2UgVHJlZSBCaW5k
+aW5ncyBmb3IgTWljcm9jaGlwIFBvbGFyZmlyZSBGUEdBIE1hbmFnZXIgdXNpbmcgc2xhdmUgU1BJ
+IHRvDQo+ICsgIGxvYWQgdGhlIGJpdHN0cmVhbSBpbiAuZGF0IGZvcm1hdC4NCg0KSSd2ZSBzZWVu
+IEtyenlzenRvZiBzYXkgYSBidW5jaCBvZiB0aW1lcyB0byByZW1vdmUgIkRldmljZSBUcmVlIEJp
+bmRpbmdzIiBmcm9tIGhlcmUuDQoNCisNCj4gK3Byb3BlcnRpZXM6DQo+ICsgIGNvbXBhdGlibGU6
+DQo+ICsgICAgZW51bToNCj4gKyAgICAgIC0gbWljcm9jaGlwLG1wZi1zcGktZnBnYS1tZ3INCj4g
+Kw0KPiArICByZWc6DQo+ICsgICAgZGVzY3JpcHRpb246IFNQSSBjaGlwIHNlbGVjdA0KPiArICAg
+IG1heEl0ZW1zOiAxDQo+ICsNCj4gKyAgc3BpLW1heC1mcmVxdWVuY3k6IHRydWUNCj4gKw0KPiAr
+cmVxdWlyZWQ6DQo+ICsgIC0gY29tcGF0aWJsZQ0KPiArICAtIHJlZw0KPiArDQo+ICthZGRpdGlv
+bmFsUHJvcGVydGllczogZmFsc2UNCj4gKw0KPiArZXhhbXBsZXM6DQo+ICsgIC0gfA0KPiArICAg
+IHNwaSB7DQo+ICsgICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gKyAgICAgICAg
+ICAgICNzaXplLWNlbGxzID0gPDA+Ow0KPiArDQo+ICsgICAgICAgICAgICBmcGdhX21nckAwIHsN
+Cj4gKyAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJtaWNyb2NoaXAsbXBmLXNwaS1m
+cGdhLW1nciI7DQo+ICsgICAgICAgICAgICAgICAgICAgIHNwaS1tYXgtZnJlcXVlbmN5ID0gPDIw
+MDAwMDAwPjsNCj4gKyAgICAgICAgICAgICAgICAgICAgcmVnID0gPDA+Ow0KPiArICAgICAgICAg
+ICAgfTsNCj4gKyAgICB9Ow0KPiAtLQ0KPiAyLjM1LjENCj4gDQo+IA0KDQo=
