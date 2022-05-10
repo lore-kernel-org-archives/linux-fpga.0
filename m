@@ -2,40 +2,40 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 113C0C433EF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3590CC4332F
 	for <linux-fpga@archiver.kernel.org>; Tue, 10 May 2022 19:58:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233158AbiEJT4n (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 10 May 2022 15:56:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50694 "EHLO
+        id S231409AbiEJT4m (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 10 May 2022 15:56:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231546AbiEJT4m (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 10 May 2022 15:56:42 -0400
+        with ESMTP id S234840AbiEJT4l (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 10 May 2022 15:56:41 -0400
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A12A53BA4F;
-        Tue, 10 May 2022 12:56:41 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB9223BBC1;
+        Tue, 10 May 2022 12:56:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1652212601; x=1683748601;
+  t=1652212600; x=1683748600;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=rPEVPIA5dZqhPtEm+UVD6Y20i+wHETkZ/phYJ2LnJIo=;
-  b=DXT3fpKB0LKJkCLP+O1fGhjnZ5k0KvwyXwNKkFcwze8GuljX7CGrtDrK
-   QTV5K5K9G/RgbwEr02wmiuDeETR7SGlNpavCU5RggmmR6+uLR96url6Kh
-   Ulh0YNyuV/GN8FxJ9585MgNRqdm6Zgr0svQ9r+NJJlTSaPlg76AQm8ZFp
-   Ket5IYZaBwfQEjSIvAuY+Xy+lL+A4ejrRXsPL+KFYvbeZNiZnFPUzbdFh
-   lvgDWnZqR90oSCbWxnazXDtqlPoT72yg1+5znAnBW0YfECnLb37dXUITW
-   lO3eG8A8tvsEBdpc+xluMZtRcLXTSYd6Q6ixQV8Rtd2zABfLD6EKYVC33
-   g==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10343"; a="269624487"
+  bh=xiCqu+5DCGdy95mwKeD8sjapUgV+a+/Wi48ZZ2kXsuk=;
+  b=aB/NHLlKuNCoub1DEMG6ZXeBdgNqY5oQAdVfR/vJ4j8HUuPM3oRoU8EI
+   L9N5iOMzuu/BorG0K1zE9oF8//cUnjxPVNRfzq5tB8iNBL5bnaU82dq3x
+   6X2vVBXyPzSjU5ZkxCn8XTEK6dg/qoddxZOddyrmKN0Wmdww4N8+sfouF
+   Uc7e2dMfOpXwtS9s/ezHZLbjc5yEgOI9L4E0E+beXQrpf1rRjdQ0n+yIz
+   5QbjQ0Q8UhY6PyfgN0ySDbK+E7QRS39IiqF/dDrxWJGyoNtfpXq9Xi/6V
+   6pJnKmd9+c68g51ZUVBfhi3Zwe8EM8RQ3bA5y88x6HJ97YzSXm8jr3ONc
+   Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10343"; a="269624481"
 X-IronPort-AV: E=Sophos;i="5.91,215,1647327600"; 
-   d="scan'208";a="269624487"
+   d="scan'208";a="269624481"
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2022 12:56:40 -0700
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2022 12:56:39 -0700
 X-IronPort-AV: E=Sophos;i="5.91,215,1647327600"; 
-   d="scan'208";a="602624713"
+   d="scan'208";a="602624706"
 Received: from rhweight-mobl.amr.corp.intel.com (HELO rhweight-mobl.ra.intel.com) ([10.212.161.124])
-  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2022 12:56:40 -0700
+  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2022 12:56:39 -0700
 From:   Russ Weight <russell.h.weight@intel.com>
 To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
         lee.jones@linaro.org, linux-fpga@vger.kernel.org,
@@ -44,9 +44,9 @@ Cc:     trix@redhat.com, marpagan@redhat.com, lgoncalv@redhat.com,
         matthew.gerlach@linux.intel.com,
         basheer.ahmed.muddebihal@intel.com, tianfei.zhang@intel.com,
         Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v19 5/5] fpga: m10bmc-sec: add max10 secure update functions
-Date:   Tue, 10 May 2022 12:56:35 -0700
-Message-Id: <20220510195635.140722-6-russell.h.weight@intel.com>
+Subject: [PATCH v19 3/5] fpga: m10bmc-sec: expose max10 flash update count
+Date:   Tue, 10 May 2022 12:56:33 -0700
+Message-Id: <20220510195635.140722-4-russell.h.weight@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220510195635.140722-1-russell.h.weight@intel.com>
 References: <20220510195635.140722-1-russell.h.weight@intel.com>
@@ -56,514 +56,139 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Create firmware upload ops and call the Firmware Upload support of the
-Firmware Loader subsystem to enable FPGA image uploads for secure
-updates of BMC images, FPGA images, etc.
+Extend the MAX10 BMC Secure Update driver to provide a sysfs file to
+expose the flash update count.
 
 Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+Reviewed-by: Tom Rix <trix@redhat.com>
 ---
 v19:
   - Change "card bmc" naming back to "m10 bmc" naming to be consistent
     with the parent driver.
 v18:
-  - Moved the firmware_upload_register() function here from an earlier
-    patch since this is where the required ops are provided.
-  - Moved the bmc_sec_remove() function here from an earlier patch to
-    unregister the firmware driver and do cleanup.
+  - No change
 v17:
+  - Update the Date and KernelVersion for the ABI documentation to Jul 2022
+    and 5.19 respectively.
   - Change "m10bmc" in symbol names to "cardbmc" to reflect the fact that the
     future devices will not necessarily use the MAX10.
-  - Change from image_load class driver to the new firmware_upload 
-    functionality of the firmware_loader.
-  - fw_upload_ops functions will return "enum fw_upload_err" data types
-    instead of integer values.
 v16:
-  - Use 0 instead of FPGA_IMAGE_ERR_NONE to indicate success.
-  - The size alignment check was moved from the FPGA Image Load framework
-    to the prepare() op.
-  - Added cancel_request boolean flag to struct m10bmc_sec.
-  - Moved the RSU cancellation logic from m10bmc_sec_cancel() to a new
-    rsu_cancel() function.
-  - The m10bmc_sec_cancel() function ONLY sets the cancel_request flag.
-    The cancel_request flag is checked at the beginning of the
-    m10bmc_sec_write() and m10bmc_sec_poll_complete() functions.
-  - Adapt to changed prototypes for the prepare() and write() ops. The
-    m10bmc_sec_write_blk() function has been renamed to
-    m10bmc_sec_write().
-  - Created a cleanup() op, m10bmc_sec_cleanup(), to attempt to cancel an
-    ongoing op during when exiting the update process.
+  - No Change
 v15:
-  - Adapted to changes in the FPGA Image Load framework:
-    (1) All enum types (progress and errors) are now type u32
-    (2) m10bmc_sec_write_blk() adds *blk_size and max_size parameters
-        and uses *blk_size as provided by the caller.
-    (3) m10bmc_sec_poll_complete() no long checks the driver_unload
-        flag.
+  - Updated the Dates and KernelVersions in the ABI documentation
 v14:
-  - Changed symbol names to reflect the renaming of the Security Manager
-    Class driver to FPGA Image Load.
-v13:
   - No change
+v13:
+  - Updated ABI documentation date and kernel version
 v12:
   - Updated Date and KernelVersion fields in ABI documentation
-  - Removed size parameter from the write_blk() op. m10bmc_sec_write_blk()
-    no longer has a size parameter, and the block size is determined
-    in this (the lower-level) driver.
 v11:
   - No change
 v10:
-  - No change
+  - Changed the path expression in the sysfs documentation to
+    replace the n3000 reference with something more generic to
+    accomodate other devices that use the same driver.
 v9:
-  - No change
+  - Rebased to 5.12-rc2 next
+  - Updated Date and KernelVersion in ABI documentation
 v8:
-  - Previously patch 5/6, otherwise no change
+  - Previously patch 3/6, otherwise no change
 v7:
-  - No change
+  - Updated Date and KernelVersion in ABI documentation
 v6:
-  - Changed (size / stride) calculation to ((size + stride - 1) / stride)
-    to ensure that the proper count is passed to regmap_bulk_write().
-  - Removed unnecessary call to rsu_check_complete() in
-    m10bmc_sec_poll_complete() and changed while loop to
-    do/while loop.
+  - Changed flash_count_show() parameter list to achieve
+    reverse-christmas tree format.
+  - Added WARN_ON() call for (FLASH_COUNT_SIZE / stride) to ensure
+    that the proper count is passed to regmap_bulk_read().
 v5:
-  - No change
+  - Renamed sysfs node user_flash_count to flash_count and updated the
+    sysfs documentation accordingly.
 v4:
-  - No change
+  - Moved the sysfs file for displaying the flash count from the
+    FPGA Security Manager class driver to here. The
+    m10bmc_user_flash_count() function is removed and the
+    functionality is moved into a user_flash_count_show()
+    function.
+  - Added ABI documentation for the new sysfs entry
 v3:
   - Changed: iops -> sops, imgr -> smgr, IFPGA_ -> FPGA_, ifpga_ to fpga_
   - Changed "MAX10 BMC Secure Engine driver" to "MAX10 BMC Secure Update
     driver"
   - Removed wrapper functions (m10bmc_raw_*, m10bmc_sys_*). The
     underlying functions are now called directly.
-  - Changed calling functions of functions that return "enum fpga_sec_err"
-    to check for (ret != FPGA_SEC_ERR_NONE) instead of (ret)
 v2:
-  - Reworked the rsu_start_done() function to make it more readable
-  - Reworked while-loop condition/content in rsu_prog_ready()
+  - Renamed get_qspi_flash_count() to m10bmc_user_flash_count()
   - Minor code cleanup per review comments
-  - Added a comment to the m10bmc_sec_poll_complete() function to
-    explain the context (could take 30+ minutes to complete).
   - Added m10bmc_ prefix to functions in m10bmc_iops structure
-  - Moved MAX10 BMC address and function definitions to a separate
-    patch.
 ---
- drivers/fpga/intel-m10-bmc-sec-update.c | 377 ++++++++++++++++++++++++
- 1 file changed, 377 insertions(+)
+ .../sysfs-driver-intel-m10-bmc-sec-update     |  8 +++++
+ drivers/fpga/intel-m10-bmc-sec-update.c       | 36 +++++++++++++++++++
+ 2 files changed, 44 insertions(+)
 
+diff --git a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
+index 2bb271695e14..1132e39b2125 100644
+--- a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
++++ b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
+@@ -27,3 +27,11 @@ Description:	Read only. Returns the root entry hash for the BMC image
+ 		"hash not programmed".  This file is only visible if the
+ 		underlying device supports it.
+ 		Format: string.
++
++What:		/sys/bus/platform/drivers/intel-m10bmc-sec-update/.../security/flash_count
++Date:		Jul 2022
++KernelVersion:	5.19
++Contact:	Russ Weight <russell.h.weight@intel.com>
++Description:	Read only. Returns number of times the secure update
++		staging area has been flashed.
++		Format: "%u".
 diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
-index 08b1840c93ef..6cf6319d4c7b 100644
+index a36856d897c9..60dca865cb28 100644
 --- a/drivers/fpga/intel-m10-bmc-sec-update.c
 +++ b/drivers/fpga/intel-m10-bmc-sec-update.c
-@@ -17,8 +17,14 @@
- struct m10bmc_sec {
- 	struct device *dev;
- 	struct intel_m10bmc *m10bmc;
-+	struct fw_upload *fwl;
-+	char *fw_name;
-+	u32 fw_name_id;
-+	bool cancel_request;
- };
+@@ -77,7 +77,43 @@ DEVICE_ATTR_SEC_REH_RO(bmc, BMC_PROG_MAGIC, BMC_PROG_ADDR, BMC_REH_ADDR);
+ DEVICE_ATTR_SEC_REH_RO(sr, SR_PROG_MAGIC, SR_PROG_ADDR, SR_REH_ADDR);
+ DEVICE_ATTR_SEC_REH_RO(pr, PR_PROG_MAGIC, PR_PROG_ADDR, PR_REH_ADDR);
  
-+static DEFINE_XARRAY_ALLOC(fw_upload_xa);
++#define FLASH_COUNT_SIZE 4096	/* count stored as inverted bit vector */
 +
- /* Root Entry Hash (REH) support */
- #define REH_SHA256_SIZE		32
- #define REH_SHA384_SIZE		48
-@@ -178,9 +184,349 @@ static const struct attribute_group *m10bmc_sec_attr_groups[] = {
- 	NULL,
- };
- 
-+static void log_error_regs(struct m10bmc_sec *sec, u32 doorbell)
++static ssize_t flash_count_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
 +{
-+	u32 auth_result;
++	struct m10bmc_sec *sec = dev_get_drvdata(dev);
++	unsigned int stride, num_bits;
++	u8 *flash_buf;
++	int cnt, ret;
 +
-+	dev_err(sec->dev, "RSU error status: 0x%08x\n", doorbell);
++	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
++	num_bits = FLASH_COUNT_SIZE * 8;
 +
-+	if (!m10bmc_sys_read(sec->m10bmc, M10BMC_AUTH_RESULT, &auth_result))
-+		dev_err(sec->dev, "RSU auth result: 0x%08x\n", auth_result);
-+}
++	flash_buf = kmalloc(FLASH_COUNT_SIZE, GFP_KERNEL);
++	if (!flash_buf)
++		return -ENOMEM;
 +
-+static enum fw_upload_err rsu_check_idle(struct m10bmc_sec *sec)
-+{
-+	u32 doorbell;
-+	int ret;
-+
-+	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	if (ret)
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+
-+	if (rsu_prog(doorbell) != RSU_PROG_IDLE &&
-+	    rsu_prog(doorbell) != RSU_PROG_RSU_DONE) {
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_BUSY;
-+	}
-+
-+	return FW_UPLOAD_ERR_NONE;
-+}
-+
-+static inline bool rsu_start_done(u32 doorbell)
-+{
-+	u32 status, progress;
-+
-+	if (doorbell & DRBL_RSU_REQUEST)
-+		return false;
-+
-+	status = rsu_stat(doorbell);
-+	if (status == RSU_STAT_ERASE_FAIL || status == RSU_STAT_WEAROUT)
-+		return true;
-+
-+	progress = rsu_prog(doorbell);
-+	if (progress != RSU_PROG_IDLE && progress != RSU_PROG_RSU_DONE)
-+		return true;
-+
-+	return false;
-+}
-+
-+static enum fw_upload_err rsu_update_init(struct m10bmc_sec *sec)
-+{
-+	u32 doorbell, status;
-+	int ret;
-+
-+	ret = regmap_update_bits(sec->m10bmc->regmap,
-+				 M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				 DRBL_RSU_REQUEST | DRBL_HOST_STATUS,
-+				 DRBL_RSU_REQUEST |
-+				 FIELD_PREP(DRBL_HOST_STATUS,
-+					    HOST_STATUS_IDLE));
-+	if (ret)
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+
-+	ret = regmap_read_poll_timeout(sec->m10bmc->regmap,
-+				       M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				       doorbell,
-+				       rsu_start_done(doorbell),
-+				       NIOS_HANDSHAKE_INTERVAL_US,
-+				       NIOS_HANDSHAKE_TIMEOUT_US);
-+
-+	if (ret == -ETIMEDOUT) {
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_TIMEOUT;
-+	} else if (ret) {
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+	}
-+
-+	status = rsu_stat(doorbell);
-+	if (status == RSU_STAT_WEAROUT) {
-+		dev_warn(sec->dev, "Excessive flash update count detected\n");
-+		return FW_UPLOAD_ERR_WEAROUT;
-+	} else if (status == RSU_STAT_ERASE_FAIL) {
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_HW_ERROR;
-+	}
-+
-+	return FW_UPLOAD_ERR_NONE;
-+}
-+
-+static enum fw_upload_err rsu_prog_ready(struct m10bmc_sec *sec)
-+{
-+	unsigned long poll_timeout;
-+	u32 doorbell, progress;
-+	int ret;
-+
-+	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	if (ret)
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+
-+	poll_timeout = jiffies + msecs_to_jiffies(RSU_PREP_TIMEOUT_MS);
-+	while (rsu_prog(doorbell) == RSU_PROG_PREPARE) {
-+		msleep(RSU_PREP_INTERVAL_MS);
-+		if (time_after(jiffies, poll_timeout))
-+			break;
-+
-+		ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+		if (ret)
-+			return FW_UPLOAD_ERR_RW_ERROR;
-+	}
-+
-+	progress = rsu_prog(doorbell);
-+	if (progress == RSU_PROG_PREPARE) {
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_TIMEOUT;
-+	} else if (progress != RSU_PROG_READY) {
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_HW_ERROR;
-+	}
-+
-+	return FW_UPLOAD_ERR_NONE;
-+}
-+
-+static enum fw_upload_err rsu_send_data(struct m10bmc_sec *sec)
-+{
-+	u32 doorbell;
-+	int ret;
-+
-+	ret = regmap_update_bits(sec->m10bmc->regmap,
-+				 M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				 DRBL_HOST_STATUS,
-+				 FIELD_PREP(DRBL_HOST_STATUS,
-+					    HOST_STATUS_WRITE_DONE));
-+	if (ret)
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+
-+	ret = regmap_read_poll_timeout(sec->m10bmc->regmap,
-+				       M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				       doorbell,
-+				       rsu_prog(doorbell) != RSU_PROG_READY,
-+				       NIOS_HANDSHAKE_INTERVAL_US,
-+				       NIOS_HANDSHAKE_TIMEOUT_US);
-+
-+	if (ret == -ETIMEDOUT) {
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_TIMEOUT;
-+	} else if (ret) {
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+	}
-+
-+	switch (rsu_stat(doorbell)) {
-+	case RSU_STAT_NORMAL:
-+	case RSU_STAT_NIOS_OK:
-+	case RSU_STAT_USER_OK:
-+	case RSU_STAT_FACTORY_OK:
-+		break;
-+	default:
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_HW_ERROR;
-+	}
-+
-+	return FW_UPLOAD_ERR_NONE;
-+}
-+
-+static int rsu_check_complete(struct m10bmc_sec *sec, u32 *doorbell)
-+{
-+	if (m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, doorbell))
-+		return -EIO;
-+
-+	switch (rsu_stat(*doorbell)) {
-+	case RSU_STAT_NORMAL:
-+	case RSU_STAT_NIOS_OK:
-+	case RSU_STAT_USER_OK:
-+	case RSU_STAT_FACTORY_OK:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	switch (rsu_prog(*doorbell)) {
-+	case RSU_PROG_IDLE:
-+	case RSU_PROG_RSU_DONE:
-+		return 0;
-+	case RSU_PROG_AUTHENTICATING:
-+	case RSU_PROG_COPYING:
-+	case RSU_PROG_UPDATE_CANCEL:
-+	case RSU_PROG_PROGRAM_KEY_HASH:
-+		return -EAGAIN;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static enum fw_upload_err rsu_cancel(struct m10bmc_sec *sec)
-+{
-+	u32 doorbell;
-+	int ret;
-+
-+	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	if (ret)
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+
-+	if (rsu_prog(doorbell) != RSU_PROG_READY)
-+		return FW_UPLOAD_ERR_BUSY;
-+
-+	ret = regmap_update_bits(sec->m10bmc->regmap,
-+				 M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				 DRBL_HOST_STATUS,
-+				 FIELD_PREP(DRBL_HOST_STATUS,
-+					    HOST_STATUS_ABORT_RSU));
-+	if (ret)
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+
-+	return FW_UPLOAD_ERR_CANCELED;
-+}
-+
-+static enum fw_upload_err m10bmc_sec_prepare(struct fw_upload *fwl,
-+					     const u8 *data, u32 size)
-+{
-+	struct m10bmc_sec *sec = fwl->dd_handle;
-+	u32 ret;
-+
-+	sec->cancel_request = false;
-+
-+	if (!size || size & 0x3 || size > M10BMC_STAGING_SIZE)
-+		return FW_UPLOAD_ERR_INVALID_SIZE;
-+
-+	ret = rsu_check_idle(sec);
-+	if (ret != FW_UPLOAD_ERR_NONE)
-+		return ret;
-+
-+	ret = rsu_update_init(sec);
-+	if (ret != FW_UPLOAD_ERR_NONE)
-+		return ret;
-+
-+	ret = rsu_prog_ready(sec);
-+	if (ret != FW_UPLOAD_ERR_NONE)
-+		return ret;
-+
-+	if (sec->cancel_request)
-+		return rsu_cancel(sec);
-+
-+	return FW_UPLOAD_ERR_NONE;
-+}
-+
-+#define WRITE_BLOCK_SIZE 0x4000	/* Default write-block size is 0x4000 bytes */
-+
-+static enum fw_upload_err m10bmc_sec_write(struct fw_upload *fwl, const u8 *data,
-+					   u32 offset, u32 size, u32 *written)
-+{
-+	struct m10bmc_sec *sec = fwl->dd_handle;
-+	unsigned int stride = regmap_get_reg_stride(sec->m10bmc->regmap);
-+	u32 blk_size, doorbell;
-+	int ret;
-+
-+	if (sec->cancel_request)
-+		return rsu_cancel(sec);
-+
-+	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
++	WARN_ON(FLASH_COUNT_SIZE % stride);
++	ret = regmap_bulk_read(sec->m10bmc->regmap, STAGING_FLASH_COUNT,
++			       flash_buf, FLASH_COUNT_SIZE / stride);
 +	if (ret) {
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+	} else if (rsu_prog(doorbell) != RSU_PROG_READY) {
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_HW_ERROR;
++		dev_err(sec->dev,
++			"failed to read flash count: %x cnt %x: %d\n",
++			STAGING_FLASH_COUNT, FLASH_COUNT_SIZE / stride, ret);
++		goto exit_free;
 +	}
++	cnt = num_bits - bitmap_weight((unsigned long *)flash_buf, num_bits);
 +
-+	blk_size = min_t(u32, WRITE_BLOCK_SIZE, size);
-+	ret = regmap_bulk_write(sec->m10bmc->regmap,
-+				M10BMC_STAGING_BASE + offset,
-+				(void *)data + offset,
-+				(blk_size + stride - 1) / stride);
++exit_free:
++	kfree(flash_buf);
 +
-+	if (ret)
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+
-+	*written = blk_size;
-+	return FW_UPLOAD_ERR_NONE;
++	return ret ? : sysfs_emit(buf, "%u\n", cnt);
 +}
++static DEVICE_ATTR_RO(flash_count);
 +
-+static enum fw_upload_err m10bmc_sec_poll_complete(struct fw_upload *fwl)
-+{
-+	struct m10bmc_sec *sec = fwl->dd_handle;
-+	unsigned long poll_timeout;
-+	u32 doorbell, result;
-+	int ret;
-+
-+	if (sec->cancel_request)
-+		return rsu_cancel(sec);
-+
-+	result = rsu_send_data(sec);
-+	if (result != FW_UPLOAD_ERR_NONE)
-+		return result;
-+
-+	poll_timeout = jiffies + msecs_to_jiffies(RSU_COMPLETE_TIMEOUT_MS);
-+	do {
-+		msleep(RSU_COMPLETE_INTERVAL_MS);
-+		ret = rsu_check_complete(sec, &doorbell);
-+	} while (ret == -EAGAIN && !time_after(jiffies, poll_timeout));
-+
-+	if (ret == -EAGAIN) {
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_TIMEOUT;
-+	} else if (ret == -EIO) {
-+		return FW_UPLOAD_ERR_RW_ERROR;
-+	} else if (ret) {
-+		log_error_regs(sec, doorbell);
-+		return FW_UPLOAD_ERR_HW_ERROR;
-+	}
-+
-+	return FW_UPLOAD_ERR_NONE;
-+}
-+
-+/*
-+ * m10bmc_sec_cancel() may be called asynchronously with an on-going update.
-+ * All other functions are called sequentially in a single thread. To avoid
-+ * contention on register accesses, m10bmc_sec_cancel() must only update
-+ * the cancel_request flag. Other functions will check this flag and handle
-+ * the cancel request synchronously.
-+ */
-+static void m10bmc_sec_cancel(struct fw_upload *fwl)
-+{
-+	struct m10bmc_sec *sec = fwl->dd_handle;
-+
-+	sec->cancel_request = true;
-+}
-+
-+static void m10bmc_sec_cleanup(struct fw_upload *fwl)
-+{
-+	struct m10bmc_sec *sec = fwl->dd_handle;
-+
-+	(void)rsu_cancel(sec);
-+}
-+
-+static const struct fw_upload_ops m10bmc_ops = {
-+	.prepare = m10bmc_sec_prepare,
-+	.write = m10bmc_sec_write,
-+	.poll_complete = m10bmc_sec_poll_complete,
-+	.cancel = m10bmc_sec_cancel,
-+	.cleanup = m10bmc_sec_cleanup,
-+};
-+
- #define SEC_UPDATE_LEN_MAX 32
- static int m10bmc_sec_probe(struct platform_device *pdev)
- {
-+	char buf[SEC_UPDATE_LEN_MAX];
-+	struct fw_upload *fwl;
-+	unsigned int len, ret;
- 	struct m10bmc_sec *sec;
- 
- 	sec = devm_kzalloc(&pdev->dev, sizeof(*sec), GFP_KERNEL);
-@@ -191,6 +537,36 @@ static int m10bmc_sec_probe(struct platform_device *pdev)
- 	sec->m10bmc = dev_get_drvdata(pdev->dev.parent);
- 	dev_set_drvdata(&pdev->dev, sec);
- 
-+	ret = xa_alloc(&fw_upload_xa, &sec->fw_name_id, sec,
-+		       xa_limit_32b, GFP_KERNEL);
-+	if (ret)
-+		return ret;
-+
-+	len = scnprintf(buf, SEC_UPDATE_LEN_MAX, "secure-update%d",
-+			sec->fw_name_id);
-+	sec->fw_name = kmemdup_nul(buf, len, GFP_KERNEL);
-+
-+	fwl = firmware_upload_register(THIS_MODULE, sec->dev, sec->fw_name,
-+				       &m10bmc_ops, sec);
-+	if (IS_ERR(fwl)) {
-+		dev_err(sec->dev, "Firmware Upload driver failed to start\n");
-+		kfree(sec->fw_name);
-+		xa_erase(&fw_upload_xa, sec->fw_name_id);
-+		return PTR_ERR(fwl);
-+	}
-+
-+	sec->fwl = fwl;
-+	return 0;
-+}
-+
-+static int m10bmc_sec_remove(struct platform_device *pdev)
-+{
-+	struct m10bmc_sec *sec = dev_get_drvdata(&pdev->dev);
-+
-+	firmware_upload_unregister(sec->fwl);
-+	kfree(sec->fw_name);
-+	xa_erase(&fw_upload_xa, sec->fw_name_id);
-+
- 	return 0;
- }
- 
-@@ -203,6 +579,7 @@ static const struct platform_device_id intel_m10bmc_sec_ids[] = {
- 
- static struct platform_driver intel_m10bmc_sec_driver = {
- 	.probe = m10bmc_sec_probe,
-+	.remove = m10bmc_sec_remove,
- 	.driver = {
- 		.name = "intel-m10bmc-sec-update",
- 		.dev_groups = m10bmc_sec_attr_groups,
+ static struct attribute *m10bmc_security_attrs[] = {
++	&dev_attr_flash_count.attr,
+ 	&dev_attr_bmc_root_entry_hash.attr,
+ 	&dev_attr_sr_root_entry_hash.attr,
+ 	&dev_attr_pr_root_entry_hash.attr,
 -- 
 2.25.1
 
