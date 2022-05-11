@@ -2,89 +2,96 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2F68C433EF
-	for <linux-fpga@archiver.kernel.org>; Tue, 10 May 2022 19:59:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EFB7C433EF
+	for <linux-fpga@archiver.kernel.org>; Wed, 11 May 2022 06:46:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229664AbiEJT5y (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 10 May 2022 15:57:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50504 "EHLO
+        id S230070AbiEKGoN (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 11 May 2022 02:44:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40566 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234650AbiEJT4k (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 10 May 2022 15:56:40 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06B653BF88;
-        Tue, 10 May 2022 12:56:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1652212599; x=1683748599;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=xcUIrCOexCSlpiNcLLv6z/aoQN0sgjplY818BxH/tTw=;
-  b=G+HZ5iBrNmATB70fD5JVKAkzOBDhCO/B36CzpKd7JnbWyWyNu4NFzWCf
-   9dqPZYuxHEn6+ZGtV8zdICxso4kTAFtoikFBjiagfX4GqIsOdP37y9qZ7
-   /LqNabnZrJH8bGgvCPTqse0w0dMKh7PPa37vxg0bChU6S4NnTVspSxFtl
-   8OtDOC4qICIqaCeuAc2dRe6Z94AwMClrm2t4lixE3pD3Z/iMC/O9OlfAb
-   u3diiw7B2e/+pFP484Xb17B/5UgvUK6CmT3GI2wLPJrgj9Mv7jQWEJjhO
-   mp5ccDzWuKGUP7q7ZfWxnfaGFeRzqhTxtLQOLsqV7APe4wkuB1e/90SMK
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10343"; a="269624476"
-X-IronPort-AV: E=Sophos;i="5.91,215,1647327600"; 
-   d="scan'208";a="269624476"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2022 12:56:38 -0700
-X-IronPort-AV: E=Sophos;i="5.91,215,1647327600"; 
-   d="scan'208";a="602624698"
-Received: from rhweight-mobl.amr.corp.intel.com (HELO rhweight-mobl.ra.intel.com) ([10.212.161.124])
-  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2022 12:56:38 -0700
-From:   Russ Weight <russell.h.weight@intel.com>
-To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
-        lee.jones@linaro.org, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     trix@redhat.com, marpagan@redhat.com, lgoncalv@redhat.com,
-        matthew.gerlach@linux.intel.com,
-        basheer.ahmed.muddebihal@intel.com, tianfei.zhang@intel.com,
-        Russ Weight <russell.h.weight@intel.com>
-Subject: [PATCH v19 1/5] mfd: intel-m10-bmc: Rename n3000bmc-secure driver
-Date:   Tue, 10 May 2022 12:56:31 -0700
-Message-Id: <20220510195635.140722-2-russell.h.weight@intel.com>
+        with ESMTP id S242238AbiEKGoL (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 11 May 2022 02:44:11 -0400
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68AEF6C0C0;
+        Tue, 10 May 2022 23:44:10 -0700 (PDT)
+Received: by mail-pf1-x433.google.com with SMTP id i24so1164699pfa.7;
+        Tue, 10 May 2022 23:44:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=EmHkqlWr7c4QFgT4EmfZ9lldeIHOaKWpbWlbDUJ786E=;
+        b=Xie9XphIFkYPUZEie/Egz6ibA1CeJIe4XjLyItsFWpUS85J9v+hVZGpZ5dPmH2DxrW
+         p8Y+/oNNubymXLVYOnrO9YyCdAF2lXqIyuXH9dqn/5OQ0zwq8djccpTv66HhHK2YtKd/
+         hNXhA/XcGMIUvp6NpmMyhgGOan2MUmaeiQBt9GzJnTRPa4u7UvCKyt+5JSv4SouDtdJU
+         uzeSFLzZNYW+Vajx9EHEs/uR9GOVEu/gWTcGs788/nZS7klvKLZcs+jMaAqsJEPXG70w
+         Vf1Qn75mR4hmzAU3XM2Qi54gRUxLyBzM/7qxoV3Zg617vFLzOTB95HB7HgjfGFh/uz8R
+         FRYA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=EmHkqlWr7c4QFgT4EmfZ9lldeIHOaKWpbWlbDUJ786E=;
+        b=gTdUEGx6QR+oy/27l+jJWjxiFdjuLsgerjBRyBklf4ukYOhNlymArf2Q3j+h7mgIJH
+         mQt5retpmatEpQbjRfogQmWqpe2kszia2oYxOr9FmaFy1xNQmHVAhWiBoOZ8GNvZTXsV
+         1VX3bqt+19+08zJ9loVoVrfMT+/ZVbjvamgI5Vx8/fHPg6d5eoyeGSRmBZox8Zz3Ctc7
+         thsUgRKAWSK5SgWbGsgLdHf0SlP3XBLUFr47zgt/XWHAVRE1IM8VrS4R9ofcDvRBaYDR
+         7pLS/BT4Oh9vm73AMehHCprGQuD00qLS6wv83E3+Sj6dT/tXIyzcfVc3k7ulzb4OFT7I
+         6UnQ==
+X-Gm-Message-State: AOAM533G4z/W9iw9HaOCC2kapkbNgiUaQqC1MTXg5WXenX01rSiYPk1s
+        TbmHgGq8laNF/DQROsidTQFHdzabRWTupsZjgOo=
+X-Google-Smtp-Source: ABdhPJz4gMyxezuz3NNsXZsooFJpcRZR+boVRmrZ1TbuIvUZm0lsMkMbXWpFXPUPR7twYVbJF5IOHQ==
+X-Received: by 2002:a63:c015:0:b0:385:fe06:eb86 with SMTP id h21-20020a63c015000000b00385fe06eb86mr19418244pgg.132.1652251449932;
+        Tue, 10 May 2022 23:44:09 -0700 (PDT)
+Received: from localhost.localdomain ([202.120.234.246])
+        by smtp.googlemail.com with ESMTPSA id c23-20020a63da17000000b003c14af50639sm858113pgh.81.2022.05.10.23.44.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 May 2022 23:44:09 -0700 (PDT)
+From:   Miaoqian Lin <linmq006@gmail.com>
+To:     Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
+        Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+        Tim Whisonant <tim.whisonant@intel.com>,
+        Enno Luebbers <enno.luebbers@intel.com>,
+        Alan Tull <atull@kernel.org>, Shiva Rao <shiva.rao@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     linmq006@gmail.com
+Subject: [PATCH] fpga: Fix memory leak in build_info_create_dev
+Date:   Wed, 11 May 2022 10:44:00 +0400
+Message-Id: <20220511064400.63518-1-linmq006@gmail.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220510195635.140722-1-russell.h.weight@intel.com>
-References: <20220510195635.140722-1-russell.h.weight@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The n3000bmc-secure driver has changed to n3000bmc-sec-update. Update
-the name in the list of the intel-m10-bmc sub-drivers.
+platform_device_alloc() create a platform device object.
+we should call platform_device_put() in error path to
+release the resource.
 
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+Fixes: 543be3d8c999 ("fpga: add device feature list support")
+Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
 ---
-v19:
-  - No change
-v18:
-  - No change
-v17:
-  - This is a new patch to change in the name of the secure update
-    driver.
----
- drivers/mfd/intel-m10-bmc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/fpga/dfl.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/mfd/intel-m10-bmc.c b/drivers/mfd/intel-m10-bmc.c
-index 8db3bcf5fccc..f4d0d72573c8 100644
---- a/drivers/mfd/intel-m10-bmc.c
-+++ b/drivers/mfd/intel-m10-bmc.c
-@@ -26,7 +26,7 @@ static struct mfd_cell m10bmc_d5005_subdevs[] = {
- static struct mfd_cell m10bmc_pacn3000_subdevs[] = {
- 	{ .name = "n3000bmc-hwmon" },
- 	{ .name = "n3000bmc-retimer" },
--	{ .name = "n3000bmc-secure" },
-+	{ .name = "n3000bmc-sec-update" },
- };
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 599bb21d86af..f0b945bd975f 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -879,8 +879,10 @@ build_info_create_dev(struct build_feature_devs_info *binfo,
+ 	INIT_LIST_HEAD(&binfo->sub_features);
  
- static struct mfd_cell m10bmc_n5010_subdevs[] = {
+ 	fdev->id = dfl_id_alloc(type, &fdev->dev);
+-	if (fdev->id < 0)
++	if (fdev->id < 0) {
++		platform_device_put(fdev);
+ 		return fdev->id;
++	}
+ 
+ 	fdev->dev.parent = &binfo->cdev->region->dev;
+ 	fdev->dev.devt = dfl_get_devt(dfl_devs[type].devt_type, fdev->id);
 -- 
 2.25.1
 
