@@ -2,70 +2,94 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFC25C433F5
-	for <linux-fpga@archiver.kernel.org>; Thu, 19 May 2022 09:41:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E61A3C433F5
+	for <linux-fpga@archiver.kernel.org>; Thu, 19 May 2022 22:13:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236212AbiESJjj (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 19 May 2022 05:39:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33546 "EHLO
+        id S245395AbiESWNf (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 19 May 2022 18:13:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34654 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236127AbiESJjf (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 19 May 2022 05:39:35 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5176793A1;
-        Thu, 19 May 2022 02:39:33 -0700 (PDT)
+        with ESMTP id S245413AbiESWNe (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 19 May 2022 18:13:34 -0400
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62126A5005;
+        Thu, 19 May 2022 15:13:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1652953173; x=1684489173;
+  t=1652998414; x=1684534414;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=zz/XtCzs4Jz68O9hElJ+yP5O0TaZacOcZONwGmR20F0=;
-  b=LWNjI2+47LoyYiaJP1bVKp7iy5CMCk6ywUHywCzq3U0xiMNuNCxP3mUv
-   s/MvfapVMPTKXDP0niC6iIIXhc35UjDMnLJb3xI/T+2KV/aBAlLHNBIJl
-   kx+5kE/UjztMJCvMTB/Wb8+iMlhf8XWFUzHfnE2yFAKjXxLcOdQEGawAS
-   HxdgCYdQDPUV2M9SO15Hm2v8HCiJGy8kjeOgBQD0PM6dLKNKX8vyi5j9G
-   DiVOjzbb56LCaoeYjQ6trS7UyBGj3YmlWgiaKVNlfwfxZYTYFDpXy9i9L
-   e4ktK3a6o8khmBJ60UvNxMauwOU6c3GMi2eMvOk2cGcpPPLhP5lSf45MP
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10351"; a="259693819"
-X-IronPort-AV: E=Sophos;i="5.91,237,1647327600"; 
-   d="scan'208";a="259693819"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2022 02:39:33 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,237,1647327600"; 
-   d="scan'208";a="817893177"
-Received: from unknown (HELO localhost.localdomain) ([10.226.216.90])
-  by fmsmga006.fm.intel.com with ESMTP; 19 May 2022 02:39:31 -0700
-From:   tien.sung.ang@intel.com
-To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
-        trix@redhat.com
-Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        tien.sung.ang@intel.com
-Subject: Re: [PATCH] fpga: altera-cvp: Truncated bitstream error support
-Date:   Thu, 19 May 2022 17:39:07 +0800
-Message-Id: <20220519093907.2883394-1-tien.sung.ang@intel.com>
+  bh=uFmq/RU+MxSprUYx5V19OMcQd3bPLRLL+9B9N2X/Hlg=;
+  b=nBlKAKG3wE2sHb+vxREiNIbCO8X6DonPvDOiWQgc3PXTak8l2MWyyvIM
+   5QpZXikDZu73Uvv5stWRHfYtByqT9zV/ZxAnwasplJE8yV1sJdMJWyge2
+   1s9ZNcVPcC9Ch1CiFB7RwSy4bWY00RCJhDDUE07J0oD4KCZ9IQZJtqpe+
+   oBcnSUo3ElXzqTrmKex42RCb14cGJlO0lsQtLRYJZdwSV0xQPlpNbj6Hh
+   itcCujMRo26eIt8czR3ivrMZaemrJSk8GWOZPc+FUFWxo3mF1MZIjsZ+B
+   3Wa528C2S/eQcfVpcJfxb1Skdf+1VoYEtIlGV6fdQ887g+anasIm4IzcZ
+   Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10352"; a="272097513"
+X-IronPort-AV: E=Sophos;i="5.91,238,1647327600"; 
+   d="scan'208";a="272097513"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2022 15:13:32 -0700
+X-IronPort-AV: E=Sophos;i="5.91,238,1647327600"; 
+   d="scan'208";a="743162376"
+Received: from rhweight-wrk1.ra.intel.com ([137.102.106.43])
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2022 15:13:32 -0700
+From:   Basheer Ahmed Muddebihal 
+        <basheer.ahmed.muddebihal@linux.intel.com>
+To:     hao.wu@intel.com, trix@redhat.com, mdf@kernel.org,
+        yilun.xu@intel.com, linux-fpga@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     matthew.gerlach@linux.intel.com, marpagan@redhat.com,
+        tianfei.zhang@intel.com,
+        Basheer Ahmed Muddebihal 
+        <basheer.ahmed.muddebihal@linux.intel.com>
+Subject: [PATCH 2/3] fpga: dfl: Fix kernel-doc warnings in include/linux/dfl.h
+Date:   Thu, 19 May 2022 15:12:48 -0700
+Message-Id: <20220519221249.858873-3-basheer.ahmed.muddebihal@linux.intel.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <b0fd6c41-f8a4-bb3a-d05a-2ea17d4ffc80@redhat.com>
-References: <b0fd6c41-f8a4-bb3a-d05a-2ea17d4ffc80@redhat.com>
+In-Reply-To: <20220519221249.858873-1-basheer.ahmed.muddebihal@linux.intel.com>
+References: <20220519221249.858873-1-basheer.ahmed.muddebihal@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Thanks for bringing this up. Yes, you are right that the fpga_mgr sees this
-as an error irrespective of the value. The CvP driver is changed now to just
-indicate the correct error which recommends a retry. To me understanding,
-EAGAIN was this. The fpga manager now looks like is going to return a CvP
-failure in short. 
-A BUSY state does not seem to be able to solve this issue. 
-Even an extended time-out didn't resolve this error state. The current time-out
-is set to 10seconds.   
-However, the main objective is to also handle the error if the CvP firmware
-is not responsive. The error_path flow is to reset the CVP mode and HIP_CLK_SEL bit
-as recommended by the firmware engineers. 
-The flow prescribed here is also an identical copy of working CvP driver 
-which is also owned by Intel. This driver is a downstream driver which is 
-not part of the Linux kernel. We are now porting this differences over to 
-the current upstream CvP driver. 
+Fixed the following warnings:
+include/linux/dfl.h:21: warning: Enum value 'FME_ID' not described in enum 'dfl_id_type'
+include/linux/dfl.h:21: warning: Enum value 'PORT_ID' not described in enum 'dfl_id_type'
+include/linux/dfl.h:21: warning: Enum value 'DFL_ID_MAX' not described in enum 'dfl_id_type'
+include/linux/dfl.h:47: warning: Function parameter or member 'revision' not described in 'dfl_device'
+
+Signed-off-by: Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>
+---
+ include/linux/dfl.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/include/linux/dfl.h b/include/linux/dfl.h
+index 431636a0dc78..4caa2d99d8dc 100644
+--- a/include/linux/dfl.h
++++ b/include/linux/dfl.h
+@@ -13,6 +13,9 @@
+ 
+ /**
+  * enum dfl_id_type - define the DFL FIU types
++ * @FME_ID: dfl id for FPGA Management Engine node.
++ * @PORT_ID: dfl id for Port.
++ * @DFL_ID_MAX: maximum number for dfl ids.
+  */
+ enum dfl_id_type {
+ 	FME_ID = 0,
+@@ -27,6 +30,7 @@ enum dfl_id_type {
+  * @id: id of the dfl device.
+  * @type: type of DFL FIU of the device. See enum dfl_id_type.
+  * @feature_id: feature identifier local to its DFL FIU type.
++ * @revision: feature revision local to its DFL FIU type.
+  * @mmio_res: mmio resource of this dfl device.
+  * @irqs: list of Linux IRQ numbers of this dfl device.
+  * @num_irqs: number of IRQs supported by this dfl device.
+-- 
+2.34.1
+
