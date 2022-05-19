@@ -2,95 +2,57 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA9EEC433EF
-	for <linux-fpga@archiver.kernel.org>; Wed, 18 May 2022 20:56:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE32CC433EF
+	for <linux-fpga@archiver.kernel.org>; Thu, 19 May 2022 04:24:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242830AbiERUyt (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 18 May 2022 16:54:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60386 "EHLO
+        id S233326AbiESEWo (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 19 May 2022 00:22:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48772 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242788AbiERUyr (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 18 May 2022 16:54:47 -0400
-Received: from smtp.smtpout.orange.fr (smtp04.smtpout.orange.fr [80.12.242.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 543A62532EB
-        for <linux-fpga@vger.kernel.org>; Wed, 18 May 2022 13:54:45 -0700 (PDT)
-Received: from [192.168.1.18] ([86.243.180.246])
-        by smtp.orange.fr with ESMTPA
-        id rQgqn20Y3QKuarQgqnmO5s; Wed, 18 May 2022 22:54:43 +0200
-X-ME-Helo: [192.168.1.18]
-X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
-X-ME-Date: Wed, 18 May 2022 22:54:43 +0200
-X-ME-IP: 86.243.180.246
-Message-ID: <6939d35f-36a0-568e-bfec-4dd2e3a48604@wanadoo.fr>
-Date:   Wed, 18 May 2022 22:54:40 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.1
+        with ESMTP id S232796AbiESEWm (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 19 May 2022 00:22:42 -0400
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15D571054F;
+        Wed, 18 May 2022 21:22:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1652934162; x=1684470162;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=t76k+55CvsHktO8F2+yZT/MW2C/RlykP0eSZCo+OnJk=;
+  b=Lp89bWC6tfb9dx93xJXUl2yoPYqpRgv9tHPUX5Jwu90COzH79tGcv8ot
+   b8fPG7W+t2fegOOi+FGcWaPlSFYq20tfwCumioWza0/aovW8b6dZJDx77
+   01fUjxGquSztp04pvFTgVncG8i2v4E5Lfva6RpbAKAK4F3gQbXDAHk67c
+   OOUpLjTFLQkVXc4xnj3Q/aHPEF7buG829ixabAQmYuBUrGRBeIJE+Zy+D
+   FdTtDWHOgRyP7C3dBAyN8cOkACopis7SRQvyQlSoTdEV0OT6H4oJA1Q6M
+   q17Xu6AHdVf009FH35fRmGS0BrmrRCOT/NWFjiJc4FGdQ92nvzDJ9VPWx
+   w==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10351"; a="332629317"
+X-IronPort-AV: E=Sophos;i="5.91,236,1647327600"; 
+   d="scan'208";a="332629317"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 May 2022 21:22:41 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.91,236,1647327600"; 
+   d="scan'208";a="700960357"
+Received: from unknown (HELO localhost.localdomain) ([10.226.216.90])
+  by orsmga004.jf.intel.com with ESMTP; 18 May 2022 21:22:39 -0700
+From:   tien.sung.ang@intel.com
+To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
+        trix@redhat.com
+Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        tien.sung.ang@intel.com
 Subject: Re: [PATCH] fpga: altera-cvp: Truncated bitstream error support
-Content-Language: en-GB
-To:     tien.sung.ang@intel.com, mdf@kernel.org, hao.wu@intel.com,
-        yilun.xu@intel.com, trix@redhat.com
-Cc:     linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20220518064844.2694651-1-tien.sung.ang@intel.com>
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-In-Reply-To: <20220518064844.2694651-1-tien.sung.ang@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Date:   Thu, 19 May 2022 12:21:35 +0800
+Message-Id: <20220519042135.2805176-1-tien.sung.ang@intel.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <6939d35f-36a0-568e-bfec-4dd2e3a48604@wanadoo.fr>
+References: <6939d35f-36a0-568e-bfec-4dd2e3a48604@wanadoo.fr>
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Le 18/05/2022 à 08:48, tien.sung.ang@intel.com a écrit :
-> From: Ang Tien Sung <tien.sung.ang@intel.com>
-> 
-> To support the error handling of a truncated bitstream sent.
-> The current AIB CvP firmware is not capable of handling a
-> data stream smaller than 4096bytes. The firmware's limitation
-> causes a hung-up as it's DMA engine waits forever for the
-> completion of the instructed 4096bytes.
-> To resolve this design limitation, both firmware and CvP
-> driver made several changes. At the CvP driver, we just
-> have to ensure that anything lesser than 4096bytes are
-> padded with extra bytes. The CvP will then, initiate the
-> tear-down by clearing the START_XFER and CVP_CONFIG bits.
-> We should also check for CVP_ERROR during the CvP completion.
-> A send_buf which is always 4096bytes is used to copy the
-> data during every transaction.
-> 
-> Signed-off-by: Ang Tien Sung <tien.sung.ang@intel.com>
-> ---
->   drivers/fpga/altera-cvp.c | 24 +++++++++++++++++++-----
->   1 file changed, 19 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-> index 4ffb9da537d8..80edcfb5e5fc 100644
-> --- a/drivers/fpga/altera-cvp.c
-> +++ b/drivers/fpga/altera-cvp.c
-> @@ -81,6 +81,7 @@ struct altera_cvp_conf {
->   	u8			numclks;
->   	u32			sent_packets;
->   	u32			vsec_offset;
-> +	u8			*send_buf;
->   	const struct cvp_priv	*priv;
->   };
->   
-> @@ -453,7 +454,11 @@ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
->   		}
->   
->   		len = min(conf->priv->block_size, remaining);
-> -		altera_cvp_send_block(conf, data, len);
-> +		/* Copy the requested host data into the transmit buffer */
-> +
-> +		memcpy(conf->send_buf, data, len);
-> +		altera_cvp_send_block(conf, (const u32 *)conf->send_buf,
-> +		conf->priv->block_size);
-
-Nitpicking: this should be aligned with 'conf'.
-
-CJ
-
->   		data += len / sizeof(u32);
->   		done += len;
->   		remaining -= len;
-
-[...]
+Thanks for pointing that out. It is always good to get all the alignments right.
+I will add this to the next revision of the patch.
