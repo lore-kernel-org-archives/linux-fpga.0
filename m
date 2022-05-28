@@ -2,110 +2,160 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39926C433F5
-	for <linux-fpga@archiver.kernel.org>; Sat, 28 May 2022 12:13:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EDDBC433F5
+	for <linux-fpga@archiver.kernel.org>; Sat, 28 May 2022 15:31:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235015AbiE1MLs (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sat, 28 May 2022 08:11:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55464 "EHLO
+        id S235298AbiE1P3R (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sat, 28 May 2022 11:29:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48252 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229685AbiE1MLr (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sat, 28 May 2022 08:11:47 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8BB661CFE1;
-        Sat, 28 May 2022 05:11:46 -0700 (PDT)
+        with ESMTP id S233773AbiE1P3Q (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sat, 28 May 2022 11:29:16 -0400
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACC3813F1F;
+        Sat, 28 May 2022 08:29:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1653739906; x=1685275906;
+  t=1653751755; x=1685287755;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=8sRkxQT26PMQWck15dOVL/QQfNSeDKy0JdrBz9Xb2us=;
-  b=Ro1kc9q5fXJ+WybXxayPLpv5pnqBj+XfuHgkDe/eT3uJDdK74N9YpxwG
-   z72PptcWnLuqczT4pYAbZCm4Cp8tvJeCqpJ+iZPKYQE0LGt33ops8NXs/
-   PvWiRWBYIc0NHW/uK1LCsy7HWoAlrHNf0QcBFRvul1KPA9yemQebKWGfM
-   /PT0zh7xiAc4kAu9OiFS814Loj1k5zRQlnrm7zZdYPq3kdmugTozSW47n
-   cpheL/tm0/BslsPqPkHWGXkoIjI9tsoLdnQCaqCcfEqdDmJMDC3rRJjzW
-   dCeiyFXgiRFF1nMDdapLRjjid6TXy/LuBZchdCyBNmOKSjjy/IWbcJ02d
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10360"; a="274765080"
+  bh=kVYNnfGX5hHOEUJRrkwZvAzV0mNlGMAMNLdCH/RNBVE=;
+  b=iguF0B7/UgwrT7JHoTPWWFJhopPD9snuOFk6NuFwALzv4x/5ho+AW/qc
+   7hjsUwRRuhZ/mH5kazFclHLIQ5lx8pBciqJS7Jip2UUxVLMi0+gvukNgV
+   OtbrRo0eZBPINomS+eIgUM1iBRf/7cogsFR84fO77bGriyvSfhXqPygTv
+   JT3KEI3DBInB2Q3irGlMpq4bqPDfLOlgbM4g2scsyJqPN5jKWAenuz047
+   hrWqX+VzOAxhmBc7NUzILT+R0AVDTEBNEYsLe3iDUkgCmaeo2boEnqnJW
+   kPIxJxj4xe2q6RMIYpy/DzYCJDt9oqvJXOcC7yc/18gqsJ0BFw/hK/Xpy
+   Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10361"; a="335336484"
 X-IronPort-AV: E=Sophos;i="5.91,258,1647327600"; 
-   d="scan'208";a="274765080"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2022 05:11:46 -0700
+   d="scan'208";a="335336484"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2022 08:29:15 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.91,258,1647327600"; 
-   d="scan'208";a="604384973"
+   d="scan'208";a="575284993"
 Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.135])
-  by orsmga008.jf.intel.com with ESMTP; 28 May 2022 05:11:44 -0700
-Date:   Sat, 28 May 2022 20:04:00 +0800
+  by orsmga007.jf.intel.com with ESMTP; 28 May 2022 08:29:11 -0700
+Date:   Sat, 28 May 2022 23:21:27 +0800
 From:   Xu Yilun <yilun.xu@intel.com>
-To:     tien.sung.ang@intel.com
-Cc:     mdf@kernel.org, hao.wu@intel.com, trix@redhat.com,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Dinh Nguyen <dinh.nguyen@intel.com>
-Subject: Re: [PATCH] fpga: altera-cvp: allow interrupt to continue next time
-Message-ID: <20220528120400.GA175058@yilunxu-OptiPlex-7050>
-References: <20220518073844.2713722-1-tien.sung.ang@intel.com>
+To:     Nava kishore Manne <nava.manne@xilinx.com>
+Cc:     michal.simek@xilinx.com, mdf@kernel.org, hao.wu@intel.com,
+        trix@redhat.com, gregkh@linuxfoundation.org, ronak.jain@xilinx.com,
+        abhyuday.godhasara@xilinx.com, rajan.vaja@xilinx.com,
+        lakshmi.sai.krishna.potthuri@xilinx.com, piyush.mehta@xilinx.com,
+        harsha.harsha@xilinx.com, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-fpga@vger.kernel.org,
+        git@xilinx.com
+Subject: Re: [PATCH 3/3] fpga: zynqmp-fpga: Adds status interface
+Message-ID: <20220528152127.GA181580@yilunxu-OptiPlex-7050>
+References: <20220524094745.287002-1-nava.manne@xilinx.com>
+ <20220524094745.287002-4-nava.manne@xilinx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220518073844.2713722-1-tien.sung.ang@intel.com>
+In-Reply-To: <20220524094745.287002-4-nava.manne@xilinx.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Wed, May 18, 2022 at 03:38:44PM +0800, tien.sung.ang@intel.com wrote:
-> From: Dinh Nguyen <dinh.nguyen@intel.com>
+On Tue, May 24, 2022 at 03:17:45PM +0530, Nava kishore Manne wrote:
+> Adds status interface for zynqmp-fpga, It's a read only
+> interface which allows the user to get the PL status.
 > 
-> CFG_READY signal/bit may time-out due to firmware not responding
-> within the given time-out. This time varies due to numerous
-> factors like size of bitstream and others.
-> This time-out error does not impact the result of the CvP
-> previous transactions. The CvP driver shall then, respond with
+> Usage:
+> To read the PL configuration status
+>         cat /sys/class/fpga_manager/<fpga>/status
+> 
+> Signed-off-by: Nava kishore Manne <nava.manne@xilinx.com>
+> ---
+>  drivers/fpga/zynqmp-fpga.c | 52 ++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 52 insertions(+)
+> 
+> diff --git a/drivers/fpga/zynqmp-fpga.c b/drivers/fpga/zynqmp-fpga.c
+> index c60f20949c47..07c7b7326726 100644
+> --- a/drivers/fpga/zynqmp-fpga.c
+> +++ b/drivers/fpga/zynqmp-fpga.c
+> @@ -14,6 +14,19 @@
+>  
+>  /* Constant Definitions */
+>  #define IXR_FPGA_DONE_MASK	BIT(3)
+> +#define READ_DMA_SIZE		256U
+> +
+> +/* Error Register */
+> +#define IXR_FPGA_ERR_CRC_ERR		BIT(0)
+> +#define IXR_FPGA_ERR_SECURITY_ERR	BIT(16)
+> +
+> +/* Signal Status Register. For details refer ug570 */
+> +#define IXR_FPGA_END_OF_STARTUP		BIT(4)
+> +#define IXR_FPGA_GST_CFG_B		BIT(5)
+> +#define IXR_FPGA_INIT_B_INTERNAL	BIT(11)
+> +#define IXR_FPGA_DONE_INTERNAL_SIGNAL	BIT(13)
+> +
+> +#define IXR_FPGA_CONFIG_STAT_OFFSET	7U
+>  
+>  /**
+>   * struct zynqmp_fpga_priv - Private data structure
+> @@ -77,8 +90,47 @@ static enum fpga_mgr_states zynqmp_fpga_ops_state(struct fpga_manager *mgr)
+>  	return FPGA_MGR_STATE_UNKNOWN;
+>  }
+>  
+> +static u64 zynqmp_fpga_ops_status(struct fpga_manager *mgr)
+> +{
+> +	unsigned int *buf, reg_val;
+> +	dma_addr_t dma_addr;
+> +	u64 status = 0;
+> +	int ret;
+> +
+> +	buf = dma_alloc_coherent(mgr->dev.parent, READ_DMA_SIZE,
+> +				 &dma_addr, GFP_KERNEL);
+> +	if (!buf)
+> +		return -ENOMEM;
+> +
+> +	ret = zynqmp_pm_fpga_read(IXR_FPGA_CONFIG_STAT_OFFSET, dma_addr,
+> +				  PM_FPGA_READ_CONFIG_REG, &reg_val);
+> +	if (ret) {
+> +		status = FPGA_MGR_STATUS_FIRMWARE_REQ_ERR;
+> +		goto free_dmabuf;
+> +	}
+> +
+> +	if (reg_val & IXR_FPGA_ERR_CRC_ERR)
+> +		status |= FPGA_MGR_STATUS_CRC_ERR;
+> +	if (reg_val & IXR_FPGA_ERR_SECURITY_ERR)
+> +		status |= FPGA_MGR_STATUS_SECURITY_ERR;
+> +	if (!(reg_val & IXR_FPGA_INIT_B_INTERNAL))
+> +		status |= FPGA_MGR_STATUS_DEVICE_INIT_ERR;
+> +	if (!(reg_val & IXR_FPGA_DONE_INTERNAL_SIGNAL))
+> +		status |= FPGA_MGR_STATUS_SIGNAL_ERR;
+> +	if (!(reg_val & IXR_FPGA_GST_CFG_B))
+> +		status |= FPGA_MGR_STATUS_HIGH_Z_STATE_ERR;
+> +	if (!(reg_val & IXR_FPGA_END_OF_STARTUP))
+> +		status |= FPGA_MGR_STATUS_EOS_ERR;
 
-Do you mean the reprogramming is successful even if you find the time
-out in write_complete()? Then return 0 is better?
+I have concern about the status interface. Different vendors have
+differnt error sets defined by Hardwares. If we always define the
+new bits when we cannot find an exact 1:1 mapping. A 64 bits would
+soon be used out. Also it's hard to understand the mixture of
+different error sets.
 
-And could you specify what the time-out mean on write_init() phase?
+I'd rather suggest that each driver define its own error reading
+interface.
 
 Thanks,
 Yilun
 
-> EAGAIN instead Time out error.
-> 
-> Signed-off-by: Dinh Nguyen <dinh.nguyen@intel.com>
-> Signed-off-by: Ang Tien Sung <tien.sung.ang@intel.com>
-> ---
->  drivers/fpga/altera-cvp.c | 14 +++++++++++++-
->  1 file changed, 13 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-> index 4ffb9da537d8..d74ff63c61e8 100644
-> --- a/drivers/fpga/altera-cvp.c
-> +++ b/drivers/fpga/altera-cvp.c
-> @@ -309,10 +309,22 @@ static int altera_cvp_teardown(struct fpga_manager *mgr,
->  	/* STEP 15 - poll CVP_CONFIG_READY bit for 0 with 10us timeout */
->  	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY, 0,
->  				     conf->priv->poll_time_us);
-> -	if (ret)
-> +	if (ret) {
->  		dev_err(&mgr->dev, "CFG_RDY == 0 timeout\n");
-> +		goto error_path;
-> +	}
->  
->  	return ret;
 > +
-> +error_path:
-> +	/* reset CVP_MODE and HIP_CLK_SEL bit */
-> +	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
-> +	val &= ~VSE_CVP_MODE_CTRL_HIP_CLK_SEL;
-> +	val &= ~VSE_CVP_MODE_CTRL_CVP_MODE;
-> +	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
+> +free_dmabuf:
+> +	dma_free_coherent(mgr->dev.parent, READ_DMA_SIZE, buf, dma_addr);
 > +
-> +	return -EAGAIN;
+> +	return status;
+> +}
 > +
->  }
->  
->  static int altera_cvp_write_init(struct fpga_manager *mgr,
+>  static const struct fpga_manager_ops zynqmp_fpga_ops = {
+>  	.state = zynqmp_fpga_ops_state,
+> +	.status = zynqmp_fpga_ops_status,
+>  	.write_init = zynqmp_fpga_ops_write_init,
+>  	.write = zynqmp_fpga_ops_write,
+>  };
 > -- 
 > 2.25.1
