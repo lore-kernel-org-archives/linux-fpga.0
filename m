@@ -2,149 +2,176 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 971F0C43334
-	for <linux-fpga@archiver.kernel.org>; Thu,  2 Jun 2022 09:10:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAB88C433EF
+	for <linux-fpga@archiver.kernel.org>; Fri,  3 Jun 2022 09:58:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232784AbiFBJIr (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 2 Jun 2022 05:08:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45200 "EHLO
+        id S243260AbiFCJ5I (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 3 Jun 2022 05:57:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231569AbiFBJIm (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 2 Jun 2022 05:08:42 -0400
-Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48A882010DA;
-        Thu,  2 Jun 2022 02:08:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-        d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding;
-        bh=GQmIjedgQb9DY7Mgnqkz3jdM5XV3TNvTH/CR49OuWb0=;
-        b=gHsWm1EXamIrs35nDXgIwXT+l+zmQlSIKRzjwQbohbvy8q0tc5piCTisYUAHWfzwSHfFZB2rOVzWY
-         HF9+De3bDQNPnVbjxEtZqJKb6lUkrwaXFYKLXdg8EZkzYUuYtF+RbUMObSkCWfkPaq9uIjXCxvEYk0
-         UieIKmq7qAN7Gs0fR3Av4fcHMUqIzoiIRk8giRVS9aUFj8Rqh/NprMGFezGCQIFhj9qAWz//IsKbs2
-         Yaj4IPTWHNx3iiBlnTPCXZJ0ZIrHJlhJ31EZrTeqBiTsMX2jsghXWmDgLAE8SMCx1fNankKMpbMMsd
-         /C6sWiBj/Q3WyQ6wjHerrnyAJvHgadg==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1424, Stamp: 3], Multi: [Enabled, t: (0.000010,0.016292)], BW: [Enabled, t: (0.000014,0.000001)], RTDA: [Enabled, t: (0.083076), Hit: No, Details: v2.39.0; Id: 15.52kcej.1g4hqofpo.mdnu; mclb], total: 0(700)
-X-Footer: bWV0cm90ZWsucnU=
-Received: from localhost.localdomain ([178.70.36.174])
-        (authenticated user i.bornyakov@metrotek.ru)
-        by mail.pr-group.ru with ESMTPSA
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Thu, 2 Jun 2022 12:08:17 +0300
-From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
-To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
-        trix@redhat.com
-Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
-        Conor.Dooley@microchip.com, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, linux-fpga@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        system@metrotek.ru
-Subject: [PATCH v15 0/3] Microchip Polarfire FPGA manager
-Date:   Thu,  2 Jun 2022 11:45:47 +0300
-Message-Id: <20220602084550.4380-1-i.bornyakov@metrotek.ru>
-X-Mailer: git-send-email 2.35.1
+        with ESMTP id S243258AbiFCJ5E (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 3 Jun 2022 05:57:04 -0400
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A78301EC63;
+        Fri,  3 Jun 2022 02:57:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1654250223; x=1685786223;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=9nMqJpc+keDBAhAZmhqU1MTCwKtNpWLiD849EJA9468=;
+  b=CVCU88vF4AlVKZEWcZ8jiLfbLsp8/54095egYMkfd6lJ7hj+PDxCt3Y0
+   4qlc9EcBWk66t8YTGy4lsUJEaQCGEYs1GeumWKR0JBHwk5iVJVfMOMf03
+   EHOE4H+zpErHCxvBA3b2kmOVtMkV+NFRddph7SBlcS+RZiO0bI+DgI8wi
+   CdhflasTB320rxJVuIwwfnaqfDAyuJ2N3gKOkKgITToyiEF4dQmqUg4rk
+   Xkpi2Cj/VeTpgr36McLLNIbDXA/7UNQe3zwULX1eqUCNPFjuT2mj8bP7M
+   h6+SAJqll52DPBSbfwam2NXpURoi3bWVkYSNeSrPKVxyxabbO+El4GBKz
+   A==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10366"; a="275017882"
+X-IronPort-AV: E=Sophos;i="5.91,274,1647327600"; 
+   d="scan'208";a="275017882"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jun 2022 02:57:03 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.91,274,1647327600"; 
+   d="scan'208";a="707967138"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.135])
+  by orsmga004.jf.intel.com with ESMTP; 03 Jun 2022 02:57:01 -0700
+Date:   Fri, 3 Jun 2022 17:49:11 +0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     tien.sung.ang@intel.com
+Cc:     christophe.jaillet@wanadoo.fr, hao.wu@intel.com,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        mdf@kernel.org, trix@redhat.com
+Subject: Re: [PATCH v2] fpga: altera-cvp: Truncated bitstream error support
+Message-ID: <20220603094911.GA238410@yilunxu-OptiPlex-7050>
+References: <20220528095933.GB175008@yilunxu-OptiPlex-7050>
+ <20220531015356.2305182-1-tien.sung.ang@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220531015356.2305182-1-tien.sung.ang@intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add support to the FPGA manager for programming Microchip Polarfire
-FPGAs over slave SPI interface with .dat formatted bitsream image.
+On Tue, May 31, 2022 at 09:53:56AM +0800, tien.sung.ang@intel.com wrote:
+> hi,
+> 
+> I will fix the "blank line" issues. 
 
-Changelog:
-  v1 -> v2: fix printk formating
-  v2 -> v3:
-   * replace "microsemi" with "microchip"
-   * replace prefix "microsemi_fpga_" with "mpf_"
-   * more sensible .compatible and .name strings
-   * remove unused defines STATUS_SPI_VIOLATION and STATUS_SPI_ERROR
-  v3 -> v4: fix unused variable warning
-    Put 'mpf_of_ids' definition under conditional compilation, so it
-    would not hang unused if CONFIG_OF is not enabled.
-  v4 -> v5:
-   * prefix defines with MPF_
-   * mdelay() -> usleep_range()
-   * formatting fixes
-   * add DT bindings doc
-   * rework fpga_manager_ops.write() to fpga_manager_ops.write_sg()
-     We can't parse image header in write_init() because image header
-     size is not known beforehand. Thus parsing need to be done in
-     fpga_manager_ops.write() callback, but fpga_manager_ops.write()
-     also need to be reenterable. On the other hand,
-     fpga_manager_ops.write_sg() is called once. Thus, rework usage of
-     write() callback to write_sg().
-  v5 -> v6: fix patch applying
-     I forgot to clean up unrelated local changes which lead to error on
-     patch 0001-fpga-microchip-spi-add-Microchip-MPF-FPGA-manager.patch
-     applying on vanilla kernel.
-  v6 -> v7: fix binding doc to pass dt_binding_check
-  v7 -> v8: another fix for dt_binding_check warning
-  v8 -> v9:
-   * add another patch to support bitstream offset in FPGA image buffer
-   * rework fpga_manager_ops.write_sg() back to fpga_manager_ops.write()
-   * move image header parsing from write() to write_init()
-  v9 -> v10:
-   * add parse_header() callback to fpga_manager_ops
-   * adjust fpga_mgr_write_init[_buf|_sg]() for parse_header() usage
-   * implement parse_header() in microchip-spi driver
-  v10 -> v11: include missing unaligned.h to microchip-spi
-     fix error: implicit declaration of function 'get_unaligned_le[16|32]'
-  v11 -> v12:
-   * microchip-spi: double read hw status, ignore first read, because it
-     can be unreliable.
-   * microchip-spi: remove sleep between status readings in
-     poll_status_not_busy() to save a few seconds. Status is polled on
-     every 16 byte writes - that is quite often, therefore
-     usleep_range() accumulate to a considerable number of seconds.
-  v12 -> v13:
-   * fpga-mgr: separate fpga_mgr_parse_header_buf() from
-     fpga_mgr_write_init_buf()
-   * fpga-mgr: introduce FPGA_MGR_STATE_PARSE_HEADER and
-     FPGA_MGR_STATE_PARSE_HEADER_ERR fpga_mgr_states
-   * fpga-mgr: rename fpga_mgr_write_init_sg() to fpga_mgr_prepare_sg()
-     and rework with respect to a new fpga_mgr_parse_header_buf()
-   * fpga-mgr: rework write accounting in fpga_mgr_buf_load_sg() for
-     better clarity
-   * microchip-spi: rename MPF_STATUS_POLL_TIMEOUT to
-     MPF_STATUS_POLL_RETRIES
-   * microchip-spi: add comment about status reading quirk to
-     mpf_read_status()
-   * microchip-spi: rename poll_status_not_busy() to mpf_poll_status()
-     and add comment.
-   * microchip-spi: make if statement in mpf_poll_status() easier to
-     read.
-  v13 -> v14:
-   * fpga-mgr: improvements from Xu Yilun in
-      - fpga_mgr_parse_header_buf()
-      - fpga_mgr_write_init_buf()
-      - fpga_mgr_prepare_sg()
-      - fpga_mgr_buf_load_sg()
-   * fpga-mgr: add check for -EAGAIN from fpga_mgr_parse_header_buf()
-     when called from fpga_mgr_buf_load_mapped()
-   * microchip-spi: remove excessive cs_change from second spi_transfer
-     in mpf_read_status()
-   * microchip-spi: change type of components_size_start,
-     bitstream_start, i from size_t to u32 in mpf_ops_parse_header()
-  v14 -> v15: eliminate memcpy() in mpf_ops_write()
-    Eliminate excessive memcpy() in mpf_ops_write() by using
-    spi_sync_transfer() instead of spi_write().
+Please don't top post.
 
-Ivan Bornyakov (3):
-  fpga: fpga-mgr: support bitstream offset in image buffer
-  fpga: microchip-spi: add Microchip MPF FPGA manager
-  dt-bindings: fpga: add binding doc for microchip-spi fpga mgr
+And you don't have to clean too much context, otherwise people have to
+search previous mails to remember what is it. People may not read the
+mail at once.
 
- .../fpga/microchip,mpf-spi-fpga-mgr.yaml      |  44 ++
- drivers/fpga/Kconfig                          |   9 +
- drivers/fpga/Makefile                         |   1 +
- drivers/fpga/fpga-mgr.c                       | 176 ++++++--
- drivers/fpga/microchip-spi.c                  | 391 ++++++++++++++++++
- include/linux/fpga/fpga-mgr.h                 |  17 +-
- 6 files changed, 610 insertions(+), 28 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
- create mode 100644 drivers/fpga/microchip-spi.c
+> 
+> >> The current AIB CvP firmware is not capable of handling a
+> >> data stream smaller than 4096bytes. The firmware's limitation
+> 
+> >So why don't you check the image size on write_init(), and just prevent
+> >the DMA writing at the very beginning?
+> We try not to add any kind of logic in the CvP driver to read
+> or understand the correctness of the bitstream. In future, this
+> logic may change. The CvP driver to our best interest should
 
--- 
-2.35.1
+But you are adding the logic in altera_cvp_write() to keep the
+correctness. What's the difference adding it somewhere else? And as I
+can see, preventing the writing at the very beginning is a much cleaner
+way.
 
+> only be responsible to perform the transfer of the bitstream
+> and perform the respective handshake. We have plans to have
+> the CvP firmware on the other side be more intelligent to 
+> handle errors and inform the CvP driver on why a certain 
+> configuration session fails. We are in the process of making
+> the next generation CvP to close this gaps.
+> 
+> >> To resolve this design limitation, both firmware and CvP
+> >> driver made several changes. At the CvP driver, we just
+> >> have to ensure that anything lesser than 4096bytes are
+> >> padded with extra bytes. The CvP will then, initiate the
+> >> tear-down by clearing the START_XFER and CVP_CONFIG bits.
+> 
+> > The driver pads the data block to 4096 bytes, then why the CvP still
+> > should fail the reprograming?
+> The block size of 4096bytes containts headers and signatures that
+> comprise a bitstream to FPGA. Any of the missing pieces will 
+> cause the FPGA configuration to fail at the SDM (Secure device
+> manager). We are at Intel are just trying to avoid a user from
+> using a bad data to reconfigure the FPGA via CvP and then, hitting
+> into a fault that is non-recoverable. Only a hard-reboot of the 
+> entire system can undo it. 
+> 
+> > If the image size is larger than 1 Page but is not aligned to 1 Page,
+> > will the reprogramming still fail?
+> Yes, the reconfiguration will fail. The above tear-down  is to prevent
+> that CvP Hardware/firmware in the FPGA from entering into a dead-lock.
+
+So if the image size is not aligned to 1 Page, the reprogram should fail
+anyway, is it? Then I really recommend you fail the reprogramming at the
+very beginning.
+
+> 
+> 
+> >> +		memcpy(conf->send_buf, data, len);
+> 
+> >Any padding value is OK?
+> Yes, any padding value is fine. The reason for this is that, the
+> CvP Firmware/Hardware on the other side is using DMA to perform
+> transfers of 4096bytes. The firmware will wait forever for the
+> DMA to complete. The firmware is not able to check for status
+> or respond to any errors while in the wait state. 
+> 
+> >> +		altera_cvp_send_block(conf, (const u32 *)conf->send_buf,
+> >> +				      conf->priv->block_size);
+> 
+> >If the len equals block_size, is the copy still needed?
+> Actually, not required. But to maintain a simple design, we use
+> a common flow for all so you can skip the check.
+
+I don't think so. We should make the code reasonable. Blindly copy the
+whole buffer impacts all normal cases, and makes people confused. The
+code seems shorter now, but not simpler, it takes people more time to
+figure out why.
+
+> 
+> >> +	ret = altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
+> >> +	if (ret || (val & VSE_CVP_STATUS_CFG_ERR)) {
+> >> +		dev_err(&mgr->dev, "CVP_CONFIG_ERROR!\n");
+> 
+> >So this new error checking covers the previous "latched error" case?
+> Yes, because the new feature requires for the CvP driver to 
+> be able to subsequently re-perform a fresh new CvP session after
+> an error. With the above, the CvP driver will forever report
+> an error and caused the entire CvP to be permanently in error. 
+> This is not desirable and the user would need to power-cycle the
+> or hard reboot the entire system to recover. Intel sees this as
+> a terrible user-experience espcially as CvP is performed 
+> normally remotely.
+> 
+> >> +	/* Allocate the 4096 block size transmit buffer */
+> >> +	conf->send_buf = devm_kzalloc(&pdev->dev, conf->priv->block_size, GFP_KERNEL);
+> 
+> >If block_size == ALTERA_CVP_V1_SIZE, the copy is still needed?
+> Yes, the firmware and hardware on the other side uses DMA
+> and V1 to my understanding has a smaller buffer size. Intel 
+> later improved this and introduced a new back-pressure credit 
+> data flow control to help increase the performance.
+> 
+> >> +	if (!conf->send_buf) {
+> >> +		ret = -ENOMEM;
+> >> +		goto err_unmap;
+> >> +	}
+> 
+> >Maybe it is better move the buffer allocation to write_init()
+> The altera_cvp_conf has not been created yet at this point.
+> The init routine in CvP so far just registers the driver.
+
+I meant moving it to altera_cvp_write_init(). But now I think it is not
+necessary. Bouncing buffer is not necessary at all.
+
+Thanks,
+Yilun
 
