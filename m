@@ -2,105 +2,118 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5866EC433EF
-	for <linux-fpga@archiver.kernel.org>; Thu,  9 Jun 2022 14:07:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3DB3CCA473
+	for <linux-fpga@archiver.kernel.org>; Thu,  9 Jun 2022 16:12:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243896AbiFIOFk (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 9 Jun 2022 10:05:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60482 "EHLO
+        id S244259AbiFIQK5 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 9 Jun 2022 12:10:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35604 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243253AbiFIOFj (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 9 Jun 2022 10:05:39 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 882C812FB2F
-        for <linux-fpga@vger.kernel.org>; Thu,  9 Jun 2022 07:05:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1654783536;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=xhgrKuwsMFGqD7N/R0k/QMWuYyV386FPUEYFwR1ivao=;
-        b=ZGjR7MnVWIkQMamv09045MKUT3WBWJWyAV9V8LQkygDUPTLduejddLK74KLcL8PNyspgqS
-        NcD/vno9KN0qd8sKwQd/hFlLCLWwckWLnTV6QhRJAix+04i2xX4ShdOakseRxDEuMEI0iE
-        tov0/vs5gwN0y/Yx19l9r2oMKGo9l3s=
-Received: from mail-ed1-f70.google.com (mail-ed1-f70.google.com
- [209.85.208.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-64-DyFXXYvvPqCkNC89GP4G0g-1; Thu, 09 Jun 2022 10:05:35 -0400
-X-MC-Unique: DyFXXYvvPqCkNC89GP4G0g-1
-Received: by mail-ed1-f70.google.com with SMTP id eh10-20020a0564020f8a00b0042dd9bf7c57so17204341edb.17
-        for <linux-fpga@vger.kernel.org>; Thu, 09 Jun 2022 07:05:34 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=xhgrKuwsMFGqD7N/R0k/QMWuYyV386FPUEYFwR1ivao=;
-        b=C9ihEgz2wMWaSeFCjyV8BqILeRZwv/r1qqH+gqR5Id2UwE90FP5/03ijDCBaVDfYUN
-         D4eNdri/gmRwHEN5QIz+Oi1sNmcvigom25FrJmtsYfj7909P4rlB/LrGih393osFcjfr
-         0bhw/LDwIBnGDngt/k5nXAlHsPMZWVAdAYf3+08eCgdxCi3CCzWDK3PdGerW1T3mtaOt
-         nM6I7axJQNfPuMJSstDnU/b0OkFTFqkrEHPq/CAqM5fqH6Q+tVriX0AEgtgDw3vH/CcB
-         /UVhTp+Jxndsf262G8RgK3QDtCszcLnCx5zJZVyloifoJJR8yoiO4iLkSd7ceKQumhmf
-         rKOg==
-X-Gm-Message-State: AOAM533JfbrGrqP4CZrEQ0DvnXHnBiibiMlnEkl/9/LE5FtG5UpGBa+3
-        +S0dspCwLqlIfa8zZoKH9U945grJgtNiGhz54rT77sKCnnWfotJ5cG/DjFQVsAkwUTNOTyfFGfm
-        ZjguSbqCVaYRdAKNd5qVU
-X-Received: by 2002:a05:6402:160b:b0:431:35df:63c0 with SMTP id f11-20020a056402160b00b0043135df63c0mr30958628edv.124.1654783533635;
-        Thu, 09 Jun 2022 07:05:33 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJyat2k8+xqz5HSlqoTKaB+b/XqaUBP/0sro/fhR+EAmjl++CgbKpOl7FWRGYDLChRrJ8P//iw==
-X-Received: by 2002:a05:6402:160b:b0:431:35df:63c0 with SMTP id f11-20020a056402160b00b0043135df63c0mr30958587edv.124.1654783533372;
-        Thu, 09 Jun 2022 07:05:33 -0700 (PDT)
-Received: from auir.station (net-188-216-46-176.cust.vodafonedsl.it. [188.216.46.176])
-        by smtp.gmail.com with ESMTPSA id o2-20020aa7dd42000000b0042dc460bda6sm14371070edw.18.2022.06.09.07.05.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 09 Jun 2022 07:05:32 -0700 (PDT)
-From:   Marco Pagani <marpagan@redhat.com>
-To:     Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
-        Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
-        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
-        Alan Tull <atull@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Marco Pagani <marpagan@redhat.com>, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v3] fpga: altera-pr-ip: fix unsigned comparison with less than zero
-Date:   Thu,  9 Jun 2022 16:05:19 +0200
-Message-Id: <20220609140520.42662-1-marpagan@redhat.com>
-X-Mailer: git-send-email 2.35.3
+        with ESMTP id S236387AbiFIQKz (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 9 Jun 2022 12:10:55 -0400
+Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98A333004D9;
+        Thu,  9 Jun 2022 09:10:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+        d=metrotek.ru; s=mail;
+        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
+         in-reply-to:references;
+        bh=PYcsBoWzdiCutgNRzhzdQblCHgmrM9wgVrOHPOZNCxQ=;
+        b=GhQFq1f+RXcF2suvxkFEbOxzZaQAxQJUo9lIlqjVeraslMiJv48iFCqMhN6bjGYhmBJ8QZjNEIjeP
+         cpFq2wWJPhfpJJZxbNfgpk+TdIFPMPVuWd1qMxAFKO3wCkQP4gMeXDaekfEGwLhuHVnXALrEldy2MZ
+         LwDhJhkGXxaq1tF1ACdzN4HypAVAJ3nNDciWGhzlw2+RjNt9lzpteHQYK6u60M84HIf2DQxJXQzHuV
+         yGKuWSEyQONITdbd7cYnI2FzE9jTyOGN1op+AjOEgEHA6XutQx2/fqr0DfokQcdO9+jLZBdQUHZ3y9
+         WBuW+Cg/d2lPBz1fnvdXpb+KmN5o26Q==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1424, Stamp: 3], Multi: [Enabled, t: (0.000009,0.008263)], BW: [Enabled, t: (0.000020,0.000001)], RTDA: [Enabled, t: (0.076305), Hit: No, Details: v2.40.0; Id: 15.52k9pa.1g54jmlnd.30e8; mclb], total: 0(700)
+X-Footer: bWV0cm90ZWsucnU=
+Received: from localhost.localdomain ([178.70.36.174])
+        (authenticated user i.bornyakov@metrotek.ru)
+        by mail.pr-group.ru with ESMTPSA
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
+        Thu, 9 Jun 2022 19:10:32 +0300
+From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
+To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
+        trix@redhat.com, corbet@lwn.net
+Cc:     Ivan Bornyakov <brnkv.i1@gmail.com>, Conor.Dooley@microchip.com,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        system@metrotek.ru, Ivan Bornyakov <i.bornyakov@metrotek.ru>,
+        Rob Herring <robh@kernel.org>
+Subject: [PATCH v17 4/4] dt-bindings: fpga: add binding doc for microchip-spi fpga mgr
+Date:   Thu,  9 Jun 2022 18:47:52 +0300
+Message-Id: <20220609154752.20781-5-i.bornyakov@metrotek.ru>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220609154752.20781-1-i.bornyakov@metrotek.ru>
+References: <20220609154752.20781-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Fix the "comparison with less than zero" warning reported by
-cppcheck for the unsigned (size_t) parameter count of the
-alt_pr_fpga_write() function.
+Add Device Tree Binding doc for Microchip Polarfire FPGA Manager using
+slave SPI to load .dat formatted bitstream image.
 
-Fixes: d201cc17a8a3 ("fpga pr ip: Core driver support for Altera Partial Reconfiguration IP")
-Reviewed-by: Tom Rix <trix@redhat.com>
+Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+Reviewed-by: Rob Herring <robh@kernel.org>
 Acked-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Marco Pagani <marpagan@redhat.com>
 ---
-Changes v1 -> v2:
-- Coding style fix
-Changes v2 -> v3:
-- Added Fixes tag
----
- drivers/fpga/altera-pr-ip-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../fpga/microchip,mpf-spi-fpga-mgr.yaml      | 44 +++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
 
-diff --git a/drivers/fpga/altera-pr-ip-core.c b/drivers/fpga/altera-pr-ip-core.c
-index be0667968d33..df8671af4a92 100644
---- a/drivers/fpga/altera-pr-ip-core.c
-+++ b/drivers/fpga/altera-pr-ip-core.c
-@@ -108,7 +108,7 @@ static int alt_pr_fpga_write(struct fpga_manager *mgr, const char *buf,
- 	u32 *buffer_32 = (u32 *)buf;
- 	size_t i = 0;
- 
--	if (count <= 0)
-+	if (!count)
- 		return -EINVAL;
- 
- 	/* Write out the complete 32-bit chunks */
+diff --git a/Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml b/Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
+new file mode 100644
+index 000000000000..aee45cb15592
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
+@@ -0,0 +1,44 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fpga/microchip,mpf-spi-fpga-mgr.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Microchip Polarfire FPGA manager.
++
++maintainers:
++  - Ivan Bornyakov <i.bornyakov@metrotek.ru>
++
++description:
++  Device Tree Bindings for Microchip Polarfire FPGA Manager using slave SPI to
++  load the bitstream in .dat format.
++
++properties:
++  compatible:
++    enum:
++      - microchip,mpf-spi-fpga-mgr
++
++  reg:
++    description: SPI chip select
++    maxItems: 1
++
++  spi-max-frequency: true
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    spi {
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            fpga_mgr@0 {
++                    compatible = "microchip,mpf-spi-fpga-mgr";
++                    spi-max-frequency = <20000000>;
++                    reg = <0>;
++            };
++    };
 -- 
-2.35.3
+2.35.1
+
 
