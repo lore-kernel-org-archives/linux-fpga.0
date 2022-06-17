@@ -2,216 +2,118 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37910C43334
-	for <linux-fpga@archiver.kernel.org>; Fri, 17 Jun 2022 02:10:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ED8AC433EF
+	for <linux-fpga@archiver.kernel.org>; Fri, 17 Jun 2022 13:51:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379688AbiFQCIP (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 16 Jun 2022 22:08:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56192 "EHLO
+        id S1382403AbiFQNt4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 17 Jun 2022 09:49:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58030 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379689AbiFQCIM (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 16 Jun 2022 22:08:12 -0400
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97EB727CD7;
-        Thu, 16 Jun 2022 19:08:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1655431682; x=1686967682;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=3/pGXYtwBNUoL/U8pvjgYsSt+Nl1CqQfA5RoTzhAlOw=;
-  b=fB2wUv3zx0zWXP2w82PO4C3kWx14XXQPya/OT5MTJpsqaD0flznl6+GV
-   TX0cl/skMQEAXVZhYrJXh8ATyjbDO7RpcGtBDAf2RMLCXFeuHrPSgtez+
-   yCX79fOZb7tAqLqW3KBWdHX3AjRwIxkJ0nLkb9T0iWS27IrdEJVunJlmp
-   dtOzXSBmVVwr6G5bUqqCJoKW4P/7MqXS/BAQYFvIbJSSagepARCKlZ4Ps
-   CmROKHs5dS4l+MSyGpNuTUuODaBeJFVL1Ymm4NIv6QniYJi4vosbkfrV+
-   rxfPlL2+3uW8A6tlfOAMOGYT1tyH9lASDsVUyryBvOKcASzPKkreh43oM
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10380"; a="365750337"
-X-IronPort-AV: E=Sophos;i="5.92,306,1650956400"; 
-   d="scan'208";a="365750337"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jun 2022 19:07:51 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,306,1650956400"; 
-   d="scan'208";a="831831735"
-Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
-  by fmsmga006.fm.intel.com with ESMTP; 16 Jun 2022 19:07:49 -0700
-From:   Tianfei Zhang <tianfei.zhang@intel.com>
-To:     yilun.xu@intel.com, lee.jones@linaro.org
-Cc:     hao.wu@intel.com, trix@redhat.com, linux-kernel@vger.kernel.org,
-        linux-fpga@vger.kernel.org, russell.h.weight@intel.com,
-        matthew.gerlach@linux.intel.com,
-        Tianfei Zhang <tianfei.zhang@intel.com>
-Subject: [PATCH v2 4/4] mfd: intel-m10-bmc: support multiple register layouts
-Date:   Thu, 16 Jun 2022 22:04:05 -0400
-Message-Id: <20220617020405.128352-5-tianfei.zhang@intel.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20220617020405.128352-1-tianfei.zhang@intel.com>
-References: <20220617020405.128352-1-tianfei.zhang@intel.com>
+        with ESMTP id S231462AbiFQNty (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 17 Jun 2022 09:49:54 -0400
+Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 728AF434B5;
+        Fri, 17 Jun 2022 06:49:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+        d=metrotek.ru; s=mail;
+        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
+         in-reply-to:references;
+        bh=XNWqwDT8OLiBMyF06PjFh1gIXEFKaOZYcVPPTh5+6oY=;
+        b=amMOAijmuV3vUb7WW+/yDAKneF7zCeZDNCZfDm1S8CnZvHtO3XVa97WJJx05ShcQRifgv+8tpKn8L
+         kcOQMW0yML4TQmOi7Ep+QSnb44x7+Dq/FNTxnsakdDYnmkrz0X2oRdUVtNnteHoHPb7JRhT4NfLho4
+         1TBdAE2iaYckVhZCHNfBOsLAomq+79idFkCV1mz0UjcPd8azYRdwVfgKgOsypWPfxokvp2lo1OWj9H
+         ZnRB1BSeoDL/RzJgyCTwu5iPCMfrMXLMByYihOiNfL3OVN1+CvolUuo7vcsEKuHowVsSMu0IoJw+Tk
+         pc60j3Hiu3+x/eau5sa8hO8rK0/OF2A==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1424, Stamp: 3], Multi: [Enabled, t: (0.000009,0.008312)], BW: [Enabled, t: (0.000019,0.000001)], RTDA: [Enabled, t: (0.072850), Hit: No, Details: v2.40.0; Id: 15.52k8oj.1g5ouq11u.27vg; mclb], total: 0(700)
+X-Footer: bWV0cm90ZWsucnU=
+Received: from h-e2.ddg ([85.143.252.66])
+        (authenticated user i.bornyakov@metrotek.ru)
+        by mail.pr-group.ru with ESMTPSA
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
+        Fri, 17 Jun 2022 16:49:24 +0300
+From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
+To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
+        trix@redhat.com, corbet@lwn.net
+Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
+        Conor.Dooley@microchip.com, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, linux-fpga@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, system@metrotek.ru,
+        Rob Herring <robh@kernel.org>
+Subject: [PATCH v20 4/4] dt-bindings: fpga: add binding doc for microchip-spi fpga mgr
+Date:   Fri, 17 Jun 2022 16:48:46 +0300
+Message-Id: <20220617134846.19859-5-i.bornyakov@metrotek.ru>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220617134846.19859-1-i.bornyakov@metrotek.ru>
+References: <20220617134846.19859-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-There are different base addresses for the MAX10 CSR register.
-Introducing a new data structure m10bmc_csr for the register
-definition of MAX10 CSR. Embedded m10bmc_csr into struct
-intel_m10bmc to support multiple register layouts.
+Add Device Tree Binding doc for Microchip Polarfire FPGA Manager using
+slave SPI to load .dat formatted bitstream image.
 
-Signed-off-by: Tianfei Zhang <tianfei.zhang@intel.com>
+Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Xu Yilun <yilun.xu@intel.com>
 ---
- drivers/mfd/intel-m10-bmc-core.c  | 30 +++++++++++++++++++++++++-----
- include/linux/mfd/intel-m10-bmc.h | 20 +++++++++++++++++++-
- 2 files changed, 44 insertions(+), 6 deletions(-)
+ .../fpga/microchip,mpf-spi-fpga-mgr.yaml      | 44 +++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
 
-diff --git a/drivers/mfd/intel-m10-bmc-core.c b/drivers/mfd/intel-m10-bmc-core.c
-index c6a1a4c28357..f85f8e2aa9a1 100644
---- a/drivers/mfd/intel-m10-bmc-core.c
-+++ b/drivers/mfd/intel-m10-bmc-core.c
-@@ -10,6 +10,22 @@
- #include <linux/mfd/intel-m10-bmc.h>
- #include <linux/module.h>
- 
-+static const struct m10bmc_csr m10bmc_pmci_csr = {
-+	.base = M10BMC_PMCI_SYS_BASE,
-+	.build_version = M10BMC_PMCI_BUILD_VER,
-+	.fw_version = NIOS2_PMCI_FW_VERSION,
-+	.mac_low = M10BMC_PMCI_MAC_LOW,
-+	.mac_high = M10BMC_PMCI_MAC_HIGH,
-+};
+diff --git a/Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml b/Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
+new file mode 100644
+index 000000000000..aee45cb15592
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
+@@ -0,0 +1,44 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fpga/microchip,mpf-spi-fpga-mgr.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+static const struct m10bmc_csr m10bmc_spi_csr = {
-+	.base = M10BMC_SYS_BASE,
-+	.build_version = M10BMC_BUILD_VER,
-+	.fw_version = NIOS2_FW_VERSION,
-+	.mac_low = M10BMC_MAC_LOW,
-+	.mac_high = M10BMC_MAC_HIGH,
-+};
++title: Microchip Polarfire FPGA manager.
 +
- static struct mfd_cell m10bmc_n6000_bmc_subdevs[] = {
- 	{ .name = "n6000bmc-hwmon" },
- 	{ .name = "n6000bmc-sec-update" }
-@@ -36,7 +52,7 @@ static ssize_t bmc_version_show(struct device *dev,
- 	unsigned int val;
- 	int ret;
- 
--	ret = m10bmc_sys_read(ddata, M10BMC_BUILD_VER, &val);
-+	ret = m10bmc_sys_read(ddata, ddata->csr->build_version, &val);
- 	if (ret)
- 		return ret;
- 
-@@ -51,7 +67,7 @@ static ssize_t bmcfw_version_show(struct device *dev,
- 	unsigned int val;
- 	int ret;
- 
--	ret = m10bmc_sys_read(ddata, NIOS2_FW_VERSION, &val);
-+	ret = m10bmc_sys_read(ddata, ddata->csr->fw_version, &val);
- 	if (ret)
- 		return ret;
- 
-@@ -66,11 +82,11 @@ static ssize_t mac_address_show(struct device *dev,
- 	unsigned int macaddr_low, macaddr_high;
- 	int ret;
- 
--	ret = m10bmc_sys_read(ddata, M10BMC_MAC_LOW, &macaddr_low);
-+	ret = m10bmc_sys_read(ddata, ddata->csr->mac_low, &macaddr_low);
- 	if (ret)
- 		return ret;
- 
--	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
-+	ret = m10bmc_sys_read(ddata, ddata->csr->mac_high, &macaddr_high);
- 	if (ret)
- 		return ret;
- 
-@@ -91,7 +107,7 @@ static ssize_t mac_count_show(struct device *dev,
- 	unsigned int macaddr_high;
- 	int ret;
- 
--	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
-+	ret = m10bmc_sys_read(ddata, ddata->csr->mac_high, &macaddr_high);
- 	if (ret)
- 		return ret;
- 
-@@ -163,18 +179,22 @@ int m10bmc_dev_init(struct intel_m10bmc *m10bmc)
- 	case M10_N3000:
- 		cells = m10bmc_pacn3000_subdevs;
- 		n_cell = ARRAY_SIZE(m10bmc_pacn3000_subdevs);
-+		m10bmc->csr = &m10bmc_spi_csr;
- 		break;
- 	case M10_D5005:
- 		cells = m10bmc_d5005_subdevs;
- 		n_cell = ARRAY_SIZE(m10bmc_d5005_subdevs);
-+		m10bmc->csr = &m10bmc_spi_csr;
- 		break;
- 	case M10_N5010:
- 		cells = m10bmc_n5010_subdevs;
- 		n_cell = ARRAY_SIZE(m10bmc_n5010_subdevs);
-+		m10bmc->csr = &m10bmc_spi_csr;
- 		break;
- 	case M10_N6000:
- 		cells = m10bmc_n6000_bmc_subdevs;
- 		n_cell = ARRAY_SIZE(m10bmc_n6000_bmc_subdevs);
-+		m10bmc->csr = &m10bmc_pmci_csr;
- 		break;
- 	default:
- 		return -ENODEV;
-diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
-index 83c4d3993dcb..3a4fdab2acbd 100644
---- a/include/linux/mfd/intel-m10-bmc.h
-+++ b/include/linux/mfd/intel-m10-bmc.h
-@@ -125,6 +125,11 @@
- #define M10BMC_PMCI_TELEM_START		0x400
- #define M10BMC_PMCI_TELEM_END		0x78c
- 
-+#define M10BMC_PMCI_BUILD_VER   0x0
-+#define NIOS2_PMCI_FW_VERSION   0x4
-+#define M10BMC_PMCI_MAC_LOW    0x20
-+#define M10BMC_PMCI_MAC_HIGH    0x24
++maintainers:
++  - Ivan Bornyakov <i.bornyakov@metrotek.ru>
 +
- /* Supported MAX10 BMC types */
- enum m10bmc_type {
- 	M10_N3000,
-@@ -133,16 +138,29 @@ enum m10bmc_type {
- 	M10_N6000
- };
- 
-+/**
-+ * struct m10bmc_csr - Intel MAX 10 BMC CSR register
-+ */
-+struct m10bmc_csr {
-+	unsigned int base;
-+	unsigned int build_version;
-+	unsigned int fw_version;
-+	unsigned int mac_low;
-+	unsigned int mac_high;
-+};
++description:
++  Device Tree Bindings for Microchip Polarfire FPGA Manager using slave SPI to
++  load the bitstream in .dat format.
 +
- /**
-  * struct intel_m10bmc - Intel MAX 10 BMC parent driver data structure
-  * @dev: this device
-  * @regmap: the regmap used to access registers by m10bmc itself
-  * @type: the type of MAX10 BMC
-+ * @csr: the register definition of MAX10 BMC
-  */
- struct intel_m10bmc {
- 	struct device *dev;
- 	struct regmap *regmap;
- 	enum m10bmc_type type;
-+	const struct m10bmc_csr *csr;
- };
- 
- /*
-@@ -174,7 +192,7 @@ m10bmc_raw_read(struct intel_m10bmc *m10bmc, unsigned int addr,
-  * M10BMC_SYS_BASE accordingly.
-  */
- #define m10bmc_sys_read(m10bmc, offset, val) \
--	m10bmc_raw_read(m10bmc, M10BMC_SYS_BASE + (offset), val)
-+	m10bmc_raw_read(m10bmc, m10bmc->csr->base + (offset), val)
- 
- /*
-  * MAX10 BMC Core support
++properties:
++  compatible:
++    enum:
++      - microchip,mpf-spi-fpga-mgr
++
++  reg:
++    description: SPI chip select
++    maxItems: 1
++
++  spi-max-frequency: true
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    spi {
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            fpga_mgr@0 {
++                    compatible = "microchip,mpf-spi-fpga-mgr";
++                    spi-max-frequency = <20000000>;
++                    reg = <0>;
++            };
++    };
 -- 
-2.26.2
+2.25.1
+
 
