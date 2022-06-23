@@ -2,35 +2,34 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7A66CCA481
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C00CFCCA47F
 	for <linux-fpga@archiver.kernel.org>; Thu, 23 Jun 2022 16:35:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232323AbiFWQd5 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 23 Jun 2022 12:33:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36232 "EHLO
+        id S232335AbiFWQd6 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 23 Jun 2022 12:33:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36248 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232124AbiFWQdz (ORCPT
+        with ESMTP id S232173AbiFWQdz (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>); Thu, 23 Jun 2022 12:33:55 -0400
 Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C9233A732;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CB7141331;
         Thu, 23 Jun 2022 09:33:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
         d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
-         in-reply-to:references;
-        bh=2+zzbSMI3tysA99V0Sf0sGgVUQ14m6F8zgKrwbt63TA=;
-        b=mQxmVUk+a6pQ2bH7dj0EddPKMcuZ9hlTrn4InCvZVG2LUg5KRNA4OeR7DAAPGV26wKLKh0rN/w4XR
-         mlKwVds23yVHtIMBmz51yhqa+SM0z2BL3VdVcRiQqrI/+BmG9imD9mtgqslqKTrceawNPd+Ad3tBbw
-         jgHwLSHnKyj9apTPLmN7M25JD2uq5JG7qFDCFo0Eg4h2J9xXrv9NYsOBR1W14/519s0XHl8bW+dRei
-         1U1t4Zv2S8rGgq9H/Nv/rnRWSjjDmzpFn1BSUNKyt6qZ+XGnXYGCtp7YB+ZE1E9wOyNdzVKyylOhpK
-         V3v/z/uIQVz873ohYbulttEf/HzW/FQ==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1424, Stamp: 3], Multi: [Enabled, t: (0.000008,0.008403)], BW: [Enabled, t: (0.000020,0.000001)], RTDA: [Enabled, t: (0.112047), Hit: No, Details: v2.40.0; Id: 15.52k7on.1g68mj0lv.2ljae; mclb], total: 0(700)
+        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding;
+        bh=NzWAEyBcqk+Ecwt3Tu0fmqAaoB97CXBgp1ryOwhd9Jc=;
+        b=S5jNVIPHrKDjTQ886RH6+ffxoYGjsScTvQCHuSZ6QOMAOOkmOS1N5qRCzl/et5U6v6JTyezw1AygF
+         QepZXLbs6VbxHJVDwAGBUK7nzdV/00V0Ivk5K/+Yn7yfPM8UtUnas7LrtOAXBd9cueulUJobfhJQll
+         xByQNg0u+YxMyQQ99GiT0INZUdkJ6ko7OF7zZljOQTlAeNXv8UMrdt8XOsNTPW0TO3+mqAJDdfRPQP
+         rbfFeAYYyWXNuYS68/GhUZfgzBZY++waPrZ6AKSuGgqLROdfB/Nb0PwCtZ0Q0LQ1KiIhP7rWY2FM6Q
+         qDCQEJpxUk+Z1Bl9CmgQDbJK0a4lkCw==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1424, Stamp: 3], Multi: [Enabled, t: (0.000009,0.025221)], BW: [Enabled, t: (0.000013,0.000001)], RTDA: [Enabled, t: (0.072428), Hit: No, Details: v2.40.0; Id: 15.52k33m.1g68mios8.2klg7; mclb], total: 0(700)
 X-Footer: bWV0cm90ZWsucnU=
 Received: from h-e2.ddg ([85.143.252.66])
         (authenticated user i.bornyakov@metrotek.ru)
         by mail.pr-group.ru with ESMTPSA
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Thu, 23 Jun 2022 19:33:37 +0300
+        Thu, 23 Jun 2022 19:33:30 +0300
 From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
 To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
         trix@redhat.com, corbet@lwn.net
@@ -38,81 +37,173 @@ Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
         conor.dooley@microchip.com, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, linux-fpga@vger.kernel.org,
         linux-doc@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, system@metrotek.ru,
-        Rob Herring <robh@kernel.org>
-Subject: [PATCH v22 4/5] dt-bindings: fpga: add binding doc for microchip-spi fpga mgr
-Date:   Thu, 23 Jun 2022 19:32:47 +0300
-Message-Id: <20220623163248.3672-5-i.bornyakov@metrotek.ru>
+        linux-kernel@vger.kernel.org, system@metrotek.ru
+Subject: [PATCH v22 0/5] Microchip Polarfire FPGA manager
+Date:   Thu, 23 Jun 2022 19:32:43 +0300
+Message-Id: <20220623163248.3672-1-i.bornyakov@metrotek.ru>
 X-Mailer: git-send-email 2.36.1
-In-Reply-To: <20220623163248.3672-1-i.bornyakov@metrotek.ru>
-References: <20220623163248.3672-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add Device Tree Binding doc for Microchip Polarfire FPGA Manager using
-slave SPI to load .dat formatted bitstream image.
+Add support to the FPGA manager for programming Microchip Polarfire
+FPGAs over slave SPI interface with .dat formatted bitsream image.
 
-Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Xu Yilun <yilun.xu@intel.com>
----
- .../fpga/microchip,mpf-spi-fpga-mgr.yaml      | 44 +++++++++++++++++++
- 1 file changed, 44 insertions(+)
+Changelog:
+  v1 -> v2: fix printk formating
+  v2 -> v3:
+   * replace "microsemi" with "microchip"
+   * replace prefix "microsemi_fpga_" with "mpf_"
+   * more sensible .compatible and .name strings
+   * remove unused defines STATUS_SPI_VIOLATION and STATUS_SPI_ERROR
+  v3 -> v4: fix unused variable warning
+    Put 'mpf_of_ids' definition under conditional compilation, so it
+    would not hang unused if CONFIG_OF is not enabled.
+  v4 -> v5:
+   * prefix defines with MPF_
+   * mdelay() -> usleep_range()
+   * formatting fixes
+   * add DT bindings doc
+   * rework fpga_manager_ops.write() to fpga_manager_ops.write_sg()
+     We can't parse image header in write_init() because image header
+     size is not known beforehand. Thus parsing need to be done in
+     fpga_manager_ops.write() callback, but fpga_manager_ops.write()
+     also need to be reenterable. On the other hand,
+     fpga_manager_ops.write_sg() is called once. Thus, rework usage of
+     write() callback to write_sg().
+  v5 -> v6: fix patch applying
+     I forgot to clean up unrelated local changes which lead to error on
+     patch 0001-fpga-microchip-spi-add-Microchip-MPF-FPGA-manager.patch
+     applying on vanilla kernel.
+  v6 -> v7: fix binding doc to pass dt_binding_check
+  v7 -> v8: another fix for dt_binding_check warning
+  v8 -> v9:
+   * add another patch to support bitstream offset in FPGA image buffer
+   * rework fpga_manager_ops.write_sg() back to fpga_manager_ops.write()
+   * move image header parsing from write() to write_init()
+  v9 -> v10:
+   * add parse_header() callback to fpga_manager_ops
+   * adjust fpga_mgr_write_init[_buf|_sg]() for parse_header() usage
+   * implement parse_header() in microchip-spi driver
+  v10 -> v11: include missing unaligned.h to microchip-spi
+     fix error: implicit declaration of function 'get_unaligned_le[16|32]'
+  v11 -> v12:
+   * microchip-spi: double read hw status, ignore first read, because it
+     can be unreliable.
+   * microchip-spi: remove sleep between status readings in
+     poll_status_not_busy() to save a few seconds. Status is polled on
+     every 16 byte writes - that is quite often, therefore
+     usleep_range() accumulate to a considerable number of seconds.
+  v12 -> v13:
+   * fpga-mgr: separate fpga_mgr_parse_header_buf() from
+     fpga_mgr_write_init_buf()
+   * fpga-mgr: introduce FPGA_MGR_STATE_PARSE_HEADER and
+     FPGA_MGR_STATE_PARSE_HEADER_ERR fpga_mgr_states
+   * fpga-mgr: rename fpga_mgr_write_init_sg() to fpga_mgr_prepare_sg()
+     and rework with respect to a new fpga_mgr_parse_header_buf()
+   * fpga-mgr: rework write accounting in fpga_mgr_buf_load_sg() for
+     better clarity
+   * microchip-spi: rename MPF_STATUS_POLL_TIMEOUT to
+     MPF_STATUS_POLL_RETRIES
+   * microchip-spi: add comment about status reading quirk to
+     mpf_read_status()
+   * microchip-spi: rename poll_status_not_busy() to mpf_poll_status()
+     and add comment.
+   * microchip-spi: make if statement in mpf_poll_status() easier to
+     read.
+  v13 -> v14:
+   * fpga-mgr: improvements from Xu Yilun in
+      - fpga_mgr_parse_header_buf()
+      - fpga_mgr_write_init_buf()
+      - fpga_mgr_prepare_sg()
+      - fpga_mgr_buf_load_sg()
+   * fpga-mgr: add check for -EAGAIN from fpga_mgr_parse_header_buf()
+     when called from fpga_mgr_buf_load_mapped()
+   * microchip-spi: remove excessive cs_change from second spi_transfer
+     in mpf_read_status()
+   * microchip-spi: change type of components_size_start,
+     bitstream_start, i from size_t to u32 in mpf_ops_parse_header()
+  v14 -> v15: eliminate memcpy() in mpf_ops_write()
+    Eliminate excessive memcpy() in mpf_ops_write() by using
+    spi_sync_transfer() instead of spi_write().
+  v15 -> v16:
+   * microchip-spi: change back components_size_start and
+     bitstream_start variables types to size_t, i - to u16 in
+     mpf_ops_parse_header()
+   * fpga-mgr: rename fpga_parse_header_buf() to
+     fpga_parse_header_mapped(). It serves only mapped FPGA image now,
+     adjust it accordingly.
+   * fpga-mgr: separate fpga_mgr_parse_header_sg_first() and
+     fpga_mgr_parse_header_sg() from fpga_mgr_prepare_sg()
+  v16 -> v17:
+   * fpga-mgr: return size of allocated header from
+     fpga_mgr_parse_header_sg(), add `char **ret_buf` to function args
+     to save pointer to allocated header. This allow us to call
+     fpga_mgr_write_init_buf() with exact size of allocated header.
+   * document parse_header() callback in fpga-mgr.rst
+  v17 -> v18:
+   * fpga-mgr: change back fpga_mgr_parse_header_sg() to return
+     allocated buffer but set buffer size into output parameter
+   * fpga-mgr: check returned pointer from krealloc for ZERO_OR_NULL_PTR
+     in fpga_mgr_paese_header_sg() as krealloc may return ZERO_SIZE_PTR.
+   * fpga-mgr: in fpga_mgr_prepare_sg() return fpga_mgr_write_init() on
+     fast path only when both initial_header_size and parse_header() are
+     not defined.
+   * docs: fpga-mgr: a few rewords from Xu Yilun
+  v18 -> v19:
+   * microchip-spi: split multiple assignments on a single line in
+     functions mpf_read_status() and mpf_ops_parse_header()
+   * fpga-mgr: add braces {} around "else if" arm in
+     fpga_mgr_prepare_sg()
+   * fpga-mgr: don't reuse krealloc() arg in fpga_mgr_parse_header_sg().
+     If krealloc() returns NULL, it doesn't free the original.
+  v19 -> v20:
+   * fpga-mgr: initialize info->header_size with
+     mops->initial_header_size at fpga_mgr_load().
+   * fpga-mgr: add mops->skip_header boolean flag. Adjust skipping
+     header before write to check against skip_header flag instead of
+     mere presence of info->header_size.
+   * fpga-mgr: split check for ZERO_OR_NULL_PTR() after realloc() in
+     fpga_mgr_parse_header_sg() function to check against zero header +
+     check against NULL returned from realloc().
+   * docs: fpga-mgr: adjust for skip_header flag.
+   * microchip-spi: add skip_header to mpf_ops.
+  v20 -> v21:
+   * fpga-mgr: in function fpga_mgr_parse_header_sg(), after
+     reallocation of a buffer for a new header, copy only exceeding
+     part, since realloc preserve old buffer content.
+   * fpga-mgr: in function fpga_mgr_buf_load_sg() instead of manually
+     counting fragments with header that should be skipped, use
+     sg_miter_skip().
+   * fpga-mgr: add tag "Suggested-by: Xu Yilun <yilun.xu@intel.com>"
+     since all changes in fpga-mgr was his ideas.
+   * MAINTAINERS: add entry for Microchip PolarFire FPGA drivers as
+     Conor Dooley suggested.
+  v21 -> v22:
+   * fpga-mgr: in function fpga_mgr_buf_load_sg() drop excessive
+     sg_miter_stop() when sg_miter_skip() reaches end of sg_mapping_iter
+
+Ivan Bornyakov (5):
+  fpga: fpga-mgr: support bitstream offset in image buffer
+  docs: fpga: mgr: document parse_header() callback
+  fpga: microchip-spi: add Microchip MPF FPGA manager
+  dt-bindings: fpga: add binding doc for microchip-spi fpga mgr
+  MAINTAINERS: add Microchip PolarFire FPGA drivers entry
+
+ .../fpga/microchip,mpf-spi-fpga-mgr.yaml      |  44 ++
+ Documentation/driver-api/fpga/fpga-mgr.rst    |  27 +-
+ MAINTAINERS                                   |   8 +
+ drivers/fpga/Kconfig                          |   8 +
+ drivers/fpga/Makefile                         |   1 +
+ drivers/fpga/fpga-mgr.c                       | 223 ++++++++--
+ drivers/fpga/microchip-spi.c                  | 398 ++++++++++++++++++
+ include/linux/fpga/fpga-mgr.h                 |  24 +-
+ 8 files changed, 700 insertions(+), 33 deletions(-)
  create mode 100644 Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
+ create mode 100644 drivers/fpga/microchip-spi.c
 
-diff --git a/Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml b/Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
-new file mode 100644
-index 000000000000..aee45cb15592
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/microchip,mpf-spi-fpga-mgr.yaml
-@@ -0,0 +1,44 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/fpga/microchip,mpf-spi-fpga-mgr.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Microchip Polarfire FPGA manager.
-+
-+maintainers:
-+  - Ivan Bornyakov <i.bornyakov@metrotek.ru>
-+
-+description:
-+  Device Tree Bindings for Microchip Polarfire FPGA Manager using slave SPI to
-+  load the bitstream in .dat format.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - microchip,mpf-spi-fpga-mgr
-+
-+  reg:
-+    description: SPI chip select
-+    maxItems: 1
-+
-+  spi-max-frequency: true
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    spi {
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+
-+            fpga_mgr@0 {
-+                    compatible = "microchip,mpf-spi-fpga-mgr";
-+                    spi-max-frequency = <20000000>;
-+                    reg = <0>;
-+            };
-+    };
 -- 
 2.36.1
 
