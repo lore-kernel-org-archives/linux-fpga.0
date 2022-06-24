@@ -2,50 +2,50 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E667CC433EF
-	for <linux-fpga@archiver.kernel.org>; Fri, 24 Jun 2022 09:28:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 027A6C43334
+	for <linux-fpga@archiver.kernel.org>; Fri, 24 Jun 2022 09:28:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231964AbiFXJ0W (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 24 Jun 2022 05:26:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42682 "EHLO
+        id S231960AbiFXJ0Z (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 24 Jun 2022 05:26:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42850 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231634AbiFXJ0O (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 24 Jun 2022 05:26:14 -0400
+        with ESMTP id S231978AbiFXJ0X (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 24 Jun 2022 05:26:23 -0400
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 103416F4A3;
-        Fri, 24 Jun 2022 02:26:14 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3261377044;
+        Fri, 24 Jun 2022 02:26:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1656062774; x=1687598774;
+  t=1656062779; x=1687598779;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=nphOBXs/+SI9u+eGqjgatvTTn0XBshiwzlb3vatLVc0=;
-  b=kPZGhr5+BCuYXMy56Yw1CIT32+ous5PJmFPlCmV9KbhXtJZpE2ZUoXmN
-   j/85ClvZazLJyZZTn1UupiJYjqUk8EgEMFaUbejP86LhZjd6Nr9uheOmD
-   0HLJYBVqNkRi3gpWFLWQoRMk4pCikK6/Q/5Ra1tvG3Ye9aXEAMBFFH7BE
-   JdB4+Ta0uH5rbbGDXutcIuaINSuU04tsNL0xI008JIu1p7jflAaQOk9EP
-   /kZdC5k6na/dLhaHl0vVBJVNI6eyXWNqvJIRFm6anIoLmCVr4WY9wZW05
-   xfR1DCMRKozwUxmMChF4SObfedTEvFswgnl/3ZavMXioD87SdFjFnykmN
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10387"; a="261389188"
+  bh=v5bfWTJCoo5BBPZT3CLaQHxq1vNHu4D3VcxL1e2EOtI=;
+  b=XyABwVWu1TKzL7CjEQsr3vq6eZToWopctbXyD7A3IuIQ/sk78TUN1TyY
+   4IWWGmDXXlag1/BUXNHnC5MlCqiG9BT7Rb8ext54WtDslqw0yrZAxArUX
+   /xBY5uEhJQa1v3vuBTRchFzlKZThieuIHcyq8vjmE62OZJp25DeA53TuW
+   WFjPo8tGNVx9NJHwkcWlzCv00D7hBB0SrPw78m+7x1xsf7FGG5erqtwyM
+   DPkSwNkAbLt72HvOz32tG8k55Uy3w9PRMEhqKkZrV89YRsYVVnj5toKgp
+   PD9kmGt6Pw5IM1BoeP1Hi5ap8ymBW1rneAeBJQkzePGpsXZyRNMtdFmDJ
+   A==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10387"; a="261389200"
 X-IronPort-AV: E=Sophos;i="5.92,218,1650956400"; 
-   d="scan'208";a="261389188"
+   d="scan'208";a="261389200"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jun 2022 02:26:13 -0700
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jun 2022 02:26:18 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.92,218,1650956400"; 
-   d="scan'208";a="691454943"
+   d="scan'208";a="691454982"
 Received: from unknown (HELO localhost.localdomain.sh.intel.com) ([10.238.175.107])
-  by fmsmga002.fm.intel.com with ESMTP; 24 Jun 2022 02:26:11 -0700
+  by fmsmga002.fm.intel.com with ESMTP; 24 Jun 2022 02:26:16 -0700
 From:   Tianfei Zhang <tianfei.zhang@intel.com>
 To:     yilun.xu@intel.com, lee.jones@linaro.org
 Cc:     hao.wu@intel.com, trix@redhat.com, linux-kernel@vger.kernel.org,
         linux-fpga@vger.kernel.org, russell.h.weight@intel.com,
         matthew.gerlach@linux.intel.com,
         Tianfei Zhang <tianfei.zhang@intel.com>
-Subject: [PATCH v3 1/3] mfd: intel-m10-bmc: rename the local variables
-Date:   Fri, 24 Jun 2022 05:22:27 -0400
-Message-Id: <20220624092229.45854-2-tianfei.zhang@intel.com>
+Subject: [PATCH v3 3/3] mfd: intel-m10-bmc: support different BMC base register address
+Date:   Fri, 24 Jun 2022 05:22:29 -0400
+Message-Id: <20220624092229.45854-4-tianfei.zhang@intel.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20220624092229.45854-1-tianfei.zhang@intel.com>
 References: <20220624092229.45854-1-tianfei.zhang@intel.com>
@@ -55,51 +55,69 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-It had better use ddata for local variables which
-directly interacts with dev_get_drvdata()/dev_set_drvdata().
+There are different base addresses for the MAX10 CSR registers.
+Introducing a new member "base" in intel_m10bmc data structure
+to support different BMC base register addresses.
 
 Signed-off-by: Tianfei Zhang <tianfei.zhang@intel.com>
 ---
- drivers/mfd/intel-m10-bmc.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+v3:
+ - use a new member "base" instead of m10bmc_csr data structure.
+---
+ drivers/mfd/intel-m10-bmc-pmci.c  | 1 +
+ drivers/mfd/intel-m10-bmc.c       | 1 +
+ include/linux/mfd/intel-m10-bmc.h | 4 +++-
+ 3 files changed, 5 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/mfd/intel-m10-bmc-pmci.c b/drivers/mfd/intel-m10-bmc-pmci.c
+index 93eca4483ac7..26eeda9720dc 100644
+--- a/drivers/mfd/intel-m10-bmc-pmci.c
++++ b/drivers/mfd/intel-m10-bmc-pmci.c
+@@ -221,6 +221,7 @@ static int pmci_probe(struct dfl_device *ddev)
+ 		return -ENOMEM;
+ 
+ 	pmci->m10bmc.dev = dev;
++	pmci->m10bmc.base = M10BMC_PMCI_SYS_BASE;
+ 	pmci->dev = dev;
+ 
+ 	pmci->base = devm_ioremap_resource(dev, &ddev->mmio_res);
 diff --git a/drivers/mfd/intel-m10-bmc.c b/drivers/mfd/intel-m10-bmc.c
-index 8db3bcf5fccc..7e521df29c72 100644
+index 7e521df29c72..f4cb67629404 100644
 --- a/drivers/mfd/intel-m10-bmc.c
 +++ b/drivers/mfd/intel-m10-bmc.c
-@@ -86,15 +86,15 @@ static DEVICE_ATTR_RO(bmcfw_version);
- static ssize_t mac_address_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
--	struct intel_m10bmc *max10 = dev_get_drvdata(dev);
-+	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
- 	unsigned int macaddr_low, macaddr_high;
- 	int ret;
+@@ -171,6 +171,7 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
+ 		return -ENOMEM;
  
--	ret = m10bmc_sys_read(max10, M10BMC_MAC_LOW, &macaddr_low);
-+	ret = m10bmc_sys_read(ddata, M10BMC_MAC_LOW, &macaddr_low);
- 	if (ret)
- 		return ret;
+ 	ddata->dev = dev;
++	ddata->base = M10BMC_SYS_BASE;
  
--	ret = m10bmc_sys_read(max10, M10BMC_MAC_HIGH, &macaddr_high);
-+	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
- 	if (ret)
- 		return ret;
+ 	ddata->regmap =
+ 		devm_regmap_init_spi_avmm(spi, &intel_m10bmc_regmap_config);
+diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
+index 7b58af207b72..0c81dbcdc3dc 100644
+--- a/include/linux/mfd/intel-m10-bmc.h
++++ b/include/linux/mfd/intel-m10-bmc.h
+@@ -130,10 +130,12 @@
+  * struct intel_m10bmc - Intel MAX 10 BMC parent driver data structure
+  * @dev: this device
+  * @regmap: the regmap used to access registers by m10bmc itself
++ * @base: the base address of MAX10 BMC registers
+  */
+ struct intel_m10bmc {
+ 	struct device *dev;
+ 	struct regmap *regmap;
++	unsigned int base;
+ };
  
-@@ -111,11 +111,11 @@ static DEVICE_ATTR_RO(mac_address);
- static ssize_t mac_count_show(struct device *dev,
- 			      struct device_attribute *attr, char *buf)
- {
--	struct intel_m10bmc *max10 = dev_get_drvdata(dev);
-+	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
- 	unsigned int macaddr_high;
- 	int ret;
+ /*
+@@ -165,6 +167,6 @@ m10bmc_raw_read(struct intel_m10bmc *m10bmc, unsigned int addr,
+  * M10BMC_SYS_BASE accordingly.
+  */
+ #define m10bmc_sys_read(m10bmc, offset, val) \
+-	m10bmc_raw_read(m10bmc, M10BMC_SYS_BASE + (offset), val)
++	m10bmc_raw_read(m10bmc, (m10bmc)->base + (offset), val)
  
--	ret = m10bmc_sys_read(max10, M10BMC_MAC_HIGH, &macaddr_high);
-+	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
- 	if (ret)
- 		return ret;
- 
+ #endif /* __MFD_INTEL_M10_BMC_H */
 -- 
 2.26.2
 
