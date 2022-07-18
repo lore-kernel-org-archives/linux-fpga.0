@@ -2,35 +2,35 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13186C433EF
-	for <linux-fpga@archiver.kernel.org>; Mon, 18 Jul 2022 10:20:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F06DC43334
+	for <linux-fpga@archiver.kernel.org>; Mon, 18 Jul 2022 11:51:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234080AbiGRKSZ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 18 Jul 2022 06:18:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60474 "EHLO
+        id S234119AbiGRLuO (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 18 Jul 2022 07:50:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39396 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234030AbiGRKSW (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 18 Jul 2022 06:18:22 -0400
+        with ESMTP id S234090AbiGRLuO (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 18 Jul 2022 07:50:14 -0400
 Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 490821C901;
-        Mon, 18 Jul 2022 03:18:17 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F3E8193D5;
+        Mon, 18 Jul 2022 04:50:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
         d=metrotek.ru; s=mail;
         h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
          in-reply-to:references;
         bh=uTxicQp0SZgyOZBp2pX4bijAiYlczh5PeuTXzW5lMvc=;
-        b=hTDsjnEouFXgQKmdREL2kFRPDEDdHowWFITn9xIErELgBSFV3X7C8Q3UHoiIqdssDmULT3Qwn4rFN
-         LNbbsbX8nRuXFtraB0TLfDy5CkJLg4RJu3XJqHeo5Ag5MqO7O3+myyI4/9OdTStC8B7tCByslxCF/q
-         qEWVlfhK2jnIPsKyqQ9A5TRmNwC2pdfITyEQ6S8zJqTSy91WhDCq/xQBFxWzBmVbfP6Xs+tlA0EwNZ
-         S3Z2aRveqBGLjkUGTfw8H/8oFBnmEiEwgBFRiHEeBoLyHXB701j49gA41Ws+R3RGfInuMelgQREj6N
-         jSPJf2pkQBuDyXM9a3BWAWDdD7hV7Fw==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1424, Stamp: 3], Multi: [Enabled, t: (0.000010,0.027111)], BW: [Enabled, t: (0.000014,0.000001)], RTDA: [Enabled, t: (0.074799), Hit: No, Details: v2.40.0; Id: 15.52k0cq.1g88d17vh.15nev; mclb], total: 0(700)
+        b=BuDqhi+vEbS+Enq057++Dd82SvSIp70VePlhPR3qVyHCUDpkg0dPCcaP3VqQ9G9qHw/iUfR3zjY7f
+         22BHV9dah6iBswxGBBAFG3mrfbG3j3u9dQ+N8gZddxiGGPo3POZIca7TrAUKTF8LxyF4Ax5bjWVfDQ
+         2h3KAzmMQ6HYRJLgScTAmBUtaj92HSlRQwFH06ekM0jgfUO9OhlrSnmUD4JyYthSQY8Jp6SnU9Qwpa
+         zedTiHovPv7roztCx9RfcOzsRmMtZ+Gh2alfJWJHhhj6cOjs9Vyq2rSbR41ziMDWCdH96n12M7E9Hj
+         Y39lsVYSACVUM8by0eUbQMCtMNv06zQ==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1424, Stamp: 3], Multi: [Enabled, t: (0.000008,0.027235)], BW: [Enabled, t: (0.000016,0.000001)], RTDA: [Enabled, t: (0.078352), Hit: No, Details: v2.40.0; Id: 15.52k2ar.1g88i9g7e.1nir0; mclb], total: 0(700)
 X-Footer: bWV0cm90ZWsucnU=
 Received: from h-e2.ddg ([85.143.252.66])
         (authenticated user i.bornyakov@metrotek.ru)
         by mail.pr-group.ru with ESMTPSA
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Mon, 18 Jul 2022 13:18:02 +0300
+        Mon, 18 Jul 2022 14:49:56 +0300
 From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
 To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
         trix@redhat.com, robh+dt@kernel.org,
@@ -38,12 +38,12 @@ To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
 Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
         linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, system@metrotek.ru
-Subject: [PATCH v2 1/2] fpga: ecp5-spi: add Lattice ECP5 FPGA manager
-Date:   Mon, 18 Jul 2022 13:17:34 +0300
-Message-Id: <20220718101735.26696-2-i.bornyakov@metrotek.ru>
+Subject: [PATCH v3 1/2] fpga: ecp5-spi: add Lattice ECP5 FPGA manager
+Date:   Mon, 18 Jul 2022 14:49:27 +0300
+Message-Id: <20220718114928.22092-2-i.bornyakov@metrotek.ru>
 X-Mailer: git-send-email 2.37.1
-In-Reply-To: <20220718101735.26696-1-i.bornyakov@metrotek.ru>
-References: <20220718101735.26696-1-i.bornyakov@metrotek.ru>
+In-Reply-To: <20220718114928.22092-1-i.bornyakov@metrotek.ru>
+References: <20220718114928.22092-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
