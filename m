@@ -2,375 +2,121 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6001CCA481
-	for <linux-fpga@archiver.kernel.org>; Tue, 19 Jul 2022 11:26:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E4AEC43334
+	for <linux-fpga@archiver.kernel.org>; Tue, 19 Jul 2022 14:59:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234651AbiGSLYY (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 19 Jul 2022 07:24:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60042 "EHLO
+        id S236109AbiGSO5O (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 19 Jul 2022 10:57:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56878 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229784AbiGSLYX (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 19 Jul 2022 07:24:23 -0400
-Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45C5821800;
-        Tue, 19 Jul 2022 04:24:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-        d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
-         in-reply-to:references;
-        bh=uTxicQp0SZgyOZBp2pX4bijAiYlczh5PeuTXzW5lMvc=;
-        b=IhqCbr015nyeRoKjONFyr8w0DSCaNPL7arOx7cri9pbSmJ5HUieMXttQftUHTJ6url75F9yUO6tPE
-         +SOHVHXSuXvJXjleO7n60rIh11Ffih7mstdy0IMT6uS8fyj3bLJs7f+IHdypwZaNnf7HNm153oD9D/
-         A77xYvutJ8ShRecnYNmsqM1b80HeQ5VGfRFjT8f3dNxAZqKzKb4ojyd21sYyxBtuDm94NMv97I/BlH
-         YNDktwNUzCJ+FlB14ZdrmsvSD3g8fVsgqXYx509eRn0NmgKSCdKQEZoyVp5HllPU//9bQGulzUAMWQ
-         u8px7ES3sgDTdVsKA9PF6LbPGAu8h6w==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1424, Stamp: 3], Multi: [Enabled, t: (0.000008,0.029357)], BW: [Enabled, t: (0.000020,0.000001)], RTDA: [Enabled, t: (0.180432), Hit: No, Details: v2.40.0; Id: 15.52k211.1g8b36t28.3qhh; mclb], total: 0(700)
-X-Footer: bWV0cm90ZWsucnU=
-Received: from h-e2.ddg ([85.143.252.66])
-        (authenticated user i.bornyakov@metrotek.ru)
-        by mail.pr-group.ru with ESMTPSA
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Tue, 19 Jul 2022 14:24:05 +0300
-From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
-To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
-        trix@redhat.com, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org
-Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
-        linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, system@metrotek.ru
-Subject: [PATCH v5 1/2] fpga: ecp5-spi: add Lattice ECP5 FPGA manager
-Date:   Tue, 19 Jul 2022 14:23:34 +0300
-Message-Id: <20220719112335.9528-2-i.bornyakov@metrotek.ru>
-X-Mailer: git-send-email 2.37.1
-In-Reply-To: <20220719112335.9528-1-i.bornyakov@metrotek.ru>
-References: <20220719112335.9528-1-i.bornyakov@metrotek.ru>
+        with ESMTP id S236206AbiGSO4v (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 19 Jul 2022 10:56:51 -0400
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 339264A822;
+        Tue, 19 Jul 2022 07:56:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1658242608; x=1689778608;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=mOi4uVPmUiLwhu9VuUzNCwyijPD85EMal5A97fZ2JcE=;
+  b=MzSIBjTtCs/D5/wZ6cvb1Co6zWMqfSMEwpYm2DUPfpuc7IcLu7VRh7zP
+   ThhLb7k+PfmvO43OLhpiwe3O4Oy6TwtSeLHaY/+J4RkDYgwGlU2QZ5uZ9
+   AZ7G7x+fYL3aCa26mTAYbMxP1WrMZxQplKHUnkLwA+sKqvd6Itscgf66K
+   Va0+I/oHZR3HwWeSx24MvCC8QiYcaC3koD4ubX//BluoeVIjd48pgiOtq
+   EbbzAdc+bk3msL215d/x3iPedTPD1hXbrmBqVy1QA/xA5U9tshlcMGs28
+   tH5tl6umKwNJiQ203kvO5fYnwk0CDOjyYvB/6RhbFwM8D4j+a4maf6nyc
+   w==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10413"; a="286523550"
+X-IronPort-AV: E=Sophos;i="5.92,284,1650956400"; 
+   d="scan'208";a="286523550"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Jul 2022 07:56:47 -0700
+X-IronPort-AV: E=Sophos;i="5.92,284,1650956400"; 
+   d="scan'208";a="625214442"
+Received: from rhweight-wrk1.ra.intel.com ([137.102.106.43])
+  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Jul 2022 07:56:47 -0700
+From:   matthew.gerlach@linux.intel.com
+To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
+        basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
+        mdf@kernel.org, linux-fpga@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        tianfei.zhang@intel.com
+Cc:     Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        Marco Pagani <marpagan@redhat.com>
+Subject: [PATCH v4] fpga: dfl-pci: Add IDs for Intel N6000, N6001 and C6100 cards
+Date:   Tue, 19 Jul 2022 07:56:44 -0700
+Message-Id: <20220719145644.242481-1-matthew.gerlach@linux.intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add support to the FPGA manager for programming Lattice ECP5 FPGA over
-slave SPI interface with .bit formatted uncompressed bitstream image.
+From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 
-Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+Add pci_dev_table entries supporting the Intel N6000, N6001
+and C6100 cards to the dfl-pci driver.
+
+Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Signed-off-by: Tianfei Zhang <tianfei.zhang@intel.com>
+Tested-by: Marco Pagani <marpagan@redhat.com>
+Reviewed-by: Tom Rix <trix@redhat.com>
+Acked-by: Wu Hao <hao.wu@intel.com>
 ---
- drivers/fpga/Kconfig    |   7 +
- drivers/fpga/Makefile   |   1 +
- drivers/fpga/ecp5-spi.c | 275 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 283 insertions(+)
- create mode 100644 drivers/fpga/ecp5-spi.c
+v4: moved subdevice ids next to respective device id
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 6c416955da53..920277a08ed9 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -263,4 +263,11 @@ config FPGA_MGR_MICROCHIP_SPI
- 	  programming over slave SPI interface with .dat formatted
- 	  bitstream image.
+v3: added necessary subdevice ids
+    removed 'drivers: ' from title
+
+v2: changed names from INTEL_OFS to INTEL_DFL
+---
+ drivers/fpga/dfl-pci.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/drivers/fpga/dfl-pci.c b/drivers/fpga/dfl-pci.c
+index fd1fa55c9113..0914e7328b1a 100644
+--- a/drivers/fpga/dfl-pci.c
++++ b/drivers/fpga/dfl-pci.c
+@@ -77,12 +77,18 @@ static void cci_pci_free_irq(struct pci_dev *pcidev)
+ #define PCIE_DEVICE_ID_INTEL_PAC_D5005		0x0B2B
+ #define PCIE_DEVICE_ID_SILICOM_PAC_N5010	0x1000
+ #define PCIE_DEVICE_ID_SILICOM_PAC_N5011	0x1001
++#define PCIE_DEVICE_ID_INTEL_DFL		0xbcce
++/* PCI Subdevice ID for PCIE_DEVICE_ID_INTEL_DFL */
++#define PCIE_SUBDEVICE_ID_INTEL_N6000		0x1770
++#define PCIE_SUBDEVICE_ID_INTEL_N6001		0x1771
++#define PCIE_SUBDEVICE_ID_INTEL_C6100		0x17d4
  
-+config FPGA_MGR_ECP5_SPI
-+	tristate "Lattice ECP5 SPI FPGA manager"
-+	depends on SPI
-+	help
-+	  FPGA manager driver support for Lattice ECP5 programming over slave
-+	  SPI interface with .bit formatted uncompressed bitstream image.
-+
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 42ae8b58abce..17c7a3c4b385 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -20,6 +20,7 @@ obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+= zynq-fpga.o
- obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+= zynqmp-fpga.o
- obj-$(CONFIG_FPGA_MGR_VERSAL_FPGA)	+= versal-fpga.o
- obj-$(CONFIG_FPGA_MGR_MICROCHIP_SPI)	+= microchip-spi.o
-+obj-$(CONFIG_FPGA_MGR_ECP5_SPI)		+= ecp5-spi.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE)		+= altera-pr-ip-core.o
- obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)	+= altera-pr-ip-core-plat.o
+ /* VF Device */
+ #define PCIE_DEVICE_ID_VF_INT_5_X		0xBCBF
+ #define PCIE_DEVICE_ID_VF_INT_6_X		0xBCC1
+ #define PCIE_DEVICE_ID_VF_DSC_1_X		0x09C5
+ #define PCIE_DEVICE_ID_INTEL_PAC_D5005_VF	0x0B2C
++#define PCIE_DEVICE_ID_INTEL_DFL_VF		0xbccf
  
-diff --git a/drivers/fpga/ecp5-spi.c b/drivers/fpga/ecp5-spi.c
-new file mode 100644
-index 000000000000..7293f19931e0
---- /dev/null
-+++ b/drivers/fpga/ecp5-spi.c
-@@ -0,0 +1,275 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Lattice ECP5 FPGA programming over slave SPI interface.
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/fpga/fpga-mgr.h>
-+#include <linux/spi/spi.h>
-+
-+#define	ECP5_SPI_MAX_SPEED_HZ		60000000
-+
-+#define	ECP5_SPI_ISC_ENABLE		{0xC6, 0x00, 0x00, 0x00}
-+#define	ECP5_SPI_ISC_DISABLE		{0x26, 0x00, 0x00, 0x00}
-+#define	ECP5_SPI_ISC_ERASE		{0x0E, 0x01, 0x00, 0x00}
-+#define	ECP5_SPI_LSC_INIT_ADDR		{0x46, 0x00, 0x00, 0x00}
-+#define	ECP5_SPI_LSC_BITSTREAM_BURST	{0x7a, 0x00, 0x00, 0x00}
-+#define	ECP5_SPI_LSC_CHECK_BUSY		{0xF0, 0x00, 0x00, 0x00}
-+
-+#define ECP5_POLL_RETRIES		100000
-+
-+struct ecp5_priv {
-+	struct gpio_desc *program;
-+	struct gpio_desc *init;
-+	struct gpio_desc *done;
-+	struct spi_device *spi;
-+};
-+
-+static enum fpga_mgr_states ecp5_ops_state(struct fpga_manager *mgr)
-+{
-+	struct ecp5_priv *priv = mgr->priv;
-+
-+	return gpiod_get_value(priv->done) ? FPGA_MGR_STATE_OPERATING :
-+					     FPGA_MGR_STATE_UNKNOWN;
-+}
-+
-+static int ecp5_poll_busy(struct spi_device *spi)
-+{
-+	const u8 lsc_check_busy[] = ECP5_SPI_LSC_CHECK_BUSY;
-+	int ret, retries = ECP5_POLL_RETRIES;
-+	struct spi_transfer xfers[2] = { 0 };
-+	u8 busy;
-+
-+	xfers[0].tx_buf = lsc_check_busy;
-+	xfers[0].len = sizeof(lsc_check_busy);
-+	xfers[1].rx_buf = &busy;
-+	xfers[1].len = sizeof(busy);
-+
-+	while (retries--) {
-+		ret = spi_sync_transfer(spi, xfers, ARRAY_SIZE(xfers));
-+		if (ret)
-+			return ret;
-+
-+		if (!busy)
-+			return 0;
-+
-+		usleep_range(50, 100);
-+	}
-+
-+	return -EBUSY;
-+}
-+
-+static int ecp5_poll_gpio(struct gpio_desc *gpio, bool is_active)
-+{
-+	int value, retries = ECP5_POLL_RETRIES;
-+
-+	while (retries--) {
-+		value = gpiod_get_value(gpio);
-+		if (value < 0)
-+			return value;
-+
-+		if ((!is_active && !value) || (is_active && value))
-+			return 0;
-+
-+		ndelay(10);
-+	}
-+
-+	return -EFAULT;
-+}
-+
-+static int ecp5_ops_write_init(struct fpga_manager *mgr,
-+			       struct fpga_image_info *info,
-+			       const char *buf, size_t count)
-+{
-+	const u8 lsc_bitstream_burst[] = ECP5_SPI_LSC_BITSTREAM_BURST;
-+	const u8 lsc_init_addr[] = ECP5_SPI_LSC_INIT_ADDR;
-+	const u8 isc_enable[] = ECP5_SPI_ISC_ENABLE;
-+	const u8 isc_erase[] = ECP5_SPI_ISC_ERASE;
-+	struct ecp5_priv *priv = mgr->priv;
-+	struct spi_device *spi = priv->spi;
-+	struct device *dev = &mgr->dev;
-+	struct spi_transfer isc_xfers[] = {
-+		{
-+			.tx_buf = isc_enable,
-+			.len = sizeof(isc_enable),
-+			.cs_change = 1,
-+		}, {
-+			.tx_buf = isc_erase,
-+			.len = sizeof(isc_erase),
-+		},
-+	};
-+	struct spi_transfer lsc_xfers[] = {
-+		{
-+			.tx_buf = lsc_init_addr,
-+			.len = sizeof(lsc_init_addr),
-+			.cs_change = 1,
-+		}, {
-+			.tx_buf = lsc_bitstream_burst,
-+			.len = sizeof(lsc_bitstream_burst),
-+			.cs_change = 1,
-+		},
-+	};
-+	int ret;
-+
-+	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
-+		dev_err(dev, "Partial reconfiguration is not supported\n");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	/* Enter init mode */
-+	gpiod_set_value(priv->program, 1);
-+
-+	ret = ecp5_poll_gpio(priv->init, true);
-+	if (!ret)
-+		ret = ecp5_poll_gpio(priv->done, false);
-+
-+	if (ret) {
-+		dev_err(dev, "Failed to go to initialization mode\n");
-+		return ret;
-+	}
-+
-+	/* Enter program mode */
-+	gpiod_set_value(priv->program, 0);
-+
-+	ret = ecp5_poll_gpio(priv->init, false);
-+	if (ret) {
-+		dev_err(dev, "Failed to go to program mode\n");
-+		return ret;
-+	}
-+
-+	/* Enter ISC mode */
-+	ret = spi_sync_transfer(spi, isc_xfers, ARRAY_SIZE(isc_xfers));
-+	if (!ret)
-+		ret = ecp5_poll_busy(spi);
-+
-+	if (ret) {
-+		dev_err(dev, "Failed to go to ISC mode\n");
-+		return ret;
-+	}
-+
-+	/* Prepare for bitstream burst write */
-+	return spi_sync_transfer(spi, lsc_xfers, ARRAY_SIZE(lsc_xfers));
-+}
-+
-+static int ecp5_ops_write(struct fpga_manager *mgr, const char *buf, size_t count)
-+{
-+	struct ecp5_priv *priv = mgr->priv;
-+	struct spi_transfer xfer = {
-+		.tx_buf = buf,
-+		.len = count,
-+		.cs_change = 1,
-+	};
-+
-+	return spi_sync_transfer(priv->spi, &xfer, 1);
-+}
-+
-+static int ecp5_ops_write_complete(struct fpga_manager *mgr,
-+				   struct fpga_image_info *info)
-+{
-+	const u8 isc_disable[] = ECP5_SPI_ISC_DISABLE;
-+	struct ecp5_priv *priv = mgr->priv;
-+	struct spi_device *spi = priv->spi;
-+	struct device *dev = &mgr->dev;
-+	int ret;
-+
-+	/* Toggle CS and wait for bitstream write to finish */
-+	ret = spi_write(spi, NULL, 0);
-+	if (!ret)
-+		ret = ecp5_poll_busy(spi);
-+
-+	if (ret) {
-+		dev_err(dev, "Error while waiting bitstream write to finish\n");
-+		return ret;
-+	}
-+
-+	/* Exit ISC mode */
-+	ret = spi_write(spi, isc_disable, sizeof(isc_disable));
-+	if (!ret)
-+		ret = ecp5_poll_gpio(priv->done, true);
-+
-+	if (ret)
-+		dev_err(dev, "Failed to finish ISC\n");
-+
-+	return ret;
-+}
-+
-+static const struct fpga_manager_ops ecp5_fpga_ops = {
-+	.state = ecp5_ops_state,
-+	.write_init = ecp5_ops_write_init,
-+	.write = ecp5_ops_write,
-+	.write_complete = ecp5_ops_write_complete,
-+};
-+
-+static int ecp5_probe(struct spi_device *spi)
-+{
-+	struct device *dev = &spi->dev;
-+	struct fpga_manager *mgr;
-+	struct ecp5_priv *priv;
-+	int ret;
-+
-+	if (spi->max_speed_hz > ECP5_SPI_MAX_SPEED_HZ) {
-+		dev_err(dev, "SPI speed %u is too high, maximum speed is %u\n",
-+			spi->max_speed_hz, ECP5_SPI_MAX_SPEED_HZ);
-+		return -EINVAL;
-+	}
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->spi = spi;
-+
-+	priv->done = devm_gpiod_get(dev, "done", GPIOD_IN);
-+	if (IS_ERR(priv->done)) {
-+		ret = PTR_ERR(priv->done);
-+		dev_err(dev, "Failed to get DONE GPIO: %d\n", ret);
-+		return ret;
-+	}
-+
-+	priv->init = devm_gpiod_get(dev, "init", GPIOD_IN);
-+	if (IS_ERR(priv->init)) {
-+		ret = PTR_ERR(priv->init);
-+		dev_err(dev, "Failed to get INIT GPIO: %d\n", ret);
-+		return ret;
-+	}
-+
-+	priv->program = devm_gpiod_get(dev, "program", GPIOD_OUT_LOW);
-+	if (IS_ERR(priv->program)) {
-+		ret = PTR_ERR(priv->program);
-+		dev_err(dev, "Failed to get PROGRAM GPIO: %d\n", ret);
-+		return ret;
-+	}
-+
-+	mgr = devm_fpga_mgr_register(dev, "Lattice ECP5 SPI FPGA Manager",
-+				     &ecp5_fpga_ops, priv);
-+
-+	return PTR_ERR_OR_ZERO(mgr);
-+}
-+
-+static const struct spi_device_id ecp5_spi_ids[] = {
-+	{ .name = "ecp5-fpga-mgr" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(spi, ecp5_spi_ids);
-+
-+#if IS_ENABLED(CONFIG_OF)
-+static const struct of_device_id ecp5_of_ids[] = {
-+	{ .compatible = "lattice,ecp5-fpga-mgr" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, ecp5_of_ids);
-+#endif /* IS_ENABLED(CONFIG_OF) */
-+
-+static struct spi_driver ecp5_driver = {
-+	.probe = ecp5_probe,
-+	.id_table = ecp5_spi_ids,
-+	.driver = {
-+		.name = "lattice_ecp5_spi_fpga_mgr",
-+		.of_match_table = of_match_ptr(ecp5_of_ids),
-+	},
-+};
-+
-+module_spi_driver(ecp5_driver);
-+
-+MODULE_DESCRIPTION("Lattice ECP5 SPI FPGA Manager");
-+MODULE_LICENSE("GPL");
+ static struct pci_device_id cci_pcie_id_tbl[] = {
+ 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_PF_INT_5_X),},
+@@ -96,6 +102,18 @@ static struct pci_device_id cci_pcie_id_tbl[] = {
+ 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_PAC_D5005_VF),},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_SILICOM_DENMARK, PCIE_DEVICE_ID_SILICOM_PAC_N5010),},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_SILICOM_DENMARK, PCIE_DEVICE_ID_SILICOM_PAC_N5011),},
++	{PCI_DEVICE_SUB(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_DFL,
++			PCI_VENDOR_ID_INTEL, PCIE_SUBDEVICE_ID_INTEL_N6000),},
++	{PCI_DEVICE_SUB(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_DFL_VF,
++			PCI_VENDOR_ID_INTEL, PCIE_SUBDEVICE_ID_INTEL_N6000),},
++	{PCI_DEVICE_SUB(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_DFL,
++			PCI_VENDOR_ID_INTEL, PCIE_SUBDEVICE_ID_INTEL_N6001),},
++	{PCI_DEVICE_SUB(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_DFL_VF,
++			PCI_VENDOR_ID_INTEL, PCIE_SUBDEVICE_ID_INTEL_N6001),},
++	{PCI_DEVICE_SUB(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_DFL,
++			PCI_VENDOR_ID_INTEL, PCIE_SUBDEVICE_ID_INTEL_C6100),},
++	{PCI_DEVICE_SUB(PCI_VENDOR_ID_INTEL, PCIE_DEVICE_ID_INTEL_DFL_VF,
++			PCI_VENDOR_ID_INTEL, PCIE_SUBDEVICE_ID_INTEL_C6100),},
+ 	{0,}
+ };
+ MODULE_DEVICE_TABLE(pci, cci_pcie_id_tbl);
 -- 
-2.37.1
-
+2.25.1
 
