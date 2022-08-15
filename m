@@ -2,283 +2,146 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 716EBC2BB43
-	for <linux-fpga@archiver.kernel.org>; Mon, 15 Aug 2022 06:13:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7791EC3F6B0
+	for <linux-fpga@archiver.kernel.org>; Mon, 15 Aug 2022 13:25:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232530AbiHOGLV (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 15 Aug 2022 02:11:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41292 "EHLO
+        id S242954AbiHONXN (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 15 Aug 2022 09:23:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35782 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232779AbiHOGLK (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 15 Aug 2022 02:11:10 -0400
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF02718B12
-        for <linux-fpga@vger.kernel.org>; Sun, 14 Aug 2022 23:11:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1660543868; x=1692079868;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=uehkZ+HMXHwf5XQ9E58Mjnu0pZDmn9EohJoigA6Z74M=;
-  b=lEHwiiJFAFkGhi6YjIO1Lsj4A1XTcknnp51Bgg0C13hwHbQ+P0zDDZkV
-   qPFoWN1WlMTd9GdQzhL5grQIxq58l7w7ld4KdNBBxtAbAYRQxon7WgA0z
-   Frx5AV0scNc0BanqIcRbbz0AIjF8GFcEyVE373CtYZYMYhaLmCxcf90bL
-   5kqqLQUpNTSOQAoKUK3lyXv18q8yvF7spYwmOoRzw6oOL7zAeXJY616qU
-   xunA9OHsrIy/Sc4A5khiA4ms0DZSHHu9QXQhDVXb3msBUC1KG4O3z/2aH
-   oJ14HRCx9E0vrj3HMIfdSlP/HznvcuiWkg2Fxy0KmyIZva75PYHbI1J0j
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10439"; a="271670714"
-X-IronPort-AV: E=Sophos;i="5.93,237,1654585200"; 
-   d="scan'208";a="271670714"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Aug 2022 23:11:08 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,237,1654585200"; 
-   d="scan'208";a="639544882"
-Received: from unknown (HELO opae-zj-2.sh.intel.com) ([10.238.175.107])
-  by orsmga001.jf.intel.com with ESMTP; 14 Aug 2022 23:11:05 -0700
-From:   Tianfei Zhang <tianfei.zhang@intel.com>
-To:     mdf@kernel.org, yilun.xu@intel.com, linux-fpga@vger.kernel.org,
-        lee.jones@linaro.org, russell.h.weight@intel.com
-Cc:     hao.wu@intel.com, trix@redhat.com,
-        Tianfei Zhang <tianfei.zhang@intel.com>
-Subject: [PATCH v4 1/2] fpga: m10bmc-sec: add sysfs to trigger FPGA/BMC images reload
-Date:   Mon, 15 Aug 2022 02:07:14 -0400
-Message-Id: <20220815060715.37712-2-tianfei.zhang@intel.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20220815060715.37712-1-tianfei.zhang@intel.com>
-References: <20220815060715.37712-1-tianfei.zhang@intel.com>
+        with ESMTP id S242920AbiHONXK (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 15 Aug 2022 09:23:10 -0400
+Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3786618E34;
+        Mon, 15 Aug 2022 06:23:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+        d=metrotek.ru; s=mail;
+        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
+         in-reply-to:references;
+        bh=01VYwKsEP5PHOAwrwZ5OBrhS5+NLvCnbkbUBqarEJ4U=;
+        b=GHRQmSN19o//wsUsvtHrKo0k+Vq1RdK+mrvR0o7WGAgeEL2TUOEXKqp3deegzQFhwZsTtjaQmxmzu
+         b9xjcEwlOwDy7ZL+IPzvKoeDrppX6qX9UCIetcayg7ctwahlNF0vMiE59qVSi1WEmYhX9vJGhBE+xE
+         opxHtJJyayjFsz4Yz8Ku97GBqXvnUtRFeRpsrQzhw30XdykEluro3+RYuDQ+6cO8vzPAue5jeMrukd
+         mEd0Usu2199N4ctgzBUBKcQvhbVyD+sVFT+QJhIFAHFjw5LQor0uQfPuH9ChKjZVcC9z092XClVgRY
+         HZK/eVt3PW4CeosMeuxhXZbGT19f8Uw==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.3.1424, Stamp: 3], Multi: [Enabled, t: (0.000009,0.011094)], BW: [Enabled, t: (0.000016,0.000001)], RTDA: [Enabled, t: (0.113868), Hit: No, Details: v2.41.0; Id: 15.52ka1c.1gagqnrn6.5tr2; mclb], total: 0(700)
+X-Footer: bWV0cm90ZWsucnU=
+Received: from h-e2.ddg ([85.143.252.66])
+        (authenticated user i.bornyakov@metrotek.ru)
+        by mail.pr-group.ru with ESMTPSA
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
+        Mon, 15 Aug 2022 16:22:53 +0300
+From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
+To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
+        trix@redhat.com, dg@emlix.com, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org
+Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
+        linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, system@metrotek.ru,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v6 2/2] dt-bindings: fpga: add binding doc for ecp5-spi fpga mgr
+Date:   Mon, 15 Aug 2022 16:21:57 +0300
+Message-Id: <20220815132157.8083-3-i.bornyakov@metrotek.ru>
+X-Mailer: git-send-email 2.37.1
+In-Reply-To: <20220815132157.8083-1-i.bornyakov@metrotek.ru>
+References: <20220815132157.8083-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Russ Weight <russell.h.weight@intel.com>
+Add Device Tree Binding doc for Lattice ECP5 FPGA manager using slave
+SPI to load .bit formatted uncompressed bitstream image.
 
-Add the available_images and image_load sysfs files. The available_images
-file returns a space separated list of key words that may be written
-into the image_load file. These keywords describe an FPGA, BMC, or
-firmware image in FLASH or EEPROM storage that may be loaded.
-
-The image_load sysfs file may be written with a key word to trigger a
-reload of an FPGA, BMC, or firmware image from FLASH or EEPROM.
-
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: Tianfei Zhang <tianfei.zhang@intel.com>
+Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
-v4:
-From Yilun and Matthew's comments, provide more detail about how
-to trigger the FPGA/BMC image reload.
-v3:
-uses regmap_update_bits() API instead of m10bmc_sys_update_bits().
-v2:
-adds the steps for how to use the "image_load" sysfs file.
----
- .../sysfs-driver-intel-m10-bmc-sec-update     |  41 +++++++
- drivers/fpga/intel-m10-bmc-sec-update.c       | 105 ++++++++++++++++++
- 2 files changed, 146 insertions(+)
+ .../bindings/fpga/lattice,ecp5-fpga-mgr.yaml  | 74 +++++++++++++++++++
+ 1 file changed, 74 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/lattice,ecp5-fpga-mgr.yaml
 
-diff --git a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
-index 0a41afe0ab4c..0db2f1e73a82 100644
---- a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
-+++ b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
-@@ -59,3 +59,44 @@ Contact:	Russ Weight <russell.h.weight@intel.com>
- Description:	Read only. Returns number of times the secure update
- 		staging area has been flashed.
- 		Format: "%u".
+diff --git a/Documentation/devicetree/bindings/fpga/lattice,ecp5-fpga-mgr.yaml b/Documentation/devicetree/bindings/fpga/lattice,ecp5-fpga-mgr.yaml
+new file mode 100644
+index 000000000000..34693a3c2f1e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fpga/lattice,ecp5-fpga-mgr.yaml
+@@ -0,0 +1,74 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fpga/lattice,ecp5-fpga-mgr.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+What:		/sys/bus/platform/drivers/intel-m10bmc-sec-update/.../control/available_images
-+Date:		Aug 2022
-+KernelVersion:  6.0
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Read-only. This file returns a space separated list of
-+		key words that may be written into the image_load file
-+		described below. These keywords decribe an FPGA, BMC,
-+		or firmware image in FLASH or EEPROM storage that may
-+		be loaded.
++title: Lattice ECP5 Slave SPI FPGA manager
 +
-+What:		/sys/bus/platform/drivers/intel-m10bmc-sec-update/.../control/image_load
-+Date:		Aug 2022
-+KernelVersion:  6.0
-+Contact:	Russ Weight <russell.h.weight@intel.com>
-+Description:	Write-only. A key word may be written to this file to
-+		trigger a reload of an FPGA, BMC, or firmware image from
-+		FLASH or EEPROM. Refer to the available_images file for a
-+		list of supported key words for the underlying device.
-+		Writing an unsupported string to this file will result in
-+		EINVAL being returned.
-+		It should remove all of resources related to the old FPGA/BMC
-+		image before trigger the image reload otherwise the functionality
-+		of FPGA/BMC will fail. We recommended that follow the below steps
-+		or directly use the OPAE RSU script to perform the reload for FPGA/BMC
-+		image.
-+		Here is the steps to trigger the reload for FPGA/BMC image:
-+		1. Unbind driver from all VFs to be affected by the trigger.
-+		2. Disable all VFs via "/sys/bus/pic/device/xxxx/sriov_numvfs"
-+		sysfs file.
-+		3. Unbind driver from all PFs affectected by the trigger except the
-+		management PF.
-+		4. Disable AER on all PFs and upstream pci root port.
-+		5. Trigger image reload of FPGA and/or other programmable devices.
-+	        6. Hot-remove the PCI devices of the FPGA card via
-+		"/sys/bus/pci/devices/xxxx/remove" sysfs file.
-+		7. Wait for reconfiguration of FPGA an/or other programmable parts
-+		(e.g. 10 seconds)
-+		8. Re-scan PCI bus.
-+		9. Renable the AER on all PFs and upstream root port.
-+		10. Bring up VFs as desired.
-diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
-index 72c677c910de..3a082911cf67 100644
---- a/drivers/fpga/intel-m10-bmc-sec-update.c
-+++ b/drivers/fpga/intel-m10-bmc-sec-update.c
-@@ -14,6 +14,8 @@
- #include <linux/platform_device.h>
- #include <linux/slab.h>
- 
-+struct image_load;
++maintainers:
++  - Ivan Bornyakov <i.bornyakov@metrotek.ru>
 +
- struct m10bmc_sec {
- 	struct device *dev;
- 	struct intel_m10bmc *m10bmc;
-@@ -21,6 +23,12 @@ struct m10bmc_sec {
- 	char *fw_name;
- 	u32 fw_name_id;
- 	bool cancel_request;
-+	struct image_load *image_load;	/* terminated with { } member */
-+};
++description:
++  Lattice ECP5 sysCONFIG port, which is used for device configuration, among
++  others, have Slave Serial Peripheral Interface. Only full reconfiguration
++  with uncompressed bitstream image in .bit format is supported.
 +
-+struct image_load {
-+	const char *name;
-+	int (*load_image)(struct m10bmc_sec *sec);
- };
- 
- static DEFINE_XARRAY_ALLOC(fw_upload_xa);
-@@ -137,6 +145,54 @@ DEVICE_ATTR_SEC_CSK_RO(pr, PR_PROG_ADDR + CSK_VEC_OFFSET);
- 
- #define FLASH_COUNT_SIZE 4096	/* count stored as inverted bit vector */
- 
-+static ssize_t available_images_show(struct device *dev,
-+				     struct device_attribute *attr, char *buf)
-+{
-+	struct m10bmc_sec *sec = dev_get_drvdata(dev);
-+	const struct image_load *hndlr;
-+	ssize_t count = 0;
++allOf:
++  - $ref: /schemas/spi/spi-peripheral-props.yaml
 +
-+	for (hndlr = sec->image_load; hndlr->name; hndlr++) {
-+		count += scnprintf(buf + count, PAGE_SIZE - count,
-+				   "%s ", hndlr->name);
-+	}
++properties:
++  compatible:
++    enum:
++      - lattice,ecp5-fpga-mgr
 +
-+	buf[count - 1] = '\n';
++  reg:
++    maxItems: 1
 +
-+	return count;
-+}
-+static DEVICE_ATTR_RO(available_images);
++  spi-max-frequency:
++    maximum: 60000000
 +
-+static ssize_t image_load_store(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	struct m10bmc_sec *sec = dev_get_drvdata(dev);
-+	const struct image_load *hndlr;
-+	int ret = -EINVAL;
++  program-gpios:
++    description:
++      A GPIO line connected to PROGRAMN (active low) pin of the device.
++      Initiates configuration sequence.
++    maxItems: 1
 +
-+	for (hndlr = sec->image_load; hndlr->name; hndlr++) {
-+		if (sysfs_streq(buf, hndlr->name)) {
-+			ret = hndlr->load_image(sec);
-+			break;
-+		}
-+	}
++  init-gpios:
++    description:
++      A GPIO line connected to INITN (active low) pin of the device.
++      Indicates that the FPGA is ready to be configured.
++    maxItems: 1
 +
-+	return ret ? : count;
-+}
-+static DEVICE_ATTR_WO(image_load);
++  done-gpios:
++    description:
++      A GPIO line connected to DONE (active high) pin of the device.
++      Indicates that the configuration sequence is complete.
++    maxItems: 1
 +
-+static struct attribute *m10bmc_control_attrs[] = {
-+	&dev_attr_available_images.attr,
-+	&dev_attr_image_load.attr,
-+	NULL,
-+};
++required:
++  - compatible
++  - reg
++  - program-gpios
++  - init-gpios
++  - done-gpios
 +
-+static struct attribute_group m10bmc_control_attr_group = {
-+	.name = "control",
-+	.attrs = m10bmc_control_attrs,
-+};
++additionalProperties: false
 +
- static ssize_t flash_count_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
-@@ -195,6 +251,7 @@ static struct attribute_group m10bmc_security_attr_group = {
- 
- static const struct attribute_group *m10bmc_sec_attr_groups[] = {
- 	&m10bmc_security_attr_group,
-+	&m10bmc_control_attr_group,
- 	NULL,
- };
- 
-@@ -208,6 +265,53 @@ static void log_error_regs(struct m10bmc_sec *sec, u32 doorbell)
- 		dev_err(sec->dev, "RSU auth result: 0x%08x\n", auth_result);
- }
- 
-+static int m10bmc_sec_bmc_image_load(struct m10bmc_sec *sec,
-+				     unsigned int val)
-+{
-+	u32 doorbell;
-+	int ret;
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
 +
-+	if (val > 1) {
-+		dev_err(sec->dev, "invalid reload val = %d\n", val);
-+		return -EINVAL;
-+	}
++    spi {
++        #address-cells = <1>;
++        #size-cells = <0>;
 +
-+	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	if (ret)
-+		return ret;
-+
-+	if (doorbell & DRBL_REBOOT_DISABLED)
-+		return -EBUSY;
-+
-+	return regmap_update_bits(sec->m10bmc->regmap,
-+				  M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				  DRBL_CONFIG_SEL | DRBL_REBOOT_REQ,
-+				  FIELD_PREP(DRBL_CONFIG_SEL, val) |
-+				  DRBL_REBOOT_REQ);
-+}
-+
-+static int m10bmc_sec_bmc_image_load_0(struct m10bmc_sec *sec)
-+{
-+	return m10bmc_sec_bmc_image_load(sec, 0);
-+}
-+
-+static int m10bmc_sec_bmc_image_load_1(struct m10bmc_sec *sec)
-+{
-+	return m10bmc_sec_bmc_image_load(sec, 1);
-+}
-+
-+static struct image_load m10bmc_image_load_hndlrs[] = {
-+	{
-+		.name = "bmc_factory",
-+		.load_image = m10bmc_sec_bmc_image_load_1,
-+	},
-+	{
-+		.name = "bmc_user",
-+		.load_image = m10bmc_sec_bmc_image_load_0,
-+	},
-+	{}
-+};
-+
- static enum fw_upload_err rsu_check_idle(struct m10bmc_sec *sec)
- {
- 	u32 doorbell;
-@@ -565,6 +669,7 @@ static int m10bmc_sec_probe(struct platform_device *pdev)
- 	sec->dev = &pdev->dev;
- 	sec->m10bmc = dev_get_drvdata(pdev->dev.parent);
- 	dev_set_drvdata(&pdev->dev, sec);
-+	sec->image_load = m10bmc_image_load_hndlrs;
- 
- 	ret = xa_alloc(&fw_upload_xa, &sec->fw_name_id, sec,
- 		       xa_limit_32b, GFP_KERNEL);
++        fpga-mgr@0 {
++            compatible = "lattice,ecp5-fpga-mgr";
++            reg = <0>;
++            spi-max-frequency = <20000000>;
++            program-gpios = <&gpio3 4 GPIO_ACTIVE_LOW>;
++            init-gpios = <&gpio3 3 GPIO_ACTIVE_LOW>;
++            done-gpios = <&gpio3 2 GPIO_ACTIVE_HIGH>;
++        };
++    };
 -- 
-2.26.2
+2.37.1
+
 
