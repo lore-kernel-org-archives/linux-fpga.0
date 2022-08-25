@@ -2,39 +2,39 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A762C64991
-	for <linux-fpga@archiver.kernel.org>; Thu, 25 Aug 2022 14:18:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D87FC64990
+	for <linux-fpga@archiver.kernel.org>; Thu, 25 Aug 2022 14:20:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238992AbiHYOQz (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 25 Aug 2022 10:16:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51462 "EHLO
+        id S229604AbiHYORC (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 25 Aug 2022 10:17:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49988 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240615AbiHYOOf (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 25 Aug 2022 10:14:35 -0400
+        with ESMTP id S241969AbiHYOOe (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 25 Aug 2022 10:14:34 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46C1DB5A6E
-        for <linux-fpga@vger.kernel.org>; Thu, 25 Aug 2022 07:14:21 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3DF58B6D59
+        for <linux-fpga@vger.kernel.org>; Thu, 25 Aug 2022 07:14:20 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <jzi@pengutronix.de>)
-        id 1oRDcg-0002z4-B8; Thu, 25 Aug 2022 16:14:18 +0200
+        id 1oRDcg-0002y5-1l; Thu, 25 Aug 2022 16:14:18 +0200
 Received: from [2a0a:edc0:0:1101:1d::39] (helo=dude03.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <jzi@pengutronix.de>)
-        id 1oRDcf-001unZ-Cu; Thu, 25 Aug 2022 16:14:17 +0200
+        id 1oRDcf-001unO-00; Thu, 25 Aug 2022 16:14:17 +0200
 Received: from jzi by dude03.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <jzi@pengutronix.de>)
-        id 1oRDcb-005xw3-UZ; Thu, 25 Aug 2022 16:14:13 +0200
+        id 1oRDcc-005xwI-1U; Thu, 25 Aug 2022 16:14:14 +0200
 From:   Johannes Zink <j.zink@pengutronix.de>
 To:     linux-fpga@vger.kernel.org
 Cc:     devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
         Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
         Xu Yilun <yilun.xu@intel.com>, kernel@pengutronix.de,
         Johannes Zink <j.zink@pengutronix.de>
-Subject: [PATCH 01/16] dt-bindings: fpga: convert Lattice MachXO2 Slave binding to YAML
-Date:   Thu, 25 Aug 2022 16:13:28 +0200
-Message-Id: <20220825141343.1375690-2-j.zink@pengutronix.de>
+Subject: [PATCH 06/16] fpga: machxo2-spi: factor out status check for readability
+Date:   Thu, 25 Aug 2022 16:13:33 +0200
+Message-Id: <20220825141343.1375690-7-j.zink@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20220825141343.1375690-1-j.zink@pengutronix.de>
 References: <20220825141343.1375690-1-j.zink@pengutronix.de>
@@ -48,104 +48,50 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-This commit prepares adding additional properties to the machxo2-slave
-device. No functional changes.
+We have the same sequence at two different places, so factor it out
+into a helper to improve readability.
 
 Signed-off-by: Johannes Zink <j.zink@pengutronix.de>
 ---
- .../bindings/fpga/lattice,machxo2-slave.yaml  | 46 +++++++++++++++++++
- .../bindings/fpga/lattice-machxo2-spi.txt     | 29 ------------
- 2 files changed, 46 insertions(+), 29 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/fpga/lattice,machxo2-slave.yaml
- delete mode 100644 Documentation/devicetree/bindings/fpga/lattice-machxo2-spi.txt
+ drivers/fpga/machxo2-spi.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/fpga/lattice,machxo2-slave.yaml b/Documentation/devicetree/bindings/fpga/lattice,machxo2-slave.yaml
-new file mode 100644
-index 000000000000..d05acd6b0fc6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/lattice,machxo2-slave.yaml
-@@ -0,0 +1,46 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/fpga/lattice,machxo2-slave.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/fpga/machxo2-spi.c b/drivers/fpga/machxo2-spi.c
+index 39dd62359821..5e12612c7289 100644
+--- a/drivers/fpga/machxo2-spi.c
++++ b/drivers/fpga/machxo2-spi.c
+@@ -167,14 +167,19 @@ static int machxo2_cleanup(struct fpga_manager *mgr)
+ 	return ret;
+ }
+ 
++static bool machxo2_status_done(unsigned long status)
++{
++	return !test_bit(BUSY, &status) && test_bit(DONE, &status) &&
++		get_err(&status) == ENOERR;
++}
 +
-+title: Lattice MachXO2 Slave FPGA Manager Device Tree Bindings
-+
-+maintainers:
-+  - Johannes Zink <j.zink@pengutronix.de>
-+
-+description: |
-+  Device used for loading the bitstream of Lattice MachXO2 FPGAs. The
-+  programming sequence is described in FPGA-TN-02155 on www.latticesemi.com
-+
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: lattice,machxo2-slave-spi
-+    then:
-+      $ref: /schemas/spi/spi-peripheral-props.yaml#
-+properties:
-+  compatible:
-+    enum:
-+      - lattice,machxo2-slave-spi
-+
-+required:
-+  - compatible
-+  - reg
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    spi0 {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        fpga@0 {
-+            compatible = "lattice,machxo2-slave-spi";
-+            spi-max-frequency = <8000000>;
-+            reg = <0>;
-+        };
-+    };
-diff --git a/Documentation/devicetree/bindings/fpga/lattice-machxo2-spi.txt b/Documentation/devicetree/bindings/fpga/lattice-machxo2-spi.txt
-deleted file mode 100644
-index a8c362eb160c..000000000000
---- a/Documentation/devicetree/bindings/fpga/lattice-machxo2-spi.txt
-+++ /dev/null
-@@ -1,29 +0,0 @@
--Lattice MachXO2 Slave SPI FPGA Manager
--
--Lattice MachXO2 FPGAs support a method of loading the bitstream over
--'slave SPI' interface.
--
--See 'MachXO2ProgrammingandConfigurationUsageGuide.pdf' on www.latticesemi.com
--
--Required properties:
--- compatible: should contain "lattice,machxo2-slave-spi"
--- reg: spi chip select of the FPGA
--
--Example for full FPGA configuration:
--
--	fpga-region0 {
--		compatible = "fpga-region";
--		fpga-mgr = <&fpga_mgr_spi>;
--		#address-cells = <0x1>;
--		#size-cells = <0x1>;
--	};
--
--	spi1: spi@2000 {
--        ...
--
--		fpga_mgr_spi: fpga-mgr@0 {
--			compatible = "lattice,machxo2-slave-spi";
--			spi-max-frequency = <8000000>;
--			reg = <0>;
--		};
--	};
+ static enum fpga_mgr_states machxo2_spi_state(struct fpga_manager *mgr)
+ {
+ 	struct spi_device *spi = mgr->priv;
+ 	unsigned long status;
+ 
+ 	get_status(spi, &status);
+-	if (!test_bit(BUSY, &status) && test_bit(DONE, &status) &&
+-	    get_err(&status) == ENOERR)
++	if (machxo2_status_done(status))
+ 		return FPGA_MGR_STATE_OPERATING;
+ 
+ 	return FPGA_MGR_STATE_UNKNOWN;
+@@ -329,8 +334,7 @@ static int machxo2_write_complete(struct fpga_manager *mgr,
+ 		/* check refresh status */
+ 		get_status(spi, &status);
+ 		dump_status_reg(&status);
+-		if (!test_bit(BUSY, &status) && test_bit(DONE, &status) &&
+-		    get_err(&status) == ENOERR)
++		if (machxo2_status_done(status))
+ 			break;
+ 		if (++refreshloop == MACHXO2_MAX_REFRESH_LOOP) {
+ 			machxo2_cleanup(mgr);
 -- 
 2.30.2
 
