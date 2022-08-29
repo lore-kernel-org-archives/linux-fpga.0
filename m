@@ -2,331 +2,419 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A8D4ECAAD4
-	for <linux-fpga@archiver.kernel.org>; Mon, 29 Aug 2022 09:58:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0540DECAAD4
+	for <linux-fpga@archiver.kernel.org>; Mon, 29 Aug 2022 10:43:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229678AbiH2J5C (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 29 Aug 2022 05:57:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43920 "EHLO
+        id S229480AbiH2Kl2 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 29 Aug 2022 06:41:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49444 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229663AbiH2J5B (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 29 Aug 2022 05:57:01 -0400
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 537015EDC3;
-        Mon, 29 Aug 2022 02:56:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1661767018; x=1693303018;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=ApEJEqVmn8ds7J7rifKwOfp8OKvwLFeIMQbTX1DLLfU=;
-  b=MB5uMayExZhEEQcKhPtPhWMZx5QfjbJ0pbwm0oekz158CpjIQWJGDODo
-   YRg6H/6RBWv6xgWwsGzRmkqLHP9ahCUfv/VtlPJEM4b6q1epB0/WjIN58
-   VRZzg7ZHlvnHIBN81MMXZWjTTpppxYwopsRra1CTVnFpuKWC7cQDG/q/8
-   Pw8DK2oe6X8xj0XvxDc/1eXJJFtdk19XdnV8N3sT0T5ZCI2Z2oS4QdKb8
-   2mJlRKDSj7459lLG3oCbTfhdlpAySrMhLLUyN6c0h5vgKdY5WltdhgpPh
-   pg1hGjfcV2kv0lQdko+NILK/E0WnUxtgBXpIN8HlCRW+xN4y4G7O7BSO2
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10453"; a="320977757"
-X-IronPort-AV: E=Sophos;i="5.93,272,1654585200"; 
-   d="scan'208";a="320977757"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Aug 2022 02:56:58 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,272,1654585200"; 
-   d="scan'208";a="640878763"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orsmga008.jf.intel.com with ESMTP; 29 Aug 2022 02:56:55 -0700
-Date:   Mon, 29 Aug 2022 17:47:37 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Johannes Zink <j.zink@pengutronix.de>
-Cc:     linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
+        with ESMTP id S229550AbiH2Kl1 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 29 Aug 2022 06:41:27 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D15435FF56
+        for <linux-fpga@vger.kernel.org>; Mon, 29 Aug 2022 03:41:23 -0700 (PDT)
+Received: from ptz.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::77] helo=irc.pengutronix.de)
+        by metis.ext.pengutronix.de with esmtp (Exim 4.92)
+        (envelope-from <j.zink@pengutronix.de>)
+        id 1oScCk-0002MK-F9; Mon, 29 Aug 2022 12:41:18 +0200
+Message-ID: <b8a6c62facf182b9ad4f333af69072e1a8c0293b.camel@pengutronix.de>
+Subject: Re: [PATCH 07/16] fpga: machxo2-spi: fix big-endianness
+ incompatibility
+From:   Johannes Zink <j.zink@pengutronix.de>
+To:     Xu Yilun <yilun.xu@intel.com>
+Cc:     devicetree@vger.kernel.org, linux-fpga@vger.kernel.org,
         Rob Herring <robh+dt@kernel.org>,
-        Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
-        kernel@pengutronix.de
-Subject: Re: [PATCH 16/16] fpga: machxo2: add configuration over i2c
-Message-ID: <YwyLOSKy6kUFsFOB@yilunxu-OptiPlex-7050>
+        Moritz Fischer <mdf@kernel.org>, kernel@pengutronix.de,
+        Wu Hao <hao.wu@intel.com>
+Date:   Mon, 29 Aug 2022 12:41:03 +0200
+In-Reply-To: <Ywx2eeTvBhNw62pW@yilunxu-OptiPlex-7050>
 References: <20220825141343.1375690-1-j.zink@pengutronix.de>
- <20220825141343.1375690-17-j.zink@pengutronix.de>
+         <20220825141343.1375690-8-j.zink@pengutronix.de>
+         <Ywx2eeTvBhNw62pW@yilunxu-OptiPlex-7050>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.38.3-1 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220825141343.1375690-17-j.zink@pengutronix.de>
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:900:1d::77
+X-SA-Exim-Mail-From: j.zink@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fpga@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On 2022-08-25 at 16:13:43 +0200, Johannes Zink wrote:
-> From: Peter Jensen <pdj@bang-olufsen.dk>
+Hi Yilun, 
+
+On Mon, 2022-08-29 at 16:19 +0800, Xu Yilun wrote:
+> On 2022-08-25 at 16:13:34 +0200, Johannes Zink wrote:
+> > The SPI message is written into the lowest-addressed bits of an
+> > unsigned long variable, but be32_to_cpu is called on the least
+> > significant bits of the variable. On big-endian 64-bit systems,
+> > this would give a wrong result. Fix this by using the fixed-size
+> > u32 instead of unsigned long. This clashes with the use of
+> > test_bit, which is unnecessary for a single u32 variable, so
+> > we adjust all usage sites appropriately and prefix the macros
+> > with MACHXO2_ while at it.
+> > 
+> > Signed-off-by: Johannes Zink <j.zink@pengutronix.de>
+> > ---
+> >  drivers/fpga/machxo2-spi.c | 110 ++++++++++++++++++---------------
+> > ----
+> >  1 file changed, 55 insertions(+), 55 deletions(-)
+> > 
+> > diff --git a/drivers/fpga/machxo2-spi.c b/drivers/fpga/machxo2-
+> > spi.c
+> > index 5e12612c7289..d1a8f28e04e7 100644
+> > --- a/drivers/fpga/machxo2-spi.c
+> > +++ b/drivers/fpga/machxo2-spi.c
+> > @@ -9,6 +9,7 @@
+> >   */
+> >  
+> >  #include <linux/delay.h>
+> > +#include <linux/bitfield.h>
+> >  #include <linux/fpga/fpga-mgr.h>
+> >  #include <linux/gpio/consumer.h>
+> >  #include <linux/module.h>
+> > @@ -41,41 +42,40 @@
+> >  #define MACHXO2_BUF_SIZE               (MACHXO2_PAGE_SIZE + 4)
+> >  
+> >  /* Status register bits, errors and error mask */
+> > -#define BUSY   12
+> > -#define DONE   8
+> > -#define DVER   27
+> > -#define ENAB   9
+> > -#define ERRBITS        23
+> > -#define ERRMASK        7
+> > -#define FAIL   13
+> > -
+> > -#define ENOERR 0 /* no error */
+> > -#define EID    1
+> > -#define ECMD   2
+> > -#define ECRC   3
+> > -#define EPREAM 4 /* preamble error */
+> > -#define EABRT  5 /* abort error */
+> > -#define EOVERFL        6 /* overflow error */
+> > -#define ESDMEOF        7 /* SDM EOF */
+> > -
+> > -static inline u8 get_err(unsigned long *status)
+> > +#define MACHXO2_BUSY           BIT(12)
+> > +#define MACHXO2_DONE           BIT(8)
+> > +#define MACHXO2_DVER           BIT(27)
+> > +#define MACHXO2_ENAB           BIT(9)
+> > +#define MACHXO2_ERR            GENMASK(25, 23)
+> > +#define MACHXO2_ERR_ENOERR     0 /* no error */
+> > +#define MACHXO2_ERR_EID                1
+> > +#define MACHXO2_ERR_ECMD       2
+> > +#define MACHXO2_ERR_ECRC       3
+> > +#define MACHXO2_ERR_EPREAM     4 /* preamble error */
+> > +#define MACHXO2_ERR_EABRT      5 /* abort error */
+> > +#define MACHXO2_ERR_EOVERFL    6 /* overflow error */
+> > +#define MACHXO2_ERR_ESDMEOF    7 /* SDM EOF */
+> > +#define MACHXO2_FAIL           BIT(13)
+> > +
+> > +static inline u8 get_err(u32 status)
+> >  {
+> > -       return (*status >> ERRBITS) & ERRMASK;
+> > +       return FIELD_GET(MACHXO2_ERR, status);
+> >  }
 > 
-> The configuration flash of the machxo2 fpga can also be erased and
-> written over i2c instead of spi. Add this functionality to the
-> refactored common driver. Since some commands are shorter over I2C than
-> they are over SPI some quirks are added to the common driver in order to
-> account for that.
+> So far the changes have nothing to do with the endian issue, is it?
+> So
+> please put it into another patch.
+
+This is explained in the commit message. We need to get rid of unsigned
+long, but test_bit requires using that type. Using the BIT and GENMASK
+macros instead allows us to work on a u32 directly.
+
+Admittedly, prefixing the macros with MACHXO2_ can be separated out,
+but as I am already touching them to make them into masks, which is
+required when not using test_bit, I chose to squash this here.
+
+This is also mentioned in the commit message. If you prefer, I do
+the rename in a separate patch. I can do that for v2, but I don't
+see how I can cleanly separate s/unsigned long/u32/ and test_bit
+removal.
+
+
 > 
-> Signed-off-by: Peter Jensen <pdj@bang-olufsen.dk>
-> Signed-off-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
-> Signed-off-by: Johannes Zink <j.zink@pengutronix.de>
-> ---
->  drivers/fpga/Kconfig          |   8 ++
->  drivers/fpga/Makefile         |   1 +
->  drivers/fpga/machxo2-common.c |  15 +++-
->  drivers/fpga/machxo2-common.h |   3 +
->  drivers/fpga/machxo2-i2c.c    | 137 ++++++++++++++++++++++++++++++++++
->  5 files changed, 163 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/fpga/machxo2-i2c.c
+> >  
+> > -static int get_status(struct spi_device *spi, unsigned long
+> > *status)
+> > +static int get_status(struct spi_device *spi, u32 *status)
+> >  {
+> >         struct spi_message msg;
+> >         struct spi_transfer rx, tx;
+> >         static const u8 cmd[] = LSC_READ_STATUS;
+> > +       __be32 tmp;
+> >         int ret;
+> >  
+> >         memset(&rx, 0, sizeof(rx));
+> >         memset(&tx, 0, sizeof(tx));
+> >         tx.tx_buf = cmd;
+> >         tx.len = sizeof(cmd);
+> > -       rx.rx_buf = status;
+> > -       rx.len = 4;
+> > +       rx.rx_buf = &tmp;
+> > +       rx.len = sizeof(tmp);
+> >         spi_message_init(&msg);
+> >         spi_message_add_tail(&tx, &msg);
+> >         spi_message_add_tail(&rx, &msg);
+> > @@ -83,7 +83,7 @@ static int get_status(struct spi_device *spi,
+> > unsigned long *status)
+> >         if (ret)
+> >                 return ret;
+> >  
+> > -       *status = be32_to_cpu(*status);
+> > +       *status = be32_to_cpu(tmp);
 > 
-> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-> index e5869a732246..97081bbd7c19 100644
-> --- a/drivers/fpga/Kconfig
-> +++ b/drivers/fpga/Kconfig
-> @@ -90,6 +90,14 @@ config FPGA_MGR_MACHXO2_SPI
->  	  FPGA manager driver support for Lattice MachXO2 configuration
->  	  over slave SPI interface.
->  
-> +config FPGA_MGR_MACHXO2_I2C
-> +	tristate "Lattice MachXO2 I2C"
-> +	depends on I2C
-> +	select FPGA_MGR_MACHXO2_COMMON
-> +	help
-> +	  FPGA manager driver support for Lattice MachXO2 configuration
-> +	  over slave I2C interface.
-> +
->  config FPGA_MGR_TS73XX
->  	tristate "Technologic Systems TS-73xx SBC FPGA Manager"
->  	depends on ARCH_EP93XX && MACH_TS72XX
-> diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-> index f247a8de83ad..fcdf79f4d424 100644
-> --- a/drivers/fpga/Makefile
-> +++ b/drivers/fpga/Makefile
-> @@ -12,6 +12,7 @@ obj-$(CONFIG_FPGA_MGR_ALTERA_PS_SPI)	+= altera-ps-spi.o
->  obj-$(CONFIG_FPGA_MGR_ICE40_SPI)	+= ice40-spi.o
->  obj-$(CONFIG_FPGA_MGR_MACHXO2_COMMON)	+= machxo2-common.o
->  obj-$(CONFIG_FPGA_MGR_MACHXO2_SPI)	+= machxo2-spi.o
-> +obj-$(CONFIG_FPGA_MGR_MACHXO2_I2C)	+= machxo2-i2c.o
->  obj-$(CONFIG_FPGA_MGR_SOCFPGA)		+= socfpga.o
->  obj-$(CONFIG_FPGA_MGR_SOCFPGA_A10)	+= socfpga-a10.o
->  obj-$(CONFIG_FPGA_MGR_STRATIX10_SOC)	+= stratix10-soc.o
-> diff --git a/drivers/fpga/machxo2-common.c b/drivers/fpga/machxo2-common.c
-> index e8967cdee2c6..0a3c126675da 100644
-> --- a/drivers/fpga/machxo2-common.c
-> +++ b/drivers/fpga/machxo2-common.c
-> @@ -100,7 +100,7 @@ static void dump_status_reg(struct device *dev, u32 status)
->  		!!FIELD_GET(MACHXO2_DVER, status), get_err_string(get_err(status)));
->  }
->  
-> -static int machxo2_wait_until_not_busy(struct machxo2_common_priv *priv)
-> +int machxo2_wait_until_not_busy(struct machxo2_common_priv *priv)
->  {
->  	u32 status;
->  	int ret, loop = 0;
-> @@ -143,6 +143,11 @@ static int machxo2_cleanup(struct fpga_manager *mgr)
->  	cmd.cmd = refresh;
->  	cmd.cmd_len = sizeof(refresh);
->  	cmd.delay_us = MACHXO2_REFRESH_USEC;
-> +
-> +	/* quirk: refresh command over i2c is 1 byte shorter */
-> +	if (priv->refresh_3b)
-> +		cmd.cmd_len--;
-> +
->  	ret = priv->write_commands(priv, &cmd, 1);
->  	if (ret)
->  		goto fail;
-> @@ -207,6 +212,10 @@ static int machxo2_write_init(struct fpga_manager *mgr,
->  	cmd[0].cmd_len = sizeof(enable);
->  	cmd[0].delay_us = MACHXO2_LOW_DELAY_USEC;
->  
-> +	/* quirk: enable command over i2c is 1 byte shorter */
-> +	if (priv->enable_3b)
-> +		cmd[0].cmd_len--;
-> +
->  	cmd[1].cmd = (u8 *)&priv->erase_cmd;
->  	cmd[1].cmd_len = sizeof(priv->erase_cmd);
->  
-> @@ -313,6 +322,10 @@ static int machxo2_write_complete(struct fpga_manager *mgr,
->  	cmd.cmd_len = sizeof(refresh);
->  	cmd.delay_us = MACHXO2_REFRESH_USEC;
->  
-> +	/* quirk: refresh command over i2c is 1 byte shorter */
-> +	if (priv->refresh_3b)
-> +		cmd.cmd_len--;
-> +
->  	do {
->  		ret = priv->write_commands(priv, &cmd, 1);
->  		if (ret)
-> diff --git a/drivers/fpga/machxo2-common.h b/drivers/fpga/machxo2-common.h
-> index 0f9f53b48152..8c09345adee5 100644
-> --- a/drivers/fpga/machxo2-common.h
-> +++ b/drivers/fpga/machxo2-common.h
-> @@ -32,9 +32,12 @@ struct machxo2_common_priv {
->  	int (*get_status)(struct machxo2_common_priv *priv, u32 *status);
->  	struct device *dev;
->  	__be32 erase_cmd;
-> +	u8 enable_3b:1;
-> +	u8 refresh_3b:1;
->  	struct gpio_desc *fpga_program_n;
->  };
->  
->  int machxo2_common_init(struct machxo2_common_priv *priv, struct device *dev);
-> +int machxo2_wait_until_not_busy(struct machxo2_common_priv *priv);
->  
->  #endif
-> diff --git a/drivers/fpga/machxo2-i2c.c b/drivers/fpga/machxo2-i2c.c
-> new file mode 100644
-> index 000000000000..a309016def1c
-> --- /dev/null
-> +++ b/drivers/fpga/machxo2-i2c.c
-> @@ -0,0 +1,137 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Lattice MachXO2 Slave I2C Driver
-> + *
-> + * Manage Lattice FPGA firmware that is loaded over I2C using
-> + * the slave serial configuration interface.
-> + *
-> + * Copyright (C) 2018 Paolo Pisati <p.pisati@gmail.com>
-> + * Copyright (C) 2021 Peter Jensen <pdj@bang-olufsen.dk>
-> + */
-> +
-> +#include <linux/i2c.h>
-> +#include <linux/container_of.h>
-> +#include <linux/delay.h>
-> +#include "machxo2-common.h"
-> +
-> +
-> +struct machxo2_i2c_priv {
-> +	struct machxo2_common_priv common;
-> +	struct i2c_client *client;
-> +};
-> +
-> +static inline struct machxo2_i2c_priv *to_machxo2_i2c_priv(struct machxo2_common_priv *common)
-> +{
-> +	return container_of(common, struct machxo2_i2c_priv, common);
-> +}
-> +
-> +static int machxo2_i2c_get_status(struct machxo2_common_priv *bus, u32 *status)
-> +{
-> +	struct machxo2_i2c_priv *i2cPriv = to_machxo2_i2c_priv(bus);
-> +	struct i2c_client *client = i2cPriv->client;
-> +	u8 read_status[] = LSC_READ_STATUS;
+> Why not directly operate on the status, I don't see the difference.
 
-The command word could also be bus agnostic. I think a callback like
-write_then_read(bus, txbuf, n_tx, rxbuf, n_rx) could be a better
-abstraction.
+I wanted to state more clearly that the value read in the rx message is
+big endian and needs conversion. 
 
-> +	__be32 tmp;
-> +	int ret;
-> +	struct i2c_msg msg[] = {
-> +		{
-> +			.addr = client->addr,
-> +			.flags = 0,
-> +			.buf = read_status,
-> +			.len = ARRAY_SIZE(read_status),
-> +		}, {
-> +			.addr = client->addr,
-> +			.flags = I2C_M_RD,
-> +			.buf = (u8 *) &tmp,
-> +			.len = sizeof(tmp)
-> +		}
-> +	};
-> +
-> +	ret = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-> +	if (ret < 0)
-> +		return ret;
-> +	if (ret != ARRAY_SIZE(msg))
-> +		return -EIO;
-> +	*status = be32_to_cpu(tmp);
-> +
-> +	return 0;
-> +}
-> +
-> +static int machxo2_i2c_write(struct machxo2_common_priv *common,
-> +			     struct machxo2_cmd *cmds, size_t cmd_count)
-> +{
-> +	struct machxo2_i2c_priv *i2c_priv = to_machxo2_i2c_priv(common);
-> +	struct i2c_client *client = i2c_priv->client;
-> +	size_t i;
-> +	int ret;
-> +
-> +	for (i = 0; i < cmd_count; i++) {
-> +		struct i2c_msg msg[] = {
-> +			{
-> +				.addr = client->addr,
-> +				.buf = cmds[i].cmd,
-> +				.len = cmds[i].cmd_len,
-> +			},
-> +		};
-> +
-> +		ret = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-> +		if (ret < 0)
-> +			return ret;
-> +		if (ret != ARRAY_SIZE(msg))
-> +			return -EIO;
-> +		if (cmds[i].delay_us)
-> +			usleep_range(cmds[i].delay_us, cmds[i].delay_us +
-> +				     cmds[i].delay_us / 4);
-> +		if (i < cmd_count - 1) /* on any iteration except for the last one... */
-> +			ret = machxo2_wait_until_not_busy(common);
+Besides, since be32_to_cpu takes a __be32 as an argument, passing 
+status, which is an u32, should give a static analyzer warning.
 
-Seems no need to implement the loop and wait in transportation layer,
-they are common. A callback like write(bus, txbuf, n_tx) is better?
-
-Thanks,
-Yilun
-
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int machxo2_i2c_probe(struct i2c_client *client,
-> +			const struct i2c_device_id *id)
-> +{
-> +	struct device *dev = &client->dev;
-> +	struct machxo2_i2c_priv *priv;
-> +
-> +	priv = devm_kzalloc(dev, sizeof(struct machxo2_i2c_priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	priv->client = client;
-> +	priv->common.get_status = machxo2_i2c_get_status;
-> +	priv->common.write_commands = machxo2_i2c_write;
-> +
-> +	/* Commands are usually 4b, but these aren't for i2c */
-> +	priv->common.enable_3b = true;
-> +	priv->common.refresh_3b = true;
-> +
-> +	return machxo2_common_init(&priv->common, dev);
-> +}
-> +
-> +static const struct of_device_id of_match[] = {
-> +	{ .compatible = "lattice,machxo2-slave-i2c", },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, of_match);
-> +
-> +static const struct i2c_device_id lattice_ids[] = {
-> +	{ "machxo2-slave-i2c", 0 },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(i2c, lattice_ids);
-> +
-> +static struct i2c_driver machxo2_i2c_driver = {
-> +	.driver = {
-> +		.name = "machxo2-slave-i2c",
-> +		.of_match_table = of_match_ptr(of_match),
-> +	},
-> +	.probe = machxo2_i2c_probe,
-> +	.id_table = lattice_ids,
-> +};
-> +
-> +module_i2c_driver(machxo2_i2c_driver);
-> +
-> +MODULE_AUTHOR("Peter Jensen <pdj@bang-olufsen.dk>");
-> +MODULE_DESCRIPTION("Load Lattice FPGA firmware over I2C");
-> +MODULE_LICENSE("GPL");
-> -- 
-> 2.30.2
 > 
+> >  
+> >         return 0;
+> >  }
+> > @@ -91,30 +91,30 @@ static int get_status(struct spi_device *spi,
+> > unsigned long *status)
+> >  static const char *get_err_string(u8 err)
+> >  {
+> >         switch (err) {
+> > -       case ENOERR:    return "No Error";
+> > -       case EID:       return "ID ERR";
+> > -       case ECMD:      return "CMD ERR";
+> > -       case ECRC:      return "CRC ERR";
+> > -       case EPREAM:    return "Preamble ERR";
+> > -       case EABRT:     return "Abort ERR";
+> > -       case EOVERFL:   return "Overflow ERR";
+> > -       case ESDMEOF:   return "SDM EOF";
+> > +       case MACHXO2_ERR_ENOERR:        return "No Error";
+> > +       case MACHXO2_ERR_EID:           return "ID ERR";
+> > +       case MACHXO2_ERR_ECMD:          return "CMD ERR";
+> > +       case MACHXO2_ERR_ECRC:          return "CRC ERR";
+> > +       case MACHXO2_ERR_EPREAM:        return "Preamble ERR";
+> > +       case MACHXO2_ERR_EABRT:         return "Abort ERR";
+> > +       case MACHXO2_ERR_EOVERFL:       return "Overflow ERR";
+> > +       case MACHXO2_ERR_ESDMEOF:       return "SDM EOF";
+> >         }
+> 
+> Same concern, no relation to the commit message
+
+please see my comment above. If you prefer, I split it out in a
+separate patch.
+
+> 
+> >  
+> > -       return "Default switch case";
+> > +       return "Unknown";
+> >  }
+> >  
+> > -static void dump_status_reg(unsigned long *status)
+> > +static void dump_status_reg(u32 status)
+> >  {
+> > -       pr_debug("machxo2 status: 0x%08lX - done=%d, cfgena=%d,
+> > busy=%d, fail=%d, devver=%d, err=%s\n",
+> > -                *status, test_bit(DONE, status), test_bit(ENAB,
+> > status),
+> > -                test_bit(BUSY, status), test_bit(FAIL, status),
+> > -                test_bit(DVER, status),
+> > get_err_string(get_err(status)));
+> > +       pr_debug("machxo2 status: 0x%08X - done=%d, cfgena=%d,
+> > busy=%d, fail=%d, devver=%d, err=%s\n",
+> > +                 status, !!FIELD_GET(MACHXO2_DONE, status),
+> > !!FIELD_GET(MACHXO2_ENAB, status),
+> > +                 !!FIELD_GET(MACHXO2_BUSY, status),
+> > !!FIELD_GET(MACHXO2_FAIL, status),
+> > +                 !!FIELD_GET(MACHXO2_DVER, status),
+> > get_err_string(get_err(status)));
+> 
+> Same concern. I'll not point out one by one below.
+> 
+> Thanks,
+> Yilun
+> 
+
+as I explained in the commit message, I am removing test_bit. As far as
+the macro renaming is concerned, please see my comments above.
+
+Best regards
+Johannes
+
+> >  }
+> 
+> 
+> >  
+> >  static int wait_until_not_busy(struct spi_device *spi)
+> >  {
+> > -       unsigned long status;
+> > +       u32 status;
+> >         int ret, loop = 0;
+> >  
+> >         do {
+> > @@ -123,7 +123,7 @@ static int wait_until_not_busy(struct
+> > spi_device *spi)
+> >                         return ret;
+> >                 if (++loop >= MACHXO2_MAX_BUSY_LOOP)
+> >                         return -EBUSY;
+> > -       } while (test_bit(BUSY, &status));
+> > +       } while (status & MACHXO2_BUSY);
+> >  
+> >         return 0;
+> >  }
+> > @@ -169,14 +169,14 @@ static int machxo2_cleanup(struct
+> > fpga_manager *mgr)
+> >  
+> >  static bool machxo2_status_done(unsigned long status)
+> >  {
+> > -       return !test_bit(BUSY, &status) && test_bit(DONE, &status)
+> > &&
+> > -               get_err(&status) == ENOERR;
+> > +       return (((status & (MACHXO2_BUSY | MACHXO2_DONE)) ==
+> > MACHXO2_DONE) &&
+> > +               get_err(status) == MACHXO2_ERR_ENOERR);
+> >  }
+> >  
+> >  static enum fpga_mgr_states machxo2_spi_state(struct fpga_manager
+> > *mgr)
+> >  {
+> >         struct spi_device *spi = mgr->priv;
+> > -       unsigned long status;
+> > +       u32 status;
+> >  
+> >         get_status(spi, &status);
+> >         if (machxo2_status_done(status))
+> > @@ -195,7 +195,7 @@ static int machxo2_write_init(struct
+> > fpga_manager *mgr,
+> >         static const u8 enable[] = ISC_ENABLE;
+> >         static const u8 erase[] = ISC_ERASE;
+> >         static const u8 initaddr[] = LSC_INITADDRESS;
+> > -       unsigned long status;
+> > +       u32 status;
+> >         int ret;
+> >  
+> >         if ((info->flags & FPGA_MGR_PARTIAL_RECONFIG)) {
+> > @@ -205,7 +205,7 @@ static int machxo2_write_init(struct
+> > fpga_manager *mgr,
+> >         }
+> >  
+> >         get_status(spi, &status);
+> > -       dump_status_reg(&status);
+> > +       dump_status_reg(status);
+> >         memset(tx, 0, sizeof(tx));
+> >         spi_message_init(&msg);
+> >         tx[0].tx_buf = &enable;
+> > @@ -226,11 +226,11 @@ static int machxo2_write_init(struct
+> > fpga_manager *mgr,
+> >                 goto fail;
+> >  
+> >         get_status(spi, &status);
+> > -       if (test_bit(FAIL, &status)) {
+> > +       if (status & MACHXO2_FAIL) {
+> >                 ret = -EINVAL;
+> >                 goto fail;
+> >         }
+> > -       dump_status_reg(&status);
+> > +       dump_status_reg(status);
+> >  
+> >         spi_message_init(&msg);
+> >         tx[2].tx_buf = &initaddr;
+> > @@ -241,7 +241,7 @@ static int machxo2_write_init(struct
+> > fpga_manager *mgr,
+> >                 goto fail;
+> >  
+> >         get_status(spi, &status);
+> > -       dump_status_reg(&status);
+> > +       dump_status_reg(status);
+> >  
+> >         return 0;
+> >  fail:
+> > @@ -258,7 +258,7 @@ static int machxo2_write(struct fpga_manager
+> > *mgr, const char *buf,
+> >         struct spi_transfer tx;
+> >         static const u8 progincr[] = LSC_PROGINCRNV;
+> >         u8 payload[MACHXO2_BUF_SIZE];
+> > -       unsigned long status;
+> > +       u32 status;
+> >         int i, ret;
+> >  
+> >         if (count % MACHXO2_PAGE_SIZE != 0) {
+> > @@ -266,7 +266,7 @@ static int machxo2_write(struct fpga_manager
+> > *mgr, const char *buf,
+> >                 return -EINVAL;
+> >         }
+> >         get_status(spi, &status);
+> > -       dump_status_reg(&status);
+> > +       dump_status_reg(status);
+> >         memcpy(payload, &progincr, sizeof(progincr));
+> >         for (i = 0; i < count; i += MACHXO2_PAGE_SIZE) {
+> >                 memcpy(&payload[sizeof(progincr)], &buf[i],
+> > MACHXO2_PAGE_SIZE);
+> > @@ -284,7 +284,7 @@ static int machxo2_write(struct fpga_manager
+> > *mgr, const char *buf,
+> >                 }
+> >         }
+> >         get_status(spi, &status);
+> > -       dump_status_reg(&status);
+> > +       dump_status_reg(status);
+> >  
+> >         return 0;
+> >  }
+> > @@ -297,7 +297,7 @@ static int machxo2_write_complete(struct
+> > fpga_manager *mgr,
+> >         struct spi_transfer tx[2];
+> >         static const u8 progdone[] = ISC_PROGRAMDONE;
+> >         static const u8 refresh[] = LSC_REFRESH;
+> > -       unsigned long status;
+> > +       u32 status;
+> >         int ret, refreshloop = 0;
+> >  
+> >         memset(tx, 0, sizeof(tx));
+> > @@ -313,8 +313,8 @@ static int machxo2_write_complete(struct
+> > fpga_manager *mgr,
+> >                 goto fail;
+> >  
+> >         get_status(spi, &status);
+> > -       dump_status_reg(&status);
+> > -       if (!test_bit(DONE, &status)) {
+> > +       dump_status_reg(status);
+> > +       if (!(status & MACHXO2_DONE)) {
+> >                 machxo2_cleanup(mgr);
+> >                 ret = -EINVAL;
+> >                 goto fail;
+> > @@ -333,7 +333,7 @@ static int machxo2_write_complete(struct
+> > fpga_manager *mgr,
+> >  
+> >                 /* check refresh status */
+> >                 get_status(spi, &status);
+> > -               dump_status_reg(&status);
+> > +               dump_status_reg(status);
+> >                 if (machxo2_status_done(status))
+> >                         break;
+> >                 if (++refreshloop == MACHXO2_MAX_REFRESH_LOOP) {
+> > @@ -344,7 +344,7 @@ static int machxo2_write_complete(struct
+> > fpga_manager *mgr,
+> >         } while (1);
+> >  
+> >         get_status(spi, &status);
+> > -       dump_status_reg(&status);
+> > +       dump_status_reg(status);
+> >  
+> >         return 0;
+> >  fail:
+> > -- 
+> > 2.30.2
+> > 
+> 
+> 
+
+-- 
+Pengutronix e.K.                | Johannes Zink                  |
+Steuerwalder Str. 21            | https://www.pengutronix.de/    |
+31137 Hildesheim, Germany       | Phone: +49-5121-206917-0       |
+Amtsgericht Hildesheim, HRA 2686| Fax:   +49-5121-206917-5555    |
+
