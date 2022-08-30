@@ -2,120 +2,182 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58B62C0502E
-	for <linux-fpga@archiver.kernel.org>; Tue, 30 Aug 2022 09:57:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9B27ECAAA1
+	for <linux-fpga@archiver.kernel.org>; Tue, 30 Aug 2022 10:34:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229703AbiH3Jzh (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 30 Aug 2022 05:55:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36144 "EHLO
+        id S229690AbiH3KdP (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 30 Aug 2022 06:33:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229744AbiH3Jza (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 30 Aug 2022 05:55:30 -0400
+        with ESMTP id S229446AbiH3KdO (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 30 Aug 2022 06:33:14 -0400
 Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53D4419C2A;
-        Tue, 30 Aug 2022 02:55:20 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7364A3D5D;
+        Tue, 30 Aug 2022 03:33:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
         d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding;
-        bh=adRRs/cSzeNyQID+6Lwy4BAkaWhLhKDY1lbpp59cqJo=;
-        b=AvMrLMkSGgmxF7pbah+h+bqUphVLwSOAsDV3CCL1J2AH+8iCnRYfpXgfHkQLZcuHZeKr3zxywURU8
-         1OjuhR9Lq5u9MGqW+y9KB+XYLmCfufxXl8w/J38M6OKOSZNumKI8tllgEA93Po6vn4QJHdTG89EtMF
-         X+YPrndgR5Ps81IKa8jwu94fciySh7cw2mlWi8TZcJo+AKIgYGMUy0n+Yh4LfZ82IrfWkSctDeGS6y
-         PkiKnqV7hZ3+a11TyHAf4uQyJIqpNnegQCpwBJhTmCxXEQW3mXnohy7fJAQDKIx0DjucgDWrqnVM7d
-         91lwTRWAl20AuSrElt5bKx9o13fqpcw==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.4.1445, Stamp: 3], Multi: [Enabled, t: (0.000010,0.013041)], BW: [Enabled, t: (0.000014,0.000001)], RTDA: [Enabled, t: (0.086778), Hit: No, Details: v2.41.0; Id: 15.52k58s.1gbn2qbkd.ph; mclb], total: 0(700)
+        h=from:subject:date:message-id:to:cc:mime-version:content-type:in-reply-to:
+         references;
+        bh=llGPjFGwJB/wfY44LT3rb5OTwIONCk545lArJ09EwdM=;
+        b=d8NgS0QG94kN53tMYz9L97aD8JmAvM5y3Pjb+auL5tVDM7BRnTyjWX+fOsVxocIVCZx4ee8/d/FFA
+         o6hbq2ALOKlQMPgZ+0AiK9avUSNlPVO0HMXeJb1tF1CKP8h3J5lHWSYD1AkT/vGoAhxm+Nq7rzQT20
+         P8iQbpCJzGzVQ+XOuomBqZiV7By52iHjp9lN/RBtATnHOJPQPDdWagNZPTThL5RpBA/h8gjEaNphw7
+         PgdMaWjFEOf1FLHCCOSiBpPFePcwtHpfeKgzfV/XkJKH9+xj9LGfX+IBwPKaoAgRG6vcV2Fn+h9v55
+         kcHuRDIPcSBwRa67f2lkg01SGi0ALiw==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.4.1445, Stamp: 3], Multi: [Enabled, t: (0.000010,0.015701)], BW: [Enabled, t: (0.000014,0.000001)], RTDA: [Enabled, t: (0.078785), Hit: No, Details: v2.41.0; Id: 15.52kem9.1gbn4vlpc.vtp; mclb], total: 0(700)
 X-Footer: bWV0cm90ZWsucnU=
 Received: from h-e2.ddg ([85.143.252.66])
         (authenticated user i.bornyakov@metrotek.ru)
         by mail.pr-group.ru with ESMTPSA
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Tue, 30 Aug 2022 12:55:11 +0300
+        Tue, 30 Aug 2022 13:33:03 +0300
+Date:   Tue, 30 Aug 2022 13:32:01 +0300
 From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
 To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
         trix@redhat.com, dg@emlix.com, j.zink@pengutronix.de,
         robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org
-Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
-        linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
+Cc:     linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, kernel@pengutronix.de,
         system@metrotek.ru
-Subject: [PATCH v9 0/2] Lattice sysCONFIG SPI FPGA manager
-Date:   Tue, 30 Aug 2022 12:54:03 +0300
-Message-Id: <20220830095405.31609-1-i.bornyakov@metrotek.ru>
-X-Mailer: git-send-email 2.37.2
+Subject: Re: [PATCH v9 2/2] dt-bindings: fpga: document Lattice sysCONFIG
+ FPGA manager
+Message-ID: <20220830103201.dmtvotiq43g742v5@h-e2.ddg>
+References: <20220830095405.31609-1-i.bornyakov@metrotek.ru>
+ <20220830095405.31609-3-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220830095405.31609-3-i.bornyakov@metrotek.ru>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add support to the FPGA manager for programming Lattice FPGAs over slave
-SPI sysCONFIG interface. ECP5 and MachXO2 are supported.
+On Tue, Aug 30, 2022 at 12:54:05PM +0300, Ivan Bornyakov wrote:
+> Add Device Tree Binding doc for configuring Lattice ECP5 and MachXO2
+> FPGAs over Slave SPI sysCONFIG interface.
+> 
+> Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+> ---
+>  .../bindings/fpga/lattice,sysconfig.yaml      | 102 ++++++++++++++++++
+>  1 file changed, 102 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml b/Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
+> new file mode 100644
+> index 000000000000..17f1e0c50bc4
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
+> @@ -0,0 +1,102 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/fpga/lattice,sysconfig.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Lattice Slave SPI sysCONFIG FPGA manager
+> +
+> +maintainers:
+> +  - Ivan Bornyakov <i.bornyakov@metrotek.ru>
+> +
+> +description: |
+> +  Lattice sysCONFIG port, which is used for FPGA configuration, among others,
+> +  have Slave Serial Peripheral Interface. Only full reconfiguration is
+> +  supported.
+> +
+> +  Programming of ECP5 is done by writing uncompressed bitstream image in .bit
+> +  format into FPGA's SRAM configuration memory.
+> +
+> +  Programming of MachXO2 is done by writing configuration data into device's
+> +  internal non-volatile Flash memory, then Self-Download of data from Flash
+> +  into SRAM is issued.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - lattice,ecp5-fpga-mgr
+> +      - lattice,machxo2-fpga-mgr
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  program-gpios:
+> +    description:
+> +      A GPIO line connected to PROGRAMN (active low) pin of the device.
+> +      Initiates configuration sequence.
+> +    maxItems: 1
+> +
+> +  init-gpios:
+> +    description:
+> +      A GPIO line connected to INITN (active low) pin of the device.
+> +      Indicates that the FPGA is ready to be configured.
+> +    maxItems: 1
+> +
+> +  done-gpios:
+> +    description:
+> +      A GPIO line connected to DONE (active high) pin of the device.
+> +      Indicates that the configuration sequence is complete.
+> +    maxItems: 1
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: lattice,machxo2-fpga-mgr
+> +    then:
+> +      properties:
+> +        spi-max-frequency:
+> +          maximum: 66000000
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: lattice,ecp5-fpga-mgr
+> +    then:
+> +      properties:
+> +        spi-max-frequency:
+> +          maximum: 60000000
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/gpio/gpio.h>
+> +
+> +    spi {
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
+> +
+> +        fpga-mgr@0 {
+> +            compatible = "lattice,ecp5-fpga-mgr";
+> +            reg = <0>;
+> +            spi-max-frequency = <20000000>;
+> +            program-gpios = <&gpio3 4 GPIO_ACTIVE_LOW>;
+> +            init-gpios = <&gpio3 3 GPIO_ACTIVE_LOW>;
+> +            done-gpios = <&gpio3 2 GPIO_ACTIVE_HIGH>;
+> +        };
+> +
+> +        fpga-mgr@1 {
+> +            compatible = "lattice,machxo2-fpga-mgr";
+> +            reg = <1>;
+> +            spi-max-frequency = <20000000>;
+> +        };
+> +    };
+> -- 
+> 2.37.2
+> 
 
-WARNING: I only have HW with ECP5, so can't vouch for the MachXO2.
-	 MachXO2's support is based on existing machxo2-spi.c and
-	 publicly available documentation, it's not tested on real
-	 hardware.
+Sorry, I forgot to add a tag from Krzysztof. Since there is not much
+change here, I think the tag is still valid.
 
-ChangeLog:
-  v1 -> v2:
-    * remove "spi" from compatible string
-    * reword description in dt-bindings doc
-    * add reference to spi-peripheral-props.yaml in dt-binding doc
-    * fix DTS example in dt-bindings doc: 4-spaces indentations, no
-      undersores in node names.
-  v2 -> v3:
-    * fix typo "##size-cells" -> "#size-cells" in dt-bindings example
-  v3 -> v4:
-    * dt-bindings: reword description
-    * dt-bindings: revert props order
-  v4 -> v5:
-    * dt-bindings: remove trailing dot from title
-    * dt-bindings: reword description to avoid driver reference
-    * dt-bindings: add "Reviewed-by: Krzysztof Kozlowski" tag
-  v5 -> v6:
-    * ecp5-spi: lock SPI bus for exclusive usage in
-      ecp5_ops_write_init(), release in ecp5_ops_write_complete()
-      or on error
-  v6 -> v7:
-    * ecp5-spi.c -> lattice-sysconfig-spi.c. Reworked to represent
-      generalized sysCONFIG port with implementations for ECP5 and
-      MachXO2
-    * lattice,ecp5-fpga-mgr.yaml -> lattice,sysconfig.yaml. Reworked to
-      document both ECP5 and MachXO2 sysCONFIG.
-    * dt-bindings: remove "Reviewed-by: Krzysztof Kozlowski" tag as doc
-      was rewritten by a considerable amount.
-  v7 -> v8:
-    * dt-bindings: move "program-gpios", "init-gpios" and "done-gpios"
-      to top-level properties and disallow them for MachXO2 variant.
-  v8 -> v9:
-    * dt-bindings: "program-gpios", "init-gpios" and "done-gpios" are
-      now optional for both ECP5 and MachXO2
-    * lattice-sysconfig-spi.c -> sysconfig-spi.c + sysconfig.c +
-      sysconfig.h
-        ** reworked to be one sysCONFIG FPGA Manager rather than two
-	   distinct ECP5 and MachXO2 managers
-	** splitted to port type agnostic sysconfig.c and SPI-specific
-	   sysconfig-spi.c
-	** command transfer function moved to callback for ease of
-	   adding another port type, such as I2C
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-Ivan Bornyakov (2):
-  fpga: lattice-sysconfig-spi: add Lattice sysCONFIG FPGA manager
-  dt-bindings: fpga: document Lattice sysCONFIG FPGA manager
-
- .../bindings/fpga/lattice,sysconfig.yaml      | 102 +++++
- drivers/fpga/Kconfig                          |   7 +
- drivers/fpga/Makefile                         |   3 +
- drivers/fpga/sysconfig-spi.c                  | 216 +++++++++
- drivers/fpga/sysconfig.c                      | 433 ++++++++++++++++++
- drivers/fpga/sysconfig.h                      |  67 +++
- 6 files changed, 828 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
- create mode 100644 drivers/fpga/sysconfig-spi.c
- create mode 100644 drivers/fpga/sysconfig.c
- create mode 100644 drivers/fpga/sysconfig.h
-
--- 
-2.37.2
 
 
