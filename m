@@ -2,136 +2,100 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1EE1ECAAD5
-	for <linux-fpga@archiver.kernel.org>; Mon,  5 Sep 2022 13:35:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64868ECAAA1
+	for <linux-fpga@archiver.kernel.org>; Tue,  6 Sep 2022 19:06:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237705AbiIENdn (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 5 Sep 2022 09:33:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58562 "EHLO
+        id S229709AbiIFTEW (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 6 Sep 2022 15:04:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50526 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237887AbiIENdi (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 5 Sep 2022 09:33:38 -0400
-Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FC8F4A81B;
-        Mon,  5 Sep 2022 06:33:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-        d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding;
-        bh=jXyOQ0ljSaTAtdchPhlkBaSb3eNac84WUyhZWSPQQfU=;
-        b=StWWpIIpB1Gyn+vM92LLCpIoaMMrQxjRkIs8lkuoq2FqaZt/ZhgpfG4tOptUbAZWgB3mAUrKewVSG
-         ME9y9wqF8LdyP8RCM7xJwPmHtOGfySrRQ929bTElgnQawccLTlgB0t82Q6RSdIRGUNsgeCWsI7TIdZ
-         dH4nhandYZvtohjEJAhNrUKQ9M3ckZDjl+8dlkzCpvMnkMrmmQHEiJjEtA+jyCCQYryL+S5D3nKBeq
-         hzW+mka4utF3LLlruvHhAOFSNCiEN17E2rqrqij8Yg/GHCBmecxBn/mZdeDytLLRsceHxI7+Y1/tg3
-         TXhgctyqYh8uyyfvi/P8f3xB7yWSJQA==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.4.1445, Stamp: 3], Multi: [Enabled, t: (0.000009,0.015557)], BW: [Enabled, t: (0.000026,0.000002)], RTDA: [Enabled, t: (0.081418), Hit: No, Details: v2.41.0; Id: 15.52k6mm.1gc6tm61l.bs; mclb], total: 0(700)
-X-Footer: bWV0cm90ZWsucnU=
-Received: from h-e2.ddg ([85.143.252.66])
-        (authenticated user i.bornyakov@metrotek.ru)
-        by mail.pr-group.ru with ESMTPSA
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Mon, 5 Sep 2022 16:33:24 +0300
-From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
-To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
-        trix@redhat.com, dg@emlix.com, j.zink@pengutronix.de,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org
-Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
-        linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel@pengutronix.de,
-        system@metrotek.ru
-Subject: [PATCH v10 0/2] Lattice sysCONFIG SPI FPGA manager
-Date:   Mon,  5 Sep 2022 16:32:03 +0300
-Message-Id: <20220905133205.17039-1-i.bornyakov@metrotek.ru>
-X-Mailer: git-send-email 2.37.2
+        with ESMTP id S229684AbiIFTEV (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 6 Sep 2022 15:04:21 -0400
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D24D88D3CB;
+        Tue,  6 Sep 2022 12:04:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1662491059; x=1694027059;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=noMjuag55LUNaeVDHiaxN2eVuWfjztTAREa6cfbKFAM=;
+  b=k7d5Jtbs15+bIwYtJ4rnGw0s5CfFrT5nrfNKvpHE2Tres7WVewO/mXyu
+   jrBm7I2HrHgWyQVVoEfX8FuVOjWRRL0PvBFQMz2ayvXu58UDiIQipGFMr
+   tf9d1jpNYS9o6Bg5Pv1aoV09Y247NslK27uXqCYNRR/iEVwgqXVzbVvbS
+   FvryX1Y9tC7mfB7C2Ql2i//whXfifTr1vdpVAX3tuUMrM2VrEzzrDi2Dn
+   Q9UyzMkLCat1WsPPlJ/dh+W1Xec1cxf3DXyI+eolkPMTFXaacsSp8Gp2F
+   P9Dmi0121VHr+NlugoJWD+tKT8bL8s+MoCefzpzLXWgMF75+von7VNpnq
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10462"; a="283677333"
+X-IronPort-AV: E=Sophos;i="5.93,294,1654585200"; 
+   d="scan'208";a="283677333"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2022 12:04:18 -0700
+X-IronPort-AV: E=Sophos;i="5.93,294,1654585200"; 
+   d="scan'208";a="789782539"
+Received: from rhweight-wrk1.ra.intel.com ([137.102.106.43])
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2022 12:04:18 -0700
+From:   matthew.gerlach@linux.intel.com
+To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
+        basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
+        mdf@kernel.org, linux-fpga@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        tianfei.zhang@intel.com, corbet@lwn.net,
+        gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
+        jirislaby@kernel.org, geert+renesas@glider.be,
+        andriy.shevchenko@linux.intel.com,
+        niklas.soderlund+renesas@ragnatech.se, phil.edworthy@renesas.com,
+        macro@orcam.me.uk, johan@kernel.org, lukas@wunner.de
+Cc:     Matthew Gerlach <matthew.gerlach@intel.com>
+Subject: [PATCH v1 0/5] Enhance definition of DFH and use enhancements for uart driver
+Date:   Tue,  6 Sep 2022 12:04:21 -0700
+Message-Id: <20220906190426.3139760-1-matthew.gerlach@linux.intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add support to the FPGA manager for programming Lattice FPGAs over slave
-SPI sysCONFIG interface. ECP5 and MachXO2 are supported.
+From: Matthew Gerlach <matthew.gerlach@intel.com>
 
-WARNING: I only have HW with ECP5, so can't vouch for the MachXO2.
-	 MachXO2's support is based on existing machxo2-spi.c and
-	 publicly available documentation, it's not tested on real
-	 hardware.
+This patchset enhances the definition of the Device Feature Header (DFH) used by
+the Device Feature List (DFL) bus and then uses the new enhancements in a uart
+driver.
 
-ChangeLog:
-  v1 -> v2:
-    * remove "spi" from compatible string
-    * reword description in dt-bindings doc
-    * add reference to spi-peripheral-props.yaml in dt-binding doc
-    * fix DTS example in dt-bindings doc: 4-spaces indentations, no
-      undersores in node names.
-  v2 -> v3:
-    * fix typo "##size-cells" -> "#size-cells" in dt-bindings example
-  v3 -> v4:
-    * dt-bindings: reword description
-    * dt-bindings: revert props order
-  v4 -> v5:
-    * dt-bindings: remove trailing dot from title
-    * dt-bindings: reword description to avoid driver reference
-    * dt-bindings: add "Reviewed-by: Krzysztof Kozlowski" tag
-  v5 -> v6:
-    * ecp5-spi: lock SPI bus for exclusive usage in
-      ecp5_ops_write_init(), release in ecp5_ops_write_complete()
-      or on error
-  v6 -> v7:
-    * ecp5-spi.c -> lattice-sysconfig-spi.c. Reworked to represent
-      generalized sysCONFIG port with implementations for ECP5 and
-      MachXO2
-    * lattice,ecp5-fpga-mgr.yaml -> lattice,sysconfig.yaml. Reworked to
-      document both ECP5 and MachXO2 sysCONFIG.
-    * dt-bindings: remove "Reviewed-by: Krzysztof Kozlowski" tag as doc
-      was rewritten by a considerable amount.
-  v7 -> v8:
-    * dt-bindings: move "program-gpios", "init-gpios" and "done-gpios"
-      to top-level properties and disallow them for MachXO2 variant.
-  v8 -> v9:
-    * dt-bindings: "program-gpios", "init-gpios" and "done-gpios" are
-      now optional for both ECP5 and MachXO2
-    * lattice-sysconfig-spi.c -> sysconfig-spi.c + sysconfig.c +
-      sysconfig.h
-        ** reworked to be one sysCONFIG FPGA Manager rather than two
-	   distinct ECP5 and MachXO2 managers
-	** splitted to port type agnostic sysconfig.c and SPI-specific
-	   sysconfig-spi.c
-	** command transfer function moved to callback for ease of
-	   adding another port type, such as I2C
-  v9 -> v10:
-    * split sysconfig_transfer() callback into separate command_write()
-      and command_write_then_read(). There are too many transfers
-      without readback.
-    * add command_write_with_data() callback which performs single
-      transfer of command + data. It's needed for better abstraction of
-      paged bitstream write routine.
-    * move sysconfig_lsc_burst_init() to bitstream_burst_write_init()
-      callback to break dependence of sysconfig.c from sysconfig-spi.c
-    * move sysconfig_lsc_burst_complete() to bitstream_burst_write_complete()
-      callback to break dependence of sysconfig.c from sysconfig-spi.c
-    * add bitstream_burst_write() to abstract fpga_manager_ops->write()
-      from bus type
-    * remove struct spi_device from struct sysconfig_priv, use
-      to_spi_device()
-    * move fpga_manager_ops initialization to sysconfig.c
+Patch 1 updates the DFL documentation to provide the motivation behind the 
+enhancements to the definition of the DFH.
 
-Ivan Bornyakov (2):
-  fpga: lattice-sysconfig-spi: add Lattice sysCONFIG FPGA manager
-  dt-bindings: fpga: document Lattice sysCONFIG FPGA manager
+Patch 2 moves some of the DFH definitions to include/linux/dfl.h so that
+they can be accessed by drivers outside of drivers/fpga.
 
- .../bindings/fpga/lattice,sysconfig.yaml      | 102 ++++
- drivers/fpga/Kconfig                          |   7 +
- drivers/fpga/Makefile                         |   3 +
- drivers/fpga/sysconfig-spi.c                  | 199 +++++++
- drivers/fpga/sysconfig.c                      | 520 ++++++++++++++++++
- drivers/fpga/sysconfig.h                      |  63 +++
- 6 files changed, 894 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
- create mode 100644 drivers/fpga/sysconfig-spi.c
- create mode 100644 drivers/fpga/sysconfig.c
- create mode 100644 drivers/fpga/sysconfig.h
+Patch 3 adds the definitions for DFHv1.
+
+Patch 4 defines and uses a DFHv1 parameter to provide a generic mechanism for
+describing MSIX interrupts used by a particular feature instance.
+
+Patch 5 adds a DFL uart driver that makes use of the new features of DFHv1.
+
+Basheer Ahmed Muddebihal (2):
+  fpga: dfl: Move the DFH definitions
+  fpga: dfl: Add DFHv1 Register Definitions
+
+Matthew Gerlach (3):
+  Documentation: fpga: dfl: Add documentation for DFHv1
+  fpga: dfl: add generic support for MSIX interrupts
+  tty: serial: 8250: add DFL bus driver for Altera 16550.
+
+ Documentation/fpga/dfl.rst         |  24 ++++
+ drivers/fpga/dfl.c                 |  59 ++++++---
+ drivers/fpga/dfl.h                 |  22 +---
+ drivers/tty/serial/8250/8250_dfl.c | 188 +++++++++++++++++++++++++++++
+ drivers/tty/serial/8250/Kconfig    |   9 ++
+ drivers/tty/serial/8250/Makefile   |   1 +
+ include/linux/dfl.h                |  80 +++++++++++-
+ 7 files changed, 347 insertions(+), 36 deletions(-)
+ create mode 100644 drivers/tty/serial/8250/8250_dfl.c
 
 -- 
-2.37.2
-
+2.25.1
 
