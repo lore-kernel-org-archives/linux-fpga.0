@@ -2,73 +2,89 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34EA2C38145
-	for <linux-fpga@archiver.kernel.org>; Wed,  7 Sep 2022 05:10:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDEECC38145
+	for <linux-fpga@archiver.kernel.org>; Wed,  7 Sep 2022 19:17:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229591AbiIGFIS (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 7 Sep 2022 01:08:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52382 "EHLO
+        id S229887AbiIGTPV (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 7 Sep 2022 15:15:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52706 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229437AbiIGFIR (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 7 Sep 2022 01:08:17 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C604F9C8EE;
-        Tue,  6 Sep 2022 22:08:16 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 63E97B81B2E;
-        Wed,  7 Sep 2022 05:08:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77DDAC433D6;
-        Wed,  7 Sep 2022 05:08:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1662527294;
-        bh=aEJWSWI4A4OAZpx07MCeh2OoOctBn8awZPww1oNt340=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=U0KVbZ4GoEhUuiW3XtluY9o8K2adjsD3YjkIZh6nfIh9M5vgNLUZAupOlQ2EeTncA
-         xFj5euYRHfBMsGovoMBeVh6MqRu0VWU2czscyoN9CwGRJZQiSaOjTG7sLxVnfLNacS
-         NgO1nrv80CS642o+JUS8DjBzMeYuIoxKvQ8sjKCA=
-Date:   Wed, 7 Sep 2022 07:08:09 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     matthew.gerlach@linux.intel.com
-Cc:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
+        with ESMTP id S229880AbiIGTPT (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 7 Sep 2022 15:15:19 -0400
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15F49ADCD2;
+        Wed,  7 Sep 2022 12:15:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1662578115; x=1694114115;
+  h=date:from:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=VXLGR9Wd6RtBhueFT65gXUYPfx/9KwI70lZVxZ42xt8=;
+  b=IfFLDaJQMt6gA6kr9kV8FdldFg9PGEV9kpAbLg7WMmk7iWSRSzHfQ9y7
+   A0ZSYNi3DcO4qMFSEEB9iJ+u928h558YD4sUy4PURfsMq2lBHX4OrxdSm
+   QnkakVlnVFoIYF4nxNpEsesThtWEiOeFi2wkYQkgRw7nyr6vnVBMUBbo/
+   ggI23LB+Jtk9CsnYPSsEiiFct/OxtiBd4WU/DIwz94E279PugN4CiuCzv
+   Tin+23hF1Rv6vlWBo4js2b6o2ZZhW3/KCgKsI0VHt3Cajbme7JjrZsmLt
+   5dg7Qda2zsBlHfWBOTYR08hB5/jXnG/u6bkiTacybcOXG2tmbaiZZTAZd
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10463"; a="296974067"
+X-IronPort-AV: E=Sophos;i="5.93,297,1654585200"; 
+   d="scan'208";a="296974067"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Sep 2022 12:15:14 -0700
+X-IronPort-AV: E=Sophos;i="5.93,297,1654585200"; 
+   d="scan'208";a="682942460"
+Received: from rhweight-wrk1.ra.intel.com ([137.102.106.43])
+  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Sep 2022 12:15:13 -0700
+Date:   Wed, 7 Sep 2022 12:15:12 -0700 (PDT)
+From:   matthew.gerlach@linux.intel.com
+X-X-Sender: mgerlach@rhweight-WRK1
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+cc:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
         basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
         mdf@kernel.org, linux-fpga@vger.kernel.org,
         linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
         tianfei.zhang@intel.com, corbet@lwn.net,
-        linux-serial@vger.kernel.org, jirislaby@kernel.org,
-        geert+renesas@glider.be, andriy.shevchenko@linux.intel.com,
+        gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
+        jirislaby@kernel.org, geert+renesas@glider.be,
         niklas.soderlund+renesas@ragnatech.se, phil.edworthy@renesas.com,
-        macro@orcam.me.uk, johan@kernel.org, lukas@wunner.de,
-        Basheer Ahmed Muddebihal 
-        <basheer.ahmed.muddebihal@linux.intel.com>
-Subject: Re: [PATCH v1 2/5] fpga: dfl: Move the DFH definitions
-Message-ID: <YxgnOYWCSP7ormvK@kroah.com>
-References: <20220906190426.3139760-1-matthew.gerlach@linux.intel.com>
- <20220906190426.3139760-3-matthew.gerlach@linux.intel.com>
+        macro@orcam.me.uk, johan@kernel.org, lukas@wunner.de
+Subject: Re: [PATCH v1 1/5] Documentation: fpga: dfl: Add documentation for
+ DFHv1
+In-Reply-To: <YxeovjbDq1IP7PZk@smile.fi.intel.com>
+Message-ID: <alpine.DEB.2.22.394.2209071214410.3336870@rhweight-WRK1>
+References: <20220906190426.3139760-1-matthew.gerlach@linux.intel.com> <20220906190426.3139760-2-matthew.gerlach@linux.intel.com> <YxeovjbDq1IP7PZk@smile.fi.intel.com>
+User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220906190426.3139760-3-matthew.gerlach@linux.intel.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Tue, Sep 06, 2022 at 12:04:23PM -0700, matthew.gerlach@linux.intel.com wrote:
-> --- a/drivers/fpga/dfl.h
-> +++ b/drivers/fpga/dfl.h
-> @@ -2,7 +2,7 @@
->  /*
->   * Driver Header File for FPGA Device Feature List (DFL) Support
->   *
-> - * Copyright (C) 2017-2018 Intel Corporation, Inc.
-> + * Copyright (C) 2017-2022 Intel Corporation, Inc.
 
-I'm all for updated proper copyright dates, but in a patch that
-_removes_ text from a file does not seem like the proper place for that,
-right?  Please discuss with your corporate lawyers as to how to do this
-properly and when to do it.
 
-thanks,
+On Tue, 6 Sep 2022, Andy Shevchenko wrote:
 
-greg k-h
+> On Tue, Sep 06, 2022 at 12:04:22PM -0700, matthew.gerlach@linux.intel.com wrote:
+>> From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+>>
+>> Add documentation describing the extentions provided by Version
+>> 1 of the Device Feature Header (DFHv1).
+>
+> ...
+>
+>> +With DFHv0, not all features types contained a GUID.  DFHv1 makes the GUILD standard
+>> +across all types.
+>
+> GUI_L_D?
+>
+
+Thanks for the review and pointing out the typo.
+
+Matthew Gerlach
+> -- 
+> With Best Regards,
+> Andy Shevchenko
+>
+>
+>
