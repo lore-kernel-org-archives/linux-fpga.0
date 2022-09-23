@@ -2,40 +2,40 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96B84C6FA8B
-	for <linux-fpga@archiver.kernel.org>; Fri, 23 Sep 2022 12:25:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2AC3C6FA82
+	for <linux-fpga@archiver.kernel.org>; Fri, 23 Sep 2022 12:27:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232170AbiIWMWp (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 23 Sep 2022 08:22:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41632 "EHLO
+        id S230341AbiIWMZa (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 23 Sep 2022 08:25:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48948 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231474AbiIWMV6 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 23 Sep 2022 08:21:58 -0400
+        with ESMTP id S231639AbiIWMV7 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 23 Sep 2022 08:21:59 -0400
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25108135047;
-        Fri, 23 Sep 2022 05:17:32 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1D34135067;
+        Fri, 23 Sep 2022 05:17:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1663935451; x=1695471451;
+  t=1663935453; x=1695471453;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=G3/jDHfEgmt1mU16f2cag46kqaswEiQqco0ejWollM4=;
-  b=VYXetGqXpU9SMfAdQIVeDkI86yECh6mGv77EkcCLk2j5vddFZ+IE8o1C
-   jTlxdcfeOJ7bqzychE8XFgI541V5vO/aLdRuBGTfmavZC3wzHcqVGARlh
-   IVHNAPpeemXaibAAb7o6o1w9sXAB933Z5vCDYhWbmSgNceKfwH69iT/4l
-   vdVZmj3GlnwSlUxlHHUG3Yu9BYlluXlUPRaSxxQUREu5AJT49BASvkwbd
-   +mhnmboiJNnMbdwV1j89qj0Q6cJcdEX2vSHZEtOfDiy2clyB63ZFSGf29
-   JgJ1755WJELHl7EwB24ECOGYyrF+VzubQwpNqoArDB+In2ovmMK6NWsQI
+  bh=sIF2Zq/0EHXy5JDYfbdr7n2ovCqxrL91EFHLvdU9NIg=;
+  b=PRjBxoBmp9NcjFkujWvOHAqZjPnmMilvbjhqKQ0T7+2Xa0gRxCyp46Gr
+   eUq9I3QwdNGwJ8v3uFUPv8L2tB3sgza0EDT7rK9Si4l9FNXlza59GOv2s
+   2ATSP7f+gfln7wgjP9Z6kanAU1XORehJPkuCodrtbPhYHxq1/UylxEOXY
+   dKN/eFHgCPwNtz36HuN0y0lzjz90a3Bau0nsvKGySXxe19+AUqDebU/fZ
+   pbND2s6BbEayvDo0KByezxtvmx1wxzyAhOzSIFNskFFYad/YoY6yJ+zQv
+   Oi0lKHo6VyUInDZPcjrfCh2ONZDQNiuKddSYD+/SSh17HWcaa0MzMJAAQ
    Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10478"; a="364595273"
+X-IronPort-AV: E=McAfee;i="6500,9779,10478"; a="364595293"
 X-IronPort-AV: E=Sophos;i="5.93,339,1654585200"; 
-   d="scan'208";a="364595273"
+   d="scan'208";a="364595293"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Sep 2022 05:17:30 -0700
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Sep 2022 05:17:32 -0700
 X-IronPort-AV: E=Sophos;i="5.93,339,1654585200"; 
-   d="scan'208";a="762597732"
+   d="scan'208";a="762597748"
 Received: from rhweight-wrk1.ra.intel.com ([137.102.106.139])
-  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Sep 2022 05:17:30 -0700
+  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Sep 2022 05:17:32 -0700
 From:   matthew.gerlach@linux.intel.com
 To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
         basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
@@ -47,12 +47,11 @@ To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
         andriy.shevchenko@linux.intel.com,
         niklas.soderlund+renesas@ragnatech.se, phil.edworthy@renesas.com,
         macro@orcam.me.uk, johan@kernel.org, lukas@wunner.de
-Cc:     Basheer Ahmed Muddebihal 
-        <basheer.ahmed.muddebihal@linux.intel.com>,
+Cc:     Matthew Gerlach <matthew.gerlach@intel.com>,
         Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Subject: [PATCH v2 2/6] fpga: dfl: Move the DFH definitions
-Date:   Fri, 23 Sep 2022 05:17:41 -0700
-Message-Id: <20220923121745.129167-3-matthew.gerlach@linux.intel.com>
+Subject: [PATCH v2 5/6] fpga: dfl: parse the location of the feature's registers from DFHv1
+Date:   Fri, 23 Sep 2022 05:17:44 -0700
+Message-Id: <20220923121745.129167-6-matthew.gerlach@linux.intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220923121745.129167-1-matthew.gerlach@linux.intel.com>
 References: <20220923121745.129167-1-matthew.gerlach@linux.intel.com>
@@ -62,146 +61,156 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>
+From: Matthew Gerlach <matthew.gerlach@intel.com>
 
-Moving the DFH register offset and register definitions from
-drivers/fpga/dfl.h to include/linux/dfl.h. These definitions
-need to be accessed by dfl drivers that are outside of
-drivers/fpga.
+The location of a feature's registers is explicitly
+described in DFHv1 and can be relative to the base of the DFHv1
+or an absolute address.  Parse the location and pass the information
+to DFL driver.
 
-Signed-off-by: Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>
 Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 ---
-v2: remove extra space in commit
-    use uniform number of digits in constants
-    don't change copyright date because of removed content
+v2: Introduced in v2.
 ---
- drivers/fpga/dfl-afu-main.c |  4 ++--
- drivers/fpga/dfl.c          |  2 +-
- drivers/fpga/dfl.h          | 20 +-------------------
- include/linux/dfl.h         | 33 ++++++++++++++++++++++++++++++++-
- 4 files changed, 36 insertions(+), 23 deletions(-)
+ drivers/fpga/dfl.c  | 26 +++++++++++++++++++++++++-
+ drivers/fpga/dfl.h  |  4 ++++
+ include/linux/dfl.h |  4 ++++
+ 3 files changed, 33 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 7f621e96d3b8..c26961ee33db 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -468,8 +468,8 @@ afu_id_show(struct device *dev, struct device_attribute *attr, char *buf)
- 		return -EBUSY;
- 	}
- 
--	guidl = readq(base + GUID_L);
--	guidh = readq(base + GUID_H);
-+	guidl = readq(base + DFH_GUID_L);
-+	guidh = readq(base + DFH_GUID_H);
- 	mutex_unlock(&pdata->lock);
- 
- 	return scnprintf(buf, PAGE_SIZE, "%016llx%016llx\n", guidh, guidl);
 diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index b9aae85ba930..1132f3c10440 100644
+index dfd3f563c92d..6fb4f30f93cf 100644
 --- a/drivers/fpga/dfl.c
 +++ b/drivers/fpga/dfl.c
-@@ -1163,7 +1163,7 @@ static int parse_feature_fiu(struct build_feature_devs_info *binfo,
- 	 * find and parse FIU's child AFU via its NEXT_AFU register.
- 	 * please note that only Port has valid NEXT_AFU pointer per spec.
- 	 */
--	v = readq(binfo->ioaddr + NEXT_AFU);
-+	v = readq(binfo->ioaddr + DFH_NEXT_AFU);
+@@ -381,6 +381,8 @@ dfl_dev_add(struct dfl_feature_platform_data *pdata,
+ 	ddev->feature_id = feature->id;
+ 	ddev->revision = feature->revision;
+ 	ddev->cdev = pdata->dfl_cdev;
++	ddev->csr_start = feature->csr_start;
++	ddev->csr_size = feature->csr_size;
  
- 	offset = FIELD_GET(NEXT_AFU_NEXT_DFH_OFST, v);
- 	if (offset)
+ 	/* add mmio resource */
+ 	parent_res = &pdev->resource[feature->resource_index];
+@@ -708,18 +710,25 @@ struct build_feature_devs_info {
+  * struct dfl_feature_info - sub feature info collected during feature dev build
+  *
+  * @fid: id of this sub feature.
++ * @revision: revision of this sub feature
++ * @dfh_version: version of Device Feature Header (DFH)
+  * @mmio_res: mmio resource of this sub feature.
+  * @ioaddr: mapped base address of mmio resource.
+  * @node: node in sub_features linked list.
++ * @csr_start: DFHv1 start of feature registers
++ * @csr_size: DFHv1 size of feature registers
+  * @irq_base: start of irq index in this sub feature.
+  * @nr_irqs: number of irqs of this sub feature.
+  */
+ struct dfl_feature_info {
+ 	u16 fid;
+ 	u8 revision;
++	u8 dfh_version;
+ 	struct resource mmio_res;
+ 	void __iomem *ioaddr;
+ 	struct list_head node;
++	resource_size_t csr_start;
++	resource_size_t csr_size;
+ 	unsigned int irq_base;
+ 	unsigned int nr_irqs;
+ };
+@@ -797,6 +806,8 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 		feature->dev = fdev;
+ 		feature->id = finfo->fid;
+ 		feature->revision = finfo->revision;
++		feature->csr_start = finfo->csr_start;
++		feature->csr_size = finfo->csr_size;
+ 
+ 		/*
+ 		 * the FIU header feature has some fundamental functions (sriov
+@@ -1054,6 +1065,7 @@ create_feature_instance(struct build_feature_devs_info *binfo,
+ {
+ 	unsigned int irq_base, nr_irqs;
+ 	struct dfl_feature_info *finfo;
++	u8 dfh_version = 0;
+ 	u8 revision = 0;
+ 	int ret;
+ 	u64 v;
+@@ -1061,7 +1073,7 @@ create_feature_instance(struct build_feature_devs_info *binfo,
+ 	if (fid != FEATURE_ID_AFU) {
+ 		v = readq(binfo->ioaddr + ofst);
+ 		revision = FIELD_GET(DFH_REVISION, v);
+-
++		dfh_version = FIELD_GET(DFH_VERSION, v);
+ 		/* read feature size and id if inputs are invalid */
+ 		size = size ? size : feature_size(v);
+ 		fid = fid ? fid : feature_id(v);
+@@ -1080,12 +1092,24 @@ create_feature_instance(struct build_feature_devs_info *binfo,
+ 
+ 	finfo->fid = fid;
+ 	finfo->revision = revision;
++	finfo->dfh_version = dfh_version;
+ 	finfo->mmio_res.start = binfo->start + ofst;
+ 	finfo->mmio_res.end = finfo->mmio_res.start + size - 1;
+ 	finfo->mmio_res.flags = IORESOURCE_MEM;
+ 	finfo->irq_base = irq_base;
+ 	finfo->nr_irqs = nr_irqs;
+ 
++	if (dfh_version == 1) {
++		v = readq(binfo->ioaddr + ofst + DFHv1_CSR_ADDR);
++		if (v & DFHv1_CSR_ADDR_REL)
++			finfo->csr_start = FIELD_GET(DFHv1_CSR_ADDR_MASK, v);
++		else
++			finfo->csr_start = binfo->start + ofst + FIELD_GET(DFHv1_CSR_ADDR_MASK, v);
++
++		v = readq(binfo->ioaddr + ofst + DFHv1_CSR_SIZE_GRP);
++		finfo->csr_size = FIELD_GET(DFHv1_CSR_SIZE_GRP_SIZE, v);
++	}
++
+ 	list_add_tail(&finfo->node, &binfo->sub_features);
+ 	binfo->feature_num++;
+ 
 diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index 06cfcd5e84bb..e620fcb02b5a 100644
+index e620fcb02b5a..64cedd00dca4 100644
 --- a/drivers/fpga/dfl.h
 +++ b/drivers/fpga/dfl.h
-@@ -17,6 +17,7 @@
- #include <linux/bitfield.h>
- #include <linux/cdev.h>
- #include <linux/delay.h>
-+#include <linux/dfl.h>
- #include <linux/eventfd.h>
- #include <linux/fs.h>
- #include <linux/interrupt.h>
-@@ -53,28 +54,9 @@
- #define PORT_FEATURE_ID_UINT		0x12
- #define PORT_FEATURE_ID_STP		0x13
- 
--/*
-- * Device Feature Header Register Set
-- *
-- * For FIUs, they all have DFH + GUID + NEXT_AFU as common header registers.
-- * For AFUs, they have DFH + GUID as common header registers.
-- * For private features, they only have DFH register as common header.
-- */
--#define DFH			0x0
--#define GUID_L			0x8
--#define GUID_H			0x10
--#define NEXT_AFU		0x18
--
--#define DFH_SIZE		0x8
--
- /* Device Feature Header Register Bitfield */
--#define DFH_ID			GENMASK_ULL(11, 0)	/* Feature ID */
- #define DFH_ID_FIU_FME		0
- #define DFH_ID_FIU_PORT		1
--#define DFH_REVISION		GENMASK_ULL(15, 12)	/* Feature revision */
--#define DFH_NEXT_HDR_OFST	GENMASK_ULL(39, 16)	/* Offset to next DFH */
--#define DFH_EOL			BIT_ULL(40)		/* End of list */
--#define DFH_TYPE		GENMASK_ULL(63, 60)	/* Feature type */
- #define DFH_TYPE_AFU		1
- #define DFH_TYPE_PRIVATE	3
- #define DFH_TYPE_FIU		4
+@@ -217,6 +217,8 @@ struct dfl_feature_irq_ctx {
+  *		    this index is used to find its mmio resource from the
+  *		    feature dev (platform device)'s resources.
+  * @ioaddr: mapped mmio resource address.
++ * @csr_start: DFHv1 start of feature registers
++ * @csr_size: DFHv1 size of feature registers
+  * @irq_ctx: interrupt context list.
+  * @nr_irqs: number of interrupt contexts.
+  * @ops: ops of this sub feature.
+@@ -229,6 +231,8 @@ struct dfl_feature {
+ 	u8 revision;
+ 	int resource_index;
+ 	void __iomem *ioaddr;
++	resource_size_t csr_start;
++	resource_size_t csr_size;
+ 	struct dfl_feature_irq_ctx *irq_ctx;
+ 	unsigned int nr_irqs;
+ 	const struct dfl_feature_ops *ops;
 diff --git a/include/linux/dfl.h b/include/linux/dfl.h
-index 431636a0dc78..33d167c53b09 100644
+index 33e21c360671..7d74ef8d1d20 100644
 --- a/include/linux/dfl.h
 +++ b/include/linux/dfl.h
-@@ -2,7 +2,7 @@
- /*
-  * Header file for DFL driver and device API
-  *
-- * Copyright (C) 2020 Intel Corporation, Inc.
-+ * Copyright (C) 2020-2022 Intel Corporation, Inc.
-  */
- 
- #ifndef __LINUX_DFL_H
-@@ -11,6 +11,37 @@
- #include <linux/device.h>
- #include <linux/mod_devicetable.h>
- 
-+/*
-+ * Device Feature Header Register Set
-+ *
-+ * For FIUs, they all have DFH + GUID + NEXT_AFU as common header registers.
-+ * For AFUs, they have DFH + GUID as common header registers.
-+ * For private features, they only have DFH register as common header.
-+ */
-+#define DFH			0x00
-+#define DFH_GUID_L		0x08
-+#define DFH_GUID_H		0x10
-+#define DFH_NEXT_AFU		0x18
-+
-+/*
-+ * DFHv1 Register Offset definitons
-+ * In DHFv1, DFH + GUID + CSR_START + CSR_SIZE_GROUP + PARAM_HDR + PARAM_DATA
-+ * as common header registers
-+ */
-+#define DFHv1_CSR_ADDR		0x18  /* CSR Register start address */
-+#define DFHv1_CSR_SIZE_GRP	0x20  /* Size of Reg Block and Group/tag */
-+#define DFHv1_PARAM_HDR		0x28  /* Optional First Param header */
-+#define DFHv1_PARAM_DATA	0x08  /* Offset of Param data from Param header */
-+
-+#define DFH_SIZE		0x08
-+
-+/* Device Feature Header Register Bitfield */
-+#define DFH_ID			GENMASK_ULL(11, 0)	/* Feature ID */
-+#define DFH_REVISION		GENMASK_ULL(15, 12)	/* Feature revision */
-+#define DFH_NEXT_HDR_OFST	GENMASK_ULL(39, 16)	/* Offset to next DFH */
-+#define DFH_EOL			BIT_ULL(40)		/* End of list */
-+#define DFH_TYPE		GENMASK_ULL(63, 60)	/* Feature type */
-+
- /**
-  * enum dfl_id_type - define the DFL FIU types
-  */
+@@ -84,6 +84,8 @@ enum dfl_id_type {
+  * @type: type of DFL FIU of the device. See enum dfl_id_type.
+  * @feature_id: feature identifier local to its DFL FIU type.
+  * @mmio_res: mmio resource of this dfl device.
++ * @csr_start: DFHv1 start of feature registers
++ * @csr_size: DFHv1 size of feature registers
+  * @irqs: list of Linux IRQ numbers of this dfl device.
+  * @num_irqs: number of IRQs supported by this dfl device.
+  * @cdev: pointer to DFL FPGA container device this dfl device belongs to.
+@@ -96,6 +98,8 @@ struct dfl_device {
+ 	u16 feature_id;
+ 	u8 revision;
+ 	struct resource mmio_res;
++	resource_size_t csr_start;
++	resource_size_t csr_size;
+ 	int *irqs;
+ 	unsigned int num_irqs;
+ 	struct dfl_fpga_cdev *cdev;
 -- 
 2.25.1
 
