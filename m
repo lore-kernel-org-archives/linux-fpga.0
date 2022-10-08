@@ -2,248 +2,154 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9C9AC433F5
-	for <linux-fpga@archiver.kernel.org>; Fri,  7 Oct 2022 18:37:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB764C433F5
+	for <linux-fpga@archiver.kernel.org>; Sat,  8 Oct 2022 11:44:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229636AbiJGSfj (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 7 Oct 2022 14:35:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36248 "EHLO
+        id S229539AbiJHLml (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sat, 8 Oct 2022 07:42:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229482AbiJGSfi (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 7 Oct 2022 14:35:38 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E08AE6C970;
-        Fri,  7 Oct 2022 11:35:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1665167736; x=1696703736;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=GlvynNTlOBH6XOgfhL1iTjczdAntw5tQaathsdAJOFc=;
-  b=Qa/6jdiL5AKBWs853q3VOu6h284uS4nvsdD9TljYfnjJm9W2Pkka5L26
-   UZD+GV1BKIIiPPdP3whN3+pFN/7X3GEIcOdRgpHWhU03YyVFOr6rDMED9
-   3KwtfeDikoxzj9jE1VI5z4S1U/+vCspm/AFwpXZbpic+7x1l9vwbtMGoh
-   nivElqhs+YbhkkJ2cKzXHKBYrcn4BLVLFb9ZUhbqc9kJHk2+h9HW2UOvz
-   rdbUSE1YDIt/2kPdreH3ZQlJltLrtFpK6zs6ngF5+dckpPv8CLHHq0tvK
-   iAAAXgdaqSymKAtVyHsFQHABri5Yu9H9POhqCjeNN5KCOBxk70AVQXiM8
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10493"; a="291077698"
-X-IronPort-AV: E=Sophos;i="5.95,167,1661842800"; 
-   d="scan'208";a="291077698"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2022 11:35:36 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10493"; a="620345979"
-X-IronPort-AV: E=Sophos;i="5.95,167,1661842800"; 
-   d="scan'208";a="620345979"
-Received: from rhweight-wrk1.ra.intel.com ([137.102.106.139])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2022 11:35:34 -0700
-Date:   Fri, 7 Oct 2022 11:35:47 -0700 (PDT)
-From:   matthew.gerlach@linux.intel.com
-X-X-Sender: mgerlach@rhweight-WRK1
-To:     =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
-cc:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
-        basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
-        mdf@kernel.org, linux-fpga@vger.kernel.org,
-        linux-doc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        tianfei.zhang@intel.com, corbet@lwn.net,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-serial <linux-serial@vger.kernel.org>,
-        Jiri Slaby <jirislaby@kernel.org>, geert+renesas@glider.be,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        niklas.soderlund+renesas@ragnatech.se, macro@orcam.me.uk,
-        johan@kernel.org, Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v3 3/4] fpga: dfl: add basic support for DFHv1
-In-Reply-To: <2ee52b26-d34d-9599-a465-b3cce51f4b45@linux.intel.com>
-Message-ID: <alpine.DEB.2.22.394.2210071126060.2168979@rhweight-WRK1>
-References: <20221004143718.1076710-1-matthew.gerlach@linux.intel.com> <20221004143718.1076710-4-matthew.gerlach@linux.intel.com> <2ee52b26-d34d-9599-a465-b3cce51f4b45@linux.intel.com>
-User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
+        with ESMTP id S229598AbiJHLmj (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sat, 8 Oct 2022 07:42:39 -0400
+Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E84E847B85;
+        Sat,  8 Oct 2022 04:42:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+        d=metrotek.ru; s=mail;
+        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
+         in-reply-to:references;
+        bh=Btkb2gtW6RKewRf9IoFqqlzQlwIj6C4A6/4lF9dHJ4A=;
+        b=l5dAPNgrvCo7vGhGb9h3bk+B2VHAZieU04UEdznvKO91rBBD04NAO9GXWUcZVQfmG6k7TKjJe7JtK
+         +G8R4ZfbqVqbEZ+v8RU/qqBztHZgpFMjRbXYDQxyAVkvjm4KqskzYTXJ3bU6g1HDp3LQRgOHy9RlbG
+         tTN3eSupX5P92/HLLJ0Vw0yUWxjMgUe5vwtzw73PDzz5UOkQ6NZGAyiF8mtHoPgN59FnoteMAskjvW
+         Q/QUaHS5U39KrjGPCJ/tItGDQ9Ry0RbTeoLh17sIWjml3egzZH/1Q1sPj8ttfjFTPZmGYL8pbRby4X
+         9wNrlKdhl5IOb+8wRMnrBDMSkMAjZ7Q==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.4.1445, Stamp: 3], Multi: [Enabled, t: (0.000013,0.013095)], BW: [Enabled, t: (0.000022,0.000001)], RTDA: [Enabled, t: (0.078530), Hit: No, Details: v2.42.0; Id: 15.52k8bv.1germeqff.93rot; mclb], total: 0(700)
+X-Footer: bWV0cm90ZWsucnU=
+Received: from localhost.localdomain ([92.100.86.33])
+        (authenticated user i.bornyakov@metrotek.ru)
+        by mail.pr-group.ru with ESMTPSA
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
+        Sat, 8 Oct 2022 14:42:27 +0300
+From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
+To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
+        trix@redhat.com, dg@emlix.com, j.zink@pengutronix.de,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org
+Cc:     Ivan Bornyakov <brnkv.i1@gmail.com>, linux-fpga@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@pengutronix.de, system@metrotek.ru,
+        Ivan Bornyakov <i.bornyakov@metrotek.ru>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v15 2/2] dt-bindings: fpga: document Lattice sysCONFIG FPGA manager
+Date:   Sat,  8 Oct 2022 14:14:19 +0300
+Message-Id: <20221008111419.21245-3-i.bornyakov@metrotek.ru>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20221008111419.21245-1-i.bornyakov@metrotek.ru>
+References: <20221008111419.21245-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-579534304-1665167753=:2168979"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Add Device Tree Binding doc for configuring Lattice ECP5 FPGA over
+Slave SPI sysCONFIG interface.
 
---8323328-579534304-1665167753=:2168979
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8BIT
+Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ .../bindings/fpga/lattice,sysconfig.yaml      | 81 +++++++++++++++++++
+ 1 file changed, 81 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
 
-
-
-On Wed, 5 Oct 2022, Ilpo Järvinen wrote:
-
-> Please try to remember cc all people who have commented your patches when
-> sending the next version.
->
-> On Tue, 4 Oct 2022, matthew.gerlach@linux.intel.com wrote:
->
->> From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
->>
->> Add generic support for MSIX interrupts for DFL devices.
->>
->> The location of a feature's registers is explicitly
->> described in DFHv1 and can be relative to the base of the DFHv1
->> or an absolute address.  Parse the location and pass the information
->> to DFL driver.
->>
->> Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
->
->> @@ -935,55 +948,74 @@ static u16 feature_id(u64 value)
->>  }
->>
->>  static int parse_feature_irqs(struct build_feature_devs_info *binfo,
->> -			      resource_size_t ofst, u16 fid,
->> -			      unsigned int *irq_base, unsigned int *nr_irqs)
->> +			      resource_size_t ofst, struct dfl_feature_info *finfo)
->>  {
->>  	void __iomem *base = binfo->ioaddr + ofst;
->>  	unsigned int i, ibase, inr = 0;
->>  	enum dfl_id_type type;
->> -	int virq;
->> -	u64 v;
->> -
->> -	type = feature_dev_id_type(binfo->feature_dev);
->> +	u16 fid = finfo->fid;
->> +	u64 v, dfh_ver;
->
-> Drop dfh_ver.
-
-I will drop dfh_ver.
-
->
->> +	int virq, off;
->>
->>  	/*
->>  	 * Ideally DFL framework should only read info from DFL header, but
->> -	 * current version DFL only provides mmio resources information for
->> +	 * current version, DFHv0, only provides mmio resources information for
->>  	 * each feature in DFL Header, no field for interrupt resources.
->>  	 * Interrupt resource information is provided by specific mmio
->>  	 * registers of each private feature which supports interrupt. So in
->>  	 * order to parse and assign irq resources, DFL framework has to look
->>  	 * into specific capability registers of these private features.
->>  	 *
->> -	 * Once future DFL version supports generic interrupt resource
->> -	 * information in common DFL headers, the generic interrupt parsing
->> -	 * code will be added. But in order to be compatible to old version
->> +	 * DFHv1 supports generic interrupt resource information in DFHv1
->> +	 * parameter blocks. But in order to be compatible to old version
->>  	 * DFL, the driver may still fall back to these quirks.
->
-> I'm not convinced this comment is useful as is after the introduction of
-> v1. It feels too focused on v0 limitations.
->
-> I suggest you move v0 limitations description to v0 block below and
-> perhaps state in the end of it that comment that v1 is recommended for
-> new things because it doesn't have those limitations. Or something along
-> those lines.
-
-I think I will rework the comment by splitting the descriptions for v0 
-and v1 and focusing on what each supports rather than limitations.
-
->
->>  	 */
->> -	if (type == PORT_ID) {
->> -		switch (fid) {
->> -		case PORT_FEATURE_ID_UINT:
->> -			v = readq(base + PORT_UINT_CAP);
->> -			ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
->> -			inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
->> +
->> +	switch (finfo->dfh_version) {
->> +	case 0:
->> +		type = feature_dev_id_type(binfo->feature_dev);
->> +		if (type == PORT_ID) {
->> +			switch (fid) {
->> +			case PORT_FEATURE_ID_UINT:
->> +				v = readq(base + PORT_UINT_CAP);
->> +				ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
->> +				inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
->> +				break;
->> +			case PORT_FEATURE_ID_ERROR:
->> +				v = readq(base + PORT_ERROR_CAP);
->> +				ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
->> +				inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
->> +				break;
->> +			}
->> +		} else if (type == FME_ID) {
->> +			if (fid == FME_FEATURE_ID_GLOBAL_ERR) {
->> +				v = readq(base + FME_ERROR_CAP);
->> +				ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
->> +				inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
->> +			}
->> +		}
->> +		break;
->> +
->> +	case 1:
->> +		if (!dfhv1_has_params(base))
->>  			break;
->> -		case PORT_FEATURE_ID_ERROR:
->> -			v = readq(base + PORT_ERROR_CAP);
->> -			ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
->> -			inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
->> +
->> +		off = dfhv1_find_param(base, ofst, DFHv1_PARAM_ID_MSIX);
->> +		if (off < 0)
->>  			break;
->> -		}
->> -	} else if (type == FME_ID) {
->> -		if (fid == FME_FEATURE_ID_GLOBAL_ERR) {
->> -			v = readq(base + FME_ERROR_CAP);
->> -			ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
->> -			inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
->> -		}
->> +
->> +		ibase = readl(base + off + DFHv1_PARAM_MSIX_STARTV);
->> +		inr = readl(base + off + DFHv1_PARAM_MSIX_NUMV);
->> +		break;
->> +
->> +	default:
->> +		dev_warn(binfo->dev, "unexpected DFH version %lld\n", dfh_ver);
->
-> dfh_ver is uninitialized here. The compiler shouldn't have been happy with
-> this.
-
-I am surprised the compiler did not flag this uninitialized variable. 
-Getting rid of the dfh_ver altogether is the best course of action.
-
->
->> @@ -1041,21 +1073,33 @@ create_feature_instance(struct build_feature_devs_info *binfo,
->>  	if (binfo->len - ofst < size)
->>  		return -EINVAL;
->>
->> -	ret = parse_feature_irqs(binfo, ofst, fid, &irq_base, &nr_irqs);
->> -	if (ret)
->> -		return ret;
->> -
->>  	finfo = kzalloc(sizeof(*finfo), GFP_KERNEL);
->>  	if (!finfo)
->>  		return -ENOMEM;
->>
->>  	finfo->fid = fid;
->>  	finfo->revision = revision;
->> +	finfo->dfh_version = dfh_version;
->>  	finfo->mmio_res.start = binfo->start + ofst;
->>  	finfo->mmio_res.end = finfo->mmio_res.start + size - 1;
->>  	finfo->mmio_res.flags = IORESOURCE_MEM;
->> -	finfo->irq_base = irq_base;
->> -	finfo->nr_irqs = nr_irqs;
->> +
->> +	ret = parse_feature_irqs(binfo, ofst, finfo);
->> +	if (ret)
->> +		return ret;
->
-> finfo has to be freed in case of an error.
-
-Good catch.  Thanks.
+diff --git a/Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml b/Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
+new file mode 100644
+index 000000000000..4fb05eb84e2a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
+@@ -0,0 +1,81 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fpga/lattice,sysconfig.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Lattice Slave SPI sysCONFIG FPGA manager
++
++maintainers:
++  - Ivan Bornyakov <i.bornyakov@metrotek.ru>
++
++description: |
++  Lattice sysCONFIG port, which is used for FPGA configuration, among others,
++  have Slave Serial Peripheral Interface. Only full reconfiguration is
++  supported.
++
++  Programming of ECP5 is done by writing uncompressed bitstream image in .bit
++  format into FPGA's SRAM configuration memory.
++
++properties:
++  compatible:
++    enum:
++      - lattice,sysconfig-ecp5
++
++  reg:
++    maxItems: 1
++
++  program-gpios:
++    description:
++      A GPIO line connected to PROGRAMN (active low) pin of the device.
++      Initiates configuration sequence.
++    maxItems: 1
++
++  init-gpios:
++    description:
++      A GPIO line connected to INITN (active low) pin of the device.
++      Indicates that the FPGA is ready to be configured.
++    maxItems: 1
++
++  done-gpios:
++    description:
++      A GPIO line connected to DONE (active high) pin of the device.
++      Indicates that the configuration sequence is complete.
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++
++allOf:
++  - $ref: /schemas/spi/spi-peripheral-props.yaml
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: lattice,sysconfig-ecp5
++    then:
++      properties:
++        spi-max-frequency:
++          maximum: 60000000
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    spi {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        fpga-mgr@0 {
++            compatible = "lattice,sysconfig-ecp5";
++            reg = <0>;
++            spi-max-frequency = <20000000>;
++            program-gpios = <&gpio3 4 GPIO_ACTIVE_LOW>;
++            init-gpios = <&gpio3 3 GPIO_ACTIVE_LOW>;
++            done-gpios = <&gpio3 2 GPIO_ACTIVE_HIGH>;
++        };
++    };
+-- 
+2.35.1
 
 
->
-> Thanks for rearranging, it looks more logical now.
->
-> --
-> i.
->
---8323328-579534304-1665167753=:2168979--
