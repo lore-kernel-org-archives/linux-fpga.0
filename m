@@ -2,466 +2,207 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57A4DC4332F
-	for <linux-fpga@archiver.kernel.org>; Wed, 12 Oct 2022 00:33:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FBCCC433FE
+	for <linux-fpga@archiver.kernel.org>; Thu, 13 Oct 2022 09:07:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229453AbiJLAbt (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 11 Oct 2022 20:31:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48926 "EHLO
+        id S229569AbiJMJGR (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 13 Oct 2022 05:06:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60496 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229436AbiJLAbs (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 11 Oct 2022 20:31:48 -0400
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AC7BA59B7;
-        Tue, 11 Oct 2022 17:31:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1665534689; x=1697070689;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=vBp0T8+mMqZ1kjBRD3tOy2m6rGI/0HR0qO6g0a13AI4=;
-  b=JvlJHlDgLvmn7mMYo50ySIJ8grM5VANM0DLSZMjEXETXMLEexPr8ICGl
-   x6cJJn2D8fWFYMrJrgw3+7s634rFlv/2YpV+WM2Q40/TJT3GulpO3hRoN
-   r/9JXIC8iz4RqegCGCGzshZGtIAlNX2mmlv/xfJp236cLrqTl2TqAY1Sz
-   f7t3IR12hed6pVMQGzosx9xkXBYhn39/ciyxRG8CIwzwY8nkJ06Nz4Em8
-   3NO+JsaAx+pK49G+VaoT9rAvNwcLFSXSL405VAO8v+uk7Bg81KWwaRHzD
-   CAXHOP9EZgdHweqI6gguoNYeQWCT2wuHlHLXrRU01X/aFk3DoZ0hvUXJq
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10497"; a="302271800"
-X-IronPort-AV: E=Sophos;i="5.95,177,1661842800"; 
-   d="scan'208";a="302271800"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Oct 2022 17:31:05 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10497"; a="715720437"
-X-IronPort-AV: E=Sophos;i="5.95,177,1661842800"; 
-   d="scan'208";a="715720437"
-Received: from rhweight-wrk1.ra.intel.com ([137.102.106.139])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Oct 2022 17:31:05 -0700
-Date:   Tue, 11 Oct 2022 17:31:18 -0700 (PDT)
-From:   matthew.gerlach@linux.intel.com
-X-X-Sender: mgerlach@rhweight-WRK1
-To:     Xu Yilun <yilun.xu@intel.com>
-cc:     hao.wu@intel.com, russell.h.weight@intel.com,
-        basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
-        mdf@kernel.org, linux-fpga@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        tianfei.zhang@intel.com, corbet@lwn.net,
-        gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
-        jirislaby@kernel.org, geert+renesas@glider.be,
-        andriy.shevchenko@linux.intel.com,
-        niklas.soderlund+renesas@ragnatech.se, macro@orcam.me.uk,
-        johan@kernel.org, lukas@wunner.de
-Subject: Re: [PATCH v3 3/4] fpga: dfl: add basic support for DFHv1
-In-Reply-To: <Y0UM87Tkq0VfBVJn@yilunxu-OptiPlex-7050>
-Message-ID: <alpine.DEB.2.22.394.2210111644500.2511705@rhweight-WRK1>
-References: <20221004143718.1076710-1-matthew.gerlach@linux.intel.com> <20221004143718.1076710-4-matthew.gerlach@linux.intel.com> <Yz6ffEeKZButHw4m@yilunxu-OptiPlex-7050> <alpine.DEB.2.22.394.2210100937280.2404672@rhweight-WRK1>
- <Y0UM87Tkq0VfBVJn@yilunxu-OptiPlex-7050>
-User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
+        with ESMTP id S229727AbiJMJGQ (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 13 Oct 2022 05:06:16 -0400
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2053.outbound.protection.outlook.com [40.107.244.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 814E54B992;
+        Thu, 13 Oct 2022 02:06:15 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=AwU2MJLhmXssIUaAx/J0y9Dtw31+pak5uvlvE4slt9oWdoD6+E5J+8P4hTKuRDoJaUuU2bgiiteIuRNofmven5pXN1L9eZGA7JurZ1fTMqPALzrOCpZvHmvzOrga6EsAJv12buHsE2TqOXX4KDKLAANwvrnUoetbG7xC82TgJSXrnPi8xGpdwcoaHZixNJ/zl1fJ7CaB5O1meObFNuqiKjhnQLTn58cA/cBLVHkaV1bPlJHBUZtNv9xA5r38SrSDeMi7FD47PHBFAB3j7KL3ZgiCpbuCxOeOPxFi2/k2l8KN5RYZQUMkbVNvWq+zfy/Hl3jG0kzRNOtsvjM7omeDvQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=jVw7E3maP+kFvQ1taOQSCAScBaVZu28hMZB7lpaSxn8=;
+ b=kSeWVxha/xfAjYjEHvxNPgo9GAU0zS7gs3Q0aPcvV5c55vXr/l4TFXD8GZqfH40t1SqfEotWsFNa7msNHsYMYtLBz9/6FOIi0+lH3ExsAw1t+cplqitlfcaTWU5TN96COTNTbIIxEkFlRXkAUKYFUnAtfTNPCu0tkhc7nfzjxTRXY+b4S5zVHqtl7P6mJregcijzKeZ8Vgq4h+WIvXLGGc7lKRVncbD1aZWcwVL5hhF7T8OcvCaLNqFCDxp2Anx1agFyUjaiK6MKCeitEl29NHVPJTcWyger7eB02K3h3WEJDc4uvZ4xdrBDT6Tmje2/3tWbnSSHTYYlQcjP0ZEksg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=xilinx.com smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=jVw7E3maP+kFvQ1taOQSCAScBaVZu28hMZB7lpaSxn8=;
+ b=Gzt0nxvOJJqhvObPwai5YXc8xu9spHu82z7AAgLnJBWDnVc01C9GACovc/wIOyUgQcGBh13BsyJkexpK/9fOuKBSkb18m616iMn9d4enruoVprJBs/Z3yua+L2UouvfQsmHgW/KtXLfhpUKoF2ykiCpSPuREs/szPuii7Pgeovw=
+Received: from MW4P223CA0020.NAMP223.PROD.OUTLOOK.COM (2603:10b6:303:80::25)
+ by BL0PR12MB5010.namprd12.prod.outlook.com (2603:10b6:208:17c::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5709.21; Thu, 13 Oct
+ 2022 09:06:11 +0000
+Received: from CO1NAM11FT013.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:303:80:cafe::8a) by MW4P223CA0020.outlook.office365.com
+ (2603:10b6:303:80::25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5723.26 via Frontend
+ Transport; Thu, 13 Oct 2022 09:06:10 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ CO1NAM11FT013.mail.protection.outlook.com (10.13.174.227) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.5723.20 via Frontend Transport; Thu, 13 Oct 2022 09:06:10 +0000
+Received: from localhost (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.28; Thu, 13 Oct
+ 2022 04:06:08 -0500
+From:   Nava kishore Manne <nava.kishore.manne@amd.com>
+To:     <git@xilinx.com>, <michal.simek@xilinx.com>, <mdf@kernel.org>,
+        <hao.wu@intel.com>, <yilun.xu@intel.com>, <trix@redhat.com>,
+        <gregkh@linuxfoundation.org>, <ronak.jain@xilinx.com>,
+        <rajan.vaja@xilinx.com>, <abhyuday.godhasara@xilinx.com>,
+        <nava.kishore.manne@amd.com>, <harsha.harsha@xilinx.com>,
+        <lakshmi.sai.krishna.potthuri@xilinx.com>,
+        <tanmay.shah@xilinx.com>, <linux-arm-kernel@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-fpga@vger.kernel.org>
+Subject: [PATCH v3 1/2] firmware: xilinx: Add pm api function for PL config reg readback
+Date:   Thu, 13 Oct 2022 14:35:55 +0530
+Message-ID: <20221013090556.741357-2-nava.kishore.manne@amd.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20221013090556.741357-1-nava.kishore.manne@amd.com>
+References: <20221013090556.741357-1-nava.kishore.manne@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1NAM11FT013:EE_|BL0PR12MB5010:EE_
+X-MS-Office365-Filtering-Correlation-Id: cddd7bda-aba9-4e28-09bf-08daacfa2bf3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: X3t4ohiLTYeZB4ztoQ89JKv1o4+mWWVfEWWTT+8X3kQwzr17/FH//kE0TSBpXvW/zEaCPsEI3vdr4Ju3Yv+i1RYecxCHKDqUBWXqnmLlVQ1ftPHPB5zy8YrFzpTBZPW39EIybP1jK0VYjMEqGN5dxuukw0koLs9i83p8cLoAVYSnm7Cbmuiagv9OY0eI0uGjF39B/KdHDnSsXoGaLFTR0uQnIVElVG8J2Iml3ZzDRSj8V5OCKLgHy2NRmKOoRvdcUOOLx+Y949rt0XdR5HFnF+zSaK0Z+V/AfMu4lloUs5O7d+4fC8pBMl3HYjtXICGGN0zhdA4hfmycaOJM4xEguofWhhtpeY+PhmLgVd65H0uGPNNzEiYKhFYF1orHr99VAxSJjnstV7fulFp7n8XYMsMxvoJalekslq+aSaFOIPBhvOWZCHqXDs2v0ZhyG/RydaIj9V97ch3rXrNeBlzsOfJXKvFBNyBEP8eJP70surMz78/BIC02MKvuT0UFFKOIlG5/bBkvxS2Ui7fs4EiAe/1wHHeHxJvTLko4Oo3HrWsUwhkV/jx13zWPownA2Q6M8S4KRee+QIu2n+Pebz1juKFNVBvyqYEF2/zmVEHDmBs8R350qTNkM30OTq03mNp6Da892IF+Zszy3ntWxr8aqIxfoU3MITFRN8q+xo7JVuWQ+m+Jrr/nEaSPxabQNcRkMJU1ZvAk76qzbUQjGdAHBJvkC580h9ZB1XMXGIP+Y/iIWUeUYOZmZeDEJQG3xAwV5toEUdPF20zLHK9JGOtpr6xn8R/jJhyFJJqqSn10s1CYX2i0fAmSd0bos402hK06bJULL5TO/4g88WzoqXc+AAs+/ZW5kydnj86Bd1QI1DIY2EeLkQ4jRD3poTZX4jlQ
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230022)(4636009)(376002)(39860400002)(396003)(346002)(136003)(451199015)(40470700004)(46966006)(36840700001)(86362001)(6666004)(426003)(40480700001)(5660300002)(921005)(82310400005)(356005)(83380400001)(70206006)(70586007)(8676002)(47076005)(81166007)(316002)(2906002)(41300700001)(110136005)(336012)(36756003)(26005)(36860700001)(186003)(16526019)(1076003)(2616005)(82740400003)(8936002)(103116003)(478600001)(40460700003)(83996005)(2101003)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Oct 2022 09:06:10.3464
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: cddd7bda-aba9-4e28-09bf-08daacfa2bf3
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT013.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL0PR12MB5010
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
+Adds PM API for performing Programmable Logic(PL) configuration
+register readback. It provides an interface to the firmware(pmufw)
+to readback the FPGA configuration register.
 
+Signed-off-by: Nava kishore Manne <nava.kishore.manne@amd.com>
+---
+hanges for v2:
+              - None.
 
-On Tue, 11 Oct 2022, Xu Yilun wrote:
+Changes for v3:
+              - Updated API and config reg read-back handling logic
+              - Updated the commit msg to align with the changes.
 
-> On 2022-10-10 at 09:58:00 -0700, matthew.gerlach@linux.intel.com wrote:
->>
->>
->> On Thu, 6 Oct 2022, Xu Yilun wrote:
->>
->>> On 2022-10-04 at 07:37:17 -0700, matthew.gerlach@linux.intel.com wrote:
->>>> From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
->>>>
->>>> Add generic support for MSIX interrupts for DFL devices.
->>>>
->>>> The location of a feature's registers is explicitly
->>>> described in DFHv1 and can be relative to the base of the DFHv1
->>>> or an absolute address.  Parse the location and pass the information
->>>> to DFL driver.
->>>>
->>>> Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
->>>> ---
->>>> v3: remove unneeded blank line
->>>>     use clearer variable name
->>>>     pass finfo into parse_feature_irqs()
->>>>     refactor code for better indentation
->>>>     use switch statement for irq parsing
->>>>     squash in code parsing register location
->>>>
->>>> v2: fix kernel doc
->>>>     clarify use of DFH_VERSION field
->>>> ---
->>>>  drivers/fpga/dfl.c  | 150 ++++++++++++++++++++++++++++++++------------
->>>>  drivers/fpga/dfl.h  |   3 +
->>>>  include/linux/dfl.h |  20 ++++++
->>>>  3 files changed, 134 insertions(+), 39 deletions(-)
->>>>
->>>> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
->>>> index b9aae85ba930..6a74317e549e 100644
->>>> --- a/drivers/fpga/dfl.c
->>>> +++ b/drivers/fpga/dfl.c
->>>> @@ -380,7 +380,11 @@ dfl_dev_add(struct dfl_feature_platform_data *pdata,
->>>>  	ddev->type = feature_dev_id_type(pdev);
->>>>  	ddev->feature_id = feature->id;
->>>>  	ddev->revision = feature->revision;
->>>> +	ddev->dfh_version = feature->dfh_version;
->>>>  	ddev->cdev = pdata->dfl_cdev;
->>>> +	ddev->csr_res.start = feature->csr_res.start;
->>>> +	ddev->csr_res.end = feature->csr_res.end;
->>>> +	ddev->csr_res.flags = IORESOURCE_MEM;
->>>>
->>>>  	/* add mmio resource */
->>>>  	parent_res = &pdev->resource[feature->resource_index];
->>>> @@ -708,18 +712,24 @@ struct build_feature_devs_info {
->>>>   * struct dfl_feature_info - sub feature info collected during feature dev build
->>>>   *
->>>>   * @fid: id of this sub feature.
->>>> + * @revision: revision of this sub feature
->>>> + * @dfh_version: version of Device Feature Header (DFH)
->>>>   * @mmio_res: mmio resource of this sub feature.
->>>>   * @ioaddr: mapped base address of mmio resource.
->>>>   * @node: node in sub_features linked list.
->>>> + * @csr_res: resource of DFHv1 feature registers
->>>> + * @csr_size: DFHv1 size of feature registers
->>>>   * @irq_base: start of irq index in this sub feature.
->>>>   * @nr_irqs: number of irqs of this sub feature.
->>>>   */
->>>>  struct dfl_feature_info {
->>>>  	u16 fid;
->>>>  	u8 revision;
->>>> +	u8 dfh_version;
->>>>  	struct resource mmio_res;
->>>>  	void __iomem *ioaddr;
->>>>  	struct list_head node;
->>>> +	struct resource csr_res;
->>>>  	unsigned int irq_base;
->>>>  	unsigned int nr_irqs;
->>>>  };
->>>> @@ -797,6 +807,9 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
->>>>  		feature->dev = fdev;
->>>>  		feature->id = finfo->fid;
->>>>  		feature->revision = finfo->revision;
->>>> +		feature->dfh_version = finfo->dfh_version;
->>>> +		feature->csr_res.start = finfo->csr_res.start;
->>>> +		feature->csr_res.end = finfo->csr_res.end;
->>>>
->>>>  		/*
->>>>  		 * the FIU header feature has some fundamental functions (sriov
->>>> @@ -935,55 +948,74 @@ static u16 feature_id(u64 value)
->>>>  }
->>>>
->>>>  static int parse_feature_irqs(struct build_feature_devs_info *binfo,
->>>> -			      resource_size_t ofst, u16 fid,
->>>> -			      unsigned int *irq_base, unsigned int *nr_irqs)
->>>> +			      resource_size_t ofst, struct dfl_feature_info *finfo)
->>>>  {
->>>>  	void __iomem *base = binfo->ioaddr + ofst;
->>>>  	unsigned int i, ibase, inr = 0;
->>>>  	enum dfl_id_type type;
->>>> -	int virq;
->>>> -	u64 v;
->>>> -
->>>> -	type = feature_dev_id_type(binfo->feature_dev);
->>>> +	u16 fid = finfo->fid;
->>>> +	u64 v, dfh_ver;
->>>> +	int virq, off;
->>>>
->>>>  	/*
->>>>  	 * Ideally DFL framework should only read info from DFL header, but
->>>> -	 * current version DFL only provides mmio resources information for
->>>> +	 * current version, DFHv0, only provides mmio resources information for
->>>>  	 * each feature in DFL Header, no field for interrupt resources.
->>>>  	 * Interrupt resource information is provided by specific mmio
->>>>  	 * registers of each private feature which supports interrupt. So in
->>>>  	 * order to parse and assign irq resources, DFL framework has to look
->>>>  	 * into specific capability registers of these private features.
->>>>  	 *
->>>> -	 * Once future DFL version supports generic interrupt resource
->>>> -	 * information in common DFL headers, the generic interrupt parsing
->>>> -	 * code will be added. But in order to be compatible to old version
->>>> +	 * DFHv1 supports generic interrupt resource information in DFHv1
->>>> +	 * parameter blocks. But in order to be compatible to old version
->>>>  	 * DFL, the driver may still fall back to these quirks.
->>>>  	 */
->>>> -	if (type == PORT_ID) {
->>>> -		switch (fid) {
->>>> -		case PORT_FEATURE_ID_UINT:
->>>> -			v = readq(base + PORT_UINT_CAP);
->>>> -			ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
->>>> -			inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
->>>> +
->>>> +	switch (finfo->dfh_version) {
->>>> +	case 0:
->>>> +		type = feature_dev_id_type(binfo->feature_dev);
->>>> +		if (type == PORT_ID) {
->>>> +			switch (fid) {
->>>> +			case PORT_FEATURE_ID_UINT:
->>>> +				v = readq(base + PORT_UINT_CAP);
->>>> +				ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
->>>> +				inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
->>>> +				break;
->>>> +			case PORT_FEATURE_ID_ERROR:
->>>> +				v = readq(base + PORT_ERROR_CAP);
->>>> +				ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
->>>> +				inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
->>>> +				break;
->>>> +			}
->>>> +		} else if (type == FME_ID) {
->>>> +			if (fid == FME_FEATURE_ID_GLOBAL_ERR) {
->>>> +				v = readq(base + FME_ERROR_CAP);
->>>> +				ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
->>>> +				inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
->>>> +			}
->>>> +		}
->>>> +		break;
->>>> +
->>>> +	case 1:
->>>> +		if (!dfhv1_has_params(base))
->>>>  			break;
->>>> -		case PORT_FEATURE_ID_ERROR:
->>>> -			v = readq(base + PORT_ERROR_CAP);
->>>> -			ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
->>>> -			inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
->>>> +
->>>> +		off = dfhv1_find_param(base, ofst, DFHv1_PARAM_ID_MSIX);
->>>> +		if (off < 0)
->>>>  			break;
->>>> -		}
->>>> -	} else if (type == FME_ID) {
->>>> -		if (fid == FME_FEATURE_ID_GLOBAL_ERR) {
->>>> -			v = readq(base + FME_ERROR_CAP);
->>>> -			ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
->>>> -			inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
->>>> -		}
->>>> +
->>>> +		ibase = readl(base + off + DFHv1_PARAM_MSIX_STARTV);
->>>> +		inr = readl(base + off + DFHv1_PARAM_MSIX_NUMV);
->>>> +		break;
->>>> +
->>>> +	default:
->>>> +		dev_warn(binfo->dev, "unexpected DFH version %lld\n", dfh_ver);
->>>> +		break;
->>>>  	}
->>>>
->>>>  	if (!inr) {
->>>> -		*irq_base = 0;
->>>> -		*nr_irqs = 0;
->>>> +		finfo->irq_base = 0;
->>>> +		finfo->nr_irqs = 0;
->>>>  		return 0;
->>>>  	}
->>>>
->>>> @@ -1006,8 +1038,8 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
->>>>  		}
->>>>  	}
->>>>
->>>> -	*irq_base = ibase;
->>>> -	*nr_irqs = inr;
->>>> +	finfo->irq_base = ibase;
->>>> +	finfo->nr_irqs = inr;
->>>>
->>>>  	return 0;
->>>>  }
->>>> @@ -1023,8 +1055,8 @@ static int
->>>>  create_feature_instance(struct build_feature_devs_info *binfo,
->>>>  			resource_size_t ofst, resource_size_t size, u16 fid)
->>>>  {
->>>> -	unsigned int irq_base, nr_irqs;
->>>>  	struct dfl_feature_info *finfo;
->>>> +	u8 dfh_version = 0;
->>>>  	u8 revision = 0;
->>>>  	int ret;
->>>>  	u64 v;
->>>> @@ -1032,7 +1064,7 @@ create_feature_instance(struct build_feature_devs_info *binfo,
->>>>  	if (fid != FEATURE_ID_AFU) {
->>>>  		v = readq(binfo->ioaddr + ofst);
->>>>  		revision = FIELD_GET(DFH_REVISION, v);
->>>> -
->>>> +		dfh_version = FIELD_GET(DFH_VERSION, v);
->>>>  		/* read feature size and id if inputs are invalid */
->>>>  		size = size ? size : feature_size(v);
->>>>  		fid = fid ? fid : feature_id(v);
->>>> @@ -1041,21 +1073,33 @@ create_feature_instance(struct build_feature_devs_info *binfo,
->>>>  	if (binfo->len - ofst < size)
->>>>  		return -EINVAL;
->>>>
->>>> -	ret = parse_feature_irqs(binfo, ofst, fid, &irq_base, &nr_irqs);
->>>> -	if (ret)
->>>> -		return ret;
->>>> -
->>>>  	finfo = kzalloc(sizeof(*finfo), GFP_KERNEL);
->>>>  	if (!finfo)
->>>>  		return -ENOMEM;
->>>>
->>>>  	finfo->fid = fid;
->>>>  	finfo->revision = revision;
->>>> +	finfo->dfh_version = dfh_version;
->>>>  	finfo->mmio_res.start = binfo->start + ofst;
->>>>  	finfo->mmio_res.end = finfo->mmio_res.start + size - 1;
->>>>  	finfo->mmio_res.flags = IORESOURCE_MEM;
->>>> -	finfo->irq_base = irq_base;
->>>> -	finfo->nr_irqs = nr_irqs;
->>>> +
->>>> +	ret = parse_feature_irqs(binfo, ofst, finfo);
->>>> +	if (ret)
->>>> +		return ret;
->>>> +
->>>> +	if (dfh_version == 1) {
->>>> +		v = readq(binfo->ioaddr + ofst + DFHv1_CSR_ADDR);
->>>> +		if (v & DFHv1_CSR_ADDR_REL)
->>>> +			finfo->csr_res.start = FIELD_GET(DFHv1_CSR_ADDR_MASK, v);
->>>> +		else
->>>> +			finfo->csr_res.start = binfo->start + ofst
->>>> +					       + FIELD_GET(DFHv1_CSR_ADDR_MASK, v);
->>>> +
->>>> +		v = readq(binfo->ioaddr + ofst + DFHv1_CSR_SIZE_GRP);
->>>> +		finfo->csr_res.end = finfo->csr_res.start
->>>> +				     + FIELD_GET(DFHv1_CSR_SIZE_GRP_SIZE, v) - 1;
->>>> +	}
->>>>
->>>>  	list_add_tail(&finfo->node, &binfo->sub_features);
->>>>  	binfo->feature_num++;
->>>> @@ -1879,6 +1923,34 @@ long dfl_feature_ioctl_set_irq(struct platform_device *pdev,
->>>>  }
->>>>  EXPORT_SYMBOL_GPL(dfl_feature_ioctl_set_irq);
->>>>
->>>> +int dfhv1_find_param(void __iomem *base, resource_size_t max, int param)
->>>> +{
->>>> +	int off = DFHv1_PARAM_HDR;
->>>> +	u64 v, next;
->>>> +
->>>> +	while (off < max) {
->>>> +		v = readq(base + off);
->>>> +		if (param == FIELD_GET(DFHv1_PARAM_HDR_ID, v))
->>>> +			return (DFHv1_PARAM_DATA + off);
->>>> +
->>>> +		next = FIELD_GET(DFHv1_PARAM_HDR_NEXT_OFFSET, v);
->>>> +		if (!next)
->>>> +			break;
->>>> +
->>>> +		off += next;
->>>> +	}
->>>> +
->>>> +	return -ENOENT;
->>>> +}
->>>> +EXPORT_SYMBOL_GPL(dfhv1_find_param);
->>>> +
->>>> +int dfhv1_has_params(void __iomem *dfh_base)
->>>> +{
->>>> +	return (FIELD_GET(DFHv1_CSR_SIZE_GRP_HAS_PARAMS,
->>>> +		readq(dfh_base + DFHv1_CSR_SIZE_GRP)));
->>>> +}
->>>> +EXPORT_SYMBOL_GPL(dfhv1_has_params);
->>>> +
->>>>  static void __exit dfl_fpga_exit(void)
->>>>  {
->>>>  	dfl_chardev_uinit();
->>>> diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
->>>> index bd8720bc5320..0423aa8319ed 100644
->>>> --- a/drivers/fpga/dfl.h
->>>> +++ b/drivers/fpga/dfl.h
->>>> @@ -266,6 +266,7 @@ struct dfl_feature_irq_ctx {
->>>>   *		    this index is used to find its mmio resource from the
->>>>   *		    feature dev (platform device)'s resources.
->>>>   * @ioaddr: mapped mmio resource address.
->>>> + * @csr_res: resource for DFHv1 feature registers
->>>>   * @irq_ctx: interrupt context list.
->>>>   * @nr_irqs: number of interrupt contexts.
->>>>   * @ops: ops of this sub feature.
->>>> @@ -276,8 +277,10 @@ struct dfl_feature {
->>>>  	struct platform_device *dev;
->>>>  	u16 id;
->>>>  	u8 revision;
->>>> +	u8 dfh_version;
->>>>  	int resource_index;
->>>>  	void __iomem *ioaddr;
->>>> +	struct resource csr_res;
->>>>  	struct dfl_feature_irq_ctx *irq_ctx;
->>>>  	unsigned int nr_irqs;
->>>>  	const struct dfl_feature_ops *ops;
->>>> diff --git a/include/linux/dfl.h b/include/linux/dfl.h
->>>> index 1a1a2b894687..71760c6a25d7 100644
->>>> --- a/include/linux/dfl.h
->>>> +++ b/include/linux/dfl.h
->>>> @@ -39,6 +39,7 @@ enum dfl_id_type {
->>>>   * @type: type of DFL FIU of the device. See enum dfl_id_type.
->>>>   * @feature_id: feature identifier local to its DFL FIU type.
->>>>   * @mmio_res: mmio resource of this dfl device.
->>>> + * @csr_res: resource for DFHv1 feature registers
->>>
->>> I think the combination of mmio_res & csr_res is confusing. Why a
->>> special csr_res dedicated for DFHv1, and what the mmio_res stands for if
->>> the csr_res exists? And they may overlap each other.
->>
->> With DFHv1, the registers of a feature may be in a different location than
->> the location of the Device Feature Header.  So a resource is needed for the
->> DFH and another resource for the actual register space.  Would changing the
->> name of mmio_res to dfh_res be less confusing? Unfortunately, changing the
->> name of mmio_res would impact the existing dfl drivers.
->
-> There are 4 existing dfl drivers now, I think making changes is still
-> possible. But what is more important to me is to have a clear definition
-> of resource layout for dfl_device structure, cause it is used in other kernel
-> domains. Resource overlapping is hard to understand.
+ drivers/firmware/xilinx/zynqmp.c     | 35 ++++++++++++++++++++++++++++
+ include/linux/firmware/xlnx-zynqmp.h | 11 +++++++++
+ 2 files changed, 46 insertions(+)
 
-I agree that we need to have a clear definition of resource layout for 
-dfl_device structure, and resource overlapping is hard to understand.
+diff --git a/drivers/firmware/xilinx/zynqmp.c b/drivers/firmware/xilinx/zynqmp.c
+index d1f652802181..045a113434c2 100644
+--- a/drivers/firmware/xilinx/zynqmp.c
++++ b/drivers/firmware/xilinx/zynqmp.c
+@@ -941,6 +941,41 @@ int zynqmp_pm_fpga_get_status(u32 *value)
+ }
+ EXPORT_SYMBOL_GPL(zynqmp_pm_fpga_get_status);
+ 
++/**
++ * zynqmp_pm_fpga_get_config_status - Get the FPGA configuration status.
++ * @value: Buffer to store FPGA configuration status.
++ *
++ * This function provides access to the pmufw to get the FPGA configuration
++ * status
++ *
++ * Return: Returns status, either success or error+reason
++ */
++int zynqmp_pm_fpga_get_config_status(u32 *value)
++{
++	u32 ret_payload[PAYLOAD_ARG_CNT];
++	u32 buf, phys_lower_addr, phys_upper_addr, addr;
++	int ret;
++
++	if (!value)
++		return -EINVAL;
++
++	addr = (u64)&buf;
++
++	phys_lower_addr = lower_32_bits(addr);
++	phys_upper_addr = upper_32_bits(addr);
++
++	ret = zynqmp_pm_invoke_fn(PM_FPGA_READ,
++				  XILINX_ZYNQMP_PM_FPGA_CONFIG_STAT_OFFSET,
++				  phys_lower_addr, phys_upper_addr,
++				  XILINX_ZYNQMP_PM_FPGA_READ_CONFIG_REG,
++				  ret_payload);
++
++	*value = ret_payload[1];
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(zynqmp_pm_fpga_get_config_status);
++
+ /**
+  * zynqmp_pm_pinctrl_request - Request Pin from firmware
+  * @pin: Pin number to request
+diff --git a/include/linux/firmware/xlnx-zynqmp.h b/include/linux/firmware/xlnx-zynqmp.h
+index 9f50dacbf7d6..34b0a9171293 100644
+--- a/include/linux/firmware/xlnx-zynqmp.h
++++ b/include/linux/firmware/xlnx-zynqmp.h
+@@ -70,6 +70,10 @@
+ #define XILINX_ZYNQMP_PM_FPGA_FULL	0x0U
+ #define XILINX_ZYNQMP_PM_FPGA_PARTIAL	BIT(0)
+ 
++/* FPGA Status Reg */
++#define XILINX_ZYNQMP_PM_FPGA_CONFIG_STAT_OFFSET	7U
++#define XILINX_ZYNQMP_PM_FPGA_READ_CONFIG_REG		0U
++
+ /*
+  * Node IDs for the Error Events.
+  */
+@@ -117,6 +121,7 @@ enum pm_api_id {
+ 	PM_CLOCK_GETRATE = 42,
+ 	PM_CLOCK_SETPARENT = 43,
+ 	PM_CLOCK_GETPARENT = 44,
++	PM_FPGA_READ = 46,
+ 	PM_SECURE_AES = 47,
+ 	PM_FEATURE_CHECK = 63,
+ };
+@@ -475,6 +480,7 @@ int zynqmp_pm_is_function_supported(const u32 api_id, const u32 id);
+ int zynqmp_pm_set_feature_config(enum pm_feature_config_id id, u32 value);
+ int zynqmp_pm_get_feature_config(enum pm_feature_config_id id, u32 *payload);
+ int zynqmp_pm_register_sgi(u32 sgi_num, u32 reset);
++int zynqmp_pm_fpga_get_config_status(u32 *value);
+ #else
+ static inline int zynqmp_pm_get_api_version(u32 *version)
+ {
+@@ -745,6 +751,11 @@ static inline int zynqmp_pm_register_sgi(u32 sgi_num, u32 reset)
+ {
+ 	return -ENODEV;
+ }
++
++int zynqmp_pm_fpga_get_config_status(u32 *value)
++{
++	return -ENODEV;
++}
+ #endif
+ 
+ #endif /* __FIRMWARE_ZYNQMP_H__ */
+-- 
+2.25.1
 
->
-> Some possible options in my mind:
-> 1. keep the mmio_res, but it only includes the csr region.
->
->   dfl driver couldn't access dfl header & param directly, but I think
->   it's OK, dfl drivers don't have to care too much about the HW layout
->   of dfl header & param. The header & param values could be parsed in dfl
->   core and provided to dfl drivers by APIs.
->
->   No extension of multiple csr regions in future.
->
-> 2. struct resource mmio_res -> int num_mmio_res & struct resource *mmio_res
->
->   Same as platform device, multiple resources for multiple memory blocks,
->   maybe each tagged by name, they don't overlap each other. It impacts the
->   existing dfl drivers, but may support multiple csr regions if possible.
->
-
-I think we may need a combination of both of your suggested options. I 
-think a limitation to a single memory resource will be insufficient for 
-many IP blocks.  DFL drivers do need to know things in header like 
-parameters and feature revisions, but I agree they can be parsed out and 
-dfl drivers can access the information by APIs.
-
->>
->> The two resources may overlap, but that is why in
->> drivers/tty/serial/8250/8250_dfl.c the mmio_res is mapped, then DFH parsed,
->> and unmapped before the csr_res is mapped in the call to
->> serial8250_register_8250_port().
->
-> This is what I want to avoid, every dfl driver needs the same routine
-> for the mmios they really want, which is a challenge to all domain
-> reviewers.
-
-I understand your concern. Let's try to get this concern fully addressed.
-
->
-> Thanks,
-> Yilun
->
->>
->>>
->>> Could you present some general purpose mmio resource layout which is
->>> compatible to dfl v0 & v1? People from other domains just need to know
->>> the basic concept like how many register blocks in the device, what are
->>> their ranges ...
->>
->> I don't know how a single resource object can be used in the case of DFHv1
->> when the registers are in a different location than the DFH.
->>
->>>
->>> Thanks,
->>> Yilun
->>>
->
