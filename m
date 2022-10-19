@@ -2,102 +2,154 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 424EDC433FE
-	for <linux-fpga@archiver.kernel.org>; Wed, 19 Oct 2022 05:05:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34ACBC433FE
+	for <linux-fpga@archiver.kernel.org>; Wed, 19 Oct 2022 13:41:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229437AbiJSFD2 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 19 Oct 2022 01:03:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46898 "EHLO
+        id S232665AbiJSNj3 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 19 Oct 2022 09:39:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38928 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229506AbiJSFD2 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 19 Oct 2022 01:03:28 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7619A5D101;
-        Tue, 18 Oct 2022 22:03:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1666155807; x=1697691807;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=o6pyxH0L5HFS1fwpUgdGvaHH+ef6BU4LBn8UIWF6hk4=;
-  b=fGmz52n6vpoBHv4F1EbbqdwkBdG12cxv19J5lQmHhd5YdK7jdH9qA/Ra
-   BG/Si26HM3xz3LgesiKfEez2l6E+B2gcpyGIluqXoeW81McTJOIsr9oro
-   JNNgU4uAXXE++XC7frdDAIMyRtqbNAA5QyavkV6gtvs+NhOUG6oIO7ITR
-   wH9FKkO+xdDvhS4XdUxUcTTa6Dm8+xdnrqli1ItQHElPiag/kEZ5m4+i4
-   q4lq323oA8sEtPBjnETcRgH3auvJICTJ5d4l0hDqDKHCcIWic6j/QoeQL
-   oQ3XUlAyVONYOq6WhOTtkjz69Ti8U6cB1/17ZlAhs08CrEior0+h1baxQ
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10504"; a="289624353"
-X-IronPort-AV: E=Sophos;i="5.95,195,1661842800"; 
-   d="scan'208";a="289624353"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Oct 2022 22:03:26 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10504"; a="771583163"
-X-IronPort-AV: E=Sophos;i="5.95,195,1661842800"; 
-   d="scan'208";a="771583163"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmsmga001.fm.intel.com with ESMTP; 18 Oct 2022 22:03:23 -0700
-Date:   Wed, 19 Oct 2022 12:54:14 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Ivan Bornyakov <i.bornyakov@metrotek.ru>
-Cc:     mdf@kernel.org, hao.wu@intel.com, trix@redhat.com, dg@emlix.com,
-        j.zink@pengutronix.de, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, linux-fpga@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kernel@pengutronix.de, system@metrotek.ru
-Subject: Re: [PATCH v18 1/2] fpga: lattice-sysconfig-spi: add Lattice
- sysCONFIG FPGA manager
-Message-ID: <Y0+C9tTIXkAcKXBS@yilunxu-OptiPlex-7050>
-References: <20221014202750.20542-1-i.bornyakov@metrotek.ru>
- <20221014202750.20542-2-i.bornyakov@metrotek.ru>
+        with ESMTP id S232936AbiJSNjH (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 19 Oct 2022 09:39:07 -0400
+Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 676EBAF191;
+        Wed, 19 Oct 2022 06:26:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+        d=metrotek.ru; s=mail;
+        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
+         in-reply-to:references;
+        bh=M4xO9IqxnWbsC4nyc5lGTD297hCkmftCcGG9wBbB0gQ=;
+        b=NG1w7H1bb+6y43ggC7JnX+EtdHOpMvWZFIwn5lf9mr3nUj8Nn7wGQd1vlnu3dWSXKUlpflOt1EgLM
+         GX1VuYoKWj+AY6iOU53cnbnHpD/zf18ylstXBb38blc5bw0Xb9U1VZChJa66zv73zNR81S8YtXUKEM
+         sBbCF3Y1w7mV/0WivSH0Jwdf3LAEBYe887kzFMeGP6vpi0yGvX9YXTHiHgeCxiKmiAV07cpJqjq3Az
+         TauU2KkviN17OojfOr8oyCmM2x22FO02KamMIJwb7ZeTqQpntXcD+n8oaJC7ByVpCSm8t1BQfpSIFx
+         SwFBLTJ1xZapNNAmtYSvXBOrBaxRQ+Q==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.4.1445, Stamp: 3], Multi: [Enabled, t: (0.000011,0.012720)], BW: [Enabled, t: (0.000020,0.000001)], RTDA: [Enabled, t: (0.081212), Hit: No, Details: v2.42.0; Id: 15.52k3ar.1gfnpodth.71d; mclb], total: 0(700)
+X-Footer: bWV0cm90ZWsucnU=
+Received: from localhost.localdomain ([92.100.86.33])
+        (authenticated user i.bornyakov@metrotek.ru)
+        by mail.pr-group.ru with ESMTPSA
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
+        Wed, 19 Oct 2022 12:38:51 +0300
+From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
+To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
+        trix@redhat.com, dg@emlix.com, j.zink@pengutronix.de,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org
+Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
+        linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, kernel@pengutronix.de,
+        system@metrotek.ru,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v19 2/2] dt-bindings: fpga: document Lattice sysCONFIG FPGA manager
+Date:   Wed, 19 Oct 2022 12:10:15 +0300
+Message-Id: <20221019091015.22678-3-i.bornyakov@metrotek.ru>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <20221019091015.22678-1-i.bornyakov@metrotek.ru>
+References: <20221019091015.22678-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221014202750.20542-2-i.bornyakov@metrotek.ru>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On 2022-10-14 at 23:27:49 +0300, Ivan Bornyakov wrote:
-> Add support to the FPGA manager for programming Lattice ECP5 FPGA over
-> slave SPI sysCONFIG interface.
-> 
-> sysCONFIG interface core functionality is separate from both ECP5 and
-> SPI specifics, so support for other FPGAs with different port types can
-> be added in the future.
-> 
-> Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
-> ---
+Add Device Tree Binding doc for configuring Lattice ECP5 FPGA over
+Slave SPI sysCONFIG interface.
 
-[...]
+Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ .../bindings/fpga/lattice,sysconfig.yaml      | 81 +++++++++++++++++++
+ 1 file changed, 81 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
 
-> +static int sysconfig_poll_gpio(struct gpio_desc *gpio, bool is_active)
-> +{
-> +	int ret, val;
-> +
-> +	ret = read_poll_timeout(gpiod_get_value, val, val < 0 ||
-> +				(val && is_active) || (!val && !is_active),
+diff --git a/Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml b/Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
+new file mode 100644
+index 000000000000..4fb05eb84e2a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fpga/lattice,sysconfig.yaml
+@@ -0,0 +1,81 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fpga/lattice,sysconfig.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Lattice Slave SPI sysCONFIG FPGA manager
++
++maintainers:
++  - Ivan Bornyakov <i.bornyakov@metrotek.ru>
++
++description: |
++  Lattice sysCONFIG port, which is used for FPGA configuration, among others,
++  have Slave Serial Peripheral Interface. Only full reconfiguration is
++  supported.
++
++  Programming of ECP5 is done by writing uncompressed bitstream image in .bit
++  format into FPGA's SRAM configuration memory.
++
++properties:
++  compatible:
++    enum:
++      - lattice,sysconfig-ecp5
++
++  reg:
++    maxItems: 1
++
++  program-gpios:
++    description:
++      A GPIO line connected to PROGRAMN (active low) pin of the device.
++      Initiates configuration sequence.
++    maxItems: 1
++
++  init-gpios:
++    description:
++      A GPIO line connected to INITN (active low) pin of the device.
++      Indicates that the FPGA is ready to be configured.
++    maxItems: 1
++
++  done-gpios:
++    description:
++      A GPIO line connected to DONE (active high) pin of the device.
++      Indicates that the configuration sequence is complete.
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++
++allOf:
++  - $ref: /schemas/spi/spi-peripheral-props.yaml
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: lattice,sysconfig-ecp5
++    then:
++      properties:
++        spi-max-frequency:
++          maximum: 60000000
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    spi {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        fpga-mgr@0 {
++            compatible = "lattice,sysconfig-ecp5";
++            reg = <0>;
++            spi-max-frequency = <20000000>;
++            program-gpios = <&gpio3 4 GPIO_ACTIVE_LOW>;
++            init-gpios = <&gpio3 3 GPIO_ACTIVE_LOW>;
++            done-gpios = <&gpio3 2 GPIO_ACTIVE_HIGH>;
++        };
++    };
+-- 
+2.37.3
 
-val < 0 || (!!val == is_active)
 
-is it better?
-
-> +				SYSCONFIG_POLL_INTERVAL_US,
-> +				SYSCONFIG_POLL_GPIO_TIMEOUT_US, false, gpio);
-> +
-> +	return val < 0 ? val : ret;
-
-Try not to use ternery operator here.
-
-  if (ret)
-	return ret;
-  else if (val < 0)
-	return val;
-
-  return 0;
-
-Is it OK?
-
-Thanks,
-Yilun
