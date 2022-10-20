@@ -2,728 +2,165 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FD91C433FE
-	for <linux-fpga@archiver.kernel.org>; Thu, 20 Oct 2022 02:03:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5BE7C4332F
+	for <linux-fpga@archiver.kernel.org>; Thu, 20 Oct 2022 21:27:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229912AbiJTCBf (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 19 Oct 2022 22:01:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41898 "EHLO
+        id S229800AbiJTV0A (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 20 Oct 2022 17:26:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230227AbiJTCBe (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 19 Oct 2022 22:01:34 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 572AB130D53;
-        Wed, 19 Oct 2022 19:01:31 -0700 (PDT)
+        with ESMTP id S229629AbiJTVZ6 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 20 Oct 2022 17:25:58 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E0BA180597;
+        Thu, 20 Oct 2022 14:25:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1666231291; x=1697767291;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=lNG0ObWIZs0QHN9kxkgfU4ltOvtFVtnmtnrBXnHm5bU=;
-  b=khgr85U8VfxQ2PXl/UnYGG7PTehbw1wVefkdGFu92qg8U6Gzgdzh6wbF
-   pLjFq5z6C2UGBSF3ZwgFrU2bZFeIvH1+Pkb330GPvuuvMJbnuHQ5QROTA
-   /zNYb8xhjIDqHWX1tNaC7WrZVYz/DGw9SlQ7MRCxKwcj8rGB/m2uahkKt
-   bOAfqXlRHoTi9c/BnYzRq1jL1mzTWzaLan1q/RygSFna+OjVjfsyFOpX1
-   +iJOieCGCkys9RNL8O6XzClkb36ga78RCNF9+A4O0UdZX//oH8N55IV2H
-   zSiRlBhXON02FWxlDLpPVZ1wy8B+3TIla/XoP+/LSJCQ/HtONmDxW+433
+  t=1666301157; x=1697837157;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=RX2JNyvAov8v89XYF6H5UlH6Cd9vaxEM+damP0WRpBM=;
+  b=kSmsRe053I1hTu7EHDjVe5xbu6eKTOg9hpeIAzWvWmNeoM6bPBqXgWz3
+   1r3MhyTyr24c/TIQJHekuq53JbQP3ohEXmrbOZp3rq7qxQYZDbNE1W0yP
+   bYiHT86xsbeSryJ2RJMIEautxd2H5PZHuGiWXo2LyN53zhIXamj0vw44+
+   NKv7Cy6CQGaQhU4k6RLsZyQaBPYC9aVNC8eG5oTgzuzsMEjwO+pHCGs3s
+   3h0DwUs6BjOnt0bsh0wVrRyPsmBH/55UHDrCXrqFj2N2oOHU9jLCvIAk2
+   k38gdJpSCYG+DE/lwsHPkvPLO5aLfl6JTIkQ6jyLpfrusmOHht+fGum6r
    g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10505"; a="289891306"
-X-IronPort-AV: E=Sophos;i="5.95,196,1661842800"; 
-   d="scan'208";a="289891306"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Oct 2022 19:01:30 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10505"; a="662758264"
-X-IronPort-AV: E=Sophos;i="5.95,196,1661842800"; 
-   d="scan'208";a="662758264"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orsmga001.jf.intel.com with ESMTP; 19 Oct 2022 19:01:27 -0700
-Date:   Thu, 20 Oct 2022 09:52:29 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Ivan Bornyakov <i.bornyakov@metrotek.ru>
-Cc:     mdf@kernel.org, hao.wu@intel.com, trix@redhat.com, dg@emlix.com,
-        j.zink@pengutronix.de, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, linux-fpga@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kernel@pengutronix.de, system@metrotek.ru
-Subject: Re: [PATCH v19 1/2] fpga: lattice-sysconfig-spi: add Lattice
- sysCONFIG FPGA manager
-Message-ID: <Y1Cp3UV7cyFR5KQ4@yilunxu-OptiPlex-7050>
-References: <20221019091015.22678-1-i.bornyakov@metrotek.ru>
- <20221019091015.22678-2-i.bornyakov@metrotek.ru>
+X-IronPort-AV: E=McAfee;i="6500,9779,10506"; a="333412435"
+X-IronPort-AV: E=Sophos;i="5.95,199,1661842800"; 
+   d="scan'208";a="333412435"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Oct 2022 14:25:56 -0700
+X-IronPort-AV: E=McAfee;i="6500,9779,10506"; a="693260674"
+X-IronPort-AV: E=Sophos;i="5.95,199,1661842800"; 
+   d="scan'208";a="693260674"
+Received: from rhweight-wrk1.ra.intel.com ([137.102.106.139])
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Oct 2022 14:25:56 -0700
+From:   matthew.gerlach@linux.intel.com
+To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
+        basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
+        mdf@kernel.org, linux-fpga@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        tianfei.zhang@intel.com, corbet@lwn.net,
+        gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
+        jirislaby@kernel.org, geert+renesas@glider.be,
+        andriy.shevchenko@linux.intel.com,
+        niklas.soderlund+renesas@ragnatech.se, macro@orcam.me.uk,
+        johan@kernel.org, lukas@wunner.de, ilpo.jarvinen@linux.intel.com,
+        marpagan@redhat.com
+Cc:     Basheer Ahmed Muddebihal 
+        <basheer.ahmed.muddebihal@linux.intel.com>,
+        Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Subject: [PATCH v4 2/4] fpga: dfl: Add DFHv1 Register Definitions
+Date:   Thu, 20 Oct 2022 14:26:08 -0700
+Message-Id: <20221020212610.697729-3-matthew.gerlach@linux.intel.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20221020212610.697729-1-matthew.gerlach@linux.intel.com>
+References: <20221020212610.697729-1-matthew.gerlach@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221019091015.22678-2-i.bornyakov@metrotek.ru>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On 2022-10-19 at 12:10:14 +0300, Ivan Bornyakov wrote:
-> Add support to the FPGA manager for programming Lattice ECP5 FPGA over
-> slave SPI sysCONFIG interface.
-> 
-> sysCONFIG interface core functionality is separate from both ECP5 and
-> SPI specifics, so support for other FPGAs with different port types can
-> be added in the future.
-> 
-> Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+From: Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>
 
-Acked-by: Xu Yilun <yilun.xu@intel.com>
+This patch adds the definitions for DFHv1 header and related register
+bitfields.
 
-> ---
->  drivers/fpga/Kconfig                 |  11 +
->  drivers/fpga/Makefile                |   2 +
->  drivers/fpga/lattice-sysconfig-spi.c | 154 +++++++++++
->  drivers/fpga/lattice-sysconfig.c     | 397 +++++++++++++++++++++++++++
->  drivers/fpga/lattice-sysconfig.h     |  39 +++
->  5 files changed, 603 insertions(+)
->  create mode 100644 drivers/fpga/lattice-sysconfig-spi.c
->  create mode 100644 drivers/fpga/lattice-sysconfig.c
->  create mode 100644 drivers/fpga/lattice-sysconfig.h
-> 
-> diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-> index 6c416955da53..d1a8107fdcb3 100644
-> --- a/drivers/fpga/Kconfig
-> +++ b/drivers/fpga/Kconfig
-> @@ -263,4 +263,15 @@ config FPGA_MGR_MICROCHIP_SPI
->  	  programming over slave SPI interface with .dat formatted
->  	  bitstream image.
->  
-> +config FPGA_MGR_LATTICE_SYSCONFIG
-> +	tristate
-> +
-> +config FPGA_MGR_LATTICE_SYSCONFIG_SPI
-> +	tristate "Lattice sysCONFIG SPI FPGA manager"
-> +	depends on SPI
-> +	select FPGA_MGR_LATTICE_SYSCONFIG
-> +	help
-> +	  FPGA manager driver support for Lattice FPGAs programming over slave
-> +	  SPI sysCONFIG interface.
-> +
->  endif # FPGA
-> diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-> index 42ae8b58abce..72e554b4d2f7 100644
-> --- a/drivers/fpga/Makefile
-> +++ b/drivers/fpga/Makefile
-> @@ -20,6 +20,8 @@ obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+= zynq-fpga.o
->  obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+= zynqmp-fpga.o
->  obj-$(CONFIG_FPGA_MGR_VERSAL_FPGA)	+= versal-fpga.o
->  obj-$(CONFIG_FPGA_MGR_MICROCHIP_SPI)	+= microchip-spi.o
-> +obj-$(CONFIG_FPGA_MGR_LATTICE_SYSCONFIG)	+= lattice-sysconfig.o
-> +obj-$(CONFIG_FPGA_MGR_LATTICE_SYSCONFIG_SPI)	+= lattice-sysconfig-spi.o
->  obj-$(CONFIG_ALTERA_PR_IP_CORE)		+= altera-pr-ip-core.o
->  obj-$(CONFIG_ALTERA_PR_IP_CORE_PLAT)	+= altera-pr-ip-core-plat.o
->  
-> diff --git a/drivers/fpga/lattice-sysconfig-spi.c b/drivers/fpga/lattice-sysconfig-spi.c
-> new file mode 100644
-> index 000000000000..9dd9b3c7b42f
-> --- /dev/null
-> +++ b/drivers/fpga/lattice-sysconfig-spi.c
-> @@ -0,0 +1,154 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Lattice FPGA programming over slave SPI sysCONFIG interface.
-> + */
-> +
-> +#include <linux/spi/spi.h>
-> +
-> +#include "lattice-sysconfig.h"
-> +
-> +static const u32 ecp5_spi_max_speed_hz = 60000000;
-> +
-> +static int sysconfig_spi_cmd_transfer(struct sysconfig_priv *priv,
-> +				      const void *tx_buf, size_t tx_len,
-> +				      void *rx_buf, size_t rx_len)
-> +{
-> +	struct spi_device *spi = to_spi_device(priv->dev);
-> +
-> +	return spi_write_then_read(spi, tx_buf, tx_len, rx_buf, rx_len);
-> +}
-> +
-> +static int sysconfig_spi_bitstream_burst_init(struct sysconfig_priv *priv)
-> +{
-> +	const u8 lsc_bitstream_burst[] = SYSCONFIG_LSC_BITSTREAM_BURST;
-> +	struct spi_device *spi = to_spi_device(priv->dev);
-> +	struct spi_transfer xfer = {};
-> +	struct spi_message msg;
-> +	size_t buf_len;
-> +	void *buf;
-> +	int ret;
-> +
-> +	buf_len = sizeof(lsc_bitstream_burst);
-> +
-> +	buf = kmalloc(buf_len, GFP_KERNEL);
-> +	if (!buf)
-> +		return -ENOMEM;
-> +
-> +	memcpy(buf, lsc_bitstream_burst, buf_len);
-> +
-> +	xfer.len = buf_len;
-> +	xfer.tx_buf = buf;
-> +	xfer.cs_change = 1;
-> +
-> +	spi_message_init_with_transfers(&msg, &xfer, 1);
-> +
-> +	/*
-> +	 * Lock SPI bus for exclusive usage until FPGA programming is done.
-> +	 * SPI bus will be released in sysconfig_spi_bitstream_burst_complete().
-> +	 */
-> +	spi_bus_lock(spi->controller);
-> +
-> +	ret = spi_sync_locked(spi, &msg);
-> +	if (ret)
-> +		spi_bus_unlock(spi->controller);
-> +
-> +	kfree(buf);
-> +
-> +	return ret;
-> +}
-> +
-> +static int sysconfig_spi_bitstream_burst_write(struct sysconfig_priv *priv,
-> +					       const char *buf, size_t len)
-> +{
-> +	struct spi_device *spi = to_spi_device(priv->dev);
-> +	struct spi_transfer xfer = {
-> +		.tx_buf = buf,
-> +		.len = len,
-> +		.cs_change = 1,
-> +	};
-> +	struct spi_message msg;
-> +
-> +	spi_message_init_with_transfers(&msg, &xfer, 1);
-> +
-> +	return spi_sync_locked(spi, &msg);
-> +}
-> +
-> +static int sysconfig_spi_bitstream_burst_complete(struct sysconfig_priv *priv)
-> +{
-> +	struct spi_device *spi = to_spi_device(priv->dev);
-> +
-> +	/* Bitstream burst write is done, release SPI bus */
-> +	spi_bus_unlock(spi->controller);
-> +
-> +	/* Toggle CS to finish bitstream write */
-> +	return spi_write(spi, NULL, 0);
-> +}
-> +
-> +static int sysconfig_spi_probe(struct spi_device *spi)
-> +{
-> +	const struct spi_device_id *dev_id;
-> +	struct device *dev = &spi->dev;
-> +	struct sysconfig_priv *priv;
-> +	const u32 *spi_max_speed;
-> +
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	spi_max_speed = device_get_match_data(dev);
-> +	if (!spi_max_speed) {
-> +		dev_id = spi_get_device_id(spi);
-> +		if (!dev_id)
-> +			return -ENODEV;
-> +
-> +		spi_max_speed = (const u32 *)dev_id->driver_data;
-> +	}
-> +
-> +	if (!spi_max_speed)
-> +		return -EINVAL;
-> +
-> +	if (spi->max_speed_hz > *spi_max_speed) {
-> +		dev_err(dev, "SPI speed %u is too high, maximum speed is %u\n",
-> +			spi->max_speed_hz, *spi_max_speed);
-> +		return -EINVAL;
-> +	}
-> +
-> +	priv->dev = dev;
-> +	priv->command_transfer = sysconfig_spi_cmd_transfer;
-> +	priv->bitstream_burst_write_init = sysconfig_spi_bitstream_burst_init;
-> +	priv->bitstream_burst_write = sysconfig_spi_bitstream_burst_write;
-> +	priv->bitstream_burst_write_complete = sysconfig_spi_bitstream_burst_complete;
-> +
-> +	return sysconfig_probe(priv);
-> +}
-> +
-> +static const struct spi_device_id sysconfig_spi_ids[] = {
-> +	{
-> +		.name = "sysconfig-ecp5",
-> +		.driver_data = (kernel_ulong_t)&ecp5_spi_max_speed_hz,
-> +	}, {},
-> +};
-> +MODULE_DEVICE_TABLE(spi, sysconfig_spi_ids);
-> +
-> +#if IS_ENABLED(CONFIG_OF)
-> +static const struct of_device_id sysconfig_of_ids[] = {
-> +	{
-> +		.compatible = "lattice,sysconfig-ecp5",
-> +		.data = &ecp5_spi_max_speed_hz,
-> +	}, {},
-> +};
-> +MODULE_DEVICE_TABLE(of, sysconfig_of_ids);
-> +#endif /* IS_ENABLED(CONFIG_OF) */
-> +
-> +static struct spi_driver lattice_sysconfig_driver = {
-> +	.probe = sysconfig_spi_probe,
-> +	.id_table = sysconfig_spi_ids,
-> +	.driver = {
-> +		.name = "lattice_sysconfig_spi_fpga_mgr",
-> +		.of_match_table = of_match_ptr(sysconfig_of_ids),
-> +	},
-> +};
-> +module_spi_driver(lattice_sysconfig_driver);
-> +
-> +MODULE_DESCRIPTION("Lattice sysCONFIG Slave SPI FPGA Manager");
-> +MODULE_LICENSE("GPL");
-> diff --git a/drivers/fpga/lattice-sysconfig.c b/drivers/fpga/lattice-sysconfig.c
-> new file mode 100644
-> index 000000000000..ba51a60f672f
-> --- /dev/null
-> +++ b/drivers/fpga/lattice-sysconfig.c
-> @@ -0,0 +1,397 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Lattice FPGA sysCONFIG interface functions independent of port type.
-> + */
-> +
-> +#include <linux/delay.h>
-> +#include <linux/fpga/fpga-mgr.h>
-> +#include <linux/gpio/consumer.h>
-> +#include <linux/iopoll.h>
-> +
-> +#include "lattice-sysconfig.h"
-> +
-> +static int sysconfig_cmd_write(struct sysconfig_priv *priv, const void *buf,
-> +			       size_t buf_len)
-> +{
-> +	return priv->command_transfer(priv, buf, buf_len, NULL, 0);
-> +}
-> +
-> +static int sysconfig_cmd_read(struct sysconfig_priv *priv, const void *tx_buf,
-> +			      size_t tx_len, void *rx_buf, size_t rx_len)
-> +{
-> +	return priv->command_transfer(priv, tx_buf, tx_len, rx_buf, rx_len);
-> +}
-> +
-> +static int sysconfig_read_busy(struct sysconfig_priv *priv)
-> +{
-> +	const u8 lsc_check_busy[] = SYSCONFIG_LSC_CHECK_BUSY;
-> +	u8 busy;
-> +	int ret;
-> +
-> +	ret = sysconfig_cmd_read(priv, lsc_check_busy, sizeof(lsc_check_busy),
-> +				 &busy, sizeof(busy));
-> +
-> +	return ret ? : busy;
-> +}
-> +
-> +static int sysconfig_poll_busy(struct sysconfig_priv *priv)
-> +{
-> +	int ret, busy;
-> +
-> +	ret = read_poll_timeout(sysconfig_read_busy, busy, busy <= 0,
-> +				SYSCONFIG_POLL_INTERVAL_US,
-> +				SYSCONFIG_POLL_BUSY_TIMEOUT_US, false, priv);
-> +
-> +	return ret ? : busy;
-> +}
-> +
-> +static int sysconfig_read_status(struct sysconfig_priv *priv, u32 *status)
-> +{
-> +	const u8 lsc_read_status[] = SYSCONFIG_LSC_READ_STATUS;
-> +	__be32 device_status;
-> +	int ret;
-> +
-> +	ret = sysconfig_cmd_read(priv, lsc_read_status, sizeof(lsc_read_status),
-> +				 &device_status, sizeof(device_status));
-> +	if (ret)
-> +		return ret;
-> +
-> +	*status = be32_to_cpu(device_status);
-> +
-> +	return 0;
-> +}
-> +
-> +static int sysconfig_poll_status(struct sysconfig_priv *priv, u32 *status)
-> +{
-> +	int ret = sysconfig_poll_busy(priv);
-> +
-> +	if (ret)
-> +		return ret;
-> +
-> +	return sysconfig_read_status(priv, status);
-> +}
-> +
-> +static int sysconfig_poll_gpio(struct gpio_desc *gpio, bool is_active)
-> +{
-> +	int ret, val;
-> +
-> +	ret = read_poll_timeout(gpiod_get_value, val,
-> +				val < 0 || !!val == is_active,
-> +				SYSCONFIG_POLL_INTERVAL_US,
-> +				SYSCONFIG_POLL_GPIO_TIMEOUT_US, false, gpio);
-> +
-> +	if (val < 0)
-> +		return val;
-> +
-> +	return ret;
-> +}
-> +
-> +static int sysconfig_gpio_refresh(struct sysconfig_priv *priv)
-> +{
-> +	struct gpio_desc *program = priv->program;
-> +	struct gpio_desc *init = priv->init;
-> +	struct gpio_desc *done = priv->done;
-> +	int ret;
-> +
-> +	/* Enter init mode */
-> +	gpiod_set_value(program, 1);
-> +
-> +	ret = sysconfig_poll_gpio(init, true);
-> +	if (!ret)
-> +		ret = sysconfig_poll_gpio(done, false);
-> +
-> +	if (ret)
-> +		return ret;
-> +
-> +	/* Enter program mode */
-> +	gpiod_set_value(program, 0);
-> +
-> +	return sysconfig_poll_gpio(init, false);
-> +}
-> +
-> +static int sysconfig_lsc_refresh(struct sysconfig_priv *priv)
-> +{
-> +	static const u8 lsc_refresh[] = SYSCONFIG_LSC_REFRESH;
-> +	int ret;
-> +
-> +	ret = sysconfig_cmd_write(priv, lsc_refresh, sizeof(lsc_refresh));
-> +	if (ret)
-> +		return ret;
-> +
-> +	usleep_range(4000, 8000);
-> +
-> +	return 0;
-> +}
-> +
-> +static int sysconfig_refresh(struct sysconfig_priv *priv)
-> +{
-> +	struct gpio_desc *program = priv->program;
-> +	struct gpio_desc *init = priv->init;
-> +	struct gpio_desc *done = priv->done;
-> +
-> +	if (program && init && done)
-> +		return sysconfig_gpio_refresh(priv);
-> +
-> +	return sysconfig_lsc_refresh(priv);
-> +}
-> +
-> +static int sysconfig_isc_enable(struct sysconfig_priv *priv)
-> +{
-> +	u8 isc_enable[] = SYSCONFIG_ISC_ENABLE;
-> +	u32 status;
-> +	int ret;
-> +
-> +	ret = sysconfig_cmd_write(priv, isc_enable, sizeof(isc_enable));
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = sysconfig_poll_status(priv, &status);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (status & SYSCONFIG_STATUS_FAIL)
-> +		return -EFAULT;
-> +
-> +	return 0;
-> +}
-> +
-> +static int sysconfig_isc_erase(struct sysconfig_priv *priv)
-> +{
-> +	u8 isc_erase[] = SYSCONFIG_ISC_ERASE;
-> +	u32 status;
-> +	int ret;
-> +
-> +	ret = sysconfig_cmd_write(priv, isc_erase, sizeof(isc_erase));
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = sysconfig_poll_status(priv, &status);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (status & SYSCONFIG_STATUS_FAIL)
-> +		return -EFAULT;
-> +
-> +	return 0;
-> +}
-> +
-> +static int sysconfig_isc_init(struct sysconfig_priv *priv)
-> +{
-> +	int ret = sysconfig_isc_enable(priv);
-> +
-> +	if (ret)
-> +		return ret;
-> +
-> +	return sysconfig_isc_erase(priv);
-> +}
-> +
-> +static int sysconfig_lsc_init_addr(struct sysconfig_priv *priv)
-> +{
-> +	const u8 lsc_init_addr[] = SYSCONFIG_LSC_INIT_ADDR;
-> +
-> +	return sysconfig_cmd_write(priv, lsc_init_addr, sizeof(lsc_init_addr));
-> +}
-> +
-> +static int sysconfig_burst_write_init(struct sysconfig_priv *priv)
-> +{
-> +	return priv->bitstream_burst_write_init(priv);
-> +}
-> +
-> +static int sysconfig_burst_write_complete(struct sysconfig_priv *priv)
-> +{
-> +	return priv->bitstream_burst_write_complete(priv);
-> +}
-> +
-> +static int sysconfig_bitstream_burst_write(struct sysconfig_priv *priv,
-> +					   const char *buf, size_t count)
-> +{
-> +	int ret = priv->bitstream_burst_write(priv, buf, count);
-> +
-> +	if (ret)
-> +		sysconfig_burst_write_complete(priv);
-> +
-> +	return ret;
-> +}
-> +
-> +static int sysconfig_isc_disable(struct sysconfig_priv *priv)
-> +{
-> +	const u8 isc_disable[] = SYSCONFIG_ISC_DISABLE;
-> +
-> +	return sysconfig_cmd_write(priv, isc_disable, sizeof(isc_disable));
-> +}
-> +
-> +static void sysconfig_cleanup(struct sysconfig_priv *priv)
-> +{
-> +	sysconfig_isc_erase(priv);
-> +	sysconfig_refresh(priv);
-> +}
-> +
-> +static int sysconfig_isc_finish(struct sysconfig_priv *priv)
-> +{
-> +	struct gpio_desc *done_gpio = priv->done;
-> +	u32 status;
-> +	int ret;
-> +
-> +	if (done_gpio) {
-> +		ret = sysconfig_isc_disable(priv);
-> +		if (ret)
-> +			return ret;
-> +
-> +		return sysconfig_poll_gpio(done_gpio, true);
-> +	}
-> +
-> +	ret = sysconfig_poll_status(priv, &status);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if ((status & SYSCONFIG_STATUS_DONE) &&
-> +	    !(status & SYSCONFIG_STATUS_BUSY) &&
-> +	    !(status & SYSCONFIG_STATUS_ERR))
-> +		return sysconfig_isc_disable(priv);
-> +
-> +	return -EFAULT;
-> +}
-> +
-> +static enum fpga_mgr_states sysconfig_ops_state(struct fpga_manager *mgr)
-> +{
-> +	struct sysconfig_priv *priv = mgr->priv;
-> +	struct gpio_desc *done = priv->done;
-> +	u32 status;
-> +	int ret;
-> +
-> +	if (done && (gpiod_get_value(done) > 0))
-> +		return FPGA_MGR_STATE_OPERATING;
-> +
-> +	ret = sysconfig_read_status(priv, &status);
-> +	if (!ret && (status & SYSCONFIG_STATUS_DONE))
-> +		return FPGA_MGR_STATE_OPERATING;
-> +
-> +	return FPGA_MGR_STATE_UNKNOWN;
-> +}
-> +
-> +static int sysconfig_ops_write_init(struct fpga_manager *mgr,
-> +				    struct fpga_image_info *info,
-> +				    const char *buf, size_t count)
-> +{
-> +	struct sysconfig_priv *priv = mgr->priv;
-> +	struct device *dev = &mgr->dev;
-> +	int ret;
-> +
-> +	if (info->flags & FPGA_MGR_PARTIAL_RECONFIG) {
-> +		dev_err(dev, "Partial reconfiguration is not supported\n");
-> +		return -EOPNOTSUPP;
-> +	}
-> +
-> +	/* Enter program mode */
-> +	ret = sysconfig_refresh(priv);
-> +	if (ret) {
-> +		dev_err(dev, "Failed to go to program mode\n");
-> +		return ret;
-> +	}
-> +
-> +	/* Enter ISC mode */
-> +	ret = sysconfig_isc_init(priv);
-> +	if (ret) {
-> +		dev_err(dev, "Failed to go to ISC mode\n");
-> +		return ret;
-> +	}
-> +
-> +	/* Initialize the Address Shift Register */
-> +	ret = sysconfig_lsc_init_addr(priv);
-> +	if (ret) {
-> +		dev_err(dev,
-> +			"Failed to initialize the Address Shift Register\n");
-> +		return ret;
-> +	}
-> +
-> +	/* Prepare for bitstream burst write */
-> +	ret = sysconfig_burst_write_init(priv);
-> +	if (ret)
-> +		dev_err(dev, "Failed to prepare for bitstream burst write\n");
-> +
-> +	return ret;
-> +}
-> +
-> +static int sysconfig_ops_write(struct fpga_manager *mgr, const char *buf,
-> +			       size_t count)
-> +{
-> +	return sysconfig_bitstream_burst_write(mgr->priv, buf, count);
-> +}
-> +
-> +static int sysconfig_ops_write_complete(struct fpga_manager *mgr,
-> +					struct fpga_image_info *info)
-> +{
-> +	struct sysconfig_priv *priv = mgr->priv;
-> +	struct device *dev = &mgr->dev;
-> +	int ret;
-> +
-> +	ret = sysconfig_burst_write_complete(priv);
-> +	if (!ret)
-> +		ret = sysconfig_poll_busy(priv);
-> +
-> +	if (ret) {
-> +		dev_err(dev, "Error while waiting bitstream write to finish\n");
-> +		goto fail;
-> +	}
-> +
-> +	ret = sysconfig_isc_finish(priv);
-> +
-> +fail:
-> +	if (ret)
-> +		sysconfig_cleanup(priv);
-> +
-> +	return ret;
-> +}
-> +
-> +static const struct fpga_manager_ops sysconfig_fpga_mgr_ops = {
-> +	.state = sysconfig_ops_state,
-> +	.write_init = sysconfig_ops_write_init,
-> +	.write = sysconfig_ops_write,
-> +	.write_complete = sysconfig_ops_write_complete,
-> +};
-> +
-> +int sysconfig_probe(struct sysconfig_priv *priv)
-> +{
-> +	struct gpio_desc *program, *init, *done;
-> +	struct device *dev = priv->dev;
-> +	struct fpga_manager *mgr;
-> +
-> +	if (!dev)
-> +		return -ENODEV;
-> +
-> +	if (!priv->command_transfer ||
-> +	    !priv->bitstream_burst_write_init ||
-> +	    !priv->bitstream_burst_write ||
-> +	    !priv->bitstream_burst_write_complete) {
-> +		dev_err(dev, "Essential callback is missing\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	program = devm_gpiod_get_optional(dev, "program", GPIOD_OUT_LOW);
-> +	if (IS_ERR(program))
-> +		return dev_err_probe(dev, PTR_ERR(program),
-> +				     "Failed to get PROGRAM GPIO\n");
-> +
-> +	init = devm_gpiod_get_optional(dev, "init", GPIOD_IN);
-> +	if (IS_ERR(init))
-> +		return dev_err_probe(dev, PTR_ERR(init),
-> +				     "Failed to get INIT GPIO\n");
-> +
-> +	done = devm_gpiod_get_optional(dev, "done", GPIOD_IN);
-> +	if (IS_ERR(done))
-> +		return dev_err_probe(dev, PTR_ERR(done),
-> +				     "Failed to get DONE GPIO\n");
-> +
-> +	priv->program = program;
-> +	priv->init = init;
-> +	priv->done = done;
-> +
-> +	mgr = devm_fpga_mgr_register(dev, "Lattice sysCONFIG FPGA Manager",
-> +				     &sysconfig_fpga_mgr_ops, priv);
-> +
-> +	return PTR_ERR_OR_ZERO(mgr);
-> +}
-> +EXPORT_SYMBOL(sysconfig_probe);
-> +
-> +MODULE_DESCRIPTION("Lattice sysCONFIG FPGA Manager Core");
-> +MODULE_LICENSE("GPL");
-> diff --git a/drivers/fpga/lattice-sysconfig.h b/drivers/fpga/lattice-sysconfig.h
-> new file mode 100644
-> index 000000000000..df47d9a524f6
-> --- /dev/null
-> +++ b/drivers/fpga/lattice-sysconfig.h
-> @@ -0,0 +1,39 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +
-> +#ifndef	__LATTICE_SYSCONFIG_H
-> +#define	__LATTICE_SYSCONFIG_H
-> +
-> +#define	SYSCONFIG_ISC_ENABLE		{0xC6, 0x00, 0x00, 0x00}
-> +#define	SYSCONFIG_ISC_DISABLE		{0x26, 0x00, 0x00, 0x00}
-> +#define	SYSCONFIG_ISC_ERASE		{0x0E, 0x01, 0x00, 0x00}
-> +#define	SYSCONFIG_LSC_READ_STATUS	{0x3C, 0x00, 0x00, 0x00}
-> +#define	SYSCONFIG_LSC_CHECK_BUSY	{0xF0, 0x00, 0x00, 0x00}
-> +#define	SYSCONFIG_LSC_REFRESH		{0x79, 0x00, 0x00, 0x00}
-> +#define	SYSCONFIG_LSC_INIT_ADDR		{0x46, 0x00, 0x00, 0x00}
-> +#define	SYSCONFIG_LSC_BITSTREAM_BURST	{0x7a, 0x00, 0x00, 0x00}
-> +
-> +#define	SYSCONFIG_STATUS_DONE		BIT(8)
-> +#define	SYSCONFIG_STATUS_BUSY		BIT(12)
-> +#define	SYSCONFIG_STATUS_FAIL		BIT(13)
-> +#define	SYSCONFIG_STATUS_ERR		GENMASK(25, 23)
-> +
-> +#define	SYSCONFIG_POLL_INTERVAL_US	30
-> +#define	SYSCONFIG_POLL_BUSY_TIMEOUT_US	1000000
-> +#define	SYSCONFIG_POLL_GPIO_TIMEOUT_US	100000
-> +
-> +struct sysconfig_priv {
-> +	struct gpio_desc *program;
-> +	struct gpio_desc *init;
-> +	struct gpio_desc *done;
-> +	struct device *dev;
-> +	int (*command_transfer)(struct sysconfig_priv *priv, const void *tx_buf,
-> +				size_t tx_len, void *rx_buf, size_t rx_len);
-> +	int (*bitstream_burst_write_init)(struct sysconfig_priv *priv);
-> +	int (*bitstream_burst_write)(struct sysconfig_priv *priv,
-> +				     const char *tx_buf, size_t tx_len);
-> +	int (*bitstream_burst_write_complete)(struct sysconfig_priv *priv);
-> +};
-> +
-> +int sysconfig_probe(struct sysconfig_priv *priv);
-> +
-> +#endif /* __LATTICE_SYSCONFIG_H */
-> -- 
-> 2.37.3
-> 
-> 
+Signed-off-by: Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>
+Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+---
+v4: s/MSIX/MSI_X/g
+    move kerneldoc to implementation
+    don't change copyright date
+
+v3:
+    keep DFHv1 definitions "hidden" in drivers/fpga/dfl.h
+
+v2: clean up whitespace and one line comments
+    remove extra space in commit
+    use uniform number of digits in constants
+    don't change copyright date because of removed content
+
+dfl.h s/MSIX/MSI_X/g move kerneldoc
+---
+ drivers/fpga/dfl.h  | 33 +++++++++++++++++++++++++++++++++
+ include/linux/dfl.h | 11 +++++++++++
+ 2 files changed, 44 insertions(+)
+
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 06cfcd5e84bb..45e6e1359a67 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -74,11 +74,44 @@
+ #define DFH_REVISION		GENMASK_ULL(15, 12)	/* Feature revision */
+ #define DFH_NEXT_HDR_OFST	GENMASK_ULL(39, 16)	/* Offset to next DFH */
+ #define DFH_EOL			BIT_ULL(40)		/* End of list */
++#define DFH_VERSION		GENMASK_ULL(59, 52)	/* DFH version */
+ #define DFH_TYPE		GENMASK_ULL(63, 60)	/* Feature type */
+ #define DFH_TYPE_AFU		1
+ #define DFH_TYPE_PRIVATE	3
+ #define DFH_TYPE_FIU		4
+ 
++/*
++ * DFHv1 Register Offset definitons
++ * In DHFv1, DFH + GUID + CSR_START + CSR_SIZE_GROUP + PARAM_HDR + PARAM_DATA
++ * as common header registers
++ */
++#define DFHv1_CSR_ADDR		0x18  /* CSR Register start address */
++#define DFHv1_CSR_SIZE_GRP	0x20  /* Size of Reg Block and Group/tag */
++#define DFHv1_PARAM_HDR		0x28  /* Optional First Param header */
++
++/*
++ * CSR Rel Bit, 1'b0 = relative (offset from feature DFH start),
++ * 1'b1 = absolute (ARM or other non-PCIe use)
++ */
++#define DFHv1_CSR_ADDR_REL	BIT_ULL(0)
++
++/* CSR Header Register Bit Definitions */
++#define DFHv1_CSR_ADDR_MASK       GENMASK_ULL(63, 1)  /* 63:1 of CSR address */
++
++/* CSR SIZE Goup Register Bit Definitions */
++#define DFHv1_CSR_SIZE_GRP_INSTANCE_ID	GENMASK_ULL(15, 0)	/* Enumeration instantiated IP */
++#define DFHv1_CSR_SIZE_GRP_GROUPING_ID	GENMASK_ULL(30, 16)	/* Group Features/interfaces */
++#define DFHv1_CSR_SIZE_GRP_HAS_PARAMS	BIT_ULL(31)		/* Presence of Parameters */
++#define DFHv1_CSR_SIZE_GRP_SIZE		GENMASK_ULL(63, 32)	/* Size of CSR Block in bytes */
++
++/* PARAM Header Register Bit Definitions */
++#define DFHv1_PARAM_HDR_ID		GENMASK_ULL(15, 0) /* Id of this Param  */
++#define DFHv1_PARAM_HDR_VERSION		GENMASK_ULL(31, 16) /* Version Param */
++#define DFHv1_PARAM_HDR_NEXT_OFFSET	GENMASK_ULL(63, 32) /* Offset of next Param */
++#define DFHv1_PARAM_HDR_NEXT_EOL	BIT_ULL(0)
++#define DFHv1_PARAM_HDR_NEXT_MASK	GENMASK_ULL(1, 0)
++#define DFHv1_PARAM_DATA		0x08  /* Offset of Param data from Param header */
++
+ /* Next AFU Register Bitfield */
+ #define NEXT_AFU_NEXT_DFH_OFST	GENMASK_ULL(23, 0)	/* Offset to next AFU */
+ 
+diff --git a/include/linux/dfl.h b/include/linux/dfl.h
+index 431636a0dc78..fea9e16d35b6 100644
+--- a/include/linux/dfl.h
++++ b/include/linux/dfl.h
+@@ -11,6 +11,17 @@
+ #include <linux/device.h>
+ #include <linux/mod_devicetable.h>
+ 
++#define DFHv1_PARAM_ID_MSI_X		0x1
++#define DFHv1_PARAM_MSI_X_STARTV	0x0
++#define DFHv1_PARAM_MSI_X_NUMV		0x4
++
++#define DFHv1_PARAM_ID_CLK_FRQ    0x2
++#define DFHv1_PARAM_ID_FIFO_LEN   0x3
++
++#define DFHv1_PARAM_ID_REG_LAYOUT 0x4
++#define DFHv1_PARAM_ID_REG_WIDTH  GENMASK_ULL(63, 32)
++#define DFHv1_PARAM_ID_REG_SHIFT  GENMASK_ULL(31, 0)
++
+ /**
+  * enum dfl_id_type - define the DFL FIU types
+  */
+-- 
+2.25.1
+
