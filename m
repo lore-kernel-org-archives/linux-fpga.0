@@ -2,41 +2,41 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39E2EC433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D37AAC4332F
 	for <linux-fpga@archiver.kernel.org>; Tue,  8 Nov 2022 14:45:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234580AbiKHOoC (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 8 Nov 2022 09:44:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48616 "EHLO
+        id S234463AbiKHOoK (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 8 Nov 2022 09:44:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234430AbiKHOnk (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 8 Nov 2022 09:43:40 -0500
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3AF5210AA;
-        Tue,  8 Nov 2022 06:43:36 -0800 (PST)
+        with ESMTP id S234507AbiKHOn6 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 8 Nov 2022 09:43:58 -0500
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A837852886;
+        Tue,  8 Nov 2022 06:43:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1667918617; x=1699454617;
+  t=1667918630; x=1699454630;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=EQA4zq5Aza6o2++oliZzx/FMqAgtSVgf9BxxvU9ea74=;
-  b=SE3R4Yc5MibTI/uXrYmc3sOTzCMEj8RFXbCLvLFxb2lkWQTAM4F7ZI/E
-   4lsG/FFKdA2hQV18LilCm8c1f3wlJRjInB0GpxkZz37XUmcGurUydtMUT
-   G0WctDVwSUl9jE1ojDOpnMeGLrS6lnkbDbhImHeFbxXrEqrGqNmTAIUjd
-   znJtn+Fjny03gIRe9NM32q5LX7IJRFO+B/dfd7XJx4ypiNHuV3CHw6pF0
-   ACE7dugR01zk42dBtwEAUKpj6ZaIZertPsihjDB6CgtwodbvH2zgLk1Me
-   T6KtygwlQnDS8fo8TsYk23/nlg5CkUeSGfxR7Dm5xKTtqlbBepnvYeACN
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10525"; a="310705551"
+  bh=iTAk9oLrLUav0u0LENYMsbdQOq0fQP8raW9dlpgAKg8=;
+  b=Uljot4cCNTQnWO2lOThBKVZXsiobCGuOAq/pfiob5qjnO55anyGRRsoy
+   gO4h8YiluveAyhSanAxTJKT8P+BrQGXI8+mM33bJBxhFegxOsX9Ccfmeh
+   i9rhX75y9cecb5mkO0+hXaSWLBczdABhmww3PlYwnqwi92WAq8JzbSPxq
+   kfO99dFyYuG89UR8w6jqMMHD5gFAsrQVqyR/pW8pmGewYOLV6XOHmfG25
+   XyF5w1RcyARAfOsCJSoo+7pEynMJrwIsB6nQ+6nZD9Pms3udT9lbTULjS
+   sDWRciU1dw1AlhDQeKoyfcXoqiHRvmAqcNB+Lk4V9lE7aBKaDl8ZTc7nN
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10525"; a="312497960"
 X-IronPort-AV: E=Sophos;i="5.96,148,1665471600"; 
-   d="scan'208";a="310705551"
+   d="scan'208";a="312497960"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2022 06:43:36 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10525"; a="638809762"
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2022 06:43:50 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10525"; a="638809812"
 X-IronPort-AV: E=Sophos;i="5.96,148,1665471600"; 
-   d="scan'208";a="638809762"
+   d="scan'208";a="638809812"
 Received: from ppkrause-mobl.ger.corp.intel.com (HELO ijarvine-MOBL2.ger.corp.intel.com) ([10.249.44.73])
-  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2022 06:43:31 -0800
+  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2022 06:43:46 -0800
 From:   =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
         Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
@@ -46,13 +46,11 @@ To:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
         Tianfei zhang <tianfei.zhang@intel.com>,
         Mark Brown <broonie@kernel.org>,
         Greg KH <gregkh@linuxfoundation.org>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org
+        linux-kernel@vger.kernel.org
 Cc:     =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH 04/12] mfd: intel-m10-bmc: Split into core and spi specific parts
-Date:   Tue,  8 Nov 2022 16:42:57 +0200
-Message-Id: <20221108144305.45424-5-ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 06/12] fpga: intel-m10-bmc: Add flash ops for sec update
+Date:   Tue,  8 Nov 2022 16:42:59 +0200
+Message-Id: <20221108144305.45424-7-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20221108144305.45424-1-ilpo.jarvinen@linux.intel.com>
 References: <20221108144305.45424-1-ilpo.jarvinen@linux.intel.com>
@@ -63,455 +61,286 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Split the common code from intel-m10-bmc driver into intel-m10-bmc-core
-and move the SPI bus parts into an interface specific file.
-
-intel-m10-bmc-core becomes the core MFD functions which can support
-multiple bus interface like SPI bus.
+Access to flash staging area is different for N6000 from that of the
+SPI interfaced counterparts. Introduce intel_m10bmc_flash_ops to allow
+interface specific differentiations for the flash access path for sec
+update.
 
 Co-developed-by: Tianfei zhang <tianfei.zhang@intel.com>
 Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
-Reviewed-by: Russ Weight <russell.h.weight@intel.com>
+Co-developed-by: Russ Weight <russell.h.weight@intel.com>
+Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- MAINTAINERS                                   |   2 +-
- drivers/fpga/Kconfig                          |   2 +-
- drivers/hwmon/Kconfig                         |   2 +-
- drivers/mfd/Kconfig                           |  30 ++--
- drivers/mfd/Makefile                          |   5 +-
- drivers/mfd/intel-m10-bmc-core.c              | 122 +++++++++++++++++
- .../{intel-m10-bmc.c => intel-m10-bmc-spi.c}  | 128 +++---------------
- include/linux/mfd/intel-m10-bmc.h             |   6 +
- 8 files changed, 173 insertions(+), 124 deletions(-)
- create mode 100644 drivers/mfd/intel-m10-bmc-core.c
- rename drivers/mfd/{intel-m10-bmc.c => intel-m10-bmc-spi.c} (60%)
+ drivers/fpga/intel-m10-bmc-sec-update.c | 79 ++++++-------------------
+ drivers/mfd/intel-m10-bmc-spi.c         | 52 ++++++++++++++++
+ include/linux/mfd/intel-m10-bmc.h       | 14 +++++
+ 3 files changed, 84 insertions(+), 61 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index cf0f18502372..ddfa4f8b3c80 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10452,7 +10452,7 @@ S:	Maintained
- F:	Documentation/ABI/testing/sysfs-driver-intel-m10-bmc
- F:	Documentation/hwmon/intel-m10-bmc-hwmon.rst
- F:	drivers/hwmon/intel-m10-bmc-hwmon.c
--F:	drivers/mfd/intel-m10-bmc.c
-+F:	drivers/mfd/intel-m10-bmc*
- F:	include/linux/mfd/intel-m10-bmc.h
+diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
+index dbe8aff95da3..3bd22d03616a 100644
+--- a/drivers/fpga/intel-m10-bmc-sec-update.c
++++ b/drivers/fpga/intel-m10-bmc-sec-update.c
+@@ -38,11 +38,9 @@ show_root_entry_hash(struct device *dev, u32 exp_magic,
+ 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
+ 	int sha_num_bytes, i, ret, cnt = 0;
+ 	u8 hash[REH_SHA384_SIZE];
+-	unsigned int stride;
+ 	u32 magic;
  
- INTEL MENLOW THERMAL DRIVER
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index d1a8107fdcb3..e4daf79943ee 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -246,7 +246,7 @@ config FPGA_MGR_VERSAL_FPGA
+-	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
+-	ret = m10bmc_raw_read(sec->m10bmc, prog_addr, &magic);
++	ret = sec->m10bmc->flash_ops->read(sec->m10bmc, (u8 *)&magic, prog_addr, sizeof(magic));
+ 	if (ret)
+ 		return ret;
  
- config FPGA_M10_BMC_SEC_UPDATE
- 	tristate "Intel MAX10 BMC Secure Update driver"
--	depends on MFD_INTEL_M10_BMC && FW_UPLOAD
-+	depends on MFD_INTEL_M10_BMC_CORE && FW_UPLOAD
- 	help
- 	  Secure update support for the Intel MAX10 board management
- 	  controller.
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 7ac3daaf59ce..984a55e0f313 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -2321,7 +2321,7 @@ config SENSORS_XGENE
+@@ -50,19 +48,16 @@ show_root_entry_hash(struct device *dev, u32 exp_magic,
+ 		return sysfs_emit(buf, "hash not programmed\n");
  
- config SENSORS_INTEL_M10_BMC_HWMON
- 	tristate "Intel MAX10 BMC Hardware Monitoring"
--	depends on MFD_INTEL_M10_BMC
-+	depends on MFD_INTEL_M10_BMC_CORE
- 	help
- 	  This driver provides support for the hardware monitoring functionality
- 	  on Intel MAX10 BMC chip.
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 8b93856de432..a09d4ac60dc7 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -2219,18 +2219,24 @@ config SGI_MFD_IOC3
- 	  If you have an SGI Origin, Octane, or a PCI IOC3 card,
- 	  then say Y. Otherwise say N.
+ 	sha_num_bytes = FIELD_GET(REH_SHA_NUM_BYTES, magic) / 8;
+-	if ((sha_num_bytes % stride) ||
+-	    (sha_num_bytes != REH_SHA256_SIZE &&
+-	     sha_num_bytes != REH_SHA384_SIZE))   {
++	if (sha_num_bytes != REH_SHA256_SIZE &&
++	    sha_num_bytes != REH_SHA384_SIZE) {
+ 		dev_err(sec->dev, "%s bad sha num bytes %d\n", __func__,
+ 			sha_num_bytes);
+ 		return -EINVAL;
+ 	}
  
--config MFD_INTEL_M10_BMC
--	tristate "Intel MAX 10 Board Management Controller"
--	depends on SPI_MASTER
--	select REGMAP_SPI_AVMM
--	select MFD_CORE
--	help
--	  Support for the Intel MAX 10 board management controller using the
--	  SPI interface.
--
--	  This driver provides common support for accessing the device,
--	  additional drivers must be enabled in order to use the functionality
--	  of the device.
-+config MFD_INTEL_M10_BMC_CORE
-+        tristate
-+        select MFD_CORE
-+        select REGMAP
-+        default n
-+
-+config MFD_INTEL_M10_BMC_SPI
-+        tristate "Intel MAX 10 Board Management Controller with SPI"
-+        depends on SPI_MASTER
-+        select MFD_INTEL_M10_BMC_CORE
-+        select REGMAP_SPI_AVMM
-+        help
-+          Support for the Intel MAX 10 board management controller using the
-+          SPI interface.
-+
-+          This driver provides common support for accessing the device,
-+          additional drivers must be enabled in order to use the functionality
-+          of the device.
- 
- config MFD_RSMU_I2C
- 	tristate "Renesas Synchronization Management Unit with I2C"
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 7ed3ef4a698c..f32276cdd0c2 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -271,7 +271,10 @@ obj-$(CONFIG_MFD_QCOM_PM8008)	+= qcom-pm8008.o
- 
- obj-$(CONFIG_SGI_MFD_IOC3)	+= ioc3.o
- obj-$(CONFIG_MFD_SIMPLE_MFD_I2C)	+= simple-mfd-i2c.o
--obj-$(CONFIG_MFD_INTEL_M10_BMC)   += intel-m10-bmc.o
-+
-+intel-m10-bmc-objs             := intel-m10-bmc-core.o
-+obj-$(CONFIG_MFD_INTEL_M10_BMC_CORE)   += intel-m10-bmc.o
-+obj-$(CONFIG_MFD_INTEL_M10_BMC_SPI)   += intel-m10-bmc-spi.o
- 
- obj-$(CONFIG_MFD_ATC260X)	+= atc260x-core.o
- obj-$(CONFIG_MFD_ATC260X_I2C)	+= atc260x-i2c.o
-diff --git a/drivers/mfd/intel-m10-bmc-core.c b/drivers/mfd/intel-m10-bmc-core.c
-new file mode 100644
-index 000000000000..6630b81b10c4
---- /dev/null
-+++ b/drivers/mfd/intel-m10-bmc-core.c
-@@ -0,0 +1,122 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Intel MAX 10 Board Management Controller chip - common code
-+ *
-+ * Copyright (C) 2018-2020 Intel Corporation. All rights reserved.
-+ */
-+
-+#include <linux/bitfield.h>
-+#include <linux/device.h>
-+#include <linux/dev_printk.h>
-+#include <linux/mfd/core.h>
-+#include <linux/mfd/intel-m10-bmc.h>
-+#include <linux/module.h>
-+
-+static ssize_t bmc_version_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
-+	unsigned int val;
-+	int ret;
-+
-+	ret = m10bmc_sys_read(ddata, M10BMC_BUILD_VER, &val);
-+	if (ret)
-+		return ret;
-+
-+	return sprintf(buf, "0x%x\n", val);
-+}
-+static DEVICE_ATTR_RO(bmc_version);
-+
-+static ssize_t bmcfw_version_show(struct device *dev,
-+				  struct device_attribute *attr, char *buf)
-+{
-+	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
-+	unsigned int val;
-+	int ret;
-+
-+	ret = m10bmc_sys_read(ddata, NIOS2_FW_VERSION, &val);
-+	if (ret)
-+		return ret;
-+
-+	return sprintf(buf, "0x%x\n", val);
-+}
-+static DEVICE_ATTR_RO(bmcfw_version);
-+
-+static ssize_t mac_address_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
-+	unsigned int macaddr_low, macaddr_high;
-+	int ret;
-+
-+	ret = m10bmc_sys_read(ddata, M10BMC_MAC_LOW, &macaddr_low);
-+	if (ret)
-+		return ret;
-+
-+	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "%02x:%02x:%02x:%02x:%02x:%02x\n",
-+			  (u8)FIELD_GET(M10BMC_MAC_BYTE1, macaddr_low),
-+			  (u8)FIELD_GET(M10BMC_MAC_BYTE2, macaddr_low),
-+			  (u8)FIELD_GET(M10BMC_MAC_BYTE3, macaddr_low),
-+			  (u8)FIELD_GET(M10BMC_MAC_BYTE4, macaddr_low),
-+			  (u8)FIELD_GET(M10BMC_MAC_BYTE5, macaddr_high),
-+			  (u8)FIELD_GET(M10BMC_MAC_BYTE6, macaddr_high));
-+}
-+static DEVICE_ATTR_RO(mac_address);
-+
-+static ssize_t mac_count_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
-+	unsigned int macaddr_high;
-+	int ret;
-+
-+	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "%u\n", (u8)FIELD_GET(M10BMC_MAC_COUNT, macaddr_high));
-+}
-+static DEVICE_ATTR_RO(mac_count);
-+
-+static struct attribute *m10bmc_attrs[] = {
-+	&dev_attr_bmc_version.attr,
-+	&dev_attr_bmcfw_version.attr,
-+	&dev_attr_mac_address.attr,
-+	&dev_attr_mac_count.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group m10bmc_group = {
-+	.attrs = m10bmc_attrs,
-+};
-+
-+const struct attribute_group *m10bmc_dev_groups[] = {
-+	&m10bmc_group,
-+	NULL,
-+};
-+EXPORT_SYMBOL_GPL(m10bmc_dev_groups);
-+
-+int m10bmc_dev_init(struct intel_m10bmc *m10bmc, const struct intel_m10bmc_platform_info *info)
-+{
-+	int ret;
-+
-+	m10bmc->info = info;
-+	dev_set_drvdata(m10bmc->dev, m10bmc);
-+
-+	ret = devm_mfd_add_devices(m10bmc->dev, PLATFORM_DEVID_AUTO,
-+				   info->cells, info->n_cells,
-+				   NULL, 0, NULL);
-+	if (ret)
-+		dev_err(m10bmc->dev, "Failed to register sub-devices: %d\n", ret);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(m10bmc_dev_init);
-+
-+MODULE_DESCRIPTION("Intel MAX 10 BMC core MFD driver");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/mfd/intel-m10-bmc.c b/drivers/mfd/intel-m10-bmc-spi.c
-similarity index 60%
-rename from drivers/mfd/intel-m10-bmc.c
-rename to drivers/mfd/intel-m10-bmc-spi.c
-index 80487a2f0024..84c46926bebf 100644
---- a/drivers/mfd/intel-m10-bmc.c
-+++ b/drivers/mfd/intel-m10-bmc-spi.c
-@@ -5,29 +5,14 @@
-  * Copyright (C) 2018-2020 Intel Corporation. All rights reserved.
-  */
- #include <linux/bitfield.h>
-+#include <linux/dev_printk.h>
- #include <linux/init.h>
- #include <linux/mfd/core.h>
- #include <linux/mfd/intel-m10-bmc.h>
- #include <linux/module.h>
--#include <linux/mutex.h>
- #include <linux/regmap.h>
- #include <linux/spi/spi.h>
- 
--static struct mfd_cell m10bmc_d5005_subdevs[] = {
--	{ .name = "d5005bmc-hwmon" },
--	{ .name = "d5005bmc-sec-update" }
--};
--
--static struct mfd_cell m10bmc_pacn3000_subdevs[] = {
--	{ .name = "n3000bmc-hwmon" },
--	{ .name = "n3000bmc-retimer" },
--	{ .name = "n3000bmc-sec-update" },
--};
--
--static struct mfd_cell m10bmc_n5010_subdevs[] = {
--	{ .name = "n5010bmc-hwmon" },
--};
--
- static const struct regmap_range m10bmc_regmap_range[] = {
- 	regmap_reg_range(M10BMC_LEGACY_BUILD_VER, M10BMC_LEGACY_BUILD_VER),
- 	regmap_reg_range(M10BMC_SYS_BASE, M10BMC_SYS_END),
-@@ -48,86 +33,6 @@ static struct regmap_config intel_m10bmc_regmap_config = {
- 	.max_register = M10BMC_MEM_END,
- };
- 
--static ssize_t bmc_version_show(struct device *dev,
--				struct device_attribute *attr, char *buf)
--{
--	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
--	unsigned int val;
--	int ret;
--
--	ret = m10bmc_sys_read(ddata, M10BMC_BUILD_VER, &val);
--	if (ret)
--		return ret;
--
--	return sprintf(buf, "0x%x\n", val);
--}
--static DEVICE_ATTR_RO(bmc_version);
--
--static ssize_t bmcfw_version_show(struct device *dev,
--				  struct device_attribute *attr, char *buf)
--{
--	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
--	unsigned int val;
--	int ret;
--
--	ret = m10bmc_sys_read(ddata, NIOS2_FW_VERSION, &val);
--	if (ret)
--		return ret;
--
--	return sprintf(buf, "0x%x\n", val);
--}
--static DEVICE_ATTR_RO(bmcfw_version);
--
--static ssize_t mac_address_show(struct device *dev,
--				struct device_attribute *attr, char *buf)
--{
--	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
--	unsigned int macaddr_low, macaddr_high;
--	int ret;
--
--	ret = m10bmc_sys_read(ddata, M10BMC_MAC_LOW, &macaddr_low);
--	if (ret)
--		return ret;
--
--	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
--	if (ret)
--		return ret;
--
--	return sysfs_emit(buf, "%02x:%02x:%02x:%02x:%02x:%02x\n",
--			  (u8)FIELD_GET(M10BMC_MAC_BYTE1, macaddr_low),
--			  (u8)FIELD_GET(M10BMC_MAC_BYTE2, macaddr_low),
--			  (u8)FIELD_GET(M10BMC_MAC_BYTE3, macaddr_low),
--			  (u8)FIELD_GET(M10BMC_MAC_BYTE4, macaddr_low),
--			  (u8)FIELD_GET(M10BMC_MAC_BYTE5, macaddr_high),
--			  (u8)FIELD_GET(M10BMC_MAC_BYTE6, macaddr_high));
--}
--static DEVICE_ATTR_RO(mac_address);
--
--static ssize_t mac_count_show(struct device *dev,
--			      struct device_attribute *attr, char *buf)
--{
--	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
--	unsigned int macaddr_high;
--	int ret;
--
--	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
--	if (ret)
--		return ret;
--
--	return sysfs_emit(buf, "%u\n",
--			  (u8)FIELD_GET(M10BMC_MAC_COUNT, macaddr_high));
--}
--static DEVICE_ATTR_RO(mac_count);
--
--static struct attribute *m10bmc_attrs[] = {
--	&dev_attr_bmc_version.attr,
--	&dev_attr_bmcfw_version.attr,
--	&dev_attr_mac_address.attr,
--	&dev_attr_mac_count.attr,
--	NULL,
--};
--ATTRIBUTE_GROUPS(m10bmc);
--
- static int check_m10bmc_version(struct intel_m10bmc *ddata)
- {
- 	unsigned int v;
-@@ -166,11 +71,9 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
- 		return -ENOMEM;
- 
- 	info = (struct intel_m10bmc_platform_info *)id->driver_data;
--	ddata->info = info;
- 	ddata->dev = dev;
- 
--	ddata->regmap =
--		devm_regmap_init_spi_avmm(spi, &intel_m10bmc_regmap_config);
-+	ddata->regmap = devm_regmap_init_spi_avmm(spi, &intel_m10bmc_regmap_config);
- 	if (IS_ERR(ddata->regmap)) {
- 		ret = PTR_ERR(ddata->regmap);
- 		dev_err(dev, "Failed to allocate regmap: %d\n", ret);
-@@ -185,15 +88,24 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
+-	ret = regmap_bulk_read(sec->m10bmc->regmap, reh_addr,
+-			       hash, sha_num_bytes / stride);
++	ret = sec->m10bmc->flash_ops->read(sec->m10bmc, hash, reh_addr, sha_num_bytes);
+ 	if (ret) {
+-		dev_err(dev, "failed to read root entry hash: %x cnt %x: %d\n",
+-			reh_addr, sha_num_bytes / stride, ret);
++		dev_err(dev, "failed to read root entry hash\n");
  		return ret;
  	}
  
--	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_AUTO,
--				   info->cells, info->n_cells,
--				   NULL, 0, NULL);
--	if (ret)
--		dev_err(dev, "Failed to register sub-devices: %d\n", ret);
+@@ -98,27 +93,16 @@ DEVICE_ATTR_SEC_REH_RO(pr);
+ static ssize_t
+ show_canceled_csk(struct device *dev, u32 addr, char *buf)
+ {
+-	unsigned int i, stride, size = CSK_32ARRAY_SIZE * sizeof(u32);
++	unsigned int i, size = CSK_32ARRAY_SIZE * sizeof(u32);
+ 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
+ 	DECLARE_BITMAP(csk_map, CSK_BIT_LEN);
+ 	__le32 csk_le32[CSK_32ARRAY_SIZE];
+ 	u32 csk32[CSK_32ARRAY_SIZE];
+ 	int ret;
+ 
+-	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
+-	if (size % stride) {
+-		dev_err(sec->dev,
+-			"CSK vector size (0x%x) not aligned to stride (0x%x)\n",
+-			size, stride);
+-		WARN_ON_ONCE(1);
+-		return -EINVAL;
+-	}
 -
--	return ret;
-+	return m10bmc_dev_init(ddata, info);
+-	ret = regmap_bulk_read(sec->m10bmc->regmap, addr, csk_le32,
+-			       size / stride);
++	ret = sec->m10bmc->flash_ops->read(sec->m10bmc, (u8 *)&csk_le32, addr, size);
+ 	if (ret) {
+-		dev_err(sec->dev, "failed to read CSK vector: %x cnt %x: %d\n",
+-			addr, size / stride, ret);
++		dev_err(sec->dev, "failed to read CSK vector\n");
+ 		return ret;
+ 	}
+ 
+@@ -157,31 +141,21 @@ static ssize_t flash_count_show(struct device *dev,
+ {
+ 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
+ 	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
+-	unsigned int stride, num_bits;
++	unsigned int num_bits;
+ 	u8 *flash_buf;
+ 	int cnt, ret;
+ 
+-	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
+ 	num_bits = FLASH_COUNT_SIZE * 8;
+ 
+-	if (FLASH_COUNT_SIZE % stride) {
+-		dev_err(sec->dev,
+-			"FLASH_COUNT_SIZE (0x%x) not aligned to stride (0x%x)\n",
+-			FLASH_COUNT_SIZE, stride);
+-		WARN_ON_ONCE(1);
+-		return -EINVAL;
+-	}
+-
+ 	flash_buf = kmalloc(FLASH_COUNT_SIZE, GFP_KERNEL);
+ 	if (!flash_buf)
+ 		return -ENOMEM;
+ 
+-	ret = regmap_bulk_read(sec->m10bmc->regmap, csr_map->rsu_update_counter,
+-			       flash_buf, FLASH_COUNT_SIZE / stride);
++	ret = sec->m10bmc->flash_ops->read(sec->m10bmc, flash_buf,
++					   csr_map->rsu_update_counter,
++					   FLASH_COUNT_SIZE);
+ 	if (ret) {
+-		dev_err(sec->dev,
+-			"failed to read flash count: %x cnt %x: %d\n",
+-			csr_map->rsu_update_counter, FLASH_COUNT_SIZE / stride, ret);
++		dev_err(sec->dev, "failed to read flash count\n");
+ 		goto exit_free;
+ 	}
+ 	cnt = num_bits - bitmap_weight((unsigned long *)flash_buf, num_bits);
+@@ -470,15 +444,14 @@ static enum fw_upload_err m10bmc_sec_write(struct fw_upload *fwl, const u8 *data
+ {
+ 	struct m10bmc_sec *sec = fwl->dd_handle;
+ 	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
+-	u32 blk_size, doorbell, extra_offset;
+-	unsigned int stride, extra = 0;
++	struct intel_m10bmc *m10bmc = sec->m10bmc;
++	u32 blk_size, doorbell;
+ 	int ret;
+ 
+-	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
+ 	if (sec->cancel_request)
+ 		return rsu_cancel(sec);
+ 
+-	ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
++	ret = m10bmc_sys_read(m10bmc, csr_map->doorbell, &doorbell);
+ 	if (ret) {
+ 		return FW_UPLOAD_ERR_RW_ERROR;
+ 	} else if (rsu_prog(doorbell) != RSU_PROG_READY) {
+@@ -486,28 +459,12 @@ static enum fw_upload_err m10bmc_sec_write(struct fw_upload *fwl, const u8 *data
+ 		return FW_UPLOAD_ERR_HW_ERROR;
+ 	}
+ 
+-	WARN_ON_ONCE(WRITE_BLOCK_SIZE % stride);
++	WARN_ON_ONCE(WRITE_BLOCK_SIZE % regmap_get_reg_stride(m10bmc->regmap));
+ 	blk_size = min_t(u32, WRITE_BLOCK_SIZE, size);
+-	ret = regmap_bulk_write(sec->m10bmc->regmap,
+-				M10BMC_STAGING_BASE + offset,
+-				(void *)data + offset,
+-				blk_size / stride);
++	ret = m10bmc->flash_ops->write(m10bmc, data, offset, blk_size);
+ 	if (ret)
+ 		return FW_UPLOAD_ERR_RW_ERROR;
+ 
+-	/*
+-	 * If blk_size is not aligned to stride, then handle the extra
+-	 * bytes with regmap_write.
+-	 */
+-	if (blk_size % stride) {
+-		extra_offset = offset + ALIGN_DOWN(blk_size, stride);
+-		memcpy(&extra, (u8 *)(data + extra_offset), blk_size % stride);
+-		ret = regmap_write(sec->m10bmc->regmap,
+-				   M10BMC_STAGING_BASE + extra_offset, extra);
+-		if (ret)
+-			return FW_UPLOAD_ERR_RW_ERROR;
+-	}
+-
+ 	*written = blk_size;
+ 	return FW_UPLOAD_ERR_NONE;
  }
- 
-+static struct mfd_cell m10bmc_d5005_subdevs[] = {
-+	{ .name = "d5005bmc-hwmon" },
-+	{ .name = "d5005bmc-sec-update" },
-+};
-+
-+static struct mfd_cell m10bmc_pacn3000_subdevs[] = {
-+	{ .name = "n3000bmc-hwmon" },
-+	{ .name = "n3000bmc-retimer" },
-+	{ .name = "n3000bmc-sec-update" },
-+};
-+
-+static struct mfd_cell m10bmc_n5010_subdevs[] = {
-+	{ .name = "n5010bmc-hwmon" },
-+};
-+
- static const struct intel_m10bmc_platform_info m10bmc_m10_n3000 = {
- 	.type = M10_N3000,
- 	.cells = m10bmc_pacn3000_subdevs,
-@@ -223,14 +135,14 @@ MODULE_DEVICE_TABLE(spi, m10bmc_spi_id);
- static struct spi_driver intel_m10bmc_spi_driver = {
- 	.driver = {
- 		.name = "intel-m10-bmc",
--		.dev_groups = m10bmc_groups,
-+		.dev_groups = m10bmc_dev_groups,
- 	},
- 	.probe = intel_m10_bmc_spi_probe,
- 	.id_table = m10bmc_spi_id,
+diff --git a/drivers/mfd/intel-m10-bmc-spi.c b/drivers/mfd/intel-m10-bmc-spi.c
+index e7b0b3b03186..e3b2edb8bc07 100644
+--- a/drivers/mfd/intel-m10-bmc-spi.c
++++ b/drivers/mfd/intel-m10-bmc-spi.c
+@@ -33,6 +33,57 @@ static struct regmap_config intel_m10bmc_regmap_config = {
+ 	.max_register = M10BMC_MEM_END,
  };
- module_spi_driver(intel_m10bmc_spi_driver);
  
--MODULE_DESCRIPTION("Intel MAX 10 BMC Device Driver");
-+MODULE_DESCRIPTION("Intel MAX 10 BMC SPI bus interface");
- MODULE_AUTHOR("Intel Corporation");
- MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("spi:intel-m10-bmc");
++static int m10bmc_spi_flash_write(struct intel_m10bmc *m10bmc, const u8 *buf, u32 offset, u32 size)
++{
++	unsigned int stride = regmap_get_reg_stride(m10bmc->regmap);
++	u32 leftover = size % stride;
++	u32 extra_offset, extra = 0;
++	int ret;
++
++	if (WARN_ON_ONCE(stride > sizeof(extra)))
++		return -EINVAL;
++
++	ret = regmap_bulk_write(m10bmc->regmap, M10BMC_STAGING_BASE + offset,
++				buf + offset, size / stride);
++	if (ret)
++		return ret;
++
++	/* If size is not aligned to stride, then handle the extra bytes with regmap_write */
++	if (leftover) {
++		extra_offset = offset + ALIGN_DOWN(size, stride);
++		memcpy(&extra, (u8 *)(buf + extra_offset), leftover);
++
++		ret = regmap_write(m10bmc->regmap, M10BMC_STAGING_BASE + extra_offset, extra);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++static int m10bmc_spi_flash_read(struct intel_m10bmc *m10bmc, u8 *buf, u32 addr, u32 size)
++{
++	unsigned int stride = regmap_get_reg_stride(m10bmc->regmap);
++	int ret;
++
++	if (WARN_ON_ONCE(size % stride)) {
++		dev_err(m10bmc->dev, "read size (0x%x) not aligned to stride (0x%x)\n",
++			size, stride);
++		return -EINVAL;
++	}
++
++	ret = regmap_bulk_read(m10bmc->regmap, addr, buf, size / stride);
++	if (ret)
++		dev_err(m10bmc->dev, "failed to read flash block data: %x cnt %x: %d\n",
++			addr, size / stride, ret);
++	return ret;
++}
++
++static const struct intel_m10bmc_flash_ops m10bmc_spi_flash_ops = {
++	.read = m10bmc_spi_flash_read,
++	.write = m10bmc_spi_flash_write,
++};
++
+ static int check_m10bmc_version(struct intel_m10bmc *ddata)
+ {
+ 	unsigned int v;
+@@ -72,6 +123,7 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
+ 
+ 	info = (struct intel_m10bmc_platform_info *)id->driver_data;
+ 	ddata->dev = dev;
++	ddata->flash_ops = &m10bmc_spi_flash_ops;
+ 
+ 	ddata->regmap = devm_regmap_init_spi_avmm(spi, &intel_m10bmc_regmap_config);
+ 	if (IS_ERR(ddata->regmap)) {
 diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
-index e58115f514b9..93ec905c928e 100644
+index d752c0d7cbdb..860408aa8db3 100644
 --- a/include/linux/mfd/intel-m10-bmc.h
 +++ b/include/linux/mfd/intel-m10-bmc.h
-@@ -179,4 +179,10 @@ m10bmc_raw_read(struct intel_m10bmc *m10bmc, unsigned int addr,
- #define m10bmc_sys_read(m10bmc, offset, val) \
- 	m10bmc_raw_read(m10bmc, M10BMC_SYS_BASE + (offset), val)
+@@ -161,16 +161,30 @@ struct intel_m10bmc_platform_info {
+ 	const struct m10bmc_csr_map *csr_map;
+ };
  
-+/*
-+ * MAX10 BMC Core support
-+ */
-+int m10bmc_dev_init(struct intel_m10bmc *m10bmc, const struct intel_m10bmc_platform_info *info);
-+extern const struct attribute_group *m10bmc_dev_groups[];
++struct intel_m10bmc;
 +
- #endif /* __MFD_INTEL_M10_BMC_H */
++/**
++ * struct intel_m10bmc_flash_ops - device specific operations for flash R/W
++ * @read: read a block of data from flash
++ * @write: write a block of data to flash
++ */
++struct intel_m10bmc_flash_ops {
++	int (*read)(struct intel_m10bmc *m10bmc, u8 *buf, u32 addr, u32 size);
++	int (*write)(struct intel_m10bmc *m10bmc, const u8 *buf, u32 offset, u32 size);
++};
++
+ /**
+  * struct intel_m10bmc - Intel MAX 10 BMC parent driver data structure
+  * @dev: this device
+  * @regmap: the regmap used to access registers by m10bmc itself
+  * @info: the platform information for MAX10 BMC
++ * @flash_ops: optional device specific operations for flash R/W
+  */
+ struct intel_m10bmc {
+ 	struct device *dev;
+ 	struct regmap *regmap;
+ 	const struct intel_m10bmc_platform_info *info;
++	const struct intel_m10bmc_flash_ops *flash_ops;
+ };
+ 
+ /*
 -- 
 2.30.2
 
