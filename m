@@ -2,41 +2,41 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D37AAC4332F
-	for <linux-fpga@archiver.kernel.org>; Tue,  8 Nov 2022 14:45:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D05D7C433FE
+	for <linux-fpga@archiver.kernel.org>; Tue,  8 Nov 2022 14:46:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234463AbiKHOoK (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 8 Nov 2022 09:44:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49432 "EHLO
+        id S234130AbiKHOpG (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 8 Nov 2022 09:45:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48662 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234507AbiKHOn6 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 8 Nov 2022 09:43:58 -0500
+        with ESMTP id S234659AbiKHOod (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 8 Nov 2022 09:44:33 -0500
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A837852886;
-        Tue,  8 Nov 2022 06:43:50 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEA176400;
+        Tue,  8 Nov 2022 06:44:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1667918630; x=1699454630;
+  t=1667918672; x=1699454672;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=iTAk9oLrLUav0u0LENYMsbdQOq0fQP8raW9dlpgAKg8=;
-  b=Uljot4cCNTQnWO2lOThBKVZXsiobCGuOAq/pfiob5qjnO55anyGRRsoy
-   gO4h8YiluveAyhSanAxTJKT8P+BrQGXI8+mM33bJBxhFegxOsX9Ccfmeh
-   i9rhX75y9cecb5mkO0+hXaSWLBczdABhmww3PlYwnqwi92WAq8JzbSPxq
-   kfO99dFyYuG89UR8w6jqMMHD5gFAsrQVqyR/pW8pmGewYOLV6XOHmfG25
-   XyF5w1RcyARAfOsCJSoo+7pEynMJrwIsB6nQ+6nZD9Pms3udT9lbTULjS
-   sDWRciU1dw1AlhDQeKoyfcXoqiHRvmAqcNB+Lk4V9lE7aBKaDl8ZTc7nN
+  bh=R8VSM/9itvp5kxWxpXkIS/pD4UFexUu9PXtV9Kc9JTo=;
+  b=ePYifdz8YpXoCwNXu19uNoFT8OccNRpSKvZvhmyXxxlorpE8JrdBMqtE
+   yINc5Z1IzihiAWH3jU3TqOGEJdlCgntcnO6y7KIV3BnuYvXuMv/LHJu45
+   9iSjzs+ziQ5kLpVoiSm5K194uvwpEA0nSSSHyix5zxQgySyHniXAz7bhf
+   ROvgRrkaioIMjBGcIni1jEelxE+8uhDKsRfMSByI64uXrDQG1osJdt+GQ
+   RH9JVUBnj0VVI7kUtA2gofl8Bcu1A/dEjY8hBg5Mu28Kb9pxJHhRarPeu
+   9RL2gr02EBvh5+52QZ/nc8aQkePl0F/hEMVBW9S4on70yvR9U99Qt6Avw
    g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10525"; a="312497960"
+X-IronPort-AV: E=McAfee;i="6500,9779,10525"; a="312498021"
 X-IronPort-AV: E=Sophos;i="5.96,148,1665471600"; 
-   d="scan'208";a="312497960"
+   d="scan'208";a="312498021"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2022 06:43:50 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10525"; a="638809812"
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2022 06:44:16 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10525"; a="638809931"
 X-IronPort-AV: E=Sophos;i="5.96,148,1665471600"; 
-   d="scan'208";a="638809812"
+   d="scan'208";a="638809931"
 Received: from ppkrause-mobl.ger.corp.intel.com (HELO ijarvine-MOBL2.ger.corp.intel.com) ([10.249.44.73])
-  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2022 06:43:46 -0800
+  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Nov 2022 06:44:12 -0800
 From:   =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
         Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
@@ -48,9 +48,9 @@ To:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
         Greg KH <gregkh@linuxfoundation.org>,
         linux-kernel@vger.kernel.org
 Cc:     =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH 06/12] fpga: intel-m10-bmc: Add flash ops for sec update
-Date:   Tue,  8 Nov 2022 16:42:59 +0200
-Message-Id: <20221108144305.45424-7-ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 12/12] mfd: intel-m10-bmc: Change MODULE_LICENSE() to GPL
+Date:   Tue,  8 Nov 2022 16:43:05 +0200
+Message-Id: <20221108144305.45424-13-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20221108144305.45424-1-ilpo.jarvinen@linux.intel.com>
 References: <20221108144305.45424-1-ilpo.jarvinen@linux.intel.com>
@@ -61,286 +61,37 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Access to flash staging area is different for N6000 from that of the
-SPI interfaced counterparts. Introduce intel_m10bmc_flash_ops to allow
-interface specific differentiations for the flash access path for sec
-update.
+"GPL v2" should not be used as MODULE_LICENSE(). "GPL" is enough, see
+commit bf7fbeeae6db ("module: Cure the MODULE_LICENSE "GPL" vs. "GPL
+v2" bogosity") for more details.
 
-Co-developed-by: Tianfei zhang <tianfei.zhang@intel.com>
-Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
-Co-developed-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- drivers/fpga/intel-m10-bmc-sec-update.c | 79 ++++++-------------------
- drivers/mfd/intel-m10-bmc-spi.c         | 52 ++++++++++++++++
- include/linux/mfd/intel-m10-bmc.h       | 14 +++++
- 3 files changed, 84 insertions(+), 61 deletions(-)
+ drivers/mfd/intel-m10-bmc-core.c | 2 +-
+ drivers/mfd/intel-m10-bmc-spi.c  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
-index dbe8aff95da3..3bd22d03616a 100644
---- a/drivers/fpga/intel-m10-bmc-sec-update.c
-+++ b/drivers/fpga/intel-m10-bmc-sec-update.c
-@@ -38,11 +38,9 @@ show_root_entry_hash(struct device *dev, u32 exp_magic,
- 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
- 	int sha_num_bytes, i, ret, cnt = 0;
- 	u8 hash[REH_SHA384_SIZE];
--	unsigned int stride;
- 	u32 magic;
+diff --git a/drivers/mfd/intel-m10-bmc-core.c b/drivers/mfd/intel-m10-bmc-core.c
+index 50a4ec758bdb..3b9e866b2bcf 100644
+--- a/drivers/mfd/intel-m10-bmc-core.c
++++ b/drivers/mfd/intel-m10-bmc-core.c
+@@ -130,4 +130,4 @@ EXPORT_SYMBOL_GPL(m10bmc_dev_init);
  
--	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
--	ret = m10bmc_raw_read(sec->m10bmc, prog_addr, &magic);
-+	ret = sec->m10bmc->flash_ops->read(sec->m10bmc, (u8 *)&magic, prog_addr, sizeof(magic));
- 	if (ret)
- 		return ret;
- 
-@@ -50,19 +48,16 @@ show_root_entry_hash(struct device *dev, u32 exp_magic,
- 		return sysfs_emit(buf, "hash not programmed\n");
- 
- 	sha_num_bytes = FIELD_GET(REH_SHA_NUM_BYTES, magic) / 8;
--	if ((sha_num_bytes % stride) ||
--	    (sha_num_bytes != REH_SHA256_SIZE &&
--	     sha_num_bytes != REH_SHA384_SIZE))   {
-+	if (sha_num_bytes != REH_SHA256_SIZE &&
-+	    sha_num_bytes != REH_SHA384_SIZE) {
- 		dev_err(sec->dev, "%s bad sha num bytes %d\n", __func__,
- 			sha_num_bytes);
- 		return -EINVAL;
- 	}
- 
--	ret = regmap_bulk_read(sec->m10bmc->regmap, reh_addr,
--			       hash, sha_num_bytes / stride);
-+	ret = sec->m10bmc->flash_ops->read(sec->m10bmc, hash, reh_addr, sha_num_bytes);
- 	if (ret) {
--		dev_err(dev, "failed to read root entry hash: %x cnt %x: %d\n",
--			reh_addr, sha_num_bytes / stride, ret);
-+		dev_err(dev, "failed to read root entry hash\n");
- 		return ret;
- 	}
- 
-@@ -98,27 +93,16 @@ DEVICE_ATTR_SEC_REH_RO(pr);
- static ssize_t
- show_canceled_csk(struct device *dev, u32 addr, char *buf)
- {
--	unsigned int i, stride, size = CSK_32ARRAY_SIZE * sizeof(u32);
-+	unsigned int i, size = CSK_32ARRAY_SIZE * sizeof(u32);
- 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
- 	DECLARE_BITMAP(csk_map, CSK_BIT_LEN);
- 	__le32 csk_le32[CSK_32ARRAY_SIZE];
- 	u32 csk32[CSK_32ARRAY_SIZE];
- 	int ret;
- 
--	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
--	if (size % stride) {
--		dev_err(sec->dev,
--			"CSK vector size (0x%x) not aligned to stride (0x%x)\n",
--			size, stride);
--		WARN_ON_ONCE(1);
--		return -EINVAL;
--	}
--
--	ret = regmap_bulk_read(sec->m10bmc->regmap, addr, csk_le32,
--			       size / stride);
-+	ret = sec->m10bmc->flash_ops->read(sec->m10bmc, (u8 *)&csk_le32, addr, size);
- 	if (ret) {
--		dev_err(sec->dev, "failed to read CSK vector: %x cnt %x: %d\n",
--			addr, size / stride, ret);
-+		dev_err(sec->dev, "failed to read CSK vector\n");
- 		return ret;
- 	}
- 
-@@ -157,31 +141,21 @@ static ssize_t flash_count_show(struct device *dev,
- {
- 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
- 	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
--	unsigned int stride, num_bits;
-+	unsigned int num_bits;
- 	u8 *flash_buf;
- 	int cnt, ret;
- 
--	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
- 	num_bits = FLASH_COUNT_SIZE * 8;
- 
--	if (FLASH_COUNT_SIZE % stride) {
--		dev_err(sec->dev,
--			"FLASH_COUNT_SIZE (0x%x) not aligned to stride (0x%x)\n",
--			FLASH_COUNT_SIZE, stride);
--		WARN_ON_ONCE(1);
--		return -EINVAL;
--	}
--
- 	flash_buf = kmalloc(FLASH_COUNT_SIZE, GFP_KERNEL);
- 	if (!flash_buf)
- 		return -ENOMEM;
- 
--	ret = regmap_bulk_read(sec->m10bmc->regmap, csr_map->rsu_update_counter,
--			       flash_buf, FLASH_COUNT_SIZE / stride);
-+	ret = sec->m10bmc->flash_ops->read(sec->m10bmc, flash_buf,
-+					   csr_map->rsu_update_counter,
-+					   FLASH_COUNT_SIZE);
- 	if (ret) {
--		dev_err(sec->dev,
--			"failed to read flash count: %x cnt %x: %d\n",
--			csr_map->rsu_update_counter, FLASH_COUNT_SIZE / stride, ret);
-+		dev_err(sec->dev, "failed to read flash count\n");
- 		goto exit_free;
- 	}
- 	cnt = num_bits - bitmap_weight((unsigned long *)flash_buf, num_bits);
-@@ -470,15 +444,14 @@ static enum fw_upload_err m10bmc_sec_write(struct fw_upload *fwl, const u8 *data
- {
- 	struct m10bmc_sec *sec = fwl->dd_handle;
- 	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
--	u32 blk_size, doorbell, extra_offset;
--	unsigned int stride, extra = 0;
-+	struct intel_m10bmc *m10bmc = sec->m10bmc;
-+	u32 blk_size, doorbell;
- 	int ret;
- 
--	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
- 	if (sec->cancel_request)
- 		return rsu_cancel(sec);
- 
--	ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
-+	ret = m10bmc_sys_read(m10bmc, csr_map->doorbell, &doorbell);
- 	if (ret) {
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 	} else if (rsu_prog(doorbell) != RSU_PROG_READY) {
-@@ -486,28 +459,12 @@ static enum fw_upload_err m10bmc_sec_write(struct fw_upload *fwl, const u8 *data
- 		return FW_UPLOAD_ERR_HW_ERROR;
- 	}
- 
--	WARN_ON_ONCE(WRITE_BLOCK_SIZE % stride);
-+	WARN_ON_ONCE(WRITE_BLOCK_SIZE % regmap_get_reg_stride(m10bmc->regmap));
- 	blk_size = min_t(u32, WRITE_BLOCK_SIZE, size);
--	ret = regmap_bulk_write(sec->m10bmc->regmap,
--				M10BMC_STAGING_BASE + offset,
--				(void *)data + offset,
--				blk_size / stride);
-+	ret = m10bmc->flash_ops->write(m10bmc, data, offset, blk_size);
- 	if (ret)
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 
--	/*
--	 * If blk_size is not aligned to stride, then handle the extra
--	 * bytes with regmap_write.
--	 */
--	if (blk_size % stride) {
--		extra_offset = offset + ALIGN_DOWN(blk_size, stride);
--		memcpy(&extra, (u8 *)(data + extra_offset), blk_size % stride);
--		ret = regmap_write(sec->m10bmc->regmap,
--				   M10BMC_STAGING_BASE + extra_offset, extra);
--		if (ret)
--			return FW_UPLOAD_ERR_RW_ERROR;
--	}
--
- 	*written = blk_size;
- 	return FW_UPLOAD_ERR_NONE;
- }
+ MODULE_DESCRIPTION("Intel MAX 10 BMC core MFD driver");
+ MODULE_AUTHOR("Intel Corporation");
+-MODULE_LICENSE("GPL v2");
++MODULE_LICENSE("GPL");
 diff --git a/drivers/mfd/intel-m10-bmc-spi.c b/drivers/mfd/intel-m10-bmc-spi.c
-index e7b0b3b03186..e3b2edb8bc07 100644
+index 4a7a16d9f8d6..6a45b080a208 100644
 --- a/drivers/mfd/intel-m10-bmc-spi.c
 +++ b/drivers/mfd/intel-m10-bmc-spi.c
-@@ -33,6 +33,57 @@ static struct regmap_config intel_m10bmc_regmap_config = {
- 	.max_register = M10BMC_MEM_END,
- };
+@@ -258,5 +258,5 @@ module_spi_driver(intel_m10bmc_spi_driver);
  
-+static int m10bmc_spi_flash_write(struct intel_m10bmc *m10bmc, const u8 *buf, u32 offset, u32 size)
-+{
-+	unsigned int stride = regmap_get_reg_stride(m10bmc->regmap);
-+	u32 leftover = size % stride;
-+	u32 extra_offset, extra = 0;
-+	int ret;
-+
-+	if (WARN_ON_ONCE(stride > sizeof(extra)))
-+		return -EINVAL;
-+
-+	ret = regmap_bulk_write(m10bmc->regmap, M10BMC_STAGING_BASE + offset,
-+				buf + offset, size / stride);
-+	if (ret)
-+		return ret;
-+
-+	/* If size is not aligned to stride, then handle the extra bytes with regmap_write */
-+	if (leftover) {
-+		extra_offset = offset + ALIGN_DOWN(size, stride);
-+		memcpy(&extra, (u8 *)(buf + extra_offset), leftover);
-+
-+		ret = regmap_write(m10bmc->regmap, M10BMC_STAGING_BASE + extra_offset, extra);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int m10bmc_spi_flash_read(struct intel_m10bmc *m10bmc, u8 *buf, u32 addr, u32 size)
-+{
-+	unsigned int stride = regmap_get_reg_stride(m10bmc->regmap);
-+	int ret;
-+
-+	if (WARN_ON_ONCE(size % stride)) {
-+		dev_err(m10bmc->dev, "read size (0x%x) not aligned to stride (0x%x)\n",
-+			size, stride);
-+		return -EINVAL;
-+	}
-+
-+	ret = regmap_bulk_read(m10bmc->regmap, addr, buf, size / stride);
-+	if (ret)
-+		dev_err(m10bmc->dev, "failed to read flash block data: %x cnt %x: %d\n",
-+			addr, size / stride, ret);
-+	return ret;
-+}
-+
-+static const struct intel_m10bmc_flash_ops m10bmc_spi_flash_ops = {
-+	.read = m10bmc_spi_flash_read,
-+	.write = m10bmc_spi_flash_write,
-+};
-+
- static int check_m10bmc_version(struct intel_m10bmc *ddata)
- {
- 	unsigned int v;
-@@ -72,6 +123,7 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
- 
- 	info = (struct intel_m10bmc_platform_info *)id->driver_data;
- 	ddata->dev = dev;
-+	ddata->flash_ops = &m10bmc_spi_flash_ops;
- 
- 	ddata->regmap = devm_regmap_init_spi_avmm(spi, &intel_m10bmc_regmap_config);
- 	if (IS_ERR(ddata->regmap)) {
-diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
-index d752c0d7cbdb..860408aa8db3 100644
---- a/include/linux/mfd/intel-m10-bmc.h
-+++ b/include/linux/mfd/intel-m10-bmc.h
-@@ -161,16 +161,30 @@ struct intel_m10bmc_platform_info {
- 	const struct m10bmc_csr_map *csr_map;
- };
- 
-+struct intel_m10bmc;
-+
-+/**
-+ * struct intel_m10bmc_flash_ops - device specific operations for flash R/W
-+ * @read: read a block of data from flash
-+ * @write: write a block of data to flash
-+ */
-+struct intel_m10bmc_flash_ops {
-+	int (*read)(struct intel_m10bmc *m10bmc, u8 *buf, u32 addr, u32 size);
-+	int (*write)(struct intel_m10bmc *m10bmc, const u8 *buf, u32 offset, u32 size);
-+};
-+
- /**
-  * struct intel_m10bmc - Intel MAX 10 BMC parent driver data structure
-  * @dev: this device
-  * @regmap: the regmap used to access registers by m10bmc itself
-  * @info: the platform information for MAX10 BMC
-+ * @flash_ops: optional device specific operations for flash R/W
-  */
- struct intel_m10bmc {
- 	struct device *dev;
- 	struct regmap *regmap;
- 	const struct intel_m10bmc_platform_info *info;
-+	const struct intel_m10bmc_flash_ops *flash_ops;
- };
- 
- /*
+ MODULE_DESCRIPTION("Intel MAX 10 BMC SPI bus interface");
+ MODULE_AUTHOR("Intel Corporation");
+-MODULE_LICENSE("GPL v2");
++MODULE_LICENSE("GPL");
+ MODULE_ALIAS("spi:intel-m10-bmc");
 -- 
 2.30.2
 
