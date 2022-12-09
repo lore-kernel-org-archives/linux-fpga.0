@@ -2,41 +2,41 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9332CC04FDE
-	for <linux-fpga@archiver.kernel.org>; Fri,  9 Dec 2022 01:25:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A799AC4167B
+	for <linux-fpga@archiver.kernel.org>; Fri,  9 Dec 2022 01:25:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229829AbiLIBXd (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 8 Dec 2022 20:23:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60170 "EHLO
+        id S229848AbiLIBXf (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 8 Dec 2022 20:23:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229561AbiLIBXb (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 8 Dec 2022 20:23:31 -0500
+        with ESMTP id S229763AbiLIBXc (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 8 Dec 2022 20:23:32 -0500
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 774E97E83F;
-        Thu,  8 Dec 2022 17:23:30 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C0CF82FB4;
+        Thu,  8 Dec 2022 17:23:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1670549010; x=1702085010;
+  t=1670549011; x=1702085011;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=mwMQmcynqENJ3y9naQPa+ubp3a09jXnV9/AxFHnqRKo=;
-  b=bUTfxGGq7jJXyirC7CgigGQG6qXwni913/zuLLYKMBSl8BoYF77uSPkl
-   KmqG5yxbUXbhRwexYOAdOrK4qIhqz969szgebjJ37LkYyHY+DyDmJsEZa
-   +GUlLZym3mjjw+H9lJG+M8w3yJtubI2RMAS4ZmfmbSUwx3xBSFhXs2EsV
-   8YIkIUfj0s+HJmSfd1ZbLhNFE9ty/VtICJQ5tGTw4BuMVg/UjSxwRTrTF
-   gSOHUzHwmfSK5Kt8Ld3OgY9MuehhsFPrZh4p6miofShXwuI58kqQBFa3o
-   HJ/LU2rsNkgiLwnrMwzqdEkysYvGwvZAabNuc3SjZKicvZcBhzqWFbQDu
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10555"; a="318504842"
+  bh=Ka1cSePtifjHK4uLChKdCNuYKgE+Jy1p2zWMS3zdk+4=;
+  b=SzEJbi/bhp3a1rpX34MS0S47opFIyIpp7Q9uRO+r/4Iv6UF1RYO7GaFT
+   I+uhSj6/NyuNQoNN5rhFHMY9yKlPIZc+bcSprVeRw3vNHokMs+Mcm4fOx
+   FiFojMhA3jiQor7owYNI8GIt0NxiOzbKWlj4dqyhf1U58v6T2FCF5B9hd
+   rXFF6NIWuhgQ4isnb00S376uUEmZ13SnD7+eBN/FwCWQrU5PgX4L9TgXx
+   mR93XkbIZcZGFl2U9kO1S5M14uvpd5Nw2gi5TKtJHlnK8So/y9Y0Il9Wb
+   n+1gh7lHWuamjxnW02/JrAGLLFvLd+7+7aDJYrqch0BlZiROI8oFXv/HR
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10555"; a="318504871"
 X-IronPort-AV: E=Sophos;i="5.96,228,1665471600"; 
-   d="scan'208";a="318504842"
+   d="scan'208";a="318504871"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2022 17:23:29 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10555"; a="715852791"
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2022 17:23:30 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10555"; a="715852802"
 X-IronPort-AV: E=Sophos;i="5.96,228,1665471600"; 
-   d="scan'208";a="715852791"
+   d="scan'208";a="715852802"
 Received: from rhweight-wrk1.ra.intel.com ([137.102.106.139])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2022 17:23:28 -0800
+  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2022 17:23:29 -0800
 From:   matthew.gerlach@linux.intel.com
 To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
         basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
@@ -50,9 +50,9 @@ To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
         johan@kernel.org, lukas@wunner.de, ilpo.jarvinen@linux.intel.com,
         marpagan@redhat.com
 Cc:     Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Subject: [PATCH v5 1/4] Documentation: fpga: dfl: Add documentation for DFHv1
-Date:   Thu,  8 Dec 2022 17:23:45 -0800
-Message-Id: <20221209012348.2883424-2-matthew.gerlach@linux.intel.com>
+Subject: [PATCH v5 4/4] tty: serial: 8250: add DFL bus driver for Altera 16550.
+Date:   Thu,  8 Dec 2022 17:23:48 -0800
+Message-Id: <20221209012348.2883424-5-matthew.gerlach@linux.intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20221209012348.2883424-1-matthew.gerlach@linux.intel.com>
 References: <20221209012348.2883424-1-matthew.gerlach@linux.intel.com>
@@ -65,141 +65,232 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 
-Add documentation describing the extensions provided by Version
-1 of the Device Feature Header (DFHv1).
+Add a Device Feature List (DFL) bus driver for the Altera
+16550 implementation of UART.
 
 Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
-v5: use neested list for field descriptions
-    clean up prose
-    add reviewed-by and comments from Ilpo Järvinen
+v5: removed unneeded blank line
+    removed unneeded includes
+    included device.h and types.h
+    removed unneeded local variable
+    remove calls to dev_dbg
+    memset -> { }
+    remove space after period
+    explicitly include used headers
+    remove redundant Inc from Copyright
+    fix format specifier
 
-v4: Remove marketing speak and separate v0 and v1 descriptions.
-    Fix errors reported by "make htmldocs".
+v4: use dev_err_probe() everywhere that is appropriate
+    clean up noise
+    change error messages to use the word, unsupported
+    tried again to sort Makefile and KConfig better
+    reorder probe function for easier error handling
+    use new dfh_find_param API
 
-v3: no change
+v3: use passed in location of registers
+    use cleaned up functions for parsing parameters
 
-v2: s/GUILD/GUID/
-    add picture
+v2: clean up error messages
+    alphabetize header files
+    fix 'missing prototype' error by making function static
+    tried to sort Makefile and Kconfig better
 ---
- Documentation/fpga/dfl.rst | 103 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 103 insertions(+)
+ drivers/tty/serial/8250/8250_dfl.c | 147 +++++++++++++++++++++++++++++
+ drivers/tty/serial/8250/Kconfig    |  12 +++
+ drivers/tty/serial/8250/Makefile   |   1 +
+ 3 files changed, 160 insertions(+)
+ create mode 100644 drivers/tty/serial/8250/8250_dfl.c
 
-diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
-index 15b670926084..606b4b070c33 100644
---- a/Documentation/fpga/dfl.rst
-+++ b/Documentation/fpga/dfl.rst
-@@ -561,6 +561,109 @@ new DFL feature via UIO direct access, its feature id should be added to the
- driver's id_table.
+diff --git a/drivers/tty/serial/8250/8250_dfl.c b/drivers/tty/serial/8250/8250_dfl.c
+new file mode 100644
+index 000000000000..68b3c00d3fe9
+--- /dev/null
++++ b/drivers/tty/serial/8250/8250_dfl.c
+@@ -0,0 +1,147 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Driver for FPGA UART
++ *
++ * Copyright (C) 2022 Intel Corporation.
++ *
++ * Authors:
++ *   Ananda Ravuri <ananda.ravuri@intel.com>
++ *   Matthew Gerlach <matthew.gerlach@linux.intel.com>
++ */
++
++#include <linux/bitfield.h>
++#include <linux/device.h>
++#include <linux/dfl.h>
++#include <linux/errno.h>
++#include <linux/ioport.h>
++#include <linux/module.h>
++#include <linux/mod_devicetable.h>
++#include <linux/types.h>
++
++#include <linux/serial.h>
++#include <linux/serial_8250.h>
++
++struct dfl_uart {
++	int line;
++};
++
++static int dfl_uart_get_params(struct dfl_device *dfl_dev, struct uart_8250_port *uart)
++{
++	struct device *dev = &dfl_dev->dev;
++	u32 reg_width;
++	u64 fifo_len;
++	u64 *p;
++
++	p = dfh_find_param(dfl_dev, DFHv1_PARAM_ID_CLK_FRQ);
++	if (!p)
++		return dev_err_probe(dev, -EINVAL, "missing CLK_FRQ param\n");
++
++	p++;
++	uart->port.uartclk = *p;
++
++	p = dfh_find_param(dfl_dev, DFHv1_PARAM_ID_FIFO_LEN);
++	if (!p)
++		return dev_err_probe(dev, -EINVAL, "missing FIFO_LEN param\n");
++
++	p++;
++	fifo_len = *p;
++	switch (fifo_len) {
++	case 32:
++		uart->port.type = PORT_ALTR_16550_F32;
++		break;
++
++	case 64:
++		uart->port.type = PORT_ALTR_16550_F64;
++		break;
++
++	case 128:
++		uart->port.type = PORT_ALTR_16550_F128;
++		break;
++
++	default:
++		return dev_err_probe(dev, -EINVAL, "unsupported FIFO_LEN %llu\n", fifo_len);
++	}
++
++	p = dfh_find_param(dfl_dev, DFHv1_PARAM_ID_REG_LAYOUT);
++	if (!p)
++		return dev_err_probe(dev, -EINVAL, "missing REG_LAYOUT param\n");
++
++	p++;
++	uart->port.regshift = FIELD_GET(DFHv1_PARAM_REG_LAYOUT_SHIFT, *p);
++	reg_width = FIELD_GET(DFHv1_PARAM_REG_LAYOUT_WIDTH, *p);
++	switch (reg_width) {
++	case 4:
++		uart->port.iotype = UPIO_MEM32;
++		break;
++
++	case 2:
++		uart->port.iotype = UPIO_MEM16;
++		break;
++
++	default:
++		return dev_err_probe(dev, -EINVAL, "unsupported reg-width %u\n", reg_width);
++
++	}
++
++	return 0;
++}
++
++static int dfl_uart_probe(struct dfl_device *dfl_dev)
++{
++	struct device *dev = &dfl_dev->dev;
++	struct uart_8250_port uart = { };
++	struct dfl_uart *dfluart;
++	int ret;
++
++	uart.port.flags = UPF_IOREMAP;
++	uart.port.mapbase = dfl_dev->mmio_res.start;
++	uart.port.mapsize = resource_size(&dfl_dev->mmio_res);
++
++	ret = dfl_uart_get_params(dfl_dev, &uart);
++	if (ret < 0)
++		return dev_err_probe(dev, ret, "failed uart feature walk\n");
++
++	if (dfl_dev->num_irqs == 1)
++		uart.port.irq = dfl_dev->irqs[0];
++
++	dfluart = devm_kzalloc(dev, sizeof(*dfluart), GFP_KERNEL);
++	if (!dfluart)
++		return -ENOMEM;
++
++	dfluart->line = serial8250_register_8250_port(&uart);
++	if (dfluart->line < 0)
++		return dev_err_probe(dev, dfluart->line, "unable to register 8250 port.\n");
++
++	dev_set_drvdata(dev, dfluart);
++
++	return 0;
++}
++
++static void dfl_uart_remove(struct dfl_device *dfl_dev)
++{
++	struct dfl_uart *dfluart = dev_get_drvdata(&dfl_dev->dev);
++
++	serial8250_unregister_port(dfluart->line);
++}
++
++#define FME_FEATURE_ID_UART 0x24
++
++static const struct dfl_device_id dfl_uart_ids[] = {
++	{ FME_ID, FME_FEATURE_ID_UART },
++	{ }
++};
++MODULE_DEVICE_TABLE(dfl, dfl_uart_ids);
++
++static struct dfl_driver dfl_uart_driver = {
++	.drv = {
++		.name = "dfl-uart",
++	},
++	.id_table = dfl_uart_ids,
++	.probe = dfl_uart_probe,
++	.remove = dfl_uart_remove,
++};
++module_dfl_driver(dfl_uart_driver);
++
++MODULE_DESCRIPTION("DFL Intel UART driver");
++MODULE_AUTHOR("Intel Corporation");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/tty/serial/8250/Kconfig b/drivers/tty/serial/8250/Kconfig
+index b0f62345bc84..08af2acd4645 100644
+--- a/drivers/tty/serial/8250/Kconfig
++++ b/drivers/tty/serial/8250/Kconfig
+@@ -370,6 +370,18 @@ config SERIAL_8250_FSL
+ 	  erratum for Freescale 16550 UARTs in the 8250 driver. It also
+ 	  enables support for ACPI enumeration.
  
- 
-+Device Feature Header - Version 0
-+===========================================
-+Version 0 (DFHv0) is the original version of the Device Feature Header.
-+The format of DFHv0 is shown below::
++config SERIAL_8250_DFL
++	tristate "DFL bus driver for Altera 16550 UART"
++	depends on SERIAL_8250 && FPGA_DFL
++	help
++	  This option enables support for a Device Feature List (DFL) bus
++	  driver for the Altera 16650 UART. One or more Altera 16650 UARTs
++	  can be instantiated in a FPGA and then be discovered during
++	  enumeration of the DFL bus.
 +
-+    +-----------------------------------------------------------------------+
-+    |63 Type 60|59 DFH VER 52|51 Rsvd 41|40 EOL|39 Next 16|15 VER 12|11 ID 0| 0x00
-+    +-----------------------------------------------------------------------+
-+    |63                                 GUID_L                             0| 0x08
-+    +-----------------------------------------------------------------------+
-+    |63                                 GUID_H                             0| 0x10
-+    +-----------------------------------------------------------------------+
++	  To compile this driver as a module, chose M here: the
++	  module will be called 8250_dfl.
 +
-+- Offset 0x00
-+
-+  * Type - The type of DFH (e.g. FME, AFU, or private feature).
-+  * DFH VER - The version of the DFH.
-+  * Rsvd - Currently unused.
-+  * EOL - Set if this DFH is the end of the Device Feature List (DFL).
-+  * Next - The offset of the next DFH in the DFL from the start of the DFH. If EOL is set, Next is the size of MMIO ofthe last feature in the list.
-+  * ID - The ID of the feature if Type is private feature.
-+
-+- Offset 0x08
-+
-+  * GUID_L - Least significant 64 bits of a 128 bit Globally Unique Identifier (present only if Type is FME or AFU).
-+
-+- Offset 0x10
-+
-+  * GUID_H - Most significant 64 bits of a 128 bit Globally Unique Identifier (present only if Type is FME or AFU).
-+
-+
-+Device Feature Header - Version 1
-+===========================================
-+Version 1 (DFHv1) of the Device Feature Header adds the following functionality:
-+
-+* Provides a standardized mechanism for features to describe parameters/capabilities to software.
-+* Standardize the use of a GUID for all DFHv1 types.
-+* Decouples the location of the DFH from the register space of the feature itself.
-+
-+The format of Version 1 of the Device Feature Header (DFH) is shown below::
-+
-+    +-----------------------------------------------------------------------+
-+    |63 Type 60|59 DFH VER 52|51 Rsvd 41|40 EOL|39 Next 16|15 VER 12|11 ID 0| 0x00
-+    +-----------------------------------------------------------------------+
-+    |63                                 GUID_L                             0| 0x08
-+    +-----------------------------------------------------------------------+
-+    |63                                 GUID_H                             0| 0x10
-+    +-----------------------------------------------------------------------+
-+    |63                   Reg Address/Offset                      1|  Rel  0| 0x18
-+    +-----------------------------------------------------------------------+
-+    |63        Reg Size       32|Params 31|30 Group    16|15 Instance      0| 0x20
-+    +-----------------------------------------------------------------------+
-+    |63 Next    35|34RSV33|EOP32|31 Param Version 16|15 Param ID           0| 0x28
-+    +-----------------------------------------------------------------------+
-+    |63                 Parameter Data                                     0| 0x30
-+    +-----------------------------------------------------------------------+
-+
-+                                  ...
-+
-+    +-----------------------------------------------------------------------+
-+    |63 Next    35|34RSV33|EOP32|31 Param Version 16|15 Param ID           0|
-+    +-----------------------------------------------------------------------+
-+    |63                 Parameter Data                                     0|
-+    +-----------------------------------------------------------------------+
-+
-+- Offset 0x00
-+
-+  * Type - The type of DFH (e.g. FME, AFU, or private feature).
-+  * DFH VER - The version of the DFH.
-+  * Rsvd - Currently unused.
-+  * EOL - Set if this DFH is the end of the Device Feature List (DFL).
-+  * Next - The offset of the next DFH in the DFL from the start of the DFH.
-+  * ID - The ID of the feature if Type is private feature.
-+
-+- Offset 0x08
-+
-+  * GUID_L - Least significant 64 bits of a 128 bit Globally Unique Identifier.
-+
-+- Offset 0x10
-+
-+  * GUID_H - Most significant 64 bits of a 128 bit Globally Unique Identifier.
-+
-+- Offset 0x18
-+
-+  * Reg Address/Offset - If Rel bit is set, then the value is the high 63 bits of a 16 bit aligned absolute address of the feature's registers. If Rel bit is clear, then the value is the offset from the start of the DFH of the feature's registers.
-+
-+- Offset 0x20
-+
-+  * Reg Size - Size of feature's register set in bytes.
-+  * Params - Set if DFH has a list of parameter blocks.
-+  * Group - Id of group if feature is part of a group.
-+  * Instance - Id of instance of feature within a group.
-+
-+- Offset 0x28 if feature has parameters
-+
-+  * Next - Offset to the next parameter block in 8 byte words. If EOP set, size in 8 byte words of last parameter.
-+  * Param Version - Version of Param ID.
-+  * Param ID - ID of parameter.
-+
-+- Offset 0x30
-+
-+  * Parameter Data - Parameter data whose size and format is defined by version and ID of the parameter.
-+
- Open discussion
- ===============
- FME driver exports one ioctl (DFL_FPGA_FME_PORT_PR) for partial reconfiguration
+ config SERIAL_8250_DW
+ 	tristate "Support for Synopsys DesignWare 8250 quirks"
+ 	depends on SERIAL_8250
+diff --git a/drivers/tty/serial/8250/Makefile b/drivers/tty/serial/8250/Makefile
+index 1615bfdde2a0..4e1a32812683 100644
+--- a/drivers/tty/serial/8250/Makefile
++++ b/drivers/tty/serial/8250/Makefile
+@@ -28,6 +28,7 @@ obj-$(CONFIG_SERIAL_8250_EXAR_ST16C554)	+= 8250_exar_st16c554.o
+ obj-$(CONFIG_SERIAL_8250_HUB6)		+= 8250_hub6.o
+ obj-$(CONFIG_SERIAL_8250_FSL)		+= 8250_fsl.o
+ obj-$(CONFIG_SERIAL_8250_MEN_MCB)	+= 8250_men_mcb.o
++obj-$(CONFIG_SERIAL_8250_DFL)		+= 8250_dfl.o
+ obj-$(CONFIG_SERIAL_8250_DW)		+= 8250_dw.o
+ obj-$(CONFIG_SERIAL_8250_EM)		+= 8250_em.o
+ obj-$(CONFIG_SERIAL_8250_IOC3)		+= 8250_ioc3.o
 -- 
 2.25.1
 
