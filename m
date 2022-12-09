@@ -2,41 +2,41 @@ Return-Path: <linux-fpga-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCA75C001B2
-	for <linux-fpga@archiver.kernel.org>; Fri,  9 Dec 2022 01:25:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79871C4332F
+	for <linux-fpga@archiver.kernel.org>; Fri,  9 Dec 2022 21:47:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229863AbiLIBXh (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 8 Dec 2022 20:23:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60170 "EHLO
+        id S230092AbiLIVpd (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 9 Dec 2022 16:45:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39354 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229772AbiLIBXc (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 8 Dec 2022 20:23:32 -0500
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7154081D92;
-        Thu,  8 Dec 2022 17:23:31 -0800 (PST)
+        with ESMTP id S229989AbiLIVpE (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 9 Dec 2022 16:45:04 -0500
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E41603D381;
+        Fri,  9 Dec 2022 13:45:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1670549011; x=1702085011;
+  t=1670622303; x=1702158303;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=KjicE71vikUb+o/5TX5UVzXDJrTEWcX3afew9mIAc8M=;
-  b=k1qkq8TEct0wsG3fSqMNxGngHiuunbZPmhCSM0wj4ZlmE4sukQ5Zo2tq
-   MYKp82tWG+lkl11vNQrGJItgIVF41s+Doub2hdaKXUUbxrRKzFyrNClpv
-   lEoGL1Qp6lMkzXnq3uMyLXC61Cxh3ukksij0G/rcga5fzVZ1X7A3+VO96
-   OzVQsG1qC/TBv3GXMlzZUrxAYKWH/9ae4r25YptI/Vj3ovnJWn4XcgXlL
-   f5ykol/+oSrrkM+P/8gUsvnOjw/Lv24BgNTsbiCFoJNaLIMEWb+kAwMUG
-   gFV9x8rcCotEDn+BG9rTijCuK0+jCGtSOFRugBBL/UOlxtGmHfmIhV2J4
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10555"; a="318504861"
-X-IronPort-AV: E=Sophos;i="5.96,228,1665471600"; 
-   d="scan'208";a="318504861"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2022 17:23:29 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10555"; a="715852798"
-X-IronPort-AV: E=Sophos;i="5.96,228,1665471600"; 
-   d="scan'208";a="715852798"
+  bh=mwMQmcynqENJ3y9naQPa+ubp3a09jXnV9/AxFHnqRKo=;
+  b=eEyHE4BqpIBEmztxPevIm5xRhUVH7m8UPktBJ668ZE9kyvr637QJ1c9A
+   FrlNKBRLvtFgCaq7E4T1eS4bIi1aYDTxrO0q/kIA5/Zw5jPvEY1Xm4QD+
+   Jvw9ihpSmKuS5s9oGMIo/93zbD5CqcUJc8gZWYu+2fPj2FJcY35DSPZ2z
+   vdBzR8AGQsC30EJikr3AdDuQFKugW7OZkeomckac8pO2jElOQ0tH3i3d6
+   c3ACwzdKgndUTgANAB3yytAIb++0ADsp8V6pcQ2G7jkGo9HX3in0veQ0i
+   yqFbutys3PUcw+F0Ipu0g/xP5HOhdXOHZj9ijMKv8Ls19W7GeiwtiLFWY
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10556"; a="300975530"
+X-IronPort-AV: E=Sophos;i="5.96,232,1665471600"; 
+   d="scan'208";a="300975530"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2022 13:45:01 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10556"; a="711031688"
+X-IronPort-AV: E=Sophos;i="5.96,232,1665471600"; 
+   d="scan'208";a="711031688"
 Received: from rhweight-wrk1.ra.intel.com ([137.102.106.139])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2022 17:23:29 -0800
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2022 13:45:00 -0800
 From:   matthew.gerlach@linux.intel.com
 To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
         basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
@@ -50,12 +50,12 @@ To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
         johan@kernel.org, lukas@wunner.de, ilpo.jarvinen@linux.intel.com,
         marpagan@redhat.com
 Cc:     Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Subject: [PATCH v5 3/4] fpga: dfl: add basic support for DFHv1
-Date:   Thu,  8 Dec 2022 17:23:47 -0800
-Message-Id: <20221209012348.2883424-4-matthew.gerlach@linux.intel.com>
+Subject: [PATCH v6 1/4] Documentation: fpga: dfl: Add documentation for DFHv1
+Date:   Fri,  9 Dec 2022 13:45:20 -0800
+Message-Id: <20221209214523.3484193-2-matthew.gerlach@linux.intel.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20221209012348.2883424-1-matthew.gerlach@linux.intel.com>
-References: <20221209012348.2883424-1-matthew.gerlach@linux.intel.com>
+In-Reply-To: <20221209214523.3484193-1-matthew.gerlach@linux.intel.com>
+References: <20221209214523.3484193-1-matthew.gerlach@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -65,441 +65,141 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 
-Version 1 of the Device Feature Header (DFH) definition adds
-functionality to the DFL bus.
-
-A DFHv1 header may have one or more parameter blocks that
-further describes the HW to SW.  Add support to the DFL bus
-to parse the MSI-X parameter.
-
-The location of a feature's register set is explicitly
-described in DFHv1 and can be relative to the base of the DFHv1
-or an absolute address.  Parse the location and pass the information
-to DFL driver.
+Add documentation describing the extensions provided by Version
+1 of the Device Feature Header (DFHv1).
 
 Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
-v5: update field names
-    fix find_param/dfh_get_psize
-    clean up mmio_res assignments
-    use u64* instead of void*
-    use FIELD_GET instead of masking
+v5: use neested list for field descriptions
+    clean up prose
+    add reviewed-by and comments from Ilpo Järvinen
 
-v4: s/MSIX/MSI_X
-    move kernel doc to implementation
-    use structure assignment
-    fix decode of absolute address
-    clean up comment in parse_feature_irqs
-    remove use of csr_res
+v4: Remove marketing speak and separate v0 and v1 descriptions.
+    Fix errors reported by "make htmldocs".
 
-v3: remove unneeded blank line
-    use clearer variable name
-    pass finfo into parse_feature_irqs()
-    refactor code for better indentation
-    use switch statement for irq parsing
-    squash in code parsing register location
+v3: no change
 
-v2: fix kernel doc
-    clarify use of DFH_VERSION field
+v2: s/GUILD/GUID/
+    add picture
 ---
- drivers/fpga/dfl.c  | 234 ++++++++++++++++++++++++++++++++++----------
- drivers/fpga/dfl.h  |   5 +
- include/linux/dfl.h |   4 +
- 3 files changed, 192 insertions(+), 51 deletions(-)
+ Documentation/fpga/dfl.rst | 103 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 103 insertions(+)
 
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index b9aae85ba930..df63c96bcbfc 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -342,6 +342,8 @@ static void release_dfl_dev(struct device *dev)
- 	if (ddev->mmio_res.parent)
- 		release_resource(&ddev->mmio_res);
+diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+index 15b670926084..606b4b070c33 100644
+--- a/Documentation/fpga/dfl.rst
++++ b/Documentation/fpga/dfl.rst
+@@ -561,6 +561,109 @@ new DFL feature via UIO direct access, its feature id should be added to the
+ driver's id_table.
  
-+	kfree(ddev->params);
-+
- 	ida_free(&dfl_device_ida, ddev->id);
- 	kfree(ddev->irqs);
- 	kfree(ddev);
-@@ -380,7 +382,16 @@ dfl_dev_add(struct dfl_feature_platform_data *pdata,
- 	ddev->type = feature_dev_id_type(pdev);
- 	ddev->feature_id = feature->id;
- 	ddev->revision = feature->revision;
-+	ddev->dfh_version = feature->dfh_version;
- 	ddev->cdev = pdata->dfl_cdev;
-+	if (feature->param_size) {
-+		ddev->params = kmemdup(feature->params, feature->param_size, GFP_KERNEL);
-+		if (!ddev->params) {
-+			ret = -ENOMEM;
-+			goto put_dev;
-+		}
-+		ddev->param_size = feature->param_size;
-+	}
  
- 	/* add mmio resource */
- 	parent_res = &pdev->resource[feature->resource_index];
-@@ -708,20 +719,27 @@ struct build_feature_devs_info {
-  * struct dfl_feature_info - sub feature info collected during feature dev build
-  *
-  * @fid: id of this sub feature.
-+ * @revision: revision of this sub feature
-+ * @dfh_version: version of Device Feature Header (DFH)
-  * @mmio_res: mmio resource of this sub feature.
-  * @ioaddr: mapped base address of mmio resource.
-  * @node: node in sub_features linked list.
-  * @irq_base: start of irq index in this sub feature.
-  * @nr_irqs: number of irqs of this sub feature.
-+ * @param_size: size DFH parameters.
-+ * @params: DFH parameter data.
-  */
- struct dfl_feature_info {
- 	u16 fid;
- 	u8 revision;
-+	u8 dfh_version;
- 	struct resource mmio_res;
- 	void __iomem *ioaddr;
- 	struct list_head node;
- 	unsigned int irq_base;
- 	unsigned int nr_irqs;
-+	unsigned int param_size;
-+	u64 params[];
- };
- 
- static void dfl_fpga_cdev_add_port_dev(struct dfl_fpga_cdev *cdev,
-@@ -797,7 +815,17 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
- 		feature->dev = fdev;
- 		feature->id = finfo->fid;
- 		feature->revision = finfo->revision;
-+		feature->dfh_version = finfo->dfh_version;
- 
-+		if (finfo->param_size) {
-+			feature->params = devm_kmemdup(binfo->dev,
-+						       finfo->params, finfo->param_size,
-+						       GFP_KERNEL);
-+			if (!feature->params)
-+				return -ENOMEM;
++Device Feature Header - Version 0
++===========================================
++Version 0 (DFHv0) is the original version of the Device Feature Header.
++The format of DFHv0 is shown below::
 +
-+			feature->param_size = finfo->param_size;
-+		}
- 		/*
- 		 * the FIU header feature has some fundamental functions (sriov
- 		 * set, port enable/disable) needed for the dfl bus device and
-@@ -934,56 +962,105 @@ static u16 feature_id(u64 value)
- 	return 0;
- }
- 
-+static u64 *find_param(u64 *params, resource_size_t max, int param_id)
-+{
-+	u64 *end = params + max / sizeof(u64);
-+	u64 v, next;
++    +-----------------------------------------------------------------------+
++    |63 Type 60|59 DFH VER 52|51 Rsvd 41|40 EOL|39 Next 16|15 VER 12|11 ID 0| 0x00
++    +-----------------------------------------------------------------------+
++    |63                                 GUID_L                             0| 0x08
++    +-----------------------------------------------------------------------+
++    |63                                 GUID_H                             0| 0x10
++    +-----------------------------------------------------------------------+
 +
-+	while (params < end) {
-+		v = *params;
-+		if (param_id == FIELD_GET(DFHv1_PARAM_HDR_ID, v))
-+			return params;
++- Offset 0x00
 +
-+		next = FIELD_GET(DFHv1_PARAM_HDR_NEXT_OFFSET, v);
-+		params += next;
-+		if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
-+			break;
-+	}
++  * Type - The type of DFH (e.g. FME, AFU, or private feature).
++  * DFH VER - The version of the DFH.
++  * Rsvd - Currently unused.
++  * EOL - Set if this DFH is the end of the Device Feature List (DFL).
++  * Next - The offset of the next DFH in the DFL from the start of the DFH. If EOL is set, Next is the size of MMIO ofthe last feature in the list.
++  * ID - The ID of the feature if Type is private feature.
 +
-+	return NULL;
-+}
++- Offset 0x08
 +
-+/**
-+ * dfh_find_param() - find data for the given parameter id
-+ * @dfl_dev: dfl device
-+ * @param: id of dfl parameter
-+ *
-+ * Return: pointer to parameter header on success, NULL otherwise.
-+ */
-+u64 *dfh_find_param(struct dfl_device *dfl_dev, int param_id)
-+{
-+	return find_param(dfl_dev->params, dfl_dev->param_size, param_id);
-+}
-+EXPORT_SYMBOL_GPL(dfh_find_param);
++  * GUID_L - Least significant 64 bits of a 128 bit Globally Unique Identifier (present only if Type is FME or AFU).
 +
- static int parse_feature_irqs(struct build_feature_devs_info *binfo,
--			      resource_size_t ofst, u16 fid,
--			      unsigned int *irq_base, unsigned int *nr_irqs)
-+			      resource_size_t ofst, struct dfl_feature_info *finfo)
- {
- 	void __iomem *base = binfo->ioaddr + ofst;
- 	unsigned int i, ibase, inr = 0;
-+	void *params = finfo->params;
- 	enum dfl_id_type type;
-+	u16 fid = finfo->fid;
- 	int virq;
-+	u64 *p;
- 	u64 v;
- 
--	type = feature_dev_id_type(binfo->feature_dev);
-+	switch (finfo->dfh_version) {
-+	case 0:
-+		/*
-+		 * DFHv0 only provides MMIO resource information for each feature
-+		 * in the DFL header.  There is no generic interrupt information.
-+		 * Instead, features with interrupt functionality provide
-+		 * the information in feature specific registers.
-+		 */
-+		type = feature_dev_id_type(binfo->feature_dev);
-+		if (type == PORT_ID) {
-+			switch (fid) {
-+			case PORT_FEATURE_ID_UINT:
-+				v = readq(base + PORT_UINT_CAP);
-+				ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
-+				inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
-+				break;
-+			case PORT_FEATURE_ID_ERROR:
-+				v = readq(base + PORT_ERROR_CAP);
-+				ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
-+				inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
-+				break;
-+			}
-+		} else if (type == FME_ID) {
-+			switch (fid) {
-+			case FME_FEATURE_ID_GLOBAL_ERR:
-+				v = readq(base + FME_ERROR_CAP);
-+				ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
-+				inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
-+				break;
-+			}
-+		}
-+		break;
- 
--	/*
--	 * Ideally DFL framework should only read info from DFL header, but
--	 * current version DFL only provides mmio resources information for
--	 * each feature in DFL Header, no field for interrupt resources.
--	 * Interrupt resource information is provided by specific mmio
--	 * registers of each private feature which supports interrupt. So in
--	 * order to parse and assign irq resources, DFL framework has to look
--	 * into specific capability registers of these private features.
--	 *
--	 * Once future DFL version supports generic interrupt resource
--	 * information in common DFL headers, the generic interrupt parsing
--	 * code will be added. But in order to be compatible to old version
--	 * DFL, the driver may still fall back to these quirks.
--	 */
--	if (type == PORT_ID) {
--		switch (fid) {
--		case PORT_FEATURE_ID_UINT:
--			v = readq(base + PORT_UINT_CAP);
--			ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
--			inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
--			break;
--		case PORT_FEATURE_ID_ERROR:
--			v = readq(base + PORT_ERROR_CAP);
--			ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
--			inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
-+	case 1:
-+		/*
-+		 * DFHv1 provides interrupt resource information in DFHv1
-+		 * parameter blocks.
-+		 */
-+		p = find_param(params, finfo->param_size, DFHv1_PARAM_ID_MSI_X);
-+		if (!p)
- 			break;
--		}
--	} else if (type == FME_ID) {
--		if (fid == FME_FEATURE_ID_GLOBAL_ERR) {
--			v = readq(base + FME_ERROR_CAP);
--			ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
--			inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
--		}
++- Offset 0x10
 +
-+		p++;
-+		ibase = FIELD_GET(DFHv1_PARAM_MSI_X_STARTV, *p);
-+		inr = FIELD_GET(DFHv1_PARAM_MSI_X_NUMV, *p);
-+		break;
++  * GUID_H - Most significant 64 bits of a 128 bit Globally Unique Identifier (present only if Type is FME or AFU).
 +
-+	default:
-+		dev_warn(binfo->dev, "unexpected DFH version %d\n", finfo->dfh_version);
-+		break;
- 	}
- 
- 	if (!inr) {
--		*irq_base = 0;
--		*nr_irqs = 0;
-+		finfo->irq_base = 0;
-+		finfo->nr_irqs = 0;
- 		return 0;
- 	}
- 
-@@ -1006,12 +1083,37 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
- 		}
- 	}
- 
--	*irq_base = ibase;
--	*nr_irqs = inr;
-+	finfo->irq_base = ibase;
-+	finfo->nr_irqs = inr;
- 
- 	return 0;
- }
- 
-+static int dfh_get_psize(void __iomem *dfh_base, resource_size_t max)
-+{
-+	int size = 0;
-+	u64 v, next;
 +
-+	if (!FIELD_GET(DFHv1_CSR_SIZE_GRP_HAS_PARAMS,
-+		       readq(dfh_base + DFHv1_CSR_SIZE_GRP)))
-+		return 0;
++Device Feature Header - Version 1
++===========================================
++Version 1 (DFHv1) of the Device Feature Header adds the following functionality:
 +
-+	while (size + DFHv1_PARAM_HDR < max) {
-+		v = readq(dfh_base + DFHv1_PARAM_HDR + size);
++* Provides a standardized mechanism for features to describe parameters/capabilities to software.
++* Standardize the use of a GUID for all DFHv1 types.
++* Decouples the location of the DFH from the register space of the feature itself.
 +
-+		next = FIELD_GET(DFHv1_PARAM_HDR_NEXT_OFFSET, v);
-+		if (!next)
-+			return -EINVAL;
++The format of Version 1 of the Device Feature Header (DFH) is shown below::
 +
-+		size += next * sizeof(u64);
++    +-----------------------------------------------------------------------+
++    |63 Type 60|59 DFH VER 52|51 Rsvd 41|40 EOL|39 Next 16|15 VER 12|11 ID 0| 0x00
++    +-----------------------------------------------------------------------+
++    |63                                 GUID_L                             0| 0x08
++    +-----------------------------------------------------------------------+
++    |63                                 GUID_H                             0| 0x10
++    +-----------------------------------------------------------------------+
++    |63                   Reg Address/Offset                      1|  Rel  0| 0x18
++    +-----------------------------------------------------------------------+
++    |63        Reg Size       32|Params 31|30 Group    16|15 Instance      0| 0x20
++    +-----------------------------------------------------------------------+
++    |63 Next    35|34RSV33|EOP32|31 Param Version 16|15 Param ID           0| 0x28
++    +-----------------------------------------------------------------------+
++    |63                 Parameter Data                                     0| 0x30
++    +-----------------------------------------------------------------------+
 +
-+		if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
-+			return size;
-+	}
++                                  ...
 +
-+	return -ENOENT;
-+}
++    +-----------------------------------------------------------------------+
++    |63 Next    35|34RSV33|EOP32|31 Param Version 16|15 Param ID           0|
++    +-----------------------------------------------------------------------+
++    |63                 Parameter Data                                     0|
++    +-----------------------------------------------------------------------+
 +
- /*
-  * when create sub feature instances, for private features, it doesn't need
-  * to provide resource size and feature id as they could be read from DFH
-@@ -1023,39 +1125,69 @@ static int
- create_feature_instance(struct build_feature_devs_info *binfo,
- 			resource_size_t ofst, resource_size_t size, u16 fid)
- {
--	unsigned int irq_base, nr_irqs;
- 	struct dfl_feature_info *finfo;
-+	resource_size_t start, end;
-+	int dfh_psize = 0;
- 	u8 revision = 0;
-+	u64 v, addr_off;
-+	u8 dfh_ver = 0;
- 	int ret;
--	u64 v;
- 
- 	if (fid != FEATURE_ID_AFU) {
- 		v = readq(binfo->ioaddr + ofst);
- 		revision = FIELD_GET(DFH_REVISION, v);
--
-+		dfh_ver = FIELD_GET(DFH_VERSION, v);
- 		/* read feature size and id if inputs are invalid */
- 		size = size ? size : feature_size(v);
- 		fid = fid ? fid : feature_id(v);
-+		if (dfh_ver == 1) {
-+			dfh_psize = dfh_get_psize(binfo->ioaddr + ofst, size);
-+			if (dfh_psize < 0) {
-+				dev_err(binfo->dev,
-+					"failed to read size of DFHv1 parameters %d\n",
-+					dfh_psize);
-+				return dfh_psize;
-+			}
-+			dev_dbg(binfo->dev, "dfhv1_psize %d\n", dfh_psize);
-+		}
- 	}
- 
- 	if (binfo->len - ofst < size)
- 		return -EINVAL;
- 
--	ret = parse_feature_irqs(binfo, ofst, fid, &irq_base, &nr_irqs);
--	if (ret)
--		return ret;
--
--	finfo = kzalloc(sizeof(*finfo), GFP_KERNEL);
-+	finfo = kzalloc(sizeof(*finfo) + dfh_psize, GFP_KERNEL);
- 	if (!finfo)
- 		return -ENOMEM;
- 
-+	memcpy_fromio(finfo->params, binfo->ioaddr + ofst + DFHv1_PARAM_HDR, dfh_psize);
-+	finfo->param_size = dfh_psize;
++- Offset 0x00
 +
- 	finfo->fid = fid;
- 	finfo->revision = revision;
--	finfo->mmio_res.start = binfo->start + ofst;
--	finfo->mmio_res.end = finfo->mmio_res.start + size - 1;
-+	finfo->dfh_version = dfh_ver;
-+	if (dfh_ver == 1) {
-+		v = readq(binfo->ioaddr + ofst + DFHv1_CSR_ADDR);
-+		addr_off = FIELD_GET(DFHv1_CSR_ADDR_MASK, v);
-+		if (FIELD_GET(DFHv1_CSR_ADDR_REL, v))
-+			start = addr_off << 1;
-+		else
-+			start = binfo->start + ofst + addr_off;
++  * Type - The type of DFH (e.g. FME, AFU, or private feature).
++  * DFH VER - The version of the DFH.
++  * Rsvd - Currently unused.
++  * EOL - Set if this DFH is the end of the Device Feature List (DFL).
++  * Next - The offset of the next DFH in the DFL from the start of the DFH.
++  * ID - The ID of the feature if Type is private feature.
 +
-+		v = readq(binfo->ioaddr + ofst + DFHv1_CSR_SIZE_GRP);
-+		end = start + FIELD_GET(DFHv1_CSR_SIZE_GRP_SIZE, v) - 1;
-+	} else {
-+		start = binfo->start + ofst;
-+		end = start + size - 1;
-+	}
- 	finfo->mmio_res.flags = IORESOURCE_MEM;
--	finfo->irq_base = irq_base;
--	finfo->nr_irqs = nr_irqs;
-+	finfo->mmio_res.start = start;
-+	finfo->mmio_res.end = end;
++- Offset 0x08
 +
-+	ret = parse_feature_irqs(binfo, ofst, finfo);
-+	if (ret) {
-+		kfree(finfo);
-+		return ret;
-+	}
- 
- 	list_add_tail(&finfo->node, &binfo->sub_features);
- 	binfo->feature_num++;
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index fc59f33367ee..5b829d7096e8 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -272,11 +272,14 @@ struct dfl_feature_irq_ctx {
-  * @ops: ops of this sub feature.
-  * @ddev: ptr to the dfl device of this sub feature.
-  * @priv: priv data of this feature.
-+ * @param_size: size of dfh parameters
-+ * @params: point to memory copy of dfh parameters
-  */
- struct dfl_feature {
- 	struct platform_device *dev;
- 	u16 id;
- 	u8 revision;
-+	u8 dfh_version;
- 	int resource_index;
- 	void __iomem *ioaddr;
- 	struct dfl_feature_irq_ctx *irq_ctx;
-@@ -284,6 +287,8 @@ struct dfl_feature {
- 	const struct dfl_feature_ops *ops;
- 	struct dfl_device *ddev;
- 	void *priv;
-+	unsigned int param_size;
-+	void *params;
- };
- 
- #define FEATURE_DEV_ID_UNUSED	(-1)
-diff --git a/include/linux/dfl.h b/include/linux/dfl.h
-index 7b11ac530a4e..1ef0f17137e6 100644
---- a/include/linux/dfl.h
-+++ b/include/linux/dfl.h
-@@ -50,9 +50,12 @@ struct dfl_device {
- 	u16 type;
- 	u16 feature_id;
- 	u8 revision;
-+	u8 dfh_version;
- 	struct resource mmio_res;
- 	int *irqs;
- 	unsigned int num_irqs;
-+	unsigned int param_size;
-+	void *params;
- 	struct dfl_fpga_cdev *cdev;
- 	const struct dfl_device_id *id_entry;
- };
-@@ -95,4 +98,5 @@ void dfl_driver_unregister(struct dfl_driver *dfl_drv);
- 	module_driver(__dfl_driver, dfl_driver_register, \
- 		      dfl_driver_unregister)
- 
-+u64 *dfh_find_param(struct dfl_device *dfl_dev, int param);
- #endif /* __LINUX_DFL_H */
++  * GUID_L - Least significant 64 bits of a 128 bit Globally Unique Identifier.
++
++- Offset 0x10
++
++  * GUID_H - Most significant 64 bits of a 128 bit Globally Unique Identifier.
++
++- Offset 0x18
++
++  * Reg Address/Offset - If Rel bit is set, then the value is the high 63 bits of a 16 bit aligned absolute address of the feature's registers. If Rel bit is clear, then the value is the offset from the start of the DFH of the feature's registers.
++
++- Offset 0x20
++
++  * Reg Size - Size of feature's register set in bytes.
++  * Params - Set if DFH has a list of parameter blocks.
++  * Group - Id of group if feature is part of a group.
++  * Instance - Id of instance of feature within a group.
++
++- Offset 0x28 if feature has parameters
++
++  * Next - Offset to the next parameter block in 8 byte words. If EOP set, size in 8 byte words of last parameter.
++  * Param Version - Version of Param ID.
++  * Param ID - ID of parameter.
++
++- Offset 0x30
++
++  * Parameter Data - Parameter data whose size and format is defined by version and ID of the parameter.
++
+ Open discussion
+ ===============
+ FME driver exports one ioctl (DFL_FPGA_FME_PORT_PR) for partial reconfiguration
 -- 
 2.25.1
 
