@@ -2,324 +2,141 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 864F4C3DA79
-	for <linux-fpga@archiver.kernel.org>; Mon, 26 Dec 2022 18:04:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69672C4167B
+	for <linux-fpga@archiver.kernel.org>; Mon, 26 Dec 2022 18:25:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232149AbiLZR7q (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 26 Dec 2022 12:59:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59232 "EHLO
+        id S229729AbiLZSYP (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 26 Dec 2022 13:24:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37860 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232227AbiLZR7i (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 26 Dec 2022 12:59:38 -0500
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5A422619;
-        Mon, 26 Dec 2022 09:59:37 -0800 (PST)
+        with ESMTP id S229676AbiLZSYO (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 26 Dec 2022 13:24:14 -0500
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A546A25D7;
+        Mon, 26 Dec 2022 10:24:13 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1672077577; x=1703613577;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=b5CWQZf4V9fQF0tyfZu2QAqdL/X41qS/YoNGj7mlgAs=;
-  b=chlCMAB+oUhf+Atgqrz6LiYDM77vGKCesYvDWN1JJVqpkBA/0cU5aJcM
-   qOGsvmn3MMw5JcRuJ3Y50b710TCTUQvu4YFflRJH+AtSmd+0exPlUI2qC
-   qW4O9NR8Jao7zz+URSz8a+Eu7tXMFtUpsx+kDOxM6OdZdCjpqWy8pTrYw
-   cZv5ts63innTFXxA1no8vlisnb0SPozokHK3nrQUOP6aNrEWO+sG3o/zl
-   /5u2tESLiaUlX21QriTD2I2ZK5Hzi0yRg2+51Vk4YhuzL+OGOCEpb7CbU
-   6DAuF0V7jSRieNW9gx7is/ff9dCMAdhfuxxOy4w9MvByd+e9pa6kGwS0J
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10572"; a="322571002"
+  t=1672079053; x=1703615053;
+  h=date:from:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=4PC/rO7q4a/aiRxZxAXzbYiW0GcNhwpPNQ+hpbSkUY0=;
+  b=ZGP+WiS6bSsFMGcocZMGcJkuGUSf2DWRjj6q6yKZjMaf+G3+uw5bADaW
+   mlJqcKmGWzLjv0uxIR0wyfrxkVfoKth7yE4MG00EnQPY1vwonicG3l+q4
+   gyssqr3KCz2LQU77msaWtiYFSK2KP8sKjkaiU06qxZa0XUxZamg4SaLJR
+   KwV4n/s/b8zey992s0wkRW8czB92V//IGlV2Hq2egKL25S3dPPBe3WZCi
+   w+3G0a/HTA8nWqSi0NGrOsU1ZYS7jQiAWChEgfiNDAfulRuWf9MiqoStV
+   g/zdWD/HdL/RtIqIWVedBnfH1MlUGWRCzyxTZr4jGy4hao2SYdxjTcRpf
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10572"; a="347790819"
 X-IronPort-AV: E=Sophos;i="5.96,276,1665471600"; 
-   d="scan'208";a="322571002"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Dec 2022 09:59:37 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10572"; a="654810108"
+   d="scan'208";a="347790819"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Dec 2022 10:24:13 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10572"; a="721309772"
 X-IronPort-AV: E=Sophos;i="5.96,276,1665471600"; 
-   d="scan'208";a="654810108"
-Received: from ptelkov-mobl2.ccr.corp.intel.com (HELO ijarvine-MOBL2.ger.corp.intel.com) ([10.249.41.4])
-  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Dec 2022 09:59:32 -0800
-From:   =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
-        Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
-        Moritz Fischer <mdf@kernel.org>, Lee Jones <lee@kernel.org>,
-        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
-        Russ Weight <russell.h.weight@intel.com>,
-        Tianfei zhang <tianfei.zhang@intel.com>,
-        Mark Brown <broonie@kernel.org>,
-        Marco Pagani <marpagan@redhat.com>,
-        linux-kernel@vger.kernel.org
-Cc:     =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH v5 05/10] fpga: intel-m10-bmc: Rework flash read/write
-Date:   Mon, 26 Dec 2022 19:58:44 +0200
-Message-Id: <20221226175849.13056-6-ilpo.jarvinen@linux.intel.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20221226175849.13056-1-ilpo.jarvinen@linux.intel.com>
-References: <20221226175849.13056-1-ilpo.jarvinen@linux.intel.com>
+   d="scan'208";a="721309772"
+Received: from ptelkov-mobl2.ccr.corp.intel.com ([10.249.41.4])
+  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Dec 2022 10:24:09 -0800
+Date:   Mon, 26 Dec 2022 20:24:06 +0200 (EET)
+From:   =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To:     Ivan Bornyakov <i.bornyakov@metrotek.ru>
+cc:     Conor Dooley <conor.dooley@microchip.com>,
+        Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
+        Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
+        linux-fpga@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        system@metrotek.ru
+Subject: Re: [PATCH v2 2/3] fpga: microchip-spi: rewrite status polling in
+ a time measurable way
+In-Reply-To: <20221226142326.8111-3-i.bornyakov@metrotek.ru>
+Message-ID: <5386279-3ce-fa0-ed5-494cb12ae6d@linux.intel.com>
+References: <20221226142326.8111-1-i.bornyakov@metrotek.ru> <20221226142326.8111-3-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Access to flash staging area is different for N6000 from that of the
-SPI interfaced counterparts. To make it easier to differentiate flash
-access path, move read/write into new functions where the new access
-path can be easily placed into. Rework the unaligned access such the
-behavior it matches for both read and write.
+On Mon, 26 Dec 2022, Ivan Bornyakov wrote:
 
-This change also renames m10bmc_sec_write() to m10bmc_sec_fw_write() as
-it would have a name conflict otherwise.
+> Original busy loop with retries count in mpf_poll_status() is not too
+> reliable, as it takes different times on different systems. Replace it
+> with read_poll_timeout() macro.
+> 
+> Fixes: 5f8d4a900830 ("fpga: microchip-spi: add Microchip MPF FPGA manager")
+> Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+> ---
+>  drivers/fpga/microchip-spi.c | 25 +++++++++++--------------
+>  1 file changed, 11 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
+> index e72fedd93a27..f3ddfab87499 100644
+> --- a/drivers/fpga/microchip-spi.c
+> +++ b/drivers/fpga/microchip-spi.c
+> @@ -6,6 +6,7 @@
+>  #include <asm/unaligned.h>
+>  #include <linux/delay.h>
+>  #include <linux/fpga/fpga-mgr.h>
+> +#include <linux/iopoll.h>
+>  #include <linux/module.h>
+>  #include <linux/of_device.h>
+>  #include <linux/spi/spi.h>
+> @@ -33,7 +34,7 @@
+>  
+>  #define	MPF_BITS_PER_COMPONENT_SIZE	22
+>  
+> -#define	MPF_STATUS_POLL_RETRIES		10000
+> +#define	MPF_STATUS_POLL_TIMEOUT		(2 * USEC_PER_SEC)
+>  #define	MPF_STATUS_BUSY			BIT(0)
+>  #define	MPF_STATUS_READY		BIT(1)
+>  #define	MPF_STATUS_SPI_VIOLATION	BIT(2)
+> @@ -197,21 +198,17 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
+>  /* Poll HW status until busy bit is cleared and mask bits are set. */
+>  static int mpf_poll_status(struct mpf_priv *priv, u8 mask)
+>  {
+> -	int status, retries = MPF_STATUS_POLL_RETRIES;
+> +	int ret, status;
+>  
+> -	while (retries--) {
+> -		status = mpf_read_status(priv);
+> -		if (status < 0)
+> -			return status;
+> -
+> -		if (status & MPF_STATUS_BUSY)
+> -			continue;
+> -
+> -		if (!mask || (status & mask))
+> -			return status;
+> -	}
+> +	ret = read_poll_timeout(mpf_read_status, status,
+> +				(status < 0) ||
+> +				(!(status & MPF_STATUS_BUSY) &&
+> +				 (!mask || (status & mask))),
 
-Co-developed-by: Tianfei zhang <tianfei.zhang@intel.com>
-Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
-Co-developed-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Acked-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
----
- drivers/fpga/intel-m10-bmc-sec-update.c | 143 +++++++++++++-----------
- 1 file changed, 79 insertions(+), 64 deletions(-)
+I'm just noting that this code does not match function's comment 
+(neither pre nor post diff code). The comment claims "mask bits are set" 
+but the code tests "any mask bit set". 
 
-diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
-index 798c1828899b..9922027856a4 100644
---- a/drivers/fpga/intel-m10-bmc-sec-update.c
-+++ b/drivers/fpga/intel-m10-bmc-sec-update.c
-@@ -31,6 +31,65 @@ static DEFINE_XARRAY_ALLOC(fw_upload_xa);
- #define REH_MAGIC		GENMASK(15, 0)
- #define REH_SHA_NUM_BYTES	GENMASK(31, 16)
- 
-+static int m10bmc_sec_write(struct m10bmc_sec *sec, const u8 *buf, u32 offset, u32 size)
-+{
-+	struct intel_m10bmc *m10bmc = sec->m10bmc;
-+	unsigned int stride = regmap_get_reg_stride(m10bmc->regmap);
-+	u32 write_count = size / stride;
-+	u32 leftover_offset = write_count * stride;
-+	u32 leftover_size = size - leftover_offset;
-+	u32 leftover_tmp = 0;
-+	int ret;
-+
-+	if (WARN_ON_ONCE(stride > sizeof(leftover_tmp)))
-+		return -EINVAL;
-+
-+	ret = regmap_bulk_write(m10bmc->regmap, M10BMC_STAGING_BASE + offset,
-+				buf + offset, write_count);
-+	if (ret)
-+		return ret;
-+
-+	/* If size is not aligned to stride, handle the remainder bytes with regmap_write() */
-+	if (leftover_size) {
-+		memcpy(&leftover_tmp, buf + leftover_offset, leftover_size);
-+		ret = regmap_write(m10bmc->regmap, M10BMC_STAGING_BASE + offset + leftover_offset,
-+				   leftover_tmp);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int m10bmc_sec_read(struct m10bmc_sec *sec, u8 *buf, u32 addr, u32 size)
-+{
-+	struct intel_m10bmc *m10bmc = sec->m10bmc;
-+	unsigned int stride = regmap_get_reg_stride(m10bmc->regmap);
-+	u32 read_count = size / stride;
-+	u32 leftover_offset = read_count * stride;
-+	u32 leftover_size = size - leftover_offset;
-+	u32 leftover_tmp;
-+	int ret;
-+
-+	if (WARN_ON_ONCE(stride > sizeof(leftover_tmp)))
-+		return -EINVAL;
-+
-+	ret = regmap_bulk_read(m10bmc->regmap, addr, buf, read_count);
-+	if (ret)
-+		return ret;
-+
-+	/* If size is not aligned to stride, handle the remainder bytes with regmap_read() */
-+	if (leftover_size) {
-+		ret = regmap_read(m10bmc->regmap, addr + leftover_offset, &leftover_tmp);
-+		if (ret)
-+			return ret;
-+		memcpy(buf + leftover_offset, &leftover_tmp, leftover_size);
-+	}
-+
-+	return 0;
-+}
-+
-+
- static ssize_t
- show_root_entry_hash(struct device *dev, u32 exp_magic,
- 		     u32 prog_addr, u32 reh_addr, char *buf)
-@@ -38,11 +97,9 @@ show_root_entry_hash(struct device *dev, u32 exp_magic,
- 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
- 	int sha_num_bytes, i, ret, cnt = 0;
- 	u8 hash[REH_SHA384_SIZE];
--	unsigned int stride;
- 	u32 magic;
- 
--	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
--	ret = m10bmc_raw_read(sec->m10bmc, prog_addr, &magic);
-+	ret = m10bmc_sec_read(sec, (u8 *)&magic, prog_addr, sizeof(magic));
- 	if (ret)
- 		return ret;
- 
-@@ -50,19 +107,16 @@ show_root_entry_hash(struct device *dev, u32 exp_magic,
- 		return sysfs_emit(buf, "hash not programmed\n");
- 
- 	sha_num_bytes = FIELD_GET(REH_SHA_NUM_BYTES, magic) / 8;
--	if ((sha_num_bytes % stride) ||
--	    (sha_num_bytes != REH_SHA256_SIZE &&
--	     sha_num_bytes != REH_SHA384_SIZE))   {
-+	if (sha_num_bytes != REH_SHA256_SIZE &&
-+	    sha_num_bytes != REH_SHA384_SIZE) {
- 		dev_err(sec->dev, "%s bad sha num bytes %d\n", __func__,
- 			sha_num_bytes);
- 		return -EINVAL;
- 	}
- 
--	ret = regmap_bulk_read(sec->m10bmc->regmap, reh_addr,
--			       hash, sha_num_bytes / stride);
-+	ret = m10bmc_sec_read(sec, hash, reh_addr, sha_num_bytes);
- 	if (ret) {
--		dev_err(dev, "failed to read root entry hash: %x cnt %x: %d\n",
--			reh_addr, sha_num_bytes / stride, ret);
-+		dev_err(dev, "failed to read root entry hash\n");
- 		return ret;
- 	}
- 
-@@ -98,27 +152,16 @@ DEVICE_ATTR_SEC_REH_RO(pr);
- static ssize_t
- show_canceled_csk(struct device *dev, u32 addr, char *buf)
- {
--	unsigned int i, stride, size = CSK_32ARRAY_SIZE * sizeof(u32);
-+	unsigned int i, size = CSK_32ARRAY_SIZE * sizeof(u32);
- 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
- 	DECLARE_BITMAP(csk_map, CSK_BIT_LEN);
- 	__le32 csk_le32[CSK_32ARRAY_SIZE];
- 	u32 csk32[CSK_32ARRAY_SIZE];
- 	int ret;
- 
--	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
--	if (size % stride) {
--		dev_err(sec->dev,
--			"CSK vector size (0x%x) not aligned to stride (0x%x)\n",
--			size, stride);
--		WARN_ON_ONCE(1);
--		return -EINVAL;
--	}
--
--	ret = regmap_bulk_read(sec->m10bmc->regmap, addr, csk_le32,
--			       size / stride);
-+	ret = m10bmc_sec_read(sec, (u8 *)&csk_le32, addr, size);
- 	if (ret) {
--		dev_err(sec->dev, "failed to read CSK vector: %x cnt %x: %d\n",
--			addr, size / stride, ret);
-+		dev_err(sec->dev, "failed to read CSK vector\n");
- 		return ret;
- 	}
- 
-@@ -157,31 +200,20 @@ static ssize_t flash_count_show(struct device *dev,
- {
- 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
- 	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
--	unsigned int stride, num_bits;
-+	unsigned int num_bits;
- 	u8 *flash_buf;
- 	int cnt, ret;
- 
--	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
- 	num_bits = FLASH_COUNT_SIZE * 8;
- 
--	if (FLASH_COUNT_SIZE % stride) {
--		dev_err(sec->dev,
--			"FLASH_COUNT_SIZE (0x%x) not aligned to stride (0x%x)\n",
--			FLASH_COUNT_SIZE, stride);
--		WARN_ON_ONCE(1);
--		return -EINVAL;
--	}
--
- 	flash_buf = kmalloc(FLASH_COUNT_SIZE, GFP_KERNEL);
- 	if (!flash_buf)
- 		return -ENOMEM;
- 
--	ret = regmap_bulk_read(sec->m10bmc->regmap, csr_map->rsu_update_counter,
--			       flash_buf, FLASH_COUNT_SIZE / stride);
-+	ret = m10bmc_sec_read(sec, flash_buf, csr_map->rsu_update_counter,
-+			      FLASH_COUNT_SIZE);
- 	if (ret) {
--		dev_err(sec->dev,
--			"failed to read flash count: %x cnt %x: %d\n",
--			csr_map->rsu_update_counter, FLASH_COUNT_SIZE / stride, ret);
-+		dev_err(sec->dev, "failed to read flash count\n");
- 		goto exit_free;
- 	}
- 	cnt = num_bits - bitmap_weight((unsigned long *)flash_buf, num_bits);
-@@ -465,20 +497,19 @@ static enum fw_upload_err m10bmc_sec_prepare(struct fw_upload *fwl,
- 
- #define WRITE_BLOCK_SIZE 0x4000	/* Default write-block size is 0x4000 bytes */
- 
--static enum fw_upload_err m10bmc_sec_write(struct fw_upload *fwl, const u8 *data,
--					   u32 offset, u32 size, u32 *written)
-+static enum fw_upload_err m10bmc_sec_fw_write(struct fw_upload *fwl, const u8 *data,
-+					      u32 offset, u32 size, u32 *written)
- {
- 	struct m10bmc_sec *sec = fwl->dd_handle;
- 	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
--	u32 blk_size, doorbell, extra_offset;
--	unsigned int stride, extra = 0;
-+	struct intel_m10bmc *m10bmc = sec->m10bmc;
-+	u32 blk_size, doorbell;
- 	int ret;
- 
--	stride = regmap_get_reg_stride(sec->m10bmc->regmap);
- 	if (sec->cancel_request)
- 		return rsu_cancel(sec);
- 
--	ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
-+	ret = m10bmc_sys_read(m10bmc, csr_map->doorbell, &doorbell);
- 	if (ret) {
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 	} else if (rsu_prog(doorbell) != RSU_PROG_READY) {
-@@ -486,28 +517,12 @@ static enum fw_upload_err m10bmc_sec_write(struct fw_upload *fwl, const u8 *data
- 		return FW_UPLOAD_ERR_HW_ERROR;
- 	}
- 
--	WARN_ON_ONCE(WRITE_BLOCK_SIZE % stride);
-+	WARN_ON_ONCE(WRITE_BLOCK_SIZE % regmap_get_reg_stride(m10bmc->regmap));
- 	blk_size = min_t(u32, WRITE_BLOCK_SIZE, size);
--	ret = regmap_bulk_write(sec->m10bmc->regmap,
--				M10BMC_STAGING_BASE + offset,
--				(void *)data + offset,
--				blk_size / stride);
-+	ret = m10bmc_sec_write(sec, data, offset, blk_size);
- 	if (ret)
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 
--	/*
--	 * If blk_size is not aligned to stride, then handle the extra
--	 * bytes with regmap_write.
--	 */
--	if (blk_size % stride) {
--		extra_offset = offset + ALIGN_DOWN(blk_size, stride);
--		memcpy(&extra, (u8 *)(data + extra_offset), blk_size % stride);
--		ret = regmap_write(sec->m10bmc->regmap,
--				   M10BMC_STAGING_BASE + extra_offset, extra);
--		if (ret)
--			return FW_UPLOAD_ERR_RW_ERROR;
--	}
--
- 	*written = blk_size;
- 	return FW_UPLOAD_ERR_NONE;
- }
-@@ -568,7 +583,7 @@ static void m10bmc_sec_cleanup(struct fw_upload *fwl)
- 
- static const struct fw_upload_ops m10bmc_ops = {
- 	.prepare = m10bmc_sec_prepare,
--	.write = m10bmc_sec_write,
-+	.write = m10bmc_sec_fw_write,
- 	.poll_complete = m10bmc_sec_poll_complete,
- 	.cancel = m10bmc_sec_cancel,
- 	.cleanup = m10bmc_sec_cleanup,
+However, currently it causes no issue because only MPF_STATUS_READY is 
+passed and it's BIT(1).
+
+I think the condition matching to the comment would be this (IMHO, it is 
+also slightly simpler because !mask doesn't need to be special cased):
+
+((status & (MPF_STATUS_BUSY | mask)) == mask)
+
+(But not necessarily to be changed in this patch.)
+
 -- 
-2.30.2
+ i.
+
+> +				0, MPF_STATUS_POLL_TIMEOUT, false, priv);
+> +	if (ret < 0)
+> +		return ret;
+>  
+> -	return -EBUSY;
+> +	return status;
+>  }
+>  
+>  static int mpf_spi_write(struct mpf_priv *priv, const void *buf, size_t buf_size)
+> 
 
