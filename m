@@ -2,35 +2,35 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6B56C3DA79
-	for <linux-fpga@archiver.kernel.org>; Mon, 26 Dec 2022 14:38:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A2D3C46467
+	for <linux-fpga@archiver.kernel.org>; Mon, 26 Dec 2022 14:38:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229920AbiLZOhG (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 26 Dec 2022 09:37:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46056 "EHLO
+        id S229532AbiLZOhH (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 26 Dec 2022 09:37:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45932 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232046AbiLZO3K (ORCPT
+        with ESMTP id S232040AbiLZO3K (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>); Mon, 26 Dec 2022 09:29:10 -0500
 Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27B8464E6;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8550064E1;
         Mon, 26 Dec 2022 06:26:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
         d=metrotek.ru; s=mail;
         h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
          in-reply-to:references;
-        bh=OPFaov/D+WEk0jxM8EJ2ri7LYnuA1DGPmJbwAx21UNU=;
-        b=Hy78NZ8SqKHl8t6eaajQ7/qYdr5N2hZ73fPnyOtJzn1boVp3Asa2dn/LYrzqhvL/Fwcm0VbqO70xF
-         Qe8ULUll2rLuz9CI/mEEqcYYGg0XgVY9hllvgjFVa/tztAf9tzABpyJGZ3WVoFCT/UWEqSyYvv8XRn
-         aSDYBjC/43eos7wds50TX+TToG/BZyFQtj79XNGu6gYhsDZUuUTzkQkEiqJx3FWn4J0BkESM17okfK
-         Fw9wBKcz/O5WxzoaGC2Nnf4ffx37F7Y9xDGIf8Wpvy82SwkQigzNy8mtYZnVXizb+ioeCCKATuExtV
-         3N/3sPipGxQQjjx2amWHYk/bAuE9dpw==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.5.1460, Stamp: 3], Multi: [Enabled, t: (0.000008,0.010166)], BW: [Enabled, t: (0.000023,0.000001)], RTDA: [Enabled, t: (0.126371), Hit: No, Details: v2.42.0; Id: 15.52k53i.1gl7d6ud3.2p; mclb], total: 0(700)
+        bh=5JXcj0PeS9btOTlGETvg46ikVRwJJJR3wMFmHeUulKw=;
+        b=CPV0mLs6v62yt1a/s7bc7/CjKRh6mSzYO3qNJbBTEZ26+RIHygtIDjnGn4m7r8n/tv3wk4thqewry
+         jM11M3zoiFQN/XSTqe/XZBUw0tOwADlNsCCzfn0joR85IOKaXNaSXGNfHfkVKvRCeKltADVxcHVaqJ
+         /aSqQmJGSGhSbyRo1EgIOBLuofeKe0w51xbeATnhsB64kx7XwHR/bjd+bxx3791klPeNPqqobt0TOf
+         zZSmbuLu1+GLSQVYr1ho50UBF1nORqO6mgcNN64TGY8EVKiRU8ycDX/lagmGs/VKcngdON2mGZXMLh
+         +ASJ7tMblHbuTHQ8p88UByrUWq2fYYw==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.5.1460, Stamp: 3], Multi: [Enabled, t: (0.000011,0.012463)], BW: [Enabled, t: (0.000028,0.000002)], RTDA: [Enabled, t: (0.080016), Hit: No, Details: v2.42.0; Id: 15.52k1a9.1gl7d6ubp.3e; mclb], total: 0(700)
 X-Footer: bWV0cm90ZWsucnU=
 Received: from localhost.localdomain ([78.37.162.181])
         (authenticated user i.bornyakov@metrotek.ru)
         by mail.pr-group.ru with ESMTPSA
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Mon, 26 Dec 2022 17:25:59 +0300
+        Mon, 26 Dec 2022 17:25:58 +0300
 From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
 To:     Conor Dooley <conor.dooley@microchip.com>,
         Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
@@ -38,9 +38,9 @@ To:     Conor Dooley <conor.dooley@microchip.com>,
 Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
         linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         system@metrotek.ru
-Subject: [PATCH v2 3/3] fpga: microchip-spi: separate data frame write routine
-Date:   Mon, 26 Dec 2022 17:23:26 +0300
-Message-Id: <20221226142326.8111-4-i.bornyakov@metrotek.ru>
+Subject: [PATCH v2 2/3] fpga: microchip-spi: rewrite status polling in a time measurable way
+Date:   Mon, 26 Dec 2022 17:23:25 +0300
+Message-Id: <20221226142326.8111-3-i.bornyakov@metrotek.ru>
 X-Mailer: git-send-email 2.38.2
 In-Reply-To: <20221226142326.8111-1-i.bornyakov@metrotek.ru>
 References: <20221226142326.8111-1-i.bornyakov@metrotek.ru>
@@ -50,74 +50,68 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-mpf_ops_write() function writes bitstream data to the FPGA by a smaller
-frames. Introduce mpf_spi_frame_write() function which is for writing a
-single data frame and use it in mpf_ops_write().
+Original busy loop with retries count in mpf_poll_status() is not too
+reliable, as it takes different times on different systems. Replace it
+with read_poll_timeout() macro.
 
-No functional changes intended.
-
+Fixes: 5f8d4a900830 ("fpga: microchip-spi: add Microchip MPF FPGA manager")
 Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
 ---
- drivers/fpga/microchip-spi.c | 36 +++++++++++++++++++++++-------------
- 1 file changed, 23 insertions(+), 13 deletions(-)
+ drivers/fpga/microchip-spi.c | 25 +++++++++++--------------
+ 1 file changed, 11 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
-index f3ddfab87499..f8a6872c865b 100644
+index e72fedd93a27..f3ddfab87499 100644
 --- a/drivers/fpga/microchip-spi.c
 +++ b/drivers/fpga/microchip-spi.c
-@@ -275,9 +275,30 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
- 	return 0;
- }
+@@ -6,6 +6,7 @@
+ #include <asm/unaligned.h>
+ #include <linux/delay.h>
+ #include <linux/fpga/fpga-mgr.h>
++#include <linux/iopoll.h>
+ #include <linux/module.h>
+ #include <linux/of_device.h>
+ #include <linux/spi/spi.h>
+@@ -33,7 +34,7 @@
  
-+static int mpf_spi_frame_write(struct mpf_priv *priv, const char *buf)
-+{
-+	struct spi_transfer xfers[2] = {
-+		{
-+			.tx_buf = &priv->tx,
-+			.len = 1,
-+		}, {
-+			.tx_buf = buf,
-+			.len = MPF_SPI_FRAME_SIZE,
-+		},
-+	};
-+	int ret;
-+
-+	ret = mpf_poll_status(priv, 0);
+ #define	MPF_BITS_PER_COMPONENT_SIZE	22
+ 
+-#define	MPF_STATUS_POLL_RETRIES		10000
++#define	MPF_STATUS_POLL_TIMEOUT		(2 * USEC_PER_SEC)
+ #define	MPF_STATUS_BUSY			BIT(0)
+ #define	MPF_STATUS_READY		BIT(1)
+ #define	MPF_STATUS_SPI_VIOLATION	BIT(2)
+@@ -197,21 +198,17 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
+ /* Poll HW status until busy bit is cleared and mask bits are set. */
+ static int mpf_poll_status(struct mpf_priv *priv, u8 mask)
+ {
+-	int status, retries = MPF_STATUS_POLL_RETRIES;
++	int ret, status;
+ 
+-	while (retries--) {
+-		status = mpf_read_status(priv);
+-		if (status < 0)
+-			return status;
+-
+-		if (status & MPF_STATUS_BUSY)
+-			continue;
+-
+-		if (!mask || (status & mask))
+-			return status;
+-	}
++	ret = read_poll_timeout(mpf_read_status, status,
++				(status < 0) ||
++				(!(status & MPF_STATUS_BUSY) &&
++				 (!mask || (status & mask))),
++				0, MPF_STATUS_POLL_TIMEOUT, false, priv);
 +	if (ret < 0)
 +		return ret;
-+
-+	priv->tx = MPF_SPI_FRAME;
-+
-+	return spi_sync_transfer(priv->spi, xfers, ARRAY_SIZE(xfers));
-+}
-+
- static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count)
- {
--	struct spi_transfer xfers[2] = { 0 };
- 	struct mpf_priv *priv = mgr->priv;
- 	struct device *dev = &mgr->dev;
- 	int ret, i;
-@@ -288,19 +309,8 @@ static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count
- 		return -EINVAL;
- 	}
  
--	xfers[0].tx_buf = &priv->tx;
--	xfers[0].len = 1;
--
- 	for (i = 0; i < count / MPF_SPI_FRAME_SIZE; i++) {
--		xfers[1].tx_buf = buf + i * MPF_SPI_FRAME_SIZE;
--		xfers[1].len = MPF_SPI_FRAME_SIZE;
--
--		ret = mpf_poll_status(priv, 0);
--		if (ret >= 0) {
--			priv->tx = MPF_SPI_FRAME;
--			ret = spi_sync_transfer(priv->spi, xfers, ARRAY_SIZE(xfers));
--		}
--
-+		ret = mpf_spi_frame_write(priv, buf + i * MPF_SPI_FRAME_SIZE);
- 		if (ret) {
- 			dev_err(dev, "Failed to write bitstream frame %d/%zu\n",
- 				i, count / MPF_SPI_FRAME_SIZE);
+-	return -EBUSY;
++	return status;
+ }
+ 
+ static int mpf_spi_write(struct mpf_priv *priv, const void *buf, size_t buf_size)
 -- 
 2.38.2
 
