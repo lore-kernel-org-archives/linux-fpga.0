@@ -2,295 +2,140 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FEB9C4708E
-	for <linux-fpga@archiver.kernel.org>; Mon, 26 Dec 2022 14:38:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F743C4167B
+	for <linux-fpga@archiver.kernel.org>; Mon, 26 Dec 2022 18:00:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231909AbiLZOhG (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 26 Dec 2022 09:37:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45934 "EHLO
+        id S229476AbiLZR6H (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 26 Dec 2022 12:58:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58594 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232053AbiLZO3K (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 26 Dec 2022 09:29:10 -0500
-Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 856A364E4;
-        Mon, 26 Dec 2022 06:26:14 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-        d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
-         in-reply-to:references;
-        bh=MFUNeq3Y8GcJH9bDlEKq9WaByHZjyHz4SS+VcCmqW98=;
-        b=ZzCcLf00xTnENl4pK52cRM4CMgKnlRLuvCZhJ6z9pbipcXFnIt7gmZGta0MaWXPPqncO9e487S/wk
-         gBX4cCXBmulvb6KwlL6C6udNAgpYZ5gF6lq55YAnyPABe1Vt6WmjgC2e86kPL6W8+UvKVfeKYGEzvi
-         NCbZGkxNRkoDnusd8egqoLhOQF3zxvkJp14GE/sxLHpFI6/ipepK6/JvOoF5j9PFy405eXM71rnkh2
-         cdiU6zFl1bg/w3PH8ghwxMDS8JHsioCn0xinLFxKgC6Tb8d7bqjjiwLZ70HrV3+8PNABuVWLd6UKla
-         SS2mAZFKoYTfGt0HpL517HI24ZjN5Zg==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.5.1460, Stamp: 3], Multi: [Enabled, t: (0.000011,0.030556)], BW: [Enabled, t: (0.000024,0.000002)], RTDA: [Enabled, t: (0.084856), Hit: No, Details: v2.42.0; Id: 15.52k1a6.1gl7d6sdq.3c; mclb], total: 0(700)
-X-Footer: bWV0cm90ZWsucnU=
-Received: from localhost.localdomain ([78.37.162.181])
-        (authenticated user i.bornyakov@metrotek.ru)
-        by mail.pr-group.ru with ESMTPSA
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Mon, 26 Dec 2022 17:25:56 +0300
-From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
-To:     Conor Dooley <conor.dooley@microchip.com>,
+        with ESMTP id S229472AbiLZR6G (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 26 Dec 2022 12:58:06 -0500
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46F721034;
+        Mon, 26 Dec 2022 09:58:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1672077485; x=1703613485;
+  h=date:from:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=itMV9pPy7ecW6wqmujU+SjOUyP24n6AQ4B0SuhgGPEI=;
+  b=DGw0tquce+Aq4/Sct4mRM+TBy/ksy24NKi2Pu6wiD11gnfIcRB+3tu1D
+   bqYOWq7ppH/1WbZJD8YYEw0YW5unN4EDdDDFgZzcN+BYtrNcYIFR/7QGJ
+   iK7MezGHiOuGKhMH+WcHLm476HOTraxOX8Bx24q1BLiHhxMi9F5eFJV86
+   XOyWLM0ctN/DPxncCb27zmaR1jFPSg8AyxDj6ZGJJM7qxCL33Axw/z0e6
+   JnviaM1mn7i+U1VkGu2+f/Kdg9KcABPC4G7cI6My1oa/tatjSOPMSDOqQ
+   o8NKaSLtNpLErPeaREivNH2conE+COTtZbr0NFNCeAe1KHD/vwo24IW3X
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10572"; a="382888271"
+X-IronPort-AV: E=Sophos;i="5.96,276,1665471600"; 
+   d="scan'208";a="382888271"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Dec 2022 09:58:04 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10572"; a="652831451"
+X-IronPort-AV: E=Sophos;i="5.96,276,1665471600"; 
+   d="scan'208";a="652831451"
+Received: from ptelkov-mobl2.ccr.corp.intel.com ([10.249.41.4])
+  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Dec 2022 09:58:01 -0800
+Date:   Mon, 26 Dec 2022 19:57:51 +0200 (EET)
+From:   =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To:     Xu Yilun <yilun.xu@intel.com>
+cc:     Russ Weight <russell.h.weight@intel.com>,
         Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
-        Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>
-Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        system@metrotek.ru
-Subject: [PATCH v2 1/3] fpga: microchip-spi: move SPI I/O buffers out of stack
-Date:   Mon, 26 Dec 2022 17:23:24 +0300
-Message-Id: <20221226142326.8111-2-i.bornyakov@metrotek.ru>
-X-Mailer: git-send-email 2.38.2
-In-Reply-To: <20221226142326.8111-1-i.bornyakov@metrotek.ru>
-References: <20221226142326.8111-1-i.bornyakov@metrotek.ru>
+        Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+        LKML <linux-kernel@vger.kernel.org>,
+        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        Marco Pagani <marpagan@redhat.com>
+Subject: Re: [PATCH v2 1/1] fpga: m10bmc-sec: Fix probe rollback
+In-Reply-To: <Y6kZfHOCb18qmaeP@yilunxu-OptiPlex-7050>
+Message-ID: <d435beb-f076-5212-ae7a-b3dedcb654e@linux.intel.com>
+References: <20221214144952.8392-1-ilpo.jarvinen@linux.intel.com> <Y6kZfHOCb18qmaeP@yilunxu-OptiPlex-7050>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/mixed; boundary="8323329-566868870-1672077484=:1690"
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-As spi-summary doc says:
- > I/O buffers use the usual Linux rules, and must be DMA-safe.
- > You'd normally allocate them from the heap or free page pool.
- > Don't use the stack, or anything that's declared "static".
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Replace spi_write() with spi_write_then_read(), which is dma-safe for
-on-stack buffers. Use allocated buffers for transfers used in
-spi_sync_transfer().
+--8323329-566868870-1672077484=:1690
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Although everything works OK with stack-located I/O buffers, better
-follow the doc to be safe.
+On Mon, 26 Dec 2022, Xu Yilun wrote:
 
-Fixes: 5f8d4a900830 ("fpga: microchip-spi: add Microchip MPF FPGA manager")
-Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
----
- drivers/fpga/microchip-spi.c | 93 ++++++++++++++++++------------------
- 1 file changed, 47 insertions(+), 46 deletions(-)
+> On 2022-12-14 at 16:49:52 +0200, Ilpo Järvinen wrote:
+> > Handle probe error rollbacks properly to avoid leaks.
+> > 
+> > Fixes: 5cd339b370e2 ("fpga: m10bmc-sec: add max10 secure update functions")
+> > Reviewed-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+> > Reviewed-by: Russ Weight <russell.h.weight@intel.com>
+> > Reviewed-by: Marco Pagani <marpagan@redhat.com>
+> > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+> 
+> I assume this should be in stable kernel, so
+>  
+>  Cc: stable@vger.kernel.org
+> 
+> If OK, I could add it myself.
 
-diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
-index 7436976ea904..e72fedd93a27 100644
---- a/drivers/fpga/microchip-spi.c
-+++ b/drivers/fpga/microchip-spi.c
-@@ -42,46 +42,55 @@
- struct mpf_priv {
- 	struct spi_device *spi;
- 	bool program_mode;
-+	u8 tx __aligned(ARCH_KMALLOC_MINALIGN);
-+	u8 rx __aligned(ARCH_KMALLOC_MINALIGN);
- };
- 
--static int mpf_read_status(struct spi_device *spi)
-+static int mpf_read_status(struct mpf_priv *priv)
- {
--	u8 status = 0, status_command = MPF_SPI_READ_STATUS;
--	struct spi_transfer xfers[2] = { 0 };
--	int ret;
--
- 	/*
- 	 * HW status is returned on MISO in the first byte after CS went
- 	 * active. However, first reading can be inadequate, so we submit
- 	 * two identical SPI transfers and use result of the later one.
- 	 */
--	xfers[0].tx_buf = &status_command;
--	xfers[1].tx_buf = &status_command;
--	xfers[0].rx_buf = &status;
--	xfers[1].rx_buf = &status;
--	xfers[0].len = 1;
--	xfers[1].len = 1;
--	xfers[0].cs_change = 1;
-+	struct spi_transfer xfers[2] = {
-+		{
-+			.tx_buf = &priv->tx,
-+			.rx_buf = &priv->rx,
-+			.len = 1,
-+			.cs_change = 1,
-+		}, {
-+			.tx_buf = &priv->tx,
-+			.rx_buf = &priv->rx,
-+			.len = 1,
-+		},
-+	};
-+	u8 status;
-+	int ret;
-+
-+	priv->tx = MPF_SPI_READ_STATUS;
-+
-+	ret = spi_sync_transfer(priv->spi, xfers, 2);
-+	if (ret)
-+		return ret;
- 
--	ret = spi_sync_transfer(spi, xfers, 2);
-+	status = priv->rx;
- 
- 	if ((status & MPF_STATUS_SPI_VIOLATION) ||
- 	    (status & MPF_STATUS_SPI_ERROR))
--		ret = -EIO;
-+		return -EIO;
- 
--	return ret ? : status;
-+	return status;
- }
- 
- static enum fpga_mgr_states mpf_ops_state(struct fpga_manager *mgr)
- {
- 	struct mpf_priv *priv = mgr->priv;
--	struct spi_device *spi;
- 	bool program_mode;
- 	int status;
- 
--	spi = priv->spi;
- 	program_mode = priv->program_mode;
--	status = mpf_read_status(spi);
-+	status = mpf_read_status(priv);
- 
- 	if (!program_mode && !status)
- 		return FPGA_MGR_STATE_OPERATING;
-@@ -186,12 +195,12 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
- }
- 
- /* Poll HW status until busy bit is cleared and mask bits are set. */
--static int mpf_poll_status(struct spi_device *spi, u8 mask)
-+static int mpf_poll_status(struct mpf_priv *priv, u8 mask)
- {
- 	int status, retries = MPF_STATUS_POLL_RETRIES;
- 
- 	while (retries--) {
--		status = mpf_read_status(spi);
-+		status = mpf_read_status(priv);
- 		if (status < 0)
- 			return status;
- 
-@@ -205,32 +214,32 @@ static int mpf_poll_status(struct spi_device *spi, u8 mask)
- 	return -EBUSY;
- }
- 
--static int mpf_spi_write(struct spi_device *spi, const void *buf, size_t buf_size)
-+static int mpf_spi_write(struct mpf_priv *priv, const void *buf, size_t buf_size)
- {
--	int status = mpf_poll_status(spi, 0);
-+	int status = mpf_poll_status(priv, 0);
- 
- 	if (status < 0)
- 		return status;
- 
--	return spi_write(spi, buf, buf_size);
-+	return spi_write_then_read(priv->spi, buf, buf_size, NULL, 0);
- }
- 
--static int mpf_spi_write_then_read(struct spi_device *spi,
-+static int mpf_spi_write_then_read(struct mpf_priv *priv,
- 				   const void *txbuf, size_t txbuf_size,
- 				   void *rxbuf, size_t rxbuf_size)
- {
- 	const u8 read_command[] = { MPF_SPI_READ_DATA };
- 	int ret;
- 
--	ret = mpf_spi_write(spi, txbuf, txbuf_size);
-+	ret = mpf_spi_write(priv, txbuf, txbuf_size);
- 	if (ret)
- 		return ret;
- 
--	ret = mpf_poll_status(spi, MPF_STATUS_READY);
-+	ret = mpf_poll_status(priv, MPF_STATUS_READY);
- 	if (ret < 0)
- 		return ret;
- 
--	return spi_write_then_read(spi, read_command, sizeof(read_command),
-+	return spi_write_then_read(priv->spi, read_command, sizeof(read_command),
- 				   rxbuf, rxbuf_size);
- }
- 
-@@ -242,7 +251,6 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
- 	const u8 isc_en_command[] = { MPF_SPI_ISC_ENABLE };
- 	struct mpf_priv *priv = mgr->priv;
- 	struct device *dev = &mgr->dev;
--	struct spi_device *spi;
- 	u32 isc_ret = 0;
- 	int ret;
- 
-@@ -251,9 +259,7 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
- 		return -EOPNOTSUPP;
- 	}
- 
--	spi = priv->spi;
--
--	ret = mpf_spi_write_then_read(spi, isc_en_command, sizeof(isc_en_command),
-+	ret = mpf_spi_write_then_read(priv, isc_en_command, sizeof(isc_en_command),
- 				      &isc_ret, sizeof(isc_ret));
- 	if (ret || isc_ret) {
- 		dev_err(dev, "Failed to enable ISC: spi_ret %d, isc_ret %u\n",
-@@ -261,7 +267,7 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
- 		return -EFAULT;
- 	}
- 
--	ret = mpf_spi_write(spi, program_mode, sizeof(program_mode));
-+	ret = mpf_spi_write(priv, program_mode, sizeof(program_mode));
- 	if (ret) {
- 		dev_err(dev, "Failed to enter program mode: %d\n", ret);
- 		return ret;
-@@ -274,11 +280,9 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
- 
- static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count)
- {
--	u8 spi_frame_command[] = { MPF_SPI_FRAME };
- 	struct spi_transfer xfers[2] = { 0 };
- 	struct mpf_priv *priv = mgr->priv;
- 	struct device *dev = &mgr->dev;
--	struct spi_device *spi;
- 	int ret, i;
- 
- 	if (count % MPF_SPI_FRAME_SIZE) {
-@@ -287,18 +291,18 @@ static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count
- 		return -EINVAL;
- 	}
- 
--	spi = priv->spi;
--
--	xfers[0].tx_buf = spi_frame_command;
--	xfers[0].len = sizeof(spi_frame_command);
-+	xfers[0].tx_buf = &priv->tx;
-+	xfers[0].len = 1;
- 
- 	for (i = 0; i < count / MPF_SPI_FRAME_SIZE; i++) {
- 		xfers[1].tx_buf = buf + i * MPF_SPI_FRAME_SIZE;
- 		xfers[1].len = MPF_SPI_FRAME_SIZE;
- 
--		ret = mpf_poll_status(spi, 0);
--		if (ret >= 0)
--			ret = spi_sync_transfer(spi, xfers, ARRAY_SIZE(xfers));
-+		ret = mpf_poll_status(priv, 0);
-+		if (ret >= 0) {
-+			priv->tx = MPF_SPI_FRAME;
-+			ret = spi_sync_transfer(priv->spi, xfers, ARRAY_SIZE(xfers));
-+		}
- 
- 		if (ret) {
- 			dev_err(dev, "Failed to write bitstream frame %d/%zu\n",
-@@ -317,12 +321,9 @@ static int mpf_ops_write_complete(struct fpga_manager *mgr,
- 	const u8 release_command[] = { MPF_SPI_RELEASE };
- 	struct mpf_priv *priv = mgr->priv;
- 	struct device *dev = &mgr->dev;
--	struct spi_device *spi;
- 	int ret;
- 
--	spi = priv->spi;
--
--	ret = mpf_spi_write(spi, isc_dis_command, sizeof(isc_dis_command));
-+	ret = mpf_spi_write(priv, isc_dis_command, sizeof(isc_dis_command));
- 	if (ret) {
- 		dev_err(dev, "Failed to disable ISC: %d\n", ret);
- 		return ret;
-@@ -330,7 +331,7 @@ static int mpf_ops_write_complete(struct fpga_manager *mgr,
- 
- 	usleep_range(1000, 2000);
- 
--	ret = mpf_spi_write(spi, release_command, sizeof(release_command));
-+	ret = mpf_spi_write(priv, release_command, sizeof(release_command));
- 	if (ret) {
- 		dev_err(dev, "Failed to exit program mode: %d\n", ret);
- 		return ret;
+Yes, it should have been there but I forgot it.
+
+Please add it like you suggested. Thanks.
+
 -- 
-2.38.2
+ i.
 
+> > ---
+> > I don't know if the previous one fell through cracks so resending this.
+> > 
+> > v2:
+> > - Resending v1 with Marco's Rev-by
+> > 
+> >  drivers/fpga/intel-m10-bmc-sec-update.c | 17 ++++++++++++-----
+> >  1 file changed, 12 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
+> > index 79d48852825e..03f1bd81c434 100644
+> > --- a/drivers/fpga/intel-m10-bmc-sec-update.c
+> > +++ b/drivers/fpga/intel-m10-bmc-sec-update.c
+> > @@ -574,20 +574,27 @@ static int m10bmc_sec_probe(struct platform_device *pdev)
+> >  	len = scnprintf(buf, SEC_UPDATE_LEN_MAX, "secure-update%d",
+> >  			sec->fw_name_id);
+> >  	sec->fw_name = kmemdup_nul(buf, len, GFP_KERNEL);
+> > -	if (!sec->fw_name)
+> > -		return -ENOMEM;
+> > +	if (!sec->fw_name) {
+> > +		ret = -ENOMEM;
+> > +		goto fw_name_fail;
+> > +	}
+> >  
+> >  	fwl = firmware_upload_register(THIS_MODULE, sec->dev, sec->fw_name,
+> >  				       &m10bmc_ops, sec);
+> >  	if (IS_ERR(fwl)) {
+> >  		dev_err(sec->dev, "Firmware Upload driver failed to start\n");
+> > -		kfree(sec->fw_name);
+> > -		xa_erase(&fw_upload_xa, sec->fw_name_id);
+> > -		return PTR_ERR(fwl);
+> > +		ret = PTR_ERR(fwl);
+> > +		goto fw_uploader_fail;
+> >  	}
+> >  
+> >  	sec->fwl = fwl;
+> >  	return 0;
+> > +
+> > +fw_uploader_fail:
+> > +	kfree(sec->fw_name);
+> > +fw_name_fail:
+> > +	xa_erase(&fw_upload_xa, sec->fw_name_id);
+> > +	return ret;
+> >  }
+> >  
+> >  static int m10bmc_sec_remove(struct platform_device *pdev)
+> > -- 
+> > 2.30.2
+> > 
+> 
 
+--8323329-566868870-1672077484=:1690--
