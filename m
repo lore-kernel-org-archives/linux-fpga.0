@@ -2,144 +2,123 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A482C4167B
-	for <linux-fpga@archiver.kernel.org>; Mon, 26 Dec 2022 19:03:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 742EBC4332F
+	for <linux-fpga@archiver.kernel.org>; Tue, 27 Dec 2022 10:09:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229829AbiLZTBi (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 26 Dec 2022 14:01:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45966 "EHLO
+        id S230492AbiL0KHc (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 27 Dec 2022 05:07:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37082 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229686AbiLZTBh (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 26 Dec 2022 14:01:37 -0500
+        with ESMTP id S229445AbiL0KHa (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 27 Dec 2022 05:07:30 -0500
 Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD8F52F6;
-        Mon, 26 Dec 2022 11:01:33 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 159062FF;
+        Tue, 27 Dec 2022 02:07:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
         d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-type:
-         content-transfer-encoding:in-reply-to:references;
-        bh=/udPUY6hw47AOPn59FFJBiQT80aytM6Y0VGbFp3lP5E=;
-        b=IYPBLRzSEzJ9ut3ndeK7wnx9M9hdMALfwgyou0RCqyovoQho2ttAoIl5FIPJkwZq1M/M/GmoEk0R7
-         ehM1MiKL7dgC06g9LLpsikaYDX0CNB69h27JiltbzU9ExmmeXAisuF8/EROeUopg0akQhFtXPQYhkf
-         zXwOJnfcE2YOqxpP0M/F/VLjY9wJXYZMlRKLd/FjfJylIlfnMFaiEK8cSE+M8KrUg5j7q69wF3FNj3
-         sTl6sLvciN5QQZik9dvI3B0cyQpSccENTAspoM4j09mBr4Qnp/I9pngQVNaecQbT/kMePBWYGhcUYT
-         X9bvv4T6JPEtCXlZYVsmpiojNH/4JkA==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.5.1460, Stamp: 3], Multi: [Enabled, t: (0.000009,0.014552)], BW: [Enabled, t: (0.000023,0.000001)], RTDA: [Enabled, t: (0.376070), Hit: No, Details: v2.42.0; Id: 15.52k9kj.1gl7sudve.646p; mclb], total: 0(700)
+        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
+         in-reply-to:references;
+        bh=7Fvs78gYqrEVBbbQ/K9bc20z+/joLO6qDiw854CBaFQ=;
+        b=SLvWAWwm+e3kVkiocTYSH6yr8Rs4Gu5Kc7UcGaV7cR8Y2jyWu/puOUzaEXH20HRVtNx9mlnWJzec4
+         zdOKRm6SM1RgM450cjqAla6xG9c0haKUEfj+zz3xCcarc1GcXMjEctepRhxzJ5kvfBUfewGJQqGeUt
+         A1gEE7ClAEUMMcpJmE24UriX0i3Nr+sDyJKYGOFP4FIKCA3PJWUl2mbOAdPRDBnx9O5CbS5PPt3B+y
+         3zkd5uhPxNRLBm7H5x5D1MNeQIIGR/vXoAx7okkvsGyQgyvHMRLoSKwh2j5+GKvL7dPY+29ZJXvJSu
+         JdFwuUq63RVjs8cplssk17HQsG8u/RQ==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.5.1460, Stamp: 3], Multi: [Enabled, t: (0.000010,0.012862)], BW: [Enabled, t: (0.000031,0.000002)], RTDA: [Enabled, t: (0.094436), Hit: No, Details: v2.42.0; Id: 15.52ka2l.1gl9gppe8.3nj; mclb], total: 0(700)
 X-Footer: bWV0cm90ZWsucnU=
-Received: from x260 ([78.37.162.181])
+Received: from localhost.localdomain ([78.37.162.181])
         (authenticated user i.bornyakov@metrotek.ru)
         by mail.pr-group.ru with ESMTPSA
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Mon, 26 Dec 2022 22:00:56 +0300
-Date:   Mon, 26 Dec 2022 21:58:44 +0300
+        Tue, 27 Dec 2022 13:07:10 +0300
 From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
-To:     Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>
-Cc:     Conor Dooley <conor.dooley@microchip.com>,
+To:     Conor Dooley <conor.dooley@microchip.com>,
         Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
         Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
-        linux-fpga@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         system@metrotek.ru
-Subject: Re: [PATCH v2 2/3] fpga: microchip-spi: rewrite status polling in a
- time measurable way
-Message-ID: <20221226185844.tvwkbzp5uz7di2gq@x260>
-References: <20221226142326.8111-1-i.bornyakov@metrotek.ru>
- <20221226142326.8111-3-i.bornyakov@metrotek.ru>
- <5386279-3ce-fa0-ed5-494cb12ae6d@linux.intel.com>
+Subject: [PATCH v3 2/3] fpga: microchip-spi: rewrite status polling in a time measurable way
+Date:   Tue, 27 Dec 2022 13:04:49 +0300
+Message-Id: <20221227100450.2257-3-i.bornyakov@metrotek.ru>
+X-Mailer: git-send-email 2.38.2
+In-Reply-To: <20221227100450.2257-1-i.bornyakov@metrotek.ru>
+References: <20221227100450.2257-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <5386279-3ce-fa0-ed5-494cb12ae6d@linux.intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Mon, Dec 26, 2022 at 08:24:06PM +0200, Ilpo Järvinen wrote:
-> On Mon, 26 Dec 2022, Ivan Bornyakov wrote:
-> 
-> > Original busy loop with retries count in mpf_poll_status() is not too
-> > reliable, as it takes different times on different systems. Replace it
-> > with read_poll_timeout() macro.
-> > 
-> > Fixes: 5f8d4a900830 ("fpga: microchip-spi: add Microchip MPF FPGA manager")
-> > Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
-> > ---
-> >  drivers/fpga/microchip-spi.c | 25 +++++++++++--------------
-> >  1 file changed, 11 insertions(+), 14 deletions(-)
-> > 
-> > diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
-> > index e72fedd93a27..f3ddfab87499 100644
-> > --- a/drivers/fpga/microchip-spi.c
-> > +++ b/drivers/fpga/microchip-spi.c
-> > @@ -6,6 +6,7 @@
-> >  #include <asm/unaligned.h>
-> >  #include <linux/delay.h>
-> >  #include <linux/fpga/fpga-mgr.h>
-> > +#include <linux/iopoll.h>
-> >  #include <linux/module.h>
-> >  #include <linux/of_device.h>
-> >  #include <linux/spi/spi.h>
-> > @@ -33,7 +34,7 @@
-> >  
-> >  #define	MPF_BITS_PER_COMPONENT_SIZE	22
-> >  
-> > -#define	MPF_STATUS_POLL_RETRIES		10000
-> > +#define	MPF_STATUS_POLL_TIMEOUT		(2 * USEC_PER_SEC)
-> >  #define	MPF_STATUS_BUSY			BIT(0)
-> >  #define	MPF_STATUS_READY		BIT(1)
-> >  #define	MPF_STATUS_SPI_VIOLATION	BIT(2)
-> > @@ -197,21 +198,17 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
-> >  /* Poll HW status until busy bit is cleared and mask bits are set. */
-> >  static int mpf_poll_status(struct mpf_priv *priv, u8 mask)
-> >  {
-> > -	int status, retries = MPF_STATUS_POLL_RETRIES;
-> > +	int ret, status;
-> >  
-> > -	while (retries--) {
-> > -		status = mpf_read_status(priv);
-> > -		if (status < 0)
-> > -			return status;
-> > -
-> > -		if (status & MPF_STATUS_BUSY)
-> > -			continue;
-> > -
-> > -		if (!mask || (status & mask))
-> > -			return status;
-> > -	}
-> > +	ret = read_poll_timeout(mpf_read_status, status,
-> > +				(status < 0) ||
-> > +				(!(status & MPF_STATUS_BUSY) &&
-> > +				 (!mask || (status & mask))),
-> 
-> I'm just noting that this code does not match function's comment 
-> (neither pre nor post diff code). The comment claims "mask bits are set" 
-> but the code tests "any mask bit set". 
-> 
-> However, currently it causes no issue because only MPF_STATUS_READY is 
-> passed and it's BIT(1).
-> 
-> I think the condition matching to the comment would be this (IMHO, it is 
-> also slightly simpler because !mask doesn't need to be special cased):
-> 
-> ((status & (MPF_STATUS_BUSY | mask)) == mask)
-> 
-> (But not necessarily to be changed in this patch.)
-> 
-> -- 
->  i.
-> 
+Original busy loop with retries count in mpf_poll_status() is not too
+reliable, as it takes different times on different systems. Replace it
+with read_poll_timeout() macro.
 
-Agree. Thank you for pointing out!
+While at it, fix polling stop condition to met function's original
+intention declared in the comment. The issue with original polling stop
+condition is that it stops if any of mask bits is set, while intention
+was to stop if all mask bits is set. This was not noticible because only
+MPF_STATUS_READY is passed as mask argument and it is BIT(1).
 
-> > +				0, MPF_STATUS_POLL_TIMEOUT, false, priv);
-> > +	if (ret < 0)
-> > +		return ret;
-> >  
-> > -	return -EBUSY;
-> > +	return status;
-> >  }
-> >  
-> >  static int mpf_spi_write(struct mpf_priv *priv, const void *buf, size_t buf_size)
-> > 
-> 
+Fixes: 5f8d4a900830 ("fpga: microchip-spi: add Microchip MPF FPGA manager")
+Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+---
+ drivers/fpga/microchip-spi.c | 24 ++++++++++--------------
+ 1 file changed, 10 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
+index e72fedd93a27..8d1d9476d0cc 100644
+--- a/drivers/fpga/microchip-spi.c
++++ b/drivers/fpga/microchip-spi.c
+@@ -6,6 +6,7 @@
+ #include <asm/unaligned.h>
+ #include <linux/delay.h>
+ #include <linux/fpga/fpga-mgr.h>
++#include <linux/iopoll.h>
+ #include <linux/module.h>
+ #include <linux/of_device.h>
+ #include <linux/spi/spi.h>
+@@ -33,7 +34,7 @@
+ 
+ #define	MPF_BITS_PER_COMPONENT_SIZE	22
+ 
+-#define	MPF_STATUS_POLL_RETRIES		10000
++#define	MPF_STATUS_POLL_TIMEOUT		(2 * USEC_PER_SEC)
+ #define	MPF_STATUS_BUSY			BIT(0)
+ #define	MPF_STATUS_READY		BIT(1)
+ #define	MPF_STATUS_SPI_VIOLATION	BIT(2)
+@@ -197,21 +198,16 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
+ /* Poll HW status until busy bit is cleared and mask bits are set. */
+ static int mpf_poll_status(struct mpf_priv *priv, u8 mask)
+ {
+-	int status, retries = MPF_STATUS_POLL_RETRIES;
++	int ret, status;
+ 
+-	while (retries--) {
+-		status = mpf_read_status(priv);
+-		if (status < 0)
+-			return status;
+-
+-		if (status & MPF_STATUS_BUSY)
+-			continue;
+-
+-		if (!mask || (status & mask))
+-			return status;
+-	}
++	ret = read_poll_timeout(mpf_read_status, status,
++				(status < 0) ||
++				((status & (MPF_STATUS_BUSY | mask)) == mask),
++				0, MPF_STATUS_POLL_TIMEOUT, false, priv);
++	if (ret < 0)
++		return ret;
+ 
+-	return -EBUSY;
++	return status;
+ }
+ 
+ static int mpf_spi_write(struct mpf_priv *priv, const void *buf, size_t buf_size)
+-- 
+2.38.2
+
 
