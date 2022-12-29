@@ -2,297 +2,264 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51EFDC4708D
-	for <linux-fpga@archiver.kernel.org>; Thu, 29 Dec 2022 10:51:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55E78C4332F
+	for <linux-fpga@archiver.kernel.org>; Thu, 29 Dec 2022 15:34:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233180AbiL2KtZ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 29 Dec 2022 05:49:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36256 "EHLO
+        id S233433AbiL2Pch (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 29 Dec 2022 10:32:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36306 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233212AbiL2KtL (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 29 Dec 2022 05:49:11 -0500
-Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D043812AE0;
-        Thu, 29 Dec 2022 02:49:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-        d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
-         in-reply-to:references;
-        bh=h2DTo7/i07c/BjtQnTqU/wo+M4tvHQruZoqERkWx+rQ=;
-        b=ewZSxubGIP2TR4oPjjbVWYqu6Fg4x8kENup3K58m2z/vo6Z1aWsFA6BIJtG2W6NIFk2xlFHsNCIqq
-         c1QHXF6Ig71wLgnB5P6abJvAPowD6lnwHOtkO+QRkH2uvCoqyth9APdu1FZDloUN+y7AjGplm9LqdY
-         bXsoTh5j56L2vIzFtW1JTRSSczx/2zRcMETV/WRtdT/2bWEsJ8LJ4bCUWlVaOdqK3VKtyfTo+XUJKr
-         4CmVsjMbjYwG4T2sYDUAFD5QxXpEDy2zA1H3NOT181+JCU5hZda9Yy/4Jd9YnTHYiw9kfmTuakDHpl
-         yy1Z3f1tqSc3fU7KfZO6maSx53e5VSQ==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.5.1460, Stamp: 3], Multi: [Enabled, t: (0.000011,0.030701)], BW: [Enabled, t: (0.000018,0.000001)], RTDA: [Enabled, t: (0.083405), Hit: No, Details: v2.42.0; Id: 15.52k7hj.1glenvavj.ipl2; mclb], total: 0(700)
-X-Footer: bWV0cm90ZWsucnU=
-Received: from h-e2.ddg ([85.143.252.66])
-        (authenticated user i.bornyakov@metrotek.ru)
-        by mail.pr-group.ru with ESMTPSA
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Thu, 29 Dec 2022 13:48:43 +0300
-From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
-To:     linux-fpga@vger.kernel.org
-Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
-        Conor Dooley <conor.dooley@microchip.com>,
-        Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
-        Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
-        =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-        linux-kernel@vger.kernel.org, system@metrotek.ru
-Subject: [PATCH v4 1/3] fpga: microchip-spi: move SPI I/O buffers out of stack
-Date:   Thu, 29 Dec 2022 13:46:02 +0300
-Message-Id: <20221229104604.2496-2-i.bornyakov@metrotek.ru>
-X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20221229104604.2496-1-i.bornyakov@metrotek.ru>
-References: <20221229104604.2496-1-i.bornyakov@metrotek.ru>
+        with ESMTP id S229721AbiL2Pch (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 29 Dec 2022 10:32:37 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5F8113E26
+        for <linux-fpga@vger.kernel.org>; Thu, 29 Dec 2022 07:31:52 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1672327911;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=h3NN2Mip5QK+Z02dH68Rq+WIBZOSpgwllYxpq3yU+XE=;
+        b=dGU8a0f6+mUhu0S7oFRn7P0dv3TyjN1J4g1SDcYvSKOkLttW3olyl2qHpRgtQtHFJGDogT
+        ZB8SZV3ZBR1gj79rpK/V6eKFAHY4ifXmqwVJ6YACXyiPP78OB3bla9k56reXLa497J1/zu
+        BGpM1Pnyv+o62pMifs8363H5nruYpgE=
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
+ [209.85.160.197]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-569-JukDSwpePOyXgJ9qt7HV2w-1; Thu, 29 Dec 2022 10:31:50 -0500
+X-MC-Unique: JukDSwpePOyXgJ9qt7HV2w-1
+Received: by mail-qt1-f197.google.com with SMTP id e18-20020ac84912000000b003a96d6f436fso7251401qtq.0
+        for <linux-fpga@vger.kernel.org>; Thu, 29 Dec 2022 07:31:50 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-language:content-transfer-encoding:in-reply-to:mime-version
+         :user-agent:date:message-id:from:references:to:subject
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=h3NN2Mip5QK+Z02dH68Rq+WIBZOSpgwllYxpq3yU+XE=;
+        b=QsjWxcyvBdpecls77ATviQHGWaqsuy6jehqXooFTnCRrJxl89jO4whViogK3etE0rD
+         B+0xgZQVZRh2TYYC/IPYWHYONE1Amisb2xdzCzhiSnyWZJcobSvwqkTEEmmbtEqW2DlW
+         Hht+uuC0qobJE/PaiBGBYtl5raPTe6pxjXVHyeQ8Px+BtLiARmAxuxBE5fEMeynWrTOf
+         GT8p5jaU4LpzDFvUyxNs94oCMCkkjH3WOurDe4x2kQhWeZ9UJ4WYQaQ2YAxpWPOjZxbG
+         IcWvFXEB/vJ7kRGAPHKUHPPmPfknT3I8pOm6cIjqrBmbfj9P2K2Pe1ll45lGywqxUMot
+         PP9g==
+X-Gm-Message-State: AFqh2kpFXv60jfXTNitDZ5NIC0jfEZ5p9wo7tdTlZZpoH0Jpv5HEO1Bw
+        E7kwmQmSNYcR2U937C/uNDOP6+b4LIserKYriTHqrmNQ/e9dD7r6yodDxa1SDC9u3foG4VPFvnq
+        9yMF4IZ2y3eGI4UrV0BRGEg==
+X-Received: by 2002:ac8:4f49:0:b0:3a9:7ae4:eecb with SMTP id i9-20020ac84f49000000b003a97ae4eecbmr41615983qtw.54.1672327910071;
+        Thu, 29 Dec 2022 07:31:50 -0800 (PST)
+X-Google-Smtp-Source: AMrXdXsFAbnEpVvVC08+mn1l6MRytL6XVCY561sPWW44HBrRRMIslfh8TDoAaiAqAv1h+8aMiZ9g0Q==
+X-Received: by 2002:ac8:4f49:0:b0:3a9:7ae4:eecb with SMTP id i9-20020ac84f49000000b003a97ae4eecbmr41615959qtw.54.1672327909765;
+        Thu, 29 Dec 2022 07:31:49 -0800 (PST)
+Received: from localhost.localdomain (024-205-208-113.res.spectrum.com. [24.205.208.113])
+        by smtp.gmail.com with ESMTPSA id 6-20020ac85646000000b003a6947863e1sm11466198qtt.11.2022.12.29.07.31.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 29 Dec 2022 07:31:49 -0800 (PST)
+Subject: Re: [PATCH v8 1/4] Documentation: fpga: dfl: Add documentation for
+ DFHv1
+To:     matthew.gerlach@linux.intel.com, hao.wu@intel.com,
+        yilun.xu@intel.com, russell.h.weight@intel.com,
+        basheer.ahmed.muddebihal@intel.com, mdf@kernel.org,
+        linux-fpga@vger.kernel.org, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, tianfei.zhang@intel.com,
+        corbet@lwn.net, gregkh@linuxfoundation.org,
+        linux-serial@vger.kernel.org, jirislaby@kernel.org,
+        geert+renesas@glider.be, andriy.shevchenko@linux.intel.com,
+        niklas.soderlund+renesas@ragnatech.se, macro@orcam.me.uk,
+        johan@kernel.org, lukas@wunner.de, ilpo.jarvinen@linux.intel.com,
+        marpagan@redhat.com, bagasdotme@gmail.com
+References: <20221228181624.1793433-1-matthew.gerlach@linux.intel.com>
+ <20221228181624.1793433-2-matthew.gerlach@linux.intel.com>
+From:   Tom Rix <trix@redhat.com>
+Message-ID: <e12481e4-9d2c-9afe-a3e9-9c995c788134@redhat.com>
+Date:   Thu, 29 Dec 2022 07:31:44 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
 MIME-Version: 1.0
+In-Reply-To: <20221228181624.1793433-2-matthew.gerlach@linux.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: en-US
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-As spi-summary doc says:
- > I/O buffers use the usual Linux rules, and must be DMA-safe.
- > You'd normally allocate them from the heap or free page pool.
- > Don't use the stack, or anything that's declared "static".
 
-Replace spi_write() with spi_write_then_read(), which is dma-safe for
-on-stack buffers. Use allocated buffers for transfers used in
-spi_sync_transfer().
+On 12/28/22 10:16 AM, matthew.gerlach@linux.intel.com wrote:
+> From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+>
+> Add documentation describing the extensions provided by Version
+> 1 of the Device Feature Header (DFHv1).
+>
+> Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+> Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+> ---
+> v8: fix section titles
+>
+> v7: shorten long lines and wording suggestions by bagasdotme@gmail.com
+>
+> v6: no change
+>
+> v5: use nested list for field descriptions
+>      clean up prose
+>      add reviewed-by and comments from Ilpo Järvinen
+>
+> v4: Remove marketing speak and separate v0 and v1 descriptions.
+>      Fix errors reported by "make htmldocs".
+>
+> v3: no change
+>
+> v2: s/GUILD/GUID/
+>      add picture
+> ---
+>   Documentation/fpga/dfl.rst | 112 +++++++++++++++++++++++++++++++++++++
+>   1 file changed, 112 insertions(+)
+>
+> diff --git a/Documentation/fpga/dfl.rst b/Documentation/fpga/dfl.rst
+> index 15b670926084..264b476fc6ac 100644
+> --- a/Documentation/fpga/dfl.rst
+> +++ b/Documentation/fpga/dfl.rst
+> @@ -561,6 +561,118 @@ new DFL feature via UIO direct access, its feature id should be added to the
+>   driver's id_table.
+>   
+>   
 
-Although everything works OK with stack-located I/O buffers, better
-follow the doc to be safe.
+I think a better location for this section would be in the beginning 
+after the
 
-Fixes: 5f8d4a900830 ("fpga: microchip-spi: add Microchip MPF FPGA manager")
-Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
----
- drivers/fpga/microchip-spi.c | 93 ++++++++++++++++++------------------
- 1 file changed, 47 insertions(+), 46 deletions(-)
+Device Feature List (DFL) Overview
 
-diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
-index 7436976ea904..e72fedd93a27 100644
---- a/drivers/fpga/microchip-spi.c
-+++ b/drivers/fpga/microchip-spi.c
-@@ -42,46 +42,55 @@
- struct mpf_priv {
- 	struct spi_device *spi;
- 	bool program_mode;
-+	u8 tx __aligned(ARCH_KMALLOC_MINALIGN);
-+	u8 rx __aligned(ARCH_KMALLOC_MINALIGN);
- };
- 
--static int mpf_read_status(struct spi_device *spi)
-+static int mpf_read_status(struct mpf_priv *priv)
- {
--	u8 status = 0, status_command = MPF_SPI_READ_STATUS;
--	struct spi_transfer xfers[2] = { 0 };
--	int ret;
--
- 	/*
- 	 * HW status is returned on MISO in the first byte after CS went
- 	 * active. However, first reading can be inadequate, so we submit
- 	 * two identical SPI transfers and use result of the later one.
- 	 */
--	xfers[0].tx_buf = &status_command;
--	xfers[1].tx_buf = &status_command;
--	xfers[0].rx_buf = &status;
--	xfers[1].rx_buf = &status;
--	xfers[0].len = 1;
--	xfers[1].len = 1;
--	xfers[0].cs_change = 1;
-+	struct spi_transfer xfers[2] = {
-+		{
-+			.tx_buf = &priv->tx,
-+			.rx_buf = &priv->rx,
-+			.len = 1,
-+			.cs_change = 1,
-+		}, {
-+			.tx_buf = &priv->tx,
-+			.rx_buf = &priv->rx,
-+			.len = 1,
-+		},
-+	};
-+	u8 status;
-+	int ret;
-+
-+	priv->tx = MPF_SPI_READ_STATUS;
-+
-+	ret = spi_sync_transfer(priv->spi, xfers, 2);
-+	if (ret)
-+		return ret;
- 
--	ret = spi_sync_transfer(spi, xfers, 2);
-+	status = priv->rx;
- 
- 	if ((status & MPF_STATUS_SPI_VIOLATION) ||
- 	    (status & MPF_STATUS_SPI_ERROR))
--		ret = -EIO;
-+		return -EIO;
- 
--	return ret ? : status;
-+	return status;
- }
- 
- static enum fpga_mgr_states mpf_ops_state(struct fpga_manager *mgr)
- {
- 	struct mpf_priv *priv = mgr->priv;
--	struct spi_device *spi;
- 	bool program_mode;
- 	int status;
- 
--	spi = priv->spi;
- 	program_mode = priv->program_mode;
--	status = mpf_read_status(spi);
-+	status = mpf_read_status(priv);
- 
- 	if (!program_mode && !status)
- 		return FPGA_MGR_STATE_OPERATING;
-@@ -186,12 +195,12 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
- }
- 
- /* Poll HW status until busy bit is cleared and mask bits are set. */
--static int mpf_poll_status(struct spi_device *spi, u8 mask)
-+static int mpf_poll_status(struct mpf_priv *priv, u8 mask)
- {
- 	int status, retries = MPF_STATUS_POLL_RETRIES;
- 
- 	while (retries--) {
--		status = mpf_read_status(spi);
-+		status = mpf_read_status(priv);
- 		if (status < 0)
- 			return status;
- 
-@@ -205,32 +214,32 @@ static int mpf_poll_status(struct spi_device *spi, u8 mask)
- 	return -EBUSY;
- }
- 
--static int mpf_spi_write(struct spi_device *spi, const void *buf, size_t buf_size)
-+static int mpf_spi_write(struct mpf_priv *priv, const void *buf, size_t buf_size)
- {
--	int status = mpf_poll_status(spi, 0);
-+	int status = mpf_poll_status(priv, 0);
- 
- 	if (status < 0)
- 		return status;
- 
--	return spi_write(spi, buf, buf_size);
-+	return spi_write_then_read(priv->spi, buf, buf_size, NULL, 0);
- }
- 
--static int mpf_spi_write_then_read(struct spi_device *spi,
-+static int mpf_spi_write_then_read(struct mpf_priv *priv,
- 				   const void *txbuf, size_t txbuf_size,
- 				   void *rxbuf, size_t rxbuf_size)
- {
- 	const u8 read_command[] = { MPF_SPI_READ_DATA };
- 	int ret;
- 
--	ret = mpf_spi_write(spi, txbuf, txbuf_size);
-+	ret = mpf_spi_write(priv, txbuf, txbuf_size);
- 	if (ret)
- 		return ret;
- 
--	ret = mpf_poll_status(spi, MPF_STATUS_READY);
-+	ret = mpf_poll_status(priv, MPF_STATUS_READY);
- 	if (ret < 0)
- 		return ret;
- 
--	return spi_write_then_read(spi, read_command, sizeof(read_command),
-+	return spi_write_then_read(priv->spi, read_command, sizeof(read_command),
- 				   rxbuf, rxbuf_size);
- }
- 
-@@ -242,7 +251,6 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
- 	const u8 isc_en_command[] = { MPF_SPI_ISC_ENABLE };
- 	struct mpf_priv *priv = mgr->priv;
- 	struct device *dev = &mgr->dev;
--	struct spi_device *spi;
- 	u32 isc_ret = 0;
- 	int ret;
- 
-@@ -251,9 +259,7 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
- 		return -EOPNOTSUPP;
- 	}
- 
--	spi = priv->spi;
--
--	ret = mpf_spi_write_then_read(spi, isc_en_command, sizeof(isc_en_command),
-+	ret = mpf_spi_write_then_read(priv, isc_en_command, sizeof(isc_en_command),
- 				      &isc_ret, sizeof(isc_ret));
- 	if (ret || isc_ret) {
- 		dev_err(dev, "Failed to enable ISC: spi_ret %d, isc_ret %u\n",
-@@ -261,7 +267,7 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
- 		return -EFAULT;
- 	}
- 
--	ret = mpf_spi_write(spi, program_mode, sizeof(program_mode));
-+	ret = mpf_spi_write(priv, program_mode, sizeof(program_mode));
- 	if (ret) {
- 		dev_err(dev, "Failed to enter program mode: %d\n", ret);
- 		return ret;
-@@ -274,11 +280,9 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
- 
- static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count)
- {
--	u8 spi_frame_command[] = { MPF_SPI_FRAME };
- 	struct spi_transfer xfers[2] = { 0 };
- 	struct mpf_priv *priv = mgr->priv;
- 	struct device *dev = &mgr->dev;
--	struct spi_device *spi;
- 	int ret, i;
- 
- 	if (count % MPF_SPI_FRAME_SIZE) {
-@@ -287,18 +291,18 @@ static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count
- 		return -EINVAL;
- 	}
- 
--	spi = priv->spi;
--
--	xfers[0].tx_buf = spi_frame_command;
--	xfers[0].len = sizeof(spi_frame_command);
-+	xfers[0].tx_buf = &priv->tx;
-+	xfers[0].len = 1;
- 
- 	for (i = 0; i < count / MPF_SPI_FRAME_SIZE; i++) {
- 		xfers[1].tx_buf = buf + i * MPF_SPI_FRAME_SIZE;
- 		xfers[1].len = MPF_SPI_FRAME_SIZE;
- 
--		ret = mpf_poll_status(spi, 0);
--		if (ret >= 0)
--			ret = spi_sync_transfer(spi, xfers, ARRAY_SIZE(xfers));
-+		ret = mpf_poll_status(priv, 0);
-+		if (ret >= 0) {
-+			priv->tx = MPF_SPI_FRAME;
-+			ret = spi_sync_transfer(priv->spi, xfers, ARRAY_SIZE(xfers));
-+		}
- 
- 		if (ret) {
- 			dev_err(dev, "Failed to write bitstream frame %d/%zu\n",
-@@ -317,12 +321,9 @@ static int mpf_ops_write_complete(struct fpga_manager *mgr,
- 	const u8 release_command[] = { MPF_SPI_RELEASE };
- 	struct mpf_priv *priv = mgr->priv;
- 	struct device *dev = &mgr->dev;
--	struct spi_device *spi;
- 	int ret;
- 
--	spi = priv->spi;
--
--	ret = mpf_spi_write(spi, isc_dis_command, sizeof(isc_dis_command));
-+	ret = mpf_spi_write(priv, isc_dis_command, sizeof(isc_dis_command));
- 	if (ret) {
- 		dev_err(dev, "Failed to disable ISC: %d\n", ret);
- 		return ret;
-@@ -330,7 +331,7 @@ static int mpf_ops_write_complete(struct fpga_manager *mgr,
- 
- 	usleep_range(1000, 2000);
- 
--	ret = mpf_spi_write(spi, release_command, sizeof(release_command));
-+	ret = mpf_spi_write(priv, release_command, sizeof(release_command));
- 	if (ret) {
- 		dev_err(dev, "Failed to exit program mode: %d\n", ret);
- 		return ret;
--- 
-2.39.0
+The reader will be looking for the details of the Header once they have 
+read the overview.
 
+It would be handy if they were next
+
+> +Device Feature Header - Version 0
+> +=================================
+> +Version 0 (DFHv0) is the original version of the Device Feature Header.
+> +The format of DFHv0 is shown below::
+> +
+> +    +-----------------------------------------------------------------------+
+> +    |63 Type 60|59 DFH VER 52|51 Rsvd 41|40 EOL|39 Next 16|15 VER 12|11 ID 0| 0x00
+> +    +-----------------------------------------------------------------------+
+> +    |63                                 GUID_L                             0| 0x08
+> +    +-----------------------------------------------------------------------+
+> +    |63                                 GUID_H                             0| 0x10
+> +    +-----------------------------------------------------------------------+
+> +
+> +- Offset 0x00
+> +
+> +  * Type - The type of DFH (e.g. FME, AFU, or private feature).
+> +  * DFH VER - The version of the DFH.
+> +  * Rsvd - Currently unused.
+> +  * EOL - Set if the DFH is the end of the Device Feature List (DFL).
+> +  * Next - The offset of the next DFH in the DFL from the DFH start.
+> +    If EOL is set, Next is the size of MMIO of the last feature in the list.
+
+Missed describing feature revision bits 12-15
+
+There as two VER's, it would be clearer if they were different. maybe 
+REV for bits 12-15
+
+Similar below.
+
+> +  * ID - The feature ID if Type is private feature.
+> +
+> +- Offset 0x08
+> +
+> +  * GUID_L - Least significant 64 bits of a 128-bit Globally Unique Identifier
+> +    (present only if Type is FME or AFU).
+> +
+> +- Offset 0x10
+> +
+> +  * GUID_H - Most significant 64 bits of a 128-bit Globally Unique Identifier
+> +    (present only if Type is FME or AFU).
+> +
+> +
+> +Device Feature Header - Version 1
+> +=================================
+> +Version 1 (DFHv1) of the Device Feature Header adds the following functionality:
+> +
+> +* Provides a standardized mechanism for features to describe
+> +  parameters/capabilities to software.
+> +* Standardize the use of a GUID for all DFHv1 types.
+> +* Decouples the DFH location from the register space of the feature itself.
+> +
+> +The format of Version 1 of the Device Feature Header (DFH) is shown below::
+> +
+> +    +-----------------------------------------------------------------------+
+> +    |63 Type 60|59 DFH VER 52|51 Rsvd 41|40 EOL|39 Next 16|15 VER 12|11 ID 0| 0x00
+> +    +-----------------------------------------------------------------------+
+> +    |63                                 GUID_L                             0| 0x08
+> +    +-----------------------------------------------------------------------+
+> +    |63                                 GUID_H                             0| 0x10
+> +    +-----------------------------------------------------------------------+
+> +    |63                   Reg Address/Offset                      1|  Rel  0| 0x18
+> +    +-----------------------------------------------------------------------+
+> +    |63        Reg Size       32|Params 31|30 Group    16|15 Instance      0| 0x20
+> +    +-----------------------------------------------------------------------+
+> +    |63 Next    35|34RSV33|EOP32|31 Param Version 16|15 Param ID           0| 0x28
+> +    +-----------------------------------------------------------------------+
+> +    |63                 Parameter Data                                     0| 0x30
+> +    +-----------------------------------------------------------------------+
+> +
+> +                                  ...
+> +
+> +    +-----------------------------------------------------------------------+
+> +    |63 Next    35|34RSV33|EOP32|31 Param Version 16|15 Param ID           0|
+> +    +-----------------------------------------------------------------------+
+> +    |63                 Parameter Data                                     0|
+> +    +-----------------------------------------------------------------------+
+> +
+> +- Offset 0x00
+> +
+> +  * Type - The type of DFH (e.g. FME, AFU, or private feature).
+> +  * DFH VER - The version of the DFH.
+> +  * Rsvd - Currently unused.
+> +  * EOL - Set if the DFH is the end of the Device Feature List (DFL).
+> +  * Next - The offset of the next DFH in the DFL from the DFH start.
+> +    If EOL is set, Next is the size of MMIO of the last feature in the list.
+
+Units of size ?
+
+Tom
+
+> +  * ID - The feature ID if Type is private feature.
+> +
+> +- Offset 0x08
+> +
+> +  * GUID_L - Least significant 64 bits of a 128-bit Globally Unique Identifier.
+> +
+> +- Offset 0x10
+> +
+> +  * GUID_H - Most significant 64 bits of a 128-bit Globally Unique Identifier.
+> +
+> +- Offset 0x18
+> +
+> +  * Reg Address/Offset - If Rel bit is set, then the value is the high 63 bits
+> +    of a 16-bit aligned absolute address of the feature's registers. Otherwise
+> +    the value is the offset from the start of the DFH of the feature's registers.
+> +
+> +- Offset 0x20
+> +
+> +  * Reg Size - Size of feature's register set in bytes.
+> +  * Params - Set if DFH has a list of parameter blocks.
+> +  * Group - Id of group if feature is part of a group.
+> +  * Instance - Id of feature instance within a group.
+> +
+> +- Offset 0x28 if feature has parameters
+> +
+> +  * Next - Offset to the next parameter block in 8 byte words. If EOP set,
+> +    size in 8 byte words of last parameter.
+> +  * Param Version - Version of Param ID.
+> +  * Param ID - ID of parameter.
+> +
+> +- Offset 0x30
+> +
+> +  * Parameter Data - Parameter data whose size and format is defined by
+> +    version and ID of the parameter.
+> +
+>   Open discussion
+>   ===============
+>   FME driver exports one ioctl (DFL_FPGA_FME_PORT_PR) for partial reconfiguration
 
