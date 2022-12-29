@@ -2,35 +2,35 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 222B8C4332F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 429C6C3DA79
 	for <linux-fpga@archiver.kernel.org>; Thu, 29 Dec 2022 10:51:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229734AbiL2KtX (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 29 Dec 2022 05:49:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36252 "EHLO
+        id S233120AbiL2KtY (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 29 Dec 2022 05:49:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36234 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233208AbiL2KtL (ORCPT
+        with ESMTP id S229669AbiL2KtL (ORCPT
         <rfc822;linux-fpga@vger.kernel.org>); Thu, 29 Dec 2022 05:49:11 -0500
 Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D028912AD1;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFED912A9D;
         Thu, 29 Dec 2022 02:49:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
         d=metrotek.ru; s=mail;
-        h=from:subject:date:message-id:to:cc:mime-version:content-type:
-         content-transfer-encoding;
-        bh=k7gYzabHTTDOgCUDLMX/MCE9I6z53Uh/Rqs9+rbTYgw=;
-        b=Kd4kxdR1DBRC3NGS3lN/pJ0MghskClEHZ/wqg0SEQwH9Ian9HiJXgUGyCTWmbTzWvSRK21OHalW4p
-         DWFMOKazoEj5yC2o7Av3S001/eXUI75L/hon3NtnNfFfzKG7WYV38QUfg51O4W1CjAPeGQe+1F3cR5
-         Pi5SEZQa1dDkvGNjMAESVCm3Z/jwG21119cYnb0d/6RtD34se3JG0P2WVrPDo/2p6yMtt54WgV1fot
-         UgbfG/sJLUtFV+MfEcMYraQawkInW8mqObW1gf5+cRGVyl8Iplf72wRCgYvf2untBPl4bpFWRZc0fx
-         qEBnFAl9tC95Y62LXNhCLp2Lhmj4lMA==
-X-Kerio-Anti-Spam:  Build: [Engines: 2.16.5.1460, Stamp: 3], Multi: [Enabled, t: (0.000008,0.006695)], BW: [Enabled, t: (0.000016,0.000001)], RTDA: [Enabled, t: (0.091441), Hit: No, Details: v2.42.0; Id: 15.52k8sc.1glenv90a.id64; mclb], total: 0(700)
+        h=from:subject:date:message-id:to:cc:mime-version:content-transfer-encoding:
+         in-reply-to:references;
+        bh=GI2mMm/uGWkE5p1bnryw0SBqR2l3kOJ73Yw+GoVPPS8=;
+        b=Ns25fgEfZqwQ0qPGTbBDXXH4yrc27AJGxDDF5VY9tiHLsYdQdGKCzx/YYnNTzcDcAoTQwg8Q+/8hW
+         mXfbCClyshrSVJ1uGHBmeTGnB2MhKlVnJOZvgFPs8MWDYnkkltDtcWGb61A3TmFeSgKLY7WgPlRmIw
+         diujQR3S1gaI3kQ2nx/S5Cc6iFulnMZI6Mn51355hdxu5GT56L73JCAeYny5fNtG8lvqNJZeYTheuH
+         dxods8/DW+XcokBkAiOH858xK1Pbi70+eoGb2msb2kJn2f7sO6z0PDDD+1rTJ4YgkOiJa8haaDJC07
+         g2/Rau2UFBuNhR5qKvIgeOHglx/qONg==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.5.1460, Stamp: 3], Multi: [Enabled, t: (0.000009,0.010010)], BW: [Enabled, t: (0.000021,0.000001)], RTDA: [Enabled, t: (0.090851), Hit: No, Details: v2.42.0; Id: 15.52k4ev.1glenvctm.3mn1; mclb], total: 0(700)
 X-Footer: bWV0cm90ZWsucnU=
 Received: from h-e2.ddg ([85.143.252.66])
         (authenticated user i.bornyakov@metrotek.ru)
         by mail.pr-group.ru with ESMTPSA
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
-        Thu, 29 Dec 2022 13:48:42 +0300
+        Thu, 29 Dec 2022 13:48:45 +0300
 From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
 To:     linux-fpga@vger.kernel.org
 Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
@@ -39,45 +39,87 @@ Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
         Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
         =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
         linux-kernel@vger.kernel.org, system@metrotek.ru
-Subject: [PATCH v4 0/3]  Reliability improvements for Microchip MPF FPGA manager
-Date:   Thu, 29 Dec 2022 13:46:01 +0300
-Message-Id: <20221229104604.2496-1-i.bornyakov@metrotek.ru>
+Subject: [PATCH v4 3/3] fpga: microchip-spi: separate data frame write routine
+Date:   Thu, 29 Dec 2022 13:46:04 +0300
+Message-Id: <20221229104604.2496-4-i.bornyakov@metrotek.ru>
 X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20221229104604.2496-1-i.bornyakov@metrotek.ru>
+References: <20221229104604.2496-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-A couple of reliability improvements for Microchip Polarfire FPGA
-manager:
- * move SPI I/O buffers out of stack
- * rewrite status polling routine in a time measurable way
+mpf_ops_write() function writes bitstream data to the FPGA by a smaller
+frames. Introduce mpf_spi_frame_write() function which is for writing a
+single data frame and use it in mpf_ops_write().
 
-Also improve mpf_ops_write() code readability by separating single data
-frame writing routine.
+No functional changes intended.
 
-ChangeLog:
-  v1:
-[https://lore.kernel.org/linux-fpga/20221223123854.8023-1-i.bornyakov@metrotek.ru/]
-  v2:
-    * split into 3 distinct patches
-[https://lore.kernel.org/linux-fpga/20221226142326.8111-1-i.bornyakov@metrotek.ru/]
-  v3:
-    * fix polling stop condition in mpf_poll_status() as Ilpo suggested.
-[https://lore.kernel.org/linux-fpga/20221227100450.2257-1-i.bornyakov@metrotek.ru/]
-  v4:
-    * more verbose comment for mpf_poll_status()
+Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+---
+ drivers/fpga/microchip-spi.c | 36 +++++++++++++++++++++++-------------
+ 1 file changed, 23 insertions(+), 13 deletions(-)
 
-Ivan Bornyakov (3):
-  fpga: microchip-spi: move SPI I/O buffers out of stack
-  fpga: microchip-spi: rewrite status polling in a time measurable way
-  fpga: microchip-spi: separate data frame write routine
-
- drivers/fpga/microchip-spi.c | 145 +++++++++++++++++++----------------
- 1 file changed, 79 insertions(+), 66 deletions(-)
-
+diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
+index 995b1964e0fe..8a541986f6f2 100644
+--- a/drivers/fpga/microchip-spi.c
++++ b/drivers/fpga/microchip-spi.c
+@@ -280,9 +280,30 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
+ 	return 0;
+ }
+ 
++static int mpf_spi_frame_write(struct mpf_priv *priv, const char *buf)
++{
++	struct spi_transfer xfers[2] = {
++		{
++			.tx_buf = &priv->tx,
++			.len = 1,
++		}, {
++			.tx_buf = buf,
++			.len = MPF_SPI_FRAME_SIZE,
++		},
++	};
++	int ret;
++
++	ret = mpf_poll_status(priv, 0);
++	if (ret < 0)
++		return ret;
++
++	priv->tx = MPF_SPI_FRAME;
++
++	return spi_sync_transfer(priv->spi, xfers, ARRAY_SIZE(xfers));
++}
++
+ static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count)
+ {
+-	struct spi_transfer xfers[2] = { 0 };
+ 	struct mpf_priv *priv = mgr->priv;
+ 	struct device *dev = &mgr->dev;
+ 	int ret, i;
+@@ -293,19 +314,8 @@ static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count
+ 		return -EINVAL;
+ 	}
+ 
+-	xfers[0].tx_buf = &priv->tx;
+-	xfers[0].len = 1;
+-
+ 	for (i = 0; i < count / MPF_SPI_FRAME_SIZE; i++) {
+-		xfers[1].tx_buf = buf + i * MPF_SPI_FRAME_SIZE;
+-		xfers[1].len = MPF_SPI_FRAME_SIZE;
+-
+-		ret = mpf_poll_status(priv, 0);
+-		if (ret >= 0) {
+-			priv->tx = MPF_SPI_FRAME;
+-			ret = spi_sync_transfer(priv->spi, xfers, ARRAY_SIZE(xfers));
+-		}
+-
++		ret = mpf_spi_frame_write(priv, buf + i * MPF_SPI_FRAME_SIZE);
+ 		if (ret) {
+ 			dev_err(dev, "Failed to write bitstream frame %d/%zu\n",
+ 				i, count / MPF_SPI_FRAME_SIZE);
 -- 
 2.39.0
 
