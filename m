@@ -2,138 +2,137 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6E13C4332F
-	for <linux-fpga@archiver.kernel.org>; Fri, 30 Dec 2022 08:03:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AA77C4708E
+	for <linux-fpga@archiver.kernel.org>; Fri, 30 Dec 2022 09:34:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234555AbiL3ICD (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 30 Dec 2022 03:02:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37948 "EHLO
+        id S234840AbiL3JcS (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 30 Dec 2022 04:32:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34528 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229876AbiL3ICC (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 30 Dec 2022 03:02:02 -0500
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8451BEB;
-        Fri, 30 Dec 2022 00:01:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1672387317; x=1703923317;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=Oi/+rIcqkcv+04p/Hg1B3NjYbcWcYaKfRFTSbgBAmnU=;
-  b=E+OA2B0jutpCkg6Zn8i/R8WQu4vshXtrHgYfhIzWP1n7VIA9fe0ryvlG
-   1jRJ2J5C3omCQdDvz680SKxDwxplD0nIgSUbmDVT/G1qmHOdWzrfJNY8y
-   uJpPbdi9Xqk9QFJnbaA3G6xW+D7dbHqZv3FiDVsa8SrJpP4GCZ2tbmuZ2
-   HUfkNiz7ZWl8cHSoKKRFvGUMbeQl/HnFp9Rl/E6twpchR5CqIQSs0RwBq
-   IVZSVIV+VVHXCjnvPJHgrNVO0JvLtvrFxWCmQlgrxV98QngY62xgZL618
-   eWkn+fAjUP4oXRjXm6j4Ke8WHZK+rNEPxro/ay4h8vhzhUwMZLRzhZ/5e
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10575"; a="319891596"
-X-IronPort-AV: E=Sophos;i="5.96,286,1665471600"; 
-   d="scan'208";a="319891596"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Dec 2022 00:01:56 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10575"; a="653822337"
-X-IronPort-AV: E=Sophos;i="5.96,286,1665471600"; 
-   d="scan'208";a="653822337"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orsmga002.jf.intel.com with ESMTP; 30 Dec 2022 00:01:53 -0800
-Date:   Fri, 30 Dec 2022 15:51:45 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Ivan Bornyakov <i.bornyakov@metrotek.ru>
-Cc:     linux-fpga@vger.kernel.org,
+        with ESMTP id S234825AbiL3JcR (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 30 Dec 2022 04:32:17 -0500
+Received: from mail.pr-group.ru (mail.pr-group.ru [178.18.215.3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24AF71A390;
+        Fri, 30 Dec 2022 01:32:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+        d=metrotek.ru; s=mail;
+        h=from:subject:date:message-id:to:cc:mime-version:content-type:
+         content-transfer-encoding:in-reply-to:references;
+        bh=PqfPOgB/H+V7BMAkAgppCtmusy/q2sCCkwNMJ1UA4RQ=;
+        b=YOTXmBc3E2HaJKrrYoif2bESs6loympIFVF3Vb1uI/jZfpd1K5s6QijzTJkEjyGMt2YB9zvAYL4QO
+         ALM9ynLqvSxd70oxDkmjhH6uiB3duLwWnvbISQH7Jcu2CdOfabVCRVotF/3bi43I3+1JY/4i1B6CTx
+         VRrFKOuB7ViYd0NIvqtmc52/gML5GyT/smatsiJnfPxQ0tpuxFfhWEWuZpfNr4crzeQm+BnfHhQ+4M
+         pBFiDg5GSQiZX8iK8lZ6TaDUxd3Zz8xZEVR5qfD7MtP3hIDxZ+Dj5R/fpLdZUPzq23Ex62fYMN4J4n
+         zuEofRxTyBM+WwI5NHAb6r7HeU1ST8Q==
+X-Kerio-Anti-Spam:  Build: [Engines: 2.16.5.1460, Stamp: 3], Multi: [Enabled, t: (0.000008,0.013650)], BW: [Enabled, t: (0.000025,0.000002)], RTDA: [Enabled, t: (0.080331), Hit: No, Details: v2.42.0; Id: 15.52k1i6.1glh5vaj9.15a61; mclb], total: 0(700)
+X-Footer: bWV0cm90ZWsucnU=
+Received: from localhost.localdomain ([78.37.162.181])
+        (authenticated user i.bornyakov@metrotek.ru)
+        by mail.pr-group.ru with ESMTPSA
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits));
+        Fri, 30 Dec 2022 12:31:51 +0300
+From:   Ivan Bornyakov <i.bornyakov@metrotek.ru>
+To:     linux-fpga@vger.kernel.org
+Cc:     Ivan Bornyakov <i.bornyakov@metrotek.ru>,
         Conor Dooley <conor.dooley@microchip.com>,
         Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
-        Tom Rix <trix@redhat.com>,
-        Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+        Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
+        =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
         linux-kernel@vger.kernel.org, system@metrotek.ru
-Subject: Re: [PATCH v4 3/3] fpga: microchip-spi: separate data frame write
- routine
-Message-ID: <Y66YkbQwQl74lmWt@yilunxu-OptiPlex-7050>
-References: <20221229104604.2496-1-i.bornyakov@metrotek.ru>
- <20221229104604.2496-4-i.bornyakov@metrotek.ru>
+Subject: [PATCH v5 2/3] fpga: microchip-spi: rewrite status polling in a time measurable way
+Date:   Fri, 30 Dec 2022 12:29:21 +0300
+Message-Id: <20221230092922.18822-3-i.bornyakov@metrotek.ru>
+X-Mailer: git-send-email 2.38.2
+In-Reply-To: <20221230092922.18822-1-i.bornyakov@metrotek.ru>
+References: <20221230092922.18822-1-i.bornyakov@metrotek.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221229104604.2496-4-i.bornyakov@metrotek.ru>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On 2022-12-29 at 13:46:04 +0300, Ivan Bornyakov wrote:
-> mpf_ops_write() function writes bitstream data to the FPGA by a smaller
-> frames. Introduce mpf_spi_frame_write() function which is for writing a
-> single data frame and use it in mpf_ops_write().
-> 
-> No functional changes intended.
-> 
-> Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Original busy loop with retries count in mpf_poll_status() is not too
+reliable, as it takes different times on different systems. Replace it
+with read_poll_timeout() macro.
 
+While at it, fix polling stop condition to met function's original
+intention declared in the comment. The issue with original polling stop
+condition is that it stops if any of mask bits is set, while intention
+was to stop if all mask bits is set. This was not noticible because only
+MPF_STATUS_READY is passed as mask argument and it is BIT(1).
+
+Fixes: 5f8d4a900830 ("fpga: microchip-spi: add Microchip MPF FPGA manager")
+Signed-off-by: Ivan Bornyakov <i.bornyakov@metrotek.ru>
+Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 Acked-by: Xu Yilun <yilun.xu@intel.com>
+---
+ drivers/fpga/microchip-spi.c | 32 +++++++++++++++++---------------
+ 1 file changed, 17 insertions(+), 15 deletions(-)
 
-> ---
->  drivers/fpga/microchip-spi.c | 36 +++++++++++++++++++++++-------------
->  1 file changed, 23 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
-> index 995b1964e0fe..8a541986f6f2 100644
-> --- a/drivers/fpga/microchip-spi.c
-> +++ b/drivers/fpga/microchip-spi.c
-> @@ -280,9 +280,30 @@ static int mpf_ops_write_init(struct fpga_manager *mgr,
->  	return 0;
->  }
->  
-> +static int mpf_spi_frame_write(struct mpf_priv *priv, const char *buf)
-> +{
-> +	struct spi_transfer xfers[2] = {
-> +		{
-> +			.tx_buf = &priv->tx,
-> +			.len = 1,
-> +		}, {
-> +			.tx_buf = buf,
-> +			.len = MPF_SPI_FRAME_SIZE,
-> +		},
-> +	};
-> +	int ret;
-> +
-> +	ret = mpf_poll_status(priv, 0);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	priv->tx = MPF_SPI_FRAME;
-> +
-> +	return spi_sync_transfer(priv->spi, xfers, ARRAY_SIZE(xfers));
-> +}
-> +
->  static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count)
->  {
-> -	struct spi_transfer xfers[2] = { 0 };
->  	struct mpf_priv *priv = mgr->priv;
->  	struct device *dev = &mgr->dev;
->  	int ret, i;
-> @@ -293,19 +314,8 @@ static int mpf_ops_write(struct fpga_manager *mgr, const char *buf, size_t count
->  		return -EINVAL;
->  	}
->  
-> -	xfers[0].tx_buf = &priv->tx;
-> -	xfers[0].len = 1;
-> -
->  	for (i = 0; i < count / MPF_SPI_FRAME_SIZE; i++) {
-> -		xfers[1].tx_buf = buf + i * MPF_SPI_FRAME_SIZE;
-> -		xfers[1].len = MPF_SPI_FRAME_SIZE;
-> -
-> -		ret = mpf_poll_status(priv, 0);
-> -		if (ret >= 0) {
-> -			priv->tx = MPF_SPI_FRAME;
-> -			ret = spi_sync_transfer(priv->spi, xfers, ARRAY_SIZE(xfers));
-> -		}
-> -
-> +		ret = mpf_spi_frame_write(priv, buf + i * MPF_SPI_FRAME_SIZE);
->  		if (ret) {
->  			dev_err(dev, "Failed to write bitstream frame %d/%zu\n",
->  				i, count / MPF_SPI_FRAME_SIZE);
-> -- 
-> 2.39.0
-> 
-> 
+diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
+index bb69f5beefe7..137fafdf57a6 100644
+--- a/drivers/fpga/microchip-spi.c
++++ b/drivers/fpga/microchip-spi.c
+@@ -6,6 +6,7 @@
+ #include <asm/unaligned.h>
+ #include <linux/delay.h>
+ #include <linux/fpga/fpga-mgr.h>
++#include <linux/iopoll.h>
+ #include <linux/module.h>
+ #include <linux/of_device.h>
+ #include <linux/spi/spi.h>
+@@ -33,7 +34,7 @@
+ 
+ #define	MPF_BITS_PER_COMPONENT_SIZE	22
+ 
+-#define	MPF_STATUS_POLL_RETRIES		10000
++#define	MPF_STATUS_POLL_TIMEOUT		(2 * USEC_PER_SEC)
+ #define	MPF_STATUS_BUSY			BIT(0)
+ #define	MPF_STATUS_READY		BIT(1)
+ #define	MPF_STATUS_SPI_VIOLATION	BIT(2)
+@@ -194,24 +195,25 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
+ 	return 0;
+ }
+ 
+-/* Poll HW status until busy bit is cleared and mask bits are set. */
+ static int mpf_poll_status(struct mpf_priv *priv, u8 mask)
+ {
+-	int status, retries = MPF_STATUS_POLL_RETRIES;
++	int ret, status;
+ 
+-	while (retries--) {
+-		status = mpf_read_status(priv);
+-		if (status < 0)
+-			return status;
+-
+-		if (status & MPF_STATUS_BUSY)
+-			continue;
+-
+-		if (!mask || (status & mask))
+-			return status;
+-	}
++	/*
++	 * Busy poll HW status. Polling stops if any of the following
++	 * conditions are met:
++	 *  - timeout is reached
++	 *  - mpf_read_status() returns an error
++	 *  - busy bit is cleared AND mask bits are set
++	 */
++	ret = read_poll_timeout(mpf_read_status, status,
++				(status < 0) ||
++				((status & (MPF_STATUS_BUSY | mask)) == mask),
++				0, MPF_STATUS_POLL_TIMEOUT, false, priv);
++	if (ret < 0)
++		return ret;
+ 
+-	return -EBUSY;
++	return status;
+ }
+ 
+ static int mpf_spi_write(struct mpf_priv *priv, const void *buf, size_t buf_size)
+-- 
+2.38.2
+
+
