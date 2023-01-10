@@ -2,565 +2,189 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BD04C678D7
-	for <linux-fpga@archiver.kernel.org>; Tue, 10 Jan 2023 00:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46EB5C54EBC
+	for <linux-fpga@archiver.kernel.org>; Tue, 10 Jan 2023 10:07:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237181AbjAJAab (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 9 Jan 2023 19:30:31 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59904 "EHLO
+        id S231215AbjAJKFf (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 10 Jan 2023 05:05:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34814 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237550AbjAJA36 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 9 Jan 2023 19:29:58 -0500
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F3C13E0F2;
-        Mon,  9 Jan 2023 16:29:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1673310597; x=1704846597;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=0BhFniL3Yz8pdVzP4uZQ0k2jL0WHYQ2W1tu2F6MEQ58=;
-  b=bgs6KekiCyYVfaUZwUMds+Ur+NTCSRfcL9Dah5FW6ZjCnpu5uS4kOtbm
-   RNylIEvhCTWJGpsGcSElpoeHdwgecRC031wEXCvR2qM3Q+ZxBrtaTBoUD
-   44qzNbsMwR5crWB4z8phnBb/aflc31NU+ozdrH3CTWCrZp8gJwVkIlWAY
-   hI5Pwi/lvD7uyYTmHwR9EpIr9Cj7rHRKpOpLgjh6Wfs0bkstya+Ae1/9c
-   vfRJ2TZdpVBEIYFgOOY6SdQ3MaqkQLoB3DkKRJivCzbQCocbsXoPK6KzO
-   9xTno6hfXo0S8rttwyRfAJXdqi0T4mmTWW5OfBQdp3wejyelTZ5IEPOq8
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="324265559"
-X-IronPort-AV: E=Sophos;i="5.96,313,1665471600"; 
-   d="scan'208";a="324265559"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2023 16:29:53 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="687381581"
-X-IronPort-AV: E=Sophos;i="5.96,313,1665471600"; 
-   d="scan'208";a="687381581"
-Received: from rhweight-wrk1.ra.intel.com ([137.102.106.43])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2023 16:29:53 -0800
-From:   matthew.gerlach@linux.intel.com
-To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
-        basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
-        mdf@kernel.org, linux-fpga@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        tianfei.zhang@intel.com, corbet@lwn.net,
-        gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
-        jirislaby@kernel.org, geert+renesas@glider.be,
-        andriy.shevchenko@linux.intel.com,
-        niklas.soderlund+renesas@ragnatech.se, macro@orcam.me.uk,
-        johan@kernel.org, lukas@wunner.de, ilpo.jarvinen@linux.intel.com,
-        marpagan@redhat.com, bagasdotme@gmail.com
-Cc:     Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Subject: [PATCH v10 3/4] fpga: dfl: add basic support for DFHv1
-Date:   Mon,  9 Jan 2023 16:30:28 -0800
-Message-Id: <20230110003029.806022-4-matthew.gerlach@linux.intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230110003029.806022-1-matthew.gerlach@linux.intel.com>
-References: <20230110003029.806022-1-matthew.gerlach@linux.intel.com>
+        with ESMTP id S231329AbjAJKFb (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 10 Jan 2023 05:05:31 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5300850061;
+        Tue, 10 Jan 2023 02:05:30 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id B199AB81133;
+        Tue, 10 Jan 2023 10:05:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37A12C433EF;
+        Tue, 10 Jan 2023 10:05:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1673345127;
+        bh=9jjmUW62X5BAqte0/4wI9dpcaebEZ8SUIffif9k/TY8=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=X9MPj+MQ6WMeEBx8Qp0R49zCdRaJv8S0llfLSlMrSSnzR9ko9kwbT+38huoOFjk+U
+         96wMYq7WDgmwT3SLLvDONmA+ElEHfurgIewosvml8fvxHUMNhd7WPHbrVgmSDyGrSI
+         k8oHNRMbYu0ZDD0gQkaS6u22lGY7LEgBgBejRpW5oQvNt9oU+SvkxwLSYUgmI1qBkV
+         bg3uxRhpt5nscuJq+s/LQkEv9Qla7C0s8OS885bzafwUiEwWd25KCkR8gib7h05TMZ
+         4h/t0HcAQ7GGFo9j7FnShRz8gmQTskotBNqYzD7Q+oaX8PP1QssnLhweLIKCXClBJK
+         RHvnV1AHWnKpw==
+Date:   Tue, 10 Jan 2023 10:05:20 +0000
+From:   Lee Jones <lee@kernel.org>
+To:     Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Cc:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
+        Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
+        Moritz Fischer <mdf@kernel.org>,
+        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
+        Russ Weight <russell.h.weight@intel.com>,
+        Tianfei zhang <tianfei.zhang@intel.com>,
+        Mark Brown <broonie@kernel.org>,
+        Marco Pagani <marpagan@redhat.com>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v5 01/10] mfd: intel-m10-bmc: Create m10bmc_platform_info
+ for type specific info
+Message-ID: <Y704YEVolcdwY7L4@google.com>
+References: <20221226175849.13056-1-ilpo.jarvinen@linux.intel.com>
+ <20221226175849.13056-2-ilpo.jarvinen@linux.intel.com>
+ <Y7xSQde3pzcOIu+X@google.com>
+ <1ffa5844-f5ce-e56a-7ed9-9ba434904b6d@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <1ffa5844-f5ce-e56a-7ed9-9ba434904b6d@linux.intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+On Mon, 09 Jan 2023, Ilpo Järvinen wrote:
 
-Version 1 of the Device Feature Header (DFH) definition adds
-functionality to the Device Feature List (DFL) bus.
+> On Mon, 9 Jan 2023, Lee Jones wrote:
+> 
+> > On Mon, 26 Dec 2022, Ilpo Järvinen wrote:
+> > 
+> > > BMC type specific info is currently set by a switch/case block. The
+> > > size of this info is expected to grow as more dev types and features
+> > > are added which would have made the switch block bloaty.
+> > > 
+> > > Store type specific info into struct and place them into .driver_data
+> > > instead because it makes things a bit cleaner.
+> > > 
+> > > The m10bmc_type enum can be dropped as the differentiation is now
+> > > fully handled by the platform info.
+> > > 
+> > > The info member of struct intel_m10bmc that is added here is not used
+> > > yet in this change but its addition logically still belongs to this
+> > > change. The CSR map change that comes after this change needs to have
+> > > the info member.
+> > > 
+> > > Reviewed-by: Russ Weight <russell.h.weight@intel.com>
+> > > Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+> > > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+> > > ---
+> > >  drivers/mfd/intel-m10-bmc.c       | 53 ++++++++++++++-----------------
+> > >  include/linux/mfd/intel-m10-bmc.h | 12 +++++++
+> > >  2 files changed, 36 insertions(+), 29 deletions(-)
+> > > 
+> > > diff --git a/drivers/mfd/intel-m10-bmc.c b/drivers/mfd/intel-m10-bmc.c
+> > > index 7e3319e5b22f..12c522c16d83 100644
+> > > --- a/drivers/mfd/intel-m10-bmc.c
+> > > +++ b/drivers/mfd/intel-m10-bmc.c
+> > > @@ -13,12 +13,6 @@
+> > >  #include <linux/regmap.h>
+> > >  #include <linux/spi/spi.h>
+> > >  
+> > > -enum m10bmc_type {
+> > > -	M10_N3000,
+> > > -	M10_D5005,
+> > > -	M10_N5010,
+> > > -};
+> > > -
+> > >  static struct mfd_cell m10bmc_d5005_subdevs[] = {
+> > >  	{ .name = "d5005bmc-hwmon" },
+> > >  	{ .name = "d5005bmc-sec-update" }
+> > > @@ -162,15 +156,17 @@ static int check_m10bmc_version(struct intel_m10bmc *ddata)
+> > >  static int intel_m10_bmc_spi_probe(struct spi_device *spi)
+> > >  {
+> > >  	const struct spi_device_id *id = spi_get_device_id(spi);
+> > > +	const struct intel_m10bmc_platform_info *info;
+> > >  	struct device *dev = &spi->dev;
+> > > -	struct mfd_cell *cells;
+> > >  	struct intel_m10bmc *ddata;
+> > > -	int ret, n_cell;
+> > > +	int ret;
+> > >  
+> > >  	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
+> > >  	if (!ddata)
+> > >  		return -ENOMEM;
+> > >  
+> > > +	info = (struct intel_m10bmc_platform_info *)id->driver_data;
+> > > +	ddata->info = info;
+> > 
+> > Why are you keeping it?
+> 
+> There are plenty of users starting from patch 04. There will more users 
+> and members in the changes not included into this series. Thus, storing 
+> csr_map instead of info would not be forward-looking enough.
+> 
+> > >  	ddata->dev = dev;
+> > >  
+> > >  	ddata->regmap =
+> > > @@ -189,24 +185,8 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
+> > >  		return ret;
+> > >  	}
+> > >  
+> > > -	switch (id->driver_data) {
+> > > -	case M10_N3000:
+> > > -		cells = m10bmc_pacn3000_subdevs;
+> > > -		n_cell = ARRAY_SIZE(m10bmc_pacn3000_subdevs);
+> > > -		break;
+> > > -	case M10_D5005:
+> > > -		cells = m10bmc_d5005_subdevs;
+> > > -		n_cell = ARRAY_SIZE(m10bmc_d5005_subdevs);
+> > > -		break;
+> > > -	case M10_N5010:
+> > > -		cells = m10bmc_n5010_subdevs;
+> > > -		n_cell = ARRAY_SIZE(m10bmc_n5010_subdevs);
+> > > -		break;
+> > > -	default:
+> > > -		return -ENODEV;
+> > > -	}
+> > > -
+> > > -	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_AUTO, cells, n_cell,
+> > > +	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_AUTO,
+> > > +				   info->cells, info->n_cells,
+> > >  				   NULL, 0, NULL);
+> > >  	if (ret)
+> > >  		dev_err(dev, "Failed to register sub-devices: %d\n", ret);
+> > > @@ -214,10 +194,25 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
+> > >  	return ret;
+> > >  }
+> > >  
+> > > +static const struct intel_m10bmc_platform_info m10bmc_spi_n3000 = {
+> > > +	.cells = m10bmc_pacn3000_subdevs,
+> > > +	.n_cells = ARRAY_SIZE(m10bmc_pacn3000_subdevs),
+> > > +};
+> > 
+> > Not seeing how adding a whole new structure and swapping out 4 lines to
+> > describe a device for a different 4 lines per device is better?
+> > 
+> > I'm not necessarily against it.  Just seems like a bit of a pointless
+> > exercise.
+> 
+> After the BMC core/SPI split in a later patch in this series, there will 
+> be an init func in m10bmc core that will be called from spi side and 
+> after PMCI is added, from there too. 
+> 
+> With a structure, only a pointer to that will have to be passed to the 
+> init func rather than n parameters (there will be more members added into 
+> the info structure too both by changes in this series and in the ones not 
+> included to this series).
 
-A DFHv1 header may have one or more parameter blocks that
-further describes the HW to SW. Add support to the DFL bus
-to parse the MSI-X parameter.
+Very well.  Please consider these review comments as tentative, until I
+get a chance to dig deeper into the patch-set.
 
-The location of a feature's register set is explicitly
-described in DFHv1 and can be relative to the base of the DFHv1
-or an absolute address. Parse the location and pass the information
-to DFL driver.
-
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
----
-v10: change dfh_find_param to return size of parameter data in bytes
-
-v9: fix spacing errors in commit message and code
-    s/dfh_get_psize/dfh_get_param_size/
-    put new structure members at the end of the stucture
-    update dfh_find_param API
-    remove dfh_get_u64_param_vals
-
-v8: use struct_size() from overflow.h
-    add dfh_get_u64_param_vals()
-
-v7: no change
-
-v6: move MSI_X parameter definitions to drivers/fpga/dfl.h
-
-v5: update field names
-    fix find_param/dfh_get_psize
-    clean up mmio_res assignments
-    use u64* instead of void*
-    use FIELD_GET instead of masking
-
-v4: s/MSIX/MSI_X
-    move kernel doc to implementation
-    use structure assignment
-    fix decode of absolute address
-    clean up comment in parse_feature_irqs
-    remove use of csr_res
-
-v3: remove unneeded blank line
-    use clearer variable name
-    pass finfo into parse_feature_irqs()
-    refactor code for better indentation
-    use switch statement for irq parsing
-    squash in code parsing register location
-
-v2: fix kernel doc
-    clarify use of DFH_VERSION field
----
- drivers/fpga/dfl.c  | 245 +++++++++++++++++++++++++++++++++++---------
- drivers/fpga/dfl.h  |  11 ++
- include/linux/dfl.h |   8 ++
- 3 files changed, 213 insertions(+), 51 deletions(-)
-
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index b9aae85ba930..0a4227bc9462 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -13,6 +13,7 @@
- #include <linux/dfl.h>
- #include <linux/fpga-dfl.h>
- #include <linux/module.h>
-+#include <linux/overflow.h>
- #include <linux/uaccess.h>
- 
- #include "dfl.h"
-@@ -342,6 +343,8 @@ static void release_dfl_dev(struct device *dev)
- 	if (ddev->mmio_res.parent)
- 		release_resource(&ddev->mmio_res);
- 
-+	kfree(ddev->params);
-+
- 	ida_free(&dfl_device_ida, ddev->id);
- 	kfree(ddev->irqs);
- 	kfree(ddev);
-@@ -380,7 +383,16 @@ dfl_dev_add(struct dfl_feature_platform_data *pdata,
- 	ddev->type = feature_dev_id_type(pdev);
- 	ddev->feature_id = feature->id;
- 	ddev->revision = feature->revision;
-+	ddev->dfh_version = feature->dfh_version;
- 	ddev->cdev = pdata->dfl_cdev;
-+	if (feature->param_size) {
-+		ddev->params = kmemdup(feature->params, feature->param_size, GFP_KERNEL);
-+		if (!ddev->params) {
-+			ret = -ENOMEM;
-+			goto put_dev;
-+		}
-+		ddev->param_size = feature->param_size;
-+	}
- 
- 	/* add mmio resource */
- 	parent_res = &pdev->resource[feature->resource_index];
-@@ -708,20 +720,27 @@ struct build_feature_devs_info {
-  * struct dfl_feature_info - sub feature info collected during feature dev build
-  *
-  * @fid: id of this sub feature.
-+ * @revision: revision of this sub feature
-+ * @dfh_version: version of Device Feature Header (DFH)
-  * @mmio_res: mmio resource of this sub feature.
-  * @ioaddr: mapped base address of mmio resource.
-  * @node: node in sub_features linked list.
-  * @irq_base: start of irq index in this sub feature.
-  * @nr_irqs: number of irqs of this sub feature.
-+ * @param_size: size DFH parameters.
-+ * @params: DFH parameter data.
-  */
- struct dfl_feature_info {
- 	u16 fid;
- 	u8 revision;
-+	u8 dfh_version;
- 	struct resource mmio_res;
- 	void __iomem *ioaddr;
- 	struct list_head node;
- 	unsigned int irq_base;
- 	unsigned int nr_irqs;
-+	unsigned int param_size;
-+	u64 params[];
- };
- 
- static void dfl_fpga_cdev_add_port_dev(struct dfl_fpga_cdev *cdev,
-@@ -797,7 +816,17 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
- 		feature->dev = fdev;
- 		feature->id = finfo->fid;
- 		feature->revision = finfo->revision;
-+		feature->dfh_version = finfo->dfh_version;
- 
-+		if (finfo->param_size) {
-+			feature->params = devm_kmemdup(binfo->dev,
-+						       finfo->params, finfo->param_size,
-+						       GFP_KERNEL);
-+			if (!feature->params)
-+				return -ENOMEM;
-+
-+			feature->param_size = finfo->param_size;
-+		}
- 		/*
- 		 * the FIU header feature has some fundamental functions (sriov
- 		 * set, port enable/disable) needed for the dfl bus device and
-@@ -934,56 +963,115 @@ static u16 feature_id(u64 value)
- 	return 0;
- }
- 
-+static u64 *find_param(u64 *params, resource_size_t max, int param_id)
-+{
-+	u64 *end = params + max / sizeof(u64);
-+	u64 v, next;
-+
-+	while (params < end) {
-+		v = *params;
-+		if (param_id == FIELD_GET(DFHv1_PARAM_HDR_ID, v))
-+			return params;
-+
-+		if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
-+			break;
-+
-+		next = FIELD_GET(DFHv1_PARAM_HDR_NEXT_OFFSET, v);
-+		params += next;
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * dfh_find_param() - find parameter block for the given parameter id
-+ * @dfl_dev: dfl device
-+ * @param_id: id of dfl parameter
-+ * @psize: destination to store size of parameter data in bytes
-+ *
-+ * Return: pointer to start of parameter data, PTR_ERR otherwise.
-+ */
-+void *dfh_find_param(struct dfl_device *dfl_dev, int param_id, size_t *psize)
-+{
-+	u64 *phdr = find_param(dfl_dev->params, dfl_dev->param_size, param_id);
-+
-+	if (!phdr)
-+		return ERR_PTR(-ENOENT);
-+
-+	if (psize)
-+		*psize = (FIELD_GET(DFHv1_PARAM_HDR_NEXT_OFFSET, *phdr) - 1) * sizeof(u64);
-+
-+	return phdr + 1;
-+}
-+EXPORT_SYMBOL_GPL(dfh_find_param);
-+
- static int parse_feature_irqs(struct build_feature_devs_info *binfo,
--			      resource_size_t ofst, u16 fid,
--			      unsigned int *irq_base, unsigned int *nr_irqs)
-+			      resource_size_t ofst, struct dfl_feature_info *finfo)
- {
- 	void __iomem *base = binfo->ioaddr + ofst;
- 	unsigned int i, ibase, inr = 0;
-+	void *params = finfo->params;
- 	enum dfl_id_type type;
-+	u16 fid = finfo->fid;
- 	int virq;
-+	u64 *p;
- 	u64 v;
- 
--	type = feature_dev_id_type(binfo->feature_dev);
-+	switch (finfo->dfh_version) {
-+	case 0:
-+		/*
-+		 * DFHv0 only provides MMIO resource information for each feature
-+		 * in the DFL header.  There is no generic interrupt information.
-+		 * Instead, features with interrupt functionality provide
-+		 * the information in feature specific registers.
-+		 */
-+		type = feature_dev_id_type(binfo->feature_dev);
-+		if (type == PORT_ID) {
-+			switch (fid) {
-+			case PORT_FEATURE_ID_UINT:
-+				v = readq(base + PORT_UINT_CAP);
-+				ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
-+				inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
-+				break;
-+			case PORT_FEATURE_ID_ERROR:
-+				v = readq(base + PORT_ERROR_CAP);
-+				ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
-+				inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
-+				break;
-+			}
-+		} else if (type == FME_ID) {
-+			switch (fid) {
-+			case FME_FEATURE_ID_GLOBAL_ERR:
-+				v = readq(base + FME_ERROR_CAP);
-+				ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
-+				inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
-+				break;
-+			}
-+		}
-+		break;
- 
--	/*
--	 * Ideally DFL framework should only read info from DFL header, but
--	 * current version DFL only provides mmio resources information for
--	 * each feature in DFL Header, no field for interrupt resources.
--	 * Interrupt resource information is provided by specific mmio
--	 * registers of each private feature which supports interrupt. So in
--	 * order to parse and assign irq resources, DFL framework has to look
--	 * into specific capability registers of these private features.
--	 *
--	 * Once future DFL version supports generic interrupt resource
--	 * information in common DFL headers, the generic interrupt parsing
--	 * code will be added. But in order to be compatible to old version
--	 * DFL, the driver may still fall back to these quirks.
--	 */
--	if (type == PORT_ID) {
--		switch (fid) {
--		case PORT_FEATURE_ID_UINT:
--			v = readq(base + PORT_UINT_CAP);
--			ibase = FIELD_GET(PORT_UINT_CAP_FST_VECT, v);
--			inr = FIELD_GET(PORT_UINT_CAP_INT_NUM, v);
--			break;
--		case PORT_FEATURE_ID_ERROR:
--			v = readq(base + PORT_ERROR_CAP);
--			ibase = FIELD_GET(PORT_ERROR_CAP_INT_VECT, v);
--			inr = FIELD_GET(PORT_ERROR_CAP_SUPP_INT, v);
-+	case 1:
-+		/*
-+		 * DFHv1 provides interrupt resource information in DFHv1
-+		 * parameter blocks.
-+		 */
-+		p = find_param(params, finfo->param_size, DFHv1_PARAM_ID_MSI_X);
-+		if (!p)
- 			break;
--		}
--	} else if (type == FME_ID) {
--		if (fid == FME_FEATURE_ID_GLOBAL_ERR) {
--			v = readq(base + FME_ERROR_CAP);
--			ibase = FIELD_GET(FME_ERROR_CAP_INT_VECT, v);
--			inr = FIELD_GET(FME_ERROR_CAP_SUPP_INT, v);
--		}
-+
-+		p++;
-+		ibase = FIELD_GET(DFHv1_PARAM_MSI_X_STARTV, *p);
-+		inr = FIELD_GET(DFHv1_PARAM_MSI_X_NUMV, *p);
-+		break;
-+
-+	default:
-+		dev_warn(binfo->dev, "unexpected DFH version %d\n", finfo->dfh_version);
-+		break;
- 	}
- 
- 	if (!inr) {
--		*irq_base = 0;
--		*nr_irqs = 0;
-+		finfo->irq_base = 0;
-+		finfo->nr_irqs = 0;
- 		return 0;
- 	}
- 
-@@ -1006,12 +1094,37 @@ static int parse_feature_irqs(struct build_feature_devs_info *binfo,
- 		}
- 	}
- 
--	*irq_base = ibase;
--	*nr_irqs = inr;
-+	finfo->irq_base = ibase;
-+	finfo->nr_irqs = inr;
- 
- 	return 0;
- }
- 
-+static int dfh_get_param_size(void __iomem *dfh_base, resource_size_t max)
-+{
-+	int size = 0;
-+	u64 v, next;
-+
-+	if (!FIELD_GET(DFHv1_CSR_SIZE_GRP_HAS_PARAMS,
-+		       readq(dfh_base + DFHv1_CSR_SIZE_GRP)))
-+		return 0;
-+
-+	while (size + DFHv1_PARAM_HDR < max) {
-+		v = readq(dfh_base + DFHv1_PARAM_HDR + size);
-+
-+		next = FIELD_GET(DFHv1_PARAM_HDR_NEXT_OFFSET, v);
-+		if (!next)
-+			return -EINVAL;
-+
-+		size += next * sizeof(u64);
-+
-+		if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
-+			return size;
-+	}
-+
-+	return -ENOENT;
-+}
-+
- /*
-  * when create sub feature instances, for private features, it doesn't need
-  * to provide resource size and feature id as they could be read from DFH
-@@ -1023,39 +1136,69 @@ static int
- create_feature_instance(struct build_feature_devs_info *binfo,
- 			resource_size_t ofst, resource_size_t size, u16 fid)
- {
--	unsigned int irq_base, nr_irqs;
- 	struct dfl_feature_info *finfo;
-+	resource_size_t start, end;
-+	int dfh_psize = 0;
- 	u8 revision = 0;
-+	u64 v, addr_off;
-+	u8 dfh_ver = 0;
- 	int ret;
--	u64 v;
- 
- 	if (fid != FEATURE_ID_AFU) {
- 		v = readq(binfo->ioaddr + ofst);
- 		revision = FIELD_GET(DFH_REVISION, v);
--
-+		dfh_ver = FIELD_GET(DFH_VERSION, v);
- 		/* read feature size and id if inputs are invalid */
- 		size = size ? size : feature_size(v);
- 		fid = fid ? fid : feature_id(v);
-+		if (dfh_ver == 1) {
-+			dfh_psize = dfh_get_param_size(binfo->ioaddr + ofst, size);
-+			if (dfh_psize < 0) {
-+				dev_err(binfo->dev,
-+					"failed to read size of DFHv1 parameters %d\n",
-+					dfh_psize);
-+				return dfh_psize;
-+			}
-+			dev_dbg(binfo->dev, "dfhv1_psize %d\n", dfh_psize);
-+		}
- 	}
- 
- 	if (binfo->len - ofst < size)
- 		return -EINVAL;
- 
--	ret = parse_feature_irqs(binfo, ofst, fid, &irq_base, &nr_irqs);
--	if (ret)
--		return ret;
--
--	finfo = kzalloc(sizeof(*finfo), GFP_KERNEL);
-+	finfo = kzalloc(struct_size(finfo, params, dfh_psize / sizeof(u64)), GFP_KERNEL);
- 	if (!finfo)
- 		return -ENOMEM;
- 
-+	memcpy_fromio(finfo->params, binfo->ioaddr + ofst + DFHv1_PARAM_HDR, dfh_psize);
-+	finfo->param_size = dfh_psize;
-+
- 	finfo->fid = fid;
- 	finfo->revision = revision;
--	finfo->mmio_res.start = binfo->start + ofst;
--	finfo->mmio_res.end = finfo->mmio_res.start + size - 1;
-+	finfo->dfh_version = dfh_ver;
-+	if (dfh_ver == 1) {
-+		v = readq(binfo->ioaddr + ofst + DFHv1_CSR_ADDR);
-+		addr_off = FIELD_GET(DFHv1_CSR_ADDR_MASK, v);
-+		if (FIELD_GET(DFHv1_CSR_ADDR_REL, v))
-+			start = addr_off << 1;
-+		else
-+			start = binfo->start + ofst + addr_off;
-+
-+		v = readq(binfo->ioaddr + ofst + DFHv1_CSR_SIZE_GRP);
-+		end = start + FIELD_GET(DFHv1_CSR_SIZE_GRP_SIZE, v) - 1;
-+	} else {
-+		start = binfo->start + ofst;
-+		end = start + size - 1;
-+	}
- 	finfo->mmio_res.flags = IORESOURCE_MEM;
--	finfo->irq_base = irq_base;
--	finfo->nr_irqs = nr_irqs;
-+	finfo->mmio_res.start = start;
-+	finfo->mmio_res.end = end;
-+
-+	ret = parse_feature_irqs(binfo, ofst, finfo);
-+	if (ret) {
-+		kfree(finfo);
-+		return ret;
-+	}
- 
- 	list_add_tail(&finfo->node, &binfo->sub_features);
- 	binfo->feature_num++;
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index fc59f33367ee..20eaddce6988 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -111,6 +111,10 @@
- #define DFHv1_PARAM_HDR_NEXT_EOP	BIT_ULL(32)
- #define DFHv1_PARAM_DATA		0x08  /* Offset of Param data from Param header */
- 
-+#define DFHv1_PARAM_ID_MSI_X		0x1
-+#define DFHv1_PARAM_MSI_X_NUMV		GENMASK_ULL(63, 32)
-+#define DFHv1_PARAM_MSI_X_STARTV	GENMASK_ULL(31, 0)
-+
- /* Next AFU Register Bitfield */
- #define NEXT_AFU_NEXT_DFH_OFST	GENMASK_ULL(23, 0)	/* Offset to next AFU */
- 
-@@ -263,6 +267,7 @@ struct dfl_feature_irq_ctx {
-  *
-  * @dev: ptr to pdev of the feature device which has the sub feature.
-  * @id: sub feature id.
-+ * @revision: revisition of the instance of a feature.
-  * @resource_index: each sub feature has one mmio resource for its registers.
-  *		    this index is used to find its mmio resource from the
-  *		    feature dev (platform device)'s resources.
-@@ -272,6 +277,9 @@ struct dfl_feature_irq_ctx {
-  * @ops: ops of this sub feature.
-  * @ddev: ptr to the dfl device of this sub feature.
-  * @priv: priv data of this feature.
-+ * @dfh_version: version of the DFH
-+ * @param_size: size of dfh parameters
-+ * @params: point to memory copy of dfh parameters
-  */
- struct dfl_feature {
- 	struct platform_device *dev;
-@@ -284,6 +292,9 @@ struct dfl_feature {
- 	const struct dfl_feature_ops *ops;
- 	struct dfl_device *ddev;
- 	void *priv;
-+	u8 dfh_version;
-+	unsigned int param_size;
-+	void *params;
- };
- 
- #define FEATURE_DEV_ID_UNUSED	(-1)
-diff --git a/include/linux/dfl.h b/include/linux/dfl.h
-index 431636a0dc78..0a7a00a0ee7f 100644
---- a/include/linux/dfl.h
-+++ b/include/linux/dfl.h
-@@ -27,11 +27,15 @@ enum dfl_id_type {
-  * @id: id of the dfl device.
-  * @type: type of DFL FIU of the device. See enum dfl_id_type.
-  * @feature_id: feature identifier local to its DFL FIU type.
-+ * @revision: revision of this dfl device feature.
-  * @mmio_res: mmio resource of this dfl device.
-  * @irqs: list of Linux IRQ numbers of this dfl device.
-  * @num_irqs: number of IRQs supported by this dfl device.
-  * @cdev: pointer to DFL FPGA container device this dfl device belongs to.
-  * @id_entry: matched id entry in dfl driver's id table.
-+ * @dfh_version: version of DFH for the device
-+ * @param_size: size of the block parameters in bytes
-+ * @params: pointer to block of parameters copied memory
-  */
- struct dfl_device {
- 	struct device dev;
-@@ -44,6 +48,9 @@ struct dfl_device {
- 	unsigned int num_irqs;
- 	struct dfl_fpga_cdev *cdev;
- 	const struct dfl_device_id *id_entry;
-+	u8 dfh_version;
-+	unsigned int param_size;
-+	void *params;
- };
- 
- /**
-@@ -84,4 +91,5 @@ void dfl_driver_unregister(struct dfl_driver *dfl_drv);
- 	module_driver(__dfl_driver, dfl_driver_register, \
- 		      dfl_driver_unregister)
- 
-+void *dfh_find_param(struct dfl_device *dfl_dev, int param_id, size_t *pcount);
- #endif /* __LINUX_DFL_H */
 -- 
-2.25.1
-
+Lee Jones [李琼斯]
