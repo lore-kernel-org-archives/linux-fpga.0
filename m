@@ -2,115 +2,158 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9F27C5479D
-	for <linux-fpga@archiver.kernel.org>; Mon,  9 Jan 2023 18:22:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88CDFC54EBE
+	for <linux-fpga@archiver.kernel.org>; Tue, 10 Jan 2023 00:32:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233849AbjAISUd (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 9 Jan 2023 13:20:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40856 "EHLO
+        id S237534AbjAJA36 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 9 Jan 2023 19:29:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59866 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237681AbjAISUB (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 9 Jan 2023 13:20:01 -0500
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7D565F4E;
-        Mon,  9 Jan 2023 10:17:33 -0800 (PST)
+        with ESMTP id S237022AbjAJA35 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 9 Jan 2023 19:29:57 -0500
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20D003E0F5;
+        Mon,  9 Jan 2023 16:29:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1673288253; x=1704824253;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version:content-id;
-  bh=cX8hNu/kXqFhEaU/swi7wdtMmf6CjBQz1mHBUebItQ8=;
-  b=AnmuoTZuEDkouUaKVEI3RKObufJoxiKgjHPoLLXF5SxcpsNPXNacV80C
-   xsJmqA+q4yNSlhR9xKwysgCax12ut8/PphacZaJQxnL35QinG3H8/lEur
-   /M8WMGs/bfHsET5yIEjjf0+/GQmTtXiIJoMte2HFgntBnleS1odmx9lYv
-   GKt3FMatlH7TQcKuRtlYHon+zQHtB39eBfqHA3tszlpAKO9vAW7QVLNa6
-   FQYhJgy4EaEQdxYiFBdVlw0Q7FAlS7iJHyPX9mos6MWzJzAsywPa6Z7Or
-   ZRDZGqkFhq0MS3In1TDJimzQsClso8MWtFrv8tlNewr7SML5kOHuE21Sd
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="320643305"
-X-IronPort-AV: E=Sophos;i="5.96,311,1665471600"; 
-   d="scan'208";a="320643305"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2023 10:17:33 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="656758245"
-X-IronPort-AV: E=Sophos;i="5.96,311,1665471600"; 
-   d="scan'208";a="656758245"
-Received: from aabdilla-mobl.amr.corp.intel.com ([10.251.221.240])
-  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2023 10:17:29 -0800
-Date:   Mon, 9 Jan 2023 20:17:32 +0200 (EET)
-From:   =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To:     Lee Jones <lee@kernel.org>
-cc:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
-        Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
-        Moritz Fischer <mdf@kernel.org>,
-        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
-        Russ Weight <russell.h.weight@intel.com>,
-        Tianfei zhang <tianfei.zhang@intel.com>,
-        Mark Brown <broonie@kernel.org>,
-        Marco Pagani <marpagan@redhat.com>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v5 02/10] mfd: intel-m10-bmc: Rename the local
- variables
-In-Reply-To: <Y7xXzxqG+9Sv/Nf9@google.com>
-Message-ID: <c35cb9ff-dc16-a897-4721-931020995cf8@linux.intel.com>
-References: <20221226175849.13056-1-ilpo.jarvinen@linux.intel.com> <20221226175849.13056-3-ilpo.jarvinen@linux.intel.com> <Y7xXzxqG+9Sv/Nf9@google.com>
+  t=1673310596; x=1704846596;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=97E2BSirr4B+fKCh/DPTUyzjDzPfoMnNZocI//RrRj0=;
+  b=cfjSN26KHT5HuX1ttfgFOyU4CQRTj4ort2jydFqctEfukUOVSUKrkhtr
+   IvYCXhYJKesYjXO8asatUOoXKWYvSr6CkB/s+42JKZUg8/27szFrjIIcp
+   zrDAKCg6b41aV4ac8tTX4KQ2NpeHTAWIJ1oFTFvJgIFCkwmBkFcCCA7NT
+   iRPxc6kgtvr+wwehrC5O2DaWc05xgbp48h6/h+Flz28QiUm3O96qmJspd
+   1kMzHcPbI4P12LjLDXkv6hFoX71rh0WC1lqlDJph/XpmkPfZd3+cEJeTr
+   nO3bG44PiyA1EacOhs0jJ86k1wOIPvjFJyPCQq+IOHAHCsGrouhOMYlZO
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="324265548"
+X-IronPort-AV: E=Sophos;i="5.96,313,1665471600"; 
+   d="scan'208";a="324265548"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2023 16:29:53 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="687381578"
+X-IronPort-AV: E=Sophos;i="5.96,313,1665471600"; 
+   d="scan'208";a="687381578"
+Received: from rhweight-wrk1.ra.intel.com ([137.102.106.43])
+  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2023 16:29:53 -0800
+From:   matthew.gerlach@linux.intel.com
+To:     hao.wu@intel.com, yilun.xu@intel.com, russell.h.weight@intel.com,
+        basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
+        mdf@kernel.org, linux-fpga@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        tianfei.zhang@intel.com, corbet@lwn.net,
+        gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
+        jirislaby@kernel.org, geert+renesas@glider.be,
+        andriy.shevchenko@linux.intel.com,
+        niklas.soderlund+renesas@ragnatech.se, macro@orcam.me.uk,
+        johan@kernel.org, lukas@wunner.de, ilpo.jarvinen@linux.intel.com,
+        marpagan@redhat.com, bagasdotme@gmail.com
+Cc:     Basheer Ahmed Muddebihal 
+        <basheer.ahmed.muddebihal@linux.intel.com>,
+        Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Subject: [PATCH v10 2/4] fpga: dfl: Add DFHv1 Register Definitions
+Date:   Mon,  9 Jan 2023 16:30:27 -0800
+Message-Id: <20230110003029.806022-3-matthew.gerlach@linux.intel.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20230110003029.806022-1-matthew.gerlach@linux.intel.com>
+References: <20230110003029.806022-1-matthew.gerlach@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="8323329-1833037273-1673287927=:1694"
-Content-ID: <225bb90-ac7e-ec66-7dc8-7c2560c447f3@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+From: Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>
 
---8323329-1833037273-1673287927=:1694
-Content-Type: text/plain; CHARSET=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Content-ID: <d4678c30-5f7d-ceb7-aca7-391fb041ed2@linux.intel.com>
+This patch adds the definitions for DFHv1 header and related register
+bitfields.
 
-On Mon, 9 Jan 2023, Lee Jones wrote:
+Signed-off-by: Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>
+Co-developed-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Reviewed-by: Ilpo JÃ¤rvinen <ilpo.jarvinen@linux.intel.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+v10: no change
 
-> On Mon, 26 Dec 2022, Ilpo Järvinen wrote:
-> 
-> > Local variables directly interact with dev_get_drvdata/dev_set_drvdata
-> > should be named ddata.
-> > 
-> > Co-developed-by: Tianfei zhang <tianfei.zhang@intel.com>
-> 
-> It took 2 people to rename some variables? :)
+v9: no change
 
-It took one person to rename the variables, and other to prepare it into a 
-series which required some changes to the original patch (which is when 
-I added my SoB). But I can remove Tianfei (Andy mentioned earlier for 
-simple changes it's okay).
+v8: add Rb Andy Shevchenko
 
+v7: no change
+
+v6: remove parameter definitions from include/linux/dfl.h
+
+v5: consistently use fields for parameter data
+    s/EOL/EOP/ to match doc
+    remove unneeded mask
+    added Co-developed-by
+
+v4: s/MSIX/MSI_X/g
+    move kerneldoc to implementation
+    don't change copyright date
+
+v3:
+    keep DFHv1 definitions "hidden" in drivers/fpga/dfl.h
+
+v2: clean up white space and one line comments
+    remove extra space in commit
+    use uniform number of digits in constants
+    don't change copyright date because of removed content
+---
+ drivers/fpga/dfl.h | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
+
+diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+index 06cfcd5e84bb..fc59f33367ee 100644
+--- a/drivers/fpga/dfl.h
++++ b/drivers/fpga/dfl.h
+@@ -74,11 +74,43 @@
+ #define DFH_REVISION		GENMASK_ULL(15, 12)	/* Feature revision */
+ #define DFH_NEXT_HDR_OFST	GENMASK_ULL(39, 16)	/* Offset to next DFH */
+ #define DFH_EOL			BIT_ULL(40)		/* End of list */
++#define DFH_VERSION		GENMASK_ULL(59, 52)	/* DFH version */
+ #define DFH_TYPE		GENMASK_ULL(63, 60)	/* Feature type */
+ #define DFH_TYPE_AFU		1
+ #define DFH_TYPE_PRIVATE	3
+ #define DFH_TYPE_FIU		4
+ 
++/*
++ * DFHv1 Register Offset definitons
++ * In DHFv1, DFH + GUID + CSR_START + CSR_SIZE_GROUP + PARAM_HDR + PARAM_DATA
++ * as common header registers
++ */
++#define DFHv1_CSR_ADDR		0x18  /* CSR Register start address */
++#define DFHv1_CSR_SIZE_GRP	0x20  /* Size of Reg Block and Group/tag */
++#define DFHv1_PARAM_HDR		0x28  /* Optional First Param header */
++
++/*
++ * CSR Rel Bit, 1'b0 = relative (offset from feature DFH start),
++ * 1'b1 = absolute (ARM or other non-PCIe use)
++ */
++#define DFHv1_CSR_ADDR_REL	BIT_ULL(0)
++
++/* CSR Header Register Bit Definitions */
++#define DFHv1_CSR_ADDR_MASK       GENMASK_ULL(63, 1)  /* 63:1 of CSR address */
++
++/* CSR SIZE Goup Register Bit Definitions */
++#define DFHv1_CSR_SIZE_GRP_INSTANCE_ID	GENMASK_ULL(15, 0)	/* Enumeration instantiated IP */
++#define DFHv1_CSR_SIZE_GRP_GROUPING_ID	GENMASK_ULL(30, 16)	/* Group Features/interfaces */
++#define DFHv1_CSR_SIZE_GRP_HAS_PARAMS	BIT_ULL(31)		/* Presence of Parameters */
++#define DFHv1_CSR_SIZE_GRP_SIZE		GENMASK_ULL(63, 32)	/* Size of CSR Block in bytes */
++
++/* PARAM Header Register Bit Definitions */
++#define DFHv1_PARAM_HDR_ID		GENMASK_ULL(15, 0) /* Id of this Param  */
++#define DFHv1_PARAM_HDR_VER		GENMASK_ULL(31, 16) /* Version Param */
++#define DFHv1_PARAM_HDR_NEXT_OFFSET	GENMASK_ULL(63, 35) /* Offset of next Param */
++#define DFHv1_PARAM_HDR_NEXT_EOP	BIT_ULL(32)
++#define DFHv1_PARAM_DATA		0x08  /* Offset of Param data from Param header */
++
+ /* Next AFU Register Bitfield */
+ #define NEXT_AFU_NEXT_DFH_OFST	GENMASK_ULL(23, 0)	/* Offset to next AFU */
+ 
 -- 
- i.
+2.25.1
 
-> > Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
-> > Reviewed-by: Russ Weight <russell.h.weight@intel.com>
-> > Reviewed-by: Xu Yilun <yilun.xu@intel.com>
-> > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
-> > ---
-> >  drivers/mfd/intel-m10-bmc.c | 10 +++++-----
-> >  1 file changed, 5 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/mfd/intel-m10-bmc.c b/drivers/mfd/intel-m10-bmc.c
-> > index 12c522c16d83..2c26203c4799 100644
-> > --- a/drivers/mfd/intel-m10-bmc.c
-> > +++ b/drivers/mfd/intel-m10-bmc.c
-> > @@ -81,15 +81,15 @@ static DEVICE_ATTR_RO(bmcfw_version);
-> >  static ssize_t mac_address_show(struct device *dev,
-> >  				struct device_attribute *attr, char *buf)
-> >  {
-> > -	struct intel_m10bmc *max10 = dev_get_drvdata(dev);
-> > +	struct intel_m10bmc *ddata = dev_get_drvdata(dev);
-> 
-> In general I'm all for the use of 'ddata' for driver data.
-> 
-> For my own reference (apply this as-is to your sign-off block):
->                                                        
-> Acked-for-MFD-by: Lee Jones <lee@kernel.org>
-
---8323329-1833037273-1673287927=:1694--
