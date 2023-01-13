@@ -2,158 +2,111 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7E70C54EBD
-	for <linux-fpga@archiver.kernel.org>; Fri, 13 Jan 2023 02:36:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1632C54EBD
+	for <linux-fpga@archiver.kernel.org>; Fri, 13 Jan 2023 06:55:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233589AbjAMCeh (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 12 Jan 2023 21:34:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56070 "EHLO
+        id S240516AbjAMGyE (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 13 Jan 2023 01:54:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56442 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231345AbjAMCef (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 12 Jan 2023 21:34:35 -0500
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8AD745E086;
-        Thu, 12 Jan 2023 18:34:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1673577274; x=1705113274;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=1Fhn7RBHP5K/zgQ40UOi83c/4i6gFct3E7arxwKP9fg=;
-  b=V8QFgrh1GffE1olnkg/Qco6Ew3WI8sbjza0JHpphZCDHDBauIilDSEFH
-   6S0wxzLUastKjJGIVx8n2FLILqr3bL+L8bI8RX5e+b8nCnrPyslAVgIHS
-   oYfQj/haE3Au3J7CBJ60mkmAHRd06Qk7GmcJOtmOupoS1sdyNJgTixBjO
-   oOXd6fR0V7LqruZfBfLmWKSfH5Q5m5YuEv2qgdea08V63l0Cu7TXGJ5Xg
-   gJTw4/92+baT8/ZKMG37gm9N8ytUIt/nQDy9XdkSzuDgzNcB8Ra68V3r8
-   pN06+wJ7Ree8vuNO7BI5Hp0hKiv7zMOXJ5WRem1yiyhf8wLOWGTVhcPyG
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10588"; a="325953181"
-X-IronPort-AV: E=Sophos;i="5.97,212,1669104000"; 
-   d="scan'208";a="325953181"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jan 2023 18:33:16 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10588"; a="903436020"
-X-IronPort-AV: E=Sophos;i="5.97,212,1669104000"; 
-   d="scan'208";a="903436020"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmsmga006.fm.intel.com with ESMTP; 12 Jan 2023 18:32:59 -0800
-Date:   Fri, 13 Jan 2023 10:22:39 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     matthew.gerlach@linux.intel.com
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        hao.wu@intel.com, russell.h.weight@intel.com,
-        basheer.ahmed.muddebihal@intel.com, trix@redhat.com,
-        mdf@kernel.org, linux-fpga@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        tianfei.zhang@intel.com, corbet@lwn.net,
-        gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
-        jirislaby@kernel.org, geert+renesas@glider.be,
-        niklas.soderlund+renesas@ragnatech.se, macro@orcam.me.uk,
-        johan@kernel.org, lukas@wunner.de, ilpo.jarvinen@linux.intel.com,
-        marpagan@redhat.com, bagasdotme@gmail.com
-Subject: Re: [PATCH v10 3/4] fpga: dfl: add basic support for DFHv1
-Message-ID: <Y8DAb3R3bP/M7f0v@yilunxu-OptiPlex-7050>
-References: <20230110003029.806022-1-matthew.gerlach@linux.intel.com>
- <20230110003029.806022-4-matthew.gerlach@linux.intel.com>
- <Y708L2rRc1RDVkui@smile.fi.intel.com>
- <alpine.DEB.2.22.394.2301101310150.815911@rhweight-WRK1>
- <Y74bSzUBLYH4cLDh@yilunxu-OptiPlex-7050>
- <Y7/ggajPS2WNrPPU@smile.fi.intel.com>
- <alpine.DEB.2.22.394.2301120732500.845139@rhweight-WRK1>
+        with ESMTP id S232051AbjAMGxU (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 13 Jan 2023 01:53:20 -0500
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DE4C6E422;
+        Thu, 12 Jan 2023 22:37:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=F5GSfMcXneCJHWOdElTSTtKlD1fdAJ9ZKc/uf3kJ2U0=; b=Rcq6BWKelXzW/gjRwWGvJiKe3/
+        nk7pF5XP3mRfF2qA70EXLrh37c+Ve+qgIFpRdUaOdnRf6mf/32AmbVy63cM+3ANAGeCYqzUHNyjkP
+        8wJ7+zWbACrahilCRSfcIrl+vfpF/BFldbDomUef3Grd5bpzl9MTG+DxPUIliiIFNjO7xxFuj/pT3
+        mCLHmFsgzZ8wSfp6tRsppunpzRX2OkMryBG4bw2lqSq+TjUqhWkmrqS2QSf6LpJC/NpAsKhwRCgxP
+        xQm3o2WbEo3R7nvUemH8vNqduIuShQ02J96KMbivzzdy4wymB7YSkmgbVZ7UhUE0E7NrGW7KlDz/h
+        1N8h7rXw==;
+Received: from [2601:1c2:d80:3110::9307] (helo=bombadil.infradead.org)
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1pGDgo-000qE9-8F; Fri, 13 Jan 2023 06:37:22 +0000
+From:   Randy Dunlap <rdunlap@infradead.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     Randy Dunlap <rdunlap@infradead.org>, Wu Hao <hao.wu@intel.com>,
+        Tom Rix <trix@redhat.com>, Moritz Fischer <mdf@kernel.org>,
+        Xu Yilun <yilun.xu@intel.com>, linux-fpga@vger.kernel.org
+Subject: [PATCH] fpga: dfl: kernel-doc corrections
+Date:   Thu, 12 Jan 2023 22:37:20 -0800
+Message-Id: <20230113063720.10668-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.39.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.22.394.2301120732500.845139@rhweight-WRK1>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On 2023-01-12 at 07:36:29 -0800, matthew.gerlach@linux.intel.com wrote:
-> 
-> 
-> On Thu, 12 Jan 2023, Andy Shevchenko wrote:
-> 
-> > On Wed, Jan 11, 2023 at 10:13:31AM +0800, Xu Yilun wrote:
-> > > On 2023-01-10 at 14:07:16 -0800, matthew.gerlach@linux.intel.com wrote:
-> > > > On Tue, 10 Jan 2023, Andy Shevchenko wrote:
-> > > > > On Mon, Jan 09, 2023 at 04:30:28PM -0800, matthew.gerlach@linux.intel.com wrote:
-> > > > > > From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-> > 
-> > ...
-> > 
-> > > > > > v10: change dfh_find_param to return size of parameter data in bytes
-> > > > > 
-> > > > > The problem that might occur with this approach is byte ordering.
-> > > > > When we have u64 items, we know that they all are placed in CPU
-> > > > > ordering by the bottom layer. What's the contract now? Can it be
-> > > > > a problematic? Please double check this (always keep in mind BE32
-> > > > > as most interesting case for u64/unsigned long representation and
-> > > > > other possible byte ordering outcomes).
-> > > > 
-> > > > A number of u64 items certainly states explicit alignment of the memory, but
-> > > > I think byte ordering is a different issue.
-> > > > 
-> > > > The bottom layer, by design, is still enforcing a number u64 items under the
-> > > > hood. So the contract has not changed. Changing units of size from u64s to
-> > > > bytes was suggested to match the general practice of size of memory being in
-> > > > bytes. I think the suggestion was made because the return type for
-> > > > dfh_find_param() changed from u64* to void* in version 9, when indirectly
-> > > > returning the size of the parameter data was introduced.  So a void * with a
-> > > > size in bytes makes sense. On the other hand, returning a u64 * is a more
-> > > > precise reflection of the data alignment. I think the API should be as
-> > > 
-> > > I prefer (void *) + bytes. The properties in the parameter block are not
-> > > guarateed to be u64 for each, e.g. the REG_LAYOUT, so (void *) could better
-> > > indicate it is not. It is just a block of data unknown to DFL core and to
-> > > be parsed by drivers.
-> > 
-> > If the hardware / protocol is capable of communicating the arbitrary lengths
-> > of parameters, then yes, bytes make sense. But this should be clear what byte
-> > ordering is there if the items can be words / dwords / qwords.
-> 
-> The hardware does communicate the arbitrary lengths of the parameter data;
-> so bytes make sense.  I will update Documentation/fpga/dfl.rst to explicitly
-> say that multi-byte quantities are little-endian.
-> 
-> > 
-> > TL;DR: The Q is: Is the parameter block a byte stream? If yes, then your
-> > proposal is okay. If no, no void * should be used. In the latter it should
-> > be union of possible items or a like as defined by a protocol.
-> 
-> The parameter block is not a byte stream; so void * should be used.
+Fix W=1 kernel-doc warnings in drivers/fpga/:
 
-Mm.. I think Andy's idea is, if the parameter block is not a byte stream,
-void * should NOT be used.
+drivers/fpga/dfl.c:54: warning: cannot understand function prototype: 'struct dfl_dev_info '
+drivers/fpga/dfl.c:74: warning: cannot understand function prototype: 'struct dfl_chardev_info '
+drivers/fpga/dfl-fme-pr.c:175: warning: Function parameter or member 'feature' not described in 'dfl_fme_create_mgr'
+drivers/fpga/dfl-fme-pr.c:280: warning: expecting prototype for dfl_fme_destroy_bridge(). Prototype was for dfl_fme_destroy_bridges() instead
 
-My understanding is, The parameter block is not a byte stream in HW, it is
-some items (or properties) of various lengths. They are compacted in the
-parameter block. But the layout is not generally defined, each parameter
-block could have its own layout.
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Wu Hao <hao.wu@intel.com>
+Cc: Tom Rix <trix@redhat.com>
+Cc: Moritz Fischer <mdf@kernel.org>
+Cc: Xu Yilun <yilun.xu@intel.com>
+Cc: linux-fpga@vger.kernel.org
+---
+ drivers/fpga/dfl-fme-pr.c |    4 ++--
+ drivers/fpga/dfl.c        |    5 +++--
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-The definition and layout of the parameter block is specific to each device,
-that is, people design the parameter block for the device when they design
-the device. So DFL core doesn't try to generalize all the layouts, they
-are unlimited. DFL core just see it as a block of untouched data to be parsed
-by each driver. So from DFL core's perspective, it is a byte stream.
-
-Thanks,
-Yilun
-
-> 
-> Thanks,
-> Matthew Gerlach
-> 
-> 
-> > 
-> > > And why users/drivers need to care about the alignment of the parameter
-> > > block?
-> > > 
-> > > > follows:
-> > 
-> > -- 
-> > With Best Regards,
-> > Andy Shevchenko
-> > 
-> > 
-> > 
+diff -- a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -45,7 +45,7 @@ static const char *dfl_pdata_key_strings
+ };
+ 
+ /**
+- * dfl_dev_info - dfl feature device information.
++ * struct dfl_dev_info - dfl feature device information.
+  * @name: name string of the feature platform device.
+  * @dfh_id: id value in Device Feature Header (DFH) register by DFL spec.
+  * @id: idr id of the feature dev.
+@@ -67,7 +67,7 @@ static struct dfl_dev_info dfl_devs[] =
+ };
+ 
+ /**
+- * dfl_chardev_info - chardev information of dfl feature device
++ * struct dfl_chardev_info - chardev information of dfl feature device
+  * @name: nmae string of the char device.
+  * @devt: devt of the char device.
+  */
+@@ -708,6 +708,7 @@ struct build_feature_devs_info {
+  * struct dfl_feature_info - sub feature info collected during feature dev build
+  *
+  * @fid: id of this sub feature.
++ * @revision: revision value of this sub feature.
+  * @mmio_res: mmio resource of this sub feature.
+  * @ioaddr: mapped base address of mmio resource.
+  * @node: node in sub_features linked list.
+diff -- a/drivers/fpga/dfl-fme-pr.c b/drivers/fpga/dfl-fme-pr.c
+--- a/drivers/fpga/dfl-fme-pr.c
++++ b/drivers/fpga/dfl-fme-pr.c
+@@ -164,7 +164,7 @@ free_exit:
+ 
+ /**
+  * dfl_fme_create_mgr - create fpga mgr platform device as child device
+- *
++ * @feature: sub feature info
+  * @pdata: fme platform_device's pdata
+  *
+  * Return: mgr platform device if successful, and error code otherwise.
+@@ -273,7 +273,7 @@ static void dfl_fme_destroy_bridge(struc
+ }
+ 
+ /**
+- * dfl_fme_destroy_bridge - destroy all fpga bridge platform device
++ * dfl_fme_destroy_bridges - destroy all fpga bridge platform device
+  * @pdata: fme platform device's pdata
+  */
+ static void dfl_fme_destroy_bridges(struct dfl_feature_platform_data *pdata)
