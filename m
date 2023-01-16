@@ -2,478 +2,354 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 724C1C54EBE
-	for <linux-fpga@archiver.kernel.org>; Mon, 16 Jan 2023 10:16:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAD84C54EBE
+	for <linux-fpga@archiver.kernel.org>; Mon, 16 Jan 2023 18:40:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229559AbjAPKOU (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 16 Jan 2023 05:14:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52234 "EHLO
+        id S234683AbjAPSjM (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 16 Jan 2023 13:39:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44282 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230076AbjAPKKB (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 16 Jan 2023 05:10:01 -0500
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AEF9917CF7;
-        Mon, 16 Jan 2023 02:09:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1673863761; x=1705399761;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=W4kjAr7eUmTeDKAbZPiopLTtOSGTbOO0VBAiQqYpW9k=;
-  b=aWZ+Q9w/VCuxFp6dky7FskdKSK8Zd1Lx1C6G68Zu0ozF/PXHLMhurCGn
-   oqMJKqmhXetFWjzS6P3cWXzARjdGlfSuSkoGTKnyx34t37glwY7XzPw1j
-   fQbWlV1j8QN27Bwx9Qo+RtcSs+Jbp/CUE/ezPec9T2Si3oPQroStkODAb
-   RCsB7DAWkJq0YLL7wW5MOdK9M9gz7AubaNGwSxZrkwSSuxNyQbLY74hDv
-   ToUSC42qlvnpFpHjm4wkaoAuI+scWuqqnYJBDvCHtjS5sw8TUWw+IL8ut
-   0StnhN/g0msFB8nOaW483lk4KIiU3bQL/4+II+LnHa02pFVsav1Xm3S0U
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10591"; a="326489316"
-X-IronPort-AV: E=Sophos;i="5.97,220,1669104000"; 
-   d="scan'208";a="326489316"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jan 2023 02:09:21 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10591"; a="832785762"
-X-IronPort-AV: E=Sophos;i="5.97,220,1669104000"; 
-   d="scan'208";a="832785762"
-Received: from xsanroma-mobl.ger.corp.intel.com (HELO ijarvine-MOBL2.ger.corp.intel.com) ([10.252.39.155])
-  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jan 2023 02:09:17 -0800
-From:   =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
-        Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
-        Moritz Fischer <mdf@kernel.org>, Lee Jones <lee@kernel.org>,
-        Matthew Gerlach <matthew.gerlach@linux.intel.com>,
-        Russ Weight <russell.h.weight@intel.com>,
-        Tianfei zhang <tianfei.zhang@intel.com>,
-        Mark Brown <broonie@kernel.org>,
-        Marco Pagani <marpagan@redhat.com>,
-        linux-kernel@vger.kernel.org
-Cc:     =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH v6 05/11] mfd: intel-m10-bmc: Support multiple CSR register layouts
-Date:   Mon, 16 Jan 2023 12:08:39 +0200
-Message-Id: <20230116100845.6153-6-ilpo.jarvinen@linux.intel.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20230116100845.6153-1-ilpo.jarvinen@linux.intel.com>
-References: <20230116100845.6153-1-ilpo.jarvinen@linux.intel.com>
+        with ESMTP id S235055AbjAPSi1 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 16 Jan 2023 13:38:27 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F4EE2A160
+        for <linux-fpga@vger.kernel.org>; Mon, 16 Jan 2023 10:29:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1673893739;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=DfE/0f7WicUarpkQ6xDKer55vlLFOFPNhSrmueY6UH0=;
+        b=hvnaz0NKBdSTqO/EoePrJlgMNEEShLR+7OWKnLE0TWPsAQDda69vk5Oq594oh871BVHFZb
+        a+/EJJUgx1ZODEFUn7xUgo6acx2n0Xo+GG2OatQtapDOszrJrQ+gxCDKoYubuAzZe7lJjN
+        N/XQTH2C2DU/m5UcNtxNGk7lLrJMmlA=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-252-R_TT1zGDP52EqxFFSISyXg-1; Mon, 16 Jan 2023 13:28:58 -0500
+X-MC-Unique: R_TT1zGDP52EqxFFSISyXg-1
+Received: by mail-wr1-f70.google.com with SMTP id i2-20020adfaac2000000b002bc40f98167so4791816wrc.2
+        for <linux-fpga@vger.kernel.org>; Mon, 16 Jan 2023 10:28:58 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:cc:content-language
+         :references:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=DfE/0f7WicUarpkQ6xDKer55vlLFOFPNhSrmueY6UH0=;
+        b=IWwB8In60yR9LfG4baSTQBlpt0ZmXKHvqtQ+hbng9Sk/gxV/6uToLM9Pp1OhneILeP
+         wlXkUyLRXIS1M0gIgNWPbgqTl3pPxgJGQFJPHbONpsNI7tySj7HDxh2970HZmdph4xuW
+         TmzneZ1n+dnFpgQ/+A40mpyPGx14R0t8i3EPE5FTFL7A62mk0KQsZ4tbF9LD7n4tK41W
+         L8nYYfBhurRtLuxqxBRy50PMc7CbauZivedVAynUR0soUuHuhhfC7FzLbRdTMGH9CA4r
+         V12w73GJAXLZUbzwt07mlYqvnSAD/a9+Pj8nMUjCvQi5tXQeVTbPhlpJ2J1UhEhqSRoe
+         BHcA==
+X-Gm-Message-State: AFqh2kpgZ+H2dUyZMsXktFTgG2Zz/Le8rceOoy7MBfDDN3AxbG1oLIA3
+        AOubd11Bb2bmrs8CMkiqd7DL752JAkozssfUEB+w/T98K6DH9ffU9hc1CTP8abk03CpHW2Z4J7Q
+        qUXfDXcDvQEnA9FMsLt+1
+X-Received: by 2002:a1c:7415:0:b0:3da:fd07:1e3 with SMTP id p21-20020a1c7415000000b003dafd0701e3mr418538wmc.22.1673893736364;
+        Mon, 16 Jan 2023 10:28:56 -0800 (PST)
+X-Google-Smtp-Source: AMrXdXvV870LGFYDRPc4DzkE5HF0Vy/AvtCIRmRYLTNYiUIhmJUMPByHsR2pTQhgRTCP0dBKTbiKqg==
+X-Received: by 2002:a1c:7415:0:b0:3da:fd07:1e3 with SMTP id p21-20020a1c7415000000b003dafd0701e3mr418524wmc.22.1673893736156;
+        Mon, 16 Jan 2023 10:28:56 -0800 (PST)
+Received: from [192.168.9.16] (net-2-34-30-183.cust.vodafonedsl.it. [2.34.30.183])
+        by smtp.gmail.com with ESMTPSA id d8-20020a05600c34c800b003c5571c27a1sm41738207wmq.32.2023.01.16.10.28.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 16 Jan 2023 10:28:55 -0800 (PST)
+Message-ID: <28f1f1bf-d490-2630-d41f-1344baa0eea9@redhat.com>
+Date:   Mon, 16 Jan 2023 19:28:54 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: [PATCH v11 4/4] tty: serial: 8250: add DFL bus driver for Altera
+ 16550.
+To:     Matthew Gerlach <matthew.gerlach@linux.intel.com>
+References: <20230115151447.1353428-1-matthew.gerlach@linux.intel.com>
+ <20230115151447.1353428-5-matthew.gerlach@linux.intel.com>
+Content-Language: en-US
+Cc:     andriy.shevchenko@linux.intel.com, bagasdotme@gmail.com,
+        basheer.ahmed.muddebihal@intel.com, corbet@lwn.net,
+        geert+renesas@glider.be, gregkh@linuxfoundation.org,
+        hao.wu@intel.com, ilpo.jarvinen@linux.intel.com,
+        jirislaby@kernel.org, johan@kernel.org, linux-doc@vger.kernel.org,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-serial@vger.kernel.org, lukas@wunner.de, macro@orcam.me.uk,
+        marpagan@redhat.com, mdf@kernel.org,
+        niklas.soderlund+renesas@ragnatech.se, russell.h.weight@intel.com,
+        tianfei.zhang@intel.com, trix@redhat.com, yilun.xu@intel.com
+From:   Marco Pagani <marpagan@redhat.com>
+In-Reply-To: <20230115151447.1353428-5-matthew.gerlach@linux.intel.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-There are different addresses for the MAX10 CSR registers. Introducing
-a new data structure m10bmc_csr_map for the register definition of
-MAX10 CSR.
 
-Provide the csr_map for SPI.
+On 2023-01-15 16:14, matthew.gerlach@linux.intel.com wrote:
+> From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+> 
+> Add a Device Feature List (DFL) bus driver for the Altera
+> 16550 implementation of UART.
+> 
+> Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+> Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Co-developed-by: Tianfei zhang <tianfei.zhang@intel.com>
-Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
-Reviewed-by: Russ Weight <russell.h.weight@intel.com>
-Reviewed-by: Xu Yilun <yilun.xu@intel.com>
-Acked-for-MFD-by: Lee Jones <lee@kernel.org>
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
----
- drivers/fpga/intel-m10-bmc-sec-update.c | 73 +++++++++++++++++--------
- drivers/mfd/intel-m10-bmc-core.c        | 10 ++--
- drivers/mfd/intel-m10-bmc-spi.c         | 23 ++++++++
- include/linux/mfd/intel-m10-bmc.h       | 38 +++++++++++--
- 4 files changed, 111 insertions(+), 33 deletions(-)
+Reviewed-by: Marco Pagani <marpagan@redhat.com>
 
-diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
-index 03f1bd81c434..798c1828899b 100644
---- a/drivers/fpga/intel-m10-bmc-sec-update.c
-+++ b/drivers/fpga/intel-m10-bmc-sec-update.c
-@@ -73,16 +73,24 @@ show_root_entry_hash(struct device *dev, u32 exp_magic,
- 	return cnt;
- }
- 
--#define DEVICE_ATTR_SEC_REH_RO(_name, _magic, _prog_addr, _reh_addr) \
-+#define DEVICE_ATTR_SEC_REH_RO(_name)						\
- static ssize_t _name##_root_entry_hash_show(struct device *dev, \
- 					    struct device_attribute *attr, \
- 					    char *buf) \
--{ return show_root_entry_hash(dev, _magic, _prog_addr, _reh_addr, buf); } \
-+{										\
-+	struct m10bmc_sec *sec = dev_get_drvdata(dev);				\
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;	\
-+										\
-+	return show_root_entry_hash(dev, csr_map->_name##_magic,		\
-+				    csr_map->_name##_prog_addr,			\
-+				    csr_map->_name##_reh_addr,			\
-+				    buf);					\
-+}										\
- static DEVICE_ATTR_RO(_name##_root_entry_hash)
- 
--DEVICE_ATTR_SEC_REH_RO(bmc, BMC_PROG_MAGIC, BMC_PROG_ADDR, BMC_REH_ADDR);
--DEVICE_ATTR_SEC_REH_RO(sr, SR_PROG_MAGIC, SR_PROG_ADDR, SR_REH_ADDR);
--DEVICE_ATTR_SEC_REH_RO(pr, PR_PROG_MAGIC, PR_PROG_ADDR, PR_REH_ADDR);
-+DEVICE_ATTR_SEC_REH_RO(bmc);
-+DEVICE_ATTR_SEC_REH_RO(sr);
-+DEVICE_ATTR_SEC_REH_RO(pr);
- 
- #define CSK_BIT_LEN		128U
- #define CSK_32ARRAY_SIZE	DIV_ROUND_UP(CSK_BIT_LEN, 32)
-@@ -122,18 +130,25 @@ show_canceled_csk(struct device *dev, u32 addr, char *buf)
- 	return bitmap_print_to_pagebuf(1, buf, csk_map, CSK_BIT_LEN);
- }
- 
--#define DEVICE_ATTR_SEC_CSK_RO(_name, _addr) \
-+#define DEVICE_ATTR_SEC_CSK_RO(_name)						\
- static ssize_t _name##_canceled_csks_show(struct device *dev, \
- 					  struct device_attribute *attr, \
- 					  char *buf) \
--{ return show_canceled_csk(dev, _addr, buf); } \
-+{										\
-+	struct m10bmc_sec *sec = dev_get_drvdata(dev);				\
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;	\
-+										\
-+	return show_canceled_csk(dev,						\
-+				 csr_map->_name##_prog_addr + CSK_VEC_OFFSET,	\
-+				 buf);						\
-+}										\
- static DEVICE_ATTR_RO(_name##_canceled_csks)
- 
- #define CSK_VEC_OFFSET 0x34
- 
--DEVICE_ATTR_SEC_CSK_RO(bmc, BMC_PROG_ADDR + CSK_VEC_OFFSET);
--DEVICE_ATTR_SEC_CSK_RO(sr, SR_PROG_ADDR + CSK_VEC_OFFSET);
--DEVICE_ATTR_SEC_CSK_RO(pr, PR_PROG_ADDR + CSK_VEC_OFFSET);
-+DEVICE_ATTR_SEC_CSK_RO(bmc);
-+DEVICE_ATTR_SEC_CSK_RO(sr);
-+DEVICE_ATTR_SEC_CSK_RO(pr);
- 
- #define FLASH_COUNT_SIZE 4096	/* count stored as inverted bit vector */
- 
-@@ -141,6 +156,7 @@ static ssize_t flash_count_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	struct m10bmc_sec *sec = dev_get_drvdata(dev);
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
- 	unsigned int stride, num_bits;
- 	u8 *flash_buf;
- 	int cnt, ret;
-@@ -160,12 +176,12 @@ static ssize_t flash_count_show(struct device *dev,
- 	if (!flash_buf)
- 		return -ENOMEM;
- 
--	ret = regmap_bulk_read(sec->m10bmc->regmap, STAGING_FLASH_COUNT,
-+	ret = regmap_bulk_read(sec->m10bmc->regmap, csr_map->rsu_update_counter,
- 			       flash_buf, FLASH_COUNT_SIZE / stride);
- 	if (ret) {
- 		dev_err(sec->dev,
- 			"failed to read flash count: %x cnt %x: %d\n",
--			STAGING_FLASH_COUNT, FLASH_COUNT_SIZE / stride, ret);
-+			csr_map->rsu_update_counter, FLASH_COUNT_SIZE / stride, ret);
- 		goto exit_free;
- 	}
- 	cnt = num_bits - bitmap_weight((unsigned long *)flash_buf, num_bits);
-@@ -200,20 +216,22 @@ static const struct attribute_group *m10bmc_sec_attr_groups[] = {
- 
- static void log_error_regs(struct m10bmc_sec *sec, u32 doorbell)
- {
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
- 	u32 auth_result;
- 
- 	dev_err(sec->dev, "RSU error status: 0x%08x\n", doorbell);
- 
--	if (!m10bmc_sys_read(sec->m10bmc, M10BMC_AUTH_RESULT, &auth_result))
-+	if (!m10bmc_sys_read(sec->m10bmc, csr_map->auth_result, &auth_result))
- 		dev_err(sec->dev, "RSU auth result: 0x%08x\n", auth_result);
- }
- 
- static enum fw_upload_err rsu_check_idle(struct m10bmc_sec *sec)
- {
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
- 	u32 doorbell;
- 	int ret;
- 
--	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
- 	if (ret)
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 
-@@ -246,11 +264,12 @@ static inline bool rsu_start_done(u32 doorbell)
- 
- static enum fw_upload_err rsu_update_init(struct m10bmc_sec *sec)
- {
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
- 	u32 doorbell, status;
- 	int ret;
- 
- 	ret = regmap_update_bits(sec->m10bmc->regmap,
--				 M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				 csr_map->base + csr_map->doorbell,
- 				 DRBL_RSU_REQUEST | DRBL_HOST_STATUS,
- 				 DRBL_RSU_REQUEST |
- 				 FIELD_PREP(DRBL_HOST_STATUS,
-@@ -259,7 +278,7 @@ static enum fw_upload_err rsu_update_init(struct m10bmc_sec *sec)
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 
- 	ret = regmap_read_poll_timeout(sec->m10bmc->regmap,
--				       M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				       csr_map->base + csr_map->doorbell,
- 				       doorbell,
- 				       rsu_start_done(doorbell),
- 				       NIOS_HANDSHAKE_INTERVAL_US,
-@@ -286,11 +305,12 @@ static enum fw_upload_err rsu_update_init(struct m10bmc_sec *sec)
- 
- static enum fw_upload_err rsu_prog_ready(struct m10bmc_sec *sec)
- {
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
- 	unsigned long poll_timeout;
- 	u32 doorbell, progress;
- 	int ret;
- 
--	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
- 	if (ret)
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 
-@@ -300,7 +320,7 @@ static enum fw_upload_err rsu_prog_ready(struct m10bmc_sec *sec)
- 		if (time_after(jiffies, poll_timeout))
- 			break;
- 
--		ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+		ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
- 		if (ret)
- 			return FW_UPLOAD_ERR_RW_ERROR;
- 	}
-@@ -319,11 +339,12 @@ static enum fw_upload_err rsu_prog_ready(struct m10bmc_sec *sec)
- 
- static enum fw_upload_err rsu_send_data(struct m10bmc_sec *sec)
- {
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
- 	u32 doorbell;
- 	int ret;
- 
- 	ret = regmap_update_bits(sec->m10bmc->regmap,
--				 M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				 csr_map->base + csr_map->doorbell,
- 				 DRBL_HOST_STATUS,
- 				 FIELD_PREP(DRBL_HOST_STATUS,
- 					    HOST_STATUS_WRITE_DONE));
-@@ -331,7 +352,7 @@ static enum fw_upload_err rsu_send_data(struct m10bmc_sec *sec)
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 
- 	ret = regmap_read_poll_timeout(sec->m10bmc->regmap,
--				       M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				       csr_map->base + csr_map->doorbell,
- 				       doorbell,
- 				       rsu_prog(doorbell) != RSU_PROG_READY,
- 				       NIOS_HANDSHAKE_INTERVAL_US,
-@@ -360,7 +381,9 @@ static enum fw_upload_err rsu_send_data(struct m10bmc_sec *sec)
- 
- static int rsu_check_complete(struct m10bmc_sec *sec, u32 *doorbell)
- {
--	if (m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, doorbell))
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
-+
-+	if (m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, doorbell))
- 		return -EIO;
- 
- 	switch (rsu_stat(*doorbell)) {
-@@ -389,10 +412,11 @@ static int rsu_check_complete(struct m10bmc_sec *sec, u32 *doorbell)
- 
- static enum fw_upload_err rsu_cancel(struct m10bmc_sec *sec)
- {
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
- 	u32 doorbell;
- 	int ret;
- 
--	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
- 	if (ret)
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 
-@@ -400,7 +424,7 @@ static enum fw_upload_err rsu_cancel(struct m10bmc_sec *sec)
- 		return FW_UPLOAD_ERR_BUSY;
- 
- 	ret = regmap_update_bits(sec->m10bmc->regmap,
--				 M10BMC_SYS_BASE + M10BMC_DOORBELL,
-+				 csr_map->base + csr_map->doorbell,
- 				 DRBL_HOST_STATUS,
- 				 FIELD_PREP(DRBL_HOST_STATUS,
- 					    HOST_STATUS_ABORT_RSU));
-@@ -445,6 +469,7 @@ static enum fw_upload_err m10bmc_sec_write(struct fw_upload *fwl, const u8 *data
- 					   u32 offset, u32 size, u32 *written)
- {
- 	struct m10bmc_sec *sec = fwl->dd_handle;
-+	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
- 	u32 blk_size, doorbell, extra_offset;
- 	unsigned int stride, extra = 0;
- 	int ret;
-@@ -453,7 +478,7 @@ static enum fw_upload_err m10bmc_sec_write(struct fw_upload *fwl, const u8 *data
- 	if (sec->cancel_request)
- 		return rsu_cancel(sec);
- 
--	ret = m10bmc_sys_read(sec->m10bmc, M10BMC_DOORBELL, &doorbell);
-+	ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
- 	if (ret) {
- 		return FW_UPLOAD_ERR_RW_ERROR;
- 	} else if (rsu_prog(doorbell) != RSU_PROG_READY) {
-diff --git a/drivers/mfd/intel-m10-bmc-core.c b/drivers/mfd/intel-m10-bmc-core.c
-index dd26e3a6c3ab..cbea8d4f68fa 100644
---- a/drivers/mfd/intel-m10-bmc-core.c
-+++ b/drivers/mfd/intel-m10-bmc-core.c
-@@ -19,7 +19,7 @@ static ssize_t bmc_version_show(struct device *dev,
- 	unsigned int val;
- 	int ret;
- 
--	ret = m10bmc_sys_read(ddata, M10BMC_BUILD_VER, &val);
-+	ret = m10bmc_sys_read(ddata, ddata->info->csr_map->build_version, &val);
- 	if (ret)
- 		return ret;
- 
-@@ -34,7 +34,7 @@ static ssize_t bmcfw_version_show(struct device *dev,
- 	unsigned int val;
- 	int ret;
- 
--	ret = m10bmc_sys_read(ddata, NIOS2_FW_VERSION, &val);
-+	ret = m10bmc_sys_read(ddata, ddata->info->csr_map->fw_version, &val);
- 	if (ret)
- 		return ret;
- 
-@@ -49,11 +49,11 @@ static ssize_t mac_address_show(struct device *dev,
- 	unsigned int macaddr_low, macaddr_high;
- 	int ret;
- 
--	ret = m10bmc_sys_read(ddata, M10BMC_MAC_LOW, &macaddr_low);
-+	ret = m10bmc_sys_read(ddata, ddata->info->csr_map->mac_low, &macaddr_low);
- 	if (ret)
- 		return ret;
- 
--	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
-+	ret = m10bmc_sys_read(ddata, ddata->info->csr_map->mac_high, &macaddr_high);
- 	if (ret)
- 		return ret;
- 
-@@ -74,7 +74,7 @@ static ssize_t mac_count_show(struct device *dev,
- 	unsigned int macaddr_high;
- 	int ret;
- 
--	ret = m10bmc_sys_read(ddata, M10BMC_MAC_HIGH, &macaddr_high);
-+	ret = m10bmc_sys_read(ddata, ddata->info->csr_map->mac_high, &macaddr_high);
- 	if (ret)
- 		return ret;
- 
-diff --git a/drivers/mfd/intel-m10-bmc-spi.c b/drivers/mfd/intel-m10-bmc-spi.c
-index be1d4ddedabb..3ed7a71a3267 100644
---- a/drivers/mfd/intel-m10-bmc-spi.c
-+++ b/drivers/mfd/intel-m10-bmc-spi.c
-@@ -91,6 +91,26 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
- 	return m10bmc_dev_init(ddata, info);
- }
- 
-+static const struct m10bmc_csr_map m10bmc_n3000_csr_map = {
-+	.base = M10BMC_SYS_BASE,
-+	.build_version = M10BMC_BUILD_VER,
-+	.fw_version = NIOS2_FW_VERSION,
-+	.mac_low = M10BMC_MAC_LOW,
-+	.mac_high = M10BMC_MAC_HIGH,
-+	.doorbell = M10BMC_DOORBELL,
-+	.auth_result = M10BMC_AUTH_RESULT,
-+	.bmc_prog_addr = BMC_PROG_ADDR,
-+	.bmc_reh_addr = BMC_REH_ADDR,
-+	.bmc_magic = BMC_PROG_MAGIC,
-+	.sr_prog_addr = SR_PROG_ADDR,
-+	.sr_reh_addr = SR_REH_ADDR,
-+	.sr_magic = SR_PROG_MAGIC,
-+	.pr_prog_addr = PR_PROG_ADDR,
-+	.pr_reh_addr = PR_REH_ADDR,
-+	.pr_magic = PR_PROG_MAGIC,
-+	.rsu_update_counter = STAGING_FLASH_COUNT,
-+};
-+
- static struct mfd_cell m10bmc_d5005_subdevs[] = {
- 	{ .name = "d5005bmc-hwmon" },
- 	{ .name = "d5005bmc-sec-update" },
-@@ -109,16 +129,19 @@ static struct mfd_cell m10bmc_n5010_subdevs[] = {
- static const struct intel_m10bmc_platform_info m10bmc_spi_n3000 = {
- 	.cells = m10bmc_pacn3000_subdevs,
- 	.n_cells = ARRAY_SIZE(m10bmc_pacn3000_subdevs),
-+	.csr_map = &m10bmc_n3000_csr_map,
- };
- 
- static const struct intel_m10bmc_platform_info m10bmc_spi_d5005 = {
- 	.cells = m10bmc_d5005_subdevs,
- 	.n_cells = ARRAY_SIZE(m10bmc_d5005_subdevs),
-+	.csr_map = &m10bmc_n3000_csr_map,
- };
- 
- static const struct intel_m10bmc_platform_info m10bmc_spi_n5010 = {
- 	.cells = m10bmc_n5010_subdevs,
- 	.n_cells = ARRAY_SIZE(m10bmc_n5010_subdevs),
-+	.csr_map = &m10bmc_n3000_csr_map,
- };
- 
- static const struct spi_device_id m10bmc_spi_id[] = {
-diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
-index a80deb61b69a..d569a72c7d4f 100644
---- a/include/linux/mfd/intel-m10-bmc.h
-+++ b/include/linux/mfd/intel-m10-bmc.h
-@@ -121,14 +121,39 @@
- /* Address of 4KB inverted bit vector containing staging area FLASH count */
- #define STAGING_FLASH_COUNT	0x17ffb000
- 
-+/**
-+ * struct m10bmc_csr_map - Intel MAX 10 BMC CSR register map
-+ */
-+struct m10bmc_csr_map {
-+	unsigned int base;
-+	unsigned int build_version;
-+	unsigned int fw_version;
-+	unsigned int mac_low;
-+	unsigned int mac_high;
-+	unsigned int doorbell;
-+	unsigned int auth_result;
-+	unsigned int bmc_prog_addr;
-+	unsigned int bmc_reh_addr;
-+	unsigned int bmc_magic;
-+	unsigned int sr_prog_addr;
-+	unsigned int sr_reh_addr;
-+	unsigned int sr_magic;
-+	unsigned int pr_prog_addr;
-+	unsigned int pr_reh_addr;
-+	unsigned int pr_magic;
-+	unsigned int rsu_update_counter;
-+};
-+
- /**
-  * struct intel_m10bmc_platform_info - Intel MAX 10 BMC platform specific information
-  * @cells: MFD cells
-  * @n_cells: MFD cells ARRAY_SIZE()
-+ * @csr_map: the mappings for register definition of MAX10 BMC
-  */
- struct intel_m10bmc_platform_info {
- 	struct mfd_cell *cells;
- 	int n_cells;
-+	const struct m10bmc_csr_map *csr_map;
- };
- 
- /**
-@@ -167,12 +192,17 @@ m10bmc_raw_read(struct intel_m10bmc *m10bmc, unsigned int addr,
-  * The base of the system registers could be configured by HW developers, and
-  * in HW SPEC, the base is not added to the addresses of the system registers.
-  *
-- * This macro helps to simplify the accessing of the system registers. And if
-+ * This function helps to simplify the accessing of the system registers. And if
-  * the base is reconfigured in HW, SW developers could simply change the
-- * M10BMC_SYS_BASE accordingly.
-+ * csr_map's base accordingly.
-  */
--#define m10bmc_sys_read(m10bmc, offset, val) \
--	m10bmc_raw_read(m10bmc, M10BMC_SYS_BASE + (offset), val)
-+static inline int m10bmc_sys_read(struct intel_m10bmc *m10bmc, unsigned int offset,
-+				  unsigned int *val)
-+{
-+	const struct m10bmc_csr_map *csr_map = m10bmc->info->csr_map;
-+
-+	return m10bmc_raw_read(m10bmc, csr_map->base + offset, val);
-+}
- 
- /*
-  * MAX10 BMC Core support
--- 
-2.30.2
+> ---
+> v11: sizeof(u64) -> sizeof(*pval)
+>      16650 -> 16550
+> 
+> v10: track change to dfh_find_param()
+> 
+> v9: add Rb Andy Shevchenko
+>     move dfh_get_u64_param_vals to static version of dfh_get_u64_param_val
+> 
+> v8: use dfh_get_u64_param_vals()
+> 
+> v7: no change
+> 
+> v6: move driver specific parameter definitions to limit scope
+> 
+> v5: removed unneeded blank line
+>     removed unneeded includes
+>     included device.h and types.h
+>     removed unneeded local variable
+>     remove calls to dev_dbg
+>     memset -> { }
+>     remove space after period
+>     explicitly include used headers
+>     remove redundant Inc from Copyright
+>     fix format specifier
+> 
+> v4: use dev_err_probe() everywhere that is appropriate
+>     clean up noise
+>     change error messages to use the word, unsupported
+>     tried again to sort Makefile and KConfig better
+>     reorder probe function for easier error handling
+>     use new dfh_find_param API
+> 
+> v3: use passed in location of registers
+>     use cleaned up functions for parsing parameters
+> 
+> v2: clean up error messages
+>     alphabetize header files
+>     fix 'missing prototype' error by making function static
+>     tried to sort Makefile and Kconfig better
+> ---
+>  drivers/tty/serial/8250/8250_dfl.c | 167 +++++++++++++++++++++++++++++
+>  drivers/tty/serial/8250/Kconfig    |  12 +++
+>  drivers/tty/serial/8250/Makefile   |   1 +
+>  3 files changed, 180 insertions(+)
+>  create mode 100644 drivers/tty/serial/8250/8250_dfl.c
+> 
+> diff --git a/drivers/tty/serial/8250/8250_dfl.c b/drivers/tty/serial/8250/8250_dfl.c
+> new file mode 100644
+> index 000000000000..6c5ff019df4b
+> --- /dev/null
+> +++ b/drivers/tty/serial/8250/8250_dfl.c
+> @@ -0,0 +1,167 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Driver for FPGA UART
+> + *
+> + * Copyright (C) 2022 Intel Corporation.
+> + *
+> + * Authors:
+> + *   Ananda Ravuri <ananda.ravuri@intel.com>
+> + *   Matthew Gerlach <matthew.gerlach@linux.intel.com>
+> + */
+> +
+> +#include <linux/bitfield.h>
+> +#include <linux/device.h>
+> +#include <linux/dfl.h>
+> +#include <linux/errno.h>
+> +#include <linux/ioport.h>
+> +#include <linux/module.h>
+> +#include <linux/mod_devicetable.h>
+> +#include <linux/types.h>
+> +
+> +#include <linux/serial.h>
+> +#include <linux/serial_8250.h>
+> +
+> +#define DFHv1_PARAM_ID_CLK_FRQ    0x2
+> +#define DFHv1_PARAM_ID_FIFO_LEN   0x3
+> +
+> +#define DFHv1_PARAM_ID_REG_LAYOUT	0x4
+> +#define DFHv1_PARAM_REG_LAYOUT_WIDTH	GENMASK_ULL(63, 32)
+> +#define DFHv1_PARAM_REG_LAYOUT_SHIFT	GENMASK_ULL(31, 0)
+> +
+> +struct dfl_uart {
+> +	int line;
+> +};
+> +
+> +static int dfh_get_u64_param_val(struct dfl_device *dfl_dev, int param_id, u64 *pval)
+> +{
+> +	size_t psize;
+> +	u64 *p;
+> +
+> +	p = dfh_find_param(dfl_dev, param_id, &psize);
+> +	if (IS_ERR(p))
+> +		return PTR_ERR(p);
+> +
+> +	if (psize != sizeof(*pval))
+> +		return -EINVAL;
+> +
+> +	*pval = *p;
+> +
+> +	return 0;
+> +}
+> +
+> +static int dfl_uart_get_params(struct dfl_device *dfl_dev, struct uart_8250_port *uart)
+> +{
+> +	struct device *dev = &dfl_dev->dev;
+> +	u64 fifo_len, clk_freq, reg_layout;
+> +	u32 reg_width;
+> +	int ret;
+> +
+> +	ret = dfh_get_u64_param_val(dfl_dev, DFHv1_PARAM_ID_CLK_FRQ, &clk_freq);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "missing CLK_FRQ param\n");
+> +
+> +	uart->port.uartclk = clk_freq;
+> +
+> +	ret = dfh_get_u64_param_val(dfl_dev, DFHv1_PARAM_ID_FIFO_LEN, &fifo_len);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "missing FIFO_LEN param\n");
+> +
+> +	switch (fifo_len) {
+> +	case 32:
+> +		uart->port.type = PORT_ALTR_16550_F32;
+> +		break;
+> +
+> +	case 64:
+> +		uart->port.type = PORT_ALTR_16550_F64;
+> +		break;
+> +
+> +	case 128:
+> +		uart->port.type = PORT_ALTR_16550_F128;
+> +		break;
+> +
+> +	default:
+> +		return dev_err_probe(dev, -EINVAL, "unsupported FIFO_LEN %llu\n", fifo_len);
+> +	}
+> +
+> +	ret = dfh_get_u64_param_val(dfl_dev, DFHv1_PARAM_ID_REG_LAYOUT, &reg_layout);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "missing REG_LAYOUT param\n");
+> +
+> +	uart->port.regshift = FIELD_GET(DFHv1_PARAM_REG_LAYOUT_SHIFT, reg_layout);
+> +	reg_width = FIELD_GET(DFHv1_PARAM_REG_LAYOUT_WIDTH, reg_layout);
+> +	switch (reg_width) {
+> +	case 4:
+> +		uart->port.iotype = UPIO_MEM32;
+> +		break;
+> +
+> +	case 2:
+> +		uart->port.iotype = UPIO_MEM16;
+> +		break;
+> +
+> +	default:
+> +		return dev_err_probe(dev, -EINVAL, "unsupported reg-width %u\n", reg_width);
+> +
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int dfl_uart_probe(struct dfl_device *dfl_dev)
+> +{
+> +	struct device *dev = &dfl_dev->dev;
+> +	struct uart_8250_port uart = { };
+> +	struct dfl_uart *dfluart;
+> +	int ret;
+> +
+> +	uart.port.flags = UPF_IOREMAP;
+> +	uart.port.mapbase = dfl_dev->mmio_res.start;
+> +	uart.port.mapsize = resource_size(&dfl_dev->mmio_res);
+> +
+> +	ret = dfl_uart_get_params(dfl_dev, &uart);
+> +	if (ret < 0)
+> +		return dev_err_probe(dev, ret, "failed uart feature walk\n");
+> +
+> +	if (dfl_dev->num_irqs == 1)
+> +		uart.port.irq = dfl_dev->irqs[0];
+> +
+> +	dfluart = devm_kzalloc(dev, sizeof(*dfluart), GFP_KERNEL);
+> +	if (!dfluart)
+> +		return -ENOMEM;
+> +
+> +	dfluart->line = serial8250_register_8250_port(&uart);
+> +	if (dfluart->line < 0)
+> +		return dev_err_probe(dev, dfluart->line, "unable to register 8250 port.\n");
+> +
+> +	dev_set_drvdata(dev, dfluart);
+> +
+> +	return 0;
+> +}
+> +
+> +static void dfl_uart_remove(struct dfl_device *dfl_dev)
+> +{
+> +	struct dfl_uart *dfluart = dev_get_drvdata(&dfl_dev->dev);
+> +
+> +	serial8250_unregister_port(dfluart->line);
+> +}
+> +
+> +#define FME_FEATURE_ID_UART 0x24
+> +
+> +static const struct dfl_device_id dfl_uart_ids[] = {
+> +	{ FME_ID, FME_FEATURE_ID_UART },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(dfl, dfl_uart_ids);
+> +
+> +static struct dfl_driver dfl_uart_driver = {
+> +	.drv = {
+> +		.name = "dfl-uart",
+> +	},
+> +	.id_table = dfl_uart_ids,
+> +	.probe = dfl_uart_probe,
+> +	.remove = dfl_uart_remove,
+> +};
+> +module_dfl_driver(dfl_uart_driver);
+> +
+> +MODULE_DESCRIPTION("DFL Intel UART driver");
+> +MODULE_AUTHOR("Intel Corporation");
+> +MODULE_LICENSE("GPL");
+> diff --git a/drivers/tty/serial/8250/Kconfig b/drivers/tty/serial/8250/Kconfig
+> index b0f62345bc84..020ef532940d 100644
+> --- a/drivers/tty/serial/8250/Kconfig
+> +++ b/drivers/tty/serial/8250/Kconfig
+> @@ -370,6 +370,18 @@ config SERIAL_8250_FSL
+>  	  erratum for Freescale 16550 UARTs in the 8250 driver. It also
+>  	  enables support for ACPI enumeration.
+>  
+> +config SERIAL_8250_DFL
+> +	tristate "DFL bus driver for Altera 16550 UART"
+> +	depends on SERIAL_8250 && FPGA_DFL
+> +	help
+> +	  This option enables support for a Device Feature List (DFL) bus
+> +	  driver for the Altera 16550 UART. One or more Altera 16550 UARTs
+> +	  can be instantiated in a FPGA and then be discovered during
+> +	  enumeration of the DFL bus.
+> +
+> +	  To compile this driver as a module, chose M here: the
+> +	  module will be called 8250_dfl.
+> +
+>  config SERIAL_8250_DW
+>  	tristate "Support for Synopsys DesignWare 8250 quirks"
+>  	depends on SERIAL_8250
+> diff --git a/drivers/tty/serial/8250/Makefile b/drivers/tty/serial/8250/Makefile
+> index 1615bfdde2a0..4e1a32812683 100644
+> --- a/drivers/tty/serial/8250/Makefile
+> +++ b/drivers/tty/serial/8250/Makefile
+> @@ -28,6 +28,7 @@ obj-$(CONFIG_SERIAL_8250_EXAR_ST16C554)	+= 8250_exar_st16c554.o
+>  obj-$(CONFIG_SERIAL_8250_HUB6)		+= 8250_hub6.o
+>  obj-$(CONFIG_SERIAL_8250_FSL)		+= 8250_fsl.o
+>  obj-$(CONFIG_SERIAL_8250_MEN_MCB)	+= 8250_men_mcb.o
+> +obj-$(CONFIG_SERIAL_8250_DFL)		+= 8250_dfl.o
+>  obj-$(CONFIG_SERIAL_8250_DW)		+= 8250_dw.o
+>  obj-$(CONFIG_SERIAL_8250_EM)		+= 8250_em.o
+>  obj-$(CONFIG_SERIAL_8250_IOC3)		+= 8250_ioc3.o
 
