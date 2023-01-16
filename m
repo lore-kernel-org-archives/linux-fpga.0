@@ -2,41 +2,41 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EADCAC54EBE
-	for <linux-fpga@archiver.kernel.org>; Mon, 16 Jan 2023 10:14:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8165BC63797
+	for <linux-fpga@archiver.kernel.org>; Mon, 16 Jan 2023 10:15:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229756AbjAPKNO (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 16 Jan 2023 05:13:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56396 "EHLO
+        id S230011AbjAPKNX (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 16 Jan 2023 05:13:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56552 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230074AbjAPKKU (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 16 Jan 2023 05:10:20 -0500
+        with ESMTP id S229526AbjAPKKC (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 16 Jan 2023 05:10:02 -0500
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65D9A1ABC0;
-        Mon, 16 Jan 2023 02:09:47 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68A5D1A95A;
+        Mon, 16 Jan 2023 02:09:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1673863787; x=1705399787;
+  t=1673863771; x=1705399771;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=Y46XwYMqMVljQNPFUR8EjW5QfC6Rigx25NoqGC/kLo4=;
-  b=XZwK4SCYJUMRCTuz79MLEchXdO42S0hQK4T+4WntcJ7qSU8UO9wnYhLn
-   HfQBXgpFrxx9L0aUTeVHLDJL3bZLiq1P3p9PxWzApYdKsMqf4Kk7NRldD
-   BAtObEWQVweeO2VVVP8ndoFxhanbbTz7xOkV/t7y0L0nBC7rxMob/wJ+p
-   s3yuPAruER8p1ucBbGb2yuTo7OFAGt3KBwloEJGiEOYmm2YSzUXwefIPa
-   WxxIlPLaCA46gkIse1UQ5Hj29C0KhGqsB52OpJKpHCjBKATfT+tGXcCSp
-   VT0OizuKGtPft4uvKfa5JwNATF+EkVKHUFbYfLeSpUjfmA0ueyfrscTXA
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10591"; a="326489372"
+  bh=vTl0dJv/nvxoTe7V3yqb7/64dhUhRoKwGAK3TyJ2ynA=;
+  b=EToMOmZvC2GKcacw0yYQ6A/ivM1ToNtIYCWmg88KRd3KsRY0iUz4/qwI
+   LyR9aFwiaMltB57Y5AwxynIGY5DdhWzgsN4KNBjeZzPCmoIC7oCOHmbwh
+   qdPBMs4zdYsZjFCTo5QEFpyMgttXGFbenrwlGOxzjljjdrN0hX9JoWjkR
+   I370xlgt1uQiiTl8p6INhKfYpgrHPtzn0XKJxY+sk8onNYGZi/hTc1hTz
+   PsByEiTeEzQt8gUXgXOntvvx9M0R//T2G3zN/O85qBVukmuHGiuSZ1JO3
+   xl3KRHjczt2yf+9KLvKduwrNMzjBXPLRHYvEx15JkA3pxK5YFL9IZ016h
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10591"; a="326489340"
 X-IronPort-AV: E=Sophos;i="5.97,220,1669104000"; 
-   d="scan'208";a="326489372"
+   d="scan'208";a="326489340"
 Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jan 2023 02:09:47 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10591"; a="832785854"
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jan 2023 02:09:31 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10591"; a="832785792"
 X-IronPort-AV: E=Sophos;i="5.97,220,1669104000"; 
-   d="scan'208";a="832785854"
+   d="scan'208";a="832785792"
 Received: from xsanroma-mobl.ger.corp.intel.com (HELO ijarvine-MOBL2.ger.corp.intel.com) ([10.252.39.155])
-  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jan 2023 02:09:42 -0800
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jan 2023 02:09:27 -0800
 From:   =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
         Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
@@ -48,9 +48,9 @@ To:     linux-fpga@vger.kernel.org, Xu Yilun <yilun.xu@intel.com>,
         Marco Pagani <marpagan@redhat.com>,
         linux-kernel@vger.kernel.org
 Cc:     =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH v6 10/11] mfd: intel-m10-bmc: Add PMCI driver
-Date:   Mon, 16 Jan 2023 12:08:44 +0200
-Message-Id: <20230116100845.6153-11-ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH v6 07/11] mfd: intel-m10-bmc: Prefix register defines with M10BMC_N3000
+Date:   Mon, 16 Jan 2023 12:08:41 +0200
+Message-Id: <20230116100845.6153-8-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230116100845.6153-1-ilpo.jarvinen@linux.intel.com>
 References: <20230116100845.6153-1-ilpo.jarvinen@linux.intel.com>
@@ -61,372 +61,239 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add the mfd driver for the Platform Management Component Interface
-(PMCI) based interface of Intel MAX10 BMC controller.
+Prefix the M10BMC defines register defines with M10BMC_N3000 to make it
+more obvious these are related to some board type. All current
+non-N3000 board types have the same layout so they'll be reused. The
+less generic makes it more obvious they're not meant for the
+generic/interface agnostic code.
 
-PMCI is a software-visible interface, connected to card BMC which
-provided the basic functionality of read/write BMC register. The access
-to the register is done indirectly via a hardware controller/bridge
-that handles read/write/clear commands and acknowledgments for the
-commands.
-
-Previously, intel-m10-bmc provided sysfs under
-/sys/bus/spi/devices/... which is generalized in this change because
-not all MAX10 BMC appear under SPI anymore.
-
-Co-developed-by: Tianfei zhang <tianfei.zhang@intel.com>
-Signed-off-by: Tianfei zhang <tianfei.zhang@intel.com>
-Co-developed-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Co-developed-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+Reviewed-by: Russ Weight <russell.h.weight@intel.com>
 Reviewed-by: Xu Yilun <yilun.xu@intel.com>
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- .../ABI/testing/sysfs-driver-intel-m10-bmc    |   8 +-
- drivers/mfd/Kconfig                           |  12 +
- drivers/mfd/Makefile                          |   1 +
- drivers/mfd/intel-m10-bmc-pmci.c              | 219 ++++++++++++++++++
- include/linux/mfd/intel-m10-bmc.h             |  28 +++
- 5 files changed, 264 insertions(+), 4 deletions(-)
- create mode 100644 drivers/mfd/intel-m10-bmc-pmci.c
+ drivers/mfd/intel-m10-bmc-core.c  | 14 +++----
+ drivers/mfd/intel-m10-bmc-spi.c   | 52 ++++++++++++------------
+ include/linux/mfd/intel-m10-bmc.h | 66 +++++++++++++++----------------
+ 3 files changed, 66 insertions(+), 66 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc
-index 9773925138af..a8ab58035c95 100644
---- a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc
-+++ b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc
-@@ -1,4 +1,4 @@
--What:		/sys/bus/spi/devices/.../bmc_version
-+What:		/sys/bus/.../drivers/intel-m10-bmc/.../bmc_version
- Date:		June 2020
- KernelVersion:	5.10
- Contact:	Xu Yilun <yilun.xu@intel.com>
-@@ -6,7 +6,7 @@ Description:	Read only. Returns the hardware build version of Intel
- 		MAX10 BMC chip.
- 		Format: "0x%x".
+diff --git a/drivers/mfd/intel-m10-bmc-core.c b/drivers/mfd/intel-m10-bmc-core.c
+index cbea8d4f68fa..dac9cf7bcb4a 100644
+--- a/drivers/mfd/intel-m10-bmc-core.c
++++ b/drivers/mfd/intel-m10-bmc-core.c
+@@ -58,12 +58,12 @@ static ssize_t mac_address_show(struct device *dev,
+ 		return ret;
  
--What:		/sys/bus/spi/devices/.../bmcfw_version
-+What:		/sys/bus/.../drivers/intel-m10-bmc/.../bmcfw_version
- Date:		June 2020
- KernelVersion:	5.10
- Contact:	Xu Yilun <yilun.xu@intel.com>
-@@ -14,7 +14,7 @@ Description:	Read only. Returns the firmware version of Intel MAX10
- 		BMC chip.
- 		Format: "0x%x".
+ 	return sysfs_emit(buf, "%02x:%02x:%02x:%02x:%02x:%02x\n",
+-			  (u8)FIELD_GET(M10BMC_MAC_BYTE1, macaddr_low),
+-			  (u8)FIELD_GET(M10BMC_MAC_BYTE2, macaddr_low),
+-			  (u8)FIELD_GET(M10BMC_MAC_BYTE3, macaddr_low),
+-			  (u8)FIELD_GET(M10BMC_MAC_BYTE4, macaddr_low),
+-			  (u8)FIELD_GET(M10BMC_MAC_BYTE5, macaddr_high),
+-			  (u8)FIELD_GET(M10BMC_MAC_BYTE6, macaddr_high));
++			  (u8)FIELD_GET(M10BMC_N3000_MAC_BYTE1, macaddr_low),
++			  (u8)FIELD_GET(M10BMC_N3000_MAC_BYTE2, macaddr_low),
++			  (u8)FIELD_GET(M10BMC_N3000_MAC_BYTE3, macaddr_low),
++			  (u8)FIELD_GET(M10BMC_N3000_MAC_BYTE4, macaddr_low),
++			  (u8)FIELD_GET(M10BMC_N3000_MAC_BYTE5, macaddr_high),
++			  (u8)FIELD_GET(M10BMC_N3000_MAC_BYTE6, macaddr_high));
+ }
+ static DEVICE_ATTR_RO(mac_address);
  
--What:		/sys/bus/spi/devices/.../mac_address
-+What:		/sys/bus/.../drivers/intel-m10-bmc/.../mac_address
- Date:		January 2021
- KernelVersion:  5.12
- Contact:	Russ Weight <russell.h.weight@intel.com>
-@@ -25,7 +25,7 @@ Description:	Read only. Returns the first MAC address in a block
- 		space.
- 		Format: "%02x:%02x:%02x:%02x:%02x:%02x".
+@@ -78,7 +78,7 @@ static ssize_t mac_count_show(struct device *dev,
+ 	if (ret)
+ 		return ret;
  
--What:		/sys/bus/spi/devices/.../mac_count
-+What:		/sys/bus/.../drivers/intel-m10-bmc/.../mac_count
- Date:		January 2021
- KernelVersion:  5.12
- Contact:	Russ Weight <russell.h.weight@intel.com>
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index a09d4ac60dc7..82f13614d98a 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -2238,6 +2238,18 @@ config MFD_INTEL_M10_BMC_SPI
-           additional drivers must be enabled in order to use the functionality
-           of the device.
+-	return sysfs_emit(buf, "%u\n", (u8)FIELD_GET(M10BMC_MAC_COUNT, macaddr_high));
++	return sysfs_emit(buf, "%u\n", (u8)FIELD_GET(M10BMC_N3000_MAC_COUNT, macaddr_high));
+ }
+ static DEVICE_ATTR_RO(mac_count);
  
-+config MFD_INTEL_M10_BMC_PMCI
-+	tristate "Intel MAX 10 Board Management Controller with PMCI"
-+	depends on FPGA_DFL
-+	select MFD_INTEL_M10_BMC_CORE
-+	select REGMAP
-+	help
-+	  Support for the Intel MAX 10 board management controller via PMCI.
-+
-+	  This driver provides common support for accessing the device,
-+	  additional drivers must be enabled in order to use the functionality
-+	  of the device.
-+
- config MFD_RSMU_I2C
- 	tristate "Renesas Synchronization Management Unit with I2C"
- 	depends on I2C && OF
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 5d1f308ee2a7..c90fb96cad2a 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -274,6 +274,7 @@ obj-$(CONFIG_MFD_SIMPLE_MFD_I2C)	+= simple-mfd-i2c.o
+diff --git a/drivers/mfd/intel-m10-bmc-spi.c b/drivers/mfd/intel-m10-bmc-spi.c
+index 3ed7a71a3267..957200e17fed 100644
+--- a/drivers/mfd/intel-m10-bmc-spi.c
++++ b/drivers/mfd/intel-m10-bmc-spi.c
+@@ -14,9 +14,9 @@
+ #include <linux/spi/spi.h>
  
- obj-$(CONFIG_MFD_INTEL_M10_BMC_CORE)	+= intel-m10-bmc-core.o
- obj-$(CONFIG_MFD_INTEL_M10_BMC_SPI)	+= intel-m10-bmc-spi.o
-+obj-$(CONFIG_MFD_INTEL_M10_BMC_PMCI)	+= intel-m10-bmc-pmci.o
+ static const struct regmap_range m10bmc_regmap_range[] = {
+-	regmap_reg_range(M10BMC_LEGACY_BUILD_VER, M10BMC_LEGACY_BUILD_VER),
+-	regmap_reg_range(M10BMC_SYS_BASE, M10BMC_SYS_END),
+-	regmap_reg_range(M10BMC_FLASH_BASE, M10BMC_FLASH_END),
++	regmap_reg_range(M10BMC_N3000_LEGACY_BUILD_VER, M10BMC_N3000_LEGACY_BUILD_VER),
++	regmap_reg_range(M10BMC_N3000_SYS_BASE, M10BMC_N3000_SYS_END),
++	regmap_reg_range(M10BMC_N3000_FLASH_BASE, M10BMC_N3000_FLASH_END),
+ };
  
- obj-$(CONFIG_MFD_ATC260X)	+= atc260x-core.o
- obj-$(CONFIG_MFD_ATC260X_I2C)	+= atc260x-i2c.o
-diff --git a/drivers/mfd/intel-m10-bmc-pmci.c b/drivers/mfd/intel-m10-bmc-pmci.c
-new file mode 100644
-index 000000000000..975019f644b5
---- /dev/null
-+++ b/drivers/mfd/intel-m10-bmc-pmci.c
-@@ -0,0 +1,219 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * MAX10 BMC Platform Management Component Interface (PMCI) based
-+ * interface.
-+ *
-+ * Copyright (C) 2020-2023 Intel Corporation.
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/dfl.h>
-+#include <linux/mfd/core.h>
-+#include <linux/mfd/intel-m10-bmc.h>
-+#include <linux/module.h>
-+#include <linux/regmap.h>
-+
-+struct m10bmc_pmci_device {
-+	void __iomem *base;
-+	struct intel_m10bmc m10bmc;
-+};
-+
-+/*
-+ * Intel FGPA indirect register access via hardware controller/bridge.
-+ */
-+#define INDIRECT_CMD_OFF	0
-+#define INDIRECT_CMD_CLR	0
-+#define INDIRECT_CMD_RD		BIT(0)
-+#define INDIRECT_CMD_WR		BIT(1)
-+#define INDIRECT_CMD_ACK	BIT(2)
-+
-+#define INDIRECT_ADDR_OFF	0x4
-+#define INDIRECT_RD_OFF		0x8
-+#define INDIRECT_WR_OFF		0xc
-+
-+#define INDIRECT_INT_US		1
-+#define INDIRECT_TIMEOUT_US	10000
-+
-+struct indirect_ctx {
-+	void __iomem *base;
-+	struct device *dev;
-+};
-+
-+static int indirect_clear_cmd(struct indirect_ctx *ctx)
-+{
-+	unsigned int cmd;
-+	int ret;
-+
-+	writel(INDIRECT_CMD_CLR, ctx->base + INDIRECT_CMD_OFF);
-+
-+	ret = readl_poll_timeout(ctx->base + INDIRECT_CMD_OFF, cmd,
-+				 cmd == INDIRECT_CMD_CLR,
-+				 INDIRECT_INT_US, INDIRECT_TIMEOUT_US);
-+	if (ret)
-+		dev_err(ctx->dev, "timed out waiting clear cmd (residual cmd=0x%x)\n", cmd);
-+
-+	return ret;
-+}
-+
-+static int indirect_reg_read(void *context, unsigned int reg, unsigned int *val)
-+{
-+	struct indirect_ctx *ctx = context;
-+	unsigned int cmd, ack, tmpval;
-+	int ret, ret2;
-+
-+	cmd = readl(ctx->base + INDIRECT_CMD_OFF);
-+	if (cmd != INDIRECT_CMD_CLR)
-+		dev_warn(ctx->dev, "residual cmd 0x%x on read entry\n", cmd);
-+
-+	writel(reg, ctx->base + INDIRECT_ADDR_OFF);
-+	writel(INDIRECT_CMD_RD, ctx->base + INDIRECT_CMD_OFF);
-+
-+	ret = readl_poll_timeout(ctx->base + INDIRECT_CMD_OFF, ack,
-+				 (ack & INDIRECT_CMD_ACK) == INDIRECT_CMD_ACK,
-+				 INDIRECT_INT_US, INDIRECT_TIMEOUT_US);
-+	if (ret)
-+		dev_err(ctx->dev, "read timed out on reg 0x%x ack 0x%x\n", reg, ack);
-+	else
-+		tmpval = readl(ctx->base + INDIRECT_RD_OFF);
-+
-+	ret2 = indirect_clear_cmd(ctx);
-+
-+	if (ret)
-+		return ret;
-+	if (ret2)
-+		return ret2;
-+
-+	*val = tmpval;
-+	return 0;
-+}
-+
-+static int indirect_reg_write(void *context, unsigned int reg, unsigned int val)
-+{
-+	struct indirect_ctx *ctx = context;
-+	unsigned int cmd, ack;
-+	int ret, ret2;
-+
-+	cmd = readl(ctx->base + INDIRECT_CMD_OFF);
-+	if (cmd != INDIRECT_CMD_CLR)
-+		dev_warn(ctx->dev, "residual cmd 0x%x on write entry\n", cmd);
-+
-+	writel(val, ctx->base + INDIRECT_WR_OFF);
-+	writel(reg, ctx->base + INDIRECT_ADDR_OFF);
-+	writel(INDIRECT_CMD_WR, ctx->base + INDIRECT_CMD_OFF);
-+
-+	ret = readl_poll_timeout(ctx->base + INDIRECT_CMD_OFF, ack,
-+				 (ack & INDIRECT_CMD_ACK) == INDIRECT_CMD_ACK,
-+				 INDIRECT_INT_US, INDIRECT_TIMEOUT_US);
-+	if (ret)
-+		dev_err(ctx->dev, "write timed out on reg 0x%x ack 0x%x\n", reg, ack);
-+
-+	ret2 = indirect_clear_cmd(ctx);
-+
-+	if (ret)
-+		return ret;
-+	return ret2;
-+}
-+
-+static const struct regmap_range m10bmc_pmci_regmap_range[] = {
-+	regmap_reg_range(M10BMC_N6000_SYS_BASE, M10BMC_N6000_SYS_END),
-+};
-+
-+static const struct regmap_access_table m10bmc_pmci_access_table = {
-+	.yes_ranges	= m10bmc_pmci_regmap_range,
-+	.n_yes_ranges	= ARRAY_SIZE(m10bmc_pmci_regmap_range),
-+};
-+
-+static struct regmap_config m10bmc_pmci_regmap_config = {
-+	.reg_bits = 32,
-+	.reg_stride = 4,
-+	.val_bits = 32,
-+	.wr_table = &m10bmc_pmci_access_table,
-+	.rd_table = &m10bmc_pmci_access_table,
-+	.reg_read = &indirect_reg_read,
-+	.reg_write = &indirect_reg_write,
-+	.max_register = M10BMC_N6000_SYS_END,
-+};
-+
-+static struct mfd_cell m10bmc_pmci_n6000_bmc_subdevs[] = {
-+	{ .name = "n6000bmc-hwmon" },
-+};
-+
-+static const struct m10bmc_csr_map m10bmc_n6000_csr_map = {
-+	.base = M10BMC_N6000_SYS_BASE,
-+	.build_version = M10BMC_N6000_BUILD_VER,
-+	.fw_version = NIOS2_N6000_FW_VERSION,
-+	.mac_low = M10BMC_N6000_MAC_LOW,
-+	.mac_high = M10BMC_N6000_MAC_HIGH,
-+	.doorbell = M10BMC_N6000_DOORBELL,
-+	.auth_result = M10BMC_N6000_AUTH_RESULT,
-+	.bmc_prog_addr = M10BMC_N6000_BMC_PROG_ADDR,
-+	.bmc_reh_addr = M10BMC_N6000_BMC_REH_ADDR,
-+	.bmc_magic = M10BMC_N6000_BMC_PROG_MAGIC,
-+	.sr_prog_addr = M10BMC_N6000_SR_PROG_ADDR,
-+	.sr_reh_addr = M10BMC_N6000_SR_REH_ADDR,
-+	.sr_magic = M10BMC_N6000_SR_PROG_MAGIC,
-+	.pr_prog_addr = M10BMC_N6000_PR_PROG_ADDR,
-+	.pr_reh_addr = M10BMC_N6000_PR_REH_ADDR,
-+	.pr_magic = M10BMC_N6000_PR_PROG_MAGIC,
-+	.rsu_update_counter = M10BMC_N6000_STAGING_FLASH_COUNT,
-+};
-+
-+static const struct intel_m10bmc_platform_info m10bmc_pmci_n6000 = {
-+	.cells = m10bmc_pmci_n6000_bmc_subdevs,
-+	.n_cells = ARRAY_SIZE(m10bmc_pmci_n6000_bmc_subdevs),
-+	.csr_map = &m10bmc_n6000_csr_map,
-+};
-+
-+static int m10bmc_pmci_probe(struct dfl_device *ddev)
-+{
-+	struct device *dev = &ddev->dev;
-+	struct m10bmc_pmci_device *pmci;
-+	struct indirect_ctx *ctx;
-+
-+	pmci = devm_kzalloc(dev, sizeof(*pmci), GFP_KERNEL);
-+	if (!pmci)
-+		return -ENOMEM;
-+
-+	pmci->m10bmc.dev = dev;
-+
-+	pmci->base = devm_ioremap_resource(dev, &ddev->mmio_res);
-+	if (IS_ERR(pmci->base))
-+		return PTR_ERR(pmci->base);
-+
-+	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
-+	if (!ctx)
-+		return -ENOMEM;
-+
-+	ctx->base = pmci->base + M10BMC_N6000_INDIRECT_BASE;
-+	ctx->dev = dev;
-+	indirect_clear_cmd(ctx);
-+	pmci->m10bmc.regmap = devm_regmap_init(dev, NULL, ctx, &m10bmc_pmci_regmap_config);
-+
-+	if (IS_ERR(pmci->m10bmc.regmap))
-+		return PTR_ERR(pmci->m10bmc.regmap);
-+
-+	return m10bmc_dev_init(&pmci->m10bmc, &m10bmc_pmci_n6000);
-+}
-+
-+#define FME_FEATURE_ID_M10BMC_PMCI	0x12
-+
-+static const struct dfl_device_id m10bmc_pmci_ids[] = {
-+	{ FME_ID, FME_FEATURE_ID_M10BMC_PMCI },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(dfl, m10bmc_pmci_ids);
-+
-+static struct dfl_driver m10bmc_pmci_driver = {
-+	.drv	= {
-+		.name       = "intel-m10-bmc",
-+		.dev_groups = m10bmc_dev_groups,
-+	},
-+	.id_table = m10bmc_pmci_ids,
-+	.probe    = m10bmc_pmci_probe,
-+};
-+
-+module_dfl_driver(m10bmc_pmci_driver);
-+
-+MODULE_DESCRIPTION("MAX10 BMC PMCI-based interface");
-+MODULE_AUTHOR("Intel Corporation");
-+MODULE_LICENSE("GPL");
+ static const struct regmap_access_table m10bmc_access_table = {
+@@ -30,7 +30,7 @@ static struct regmap_config intel_m10bmc_regmap_config = {
+ 	.reg_stride = 4,
+ 	.wr_table = &m10bmc_access_table,
+ 	.rd_table = &m10bmc_access_table,
+-	.max_register = M10BMC_MEM_END,
++	.max_register = M10BMC_N3000_MEM_END,
+ };
+ 
+ static int check_m10bmc_version(struct intel_m10bmc *ddata)
+@@ -41,16 +41,16 @@ static int check_m10bmc_version(struct intel_m10bmc *ddata)
+ 	/*
+ 	 * This check is to filter out the very old legacy BMC versions. In the
+ 	 * old BMC chips, the BMC version info is stored in the old version
+-	 * register (M10BMC_LEGACY_BUILD_VER), so its read out value would have
+-	 * not been M10BMC_VER_LEGACY_INVALID (0xffffffff). But in new BMC
++	 * register (M10BMC_N3000_LEGACY_BUILD_VER), so its read out value would have
++	 * not been M10BMC_N3000_VER_LEGACY_INVALID (0xffffffff). But in new BMC
+ 	 * chips that the driver supports, the value of this register should be
+-	 * M10BMC_VER_LEGACY_INVALID.
++	 * M10BMC_N3000_VER_LEGACY_INVALID.
+ 	 */
+-	ret = m10bmc_raw_read(ddata, M10BMC_LEGACY_BUILD_VER, &v);
++	ret = m10bmc_raw_read(ddata, M10BMC_N3000_LEGACY_BUILD_VER, &v);
+ 	if (ret)
+ 		return -ENODEV;
+ 
+-	if (v != M10BMC_VER_LEGACY_INVALID) {
++	if (v != M10BMC_N3000_VER_LEGACY_INVALID) {
+ 		dev_err(ddata->dev, "bad version M10BMC detected\n");
+ 		return -ENODEV;
+ 	}
+@@ -92,23 +92,23 @@ static int intel_m10_bmc_spi_probe(struct spi_device *spi)
+ }
+ 
+ static const struct m10bmc_csr_map m10bmc_n3000_csr_map = {
+-	.base = M10BMC_SYS_BASE,
+-	.build_version = M10BMC_BUILD_VER,
+-	.fw_version = NIOS2_FW_VERSION,
+-	.mac_low = M10BMC_MAC_LOW,
+-	.mac_high = M10BMC_MAC_HIGH,
+-	.doorbell = M10BMC_DOORBELL,
+-	.auth_result = M10BMC_AUTH_RESULT,
+-	.bmc_prog_addr = BMC_PROG_ADDR,
+-	.bmc_reh_addr = BMC_REH_ADDR,
+-	.bmc_magic = BMC_PROG_MAGIC,
+-	.sr_prog_addr = SR_PROG_ADDR,
+-	.sr_reh_addr = SR_REH_ADDR,
+-	.sr_magic = SR_PROG_MAGIC,
+-	.pr_prog_addr = PR_PROG_ADDR,
+-	.pr_reh_addr = PR_REH_ADDR,
+-	.pr_magic = PR_PROG_MAGIC,
+-	.rsu_update_counter = STAGING_FLASH_COUNT,
++	.base = M10BMC_N3000_SYS_BASE,
++	.build_version = M10BMC_N3000_BUILD_VER,
++	.fw_version = NIOS2_N3000_FW_VERSION,
++	.mac_low = M10BMC_N3000_MAC_LOW,
++	.mac_high = M10BMC_N3000_MAC_HIGH,
++	.doorbell = M10BMC_N3000_DOORBELL,
++	.auth_result = M10BMC_N3000_AUTH_RESULT,
++	.bmc_prog_addr = M10BMC_N3000_BMC_PROG_ADDR,
++	.bmc_reh_addr = M10BMC_N3000_BMC_REH_ADDR,
++	.bmc_magic = M10BMC_N3000_BMC_PROG_MAGIC,
++	.sr_prog_addr = M10BMC_N3000_SR_PROG_ADDR,
++	.sr_reh_addr = M10BMC_N3000_SR_REH_ADDR,
++	.sr_magic = M10BMC_N3000_SR_PROG_MAGIC,
++	.pr_prog_addr = M10BMC_N3000_PR_PROG_ADDR,
++	.pr_reh_addr = M10BMC_N3000_PR_REH_ADDR,
++	.pr_magic = M10BMC_N3000_PR_PROG_MAGIC,
++	.rsu_update_counter = M10BMC_N3000_STAGING_FLASH_COUNT,
+ };
+ 
+ static struct mfd_cell m10bmc_d5005_subdevs[] = {
 diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
-index 1f75b33240ad..810534b1bd12 100644
+index d569a72c7d4f..470dc3773c01 100644
 --- a/include/linux/mfd/intel-m10-bmc.h
 +++ b/include/linux/mfd/intel-m10-bmc.h
-@@ -120,6 +120,34 @@
- /* Address of 4KB inverted bit vector containing staging area FLASH count */
- #define M10BMC_N3000_STAGING_FLASH_COUNT	0x17ffb000
+@@ -12,38 +12,38 @@
+ #include <linux/dev_printk.h>
+ #include <linux/regmap.h>
  
-+#define M10BMC_N6000_INDIRECT_BASE		0x400
-+
-+#define M10BMC_N6000_SYS_BASE			0x0
-+#define M10BMC_N6000_SYS_END			0xfff
-+
-+#define M10BMC_N6000_DOORBELL			0x1c0
-+#define M10BMC_N6000_AUTH_RESULT		0x1c4
-+
-+#define M10BMC_N6000_BUILD_VER			0x0
-+#define NIOS2_N6000_FW_VERSION			0x4
-+#define M10BMC_N6000_MAC_LOW			0x20
-+#define M10BMC_N6000_MAC_HIGH			(M10BMC_N6000_MAC_LOW + 4)
-+
-+/* Addresses for security related data in FLASH */
-+#define M10BMC_N6000_BMC_REH_ADDR		0x7ffc004
-+#define M10BMC_N6000_BMC_PROG_ADDR		0x7ffc000
-+#define M10BMC_N6000_BMC_PROG_MAGIC		0x5746
-+
-+#define M10BMC_N6000_SR_REH_ADDR		0x7ffd004
-+#define M10BMC_N6000_SR_PROG_ADDR		0x7ffd000
-+#define M10BMC_N6000_SR_PROG_MAGIC		0x5253
-+
-+#define M10BMC_N6000_PR_REH_ADDR		0x7ffe004
-+#define M10BMC_N6000_PR_PROG_ADDR		0x7ffe000
-+#define M10BMC_N6000_PR_PROG_MAGIC		0x5250
-+
-+#define M10BMC_N6000_STAGING_FLASH_COUNT	0x7ff5000
-+
+-#define M10BMC_LEGACY_BUILD_VER		0x300468
+-#define M10BMC_SYS_BASE			0x300800
+-#define M10BMC_SYS_END			0x300fff
+-#define M10BMC_FLASH_BASE		0x10000000
+-#define M10BMC_FLASH_END		0x1fffffff
+-#define M10BMC_MEM_END			M10BMC_FLASH_END
++#define M10BMC_N3000_LEGACY_BUILD_VER	0x300468
++#define M10BMC_N3000_SYS_BASE		0x300800
++#define M10BMC_N3000_SYS_END		0x300fff
++#define M10BMC_N3000_FLASH_BASE		0x10000000
++#define M10BMC_N3000_FLASH_END		0x1fffffff
++#define M10BMC_N3000_MEM_END		M10BMC_N3000_FLASH_END
+ 
+ #define M10BMC_STAGING_BASE		0x18000000
+ #define M10BMC_STAGING_SIZE		0x3800000
+ 
+ /* Register offset of system registers */
+-#define NIOS2_FW_VERSION		0x0
+-#define M10BMC_MAC_LOW			0x10
+-#define M10BMC_MAC_BYTE4		GENMASK(7, 0)
+-#define M10BMC_MAC_BYTE3		GENMASK(15, 8)
+-#define M10BMC_MAC_BYTE2		GENMASK(23, 16)
+-#define M10BMC_MAC_BYTE1		GENMASK(31, 24)
+-#define M10BMC_MAC_HIGH			0x14
+-#define M10BMC_MAC_BYTE6		GENMASK(7, 0)
+-#define M10BMC_MAC_BYTE5		GENMASK(15, 8)
+-#define M10BMC_MAC_COUNT		GENMASK(23, 16)
+-#define M10BMC_TEST_REG			0x3c
+-#define M10BMC_BUILD_VER		0x68
+-#define M10BMC_VER_MAJOR_MSK		GENMASK(23, 16)
+-#define M10BMC_VER_PCB_INFO_MSK		GENMASK(31, 24)
+-#define M10BMC_VER_LEGACY_INVALID	0xffffffff
++#define NIOS2_N3000_FW_VERSION		0x0
++#define M10BMC_N3000_MAC_LOW		0x10
++#define M10BMC_N3000_MAC_BYTE4		GENMASK(7, 0)
++#define M10BMC_N3000_MAC_BYTE3		GENMASK(15, 8)
++#define M10BMC_N3000_MAC_BYTE2		GENMASK(23, 16)
++#define M10BMC_N3000_MAC_BYTE1		GENMASK(31, 24)
++#define M10BMC_N3000_MAC_HIGH		0x14
++#define M10BMC_N3000_MAC_BYTE6		GENMASK(7, 0)
++#define M10BMC_N3000_MAC_BYTE5		GENMASK(15, 8)
++#define M10BMC_N3000_MAC_COUNT		GENMASK(23, 16)
++#define M10BMC_N3000_TEST_REG		0x3c
++#define M10BMC_N3000_BUILD_VER		0x68
++#define M10BMC_N3000_VER_MAJOR_MSK	GENMASK(23, 16)
++#define M10BMC_N3000_VER_PCB_INFO_MSK	GENMASK(31, 24)
++#define M10BMC_N3000_VER_LEGACY_INVALID	0xffffffff
+ 
+ /* Secure update doorbell register, in system register region */
+-#define M10BMC_DOORBELL			0x400
++#define M10BMC_N3000_DOORBELL		0x400
+ 
+ /* Authorization Result register, in system register region */
+-#define M10BMC_AUTH_RESULT		0x404
++#define M10BMC_N3000_AUTH_RESULT		0x404
+ 
+ /* Doorbell register fields */
+ #define DRBL_RSU_REQUEST		BIT(0)
+@@ -106,20 +106,20 @@
+ #define RSU_COMPLETE_TIMEOUT_MS		(40 * 60 * 1000)
+ 
+ /* Addresses for security related data in FLASH */
+-#define BMC_REH_ADDR	0x17ffc004
+-#define BMC_PROG_ADDR	0x17ffc000
+-#define BMC_PROG_MAGIC	0x5746
++#define M10BMC_N3000_BMC_REH_ADDR	0x17ffc004
++#define M10BMC_N3000_BMC_PROG_ADDR	0x17ffc000
++#define M10BMC_N3000_BMC_PROG_MAGIC	0x5746
+ 
+-#define SR_REH_ADDR	0x17ffd004
+-#define SR_PROG_ADDR	0x17ffd000
+-#define SR_PROG_MAGIC	0x5253
++#define M10BMC_N3000_SR_REH_ADDR	0x17ffd004
++#define M10BMC_N3000_SR_PROG_ADDR	0x17ffd000
++#define M10BMC_N3000_SR_PROG_MAGIC	0x5253
+ 
+-#define PR_REH_ADDR	0x17ffe004
+-#define PR_PROG_ADDR	0x17ffe000
+-#define PR_PROG_MAGIC	0x5250
++#define M10BMC_N3000_PR_REH_ADDR	0x17ffe004
++#define M10BMC_N3000_PR_PROG_ADDR	0x17ffe000
++#define M10BMC_N3000_PR_PROG_MAGIC	0x5250
+ 
+ /* Address of 4KB inverted bit vector containing staging area FLASH count */
+-#define STAGING_FLASH_COUNT	0x17ffb000
++#define M10BMC_N3000_STAGING_FLASH_COUNT	0x17ffb000
+ 
  /**
   * struct m10bmc_csr_map - Intel MAX 10 BMC CSR register map
-  */
 -- 
 2.30.2
 
