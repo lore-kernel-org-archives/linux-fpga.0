@@ -2,42 +2,42 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7676C677F1
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD533C678D4
 	for <linux-fpga@archiver.kernel.org>; Thu, 19 Jan 2023 01:33:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229522AbjASBbm (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 18 Jan 2023 20:31:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45120 "EHLO
+        id S229546AbjASBbq (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 18 Jan 2023 20:31:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45138 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229862AbjASBai (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 18 Jan 2023 20:30:38 -0500
+        with ESMTP id S230009AbjASBaj (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 18 Jan 2023 20:30:39 -0500
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F73D2C647;
-        Wed, 18 Jan 2023 17:28:20 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CB0753B05;
+        Wed, 18 Jan 2023 17:28:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1674091700; x=1705627700;
+  t=1674091724; x=1705627724;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=/fMvxq4ANCu2cW712GMMTIFRFtohqCRfRXkl6DAzvos=;
-  b=WZrJQnrCS1MIiO+78TrLWPEZ3C8AYcw1GsQxe0iI0Wg/jvq2jLoumIuH
-   zVpgWpcho3tJW2X/e6mL3e4gCj0LBGiafIB8CsQ8XaGjPqbKg8QqRLwsS
-   VRinlaM68VMEvITZ2ZgdOItXGu8Vz3QiKS0OjNgWuJU9HB7zXXu0cXRZp
-   WXpLDhDInnX1R9vq4u+Fa3FLp0/NZW0AEU54qVHfBm+Db/9NmprX1TjzL
-   i4E7A6BwzdE/P9QbIMX8yZ+JbGTNyd+2hiaDHPSHQMrPEVfv+CbFJgyg5
-   2cF3Cw/V/djB68rliwVzHTEknmUFnAcFmw5F5U2MjxVqLBrrYoz83/9Wy
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="322847462"
+  bh=jZ/NDvb0qS7gU99iyUtOq4wnLW3cht+LjwWtMVC1BoY=;
+  b=LWDfzwKb/IBvb2e7gjemYOw/VFRZPxq++nEjhEJQoK5X0hIj2C3yX1CT
+   M2bRPdFQYTxJUbQWY6iuko9/S1jrGIz/bBVDxA5sHfzh5nWjLL9loOZNP
+   IwPc8mlxYB95Zis+gbL//6Co6tAIS2ISMHMBly2wJdJUF2BupyYbK5zF2
+   DrzKTSThl7b3PefIRK3dS598eb6j3Etk7BxbM9keDgU/m3iLC1hh0hykQ
+   /wepMyUdcVoOsT0FhpkW33pPMhxiliFx3yP+xSeRVu3612QveDHXQDb8u
+   U74TVjjPLIoJUG74LIZeyvZ4Kxq0k5mpdujwFofJX41g75kDJ1LIYjY3G
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="322847541"
 X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; 
-   d="scan'208";a="322847462"
+   d="scan'208";a="322847541"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jan 2023 17:28:20 -0800
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jan 2023 17:28:43 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="767995625"
+X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="767995666"
 X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; 
-   d="scan'208";a="767995625"
+   d="scan'208";a="767995666"
 Received: from unknown (HELO fedora.sh.intel.com) ([10.238.175.104])
-  by fmsmga002.fm.intel.com with ESMTP; 18 Jan 2023 17:28:14 -0800
+  by fmsmga002.fm.intel.com with ESMTP; 18 Jan 2023 17:28:38 -0800
 From:   Tianfei Zhang <tianfei.zhang@intel.com>
 To:     bhelgaas@google.com, linux-pci@vger.kernel.org,
         linux-fpga@vger.kernel.org, lukas@wunner.de, kabel@kernel.org,
@@ -50,9 +50,9 @@ To:     bhelgaas@google.com, linux-pci@vger.kernel.org,
         lee@kernel.org, gregkh@linuxfoundation.org,
         matthew.gerlach@linux.intel.com
 Cc:     Tianfei Zhang <tianfei.zhang@intel.com>
-Subject: [PATCH v1 03/12] PCI: hotplug: add and expose link disable API
-Date:   Wed, 18 Jan 2023 20:35:53 -0500
-Message-Id: <20230119013602.607466-4-tianfei.zhang@intel.com>
+Subject: [PATCH v1 07/12] PCI: hotplug: add register/unregister function for BMC device
+Date:   Wed, 18 Jan 2023 20:35:57 -0500
+Message-Id: <20230119013602.607466-8-tianfei.zhang@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20230119013602.607466-1-tianfei.zhang@intel.com>
 References: <20230119013602.607466-1-tianfei.zhang@intel.com>
@@ -62,49 +62,180 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-When a PCIe-based FPGA card is reprogrammed, it temporarily
-disappears from the PCIe bus. This needs to be managed to
-avoid PCIe errors while the device is not present. Also,
-re-probing and rescan the PCI devices must be performed after
-loading the new images. Export functions from pciehp driver
-necessary for disable and enable the PCI link of a PCI hotplug
-bridge.
+Introduce new APIs to register/unregister a BMC device instance
+for fpgahp driver.
+
+The fpgahp_bmc_device data structure represents a FPGA BMC device
+which has some specific callbacks for FPGA hotplug operations.
+The first one is available_images, which will return a list of
+available images for FPGA. The second one is the image_load,
+which will provide a reload trigger operation to BMC via secure
+update driver for Intel PAC N3000 Card.
 
 Signed-off-by: Tianfei Zhang <tianfei.zhang@intel.com>
 ---
- drivers/pci/hotplug/pciehp.h     | 1 +
- drivers/pci/hotplug/pciehp_hpc.c | 6 ++++++
- 2 files changed, 7 insertions(+)
+ drivers/pci/hotplug/fpgahp.c        | 78 +++++++++++++++++++++++++++++
+ include/linux/fpga/fpgahp_manager.h | 38 ++++++++++++++
+ 2 files changed, 116 insertions(+)
 
-diff --git a/drivers/pci/hotplug/pciehp.h b/drivers/pci/hotplug/pciehp.h
-index c7f455a3b08f..8b58d0e84644 100644
---- a/drivers/pci/hotplug/pciehp.h
-+++ b/drivers/pci/hotplug/pciehp.h
-@@ -195,6 +195,7 @@ int pciehp_get_raw_indicator_status(struct hotplug_slot *h_slot, u8 *status);
- int pciehp_slot_reset(struct pcie_device *dev);
- 
- int pciehp_link_enable(struct controller *ctrl);
-+int pciehp_link_disable(struct controller *ctrl);
- 
- static inline const char *slot_name(struct controller *ctrl)
- {
-diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
-index 11e4bc58aec0..729546c0c1f9 100644
---- a/drivers/pci/hotplug/pciehp_hpc.c
-+++ b/drivers/pci/hotplug/pciehp_hpc.c
-@@ -353,6 +353,12 @@ int pciehp_link_enable(struct controller *ctrl)
+diff --git a/drivers/pci/hotplug/fpgahp.c b/drivers/pci/hotplug/fpgahp.c
+index 71cee65383e2..79bae97a1d39 100644
+--- a/drivers/pci/hotplug/fpgahp.c
++++ b/drivers/pci/hotplug/fpgahp.c
+@@ -34,6 +34,84 @@ static void fpgahp_add_fhpc(struct fpgahp_controller *fhpc)
+ 	mutex_unlock(&fhpc_lock);
  }
- EXPORT_SYMBOL_NS_GPL(pciehp_link_enable, PCIEHP);
  
-+int pciehp_link_disable(struct controller *ctrl)
++static struct fpgahp_bmc_device *fpgahp_find_bmc(struct device *bmc_device)
 +{
-+	return __pciehp_link_set(ctrl, false);
-+}
-+EXPORT_SYMBOL_NS_GPL(pciehp_link_disable, PCIEHP);
++	struct fpgahp_bmc_device *bmc = NULL;
++	struct fpgahp_controller *fhpc;
 +
- int pciehp_get_raw_indicator_status(struct hotplug_slot *hotplug_slot,
- 				    u8 *status)
++	mutex_lock(&fhpc_lock);
++
++	list_for_each_entry(fhpc, &fhpc_list, node) {
++		struct fpgahp_manager *mgr = &fhpc->mgr;
++		struct pci_dev *pcidev = mgr->priv;
++
++		if (!mgr->registered)
++			continue;
++
++		/*
++		 * BMC device (like security dev) is a subordinate device under
++		 * PCI device, so check if the parent device of BMC device recursively
++		 */
++		if (device_is_ancestor(&pcidev->dev, bmc_device)) {
++			bmc = &mgr->bmc;
++			break;
++		}
++	}
++
++	mutex_unlock(&fhpc_lock);
++
++	return bmc;
++}
++
++/**
++ * fpgahp_bmc_device_register - register FPGA BMC device into fpgahp driver
++ * @ops: pointer to structure of fpgahp manager ops
++ * @dev: device struct of BMC device
++ * @priv: private data for FPGA device
++ *
++ * Return: pointer to struct fpgahp_manager pointer or ERR_PTR()
++ */
++struct fpgahp_bmc_device *
++fpgahp_bmc_device_register(const struct fpgahp_bmc_ops *ops,
++			   struct device *dev, void *priv)
++{
++	struct fpgahp_manager *mgr;
++	struct fpgahp_bmc_device *bmc;
++
++	if (!ops)
++		return ERR_PTR(-EINVAL);
++
++	bmc = fpgahp_find_bmc(dev);
++	if (!bmc)
++		return ERR_PTR(-EINVAL);
++
++	mgr = to_fpgahp_mgr(bmc);
++
++	mutex_lock(&mgr->lock);
++	bmc->priv = priv;
++	bmc->device = dev;
++	bmc->ops = ops;
++	bmc->registered = true;
++	mutex_unlock(&mgr->lock);
++
++	return bmc;
++}
++EXPORT_SYMBOL_NS_GPL(fpgahp_bmc_device_register, FPGAHP);
++
++/**
++ * fpgahp_bmc_device_unregister - unregister FPGA BMC device from fpgahp driver
++ * @bmc: point to the fpgahp_bmc_device
++ */
++void fpgahp_bmc_device_unregister(struct fpgahp_bmc_device *bmc)
++{
++	struct fpgahp_manager *mgr = to_fpgahp_mgr(bmc);
++
++	mutex_lock(&mgr->lock);
++	bmc->registered = false;
++	mutex_unlock(&mgr->lock);
++}
++EXPORT_SYMBOL_NS_GPL(fpgahp_bmc_device_unregister, FPGAHP);
++
+ static int fpgahp_init_controller(struct controller *ctrl, struct pcie_device *dev)
  {
+ 	struct pci_dev *hotplug_bridge = dev->port;
+diff --git a/include/linux/fpga/fpgahp_manager.h b/include/linux/fpga/fpgahp_manager.h
+index 5e31877f03de..982fbc661f55 100644
+--- a/include/linux/fpga/fpgahp_manager.h
++++ b/include/linux/fpga/fpgahp_manager.h
+@@ -11,6 +11,33 @@
+ 
+ struct pci_dev;
+ struct fpgahp_manager;
++struct fpgahp_bmc_device;
++
++/**
++ * struct fpgahp_bmc_ops - fpga hotplug BMC specific operations
++ * @available_images: Required: available images for fpgahp trigger
++ * @image_trigger: Required: trigger the image reload on BMC
++ */
++struct fpgahp_bmc_ops {
++	ssize_t (*available_images)(struct fpgahp_bmc_device *bmc, char *buf);
++	int (*image_trigger)(struct fpgahp_bmc_device *bmc, const char *buf,
++			     u32 *wait_time_msec);
++};
++
++/**
++ * struct fpgahp_bmc_device - represent a fpga hotplug BMC device
++ *
++ * @ops: ops of this fpgahp_bmc_device
++ * @priv: private data for fpgahp_bmc_device
++ * @device: device of BMC device
++ * @registered: register status
++ */
++struct fpgahp_bmc_device {
++	const struct fpgahp_bmc_ops *ops;
++	void *priv;
++	struct device *device;
++	bool registered;
++};
+ 
+ /**
+  * struct fpgahp_manager_ops - fpgahp manager specific operations
+@@ -43,6 +70,7 @@ enum fpgahp_manager_states {
+  * @ops: ops of this fpgahp_manager
+  * @state: the status of fpgahp_manager
+  * @name: name of the fpgahp_manager
++ * @bmc: fpgahp BMC device
+  * @registered: register status
+  */
+ struct fpgahp_manager {
+@@ -51,12 +79,22 @@ struct fpgahp_manager {
+ 	const struct fpgahp_manager_ops *ops;
+ 	enum fpgahp_manager_states state;
+ 	const char *name;
++	struct fpgahp_bmc_device bmc;
+ 	bool registered;
+ };
+ 
++static inline struct fpgahp_manager *to_fpgahp_mgr(struct fpgahp_bmc_device *bmc)
++{
++	return container_of(bmc, struct fpgahp_manager, bmc);
++}
++
+ struct fpgahp_manager *fpgahp_register(struct pci_dev *hotplug_bridge,
+ 				       const char *name, const struct fpgahp_manager_ops *ops,
+ 				       void *priv);
+ void fpgahp_unregister(struct fpgahp_manager *mgr);
+ 
++struct fpgahp_bmc_device *fpgahp_bmc_device_register(const struct fpgahp_bmc_ops *ops,
++						     struct device *dev, void *priv);
++void fpgahp_bmc_device_unregister(struct fpgahp_bmc_device *bmc);
++
+ #endif
 -- 
 2.38.1
 
