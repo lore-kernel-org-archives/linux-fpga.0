@@ -2,35 +2,35 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAD4BC636D6
-	for <linux-fpga@archiver.kernel.org>; Fri, 17 Feb 2023 16:42:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F18DC636D6
+	for <linux-fpga@archiver.kernel.org>; Fri, 17 Feb 2023 16:43:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230412AbjBQQlG (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 17 Feb 2023 11:41:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52884 "EHLO
+        id S230170AbjBQQlW (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 17 Feb 2023 11:41:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53456 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230063AbjBQQk6 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 17 Feb 2023 11:40:58 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B8D971CA1;
-        Fri, 17 Feb 2023 08:40:54 -0800 (PST)
+        with ESMTP id S230365AbjBQQlT (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 17 Feb 2023 11:41:19 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF1A972E11;
+        Fri, 17 Feb 2023 08:41:01 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id AD9E961EEC;
-        Fri, 17 Feb 2023 16:40:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 895C0C433D2;
-        Fri, 17 Feb 2023 16:40:50 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 5C0B7B82CB5;
+        Fri, 17 Feb 2023 16:41:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83AB1C433D2;
+        Fri, 17 Feb 2023 16:40:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1676652053;
-        bh=uGoJRv9LAzu1WKQhfnsYWd6U9roPlOaRoVRun8gS2As=;
+        s=k20201202; t=1676652059;
+        bh=AjGLCJDaBLeS+ZJn3SLxobc8nrc/IffXtF3vDUxqz3g=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=fYbtCpn1bJdYLzPGDJ4B6qBN8l0H9KP2b7UqP6Z44fszrR8RRn0UH05vq3cWrG3sP
-         WPbEwvwakZnPsuVK1ayv7oHbL7qtVXiD3d7jaR89ROlOeNMLibIEjQSh3Fz+0k8SME
-         84+tvbPleFuvFOUDCpXUYYnVyXOnwrg3tviCg+BygsWwIeumobi8TH9HPOcB+8Hszo
-         y3BdHPxo9E4mAxTFXhEu3+s6UE+2nB4PFxEGX5vwZcuXICevF83QI2kZ0bLBm0Aowl
-         MX0UTYmz1RSnn9G6WGlZaV7SX7LdvMjJ5arIGdNsJYbqkX7hvjy7rxqT11lV/ePOva
-         3JxrWwMjN3JFA==
+        b=DJZUfZJnxBBHc7U58XjuoN3nKx5tYwwfWvMR2Th9MWOHCJUNLBLpQTvlzEzhANqBg
+         9/3/flM25H3zbd4a4lV/1IVmMkTLVbyu7b9/w3JPxK792qbt5lqq0SuCrIOpnocGei
+         JamiHe3RWjCsfJIUVjC1n0pPX2XJWAAyz+hzWt8Po4zzy7bjZRNSU6SZiPc/CK8zz7
+         vI+i/ytI7wIXaKDnkznja8D9vqq1gl+bAPHa0aLz7zLB3QDf7A0ua7/b5wbo7DCT8P
+         KeYv8P+PWww3Gr8MMYyQp/cgpX5KP8xXe9XvT6LV+mrqLJmnEq3zR2rijr64wboTTS
+         q4hT3s5P+3F1A==
 From:   Conor Dooley <conor@kernel.org>
 To:     Xu Yilun <yilun.xu@intel.com>, conor@kernel.org
 Cc:     Conor Dooley <conor.dooley@microchip.com>,
@@ -41,14 +41,14 @@ Cc:     Conor Dooley <conor.dooley@microchip.com>,
         Tom Rix <trix@redhat.com>, linux-riscv@lists.infradead.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-fpga@vger.kernel.org
-Subject: [PATCH v1 4/6] soc: microchip: mpfs: add auto-update subdev to system controller
-Date:   Fri, 17 Feb 2023 16:40:21 +0000
-Message-Id: <20230217164023.14255-5-conor@kernel.org>
+Subject: [PATCH v1 6/6] riscv: dts: microchip: add the mpfs' system controller qspi & associated flash
+Date:   Fri, 17 Feb 2023 16:40:23 +0000
+Message-Id: <20230217164023.14255-7-conor@kernel.org>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230217164023.14255-1-conor@kernel.org>
 References: <20230217164023.14255-1-conor@kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1866; i=conor.dooley@microchip.com; h=from:subject; bh=ADNLFIuLz+bv6oLLm4KQdjoPfC5CtvF+uTlkACIcj0E=; b=owGbwMvMwCFWscWwfUFT0iXG02pJDMnv175tEGV0j9HZ2vLvTNU+nerJm7euyfWawrkrQO497+9U nfl/OkpZGMQ4GGTFFFkSb/e1SK3/47LDuectzBxWJpAhDFycAjAR3vuMDHO5uJRuXvrQt1lxU9rXDX MdvlqEP77yrY95l3putZHK74eMDLsOLvw57errlJiDTJcn3OCdv+CW4oaVtvPF73xk2PVnjzsTAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3434; i=conor.dooley@microchip.com; h=from:subject; bh=zi1BUMETDrjgTzSYci2/43ZGtuWfx3kHNh6ZsIx3EnU=; b=owGbwMvMwCFWscWwfUFT0iXG02pJDMnv174taji+aGd1T7v7hmnptxf0/j/+TWbS4esnvu5es1/p zo3bNh2lLAxiHAyyYoosibf7WqTW/3HZ4dzzFmYOKxPIEAYuTgGYSEc7I8Pxv0r/94uLtlyYuI05O9 Mz3lZ6QmVdj3j8kpg5W/b9z4lmZLgfxHNHOGcjq8mVBye2SveKfDypZT6Z64XQxI0XbRZtrGYHAA==
 X-Developer-Key: i=conor.dooley@microchip.com; a=openpgp; fpr=F9ECA03CF54F12CD01F1655722E2C55B37CF380C
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -57,56 +57,103 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Conor Dooley <conor.dooley@microchip.com>
 
-The PolarFire SoC's system controller offers the ability to re-program
-the FPGA from a user application via two, related, mechanisms.
-In-Application Programming (IAP) is not ideal for use in Linux, as it
-will immediately take down the system when requested. Auto Update is
-preferred, as it will only take affect at device power up*, allowing the
-OS (and potential applications in AMP) to be shut down gracefully.
+The system controller's flash can be accessed via an MSS-exposed QSPI
+controller sitting, which sits between the mailbox's control & data
+registers. On Icicle, it has an MT25QL01GBBB8ESF connected to it.
 
-* Auto Update occurs at device initialisation, which can also be
-  triggered by device reset - possible with the v2023.02 version of the
-  Hart Software Services (HSS) and reference design.
+The system controller and MSS both have separate QSPI controllers, both
+of which can access the flash, although the system controller takes
+priority.
+Unfortunately, on engineering sample silicon, such as that on Icicle
+kits, the MSS' QSPI controller cannot write to the flash due to a bug.
+As a workaround, a QSPI controller can be implemented in the FPGA
+fabric and the IO routing modified to connect it to the flash in place
+of the "hard" controller in the MSS.
 
 Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- drivers/soc/microchip/mpfs-sys-controller.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ .../boot/dts/microchip/mpfs-icicle-kit.dts    | 21 ++++++++++++++++
+ arch/riscv/boot/dts/microchip/mpfs.dtsi       | 24 ++++++++++++++-----
+ 2 files changed, 39 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/soc/microchip/mpfs-sys-controller.c b/drivers/soc/microchip/mpfs-sys-controller.c
-index bcbb4bab09e5..223eec66edf9 100644
---- a/drivers/soc/microchip/mpfs-sys-controller.c
-+++ b/drivers/soc/microchip/mpfs-sys-controller.c
-@@ -114,7 +114,11 @@ static struct platform_device subdevs[] = {
- 	{
- 		.name		= "mpfs-generic-service",
- 		.id		= -1,
--	}
-+	},
-+	{
-+		.name		= "mpfs-auto-update",
-+		.id		= -1,
-+	},
+diff --git a/arch/riscv/boot/dts/microchip/mpfs-icicle-kit.dts b/arch/riscv/boot/dts/microchip/mpfs-icicle-kit.dts
+index 90b261114763..2dae3f8f33f6 100644
+--- a/arch/riscv/boot/dts/microchip/mpfs-icicle-kit.dts
++++ b/arch/riscv/boot/dts/microchip/mpfs-icicle-kit.dts
+@@ -199,6 +199,27 @@ &syscontroller {
+ 	status = "okay";
  };
  
- static int mpfs_sys_controller_probe(struct platform_device *pdev)
-@@ -156,7 +160,6 @@ static int mpfs_sys_controller_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, sys_controller);
- 
--	dev_info(&pdev->dev, "Registered MPFS system controller\n");
- 
- 	for (i = 0; i < ARRAY_SIZE(subdevs); i++) {
- 		subdevs[i].dev.parent = dev;
-@@ -164,6 +167,8 @@ static int mpfs_sys_controller_probe(struct platform_device *pdev)
- 			dev_warn(dev, "Error registering sub device %s\n", subdevs[i].name);
- 	}
- 
-+	dev_info(&pdev->dev, "Registered MPFS system controller\n");
++&syscontroller_qspi {
++	/*
++	 * The flash *is* there, but Icicle kits that have engineering sample
++	 * silicon (write?) access to this flash to non-functional. The system
++	 * controller itself can actually access it, but the MSS cannot write
++	 * an image there. Instantiating a coreQSPI in the fabric & connecting
++	 * it to the flash instead should work though. Pre-production or later
++	 * silicon does not have this issue.
++	 */
++	status = "disabled";
 +
- 	return 0;
- }
++	sys_ctrl_flash: flash@0 { // MT25QL01GBBB8ESF-0SIT
++		compatible = "jedec,spi-nor";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		spi-max-frequency = <20000000>;
++		spi-rx-bus-width = <1>;
++		reg = <0>;
++	};
++};
++
+ &usb {
+ 	status = "okay";
+ 	dr_mode = "host";
+diff --git a/arch/riscv/boot/dts/microchip/mpfs.dtsi b/arch/riscv/boot/dts/microchip/mpfs.dtsi
+index 0a9bb84af438..568da2b570c0 100644
+--- a/arch/riscv/boot/dts/microchip/mpfs.dtsi
++++ b/arch/riscv/boot/dts/microchip/mpfs.dtsi
+@@ -173,11 +173,6 @@ refclk: mssrefclk {
+ 		#clock-cells = <0>;
+ 	};
  
+-	syscontroller: syscontroller {
+-		compatible = "microchip,mpfs-sys-controller";
+-		mboxes = <&mbox 0>;
+-	};
+-
+ 	soc {
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
+@@ -498,11 +493,28 @@ usb: usb@20201000 {
+ 
+ 		mbox: mailbox@37020000 {
+ 			compatible = "microchip,mpfs-mailbox";
+-			reg = <0x0 0x37020000 0x0 0x1000>, <0x0 0x2000318C 0x0 0x40>;
++			reg = <0x0 0x37020000 0x0 0x58>, <0x0 0x2000318C 0x0 0x40>,
++			      <0x0 0x37020800 0x0 0x100>;
+ 			interrupt-parent = <&plic>;
+ 			interrupts = <96>;
+ 			#mbox-cells = <1>;
+ 			status = "disabled";
+ 		};
++
++		syscontroller_qspi: spi@37020100 {
++			compatible = "microchip,mpfs-qspi", "microchip,coreqspi-rtl-v2";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x37020100 0x0 0x100>;
++			interrupt-parent = <&plic>;
++			interrupts = <110>;
++			clocks = <&clkcfg CLK_QSPI>; /* this is probably wrong, consult the docs! */
++			status = "disabled";
++		};
++	};
++
++	syscontroller: syscontroller {
++		compatible = "microchip,mpfs-sys-controller";
++		mboxes = <&mbox 0>;
+ 	};
+ };
 -- 
 2.39.1
 
