@@ -2,35 +2,35 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A84FC05027
-	for <linux-fpga@archiver.kernel.org>; Fri, 17 Feb 2023 16:42:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 995F4C05027
+	for <linux-fpga@archiver.kernel.org>; Fri, 17 Feb 2023 16:42:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229592AbjBQQkp (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 17 Feb 2023 11:40:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52272 "EHLO
+        id S230287AbjBQQkw (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 17 Feb 2023 11:40:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52360 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229520AbjBQQkp (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 17 Feb 2023 11:40:45 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3D8B6B33A;
-        Fri, 17 Feb 2023 08:40:43 -0800 (PST)
+        with ESMTP id S230235AbjBQQkt (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 17 Feb 2023 11:40:49 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CAAA6FF1E;
+        Fri, 17 Feb 2023 08:40:48 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 6A002B82CB5;
-        Fri, 17 Feb 2023 16:40:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9402FC433EF;
-        Fri, 17 Feb 2023 16:40:38 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B150561EE5;
+        Fri, 17 Feb 2023 16:40:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 906D2C433A0;
+        Fri, 17 Feb 2023 16:40:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1676652041;
-        bh=rmWBKZ+kPA2hUTIl4dipdQ5MuLzgCCO85eiyabtlaR8=;
-        h=From:To:Cc:Subject:Date:From;
-        b=JISBcVvwSVhwD8ydNdtR8fNanFcFSbKOUTVPD7OoLoYSVd7+MGaIVHUnLcfXZ86HP
-         +x6yWRs17/2GhQbKYDJukflhfB+kd9ry0jIA6HsQwa3zvCmoNbcKDvUkMR8rGpUHo3
-         l19sEacxYW2QGYNU7UnlGFx4tc2gjXMx72cy029iMg9upRVWlDpMdLzibWxIZ3dyhK
-         iYkA6efl9/I3bUbdZ2FIV+pvWYch7CDKHj2i+z2KdDTDPFP8GAcAS2CQ+vkRCJPcH4
-         L4v3yoNKdUyEjLyUP8IQvwkHgIm8+zfSF277MVDk3xSHsqDSODwfo7X+1LKyMcdMG0
-         YMuQEV9Xn5RLg==
+        s=k20201202; t=1676652047;
+        bh=8Pkfc5Vtr1bS1mfUGRyytTI2Goy5iCLpHwo24Vj3Z4Q=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=iZopDMN/t/u+V8+JAFkyK6Easm2YKxMfzovzbDhLKTTW2uoA5pibaW9nNphyrlgPz
+         dJ0fJ20e9NpMGoo7A4gTbsCDA9XlNt//MDfR/QQfs6TqzccOPsfWC2JWhmEVadY5lY
+         /8eW3K6sYTTm32hR2LP0uqhZybx1CHfx5zvrwehpKfHTaP+q5vPqwQsmsVcGGLm67g
+         tT5D1SgNpCHUnyRhYhh6dh6dChwNcNqFZ9DvBV6EwVxLwb6dQFiWVlW7ghGkIJmFaz
+         Ipj1QHKjMN5wzFrTSDrcI2hhrUOt7IQGf23kVgVHcrOZSlrS8UOzauNiq+iEkmVlez
+         4qJe7N94WqvOA==
 From:   Conor Dooley <conor@kernel.org>
 To:     Xu Yilun <yilun.xu@intel.com>, conor@kernel.org
 Cc:     Conor Dooley <conor.dooley@microchip.com>,
@@ -41,12 +41,14 @@ Cc:     Conor Dooley <conor.dooley@microchip.com>,
         Tom Rix <trix@redhat.com>, linux-riscv@lists.infradead.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-fpga@vger.kernel.org
-Subject: [PATCH v1 0/6] PolarFire SoC Auto Update Support
-Date:   Fri, 17 Feb 2023 16:40:17 +0000
-Message-Id: <20230217164023.14255-1-conor@kernel.org>
+Subject: [PATCH v1 2/6] dt-bindings: soc: microchip: add a property for system controller flash
+Date:   Fri, 17 Feb 2023 16:40:19 +0000
+Message-Id: <20230217164023.14255-3-conor@kernel.org>
 X-Mailer: git-send-email 2.39.1
+In-Reply-To: <20230217164023.14255-1-conor@kernel.org>
+References: <20230217164023.14255-1-conor@kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3067; i=conor.dooley@microchip.com; h=from:subject; bh=mkXk5MOQJ1YMEavNc6St4EA6j9TWtSU8tsLYKbnhkSA=; b=owGbwMvMwCFWscWwfUFT0iXG02pJDMnv1761brJ98f31FJ/aQ0nTvlyob26oY+x517rPdMFZjn/P tjP97yhlYRDjYJAVU2RJvN3XIrX+j8sO5563MHNYmUCGMHBxCsBEllsy/HedUn3owZq/U7pvunt8bq qXu5N1n/Wg61VfzwbRO+dV1jcwMvyfosnnI8255dlW9/SosHczw47cFHQMqnLl4NS7eWCxDj8A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1632; i=conor.dooley@microchip.com; h=from:subject; bh=fTElDZa5UroElstrQ0dzqW+hmPb678nX3XRMkYJvFsI=; b=owGbwMvMwCFWscWwfUFT0iXG02pJDMnv17498Deyouk5h1zP2z+h8+6vbr/qvOLkvAp5xQ4Lz/CX 0mcXd5SyMIhxMMiKKbIk3u5rkVr/x2WHc89bmDmsTCBDGLg4BWAix88yMpz/c+1uxwu1xe8XzvD6o7 9m46nA+kczWkVF1IVXJM3dNi+e4Z/NJD0Wl4fxFZF8+c4Ta/pbGO9NWxbErHfykcLz/RFq6lwA
 X-Developer-Key: i=conor.dooley@microchip.com; a=openpgp; fpr=F9ECA03CF54F12CD01F1655722E2C55B37CF380C
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -55,75 +57,40 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 From: Conor Dooley <conor.dooley@microchip.com>
 
-Hey all,
+The system controller "shares" a SPI flash device with a QSPI controller
+in the MSS. This flash is used to store FPGA bitstreams & other
+metadata. IAP and Auto Upgrade both write images to this flash that the
+System Controller will use to re-program the FPGA.
 
-This patchset adds support for the "Auto Update" feature on PolarFire
-SoC that allows for writing an FPGA bistream to the SPI flash connected
-to the system controller.
-On powercycle (or reboot depending on how the firmware implements the
-openSBI SRST extension) "Auto Update" will take place, and program the
-FPGA with the contents of the SPI flash - provided that that image is
-valid and an actual upgrade from that already programmed!
+Add a phandle property signifying which flash device is connected to the
+system controller.
 
-Unfortunately, this series is not really testable yet - the Engineering
-Sample silicon on most dev boards has a bug in the QSPI controller
-connected to the system controller's flash and cannot access it.
-Pre-production and later silicon has this bug fixed.
+Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+---
+ .../soc/microchip/microchip,mpfs-sys-controller.yaml   | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-I previously posted an RFC about my approach in this driver, since as a
-flash-based FPGA we are somewhat different to the existing
-self-reprogramming drivers here. That RFC is here:
-https://lore.kernel.org/linux-fpga/20221121225748.124900-1-conor@kernel.org/
-
-This series depends on the following fixes:
-https://patchwork.kernel.org/project/linux-riscv/list/?series=714160
-
-The patch adding the driver depends on the soc patches earlier in the
-series, so taking both through the same tree makes sense. Depending on
-sequencing with the dependencies, me taking it through the soc tree
-(with Acks etc of course) may make the most sense.
-
-The other caveat here I guess is that this uses debugfs to trigger the
-write, as we do not yet have a userspace for this yet!
-
-Cheers,
-Conor.
-
-CC: Conor Dooley <conor.dooley@microchip.com>
-CC: Daire McNamara <daire.mcnamara@microchip.com>
-CC: Rob Herring <robh+dt@kernel.org>
-CC: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-CC: Moritz Fischer <mdf@kernel.org>
-CC: Wu Hao <hao.wu@intel.com>
-CC: Xu Yilun <yilun.xu@intel.com>
-CC: Tom Rix <trix@redhat.com>
-CC: linux-riscv@lists.infradead.org
-CC: devicetree@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-CC: linux-fpga@vger.kernel.org
-
-Conor Dooley (6):
-  soc: microchip: mpfs: add a prefix to rx_callback()
-  dt-bindings: soc: microchip: add a property for system controller
-    flash
-  soc: microchip: mpfs: enable access to the system controller's flash
-  soc: microchip: mpfs: add auto-update subdev to system controller
-  fpga: add PolarFire SoC Auto Update support
-  riscv: dts: microchip: add the mpfs' system controller qspi &
-    associated flash
-
- .../microchip,mpfs-sys-controller.yaml        |  10 +
- .../boot/dts/microchip/mpfs-icicle-kit.dts    |  21 +
- arch/riscv/boot/dts/microchip/mpfs.dtsi       |  24 +-
- drivers/fpga/Kconfig                          |   9 +
- drivers/fpga/Makefile                         |   1 +
- drivers/fpga/microchip-auto-update.c          | 495 ++++++++++++++++++
- drivers/soc/microchip/Kconfig                 |   1 +
- drivers/soc/microchip/mpfs-sys-controller.c   |  33 +-
- include/soc/microchip/mpfs.h                  |   2 +
- 9 files changed, 586 insertions(+), 10 deletions(-)
- create mode 100644 drivers/fpga/microchip-auto-update.c
-
+diff --git a/Documentation/devicetree/bindings/soc/microchip/microchip,mpfs-sys-controller.yaml b/Documentation/devicetree/bindings/soc/microchip/microchip,mpfs-sys-controller.yaml
+index 04ffee3a7c59..97a7cb74cbf9 100644
+--- a/Documentation/devicetree/bindings/soc/microchip/microchip,mpfs-sys-controller.yaml
++++ b/Documentation/devicetree/bindings/soc/microchip/microchip,mpfs-sys-controller.yaml
+@@ -26,6 +26,16 @@ properties:
+   compatible:
+     const: microchip,mpfs-sys-controller
+ 
++  microchip,bitstream-flash:
++    $ref: "/schemas/types.yaml#/definitions/phandle"
++    description:
++      The SPI flash connected to the system controller's QSPI controller.
++      The system controller may retrieve FPGA bitstreams from this flash to
++      perform In-Application Programming (IAP) or during device initialisation
++      for Auto Update. The MSS and system controller have separate QSPI
++      controllers and this flash is connected to both. Software running in the
++      MSS can write bitstreams to the flash.
++
+ required:
+   - compatible
+   - mboxes
 -- 
 2.39.1
 
