@@ -2,121 +2,201 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBD9EC61DA4
-	for <linux-fpga@archiver.kernel.org>; Fri, 24 Feb 2023 12:11:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AF66C61DA4
+	for <linux-fpga@archiver.kernel.org>; Fri, 24 Feb 2023 14:56:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229808AbjBXMJ0 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 24 Feb 2023 07:09:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38590 "EHLO
+        id S230096AbjBXOzN (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 24 Feb 2023 09:55:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43762 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229622AbjBXMJZ (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 24 Feb 2023 07:09:25 -0500
-Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2060.outbound.protection.outlook.com [40.107.93.60])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72D3D3CE27;
-        Fri, 24 Feb 2023 04:08:53 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=bDKeZAhKKvDCvx7l1DxZ6Gf5ndWvVuhWSeXEfk1hmiQncBkCaPiO1RbbCQsUos6Y9NG2a6ms/Ghz2t3X3WwCfFCo3NYcP7iQkq6R1FAXl4cgUX5GREud57FIU8XV57xeUkanblnpUzeNYweL5wiyvkpel9PnqYZmmq40siQsR0ixcIuT4R19K/HM9Ub9yk3SAWbYIuSQY7+mWf9rnGewLivpIKDnLLM2RsEQ/pNC8DyT8q4C3GZSrS+Oa1okX5XY09zRGjfaPHJILasykDVqfNFKa4fkS7JHbYpEx/5YUG4+Mcx7fcjNqV7wELx+FMbuoTmrNfvolMbhmpeU4UGZlw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=AoizO9eci6dcpXEEUNLH8cgwfZfC3SKmptBLI1Zrz4w=;
- b=J3z502IBoseQEqWtZFe8h28EsA2XVq72Y/Aqvy0BbiUWuRnOPb2Wnu+XKXbapQPmJ2JmftLxa3aaK+f7xiiVqN9iIEgeR/eK4z4R1aUuHLXK7k82ie7vxpx/LPvBPd+esagK9xecJxd16WJyTNonov2ISwMZ6DLgjDazCaMJVb+5s0LYw/+8m3winoj2lly1Jo/X8xiyqutInqUdsPxAw4hKl3sScasxzwmw9IyrUxHdCBJ43kjR9r+Ri/Zga4J05MI0bfztE79ghnaOj158zSu+iMAfKuXCQB6/P11E2sq+NwynNQc748L0/jlTsGteq77ZqP7huIuD+zi5fwbqTg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=xilinx.com smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=AoizO9eci6dcpXEEUNLH8cgwfZfC3SKmptBLI1Zrz4w=;
- b=eoiltb5qLe6qPduJqZTO+SAfvtLzwoAL8Z4mFfYTZeVXn5GxW39KY3aIxiVE0+raeEu+Q82vYY6yxzXFTXNXAKE1JIcCZnDV56IdEHS+xdPArPBGPawtEEQhti84cXwCj/JjxS5E4QuXG9aAvfPS3hIQY5sIjMXfnDgK7XLnQfQ=
-Received: from BLAPR03CA0174.namprd03.prod.outlook.com (2603:10b6:208:32f::11)
- by PH7PR12MB6788.namprd12.prod.outlook.com (2603:10b6:510:1ae::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6134.19; Fri, 24 Feb
- 2023 12:07:43 +0000
-Received: from BL02EPF000108E8.namprd05.prod.outlook.com
- (2603:10b6:208:32f:cafe::d4) by BLAPR03CA0174.outlook.office365.com
- (2603:10b6:208:32f::11) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6134.24 via Frontend
- Transport; Fri, 24 Feb 2023 12:07:42 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BL02EPF000108E8.mail.protection.outlook.com (10.167.241.201) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6134.16 via Frontend Transport; Fri, 24 Feb 2023 12:07:42 +0000
-Received: from localhost (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Fri, 24 Feb
- 2023 06:07:41 -0600
-From:   Nava kishore Manne <nava.kishore.manne@amd.com>
-To:     <michal.simek@xilinx.com>, <mdf@kernel.org>, <hao.wu@intel.com>,
-        <yilun.xu@intel.com>, <trix@redhat.com>,
-        <nava.kishore.manne@amd.com>, <ronak.jain@xilinx.com>,
-        <gregkh@linuxfoundation.org>, <tanmay.shah@xilinx.com>,
-        <mathieu.poirier@linaro.org>, <ben.levinsky@amd.com>,
-        <rajan.vaja@xilinx.com>, <harsha.harsha@xilinx.com>,
-        <arnd@arndb.de>, <linux-arm-kernel@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-fpga@vger.kernel.org>
-Subject: [PATCH v7 0/2]Adds status interface for zynqmp-fpga
-Date:   Fri, 24 Feb 2023 17:37:36 +0530
-Message-ID: <20230224120738.329416-1-nava.kishore.manne@amd.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S229825AbjBXOzM (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 24 Feb 2023 09:55:12 -0500
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4816451908
+        for <linux-fpga@vger.kernel.org>; Fri, 24 Feb 2023 06:55:11 -0800 (PST)
+Received: by mail-wm1-x334.google.com with SMTP id p18-20020a05600c359200b003dc57ea0dfeso2409535wmq.0
+        for <linux-fpga@vger.kernel.org>; Fri, 24 Feb 2023 06:55:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=aMQW/ellgn1pXltseM1o0F3wQ2R9xKG925J3WLYtIok=;
+        b=da+dhW3QJGErTX3NvZ44iKfDDxZfxs7rL/V3IoMNmgzNYJwx1qOUL6cUAwuIgk5h++
+         Zlm+8xoPSooEP9p/PH2bGZC4t8msBI59TyTkvw+FMvwfJAAOlTx41H3JCAK9/VEa0fyR
+         MNGf7H7EVCQJcbGdck0Oab8BEStnje4WV42ExHLsQNJioAcsY2dX5oYYsiLCmbWHfZNj
+         rOLv9VFyHtIJEoHh2PT8QlzSbGtFz8otcXVj3bXcrX/zG2Us0Mua57SYyn5OQmUZpLN9
+         Mx9oYaa8at9pNGp7P7WxD5/ebwN9o3l0G6N6qa6A3Ef/UQBtUbUMdbMr81bzFzgTNMSB
+         aQZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=aMQW/ellgn1pXltseM1o0F3wQ2R9xKG925J3WLYtIok=;
+        b=ngjjS/Gd5MZqsK78u7xqh+P+TBFuNg6rbEpul/SIwlKbGFU1al9RAe75zcAGqdeJTA
+         DqfnAftULrbs6HsxweqMj6Z3Z7zQF0ZlpFvFA4MBxG1FFz+tXIUfacYnfJ1GVz+KxsM4
+         EF2SjGM3xis59B8B4Rea5Y11o3D4tnNilQmIp/LZUs17tRnq2SFc3/jXU3/0FBzWVDP3
+         W5LzWelAj3Z3fmiSPRH7DeBhVGbWlhI6U3x6ZgMaJkrJb53ITJxB07a/Vv96QlWLHWbo
+         HbHB74Mq2FyrskZlRzrR83ILCLBk04EOVQaaMfuMyJq+biE44kiAqP3aTioDrqLRqHp3
+         9OWA==
+X-Gm-Message-State: AO0yUKVQvR/cAZaM6v26DXdX9AuDqf+HAWqYuElsXVDLTlt4spGUp5qf
+        R1nbx66fm1Ded9XpFYS/z1Gv1g==
+X-Google-Smtp-Source: AK7set9n3yDeszAz6rxtpcHWPJpCYXtZPQyoC7QSt/RBAGQZWNXLHu3H4DAGoH3J6E1tycXa0VMDTQ==
+X-Received: by 2002:a05:600c:4d18:b0:3ea:e554:7808 with SMTP id u24-20020a05600c4d1800b003eae5547808mr3256028wmp.19.1677250509708;
+        Fri, 24 Feb 2023 06:55:09 -0800 (PST)
+Received: from [192.168.1.20] ([178.197.216.144])
+        by smtp.gmail.com with ESMTPSA id q9-20020a1ce909000000b003dff870ce0esm3104352wmc.2.2023.02.24.06.55.08
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 24 Feb 2023 06:55:09 -0800 (PST)
+Message-ID: <2df19bef-5565-6961-3235-bf1ea21eabfe@linaro.org>
+Date:   Fri, 24 Feb 2023 15:55:07 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL02EPF000108E8:EE_|PH7PR12MB6788:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6d82f2db-8b8f-464e-c710-08db165fbba5
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: Fm4hcz4F0P/jE//eqVu1th1f+XUFndVBhCM7u08RithGkS2664Nhok9giyC2+XKDlvgjXUFlgBgPSQ5yA8ZAKzLY4gG4hpvBlnYdSDZOOFkWvm0FzNu/3NYgQCVvX6W5YqsCpd7r+TSpySpBANYEKG1qW4srfFh8CrdTkCAFPBCOQi0eyrvg0y7iGrfBQSxYKBYpcZ9Xdl3LDBESoP0xnZ/o80f3IdFhP41VJC2yDwJEp28RvP7pXbwQDD0i+FchKCpddq+AHzSg+xLKDfhFFUs1UB601shRjcWeX2uHriywKG+jrHaO5LsyPOzgnbfNFTHKTZ4OCfTIuKjpckd90ObuwQZZvr95mpX8aCqnDhx9aghSzP+JOJhAegQ9ZMPHfXLfjGyxqTcaqnEnk/IjiH0XP8CuX/OaU2jhxQZpKjSXOovQ3KnAbyvE3wrFFOlgFjKtXz+CtHBnuRkJ74QLo5rHSaO/nPy+oGOyZeA0HBxUDwQOrhf4QqBXhGV7/pgS8CKIXepWnZXM7jUYaeK2yzH70PIc6n8BmMDEnwPcLBtkc0bQI2Dgzi2PSBjoPQeEnOHIX9ud+z8fxjPUg0JNOqtlh+/3PAlKOV7XYYIaeEn9wLBwsIXRFvBcSXXfi3U0QpfVsGFcsBTiPPvxmlImeFjitInvx9lPeALFdrvug2OV1fmIGyOGHfwQLSidYHyjM5KKV7sV1iQVTzVZ1F9IlhHih60NdvSmhUGzwUeOMwu/mrw6hk2hDGpR/LLME8nDe8HAsEBGJjXI8MNOdwfqAktBRLCc4qOxVuia8pJaCu0=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230025)(4636009)(376002)(396003)(136003)(39860400002)(346002)(451199018)(36840700001)(46966006)(40470700004)(82740400003)(81166007)(316002)(186003)(16526019)(41300700001)(336012)(26005)(40480700001)(36860700001)(4744005)(426003)(356005)(7416002)(8936002)(2616005)(103116003)(5660300002)(478600001)(8676002)(70586007)(1076003)(110136005)(47076005)(40460700003)(82310400005)(70206006)(36756003)(86362001)(966005)(6666004)(921005)(2906002)(2101003)(83996005)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Feb 2023 12:07:42.8496
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6d82f2db-8b8f-464e-c710-08db165fbba5
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: BL02EPF000108E8.namprd05.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6788
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH] dt-bindings: fpga: xilinx-spi: convert bindings to
+ json-schema
+Content-Language: en-US
+To:     Nava kishore Manne <nava.kishore.manne@amd.com>, mdf@kernel.org,
+        hao.wu@intel.com, yilun.xu@intel.com, trix@redhat.com,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        michal.simek@xilinx.com, linux-fpga@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+References: <20230224113711.193903-1-nava.kishore.manne@amd.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230224113711.193903-1-nava.kishore.manne@amd.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Adds status interface for zynqmp-fpga, It's a read only interface
-which allows the user to get the Programmable Logic(PL) status.
- -Device Initialization error.
- -Device internal signal error.
- -All I/Os are placed in High-Z state.
- -Device start-up sequence error.
- -Firmware error.
+On 24/02/2023 12:37, Nava kishore Manne wrote:
+> Convert xilinx-spi bindings to DT schema format using json-schema
 
-For more details refer the ug570.
-https://docs.xilinx.com/v/u/en-US/ug570-ultrascale-configuration
+Missing full stop.
 
-Nava kishore Manne (2):
-  firmware: xilinx: Add pm api function for PL config reg readback
-  fpga: zynqmp-fpga: Adds status interface
+> 
+> Signed-off-by: Nava kishore Manne <nava.kishore.manne@amd.com>
+> ---
+>  .../bindings/fpga/xilinx-slave-serial.txt     | 51 ------------
+>  .../bindings/fpga/xlnx,fpga-slave-serial.yaml | 77 +++++++++++++++++++
+>  2 files changed, 77 insertions(+), 51 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/fpga/xilinx-slave-serial.txt
+>  create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,fpga-slave-serial.yaml
 
- .../ABI/testing/sysfs-driver-zynqmp-fpga      | 73 +++++++++++++++++++
- drivers/firmware/xilinx/zynqmp.c              | 33 +++++++++
- drivers/fpga/zynqmp-fpga.c                    | 21 ++++++
- include/linux/firmware/xlnx-zynqmp.h          | 11 +++
- 4 files changed, 138 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-driver-zynqmp-fpga
 
--- 
-2.25.1
+Thank you for your patch. There is something to discuss/improve.
+
+
+> +++ b/Documentation/devicetree/bindings/fpga/xlnx,fpga-slave-serial.yaml
+> @@ -0,0 +1,77 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/fpga/xlnx,fpga-slave-serial.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Xilinx Slave Serial SPI FPGA driver.
+
+Drop driver and full stop.
+
+> +
+> +maintainers:
+> +  - Nava kishore Manne <nava.kishore.manne@amd.com>
+> +
+> +description: |
+> +  Xilinx Spartan-6 and 7 Series FPGAs support a method of loading the bitstream
+> +  over what is referred to as slave serial interface.The slave serial link is
+> +  not technically SPI, and might require extra circuits in order to play nicely
+> +  with other SPI slaves on the same bus.
+> +  Please refer to fpga-region.txt in this directory for  common binding part
+> +  and usage.
+
+Just one space, not two. But what exactly from fpga-region comes here?
+If it is used, you need to mention it otherwise it's not allowed to be
+used...
+
+
+> +
+> +  Datasheets:
+> +    https://www.xilinx.com/support/documentation/user_guides/ug380.pdf
+> +    https://www.xilinx.com/support/documentation/user_guides/ug470_7Series_Config.pdf
+> +    https://www.xilinx.com/support/documentation/application_notes/xapp583-fpga-configuration.pdf
+> +
+
+Missing allOf to spi-peripheral-props.
+
+> +properties:
+> +  compatible:
+> +    items:
+
+No need for items, drop it.
+
+> +      - enum:
+> +          - xlnx,fpga-slave-serial
+> +
+> +  spi-cpha: true
+> +
+> +  spi-max-frequency:
+> +    maximum: 60000000
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  prog_b-gpios:
+> +    description:
+> +      config pin (referred to as PROGRAM_B in the manual)
+
+maxItems
+
+> +
+> +  done-gpios:
+> +    description:
+> +      config status pin (referred to as DONE in the manual)
+
+maxItems
+
+> +
+> +  init-b-gpios:
+> +    description:
+> +      initialization status and configuration error pin
+> +      (referred to as INIT_B in the manual)
+
+maxItems
+
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - prog_b-gpios
+> +  - done-gpios
+> +  - init-b-gpios
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/gpio/gpio.h>
+> +    spi0 {
+
+spi
+
+> +      #address-cells = <1>;
+> +      #size-cells = <0>;
+> +      fpga_mgr_spi: fpga-mgr@0 {
+> +        compatible = "xlnx,fpga-slave-serial";
+> +        spi-max-frequency = <60000000>;
+> +        spi-cpha;
+> +        reg = <0>;
+> +        prog_b-gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;
+> +        init-b-gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;
+> +        done-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
+> +      };
+> +    };
+> +...
+
+Best regards,
+Krzysztof
 
