@@ -2,42 +2,42 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89F32C6FD18
-	for <linux-fpga@archiver.kernel.org>; Fri, 31 Mar 2023 07:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73652C76196
+	for <linux-fpga@archiver.kernel.org>; Fri, 31 Mar 2023 07:20:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230317AbjCaHS6 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 31 Mar 2023 03:18:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45182 "EHLO
+        id S229517AbjCaHTA (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 31 Mar 2023 03:19:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230226AbjCaHS4 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 31 Mar 2023 03:18:56 -0400
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 044E9AD20;
-        Fri, 31 Mar 2023 00:18:49 -0700 (PDT)
+        with ESMTP id S230310AbjCaHS6 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 31 Mar 2023 03:18:58 -0400
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A14FC1FD8;
+        Fri, 31 Mar 2023 00:18:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1680247130; x=1711783130;
+  t=1680247132; x=1711783132;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=v+iGAOoMCBTZGHjA4MlM8wSqYcR0Frqq6qIhcdJ6VMQ=;
-  b=BOZDvfJQsxN8QBHrF1NGfWPKiLXHKJDBADxv1n1Rk0oDJtkuAuUbqxRM
-   ses4DV9amd5YU2c1W5Ea466cDg6dfjEVsAe/jTYgONRUFJrfMQA/TWb+6
-   CcdLzk0RhF22LLeEZxuyUDE4izzGfuGxXPPPkBkzMwaZTNbZ/IDA9h1fM
-   AYjZZXLmk60puDcd/HWzzzjZpQ9qFNjSEhLOLsAF/qh1yIjXcgp50iS7n
-   FT6RVicBWRSe0GusuCEUGwKXCu3mi8WeHEVlMx7p2dHH2PkYM9rC1Vsha
-   GKk+hsI35Mblw2ThhckYfaKCVbQOVmULsIb9Vczo+9GXBV1oCNj6HPzxc
-   Q==;
+  bh=0RxSmjLFLGNqYDQT3XMLRg36TkNHpX++EBfYDoIpS48=;
+  b=cvlVVTSy/GOCG8DO8yB78DEqu0q1TUbdvyz/quRG5ofJw5vvEzQpBzLw
+   x9/d10fBqz+D+JPPn0EMg6UL9y/Dv2pBBBgr+P9lFL/ywjE2edAsdBGkv
+   8TUozr0ZCU2kpSJ6aVxqwjXGa+cbQWsxw5FjUcGHoiENiR7mqECGCn5Zq
+   51JvA35+9KBPEdJT+ZDgHC+EZYjCM3F0SJ49RIToxMFwnCvAMj/zkUsDR
+   jsV1ktaG35NPHnsFW4iD4sxtcTFSsgy+PZsNHleP0VpoM+o0ZdsW3GHRd
+   EVS5NtxHHCHOSp35GtMfHoASXLG42ztg3Owjb65HMsiPXfaMZ2j2avWYL
+   A==;
 X-IronPort-AV: E=Sophos;i="5.98,307,1673938800"; 
-   d="scan'208";a="204349705"
+   d="scan'208";a="207148827"
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa4.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 31 Mar 2023 00:18:49 -0700
+  by esa3.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 31 Mar 2023 00:18:52 -0700
 Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
- chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Fri, 31 Mar 2023 00:18:46 -0700
+ 15.1.2507.21; Fri, 31 Mar 2023 00:18:51 -0700
 Received: from wendy.microchip.com (10.10.115.15) by chn-vm-ex01.mchp-main.com
  (10.10.85.143) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
- Transport; Fri, 31 Mar 2023 00:18:44 -0700
+ Transport; Fri, 31 Mar 2023 00:18:49 -0700
 From:   Conor Dooley <conor.dooley@microchip.com>
 To:     <linux-fpga@vger.kernel.org>
 CC:     <conor@kernel.org>, <conor.dooley@microchip.com>,
@@ -48,14 +48,14 @@ CC:     <conor@kernel.org>, <conor.dooley@microchip.com>,
         Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
         <linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 1/7] soc: microchip: mpfs: add a prefix to rx_callback()
-Date:   Fri, 31 Mar 2023 08:18:17 +0100
-Message-ID: <20230331071823.956087-2-conor.dooley@microchip.com>
+Subject: [PATCH v2 3/7] soc: microchip: mpfs: enable access to the system controller's flash
+Date:   Fri, 31 Mar 2023 08:18:19 +0100
+Message-ID: <20230331071823.956087-4-conor.dooley@microchip.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230331071823.956087-1-conor.dooley@microchip.com>
 References: <20230331071823.956087-1-conor.dooley@microchip.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1311; i=conor.dooley@microchip.com; h=from:subject; bh=v+iGAOoMCBTZGHjA4MlM8wSqYcR0Frqq6qIhcdJ6VMQ=; b=owGbwMvMwCFWscWwfUFT0iXG02pJDClqnZYdwexPn4oeOna7jq3DNefegq0nhZf/fnGl8NcJfqG0 bRPPdZSyMIhxMMiKKbIk3u5rkVr/x2WHc89bmDmsTCBDGLg4BWAicsIM/2z2J17J72e+Xq1+ZdthlR 8a5kU5nxKvz9r7zWzLD5bJdvEM/5RWHLM+vDBzSmu4MEeniEXxJv8kW31v7/UcRaUK06cKswAA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3442; i=conor.dooley@microchip.com; h=from:subject; bh=0RxSmjLFLGNqYDQT3XMLRg36TkNHpX++EBfYDoIpS48=; b=owGbwMvMwCFWscWwfUFT0iXG02pJDClqnZYaQq89GQLW/gz9d7uWaaWFgdwO3sQVd7Ysve3rlySr c/J2RykLgxgHg6yYIkvi7b4WqfV/XHY497yFmcPKBDKEgYtTACayRIHhf/hTuSnNfJELc4RXvrfJT7 96cfqVBzv+v9zd4P/csfxTYTTDf7+t3RJfP8xedWqDsl1Gh11v5aIP/beaL+y4LHrYxeG2GisA
 X-Developer-Key: i=conor.dooley@microchip.com; a=openpgp; fpr=F9ECA03CF54F12CD01F1655722E2C55B37CF380C
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -63,35 +63,101 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add a prefix to the function name to match the rest of the file.
+The system controller has a flash that contains images used to reprogram
+the FPGA using IAP (In-Application Programming).
+Introduce a function that allows a driver with a reference to the system
+controller to get one to a flash device attached to it.
 
 Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- drivers/soc/microchip/mpfs-sys-controller.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/soc/microchip/Kconfig               |  1 +
+ drivers/soc/microchip/mpfs-sys-controller.c | 20 ++++++++++++++++++++
+ include/soc/microchip/mpfs.h                |  2 ++
+ 3 files changed, 23 insertions(+)
 
+diff --git a/drivers/soc/microchip/Kconfig b/drivers/soc/microchip/Kconfig
+index eb656b33156b..9b0fdd95276e 100644
+--- a/drivers/soc/microchip/Kconfig
++++ b/drivers/soc/microchip/Kconfig
+@@ -1,6 +1,7 @@
+ config POLARFIRE_SOC_SYS_CTRL
+ 	tristate "POLARFIRE_SOC_SYS_CTRL"
+ 	depends on POLARFIRE_SOC_MAILBOX
++	depends on MTD
+ 	help
+ 	  This driver adds support for the PolarFire SoC (MPFS) system controller.
+ 
 diff --git a/drivers/soc/microchip/mpfs-sys-controller.c b/drivers/soc/microchip/mpfs-sys-controller.c
-index ceaeebc1fc6b..216d9f4ea0ce 100644
+index 216d9f4ea0ce..5270630c52bf 100644
 --- a/drivers/soc/microchip/mpfs-sys-controller.c
 +++ b/drivers/soc/microchip/mpfs-sys-controller.c
-@@ -75,7 +75,7 @@ int mpfs_blocking_transaction(struct mpfs_sys_controller *sys_controller, struct
- }
- EXPORT_SYMBOL(mpfs_blocking_transaction);
+@@ -12,6 +12,8 @@
+ #include <linux/kref.h>
+ #include <linux/module.h>
+ #include <linux/jiffies.h>
++#include <linux/mtd/mtd.h>
++#include <linux/spi/spi.h>
+ #include <linux/interrupt.h>
+ #include <linux/of_platform.h>
+ #include <linux/mailbox_client.h>
+@@ -30,6 +32,7 @@ struct mpfs_sys_controller {
+ 	struct mbox_client client;
+ 	struct mbox_chan *chan;
+ 	struct completion c;
++	struct mtd_info *flash;
+ 	struct kref consumers;
+ };
  
--static void rx_callback(struct mbox_client *client, void *msg)
-+static void mpfs_sys_controller_rx_callback(struct mbox_client *client, void *msg)
+@@ -99,6 +102,12 @@ static void mpfs_sys_controller_put(void *data)
+ 	kref_put(&sys_controller->consumers, mpfs_sys_controller_delete);
+ }
+ 
++struct mtd_info *mpfs_sys_controller_get_flash(struct mpfs_sys_controller *mpfs_client)
++{
++	return mpfs_client->flash;
++}
++EXPORT_SYMBOL(mpfs_sys_controller_get_flash);
++
+ static struct platform_device subdevs[] = {
+ 	{
+ 		.name		= "mpfs-rng",
+@@ -114,12 +123,23 @@ static int mpfs_sys_controller_probe(struct platform_device *pdev)
  {
- 	struct mpfs_sys_controller *sys_controller =
- 		container_of(client, struct mpfs_sys_controller, client);
-@@ -121,7 +121,7 @@ static int mpfs_sys_controller_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct mpfs_sys_controller *sys_controller;
++	struct device_node *np;
+ 	int i, ret;
+ 
+ 	sys_controller = kzalloc(sizeof(*sys_controller), GFP_KERNEL);
+ 	if (!sys_controller)
  		return -ENOMEM;
  
++	np = of_parse_phandle(dev->of_node, "microchip,bitstream-flash", 0);
++	if (!np)
++		goto no_flash;
++
++	sys_controller->flash = of_get_mtd_device_by_node(np);
++	of_node_put(np);
++	if (IS_ERR(sys_controller->flash))
++		return dev_err_probe(dev, PTR_ERR(sys_controller->flash), "Failed to get flash\n");
++
++no_flash:
  	sys_controller->client.dev = dev;
--	sys_controller->client.rx_callback = rx_callback;
-+	sys_controller->client.rx_callback = mpfs_sys_controller_rx_callback;
+ 	sys_controller->client.rx_callback = mpfs_sys_controller_rx_callback;
  	sys_controller->client.tx_block = 1U;
- 	sys_controller->client.tx_tout = msecs_to_jiffies(MPFS_SYS_CTRL_TIMEOUT_MS);
+diff --git a/include/soc/microchip/mpfs.h b/include/soc/microchip/mpfs.h
+index f916dcde457f..09722f83b0ca 100644
+--- a/include/soc/microchip/mpfs.h
++++ b/include/soc/microchip/mpfs.h
+@@ -38,6 +38,8 @@ int mpfs_blocking_transaction(struct mpfs_sys_controller *mpfs_client, struct mp
  
+ struct mpfs_sys_controller *mpfs_sys_controller_get(struct device *dev);
+ 
++struct mtd_info *mpfs_sys_controller_get_flash(struct mpfs_sys_controller *mpfs_client);
++
+ #endif /* if IS_ENABLED(CONFIG_POLARFIRE_SOC_SYS_CTRL) */
+ 
+ #if IS_ENABLED(CONFIG_MCHP_CLK_MPFS)
 -- 
 2.39.2
 
