@@ -2,25 +2,25 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F6DCC6FD1D
-	for <linux-fpga@archiver.kernel.org>; Tue,  4 Apr 2023 13:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88A09C6FD1D
+	for <linux-fpga@archiver.kernel.org>; Tue,  4 Apr 2023 13:59:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235547AbjDDN4q (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 4 Apr 2023 09:56:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51966 "EHLO
+        id S235383AbjDDN5g (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 4 Apr 2023 09:57:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58020 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235808AbjDDNy6 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 4 Apr 2023 09:54:58 -0400
+        with ESMTP id S235655AbjDDN5M (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 4 Apr 2023 09:57:12 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED23844AB;
-        Tue,  4 Apr 2023 06:54:39 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD7E35278;
+        Tue,  4 Apr 2023 06:56:30 -0700 (PDT)
 Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.200])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PrTg26rbhz67fjf;
-        Tue,  4 Apr 2023 21:50:38 +0800 (CST)
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PrTlx1cJrz67TK2;
+        Tue,  4 Apr 2023 21:54:53 +0800 (CST)
 Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
  lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Tue, 4 Apr 2023 14:54:36 +0100
+ 15.1.2507.23; Tue, 4 Apr 2023 14:55:38 +0100
 From:   Jonathan Cameron <Jonathan.Cameron@huawei.com>
 To:     Mark Rutland <mark.rutland@arm.com>,
         Peter Zijlstra <peterz@infradead.org>,
@@ -48,9 +48,9 @@ CC:     <linuxarm@huawei.com>, Dan Williams <dan.j.williams@intel.com>,
         Tom Rix <trix@redhat.com>, <linux-fpga@vger.kernel.org>,
         Suzuki K Poulose <suzuki.poulose@arm.com>,
         Liang Kan <kan.liang@linux.intel.com>
-Subject: [PATCH 24/32] perf/arm-smmuv3: Assign parents for event_source device
-Date:   Tue, 4 Apr 2023 14:42:17 +0100
-Message-ID: <20230404134225.13408-25-Jonathan.Cameron@huawei.com>
+Subject: [PATCH 26/32] arc: Assign parents for event_source devices
+Date:   Tue, 4 Apr 2023 14:42:19 +0100
+Message-ID: <20230404134225.13408-27-Jonathan.Cameron@huawei.com>
 X-Mailer: git-send-email 2.37.2
 In-Reply-To: <20230404134225.13408-1-Jonathan.Cameron@huawei.com>
 References: <20230404134225.13408-1-Jonathan.Cameron@huawei.com>
@@ -58,7 +58,7 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Content-Type:   text/plain; charset=US-ASCII
 X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml500003.china.huawei.com (7.191.162.67) To
+X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
@@ -70,23 +70,24 @@ Only root busses should appear there, so instead assign the pmu->dev
 parent to be the platform device.
 
 Link: https://lore.kernel.org/linux-cxl/ZCLI9A40PJsyqAmq@kroah.com/
+Cc: Vineet Gupta <vgupta@kernel.org>002
 Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- drivers/perf/arm_smmuv3_pmu.c | 1 +
+ arch/arc/kernel/perf_event.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/perf/arm_smmuv3_pmu.c b/drivers/perf/arm_smmuv3_pmu.c
-index 25a269d431e4..7b3edccae535 100644
---- a/drivers/perf/arm_smmuv3_pmu.c
-+++ b/drivers/perf/arm_smmuv3_pmu.c
-@@ -826,6 +826,7 @@ static int smmu_pmu_probe(struct platform_device *pdev)
+diff --git a/arch/arc/kernel/perf_event.c b/arch/arc/kernel/perf_event.c
+index adff957962da..bd4c2c110afe 100644
+--- a/arch/arc/kernel/perf_event.c
++++ b/arch/arc/kernel/perf_event.c
+@@ -788,6 +788,7 @@ static int arc_pmu_device_probe(struct platform_device *pdev)
+ 	arc_pmu->attr_groups[ARCPMU_ATTR_GR_FORMATS] = &arc_pmu_format_attr_gr;
  
- 	smmu_pmu->pmu = (struct pmu) {
- 		.module		= THIS_MODULE,
+ 	arc_pmu->pmu = (struct pmu) {
 +		.parent		= &pdev->dev,
- 		.task_ctx_nr    = perf_invalid_context,
- 		.pmu_enable	= smmu_pmu_enable,
- 		.pmu_disable	= smmu_pmu_disable,
+ 		.pmu_enable	= arc_pmu_enable,
+ 		.pmu_disable	= arc_pmu_disable,
+ 		.event_init	= arc_pmu_event_init,
 -- 
 2.37.2
 
