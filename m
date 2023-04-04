@@ -2,42 +2,34 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A6C3C761A6
-	for <linux-fpga@archiver.kernel.org>; Tue,  4 Apr 2023 13:54:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CE06C761A6
+	for <linux-fpga@archiver.kernel.org>; Tue,  4 Apr 2023 13:54:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235538AbjDDNw7 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 4 Apr 2023 09:52:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52542 "EHLO
+        id S235498AbjDDNxG (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 4 Apr 2023 09:53:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52864 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235510AbjDDNwl (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 4 Apr 2023 09:52:41 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 593714C3E;
-        Tue,  4 Apr 2023 06:52:33 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id CF79A6318F;
-        Tue,  4 Apr 2023 13:52:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C09BCC433D2;
-        Tue,  4 Apr 2023 13:52:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1680616352;
-        bh=uQpwNiCGK45NM7xWkrqtCc0SIYaONCTxiDSyYfND32I=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=yZuYfaKCF5i3gr9xn3cVUBee4GnMOifjBJT4lGyDuVvLjQBCSLQ5Wmnd9sNdFVkjo
-         r5Jpw1Q/CCJqTrwovP5xxZTigh8O70rLNCGeOcRX5i8HJscwQrX+Cd6zk2hBUgBQBA
-         twgoHIj1On3bmKeMz4VFGHZZz1j47SywIpGZS/9c=
-Date:   Tue, 4 Apr 2023 15:52:29 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc:     Mark Rutland <mark.rutland@arm.com>,
+        with ESMTP id S235588AbjDDNwp (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 4 Apr 2023 09:52:45 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 032BF44AE;
+        Tue,  4 Apr 2023 06:52:37 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.206])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PrThN1FC6z67XcG;
+        Tue,  4 Apr 2023 21:51:48 +0800 (CST)
+Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
+ lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Tue, 4 Apr 2023 14:52:33 +0100
+From:   Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To:     Mark Rutland <mark.rutland@arm.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Ingo Molnar <mingo@redhat.com>,
         Arnaldo Carvalho de Melo <acme@kernel.org>,
-        Will Deacon <will@kernel.org>, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linuxarm@huawei.com,
-        Dan Williams <dan.j.williams@intel.com>,
+        Will Deacon <will@kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <gregkh@linuxfoundation.org>
+CC:     <linuxarm@huawei.com>, Dan Williams <dan.j.williams@intel.com>,
         Shaokun Zhang <zhangshaokun@hisilicon.com>,
         Yicong Yang <yangyicong@hisilicon.com>,
         Jiucheng Xu <jiucheng.xu@amlogic.com>,
@@ -53,27 +45,48 @@ Cc:     Mark Rutland <mark.rutland@arm.com>,
         Shawn Guo <shawnguo@kernel.org>,
         Fenghua Yu <fenghua.yu@intel.com>,
         Dave Jiang <dave.jiang@intel.com>, Wu Hao <hao.wu@intel.com>,
-        Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+        Tom Rix <trix@redhat.com>, <linux-fpga@vger.kernel.org>,
         Suzuki K Poulose <suzuki.poulose@arm.com>,
         Liang Kan <kan.liang@linux.intel.com>
-Subject: Re: [PATCH 05/32] Documentation: hns-pmu: Use
- /sys/bus/event_source/devices paths
-Message-ID: <2023040424-pope-footsie-44a6@gregkh>
+Subject: [PATCH 20/32] perf/arm-ccn: Assign parents for event_source device
+Date:   Tue, 4 Apr 2023 14:42:13 +0100
+Message-ID: <20230404134225.13408-21-Jonathan.Cameron@huawei.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230404134225.13408-1-Jonathan.Cameron@huawei.com>
 References: <20230404134225.13408-1-Jonathan.Cameron@huawei.com>
- <20230404134225.13408-6-Jonathan.Cameron@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230404134225.13408-6-Jonathan.Cameron@huawei.com>
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.122.247.231]
+X-ClientProxiedBy: lhrpeml500003.china.huawei.com (7.191.162.67) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Tue, Apr 04, 2023 at 02:41:58PM +0100, Jonathan Cameron wrote:
-> To allow setting an appropriate parent for the struct pmu device
-> remove existing references to /sys/devices/ path.
-> 
-> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Currently the PMU device appears directly under /sys/devices/
+Only root busses should appear there, so instead assign the pmu->dev
+parent to be the platform device.
 
+Link: https://lore.kernel.org/linux-cxl/ZCLI9A40PJsyqAmq@kroah.com/
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+---
+ drivers/perf/arm-ccn.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+diff --git a/drivers/perf/arm-ccn.c b/drivers/perf/arm-ccn.c
+index 728d13d8e98a..dc8b0dcb436e 100644
+--- a/drivers/perf/arm-ccn.c
++++ b/drivers/perf/arm-ccn.c
+@@ -1265,6 +1265,7 @@ static int arm_ccn_pmu_init(struct arm_ccn *ccn)
+ 	/* Perf driver registration */
+ 	ccn->dt.pmu = (struct pmu) {
+ 		.module = THIS_MODULE,
++		.parent = ccn->dev,
+ 		.attr_groups = arm_ccn_pmu_attr_groups,
+ 		.task_ctx_nr = perf_invalid_context,
+ 		.event_init = arm_ccn_pmu_event_init,
+-- 
+2.37.2
+
