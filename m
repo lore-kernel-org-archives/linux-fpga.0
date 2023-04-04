@@ -2,25 +2,25 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0D00C761AF
-	for <linux-fpga@archiver.kernel.org>; Tue,  4 Apr 2023 14:13:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B70B6C6FD1D
+	for <linux-fpga@archiver.kernel.org>; Tue,  4 Apr 2023 14:15:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235576AbjDDOML (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 4 Apr 2023 10:12:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33992 "EHLO
+        id S235806AbjDDON6 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 4 Apr 2023 10:13:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38126 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235500AbjDDOMK (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 4 Apr 2023 10:12:10 -0400
+        with ESMTP id S235809AbjDDONz (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 4 Apr 2023 10:13:55 -0400
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF5823AB9;
-        Tue,  4 Apr 2023 07:12:06 -0700 (PDT)
-Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PrTmX1Qxvz67XcG;
-        Tue,  4 Apr 2023 21:55:24 +0800 (CST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69623526C;
+        Tue,  4 Apr 2023 07:13:23 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PrTmM1LsPz6J7BP;
+        Tue,  4 Apr 2023 21:55:15 +0800 (CST)
 Received: from SecurePC-101-06.china.huawei.com (10.122.247.231) by
  lhrpeml500005.china.huawei.com (7.191.163.240) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Tue, 4 Apr 2023 14:56:09 +0100
+ 15.1.2507.23; Tue, 4 Apr 2023 14:57:11 +0100
 From:   Jonathan Cameron <Jonathan.Cameron@huawei.com>
 To:     Mark Rutland <mark.rutland@arm.com>,
         Peter Zijlstra <peterz@infradead.org>,
@@ -48,9 +48,9 @@ CC:     <linuxarm@huawei.com>, Dan Williams <dan.j.williams@intel.com>,
         Tom Rix <trix@redhat.com>, <linux-fpga@vger.kernel.org>,
         Suzuki K Poulose <suzuki.poulose@arm.com>,
         Liang Kan <kan.liang@linux.intel.com>
-Subject: [PATCH 27/32] ARM: imx: Assign parents for mmdc event_source devices
-Date:   Tue, 4 Apr 2023 14:42:20 +0100
-Message-ID: <20230404134225.13408-28-Jonathan.Cameron@huawei.com>
+Subject: [PATCH 29/32] fpga: dfl: Assign parent for event_source device
+Date:   Tue, 4 Apr 2023 14:42:22 +0100
+Message-ID: <20230404134225.13408-30-Jonathan.Cameron@huawei.com>
 X-Mailer: git-send-email 2.37.2
 In-Reply-To: <20230404134225.13408-1-Jonathan.Cameron@huawei.com>
 References: <20230404134225.13408-1-Jonathan.Cameron@huawei.com>
@@ -58,7 +58,7 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Content-Type:   text/plain; charset=US-ASCII
 X-Originating-IP: [10.122.247.231]
-X-ClientProxiedBy: lhrpeml500004.china.huawei.com (7.191.163.9) To
+X-ClientProxiedBy: lhrpeml500003.china.huawei.com (7.191.162.67) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 X-CFilter-Loop: Reflected
 Precedence: bulk
@@ -67,27 +67,29 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 
 Currently the PMU device appears directly under /sys/devices/
 Only root busses should appear there, so instead assign the pmu->dev
-parent to be the platform device.
+parent to be the Platform device.
 
 Link: https://lore.kernel.org/linux-cxl/ZCLI9A40PJsyqAmq@kroah.com/
-Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Wu Hao <hao.wu@intel.com>
+Cc: Tom Rix <trix@redhat.com>
+Cc: linux-fpga@vger.kernel.org
 Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- arch/arm/mach-imx/mmdc.c | 1 +
+ drivers/fpga/dfl-fme-perf.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/mach-imx/mmdc.c b/arch/arm/mach-imx/mmdc.c
-index b9efe9da06e0..a015e0ea915d 100644
---- a/arch/arm/mach-imx/mmdc.c
-+++ b/arch/arm/mach-imx/mmdc.c
-@@ -436,6 +436,7 @@ static int mmdc_pmu_init(struct mmdc_pmu *pmu_mmdc,
- {
- 	*pmu_mmdc = (struct mmdc_pmu) {
- 		.pmu = (struct pmu) {
-+			.parent		= dev,
- 			.task_ctx_nr    = perf_invalid_context,
- 			.attr_groups    = attr_groups,
- 			.event_init     = mmdc_pmu_event_init,
+diff --git a/drivers/fpga/dfl-fme-perf.c b/drivers/fpga/dfl-fme-perf.c
+index 7422d2bc6f37..2d59f1c620b1 100644
+--- a/drivers/fpga/dfl-fme-perf.c
++++ b/drivers/fpga/dfl-fme-perf.c
+@@ -912,6 +912,7 @@ static int fme_perf_pmu_register(struct platform_device *pdev,
+ 
+ 	fme_perf_setup_hardware(priv);
+ 
++	pmu->parent =		&pdev->dev;
+ 	pmu->task_ctx_nr =	perf_invalid_context;
+ 	pmu->attr_groups =	fme_perf_groups;
+ 	pmu->attr_update =	fme_perf_events_groups;
 -- 
 2.37.2
 
