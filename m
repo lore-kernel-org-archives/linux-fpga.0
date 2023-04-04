@@ -2,82 +2,111 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C63A4C761AF
-	for <linux-fpga@archiver.kernel.org>; Mon,  3 Apr 2023 19:37:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D49E2C761A6
+	for <linux-fpga@archiver.kernel.org>; Tue,  4 Apr 2023 13:36:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231571AbjDCTfZ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 3 Apr 2023 15:35:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56092 "EHLO
+        id S235129AbjDDNe1 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 4 Apr 2023 09:34:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44410 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231538AbjDCTfZ (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 3 Apr 2023 15:35:25 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A06FA3;
-        Mon,  3 Apr 2023 12:35:24 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id E9732625A0;
-        Mon,  3 Apr 2023 19:35:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A1F2C433D2;
-        Mon,  3 Apr 2023 19:35:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1680550523;
-        bh=jvtnWZFI2fGJeH2PxHp6LZJsWoWybXxjuO7vI5xdc+k=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Y6p7mCvxr0BUh3aKtOMbCLM5/EIMGrzSJ9otvW1VaUDMJMnk+iJjhwZovzRPSKHGh
-         enymh2tMk49s2QKiOozwHvchGRtbYQRL5Ol/YfMF9gBH3tf8iU7w/Q1CLoygJ/bTvB
-         pQbNPxG0FRPjVBMDEsi+Nz9y8JWClfstHkWoHyRXWX6WH0PPIrD7MZr4C8+56Z8Uh2
-         /PSARdk4QAzH33kABAqlbI1+dr9kSBiUKatImd/nON1sEIWAP53B1n8LL2coMuD2AW
-         G7EyDPUI4pvKeK+h9F2Z18SyAKN3F1Mcgl1HbSlKPnpJQ8l8FD0dgBJBQTBbpneqr8
-         w2jCLwTX9pGSw==
-From:   Conor Dooley <conor@kernel.org>
-To:     linux-fpga@vger.kernel.org,
-        Conor Dooley <conor.dooley@microchip.com>
-Cc:     conor@kernel.org, Daire McNamara <daire.mcnamara@microchip.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
-        Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
-        linux-riscv@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: (subset) [PATCH v2 0/7] PolarFire SoC Auto Update Support
-Date:   Mon,  3 Apr 2023 20:34:59 +0100
-Message-Id: <20230403-audacity-champion-9aa7a47939f0@spud>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230331071823.956087-1-conor.dooley@microchip.com>
-References: <20230331071823.956087-1-conor.dooley@microchip.com>
+        with ESMTP id S235225AbjDDNeR (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 4 Apr 2023 09:34:17 -0400
+Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::224])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0FD223C06;
+        Tue,  4 Apr 2023 06:33:55 -0700 (PDT)
+Received: (Authenticated sender: alexis.lothore@bootlin.com)
+        by mail.gandi.net (Postfix) with ESMTPSA id 0DD9AE000D;
+        Tue,  4 Apr 2023 13:33:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+        t=1680615234;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=dhPKsedyNaIm395Jon3eIezMwB2v8WnHlUJJmpukY9g=;
+        b=Thx8U5pQS6MGp3KVFvjDkn8adG0aYVFH99okR43UMr9h3oYL42FzBRZ/WaocJGpGLIvVUp
+        Chw5l83T9ejeznKsxGtkTIuNqy3jD7FJbzBo32r7wA+vwMzJ0oJ7ePuJYeQswMhkMk7eQD
+        vKujDW7RCVPNpk9k55dqoxwjjYX4J9RgnT29/R3qYm8uRCqkuolEETawgCPVIwAvM6vB1p
+        PQ0LNH2X/fSIVXi7xdemSa5yjo6KXOG15DYii498tf7xDHiOBIin7EzHcqi1W0RI4rU5qL
+        wgQ2Qrz/TSZ4UA92hz07Zw/U4CDvF64Loxu1rF81CBNcoFOsZGt5/fDVi61Viw==
+From:   alexis.lothore@bootlin.com
+To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
+        trix@redhat.com, russell.h.weight@intel.com,
+        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     thomas.petazzoni@bootlin.com, nicolas.carrier@orolia.com
+Subject: [PATCH 0/1] warning on FPGA bridge registration
+Date:   Tue,  4 Apr 2023 15:31:01 +0200
+Message-Id: <20230404133102.2837535-1-alexis.lothore@bootlin.com>
+X-Mailer: git-send-email 2.40.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-X-Developer-Signature: v=1; a=openpgp-sha256; l=818; i=conor.dooley@microchip.com; h=from:subject:message-id; bh=YlEC6sgE+Yocm04DZPoSm8ShZaYEwmR3DSX9EC6jsCo=; b=owGbwMvMwCFWscWwfUFT0iXG02pJDCnaWomZhzYo6ft1XXtpV/K3bxuLt0rLQtVrvUefWJxPF 5i+WM6yo5SFQYyDQVZMkSXxdl+L1Po/Ljuce97CzGFlAhnCwMUpABNZGcbwV7Cda2eLu27inZjv HTJbdki4z2NY1VTb/WTRSr1nNfvnOzMyrGc6fDhNrmezc+TWuuqrzzL28D51PvBx0jnRf9eXfCn 4zwIA
-X-Developer-Key: i=conor.dooley@microchip.com; a=openpgp; fpr=F9ECA03CF54F12CD01F1655722E2C55B37CF380C
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Conor Dooley <conor.dooley@microchip.com>
+From: Alexis Lothoré <alexis.lothore@bootlin.com>
 
-On Fri, 31 Mar 2023 08:18:16 +0100, Conor Dooley wrote:
-> Hey all,
-> 
-> This patchset adds support for the "Auto Update" feature on PolarFire
-> SoC that allows for writing an FPGA bistream to the SPI flash connected
-> to the system controller.
-> On powercycle (or reboot depending on how the firmware implements the
-> openSBI SRST extension) "Auto Update" will take place, and program the
-> FPGA with the contents of the SPI flash - provided that that image is
-> valid and an actual upgrade from that already programmed!
-> 
-> [...]
+Hello,
+While upgrading a kernel 5.10.x to kernel 6.1.x, I observe some warnings. The
+target platform is a socfpga (Cyclone V). The warning has the following trace:
 
-Gonna take this one patch, since it's got ~nothing to do with the rest
-of the series really, so:
+[   26.725222] WARNING: CPU: 0 PID: 1 at lib/refcount.c:25 kobject_get (./include/linux/refcount.h:199 ./include/linux/refcount.h:250 ./include/linux/refcount.h:267 ./include/linux/kref.h:45 lib/kobject.c:635)
+[   26.732380] refcount_t: addition on 0; use-after-free.
+[   26.737501] Modules linked in:
+[   26.747935] Hardware name: Altera SOCFPGA
+[   26.751939] unwind_backtrace from show_stack (arch/arm/kernel/traps.c:255)
+[   26.757175] show_stack from dump_stack_lvl (lib/dump_stack.c:107 (discriminator 1))
+[   26.762230] dump_stack_lvl from __warn (kernel/panic.c:632 kernel/panic.c:679)
+[   26.767032] __warn from warn_slowpath_fmt (./include/asm-generic/preempt.h:69 ./include/linux/context_tracking.h:154 kernel/panic.c:705)
+[   26.772177] warn_slowpath_fmt from kobject_get (./include/linux/refcount.h:199 ./include/linux/refcount.h:250 ./include/linux/refcount.h:267 ./include/linux/kref.h:45 lib/kobject.c:635)
+[   26.777580] kobject_get from device_add (drivers/base/core.c:3760 drivers/base/core.c:3584)
+[   26.782464] device_add from of_platform_device_create_pdata (drivers/of/platform.c:190)
+[   26.788994] of_platform_device_create_pdata from of_platform_bus_create (drivers/of/platform.c:390)
+[   26.796732] of_platform_bus_create from of_platform_populate (drivers/of/platform.c:482)
+[   26.803432] of_platform_populate from fpga_bridge_register (drivers/fpga/fpga-bridge.c:365)
+[   26.809967] fpga_bridge_register from alt_fpga_bridge_probe (drivers/fpga/altera-hps2fpga.c:185)
+[   26.816674] alt_fpga_bridge_probe from platform_probe (drivers/base/platform.c:1401)
+[   26.822682] platform_probe from really_probe (drivers/base/dd.c:560 drivers/base/dd.c:639)
+[   26.827995] really_probe from __driver_probe_device (drivers/base/dd.c:778)
+[   26.833919] __driver_probe_device from driver_probe_device (drivers/base/dd.c:809)
+[   26.840363] driver_probe_device from __driver_attach (drivers/base/dd.c:1195)
+[   26.846460] __driver_attach from bus_for_each_dev (drivers/base/bus.c:300)
+[   26.852122] bus_for_each_dev from bus_add_driver (drivers/base/bus.c:619)
+[   26.857870] bus_add_driver from driver_register (drivers/base/driver.c:247)
+[   26.863449] driver_register from do_one_initcall (./include/linux/jump_label.h:259 ./include/linux/jump_label.h:269 ./include/trace/events/initcall.h:48 init/main.c:1304)
+[   26.869116] do_one_initcall from kernel_init_freeable (init/main.c:1375 init/main.c:1392 init/main.c:1411 init/main.c:1631)
+[   26.875296] kernel_init_freeable from kernel_init (init/main.c:1521)
+[   26.881047] kernel_init from ret_from_fork (arch/arm/kernel/entry-common.S:149)
+[   26.886097] Exception stack(0xf0831fb0 to 0xf0831ff8)
+[   26.891138] 1fa0:                                     00000000 00000000 00000000 00000000
+[   26.899292] 1fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[   26.907442] 1fe0: 00000000 00000000 00000000 00000000 00000013 00000000
 
-Applied to riscv-soc-for-next, thanks!
+From my understanding, the warning occurs because the device passed to
+of_platform_populate() in fpga_bridge_register() is not initialized. As a
+consequence, when it will eventually try to get a reference on parent
+device to create new child, it will find an uninitialized kobject and raise
+the warning.
 
-[1/7] soc: microchip: mpfs: add a prefix to rx_callback()
-      https://git.kernel.org/conor/c/4dd472bdafcb
+My guess is that the issue occurs since commit 0d70af3c2530 (and a revert
+tends to prove it). Before this rework, device initialization and addition
+were done before of_platform_populate. This commit has merged
+fpga_bridge_create() and fpga_bridge_register() (and while doing so, it has
+merged device_initialize() and device_add() into device_register()), but in
+the meantime it has moved device_register() AFTER of_platform_populate()
 
-Thanks,
-Conor.
+A naive attempt to revert to previous behavior (device init/add before
+of_platform_populate) can be found with the following patch, but since my
+understanding of fpga framework is still quite limited, please let me know
+if I am missing something.
+
+Alexis Lothoré (1):
+  fpga: bridge: properly initialize bridge device before populating
+    children
+
+ drivers/fpga/fpga-bridge.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+-- 
+2.40.0
+
