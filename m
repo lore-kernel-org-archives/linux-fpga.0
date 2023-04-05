@@ -2,62 +2,95 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D35DCC6FD1D
-	for <linux-fpga@archiver.kernel.org>; Tue,  4 Apr 2023 16:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56629C76188
+	for <linux-fpga@archiver.kernel.org>; Wed,  5 Apr 2023 03:52:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229670AbjDDQHO (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 4 Apr 2023 12:07:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43044 "EHLO
+        id S236228AbjDEDu4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 4 Apr 2023 23:50:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40762 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235693AbjDDQHO (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 4 Apr 2023 12:07:14 -0400
-X-Greylist: delayed 4196 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 04 Apr 2023 09:07:12 PDT
-Received: from mail.feshiecree.pl (mail.feshiecree.pl [89.40.114.103])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB4EC3AB9
-        for <linux-fpga@vger.kernel.org>; Tue,  4 Apr 2023 09:07:12 -0700 (PDT)
-Received: by mail.feshiecree.pl (Postfix, from userid 1001)
-        id 0C3D088B2C; Tue,  4 Apr 2023 08:50:59 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=feshiecree.pl;
-        s=mail; t=1680594695;
-        bh=hFxZwVw4rIL+JwfEOGI47p+fdoVOAeqVswP6NWoHSHQ=;
-        h=Date:From:To:Subject:From;
-        b=T8X1BymkJYZdkjtoKbZpduNKnAIkQzQNMjYFB6QzOMioHVz38KBPGzdSyVo+h/mmb
-         9gPNXFAZFmfS7Nhxrcy69mEs7pA3gBdDgEPwgUl5bVjQIWp93Pc09ZxvKLkKZ8S26h
-         s3qgtDTyLsgmKi8t1CC98LcISIuZVZJg/1q61d8G4g2vvKumDMlDBDiCX63ItxeK9X
-         cdsq/B3o8qmHmdvVC85wyjxldwf8tX+dLSxtu8TCRk8P8icGL5WY7Zr2J3cHAXks0u
-         cuT4kfRsxsUx5y7QsJn5mnF3mVqjqSu0hH2fvVjMLnHev93XX1oLJ/lY3AI1aHfpJM
-         X1JGq/NwglSIw==
-Received: by feshiecree.pl for <linux-fpga@vger.kernel.org>; Tue,  4 Apr 2023 07:50:27 GMT
-Message-ID: <20230404074504-0.1.1t.5nx8.0.p4t1mdv3lj@feshiecree.pl>
-Date:   Tue,  4 Apr 2023 07:50:27 GMT
-From:   "Krystian Wieczorek" <krystian.wieczorek@feshiecree.pl>
-To:     <linux-fpga@vger.kernel.org>
-Subject: W sprawie samochodu
-X-Mailer: mail.feshiecree.pl
+        with ESMTP id S236000AbjDEDuz (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 4 Apr 2023 23:50:55 -0400
+Received: from out30-113.freemail.mail.aliyun.com (out30-113.freemail.mail.aliyun.com [115.124.30.113])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 599E12691;
+        Tue,  4 Apr 2023 20:50:53 -0700 (PDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R961e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046059;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=30;SR=0;TI=SMTPD_---0VfNxCDL_1680666644;
+Received: from 30.240.113.3(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0VfNxCDL_1680666644)
+          by smtp.aliyun-inc.com;
+          Wed, 05 Apr 2023 11:50:47 +0800
+Message-ID: <9cb06879-d743-e3b2-b8e3-23962b458202@linux.alibaba.com>
+Date:   Wed, 5 Apr 2023 11:50:40 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.9.0
+Subject: Re: [PATCH 18/32] perf/alibaba_uncore: Assign parents for
+ event_source device
+Content-Language: en-US
+To:     Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Arnaldo Carvalho de Melo <acme@kernel.org>,
+        Will Deacon <will@kernel.org>, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org
+Cc:     linuxarm@huawei.com, Dan Williams <dan.j.williams@intel.com>,
+        Shaokun Zhang <zhangshaokun@hisilicon.com>,
+        Yicong Yang <yangyicong@hisilicon.com>,
+        Jiucheng Xu <jiucheng.xu@amlogic.com>,
+        Khuong Dinh <khuong@os.amperecomputing.com>,
+        Robert Richter <rric@kernel.org>,
+        Atish Patra <atishp@atishpatra.org>,
+        Anup Patel <anup@brainfault.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Frank Li <Frank.li@nxp.com>, Vineet Gupta <vgupta@kernel.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Fenghua Yu <fenghua.yu@intel.com>,
+        Dave Jiang <dave.jiang@intel.com>, Wu Hao <hao.wu@intel.com>,
+        Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Liang Kan <kan.liang@linux.intel.com>
+References: <20230404134225.13408-1-Jonathan.Cameron@huawei.com>
+ <20230404134225.13408-19-Jonathan.Cameron@huawei.com>
+From:   Shuai Xue <xueshuai@linux.alibaba.com>
+In-Reply-To: <20230404134225.13408-19-Jonathan.Cameron@huawei.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Dzie=C5=84 dobry,
-
-chcieliby=C5=9Bmy zapewni=C4=87 Pa=C5=84stwu kompleksowe rozwi=C4=85zania=
-, je=C5=9Bli chodzi o system monitoringu GPS.
-
-Precyzyjne monitorowanie pojazd=C3=B3w na mapach cyfrowych, =C5=9Bledzeni=
-e ich parametr=C3=B3w eksploatacyjnych w czasie rzeczywistym oraz kontrol=
-a paliwa to kluczowe funkcjonalno=C5=9Bci naszego systemu.=20
-
-Organizowanie pracy pracownik=C3=B3w jest dzi=C4=99ki temu prostsze i bar=
-dziej efektywne, a oszcz=C4=99dno=C5=9Bci i optymalizacja w zakresie pono=
-szonych koszt=C3=B3w, maj=C4=85 dla ka=C5=BCdego przedsi=C4=99biorcy ogro=
-mne znaczenie.
-
-Dopasujemy nasz=C4=85 ofert=C4=99 do Pa=C5=84stwa oczekiwa=C5=84 i potrze=
-b organizacji. Czy mogliby=C5=9Bmy porozmawia=C4=87 o naszej propozycji?
 
 
-Pozdrawiam
-Krystian Wieczorek
+On 2023/4/4 PM9:42, Jonathan Cameron wrote:
+> Currently the PMU device appears directly under /sys/devices/
+> Only root busses should appear there, so instead assign the pmu->dev
+> parent to be the platform device.
+> 
+> Link: https://lore.kernel.org/linux-cxl/ZCLI9A40PJsyqAmq@kroah.com/
+> Cc: Shuai Xue <xueshuai@linux.alibaba.com>
+> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> ---
+>  drivers/perf/alibaba_uncore_drw_pmu.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/perf/alibaba_uncore_drw_pmu.c b/drivers/perf/alibaba_uncore_drw_pmu.c
+> index a7689fecb49d..0d129acf3f84 100644
+> --- a/drivers/perf/alibaba_uncore_drw_pmu.c
+> +++ b/drivers/perf/alibaba_uncore_drw_pmu.c
+> @@ -683,6 +683,7 @@ static int ali_drw_pmu_probe(struct platform_device *pdev)
+>  
+>  	drw_pmu->pmu = (struct pmu) {
+>  		.module		= THIS_MODULE,
+> +		.parent		= &pdev->dev,
+>  		.task_ctx_nr	= perf_invalid_context,
+>  		.event_init	= ali_drw_pmu_event_init,
+>  		.add		= ali_drw_pmu_add,
+
+
+Reviewed-by: Shuai Xue <xueshuai@linux.alibaba.com>
+
+Thank you.
+
+Best Regards,
+Shuai
