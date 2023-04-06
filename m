@@ -2,33 +2,32 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 792D2C77B73
-	for <linux-fpga@archiver.kernel.org>; Thu,  6 Apr 2023 02:36:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 090E2C7619A
+	for <linux-fpga@archiver.kernel.org>; Thu,  6 Apr 2023 02:40:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234567AbjDFCez (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 5 Apr 2023 22:34:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56890 "EHLO
+        id S233745AbjDFCjJ (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 5 Apr 2023 22:39:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34010 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233927AbjDFCep (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 5 Apr 2023 22:34:45 -0400
-Received: from out30-119.freemail.mail.aliyun.com (out30-119.freemail.mail.aliyun.com [115.124.30.119])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10F445FDB;
-        Wed,  5 Apr 2023 19:34:42 -0700 (PDT)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R131e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046051;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0VfR2SYv_1680748479;
-Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0VfR2SYv_1680748479)
+        with ESMTP id S229504AbjDFCjJ (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 5 Apr 2023 22:39:09 -0400
+Received: from out30-111.freemail.mail.aliyun.com (out30-111.freemail.mail.aliyun.com [115.124.30.111])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7BD891980;
+        Wed,  5 Apr 2023 19:39:07 -0700 (PDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R121e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046051;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=9;SR=0;TI=SMTPD_---0VfR11DX_1680748743;
+Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0VfR11DX_1680748743)
           by smtp.aliyun-inc.com;
-          Thu, 06 Apr 2023 10:34:40 +0800
+          Thu, 06 Apr 2023 10:39:04 +0800
 From:   Yang Li <yang.lee@linux.alibaba.com>
 To:     mdf@kernel.org
 Cc:     hao.wu@intel.com, yilun.xu@intel.com, trix@redhat.com,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+        michal.simek@xilinx.com, linux-fpga@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Yang Li <yang.lee@linux.alibaba.com>
-Subject: [PATCH -next 4/6] fpga: dfl: Use devm_platform_ioremap_resource()
-Date:   Thu,  6 Apr 2023 10:34:30 +0800
-Message-Id: <20230406023432.124792-4-yang.lee@linux.alibaba.com>
+Subject: [PATCH -next] fpga: zynq: Use devm_platform_ioremap_resource()
+Date:   Thu,  6 Apr 2023 10:39:03 +0800
+Message-Id: <20230406023903.131063-1-yang.lee@linux.alibaba.com>
 X-Mailer: git-send-email 2.20.1.7.g153144c
-In-Reply-To: <20230406023432.124792-1-yang.lee@linux.alibaba.com>
-References: <20230406023432.124792-1-yang.lee@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -41,31 +40,31 @@ function does.
 
 Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 ---
- drivers/fpga/dfl-fme-mgr.c | 4 +---
+ drivers/fpga/zynq-fpga.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/fpga/dfl-fme-mgr.c b/drivers/fpga/dfl-fme-mgr.c
-index af0785783b52..ab228d8837a0 100644
---- a/drivers/fpga/dfl-fme-mgr.c
-+++ b/drivers/fpga/dfl-fme-mgr.c
-@@ -280,7 +280,6 @@ static int fme_mgr_probe(struct platform_device *pdev)
+diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
+index ae0da361e6c6..b509da6b0604 100644
+--- a/drivers/fpga/zynq-fpga.c
++++ b/drivers/fpga/zynq-fpga.c
+@@ -555,7 +555,6 @@ static int zynq_fpga_probe(struct platform_device *pdev)
  	struct device *dev = &pdev->dev;
- 	struct fme_mgr_priv *priv;
+ 	struct zynq_fpga_priv *priv;
  	struct fpga_manager *mgr;
 -	struct resource *res;
+ 	int err;
  
  	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
-@@ -290,8 +289,7 @@ static int fme_mgr_probe(struct platform_device *pdev)
- 		priv->ioaddr = pdata->ioaddr;
+@@ -563,8 +562,7 @@ static int zynq_fpga_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	spin_lock_init(&priv->dma_lock);
  
- 	if (!priv->ioaddr) {
--		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--		priv->ioaddr = devm_ioremap_resource(dev, res);
-+		priv->ioaddr = devm_platform_ioremap_resource(pdev, 0);
- 		if (IS_ERR(priv->ioaddr))
- 			return PTR_ERR(priv->ioaddr);
- 	}
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	priv->io_base = devm_ioremap_resource(dev, res);
++	priv->io_base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(priv->io_base))
+ 		return PTR_ERR(priv->io_base);
+ 
 -- 
 2.20.1.7.g153144c
 
