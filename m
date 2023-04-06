@@ -2,25 +2,25 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69C3EC7618D
-	for <linux-fpga@archiver.kernel.org>; Thu,  6 Apr 2023 03:58:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6DCDC7618D
+	for <linux-fpga@archiver.kernel.org>; Thu,  6 Apr 2023 03:59:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235035AbjDFD4X (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 5 Apr 2023 23:56:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56662 "EHLO
+        id S235110AbjDFD6E (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 5 Apr 2023 23:58:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57732 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235045AbjDFD4V (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 5 Apr 2023 23:56:21 -0400
+        with ESMTP id S235045AbjDFD6D (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 5 Apr 2023 23:58:03 -0400
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D970C527F;
-        Wed,  5 Apr 2023 20:56:19 -0700 (PDT)
-Received: from canpemm500009.china.huawei.com (unknown [172.30.72.53])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4PsSKR6yQkzKx1b;
-        Thu,  6 Apr 2023 11:53:47 +0800 (CST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 565339760;
+        Wed,  5 Apr 2023 20:58:02 -0700 (PDT)
+Received: from canpemm500009.china.huawei.com (unknown [172.30.72.57])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4PsSKw0VcRzSqkp;
+        Thu,  6 Apr 2023 11:54:12 +0800 (CST)
 Received: from [10.67.102.169] (10.67.102.169) by
  canpemm500009.china.huawei.com (7.192.105.203) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Thu, 6 Apr 2023 11:56:07 +0800
+ 15.1.2507.23; Thu, 6 Apr 2023 11:57:30 +0800
 CC:     <yangyicong@hisilicon.com>, <linuxarm@huawei.com>,
         Dan Williams <dan.j.williams@intel.com>,
         Shaokun Zhang <zhangshaokun@hisilicon.com>,
@@ -40,8 +40,8 @@ CC:     <yangyicong@hisilicon.com>, <linuxarm@huawei.com>,
         Tom Rix <trix@redhat.com>, <linux-fpga@vger.kernel.org>,
         Suzuki K Poulose <suzuki.poulose@arm.com>,
         Liang Kan <kan.liang@linux.intel.com>
-Subject: Re: [PATCH 02/32] perf/hisi-pcie: Assign parent for event_source
- device
+Subject: Re: [PATCH 04/32] perf/hisi-uncore: Assign parents for event_source
+ devices
 To:     Jonathan Cameron <Jonathan.Cameron@huawei.com>,
         Mark Rutland <mark.rutland@arm.com>,
         Peter Zijlstra <peterz@infradead.org>,
@@ -51,18 +51,18 @@ To:     Jonathan Cameron <Jonathan.Cameron@huawei.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <gregkh@linuxfoundation.org>
 References: <20230404134225.13408-1-Jonathan.Cameron@huawei.com>
- <20230404134225.13408-3-Jonathan.Cameron@huawei.com>
+ <20230404134225.13408-5-Jonathan.Cameron@huawei.com>
 From:   Yicong Yang <yangyicong@huawei.com>
-Message-ID: <fa68a994-7af7-53c0-a91a-bf00cff9d7ff@huawei.com>
-Date:   Thu, 6 Apr 2023 11:56:07 +0800
+Message-ID: <233516c4-be85-ec0b-e586-bb1c5f78a9b5@huawei.com>
+Date:   Thu, 6 Apr 2023 11:57:30 +0800
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
  Thunderbird/78.5.1
 MIME-Version: 1.0
-In-Reply-To: <20230404134225.13408-3-Jonathan.Cameron@huawei.com>
+In-Reply-To: <20230404134225.13408-5-Jonathan.Cameron@huawei.com>
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-Originating-IP: [10.67.102.169]
-X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
  canpemm500009.china.huawei.com (7.192.105.203)
 X-CFilter-Loop: Reflected
 Precedence: bulk
@@ -72,7 +72,7 @@ X-Mailing-List: linux-fpga@vger.kernel.org
 On 2023/4/4 21:41, Jonathan Cameron wrote:
 > Currently the PMU device appears directly under /sys/devices/
 > Only root busses should appear there, so instead assign the pmu->dev
-> parent to be the PCI device.
+> parent to be the platform device.
 > 
 > Link: https://lore.kernel.org/linux-cxl/ZCLI9A40PJsyqAmq@kroah.com/
 > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
@@ -80,19 +80,19 @@ On 2023/4/4 21:41, Jonathan Cameron wrote:
 Reviewed-by: Yicong Yang <yangyicong@hisilicon.com>
 
 > ---
->  drivers/perf/hisilicon/hisi_pcie_pmu.c | 1 +
+>  drivers/perf/hisilicon/hisi_uncore_pmu.c | 1 +
 >  1 file changed, 1 insertion(+)
 > 
-> diff --git a/drivers/perf/hisilicon/hisi_pcie_pmu.c b/drivers/perf/hisilicon/hisi_pcie_pmu.c
-> index 6fee0b6e163b..2cc88d75b895 100644
-> --- a/drivers/perf/hisilicon/hisi_pcie_pmu.c
-> +++ b/drivers/perf/hisilicon/hisi_pcie_pmu.c
-> @@ -793,6 +793,7 @@ static int hisi_pcie_alloc_pmu(struct pci_dev *pdev, struct hisi_pcie_pmu *pcie_
->  	pcie_pmu->pmu = (struct pmu) {
->  		.name		= name,
->  		.module		= THIS_MODULE,
-> +		.parent		= &pdev->dev,
->  		.event_init	= hisi_pcie_pmu_event_init,
->  		.pmu_enable	= hisi_pcie_pmu_enable,
->  		.pmu_disable	= hisi_pcie_pmu_disable,
+> diff --git a/drivers/perf/hisilicon/hisi_uncore_pmu.c b/drivers/perf/hisilicon/hisi_uncore_pmu.c
+> index f1b0f5e1a28f..b4350e5dc3fc 100644
+> --- a/drivers/perf/hisilicon/hisi_uncore_pmu.c
+> +++ b/drivers/perf/hisilicon/hisi_uncore_pmu.c
+> @@ -538,6 +538,7 @@ void hisi_pmu_init(struct hisi_pmu *hisi_pmu, const char *name,
+>  
+>  	pmu->name               = name;
+>  	pmu->module             = module;
+> +	pmu->parent		= hisi_pmu->dev;
+>  	pmu->task_ctx_nr        = perf_invalid_context;
+>  	pmu->event_init         = hisi_uncore_pmu_event_init;
+>  	pmu->pmu_enable         = hisi_uncore_pmu_enable;
 > 
