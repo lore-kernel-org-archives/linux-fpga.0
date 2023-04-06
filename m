@@ -2,31 +2,33 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AF9EC7619A
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 288F5C7618D
 	for <linux-fpga@archiver.kernel.org>; Thu,  6 Apr 2023 02:36:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234269AbjDFCey (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 5 Apr 2023 22:34:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56850 "EHLO
+        id S231232AbjDFCe4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 5 Apr 2023 22:34:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56892 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231232AbjDFCek (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 5 Apr 2023 22:34:40 -0400
-Received: from out30-112.freemail.mail.aliyun.com (out30-112.freemail.mail.aliyun.com [115.124.30.112])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 682AC5BA0;
-        Wed,  5 Apr 2023 19:34:37 -0700 (PDT)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R121e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046060;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0VfR2psz_1680748474;
-Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0VfR2psz_1680748474)
+        with ESMTP id S234033AbjDFCep (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 5 Apr 2023 22:34:45 -0400
+Received: from out30-119.freemail.mail.aliyun.com (out30-119.freemail.mail.aliyun.com [115.124.30.119])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1AA485BA0;
+        Wed,  5 Apr 2023 19:34:40 -0700 (PDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R561e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046049;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0VfR1kSd_1680748477;
+Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0VfR1kSd_1680748477)
           by smtp.aliyun-inc.com;
-          Thu, 06 Apr 2023 10:34:34 +0800
+          Thu, 06 Apr 2023 10:34:38 +0800
 From:   Yang Li <yang.lee@linux.alibaba.com>
 To:     mdf@kernel.org
 Cc:     hao.wu@intel.com, yilun.xu@intel.com, trix@redhat.com,
         linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
         Yang Li <yang.lee@linux.alibaba.com>
-Subject: [PATCH -next 1/6] fpga: manager: Use devm_platform_ioremap_resource()
-Date:   Thu,  6 Apr 2023 10:34:27 +0800
-Message-Id: <20230406023432.124792-1-yang.lee@linux.alibaba.com>
+Subject: [PATCH -next 3/6] fpga: manager: Use devm_platform_ioremap_resource()
+Date:   Thu,  6 Apr 2023 10:34:29 +0800
+Message-Id: <20230406023432.124792-3-yang.lee@linux.alibaba.com>
 X-Mailer: git-send-email 2.20.1.7.g153144c
+In-Reply-To: <20230406023432.124792-1-yang.lee@linux.alibaba.com>
+References: <20230406023432.124792-1-yang.lee@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -39,30 +41,37 @@ function does.
 
 Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 ---
- drivers/fpga/ts73xx-fpga.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/fpga/socfpga-a10.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/fpga/ts73xx-fpga.c b/drivers/fpga/ts73xx-fpga.c
-index 8e6e9c840d9d..4e1d2a4d3df4 100644
---- a/drivers/fpga/ts73xx-fpga.c
-+++ b/drivers/fpga/ts73xx-fpga.c
-@@ -103,7 +103,6 @@ static int ts73xx_fpga_probe(struct platform_device *pdev)
- 	struct device *kdev = &pdev->dev;
- 	struct ts73xx_fpga_priv *priv;
+diff --git a/drivers/fpga/socfpga-a10.c b/drivers/fpga/socfpga-a10.c
+index ac8e89b8a5cc..cc4861e345c9 100644
+--- a/drivers/fpga/socfpga-a10.c
++++ b/drivers/fpga/socfpga-a10.c
+@@ -471,7 +471,6 @@ static int socfpga_a10_fpga_probe(struct platform_device *pdev)
+ 	struct a10_fpga_priv *priv;
+ 	void __iomem *reg_base;
  	struct fpga_manager *mgr;
 -	struct resource *res;
+ 	int ret;
  
- 	priv = devm_kzalloc(kdev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
-@@ -111,8 +110,7 @@ static int ts73xx_fpga_probe(struct platform_device *pdev)
+ 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+@@ -479,14 +478,12 @@ static int socfpga_a10_fpga_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
  
- 	priv->dev = kdev;
- 
+ 	/* First mmio base is for register access */
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	priv->io_base = devm_ioremap_resource(kdev, res);
-+	priv->io_base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(priv->io_base))
- 		return PTR_ERR(priv->io_base);
+-	reg_base = devm_ioremap_resource(dev, res);
++	reg_base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(reg_base))
+ 		return PTR_ERR(reg_base);
+ 
+ 	/* Second mmio base is for writing FPGA image data */
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+-	priv->fpga_data_addr = devm_ioremap_resource(dev, res);
++	priv->fpga_data_addr = devm_platform_ioremap_resource(pdev, 1);
+ 	if (IS_ERR(priv->fpga_data_addr))
+ 		return PTR_ERR(priv->fpga_data_addr);
  
 -- 
 2.20.1.7.g153144c
