@@ -2,74 +2,118 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD69FC77B6E
-	for <linux-fpga@archiver.kernel.org>; Mon, 10 Apr 2023 02:19:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43207C7619A
+	for <linux-fpga@archiver.kernel.org>; Tue, 11 Apr 2023 05:59:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229657AbjDJCRm (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 9 Apr 2023 22:17:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35566 "EHLO
+        id S229986AbjDKF50 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 11 Apr 2023 01:57:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43446 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229644AbjDJCRl (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 9 Apr 2023 22:17:41 -0400
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80F8D3C21;
-        Sun,  9 Apr 2023 19:17:39 -0700 (PDT)
-Received: by mail-lj1-x236.google.com with SMTP id bx15so2065827ljb.7;
-        Sun, 09 Apr 2023 19:17:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1681093057;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Wf+efalkSkI9mDMxtM/0oFO463/s9uRI1g/ofMKtVDo=;
-        b=WUDlFzBq4CMSyM65JP/KVwNhuWO/RvSl+oy866bY0BnNNEASFunHZ+hSDxCSEmW8lD
-         E9H63EEimuLNHW8A4CVtaK5W4nINAv27VKeF16TJMA6tT7HEXFgTFRCbdgBFqgS+Wt9T
-         g7kKyK22WkrzO8eC1O0jFEH407JspVuyghQUqbvQ0nVMGvAskJRH9lhCf25LWFFAPmxm
-         lgPF1US1pVdLAl/jNasKmk2pUs8zJKNphtS4QGGk0M+KdOrfspcLzL9H9pAMI93w8ex7
-         OeODgTFbnPy/q8PsUdTjNP43qzWhEhqE3Pa4Qd+INiYWeh6VnfCLIeMRMlIzeefGtEjE
-         zUIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681093057;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Wf+efalkSkI9mDMxtM/0oFO463/s9uRI1g/ofMKtVDo=;
-        b=7DGvg7jXjcveCK6C89uJGDlvLsxoVoLgZpBh10w0xgzjak9LUrK2o+Qi9HYkl8pFrE
-         KtOsqCUzKcitYOD6RprWkwTDi5t9gas6dTtIelVkeXptPNSnpgeDbGhlXFenOgqkd96T
-         5PprbTz/X44qIuq9Cwd6Qqd5+Qm7W8zgHYiKmZLvqLpUDIwrMFJ3I3C97NRp+xssifFs
-         6LDzvV8eecehor5VVpUwHOmYnQ1Ad9H3jurBhsprZc4ULnj9ZsEgXK1OBWPD1xklrjz2
-         RmKGEOIgFHZOQ/84L2WAX5wBXy8DBJLisbmQVKzwUm4RHqiVU7gqUVfmxRoucWwkETbG
-         TFeQ==
-X-Gm-Message-State: AAQBX9cGSZDP1Uytf1z99EYgF9rvn72LwwquWUneGRqkS7w6ghE3H9PU
-        ngsnabrj0HMY02OkqzcE2lAk+AaEX9Ud0nz5K0I=
-X-Google-Smtp-Source: AKy350brDVaJMT570wYdSM/EYIYWXwU+EDYTuo8e2Qv81S4dgcFrmPHEYudKemWMtHHarOvKLnR2zIz09Kd9CS+j7gU=
-X-Received: by 2002:a2e:93c3:0:b0:29b:ebfa:765d with SMTP id
- p3-20020a2e93c3000000b0029bebfa765dmr2450197ljh.1.1681093057526; Sun, 09 Apr
- 2023 19:17:37 -0700 (PDT)
+        with ESMTP id S229831AbjDKF5Y (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 11 Apr 2023 01:57:24 -0400
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 276AC3A91;
+        Mon, 10 Apr 2023 22:56:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681192610; x=1712728610;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=EF3DS2gvz2bYEhotwKHn4GGVCCEzg7c8/8/hl25mbs4=;
+  b=nT7boguw3zlPBEYBxPmB9IplCdf9PpF+iXPPA14SnLIVpBFxNIGNE9HS
+   pCCDzJ68h91BaXDVAZPFDITxCvPHZZlDfJZ+305sNwGgbiVZb1S3WZ+w0
+   zeTe56EwtgkEVFvSrg5TewZ44Er69LAp8NPzz0Drv2SdOvBs346UJaVcj
+   xHSdXJkVavdsvK7m6HE7UcrscuiOeMFidApRzQnBoFSBYZ9XOuf+UVJSZ
+   iz+fIyc6Xb1GytAzjhGPnH1Xmf58rPQBmv3e0t981xxyStoYtFX9gjipH
+   OExxUOBQ0/88G3kIMMX5DTi6cHBMnloJn1dsGWEzhqftSAbQE9TGqaAug
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10676"; a="343535100"
+X-IronPort-AV: E=Sophos;i="5.98,335,1673942400"; 
+   d="scan'208";a="343535100"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2023 22:56:20 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10676"; a="757692648"
+X-IronPort-AV: E=Sophos;i="5.98,335,1673942400"; 
+   d="scan'208";a="757692648"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by fmsmga004.fm.intel.com with ESMTP; 10 Apr 2023 22:56:17 -0700
+Date:   Tue, 11 Apr 2023 13:57:00 +0000
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     Guenter Roeck <linux@roeck-us.net>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
+        Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
+        linux-hwmon@vger.kernel.org
+Subject: Re: [PATCH] fpga: dfl-fme: constify pointers to hwmon_channel_info
+Message-ID: <ZDVnLDpnkycl+Uz8@yilunxu-OptiPlex-7050>
+References: <20230407150112.79854-1-krzysztof.kozlowski@linaro.org>
+ <0e41f48f-229d-389f-1dec-7230f13e1600@roeck-us.net>
 MIME-Version: 1.0
-References: <20230206054326.89323-1-k1rh4.lee@gmail.com> <Y+X+kZResf0a/aES@yilunxu-OptiPlex-7050>
- <ZDMLSOoMt5Ims6xT@eldamar.lan>
-In-Reply-To: <ZDMLSOoMt5Ims6xT@eldamar.lan>
-From:   sangsup lee <k1rh4.lee@gmail.com>
-Date:   Mon, 10 Apr 2023 11:17:01 +0900
-Message-ID: <CAJkuJRh4r9bqjfTAdkFgAQ1Az+zt6HuG85d-fWVQXdgmQDW8dQ@mail.gmail.com>
-Subject: Re: [PATCH] fpga: dfl-afu-region: Add overflow checks for region size
- and offset
-To:     Salvatore Bonaccorso <carnil@debian.org>
-Cc:     Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>,
-        Tom Rix <trix@redhat.com>, Moritz Fischer <mdf@kernel.org>,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0e41f48f-229d-389f-1dec-7230f13e1600@roeck-us.net>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Hi,
+On 2023-04-07 at 16:08:45 -0700, Guenter Roeck wrote:
+> On 4/7/23 08:01, Krzysztof Kozlowski wrote:
+> > Statically allocated array of pointed to hwmon_channel_info can be made
+> > const for safety.
+> > 
+> > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> > 
+> > ---
+> > 
+> > This depends on hwmon core patch:
+> > https://lore.kernel.org/all/20230406203103.3011503-2-krzysztof.kozlowski@linaro.org/
+> > 
+> > Therefore I propose this should also go via hwmon tree.
+> 
+> I am not going to apply patches for 10+ subsystems through the hwmon tree.
+> This can only result in chaos. The dependent patch is available at
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git hwmon-const
+> 
+> or wait until after the next commit window to apply this patch.
 
-In my opinion the code has an insecure code pattern.
-The size may have integer overflow condition i think.
-But, I did  not do dynamic analysis but I did static audit fpga code(I
-don't have an fpga device).
-because of this.  I don't make sure about Yilun's comment.
-I think the code must have defensive coding rules.
+OK, I could apply this patch to linux-fpga in next cycle.
 
-best regards.
+Thanks,
+Yilun
+
+> 
+> Thanks,
+> Guenter
+> 
+> > 
+> > Cc: Jean Delvare <jdelvare@suse.com>
+> > Cc: Guenter Roeck <linux@roeck-us.net>
+> > Cc: linux-hwmon@vger.kernel.org
+> > ---
+> >   drivers/fpga/dfl-fme-main.c | 4 ++--
+> >   1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
+> > index 77ea04d4edbe..bcb5d34b3b82 100644
+> > --- a/drivers/fpga/dfl-fme-main.c
+> > +++ b/drivers/fpga/dfl-fme-main.c
+> > @@ -265,7 +265,7 @@ static const struct hwmon_ops thermal_hwmon_ops = {
+> >   	.read = thermal_hwmon_read,
+> >   };
+> > -static const struct hwmon_channel_info *thermal_hwmon_info[] = {
+> > +static const struct hwmon_channel_info * const thermal_hwmon_info[] = {
+> >   	HWMON_CHANNEL_INFO(temp, HWMON_T_INPUT | HWMON_T_EMERGENCY |
+> >   				 HWMON_T_MAX   | HWMON_T_MAX_ALARM |
+> >   				 HWMON_T_CRIT  | HWMON_T_CRIT_ALARM),
+> > @@ -465,7 +465,7 @@ static const struct hwmon_ops power_hwmon_ops = {
+> >   	.write = power_hwmon_write,
+> >   };
+> > -static const struct hwmon_channel_info *power_hwmon_info[] = {
+> > +static const struct hwmon_channel_info * const power_hwmon_info[] = {
+> >   	HWMON_CHANNEL_INFO(power, HWMON_P_INPUT |
+> >   				  HWMON_P_MAX   | HWMON_P_MAX_ALARM |
+> >   				  HWMON_P_CRIT  | HWMON_P_CRIT_ALARM),
+> 
