@@ -2,115 +2,118 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1B02C77B6F
-	for <linux-fpga@archiver.kernel.org>; Tue, 11 Apr 2023 11:56:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 391E9C77B6E
+	for <linux-fpga@archiver.kernel.org>; Wed, 12 Apr 2023 09:58:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230086AbjDKLy6 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 11 Apr 2023 07:54:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45520 "EHLO
+        id S229485AbjDLJ5A (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Wed, 12 Apr 2023 05:57:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43204 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229721AbjDKLy5 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 11 Apr 2023 07:54:57 -0400
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8FDEE67;
-        Tue, 11 Apr 2023 04:54:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681214096; x=1712750096;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=C8TGZFhmbYFm4VBWTD8elks6yBJ/GjsydWyFRQRkG+k=;
-  b=ko+3sF1vlYNwuLeWcd2oSYbURWxLIMSaZ81N61TulHIZVVWsURamrqgY
-   7V81iSBHPJsv5iCjPvIFk/aUm0GeAtqPFQFU+2LwSEZWWB0yYjkOB8yBd
-   Y3kpXN2lf3U7txp6lKVS6L5d3J5CJ0B7PDvCmo6PZcvg/oBlAUWrxIORi
-   0VgC6ddHqfb/C47gotW0xHug4PwSk4RhWGPiqo8c3V34q+Rz17cqH+Kkx
-   wrCo4Z+m+L/8ZPPUqxhULsmnwRwgLYLGCDZmpyJUYX2rGfi1ZG3yUkZ7v
-   gj3RZdH1i7vz0pye+3OrgCvt96ZjrDFW6gkK4Arr/QueeYASv4gi8+sG/
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10676"; a="341087922"
-X-IronPort-AV: E=Sophos;i="5.98,336,1673942400"; 
-   d="scan'208";a="341087922"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Apr 2023 04:54:56 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10676"; a="832314039"
-X-IronPort-AV: E=Sophos;i="5.98,336,1673942400"; 
-   d="scan'208";a="832314039"
-Received: from rwambsga-mobl.ger.corp.intel.com ([10.251.212.142])
-  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Apr 2023 04:54:53 -0700
-Date:   Tue, 11 Apr 2023 14:54:58 +0300 (EEST)
-From:   =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To:     Xu Yilun <yilun.xu@intel.com>
-cc:     Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
-        Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org,
-        Lee Jones <lee@kernel.org>, Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        linux-hwmon@vger.kernel.org,
-        Russ Weight <russell.h.weight@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/4] mfd: intel-m10-bmc: Manage access to MAX 10 fw
- handshake registers
-In-Reply-To: <ZC+1rKoUNsqrjjtw@yilunxu-OptiPlex-7050>
-Message-ID: <fb95c8da-c828-12b8-aae-56bd867cff41@linux.intel.com>
-References: <20230405080152.6732-1-ilpo.jarvinen@linux.intel.com> <20230405080152.6732-5-ilpo.jarvinen@linux.intel.com> <ZC+1rKoUNsqrjjtw@yilunxu-OptiPlex-7050>
+        with ESMTP id S229964AbjDLJ47 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Wed, 12 Apr 2023 05:56:59 -0400
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD6737295;
+        Wed, 12 Apr 2023 02:56:57 -0700 (PDT)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4PxJ2w0HmHz6J6wc;
+        Wed, 12 Apr 2023 17:54:32 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Wed, 12 Apr
+ 2023 10:56:53 +0100
+Date:   Wed, 12 Apr 2023 10:56:50 +0100
+From:   Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To:     Greg KH <gregkh@linuxfoundation.org>
+CC:     Peter Zijlstra <peterz@infradead.org>,
+        Yicong Yang <yangyicong@huawei.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Ingo Molnar <mingo@redhat.com>,
+        Arnaldo Carvalho de Melo <acme@kernel.org>,
+        Will Deacon <will@kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>, <yangyicong@hisilicon.com>,
+        <linuxarm@huawei.com>, Dan Williams <dan.j.williams@intel.com>,
+        Shaokun Zhang <zhangshaokun@hisilicon.com>,
+        Jiucheng Xu <jiucheng.xu@amlogic.com>,
+        "Khuong Dinh" <khuong@os.amperecomputing.com>,
+        Robert Richter <rric@kernel.org>,
+        Atish Patra <atishp@atishpatra.org>,
+        Anup Patel <anup@brainfault.org>,
+        "Andy Gross" <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Frank Li <Frank.li@nxp.com>,
+        Shuai Xue <xueshuai@linux.alibaba.com>,
+        Vineet Gupta <vgupta@kernel.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Fenghua Yu <fenghua.yu@intel.com>,
+        Dave Jiang <dave.jiang@intel.com>, Wu Hao <hao.wu@intel.com>,
+        Tom Rix <trix@redhat.com>, <linux-fpga@vger.kernel.org>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Liang Kan <kan.liang@linux.intel.com>
+Subject: Re: [PATCH 01/32] perf: Allow a PMU to have a parent
+Message-ID: <20230412105650.000014f9@Huawei.com>
+In-Reply-To: <2023040610-morbidly-supermom-e81c@gregkh>
+References: <20230404134225.13408-1-Jonathan.Cameron@huawei.com>
+        <20230404134225.13408-2-Jonathan.Cameron@huawei.com>
+        <61f8e489-ae76-38d6-2da0-43cf3c17853d@huawei.com>
+        <20230406111607.00007be5@Huawei.com>
+        <20230406124040.GD392176@hirez.programming.kicks-ass.net>
+        <20230406174445.0000235c@Huawei.com>
+        <2023040610-morbidly-supermom-e81c@gregkh>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323329-1451428716-1681214103=:2109"
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100002.china.huawei.com (7.191.160.241) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 6 Apr 2023 19:08:45 +0200
+Greg KH <gregkh@linuxfoundation.org> wrote:
 
---8323329-1451428716-1681214103=:2109
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 7 Apr 2023, Xu Yilun wrote:
-
-> On 2023-04-05 at 11:01:52 +0300, Ilpo Järvinen wrote:
-> > On some MAX 10 cards, the BMC firmware is not available to service
-> > handshake registers during secure update erase and write phases at
-> > normal speeds. This problem affects at least hwmon driver. When the MAX
-> > 10 hwmon driver tries to read the sensor values during a secure update,
-> > the reads are slowed down (e.g., reading all D5005 sensors takes ~24s
-> > which is magnitudes worse than the normal <0.02s).
+> On Thu, Apr 06, 2023 at 05:44:45PM +0100, Jonathan Cameron wrote:
+> > On Thu, 6 Apr 2023 14:40:40 +0200
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> >   
+> > > On Thu, Apr 06, 2023 at 11:16:07AM +0100, Jonathan Cameron wrote:
+> > >   
+> > > > In the long run I agree it would be good.  Short term there are more instances of
+> > > > struct pmu that don't have parents than those that do (even after this series).
+> > > > We need to figure out what to do about those before adding checks on it being
+> > > > set.    
+> > > 
+> > > Right, I don't think you've touched *any* of the x86 PMUs for example,
+> > > and getting everybody that boots an x86 kernel a warning isn't going to
+> > > go over well :-)
+> > >   
 > > 
-> > Manage access to the handshake registers using a rw semaphore and a FW
-> > state variable to prevent accesses during those secure update phases
-> > and return -EBUSY instead.
+> > It was tempting :) "Warning: Parentless PMU: try a different architecture."
 > > 
-> > Co-developed-by: Russ Weight <russell.h.weight@intel.com>
-> > Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-> > Co-developed-by: Xu Yilun <yilun.xu@intel.com>
-> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
-> > ---
-> >  drivers/fpga/intel-m10-bmc-sec-update.c | 17 +++++--
-> >  drivers/mfd/intel-m10-bmc-core.c        | 63 ++++++++++++++++++++++++-
-> >  drivers/mfd/intel-m10-bmc-pmci.c        |  4 ++
-> >  drivers/mfd/intel-m10-bmc-spi.c         | 14 ++++++
-> >  include/linux/mfd/intel-m10-bmc.h       | 27 +++++++++++
-> >  5 files changed, 120 insertions(+), 5 deletions(-)
-> >
+> > I'd love some inputs on what the x86 PMU devices parents should be?
+> > CPU counters in general tend to just spin out of deep in the architecture code.
+> > 
+> > My overall favorite is an l2 cache related PMU that is spun up in
+> > arch/arm/kernel/irq.c init_IRQ()
+> > 
+> > I'm just not going to try and figure out why...  
 > 
-> [...]
->  
-> >  
-> > +void m10bmc_fw_state_set(struct intel_m10bmc *m10bmc, enum m10bmc_fw_state new_state)
-> > +{
-> > +	down_write(&m10bmc->bmcfw_lock);
-> > +	m10bmc->bmcfw_state = new_state;
-> > +	up_write(&m10bmc->bmcfw_lock);
+> Why not change the api to force a parent to be passed in?  And if one
+> isn't, we make it a "virtual" device and throw it in the class for them?
+
+Longer term I'd be fine doing that, but I'd like to identify the right parents
+rather than end up sweeping it under the carpet.  Anything we either get completely
+stuck on (or decide we don't care about) could indeed fall back to a virtual
+device.
+
+Jonathan
+
+
 > 
-> Could we also skip this if no handshake is possible like for PMCI?
+> thanks,
+> 
+> greg k-h
 
-Did you mean guarding it with !m10bmc->info->handshake_sys_reg_nranges ?
-If yes, it's doable (+ I'd add comment mentioning it since it's slightly 
-trappy to not always have that state updated).
-
-
--- 
- i.
-
---8323329-1451428716-1681214103=:2109--
