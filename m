@@ -2,380 +2,529 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BC1AC77B72
-	for <linux-fpga@archiver.kernel.org>; Mon, 17 Apr 2023 09:30:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7601C77B72
+	for <linux-fpga@archiver.kernel.org>; Mon, 17 Apr 2023 12:27:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230204AbjDQJ2S (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 17 Apr 2023 05:28:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56366 "EHLO
+        id S231180AbjDQMZg (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 17 Apr 2023 08:25:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44550 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230433AbjDQJ1l (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 17 Apr 2023 05:27:41 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 564992D62;
-        Mon, 17 Apr 2023 02:27:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681723644; x=1713259644;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=MHGEtcKcY+puHEIF6HdRQcSnr9Fy0usGjiNOAMUcUJU=;
-  b=JRaog/aMbbgzc5p1QSjothqEvTy23HYZGWz7kG/BHr1SMuh2TrGo1WOr
-   Tb6pu7TostXQGcuGZ5udKXkM/UtAduzxIPcqFedQWqJoGYAydNe9LoWMt
-   UKRdKfm21bq4+A39fiO+tRAuVi5ZjvX8wkZGjtOvVIXNfSzRXYORIjvEx
-   LmMKAq0fpGQdtmsDl+mUQMJfR9GzwySMvPnicAopaQ5Oixwr9DyKlQQyF
-   OGk4t/sSr28KTx4uLI9Gk752Emp++0jGxFQMsk/ts7TWwna7nlXS98a/D
-   DoG2s7Bn1LsKXfRMVhl1lzFdcpHMasDq7rrSfVJDcU/3lWlhw3LUMBGI9
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="344846521"
-X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; 
-   d="scan'208";a="344846521"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 02:27:23 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="684094864"
-X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; 
-   d="scan'208";a="684094864"
-Received: from anicosix-mobl2.ger.corp.intel.com (HELO ijarvine-MOBL2.ger.corp.intel.com) ([10.249.35.34])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 02:27:19 -0700
-From:   =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To:     Xu Yilun <yilun.xu@intel.com>, Wu Hao <hao.wu@intel.com>,
-        Tom Rix <trix@redhat.com>, Moritz Fischer <mdf@kernel.org>,
-        linux-fpga@vger.kernel.org, Lee Jones <lee@kernel.org>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Russ Weight <russell.h.weight@intel.com>,
-        linux-kernel@vger.kernel.org
-Cc:     linux-hwmon@vger.kernel.org,
-        =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH v3 4/4] mfd: intel-m10-bmc: Manage access to MAX 10 fw handshake registers
-Date:   Mon, 17 Apr 2023 12:26:53 +0300
-Message-Id: <20230417092653.16487-5-ilpo.jarvinen@linux.intel.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20230417092653.16487-1-ilpo.jarvinen@linux.intel.com>
-References: <20230417092653.16487-1-ilpo.jarvinen@linux.intel.com>
+        with ESMTP id S231126AbjDQMZ0 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 17 Apr 2023 08:25:26 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00ED65257
+        for <linux-fpga@vger.kernel.org>; Mon, 17 Apr 2023 05:24:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1681734198;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=nQ42dcQvki9IfHxndNIcUE+MqFzkjDsdNaPpQ6RElBw=;
+        b=e1tazDHe2T6d418xApDodMnV7zhPZePg4W8niW3dHYAXYlajGIy+jjDZA2a+rlmWlWL4w3
+        CAu+GaJhmKy/desU6Zstts2AsCpKfs59m3cmNAc0yVDQEcMy32q6hY5cVUkJX3YFGA6I7l
+        ohs94Q7yKiDuqgWZHoqxRal2FbSfW3Q=
+Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com
+ [209.85.208.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-86-PjtTI-9xPvmY1HtHqWGpZA-1; Mon, 17 Apr 2023 08:23:16 -0400
+X-MC-Unique: PjtTI-9xPvmY1HtHqWGpZA-1
+Received: by mail-ed1-f71.google.com with SMTP id 4fb4d7f45d1cf-5068e922bcaso832388a12.1
+        for <linux-fpga@vger.kernel.org>; Mon, 17 Apr 2023 05:23:16 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1681734195; x=1684326195;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=nQ42dcQvki9IfHxndNIcUE+MqFzkjDsdNaPpQ6RElBw=;
+        b=Gmu3xBMb6AntJFRqP7VgvdVFtJ0ZiO8a59u6LqhTN0Q6pC5ZYRASeuVT1vG8Lwb1SL
+         bTHYotbKsojYzcpQwSxbVkvM2w25phbuEBsEObBnFjQc56oqBfJkSFoXnpds/TIud6Qn
+         OzZWDb8Ckh3oBpZpv8K1lhwbrtbLFRapVoXh4SO6K1kjZ0JlbtF/d9aZCCFaQr13+XzG
+         aA/hgr4bdhfTD3s9qfc7WIeXLNfyY+vPx1XBwKUHvksTaVBF5JMunEcW+mPPRoFxRLmk
+         VG11QFXZ3J+oYtY1t4ZBjbRViJCHQJ3oEwod7Fl8FBRYLLjtuDXSjhVCNeA0y0KF93Pr
+         /y8g==
+X-Gm-Message-State: AAQBX9dnQMiTBSNKemI8DlJcySLUve/aR8VJwb/GMU/yJoiQ0qYuQoyH
+        2+OLV9BmdxLy/6b1KCiqU/uP4BmAtTrR9FhAzkpsLSfAUbiY8nPDgK0uWgGCuWXpBVRb04hofQL
+        69JeTJPN0Z8qfhVYK3wUF
+X-Received: by 2002:aa7:c79a:0:b0:506:af22:1271 with SMTP id n26-20020aa7c79a000000b00506af221271mr1352662eds.0.1681734195520;
+        Mon, 17 Apr 2023 05:23:15 -0700 (PDT)
+X-Google-Smtp-Source: AKy350b840itZTrJjuBKu9hRqJjRfC3ji23pWETtYNRuyF5SslQgbczA/v4Zo8zRfe2cFCeQmcatFQ==
+X-Received: by 2002:aa7:c79a:0:b0:506:af22:1271 with SMTP id n26-20020aa7c79a000000b00506af221271mr1352639eds.0.1681734195083;
+        Mon, 17 Apr 2023 05:23:15 -0700 (PDT)
+Received: from klayman.. ([37.163.248.182])
+        by smtp.gmail.com with ESMTPSA id q21-20020aa7cc15000000b004fbf6b35a56sm5756618edt.76.2023.04.17.05.23.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 17 Apr 2023 05:23:14 -0700 (PDT)
+From:   Marco Pagani <marpagan@redhat.com>
+To:     Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
+        Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>
+Cc:     Marco Pagani <marpagan@redhat.com>, linux-kernel@vger.kernel.org,
+        linux-fpga@vger.kernel.org
+Subject: [RFC PATCH v4 1/4] fpga: add fake FPGA manager
+Date:   Mon, 17 Apr 2023 14:23:05 +0200
+Message-Id: <20230417122308.131453-2-marpagan@redhat.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230417122308.131453-1-marpagan@redhat.com>
+References: <20230417122308.131453-1-marpagan@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On some MAX 10 cards, the BMC firmware is not available to service
-handshake registers during secure update erase and write phases at
-normal speeds. This problem affects at least hwmon driver. When the MAX
-10 hwmon driver tries to read the sensor values during a secure update,
-the reads are slowed down (e.g., reading all D5005 sensors takes ~24s
-which is magnitudes worse than the normal <0.02s).
+Add fake FPGA manager platform driver with support functions.
+The driver checks the programming sequence using KUnit expectations.
+This module is part of the KUnit tests for the FPGA subsystem.
 
-Manage access to the handshake registers using a rw semaphore and a FW
-state variable to prevent accesses during those secure update phases
-and return -EBUSY instead.
-
-If handshake_sys_reg_nranges == 0, don't update bwcfw_state as it is not
-used. This avoids the locking cost.
-
-Co-developed-by: Russ Weight <russell.h.weight@intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-Co-developed-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+Signed-off-by: Marco Pagani <marpagan@redhat.com>
 ---
- drivers/fpga/intel-m10-bmc-sec-update.c | 17 +++++--
- drivers/mfd/intel-m10-bmc-core.c        | 67 ++++++++++++++++++++++++-
- drivers/mfd/intel-m10-bmc-spi.c         | 14 ++++++
- include/linux/mfd/intel-m10-bmc.h       | 28 +++++++++++
- 4 files changed, 121 insertions(+), 5 deletions(-)
+ drivers/fpga/tests/fake-fpga-mgr.c | 386 +++++++++++++++++++++++++++++
+ drivers/fpga/tests/fake-fpga-mgr.h |  43 ++++
+ 2 files changed, 429 insertions(+)
+ create mode 100644 drivers/fpga/tests/fake-fpga-mgr.c
+ create mode 100644 drivers/fpga/tests/fake-fpga-mgr.h
 
-diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
-index fe0127a58eff..31af2e08c825 100644
---- a/drivers/fpga/intel-m10-bmc-sec-update.c
-+++ b/drivers/fpga/intel-m10-bmc-sec-update.c
-@@ -544,21 +544,28 @@ static enum fw_upload_err m10bmc_sec_prepare(struct fw_upload *fwl,
- 	if (ret != FW_UPLOAD_ERR_NONE)
- 		goto unlock_flash;
- 
-+	m10bmc_fw_state_set(sec->m10bmc, M10BMC_FW_STATE_SEC_UPDATE_PREPARE);
+diff --git a/drivers/fpga/tests/fake-fpga-mgr.c b/drivers/fpga/tests/fake-fpga-mgr.c
+new file mode 100644
+index 000000000000..636df637b291
+--- /dev/null
++++ b/drivers/fpga/tests/fake-fpga-mgr.c
+@@ -0,0 +1,386 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Driver for the fake FPGA manager
++ *
++ * Copyright (C) 2023 Red Hat, Inc.
++ *
++ * Author: Marco Pagani <marpagan@redhat.com>
++ */
 +
- 	ret = rsu_update_init(sec);
- 	if (ret != FW_UPLOAD_ERR_NONE)
--		goto unlock_flash;
-+		goto fw_state_exit;
- 
- 	ret = rsu_prog_ready(sec);
- 	if (ret != FW_UPLOAD_ERR_NONE)
--		goto unlock_flash;
-+		goto fw_state_exit;
- 
- 	if (sec->cancel_request) {
- 		ret = rsu_cancel(sec);
--		goto unlock_flash;
-+		goto fw_state_exit;
- 	}
- 
-+	m10bmc_fw_state_set(sec->m10bmc, M10BMC_FW_STATE_SEC_UPDATE_WRITE);
++#include <linux/types.h>
++#include <linux/device.h>
++#include <linux/platform_device.h>
++#include <linux/fpga/fpga-mgr.h>
++#include <kunit/test.h>
 +
- 	return FW_UPLOAD_ERR_NONE;
- 
-+fw_state_exit:
-+	m10bmc_fw_state_set(sec->m10bmc, M10BMC_FW_STATE_NORMAL);
++#include "fake-fpga-mgr.h"
 +
- unlock_flash:
- 	if (sec->m10bmc->flash_bulk_ops)
- 		sec->m10bmc->flash_bulk_ops->unlock_write(sec->m10bmc);
-@@ -607,6 +614,8 @@ static enum fw_upload_err m10bmc_sec_poll_complete(struct fw_upload *fwl)
- 	if (sec->cancel_request)
- 		return rsu_cancel(sec);
- 
-+	m10bmc_fw_state_set(sec->m10bmc, M10BMC_FW_STATE_SEC_UPDATE_PROGRAM);
++#define FAKE_FPGA_MGR_DEV_NAME	"fake_fpga_mgr"
 +
- 	result = rsu_send_data(sec);
- 	if (result != FW_UPLOAD_ERR_NONE)
- 		return result;
-@@ -650,6 +659,8 @@ static void m10bmc_sec_cleanup(struct fw_upload *fwl)
- 
- 	(void)rsu_cancel(sec);
- 
-+	m10bmc_fw_state_set(sec->m10bmc, M10BMC_FW_STATE_NORMAL);
++#define FAKE_HEADER_BYTE	0x3f
++#define FAKE_HEADER_SIZE	FPGA_IMG_BLOCK
 +
- 	if (sec->m10bmc->flash_bulk_ops)
- 		sec->m10bmc->flash_bulk_ops->unlock_write(sec->m10bmc);
- }
-diff --git a/drivers/mfd/intel-m10-bmc-core.c b/drivers/mfd/intel-m10-bmc-core.c
-index 51f865174796..8ad5b3821584 100644
---- a/drivers/mfd/intel-m10-bmc-core.c
-+++ b/drivers/mfd/intel-m10-bmc-core.c
-@@ -12,6 +12,46 @@
- #include <linux/mfd/intel-m10-bmc.h>
- #include <linux/module.h>
- 
-+void m10bmc_fw_state_set(struct intel_m10bmc *m10bmc, enum m10bmc_fw_state new_state)
++struct fake_mgr_priv {
++	int rcfg_count;
++	bool op_parse_header;
++	bool op_write_init;
++	bool op_write;
++	bool op_write_sg;
++	bool op_write_complete;
++	struct kunit *test;
++};
++
++struct fake_mgr_data {
++	struct kunit *test;
++};
++
++static void check_header(struct kunit *test, const u8 *buf);
++
++static enum fpga_mgr_states op_state(struct fpga_manager *mgr)
 +{
-+	/* bmcfw_state is only needed if handshake_sys_reg_nranges > 0 */
-+	if (!m10bmc->info->handshake_sys_reg_nranges)
++	struct fake_mgr_priv *priv;
++
++	priv = mgr->priv;
++
++	if (priv->test)
++		kunit_info(priv->test, "Fake FPGA manager: state\n");
++
++	return FPGA_MGR_STATE_UNKNOWN;
++}
++
++static u64 op_status(struct fpga_manager *mgr)
++{
++	struct fake_mgr_priv *priv;
++
++	priv = mgr->priv;
++
++	if (priv->test)
++		kunit_info(priv->test, "Fake FPGA manager: status\n");
++
++	return 0;
++}
++
++static int op_parse_header(struct fpga_manager *mgr, struct fpga_image_info *info,
++			   const char *buf, size_t count)
++{
++	struct fake_mgr_priv *priv;
++
++	priv = mgr->priv;
++
++	if (priv->test) {
++		kunit_info(priv->test, "Fake FPGA manager: parse_header\n");
++
++		KUNIT_EXPECT_EQ(priv->test, mgr->state,
++				FPGA_MGR_STATE_PARSE_HEADER);
++
++		check_header(priv->test, buf);
++	}
++
++	priv->op_parse_header = true;
++
++	return 0;
++}
++
++static int op_write_init(struct fpga_manager *mgr, struct fpga_image_info *info,
++			 const char *buf, size_t count)
++{
++	struct fake_mgr_priv *priv;
++
++	priv = mgr->priv;
++
++	if (priv->test) {
++		kunit_info(priv->test, "Fake FPGA manager: write_init\n");
++
++		KUNIT_EXPECT_EQ(priv->test, mgr->state,
++				FPGA_MGR_STATE_WRITE_INIT);
++	}
++
++	priv->op_write_init = true;
++
++	return 0;
++}
++
++static int op_write(struct fpga_manager *mgr, const char *buf, size_t count)
++{
++	struct fake_mgr_priv *priv;
++
++	priv = mgr->priv;
++
++	if (priv->test) {
++		kunit_info(priv->test, "Fake FPGA manager: write\n");
++
++		KUNIT_EXPECT_EQ(priv->test, mgr->state,
++				FPGA_MGR_STATE_WRITE);
++	}
++
++	priv->op_write = true;
++
++	return 0;
++}
++
++static int op_write_sg(struct fpga_manager *mgr, struct sg_table *sgt)
++{
++	struct fake_mgr_priv *priv;
++
++	priv = mgr->priv;
++
++	if (priv->test) {
++		kunit_info(priv->test, "Fake FPGA manager: write_sg\n");
++
++		KUNIT_EXPECT_EQ(priv->test, mgr->state,
++				FPGA_MGR_STATE_WRITE);
++	}
++
++	priv->op_write_sg = true;
++
++	return 0;
++}
++
++static int op_write_complete(struct fpga_manager *mgr, struct fpga_image_info *info)
++{
++	struct fake_mgr_priv *priv;
++
++	priv = mgr->priv;
++
++	if (priv->test) {
++		kunit_info(priv->test, "Fake FPGA manager: write_complete\n");
++
++		KUNIT_EXPECT_EQ(priv->test, mgr->state,
++				FPGA_MGR_STATE_WRITE_COMPLETE);
++	}
++
++	priv->op_write_complete = true;
++	priv->rcfg_count++;
++
++	return 0;
++}
++
++static void op_fpga_remove(struct fpga_manager *mgr)
++{
++	struct fake_mgr_priv *priv;
++
++	priv = mgr->priv;
++
++	if (priv->test)
++		kunit_info(priv->test, "Fake FPGA manager: remove\n");
++}
++
++static const struct fpga_manager_ops fake_fpga_mgr_ops = {
++	.initial_header_size = FAKE_HEADER_SIZE,
++	.skip_header = false,
++	.state = op_state,
++	.status = op_status,
++	.parse_header = op_parse_header,
++	.write_init = op_write_init,
++	.write = op_write,
++	.write_sg = op_write_sg,
++	.write_complete = op_write_complete,
++	.fpga_remove = op_fpga_remove,
++};
++
++/**
++ * fake_fpga_mgr_register() - register a fake FPGA manager.
++ * @mgr_ctx: fake FPGA manager context data structure.
++ * @test: KUnit test context object.
++ *
++ * Return: pointer to a new fake FPGA manager on success, an ERR_PTR()
++ * encoded error code on failure.
++ */
++struct fake_fpga_mgr *
++fake_fpga_mgr_register(struct kunit *test, struct device *parent)
++{
++	struct fake_fpga_mgr *mgr_ctx;
++	struct fake_mgr_data pdata;
++	int ret;
++
++	mgr_ctx = kzalloc(sizeof(*mgr_ctx), GFP_KERNEL);
++	if (!mgr_ctx) {
++		ret = -ENOMEM;
++		goto err_mem;
++	}
++
++	mgr_ctx->pdev = platform_device_alloc(FAKE_FPGA_MGR_DEV_NAME,
++					      PLATFORM_DEVID_AUTO);
++	if (!mgr_ctx->pdev) {
++		pr_err("Fake FPGA manager device allocation failed\n");
++		ret = -ENOMEM;
++		goto err_mem;
++	}
++
++	pdata.test = test;
++	platform_device_add_data(mgr_ctx->pdev, &pdata, sizeof(pdata));
++
++	mgr_ctx->pdev->dev.parent = parent;
++	ret = platform_device_add(mgr_ctx->pdev);
++	if (ret) {
++		pr_err("Fake FPGA manager device add failed\n");
++		goto err_pdev;
++	}
++
++	mgr_ctx->mgr = platform_get_drvdata(mgr_ctx->pdev);
++
++	if (test)
++		kunit_info(test, "Fake FPGA manager registered\n");
++
++	return mgr_ctx;
++
++err_pdev:
++	platform_device_put(mgr_ctx->pdev);
++	kfree(mgr_ctx);
++err_mem:
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL_GPL(fake_fpga_mgr_register);
++
++/**
++ * fake_fpga_mgr_unregister() - unregister a fake FPGA manager.
++ * @mgr_ctx: fake FPGA manager context data structure.
++ */
++void fake_fpga_mgr_unregister(struct fake_fpga_mgr *mgr_ctx)
++{
++	struct fake_mgr_priv *priv;
++	struct kunit *test;
++
++	if (!mgr_ctx)
 +		return;
 +
-+	down_write(&m10bmc->bmcfw_lock);
-+	m10bmc->bmcfw_state = new_state;
-+	up_write(&m10bmc->bmcfw_lock);
++	priv = mgr_ctx->mgr->priv;
++	test = priv->test;
++
++	if (mgr_ctx->pdev) {
++		platform_device_unregister(mgr_ctx->pdev);
++		if (test)
++			kunit_info(test, "Fake FPGA manager unregistered\n");
++	}
++
++	kfree(mgr_ctx);
 +}
-+EXPORT_SYMBOL_NS_GPL(m10bmc_fw_state_set, INTEL_M10_BMC_CORE);
++EXPORT_SYMBOL_GPL(fake_fpga_mgr_unregister);
 +
-+/*
-+ * For some Intel FPGA devices, the BMC firmware is not available to service
-+ * handshake registers during a secure update.
-+ */
-+static bool m10bmc_reg_always_available(struct intel_m10bmc *m10bmc, unsigned int offset)
-+{
-+	if (!m10bmc->info->handshake_sys_reg_nranges)
-+		return true;
-+
-+	return !regmap_reg_in_ranges(offset, m10bmc->info->handshake_sys_reg_ranges,
-+				     m10bmc->info->handshake_sys_reg_nranges);
-+}
-+
-+/*
-+ * m10bmc_handshake_reg_unavailable - Checks if reg access collides with secure update state
-+ * @m10bmc: M10 BMC structure
++/**
++ * fake_fpga_mgr_get_rcfg_count() - get the number of reconfigurations.
++ * @mgr_ctx: fake FPGA manager context data structure.
 + *
-+ * For some Intel FPGA devices, the BMC firmware is not available to service
-+ * handshake registers during a secure update erase and write phases.
-+ *
-+ * Context: @m10bmc->bmcfw_lock must be held.
++ * Return: number of reconfigurations.
 + */
-+static bool m10bmc_handshake_reg_unavailable(struct intel_m10bmc *m10bmc)
++int fake_fpga_mgr_get_rcfg_count(const struct fake_fpga_mgr *mgr_ctx)
 +{
-+	return m10bmc->bmcfw_state == M10BMC_FW_STATE_SEC_UPDATE_PREPARE ||
-+	       m10bmc->bmcfw_state == M10BMC_FW_STATE_SEC_UPDATE_WRITE;
++	struct fake_mgr_priv *priv;
++
++	priv = mgr_ctx->mgr->priv;
++
++	return priv->rcfg_count;
++}
++EXPORT_SYMBOL_GPL(fake_fpga_mgr_get_rcfg_count);
++
++/**
++ * fake_fpga_mgr_fill_header() - fill an image buffer with the test header.
++ * @buf: image buffer.
++ */
++void fake_fpga_mgr_fill_header(u8 *buf)
++{
++	int i;
++
++	for (i = 0; i < FAKE_HEADER_SIZE; i++)
++		buf[i] = FAKE_HEADER_BYTE;
++}
++EXPORT_SYMBOL_GPL(fake_fpga_mgr_fill_header);
++
++static void check_header(struct kunit *test, const u8 *buf)
++{
++	int i;
++
++	for (i = 0; i < FAKE_HEADER_SIZE; i++)
++		KUNIT_EXPECT_EQ(test, buf[i], FAKE_HEADER_BYTE);
 +}
 +
- /*
-  * This function helps to simplify the accessing of the system registers.
-  *
-@@ -21,8 +61,19 @@
- int m10bmc_sys_read(struct intel_m10bmc *m10bmc, unsigned int offset, unsigned int *val)
- {
- 	const struct m10bmc_csr_map *csr_map = m10bmc->info->csr_map;
-+	int ret;
++static void clear_op_flags(struct fake_mgr_priv *priv)
++{
++	priv->op_parse_header = false;
++	priv->op_write_init = false;
++	priv->op_write = false;
++	priv->op_write_sg = false;
++	priv->op_write_complete = false;
++}
 +
-+	if (m10bmc_reg_always_available(m10bmc, offset))
-+		return m10bmc_raw_read(m10bmc, csr_map->base + offset, val);
- 
--	return m10bmc_raw_read(m10bmc, csr_map->base + offset, val);
-+	down_read(&m10bmc->bmcfw_lock);
-+	if (m10bmc_handshake_reg_unavailable(m10bmc))
-+		ret = -EBUSY;	/* Reg not available during secure update */
-+	else
-+		ret = m10bmc_raw_read(m10bmc, csr_map->base + offset, val);
-+	up_read(&m10bmc->bmcfw_lock);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_NS_GPL(m10bmc_sys_read, INTEL_M10_BMC_CORE);
- 
-@@ -30,8 +81,19 @@ int m10bmc_sys_update_bits(struct intel_m10bmc *m10bmc, unsigned int offset,
- 			   unsigned int msk, unsigned int val)
- {
- 	const struct m10bmc_csr_map *csr_map = m10bmc->info->csr_map;
-+	int ret;
- 
--	return regmap_update_bits(m10bmc->regmap, csr_map->base + offset, msk, val);
-+	if (m10bmc_reg_always_available(m10bmc, offset))
-+		return regmap_update_bits(m10bmc->regmap, csr_map->base + offset, msk, val);
-+
-+	down_read(&m10bmc->bmcfw_lock);
-+	if (m10bmc_handshake_reg_unavailable(m10bmc))
-+		ret = -EBUSY;	/* Reg not available during secure update */
-+	else
-+		ret = regmap_update_bits(m10bmc->regmap, csr_map->base + offset, msk, val);
-+	up_read(&m10bmc->bmcfw_lock);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_NS_GPL(m10bmc_sys_update_bits, INTEL_M10_BMC_CORE);
- 
-@@ -129,6 +191,7 @@ int m10bmc_dev_init(struct intel_m10bmc *m10bmc, const struct intel_m10bmc_platf
- 
- 	m10bmc->info = info;
- 	dev_set_drvdata(m10bmc->dev, m10bmc);
-+	init_rwsem(&m10bmc->bmcfw_lock);
- 
- 	ret = devm_mfd_add_devices(m10bmc->dev, PLATFORM_DEVID_AUTO,
- 				   info->cells, info->n_cells,
-diff --git a/drivers/mfd/intel-m10-bmc-spi.c b/drivers/mfd/intel-m10-bmc-spi.c
-index edd266557ab9..cbeb7de9e041 100644
---- a/drivers/mfd/intel-m10-bmc-spi.c
-+++ b/drivers/mfd/intel-m10-bmc-spi.c
-@@ -116,12 +116,20 @@ static struct mfd_cell m10bmc_d5005_subdevs[] = {
- 	{ .name = "d5005bmc-sec-update" },
- };
- 
-+static const struct regmap_range m10bmc_d5005_fw_handshake_regs[] = {
-+	regmap_reg_range(M10BMC_N3000_TELEM_START, M10BMC_D5005_TELEM_END),
-+};
-+
- static struct mfd_cell m10bmc_pacn3000_subdevs[] = {
- 	{ .name = "n3000bmc-hwmon" },
- 	{ .name = "n3000bmc-retimer" },
- 	{ .name = "n3000bmc-sec-update" },
- };
- 
-+static const struct regmap_range m10bmc_n3000_fw_handshake_regs[] = {
-+	regmap_reg_range(M10BMC_N3000_TELEM_START, M10BMC_N3000_TELEM_END),
-+};
-+
- static struct mfd_cell m10bmc_n5010_subdevs[] = {
- 	{ .name = "n5010bmc-hwmon" },
- };
-@@ -129,18 +137,24 @@ static struct mfd_cell m10bmc_n5010_subdevs[] = {
- static const struct intel_m10bmc_platform_info m10bmc_spi_n3000 = {
- 	.cells = m10bmc_pacn3000_subdevs,
- 	.n_cells = ARRAY_SIZE(m10bmc_pacn3000_subdevs),
-+	.handshake_sys_reg_ranges = m10bmc_n3000_fw_handshake_regs,
-+	.handshake_sys_reg_nranges = ARRAY_SIZE(m10bmc_n3000_fw_handshake_regs),
- 	.csr_map = &m10bmc_n3000_csr_map,
- };
- 
- static const struct intel_m10bmc_platform_info m10bmc_spi_d5005 = {
- 	.cells = m10bmc_d5005_subdevs,
- 	.n_cells = ARRAY_SIZE(m10bmc_d5005_subdevs),
-+	.handshake_sys_reg_ranges = m10bmc_d5005_fw_handshake_regs,
-+	.handshake_sys_reg_nranges = ARRAY_SIZE(m10bmc_d5005_fw_handshake_regs),
- 	.csr_map = &m10bmc_n3000_csr_map,
- };
- 
- static const struct intel_m10bmc_platform_info m10bmc_spi_n5010 = {
- 	.cells = m10bmc_n5010_subdevs,
- 	.n_cells = ARRAY_SIZE(m10bmc_n5010_subdevs),
-+	.handshake_sys_reg_ranges = m10bmc_n3000_fw_handshake_regs,
-+	.handshake_sys_reg_nranges = ARRAY_SIZE(m10bmc_n3000_fw_handshake_regs),
- 	.csr_map = &m10bmc_n3000_csr_map,
- };
- 
-diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
-index 252644fa61be..ee66c9751003 100644
---- a/include/linux/mfd/intel-m10-bmc.h
-+++ b/include/linux/mfd/intel-m10-bmc.h
-@@ -11,6 +11,7 @@
- #include <linux/bits.h>
- #include <linux/dev_printk.h>
- #include <linux/regmap.h>
-+#include <linux/rwsem.h>
- 
- #define M10BMC_N3000_LEGACY_BUILD_VER	0x300468
- #define M10BMC_N3000_SYS_BASE		0x300800
-@@ -39,6 +40,11 @@
- #define M10BMC_N3000_VER_PCB_INFO_MSK	GENMASK(31, 24)
- #define M10BMC_N3000_VER_LEGACY_INVALID	0xffffffff
- 
-+/* Telemetry registers */
-+#define M10BMC_N3000_TELEM_START	0x100
-+#define M10BMC_N3000_TELEM_END		0x250
-+#define M10BMC_D5005_TELEM_END		0x300
-+
- /* Secure update doorbell register, in system register region */
- #define M10BMC_N3000_DOORBELL		0x400
- 
-@@ -205,11 +211,15 @@ struct m10bmc_csr_map {
-  * struct intel_m10bmc_platform_info - Intel MAX 10 BMC platform specific information
-  * @cells: MFD cells
-  * @n_cells: MFD cells ARRAY_SIZE()
-+ * @handshake_sys_reg_ranges: array of register ranges for fw handshake regs
-+ * @handshake_sys_reg_nranges: number of register ranges for fw handshake regs
-  * @csr_map: the mappings for register definition of MAX10 BMC
-  */
- struct intel_m10bmc_platform_info {
- 	struct mfd_cell *cells;
- 	int n_cells;
-+	const struct regmap_range *handshake_sys_reg_ranges;
-+	unsigned int handshake_sys_reg_nranges;
- 	const struct m10bmc_csr_map *csr_map;
- };
- 
-@@ -232,18 +242,30 @@ struct intel_m10bmc_flash_bulk_ops {
- 	void (*unlock_write)(struct intel_m10bmc *m10bmc);
- };
- 
-+enum m10bmc_fw_state {
-+	M10BMC_FW_STATE_NORMAL,
-+	M10BMC_FW_STATE_SEC_UPDATE_PREPARE,
-+	M10BMC_FW_STATE_SEC_UPDATE_WRITE,
-+	M10BMC_FW_STATE_SEC_UPDATE_PROGRAM,
-+};
-+
- /**
-  * struct intel_m10bmc - Intel MAX 10 BMC parent driver data structure
-  * @dev: this device
-  * @regmap: the regmap used to access registers by m10bmc itself
-  * @info: the platform information for MAX10 BMC
-  * @flash_bulk_ops: optional device specific operations for flash R/W
-+ * @bmcfw_lock: read/write semaphore to BMC firmware running state
-+ * @bmcfw_state: BMC firmware running state. Available only when
-+ *		 handshake_sys_reg_nranges > 0.
-  */
- struct intel_m10bmc {
- 	struct device *dev;
- 	struct regmap *regmap;
- 	const struct intel_m10bmc_platform_info *info;
- 	const struct intel_m10bmc_flash_bulk_ops *flash_bulk_ops;
-+	struct rw_semaphore bmcfw_lock;		/* Protects bmcfw_state */
-+	enum m10bmc_fw_state bmcfw_state;
- };
- 
- /*
-@@ -271,6 +293,12 @@ int m10bmc_sys_read(struct intel_m10bmc *m10bmc, unsigned int offset, unsigned i
- int m10bmc_sys_update_bits(struct intel_m10bmc *m10bmc, unsigned int offset,
- 			   unsigned int msk, unsigned int val);
- 
-+/*
-+ * Track the state of the firmware, as it is not available for register
-+ * handshakes during secure updates on some MAX 10 cards.
++/**
++ * fake_fpga_mgr_check_write_buf() - check if programming using a buffer succeeded.
++ * @mgr_ctx: fake FPGA manager context data structure.
 + */
-+void m10bmc_fw_state_set(struct intel_m10bmc *m10bmc, enum m10bmc_fw_state new_state);
++void fake_fpga_mgr_check_write_buf(struct fake_fpga_mgr *mgr_ctx)
++{
++	struct fake_mgr_priv *priv;
 +
- /*
-  * MAX10 BMC Core support
-  */
++	priv = mgr_ctx->mgr->priv;
++
++	if (priv->test) {
++		KUNIT_EXPECT_EQ(priv->test, priv->op_parse_header, true);
++		KUNIT_EXPECT_EQ(priv->test, priv->op_write_init, true);
++		KUNIT_EXPECT_EQ(priv->test, priv->op_write, true);
++		KUNIT_EXPECT_EQ(priv->test, priv->op_write_complete, true);
++	}
++
++	clear_op_flags(priv);
++}
++EXPORT_SYMBOL_GPL(fake_fpga_mgr_check_write_buf);
++
++/**
++ * fake_fpga_mgr_check_write_sgt() - check if programming using a s.g. table succeeded.
++ * @mgr_ctx: fake FPGA manager context data structure.
++ */
++void fake_fpga_mgr_check_write_sgt(struct fake_fpga_mgr *mgr_ctx)
++{
++	struct fake_mgr_priv *priv;
++
++	priv = mgr_ctx->mgr->priv;
++
++	if (priv->test) {
++		KUNIT_EXPECT_EQ(priv->test, priv->op_parse_header, true);
++		KUNIT_EXPECT_EQ(priv->test, priv->op_write_init, true);
++		KUNIT_EXPECT_EQ(priv->test, priv->op_write_sg, true);
++		KUNIT_EXPECT_EQ(priv->test, priv->op_write_complete, true);
++	}
++
++	clear_op_flags(priv);
++}
++EXPORT_SYMBOL_GPL(fake_fpga_mgr_check_write_sgt);
++
++static int fake_fpga_mgr_probe(struct platform_device *pdev)
++{
++	struct device *dev;
++	struct fake_mgr_priv *priv;
++	struct fake_mgr_data *pdata;
++	struct fpga_manager *mgr;
++
++	dev = &pdev->dev;
++	pdata = dev_get_platdata(dev);
++
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	if (pdata)
++		priv->test = pdata->test;
++
++	mgr = devm_fpga_mgr_register(dev, "Fake FPGA Manager",
++				     &fake_fpga_mgr_ops, priv);
++	if (IS_ERR(mgr))
++		return PTR_ERR(mgr);
++
++	platform_set_drvdata(pdev, mgr);
++
++	return 0;
++}
++
++static struct platform_driver fake_fpga_mgr_drv = {
++	.driver = {
++		.name = FAKE_FPGA_MGR_DEV_NAME
++	},
++	.probe = fake_fpga_mgr_probe,
++};
++
++module_platform_driver(fake_fpga_mgr_drv);
++
++MODULE_AUTHOR("Marco Pagani <marpagan@redhat.com>");
++MODULE_DESCRIPTION("Fake FPGA Manager");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/fpga/tests/fake-fpga-mgr.h b/drivers/fpga/tests/fake-fpga-mgr.h
+new file mode 100644
+index 000000000000..453672b5df72
+--- /dev/null
++++ b/drivers/fpga/tests/fake-fpga-mgr.h
+@@ -0,0 +1,43 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Header file for the fake FPGA manager
++ *
++ * Copyright (C) 2023 Red Hat, Inc.
++ *
++ * Author: Marco Pagani <marpagan@redhat.com>
++ */
++
++#ifndef __FPGA_FAKE_MGR_H
++#define __FPGA_FAKE_MGR_H
++
++#include <linux/fpga/fpga-mgr.h>
++#include <linux/platform_device.h>
++#include <kunit/test.h>
++
++#define FPGA_IMG_BLOCK	1024
++
++/**
++ * struct fake_fpga_mgr - fake FPGA manager context data structure
++ *
++ * @mgr: FPGA manager.
++ * @pdev: platform device of the FPGA manager.
++ */
++struct fake_fpga_mgr {
++	struct fpga_manager *mgr;
++	struct platform_device *pdev;
++};
++
++struct fake_fpga_mgr *
++fake_fpga_mgr_register(struct kunit *test, struct device *parent);
++
++void fake_fpga_mgr_unregister(struct fake_fpga_mgr *mgr_ctx);
++
++int fake_fpga_mgr_get_rcfg_count(const struct fake_fpga_mgr *mgr_ctx);
++
++void fake_fpga_mgr_fill_header(u8 *buf);
++
++void fake_fpga_mgr_check_write_buf(struct fake_fpga_mgr *mgr_ctx);
++
++void fake_fpga_mgr_check_write_sgt(struct fake_fpga_mgr *mgr_ctx);
++
++#endif /* __FPGA_FAKE_MGR_H */
 -- 
-2.30.2
+2.39.2
 
