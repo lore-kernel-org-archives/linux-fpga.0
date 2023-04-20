@@ -2,56 +2,98 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0CAAC77B72
-	for <linux-fpga@archiver.kernel.org>; Thu, 20 Apr 2023 08:04:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11820C77B73
+	for <linux-fpga@archiver.kernel.org>; Thu, 20 Apr 2023 08:08:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234234AbjDTICw (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 20 Apr 2023 04:02:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38208 "EHLO
+        id S234035AbjDTIHF (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 20 Apr 2023 04:07:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41622 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234014AbjDTICw (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 20 Apr 2023 04:02:52 -0400
-Received: from mail.craftsplex.pl (mail.craftsplex.pl [162.19.155.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59AAD10FE
-        for <linux-fpga@vger.kernel.org>; Thu, 20 Apr 2023 01:02:51 -0700 (PDT)
-Received: by mail.craftsplex.pl (Postfix, from userid 1002)
-        id C1828240F8; Thu, 20 Apr 2023 08:01:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=craftsplex.pl;
-        s=mail; t=1681977721;
-        bh=PcMncQpBfIZCnTOfZJY5G1G+gaLn4c9QPfFvoXrE4rA=;
-        h=Date:From:To:Subject:From;
-        b=SZwB6I1fLVUpL0QPkJBLFuNatMfF/n0xIbz6jRKrOrPfNxegMYOMB60QMvL4qbcse
-         iymRSaXJBZJ0czrpLcnrgBsROBEOAF7jZ7k81d9eVJk+7AFXgAMLXjt2ov16PNt2+U
-         NCp2UfKgA0EyHcAPnjd8f3zwfvIZcFVtgAzbPFWYJyOtS9wTkeiNY3eLRQb+KwICzR
-         fgyNkG+HkvsHzEHSvVwvR58YhXBHZdz4wm9tMe9PKRmBnmyr4GqVrELkyPuCOVZVFm
-         H2UD5fSuGmXzq9POWpD2iV8IAbtiIBusVY/Ny1/LvOn1/am32aXFP7POwkXR3F14IN
-         6iDhbyvquuXyg==
-Received: by mail.craftsplex.pl for <linux-fpga@vger.kernel.org>; Thu, 20 Apr 2023 08:00:45 GMT
-Message-ID: <20230420064500-0.1.5o.q8p9.0.rw60xk65eo@craftsplex.pl>
-Date:   Thu, 20 Apr 2023 08:00:45 GMT
-From:   "Kamil Tralewski" <kamil.tralewski@craftsplex.pl>
-To:     <linux-fpga@vger.kernel.org>
-Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
-X-Mailer: mail.craftsplex.pl
+        with ESMTP id S233822AbjDTIHE (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 20 Apr 2023 04:07:04 -0400
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 755C513E;
+        Thu, 20 Apr 2023 01:07:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681978023; x=1713514023;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=IWgTUakXo/so+EUi19BYPXwPdQE5MJLPRo4AH1Tqv8E=;
+  b=cQE1FGXcUVrkTgHsGSiISeQ0nqDmYKpsqGdNvNYemb9tG+C+/Rl5+hfx
+   g/q3wJYommZ+9B2aSmF7YNofc2EC7Z/TlR1ikEY3hnAsHl1MziEfAade2
+   BUZ4v0Qk3bZOpjV/uWytXTQYwJkLstWRW7Cwk7ispJnzl77zBLXt+DXo+
+   f2qHnkjn22mCXKXNAEolK8cFBiPOR4/r3uWF10EJYfc7V7roZ6SPAsy0+
+   uybKe16+o8O5A6SJuLyuJ92w8v618NTtGOvSAcfxGPB4Cs2f1L267ZnQa
+   amoZRZPjupPEFY+iqvMVB0VL7MKL0WYV6XodXZvkRVkJoitXmFC2NJfju
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="334494756"
+X-IronPort-AV: E=Sophos;i="5.99,212,1677571200"; 
+   d="scan'208";a="334494756"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Apr 2023 01:07:02 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="722283330"
+X-IronPort-AV: E=Sophos;i="5.99,212,1677571200"; 
+   d="scan'208";a="722283330"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by orsmga008.jf.intel.com with ESMTP; 20 Apr 2023 01:06:59 -0700
+Date:   Fri, 21 Apr 2023 00:07:30 +0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Cc:     Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
+        Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org,
+        Lee Jones <lee@kernel.org>, Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Russ Weight <russell.h.weight@intel.com>,
+        linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org
+Subject: Re: [PATCH v3 4/4] mfd: intel-m10-bmc: Manage access to MAX 10 fw
+ handshake registers
+Message-ID: <ZEFjQtOCQCvQJ1k/@yilunxu-OptiPlex-7050>
+References: <20230417092653.16487-1-ilpo.jarvinen@linux.intel.com>
+ <20230417092653.16487-5-ilpo.jarvinen@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230417092653.16487-5-ilpo.jarvinen@linux.intel.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Dzie=C5=84 dobry,
+On 2023-04-17 at 12:26:53 +0300, Ilpo Järvinen wrote:
+> On some MAX 10 cards, the BMC firmware is not available to service
+> handshake registers during secure update erase and write phases at
+> normal speeds. This problem affects at least hwmon driver. When the MAX
+> 10 hwmon driver tries to read the sensor values during a secure update,
+> the reads are slowed down (e.g., reading all D5005 sensors takes ~24s
+> which is magnitudes worse than the normal <0.02s).
+> 
+> Manage access to the handshake registers using a rw semaphore and a FW
+> state variable to prevent accesses during those secure update phases
+> and return -EBUSY instead.
+> 
+> If handshake_sys_reg_nranges == 0, don't update bwcfw_state as it is not
+> used. This avoids the locking cost.
+> 
+> Co-developed-by: Russ Weight <russell.h.weight@intel.com>
+> Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+> Co-developed-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 
-zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
-=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
-o dalszych rozm=C3=B3w.=20
+Reviewed-by: Xu Yilun <yilun.xu@intel.com>
 
-Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
-=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
-=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
-strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
+Hi Lee:
 
-Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
+Could the fpga part also been applied to mfd tree when everyone is good?
 
-Pozdrawiam
-Kamil Tralewski
+Thanks,
+Yilun
+
+> ---
+>  drivers/fpga/intel-m10-bmc-sec-update.c | 17 +++++--
+>  drivers/mfd/intel-m10-bmc-core.c        | 67 ++++++++++++++++++++++++-
+>  drivers/mfd/intel-m10-bmc-spi.c         | 14 ++++++
+>  include/linux/mfd/intel-m10-bmc.h       | 28 +++++++++++
+>  4 files changed, 121 insertions(+), 5 deletions(-)
