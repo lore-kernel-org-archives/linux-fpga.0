@@ -2,38 +2,45 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C8A2C77B7C
-	for <linux-fpga@archiver.kernel.org>; Thu, 20 Apr 2023 11:26:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A212C7618E
+	for <linux-fpga@archiver.kernel.org>; Fri, 21 Apr 2023 01:53:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229653AbjDTLY4 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 20 Apr 2023 07:24:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53570 "EHLO
+        id S233352AbjDUBwI (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 20 Apr 2023 21:52:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47264 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234097AbjDTLYh (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 20 Apr 2023 07:24:37 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 450434EF6;
-        Thu, 20 Apr 2023 04:23:13 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id AA7A660EE2;
-        Thu, 20 Apr 2023 11:13:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8FBDC433D2;
-        Thu, 20 Apr 2023 11:13:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1681989210;
-        bh=83TzyHp1mq1Rphu2Mp/8bCtIaYRo7x0Qx9nQXv5k8Mo=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=mesjctjmh4x2MfVshQziiYcP9VPUja+3n03zFKwjFShgQ5Cuj1r8B9x2Mkyvh7mmI
-         yWiQWgHLUGHeOfjEoPQYvX1xAiIFXzYS7kpdu9J1MhagXRDm7Z+9JxA962vSj2DclJ
-         kCT5d3rC2cWqMzwbIGNqoP5S4VIyuw5CXn8e+aKEQKgbGku8jQmQn1gGGg/KIe83qe
-         kNXANOU+kPd1O/gFoWBhpVwTfV6AW6MeYVWRRTJX7xMSr81paNJOWn7r4hNFP2H+g5
-         IqKnuFhBk4W10zfGrGHAHfYJO25bLApSZEj5TCwgcw5rjUm1uIaSgGnJiGPLb1TM3X
-         K+XR5jRKXGpug==
-Date:   Thu, 20 Apr 2023 12:13:24 +0100
-From:   Lee Jones <lee@kernel.org>
-To:     Xu Yilun <yilun.xu@intel.com>
+        with ESMTP id S233409AbjDUBwF (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 20 Apr 2023 21:52:05 -0400
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDE5D6EB5;
+        Thu, 20 Apr 2023 18:51:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1682041912; x=1713577912;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=qOaIZhCM0M7nCC0PwmJL4rbJwQkhe6qCcFlSkgzP2Os=;
+  b=RSWBlnD2SngH43rjO9rq0WYogV+r0yij3ASnFjEHs56l3mzaiZlJFSJi
+   DwePIYUtXUtGgGHGtnOImF894CtzJDNxCvk1QjR8At3HLsdytcqp1JOHI
+   1DVE0OfhcKAam6m9P0ErgOB70+nOR2aTExmYR4AVNbxhPqvwdA8bWb5Xq
+   BedIMxnJgJlmsXSwgaT09YzJ3u+j3r+wEfsGq6jXOOcPf5NEMtE0TRkJL
+   BwjnmDxgHyqKPROGnfm3AqzQ2heqnGFebnSEun5HGowKyeOGMj3xbhgs3
+   3Hdr8hwWBDWihop6pnrvqbH0IBq6W3eJc3fGEolxtSqBQ0X38/By+L1vu
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10686"; a="330092938"
+X-IronPort-AV: E=Sophos;i="5.99,214,1677571200"; 
+   d="scan'208";a="330092938"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Apr 2023 18:51:52 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10686"; a="836003730"
+X-IronPort-AV: E=Sophos;i="5.99,214,1677571200"; 
+   d="scan'208";a="836003730"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by fmsmga001.fm.intel.com with ESMTP; 20 Apr 2023 18:51:49 -0700
+Date:   Fri, 21 Apr 2023 17:52:19 +0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     Lee Jones <lee@kernel.org>
 Cc:     Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
         Wu Hao <hao.wu@intel.com>, Tom Rix <trix@redhat.com>,
         Moritz Fischer <mdf@kernel.org>, linux-fpga@vger.kernel.org,
@@ -43,49 +50,54 @@ Cc:     Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
         linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org
 Subject: Re: [PATCH v3 4/4] mfd: intel-m10-bmc: Manage access to MAX 10 fw
  handshake registers
-Message-ID: <20230420111324.GA970483@google.com>
+Message-ID: <ZEJc06oNSS2ICS1F@yilunxu-OptiPlex-7050>
 References: <20230417092653.16487-1-ilpo.jarvinen@linux.intel.com>
  <20230417092653.16487-5-ilpo.jarvinen@linux.intel.com>
  <ZEFjQtOCQCvQJ1k/@yilunxu-OptiPlex-7050>
+ <20230420111324.GA970483@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <ZEFjQtOCQCvQJ1k/@yilunxu-OptiPlex-7050>
+In-Reply-To: <20230420111324.GA970483@google.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Fri, 21 Apr 2023, Xu Yilun wrote:
-
-> On 2023-04-17 at 12:26:53 +0300, Ilpo Järvinen wrote:
-> > On some MAX 10 cards, the BMC firmware is not available to service
-> > handshake registers during secure update erase and write phases at
-> > normal speeds. This problem affects at least hwmon driver. When the MAX
-> > 10 hwmon driver tries to read the sensor values during a secure update,
-> > the reads are slowed down (e.g., reading all D5005 sensors takes ~24s
-> > which is magnitudes worse than the normal <0.02s).
-> > 
-> > Manage access to the handshake registers using a rw semaphore and a FW
-> > state variable to prevent accesses during those secure update phases
-> > and return -EBUSY instead.
-> > 
-> > If handshake_sys_reg_nranges == 0, don't update bwcfw_state as it is not
-> > used. This avoids the locking cost.
-> > 
-> > Co-developed-by: Russ Weight <russell.h.weight@intel.com>
-> > Signed-off-by: Russ Weight <russell.h.weight@intel.com>
-> > Co-developed-by: Xu Yilun <yilun.xu@intel.com>
-> > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-> > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+On 2023-04-20 at 12:13:24 +0100, Lee Jones wrote:
+> On Fri, 21 Apr 2023, Xu Yilun wrote:
 > 
-> Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+> > On 2023-04-17 at 12:26:53 +0300, Ilpo Järvinen wrote:
+> > > On some MAX 10 cards, the BMC firmware is not available to service
+> > > handshake registers during secure update erase and write phases at
+> > > normal speeds. This problem affects at least hwmon driver. When the MAX
+> > > 10 hwmon driver tries to read the sensor values during a secure update,
+> > > the reads are slowed down (e.g., reading all D5005 sensors takes ~24s
+> > > which is magnitudes worse than the normal <0.02s).
+> > > 
+> > > Manage access to the handshake registers using a rw semaphore and a FW
+> > > state variable to prevent accesses during those secure update phases
+> > > and return -EBUSY instead.
+> > > 
+> > > If handshake_sys_reg_nranges == 0, don't update bwcfw_state as it is not
+> > > used. This avoids the locking cost.
+> > > 
+> > > Co-developed-by: Russ Weight <russell.h.weight@intel.com>
+> > > Signed-off-by: Russ Weight <russell.h.weight@intel.com>
+> > > Co-developed-by: Xu Yilun <yilun.xu@intel.com>
+> > > Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+> > > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+> > 
+> > Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+> > 
+> > Hi Lee:
+> > 
+> > Could the fpga part also been applied to mfd tree when everyone is good?
 > 
-> Hi Lee:
+> Yes, with an Acked-by it can.
+
+Acked-by: Xu Yilun <yilun.xu@intel.com>
+
 > 
-> Could the fpga part also been applied to mfd tree when everyone is good?
-
-Yes, with an Acked-by it can.
-
--- 
-Lee Jones [李琼斯]
+> -- 
+> Lee Jones [李琼斯]
