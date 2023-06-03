@@ -2,147 +2,127 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4D9EC77B7C
-	for <linux-fpga@archiver.kernel.org>; Wed, 31 May 2023 09:58:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFF08C77B73
+	for <linux-fpga@archiver.kernel.org>; Sat,  3 Jun 2023 09:29:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235764AbjEaJ4k (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Wed, 31 May 2023 05:56:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52348 "EHLO
+        id S229848AbjFCJ1z (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Sat, 3 Jun 2023 05:27:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235587AbjEaJ4i (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Wed, 31 May 2023 05:56:38 -0400
-Received: from NAM04-DM6-obe.outbound.protection.outlook.com (mail-dm6nam04on2084.outbound.protection.outlook.com [40.107.102.84])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A48C132;
-        Wed, 31 May 2023 02:56:32 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Rho5cfQ978DD3NBwuH5F8kVzo0mnLuA5zVb1bb93r/bWgmNzqdz6plbOS/m15k5Ugd3Jf2Txv7H21D7kYHyz7w6jfYOqK3URYh7vBkDGiwyfTW4CRU6sa22Va/OvfV5zaWQjhSLuCp4wk/jt05IUFHxubKjCNxYXK7TTWQHwYn5bqg1Jp1TMa83COpjf7Lfl4Al60boxclWs4SqlHr2z6/E5+q/872TH/i1S3RsHNJ1fuZ9GAbtIywu0SsttW9Ny4d2bknMi9z3LCDiOm6/5hLZ/pKmpRwhjJuZ86bg/pEenvvWricy1X5VLDH3iwSLM8MWr7UDaQFOJ21xee2Y9hQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UBDSnOwHD/6z1qxcjGDdNCgWTAo23doghi/f3sNJJLo=;
- b=LV+31/Q1WdOtJvSpyVGs65oTs6SZAhS1Hjv58o8hGX9wQwqd7PNse6N27+kJgKR74rB/ha/Sgxy6tQQWZIJkSdZ9lb3pz1QQ2Z4+CQswF8DuS28O7Of71qVf6emwbao7/tzZF28eZK+hETZsa1LgEFP+bi/j28ALu/v7yoYttRpTbffdcACXYrmf/+ZVZMfSvnAchQenyZlpsDEVCv0dmaydIjP3lkfxzwFbn88UFr5mrszfZ1Z8e7CmiM8riAkoC65goJOxKbeDm100bWdGcYh+1FjjD3KOGc6R/0JJG89LsuIcGu+h3FqyYZjCoW4Y5Lpfh7xrxTcI4ehxmr/Z7w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UBDSnOwHD/6z1qxcjGDdNCgWTAo23doghi/f3sNJJLo=;
- b=PJacP/PokDKH1YVy9HmBgg4rvxwBMDlEHvT8iWK00iNJJz0Q64QRN7miVnEOXkKgexVABJ+GZXIdNUP1zJjycKb5ujSSxbDMMS9NWQ9M2ujmP6gCnpq15qSsC2lg+C2VLcCvknB/Z/KfAsWtFB4yvrmxZomxvTY0HkgKq5vMjdM=
-Received: from BN0PR10CA0009.namprd10.prod.outlook.com (2603:10b6:408:143::6)
- by CY5PR12MB6527.namprd12.prod.outlook.com (2603:10b6:930:30::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.22; Wed, 31 May
- 2023 09:56:29 +0000
-Received: from BN8NAM11FT059.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:143:cafe::69) by BN0PR10CA0009.outlook.office365.com
- (2603:10b6:408:143::6) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.22 via Frontend
- Transport; Wed, 31 May 2023 09:56:29 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BN8NAM11FT059.mail.protection.outlook.com (10.13.177.120) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6455.22 via Frontend Transport; Wed, 31 May 2023 09:56:29 +0000
-Received: from localhost (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Wed, 31 May
- 2023 04:56:27 -0500
-From:   Nava kishore Manne <nava.kishore.manne@amd.com>
-To:     <mdf@kernel.org>, <hao.wu@intel.com>, <yilun.xu@intel.com>,
-        <trix@redhat.com>, <michal.simek@amd.com>,
-        <linux-fpga@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     Alfonso Rodriguez <alfonso.rodriguezm@upm.es>
-Subject: [PATCH v2] fpga: zynq-fpga: Ensure proper xCAP interface switch
-Date:   Wed, 31 May 2023 15:26:24 +0530
-Message-ID: <20230531095624.1802757-1-nava.kishore.manne@amd.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S229692AbjFCJ1z (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Sat, 3 Jun 2023 05:27:55 -0400
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE3F9E48;
+        Sat,  3 Jun 2023 02:27:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1685784473; x=1717320473;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=pdvmuC2wyW2a7AD5zT1/NjQSBP98ch0K0/460XXGMZU=;
+  b=nlUSMCNMMY0ehLsukjtWCFfY6oPBtq533ee84WI6/bp5JYwF0kxJBVpZ
+   8SVvqwTLkA/DtaZ2KpdxOcXBbvLKQbZXqQ1khnkrYYJ+Wo+xY/LR1Dhxq
+   vJYC69zkx8/YBMaceq1zigpulxl76sgBkuYi6gcNV+RHDkPA4xD1KTict
+   zf4ZyBLtTqRY4r0nAXSIro7AATMsT64RI1iRo2o5GnJ61FDLPARB3BHMM
+   F/vAvNyt3Cq/liOrraBvpaj0GI/RmzIqr45S11zTYCElr07Qqc4y8Kbjb
+   jOcD6Pp5xGvUOEMlUjfHB7LA4SWoN5/aHp5N4Tt2TvQyD6TpGp1+1HxW+
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10729"; a="419591916"
+X-IronPort-AV: E=Sophos;i="6.00,215,1681196400"; 
+   d="scan'208";a="419591916"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jun 2023 02:27:53 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10729"; a="658529048"
+X-IronPort-AV: E=Sophos;i="6.00,215,1681196400"; 
+   d="scan'208";a="658529048"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by orsmga003.jf.intel.com with ESMTP; 03 Jun 2023 02:27:51 -0700
+Date:   Sun, 4 Jun 2023 01:27:21 +0800
+From:   Xu Yilun <yilun.xu@intel.com>
+To:     Nava kishore Manne <nava.kishore.manne@amd.com>
+Cc:     mdf@kernel.org, hao.wu@intel.com, trix@redhat.com,
+        michal.simek@amd.com, linux-fpga@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Alfonso Rodriguez <alfonso.rodriguezm@upm.es>
+Subject: Re: [PATCH v2] fpga: zynq-fpga: Ensure proper xCAP interface switch
+Message-ID: <ZHt3+XSvmTnk1Xno@yilunxu-OptiPlex-7050>
+References: <20230531095624.1802757-1-nava.kishore.manne@amd.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN8NAM11FT059:EE_|CY5PR12MB6527:EE_
-X-MS-Office365-Filtering-Correlation-Id: 70c81b88-430b-47ac-c9ce-08db61bd4e6b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: psmqx7XL4WKQNmoq3KNol+qXDuJvJTLLiO/O9IonS3C6c2R2mVel5H70J7641V+gEb1nHf9CNZGvCxIppUY3IgPrGIBpB714kLWE+e9JGy6Huy3sS62uv7jSjqIawOZMSBGUMADkzQssCz1ufSCIvPhR2gHZt65UwsU5HqETm1eAqPrRxNlJa3jNhGua6vIairLpUIUvLXlgQ6mNIB459RnloN4e4dWOQi/TCRP7z6//iK2ZgD0Hz7C1XRRmykHWs5nzz441unEdvDO6+ztjfsIZpQ/9Tahoj227MArbPPLo9CRFU/JtpGgrzz+/ZqCGaW1hTxrUWDBakFjw9CirvGjCTRVFyBdBDr/wswvBSEkgt5gS6JH5ZQtL49PJi0gxM9Y5lweg7P2Y9QwW8YXtdrj2SY+mHnz1AHFFuJMIckw08qe9Jh7IAUQwCW1SdxAM4ttc6kLxtemN7EQ/BOcx0+8Kp+B5hlYbhynszPFxNk5md5LCqDjtdVh6Qh9bGsD8kxtA+JUxtoUIG8pgPwKbsrhifpy/dPh6RVZOKXrJuy0amwVrrj8zzRWXI5/58aay6DvTFy8C84pBVG3zS8fBTDkmyZA5YWcXqoI0tt/NYtT6HtXlSOmas3sTru8HdtxmcfGMlt7vDphhO4TmQ9VySyP/uoeVf3ID6E3ezzWX+ZU5fCtw0vsswMpGxnWmF+L6RC0tMA/qJmm2ANc4381P4Z3D/7NOfHIt2237BjKlmq1HKhvOz1sALZnejM/BzV00//Ks6OwKjZKFkxPfisXrVAoeYlRtwL4Oqvzx2bueXGM=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(376002)(346002)(136003)(39860400002)(396003)(451199021)(46966006)(40470700004)(36840700001)(8936002)(8676002)(5660300002)(110136005)(478600001)(966005)(41300700001)(316002)(6666004)(1076003)(26005)(16526019)(186003)(70206006)(70586007)(4326008)(2616005)(426003)(2906002)(40460700003)(336012)(47076005)(83380400001)(81166007)(356005)(82740400003)(40480700001)(36860700001)(82310400005)(86362001)(103116003)(36756003)(2101003)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 May 2023 09:56:29.4988
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 70c81b88-430b-47ac-c9ce-08db61bd4e6b
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT059.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY5PR12MB6527
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230531095624.1802757-1-nava.kishore.manne@amd.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-From: Alfonso Rodriguez <alfonso.rodriguezm@upm.es>
+On 2023-05-31 at 15:26:24 +0530, Nava kishore Manne wrote:
+> From: Alfonso Rodriguez <alfonso.rodriguezm@upm.es>
+> 
+> The Zynq platform has PCAP, ICAP and JTAG interfaces for configuring
+> programmable logic (PL). The existing driver implementation uses the
+> PCAP interface to configure the PL. Before switching the PL configuration
+> interface from PCAP to ICAP make sure that all outstanding Transactions
+> relevant to the PL configuration should be completed by the PCAP interface
+> otherwise it may lead to PL configuration issues.
+> 
+> This patch provides a required fix to ensure that all existing PL
+> transactions are completed before switching from PCAP to ICAP.
+> 
+> For detailed information relevant to PL configuration interfaces refer
+> Zynq 7000 TRM (section 6.5.1).
+> Link: https://docs.xilinx.com/v/u/en-US/ug585-Zynq-7000-TRM
+> 
+> Signed-off-by: Alfonso Rodriguez <alfonso.rodriguezm@upm.es>
+> Signed-off-by: Nava kishore Manne <nava.kishore.manne@amd.com>
+> ---
+> Changes for v2:
+>               - Updated commit message and added Doc link as suggested by Yilun.
+> 
+>  drivers/fpga/zynq-fpga.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
+> index ae0da361e6c6..88db9ac36887 100644
+> --- a/drivers/fpga/zynq-fpga.c
+> +++ b/drivers/fpga/zynq-fpga.c
+> @@ -493,15 +493,16 @@ static int zynq_fpga_ops_write_complete(struct fpga_manager *mgr,
+>  	if (err)
+>  		return err;
+>  
+> -	/* Release 'PR' control back to the ICAP */
+> -	zynq_fpga_write(priv, CTRL_OFFSET,
+> -		zynq_fpga_read(priv, CTRL_OFFSET) & ~CTRL_PCAP_PR_MASK);
+> -
+>  	err = zynq_fpga_poll_timeout(priv, INT_STS_OFFSET, intr_status,
+>  				     intr_status & IXR_PCFG_DONE_MASK,
+>  				     INIT_POLL_DELAY,
+>  				     INIT_POLL_TIMEOUT);
+>  
+> +	/* Release 'PR' control back to the ICAP */
+> +	zynq_fpga_write(priv, CTRL_OFFSET,
+> +			zynq_fpga_read(priv, CTRL_OFFSET)
+> +			& ~CTRL_PCAP_PR_MASK);
 
-The Zynq platform has PCAP, ICAP and JTAG interfaces for configuring
-programmable logic (PL). The existing driver implementation uses the
-PCAP interface to configure the PL. Before switching the PL configuration
-interface from PCAP to ICAP make sure that all outstanding Transactions
-relevant to the PL configuration should be completed by the PCAP interface
-otherwise it may lead to PL configuration issues.
+Don't put the & at the beginning of the line:
 
-This patch provides a required fix to ensure that all existing PL
-transactions are completed before switching from PCAP to ICAP.
+	zynq_fpga_read(priv, CTRL_OFFSET) &
+	~CTRL_PCAP_PR_MASK);
 
-For detailed information relevant to PL configuration interfaces refer
-Zynq 7000 TRM (section 6.5.1).
-Link: https://docs.xilinx.com/v/u/en-US/ug585-Zynq-7000-TRM
+or just:
+	zynq_fpga_read(priv, CTRL_OFFSET) & ~CTRL_PCAP_PR_MASK);
 
-Signed-off-by: Alfonso Rodriguez <alfonso.rodriguezm@upm.es>
-Signed-off-by: Nava kishore Manne <nava.kishore.manne@amd.com>
----
-Changes for v2:
-              - Updated commit message and added Doc link as suggested by Yilun.
+80 lines is not a must now.
 
- drivers/fpga/zynq-fpga.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+Others look good to me.
 
-diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
-index ae0da361e6c6..88db9ac36887 100644
---- a/drivers/fpga/zynq-fpga.c
-+++ b/drivers/fpga/zynq-fpga.c
-@@ -493,15 +493,16 @@ static int zynq_fpga_ops_write_complete(struct fpga_manager *mgr,
- 	if (err)
- 		return err;
- 
--	/* Release 'PR' control back to the ICAP */
--	zynq_fpga_write(priv, CTRL_OFFSET,
--		zynq_fpga_read(priv, CTRL_OFFSET) & ~CTRL_PCAP_PR_MASK);
--
- 	err = zynq_fpga_poll_timeout(priv, INT_STS_OFFSET, intr_status,
- 				     intr_status & IXR_PCFG_DONE_MASK,
- 				     INIT_POLL_DELAY,
- 				     INIT_POLL_TIMEOUT);
- 
-+	/* Release 'PR' control back to the ICAP */
-+	zynq_fpga_write(priv, CTRL_OFFSET,
-+			zynq_fpga_read(priv, CTRL_OFFSET)
-+			& ~CTRL_PCAP_PR_MASK);
-+
- 	clk_disable(priv->clk);
- 
- 	if (err)
--- 
-2.25.1
+Thanks,
+Yilun
 
+> +
+>  	clk_disable(priv->clk);
+>  
+>  	if (err)
+> -- 
+> 2.25.1
+> 
