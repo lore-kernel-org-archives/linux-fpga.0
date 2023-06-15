@@ -2,90 +2,57 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1191EC7EE25
-	for <linux-fpga@archiver.kernel.org>; Mon, 12 Jun 2023 08:43:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43FF8EB64D9
+	for <linux-fpga@archiver.kernel.org>; Thu, 15 Jun 2023 11:10:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233405AbjFLIlw (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 12 Jun 2023 04:41:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46254 "EHLO
+        id S245659AbjFOLI3 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 15 Jun 2023 07:08:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230361AbjFLIlm (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 12 Jun 2023 04:41:42 -0400
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51DF9120
-        for <linux-fpga@vger.kernel.org>; Mon, 12 Jun 2023 01:41:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1686559301; x=1718095301;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=LqCb0vI7jAWvxqE6rvq5GH8+IecEOk1GDR6lcX0Gba0=;
-  b=fEG/9eCvqLJBxIGUzmkuJuF3QVNJ/pBIi7j+uffZg4OC0oY2MdWwze1o
-   7atACQ3mFGedzqTuOM4vW7+/XubCR89PsV1oLGlEo/g/Jd8v1trijWEye
-   kWAOEsNcKOWWN6MSfMj8q9L5CdL79SkUlyB9Er5hNwt/eFuMbyT+TWALa
-   4dZaIif3ybNU0VkeI4AAkpwBFyDEp7x5U/Oug0q/QrpK5lfJsk/0hgMzB
-   mF0lCm3N+KIqtWqxLmhNxq+ew/TB6kIArA+8v3ZqlG/ktq3kEFudL+skp
-   zyMbWoirRPIfzUNa3QfFtxmfrAZi4JI/x04WkmCvxiGAMYkJ0RFS6iQ4t
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10738"; a="356866095"
-X-IronPort-AV: E=Sophos;i="6.00,236,1681196400"; 
-   d="scan'208";a="356866095"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jun 2023 01:41:29 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10738"; a="957926814"
-X-IronPort-AV: E=Sophos;i="6.00,236,1681196400"; 
-   d="scan'208";a="957926814"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmsmga006.fm.intel.com with ESMTP; 12 Jun 2023 01:41:27 -0700
-Date:   Tue, 13 Jun 2023 00:40:44 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     gregkh@linuxfoundation.org
-Cc:     yilun.xu@intel.com, linux-fpga@vger.kernel.org, hao.wu@intel.com,
-        mdf@kernel.org
-Subject: [GIT PULL] FPGA Manager changes for 6.5-rc1
-Message-ID: <ZIdKjGlqzcHGveTV@yilunxu-OptiPlex-7050>
+        with ESMTP id S245694AbjFOLI1 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 15 Jun 2023 07:08:27 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EAE752729
+        for <linux-fpga@vger.kernel.org>; Thu, 15 Jun 2023 04:08:26 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 8010D6145F
+        for <linux-fpga@vger.kernel.org>; Thu, 15 Jun 2023 11:08:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95385C433C0;
+        Thu, 15 Jun 2023 11:08:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1686827305;
+        bh=+ytExtzQnwlhFqQFUzO9T7CrhQ9JCvFmHVmIDEx9Ti8=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=vYWCIIaYfgw8yYDWtWGg1VfVS8n2paq3fydorexV112WkGbwYT3U0fn8Yhj1CERZU
+         VbzXqbvHlvme13ZIhzKJFQGb26rVFV6C9jiO0jlKgB/NZd0K/ChFL9mYtBZFFyyacb
+         470MA0r1xJcwGwLXHDUeV2hzdoXOzHp0Xk1CqlVg=
+Date:   Thu, 15 Jun 2023 13:06:46 +0200
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Xu Yilun <yilun.xu@intel.com>
+Cc:     linux-fpga@vger.kernel.org, hao.wu@intel.com, mdf@kernel.org
+Subject: Re: [GIT PULL] FPGA Manager changes for 6.5-rc1
+Message-ID: <2023061538-level-glorious-1048@gregkh>
+References: <ZIdKjGlqzcHGveTV@yilunxu-OptiPlex-7050>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <ZIdKjGlqzcHGveTV@yilunxu-OptiPlex-7050>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The following changes since commit 44c026a73be8038f03dbdeef028b642880cf1511:
+On Tue, Jun 13, 2023 at 12:40:44AM +0800, Xu Yilun wrote:
+> The following changes since commit 44c026a73be8038f03dbdeef028b642880cf1511:
+> 
+>   Linux 6.4-rc3 (2023-05-21 14:05:48 -0700)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/fpga/linux-fpga tags/fpga-for-6.5-rc1
 
-  Linux 6.4-rc3 (2023-05-21 14:05:48 -0700)
+Pulled and pushed out, thanks.
 
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/fpga/linux-fpga tags/fpga-for-6.5-rc1
-
-for you to fetch changes up to 47147d56f92ee3f575e4b457413e0f2587b40e17:
-
-  fpga: zynq-fpga: Ensure proper xCAP interface switch (2023-06-06 19:14:19 +0800)
-
-----------------------------------------------------------------
-FPGA Manager changes for 6.5-rc1
-
-DFL:
-
-- Krzysztof's change constifies pointers to hwmon_channel_info
-
-Xilinx:
-
-- Alfonso's change ensures proper reprograming (xCAP) interface switch
-
-All patches have been reviewed on the mailing list, and have been in the
-last linux-next releases (as part of our for-next branch).
-
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-
-----------------------------------------------------------------
-Alfonso Rodriguez (1):
-      fpga: zynq-fpga: Ensure proper xCAP interface switch
-
-Krzysztof Kozlowski (1):
-      fpga: dfl-fme: constify pointers to hwmon_channel_info
-
- drivers/fpga/dfl-fme-main.c | 4 ++--
- drivers/fpga/zynq-fpga.c    | 8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+greg k-h
