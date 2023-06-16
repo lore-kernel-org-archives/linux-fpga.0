@@ -2,67 +2,67 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CC77EB64D8
-	for <linux-fpga@archiver.kernel.org>; Fri, 16 Jun 2023 15:47:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9613EB64D8
+	for <linux-fpga@archiver.kernel.org>; Fri, 16 Jun 2023 15:47:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345857AbjFPPpd (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 16 Jun 2023 11:45:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55168 "EHLO
+        id S1346098AbjFPPps (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 16 Jun 2023 11:45:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55186 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346066AbjFPPp0 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 16 Jun 2023 11:45:26 -0400
+        with ESMTP id S1346125AbjFPPpl (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 16 Jun 2023 11:45:41 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 336EB30C3
-        for <linux-fpga@vger.kernel.org>; Fri, 16 Jun 2023 08:44:40 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D01B30F8
+        for <linux-fpga@vger.kernel.org>; Fri, 16 Jun 2023 08:44:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1686930279;
+        s=mimecast20190719; t=1686930293;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0tmpX0UMp42WCZHiMzV6s9gBD7RFJYF8/+0DSuUNrP8=;
-        b=TIVxxL6uOCg9ZWTVStBcf27cqHqjQKsh38Qy11V15DHxzSY1u/rHr5s5X/CK6smIV7ZFFZ
-        xWMJ9E6YAcZMZXgPjtDoa84HWlmvpqGrVmUYejy5DQevXmiFtO6+M793dG/T81549zlWl7
-        eJEcL/5s+GUzLOGfW9ly3s546pZQh1I=
+        bh=DLxKEahzszph04pP7LNvqbtOeyVOwQumdUKeU8imaG0=;
+        b=aQ84qE93pQ9w9q5r/0ci9Gkcm2VpO4I+cuzFzZzs99W26fjRk/4azZnQKgnvfhRieG+sUM
+        9CCBb4njqwd/lgWLFRxgUybIM9fp8afvgwanmAWIJNuERv4EHKzvfaQZqn/ZK+1lLMbadh
+        rLFr+fdDKqJNoNEyL/Lzlw1/6Ql1er8=
 Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com
  [209.85.222.199]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-330-Ys0QzdCEN3iGaVceiaWoyw-1; Fri, 16 Jun 2023 11:44:37 -0400
-X-MC-Unique: Ys0QzdCEN3iGaVceiaWoyw-1
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-7623822a815so66407885a.1
-        for <linux-fpga@vger.kernel.org>; Fri, 16 Jun 2023 08:44:37 -0700 (PDT)
+ us-mta-12-9hV07PYIOlqjGgf85H5lQg-1; Fri, 16 Jun 2023 11:44:52 -0400
+X-MC-Unique: 9hV07PYIOlqjGgf85H5lQg-1
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-7623d5cb0beso5018585a.3
+        for <linux-fpga@vger.kernel.org>; Fri, 16 Jun 2023 08:44:52 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686930277; x=1689522277;
+        d=1e100.net; s=20221208; t=1686930292; x=1689522292;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=0tmpX0UMp42WCZHiMzV6s9gBD7RFJYF8/+0DSuUNrP8=;
-        b=exRfElvl0GC0MSEbJMmmpOqs2pBfHYYrHoPwooorJ3fw43oy9beZbl73yj40yHgMow
-         i0wxKil3L49BDugOs3N+TKXRIt2KaWlBXBvsuOzek/d9gXMqQRhaJ9PerRVahTsaHfn7
-         E2BxCS/5FDrWyyiCTtSj9Xtm3P6KLv+l5UApzxk9e/wPzWw7SghNLA/uhB3nDVV9Sw3o
-         yaFO6cvXs7Lwc7menK5x4gbpZyRXJQ43SeMV5zNvP8kfdPW1CQQIUfjZGWFAqIuM3zAE
-         txwC/4rj3NL3tDNrPxe8Yp/qlYLKQUXvVvbdmamEhENQIzfm3CTCw+is6OJZy3ssx0/A
-         SiTw==
-X-Gm-Message-State: AC+VfDz5NFt1PbO2pjOfQXtpwiiNrh39IfZ86zEk40fNJEqSlu/9vv12
-        41YsSC2yVdeDWUkEiZAOEYBnzhETY1ge04NzP/jG1n250qKzwKavGwshc1FXgiL9LbD4bCGPXgF
-        N2cvhp2T6dE3xO79fbz6k
-X-Received: by 2002:a05:620a:2493:b0:75e:d8db:5e4 with SMTP id i19-20020a05620a249300b0075ed8db05e4mr2588739qkn.49.1686930277073;
-        Fri, 16 Jun 2023 08:44:37 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ6XfvyzvhLYEqGnMBZOxLgC/rlbvrl2NqnYEYVzZhgerUW/EtIHA0L+l9jl/KJR8kzRqRReNw==
-X-Received: by 2002:a05:620a:2493:b0:75e:d8db:5e4 with SMTP id i19-20020a05620a249300b0075ed8db05e4mr2588725qkn.49.1686930276831;
-        Fri, 16 Jun 2023 08:44:36 -0700 (PDT)
+        bh=DLxKEahzszph04pP7LNvqbtOeyVOwQumdUKeU8imaG0=;
+        b=CGb53sl7DCrWHgpOBuBOeGNADLxrpoGLvNCvCr0hTL7eqaPqek8Jh7aLYRbcq/aC+3
+         OVLFdZI0KRAPM5Ic0Wwd91knpYRpu+muOha5IZSYS7rO/iFrYXRFdLJHUH+Ha892/8Cn
+         i2+Z/ZN5HodfSEKg26TjLUc/NkAnZwPkf1RlLsUFqq1lfwW883EUsbfAwf+MVQj6BZJ/
+         DGBkhUZLHbIrTaYaFILDjP80KbL3topPkMeAyzOziQkciU/PKHhYBmttGmxJHKzPXP79
+         pcUIDJ6XgJpFsr0OknjaWP5cYaE9p9VuejnP0oJ4IYIbW2GYqwViYLgSKHoF60JIyMAK
+         Wuxw==
+X-Gm-Message-State: AC+VfDyWniV+eV/RkefSl8tf1nYgMV9p3cTLgB2ulkdMhdHCuXNZ/KgA
+        8ShjyMB/ETf1kFYcbAQg8OvN3hxf8TeEfJ7G6dj9gOQ3BUnf+01pJRq1nD8PIPimb8MG7dPG9tR
+        mj/SERodVf6KqhtWppllV
+X-Received: by 2002:a05:620a:2910:b0:75e:d264:fdb5 with SMTP id m16-20020a05620a291000b0075ed264fdb5mr2361404qkp.24.1686930291894;
+        Fri, 16 Jun 2023 08:44:51 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ6Bjdq1H5v2oXi7Crxi6Vc1bnEVTjwJ/KPh97ESWzct/YGwWUNWKNELPjwCPGFsi/pQ7eUbug==
+X-Received: by 2002:a05:620a:2910:b0:75e:d264:fdb5 with SMTP id m16-20020a05620a291000b0075ed264fdb5mr2361388qkp.24.1686930291661;
+        Fri, 16 Jun 2023 08:44:51 -0700 (PDT)
 Received: from klayman.redhat.com (net-2-34-28-201.cust.vodafonedsl.it. [2.34.28.201])
-        by smtp.gmail.com with ESMTPSA id 27-20020a05620a079b00b007607ecd58ecsm4436931qka.59.2023.06.16.08.44.35
+        by smtp.gmail.com with ESMTPSA id 27-20020a05620a079b00b007607ecd58ecsm4436931qka.59.2023.06.16.08.44.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 16 Jun 2023 08:44:36 -0700 (PDT)
+        Fri, 16 Jun 2023 08:44:51 -0700 (PDT)
 From:   Marco Pagani <marpagan@redhat.com>
 To:     Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
         Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>
 Cc:     Marco Pagani <marpagan@redhat.com>, linux-kernel@vger.kernel.org,
         linux-fpga@vger.kernel.org
-Subject: [PATCH v7 2/4] fpga: add an initial KUnit suite for the FPGA Bridge
-Date:   Fri, 16 Jun 2023 17:44:03 +0200
-Message-Id: <20230616154405.220502-3-marpagan@redhat.com>
+Subject: [PATCH v7 4/4] fpga: add configuration for the FPGA KUnit test suites.
+Date:   Fri, 16 Jun 2023 17:44:05 +0200
+Message-Id: <20230616154405.220502-5-marpagan@redhat.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230616154405.220502-1-marpagan@redhat.com>
 References: <20230616154405.220502-1-marpagan@redhat.com>
@@ -72,196 +72,82 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The suite tests the basic behaviors of the FPGA Bridge including
-the functions that operate on a list of Bridges.
+Add configuration for the KUnit test suites for the core components
+of the FPGA subsystem.
 
 Signed-off-by: Marco Pagani <marpagan@redhat.com>
 ---
- drivers/fpga/tests/fpga-bridge-test.c | 175 ++++++++++++++++++++++++++
- 1 file changed, 175 insertions(+)
- create mode 100644 drivers/fpga/tests/fpga-bridge-test.c
+ drivers/fpga/Kconfig            |  2 ++
+ drivers/fpga/Makefile           |  3 +++
+ drivers/fpga/tests/.kunitconfig |  5 +++++
+ drivers/fpga/tests/Kconfig      | 11 +++++++++++
+ drivers/fpga/tests/Makefile     |  5 +++++
+ 5 files changed, 26 insertions(+)
+ create mode 100644 drivers/fpga/tests/.kunitconfig
+ create mode 100644 drivers/fpga/tests/Kconfig
+ create mode 100644 drivers/fpga/tests/Makefile
 
-diff --git a/drivers/fpga/tests/fpga-bridge-test.c b/drivers/fpga/tests/fpga-bridge-test.c
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 0a00763b9f28..2f689ac4ba3a 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -276,4 +276,6 @@ config FPGA_MGR_LATTICE_SYSCONFIG_SPI
+ 	  FPGA manager driver support for Lattice FPGAs programming over slave
+ 	  SPI sysCONFIG interface.
+ 
++source "drivers/fpga/tests/Kconfig"
++
+ endif # FPGA
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index 72e554b4d2f7..352a2612623e 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -55,3 +55,6 @@ obj-$(CONFIG_FPGA_DFL_NIOS_INTEL_PAC_N3000)	+= dfl-n3000-nios.o
+ 
+ # Drivers for FPGAs which implement DFL
+ obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
++
++# KUnit tests
++obj-$(CONFIG_FPGA_KUNIT_TESTS)		+= tests/
+diff --git a/drivers/fpga/tests/.kunitconfig b/drivers/fpga/tests/.kunitconfig
 new file mode 100644
-index 000000000000..fce67ac59a7c
+index 000000000000..a1c2a2974c39
 --- /dev/null
-+++ b/drivers/fpga/tests/fpga-bridge-test.c
-@@ -0,0 +1,175 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * KUnit test for the FPGA Bridge
-+ *
-+ * Copyright (C) 2023 Red Hat, Inc.
-+ *
-+ * Author: Marco Pagani <marpagan@redhat.com>
-+ */
++++ b/drivers/fpga/tests/.kunitconfig
+@@ -0,0 +1,5 @@
++CONFIG_KUNIT=y
++CONFIG_FPGA=y
++CONFIG_FPGA_REGION=y
++CONFIG_FPGA_BRIDGE=y
++CONFIG_FPGA_KUNIT_TESTS=y
+diff --git a/drivers/fpga/tests/Kconfig b/drivers/fpga/tests/Kconfig
+new file mode 100644
+index 000000000000..e4a64815f16d
+--- /dev/null
++++ b/drivers/fpga/tests/Kconfig
+@@ -0,0 +1,11 @@
++config FPGA_KUNIT_TESTS
++	tristate "KUnit test for the FPGA subsystem" if !KUNIT_ALL_TESTS
++	depends on FPGA && FPGA_REGION && FPGA_BRIDGE && KUNIT=y
++	default KUNIT_ALL_TESTS
++        help
++          This builds unit tests for the FPGA subsystem
 +
-+#include <linux/types.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <kunit/test.h>
-+#include <linux/fpga/fpga-bridge.h>
++          For more information on KUnit and unit tests in general,
++          please refer to the KUnit documentation in Documentation/dev-tools/kunit/.
 +
-+struct bridge_stats {
-+	bool enable;
-+};
++          If unsure, say N.
+diff --git a/drivers/fpga/tests/Makefile b/drivers/fpga/tests/Makefile
+new file mode 100644
+index 000000000000..faa5fa230ab0
+--- /dev/null
++++ b/drivers/fpga/tests/Makefile
+@@ -0,0 +1,5 @@
++# SPDX-License-Identifier: GPL-2.0
 +
-+struct bridge_ctx {
-+	struct fpga_bridge *bridge;
-+	struct platform_device *pdev;
-+	struct bridge_stats stats;
-+};
-+
-+static int op_enable_set(struct fpga_bridge *bridge, bool enable)
-+{
-+	struct bridge_stats *stats = bridge->priv;
-+
-+	stats->enable = enable;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Fake Bridge that implements only the enable_set op to track
-+ * the state.
-+ */
-+static const struct fpga_bridge_ops fake_bridge_ops = {
-+	.enable_set = op_enable_set
-+};
-+
-+/**
-+ * register_test_bridge() - Register a fake Bridge for testing.
-+ * @test: KUnit test context object.
-+ *
-+ * Return: Context of the newly registered Bridge.
-+ */
-+static struct bridge_ctx *register_test_bridge(struct kunit *test)
-+{
-+	struct bridge_ctx *ctx;
-+
-+	ctx = kunit_kzalloc(test, sizeof(*ctx), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx);
-+
-+	ctx->pdev = platform_device_register_simple("bridge_pdev", PLATFORM_DEVID_AUTO, NULL, 0);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx->pdev);
-+
-+	ctx->bridge = fpga_bridge_register(&ctx->pdev->dev, "Fake FPGA Bridge", &fake_bridge_ops,
-+					   &ctx->stats);
-+	KUNIT_ASSERT_FALSE(test, IS_ERR_OR_NULL(ctx->bridge));
-+
-+	return ctx;
-+}
-+
-+static void unregister_test_bridge(struct bridge_ctx *ctx)
-+{
-+	fpga_bridge_unregister(ctx->bridge);
-+	platform_device_unregister(ctx->pdev);
-+}
-+
-+static void fpga_bridge_test_get(struct kunit *test)
-+{
-+	struct bridge_ctx *ctx = test->priv;
-+	struct fpga_bridge *bridge;
-+
-+	bridge = fpga_bridge_get(&ctx->pdev->dev, NULL);
-+	KUNIT_EXPECT_PTR_EQ(test, bridge, ctx->bridge);
-+
-+	bridge = fpga_bridge_get(&ctx->pdev->dev, NULL);
-+	KUNIT_EXPECT_EQ(test, PTR_ERR(bridge), -EBUSY);
-+
-+	fpga_bridge_put(ctx->bridge);
-+}
-+
-+static void fpga_bridge_test_toggle(struct kunit *test)
-+{
-+	struct bridge_ctx *ctx = test->priv;
-+	int ret;
-+
-+	ret = fpga_bridge_disable(ctx->bridge);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+	KUNIT_EXPECT_FALSE(test, ctx->stats.enable);
-+
-+	ret = fpga_bridge_enable(ctx->bridge);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+	KUNIT_EXPECT_TRUE(test, ctx->stats.enable);
-+}
-+
-+/* Test the functions for getting and controlling a list of bridges */
-+static void fpga_bridge_test_get_put_list(struct kunit *test)
-+{
-+	struct list_head bridge_list;
-+	struct bridge_ctx *ctx_0, *ctx_1;
-+	int ret;
-+
-+	ctx_0 = test->priv;
-+	ctx_1 = register_test_bridge(test);
-+
-+	INIT_LIST_HEAD(&bridge_list);
-+
-+	/* Get bridge 0 and add it to the list */
-+	ret = fpga_bridge_get_to_list(&ctx_0->pdev->dev, NULL, &bridge_list);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+
-+	KUNIT_EXPECT_PTR_EQ(test, ctx_0->bridge,
-+			    list_first_entry_or_null(&bridge_list, struct fpga_bridge, node));
-+
-+	/* Get bridge 1 and add it to the list */
-+	ret = fpga_bridge_get_to_list(&ctx_1->pdev->dev, NULL, &bridge_list);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+
-+	KUNIT_EXPECT_PTR_EQ(test, ctx_1->bridge,
-+			    list_first_entry_or_null(&bridge_list, struct fpga_bridge, node));
-+
-+	/* Disable an then enable both bridges from the list */
-+	ret = fpga_bridges_disable(&bridge_list);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+
-+	KUNIT_EXPECT_FALSE(test, ctx_0->stats.enable);
-+	KUNIT_EXPECT_FALSE(test, ctx_1->stats.enable);
-+
-+	ret = fpga_bridges_enable(&bridge_list);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+
-+	KUNIT_EXPECT_TRUE(test, ctx_0->stats.enable);
-+	KUNIT_EXPECT_TRUE(test, ctx_1->stats.enable);
-+
-+	/* Put and remove both bridges from the list */
-+	fpga_bridges_put(&bridge_list);
-+
-+	KUNIT_EXPECT_TRUE(test, list_empty(&bridge_list));
-+
-+	unregister_test_bridge(ctx_1);
-+}
-+
-+static int fpga_bridge_test_init(struct kunit *test)
-+{
-+	test->priv = register_test_bridge(test);
-+
-+	return 0;
-+}
-+
-+static void fpga_bridge_test_exit(struct kunit *test)
-+{
-+	unregister_test_bridge(test->priv);
-+}
-+
-+static struct kunit_case fpga_bridge_test_cases[] = {
-+	KUNIT_CASE(fpga_bridge_test_get),
-+	KUNIT_CASE(fpga_bridge_test_toggle),
-+	KUNIT_CASE(fpga_bridge_test_get_put_list),
-+	{}
-+};
-+
-+static struct kunit_suite fpga_bridge_suite = {
-+	.name = "fpga_bridge",
-+	.init = fpga_bridge_test_init,
-+	.exit = fpga_bridge_test_exit,
-+	.test_cases = fpga_bridge_test_cases,
-+};
-+
-+kunit_test_suite(fpga_bridge_suite);
-+
-+MODULE_LICENSE("GPL");
++obj-$(CONFIG_FPGA_KUNIT_TESTS) += fpga-mgr-test.o
++obj-$(CONFIG_FPGA_KUNIT_TESTS) += fpga-bridge-test.o
++obj-$(CONFIG_FPGA_KUNIT_TESTS) += fpga-region-test.o
 -- 
 2.40.1
 
