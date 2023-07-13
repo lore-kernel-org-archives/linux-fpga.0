@@ -2,67 +2,67 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA220C0015E
-	for <linux-fpga@archiver.kernel.org>; Thu, 13 Jul 2023 16:30:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DF46C0015E
+	for <linux-fpga@archiver.kernel.org>; Thu, 13 Jul 2023 16:30:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235179AbjGMQ2f (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Thu, 13 Jul 2023 12:28:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39912 "EHLO
+        id S232538AbjGMQ2t (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 13 Jul 2023 12:28:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39948 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235114AbjGMQ2f (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Thu, 13 Jul 2023 12:28:35 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A1F2D2736
-        for <linux-fpga@vger.kernel.org>; Thu, 13 Jul 2023 09:27:48 -0700 (PDT)
+        with ESMTP id S235206AbjGMQ2q (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 13 Jul 2023 12:28:46 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A885A273E
+        for <linux-fpga@vger.kernel.org>; Thu, 13 Jul 2023 09:28:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1689265667;
+        s=mimecast20190719; t=1689265681;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=LBY3AM8SBjilw9AXdaa+jKuWzCAP6c8/6drDGdm7qoQ=;
-        b=Eh3HMWfisbNI36detL4qXwPxAtTP2S1DJLh3HSLhBw2iT2Br1pdmYnouhh843pt9AjpOE/
-        R1xETFwhSHY8URkRP10DOQJdRn+ntAJGd+bTsKI5uiHY68ISKXhYd2DtXZSPNMsIXj8FM7
-        x8X92iwR4WEjiA4hrwp1GibXGeamDNY=
-Received: from mail-ua1-f72.google.com (mail-ua1-f72.google.com
- [209.85.222.72]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=QKrzGanyiyC099mjlFA5dr2WMY6zoHlA/Ps7wwq3mKc=;
+        b=YFPXP7f+pRHQeJQerkD8yaFEw8Cj9IlN4wSsf7jAVinA09IRD1VzBn6EI7TwBYz1jNPly0
+        YiSXMbZ6I6RIzWgmumGEUws+oojWY3NL0e94kTQ0ZfnZ8pbm5Th9/xMB6mtUaInuRYrL84
+        5ErU+J+ZDaAcRzBTOlIGY30gJocqkbI=
+Received: from mail-vs1-f69.google.com (mail-vs1-f69.google.com
+ [209.85.217.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-307-xoqsMLwzMSK_jDLzzTHm3Q-1; Thu, 13 Jul 2023 12:27:46 -0400
-X-MC-Unique: xoqsMLwzMSK_jDLzzTHm3Q-1
-Received: by mail-ua1-f72.google.com with SMTP id a1e0cc1a2514c-791e11ad8a9so175357241.0
-        for <linux-fpga@vger.kernel.org>; Thu, 13 Jul 2023 09:27:46 -0700 (PDT)
+ us-mta-50-o-JzbUBtPEKVWy19wXN-xw-1; Thu, 13 Jul 2023 12:28:00 -0400
+X-MC-Unique: o-JzbUBtPEKVWy19wXN-xw-1
+Received: by mail-vs1-f69.google.com with SMTP id ada2fe7eead31-44367182e90so183432137.3
+        for <linux-fpga@vger.kernel.org>; Thu, 13 Jul 2023 09:28:00 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689265666; x=1691857666;
+        d=1e100.net; s=20221208; t=1689265680; x=1691857680;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=LBY3AM8SBjilw9AXdaa+jKuWzCAP6c8/6drDGdm7qoQ=;
-        b=i89zQM45bKwQw1OMjTTYCHJieViPXcyMP8ib4EbYvxMJHCtmmZlWjHsir+DETVEp8o
-         umIajrqm4CBWDTArF8namHQ6R9QLdh2iOHj8gxrC0NOo8/g/TuMdNQEvN0JuRsg/ZTmU
-         njnz79Hs/laQ8t8Ris3ozOy58wCw48LeZ5nHezOQGP9bXws9IxtqxbevtmSQ8o30Qw3D
-         tfQ0/uTFc0M1WhC11024vem/sxOkZsb2oSoubL+v8IMMDEAzjA/JthRK9BokcIygDHjq
-         Jdm8vlyQd3d8J/r/TKs8EpvhaQS1m/X2yjvJX2eJ3sxSRz4Vy0NVuBLnkqL6N6avk8L2
-         NqaA==
-X-Gm-Message-State: ABy/qLaOsNXz4aeV+werT0sZvn2u1oXoyHbXWn9/IBbUGaO9D8hd1OwH
-        bkx36/hzzS+wgDablfkZIs9Vhl+FKwtBhcd/Sk9qhUbUu/y2E2nC4mg6U8kCEgQ/FBQDmvV4yZP
-        lwk3sTqhLu1EP35fGIoJ9
-X-Received: by 2002:a67:e2c1:0:b0:443:6ad6:7915 with SMTP id i1-20020a67e2c1000000b004436ad67915mr1335045vsm.27.1689265666089;
-        Thu, 13 Jul 2023 09:27:46 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlHN2oSs45XFUuWKeVJDVACUWDNt/pihDZOywKbmCKuPxM16ir3bHG7Bm/G8jn/mophQJ1Zing==
-X-Received: by 2002:a67:e2c1:0:b0:443:6ad6:7915 with SMTP id i1-20020a67e2c1000000b004436ad67915mr1335030vsm.27.1689265665795;
-        Thu, 13 Jul 2023 09:27:45 -0700 (PDT)
+        bh=QKrzGanyiyC099mjlFA5dr2WMY6zoHlA/Ps7wwq3mKc=;
+        b=jqf3TfIDVDjHJaGkUQNuCkazT+4vY/QkpxjSTYXpHv+fRLtzSwsmSUG6EYuKarVaEF
+         h5GMF7izKwKiq1JOrlsW089hVmZ5LnDfQrIseVJ/gqIftj5BzY44WcMQNXT5a4JvkZV9
+         nQ+yt2kdFmdus9hIbTFbQ0/xQlr3LG2Yur96nUL70FsqwsS/ThfZvy71BlkMikjR+GhW
+         ORVZpr4roZddbrGfcXFcqhsbtfkm5o901Iwo9gBP3VLRenFWm3m4eDp87r70Dg3ahRyp
+         xd7MycPq5HfPY9ao3Etni2F+UdY15Q4aZfYs8kYSUiv/ohNuQxjGZ6vzHhCDJ8tsiQlq
+         2OrA==
+X-Gm-Message-State: ABy/qLZh9jwEZmN/7gbRqam/ej2D/25PLCUaEQtkin/i9/9YflFyOVbr
+        O6eypN8qie79Zh5fMC1i4OrHUD5CuzrvDndWJqt6mjnoiivmDG7YSDUgoQIHjPkeuYQBKWQEWIf
+        UPSoxO8Y7DVWmwgZHYAEY
+X-Received: by 2002:a67:fa09:0:b0:443:a8dd:c416 with SMTP id i9-20020a67fa09000000b00443a8ddc416mr1504658vsq.8.1689265680371;
+        Thu, 13 Jul 2023 09:28:00 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlFS304p593zeQ6Tj+ewmfzA+4oO/F//5JHItKyA8E3joHp3KNi1JLprPORk3C1nmCCWNPHU/Q==
+X-Received: by 2002:a67:fa09:0:b0:443:a8dd:c416 with SMTP id i9-20020a67fa09000000b00443a8ddc416mr1504647vsq.8.1689265680122;
+        Thu, 13 Jul 2023 09:28:00 -0700 (PDT)
 Received: from klayman.redhat.com (net-2-34-24-242.cust.vodafonedsl.it. [2.34.24.242])
-        by smtp.gmail.com with ESMTPSA id u17-20020a0cf1d1000000b00637873ff0f3sm3206582qvl.15.2023.07.13.09.27.44
+        by smtp.gmail.com with ESMTPSA id u17-20020a0cf1d1000000b00637873ff0f3sm3206582qvl.15.2023.07.13.09.27.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Jul 2023 09:27:45 -0700 (PDT)
+        Thu, 13 Jul 2023 09:27:59 -0700 (PDT)
 From:   Marco Pagani <marpagan@redhat.com>
 To:     Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
         Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>
 Cc:     Marco Pagani <marpagan@redhat.com>, linux-kernel@vger.kernel.org,
         linux-fpga@vger.kernel.org
-Subject: [PATCH v9 1/4] fpga: add an initial KUnit suite for the FPGA Manager
-Date:   Thu, 13 Jul 2023 18:27:28 +0200
-Message-ID: <20230713162731.211669-2-marpagan@redhat.com>
+Subject: [PATCH v9 3/4] fpga: add an initial KUnit suite for the FPGA Region
+Date:   Thu, 13 Jul 2023 18:27:30 +0200
+Message-ID: <20230713162731.211669-4-marpagan@redhat.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230713162731.211669-1-marpagan@redhat.com>
 References: <20230713162731.211669-1-marpagan@redhat.com>
@@ -72,24 +72,25 @@ Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The suite tests the basic behaviors of the FPGA Manager including
-programming using a single contiguous buffer and a scatter gather table.
+The suite tests the basic behaviors of the FPGA Region including
+the programming and the function for finding a specific region.
 
 Signed-off-by: Marco Pagani <marpagan@redhat.com>
+Acked-by: Xu Yilun <yilun.xu@intel.com>
 ---
- drivers/fpga/tests/fpga-mgr-test.c | 329 +++++++++++++++++++++++++++++
- 1 file changed, 329 insertions(+)
- create mode 100644 drivers/fpga/tests/fpga-mgr-test.c
+ drivers/fpga/tests/fpga-region-test.c | 211 ++++++++++++++++++++++++++
+ 1 file changed, 211 insertions(+)
+ create mode 100644 drivers/fpga/tests/fpga-region-test.c
 
-diff --git a/drivers/fpga/tests/fpga-mgr-test.c b/drivers/fpga/tests/fpga-mgr-test.c
+diff --git a/drivers/fpga/tests/fpga-region-test.c b/drivers/fpga/tests/fpga-region-test.c
 new file mode 100644
-index 000000000000..9f797986737a
+index 000000000000..9f9d50ee7871
 --- /dev/null
-+++ b/drivers/fpga/tests/fpga-mgr-test.c
-@@ -0,0 +1,329 @@
++++ b/drivers/fpga/tests/fpga-region-test.c
+@@ -0,0 +1,211 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * KUnit test for the FPGA Manager
++ * KUnit test for the FPGA Region
 + *
 + * Copyright (C) 2023 Red Hat, Inc.
 + *
@@ -97,323 +98,205 @@ index 000000000000..9f797986737a
 + */
 +
 +#include <kunit/test.h>
-+#include <linux/device.h>
++#include <linux/fpga/fpga-bridge.h>
 +#include <linux/fpga/fpga-mgr.h>
++#include <linux/fpga/fpga-region.h>
 +#include <linux/module.h>
-+#include <linux/scatterlist.h>
++#include <linux/platform_device.h>
 +#include <linux/types.h>
 +
-+#define HEADER_FILL		'H'
-+#define IMAGE_FILL		'P'
-+#define IMAGE_BLOCK		1024
-+
-+#define HEADER_SIZE		IMAGE_BLOCK
-+#define IMAGE_SIZE		(IMAGE_BLOCK * 4)
-+
 +struct mgr_stats {
-+	bool header_match;
-+	bool image_match;
-+	u32 seq_num;
-+	u32 op_parse_header_seq;
-+	u32 op_write_init_seq;
-+	u32 op_write_seq;
-+	u32 op_write_sg_seq;
-+	u32 op_write_complete_seq;
-+	enum fpga_mgr_states op_parse_header_state;
-+	enum fpga_mgr_states op_write_init_state;
-+	enum fpga_mgr_states op_write_state;
-+	enum fpga_mgr_states op_write_sg_state;
-+	enum fpga_mgr_states op_write_complete_state;
++	u32 write_count;
 +};
 +
-+struct mgr_ctx {
-+	struct fpga_image_info *img_info;
++struct bridge_stats {
++	bool enable;
++	u32 cycles_count;
++};
++
++struct test_ctx {
 +	struct fpga_manager *mgr;
-+	struct platform_device *pdev;
-+	struct mgr_stats stats;
++	struct platform_device *mgr_pdev;
++	struct fpga_bridge *bridge;
++	struct platform_device *bridge_pdev;
++	struct fpga_region *region;
++	struct platform_device *region_pdev;
++	struct bridge_stats bridge_stats;
++	struct mgr_stats mgr_stats;
 +};
 +
-+/**
-+ * init_test_buffer() - Allocate and initialize a test image in a buffer.
-+ * @test: KUnit test context object.
-+ * @count: image size in bytes.
-+ *
-+ * Return: pointer to the newly allocated image.
-+ */
-+static char *init_test_buffer(struct kunit *test, size_t count)
-+{
-+	char *buf;
-+
-+	KUNIT_ASSERT_GE(test, count, HEADER_SIZE);
-+
-+	buf = kunit_kzalloc(test, count, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, buf);
-+
-+	memset(buf, HEADER_FILL, HEADER_SIZE);
-+	memset(buf + HEADER_SIZE, IMAGE_FILL, count - HEADER_SIZE);
-+
-+	return buf;
-+}
-+
-+/*
-+ * Check the image header. Do not return an error code if the image check fails
-+ * since, in this case, it is a failure of the FPGA manager itself, not this
-+ * op that tests it.
-+ */
-+static int op_parse_header(struct fpga_manager *mgr, struct fpga_image_info *info,
-+			   const char *buf, size_t count)
-+{
-+	struct mgr_stats *stats = mgr->priv;
-+	size_t i;
-+
-+	stats->op_parse_header_state = mgr->state;
-+	stats->op_parse_header_seq = stats->seq_num++;
-+
-+	/* Set header_size and data_size for later */
-+	info->header_size = HEADER_SIZE;
-+	info->data_size = info->count - HEADER_SIZE;
-+
-+	stats->header_match = true;
-+	for (i = 0; i < info->header_size; i++) {
-+		if (buf[i] != HEADER_FILL) {
-+			stats->header_match = false;
-+			goto out;
-+		}
-+	}
-+
-+out:
-+	return 0;
-+}
-+
-+static int op_write_init(struct fpga_manager *mgr, struct fpga_image_info *info,
-+			 const char *buf, size_t count)
-+{
-+	struct mgr_stats *stats = mgr->priv;
-+
-+	stats->op_write_init_state = mgr->state;
-+	stats->op_write_init_seq = stats->seq_num++;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Check the image data. As with, op_parse_header do not return an error code
-+ * if the image check fails.
-+ */
 +static int op_write(struct fpga_manager *mgr, const char *buf, size_t count)
 +{
 +	struct mgr_stats *stats = mgr->priv;
-+	size_t i;
 +
-+	stats->op_write_state = mgr->state;
-+	stats->op_write_seq = stats->seq_num++;
-+
-+	stats->image_match = true;
-+	for (i = 0; i < count; i++) {
-+		if (buf[i] != IMAGE_FILL) {
-+			stats->image_match = false;
-+			goto out;
-+		}
-+	}
-+
-+out:
-+	return 0;
-+}
-+
-+/*
-+ * Check the image data, but first skip the header since write_sg will get
-+ * the whole image in sg_table. As with op_write, do not return an error code
-+ * if the image check fails.
-+ */
-+static int op_write_sg(struct fpga_manager *mgr, struct sg_table *sgt)
-+{
-+	struct mgr_stats *stats = mgr->priv;
-+	struct sg_mapping_iter miter;
-+	char *img;
-+	size_t i;
-+
-+	stats->op_write_sg_state = mgr->state;
-+	stats->op_write_sg_seq = stats->seq_num++;
-+
-+	stats->image_match = true;
-+	sg_miter_start(&miter, sgt->sgl, sgt->nents, SG_MITER_FROM_SG);
-+
-+	if (!sg_miter_skip(&miter, HEADER_SIZE)) {
-+		stats->image_match = false;
-+		goto out;
-+	}
-+
-+	while (sg_miter_next(&miter)) {
-+		img = miter.addr;
-+		for (i = 0; i < miter.length; i++) {
-+			if (img[i] != IMAGE_FILL) {
-+				stats->image_match = false;
-+				goto out;
-+			}
-+		}
-+	}
-+out:
-+	sg_miter_stop(&miter);
-+	return 0;
-+}
-+
-+static int op_write_complete(struct fpga_manager *mgr, struct fpga_image_info *info)
-+{
-+	struct mgr_stats *stats = mgr->priv;
-+
-+	stats->op_write_complete_state = mgr->state;
-+	stats->op_write_complete_seq = stats->seq_num++;
++	stats->write_count++;
 +
 +	return 0;
 +}
 +
 +/*
-+ * Fake FPGA manager that implements all ops required to check the programming
-+ * sequence using a single contiguous buffer and a scatter gather table.
++ * Fake FPGA manager that implements only the write op to count the number
++ * of programming cycles. The internals of the programming sequence are
++ * tested in the Manager suite since they are outside the responsibility
++ * of the Region.
 + */
 +static const struct fpga_manager_ops fake_mgr_ops = {
-+	.skip_header = true,
-+	.parse_header = op_parse_header,
-+	.write_init = op_write_init,
 +	.write = op_write,
-+	.write_sg = op_write_sg,
-+	.write_complete = op_write_complete,
 +};
 +
-+static void fpga_mgr_test_get(struct kunit *test)
++static int op_enable_set(struct fpga_bridge *bridge, bool enable)
 +{
-+	struct mgr_ctx *ctx = test->priv;
-+	struct fpga_manager *mgr;
++	struct bridge_stats *stats = bridge->priv;
 +
-+	mgr = fpga_mgr_get(&ctx->pdev->dev);
-+	KUNIT_EXPECT_PTR_EQ(test, mgr, ctx->mgr);
++	if (!stats->enable && enable)
++		stats->cycles_count++;
 +
-+	fpga_mgr_put(ctx->mgr);
++	stats->enable = enable;
++
++	return 0;
 +}
 +
-+static void fpga_mgr_test_lock(struct kunit *test)
++/*
++ * Fake FPGA bridge that implements only enable_set op to count the number
++ * of activation cycles.
++ */
++static const struct fpga_bridge_ops fake_bridge_ops = {
++	.enable_set = op_enable_set,
++};
++
++static int fake_region_get_bridges(struct fpga_region *region)
 +{
-+	struct mgr_ctx *ctx = test->priv;
-+	int ret;
++	struct fpga_bridge *bridge = region->priv;
 +
-+	ret = fpga_mgr_lock(ctx->mgr);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+
-+	ret = fpga_mgr_lock(ctx->mgr);
-+	KUNIT_EXPECT_EQ(test, ret, -EBUSY);
-+
-+	fpga_mgr_unlock(ctx->mgr);
++	return fpga_bridge_get_to_list(bridge->dev.parent, region->info, &region->bridge_list);
 +}
 +
-+/* Check the programming sequence using an image in a buffer */
-+static void fpga_mgr_test_img_load_buf(struct kunit *test)
++static int fake_region_match(struct device *dev, const void *data)
 +{
-+	struct mgr_ctx *ctx = test->priv;
-+	char *img_buf;
-+	int ret;
-+
-+	img_buf = init_test_buffer(test, IMAGE_SIZE);
-+
-+	ctx->img_info->count = IMAGE_SIZE;
-+	ctx->img_info->buf = img_buf;
-+
-+	ret = fpga_mgr_load(ctx->mgr, ctx->img_info);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+
-+	KUNIT_EXPECT_TRUE(test, ctx->stats.header_match);
-+	KUNIT_EXPECT_TRUE(test, ctx->stats.image_match);
-+
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_parse_header_state, FPGA_MGR_STATE_PARSE_HEADER);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_init_state, FPGA_MGR_STATE_WRITE_INIT);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_state, FPGA_MGR_STATE_WRITE);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_complete_state, FPGA_MGR_STATE_WRITE_COMPLETE);
-+
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_init_seq, ctx->stats.op_parse_header_seq + 1);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_seq, ctx->stats.op_parse_header_seq + 2);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_complete_seq, ctx->stats.op_parse_header_seq + 3);
++	return dev->parent == data;
 +}
 +
-+/* Check the programming sequence using an image in a scatter gather table */
-+static void fpga_mgr_test_img_load_sgt(struct kunit *test)
++static void fpga_region_test_class_find(struct kunit *test)
 +{
-+	struct mgr_ctx *ctx = test->priv;
-+	struct sg_table *sgt;
-+	char *img_buf;
++	struct test_ctx *ctx = test->priv;
++	struct fpga_region *region;
++
++	region = fpga_region_class_find(NULL, &ctx->region_pdev->dev, fake_region_match);
++	KUNIT_EXPECT_PTR_EQ(test, region, ctx->region);
++}
++
++/*
++ * FPGA Region programming test. The Region must call get_bridges() to get
++ * and control the bridges, and then the Manager for the actual programming.
++ */
++static void fpga_region_test_program_fpga(struct kunit *test)
++{
++	struct test_ctx *ctx = test->priv;
++	struct fpga_image_info *img_info;
++	char img_buf[4];
 +	int ret;
 +
-+	img_buf = init_test_buffer(test, IMAGE_SIZE);
++	img_info = fpga_image_info_alloc(&ctx->mgr_pdev->dev);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, img_info);
 +
-+	sgt = kunit_kzalloc(test, sizeof(*sgt), GFP_KERNEL);
-+	ret = sg_alloc_table(sgt, 1, GFP_KERNEL);
++	img_info->buf = img_buf;
++	img_info->count = sizeof(img_buf);
++
++	ctx->region->info = img_info;
++	ret = fpga_region_program_fpga(ctx->region);
 +	KUNIT_ASSERT_EQ(test, ret, 0);
-+	sg_init_one(sgt->sgl, img_buf, IMAGE_SIZE);
 +
-+	ctx->img_info->sgt = sgt;
++	KUNIT_EXPECT_EQ(test, 1, ctx->mgr_stats.write_count);
++	KUNIT_EXPECT_EQ(test, 1, ctx->bridge_stats.cycles_count);
 +
-+	ret = fpga_mgr_load(ctx->mgr, ctx->img_info);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
++	fpga_bridges_put(&ctx->region->bridge_list);
 +
-+	KUNIT_EXPECT_TRUE(test, ctx->stats.header_match);
-+	KUNIT_EXPECT_TRUE(test, ctx->stats.image_match);
++	ret = fpga_region_program_fpga(ctx->region);
++	KUNIT_ASSERT_EQ(test, ret, 0);
 +
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_parse_header_state, FPGA_MGR_STATE_PARSE_HEADER);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_init_state, FPGA_MGR_STATE_WRITE_INIT);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_sg_state, FPGA_MGR_STATE_WRITE);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_complete_state, FPGA_MGR_STATE_WRITE_COMPLETE);
++	KUNIT_EXPECT_EQ(test, 2, ctx->mgr_stats.write_count);
++	KUNIT_EXPECT_EQ(test, 2, ctx->bridge_stats.cycles_count);
 +
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_init_seq, ctx->stats.op_parse_header_seq + 1);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_sg_seq, ctx->stats.op_parse_header_seq + 2);
-+	KUNIT_EXPECT_EQ(test, ctx->stats.op_write_complete_seq, ctx->stats.op_parse_header_seq + 3);
++	fpga_bridges_put(&ctx->region->bridge_list);
 +
-+	sg_free_table(ctx->img_info->sgt);
++	fpga_image_info_free(img_info);
 +}
 +
-+static int fpga_mgr_test_init(struct kunit *test)
++/*
++ * The configuration used in this test suite uses a single bridge to
++ * limit the code under test to a single unit. The functions used by the
++ * Region for getting and controlling bridges are tested (with a list of
++ * multiple bridges) in the Bridge suite.
++ */
++static int fpga_region_test_init(struct kunit *test)
 +{
-+	struct mgr_ctx *ctx;
++	struct test_ctx *ctx;
++	struct fpga_region_info region_info = { 0 };
 +
 +	ctx = kunit_kzalloc(test, sizeof(*ctx), GFP_KERNEL);
 +	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx);
 +
-+	ctx->pdev = platform_device_register_simple("mgr_pdev", PLATFORM_DEVID_AUTO, NULL, 0);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx->pdev);
++	ctx->mgr_pdev = platform_device_register_simple("mgr_pdev", PLATFORM_DEVID_AUTO, NULL, 0);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx->mgr_pdev);
 +
-+	ctx->mgr = devm_fpga_mgr_register(&ctx->pdev->dev, "Fake FPGA Manager", &fake_mgr_ops,
-+					  &ctx->stats);
++	ctx->mgr = devm_fpga_mgr_register(&ctx->mgr_pdev->dev, "Fake FPGA Manager", &fake_mgr_ops,
++					  &ctx->mgr_stats);
 +	KUNIT_ASSERT_FALSE(test, IS_ERR_OR_NULL(ctx->mgr));
 +
-+	ctx->img_info = fpga_image_info_alloc(&ctx->pdev->dev);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx->img_info);
++	ctx->bridge_pdev = platform_device_register_simple("bridge_pdev", PLATFORM_DEVID_AUTO,
++							   NULL, 0);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx->bridge_pdev);
++
++	ctx->bridge = fpga_bridge_register(&ctx->bridge_pdev->dev, "Fake FPGA Bridge",
++					   &fake_bridge_ops, &ctx->bridge_stats);
++	KUNIT_ASSERT_FALSE(test, IS_ERR_OR_NULL(ctx->bridge));
++
++	ctx->bridge_stats.enable = true;
++
++	ctx->region_pdev = platform_device_register_simple("region_pdev", PLATFORM_DEVID_AUTO,
++							   NULL, 0);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx->region_pdev);
++
++	region_info.mgr = ctx->mgr;
++	region_info.priv = ctx->bridge;
++	region_info.get_bridges = fake_region_get_bridges;
++
++	ctx->region = fpga_region_register_full(&ctx->region_pdev->dev, &region_info);
++	KUNIT_ASSERT_FALSE(test, IS_ERR_OR_NULL(ctx->region));
 +
 +	test->priv = ctx;
 +
 +	return 0;
 +}
 +
-+static void fpga_mgr_test_exit(struct kunit *test)
++static void fpga_region_test_exit(struct kunit *test)
 +{
-+	struct mgr_ctx *ctx = test->priv;
++	struct test_ctx *ctx = test->priv;
 +
-+	fpga_image_info_free(ctx->img_info);
-+	platform_device_unregister(ctx->pdev);
++	fpga_region_unregister(ctx->region);
++	platform_device_unregister(ctx->region_pdev);
++
++	fpga_bridge_unregister(ctx->bridge);
++	platform_device_unregister(ctx->bridge_pdev);
++
++	platform_device_unregister(ctx->mgr_pdev);
 +}
 +
-+static struct kunit_case fpga_mgr_test_cases[] = {
-+	KUNIT_CASE(fpga_mgr_test_get),
-+	KUNIT_CASE(fpga_mgr_test_lock),
-+	KUNIT_CASE(fpga_mgr_test_img_load_buf),
-+	KUNIT_CASE(fpga_mgr_test_img_load_sgt),
++static struct kunit_case fpga_region_test_cases[] = {
++	KUNIT_CASE(fpga_region_test_class_find),
++	KUNIT_CASE(fpga_region_test_program_fpga),
++
 +	{}
 +};
 +
-+static struct kunit_suite fpga_mgr_suite = {
++static struct kunit_suite fpga_region_suite = {
 +	.name = "fpga_mgr",
-+	.init = fpga_mgr_test_init,
-+	.exit = fpga_mgr_test_exit,
-+	.test_cases = fpga_mgr_test_cases,
++	.init = fpga_region_test_init,
++	.exit = fpga_region_test_exit,
++	.test_cases = fpga_region_test_cases,
 +};
 +
-+kunit_test_suite(fpga_mgr_suite);
++kunit_test_suite(fpga_region_suite);
 +
 +MODULE_LICENSE("GPL");
 -- 
