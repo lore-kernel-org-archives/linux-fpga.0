@@ -2,158 +2,154 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF5F7EB64DC
-	for <linux-fpga@archiver.kernel.org>; Mon, 17 Jul 2023 22:55:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BEFCEB64DA
+	for <linux-fpga@archiver.kernel.org>; Tue, 18 Jul 2023 13:09:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230190AbjGQWxe (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Mon, 17 Jul 2023 18:53:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49494 "EHLO
+        id S231869AbjGRNH1 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 18 Jul 2023 09:07:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45316 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229449AbjGQWxd (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Mon, 17 Jul 2023 18:53:33 -0400
+        with ESMTP id S232438AbjGRNHD (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 18 Jul 2023 09:07:03 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6F07133
-        for <linux-fpga@vger.kernel.org>; Mon, 17 Jul 2023 15:52:12 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0D9530D8
+        for <linux-fpga@vger.kernel.org>; Tue, 18 Jul 2023 06:04:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1689634332;
+        s=mimecast20190719; t=1689685424;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=8wy84DSSq8n2YYiK0mWellsvoswCFp/2kMAmdZ+UHHc=;
-        b=YSk1JlSPWnconUwKXTf5rg4sQ0JD0tmcrSQ3UtaPlPP8C+hRi28ErHV9ioc6MVpbIp16HE
-        9mdZODidJQLOAbujhPprxpDbDZddsiIt3tg7QcQ2ffahZMgZmkXC5F+pjF4FpspWT4jpqE
-        AM2KfY7aEaGCgrlKvliOV54+lmoz0E8=
-Received: from mail-io1-f69.google.com (mail-io1-f69.google.com
- [209.85.166.69]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=wWVveJ30j+awpC6r3B537VP9iS5QEq83jfrgh734Zoc=;
+        b=WAwA9Jv4vqPnFnLERuI6ojM9lIU/NBAdYhN8/uIqOS4UCwFykM59PfjCU6dDD7rHzO9GhA
+        pmEVdA1iiBPxvCJkSQC267+Gz7cl2QWuRtqWTgnjkDwRo7Tj3IsrPD2F1ZAbHPr0ooRl1l
+        0m9Tgn8r6U5nVyfh1baZfFOdqfAKSPU=
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com
+ [209.85.222.197]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-49-0UaGQS50OW2vA2dQnJix4A-1; Mon, 17 Jul 2023 18:52:07 -0400
-X-MC-Unique: 0UaGQS50OW2vA2dQnJix4A-1
-Received: by mail-io1-f69.google.com with SMTP id ca18e2360f4ac-786d9d4d9a6so318099939f.2
-        for <linux-fpga@vger.kernel.org>; Mon, 17 Jul 2023 15:52:07 -0700 (PDT)
+ us-mta-515-k6XH_oepMkqFLbjIrsGDsw-1; Tue, 18 Jul 2023 09:03:43 -0400
+X-MC-Unique: k6XH_oepMkqFLbjIrsGDsw-1
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-76735d5eb86so800685285a.3
+        for <linux-fpga@vger.kernel.org>; Tue, 18 Jul 2023 06:03:42 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689634327; x=1692226327;
-        h=content-transfer-encoding:mime-version:organization:references
-         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=8wy84DSSq8n2YYiK0mWellsvoswCFp/2kMAmdZ+UHHc=;
-        b=Afu0zZ4XslWKWql5GVi5rsYC2pylVnb6r32vR7dnwYZgjes993lIow1LYNbGiLYQan
-         MeDWHvDy+XA77TdkJRWENou/V+kUY3/Te4CCY8S1YsFKh6Nb30ZTAfTwnl2djSEaOYw8
-         GM+daPXoOwNJlgmFjeZo21KEi04CrJ8KmKvSV/PR/2xr1T+NS5gdcRqThCMJa39C+/IL
-         62aYKdlwL0sOv6lQxbmsGaPkvOJH2SxX643Yn/x0fhikjei4jtUIPR5VNK99u1DfP3hO
-         17QgUxoSGkiBqwKXSzqiK1z2XZaME2HbZwXJw1ljr3qgW2ZHXfmuXQNc/G0d0RnEP9kn
-         /QdA==
-X-Gm-Message-State: ABy/qLY/cb1SwS8nad9jJ11Pg2Z5WTDthZn4Z6XXhFd0p7VeBIrVJgcJ
-        /wnFWXIEhjovsXtYTQdTDtXbJRsgED5zxr9UYP7lqn6HXvKRk40NgtNquoCDXAhbSLdu2/8RuQc
-        gb9BqRduqPPxKQffttz4NOA==
-X-Received: by 2002:a92:c651:0:b0:347:693a:7300 with SMTP id 17-20020a92c651000000b00347693a7300mr1012018ill.26.1689634327045;
-        Mon, 17 Jul 2023 15:52:07 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlGlBYmCdY1EaUds5QDcX7E6PqePOm9wJTOwk2wgOBkeJp+9wxIVvWJlHjSTuTXhWw/m+atXtQ==
-X-Received: by 2002:a92:c651:0:b0:347:693a:7300 with SMTP id 17-20020a92c651000000b00347693a7300mr1012015ill.26.1689634326829;
-        Mon, 17 Jul 2023 15:52:06 -0700 (PDT)
-Received: from redhat.com ([38.15.36.239])
-        by smtp.gmail.com with ESMTPSA id d10-20020a92ddca000000b00341c0710169sm242627ilr.46.2023.07.17.15.52.04
+        d=1e100.net; s=20221208; t=1689685422; x=1692277422;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=wWVveJ30j+awpC6r3B537VP9iS5QEq83jfrgh734Zoc=;
+        b=TnqNxWsIf03kD2VUY/biu5YipkU6xC7bsVLI9SWMTavwuemaSDB0qx+A+mAE/iIS2y
+         fK4BMUgT8xzkd8w/tatS+CAeNgOUoRnqxduh678+5D61yXm15GnEjBtHyIFD8oTF/A8H
+         M/a/c9o1ecfxkFByuUpQvJQ6rc6IVBp7l0wsPCXXnhpGdE0juQX9o1g0FQupnS4r6vFF
+         T4tP65x+IyrCR6QIKv/y8YyBVj0Ft9F2hypGHl+kBPAUX4gCf9bdIUg+gWYsEzkyYvIG
+         KMSMClICxworKewX+4XLg8dBv4t8XY0/LofIhbFkqqaBXr0co+FEtTpS06HwEYYHu5Sl
+         uAVg==
+X-Gm-Message-State: ABy/qLapA4QUhPgma+13Q71QSVqz0FECws+MsGTyYt+gnVHc5N2VWz3W
+        eiJ64mSVNj8YrEwBO5GaEnws26hAvqe2MMXP4a5MuTq3RT2wLuvqIpJsE3+uZMAA9A4ZZVstkfW
+        kXPziw2elVz03hG5GaOud
+X-Received: by 2002:a05:620a:470e:b0:765:ab6e:53fb with SMTP id bs14-20020a05620a470e00b00765ab6e53fbmr18551804qkb.40.1689685422047;
+        Tue, 18 Jul 2023 06:03:42 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlHo2dahj88tgdIwzLRNbgcz8isJZIvCaDhTpJfDLLFrXuf4AikIIrEmd56tJQ1e0Thj/WFI9w==
+X-Received: by 2002:a05:620a:470e:b0:765:ab6e:53fb with SMTP id bs14-20020a05620a470e00b00765ab6e53fbmr18551738qkb.40.1689685421467;
+        Tue, 18 Jul 2023 06:03:41 -0700 (PDT)
+Received: from klayman.redhat.com (net-2-34-27-228.cust.vodafonedsl.it. [2.34.27.228])
+        by smtp.gmail.com with ESMTPSA id h18-20020a05620a10b200b00765ab6d3e81sm550221qkk.122.2023.07.18.06.03.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Jul 2023 15:52:06 -0700 (PDT)
-Date:   Mon, 17 Jul 2023 16:52:03 -0600
-From:   Alex Williamson <alex.williamson@redhat.com>
-To:     Jason Gunthorpe <jgg@ziepe.ca>
-Cc:     Grzegorz Jaszczyk <jaz@semihalf.com>,
-        Christian Brauner <brauner@kernel.org>,
-        linux-fsdevel@vger.kernel.org, linux-aio@kvack.org,
-        linux-usb@vger.kernel.org, Matthew Rosato <mjrosato@linux.ibm.com>,
-        Paul Durrant <paul@xen.org>, Tom Rix <trix@redhat.com>,
-        Jason Wang <jasowang@redhat.com>,
-        dri-devel@lists.freedesktop.org, Michal Hocko <mhocko@kernel.org>,
-        linux-mm@kvack.org, Kirti Wankhede <kwankhede@nvidia.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Jens Axboe <axboe@kernel.dk>,
-        Vineeth Vijayan <vneethv@linux.ibm.com>,
-        Diana Craciun <diana.craciun@oss.nxp.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-        Shakeel Butt <shakeelb@google.com>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Leon Romanovsky <leon@kernel.org>,
-        Harald Freudenberger <freude@linux.ibm.com>,
-        Fei Li <fei1.li@intel.com>, x86@kernel.org,
-        Roman Gushchin <roman.gushchin@linux.dev>,
-        Halil Pasic <pasic@linux.ibm.com>,
-        Ingo Molnar <mingo@redhat.com>,
-        intel-gfx@lists.freedesktop.org,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        linux-fpga@vger.kernel.org, Zhi Wang <zhi.a.wang@intel.com>,
-        Wu Hao <hao.wu@intel.com>, Jason Herne <jjherne@linux.ibm.com>,
-        Eric Farman <farman@linux.ibm.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Andrew Donnellan <ajd@linux.ibm.com>,
-        Arnd Bergmann <arnd@arndb.de>, linux-s390@vger.kernel.org,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Johannes Weiner <hannes@cmpxchg.org>,
-        linuxppc-dev@lists.ozlabs.org, Eric Auger <eric.auger@redhat.com>,
-        Borislav Petkov <bp@alien8.de>, kvm@vger.kernel.org,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>, cgroups@vger.kernel.org,
-        Thomas Gleixner <tglx@linutronix.de>,
-        virtualization@lists.linux-foundation.org,
-        intel-gvt-dev@lists.freedesktop.org, io-uring@vger.kernel.org,
-        netdev@vger.kernel.org, Tony Krowiak <akrowiak@linux.ibm.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        Pavel Begunkov <asml.silence@gmail.com>,
-        Sean Christopherson <seanjc@google.com>,
-        Oded Gabbay <ogabbay@kernel.org>,
-        Muchun Song <muchun.song@linux.dev>,
-        Peter Oberparleiter <oberpar@linux.ibm.com>,
-        linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
-        Benjamin LaHaise <bcrl@kvack.org>,
-        "Michael S. Tsirkin" <mst@redhat.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Frederic Barrat <fbarrat@linux.ibm.com>,
-        Moritz Fischer <mdf@kernel.org>,
-        Vitaly Kuznetsov <vkuznets@redhat.com>,
-        David Woodhouse <dwmw2@infradead.org>,
-        Xu Yilun <yilun.xu@intel.com>,
-        Dominik Behr <dbehr@chromium.org>,
-        Marcin Wojtas <mw@semihalf.com>
-Subject: Re: [PATCH 0/2] eventfd: simplify signal helpers
-Message-ID: <20230717165203.4ee6b1e6.alex.williamson@redhat.com>
-In-Reply-To: <ZLW8wEzkhBxd0O0L@ziepe.ca>
-References: <20230630155936.3015595-1-jaz@semihalf.com>
-        <20230714-gauner-unsolidarisch-fc51f96c61e8@brauner>
-        <CAH76GKPF4BjJLrzLBW8k12ATaAGADeMYc2NQ9+j0KgRa0pomUw@mail.gmail.com>
-        <20230717130831.0f18381a.alex.williamson@redhat.com>
-        <ZLW8wEzkhBxd0O0L@ziepe.ca>
-Organization: Red Hat
+        Tue, 18 Jul 2023 06:03:41 -0700 (PDT)
+From:   Marco Pagani <marpagan@redhat.com>
+To:     Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
+        Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>
+Cc:     Marco Pagani <marpagan@redhat.com>, linux-kernel@vger.kernel.org,
+        linux-fpga@vger.kernel.org
+Subject: [PATCH v10 4/4] fpga: add configuration for the FPGA KUnit test suites.
+Date:   Tue, 18 Jul 2023 15:03:04 +0200
+Message-ID: <20230718130304.87048-5-marpagan@redhat.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230718130304.87048-1-marpagan@redhat.com>
+References: <20230718130304.87048-1-marpagan@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On Mon, 17 Jul 2023 19:12:16 -0300
-Jason Gunthorpe <jgg@ziepe.ca> wrote:
+Add configuration for the KUnit test suites for the core components
+of the FPGA subsystem.
 
-> On Mon, Jul 17, 2023 at 01:08:31PM -0600, Alex Williamson wrote:
-> 
-> > What would that mechanism be?  We've been iterating on getting the
-> > serialization and buffering correct, but I don't know of another means
-> > that combines the notification with a value, so we'd likely end up with
-> > an eventfd only for notification and a separate ring buffer for
-> > notification values.  
-> 
-> All FDs do this. You just have to make a FD with custom
-> file_operations that does what this wants. The uAPI shouldn't be able
-> to tell if the FD is backing it with an eventfd or otherwise. Have the
-> kernel return the FD instead of accepting it. Follow the basic design
-> of eg mlx5vf_save_fops
+Signed-off-by: Marco Pagani <marpagan@redhat.com>
+Acked-by: Xu Yilun <yilun.xu@intel.com>
+---
+ drivers/fpga/Kconfig            |  2 ++
+ drivers/fpga/Makefile           |  3 +++
+ drivers/fpga/tests/.kunitconfig |  5 +++++
+ drivers/fpga/tests/Kconfig      | 11 +++++++++++
+ drivers/fpga/tests/Makefile     |  6 ++++++
+ 5 files changed, 27 insertions(+)
+ create mode 100644 drivers/fpga/tests/.kunitconfig
+ create mode 100644 drivers/fpga/tests/Kconfig
+ create mode 100644 drivers/fpga/tests/Makefile
 
-Sure, userspace could poll on any fd and read a value from it, but at
-that point we're essentially duplicating a lot of what eventfd provides
-for a minor(?) semantic difference over how the counter value is
-interpreted.  Using an actual eventfd allows the ACPI notification to
-work as just another interrupt index within the existing vfio IRQ uAPI.
-Thanks,
-
-Alex
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index 0a00763b9f28..2f689ac4ba3a 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -276,4 +276,6 @@ config FPGA_MGR_LATTICE_SYSCONFIG_SPI
+ 	  FPGA manager driver support for Lattice FPGAs programming over slave
+ 	  SPI sysCONFIG interface.
+ 
++source "drivers/fpga/tests/Kconfig"
++
+ endif # FPGA
+diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
+index 72e554b4d2f7..352a2612623e 100644
+--- a/drivers/fpga/Makefile
++++ b/drivers/fpga/Makefile
+@@ -55,3 +55,6 @@ obj-$(CONFIG_FPGA_DFL_NIOS_INTEL_PAC_N3000)	+= dfl-n3000-nios.o
+ 
+ # Drivers for FPGAs which implement DFL
+ obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
++
++# KUnit tests
++obj-$(CONFIG_FPGA_KUNIT_TESTS)		+= tests/
+diff --git a/drivers/fpga/tests/.kunitconfig b/drivers/fpga/tests/.kunitconfig
+new file mode 100644
+index 000000000000..a1c2a2974c39
+--- /dev/null
++++ b/drivers/fpga/tests/.kunitconfig
+@@ -0,0 +1,5 @@
++CONFIG_KUNIT=y
++CONFIG_FPGA=y
++CONFIG_FPGA_REGION=y
++CONFIG_FPGA_BRIDGE=y
++CONFIG_FPGA_KUNIT_TESTS=y
+diff --git a/drivers/fpga/tests/Kconfig b/drivers/fpga/tests/Kconfig
+new file mode 100644
+index 000000000000..e4a64815f16d
+--- /dev/null
++++ b/drivers/fpga/tests/Kconfig
+@@ -0,0 +1,11 @@
++config FPGA_KUNIT_TESTS
++	tristate "KUnit test for the FPGA subsystem" if !KUNIT_ALL_TESTS
++	depends on FPGA && FPGA_REGION && FPGA_BRIDGE && KUNIT=y
++	default KUNIT_ALL_TESTS
++        help
++          This builds unit tests for the FPGA subsystem
++
++          For more information on KUnit and unit tests in general,
++          please refer to the KUnit documentation in Documentation/dev-tools/kunit/.
++
++          If unsure, say N.
+diff --git a/drivers/fpga/tests/Makefile b/drivers/fpga/tests/Makefile
+new file mode 100644
+index 000000000000..bb78215c645c
+--- /dev/null
++++ b/drivers/fpga/tests/Makefile
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0
++#
++# Makefile for KUnit test suites for the FPGA subsystem
++#
++
++obj-$(CONFIG_FPGA_KUNIT_TESTS) += fpga-mgr-test.o fpga-bridge-test.o fpga-region-test.o
+-- 
+2.41.0
 
