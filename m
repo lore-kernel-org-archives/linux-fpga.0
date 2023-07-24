@@ -2,64 +2,44 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FA82C001B0
-	for <linux-fpga@archiver.kernel.org>; Sun, 23 Jul 2023 07:38:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CA56C001DE
+	for <linux-fpga@archiver.kernel.org>; Mon, 24 Jul 2023 09:45:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229824AbjGWHhH (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 23 Jul 2023 03:37:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45258 "EHLO
+        id S231173AbjGXJoC (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 24 Jul 2023 05:44:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45328 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229469AbjGWHhG (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 23 Jul 2023 03:37:06 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2036E10FD;
-        Sun, 23 Jul 2023 00:37:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1690097826; x=1721633826;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=yOACp0ZvFmOn9ZDK237ln2wXZ58ULNm3KlJxD9UsGb4=;
-  b=Lm95ZE+Tfh4cpaso9qtv26ECm7VITbeZZ2y18ONeKfG4xf9gxpFFxXRq
-   l4ci4gUY+FBHNjayXt28zZjic7BBsKiSHevtXXpNHPUpuE3q++VvLVlZo
-   IpfmIjN806zVT2nx+7Fe+Rz9fK3VFXRrVp7FZpPbhLdYIAj/yvh52pfFW
-   NZLQcPkSCytIhEHke2/uOZ4oYZoDyZcxScKd478o34x1D/bCQe8CKy1Wx
-   ZIP8WAV53hkGZmJ1QpZd/WQx3NHNa+gDV2fJ//8hFvQrXJ5sbZHm5qawM
-   A5vye1Ugy7su82SNb63lHUIOBBh0psv+n78lgeOISdPxKVvhDhWeJMW/S
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10779"; a="370858872"
-X-IronPort-AV: E=Sophos;i="6.01,226,1684825200"; 
-   d="scan'208";a="370858872"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jul 2023 00:37:05 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10779"; a="754959351"
-X-IronPort-AV: E=Sophos;i="6.01,226,1684825200"; 
-   d="scan'208";a="754959351"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orsmga008.jf.intel.com with ESMTP; 23 Jul 2023 00:37:03 -0700
-Date:   Sun, 23 Jul 2023 15:35:17 +0800
-From:   Xu Yilun <yilun.xu@intel.com>
-To:     Marco Pagani <marpagan@redhat.com>
-Cc:     Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
-        Tom Rix <trix@redhat.com>, linux-kernel@vger.kernel.org,
-        linux-fpga@vger.kernel.org
-Subject: Re: [PATCH v10 0/4] fpga: add initial KUnit tests for the subsystem
-Message-ID: <ZLzYNY2pC6+qbuz+@yilunxu-OptiPlex-7050>
-References: <20230718130304.87048-1-marpagan@redhat.com>
+        with ESMTP id S230484AbjGXJoB (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 24 Jul 2023 05:44:01 -0400
+X-Greylist: delayed 1040 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 24 Jul 2023 02:44:00 PDT
+Received: from fluorez-com.cfd (fluorez-com.cfd [107.174.244.118])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D14451BF
+        for <linux-fpga@vger.kernel.org>; Mon, 24 Jul 2023 02:44:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; s=re1; d=fluorez-com.cfd;
+ h=Reply-To:From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:
+ Content-Transfer-Encoding; i=info@fluorez-com.cfd;
+ bh=LqAKS0rQcqRhfS2AomqosmxOtHjI8TSd2DPxtKmN8Fo=;
+ b=MJ6mV72J9t5TAM+axXT/2ejdU9ZXshhPB8uVoHYcJ3yzfbOR+1R+K47qdaioGHz6dQ/cbBsCuWv9
+   qVTv64dJ1W5MwfGlx7lJU2r64e/u+SYoyknoerzozLZJlL3OpZ3pTgA4ggZGnfCEffkpGLaSGjRg
+   WQ2DtUo1L801leEY0DkMy5Pw70+cR0LzWh938tPYlCneEKNYr82icTPaNrbrPg0A1i22ST7VTpPI
+   7VCFmqIzf2CvRuqUHpzJbS0bXxLCGTNzCgzbrIaa6zuREgHR2a2Z5LSBUVgR9n6SEOpoQr2u4Egv
+   UaFIhDVkkMzHZ4ciPPHTFfg27LLA0ZpOj4OOCA==
+Reply-To: info@coinloansupport.online
+From:   Coinloan Support Center <info@fluorez-com.cfd>
+To:     linux-fpga@vger.kernel.org
+Subject: Low Interest loan opportunity
+Date:   24 Jul 2023 10:47:13 +0200
+Message-ID: <20230724104713.7F1EFF37C3B16051@fluorez-com.cfd>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230718130304.87048-1-marpagan@redhat.com>
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On 2023-07-18 at 15:03:00 +0200, Marco Pagani wrote:
-> This patch set introduces an initial set of KUnit test suites for the
-> core components of the FPGA subsystem.
-
-Applied this series.
-
-Thanks,
-Yilun
+Are you looking for a loan to either increase your activity or to=20
+carry out a project.=20
+We offer Crypto Loans at 2-7% interest rate with or without a=20
+credit check.
+Please get back to us if you are interested in more details.
