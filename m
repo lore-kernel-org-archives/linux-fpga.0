@@ -2,67 +2,187 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A2F1C001B0
-	for <linux-fpga@archiver.kernel.org>; Tue,  8 Aug 2023 20:34:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95916C41513
+	for <linux-fpga@archiver.kernel.org>; Thu, 10 Aug 2023 17:24:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232378AbjHHUc1 (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Tue, 8 Aug 2023 16:32:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52156 "EHLO
+        id S234110AbjHJRWX (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Thu, 10 Aug 2023 13:22:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235820AbjHHUcG (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Tue, 8 Aug 2023 16:32:06 -0400
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB9FE17AA9
-        for <linux-fpga@vger.kernel.org>; Tue,  8 Aug 2023 09:51:19 -0700 (PDT)
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.56])
-        by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4RKtvJ0pgnz1L99w;
-        Tue,  8 Aug 2023 21:14:36 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by kwepemi500008.china.huawei.com
- (7.221.188.139) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Tue, 8 Aug
- 2023 21:15:45 +0800
-From:   Ruan Jinjie <ruanjinjie@huawei.com>
-To:     <mdf@kernel.org>, <hao.wu@intel.com>, <yilun.xu@intel.com>,
-        <trix@redhat.com>, <linux-fpga@vger.kernel.org>
-CC:     <ruanjinjie@huawei.com>
-Subject: [PATCH -next 1/2] fpga: ice40-spi: Remove redundant of_match_ptr()
-Date:   Tue, 8 Aug 2023 21:14:58 +0800
-Message-ID: <20230808131459.4081739-2-ruanjinjie@huawei.com>
+        with ESMTP id S235089AbjHJRWV (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Thu, 10 Aug 2023 13:22:21 -0400
+Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68C892733;
+        Thu, 10 Aug 2023 10:22:19 -0700 (PDT)
+Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-3fe247796ccso2345015e9.1;
+        Thu, 10 Aug 2023 10:22:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1691688138; x=1692292938;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nm5CzUEsnxqhaEVu4VzCbvkfQqrKkziEtlUo4iZJpC8=;
+        b=V05ckOHRS5w9+RSk3PTcklQxh9iiEp/YGMPAUsd0VbN1idJG1WJgX/LjRBxf6XMQ1F
+         3FrYvc4gssnQusqAHEui1m7Mw2VRxbOBxRviuEOEJJDkyCf9ogrHJLt9G0UmkvzE4zp/
+         LiCtJ9ZWzokkj/Sq/zQn6Al13OpBrkfJlCobByApT3ybJcByy1Mi0MjcWzrn7AXvaeV3
+         TAt2zBSjVAsOMR/rGtTgBf5X7BDl/pfRs5bv7/wLbc4zozjW1B3oH8moLE5HnPJiCfTQ
+         sSWA7t1ei6BCp6oZWffZ3ZcuUmD6xxLeXcjQDC0GOkkqPhm/+BzC0jkGpVOGbayu+npe
+         l0pA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691688138; x=1692292938;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=nm5CzUEsnxqhaEVu4VzCbvkfQqrKkziEtlUo4iZJpC8=;
+        b=gOesnmEI0Zqn1YdZheDtRHzg8ggTXNbbktmilau2eSxaRE36sWiMqy98ESsy/JR8mj
+         DmZmNeVyCLOkBSQRoBuifSg2y3GPVHJbjZH49RxbZSm8fcUpJ3v6PY3yRN85LoeHdn2i
+         UtHvfPC8+fp/S9Y5l/hpBxD/S5gAwWE2ScZCPFhsmS7FVo8EY/81Oq9UPDWDENgALNTH
+         jMebZHdhoSJ1lezVzJAYtm4ilkljViOKE8xK5uZuzzGstWUyyROyyQsDC+zaWfcXBaLv
+         IQAqg9zQ5QSjY4KBODxcm47rJjdCARvru9ue9J5bYQxnQuIeixrtZj/kVVd7UItYAzhd
+         u/fA==
+X-Gm-Message-State: AOJu0YxbVdSxl1Hdz1OHMQKDUIC/iuon3/zgelo/E+NYBkkx8Ji2Sfnq
+        tkrnIptX435y6paraTqHHzg=
+X-Google-Smtp-Source: AGHT+IHdMEGYvDD01uD6H3/hRGSeQWKfud6ga2tbleMEXnZZ3eRqiyTAqJllkJfXqkZHK0HQWs9eGQ==
+X-Received: by 2002:a5d:4fc5:0:b0:317:3d35:b809 with SMTP id h5-20020a5d4fc5000000b003173d35b809mr2590542wrw.2.1691688137578;
+        Thu, 10 Aug 2023 10:22:17 -0700 (PDT)
+Received: from ivan-HLYL-WXX9.. ([141.136.93.153])
+        by smtp.gmail.com with ESMTPSA id l18-20020a5d4112000000b003144b95e1ecsm2715754wrp.93.2023.08.10.10.22.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Aug 2023 10:22:17 -0700 (PDT)
+From:   Ivan Orlov <ivan.orlov0322@gmail.com>
+To:     mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com,
+        trix@redhat.com
+Cc:     Ivan Orlov <ivan.orlov0322@gmail.com>, linux-fpga@vger.kernel.org,
+        linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
+Subject: [PATCH 3/3] fpga: region: make fpga_region_class a static const structure
+Date:   Thu, 10 Aug 2023 21:22:10 +0400
+Message-Id: <20230810172210.6338-3-ivan.orlov0322@gmail.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230808131459.4081739-1-ruanjinjie@huawei.com>
-References: <20230808131459.4081739-1-ruanjinjie@huawei.com>
+In-Reply-To: <20230810172210.6338-1-ivan.orlov0322@gmail.com>
+References: <20230810172210.6338-1-ivan.orlov0322@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- kwepemi500008.china.huawei.com (7.221.188.139)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-The driver depends on CONFIG_OF, it is not necessary to use
-of_match_ptr() here.
+Now that the driver core allows for struct class to be in read-only
+memory, move the fpga_region_class structure to be declared at build
+time placing it into read-only memory, instead of having to be
+dynamically allocated at boot time.
 
-Signed-off-by: Ruan Jinjie <ruanjinjie@huawei.com>
+Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
- drivers/fpga/ice40-spi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/fpga/fpga-region.c | 64 ++++++++++++++++++--------------------
+ 1 file changed, 31 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
-index 7cbb3558b844..1fa546765cf8 100644
---- a/drivers/fpga/ice40-spi.c
-+++ b/drivers/fpga/ice40-spi.c
-@@ -199,7 +199,7 @@ static struct spi_driver ice40_fpga_driver = {
- 	.probe = ice40_fpga_probe,
- 	.driver = {
- 		.name = "ice40spi",
--		.of_match_table = of_match_ptr(ice40_fpga_of_match),
-+		.of_match_table = ice40_fpga_of_match,
- 	},
- 	.id_table = ice40_fpga_spi_ids,
+diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
+index ccf6fdab1360..01cf4c2f83d1 100644
+--- a/drivers/fpga/fpga-region.c
++++ b/drivers/fpga/fpga-region.c
+@@ -16,21 +16,6 @@
+ #include <linux/spinlock.h>
+ 
+ static DEFINE_IDA(fpga_region_ida);
+-static struct class *fpga_region_class;
+-
+-struct fpga_region *
+-fpga_region_class_find(struct device *start, const void *data,
+-		       int (*match)(struct device *, const void *))
+-{
+-	struct device *dev;
+-
+-	dev = class_find_device(fpga_region_class, start, data, match);
+-	if (!dev)
+-		return NULL;
+-
+-	return to_fpga_region(dev);
+-}
+-EXPORT_SYMBOL_GPL(fpga_region_class_find);
+ 
+ /**
+  * fpga_region_get - get an exclusive reference to an fpga region
+@@ -179,6 +164,34 @@ static struct attribute *fpga_region_attrs[] = {
  };
+ ATTRIBUTE_GROUPS(fpga_region);
+ 
++static void fpga_region_dev_release(struct device *dev)
++{
++	struct fpga_region *region = to_fpga_region(dev);
++
++	ida_free(&fpga_region_ida, region->dev.id);
++	kfree(region);
++}
++
++static const struct class fpga_region_class = {
++	.name = "fpga_region",
++	.dev_groups = fpga_region_groups,
++	.dev_release = fpga_region_dev_release,
++};
++
++struct fpga_region *
++fpga_region_class_find(struct device *start, const void *data,
++		       int (*match)(struct device *, const void *))
++{
++	struct device *dev;
++
++	dev = class_find_device(&fpga_region_class, start, data, match);
++	if (!dev)
++		return NULL;
++
++	return to_fpga_region(dev);
++}
++EXPORT_SYMBOL_GPL(fpga_region_class_find);
++
+ /**
+  * fpga_region_register_full - create and register an FPGA Region device
+  * @parent: device parent
+@@ -216,7 +229,7 @@ fpga_region_register_full(struct device *parent, const struct fpga_region_info *
+ 	mutex_init(&region->mutex);
+ 	INIT_LIST_HEAD(&region->bridge_list);
+ 
+-	region->dev.class = fpga_region_class;
++	region->dev.class = &fpga_region_class;
+ 	region->dev.parent = parent;
+ 	region->dev.of_node = parent->of_node;
+ 	region->dev.id = id;
+@@ -279,33 +292,18 @@ void fpga_region_unregister(struct fpga_region *region)
+ }
+ EXPORT_SYMBOL_GPL(fpga_region_unregister);
+ 
+-static void fpga_region_dev_release(struct device *dev)
+-{
+-	struct fpga_region *region = to_fpga_region(dev);
+-
+-	ida_free(&fpga_region_ida, region->dev.id);
+-	kfree(region);
+-}
+-
+ /**
+  * fpga_region_init - init function for fpga_region class
+  * Creates the fpga_region class and registers a reconfig notifier.
+  */
+ static int __init fpga_region_init(void)
+ {
+-	fpga_region_class = class_create("fpga_region");
+-	if (IS_ERR(fpga_region_class))
+-		return PTR_ERR(fpga_region_class);
+-
+-	fpga_region_class->dev_groups = fpga_region_groups;
+-	fpga_region_class->dev_release = fpga_region_dev_release;
+-
+-	return 0;
++	return class_register(&fpga_region_class);
+ }
+ 
+ static void __exit fpga_region_exit(void)
+ {
+-	class_destroy(fpga_region_class);
++	class_unregister(&fpga_region_class);
+ 	ida_destroy(&fpga_region_ida);
+ }
+ 
 -- 
 2.34.1
 
