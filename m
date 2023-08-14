@@ -2,69 +2,145 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6314AEB64DD
-	for <linux-fpga@archiver.kernel.org>; Fri, 11 Aug 2023 15:13:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 627D1C04A94
+	for <linux-fpga@archiver.kernel.org>; Mon, 14 Aug 2023 09:54:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230197AbjHKPLa (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 11 Aug 2023 11:11:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35256 "EHLO
+        id S231725AbjHNJwB (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Mon, 14 Aug 2023 05:52:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58316 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234748AbjHKPL2 (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 11 Aug 2023 11:11:28 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A822F171F;
-        Fri, 11 Aug 2023 08:11:28 -0700 (PDT)
+        with ESMTP id S233036AbjHNJvu (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Mon, 14 Aug 2023 05:51:50 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54265CC
+        for <linux-fpga@vger.kernel.org>; Mon, 14 Aug 2023 02:51:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1691766688; x=1723302688;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=Cjpcej3exmxfLa8oaOup6NX7xPqbLEY+b/Fz8WNpEn0=;
-  b=ifYAl46JNZNadbffRsn+AIr7NmlL4HRgMKu1pNPf/mvhTsiWXkrTXZ40
-   f2JTUWfJUfUySyRn1ciFoJfcOXqWXgbjQDEY8Yci6Z9awtwyZWI+16262
-   qZISMKLi6FHYlUqhDvZ+3B5wPPGgMsUCPO5/zihybcnPMvWvouMnjd4um
-   ByyA4xu5n5iFPr/aJGW4ZTn9h9tiVmQXJieHJOfIImH7t6mqAgICSphcJ
-   JCJmCgg2BLf2PQ5/unzIFlsGCrku16rEGRUX8OolCIJUplKT4QAgoKeJM
-   bmiIO4WRSv4Y3T/0pAR9Sgp/H6YI7R8YQRBBfTiYHJBG+OJhvZXFkxzDu
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10799"; a="370595516"
-X-IronPort-AV: E=Sophos;i="6.01,166,1684825200"; 
-   d="scan'208";a="370595516"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Aug 2023 08:11:28 -0700
+  t=1692006708; x=1723542708;
+  h=date:from:to:cc:subject:message-id:mime-version;
+  bh=f1MEzXakOSYUpY3IHQ0M9z2n8MZ1kR5HGSJPHra/ggk=;
+  b=kZyQAoZ0p1eTuLWb1lA+DXbPxEI0KFKWP6WfYgEsOODdVTVCtpv9yA/N
+   75Lgx7Ql2CrHISk9GjZ/tWfq2Lo+8f4RsAjDQgKZu8j2x4J+wGdiZq5nZ
+   j7xKjjPeY/x+em+nx3owG1WUI8NYoUbF/hOcCpPT+5zNv+c+GLK9ojZbj
+   eoTqXdTgzDcEpEBIB+BssOALHAgzP4oIiDJz9lXt9+9ZBi72PCBKaTWnZ
+   zEwprwfirqZv+2iv07N/XNb4BKyjrfZJTKmJQ/UQisGsjcKDcOnVVhmqJ
+   sS44Eg5RQvVepdzHeReXOlKc2B5XNstxFMtwCpam1BE9nsgQFsBek9WWB
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10801"; a="375711199"
+X-IronPort-AV: E=Sophos;i="6.01,172,1684825200"; 
+   d="scan'208";a="375711199"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Aug 2023 02:51:46 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10799"; a="682574137"
-X-IronPort-AV: E=Sophos;i="6.01,166,1684825200"; 
-   d="scan'208";a="682574137"
+X-IronPort-AV: E=McAfee;i="6600,9927,10801"; a="710271955"
+X-IronPort-AV: E=Sophos;i="6.01,172,1684825200"; 
+   d="scan'208";a="710271955"
 Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orsmga003.jf.intel.com with ESMTP; 11 Aug 2023 08:11:25 -0700
-Date:   Fri, 11 Aug 2023 23:09:13 +0800
+  by orsmga006.jf.intel.com with ESMTP; 14 Aug 2023 02:51:44 -0700
+Date:   Mon, 14 Aug 2023 17:49:27 +0800
 From:   Xu Yilun <yilun.xu@intel.com>
-To:     Ivan Orlov <ivan.orlov0322@gmail.com>
-Cc:     mdf@kernel.org, hao.wu@intel.com, trix@redhat.com,
-        linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-        gregkh@linuxfoundation.org
-Subject: Re: [PATCH v2 1/3] fpga: bridge: make fpga_bridge_class a static
- const structure
-Message-ID: <ZNZPGa8u43v6UKsI@yilunxu-OptiPlex-7050>
-References: <20230811073043.52808-1-ivan.orlov0322@gmail.com>
+To:     gregkh@linuxfoundation.org
+Cc:     yilun.xu@intel.com, linux-fpga@vger.kernel.org, hao.wu@intel.com,
+        mdf@kernel.org
+Subject: [GIT PULL] FPGA Manager changes for 6.6-rc1
+Message-ID: <ZNn4p4zpwj3iCk4u@yilunxu-OptiPlex-7050>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230811073043.52808-1-ivan.orlov0322@gmail.com>
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-On 2023-08-11 at 11:30:41 +0400, Ivan Orlov wrote:
-> Now that the driver core allows for struct class to be in read-only
-> memory, move the fpga_bridge_class structure to be declared at build
-> time placing it into read-only memory, instead of having to be
-> dynamically allocated at boot time.
-> 
-> Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org> 
-> Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
+The following changes since commit 06c2afb862f9da8dc5efa4b6076a0e48c3fbaaa5:
 
-Acked-by: Xu Yilun <yilun.xu@intel.com>
+  Linux 6.5-rc1 (2023-07-09 13:53:13 -0700)
 
-Applied this series.
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/fpga/linux-fpga tags/fpga-for-6.6-rc1
+
+for you to fetch changes up to 1a22ec09a2c1d367a43cb7f837c7a8719e7fe975:
+
+  fpga: region: make fpga_region_class a static const structure (2023-08-11 23:04:21 +0800)
+
+----------------------------------------------------------------
+FPGA Manager changes for 6.6-rc1
+
+- Marco's change fixes kernel-doc warnings.
+- Yangtao's change converts to use devm_platform_ioremap_resource().
+- Peter's change uses HWMON defined Macros for HWMON interfaces support.
+- Rob's change explicitly includes correct DT includes.
+- Marco's change adds KUnit tests for FPGA core.
+- Xiongfeng's change converts to use pci_find_vsec_capability().
+- Ivan's change makes fpga_xxx_class a static const structure.
+
+All patches have been reviewed on the mailing list, and have been in the
+last linux-next releases (as part of our for-next branch).
+
+Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+
+----------------------------------------------------------------
+Ivan Orlov (3):
+      fpga: bridge: make fpga_bridge_class a static const structure
+      fpga: fpga-mgr: make fpga_mgr_class a static const structure
+      fpga: region: make fpga_region_class a static const structure
+
+Marco Pagani (6):
+      fpga: region: fix kernel-doc
+      fpga: bridge: fix kernel-doc
+      fpga: add an initial KUnit suite for the FPGA Manager
+      fpga: add an initial KUnit suite for the FPGA Bridge
+      fpga: add an initial KUnit suite for the FPGA Region
+      fpga: add configuration for the FPGA KUnit test suites.
+
+Peter Colberg (1):
+      fpga: dfl: fme: use SI unit prefix macros
+
+Rob Herring (1):
+      fpga: Explicitly include correct DT includes
+
+Xiongfeng Wang (1):
+      fpga: dfl-pci: Use pci_find_vsec_capability() to simplify the code
+
+Yangtao Li (8):
+      fpga: bridge: Convert to devm_platform_ioremap_resource()
+      fpga: dfl-fme-mgr: Convert to devm_platform_ioremap_resource()
+      fpga: xilinx-pr-decoupler: Convert to devm_platform_ioremap_resource()
+      fpga: fpga-mgr: socfpga: Convert to devm_platform_ioremap_resource()
+      fpga: fpga-mgr: ts73xx: Convert to devm_platform_ioremap_resource()
+      fpga: zynq-fpga: Convert to devm_platform_ioremap_resource()
+      fpga: fpga-mgr: altera-pr-ip: Convert to devm_platform_ioremap_resource()
+      fpga: socfpga-a10: Convert to devm_platform_ioremap_resource()
+
+ drivers/fpga/Kconfig                  |   2 +
+ drivers/fpga/Makefile                 |   3 +
+ drivers/fpga/altera-fpga2sdram.c      |   2 +-
+ drivers/fpga/altera-freeze-bridge.c   |  11 +-
+ drivers/fpga/altera-pr-ip-core-plat.c |   9 +-
+ drivers/fpga/dfl-fme-main.c           |  17 +-
+ drivers/fpga/dfl-fme-mgr.c            |   4 +-
+ drivers/fpga/dfl-pci.c                |  15 +-
+ drivers/fpga/fpga-bridge.c            |  48 ++---
+ drivers/fpga/fpga-mgr.c               |  25 ++-
+ drivers/fpga/fpga-region.c            |  37 ++--
+ drivers/fpga/microchip-spi.c          |   2 +-
+ drivers/fpga/of-fpga-region.c         |   2 +
+ drivers/fpga/socfpga-a10.c            |   7 +-
+ drivers/fpga/socfpga.c                |   7 +-
+ drivers/fpga/stratix10-soc.c          |   1 +
+ drivers/fpga/tests/.kunitconfig       |   5 +
+ drivers/fpga/tests/Kconfig            |  11 ++
+ drivers/fpga/tests/Makefile           |   6 +
+ drivers/fpga/tests/fpga-bridge-test.c | 175 ++++++++++++++++++
+ drivers/fpga/tests/fpga-mgr-test.c    | 327 ++++++++++++++++++++++++++++++++++
+ drivers/fpga/tests/fpga-region-test.c | 211 ++++++++++++++++++++++
+ drivers/fpga/ts73xx-fpga.c            |   4 +-
+ drivers/fpga/xilinx-pr-decoupler.c    |   4 +-
+ drivers/fpga/zynq-fpga.c              |   4 +-
+ 25 files changed, 828 insertions(+), 111 deletions(-)
+ create mode 100644 drivers/fpga/tests/.kunitconfig
+ create mode 100644 drivers/fpga/tests/Kconfig
+ create mode 100644 drivers/fpga/tests/Makefile
+ create mode 100644 drivers/fpga/tests/fpga-bridge-test.c
+ create mode 100644 drivers/fpga/tests/fpga-mgr-test.c
+ create mode 100644 drivers/fpga/tests/fpga-region-test.c
