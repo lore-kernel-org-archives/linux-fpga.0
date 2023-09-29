@@ -2,95 +2,137 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2114FE71D4F
-	for <linux-fpga@archiver.kernel.org>; Fri, 29 Sep 2023 15:23:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1414E71D53
+	for <linux-fpga@archiver.kernel.org>; Fri, 29 Sep 2023 15:24:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233524AbjI2PWB (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Fri, 29 Sep 2023 11:22:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33524 "EHLO
+        id S233650AbjI2PWU (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Fri, 29 Sep 2023 11:22:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53320 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233488AbjI2PWA (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Fri, 29 Sep 2023 11:22:00 -0400
+        with ESMTP id S233614AbjI2PWO (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Fri, 29 Sep 2023 11:22:14 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C9C56DE
-        for <linux-fpga@vger.kernel.org>; Fri, 29 Sep 2023 08:21:13 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 37D3FD6
+        for <linux-fpga@vger.kernel.org>; Fri, 29 Sep 2023 08:21:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1696000873;
+        s=mimecast20190719; t=1696000887;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=2RjG0vxzlp2XNSTnbZsP+fW84/NpvbH3AB72ShSUKnA=;
-        b=YrzMu4JroeReKpcJLhGdun5HpNWfXD3sAZQV6Os3XWlK5iLctmzPwCGMOz5G5XycN1k0zl
-        1XQEGu/+jA3ac4qKR1k1JIIcKDqEkyDu7Lv5I9gXszsumCfAjWk/qZB4yEqTeWx4Lj+mN5
-        uMYKNDpwnIiHQ3+1H3ftUN1KjYp3dMw=
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
- [209.85.160.197]) by relay.mimecast.com with ESMTP with STARTTLS
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=6vekRvbFuhbc4qXIoy5r5sKVR277TKztySBeIjCszjQ=;
+        b=YkO6UYGvOvLZwYAx7VHjqVQwFsXVSv6MHDfjtM4zzUYTOcYv3FsJnyLRbB02+zOPCjVMPb
+        9aKReMMi4K3YIENzitwUOand7FwcwjEjqyHMSrchuhxRL3wEqOXjDtYuXL2vAyFc4Q7o+e
+        41mN5JqCtiG544uEiF7bMAsJiVBqmTA=
+Received: from mail-vk1-f198.google.com (mail-vk1-f198.google.com
+ [209.85.221.198]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-422-wGOjTUw_OrW72CGo6qzvrA-1; Fri, 29 Sep 2023 11:21:11 -0400
-X-MC-Unique: wGOjTUw_OrW72CGo6qzvrA-1
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-4195a70269eso79192301cf.3
-        for <linux-fpga@vger.kernel.org>; Fri, 29 Sep 2023 08:21:11 -0700 (PDT)
+ us-mta-638-przBmACXM2m_D7A7yEqldw-1; Fri, 29 Sep 2023 11:21:26 -0400
+X-MC-Unique: przBmACXM2m_D7A7yEqldw-1
+Received: by mail-vk1-f198.google.com with SMTP id 71dfb90a1353d-49093c3acacso8104712e0c.0
+        for <linux-fpga@vger.kernel.org>; Fri, 29 Sep 2023 08:21:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696000870; x=1696605670;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=2RjG0vxzlp2XNSTnbZsP+fW84/NpvbH3AB72ShSUKnA=;
-        b=c+tH552cq5we/kM2Ycv5jytQmo0amPcjItYQwpUVljf81lsJLIxbOi+NgAlc3chN/y
-         /ECEXif9FdVpD9A6mnJov6+zz2pYQxvvLi16yJ707w14hJaw0wwG/M/X+Hvtjn2AQk+P
-         2EBmrYtvJYAS6dVUNRn8gOhCqdf4HOpBuMahJbYKLKe4cpDl5KhycXS9bD/2eMFEG+so
-         Ptczuutrm5WrC0ubek96KRs9FwnzFvMU6kcaTk5V7M9EMKSoWII1gTcGlu8J+MdEqXSE
-         9QuhpZZx0jOXPr09MGmfVo3ShK52WoiC5qyKtrwAfOpFzO6AXjdnpXtxk1TEpUjcbbXk
-         3C3g==
-X-Gm-Message-State: AOJu0YxrXT0QcG2R4f430odMOmEelN+J3Jk3Su768VFEqBt7SiLF7Mwm
-        mwLgYTiuoIP11ShtjtifdnHNGAWZ4qJ5vzOiIrtD3QFnew7pGVX6VtD9kVJAe38djY9utCE6jYC
-        UjLKnubMAopu+FHv95wUK
-X-Received: by 2002:ac8:57c7:0:b0:419:53ce:3fa9 with SMTP id w7-20020ac857c7000000b0041953ce3fa9mr5832303qta.53.1696000870691;
-        Fri, 29 Sep 2023 08:21:10 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEN1zu4gWKrOid0K633sP55/uvJCk4Eh5nH/sEFDbbakhFkC4oZ5JKl9fj1A+P1+6qWn8xKGw==
-X-Received: by 2002:ac8:57c7:0:b0:419:53ce:3fa9 with SMTP id w7-20020ac857c7000000b0041953ce3fa9mr5832288qta.53.1696000870476;
-        Fri, 29 Sep 2023 08:21:10 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1696000885; x=1696605685;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=6vekRvbFuhbc4qXIoy5r5sKVR277TKztySBeIjCszjQ=;
+        b=qi2fKTE2oWA8pwdZ+FsWFlu4uGOjvxg9UnoBwDjPxBa0+HJvKmuF8n0EtVuaoaMZ52
+         GZyauJq/1xsvuBFqDFfoOf0i6Mcg2TQqQ78Q0KsgSXZjA8maiQPJFcafsuLpPwSnDqfS
+         sahxlJ2GlBsp8M6uA9ZLvaGqUq5HNXbeIy83o4kHKWB4YR6TsWSPdf4P2lTvHM3L+iwp
+         tUCGeu1VyOmoUVOhXi+dPix1iw6/waqUC/7xY75E4GqWV4/55fgcTIaUTW2mKY8Wdai9
+         tPcLW9W+vPdxRVAV0ZRVAjG8Db9JDgxr86t+cS5Mfiq/TlCcfd6rtfeXdk6kCMfw1TJa
+         1HfA==
+X-Gm-Message-State: AOJu0YzFN+iii/fN2X1eNa3NAFgP4gwbmY16YuqReCPVtDY7Rlr+nLIs
+        a0bVMQHP2/LmND/5YD5U/OQWRUHo1Zcj+K5B8p9ZMs1RNPtEmr54qvwZZIWqcF0vp0eXvBUYJS8
+        ZrmaiONPSYm/K14uYmFRS
+X-Received: by 2002:a05:6122:32cd:b0:49c:37a1:2358 with SMTP id ck13-20020a05612232cd00b0049c37a12358mr4322986vkb.14.1696000885109;
+        Fri, 29 Sep 2023 08:21:25 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IG4gs4hEWcYKxSY0LaVxjaPFVuWUAi9sKJYkYSyuIRz/F7CcNcZSPh09BHPm2a9q2Pylaeasg==
+X-Received: by 2002:a05:6122:32cd:b0:49c:37a1:2358 with SMTP id ck13-20020a05612232cd00b0049c37a12358mr4322964vkb.14.1696000884850;
+        Fri, 29 Sep 2023 08:21:24 -0700 (PDT)
 Received: from klayman.redhat.com (net-2-34-30-58.cust.vodafonedsl.it. [2.34.30.58])
-        by smtp.gmail.com with ESMTPSA id bq14-20020a05622a1c0e00b00419801b1094sm287053qtb.13.2023.09.29.08.21.08
+        by smtp.gmail.com with ESMTPSA id bq14-20020a05622a1c0e00b00419801b1094sm287053qtb.13.2023.09.29.08.21.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 29 Sep 2023 08:21:10 -0700 (PDT)
+        Fri, 29 Sep 2023 08:21:24 -0700 (PDT)
 From:   Marco Pagani <marpagan@redhat.com>
 To:     Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
         Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>
 Cc:     Marco Pagani <marpagan@redhat.com>, linux-kernel@vger.kernel.org,
-        linux-fpga@vger.kernel.org
-Subject: [PATCH v2 0/4] fpga: add platform drivers to the FPGA KUnit test suites
-Date:   Fri, 29 Sep 2023 17:20:53 +0200
-Message-ID: <20230929152057.85047-1-marpagan@redhat.com>
+        linux-fpga@vger.kernel.org, Jinjie Ruan <ruanjinjie@huawei.com>
+Subject: [PATCH v2 2/4] fpga: add a platform driver to the FPGA Manager test suite
+Date:   Fri, 29 Sep 2023 17:20:55 +0200
+Message-ID: <20230929152057.85047-3-marpagan@redhat.com>
 X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230929152057.85047-1-marpagan@redhat.com>
+References: <20230929152057.85047-1-marpagan@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Add and register minimal platform drivers associated with parent
-platform devices used for testing to prevent a null-ptr-deref when
-try_module_get() is called.
+Register a minimal platform driver associated with the parent platform
+device used for testing to prevent a null-ptr-deref when try_module_get()
+is called by fpga_mgr_get().
 
-v2:
-- Renamed include guard symbol in fpga-test-helpers.h
+Fixes: ccbc1c302115 ("fpga: add an initial KUnit suite for the FPGA Manager")
+Reported-by: Jinjie Ruan <ruanjinjie@huawei.com>
+Signed-off-by: Marco Pagani <marpagan@redhat.com>
+---
+ drivers/fpga/tests/fpga-mgr-test.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-Marco Pagani (4):
-  fpga: add helpers for the FPGA KUnit test suites.
-  fpga: add a platform driver to the FPGA Manager test suite
-  fpga: add a platform driver to the FPGA Bridge test suite
-  fpga: add a platform driver to the FPGA Region test suite
-
- drivers/fpga/tests/fpga-bridge-test.c  | 18 +++++++++++++++-
- drivers/fpga/tests/fpga-mgr-test.c     | 18 +++++++++++++++-
- drivers/fpga/tests/fpga-region-test.c  | 26 ++++++++++++++++++-----
- drivers/fpga/tests/fpga-test-helpers.h | 29 ++++++++++++++++++++++++++
- 4 files changed, 84 insertions(+), 7 deletions(-)
- create mode 100644 drivers/fpga/tests/fpga-test-helpers.h
-
-
-base-commit: 6465e260f48790807eef06b583b38ca9789b6072
+diff --git a/drivers/fpga/tests/fpga-mgr-test.c b/drivers/fpga/tests/fpga-mgr-test.c
+index 6acec55b60ce..30de474d7def 100644
+--- a/drivers/fpga/tests/fpga-mgr-test.c
++++ b/drivers/fpga/tests/fpga-mgr-test.c
+@@ -14,6 +14,8 @@
+ #include <linux/scatterlist.h>
+ #include <linux/types.h>
+ 
++#include "fpga-test-helpers.h"
++
+ #define HEADER_FILL		'H'
+ #define IMAGE_FILL		'P'
+ #define IMAGE_BLOCK		1024
+@@ -277,6 +279,18 @@ static void fpga_mgr_test_img_load_sgt(struct kunit *test)
+ 	sg_free_table(ctx->img_info->sgt);
+ }
+ 
++TEST_PLATFORM_DRIVER(test_platform_driver);
++
++static int fpga_mgr_test_suite_init(struct kunit_suite *suite)
++{
++	return platform_driver_register(&test_platform_driver);
++}
++
++static void fpga_mgr_test_suite_exit(struct kunit_suite *suite)
++{
++	platform_driver_unregister(&test_platform_driver);
++}
++
+ static int fpga_mgr_test_init(struct kunit *test)
+ {
+ 	struct mgr_ctx *ctx;
+@@ -284,7 +298,7 @@ static int fpga_mgr_test_init(struct kunit *test)
+ 	ctx = kunit_kzalloc(test, sizeof(*ctx), GFP_KERNEL);
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx);
+ 
+-	ctx->pdev = platform_device_register_simple("mgr_pdev", PLATFORM_DEVID_AUTO, NULL, 0);
++	ctx->pdev = platform_device_register_simple(TEST_PDEV_NAME, PLATFORM_DEVID_AUTO, NULL, 0);
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx->pdev);
+ 
+ 	ctx->mgr = devm_fpga_mgr_register(&ctx->pdev->dev, "Fake FPGA Manager", &fake_mgr_ops,
+@@ -317,6 +331,8 @@ static struct kunit_case fpga_mgr_test_cases[] = {
+ 
+ static struct kunit_suite fpga_mgr_suite = {
+ 	.name = "fpga_mgr",
++	.suite_init = fpga_mgr_test_suite_init,
++	.suite_exit = fpga_mgr_test_suite_exit,
+ 	.init = fpga_mgr_test_init,
+ 	.exit = fpga_mgr_test_exit,
+ 	.test_cases = fpga_mgr_test_cases,
 -- 
 2.41.0
 
