@@ -2,79 +2,54 @@ Return-Path: <linux-fpga-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BA2ACDB474
-	for <linux-fpga@archiver.kernel.org>; Mon, 23 Oct 2023 03:32:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C9B7C07545
+	for <linux-fpga@archiver.kernel.org>; Tue, 24 Oct 2023 08:17:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233315AbjJWDap (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
-        Sun, 22 Oct 2023 23:30:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56134 "EHLO
+        id S233662AbjJXIQA (ORCPT <rfc822;linux-fpga@archiver.kernel.org>);
+        Tue, 24 Oct 2023 04:16:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233345AbjJWDaX (ORCPT
-        <rfc822;linux-fpga@vger.kernel.org>); Sun, 22 Oct 2023 23:30:23 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6ADC910C8;
-        Sun, 22 Oct 2023 20:30:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1698031811; x=1729567811;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=TzAs4WqG+fJiSTBAokWdOF+N9p7/TQYUdpoHehE7fZ8=;
-  b=XD3gMSF+6qfwW3ICwuGTPAi3HBXvqbbhD/fBIihhu1me1AfVH0cpkRkd
-   qQwtxf9GDrTuqt3sdD+XJ8UGwNJyxr+wep6XZSGrLA9YMxIZNDKMxviHb
-   udH+lMqhhwzSL1dA996J8rTV/raKPGAoOSY78khmGbQg5s9+KXGWulXD2
-   uODdYxiTxg1cVuBmjz7LZWhA3dNTjnb8W1sEorVHbASNnZgvP/8aswept
-   AM9mJZL+fIaVa/q204GzfwDNlxUMkae5nrmYRYP5vE7Im0XXmSz/YdyJ7
-   lMaQOOaDXvrPisjqpzH9LHgxpsWXqAaEr2DR5lIOrxWW5LC52X7ueuiYy
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10871"; a="5380104"
-X-IronPort-AV: E=Sophos;i="6.03,244,1694761200"; 
-   d="scan'208";a="5380104"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Oct 2023 20:30:11 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10871"; a="881617666"
-X-IronPort-AV: E=Sophos;i="6.03,244,1694761200"; 
-   d="scan'208";a="881617666"
-Received: from yilunxu-optiplex-7050.sh.intel.com ([10.239.159.165])
-  by orsmga004.jf.intel.com with ESMTP; 22 Oct 2023 20:30:08 -0700
-From:   Xu Yilun <yilun.xu@linux.intel.com>
-To:     gregkh@linuxfoundation.org
-Cc:     hao.wu@intel.com, mdf@kernel.org, linux-fpga@vger.kernel.org,
-        linux-kernel@vger.kernel.org, yilun.xu@intel.com
-Subject: [RESEND PATCH 0/2] FPGA Remaining fix patches for 6.6-final
-Date:   Mon, 23 Oct 2023 11:28:55 +0800
-Message-Id: <20231023032857.902699-1-yilun.xu@linux.intel.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S233668AbjJXIP7 (ORCPT
+        <rfc822;linux-fpga@vger.kernel.org>); Tue, 24 Oct 2023 04:15:59 -0400
+Received: from mail.citycodes.pl (mail.citycodes.pl [158.255.215.195])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C98D9D7C
+        for <linux-fpga@vger.kernel.org>; Tue, 24 Oct 2023 01:15:55 -0700 (PDT)
+Received: by mail.citycodes.pl (Postfix, from userid 1001)
+        id 8665921709; Tue, 24 Oct 2023 10:15:37 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=citycodes.pl; s=mail;
+        t=1698135354; bh=fClkhHu/p6gIm8tbpvFwCqGX3kXIMdqjiuDdSiYGEkk=;
+        h=Date:From:To:Subject:From;
+        b=d3e43e6OKcNH4qASflt9mEDRSbPXKF6wvxP4wna3J+Z8SqaIinETG5/hgJHBD+CZm
+         +xJQxZpSTOWseghDxwc4wyjKiA5SXI+9X9e8LONn6PwIrAewePalUr3bLzf12WXap3
+         MGIXhuH/9RFkMruLQHyTQj9LprAODlIBEzWhX4CwlN6K8E618bksv0rGyRvIau0BvO
+         mgN25EgEoQMEkzyWjFFPeYaCM7Q8JQO2SOabtm5Wpsg7XVF645fe6nlAhQ2CLS4n8+
+         Et34GjMygrzQZSC/MsPI/ayMR0ondYVr1qOuX6XIRVh6l1UpOg+Jpg49AvfWJf6QVd
+         PiKa92ROWtt1A==
+Received: by mail.citycodes.pl for <linux-fpga@vger.kernel.org>; Tue, 24 Oct 2023 08:15:29 GMT
+Message-ID: <20231024084500-0.1.8a.l8t5.0.sr94gg20q9@citycodes.pl>
+Date:   Tue, 24 Oct 2023 08:15:29 GMT
+From:   "Kamil Lasek" <kamil.lasek@citycodes.pl>
+To:     <linux-fpga@vger.kernel.org>
+Subject: Wycena paneli fotowoltaicznych
+X-Mailer: mail.citycodes.pl
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fpga.vger.kernel.org>
 X-Mailing-List: linux-fpga@vger.kernel.org
 
-Hi Greg:
+Dzie=C5=84 dobry,
 
-We have settled the issue of some patches in FPGA pull request for
-6.6-final.
-https://lore.kernel.org/all/2023101924-hunk-conjuror-2d35@gregkh/
+dostrzegam mo=C5=BCliwo=C5=9B=C4=87 wsp=C3=B3=C5=82pracy z Pa=C5=84stwa f=
+irm=C4=85.
 
-There are 2 more patches which seem OK but not get pulled in this pull
-request.
-https://lore.kernel.org/all/2023101730-budding-spree-1471@gregkh/
+=C5=9Awiadczymy kompleksow=C4=85 obs=C5=82ug=C4=99 inwestycji w fotowolta=
+ik=C4=99, kt=C3=B3ra obni=C5=BCa koszty energii elektrycznej.
 
-Could you help review and merge?
+Czy s=C4=85 Pa=C5=84stwo zainteresowani weryfikacj=C4=85 wst=C4=99pnych p=
+ropozycji?
 
-Jinjie Ruan (1):
-  fpga: Fix memory leak for fpga_region_test_class_find()
 
-Russ Weight (1):
-  fpga: m10bmc-sec: Change contact for secure update driver
-
- .../testing/sysfs-driver-intel-m10-bmc-sec-update  | 14 +++++++-------
- MAINTAINERS                                        |  2 +-
- drivers/fpga/tests/fpga-region-test.c              |  2 ++
- 3 files changed, 10 insertions(+), 8 deletions(-)
-
--- 
-2.25.1
-
+Pozdrawiam,
+Kamil Lasek
