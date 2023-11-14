@@ -1,29 +1,48 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from lindbergh.monkeyblade.net (lindbergh.monkeyblade.net [23.128.96.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D1C312B61
-	for <linux-fpga@vger.kernel.org>; Sat, 11 Nov 2023 11:02:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77C26BA2B
+	for <linux-fpga@vger.kernel.org>; Tue, 14 Nov 2023 06:55:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="ZzM5DqBs"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 91023C433C8;
-	Sat, 11 Nov 2023 11:02:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1699700562;
-	bh=VkzEk2G8M/IH667WMnhkEfu1xxxWypOT/8U1uxpfOeI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ZzM5DqBsBU8jvmoWYqm1DHgIFygZG8ppasjXy38eTaslrANgCR2FPCe7S1b3sK7Qb
-	 9XBWnB+ztPiE6luSRAT+uMydCwEjzBMMHGPvtKgYMI1uBmnvUY5VAvD3wEvrSuGRiq
-	 xDx3CND3eBQz3eg1kdNm+YxygN78ls+nQ4f1xGHw=
-Date: Sat, 11 Nov 2023 06:02:41 -0500
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="G+dE7lit"
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6D82D43;
+	Mon, 13 Nov 2023 22:55:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1699944908; x=1731480908;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=GPkBoNsUMQY8CWS7ia3KzqjIuFIsEAor8fkNZkDALeg=;
+  b=G+dE7litinE56E3BZ4VN/qxqNdl0c/HbTC1Zr3ZmBwyTaK9FJpnTLVFi
+   lI8/d4mgVFz2qN7z+C03k9IpU3fYGwZn1GFv1tkoAFcPiIqDgDbz7J9gN
+   asxl87pgBznxwSlcHxaJNDX9eMGTtBF8ChAVyZr8mEYGYTKFpy9I7nxk/
+   9Le8fDNQKszzIPo2rFaMF+uAmg6xEDYdwPk5IJqEeILHYnT3DLnyga5Gy
+   uleYmcO5jYIwKtVKMWlky7RxNLkuKzWs7xTrAIk8WcldToW1HxnhPBWnF
+   0RowlliN6Im03X15rKvAypy5dmY7kzuC94idBibpkjpuN8YxUlIemqhd/
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10893"; a="421696022"
+X-IronPort-AV: E=Sophos;i="6.03,301,1694761200"; 
+   d="scan'208";a="421696022"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Nov 2023 22:55:08 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10893"; a="881950403"
+X-IronPort-AV: E=Sophos;i="6.03,301,1694761200"; 
+   d="scan'208";a="881950403"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by fmsmga002.fm.intel.com with ESMTP; 13 Nov 2023 22:55:06 -0800
+Date: Tue, 14 Nov 2023 14:53:24 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
 To: Marco Pagani <marpagan@redhat.com>
-Cc: Xu Yilun <yilun.xu@linux.intel.com>, Moritz Fischer <mdf@kernel.org>,
-	Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>, Alan Tull <atull@opensource.altera.com>,
+Cc: Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>,
+	Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
+	Alan Tull <atull@opensource.altera.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [RFC PATCH] fpga: remove module reference counting from core
  components
-Message-ID: <2023111139-dramatize-spherical-cf43@gregkh>
+Message-ID: <ZVMZZNyLE0+YtKYz@yilunxu-OptiPlex-7050>
 References: <20231027152928.184012-1-marpagan@redhat.com>
  <ZT9qENE9fE3Z0KCW@yilunxu-OptiPlex-7050>
  <ae202b70-b106-4805-9ce0-ffbb2738bb04@redhat.com>
@@ -97,19 +116,23 @@ On Fri, Nov 10, 2023 at 11:58:37PM +0100, Marco Pagani wrote:
 > try_module_get() (1) made me question the safety of that approach.
 > My concern is that the low-level driver could be removed right when
 > someone is calling fpga_mgr_get() and hasn't yet reached
-> try_module_get(mgr->mops->owner).
-
-Can that really happen?  This shouldn't be a real issue, but normally
-this should only be needed on an open() like call, don't tie a module
-reference to a device reference, those are two different things.
-
-> In that case, the struct mops
+> try_module_get(mgr->mops->owner). In that case, the struct mops
 > (along with the entire low-level driver module) and the manager dev
 > would "disappear" under the feet of fpga_mgr_get().
 
-You should have a lock for handling this anyway, this feels odd that
-it's a problem, but I haven't looked at the code in a long time.
+I don't get what's the problem. fpga_mgr_get() would first of all
+look for mgr_dev via class_find_device(), if low-level module is
+unloaded, then you cannot find the mgr_dev and gracefully error out.
 
-try it and see!
+If class_find_device() succeed, mgr_dev got a reference and won't
+disappear. Finally we may still found module removed when
+try_module_get(), but should be another graceful error out.
 
-greg k-h
+Am I missing anything?
+
+Thanks,
+Yilun
+
+> 
+> (1) 557aafac1153 ("kernel/module: add documentation for try_module_get()")
+>  
