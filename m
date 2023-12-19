@@ -1,33 +1,34 @@
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80FB937D0F
-	for <linux-fpga@vger.kernel.org>; Tue, 19 Dec 2023 17:32:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B8F424A03
+	for <linux-fpga@vger.kernel.org>; Tue, 19 Dec 2023 17:32:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1rFdxC-0005wA-Vj; Tue, 19 Dec 2023 18:32:26 +0100
+	id 1rFdxD-0005wL-Be; Tue, 19 Dec 2023 18:32:27 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1rFdxB-0004H7-G8; Tue, 19 Dec 2023 18:32:26 +0100
+	id 1rFdxB-0004HH-S3; Tue, 19 Dec 2023 18:32:26 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1rFdxC-000Cpj-A3; Tue, 19 Dec 2023 18:32:26 +0100
+	id 1rFdxC-000Cpq-M5; Tue, 19 Dec 2023 18:32:26 +0100
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Wu Hao <hao.wu@intel.com>,
-	Moritz Fischer <mdf@kernel.org>,
+To: Moritz Fischer <mdf@kernel.org>,
+	Wu Hao <hao.wu@intel.com>,
 	Xu Yilun <yilun.xu@intel.com>
-Cc: Tom Rix <trix@redhat.com>,
+Cc: Peter Colberg <peter.colberg@intel.com>,
+	Tom Rix <trix@redhat.com>,
 	linux-fpga@vger.kernel.org,
 	kernel@pengutronix.de
-Subject: [PATCH 06/13] fpga: dfl-fme-main: Convert to platform remove callback returning void
-Date: Tue, 19 Dec 2023 18:32:04 +0100
-Message-ID:  <438bb4797984fbfd0cef501010a64fa1e42ad9f4.1703006638.git.u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 08/13] fpga: intel-m10-bmc-sec-update: Convert to platform remove callback returning void
+Date: Tue, 19 Dec 2023 18:32:06 +0100
+Message-ID:  <8d7b192ade744a70da4d7bc681ee4e00f9d04ba9.1703006638.git.u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <cover.1703006638.git.u.kleine-koenig@pengutronix.de>
 References: <cover.1703006638.git.u.kleine-koenig@pengutronix.de>
@@ -38,7 +39,7 @@ List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1665; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=qfB5i+dUHckThGJDxVawBxUYk6jLLVFxmgRke5aDk5g=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlgdOU73secTwGqydXpibi+xQrgc/9aeuncTw7m e1cc6XjucqJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZYHTlAAKCRCPgPtYfRL+ Tv5ACACYffed80Ns9oh/1aOfFBm6L+Xngs3B9JWXma3660ouHgK3qKXhYWoIiAkdUNP3TvH9ImO imZJ4xya2+xh1er6VWlhdD8ELyse5LosyJFYIIwHd4EAGIfUmdyQM+OWKs9hMKvNOS2VMnugfSC jlT4R1Ue/V5HEykfp3pR4lANSmuVqzsKZRXzmaWSGXgbCX8NUafCQbXe+5bIz0dzPqY6IWxtv54 3LcN3jyyqWwqMJ8D4KRMbOtUk9t7r5jgPWj3NKipUlD8WOZjTPBo98weHBqMlxUqYvhEHC/Edpl SQkFHX2/3dXjLhbBpBE98Cq4ZqiH6exRtnHFssMigsHUx884
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1922; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=x/91DhywnpZtlOuTo5ij49/8knaEiA9uKV9pkUBzyDw=; b=owGbwMvMwMXY3/A7olbonx/jabUkhtTGy9P5Utm2bjr5846Rp6cYy5LYCwnKX4LExBZ3vdo1T /nU3b88nYzGLAyMXAyyYoos9o1rMq2q5CI71/67DDOIlQlkCgMXpwBM5NRU9n9qkq/VY1Xc3GzX 69duTohTOSH8Y0OetpFlSbiau93cP3KmB877G4XMNd79NsmTI/BW2f50+22CMi0dfvl2vDbPqkr +N99malCpnplpw7bTub7T5WDAL9e53PsZpJbpzzPTnBy+9qQhQ5Os1dn3y+aYHd6y6bOxdt72lX EZdUyuS5asF7rBXlB6xz+e77Vx/FX3Y19vnrzygKfK7bOTiU4Y3w/+yCWf/tYUz3lX/OOF/NKaR RuCwnxCtNbdsJLqZdBUuHHl6vJsZ4/Cb7H3v7y7pzrJ4PHETy4BTl78ETsrPHL/h4rMXN+adjZV bY+PrXaymUJ0TVZQ5PKwQ3bcH57dabOLazzfvcPV5JQPAA==
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -61,37 +62,39 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/fpga/dfl-fme-main.c | 6 ++----
+ drivers/fpga/intel-m10-bmc-sec-update.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/fpga/dfl-fme-main.c b/drivers/fpga/dfl-fme-main.c
-index 3dcf990bd261..a2b5da0093da 100644
---- a/drivers/fpga/dfl-fme-main.c
-+++ b/drivers/fpga/dfl-fme-main.c
-@@ -730,13 +730,11 @@ static int fme_probe(struct platform_device *pdev)
+diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
+index 31af2e08c825..89851b133709 100644
+--- a/drivers/fpga/intel-m10-bmc-sec-update.c
++++ b/drivers/fpga/intel-m10-bmc-sec-update.c
+@@ -730,15 +730,13 @@ static int m10bmc_sec_probe(struct platform_device *pdev)
  	return ret;
  }
  
--static int fme_remove(struct platform_device *pdev)
-+static void fme_remove(struct platform_device *pdev)
+-static int m10bmc_sec_remove(struct platform_device *pdev)
++static void m10bmc_sec_remove(struct platform_device *pdev)
  {
- 	dfl_fpga_dev_ops_unregister(pdev);
- 	dfl_fpga_dev_feature_uinit(pdev);
- 	fme_dev_destroy(pdev);
+ 	struct m10bmc_sec *sec = dev_get_drvdata(&pdev->dev);
+ 
+ 	firmware_upload_unregister(sec->fwl);
+ 	kfree(sec->fw_name);
+ 	xa_erase(&fw_upload_xa, sec->fw_name_id);
 -
 -	return 0;
  }
  
- static const struct attribute_group *fme_dev_groups[] = {
-@@ -751,7 +749,7 @@ static struct platform_driver fme_driver = {
- 		.dev_groups = fme_dev_groups,
- 	},
- 	.probe   = fme_probe,
--	.remove  = fme_remove,
-+	.remove_new = fme_remove,
- };
+ static const struct platform_device_id intel_m10bmc_sec_ids[] = {
+@@ -760,7 +758,7 @@ MODULE_DEVICE_TABLE(platform, intel_m10bmc_sec_ids);
  
- module_platform_driver(fme_driver);
+ static struct platform_driver intel_m10bmc_sec_driver = {
+ 	.probe = m10bmc_sec_probe,
+-	.remove = m10bmc_sec_remove,
++	.remove_new = m10bmc_sec_remove,
+ 	.driver = {
+ 		.name = "intel-m10bmc-sec-update",
+ 		.dev_groups = m10bmc_sec_attr_groups,
 -- 
 2.42.0
 
