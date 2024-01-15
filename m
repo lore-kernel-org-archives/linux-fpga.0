@@ -1,191 +1,89 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE6C1182A1
-	for <linux-fpga@vger.kernel.org>; Mon, 15 Jan 2024 17:08:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="IsWaigLg"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1705338516;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=P1P61my+Bw8+fnvo70xyLGssKK24tkeqWAOxKcUoi5E=;
-	b=IsWaigLgBWnJWUMDVhFaXIa8BS+0Bw+khEWGsMx7gZaO68OmcPX5/aFYiydQLc3smFITt7
-	p3re+pWPMyqk78dBlTuwWNn11aStIEEhA/DTF7DZI46/ROae85e2S9pCPzY3FMGj9GlQsg
-	WBMwMXbk9oftjTTQDvLodMnxrmKVN/Q=
-Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com
- [209.85.160.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-412-Pir5Y38SM8qhFSLFuXrnxw-1; Mon, 15 Jan 2024 12:08:35 -0500
-X-MC-Unique: Pir5Y38SM8qhFSLFuXrnxw-1
-Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-427b56e96a6so138997071cf.3
-        for <linux-fpga@vger.kernel.org>; Mon, 15 Jan 2024 09:08:35 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705338515; x=1705943315;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:subject:from:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=P1P61my+Bw8+fnvo70xyLGssKK24tkeqWAOxKcUoi5E=;
-        b=TvLt6d+8qr53KXCWXIIzIJx3yiM3AiStCbC6tomKqdgDQIPEy3V0Ska3xKO6QnqOnM
-         vaDwOGgZnOvLLDwc7Q7dvKDDiYby8PJLjEF/Rm7YJtmWIlWwFcG/Ws5RpWDPzvIBGB1t
-         r0XP3g+GG5kkN24TYCL/YEXahtUF20/qyqzCJzpRAvlm5xf3MhSY7m/o4RVchirocg8W
-         +6o7Y1kMR7sptsKU4BY4xIbRWzG7ndOi2rL8vwynFz+zaxajMppdFl+BkVX9HU92A3Gi
-         57UnUz0eE0w6jeE61xa4PvGZzcnG1rfnppeRxPESrDuJDMT/nHTvQlPLiRiXwaUGsHPv
-         3xuA==
-X-Gm-Message-State: AOJu0YzUQf3KXRjk3VGoqVK9D1vfF4F74E4CjYWpbrDj9NnGZL47trmJ
-	+YoBlz0c9RV/i9IzOeLA40wZs2Wge45wB9kLCUtmNA1U2aLgJDX1MF/JaNwgJz0ZLojVBGZLhGS
-	8QfUbDYLeXu+UD9auSTiCv3I12EBd
-X-Received: by 2002:a05:622a:1b9e:b0:429:cfa7:2694 with SMTP id bp30-20020a05622a1b9e00b00429cfa72694mr8278454qtb.132.1705338514909;
-        Mon, 15 Jan 2024 09:08:34 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IGSo27e4aZe4IMLfNfuibFhqawYh2aJcFoKYMMlbNu9QIdvCFbQvArA0Ru5fOqmfL7xiIx6vQ==
-X-Received: by 2002:a05:622a:1b9e:b0:429:cfa7:2694 with SMTP id bp30-20020a05622a1b9e00b00429cfa72694mr8278439qtb.132.1705338514643;
-        Mon, 15 Jan 2024 09:08:34 -0800 (PST)
-Received: from [192.168.9.34] (net-2-34-31-72.cust.vodafonedsl.it. [2.34.31.72])
-        by smtp.gmail.com with ESMTPSA id fv11-20020a05622a4a0b00b00427fb1d6b44sm4089985qtb.5.2024.01.15.09.08.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 15 Jan 2024 09:08:34 -0800 (PST)
-Message-ID: <12b50394-3d02-4fe2-9b00-97788b2a64ef@redhat.com>
-Date: Mon, 15 Jan 2024 18:08:31 +0100
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C42551A5A2
+	for <linux-fpga@vger.kernel.org>; Mon, 15 Jan 2024 20:21:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rPTSD-0004fw-TL; Mon, 15 Jan 2024 21:21:05 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rPTSC-0005fx-VP; Mon, 15 Jan 2024 21:21:04 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rPTSC-000N76-2n;
+	Mon, 15 Jan 2024 21:21:04 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Mark Brown <broonie@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: linux-spi@vger.kernel.org,
+	kernel@pengutronix.de,
+	Moritz Fischer <mdf@kernel.org>,
+	Wu Hao <hao.wu@intel.com>,
+	Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>,
+	linux-fpga@vger.kernel.org
+Subject: [PATCH 01/33] fpga: ice40-spi: Follow renaming of SPI "master" to "controller"
+Date: Mon, 15 Jan 2024 21:12:47 +0100
+Message-ID:  <caef8566918e708daee60c211ab2d12b926f95a5.1705348269.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1705348269.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1705348269.git.u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Marco Pagani <marpagan@redhat.com>
-Subject: Re: [RFC 1/2] fpga: support loading from a pre-allocated buffer
-To: Nava kishore Manne <nava.kishore.manne@amd.com>
-Cc: mdf@kernel.org, hao.wu@intel.com, yilun.xu@intel.com, trix@redhat.com,
- sumit.semwal@linaro.org, christian.koenig@amd.com,
- linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-media@vger.kernel.org, linaro-mm-sig@lists.linaro.org,
- dri-devel@lists.freedesktop.org
-References: <20231122053035.3758124-1-nava.kishore.manne@amd.com>
- <20231122053035.3758124-2-nava.kishore.manne@amd.com>
-Content-Language: en-US
-In-Reply-To: <20231122053035.3758124-2-nava.kishore.manne@amd.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1103; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=fSgQPTezpGR5drXnUnq6i6N7m9qJ4nBuVl3s9l71bY4=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlpZHBzGVb3YfhNUzjTWynzV63cdWW87u++P0uQ zUzdyWau/GJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZaWRwQAKCRCPgPtYfRL+ TjRFCACkNvheXPy87TdwTjEKL3jBLF0liDyvOpTs3OFGmB/zZdwXj/VSRn9EYwnJJboNn25K2m/ XpeZ/jg5m3X3SOm9h2pGuMtwtwL8XyRupfE/8ev+dT4jzmYIPP3XUx9j1ANJpcVN10GGp/z43Tn Dku/Arx6G5PadrdD+RE6Jsn7mLQ98ba9GtXqpXhk7HasMs4nybqEd2kIETakC7l10HE06ZomQoV fcZLYz8eC/XJfcAqZ7A7aFYmyFWG64xJeGuUMcpksCm5xzV68hUpizzCfcncd+axKHdF3Uf8Q85 Le0bv+9Xwt5nRqWx1i8EOXv73Ns8gARo1JtWQ+lP0eC06XaA
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fpga@vger.kernel.org
 
+In commit 8caab75fd2c2 ("spi: Generalize SPI "master" to "controller"")
+some functions and struct members were renamed. To not break all drivers
+compatibility macros were provided.
 
+To be able to remove these compatibility macros push the renaming into
+this driver.
 
-On 2023-11-22 06:30, Nava kishore Manne wrote:
-> Some systems are memory constrained but they need to load very
-> large Configuration files. The FPGA subsystem allows drivers to
-> request this Configuration image be loaded from the filesystem,
-> but this requires that the entire configuration data be loaded
-> into kernel memory first before it's provided to the driver.
-> This can lead to a situation where we map the configuration
-> data twice, once to load the configuration data into kernel
-> memory and once to copy the configuration data into the final
-> resting place which is nothing but a dma-able continuous buffer.
-> 
-> This creates needless memory pressure and delays due to multiple
-> copies. Let's add a dmabuf handling support to the fpga manager
-> framework that allows drivers to load the Configuration data
-> directly from a pre-allocated buffer. This skips the intermediate
-> step of allocating a buffer in kernel memory to hold the
-> Configuration data.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/fpga/ice40-spi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Sharing images/bitstreams using dma-buf to avoid multiple copies
-make sense to me to have a fast path for partial reconfiguration.
-However, implementing the userspace interface for importing the
-buffer at the manager level seems questionable, considering that
-the manager should be responsible only for writing images.
-
-Wouldn't it be conceptually cleaner to implement the interface for
-importing dma-buf as a separate layer on top of the manager? Such a
-layer could then program the FPGA using the standard write_sg 
-interface exported by the manager. In this way, each component would
-have its own responsibility.
-
-> 
-> Signed-off-by: Nava kishore Manne <nava.kishore.manne@amd.com>
-> ---
->  drivers/fpga/fpga-mgr.c       | 113 ++++++++++++++++++++++++++++++++++
->  include/linux/fpga/fpga-mgr.h |  10 +++
->  2 files changed, 123 insertions(+)
-> 
-> diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-> index 06651389c592..23d2b4d45827 100644
-> --- a/drivers/fpga/fpga-mgr.c
-> +++ b/drivers/fpga/fpga-mgr.c
-> @@ -8,6 +8,8 @@
->   * With code from the mailing list:
->   * Copyright (C) 2013 Xilinx, Inc.
->   */
-> +#include <linux/dma-buf.h>
-> +#include <linux/dma-map-ops.h>
->  #include <linux/firmware.h>
->  #include <linux/fpga/fpga-mgr.h>
->  #include <linux/idr.h>
-> @@ -519,6 +521,39 @@ static int fpga_mgr_buf_load(struct fpga_manager *mgr,
->  	return rc;
->  }
->  
-> +static int fpga_dmabuf_load(struct fpga_manager *mgr,
-> +			    struct fpga_image_info *info)
-> +{
-> +	struct dma_buf_attachment *attach;
-> +	struct sg_table *sgt;
-> +	int ret;
-> +
-> +	/* create attachment for dmabuf with the user device */
-> +	attach = dma_buf_attach(mgr->dmabuf, &mgr->dev);
-> +	if (IS_ERR(attach)) {
-> +		pr_err("failed to attach dmabuf\n");
-> +		ret = PTR_ERR(attach);
-> +		goto fail_put;
-> +	}
-> +
-> +	sgt = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
-> +	if (IS_ERR(sgt)) {
-> +		ret = PTR_ERR(sgt);
-> +		goto fail_detach;
-> +	}
-> +
-> +	info->sgt = sgt;
-> +	ret = fpga_mgr_buf_load_sg(mgr, info, info->sgt);
-> +	dma_buf_unmap_attachment(attach, sgt, DMA_BIDIRECTIONAL);
-> +
-> +fail_detach:
-> +	dma_buf_detach(mgr->dmabuf, attach);
-> +fail_put:
-> +	dma_buf_put(mgr->dmabuf);
-> +
-> +	return ret;
-> +}
-> +
->  /**
->   * fpga_mgr_firmware_load - request firmware and load to fpga
->   * @mgr:	fpga manager
-> @@ -573,6 +608,8 @@ int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info)
->  {
->  	info->header_size = mgr->mops->initial_header_size;
->  
-> +	if (mgr->flags & FPGA_MGR_CONFIG_DMA_BUF)
-> +		return fpga_dmabuf_load(mgr, info);
-
-I'm not understanding the whole picture. After the dma-buf has been
-imported from userspace, who is supposed to call fpga_mgr_load() or
-fpga_region_program_fpga()? And who should load and export the dma-buf
-containing the image in the first place?
-
-I think it would be interesting to have a system that buffers a set of
-alternative configurations for each (reconfigurable) region. Alternative
-configurations could be represented and activated through a sysfs
-interface. The user could request a specific configuration by writing in
-the corresponding sysfs file, and the system would use the preloaded
-image and optionally the overlay to configure the region. What do you
-think?
-
-> [...]
-
-Thanks,
-Marco
+diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
+index 7cbb3558b844..c0028ae4c5b7 100644
+--- a/drivers/fpga/ice40-spi.c
++++ b/drivers/fpga/ice40-spi.c
+@@ -66,7 +66,7 @@ static int ice40_fpga_ops_write_init(struct fpga_manager *mgr,
+ 	}
+ 
+ 	/* Lock the bus, assert CRESET_B and SS_B and delay >200ns */
+-	spi_bus_lock(dev->master);
++	spi_bus_lock(dev->controller);
+ 
+ 	gpiod_set_value(priv->reset, 1);
+ 
+@@ -94,7 +94,7 @@ static int ice40_fpga_ops_write_init(struct fpga_manager *mgr,
+ 	ret = spi_sync_locked(dev, &message);
+ 
+ fail:
+-	spi_bus_unlock(dev->master);
++	spi_bus_unlock(dev->controller);
+ 
+ 	return ret;
+ }
+-- 
+2.43.0
 
