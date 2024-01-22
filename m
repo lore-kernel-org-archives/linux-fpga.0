@@ -1,100 +1,99 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5841612FE;
-	Mon, 22 Jan 2024 17:24:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C705D6026E
+	for <linux-fpga@vger.kernel.org>; Mon, 22 Jan 2024 18:08:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705944291; cv=none; b=ISbi4beL71C3q6xTOOmE7RNb2XReoHyzHoa4v8eaxJFY0brX8zBS8p92G0erK5XTK/dBo8PEaYEdwC5Wkj7gsShBYHnFiMyXD2yVvfuoq/IG1vDfwwKRtrNLIdqjzZfjUxBiLQUpMBR9Hqpvza4ZzvQw2KyyWkdFYAf9BZRnhmM=
+	t=1705946907; cv=none; b=Hqt8OYyPULdLSC0nRxD89P3y1HGM1AcXnn+ButH8iDeEMVlI8AY67zqhdGfK2fId39xDZiJck8Q00dg+v/r4QOZAUr2brXx6s9bvMbZ1xr0yUkM7t/8zlH7DACeLvEtoAGDLEqACLsp5MX9xLvkN3IB0yBS4ZhNYYGytV/IUYx0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705944291; c=relaxed/simple;
-	bh=NPdtl0n426XRja32Jxqcz/56e80Ebxi5CwNkSRmx1Zk=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=STcdt+5KNPNXEyjsYHpl1amxBvm9LolurrskT8wlNCyVZhxvrAjDZhCJFJndURHfokqADYgAZqr1U6wWC0mkWaYAk0MWg+ABfeMm4vvCmYLpmHNVht+C6B1Bk2zJoWtODlnOdij9db+MLzn1gPb/xLJjj6qzGRKWQm2tKqSYGZE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=mVwJlG54; arc=none smtp.client-ip=198.175.65.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="mVwJlG54"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1705944290; x=1737480290;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=NPdtl0n426XRja32Jxqcz/56e80Ebxi5CwNkSRmx1Zk=;
-  b=mVwJlG543WZag8bwwyjTtnkcvC+0fE3F2BBjU2dBSxnSFQBFD6f+p4JA
-   w3szMwh24AmgNrd6n3ARBgfnAygXk05pqXjOJj/hXwxeQQRi2XNLPLoSm
-   3bQkfT4TmivPI8BGk/1pbUAFTgvmoFtop4eGUU1f/phbC9BDWBBlzj0Ds
-   gj4QtJ5JiNBkCWhfXLYM2ux8I4vkm8xCsPz7kFxRtDOa5ceta8OFZ8tbl
-   1ia7TU4N2qt1TtWY/Eo//YC6YNnvz8FWy2CWRQV7UiA2dNEvOXsjqEUuM
-   5dpPvw1eRO8Yxv+OYAVpv7VGPeptzd0nY1BAV4Is7Zt3z5hFSXqzMYoTC
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10961"; a="1150981"
-X-IronPort-AV: E=Sophos;i="6.05,211,1701158400"; 
-   d="scan'208";a="1150981"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jan 2024 09:24:50 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.05,211,1701158400"; 
-   d="scan'208";a="1263457"
-Received: from sj-2308-osc3.sj.intel.com ([10.233.115.64])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jan 2024 09:24:49 -0800
-From: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-To: hao.wu@intel.com,
-	trix@redhat.com,
-	mdf@kernel.org,
-	yilun.xu@intel.com,
+	s=arc-20240116; t=1705946907; c=relaxed/simple;
+	bh=CT6mvx5MJLTpMbmu0NWGpTT+pYXsbShqSkc7JqmqXeM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ObJDkwIDg3lRuOYr8WaZz0Kd8JejFVUNCeSLigxUchTino/Tq9voTixELmwJxODL8A/3pIHd/ucqD+fxgAnxAVN5nFwRoUQzZnxMb+loQZvuR3thlsQDldvltPdnHmLwcDG3QRHOI6yhPQc3lWqeDinwfUYvlGooMiztCxseo58=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rRyiT-0001lQ-HX; Mon, 22 Jan 2024 19:08:13 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rRyiS-001ePF-Ra; Mon, 22 Jan 2024 19:08:12 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rRyiS-005Zwm-2S;
+	Mon, 22 Jan 2024 19:08:12 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Mark Brown <broonie@kernel.org>
+Cc: kernel@pengutronix.de,
+	Moritz Fischer <mdf@kernel.org>,
+	Wu Hao <hao.wu@intel.com>,
+	Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>,
 	linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Matthew Gerlach <matthew.gerlach@linux.intel.com>
-Subject: [PATCH] fpga: dfl: afu: update initialization of port_hdr driver
-Date: Mon, 22 Jan 2024 09:24:33 -0800
-Message-Id: <20240122172433.537525-1-matthew.gerlach@linux.intel.com>
-X-Mailer: git-send-email 2.34.1
+	linux-kernel@vger.kernel.org,
+	linux-spi@vger.kernel.org
+Subject: [PATCH v2 01/33] fpga: ice40-spi: Follow renaming of SPI "master" to "controller"
+Date: Mon, 22 Jan 2024 19:06:56 +0100
+Message-ID:  <62dce856652735aee45875325fe67a983ce0217d.1705944943.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1705944943.git.u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1144; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=CT6mvx5MJLTpMbmu0NWGpTT+pYXsbShqSkc7JqmqXeM=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlrq7E/sL5DoPQSDlOukasGqhLuAhZ65r9MjlCZ Xt+uBQMY/qJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZa6uxAAKCRCPgPtYfRL+ TrTWB/wO9zpn0hQi6pl9qxqHj4H+TWOyPJ3yO7coDr5AuP33ZJ62Cj2l5x2x5o8ijso2Yh0MPGQ URMbuiP3Jc5PNcNk1TgtKCBOsTSOw+LdUWKA7OOQaT5fxdBqwdV1YyNk05ZJ8ve8ZNwg1+Wr8LI VXL8xzUHEcBIaklZJSDxKw6bXM2oirDyzUoFLURfz5cRXYCZaKmSROvqJYT7YN0//EZUeKXUYkg ighY/cqEeosCrYr3ZwAygp8iolwgOgpcAfpEsCMCFy+2RmdFPDa7xd0azbdXhD9P0fjTe0VrCmB S+EjGJysfTvqm47CAI4hqMIgLKf5RcmoYBl/FYhRrHFr/E6g
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fpga@vger.kernel.org
 
-Revision 2 of the Device Feature List (DFL) Port feature has
-slightly different requirements than revision 1. Revision 2
-does not need the port to reset at driver startup. In fact,
-performing a port reset during driver initialization can cause
-driver race conditions when the port is connected to a different
-PCIe Physical Function (PF) than the management PF performing
-the actual port reset.
+In commit 8caab75fd2c2 ("spi: Generalize SPI "master" to "controller"")
+some functions and struct members were renamed. To not break all drivers
+compatibility macros were provided.
 
-Signed-off-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
+To be able to remove these compatibility macros push the renaming into
+this driver.
+
+Acked-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/fpga/dfl-afu-main.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ drivers/fpga/ice40-spi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index c0a75ca360d6..7d7f80cd264f 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -417,7 +417,18 @@ static const struct attribute_group port_hdr_group = {
- static int port_hdr_init(struct platform_device *pdev,
- 			 struct dfl_feature *feature)
- {
--	port_reset(pdev);
-+	void __iomem *base;
-+	u8 rev;
-+
-+	base = dfl_get_feature_ioaddr_by_id(&pdev->dev, PORT_FEATURE_ID_HEADER);
-+
-+	rev = dfl_feature_revision(base);
-+
-+	if (rev < 2)
-+		port_reset(pdev);
-+
-+	if (rev > 2)
-+		dev_info(&pdev->dev, "unexpected port feature revision, %u\n", rev);
+diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
+index 7cbb3558b844..c0028ae4c5b7 100644
+--- a/drivers/fpga/ice40-spi.c
++++ b/drivers/fpga/ice40-spi.c
+@@ -66,7 +66,7 @@ static int ice40_fpga_ops_write_init(struct fpga_manager *mgr,
+ 	}
  
- 	return 0;
+ 	/* Lock the bus, assert CRESET_B and SS_B and delay >200ns */
+-	spi_bus_lock(dev->master);
++	spi_bus_lock(dev->controller);
+ 
+ 	gpiod_set_value(priv->reset, 1);
+ 
+@@ -94,7 +94,7 @@ static int ice40_fpga_ops_write_init(struct fpga_manager *mgr,
+ 	ret = spi_sync_locked(dev, &message);
+ 
+ fail:
+-	spi_bus_unlock(dev->master);
++	spi_bus_unlock(dev->controller);
+ 
+ 	return ret;
  }
 -- 
-2.34.1
+2.43.0
 
