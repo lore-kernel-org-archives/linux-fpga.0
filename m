@@ -1,107 +1,96 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+Received: from mout.web.de (mout.web.de [212.227.15.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AF943D986;
-	Wed, 31 Jan 2024 05:46:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B75D45788C;
+	Wed, 31 Jan 2024 07:43:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706680004; cv=none; b=XWIabctwAGOo//vFCaDojLmpL8Av9fCgDSnNzjen8yfKH4qriy3ULkbMdsgCErkW7gjfXaLxzsymm3uI+NpFeWEB6wozKP6xsMOsbqshZ4KtvFvpt9QkpxLz0Rov7o5MibI8rDu2QaJKUkZsFjl1m68TUpfVrYrFHFKdXE5RKKQ=
+	t=1706687027; cv=none; b=tev0TbaGdYh9zoNya802e+1XiN+nXwqwI49LhSiDApgRL+rYZ1b/XZHHSwwwpKl07RtVU/SrLC7qJYFwnDygsPtxSd494mMVHXWwtNu7W7kFHAEpK2jhBYmyWeDNXSyKAw8hjU4UDLDv4bGKUDHWQvKDueHwO39qhpSQD0WwdAA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706680004; c=relaxed/simple;
-	bh=zYKdxbeD/BiYZ6iSuprMc52VLxxA+Qn+5DDM5o6EiaE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bv05S0pNskxdeXXmzHSnT4GfvV/EveRWFypCOlQNZ2WfhpUEmhmXbeogVlEqVDvcORDwibYNcRSOve+JkAvMbs5C35AJKEnTAwkrMQek3oFDvFAvYx9/5h5engkxkHGsoAUbnMxbdTT3NipKUXRL9s3ykLu+1TAEk5LCyXWEu2g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nLy1WTDj; arc=none smtp.client-ip=192.198.163.8
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1706687027; c=relaxed/simple;
+	bh=3UtEEurfF0DcUrGrZ1swp8W+Hl3SyFmpYaEjxHY/nFM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=D6nkqe/VZBoRS65K4tHpkO6BMc1lxmxApdIOmLfGPdBCv8MA8OJuwpzo2o0xbvX6YKOmJwR9AShl62CS/Q9L0IzSHI8SP9dldFyw4QI6vk8brEKf/pPxg7WlDjhD++PgBeWfTcdSxXa0fsKEw16V+4J2kiwDHuoxcsmLB8o6na4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=Hi2dSkbn; arc=none smtp.client-ip=212.227.15.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nLy1WTDj"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1706680003; x=1738216003;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=zYKdxbeD/BiYZ6iSuprMc52VLxxA+Qn+5DDM5o6EiaE=;
-  b=nLy1WTDjof/2gGaS1fsyrCgvgBV1f+Up/Cvuypg2Qefh2hwURWdo/+q6
-   nMwqNxUeOHUXkmLzGtA23hf1hhoR/pNStFo0ucWlOY+8wycefNd3dPuT9
-   NvDvFWwAcl92OoRGfVGigVMzlgHBklNhF2L2gKLMECtz2MIUr6dLCg44v
-   wZbYgRPlWAUZrQ+q/lOWCs0+5GrnG1TeYAXVgwEvGWYG2KpRL7aDKOn77
-   ShB3wpvRwm3JT0s26kRe1ZyO05GlL8jefCRD0nW9zb2LT1WZQNbY3bOgR
-   RvYooBRIcWDlk8OQmRB4eLe0xBFGMPDIWkWMIESDdIyRKYGM6mr/lZwuS
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="17030298"
-X-IronPort-AV: E=Sophos;i="6.05,231,1701158400"; 
-   d="scan'208";a="17030298"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jan 2024 21:46:43 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="961512432"
-X-IronPort-AV: E=Sophos;i="6.05,231,1701158400"; 
-   d="scan'208";a="961512432"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orsmga005.jf.intel.com with ESMTP; 30 Jan 2024 21:46:40 -0800
-Date: Wed, 31 Jan 2024 13:43:13 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: matthew.gerlach@linux.intel.com
-Cc: hao.wu@intel.com, trix@redhat.com, mdf@kernel.org, yilun.xu@intel.com,
-	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] fpga: dfl: afu: support Rev 2 of DFL Port feature
-Message-ID: <Zbnd8W1ciTKeoKc4@yilunxu-OptiPlex-7050>
-References: <20240125233715.861883-1-matthew.gerlach@linux.intel.com>
- <ZbjHl8ptQG5FdHvC@yilunxu-OptiPlex-7050>
- <alpine.DEB.2.22.394.2401300948590.112016@sj-4150-psse-sw-opae-dev2>
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="Hi2dSkbn"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de; s=s29768273;
+	t=1706686983; x=1707291783; i=markus.elfring@web.de;
+	bh=3UtEEurfF0DcUrGrZ1swp8W+Hl3SyFmpYaEjxHY/nFM=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
+	 In-Reply-To;
+	b=Hi2dSkbnv9yYiXpDMjayehX07BUp1NW/nccsYAxYCPV5mE6R4t6DmUT/6vxxz+5M
+	 pGnC1IpV0RwV4ZgkvrtWqWEMxi1Bhh643Ri3Lv+na+Xf8WyCn/bU0ccCHh8jmskR9
+	 WHfhT8QssDTM9Qg9MSn0v1eM4Oy/khfHyjJu1iTTDUe3h4qpKze9R9/337nSEU0UD
+	 V/v+lV287r7TThCeCwOzyuPiqOe94OGWfodjSEVA9SLfQL62d6i7m7QSvDemEGyAa
+	 IcXp8exYI8v48cyhbKk7zcH2s9dq+n7BhgPa2MghCNpGTg+FQ3XJuouP2PTD8vZcO
+	 PkLYx0yQnbbuy4Yw/Q==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.21] ([94.31.81.95]) by smtp.web.de (mrweb005
+ [213.165.67.108]) with ESMTPSA (Nemesis) id 1N6sG3-1qzCMy0ngF-01871C; Wed, 31
+ Jan 2024 08:43:03 +0100
+Message-ID: <4cabce20-b5ff-4586-8492-60d2d198a13b@web.de>
+Date: Wed, 31 Jan 2024 08:42:33 +0100
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.22.394.2401300948590.112016@sj-4150-psse-sw-opae-dev2>
+User-Agent: Mozilla Thunderbird
+Subject: Re: fpga: dfl: fme: Return directly after a failed devm_kasprintf()
+ call in fme_perf_pmu_register()
+To: Xu Yilun <yilun.xu@linux.intel.com>, linux-fpga@vger.kernel.org,
+ kernel-janitors@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Moritz Fischer <mdf@kernel.org>, Tom Rix <trix@redhat.com>,
+ Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>,
+ linux-doc@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Kunwu Chan <chentao@kylinos.cn>,
+ Jonathan Corbet <corbet@lwn.net>
+References: <d94376b6-12e8-45bb-a9be-4887bb316d35@web.de>
+ <ZbjJYMlDifIv0WId@yilunxu-OptiPlex-7050>
+ <ZbjPDX1y2I9Heanq@yilunxu-OptiPlex-7050>
+ <49183574-ea83-4517-8e34-5d6e87ede064@web.de>
+ <ZbkAziPCX+RDSgfP@yilunxu-OptiPlex-7050>
+Content-Language: en-GB
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <ZbkAziPCX+RDSgfP@yilunxu-OptiPlex-7050>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:f1i1yJGnQvsaxMF3ysU2Q3MKc0v1ZqMlnGlCdOdQU92xqESrmLC
+ 32faYZJASuGhAlIO1E7rIPuiYDDHUMRwWK7t12GSAZGvlacqjnORhc7IGR3zf9OpnD8Cnok
+ owulZmVQZGYjwklX5tNvBFEOgQDgpjctV+Kc6aA8vUF8tDuv39SrlXnoyZ2DSDnBYurCaos
+ NBRHokiFOULLbfKjHuyug==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:ABEuiVqcTWA=;1S/Q+gJchbADRcMSwHok6Y9Hd08
+ uDJu05/UPgVsiwfgqqdlhtfugE1vcwAK550Z8CzzKwnSzVjL4wRZpj1FMnHT4nZh3NXviP2vj
+ oKTgjvTwi9f3E5qCXrz+FpXFjaDB0XkofknRjvMrAVQYZ8XdVTSsJqAhzjLpT3QsuWfyaJsQL
+ VXuH0H7SbzuW7FOHQA911Gq9nKGTuBp00AmdBe73DUi9LFOrlBc9MI0SdiKN1JZ5R2gKEW6eP
+ MuFfYx2ObubBlRc+1sDxFeKUOExjSwUqzLhrZSFFXJt+ENW/WSFqZlCQmo+b+pDy7TCNvYV6u
+ +8V6rIBPQypboe24aZOPbKpC/BGaUTZL/b8mc9GcMKv+OeEyWXUHGhbGGj08ajmUKn9mBQTgS
+ ogop3U8YgYpW0UXryh9ZyHRSJANbfEBRU5lnMrsS1HZtteXnywDNCWJBOjpICF2DNiR5rhHhi
+ z+VUu+asPEu+Kcq1M2jurGEwU+iPFu1XSuOK8w+sw+BosErPquRELXS/TSUWdSznXihZ0u32T
+ ajVFatxSX69Cn1brc6eT101YHVTBN5aILW1p4oQCadDj4JjEKgJGqbXga6DUuWA3vZ0ueOs9H
+ mFrdFa1pKZKl1K16g/0fnC2467i/LaF0X+R2arcUfruKKW2wQXHo+DQ8Fr87RRoKGThEMKbWy
+ wmbBaXh2W7t2LXW/yVOX7Hv6B0qqm5ibmayV3zaJLvFEs78XkSpy7d7r7/9+B/aRfBFzS0lpW
+ VIn2Noib8w3KRbVn0i7K4geUNIOBjdXNjlsX4GGbg2l3OhR5H1iMG7lyo/K8xP5HYZH8mbvaS
+ x9bhjxl7izXwZk69Ebu+ZtZoyiOm4oqSD3S5ACWtGGwCTE7sAlr3fco65F5aX/ZKdOPUFw+g1
+ qrdsPS5aTlU6K80eypoV152l6hqYFcq8ZJLAAqTshff366m3ahFee4RdQCot9+82q1Wp6WNVt
+ bO65kM6EyE/lb7/E/0awB/9IrZ4=
 
-On Tue, Jan 30, 2024 at 10:00:16AM -0800, matthew.gerlach@linux.intel.com wrote:
-> 
-> 
-> On Tue, 30 Jan 2024, Xu Yilun wrote:
-> 
-> > On Thu, Jan 25, 2024 at 03:37:15PM -0800, Matthew Gerlach wrote:
-> > > Revision 2 of the Device Feature List (DFL) Port feature
-> > > adds support for connecting the contents of the port to
-> > > multiple PCIe Physical Functions (PF).
-> > > 
-> > > This new functionality requires changing the port reset
-> > > behavior during FPGA and software initialization from
-> > > revision 1 of the port feature. With revision 1, the initial
-> > > state of the logic inside the port was not guaranteed to
-> > > be valid until a port reset was performed by software during
-> > > driver initialization. With revision 2, the initial state
-> > > of the logic inside the port is guaranteed to be valid,
-> > > and a port reset is not required during driver initialization.
-> > > 
-> > > This change in port reset behavior avoids a potential race
-> > > condition during PCI enumeration when a port is connected to
-> > > multiple PFs. Problems can occur if the driver attached to
-> > > the PF managing the port asserts reset in its probe function
-> > > when a driver attached to another PF accesses the port in its
-> > > own probe function. The potential problems include failed or hung
-> > 
-> > Only racing during probe functions? I assume any time port_reset()
-> > would fail TLPs for the other PF. And port_reset() could be triggered
-> > at runtime by ioctl().
-> 
-> Yes, a port_reset() triggered by ioctl could result in failed TLP for the
-> other PFs. The user space SW performing the ioctl needs to ensure all PFs
-> involved are properly quiesced before the port_reset is performed.
+>> There are different preferences involved.
+>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree=
+/Documentation/process/submitting-patches.rst?h=3Dv6.8-rc2#n109
+>
+> Ah, I mean you use 13 chars, but 12 chars is better. Also the doc
+> doens't seem to enforce 12 chars, but checkpatch warns on that.
 
-How would user get an insight into other PF drivers to know everything
-is quiesced?  I mean do we need driver level management for this?
+Would the specification =E2=80=9Cat least=E2=80=9D become supported at fur=
+ther places
+for such hash lengths?
 
-Thanks,
-Yilun
-
-> 
-> Do you want me to update the commit message with this information?
-> 
-> Thanks,
-> Matthew
+Regards,
+Markus
