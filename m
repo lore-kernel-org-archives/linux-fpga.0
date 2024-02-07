@@ -1,48 +1,48 @@
 Received: from mail.savoirfairelinux.com (mail.savoirfairelinux.com [208.88.110.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC47B85C55;
-	Wed,  7 Feb 2024 18:02:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A283B7D3E6;
+	Wed,  7 Feb 2024 18:02:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=208.88.110.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707328958; cv=none; b=dgKGc+xgZpNhANUJMSXYlnr3xX72jkr5XZoBXJsvLOo4oGKHt2K1RwsdVUI73+GpP4WZkIbUDnRvhBW+ZVJyUgc6Yar8zdA9RzV8AHkz0USlgofCtOvGPfhNMKAdk/2ermDntQocWUrkXXMn/RQTMYaR6SEDF/aPmj9+rtLQVmA=
+	t=1707328960; cv=none; b=GMmzg5f4MDZ8X1eMXiHPTqh0LZd4xZdhBwbMqN8qym0XSocETBEILIG5DrwRhKWmXjXoNNA2UGei92hxjqH43TKLXyQgwn41mK/QrQCnmC2RXC+pYs+RQk7C/5GkXaUy1jIpf8lUEAI7TJWkJffoxu7eH2fYRb3P5gjQvzVQ3As=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707328958; c=relaxed/simple;
-	bh=NR5SjOtitKYacXAEEruvJ6JXFK2gpzJixBo6UISsrYc=;
+	s=arc-20240116; t=1707328960; c=relaxed/simple;
+	bh=lwoe7HY3Oph3ImZWZIlxENJkS/bc6DUnYsSbIpdD/sc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=pPfCeICGglyi08o7tRfiA27E62HtLtxzyQnP93xPSKi+K9ZU1QkEafYIv2xQ0rAmzC6atbeBG+pJLxYeh3UMxbXmwH1968e3AM+DM6+AB7bRjpBAslLrakMEdAc8Dr/t8r99bLjmHujTMRSYauKvaLBVh/sx4FxAxcst7nfZer4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com; spf=pass smtp.mailfrom=savoirfairelinux.com; dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b=Z0TS9kxt; arc=none smtp.client-ip=208.88.110.44
+	 MIME-Version; b=AyvyS9qBIA3NgQqDl4VmARwiU8+LzPSh6DgLxtWwi9Hh/2bWK8yO43VcSATVEcQoEEvTilaMe18hOaJjWaUrxI/bB3SWdN27FRT0t4i1res378nNu9ZbJ24GBIThnZ1bEBnsZDKIVbv1pJqQHWSVZPGDT7C0ai718b5YJtHa1hM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com; spf=pass smtp.mailfrom=savoirfairelinux.com; dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b=nH+j8fhu; arc=none smtp.client-ip=208.88.110.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=savoirfairelinux.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b="Z0TS9kxt"
+	dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b="nH+j8fhu"
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id C7BB39C48F1;
-	Wed,  7 Feb 2024 13:02:35 -0500 (EST)
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id 9E1AD9C48BD;
+	Wed,  7 Feb 2024 13:02:33 -0500 (EST)
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10032)
- with ESMTP id f3bXL3Gt-X3n; Wed,  7 Feb 2024 13:02:35 -0500 (EST)
+ with ESMTP id dsiiqCpFK7Tb; Wed,  7 Feb 2024 13:02:33 -0500 (EST)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 249669C48F9;
-	Wed,  7 Feb 2024 13:02:35 -0500 (EST)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 249669C48F9
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id 0A5169C48F1;
+	Wed,  7 Feb 2024 13:02:33 -0500 (EST)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 0A5169C48F1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=savoirfairelinux.com; s=DFC430D2-D198-11EC-948E-34200CB392D2;
-	t=1707328955; bh=ly1997o8a0kUOAeldUVP9gf71MeRB6+Tnu3YuBit5iE=;
+	t=1707328953; bh=nHQnXDVxcSW7s6S1tBnJ+p00mzPnPdlE/JmMr8nROKA=;
 	h=From:To:Date:Message-ID:MIME-Version;
-	b=Z0TS9kxtpVoBjChlAkWCmhChshibcq3f4A1pEdaQDbMPnMTAnWVIBKs/lRMYyno1Q
-	 gjKc3dyV1RAO9YhK7Z2ZpiI955OBKDdoeTyQWyznAqDGJitW2ltU/k8Dytc6Pr8b+9
-	 tKn6VoWj53twKfFVOkVMeoLn7dzsucIREuxtk2ME0ynXaCst0hY9u/tVAgbvgPTVEQ
-	 i+c49eN+zzfdk6Qv+/vWDZ/nIKBd3DDN62gY5BPiBAV2pwwyiURPsfQpU90kQjNW3z
-	 L9IxN42QqTajrFEmYk2nR3eaLXMH1/3RFPETKM9st6aNf4ZMDXz/aztmmx9noNa5Vj
-	 VkSqMT7ZAkUPw==
+	b=nH+j8fhuuJW7+GZqUYncdyIEP2uuGaWZLUsk1mYNkZPGBsYHfCxY3YDXkTuhhhrDv
+	 0dfrPNKKNJySt+6xw17RXWSc/OX/wi+Qn0VGDTh3qcn/UPpsNSnzXBCmo/Y20izj4k
+	 NXnsHRfUe4y19zVlaGH+B9gBQ/FuTdI6rQzMlzIQ4Q+2QM0P9WmObAacNCzpmnu+r+
+	 JwghLqC4MsTq9sEhynuzcZughxbForzaYCuzPNPUacBySRsw3bTHXIMMUcjm6561u+
+	 JR9Nov1YKMwo0B6zu8CF8Hevx27KuTm0t3N0LThh3IJAU0F+ftcRma8nLRjeSDrAoU
+	 J/ssiE+WCZctw==
 X-Virus-Scanned: amavis at mail.savoirfairelinux.com
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10026)
- with ESMTP id bdq_3Q6xO9jO; Wed,  7 Feb 2024 13:02:35 -0500 (EST)
+ with ESMTP id r22U_qOEgoEB; Wed,  7 Feb 2024 13:02:32 -0500 (EST)
 Received: from pcperry.mtl.sfl (unknown [192.168.51.254])
-	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id 0194A9C48F1;
-	Wed,  7 Feb 2024 13:02:35 -0500 (EST)
+	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id D9B809C48BD;
+	Wed,  7 Feb 2024 13:02:32 -0500 (EST)
 From: Charles Perry <charles.perry@savoirfairelinux.com>
 To: mdf@kernel.org
 Cc: avandiver@markem-imaje.com,
@@ -60,9 +60,9 @@ Cc: avandiver@markem-imaje.com,
 	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v3 5/5] fpga: xilinx-selectmap: add new driver
-Date: Wed,  7 Feb 2024 13:01:28 -0500
-Message-ID: <20240207180142.79625-6-charles.perry@savoirfairelinux.com>
+Subject: [PATCH v3 4/5] dt-bindings: fpga: xlnx,fpga-selectmap: add DT schema
+Date: Wed,  7 Feb 2024 13:01:27 -0500
+Message-ID: <20240207180142.79625-5-charles.perry@savoirfairelinux.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240207180142.79625-1-charles.perry@savoirfairelinux.com>
 References: <20240207180142.79625-1-charles.perry@savoirfairelinux.com>
@@ -74,158 +74,111 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 
-Xilinx 7 series FPGA can be programmed using a parallel port named
-the SelectMAP interface in the datasheet. This interface is compatible
-with the i.MX6 EIM bus controller but other types of external memory
-mapped parallel bus might work.
-
-xilinx-selectmap currently only supports the x8 mode where data is loaded
-at one byte per rising edge of the clock, with the MSb of each byte
-presented to the D0 pin.
+Document the SelectMAP interface of Xilinx 7 series FPGA.
 
 Signed-off-by: Charles Perry <charles.perry@savoirfairelinux.com>
 ---
- drivers/fpga/Kconfig            |  8 +++
- drivers/fpga/Makefile           |  1 +
- drivers/fpga/xilinx-selectmap.c | 97 +++++++++++++++++++++++++++++++++
- 3 files changed, 106 insertions(+)
- create mode 100644 drivers/fpga/xilinx-selectmap.c
+ .../bindings/fpga/xlnx,fpga-selectmap.yaml    | 86 +++++++++++++++++++
+ 1 file changed, 86 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,fpga-sele=
+ctmap.yaml
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index d27a1ebf40838..37b35f58f0dfb 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -67,6 +67,14 @@ config FPGA_MGR_STRATIX10_SOC
- config FPGA_MGR_XILINX_CORE
- 	tristate
-=20
-+config FPGA_MGR_XILINX_SELECTMAP
-+	tristate "Xilinx Configuration over SelectMAP"
-+	depends on HAS_IOMEM
-+	select FPGA_MGR_XILINX_CORE
-+	help
-+	  FPGA manager driver support for Xilinx FPGA configuration
-+	  over SelectMAP interface.
-+
- config FPGA_MGR_XILINX_SPI
- 	tristate "Xilinx Configuration over Slave Serial (SPI)"
- 	depends on SPI
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index 7ec795b6a5a70..aeb89bb13517e 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_FPGA_MGR_SOCFPGA_A10)	+=3D socfpga-a10.o
- obj-$(CONFIG_FPGA_MGR_STRATIX10_SOC)	+=3D stratix10-soc.o
- obj-$(CONFIG_FPGA_MGR_TS73XX)		+=3D ts73xx-fpga.o
- obj-$(CONFIG_FPGA_MGR_XILINX_CORE)	+=3D xilinx-core.o
-+obj-$(CONFIG_FPGA_MGR_XILINX_SELECTMAP)	+=3D xilinx-selectmap.o
- obj-$(CONFIG_FPGA_MGR_XILINX_SPI)	+=3D xilinx-spi.o
- obj-$(CONFIG_FPGA_MGR_ZYNQ_FPGA)	+=3D zynq-fpga.o
- obj-$(CONFIG_FPGA_MGR_ZYNQMP_FPGA)	+=3D zynqmp-fpga.o
-diff --git a/drivers/fpga/xilinx-selectmap.c b/drivers/fpga/xilinx-select=
-map.c
+diff --git a/Documentation/devicetree/bindings/fpga/xlnx,fpga-selectmap.y=
+aml b/Documentation/devicetree/bindings/fpga/xlnx,fpga-selectmap.yaml
 new file mode 100644
-index 0000000000000..b63f4623f8b2c
+index 0000000000000..c54bb2ecc30e9
 --- /dev/null
-+++ b/drivers/fpga/xilinx-selectmap.c
-@@ -0,0 +1,97 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Xilinx Spartan6 and 7 Series SelectMAP interface driver
-+ *
-+ * (C) 2024 Charles Perry <charles.perry@savoirfairelinux.com>
-+ *
-+ * Manage Xilinx FPGA firmware loaded over the SelectMAP configuration
-+ * interface.
-+ */
++++ b/Documentation/devicetree/bindings/fpga/xlnx,fpga-selectmap.yaml
+@@ -0,0 +1,86 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fpga/xlnx,fpga-selectmap.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+#include "xilinx-core.h"
++title: Xilinx SelectMAP FPGA interface
 +
-+#include <linux/platform_device.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/module.h>
-+#include <linux/mod_devicetable.h>
-+#include <linux/of.h>
-+#include <linux/io.h>
++maintainers:
++  - Charles Perry <charles.perry@savoirfairelinux.com>
 +
-+struct xilinx_selectmap_conf {
-+	struct xilinx_fpga_core core;
-+	void __iomem *base;
-+};
++description: |
++  Xilinx 7 Series FPGAs support a method of loading the bitstream over a
++  parallel port named the SelectMAP interface in the documentation. Only
++  the x8 mode is supported where data is loaded at one byte per rising e=
+dge of
++  the clock, with the MSB of each byte presented to the D0 pin.
 +
-+#define to_xilinx_selectmap_conf(obj) \
-+	container_of(obj, struct xilinx_selectmap_conf, core)
++  Datasheets:
++    https://www.xilinx.com/support/documentation/user_guides/ug470_7Seri=
+es_Config.pdf
 +
-+static int xilinx_selectmap_write(struct xilinx_fpga_core *core,
-+				  const char *buf, size_t count)
-+{
-+	struct xilinx_selectmap_conf *conf =3D to_xilinx_selectmap_conf(core);
-+	u32 i;
++allOf:
++  - $ref: /schemas/memory-controllers/mc-peripheral-props.yaml#
 +
-+	for (i =3D 0; i < count; ++i)
-+		writeb(buf[i], conf->base);
++properties:
++  compatible:
++    enum:
++      - xlnx,fpga-xc7s-selectmap
++      - xlnx,fpga-xc7a-selectmap
++      - xlnx,fpga-xc7k-selectmap
++      - xlnx,fpga-xc7v-selectmap
 +
-+	return 0;
-+}
++  reg:
++    description:
++      At least 1 byte of memory mapped IO
++    maxItems: 1
 +
-+static int xilinx_selectmap_probe(struct platform_device *pdev)
-+{
-+	struct xilinx_selectmap_conf *conf;
-+	struct resource *r;
-+	void __iomem *base;
-+	struct gpio_desc *csi_b;
-+	struct gpio_desc *rdwr_b;
++  prog-gpios:
++    description:
++      config pin (referred to as PROGRAM_B in the manual)
++    maxItems: 1
 +
-+	conf =3D devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
-+	if (!conf)
-+		return -ENOMEM;
++  done-gpios:
++    description:
++      config status pin (referred to as DONE in the manual)
++    maxItems: 1
 +
-+	conf->core.dev =3D &pdev->dev;
-+	conf->core.write =3D xilinx_selectmap_write;
++  init-gpios:
++    description:
++      initialization status and configuration error pin
++      (referred to as INIT_B in the manual)
++    maxItems: 1
 +
-+	base =3D devm_platform_get_and_ioremap_resource(pdev, 0, &r);
-+	if (IS_ERR(base))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(base),
-+				     "ioremap error\n");
-+	conf->base =3D base;
++  csi-gpios:
++    description:
++      chip select pin (referred to as CSI_B in the manual)
++      Optional gpio for if the bus controller does not provide a chip se=
+lect.
++    maxItems: 1
 +
-+	/* CSI_B is active low */
-+	csi_b =3D devm_gpiod_get_optional(&pdev->dev, "csi", GPIOD_OUT_HIGH);
-+	if (IS_ERR(csi_b))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(csi_b),
-+				     "Failed to get CSI_B gpio\n");
++  rdwr-gpios:
++    description:
++      read/write select pin (referred to as RDWR_B in the manual)
++      Optional gpio for if the bus controller does not provide this pin.
++    maxItems: 1
 +
-+	/* RDWR_B is active low */
-+	rdwr_b =3D devm_gpiod_get_optional(&pdev->dev, "rdwr", GPIOD_OUT_HIGH);
-+	if (IS_ERR(rdwr_b))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(rdwr_b),
-+				     "Failed to get RDWR_B gpio\n");
++required:
++  - compatible
++  - reg
++  - prog-gpios
++  - done-gpios
++  - init-gpios
 +
-+	return xilinx_core_probe(&conf->core);
-+}
++unevaluatedProperties: false
 +
-+static const struct of_device_id xlnx_selectmap_of_match[] =3D {
-+	{ .compatible =3D "xlnx,fpga-xc7s-selectmap", }, // Spartan-7
-+	{ .compatible =3D "xlnx,fpga-xc7a-selectmap", }, // Artix-7
-+	{ .compatible =3D "xlnx,fpga-xc7k-selectmap", }, // Kintex-7
-+	{ .compatible =3D "xlnx,fpga-xc7v-selectmap", }, // Virtex-7
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, xlnx_selectmap_of_match);
-+
-+static struct platform_driver xilinx_selectmap_driver =3D {
-+	.driver =3D {
-+		.name =3D "xilinx-selectmap",
-+		.of_match_table =3D xlnx_selectmap_of_match,
-+	},
-+	.probe  =3D xilinx_selectmap_probe,
-+};
-+
-+module_platform_driver(xilinx_selectmap_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Charles Perry <charles.perry@savoirfairelinux.com>");
-+MODULE_DESCRIPTION("Load Xilinx FPGA firmware over SelectMap");
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    fpga-mgr@8000000 {
++      compatible =3D "xlnx,fpga-selectmap";
++      reg =3D <0x8000000 0x4>;
++      prog-gpios =3D <&gpio5 5 GPIO_ACTIVE_LOW>;
++      init-gpios =3D <&gpio5 8 GPIO_ACTIVE_LOW>;
++      done-gpios =3D <&gpio2 30 GPIO_ACTIVE_HIGH>;
++      csi-gpios =3D <&gpio3 19 GPIO_ACTIVE_LOW>;
++      rdwr-gpios =3D <&gpio3 10 GPIO_ACTIVE_LOW>;
++    };
++...
 --=20
 2.43.0
 
