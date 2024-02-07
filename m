@@ -1,184 +1,100 @@
-Received: from mail.savoirfairelinux.com (mail.savoirfairelinux.com [208.88.110.44])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A283B7D3E6;
-	Wed,  7 Feb 2024 18:02:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=208.88.110.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17DB285952
+	for <linux-fpga@vger.kernel.org>; Wed,  7 Feb 2024 18:43:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707328960; cv=none; b=GMmzg5f4MDZ8X1eMXiHPTqh0LZd4xZdhBwbMqN8qym0XSocETBEILIG5DrwRhKWmXjXoNNA2UGei92hxjqH43TKLXyQgwn41mK/QrQCnmC2RXC+pYs+RQk7C/5GkXaUy1jIpf8lUEAI7TJWkJffoxu7eH2fYRb3P5gjQvzVQ3As=
+	t=1707331403; cv=none; b=L+p44Ju6WiXpOqsJM55/BkY1xyMzZlkXvwGnyOEbCJpgHW2n041xtIzTXf1CNFois3yyPqtH/erboeZQg0XKsehXm8Cbhjq8kuWknHonHi7Z1/muAVPUj+xDqfl6gSnEswPUTQx6S8GPGlU+dKF1bHK6rkBMfUCZUX6Z1qbGZLQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707328960; c=relaxed/simple;
-	bh=lwoe7HY3Oph3ImZWZIlxENJkS/bc6DUnYsSbIpdD/sc=;
+	s=arc-20240116; t=1707331403; c=relaxed/simple;
+	bh=wUvKlZOylTR25ACwo1tz3FpcLw1cTa0qMahNcZYRNf0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AyvyS9qBIA3NgQqDl4VmARwiU8+LzPSh6DgLxtWwi9Hh/2bWK8yO43VcSATVEcQoEEvTilaMe18hOaJjWaUrxI/bB3SWdN27FRT0t4i1res378nNu9ZbJ24GBIThnZ1bEBnsZDKIVbv1pJqQHWSVZPGDT7C0ai718b5YJtHa1hM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com; spf=pass smtp.mailfrom=savoirfairelinux.com; dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b=nH+j8fhu; arc=none smtp.client-ip=208.88.110.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=savoirfairelinux.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b="nH+j8fhu"
-Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 9E1AD9C48BD;
-	Wed,  7 Feb 2024 13:02:33 -0500 (EST)
-Received: from mail.savoirfairelinux.com ([127.0.0.1])
- by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10032)
- with ESMTP id dsiiqCpFK7Tb; Wed,  7 Feb 2024 13:02:33 -0500 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 0A5169C48F1;
-	Wed,  7 Feb 2024 13:02:33 -0500 (EST)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 0A5169C48F1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=savoirfairelinux.com; s=DFC430D2-D198-11EC-948E-34200CB392D2;
-	t=1707328953; bh=nHQnXDVxcSW7s6S1tBnJ+p00mzPnPdlE/JmMr8nROKA=;
-	h=From:To:Date:Message-ID:MIME-Version;
-	b=nH+j8fhuuJW7+GZqUYncdyIEP2uuGaWZLUsk1mYNkZPGBsYHfCxY3YDXkTuhhhrDv
-	 0dfrPNKKNJySt+6xw17RXWSc/OX/wi+Qn0VGDTh3qcn/UPpsNSnzXBCmo/Y20izj4k
-	 NXnsHRfUe4y19zVlaGH+B9gBQ/FuTdI6rQzMlzIQ4Q+2QM0P9WmObAacNCzpmnu+r+
-	 JwghLqC4MsTq9sEhynuzcZughxbForzaYCuzPNPUacBySRsw3bTHXIMMUcjm6561u+
-	 JR9Nov1YKMwo0B6zu8CF8Hevx27KuTm0t3N0LThh3IJAU0F+ftcRma8nLRjeSDrAoU
-	 J/ssiE+WCZctw==
-X-Virus-Scanned: amavis at mail.savoirfairelinux.com
-Received: from mail.savoirfairelinux.com ([127.0.0.1])
- by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10026)
- with ESMTP id r22U_qOEgoEB; Wed,  7 Feb 2024 13:02:32 -0500 (EST)
-Received: from pcperry.mtl.sfl (unknown [192.168.51.254])
-	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id D9B809C48BD;
-	Wed,  7 Feb 2024 13:02:32 -0500 (EST)
-From: Charles Perry <charles.perry@savoirfairelinux.com>
-To: mdf@kernel.org
-Cc: avandiver@markem-imaje.com,
-	bcody@markem-imaje.com,
-	Charles Perry <charles.perry@savoirfairelinux.com>,
+	 MIME-Version:Content-Type; b=Kk5CgVZvHZ01utzSRt+XZlv7KW5BAA/HrdXGdmquyo0jvUjWEJ8iBLaFh/QuokDTtHtRTfQOcNvPfxaRpmx3X7FgEURpRXwW29bPI7TTEdyl+PKqLuvBltD2eiuflxXv9lVHrucYFqBoJD9I3ySjSH/lvrPs7LnIlqTpaXMbOLg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rXmt4-0007PG-4K; Wed, 07 Feb 2024 19:43:10 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rXmt1-0054Wq-JH; Wed, 07 Feb 2024 19:43:07 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rXmt1-00HRrk-1b;
+	Wed, 07 Feb 2024 19:43:07 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Mark Brown <broonie@kernel.org>
+Cc: kernel@pengutronix.de,
+	Moritz Fischer <mdf@kernel.org>,
 	Wu Hao <hao.wu@intel.com>,
 	Xu Yilun <yilun.xu@intel.com>,
 	Tom Rix <trix@redhat.com>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Michal Simek <michal.simek@amd.com>,
-	kishore Manne <nava.kishore.manne@amd.com>,
 	linux-fpga@vger.kernel.org,
-	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v3 4/5] dt-bindings: fpga: xlnx,fpga-selectmap: add DT schema
-Date: Wed,  7 Feb 2024 13:01:27 -0500
-Message-ID: <20240207180142.79625-5-charles.perry@savoirfairelinux.com>
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v3 01/32] fpga: ice40-spi: Follow renaming of SPI "master" to "controller"
+Date: Wed,  7 Feb 2024 19:40:15 +0100
+Message-ID:  <6a3ddedc955cf55dddbc68ccf5ff5e46af5e8b6f.1707324793.git.u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240207180142.79625-1-charles.perry@savoirfairelinux.com>
-References: <20240207180142.79625-1-charles.perry@savoirfairelinux.com>
+In-Reply-To: <cover.1707324793.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1707324793.git.u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1202; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=wUvKlZOylTR25ACwo1tz3FpcLw1cTa0qMahNcZYRNf0=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlw86WUHAWkGcRfm4ejb22wIJkr4J5rq2dd4nnu y/Az1s+R7eJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZcPOlgAKCRCPgPtYfRL+ TvfOB/0VlX4j2NqYav7kvi55bMy4jP6iZ3BIVkH0MRTghLES4nrb+1y5l4G/49O2EKKyPIW4iVs go4FGGmaiaNPY4RUMrddvye1xfL+JfeIJy/1TvY+kc4F094/W32Is0aoqpVvXw5RtuEnRNVQjMd 1K6kOOcg/fveKQ+rkk7YMlS/EzchGWPv7NIFg+la+rls+KqpPspsyJcHW4gamQE0tBlMLGKRxna oL1SM66D2wVkaEaon/Je5Jlo+8LTIeYZAk43xU/CGJsw5kEySsTm/S+iLwSTBkbXPwU3GLTJV1n /Af9dbfu5M4DV54F/wxpKUAWLRJIKBNvNobOQI8y7rKkhx0e
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fpga@vger.kernel.org
 
-Document the SelectMAP interface of Xilinx 7 series FPGA.
+In commit 8caab75fd2c2 ("spi: Generalize SPI "master" to "controller"")
+some functions and struct members were renamed. To not break all drivers
+compatibility macros were provided.
 
-Signed-off-by: Charles Perry <charles.perry@savoirfairelinux.com>
+To be able to remove these compatibility macros push the renaming into
+this driver.
+
+Acked-by: Xu Yilun <yilun.xu@intel.com>
+Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- .../bindings/fpga/xlnx,fpga-selectmap.yaml    | 86 +++++++++++++++++++
- 1 file changed, 86 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,fpga-sele=
-ctmap.yaml
+ drivers/fpga/ice40-spi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/fpga/xlnx,fpga-selectmap.y=
-aml b/Documentation/devicetree/bindings/fpga/xlnx,fpga-selectmap.yaml
-new file mode 100644
-index 0000000000000..c54bb2ecc30e9
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/xlnx,fpga-selectmap.yaml
-@@ -0,0 +1,86 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/fpga/xlnx,fpga-selectmap.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Xilinx SelectMAP FPGA interface
-+
-+maintainers:
-+  - Charles Perry <charles.perry@savoirfairelinux.com>
-+
-+description: |
-+  Xilinx 7 Series FPGAs support a method of loading the bitstream over a
-+  parallel port named the SelectMAP interface in the documentation. Only
-+  the x8 mode is supported where data is loaded at one byte per rising e=
-dge of
-+  the clock, with the MSB of each byte presented to the D0 pin.
-+
-+  Datasheets:
-+    https://www.xilinx.com/support/documentation/user_guides/ug470_7Seri=
-es_Config.pdf
-+
-+allOf:
-+  - $ref: /schemas/memory-controllers/mc-peripheral-props.yaml#
-+
-+properties:
-+  compatible:
-+    enum:
-+      - xlnx,fpga-xc7s-selectmap
-+      - xlnx,fpga-xc7a-selectmap
-+      - xlnx,fpga-xc7k-selectmap
-+      - xlnx,fpga-xc7v-selectmap
-+
-+  reg:
-+    description:
-+      At least 1 byte of memory mapped IO
-+    maxItems: 1
-+
-+  prog-gpios:
-+    description:
-+      config pin (referred to as PROGRAM_B in the manual)
-+    maxItems: 1
-+
-+  done-gpios:
-+    description:
-+      config status pin (referred to as DONE in the manual)
-+    maxItems: 1
-+
-+  init-gpios:
-+    description:
-+      initialization status and configuration error pin
-+      (referred to as INIT_B in the manual)
-+    maxItems: 1
-+
-+  csi-gpios:
-+    description:
-+      chip select pin (referred to as CSI_B in the manual)
-+      Optional gpio for if the bus controller does not provide a chip se=
-lect.
-+    maxItems: 1
-+
-+  rdwr-gpios:
-+    description:
-+      read/write select pin (referred to as RDWR_B in the manual)
-+      Optional gpio for if the bus controller does not provide this pin.
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - prog-gpios
-+  - done-gpios
-+  - init-gpios
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/gpio/gpio.h>
-+    fpga-mgr@8000000 {
-+      compatible =3D "xlnx,fpga-selectmap";
-+      reg =3D <0x8000000 0x4>;
-+      prog-gpios =3D <&gpio5 5 GPIO_ACTIVE_LOW>;
-+      init-gpios =3D <&gpio5 8 GPIO_ACTIVE_LOW>;
-+      done-gpios =3D <&gpio2 30 GPIO_ACTIVE_HIGH>;
-+      csi-gpios =3D <&gpio3 19 GPIO_ACTIVE_LOW>;
-+      rdwr-gpios =3D <&gpio3 10 GPIO_ACTIVE_LOW>;
-+    };
-+...
---=20
+diff --git a/drivers/fpga/ice40-spi.c b/drivers/fpga/ice40-spi.c
+index 7cbb3558b844..c0028ae4c5b7 100644
+--- a/drivers/fpga/ice40-spi.c
++++ b/drivers/fpga/ice40-spi.c
+@@ -66,7 +66,7 @@ static int ice40_fpga_ops_write_init(struct fpga_manager *mgr,
+ 	}
+ 
+ 	/* Lock the bus, assert CRESET_B and SS_B and delay >200ns */
+-	spi_bus_lock(dev->master);
++	spi_bus_lock(dev->controller);
+ 
+ 	gpiod_set_value(priv->reset, 1);
+ 
+@@ -94,7 +94,7 @@ static int ice40_fpga_ops_write_init(struct fpga_manager *mgr,
+ 	ret = spi_sync_locked(dev, &message);
+ 
+ fail:
+-	spi_bus_unlock(dev->master);
++	spi_bus_unlock(dev->controller);
+ 
+ 	return ret;
+ }
+-- 
 2.43.0
 
