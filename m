@@ -1,52 +1,54 @@
 Received: from mail.savoirfairelinux.com (mail.savoirfairelinux.com [208.88.110.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01ADD132489;
-	Thu, 21 Mar 2024 22:06:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EEF7D13664F;
+	Thu, 21 Mar 2024 22:06:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=208.88.110.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1711058775; cv=none; b=QaAZZcElso++Vo8KgwDM3M7wyyfUY+/3aOpjjrwNiK4k1i7qc5Vlw1Gesezz26/1hnzYqb3+A6r21J+kiUSlz+3idRL2dMimh1on1MUdLMQN7zB9VAuib1NMqThQuSkrY4/CkY1izHkdKSHp6Yh5UIEBJ71JDrXos6ojAK2zPNY=
+	t=1711058775; cv=none; b=Kuyubp7hJ5uah+wQJOWSHoKXAi7TMY7j1KBoQej910vaqgD/0SOvuedjcBh/S+lGfinjb9LElQceFg+kPLczFphcy1BR2Yw/6iHn/Yn2Qf55J1NSNq/60cMlebRsJi4srqBC6qCelq7Jg/7jLetl+acj2nf0ri+6EafZEA4FFUY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1711058775; c=relaxed/simple;
-	bh=jCsAdyC1KUA5vKIMMyySgNdeDPLdStRYb2SYcOmbSS4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dphE5pAShrf1GaAa+VGfKhEn4uS1i48YCH/QfMV2Y4HAQTeA9YyAvoBcNfvMDlDyrG3/P3ClhflQslZT1XjvDkCSCHZet9zoffGJd8DrGwzF1GYBfQKX4r1ufUSb3zU1umMOOwKyY72FKPINGsR6QhfTUg0XnRt2UBYggbP1XW8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com; spf=pass smtp.mailfrom=savoirfairelinux.com; dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b=sAZfLl1A; arc=none smtp.client-ip=208.88.110.44
+	bh=3jLKTcczzZnzhXLnlDgNt6ZDQuVI3dx0MeE/oTV0g00=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=dvExwYthdsRJiF59st736gWqMlz/7e50b1GGKGNlNlWRay1uZ7VfK42GMR9T2A8mMZ8N4WiAtI2gDCbhAegf/63cRLUKUag0akQDLNbqkskX/eteTNwJPxjj52jHlj5OGMTSdpTQpsGPzwN/HvyGtVEq91MgiB5jMYi7aFoADjQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com; spf=pass smtp.mailfrom=savoirfairelinux.com; dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b=yIi5zWEa; arc=none smtp.client-ip=208.88.110.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=savoirfairelinux.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b="sAZfLl1A"
+	dkim=pass (2048-bit key) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.b="yIi5zWEa"
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id C0E759C53D6;
-	Thu, 21 Mar 2024 18:06:03 -0400 (EDT)
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id 8029E9C52E9;
+	Thu, 21 Mar 2024 18:06:07 -0400 (EDT)
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10032)
- with ESMTP id nvZ0To_hTJnD; Thu, 21 Mar 2024 18:06:02 -0400 (EDT)
+ with ESMTP id h54AjYVSvKKB; Thu, 21 Mar 2024 18:06:06 -0400 (EDT)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 8C5CD9C52E9;
-	Thu, 21 Mar 2024 18:06:02 -0400 (EDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 8C5CD9C52E9
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id 7E15F9C544D;
+	Thu, 21 Mar 2024 18:06:06 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 7E15F9C544D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=savoirfairelinux.com; s=DFC430D2-D198-11EC-948E-34200CB392D2;
-	t=1711058762; bh=1r3GwkK0c9zs1wbPB3fzzwaH34IaNdvV4R26cOy5fiA=;
+	t=1711058766; bh=MS/CSI1DQm+VcI/nbTmPkuznJvo8jK4CQm3471DDMa0=;
 	h=From:To:Date:Message-ID:MIME-Version;
-	b=sAZfLl1AnVNozQ6iyYB2Qdc1GW14FSA1QscuRbjlufMGhSEj6xfGeABh55pwC8SP7
-	 4xOSBwfrpj7L7Eu20jlv2wbaTLrQmof0gIP8MvBx1ekOBZCg3uXTjkBDIPl1wGXzQ1
-	 9km//6FG3SIQP1N5GPAJ2PQh0rMW+bdpOMFzWIcpgARdg7x0Skj8OVXgSbiteNKil4
-	 cUrgbAQEstR2nDI5yG0oRhCj0I5ZmfMt4AVnPucJBLOEWOFIlxNv8t1YMko1nvV52z
-	 5ImS3cp122Jg0GKCHMfL2La+S5hHSWPU1rMWPRUwOlgies9OOMK8wf+/IgVBN/ptUU
-	 rOJHAscDb4zsA==
+	b=yIi5zWEaHjGMh04NmmTsOxht0wZxJHjdMXp3lvUhOdm449lmr5PMHX/Q3CkWi0Tju
+	 ArfDJAgfcUIkS96wlEiUOj0PuOOZyGaXeeT4zSFV3e8jqJr9H5UJBB6URoru6s8O+T
+	 rPDSMcuj9LHVxLheMjoHGNaye8pIehco4cJpw5oMCkzlxb/ASzM/5I94otiUcPyaH+
+	 bRC1KwLUicnS99hdGKb6MdRYI4x607cM0o/tBAg1gTeK8vRfrah3XR3EucYvB2EUOk
+	 6euVZJtauhtPjPxSUWCMxhtHm3KTVRqzqRzltlGAS1xd+KK81Typr2/PzvRWd4rjyW
+	 FL+EhdCIpu1xg==
 X-Virus-Scanned: amavis at mail.savoirfairelinux.com
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10026)
- with ESMTP id PVetQC4MblrT; Thu, 21 Mar 2024 18:06:02 -0400 (EDT)
+ with ESMTP id kqGEY5JAyOp5; Thu, 21 Mar 2024 18:06:06 -0400 (EDT)
 Received: from pcperry.mtl.sfl (unknown [192.168.51.254])
-	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id 535DC9C52D8;
-	Thu, 21 Mar 2024 18:06:02 -0400 (EDT)
+	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id 583259C52E9;
+	Thu, 21 Mar 2024 18:06:06 -0400 (EDT)
 From: Charles Perry <charles.perry@savoirfairelinux.com>
 To: mdf@kernel.org
 Cc: avandiver@markem-imaje.com,
 	bcody@markem-imaje.com,
 	Charles Perry <charles.perry@savoirfairelinux.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
 	Wu Hao <hao.wu@intel.com>,
 	Xu Yilun <yilun.xu@intel.com>,
 	Tom Rix <trix@redhat.com>,
@@ -58,10 +60,12 @@ Cc: avandiver@markem-imaje.com,
 	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v6 0/4] fpga: xilinx-selectmap: add new driver
-Date: Thu, 21 Mar 2024 18:04:32 -0400
-Message-ID: <20240321220447.3260065-1-charles.perry@savoirfairelinux.com>
+Subject: [PATCH v6 2/4] dt-bindings: fpga: xlnx,fpga-selectmap: add DT schema
+Date: Thu, 21 Mar 2024 18:04:34 -0400
+Message-ID: <20240321220447.3260065-3-charles.perry@savoirfairelinux.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240321220447.3260065-1-charles.perry@savoirfairelinux.com>
+References: <20240321220447.3260065-1-charles.perry@savoirfairelinux.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -70,100 +74,112 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 
-Hello,
+Document the SelectMAP interface of Xilinx 7 series FPGA.
 
-This patchset adds a new driver for the 7 series FPGA's SelectMAP
-interface.
-
-The SelectMAP interface shares a common GPIO protocol with the SPI
-interface which is already in the kernel (drivers/fpga/xilinx-spi.c).
-The approach proposed in this patchset is to refactor xilinx-spi.c into
-xilinx-core.c which would handle the common GPIO protocol. This is then
-used to build two drivers, the already existing xilinx-spi.c driver and
-a newly added xilinx-selectmap.c driver.
-
-The SelectMAP driver proposed only supports 8 bit mode. This is because
-the 16 and 32 bits mode have limitations with regards to compressed
-bitstream support as well as introducing endianness considerations.
-
-I'm testing xilinx-selectmap.c on a custom i.MX6 board connected to an
-Artix 7 FPGA. Flashing a 913K bitstream takes 0.44 seconds.
-
-Changes since v5: (from Yilun review)
- * xilinx-core.h: remove private fields kernel-doc
- * xilinx-spi.c: rename conf into core in xilinx_spi_probe
- * xilinx-core.c: introduce the new gpio names in patch 4/4
- * xilinx-core.c: remove kernel-doc on xilinx_core_devm_gpiod_get()
- * xilinx-selectmap.c:
-   * reorder includes in alphabetical order
-   * xilinx_selectmap_probe(): remove unused resource *r variable
-   * xilinx_selectmap_probe(): use a single gpio_desc* temporary
-   * xilinx_selectmap_probe(): declare variables in reverse xmas tree
-
-Changes since v4: (from Yilun and Krzysztof review)
- * xilinx-core: use sizeof() instead of hardcoded immediate
- * xilinx-core: fix module compilation (EXPORT_SYMBOL_GPL, MODULE_LICENSE=
-,
-   MODULE_AUTHOR, MODULE_DESCRIPTION)
- * xilinx-core: add private/public qualifiers for struct xilinx_fpga_core
- * xilinx-spi: remove struct xilinx_spi_conf. This struct isn't needed as
-   the struct spi_device* can be retrieved from the struct device*.
- * dt-bindings: remove usage of "_b" and "-b" for the new driver. We
-   agreed that the spi and selectmap driver will use different bindings
-   which will be handled by the driver core and that the legacy names wil=
-l
-   be used only for the spi compatible.
- * xilinx-core: select between prog/init and prog_b/init-b
-
-Changes since v3: (from Rob Herring review)
- * Fix an error in the DT binding example compatible.
- * Drop the renaming of "prog_b" to "prog" and "init-b" to "init".
-   Patches 2 and 3 are removed.
-
-Changes since v2:
- * Inserted patch 2 and 3 which rename "prog_b" and "init-b" into "prog"
-   and "init" for the SPI driver.
- * From Krzysztof Kozlowski review's:
-   * Use more specific compatible names
-   * Remove other missing occurences of the slave word missed in v2.
- * From Xu Yilun review's:
-   * Fix vertical whitespace in get_done_gpio().
-   * Combine write() and write_one_dummy_byte() together.
-   * Eliminate most of the xilinx_core_probe() arguments, the driver
-     needs to populate those directly into the xilinx_fpga_core struct.
-     Added some documentation to struct xilinx_fpga_core to clarify
-     this.
-   * Removed typedefs from xilinx-core.h.
-   * Moved null checks in xilinx_core_probe() to first patch.
-   * Move csi_b and rdwr_b out of xilinx_selectmap_conf as they are not
-     used out of the probe function.
-
-Changes since v1: (from Krzysztof Kozlowski review's)
-  * Use more conventional names for gpio DT bindings
-  * fix example in DT bindings
-  * add mc-peripheral-props.yaml to DT bindings
-  * fix various formatting mistakes
-  * Remove all occurences of the "slave" word.
-
-Charles Perry (4):
-  fpga: xilinx-spi: extract a common driver core
-  dt-bindings: fpga: xlnx,fpga-selectmap: add DT schema
-  fpga: xilinx-selectmap: add new driver
-  xilinx-core: add new gpio names for prog and init
-
- .../bindings/fpga/xlnx,fpga-selectmap.yaml    |  86 +++++++
- drivers/fpga/Kconfig                          |  12 +
- drivers/fpga/Makefile                         |   2 +
- drivers/fpga/xilinx-core.c                    | 229 ++++++++++++++++++
- drivers/fpga/xilinx-core.h                    |  27 +++
- drivers/fpga/xilinx-selectmap.c               |  95 ++++++++
- drivers/fpga/xilinx-spi.c                     | 224 ++---------------
- 7 files changed, 466 insertions(+), 209 deletions(-)
+Signed-off-by: Charles Perry <charles.perry@savoirfairelinux.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ .../bindings/fpga/xlnx,fpga-selectmap.yaml    | 86 +++++++++++++++++++
+ 1 file changed, 86 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/fpga/xlnx,fpga-sele=
 ctmap.yaml
- create mode 100644 drivers/fpga/xilinx-core.c
- create mode 100644 drivers/fpga/xilinx-core.h
- create mode 100644 drivers/fpga/xilinx-selectmap.c
 
---
+diff --git a/Documentation/devicetree/bindings/fpga/xlnx,fpga-selectmap.y=
+aml b/Documentation/devicetree/bindings/fpga/xlnx,fpga-selectmap.yaml
+new file mode 100644
+index 0000000000000..05775746fd706
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fpga/xlnx,fpga-selectmap.yaml
+@@ -0,0 +1,86 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fpga/xlnx,fpga-selectmap.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Xilinx SelectMAP FPGA interface
++
++maintainers:
++  - Charles Perry <charles.perry@savoirfairelinux.com>
++
++description: |
++  Xilinx 7 Series FPGAs support a method of loading the bitstream over a
++  parallel port named the SelectMAP interface in the documentation. Only
++  the x8 mode is supported where data is loaded at one byte per rising e=
+dge of
++  the clock, with the MSB of each byte presented to the D0 pin.
++
++  Datasheets:
++    https://www.xilinx.com/support/documentation/user_guides/ug470_7Seri=
+es_Config.pdf
++
++allOf:
++  - $ref: /schemas/memory-controllers/mc-peripheral-props.yaml#
++
++properties:
++  compatible:
++    enum:
++      - xlnx,fpga-xc7s-selectmap
++      - xlnx,fpga-xc7a-selectmap
++      - xlnx,fpga-xc7k-selectmap
++      - xlnx,fpga-xc7v-selectmap
++
++  reg:
++    description:
++      At least 1 byte of memory mapped IO
++    maxItems: 1
++
++  prog-gpios:
++    description:
++      config pin (referred to as PROGRAM_B in the manual)
++    maxItems: 1
++
++  done-gpios:
++    description:
++      config status pin (referred to as DONE in the manual)
++    maxItems: 1
++
++  init-gpios:
++    description:
++      initialization status and configuration error pin
++      (referred to as INIT_B in the manual)
++    maxItems: 1
++
++  csi-gpios:
++    description:
++      chip select pin (referred to as CSI_B in the manual)
++      Optional gpio for if the bus controller does not provide a chip se=
+lect.
++    maxItems: 1
++
++  rdwr-gpios:
++    description:
++      read/write select pin (referred to as RDWR_B in the manual)
++      Optional gpio for if the bus controller does not provide this pin.
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - prog-gpios
++  - done-gpios
++  - init-gpios
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    fpga-mgr@8000000 {
++      compatible =3D "xlnx,fpga-xc7s-selectmap";
++      reg =3D <0x8000000 0x4>;
++      prog-gpios =3D <&gpio5 5 GPIO_ACTIVE_LOW>;
++      init-gpios =3D <&gpio5 8 GPIO_ACTIVE_LOW>;
++      done-gpios =3D <&gpio2 30 GPIO_ACTIVE_HIGH>;
++      csi-gpios =3D <&gpio3 19 GPIO_ACTIVE_LOW>;
++      rdwr-gpios =3D <&gpio3 10 GPIO_ACTIVE_LOW>;
++    };
++...
+--=20
 2.43.0
+
