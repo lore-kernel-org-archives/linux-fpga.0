@@ -1,48 +1,48 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04DFC14F12D;
-	Wed, 20 Nov 2024 01:11:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DA3214B08A;
+	Wed, 20 Nov 2024 01:11:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732065114; cv=none; b=ONcyp2582jzSAS790TOlopQofab4pmciDZ3N6glML/yH4ngo++m5dWklfzw7D4jPXSDyP910+qVhmsoR0FYz+Z36xU/f4c/J9ig68ylfqrWr+AYyPmvd2gQno+eVKdS0omqqhzrFQyuIG3OF7pbHY7+wCXDEPxsnm3jnUUytmSY=
+	t=1732065114; cv=none; b=dWSABovz7RTgbtzhvNu7A5437WLOS9CZ49umSofBWImS9hUh9seeOVJGa3usm8Z0TzbC10wloPH+Ev3NHrNJBnJVQ0ibgjHAhoUweGk1GgeqQvcWWa+V2tobYYIs8F030xDX4H4eA92sgUTDTeP6fblxSF0k/arz8z2V+05ktvw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1732065114; c=relaxed/simple;
-	bh=RxW4J+F2v4aAnLswBVya46uekQUHr6rRIs+ONgrBVms=;
+	bh=hOUbRA5gOcZEcufXcx6zy9jhH9eo+LXdrTu5kqFXAI8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YnbrxBJ3B+OFuWkR3Jf4YXwKhSwAc8Svq7hk6B3HqtcZtv6aj3u77gyhlZhmyjDjd0IHWEYtLn0Le+m+mcbyqcX6DLOa6nGh9TpOZT9Allwj/aHsMuO4lOWve+IFOuDleie2hw50mnsQogrkJ4DBBQ5P9WY8g4f+CtOOHi8qrek=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=WVMYIBjN; arc=none smtp.client-ip=198.175.65.11
+	 MIME-Version; b=EAl8xG6kUQVm0sO99QwuZWdav2wvvMIEB9nP5efl2auUeUzf0fhIebTGAoRWAQ9pfHdUKYFm0IOCr/vblzvftDdnlseKXxKUYnZ5vVAl2qq8WzWETQXpEMLI94/pkf7m+JsjwkT52JJ4BZHp5AVcKEbm+D+bXi32RCtnAV6TfUA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=axUrv6da; arc=none smtp.client-ip=198.175.65.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="WVMYIBjN"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="axUrv6da"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1732065112; x=1763601112;
+  t=1732065111; x=1763601111;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=RxW4J+F2v4aAnLswBVya46uekQUHr6rRIs+ONgrBVms=;
-  b=WVMYIBjN9kF6oVfxvV3Ru8ZQeOOE6Gg3BD4cs51HkpxvUHdbaGhL1lcM
-   qdoBqJZHcJj6yDS2Ev15WfhI+o49LTBtP2LiHMEoYJRrbrMZSQKBsw+UO
-   a7bbWXOEdNadCiPvhG2u6zd0/fjj7UaRi8E6QqRitH0PiuT1OJfMVbmn0
-   sESHzWtZxCZ4Yr5EdM1zz4m0rZGYYA9itsi0/ToOL2+1u0zRU4OajmwY2
-   8ZbrAOcEtV0ee3X2D5h9Oo3kQOPSm4CpEiBptC0kUXBHTF8SpY8liEJfp
-   4KUhwwFxGZs0FGQvNAewavZYpgH6eRIYCXHg8ZwMCDfutP6r5pvcdl3PB
-   Q==;
-X-CSE-ConnectionGUID: A1J6WQOhQFiEYoRBFBn0SQ==
-X-CSE-MsgGUID: EFGN/TUeQfyrfFqqLdtRpQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11261"; a="42613036"
+  bh=hOUbRA5gOcZEcufXcx6zy9jhH9eo+LXdrTu5kqFXAI8=;
+  b=axUrv6day13ninnk12Jfd39bS3dti251WLpu0l1F1UvsaQZ9eJfdWACE
+   Mu43tNbCEOZ7BN/6iatVeH+/hMHJdrO5drWR68FrHDOPkd1RDhPKO2ZYR
+   M4sOduqAyAIs61M71G+RlUlX++KQZNvl1qYUdJK204lzBObbf8bjechpZ
+   XIsF30pX6Z/uD+jnm6qeYbOMi5lSQzO0EKj8I44Fhnr1lM45FXIpYRyIS
+   BOCThS6UFRwWKqLfwk3W+JMglFfkn5ShfXhXKMgsJ+dglTYPzfFA2DEUd
+   Dk8A3VY7fG00jZOGh1NN/EHrV0sdSgsLW9Rcse+4LS9o6Z5NFmtabbfFv
+   g==;
+X-CSE-ConnectionGUID: Ba8TFe0QSOizcFErX4BUeQ==
+X-CSE-MsgGUID: Xs4vqVDVT5mwSCXPmbBnSQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11261"; a="42613031"
 X-IronPort-AV: E=Sophos;i="6.12,168,1728975600"; 
-   d="scan'208";a="42613036"
+   d="scan'208";a="42613031"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
   by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2024 17:11:41 -0800
-X-CSE-ConnectionGUID: PGl6GEhpTI+M3LxY+QUkhQ==
-X-CSE-MsgGUID: 9qf0cGapSHe0hVRjCZKFgA==
+X-CSE-ConnectionGUID: eqOUF6HPQI+zYCyWtWp8pw==
+X-CSE-MsgGUID: Q/ccikOhTwuYIDhVPh8Lzw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.12,168,1728975600"; 
-   d="scan'208";a="93813622"
+   d="scan'208";a="93813612"
 Received: from sj-4150-psse-sw-opae-dev3.sj.altera.com ([10.244.138.109])
-  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2024 17:11:41 -0800
+  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2024 17:11:40 -0800
 From: Peter Colberg <peter.colberg@intel.com>
 To: Wu Hao <hao.wu@intel.com>,
 	Tom Rix <trix@redhat.com>,
@@ -54,11 +54,10 @@ Cc: Russ Weight <russ.weight@linux.dev>,
 	Marco Pagani <marpagan@redhat.com>,
 	Matthew Gerlach <matthew.gerlach@linux.intel.com>,
 	Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>,
-	Russ Weight <russell.h.weight@intel.com>,
 	Peter Colberg <peter.colberg@intel.com>
-Subject: [PATCH v5 18/18] fpga: dfl: destroy/recreate feature platform device on port release/assign
-Date: Tue, 19 Nov 2024 20:10:34 -0500
-Message-ID: <20241120011035.230574-19-peter.colberg@intel.com>
+Subject: [PATCH v5 15/18] fpga: dfl: allocate platform device after feature device data
+Date: Tue, 19 Nov 2024 20:10:31 -0500
+Message-ID: <20241120011035.230574-16-peter.colberg@intel.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241120011035.230574-1-peter.colberg@intel.com>
 References: <20241120011035.230574-1-peter.colberg@intel.com>
@@ -70,113 +69,226 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Xu Yilun <yilun.xu@intel.com>
+Delay calling platform_device_alloc() from build_info_create_dev() to
+feature_dev_register(), now that the feature device data contains all
+necessary data to create the feature device. This completes the new
+function feature_dev_register(), which will be reused in a subsequent
+commit to fully recreate the feature device when assigning a port.
 
-Now that the internal DFL APIs have been converted to consume DFL
-enumeration info from a separate structure, dfl_feature_dev_data, which
-lifetime is independent of the feature device, proceed to completely
-destroy and recreate the feature platform device on port release and
-assign, respectively. This resolves a longstanding issue in the use of
-platform_device_add(), which states to "not call this routine more than
-once for any device structure" and which used to print a kernel warning.
+In the function feature_dev_unregister(), reset the device pointer in
+the feature data to NULL to signal that the platform device has been
+destroyed. This will substitute device_is_registered() in a subsequent
+commit. Reset the device pointer of each sub feature for consistency.
 
-The function feature_dev_unregister() resets the device pointer in the
-feature data to NULL to signal that the feature platform device has been
-destroyed. This substitutes the previous device_is_registered() checks.
+Convert is_feature_dev_detected() to check whether binfo->type is not
+DFL_ID_MAX for deciding whether a feature device was detected during
+feature parsing, instead of checking binfo->feature_dev for non-NULL.
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Russ Weight <russell.h.weight@intel.com>
 Signed-off-by: Peter Colberg <peter.colberg@intel.com>
 Reviewed-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 Reviewed-by: Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>
-Acked-by: Xu Yilun <yilun.xu@intel.com>
 ---
 Changes since v4:
-- No changes.
+- Merge patch "convert is_feature_dev_detected() to use FIU type".
+  After the former patch was applied but not yet this patch, there
+  was a window between binfo->type already holding a valid DFL id but
+  binfo->feature_dev still NULL, where is_feature_dev_detected() would
+  yield a different result, e.g., when build_info_create_dev() failed.
+- Move reset of device pointer in feature data to NULL in the function
+  feature_dev_unregister() from the patch "fpga: dfl: factor out feature
+  device registration" to this patch, which contains the corresponding
+  initialization of the device pointer in feature_dev_register().
+- In the function feature_dev_unregister(), reset the device pointer of
+  each sub feature to NULL for consistency.
 
 Changes since v3:
 - New patch extracted from last patch of v3 series.
 ---
- drivers/fpga/dfl.c | 23 ++++++-----------------
- 1 file changed, 6 insertions(+), 17 deletions(-)
+ drivers/fpga/dfl.c | 72 ++++++++++++++++++++++------------------------
+ 1 file changed, 34 insertions(+), 38 deletions(-)
 
 diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index d4b8df4e0ebc..b01fb446bc7c 100644
+index aeae5befc6c6..91f12272da3e 100644
 --- a/drivers/fpga/dfl.c
 +++ b/drivers/fpga/dfl.c
-@@ -1630,21 +1630,10 @@ EXPORT_SYMBOL_GPL(dfl_fpga_feature_devs_enumerate);
-  */
- void dfl_fpga_feature_devs_remove(struct dfl_fpga_cdev *cdev)
+@@ -681,7 +681,6 @@ EXPORT_SYMBOL_GPL(dfl_fpga_dev_ops_unregister);
+  * @nr_irqs: number of irqs for all feature devices.
+  * @irq_table: Linux IRQ numbers for all irqs, indexed by local irq index of
+  *	       this device.
+- * @feature_dev: current feature device.
+  * @type: the current FIU type.
+  * @ioaddr: header register region address of current FIU in enumeration.
+  * @start: register resource start of current FIU.
+@@ -695,7 +694,6 @@ struct build_feature_devs_info {
+ 	unsigned int nr_irqs;
+ 	int *irq_table;
+ 
+-	struct platform_device *feature_dev;
+ 	enum dfl_id_type type;
+ 	void __iomem *ioaddr;
+ 	resource_size_t start;
+@@ -750,7 +748,6 @@ static void dfl_id_free_action(void *arg)
+ static struct dfl_feature_dev_data *
+ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
  {
--	struct dfl_feature_dev_data *fdata, *ptmp;
--
- 	mutex_lock(&cdev->lock);
- 	if (cdev->fme_dev)
- 		put_device(cdev->fme_dev);
+-	struct platform_device *fdev = binfo->feature_dev;
+ 	enum dfl_id_type type = binfo->type;
+ 	struct dfl_feature_info *finfo, *p;
+ 	struct dfl_feature_dev_data *fdata;
+@@ -773,7 +770,6 @@ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
+ 	if (!fdata->resources)
+ 		return ERR_PTR(-ENOMEM);
  
--	list_for_each_entry_safe(fdata, ptmp, &cdev->port_dev_list, node) {
--		struct platform_device *port_dev = fdata->dev;
--
--		/* remove released ports */
--		if (!device_is_registered(&port_dev->dev))
--			platform_device_put(port_dev);
--
--		list_del(&fdata->node);
--	}
- 	mutex_unlock(&cdev->lock);
+-	fdata->dev = fdev;
+ 	fdata->type = type;
  
- 	remove_feature_devs(cdev);
-@@ -1724,7 +1713,7 @@ int dfl_fpga_cdev_release_port(struct dfl_fpga_cdev *cdev, int port_id)
- 	if (!fdata)
- 		goto unlock_exit;
- 
--	if (!device_is_registered(&fdata->dev->dev)) {
-+	if (!fdata->dev) {
- 		ret = -EBUSY;
- 		goto unlock_exit;
- 	}
-@@ -1735,7 +1724,7 @@ int dfl_fpga_cdev_release_port(struct dfl_fpga_cdev *cdev, int port_id)
+ 	fdata->pdev_id = dfl_id_alloc(type, binfo->dev);
+@@ -784,8 +780,6 @@ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
  	if (ret)
- 		goto unlock_exit;
+ 		return ERR_PTR(ret);
  
--	platform_device_del(fdata->dev);
-+	feature_dev_unregister(fdata);
- 	cdev->released_port_num++;
- unlock_exit:
- 	mutex_unlock(&cdev->lock);
-@@ -1765,12 +1754,12 @@ int dfl_fpga_cdev_assign_port(struct dfl_fpga_cdev *cdev, int port_id)
- 	if (!fdata)
- 		goto unlock_exit;
+-	fdev->id = fdata->pdev_id;
+-
+ 	fdata->pdev_name = dfl_devs[type].name;
+ 	fdata->num = binfo->feature_num;
+ 	fdata->dfl_cdev = binfo->cdev;
+@@ -809,7 +803,6 @@ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
+ 		unsigned int i;
  
--	if (device_is_registered(&fdata->dev->dev)) {
-+	if (fdata->dev) {
- 		ret = -EBUSY;
- 		goto unlock_exit;
- 	}
+ 		/* save resource information for each feature */
+-		feature->dev = fdev;
+ 		feature->id = finfo->fid;
+ 		feature->revision = finfo->revision;
+ 		feature->dfh_version = finfo->dfh_version;
+@@ -868,18 +861,6 @@ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
+ static int
+ build_info_create_dev(struct build_feature_devs_info *binfo)
+ {
+-	enum dfl_id_type type = binfo->type;
+-	struct platform_device *fdev;
+-
+-	/*
+-	 * we use -ENODEV as the initialization indicator which indicates
+-	 * whether the id need to be reclaimed
+-	 */
+-	fdev = platform_device_alloc(dfl_devs[type].name, -ENODEV);
+-	if (!fdev)
+-		return -ENOMEM;
+-
+-	binfo->feature_dev = fdev;
+ 	binfo->feature_num = 0;
  
--	ret = platform_device_add(fdata->dev);
-+	ret = feature_dev_register(fdata);
+ 	INIT_LIST_HEAD(&binfo->sub_features);
+@@ -895,32 +876,59 @@ build_info_create_dev(struct build_feature_devs_info *binfo)
+ static int feature_dev_register(struct dfl_feature_dev_data *fdata)
+ {
+ 	struct dfl_feature_platform_data pdata = {};
+-	struct platform_device *fdev = fdata->dev;
++	struct platform_device *fdev;
++	struct dfl_feature *feature;
+ 	int ret;
+ 
++	fdev = platform_device_alloc(fdata->pdev_name, fdata->pdev_id);
++	if (!fdev)
++		return -ENOMEM;
++
++	fdata->dev = fdev;
++
+ 	fdev->dev.parent = &fdata->dfl_cdev->region->dev;
+ 	fdev->dev.devt = dfl_get_devt(dfl_devs[fdata->type].devt_type, fdev->id);
+ 
++	dfl_fpga_dev_for_each_feature(fdata, feature)
++		feature->dev = fdev;
++
+ 	ret = platform_device_add_resources(fdev, fdata->resources,
+ 					    fdata->resource_num);
  	if (ret)
- 		goto unlock_exit;
+-		return ret;
++		goto err_put_dev;
  
-@@ -1820,7 +1809,7 @@ void dfl_fpga_cdev_config_ports_pf(struct dfl_fpga_cdev *cdev)
+ 	pdata.fdata = fdata;
+ 	ret = platform_device_add_data(fdev, &pdata, sizeof(pdata));
+ 	if (ret)
+-		return ret;
++		goto err_put_dev;
  
- 	mutex_lock(&cdev->lock);
- 	list_for_each_entry(fdata, &cdev->port_dev_list, node) {
--		if (device_is_registered(&fdata->dev->dev))
-+		if (fdata->dev)
- 			continue;
+ 	ret = platform_device_add(fdev);
+ 	if (ret)
+-		return ret;
++		goto err_put_dev;
  
- 		config_port_pf_mode(cdev->fme_dev, fdata->id);
-@@ -1857,7 +1846,7 @@ int dfl_fpga_cdev_config_ports_vf(struct dfl_fpga_cdev *cdev, int num_vfs)
+ 	return 0;
++
++err_put_dev:
++	platform_device_put(fdev);
++
++	fdata->dev = NULL;
++
++	dfl_fpga_dev_for_each_feature(fdata, feature)
++		feature->dev = NULL;
++
++	return ret;
+ }
+ 
+ static void feature_dev_unregister(struct dfl_feature_dev_data *fdata)
+ {
++	struct dfl_feature *feature;
++
+ 	platform_device_unregister(fdata->dev);
++
++	fdata->dev = NULL;
++
++	dfl_fpga_dev_for_each_feature(fdata, feature)
++		feature->dev = NULL;
+ }
+ 
+ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+@@ -939,16 +947,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 	if (binfo->type == PORT_ID)
+ 		dfl_fpga_cdev_add_port_data(binfo->cdev, fdata);
+ 	else
+-		binfo->cdev->fme_dev = get_device(&binfo->feature_dev->dev);
+-
+-	/*
+-	 * reset it to avoid build_info_free() freeing their resource.
+-	 *
+-	 * The resource of successfully registered feature devices
+-	 * will be freed by platform_device_unregister(). See the
+-	 * comments in build_info_create_dev().
+-	 */
+-	binfo->feature_dev = NULL;
++		binfo->cdev->fme_dev = get_device(&fdata->dev->dev);
+ 
+ 	/* reset the binfo for next FIU */
+ 	binfo->type = DFL_ID_MAX;
+@@ -965,8 +964,6 @@ static void build_info_free(struct build_feature_devs_info *binfo)
+ 		kfree(finfo);
  	}
  
- 	list_for_each_entry(fdata, &cdev->port_dev_list, node) {
--		if (device_is_registered(&fdata->dev->dev))
-+		if (fdata->dev)
- 			continue;
+-	platform_device_put(binfo->feature_dev);
+-
+ 	devm_kfree(binfo->dev, binfo);
+ }
  
- 		config_port_vf_mode(cdev->fme_dev, fdata->id);
+@@ -1247,7 +1244,7 @@ static int parse_feature_port_afu(struct build_feature_devs_info *binfo,
+ 	return create_feature_instance(binfo, ofst, size, FEATURE_ID_AFU);
+ }
+ 
+-#define is_feature_dev_detected(binfo) (!!(binfo)->feature_dev)
++#define is_feature_dev_detected(binfo) ((binfo)->type != DFL_ID_MAX)
+ 
+ static int parse_feature_afu(struct build_feature_devs_info *binfo,
+ 			     resource_size_t ofst)
+@@ -1261,8 +1258,7 @@ static int parse_feature_afu(struct build_feature_devs_info *binfo,
+ 	case PORT_ID:
+ 		return parse_feature_port_afu(binfo, ofst);
+ 	default:
+-		dev_info(binfo->dev, "AFU belonging to FIU %s is not supported yet.\n",
+-			 binfo->feature_dev->name);
++		dev_info(binfo->dev, "AFU belonging to FIU is not supported yet.\n");
+ 	}
+ 
+ 	return 0;
 -- 
 2.47.0
 
