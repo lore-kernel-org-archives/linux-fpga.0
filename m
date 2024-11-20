@@ -1,46 +1,46 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A75056B8C;
-	Wed, 20 Nov 2024 01:11:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16FD374C14;
+	Wed, 20 Nov 2024 01:11:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732065102; cv=none; b=eBUdRgmbM9wCULaui5GmkRRF+VeuAv5eGHbNlraSaERxIl0DbRC7ReCCsbjSwusVfAq9rb8mRIsv/UEcKFqO3oOPYTZs7fi9tTPuR6HKgW4i8OTFZELQJ7ydwLDxqXLU5covtZh5cnJfZK6Shpzxh2LRyoA53ZAoMMLqDUalhhc=
+	t=1732065103; cv=none; b=ANakz38nFLw1rh44EoBlOV/nwDcBdT2tJaAdGbfI8F/DsCPx68NQQ/XAW52yjsDcfBY2eR29wns6ApShax8BE1aGnE6BagdQCRAJfUgVUhWs56V2Ya6qyXvcjTFMhi7ijSRqr4x1UqsYTl5XcR901aP50coZfnl+DyCCsiihPmw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1732065102; c=relaxed/simple;
-	bh=b0LhuUA2ME4PHwgIC1kzHTdJ6tObQVHDg6az3WoiTwA=;
+	s=arc-20240116; t=1732065103; c=relaxed/simple;
+	bh=SzQ9MsCK3IvY/ogi6ri7XaGysw8Fenuk1opsDdO6OkI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=V3T37eAWSS1rir8g4pPX65Z0wfNm6RaUgCL2vm6RjAWwKCv2h+f/eIvK8CBvBq07bevJ5PAFuFp7KkZ0nhw1bjguEogrdn4+wQGPBWNI+PwMFuLSPFrun9qcop+DWDs9HbEyGkcOCl8LEqr4PVnRLYaoMm8cyR52tvbBpJ6VbEE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=avwRBza7; arc=none smtp.client-ip=198.175.65.11
+	 MIME-Version; b=e2NjOtiTD+3dz7ckekWScNvq0kn7NXPSSn4SMBGqqQgPbU0sZHlv//W2hiVxKYdcHZkogGQ4opXQzMaeW/qbhAOyPqQmICKoVMmrN2nXAnM9VJpNZ2Xvk+noPv7j7Qwk196PXf/pY521oMN2QOdMBUwixtwK6UmnEHzskUta8s0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=PVCPe7Tx; arc=none smtp.client-ip=198.175.65.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="avwRBza7"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="PVCPe7Tx"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1732065101; x=1763601101;
+  t=1732065102; x=1763601102;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=b0LhuUA2ME4PHwgIC1kzHTdJ6tObQVHDg6az3WoiTwA=;
-  b=avwRBza7V8GwE07s/pyOGUa/mGg8uY9CCSwfw5c7Ce0XjPWxEDW1x+zk
-   uFObnDuT1KZo2v5ERqSWPIXS5wm6drpnf4GK69bqEM4ibBDDbjn8XKDmE
-   OHWMs7XPs+RZZa8tEReuJESYFnEn26rp8rYmO3Dxv9hxprjr18dCugjD3
-   BVqcmGhyLh8RiAOEccw6uvTL6XHu6aCBAQELp1qXQsloiKKVTBvYuBgI9
-   um06DQFBMspTsVptk6sT07jn2aW+iEedNa6Qh9/BIBXuOsMMOT308iQ5e
-   O1jegB8zM6qJtBwb+4JK0fYKrPToViHb88Gu0hsFAeSd4bk2kb81DcsUx
-   g==;
-X-CSE-ConnectionGUID: QBMIHYkrTkS3IY2G1IN81g==
-X-CSE-MsgGUID: SElnyAmXTf+OM6q/58w1oQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11261"; a="42612978"
+  bh=SzQ9MsCK3IvY/ogi6ri7XaGysw8Fenuk1opsDdO6OkI=;
+  b=PVCPe7Txr4Xa/Z3UxdrM1nwaqkHqq8PNmD/2Pb/B5v7P9+9hJgzLiBiJ
+   yInkwsnfSgqvlANWcRlY3/JGQ3wpdLWkzxhfkklTmIt0ghMWlXj8AybD4
+   +Ipt0rJNRGrH0+lxNZwRrCA40Olz6fmjBleZ5aB02e/LuzZweXd5bS9fV
+   ZiAfxfeu/qZ4DxJ8RJkhLNEulIm2pnXSwgnMDTNlibW86oOPaozOgL6An
+   PYDi8OBMk9c9MFdfAY/PdByyPkfygRBqce6cUaEcMN9cA1K37xzHVWbGy
+   NadcNc5/Wbq/uARxWsUNwciq9FvOMO2vHcAl3AR6EChsMmNcRn6vbMXYO
+   w==;
+X-CSE-ConnectionGUID: DRZN6iu4RDW4QvMuLeZ4tg==
+X-CSE-MsgGUID: F5nEUOcBQaSJL+IDjKN7/w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11261"; a="42612986"
 X-IronPort-AV: E=Sophos;i="6.12,168,1728975600"; 
-   d="scan'208";a="42612978"
+   d="scan'208";a="42612986"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2024 17:11:39 -0800
-X-CSE-ConnectionGUID: D+u6w4JKS8Gsqg+pEOislQ==
-X-CSE-MsgGUID: 4MADt0qQTKem5cMcVQGWqA==
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2024 17:11:40 -0800
+X-CSE-ConnectionGUID: ACgXJOB3S4Cud0dqmM8PQg==
+X-CSE-MsgGUID: LDUINnjVTGOdUxy3u2trtw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.12,168,1728975600"; 
-   d="scan'208";a="93813575"
+   d="scan'208";a="93813581"
 Received: from sj-4150-psse-sw-opae-dev3.sj.altera.com ([10.244.138.109])
   by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2024 17:11:39 -0800
 From: Peter Colberg <peter.colberg@intel.com>
@@ -55,9 +55,9 @@ Cc: Russ Weight <russ.weight@linux.dev>,
 	Matthew Gerlach <matthew.gerlach@linux.intel.com>,
 	Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>,
 	Peter Colberg <peter.colberg@intel.com>
-Subject: [PATCH v5 04/18] fpga: dfl: afu: define local pointer to feature device
-Date: Tue, 19 Nov 2024 20:10:20 -0500
-Message-ID: <20241120011035.230574-5-peter.colberg@intel.com>
+Subject: [PATCH v5 06/18] fpga: dfl: factor out feature data creation from build_info_commit_dev()
+Date: Tue, 19 Nov 2024 20:10:22 -0500
+Message-ID: <20241120011035.230574-7-peter.colberg@intel.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241120011035.230574-1-peter.colberg@intel.com>
 References: <20241120011035.230574-1-peter.colberg@intel.com>
@@ -69,7 +69,9 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Define local pointer to pdata->dev->dev to avoid repetition.
+Add a separate function, binfo_create_feature_dev_data(), which allocates
+and populates the feature platform data, and call the function from
+build_info_commit_dev(), which registers the feature platform device.
 
 Signed-off-by: Peter Colberg <peter.colberg@intel.com>
 Reviewed-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
@@ -80,88 +82,156 @@ Changes since v4:
 - No changes.
 
 Changes since v3:
-- No changes.
+- Replace ERR_PTR(PTR_ERR(feature->ioaddr) with feature->ioaddr and
+  remove unneeded local variable ret.
+- Add missing commas in description.
 
 Changes since v2:
 - New patch extracted from monolithic v1 patch.
 ---
- drivers/fpga/dfl-afu-dma-region.c | 9 +++++----
- drivers/fpga/dfl-afu-region.c     | 5 +++--
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/fpga/dfl.c | 72 +++++++++++++++++++++++++---------------------
+ 1 file changed, 40 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-index 02b60fde0430..814191e623e1 100644
---- a/drivers/fpga/dfl-afu-dma-region.c
-+++ b/drivers/fpga/dfl-afu-dma-region.c
-@@ -301,6 +301,7 @@ afu_dma_region_find_iova(struct dfl_feature_platform_data *pdata, u64 iova)
- int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
- 		       u64 user_addr, u64 length, u64 *iova)
- {
-+	struct device *dev = &pdata->dev->dev;
- 	struct dfl_afu_dma_region *region;
- 	int ret;
- 
-@@ -325,13 +326,13 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
- 	/* Pin the user memory region */
- 	ret = afu_dma_pin_pages(pdata, region);
- 	if (ret) {
--		dev_err(&pdata->dev->dev, "failed to pin memory region\n");
-+		dev_err(dev, "failed to pin memory region\n");
- 		goto free_region;
- 	}
- 
- 	/* Only accept continuous pages, return error else */
- 	if (!afu_dma_check_continuous_pages(region)) {
--		dev_err(&pdata->dev->dev, "pages are not continuous\n");
-+		dev_err(dev, "pages are not continuous\n");
- 		ret = -EINVAL;
- 		goto unpin_pages;
- 	}
-@@ -342,7 +343,7 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
- 				    region->length,
- 				    DMA_BIDIRECTIONAL);
- 	if (dma_mapping_error(dfl_fpga_pdata_to_parent(pdata), region->iova)) {
--		dev_err(&pdata->dev->dev, "failed to map for dma\n");
-+		dev_err(dev, "failed to map for dma\n");
- 		ret = -EFAULT;
- 		goto unpin_pages;
- 	}
-@@ -353,7 +354,7 @@ int afu_dma_map_region(struct dfl_feature_platform_data *pdata,
- 	ret = afu_dma_region_add(pdata, region);
- 	mutex_unlock(&pdata->lock);
- 	if (ret) {
--		dev_err(&pdata->dev->dev, "failed to add dma region\n");
-+		dev_err(dev, "failed to add dma region\n");
- 		goto unmap_dma;
- 	}
- 
-diff --git a/drivers/fpga/dfl-afu-region.c b/drivers/fpga/dfl-afu-region.c
-index 2e7b41629406..8f0e9485214a 100644
---- a/drivers/fpga/dfl-afu-region.c
-+++ b/drivers/fpga/dfl-afu-region.c
-@@ -50,11 +50,12 @@ static struct dfl_afu_mmio_region *get_region_by_index(struct dfl_afu *afu,
- int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
- 			u32 region_index, u64 region_size, u64 phys, u32 flags)
- {
-+	struct device *dev = &pdata->dev->dev;
- 	struct dfl_afu_mmio_region *region;
- 	struct dfl_afu *afu;
- 	int ret = 0;
- 
--	region = devm_kzalloc(&pdata->dev->dev, sizeof(*region), GFP_KERNEL);
-+	region = devm_kzalloc(dev, sizeof(*region), GFP_KERNEL);
- 	if (!region)
- 		return -ENOMEM;
- 
-@@ -85,7 +86,7 @@ int afu_mmio_region_add(struct dfl_feature_platform_data *pdata,
- 	return 0;
- 
- exit:
--	devm_kfree(&pdata->dev->dev, region);
-+	devm_kfree(dev, region);
- 	return ret;
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 4c79d433d216..56a32f5146a3 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -749,22 +749,18 @@ static void dfl_fpga_cdev_add_port_data(struct dfl_fpga_cdev *cdev,
+ 	mutex_unlock(&cdev->lock);
  }
  
+-/*
+- * register current feature device, it is called when we need to switch to
+- * another feature parsing or we have parsed all features on given device
+- * feature list.
+- */
+-static int build_info_commit_dev(struct build_feature_devs_info *binfo)
++static struct dfl_feature_platform_data *
++binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
+ {
+ 	struct platform_device *fdev = binfo->feature_dev;
+ 	struct dfl_feature_platform_data *pdata;
+ 	struct dfl_feature_info *finfo, *p;
+ 	enum dfl_id_type type;
+-	int ret, index = 0, res_idx = 0;
++	int index = 0, res_idx = 0;
+ 
+ 	type = feature_dev_id_type(fdev);
+ 	if (WARN_ON_ONCE(type >= DFL_ID_MAX))
+-		return -EINVAL;
++		return ERR_PTR(-EINVAL);
+ 
+ 	/*
+ 	 * we do not need to care for the memory which is associated with
+@@ -774,7 +770,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 	 */
+ 	pdata = kzalloc(struct_size(pdata, features, binfo->feature_num), GFP_KERNEL);
+ 	if (!pdata)
+-		return -ENOMEM;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	pdata->dev = fdev;
+ 	pdata->num = binfo->feature_num;
+@@ -799,7 +795,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 	fdev->resource = kcalloc(binfo->feature_num, sizeof(*fdev->resource),
+ 				 GFP_KERNEL);
+ 	if (!fdev->resource)
+-		return -ENOMEM;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	/* fill features and resource information for feature dev */
+ 	list_for_each_entry_safe(finfo, p, &binfo->sub_features, node) {
+@@ -818,7 +814,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 						       finfo->params, finfo->param_size,
+ 						       GFP_KERNEL);
+ 			if (!feature->params)
+-				return -ENOMEM;
++				return ERR_PTR(-ENOMEM);
+ 
+ 			feature->param_size = finfo->param_size;
+ 		}
+@@ -835,7 +831,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 				devm_ioremap_resource(binfo->dev,
+ 						      &finfo->mmio_res);
+ 			if (IS_ERR(feature->ioaddr))
+-				return PTR_ERR(feature->ioaddr);
++				return feature->ioaddr;
+ 		} else {
+ 			feature->resource_index = res_idx;
+ 			fdev->resource[res_idx++] = finfo->mmio_res;
+@@ -845,7 +841,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 			ctx = devm_kcalloc(binfo->dev, finfo->nr_irqs,
+ 					   sizeof(*ctx), GFP_KERNEL);
+ 			if (!ctx)
+-				return -ENOMEM;
++				return ERR_PTR(-ENOMEM);
+ 
+ 			for (i = 0; i < finfo->nr_irqs; i++)
+ 				ctx[i].irq =
+@@ -859,25 +855,7 @@ static int build_info_commit_dev(struct build_feature_devs_info *binfo)
+ 		kfree(finfo);
+ 	}
+ 
+-	ret = platform_device_add(binfo->feature_dev);
+-	if (!ret) {
+-		if (type == PORT_ID)
+-			dfl_fpga_cdev_add_port_data(binfo->cdev,
+-						    pdata);
+-		else
+-			binfo->cdev->fme_dev =
+-					get_device(&binfo->feature_dev->dev);
+-		/*
+-		 * reset it to avoid build_info_free() freeing their resource.
+-		 *
+-		 * The resource of successfully registered feature devices
+-		 * will be freed by platform_device_unregister(). See the
+-		 * comments in build_info_create_dev().
+-		 */
+-		binfo->feature_dev = NULL;
+-	}
+-
+-	return ret;
++	return pdata;
+ }
+ 
+ static int
+@@ -912,6 +890,36 @@ build_info_create_dev(struct build_feature_devs_info *binfo,
+ 	return 0;
+ }
+ 
++static int build_info_commit_dev(struct build_feature_devs_info *binfo)
++{
++	struct dfl_feature_platform_data *pdata;
++	int ret;
++
++	pdata = binfo_create_feature_dev_data(binfo);
++	if (IS_ERR(pdata))
++		return PTR_ERR(pdata);
++
++	ret = platform_device_add(binfo->feature_dev);
++	if (ret)
++		return ret;
++
++	if (feature_dev_id_type(binfo->feature_dev) == PORT_ID)
++		dfl_fpga_cdev_add_port_data(binfo->cdev, pdata);
++	else
++		binfo->cdev->fme_dev = get_device(&binfo->feature_dev->dev);
++
++	/*
++	 * reset it to avoid build_info_free() freeing their resource.
++	 *
++	 * The resource of successfully registered feature devices
++	 * will be freed by platform_device_unregister(). See the
++	 * comments in build_info_create_dev().
++	 */
++	binfo->feature_dev = NULL;
++
++	return 0;
++}
++
+ static void build_info_free(struct build_feature_devs_info *binfo)
+ {
+ 	struct dfl_feature_info *finfo, *p;
 -- 
 2.47.0
 
