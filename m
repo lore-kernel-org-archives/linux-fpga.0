@@ -1,48 +1,48 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38034145B18;
-	Wed, 20 Nov 2024 01:11:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 487671474A5;
+	Wed, 20 Nov 2024 01:11:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1732065110; cv=none; b=JWgFkgFCdKqoWtZd/SADuKdhIzS18VaNv/OkOFUo4oGSEywsFXQNL73eHhRORlF5rIAPJVi8kF0unRylkUNCpsBvEzAOncuzlBC2aEo7IemHnN7ACCob3eFiaXUfvpwI59ycVi5CrdFfz6mu6qgXlWizBl8Zac0Gox7FMZlUGWw=
+	t=1732065110; cv=none; b=DqDIdpU+DPrcDjdpC0Rcafm0lFK2ruRQNGwHKkkl2hz4PFl75lGR+SoA2cFwqNzb6gV1I3RaVVir+le5JGN1mrEuzqcZ/R6bsohs6RWgl84nRk1maFBBtB/XU88kJHfEu6ynqcxaqIafpxUZ+OgSOiZNOgC7uRgprpCv4w+TUvs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1732065110; c=relaxed/simple;
-	bh=Pk9g8e5/ks8j2zFFTFyPo0YQPtP9Wrtdu2ahGNNfISY=;
+	bh=xp3RlZfzVTWveBY4glj257I12Rv13of4juVhCN8tddE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XYTY0FRgaQwe3gGLRojCVOpeUkkrDgqbWgk3NizcCiLGHhOIEUYBjCDQ/+/+1WPQCSmIr29AStkoN6C2dXoV86xIOy1bS77zLYG0c8RHMHNB+nMqFk25Bsr2Mh7McicMkE3PsUT8LbA5d10RVTExYv3qX512jlM0Xx2j3t0J/i4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EvpFh0rh; arc=none smtp.client-ip=198.175.65.11
+	 MIME-Version; b=IgG5KgZhXMOV79E8wR9P3PLLbdp/I++C9oDxUuLMHCnTqD4/G4x1ZvlSx2NcShorePyI+y79+2D4UqAv5/xT43IskkNg2PLYfroEi6tEHaOM81CcKTmXY2fPlQ/eVSK3x4ESKLPQRWne21U6hCag+gzkpmNOcGRV6ReehbbJQ94=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Co1Wt8bV; arc=none smtp.client-ip=198.175.65.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EvpFh0rh"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Co1Wt8bV"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1732065108; x=1763601108;
+  t=1732065109; x=1763601109;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=Pk9g8e5/ks8j2zFFTFyPo0YQPtP9Wrtdu2ahGNNfISY=;
-  b=EvpFh0rhscWQF8zIgBywzCIFLfeKrAEFpBj3DGLkJVbiwMkUONltVUVA
-   t/ypJSmeG8CySfFHNeCqJCqGj1A+lYxu6xjCVYMs9NS1ylzZ7NTjyA7cn
-   bsEzFRALWy3J8QE/Aq63Qb3y2iBPxdjqtS0JvsqQoTvpFvh538t1hnIDY
-   GY8BIsZx/NNzZhpGcWpIJJi0D/vlNialUk57jivMzYiflAMP3CS+ZOJRT
-   qhiuJ2qVAedWGB5KZts3PktE+YBueUnEP4CO/evhb4UOr8dEda4Ua1rCw
-   4XJnHprXSrGTeB8amoCnlqQTcusLLWfSj4v+4AkSgnAuv2NYTQ1cADr0X
+  bh=xp3RlZfzVTWveBY4glj257I12Rv13of4juVhCN8tddE=;
+  b=Co1Wt8bV/mFFr0eAUERqsyNHLZWoLFZoY6Bzv+zNX7vE/RJ8FZeJLKBw
+   jKZjiZq4pUMTLzxVFJTdZRzSHxADSDGztBO/wtzQmB8Hrv3hByDKvuqTz
+   84U/jxpiJ9weCEKezlr03OfLX+yOLXJc3FEprhVcLggKFyg4v8eO56OAD
+   8nPyLPkGY177nIO2DiJyZjahVyvGPdG+35UQh+d5BM43KatCIIb7UX0YZ
+   HqlTkfBJbhQ2truQsplotWk/XZwUdy26rfV2MEU85eB6ldvESehOUAHCH
+   dCI33pyK2l9/lyJOlPqf9YOu9Dav0Pjp4ymEP640KvT7IcbTCURm8775W
    w==;
-X-CSE-ConnectionGUID: 0/cnNVHRRUa9L+mq0Qfuxw==
-X-CSE-MsgGUID: 82IGuftVT1iMEi0Uob47Zg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11261"; a="42613016"
+X-CSE-ConnectionGUID: iocxHCcSRHqIShjgigpf6A==
+X-CSE-MsgGUID: Z3amp7hpTSyOKfVsBuADkA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11261"; a="42613033"
 X-IronPort-AV: E=Sophos;i="6.12,168,1728975600"; 
-   d="scan'208";a="42613016"
+   d="scan'208";a="42613033"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
   by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2024 17:11:41 -0800
-X-CSE-ConnectionGUID: z9OPfEs5Q5GKGcSfdWVVcw==
-X-CSE-MsgGUID: AhlHPMJFQ6GmcYjczWN3Mw==
+X-CSE-ConnectionGUID: 7c1PbKxwSS+myjIPXzQRdg==
+X-CSE-MsgGUID: wiRLrVMeS4uOiMEBrquvWA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.12,168,1728975600"; 
-   d="scan'208";a="93813601"
+   d="scan'208";a="93813615"
 Received: from sj-4150-psse-sw-opae-dev3.sj.altera.com ([10.244.138.109])
-  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2024 17:11:40 -0800
+  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2024 17:11:41 -0800
 From: Peter Colberg <peter.colberg@intel.com>
 To: Wu Hao <hao.wu@intel.com>,
 	Tom Rix <trix@redhat.com>,
@@ -55,9 +55,9 @@ Cc: Russ Weight <russ.weight@linux.dev>,
 	Matthew Gerlach <matthew.gerlach@linux.intel.com>,
 	Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>,
 	Peter Colberg <peter.colberg@intel.com>
-Subject: [PATCH v5 12/18] fpga: dfl: store MMIO resources in feature device data
-Date: Tue, 19 Nov 2024 20:10:28 -0500
-Message-ID: <20241120011035.230574-13-peter.colberg@intel.com>
+Subject: [PATCH v5 16/18] fpga: dfl: remove unneeded function build_info_create_dev()
+Date: Tue, 19 Nov 2024 20:10:32 -0500
+Message-ID: <20241120011035.230574-17-peter.colberg@intel.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241120011035.230574-1-peter.colberg@intel.com>
 References: <20241120011035.230574-1-peter.colberg@intel.com>
@@ -69,110 +69,59 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Instead of directly copying the MMIO resource of each feature to the
-feature device resources, add a new member to the feature device data
-to store the resources and copy them to the feature device using
-platform_device_add_resources(). This prepares a subsequent commit
-which completely destroys and recreates the feature device when
-releasing and reassigning the corresponding port, respectively.
+Remove the function build_info_create_dev(), which no longer serves its
+original purpose now that the allocation of the platform device has been
+moved to feature_dev_register().
 
 Signed-off-by: Peter Colberg <peter.colberg@intel.com>
 Reviewed-by: Matthew Gerlach <matthew.gerlach@linux.intel.com>
 Reviewed-by: Basheer Ahmed Muddebihal <basheer.ahmed.muddebihal@linux.intel.com>
-Acked-by: Xu Yilun <yilun.xu@intel.com>
 ---
 Changes since v4:
-- No changes.
+- Revise commit description to be confirmative, from (the function)
+  "may be removed" to "Remove the function".
 
 Changes since v3:
 - New patch extracted from last patch of v3 series.
 ---
- drivers/fpga/dfl.c | 21 +++++++++++++--------
- drivers/fpga/dfl.h |  4 ++++
- 2 files changed, 17 insertions(+), 8 deletions(-)
+ drivers/fpga/dfl.c | 17 ++---------------
+ 1 file changed, 2 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index bf2c7381eebd..5e9052b98c4a 100644
+index 91f12272da3e..203b14e292b4 100644
 --- a/drivers/fpga/dfl.c
 +++ b/drivers/fpga/dfl.c
-@@ -761,6 +761,11 @@ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
- 	if (!fdata->features)
- 		return ERR_PTR(-ENOMEM);
- 
-+	fdata->resources = devm_kcalloc(binfo->dev, binfo->feature_num,
-+					sizeof(*fdata->resources), GFP_KERNEL);
-+	if (!fdata->resources)
-+		return ERR_PTR(-ENOMEM);
-+
- 	fdata->dev = fdev;
- 	fdata->type = type;
- 	fdata->num = binfo->feature_num;
-@@ -778,13 +783,6 @@ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
- 	 */
- 	WARN_ON(fdata->disable_count);
- 
--	/* each sub feature has one MMIO resource */
--	fdev->num_resources = binfo->feature_num;
--	fdev->resource = kcalloc(binfo->feature_num, sizeof(*fdev->resource),
--				 GFP_KERNEL);
--	if (!fdev->resource)
--		return ERR_PTR(-ENOMEM);
--
- 	/* fill features and resource information for feature dev */
- 	list_for_each_entry_safe(finfo, p, &binfo->sub_features, node) {
- 		struct dfl_feature *feature = &fdata->features[index++];
-@@ -822,7 +820,7 @@ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
- 				return feature->ioaddr;
- 		} else {
- 			feature->resource_index = res_idx;
--			fdev->resource[res_idx++] = finfo->mmio_res;
-+			fdata->resources[res_idx++] = finfo->mmio_res;
- 		}
- 
- 		if (finfo->nr_irqs) {
-@@ -843,6 +841,8 @@ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
- 		kfree(finfo);
- 	}
- 
-+	fdata->resource_num = res_idx;
-+
+@@ -858,16 +858,6 @@ binfo_create_feature_dev_data(struct build_feature_devs_info *binfo)
  	return fdata;
  }
  
-@@ -886,6 +886,11 @@ static int feature_dev_register(struct dfl_feature_dev_data *fdata)
- 	fdev->dev.parent = &fdata->dfl_cdev->region->dev;
- 	fdev->dev.devt = dfl_get_devt(dfl_devs[fdata->type].devt_type, fdev->id);
+-static int
+-build_info_create_dev(struct build_feature_devs_info *binfo)
+-{
+-	binfo->feature_num = 0;
+-
+-	INIT_LIST_HEAD(&binfo->sub_features);
+-
+-	return 0;
+-}
+-
+ /*
+  * register current feature device, it is called when we need to switch to
+  * another feature parsing or we have parsed all features on given device
+@@ -1326,11 +1316,8 @@ static int parse_feature_fiu(struct build_feature_devs_info *binfo,
+ 		return -EINVAL;
  
-+	ret = platform_device_add_resources(fdev, fdata->resources,
-+					    fdata->resource_num);
-+	if (ret)
-+		return ret;
-+
- 	pdata.fdata = fdata;
- 	ret = platform_device_add_data(fdev, &pdata, sizeof(pdata));
+ 	binfo->type = type;
+-
+-	/* create platform device for dfl feature dev */
+-	ret = build_info_create_dev(binfo);
+-	if (ret)
+-		return ret;
++	binfo->feature_num = 0;
++	INIT_LIST_HEAD(&binfo->sub_features);
+ 
+ 	ret = create_feature_instance(binfo, 0, 0, 0);
  	if (ret)
-diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
-index d2765555e109..921d946e4820 100644
---- a/drivers/fpga/dfl.h
-+++ b/drivers/fpga/dfl.h
-@@ -317,6 +317,8 @@ struct dfl_feature {
-  * @num: number for sub features.
-  * @private: ptr to feature dev private data.
-  * @features: sub features for the feature dev.
-+ * @resource_num: number of resources for the feature dev.
-+ * @resources: resources for the feature dev.
-  */
- struct dfl_feature_dev_data {
- 	struct list_head node;
-@@ -331,6 +333,8 @@ struct dfl_feature_dev_data {
- 	void *private;
- 	int num;
- 	struct dfl_feature *features;
-+	int resource_num;
-+	struct resource *resources;
- };
- 
- /**
 -- 
 2.47.0
 
