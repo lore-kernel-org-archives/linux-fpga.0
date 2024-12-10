@@ -1,46 +1,46 @@
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2085.outbound.protection.outlook.com [40.107.236.85])
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2052.outbound.protection.outlook.com [40.107.92.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00CC2204560;
-	Tue, 10 Dec 2024 18:37:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.236.85
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8102F214214;
+	Tue, 10 Dec 2024 18:38:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.92.52
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733855882; cv=fail; b=liqkqvGQGwkcFaM0xHv7gyA3ObPO7n0ZbJpby9Q2uYgsHQy62w/xjHU4lc+GmTfZ6ITjcEVnNZReWaRxpwjnLoafFGn6GnasEwHU1PokNSHhRePhamPW4SEbE/mz0QpryH7JHa+YwcnPBjmzASHA6kgEpPkMYrGDh+U+TXtyBrE=
+	t=1733855887; cv=fail; b=t93RIeURBapBeDvmDqSGflsUjVghAki6yhVvm4SGyhiFKQCPmk+lzsEdAkzQE1qcYGRbbSfwFetUXpGEuYbpa3ZBPmzgMfKzGZFi07ylD97cC2BRwIURpsFuEW1E3UPPE42TJF3W3StpK0iCRpMSVTpw9EgDxD1dD7xqPCyMoFA=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733855882; c=relaxed/simple;
-	bh=pRujW3q7M3cb6eZ3WLuXAcZf3pSvABOjtEF5U6rvvv0=;
+	s=arc-20240116; t=1733855887; c=relaxed/simple;
+	bh=GpQDLaKH50MB2GBB3cqdgGDlaFb3zQl2c+JiALyAiMk=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=cr3tX3RdkxROfotMIjzw95R332VFkkISx57q5rWvdBaoajQ6WcnSwZvryqAwtN1P1gamS1J8WYbLSboq4vnsPHVA8uPgD5neyZ9TqR3AVFx4NL1cSDBKU/IOi0mNd9IPAcPu33b4rFC3mZEqz/TyUvWO9z1xUd1egPm6YzVLSxg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=iDdfLECX; arc=fail smtp.client-ip=40.107.236.85
+	 MIME-Version:Content-Type; b=KCEvrXFS1A/yRe8W1xuJjHh5OopApKk9yIYHDpopvCLIPZJwNqfmnMrVYrkXH7nzMPkPupMd9iSe9PXQKEbne+p6w+Htg+zc17NxjlTElu4yHNWeqMWM6oMwrvqYvE0oz1tMpvRtgfljlJ4Qs0TT2muEmBTazOUfhl0JzHAi1eU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=a5Gd/XZT; arc=fail smtp.client-ip=40.107.92.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="iDdfLECX"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="a5Gd/XZT"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=bP0NE9Nt6kq5Fwa1O8DRDbdKdCA3s7Wn+AuxFnWRF4TEwuHxt50vnfFH9LjBpJIuDTl+bni+tttSeljxiX4wSiC10OttZTq0gh5BeQl88ltRO9gJP/zfKPCRh71z1zDKiEf67sSVFlFzjdYLJFKKNmz0k/2GBTbSCPoLLNiwKb9ZEykGmP0nUKCMwhqZNSRpiD4SxngA3nw0iElWGHGxM/ADoha/J3fIEUpeeg8QE3zsCj/jJBe3pg4JKyP6dYXTMxJa9LM21ZCacHohI/eUvTCWpODfiJtK52xBGhtE5v7idEcYhmN1AB517FeM/BQ3LwEWG18JXb5EfTZSf4fbsA==
+ b=FXtETrF8USuL5eNk/+J8JIkMouoTlSTaek7buB24tHo7l3J6GFiZRe1wHe/9S5nA5zZ9BfLL7CzsMemaiZlnm7Gk7x6AJEG4gydmQDSAz+vETPrXKRJHJSSuvLRoJdMUS2KXUn8NS6YmDSbSmYTtWI6rLIKmHA4sympSZLe2jKSVOk8YxocE37yXrsVR7yTA81gKNLVbjV0kpcOwZJscbhlP8sMyNt96Ul2TRU25CJ8liNoYcXBkACwumIwlu5EeuLdTCooT9cOhN3xCnD0TlPNIE4C6oRroZ7PPT4Wi80VeCi/ABwqNalEWNSISJdeEbevRXD0YRiZdCvVX8HTN5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=tdREsDzyVJR57/05d5vJn3b91G3BJJCrMraFtWha6eg=;
- b=qt4A7ATn1PjQi1SsZgcpvL0+pDUHOPwdrg4mqeL+vV75Dm1qn/v/2/gk/9oRUlQ+AdZwFMeR4L4DWuZzQ7p1ADJ+9fQGNX/4a2VHjlAXhFqVaecQuem/3Bv6dfkHVD3wFtNMBx+JLaL0j+19jLZy7zaxLs2F3gg8rGm9sxRQpb8hRU+2QFSXdzvrdpLQM+QWMpPTu44ub5pMaEYC23Xe/CBaP4JkhrJKZJ9H0q5LPgKVu+KPv9+NVpzyozAVl5Mb/5yEX8caEASRQ2oFl7Rx1aMkYxiBmeCW3nSA4JOHaMfwuccrTHvnM/i6XtrVB+6JiO1xFfnafYEffjwhyVriEg==
+ bh=8qYHfyBW3ia1q5G4plYvmmIk4ry4jwrUFeKOExRWp7Q=;
+ b=PeRBOXSpy71nedndjiewuY69ahiAOGruZUPhF42IuZ7Lv2K68e/T3tQ0ZA96HOGgZ8M+wh4Xjswzb7lmV/lKDViLai3Mc2bE2nGS49hjx8BeuSV6eeyW5E6/cwHGGUWsKmEadrw/QRqXwySwqcWxM9ZwmEP7xEZEslS78Na0Udrc8gIvdnnw5ZFeJTQCjO/8wQtsjy6bZkI8QOiYC2PnUXaR9r07Mq1TSTGwSiVW3UxSz0P1D+mvKPlAtmDiNYcegOA5g7NQJUc9P1fFItrg3i3HV311uoOiWURg6Wazom6J+rm1JDkqdb3Ell5+E5/ytuZe92LRxHDXHkctuvbp1w==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
  dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
  header.from=amd.com; dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=tdREsDzyVJR57/05d5vJn3b91G3BJJCrMraFtWha6eg=;
- b=iDdfLECXIvIBiKdO4YR7DxFsz9NCVxl47YmIePXDg9j9paO0V6VIKvCRgWeZUWoL5Mk/bVf+39g90CbCVHnSbRjOABytC0Cfmcy+3EikJcLCqcPemTOgma9qye5UZ0eWJYOBQgid7qNDUPWIawRaqdZhU8n2hJTL3axTiTEb36c=
-Received: from SN7PR04CA0225.namprd04.prod.outlook.com (2603:10b6:806:127::20)
- by CH0PR12MB8529.namprd12.prod.outlook.com (2603:10b6:610:18d::5) with
+ bh=8qYHfyBW3ia1q5G4plYvmmIk4ry4jwrUFeKOExRWp7Q=;
+ b=a5Gd/XZTiq8vnZyvEqa/+5Adgi0ZQ+Fo3qNsBtNG/kscHT2kA9SJMRGQyjqP3M+ulkkvaTON3jdYHaciV5H2H61CTZ782Sqx8onKaGfzqFQaXabKWwe/p/xwpR8a+kbOa1a3IMPINbMmsjtD2o7ZIGlRGnYqawj3wbqQFvJxk4U=
+Received: from PH7P221CA0020.NAMP221.PROD.OUTLOOK.COM (2603:10b6:510:32a::6)
+ by CH3PR12MB8306.namprd12.prod.outlook.com (2603:10b6:610:12c::5) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8230.12; Tue, 10 Dec
- 2024 18:37:53 +0000
-Received: from SN1PEPF000252A3.namprd05.prod.outlook.com
- (2603:10b6:806:127:cafe::ca) by SN7PR04CA0225.outlook.office365.com
- (2603:10b6:806:127::20) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.8230.15 via Frontend Transport; Tue,
- 10 Dec 2024 18:37:53 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8251.14; Tue, 10 Dec
+ 2024 18:37:58 +0000
+Received: from SN1PEPF000252A2.namprd05.prod.outlook.com
+ (2603:10b6:510:32a:cafe::4f) by PH7P221CA0020.outlook.office365.com
+ (2603:10b6:510:32a::6) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.8251.14 via Frontend Transport; Tue,
+ 10 Dec 2024 18:37:57 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -48,25 +48,28 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- SN1PEPF000252A3.mail.protection.outlook.com (10.167.242.10) with Microsoft
+ SN1PEPF000252A2.mail.protection.outlook.com (10.167.242.9) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.8230.7 via Frontend Transport; Tue, 10 Dec 2024 18:37:53 +0000
-Received: from SATLEXMB03.amd.com (10.181.40.144) by SATLEXMB04.amd.com
+ 15.20.8230.7 via Frontend Transport; Tue, 10 Dec 2024 18:37:57 +0000
+Received: from SATLEXMB06.amd.com (10.181.40.147) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Tue, 10 Dec
- 2024 12:37:52 -0600
+ 2024 12:37:55 -0600
+Received: from SATLEXMB03.amd.com (10.181.40.144) by SATLEXMB06.amd.com
+ (10.181.40.147) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Tue, 10 Dec
+ 2024 12:37:55 -0600
 Received: from xsjyliu51.xilinx.com (10.180.168.240) by SATLEXMB03.amd.com
  (10.181.40.144) with Microsoft SMTP Server id 15.1.2507.39 via Frontend
- Transport; Tue, 10 Dec 2024 12:37:52 -0600
+ Transport; Tue, 10 Dec 2024 12:37:54 -0600
 From: Yidong Zhang <yidong.zhang@amd.com>
 To: <linux-kernel@vger.kernel.org>, <linux-fpga@vger.kernel.org>,
 	<mdf@kernel.org>, <hao.wu@intel.com>, <yilun.xu@intel.com>
-CC: Yidong Zhang <yidong.zhang@amd.com>, <lizhi.hou@amd.com>, DMG Karthik
-	<Karthik.DMG@amd.com>, Nishad Saraf <nishads@amd.com>, Prapul Krishnamurthy
-	<prapulk@amd.com>, Hayden Laccabue <hayden.laccabue@amd.com>
-Subject: [PATCH V2 1/4] drivers/fpga/amd: Add new driver amd versal-pci
-Date: Tue, 10 Dec 2024 10:37:30 -0800
-Message-ID: <20241210183734.30803-2-yidong.zhang@amd.com>
+CC: Yidong Zhang <yidong.zhang@amd.com>, <lizhi.hou@amd.com>, Nishad Saraf
+	<nishads@amd.com>, Prapul Krishnamurthy <prapulk@amd.com>
+Subject: [PATCH V2 4/4] drivers/fpga/amd: Add load xclbin and load firmware
+Date: Tue, 10 Dec 2024 10:37:33 -0800
+Message-ID: <20241210183734.30803-5-yidong.zhang@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20241210183734.30803-1-yidong.zhang@amd.com>
 References: <20241210183734.30803-1-yidong.zhang@amd.com>
@@ -78,95 +81,53 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-Received-SPF: None (SATLEXMB04.amd.com: yidong.zhang@amd.com does not
- designate permitted sender hosts)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SN1PEPF000252A3:EE_|CH0PR12MB8529:EE_
-X-MS-Office365-Filtering-Correlation-Id: aabfae20-d2f1-4bea-08e5-08dd1949c215
+X-MS-TrafficTypeDiagnostic: SN1PEPF000252A2:EE_|CH3PR12MB8306:EE_
+X-MS-Office365-Filtering-Correlation-Id: c14ca5e7-707b-4339-c743-08dd1949c48c
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|36860700013|1800799024|376014;
+	BCL:0;ARA:13230040|376014|1800799024|82310400026|36860700013;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?CmT7TenKLtLXaqSBzS9GT8sAk9R5ft/49vjjYOQ7FAeu43iWkOaanlQzQxpQ?=
- =?us-ascii?Q?rVwyEuCgntYLN8kANt6dbBoEJm0vLj1nNJypWIgatIcMBjpfQDEUoasd6lZt?=
- =?us-ascii?Q?d/4t0ULqV/m+ijFbAAa9liydb3qFa9QKYfcpie50r2AKGXBlbwkS6cuIySJP?=
- =?us-ascii?Q?C/a55hRkGpMjnvLXF+e6gTLg///3CHragSr9mntd67He+L0zViUc7hf5vK/z?=
- =?us-ascii?Q?xubr8TPbkJ0h/1jh5xVjaIwBUTmEGtBGby/4eb1Nl+RLeDz7aKN+lmMHc6Ro?=
- =?us-ascii?Q?8G0gp51K7/fkLeCA5fqzijs++Yti7YAkJlNoXIq6qy2OzAm/UUAN0bpBsaEl?=
- =?us-ascii?Q?UaC8j+4NyPFkZYzCu7g4OQnqbvCYRJ0v1DOhD2MITZ1Ax06rw7PKZqFWOg+g?=
- =?us-ascii?Q?9kX9y1nF4BV3L6vZA1iA90AeZvBRkyEhHgcjgp1byXvJAlFMdilPhlS8mV00?=
- =?us-ascii?Q?xO2HY8DHwkLcqugrI8tDUxPJNA4Qm+D2AaShvMrU3nJmBJzTBrRbPVhLlxbO?=
- =?us-ascii?Q?axlHMPCUi9OgaEgrIi48eTxBCWrtryg4wxQd+vCHJ/g3gMs4zRIdddFLovk1?=
- =?us-ascii?Q?9jSqrSPvyoVt+a6A6DAeoVpn0hJFiCb/65dbGvgFdCSPl2po9xgTWhbQT0MW?=
- =?us-ascii?Q?bb0a+4fIkb7ZtvHX6nfHsPKw47eTYUL9J3e25z9ym1x6O1eItZe0wpi75mxM?=
- =?us-ascii?Q?b6CliQ9jfz1uwpD7HO08KM+cR4xN0nWwE/uK7wUmJNLAVTB9APStqGlNmEm6?=
- =?us-ascii?Q?HsPRo2XIZJHjhhRuxyosPRreW14MN9sl9cEjPSLeBioASVH1naimKsB3kYte?=
- =?us-ascii?Q?zyyeWwOS/D3227TDpil5siCtwMebQisXz7jgfji7iBpN27AYsEXue7G+3n/M?=
- =?us-ascii?Q?39sL2aYwGb85N7bzLUllKV6s9ZWuXcUNpSZuwdptUojvRB1CV5NtkDSo3QmB?=
- =?us-ascii?Q?RL/YEbUnMHe+JaltepV2crVObo7LOM/2Li9/myq7HdG5HjRmYmW0ynf138fS?=
- =?us-ascii?Q?AUFvoN/ZFt4hjPN6YBXYexr9qbLtp4u6e8xxzw132HCvCO7lqbGchTeLV2M0?=
- =?us-ascii?Q?Brh5xubIe/F8dZnTO4wqZr9aFTxP5qDu+d47USvM3Dt0kuQQ06f9gVes8fZl?=
- =?us-ascii?Q?42JOctq/TTeeRSJZaJRmqy621z1D1GMQfcyKTPMD/kNsOokrQRpGnPfHOTgq?=
- =?us-ascii?Q?rJtndQa5cy70ZDvan5G0KTamDNgBVMpwPAbc4gdRFQmNgEfzqXNAvq+FTWAF?=
- =?us-ascii?Q?EXSWCoPDoI2VsCaHRbjEFzKkKm0bCCJZ/9zAZxvb4MKNZd5S13hBnB9J8y6o?=
- =?us-ascii?Q?ggK+ownkQt/dT3Ed4rJioBk/Bol1f5YU8tkCLv8daGY+dbboA+GXVe/bVHYS?=
- =?us-ascii?Q?q94C3Qm/Q0HjkLXG8nfbmlvRNX0eaq+zWw7SjNE/c6M/7gBtkm64AVq8PuCn?=
- =?us-ascii?Q?IGvAyOak0eyuTaql2Hvvr1OA+kivFLR/?=
+	=?us-ascii?Q?HxwKpdRrumlDz45/vWQRUuXHK5Ujacd3hcluhN4HrT8qtriubjyqefiHOP0a?=
+ =?us-ascii?Q?Gvf0nb7cKEv8yWBqQ9hm9kzROqJBAwKb+yUruLY9eYUP8kToWsZpicSiGBUu?=
+ =?us-ascii?Q?iSkR8r2bkMsYoYsQCxI9kN8NvFcd1xS+5Kau2/8ZsuC4WuvBh15RTgBBjgg5?=
+ =?us-ascii?Q?Jlx4uki5ONYHqoTw6DNrCCSe6+V49l+LZ2PEDdZUwL5i+K7FQJX3muKzLQL/?=
+ =?us-ascii?Q?rOP0F8RBbWii+geqCQnwlsbL7xjIKv5PkMH8JOt47+/6iAM6GAeKXXQnLIBX?=
+ =?us-ascii?Q?lPGhuqqLWMwOAnTH3lzH8DePEsyxaxXBaSGDLnAr/SGQQaYhcysmuCNIjJcz?=
+ =?us-ascii?Q?O+ljq605W7Eny8SGnXsHNmRiXs1MQHSjU8sjpAlNBFHsK9a5hp6TS0Gd11JA?=
+ =?us-ascii?Q?LF8Ix2/zSXlUnGRkDeQ33Y5P8F3wbhDl6ExwhzwAfZJXeMkjHhBeRiMEXZFI?=
+ =?us-ascii?Q?F6raDZMI0HmTIeG/LccZeGzze5WkoSEyl6H3LBIvC1ntsf4ljVTG90grcO8o?=
+ =?us-ascii?Q?i44U2VerdxRHBeZyrLkE1S8qI4W2OHlkr6Q7axNXTZHGL5CaXtvE/mCrxNNo?=
+ =?us-ascii?Q?FHO1SUXPyThcQprRfJXwpL4tJj4mhD55X2pAN+Kn2fHaQxdXMT1txQrUJoyv?=
+ =?us-ascii?Q?YtaNhJmx/HEmq7p+IZ4tF+Q0DSCfT91pgT8vKslZ9P6Sojnj0hSn5v63OMDI?=
+ =?us-ascii?Q?SNY7WM4mvcCEnu9C5R4orkY10JPZfyOm1sxLMbvWi9pWbSALmXTbmAhaZMZ6?=
+ =?us-ascii?Q?6OTlgjqMFWOzGgZ4qc5ERPNaxKjkKMPNvUn7KGvdna4Y/lkcBhDjbLhtDLIW?=
+ =?us-ascii?Q?3HWjVjqoLtqOvx23Wzte1S8jxnV3GApGVo0U9+M5hOQsE1QMNiOxbJq8m5sp?=
+ =?us-ascii?Q?6Zazu167vwZokkRjnFNyCv5a8O3AFf+oqkrCByxSqD+BVL1Nu0SHaHb7+vK6?=
+ =?us-ascii?Q?acKIhFw/Mq5hBK1jjTiojIYF9S9fRYB3XcvG4cTtmyvO8dGl4O5AhbO3vmbI?=
+ =?us-ascii?Q?pXroIUcWFtdOWkBC0R7p0L+bQn+QKkiqhpR1W2hhikGDuNHmTSXa/AS4KaJ0?=
+ =?us-ascii?Q?d88pIwn0y4yVYwsr4oMNkQrixUivUeKWFmele31WQGHHx6h0zpzFWtmrnrsG?=
+ =?us-ascii?Q?3FMrUvHnql9y/qZMlRNqY0wnapoRsx7//SzLv+v49Ip0gGnOo1CAo6KLQ77r?=
+ =?us-ascii?Q?BDzJ8Qs/eickFL/dAToyC7kj5VaNhMpS0p+cmElDaarL81XZL9KPS2isCaQH?=
+ =?us-ascii?Q?HuYGqDum66D9s7+9rqj+xRVTMHw0CJMkjvfAv5HHx2Oq9fyG1jEx00LS4tlN?=
+ =?us-ascii?Q?CZdWztU27zF7qjE0Txx5yq9kbyHlk4klGXDvTryZhSEH1FIw2AzoGG0SlEC8?=
+ =?us-ascii?Q?s9DvWajBUv2Gya1pla17UNl6/ZmYsTrW/M7gmvdo8x8CsWLHO3Ge+BGXuEwB?=
+ =?us-ascii?Q?Y2EFGlPO8vZYfFQgULBfy7ZZJeh+YA9J?=
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700013)(1800799024)(376014);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(1800799024)(82310400026)(36860700013);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Dec 2024 18:37:53.5162
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Dec 2024 18:37:57.6408
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: aabfae20-d2f1-4bea-08e5-08dd1949c215
+X-MS-Exchange-CrossTenant-Network-Message-Id: c14ca5e7-707b-4339-c743-08dd1949c48c
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	SN1PEPF000252A3.namprd05.prod.outlook.com
+	SN1PEPF000252A2.namprd05.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH0PR12MB8529
-
-AMD Versal based PCIe card, including V70, is designed for AI inference
-efficiency and is tuned for video analytics and natural language processing
-applications.
-
-The driver architecture:
-
-  +---------+  Communication +---------+  Remote  +-----+------+
-  |         |  Channel       |         |  Queue   |     |      |
-  | User PF | <============> | Mgmt PF | <=======>| FW  | FPGA |
-  +---------+                +---------+          +-----+------+
-    PL Data                    base FW
-                               APU FW
-                               PL Data (copy)
- - PL (FPGA Program Logic)
- - FW (Firmware)
-
-There are 2 separate drivers from the original XRT[1] design.
- - UserPF driver
- - MgmtPF driver
-
-The new AMD versal-pci driver will replace the MgmtPF driver for Versal
-PCIe card.
-
-The XRT[1] is already open-sourced. It includes solution of runtime for
-many different type of PCIe Based cards. It also provides utilities for
-managing and programming the devices.
-
-The AMD versal-pci stands for AMD Versal brand PCIe device management
-driver. This driver provides the following functionalities:
-
-   - module and PCI device initialization
-     this driver will attach to specific device id of V70 card;
-     the driver will initialize itself based on bar resources for
-     - communication channel:
-       a hardware message service between mgmt PF and user PF
-     - remote queue:
-       a hardware queue based ring buffer service between mgmt PF and PCIe
-       hardware firmware for programming FPGA Program Logic, loading
-       firmware and checking card healthy status.
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB8306
 
    - programming FW
      - The base FW is downloaded onto the flash of the card.
@@ -189,111 +150,317 @@ driver. This driver provides the following functionalities:
       |                     | |                   |
       +--  xclbin UUID    --+ +--interface UUID --+
 
-[1] https://github.com/Xilinx/XRT/blob/master/README.rst
-
-Co-developed-by: DMG Karthik <Karthik.DMG@amd.com>
-Signed-off-by: DMG Karthik <Karthik.DMG@amd.com>
 Co-developed-by: Nishad Saraf <nishads@amd.com>
 Signed-off-by: Nishad Saraf <nishads@amd.com>
 Co-developed-by: Prapul Krishnamurthy <prapulk@amd.com>
 Signed-off-by: Prapul Krishnamurthy <prapulk@amd.com>
-Co-developed-by: Hayden Laccabue <hayden.laccabue@amd.com>
-Signed-off-by: Hayden Laccabue <hayden.laccabue@amd.com>
 Signed-off-by: Yidong Zhang <yidong.zhang@amd.com>
 ---
- MAINTAINERS                        |   6 +
- drivers/fpga/Kconfig               |   3 +
- drivers/fpga/Makefile              |   3 +
- drivers/fpga/amd/Kconfig           |  15 ++
- drivers/fpga/amd/Makefile          |   5 +
- drivers/fpga/amd/versal-pci-main.c | 328 +++++++++++++++++++++++++++++
- drivers/fpga/amd/versal-pci.h      |  86 ++++++++
- 7 files changed, 446 insertions(+)
- create mode 100644 drivers/fpga/amd/Kconfig
- create mode 100644 drivers/fpga/amd/Makefile
- create mode 100644 drivers/fpga/amd/versal-pci-main.c
- create mode 100644 drivers/fpga/amd/versal-pci.h
+ drivers/fpga/amd/Makefile                |   3 +-
+ drivers/fpga/amd/versal-pci-main.c       | 137 ++++++-
+ drivers/fpga/amd/versal-pci-rm-queue.c   |  14 +-
+ drivers/fpga/amd/versal-pci-rm-service.c | 497 +++++++++++++++++++++++
+ drivers/fpga/amd/versal-pci-rm-service.h |  20 +
+ drivers/fpga/amd/versal-pci.h            |   2 +
+ 6 files changed, 649 insertions(+), 24 deletions(-)
+ create mode 100644 drivers/fpga/amd/versal-pci-rm-service.c
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 17daa9ee9384..302c10004c5d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1194,6 +1194,12 @@ L:	linux-spi@vger.kernel.org
- S:	Supported
- F:	drivers/spi/spi-amd.c
- 
-+AMD VERSAL PCI DRIVER
-+M:	Yidong Zhang <yidong.zhang@amd.com>
-+L:	linux-fpga@vger.kernel.org
-+S:	Supported
-+F:	drivers/fpga/amd/
-+
- AMD XGBE DRIVER
- M:	"Shyam Sundar S K" <Shyam-sundar.S-k@amd.com>
- L:	netdev@vger.kernel.org
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index 37b35f58f0df..dce060a7bd8f 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -290,4 +290,7 @@ config FPGA_MGR_LATTICE_SYSCONFIG_SPI
- 
- source "drivers/fpga/tests/Kconfig"
- 
-+# Driver files
-+source "drivers/fpga/amd/Kconfig"
-+
- endif # FPGA
-diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
-index aeb89bb13517..8412f3e211cc 100644
---- a/drivers/fpga/Makefile
-+++ b/drivers/fpga/Makefile
-@@ -58,5 +58,8 @@ obj-$(CONFIG_FPGA_DFL_NIOS_INTEL_PAC_N3000)	+= dfl-n3000-nios.o
- # Drivers for FPGAs which implement DFL
- obj-$(CONFIG_FPGA_DFL_PCI)		+= dfl-pci.o
- 
-+# AMD PCIe Versal Management Driver
-+obj-$(CONFIG_AMD_VERSAL_PCI)		+= amd/
-+
- # KUnit tests
- obj-$(CONFIG_FPGA_KUNIT_TESTS)		+= tests/
-diff --git a/drivers/fpga/amd/Kconfig b/drivers/fpga/amd/Kconfig
-new file mode 100644
-index 000000000000..b18a42a340ba
---- /dev/null
-+++ b/drivers/fpga/amd/Kconfig
-@@ -0,0 +1,15 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+config AMD_VERSAL_PCI
-+	tristate "AMD Versal PCIe Management Driver"
-+	select FW_LOADER
-+	select FW_UPLOAD
-+	depends on FPGA
-+	depends on HAS_IOMEM
-+	depends on PCI
-+	help
-+	  AMD Versal PCIe Management Driver provides management services to
-+	  download firmware, program bitstream, and communicate with the User
-+	  function.
-+
-+	  If "M" is selected, the driver module will be versal-pci
 diff --git a/drivers/fpga/amd/Makefile b/drivers/fpga/amd/Makefile
-new file mode 100644
-index 000000000000..5d1ef04b5e80
---- /dev/null
+index b2ffdbf23400..ffe4ead0d55e 100644
+--- a/drivers/fpga/amd/Makefile
 +++ b/drivers/fpga/amd/Makefile
-@@ -0,0 +1,5 @@
-+# SPDX-License-Identifier: GPL-2.0
-+
-+obj-$(CONFIG_AMD_VERSAL_PCI)			+= versal-pci.o
-+
-+versal-pci-$(CONFIG_AMD_VERSAL_PCI)		:= versal-pci-main.o
+@@ -4,4 +4,5 @@ obj-$(CONFIG_AMD_VERSAL_PCI)			+= versal-pci.o
+ 
+ versal-pci-$(CONFIG_AMD_VERSAL_PCI)		:= versal-pci-main.o \
+ 						   versal-pci-comm-chan.o \
+-						   versal-pci-rm-queue.o
++						   versal-pci-rm-queue.o \
++						   versal-pci-rm-service.o
 diff --git a/drivers/fpga/amd/versal-pci-main.c b/drivers/fpga/amd/versal-pci-main.c
-new file mode 100644
-index 000000000000..a10ccf86802b
---- /dev/null
+index a3b83197c6d5..b56449932c05 100644
+--- a/drivers/fpga/amd/versal-pci-main.c
 +++ b/drivers/fpga/amd/versal-pci-main.c
-@@ -0,0 +1,328 @@
+@@ -9,6 +9,8 @@
+ 
+ #include "versal-pci.h"
+ #include "versal-pci-comm-chan.h"
++#include "versal-pci-rm-service.h"
++#include "versal-pci-rm-queue.h"
+ 
+ #define DRV_NAME			"amd-versal-pci"
+ 
+@@ -18,22 +20,55 @@
+ static int versal_pci_fpga_write_init(struct fpga_manager *mgr, struct fpga_image_info *info,
+ 				      const char *buf, size_t count)
+ {
+-	/* TODO */
+-	return 0;
++	struct fpga_device *fdev = mgr->priv;
++	struct fw_tnx *tnx = &fdev->fw;
++	int ret;
++
++	ret = rm_queue_create_cmd(fdev->vdev->rdev, tnx->opcode, &tnx->cmd);
++	if (ret) {
++		fdev->state = FPGA_MGR_STATE_WRITE_INIT_ERR;
++		return ret;
++	}
++
++	fdev->state = FPGA_MGR_STATE_WRITE_INIT;
++	return ret;
+ }
+ 
+ static int versal_pci_fpga_write(struct fpga_manager *mgr, const char *buf,
+ 				 size_t count)
+ {
+-	/* TODO */
+-	return 0;
++	struct fpga_device *fdev = mgr->priv;
++	int ret;
++
++	ret = rm_queue_data_init(fdev->fw.cmd, buf, count);
++	if (ret) {
++		fdev->state = FPGA_MGR_STATE_WRITE_ERR;
++		rm_queue_destory_cmd(fdev->fw.cmd);
++		return ret;
++	}
++
++	fdev->state = FPGA_MGR_STATE_WRITE;
++	return ret;
+ }
+ 
+ static int versal_pci_fpga_write_complete(struct fpga_manager *mgr,
+ 					  struct fpga_image_info *info)
+ {
+-	/* TODO */
+-	return 0;
++	struct fpga_device *fdev = mgr->priv;
++	int ret;
++
++	ret = rm_queue_send_cmd(fdev->fw.cmd, RM_CMD_WAIT_DOWNLOAD_TIMEOUT);
++	if (ret) {
++		fdev->state = FPGA_MGR_STATE_WRITE_COMPLETE_ERR;
++		vdev_err(fdev->vdev, "Send cmd failed:%d, cid:%d", ret, fdev->fw.id);
++	} else {
++		fdev->state = FPGA_MGR_STATE_WRITE_COMPLETE;
++	}
++
++	rm_queue_data_fini(fdev->fw.cmd);
++	rm_queue_destory_cmd(fdev->fw.cmd);
++	memset(&fdev->fw, 0, sizeof(fdev->fw));
++	return ret;
+ }
+ 
+ static enum fpga_mgr_states versal_pci_fpga_state(struct fpga_manager *mgr)
+@@ -97,10 +132,20 @@ static struct fpga_device *versal_pci_fpga_init(struct versal_pci_device *vdev)
+ 		return ERR_PTR(ret);
+ 	}
+ 
+-	/* Place holder for rm_queue_get_fw_id(vdev->rdev) */
++	ret = rm_queue_get_fw_id(vdev->rdev);
++	if (ret) {
++		vdev_warn(vdev, "Failed to get fw_id");
++		ret = -EINVAL;
++		goto unregister_fpga_mgr;
++	}
+ 	versal_pci_uuid_parse(vdev, &vdev->intf_uuid);
+ 
+ 	return fdev;
++
++unregister_fpga_mgr:
++	fpga_mgr_unregister(fdev->mgr);
++
++	return ERR_PTR(ret);
+ }
+ 
+ static int versal_pci_program_axlf(struct versal_pci_device *vdev, char *data, size_t size)
+@@ -161,31 +206,84 @@ int versal_pci_load_xclbin(struct versal_pci_device *vdev, uuid_t *xuuid)
+ static enum fw_upload_err versal_pci_fw_prepare(struct fw_upload *fw_upload, const u8 *data,
+ 						u32 size)
+ {
+-	/* TODO */
++	struct firmware_device *fwdev = fw_upload->dd_handle;
++	struct axlf *xsabin = (struct axlf *)data;
++	int ret;
++
++	ret = memcmp(xsabin->magic, VERSAL_XCLBIN_MAGIC_ID, sizeof(VERSAL_XCLBIN_MAGIC_ID));
++	if (ret) {
++		vdev_err(fwdev->vdev, "Invalid device firmware");
++		return FW_UPLOAD_ERR_INVALID_SIZE;
++	}
++
++	/* Firmware size should never be over 1G and less than size of struct axlf */
++	if (!size || size != xsabin->header.length || size < sizeof(*xsabin) ||
++	    size > 1024 * 1024 * 1024) {
++		vdev_err(fwdev->vdev, "Invalid device firmware size");
++		return FW_UPLOAD_ERR_INVALID_SIZE;
++	}
++
++	ret = rm_queue_create_cmd(fwdev->vdev->rdev, RM_QUEUE_OP_LOAD_FW,
++				  &fwdev->cmd);
++	if (ret)
++		return FW_UPLOAD_ERR_RW_ERROR;
++
++	uuid_copy(&fwdev->uuid, &xsabin->header.uuid);
+ 	return FW_UPLOAD_ERR_NONE;
+ }
+ 
+ static enum fw_upload_err versal_pci_fw_write(struct fw_upload *fw_upload, const u8 *data,
+ 					      u32 offset, u32 size, u32 *written)
+ {
+-	/* TODO */
++	struct firmware_device *fwdev = fw_upload->dd_handle;
++	int ret;
++
++	ret = rm_queue_data_init(fwdev->cmd, data, size);
++	if (ret)
++		return FW_UPLOAD_ERR_RW_ERROR;
++
++	*written = size;
+ 	return FW_UPLOAD_ERR_NONE;
+ }
+ 
+ static enum fw_upload_err versal_pci_fw_poll_complete(struct fw_upload *fw_upload)
+ {
+-	/* TODO */
++	struct firmware_device *fwdev = fw_upload->dd_handle;
++	int ret;
++
++	vdev_info(fwdev->vdev, "Programming device firmware: %pUb", &fwdev->uuid);
++
++	ret = rm_queue_send_cmd(fwdev->cmd, RM_CMD_WAIT_DOWNLOAD_TIMEOUT);
++	if (ret) {
++		vdev_err(fwdev->vdev, "Send cmd failedi:%d, cid %d", ret, fwdev->id);
++		return FW_UPLOAD_ERR_HW_ERROR;
++	}
++
++	vdev_info(fwdev->vdev, "Successfully programmed device firmware: %pUb",
++		  &fwdev->uuid);
+ 	return FW_UPLOAD_ERR_NONE;
+ }
+ 
+ static void versal_pci_fw_cancel(struct fw_upload *fw_upload)
+ {
+-	/* TODO */
++	struct firmware_device *fwdev = fw_upload->dd_handle;
++
++	vdev_warn(fwdev->vdev, "canceled");
++	rm_queue_withdraw_cmd(fwdev->cmd);
+ }
+ 
+ static void versal_pci_fw_cleanup(struct fw_upload *fw_upload)
+ {
+-	/* TODO */
++	struct firmware_device *fwdev = fw_upload->dd_handle;
++
++	if (!fwdev->cmd)
++		return;
++
++	rm_queue_data_fini(fwdev->cmd);
++	rm_queue_destory_cmd(fwdev->cmd);
++
++	fwdev->cmd = NULL;
++	fwdev->id = 0;
+ }
+ 
+ static const struct fw_upload_ops versal_pci_fw_ops = {
+@@ -240,23 +338,31 @@ static void versal_pci_device_teardown(struct versal_pci_device *vdev)
+ 	versal_pci_fpga_fini(vdev->fdev);
+ 	versal_pci_fw_upload_fini(vdev->fwdev);
+ 	versal_pci_comm_chan_fini(vdev->ccdev);
++	versal_pci_rm_fini(vdev->rdev);
+ }
+ 
+ static int versal_pci_device_setup(struct versal_pci_device *vdev)
+ {
+ 	int ret;
+ 
++	vdev->rdev = versal_pci_rm_init(vdev);
++	if (IS_ERR(vdev->rdev)) {
++		ret = PTR_ERR(vdev->rdev);
++		vdev_err(vdev, "Failed to init remote queue, err %d", ret);
++		return ret;
++	}
++
+ 	vdev->fwdev = versal_pci_fw_upload_init(vdev);
+ 	if (IS_ERR(vdev->fwdev)) {
+ 		ret = PTR_ERR(vdev->fwdev);
+ 		vdev_err(vdev, "Failed to init FW uploader, err %d", ret);
+-		return ret;
++		goto rm_fini;
+ 	}
+ 
+ 	vdev->ccdev = versal_pci_comm_chan_init(vdev);
+ 	if (IS_ERR(vdev->ccdev)) {
+ 		ret = PTR_ERR(vdev->ccdev);
+-		vdev_err(vdev, "Failed to init comms channel, err %d", ret);
++		vdev_err(vdev, "Failed to init comm channel, err %d", ret);
+ 		goto upload_fini;
+ 	}
+ 
+@@ -272,7 +378,8 @@ static int versal_pci_device_setup(struct versal_pci_device *vdev)
+ 	versal_pci_comm_chan_fini(vdev->ccdev);
+ upload_fini:
+ 	versal_pci_fw_upload_fini(vdev->fwdev);
+-
++rm_fini:
++	versal_pci_rm_fini(vdev->rdev);
+ 	return ret;
+ }
+ 
+diff --git a/drivers/fpga/amd/versal-pci-rm-queue.c b/drivers/fpga/amd/versal-pci-rm-queue.c
+index 92f2e1165052..e62aa6791a95 100644
+--- a/drivers/fpga/amd/versal-pci-rm-queue.c
++++ b/drivers/fpga/amd/versal-pci-rm-queue.c
+@@ -23,37 +23,35 @@ static inline struct rm_device *to_rdev_msg_timer(struct timer_list *t)
+ 
+ static inline u32 rm_io_read(struct rm_device *rdev, u32 offset)
+ {
+-	/* TODO */
+-	return 0;
++	return rm_reg_read(rdev, RM_PCI_IO_BAR_OFF + offset);
+ }
+ 
+ static inline int rm_io_write(struct rm_device *rdev, u32 offset, u32 value)
+ {
+-	/* TODO */
++	rm_reg_write(rdev, RM_PCI_IO_BAR_OFF + offset, value);
+ 	return 0;
+ }
+ 
+ static inline u32 rm_queue_read(struct rm_device *rdev, u32 offset)
+ {
+-	/* TODO */
+-	return 0;
++	return rm_reg_read(rdev, RM_PCI_SHMEM_BAR_OFF + rdev->queue_base + offset);
+ }
+ 
+ static inline void rm_queue_write(struct rm_device *rdev, u32 offset, u32 value)
+ {
+-	/* TODO */
++	rm_reg_write(rdev, RM_PCI_SHMEM_BAR_OFF + rdev->queue_base + offset, value);
+ }
+ 
+ static inline void rm_queue_bulk_read(struct rm_device *rdev, u32 offset,
+ 				      u32 *value, u32 size)
+ {
+-	/* TODO */
++	rm_bulk_reg_read(rdev, RM_PCI_SHMEM_BAR_OFF + rdev->queue_base + offset, value, size);
+ }
+ 
+ static inline void rm_queue_bulk_write(struct rm_device *rdev, u32 offset,
+ 				       u32 *value, u32 size)
+ {
+-	/* TODO */
++	rm_bulk_reg_write(rdev, RM_PCI_SHMEM_BAR_OFF + rdev->queue_base + offset, value, size);
+ }
+ 
+ static inline u32 rm_queue_get_cidx(struct rm_device *rdev, enum rm_queue_type type)
+diff --git a/drivers/fpga/amd/versal-pci-rm-service.c b/drivers/fpga/amd/versal-pci-rm-service.c
+new file mode 100644
+index 000000000000..0a1d96a432b2
+--- /dev/null
++++ b/drivers/fpga/amd/versal-pci-rm-service.c
+@@ -0,0 +1,497 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Driver for Versal PCIe device
@@ -301,419 +468,545 @@ index 000000000000..a10ccf86802b
 + * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
 + */
 +
++#include <linux/bitfield.h>
 +#include <linux/pci.h>
++#include <linux/vmalloc.h>
 +
 +#include "versal-pci.h"
++#include "versal-pci-rm-service.h"
++#include "versal-pci-rm-queue.h"
 +
-+#define DRV_NAME			"amd-versal-pci"
++static DEFINE_IDA(rm_cmd_ids);
 +
-+#define PCI_DEVICE_ID_V70PQ2		0x50B0
-+#define VERSAL_XCLBIN_MAGIC_ID		"xclbin2"
++static void rm_uninstall_health_monitor(struct rm_device *rdev);
 +
-+static int versal_pci_fpga_write_init(struct fpga_manager *mgr, struct fpga_image_info *info,
-+				      const char *buf, size_t count)
++static inline struct rm_device *to_rdev_health_monitor(struct work_struct *w)
 +{
-+	/* TODO */
-+	return 0;
++	return container_of(w, struct rm_device, health_monitor);
 +}
 +
-+static int versal_pci_fpga_write(struct fpga_manager *mgr, const char *buf,
-+				 size_t count)
++static inline struct rm_device *to_rdev_health_timer(struct timer_list *t)
 +{
-+	/* TODO */
-+	return 0;
++	return container_of(t, struct rm_device, health_timer);
 +}
 +
-+static int versal_pci_fpga_write_complete(struct fpga_manager *mgr,
-+					  struct fpga_image_info *info)
++u32 rm_reg_read(struct rm_device *rdev, u32 offset)
 +{
-+	/* TODO */
-+	return 0;
++	return readl(rdev->vdev->io_regs + offset);
 +}
 +
-+static enum fpga_mgr_states versal_pci_fpga_state(struct fpga_manager *mgr)
++void rm_reg_write(struct rm_device *rdev, u32 offset, const u32 value)
 +{
-+	struct fpga_device *fdev = mgr->priv;
-+
-+	return fdev->state;
++	writel(value, rdev->vdev->io_regs + offset);
 +}
 +
-+static const struct fpga_manager_ops versal_pci_fpga_ops = {
-+	.write_init = versal_pci_fpga_write_init,
-+	.write = versal_pci_fpga_write,
-+	.write_complete = versal_pci_fpga_write_complete,
-+	.state = versal_pci_fpga_state,
-+};
-+
-+static void versal_pci_fpga_fini(struct fpga_device *fdev)
++void rm_bulk_reg_read(struct rm_device *rdev, u32 offset, u32 *value, size_t size)
 +{
-+	fpga_mgr_unregister(fdev->mgr);
++	void __iomem *src = rdev->vdev->io_regs + offset;
++	void *dst = (void *)value;
++
++	memcpy_fromio(dst, src, size);
++	/* Barrier of reading data from device */
++	rmb();
 +}
 +
-+static void versal_pci_uuid_parse(struct versal_pci_device *vdev, uuid_t *uuid)
++void rm_bulk_reg_write(struct rm_device *rdev, u32 offset, const void *value, size_t size)
 +{
-+	char str[UUID_STRING_LEN];
-+	u8 i, j;
++	void __iomem *dst = rdev->vdev->io_regs + offset;
 +
-+	/* parse uuid into a valid uuid string format */
-+	for (i  = 0, j = 0; i < strlen(vdev->fw_id) && i < sizeof(str); i++) {
-+		str[j++] = vdev->fw_id[i];
-+		if (j == 8 || j == 13 || j == 18 || j == 23)
-+			str[j++] = '-';
++	memcpy_toio(dst, value, size);
++	/* Barrier of writing data to device */
++	wmb();
++}
++
++static inline u32 rm_shmem_read(struct rm_device *rdev, u32 offset)
++{
++	return rm_reg_read(rdev, RM_PCI_SHMEM_BAR_OFF + offset);
++}
++
++static inline void rm_shmem_bulk_read(struct rm_device *rdev, u32 offset,
++				      u32 *value, u32 size)
++{
++	rm_bulk_reg_read(rdev, RM_PCI_SHMEM_BAR_OFF + offset, value, size);
++}
++
++static inline void rm_shmem_bulk_write(struct rm_device *rdev, u32 offset,
++				       const void *value, u32 size)
++{
++	rm_bulk_reg_write(rdev, RM_PCI_SHMEM_BAR_OFF + offset, value, size);
++}
++
++void rm_queue_destory_cmd(struct rm_cmd *cmd)
++{
++	ida_free(&rm_cmd_ids, cmd->sq_msg.hdr.id);
++	kfree(cmd);
++}
++
++static int rm_queue_copy_response(struct rm_cmd *cmd, void *buffer, ssize_t len)
++{
++	struct rm_cmd_cq_log_page *result = &cmd->cq_msg.data.page;
++	u64 off = cmd->sq_msg.data.page.address;
++
++	if (!result->len || len < result->len) {
++		vdev_err(cmd->rdev->vdev, "Invalid response or buffer size");
++		return -EINVAL;
 +	}
 +
-+	uuid_parse(str, uuid);
-+	vdev_info(vdev, "Interface uuid %pU", uuid);
++	rm_shmem_bulk_read(cmd->rdev, off, (u32 *)buffer, result->len);
++	return 0;
 +}
 +
-+static struct fpga_device *versal_pci_fpga_init(struct versal_pci_device *vdev)
++static void rm_queue_payload_fini(struct rm_cmd *cmd)
 +{
-+	struct device *dev = &vdev->pdev->dev;
-+	struct fpga_manager_info info = { 0 };
-+	struct fpga_device *fdev;
-+	int ret;
-+
-+	fdev = devm_kzalloc(dev, sizeof(*fdev), GFP_KERNEL);
-+	if (!fdev)
-+		return ERR_PTR(-ENOMEM);
-+
-+	fdev->vdev = vdev;
-+
-+	info = (struct fpga_manager_info) {
-+		.name = "AMD Versal FPGA Manager",
-+		.mops = &versal_pci_fpga_ops,
-+		.priv = fdev,
-+	};
-+
-+	fdev->mgr = fpga_mgr_register_full(dev, &info);
-+	if (IS_ERR(fdev->mgr)) {
-+		ret = PTR_ERR(fdev->mgr);
-+		vdev_err(vdev, "Failed to register FPGA manager, err %d", ret);
-+		return ERR_PTR(ret);
-+	}
-+
-+	/* Place holder for rm_queue_get_fw_id(vdev->rdev) */
-+	versal_pci_uuid_parse(vdev, &vdev->intf_uuid);
-+
-+	return fdev;
++	up(&cmd->rdev->cq.data_lock);
 +}
 +
-+static int versal_pci_program_axlf(struct versal_pci_device *vdev, char *data, size_t size)
++static int rm_queue_payload_init(struct rm_cmd *cmd,
++				 enum rm_cmd_log_page_type type)
 +{
-+	const struct axlf *axlf = (struct axlf *)data;
-+	struct fpga_image_info *image_info;
++	struct rm_device *rdev = cmd->rdev;
 +	int ret;
 +
-+	image_info = fpga_image_info_alloc(&vdev->pdev->dev);
-+	if (!image_info)
++	ret = down_interruptible(&rdev->cq.data_lock);
++	if (ret)
++		return ret;
++
++	cmd->sq_msg.data.page.address = rdev->cq.data_offset;
++	cmd->sq_msg.data.page.size = rdev->cq.data_size;
++	cmd->sq_msg.data.page.reserved1 = 0;
++	cmd->sq_msg.data.page.type = FIELD_PREP(RM_CMD_LOG_PAGE_TYPE_MASK,
++						type);
++	return 0;
++}
++
++void rm_queue_data_fini(struct rm_cmd *cmd)
++{
++	up(&cmd->rdev->sq.data_lock);
++}
++
++int rm_queue_data_init(struct rm_cmd *cmd, const char *buffer, ssize_t size)
++{
++	struct rm_device *rdev = cmd->rdev;
++	int ret;
++
++	if (!size || size > rdev->sq.data_size) {
++		vdev_err(rdev->vdev, "Unsupported file size");
 +		return -ENOMEM;
-+
-+	image_info->count = axlf->header.length;
-+	image_info->buf = (char *)axlf;
-+
-+	ret = fpga_mgr_load(vdev->fdev->mgr, image_info);
-+	if (ret) {
-+		vdev_err(vdev, "failed to load xclbin: %d", ret);
-+		goto exit;
 +	}
 +
-+	vdev_info(vdev, "Downloaded axlf %pUb of size %zu Bytes", &axlf->header.uuid, size);
-+	uuid_copy(&vdev->xclbin_uuid, &axlf->header.uuid);
++	ret = down_interruptible(&rdev->sq.data_lock);
++	if (ret)
++		return ret;
 +
-+exit:
-+	fpga_image_info_free(image_info);
++	rm_shmem_bulk_write(cmd->rdev, rdev->sq.data_offset, buffer, size);
 +
++	cmd->sq_msg.data.bin.address = rdev->sq.data_offset;
++	cmd->sq_msg.data.bin.size = size;
++	return 0;
++}
++
++int rm_queue_create_cmd(struct rm_device *rdev, enum rm_queue_opcode opcode,
++			struct rm_cmd **cmd_ptr)
++{
++	struct rm_cmd *cmd = NULL;
++	int ret, id;
++	u16 size;
++
++	if (rdev->firewall_tripped)
++		return -ENODEV;
++
++	cmd = kzalloc(sizeof(*cmd), GFP_KERNEL);
++	if (!cmd)
++		return -ENOMEM;
++	cmd->rdev = rdev;
++
++	switch (opcode) {
++	case RM_QUEUE_OP_LOAD_XCLBIN:
++		fallthrough;
++	case RM_QUEUE_OP_LOAD_FW:
++		fallthrough;
++	case RM_QUEUE_OP_LOAD_APU_FW:
++		size = sizeof(struct rm_cmd_sq_bin);
++		break;
++	case RM_QUEUE_OP_GET_LOG_PAGE:
++		size = sizeof(struct rm_cmd_sq_log_page);
++		break;
++	case RM_QUEUE_OP_IDENTIFY:
++		size = 0;
++		break;
++	case RM_QUEUE_OP_VMR_CONTROL:
++		size = sizeof(struct rm_cmd_sq_ctrl);
++		break;
++	default:
++		vdev_err(rdev->vdev, "Invalid cmd opcode %d", opcode);
++		ret = -EINVAL;
++		goto error;
++	}
++
++	cmd->opcode = opcode;
++	cmd->sq_msg.hdr.opcode = FIELD_PREP(RM_CMD_SQ_HDR_OPS_MSK, opcode);
++	cmd->sq_msg.hdr.msg_size = FIELD_PREP(RM_CMD_SQ_HDR_SIZE_MSK, size);
++
++	id = ida_alloc_range(&rm_cmd_ids, RM_CMD_ID_MIN, RM_CMD_ID_MAX, GFP_KERNEL);
++	if (id < 0) {
++		vdev_err(rdev->vdev, "Failed to alloc cmd ID: %d", id);
++		ret = id;
++		goto error;
++	}
++	cmd->sq_msg.hdr.id = id;
++
++	init_completion(&cmd->executed);
++
++	*cmd_ptr = cmd;
++	return 0;
++error:
++	kfree(cmd);
 +	return ret;
 +}
 +
-+int versal_pci_load_xclbin(struct versal_pci_device *vdev, uuid_t *xuuid)
++static int rm_queue_verify(struct rm_device *rdev)
 +{
-+	const char *xclbin_location = "xilinx/xclbins";
-+	char fw_name[100];
-+	const struct firmware *fw;
++	struct versal_pci_device *vdev = rdev->vdev;
++	struct rm_cmd_cq_identify *result;
++	struct rm_cmd *cmd;
++	u32 major, minor;
 +	int ret;
 +
-+	snprintf(fw_name, sizeof(fw_name), "%s/%pUb_%s.xclbin",
-+		 xclbin_location, xuuid, vdev->fw_id);
++	ret = rm_queue_create_cmd(rdev, RM_QUEUE_OP_IDENTIFY, &cmd);
++	if (ret)
++		return ret;
 +
-+	vdev_info(vdev, "trying to load %s", fw_name);
-+	ret = request_firmware(&fw, fw_name, &vdev->pdev->dev);
++	ret = rm_queue_send_cmd(cmd, RM_CMD_WAIT_CONFIG_TIMEOUT);
++	if (ret)
++		goto error;
++
++	result = &cmd->cq_msg.data.identify;
++	major = result->major;
++	minor = result->minor;
++	vdev_dbg(vdev, "VMR version %d.%d", major, minor);
++	if (!major) {
++		vdev_err(vdev, "VMR version is unsupported");
++		ret = -EOPNOTSUPP;
++	}
++
++error:
++	rm_queue_destory_cmd(cmd);
++	return ret;
++}
++
++static int rm_check_apu_status(struct rm_device *rdev, bool *status)
++{
++	struct rm_cmd_cq_control *result;
++	struct rm_cmd *cmd;
++	int ret;
++
++	ret = rm_queue_create_cmd(rdev, RM_QUEUE_OP_VMR_CONTROL, &cmd);
++	if (ret)
++		return ret;
++
++	ret = rm_queue_send_cmd(cmd, RM_CMD_WAIT_CONFIG_TIMEOUT);
++	if (ret)
++		goto error;
++
++	result = &cmd->cq_msg.data.ctrl;
++	*status = FIELD_GET(RM_CMD_VMR_CONTROL_PS_MASK, result->status);
++
++	rm_queue_destory_cmd(cmd);
++	return 0;
++
++error:
++	rm_queue_destory_cmd(cmd);
++	return ret;
++}
++
++static int rm_download_apu_fw(struct rm_device *rdev, char *data, ssize_t size)
++{
++	struct rm_cmd *cmd;
++	int ret;
++
++	ret = rm_queue_create_cmd(rdev, RM_QUEUE_OP_LOAD_APU_FW, &cmd);
++	if (ret)
++		return ret;
++
++	ret = rm_queue_data_init(cmd, data, size);
++	if (ret)
++		goto done;
++
++	ret = rm_queue_send_cmd(cmd, RM_CMD_WAIT_DOWNLOAD_TIMEOUT);
++
++done:
++	rm_queue_destory_cmd(cmd);
++	return ret;
++}
++
++int rm_queue_boot_apu(struct rm_device *rdev)
++{
++	char *bin = "xilinx/xrt-versal-apu.xsabin";
++	const struct firmware *fw = NULL;
++	bool status;
++	int ret;
++
++	ret = rm_check_apu_status(rdev, &status);
 +	if (ret) {
-+		vdev_warn(vdev, "request xclbin fw %s failed %d", fw_name, ret);
++		vdev_err(rdev->vdev, "Failed to get APU status");
 +		return ret;
 +	}
-+	vdev_info(vdev, "loaded data size %zu", fw->size);
 +
-+	ret = versal_pci_program_axlf(vdev, (char *)fw->data, fw->size);
++	if (status) {
++		vdev_dbg(rdev->vdev, "APU online. Skipping APU FW download");
++		return 0;
++	}
++
++	ret = request_firmware(&fw, bin, &rdev->vdev->pdev->dev);
++	if (ret) {
++		vdev_warn(rdev->vdev, "Request APU FW %s failed %d", bin, ret);
++		return ret;
++	}
++
++	vdev_dbg(rdev->vdev, "Starting... APU FW download");
++	ret = rm_download_apu_fw(rdev, (char *)fw->data, fw->size);
++	vdev_dbg(rdev->vdev, "Finished... APU FW download %d", ret);
++
 +	if (ret)
-+		vdev_err(vdev, "program axlf %s failed %d", fw_name, ret);
++		vdev_err(rdev->vdev, "Failed to download APU FW, ret:%d", ret);
 +
 +	release_firmware(fw);
 +
 +	return ret;
 +}
 +
-+static enum fw_upload_err versal_pci_fw_prepare(struct fw_upload *fw_upload, const u8 *data,
-+						u32 size)
++static void rm_check_health(struct work_struct *w)
 +{
-+	/* TODO */
-+	return FW_UPLOAD_ERR_NONE;
-+}
-+
-+static enum fw_upload_err versal_pci_fw_write(struct fw_upload *fw_upload, const u8 *data,
-+					      u32 offset, u32 size, u32 *written)
-+{
-+	/* TODO */
-+	return FW_UPLOAD_ERR_NONE;
-+}
-+
-+static enum fw_upload_err versal_pci_fw_poll_complete(struct fw_upload *fw_upload)
-+{
-+	/* TODO */
-+	return FW_UPLOAD_ERR_NONE;
-+}
-+
-+static void versal_pci_fw_cancel(struct fw_upload *fw_upload)
-+{
-+	/* TODO */
-+}
-+
-+static void versal_pci_fw_cleanup(struct fw_upload *fw_upload)
-+{
-+	/* TODO */
-+}
-+
-+static const struct fw_upload_ops versal_pci_fw_ops = {
-+	.prepare = versal_pci_fw_prepare,
-+	.write = versal_pci_fw_write,
-+	.poll_complete = versal_pci_fw_poll_complete,
-+	.cancel = versal_pci_fw_cancel,
-+	.cleanup = versal_pci_fw_cleanup,
-+};
-+
-+static void versal_pci_fw_upload_fini(struct firmware_device *fwdev)
-+{
-+	firmware_upload_unregister(fwdev->fw);
-+	kfree(fwdev->name);
-+}
-+
-+static u32 versal_pci_devid(struct versal_pci_device *vdev)
-+{
-+	return ((pci_domain_nr(vdev->pdev->bus) << 16) |
-+		PCI_DEVID(vdev->pdev->bus->number, vdev->pdev->devfn));
-+}
-+
-+static struct firmware_device *versal_pci_fw_upload_init(struct versal_pci_device *vdev)
-+{
-+	struct device *dev = &vdev->pdev->dev;
-+	struct firmware_device *fwdev;
-+	u32 devid;
-+
-+	fwdev = devm_kzalloc(dev, sizeof(*fwdev), GFP_KERNEL);
-+	if (!fwdev)
-+		return ERR_PTR(-ENOMEM);
-+
-+	devid = versal_pci_devid(vdev);
-+	fwdev->name = kasprintf(GFP_KERNEL, "%s%x", DRV_NAME, devid);
-+	if (!fwdev->name)
-+		return ERR_PTR(-ENOMEM);
-+
-+	fwdev->fw = firmware_upload_register(THIS_MODULE, dev, fwdev->name,
-+					     &versal_pci_fw_ops, fwdev);
-+	if (IS_ERR(fwdev->fw)) {
-+		kfree(fwdev->name);
-+		return ERR_CAST(fwdev->fw);
-+	}
-+
-+	fwdev->vdev = vdev;
-+
-+	return fwdev;
-+}
-+
-+static void versal_pci_device_teardown(struct versal_pci_device *vdev)
-+{
-+	versal_pci_fpga_fini(vdev->fdev);
-+	versal_pci_fw_upload_fini(vdev->fwdev);
-+}
-+
-+static int versal_pci_device_setup(struct versal_pci_device *vdev)
-+{
++	struct rm_device *rdev = to_rdev_health_monitor(w);
++	u32 max_len = PAGE_SIZE;
++	struct rm_cmd *cmd;
 +	int ret;
 +
-+	vdev->fwdev = versal_pci_fw_upload_init(vdev);
-+	if (IS_ERR(vdev->fwdev)) {
-+		ret = PTR_ERR(vdev->fwdev);
-+		vdev_err(vdev, "Failed to init FW uploader, err %d", ret);
++	ret = rm_queue_create_cmd(rdev, RM_QUEUE_OP_GET_LOG_PAGE, &cmd);
++	if (ret)
++		return;
++
++	ret = rm_queue_payload_init(cmd, RM_CMD_LOG_PAGE_AXI_TRIP_STATUS);
++	if (ret)
++		goto destroy_cmd;
++
++	ret = rm_queue_send_cmd(cmd, RM_CMD_WAIT_CONFIG_TIMEOUT);
++	if (ret == -ETIME || ret == -EINVAL)
++		goto payload_fini;
++
++	if (ret) {
++		u32 log_len = cmd->cq_msg.data.page.len;
++
++		if (log_len > max_len) {
++			vdev_warn(rdev->vdev, "msg size %d is greater than requested %d",
++				  log_len, max_len);
++			log_len = max_len;
++		}
++
++		if (log_len) {
++			char *buffer = vzalloc(log_len);
++
++			if (!buffer)
++				goto payload_fini;
++
++			ret = rm_queue_copy_response(cmd, buffer, log_len);
++			if (ret) {
++				vfree(buffer);
++				goto payload_fini;
++			}
++
++			vdev_err(rdev->vdev, "%s", buffer);
++			vfree(buffer);
++
++		} else {
++			vdev_err(rdev->vdev, "firewall check ret%d", ret);
++		}
++
++		rdev->firewall_tripped = 1;
++	}
++
++payload_fini:
++	rm_queue_payload_fini(cmd);
++destroy_cmd:
++	rm_queue_destory_cmd(cmd);
++
++	vdev_dbg(rdev->vdev, "check result: %d", ret);
++}
++
++static void rm_sched_health_check(struct timer_list *t)
++{
++	struct rm_device *rdev = to_rdev_health_timer(t);
++
++	if (rdev->firewall_tripped) {
++		vdev_err(rdev->vdev, "Firewall tripped, health check paused. Please reset card");
++		return;
++	}
++	/* Schedule a work in the general workqueue */
++	schedule_work(&rdev->health_monitor);
++	/* Periodic timer */
++	mod_timer(&rdev->health_timer, jiffies + RM_HEALTH_CHECK_TIMER);
++}
++
++static void rm_uninstall_health_monitor(struct rm_device *rdev)
++{
++	del_timer_sync(&rdev->health_timer);
++	cancel_work_sync(&rdev->health_monitor);
++}
++
++static void rm_install_health_monitor(struct rm_device *rdev)
++{
++	INIT_WORK(&rdev->health_monitor, &rm_check_health);
++	timer_setup(&rdev->health_timer, &rm_sched_health_check, 0);
++	mod_timer(&rdev->health_timer, jiffies + RM_HEALTH_CHECK_TIMER);
++}
++
++void versal_pci_rm_fini(struct rm_device *rdev)
++{
++	rm_uninstall_health_monitor(rdev);
++	rm_queue_fini(rdev);
++}
++
++struct rm_device *versal_pci_rm_init(struct versal_pci_device *vdev)
++{
++	struct rm_header *header;
++	struct rm_device *rdev;
++	u32 status;
++	int ret;
++
++	rdev = devm_kzalloc(&vdev->pdev->dev, sizeof(*rdev), GFP_KERNEL);
++	if (!rdev)
++		return ERR_PTR(-ENOMEM);
++
++	rdev->vdev = vdev;
++	header = &rdev->rm_metadata;
++
++	rm_shmem_bulk_read(rdev, RM_HDR_OFF, (u32 *)header, sizeof(*header));
++	if (header->magic != RM_HDR_MAGIC_NUM) {
++		vdev_err(vdev, "Invalid RM header 0x%x", header->magic);
++		ret = -ENODEV;
++		goto err;
++	}
++
++	status = rm_shmem_read(rdev, header->status_off);
++	if (!status) {
++		vdev_err(vdev, "RM status %d is not ready", status);
++		ret = -ENODEV;
++		goto err;
++	}
++
++	rdev->queue_buffer_size = header->data_end - header->data_start + 1;
++	rdev->queue_buffer_start = header->data_start;
++	rdev->queue_base = header->queue_base;
++
++	ret = rm_queue_init(rdev);
++	if (ret) {
++		vdev_err(vdev, "Failed to init cmd queue, ret %d", ret);
++		ret = -ENODEV;
++		goto err;
++	}
++
++	ret = rm_queue_verify(rdev);
++	if (ret) {
++		vdev_err(vdev, "Failed to verify cmd queue, ret %d", ret);
++		ret = -ENODEV;
++		goto queue_fini;
++	}
++
++	ret = rm_queue_boot_apu(rdev);
++	if (ret) {
++		vdev_err(vdev, "Failed to bringup APU, ret %d", ret);
++		ret = -ENODEV;
++		goto queue_fini;
++	}
++
++	rm_install_health_monitor(rdev);
++
++	return rdev;
++queue_fini:
++	rm_queue_fini(rdev);
++err:
++	return ERR_PTR(ret);
++}
++
++int rm_queue_get_fw_id(struct rm_device *rdev)
++{
++	struct rm_cmd *cmd;
++	int ret;
++
++	ret = rm_queue_create_cmd(rdev, RM_QUEUE_OP_GET_LOG_PAGE, &cmd);
++	if (ret)
 +		return ret;
-+	}
 +
-+	vdev->fdev = versal_pci_fpga_init(vdev);
-+	if (IS_ERR(vdev->fdev)) {
-+		ret = PTR_ERR(vdev->fdev);
-+		vdev_err(vdev, "Failed to init FPGA manager, err %d", ret);
-+		goto upload_fini;
-+	}
++	ret = rm_queue_payload_init(cmd, RM_CMD_LOG_PAGE_FW_ID);
++	if (ret)
++		goto destroy_cmd;
 +
-+	return 0;
++	ret = rm_queue_send_cmd(cmd, RM_CMD_WAIT_CONFIG_TIMEOUT);
++	if (ret)
++		goto payload_fini;
 +
-+upload_fini:
-+	versal_pci_fw_upload_fini(vdev->fwdev);
++	ret = rm_queue_copy_response(cmd, rdev->vdev->fw_id, sizeof(rdev->vdev->fw_id));
++	if (ret)
++		goto payload_fini;
++
++	vdev_info(rdev->vdev, "fw_id %s", rdev->vdev->fw_id);
++
++payload_fini:
++	rm_queue_payload_fini(cmd);
++destroy_cmd:
++	rm_queue_destory_cmd(cmd);
 +
 +	return ret;
 +}
+diff --git a/drivers/fpga/amd/versal-pci-rm-service.h b/drivers/fpga/amd/versal-pci-rm-service.h
+index 85a78257770a..90796567f0d3 100644
+--- a/drivers/fpga/amd/versal-pci-rm-service.h
++++ b/drivers/fpga/amd/versal-pci-rm-service.h
+@@ -206,4 +206,24 @@ struct rm_device {
+ 	__u32			firewall_tripped;
+ };
+ 
++/* rm service init api */
++struct rm_device *versal_pci_rm_init(struct versal_pci_device *vdev);
++void versal_pci_rm_fini(struct rm_device *rdev);
 +
-+static void versal_pci_remove(struct pci_dev *pdev)
-+{
-+	struct versal_pci_device *vdev = pci_get_drvdata(pdev);
++/* rm services APIs */
++int rm_queue_create_cmd(struct rm_device *rdev, enum rm_queue_opcode opcode,
++			struct rm_cmd **cmd_ptr);
++void rm_queue_destory_cmd(struct rm_cmd *cmd);
 +
-+	versal_pci_device_teardown(vdev);
-+}
++int rm_queue_data_init(struct rm_cmd *cmd, const char *buffer, ssize_t size);
++void rm_queue_data_fini(struct rm_cmd *cmd);
++int rm_queue_get_fw_id(struct rm_device *rdev);
++int rm_queue_boot_apu(struct rm_device *rdev);
 +
-+static int versal_pci_probe(struct pci_dev *pdev, const struct pci_device_id *pdev_id)
-+{
-+	struct versal_pci_device *vdev;
-+	int ret;
++/* rm bar register operation APIs */
++u32 rm_reg_read(struct rm_device *rdev, u32 offset);
++void rm_reg_write(struct rm_device *rdev, u32 offset, const u32 value);
++void rm_bulk_reg_read(struct rm_device *rdev, u32 offset, u32 *value, size_t size);
++void rm_bulk_reg_write(struct rm_device *rdev, u32 offset, const void *value, size_t size);
 +
-+	vdev = devm_kzalloc(&pdev->dev, sizeof(*vdev), GFP_KERNEL);
-+	if (!vdev)
-+		return -ENOMEM;
-+
-+	pci_set_drvdata(pdev, vdev);
-+	vdev->pdev = pdev;
-+
-+	ret = pcim_enable_device(pdev);
-+	if (ret) {
-+		vdev_err(vdev, "Failed to enable device %d", ret);
-+		return ret;
-+	}
-+
-+	vdev->io_regs = pcim_iomap_region(vdev->pdev, MGMT_BAR, DRV_NAME);
-+	if (IS_ERR(vdev->io_regs)) {
-+		vdev_err(vdev, "Failed to map RM shared memory BAR%d", MGMT_BAR);
-+		return PTR_ERR(vdev->io_regs);
-+	}
-+
-+	ret = versal_pci_device_setup(vdev);
-+	if (ret) {
-+		vdev_err(vdev, "Failed to setup Versal device %d", ret);
-+		return ret;
-+	}
-+
-+	vdev_dbg(vdev, "Successfully probed %s driver!", DRV_NAME);
-+	return 0;
-+}
-+
-+static const struct pci_device_id versal_pci_ids[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_XILINX, PCI_DEVICE_ID_V70PQ2), },
-+	{ 0 }
-+};
-+
-+MODULE_DEVICE_TABLE(pci, versal_pci_ids);
-+
-+static struct pci_driver versal_pci_driver = {
-+	.name = DRV_NAME,
-+	.id_table = versal_pci_ids,
-+	.probe = versal_pci_probe,
-+	.remove = versal_pci_remove,
-+};
-+
-+module_pci_driver(versal_pci_driver);
-+
-+MODULE_DESCRIPTION("AMD Versal PCIe Management Driver");
-+MODULE_AUTHOR("XRT Team <runtimeca39d@amd.com>");
-+MODULE_LICENSE("GPL");
+ #endif	/* __RM_SERVICE_H */
 diff --git a/drivers/fpga/amd/versal-pci.h b/drivers/fpga/amd/versal-pci.h
-new file mode 100644
-index 000000000000..1509bd0532ea
---- /dev/null
+index 6c1ca3ce505d..5d3f793a5b68 100644
+--- a/drivers/fpga/amd/versal-pci.h
 +++ b/drivers/fpga/amd/versal-pci.h
-@@ -0,0 +1,86 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Driver for Versal PCIe device
-+ *
-+ * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
-+ */
-+
-+#ifndef __VERSAL_PCI_H
-+#define __VERSAL_PCI_H
-+
-+#include <linux/firmware.h>
-+#include <linux/fpga/fpga-mgr.h>
-+
-+#define MGMT_BAR		0
-+
-+#define vdev_info(vdev, fmt, args...)					\
-+	dev_info(&(vdev)->pdev->dev, "%s: "fmt, __func__, ##args)
-+
-+#define vdev_warn(vdev, fmt, args...)					\
-+	dev_warn(&(vdev)->pdev->dev, "%s: "fmt, __func__, ##args)
-+
-+#define vdev_err(vdev, fmt, args...)					\
-+	dev_err(&(vdev)->pdev->dev, "%s: "fmt, __func__, ##args)
-+
-+#define vdev_dbg(vdev, fmt, args...)					\
-+	dev_dbg(&(vdev)->pdev->dev, fmt, ##args)
-+
-+struct versal_pci_device;
-+
-+struct axlf_header {
-+	__u64				length;
-+	__u8				reserved1[24];
-+	uuid_t				rom_uuid;
-+	__u8				reserved2[64];
-+	uuid_t				uuid;
-+	__u8				reserved3[24];
-+} __packed;
-+
-+struct axlf {
-+	__u8				magic[8];
-+	__u8				reserved[296];
-+	struct axlf_header		header;
-+} __packed;
-+
-+struct fw_tnx {
-+	struct rm_cmd			*cmd;
-+	__u32				opcode;
-+	__u32				id;
-+};
-+
-+struct fpga_device {
-+	enum fpga_mgr_states		state;
-+	struct fpga_manager		*mgr;
-+	struct versal_pci_device	*vdev;
-+	struct fw_tnx			fw;
-+};
-+
-+struct firmware_device {
-+	struct versal_pci_device	*vdev;
-+	struct fw_upload		*fw;
-+	__u8				*name;
-+	__u32				fw_name_id;
-+	struct rm_cmd			*cmd;
-+	__u32				id;
-+	uuid_t				uuid;
-+};
-+
-+struct versal_pci_device {
-+	struct pci_dev			*pdev;
-+
-+	struct fpga_device		*fdev;
-+	struct firmware_device		*fwdev;
-+	struct device			*device;
-+
-+	void __iomem			*io_regs;
-+	uuid_t				xclbin_uuid;
-+	uuid_t				intf_uuid;
-+	__u8				fw_id[UUID_STRING_LEN + 1];
-+
-+	__u8				*debugfs_root;
-+};
-+
-+/* versal pci driver APIs */
-+int versal_pci_load_xclbin(struct versal_pci_device *vdev, uuid_t *xclbin_uuid);
-+
-+#endif	/* __VERSAL_PCI_H */
+@@ -27,6 +27,7 @@
+ 
+ struct versal_pci_device;
+ struct comm_chan_device;
++struct rm_cmd;
+ 
+ struct axlf_header {
+ 	__u64				length;
+@@ -69,6 +70,7 @@ struct firmware_device {
+ struct versal_pci_device {
+ 	struct pci_dev			*pdev;
+ 
++	struct rm_device		*rdev;
+ 	struct fpga_device		*fdev;
+ 	struct comm_chan_device         *ccdev;
+ 	struct firmware_device		*fwdev;
 -- 
 2.34.1
 
