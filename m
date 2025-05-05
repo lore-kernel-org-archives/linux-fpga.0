@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30E112D37E0;
-	Mon,  5 May 2025 22:47:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11DD738AC68;
+	Mon,  5 May 2025 23:01:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746485238; cv=none; b=uX+aa0ZZ0Gf0MFTD9wswWihKVZNz8dpJr+NZoka+bWl9daJJcrk8A+iojzFmolN8g+3VGklzIzJt7aOGf4/b1tS0MvAl4KUxGxZzcskTi1Xj9fIIl5c713uOzEwEVvfKkysBRsFLuIxXuAcdL/0V1SmRjyjXxsCgCmjaNLweFjM=
+	t=1746486067; cv=none; b=KdJ3/wuiwhhTpdHxRf70N0Ct+WmmPpDmeW4hY3alyD9ndu4PCP4ofS9LOK1TsAOkcEi8m7POmy2uBevycpAnBrKHIn87M4poX21T4LE9s1EROW6c77szw2mXWp6ztkB2MPa6WLCpZ5WNW80q64Jawco/6CNqq6nnlzyTeNnMSrY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746485238; c=relaxed/simple;
-	bh=W2Cu9hRPMdSBIn6W4sF6wD4Okx7o3185REUr24RV8oA=;
+	s=arc-20240116; t=1746486067; c=relaxed/simple;
+	bh=8NVCDiz8iITfIRqltj6+2O2/8Z/wjMt5J+O98JIyMaA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=onma56KbCoHCoeOepMlBNfAoH5s4FfOo3g0wJkj4SiWIMqvAj5v7ckNY7yo+h6oImLoSvtWaKBTeVr7eN5oDDVmYb6fL3tXIqOKq7uv4sN8qNmAtMl/k/NO/vvfBUZac6X/oPjvHZ7uxsxMGne85Q1KGfC6H/2BKFbywONcMztU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GpCDwPiw; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=roz/ZGyO0gb3gKH7hHHvN9YSIXttu23IntZWedCBIZzSOBskFk7n0ptqdhYaroYgKsns0jj/p9hQiXkp5v+qLoJ0F11L3XROMylNPVMLOnUaJLy/VElar53Sp9auDL1h9lcY99L5atR0AdbdhH7KywwwdSqyh+ZvHu3fKLHcXCc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YD0hGEZm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GpCDwPiw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00FC8C4CEEE;
-	Mon,  5 May 2025 22:47:15 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YD0hGEZm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71FB0C4CEEF;
+	Mon,  5 May 2025 23:01:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746485237;
-	bh=W2Cu9hRPMdSBIn6W4sF6wD4Okx7o3185REUr24RV8oA=;
+	s=k20201202; t=1746486064;
+	bh=8NVCDiz8iITfIRqltj6+2O2/8Z/wjMt5J+O98JIyMaA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=GpCDwPiwxTtGTUwb42wyS/vKWErLnuDdGkgpKxFpfar+CbAePDMJnc8hUFK9G0jLw
-	 7hvuxUztVfJGp6ePL282wjvsvoxXnuG0v0TE/+enc5jjrBrH2vhBFSLvQmIyA06QlF
-	 RRPHIOw+unlJtDVFAm60mjgocZ9ZD+Evc0jxqTfJ/+T2ZMudXyMquGZAcOSA4/LqJs
-	 yTOBwTC/0I/k3QGnwkqiEChs25RR7rzHXqrhfX+GXrfh7gJzGkR7W7iUs/gjmyWT4w
-	 OCV2cyP5t7YEBhl07frcnuDu5b1viuQNMFTf4OA4qzgjH0tmCrcsyjOeh/mQHCNqZm
-	 xxD59xr4wKZfQ==
+	b=YD0hGEZmkaLSHuDdUq6WxMnhqXD8zmb6g8Yr9ZGSJxKsSUri6iogYbRx2mu6wyUyA
+	 Ed8a7a1PxSOWe7NjLdQGNZLiWjzMbj/x7YVZSZKCmUyHLASM1AO3tHLLBFsp2OPgoa
+	 1ugUoPVw05JBIHmH2GEZLbICiu3TGhpcYlLE5U3hD5xwliiDHNqWUbZbLq8WJOPMaK
+	 /uD94OLAWgMimZ36SyDOKGDJINqc8YPYNyXFVwhBzjbO2R7FOEIh6LPd/D1kN+nqZX
+	 47V8o1lFAb+1nhsPRn6Wg4YkOdpnGJGg6L2a9rnjmvS0tlquvEoqcQFqtUIT6RiMqk
+	 kjZgm4CkJaKmA==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -37,12 +37,12 @@ Cc: Kuhanh Murugasen Krishnan <kuhanh.murugasen.krishnan@intel.com>,
 	mdf@kernel.org,
 	hao.wu@intel.com,
 	linux-fpga@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.12 227/486] fpga: altera-cvp: Increase credit timeout
-Date: Mon,  5 May 2025 18:35:03 -0400
-Message-Id: <20250505223922.2682012-227-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.6 135/294] fpga: altera-cvp: Increase credit timeout
+Date: Mon,  5 May 2025 18:53:55 -0400
+Message-Id: <20250505225634.2688578-135-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505223922.2682012-1-sashal@kernel.org>
-References: <20250505223922.2682012-1-sashal@kernel.org>
+In-Reply-To: <20250505225634.2688578-1-sashal@kernel.org>
+References: <20250505225634.2688578-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -51,7 +51,7 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.12.26
+X-stable-base: Linux 6.6.89
 Content-Transfer-Encoding: 8bit
 
 From: Kuhanh Murugasen Krishnan <kuhanh.murugasen.krishnan@intel.com>
@@ -77,7 +77,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 6b09144324453..5af0bd33890c0 100644
+index 4ffb9da537d82..5295ff90482bc 100644
 --- a/drivers/fpga/altera-cvp.c
 +++ b/drivers/fpga/altera-cvp.c
 @@ -52,7 +52,7 @@
