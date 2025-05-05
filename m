@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9495E2FC2AA;
-	Mon,  5 May 2025 22:25:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30E112D37E0;
+	Mon,  5 May 2025 22:47:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746483954; cv=none; b=qVHxGPX78Zped+o7wxtmZu1Aywh21SmvrNR9WYzw/PKuTd12VPLEAz8nC6900eGwjz6i6ByUkQhKXiuXoIaWp7dgfUfDrgqmToUd07P8+Yo/30x44Y0B6HJTD23wjmwS8X5M6l9AZeVAAk7oQUmc9Ew7pd2fVMCcjWb+RFVaeyU=
+	t=1746485238; cv=none; b=uX+aa0ZZ0Gf0MFTD9wswWihKVZNz8dpJr+NZoka+bWl9daJJcrk8A+iojzFmolN8g+3VGklzIzJt7aOGf4/b1tS0MvAl4KUxGxZzcskTi1Xj9fIIl5c713uOzEwEVvfKkysBRsFLuIxXuAcdL/0V1SmRjyjXxsCgCmjaNLweFjM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1746483954; c=relaxed/simple;
+	s=arc-20240116; t=1746485238; c=relaxed/simple;
 	bh=W2Cu9hRPMdSBIn6W4sF6wD4Okx7o3185REUr24RV8oA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=ThhFvcIgYlf/RF0493GPTwlTLP5XhBgceW4lBdqwAjQ/MKh5PFBEUqjB7klyoOj80TRcNSd87KErnsG0o2qpSxbEcVcMKPJgMrXV6ohTqWpl+JFlIXYXfU2Q6RLS9jsmtfpRL+2/Nol+Db5Er2CzagvF1NKFY5Ct7YUvNLk3gdE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B4dYW9tM; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=onma56KbCoHCoeOepMlBNfAoH5s4FfOo3g0wJkj4SiWIMqvAj5v7ckNY7yo+h6oImLoSvtWaKBTeVr7eN5oDDVmYb6fL3tXIqOKq7uv4sN8qNmAtMl/k/NO/vvfBUZac6X/oPjvHZ7uxsxMGne85Q1KGfC6H/2BKFbywONcMztU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GpCDwPiw; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B4dYW9tM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65449C4CEEF;
-	Mon,  5 May 2025 22:25:53 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GpCDwPiw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00FC8C4CEEE;
+	Mon,  5 May 2025 22:47:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746483954;
+	s=k20201202; t=1746485237;
 	bh=W2Cu9hRPMdSBIn6W4sF6wD4Okx7o3185REUr24RV8oA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=B4dYW9tMP1Rqq2XnqgBEmnR2bTgfYk7TTpzKGYtYqHzFt+O61GXIUD7+dfTwzR6oT
-	 lcBS6nBkPb63iDrz3RR2yyM2ofpNkF4dDXswSz0aZHBEVIOqQS+cSg4kRDUiBqXDFq
-	 GyxGJgNCsTFzzvpp7kMeoMHCUBS+F5sdHMebuKlXhnFk/N+FZpwAL/C6LQSuYjd1N7
-	 BnHaFAJJB16O0ARAuiU5FTGJyBykmfe7VgyMrfVau7S/LFDAoHoMEpTx1w6uAyML/E
-	 JNGRnqWAYx8f+w0Ia7TweciuhFG1O/o7Bo+BF9A8h3O8sc6NNwgocXpk9+h/dSErcr
-	 7P+zI9xJMzp6w==
+	b=GpCDwPiwxTtGTUwb42wyS/vKWErLnuDdGkgpKxFpfar+CbAePDMJnc8hUFK9G0jLw
+	 7hvuxUztVfJGp6ePL282wjvsvoxXnuG0v0TE/+enc5jjrBrH2vhBFSLvQmIyA06QlF
+	 RRPHIOw+unlJtDVFAm60mjgocZ9ZD+Evc0jxqTfJ/+T2ZMudXyMquGZAcOSA4/LqJs
+	 yTOBwTC/0I/k3QGnwkqiEChs25RR7rzHXqrhfX+GXrfh7gJzGkR7W7iUs/gjmyWT4w
+	 OCV2cyP5t7YEBhl07frcnuDu5b1viuQNMFTf4OA4qzgjH0tmCrcsyjOeh/mQHCNqZm
+	 xxD59xr4wKZfQ==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -37,12 +37,12 @@ Cc: Kuhanh Murugasen Krishnan <kuhanh.murugasen.krishnan@intel.com>,
 	mdf@kernel.org,
 	hao.wu@intel.com,
 	linux-fpga@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.14 288/642] fpga: altera-cvp: Increase credit timeout
-Date: Mon,  5 May 2025 18:08:24 -0400
-Message-Id: <20250505221419.2672473-288-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.12 227/486] fpga: altera-cvp: Increase credit timeout
+Date: Mon,  5 May 2025 18:35:03 -0400
+Message-Id: <20250505223922.2682012-227-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505221419.2672473-1-sashal@kernel.org>
-References: <20250505221419.2672473-1-sashal@kernel.org>
+In-Reply-To: <20250505223922.2682012-1-sashal@kernel.org>
+References: <20250505223922.2682012-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -51,7 +51,7 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.14.5
+X-stable-base: Linux 6.12.26
 Content-Transfer-Encoding: 8bit
 
 From: Kuhanh Murugasen Krishnan <kuhanh.murugasen.krishnan@intel.com>
