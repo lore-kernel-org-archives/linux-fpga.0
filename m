@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 035752561C2;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 035DD25A2AD;
 	Mon,  5 May 2025 16:41:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1746463298; cv=none; b=m6m8gd911uozg5eZ/Ki6obGOcjbBSZN21ZwFFlrbY0vnmMfbroW1QO3dGg82fVJv2DxR1n00v+MzfZ+yxbwQ+EqbwiNu5F/JCP6U2zCEfBOiQI5a2C9Vbt5Q41X4yut9hXKlX909T2P/xv5KfU9ch59+crCHHMFIvYC8gY8/b/s=
+	t=1746463298; cv=none; b=LXcmaZyIKICqbKJepp8zr1vS9u7XELiJEgC3QPERZXc3AYl0gciGhprbVzBMTtMlRHvh/2YyYW3FBPk9BnenNBrnQy53M/AUPeteXxbGEviM3XFhCB9O3EBz2At6mK0PtjZ9r1XJFVP+lptgeh+9tCTgygh7C4k6lJfAX9bbWs8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1746463298; c=relaxed/simple;
-	bh=PNq6U2I3HrnFLA5UzDJVVGjDrEp2mDSrLVWnF49drME=;
+	bh=HI59+3VsZAHzDG2lW8mj78HPsyNMQFBt0V6LHST9s0s=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=RKbtWnWn4j+IG5BfbTktayPo4EcfE6hef+sIrOmeStArqICffjingwM7ZytuA+ws5GzPo+1TrKT2XtlaV/SBh74VV4Rqb3MdAAKSghUGieBX4Dx1sy6UrNa98LIcOZuV/g1Iv1LvGkknFEBoSTCbNdm5hfckJqAAkyHw6XaZiVM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UNKZT4+Y; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=Fg6unijdNWKttU4igF68x3vlXPEmdJED23ibJ9Dhy+cXBHRSVDaL0Ji2sy1NatkYuaI0X25xdlfziBblT1GgfsSe8X8S1H7eyT3g6SylBNNzNkQEBgJyd855ND9fsGpu8yN98uRcAFHkdrzXWbLxKQ5oQTkPAX5gH4ZsA1VgZkY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dxmNvawv; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UNKZT4+Y"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 93BD3C4CEF1;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dxmNvawv"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 7BC61C4CEEF;
 	Mon,  5 May 2025 16:41:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1746463297;
-	bh=PNq6U2I3HrnFLA5UzDJVVGjDrEp2mDSrLVWnF49drME=;
+	bh=HI59+3VsZAHzDG2lW8mj78HPsyNMQFBt0V6LHST9s0s=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=UNKZT4+Yqo3Xq3f2d3kXs6vqF3KVif9HBYC81O67eIC773aLtl3EAC34Yp3aMZ2FI
-	 WWqUqRf7nc1OC5qOo6XSyrk7Ha+LFQds65xer/oqrBO2X/oAfuQxgiwPsovGnoZH3G
-	 495zX0DwxFI6Sn9NrBv46yCbukMHbL8FCxvpVMobb1amEWLSF0+KpwThiyY/a6ehBL
-	 gd7shFnohT7sWrG8xguqHg4Gxayo1TV688R9mY7SR43zy7ASD0MSdVT+Dz3lNB/YAS
-	 cV1sS/OB1BzCdAE+ka4Fo0ZKTAONLJ4TSvv8FiFZDSeu9YjBiaTSLiZObRZfzuLvBn
-	 Vw2qnuVvvvuQQ==
+	b=dxmNvawvOySthKC2h5HX3OBYp7mNZOccBje4oN3+8uEKBuxvPAVLPiHXhxp/zFQ/h
+	 otCd2vhOyzUmegmT4pTTnike213vqj5DSTaRrpJY81eqeINYNmGjDoYezpQRT5nNW3
+	 c3r9H/ssA9egWPCLSUDEkqHZ1j2Zf38Jmby8j6zIz9KlXY4y3IenQUMJU0NdpOKGaa
+	 nRoNYTyQPqbhugfxwOf5T2IJuYtiq9D+v9TcdVivPKoOdQuFoh5Ks3ZIJ+w5GTnHaT
+	 44Al+HMz52fUa4bdgCyoTNbnRJpvqjBfzgDBdYmqJ8Xqwui5ZFAtkxJTDPSRItHuwj
+	 qVffrBaa+mYBA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8638CC3ABB0;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69EB9C3ABBB;
 	Mon,  5 May 2025 16:41:37 +0000 (UTC)
 From: =?utf-8?q?Nuno_S=C3=A1_via_B4_Relay?= <devnull+nuno.sa.analog.com@kernel.org>
-Date: Mon, 05 May 2025 17:41:34 +0100
-Subject: [PATCH v4 3/7] include: linux: move adi-axi-common.h out of fpga
+Date: Mon, 05 May 2025 17:41:32 +0100
+Subject: [PATCH v4 1/7] clk: clk-axi-clkgen: fix fpfd_max frequency for
+ zynq
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -40,7 +41,7 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250505-dev-axi-clkgen-limits-v4-3-3ad5124e19e1@analog.com>
+Message-Id: <20250505-dev-axi-clkgen-limits-v4-1-3ad5124e19e1@analog.com>
 References: <20250505-dev-axi-clkgen-limits-v4-0-3ad5124e19e1@analog.com>
 In-Reply-To: <20250505-dev-axi-clkgen-limits-v4-0-3ad5124e19e1@analog.com>
 To: linux-clk@vger.kernel.org, linux-fpga@vger.kernel.org, 
@@ -57,13 +58,13 @@ Cc: Stephen Boyd <sboyd@kernel.org>,
  Jonathan Cameron <jic23@kernel.org>, Trevor Gamblin <tgamblin@baylibre.com>, 
  =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
  David Lechner <dlechner@baylibre.com>, Mark Brown <broonie@kernel.org>, 
- Mike Turquette <mturquette@linaro.org>, Xu Yilun <yilun.xu@linux.intel.com>
+ Mike Turquette <mturquette@linaro.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1746463295; l=5207;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1746463295; l=999;
  i=nuno.sa@analog.com; s=20231116; h=from:subject:message-id;
- bh=hTfAJ8m2qPT1Pwb4zWNdx35c39UYD8SzztRcEcNOAic=;
- b=TLHzSlYtMGF4jlirqR12oXFlqKCS3iFA3WUBjsavC5A1NJMvghawcwKwuAQfTjGqSP2DxK7iM
- FxYjUDknddSAsU0TnYi1IZo2vHifd38EEzBKmaTC3gghQdGBSwYD/Bh
+ bh=5+y858CS+pLM6RSN4Bbzxos5w9xYK0rwoYDgzKAlxLk=;
+ b=JnMILPfgdPrKiAjlHa+0kVVuFT7iIapl+s0dtmxMQRdGK4FggI5iS5L0WswSPT5cL/SUCXp0K
+ 5L+kR1/Pz8sDGrP3kWDs9xbb6IAKZvvMsbdYURtP4fe+A9WYDroBDRA
 X-Developer-Key: i=nuno.sa@analog.com; a=ed25519;
  pk=3NQwYA013OUYZsmDFBf8rmyyr5iQlxV/9H4/Df83o1E=
 X-Endpoint-Received: by B4 Relay for nuno.sa@analog.com/20231116 with
@@ -73,148 +74,30 @@ Reply-To: nuno.sa@analog.com
 
 From: Nuno Sá <nuno.sa@analog.com>
 
-The adi-axi-common.h header has some common defines used in various ADI
-IPs. However they are not specific for any fpga manager so it's
-questionable for the header to live under include/linux/fpga. Hence
-let's just move one directory up and update all users.
+The fpfd_max frequency should be set to 450 MHz instead of 300 MHz.
+Well, it actually depends on the platform speed grade but we are being
+conservative for ultrascale so let's be consistent. In a following
+change we will set these limits at runtime.
 
-Suggested-by: Xu Yilun <yilun.xu@linux.intel.com>
+Fixes: 0e646c52cf0e ("clk: Add axi-clkgen driver")
 Signed-off-by: Nuno Sá <nuno.sa@analog.com>
 ---
- drivers/clk/clk-axi-clkgen.c              | 2 ++
- drivers/dma/dma-axi-dmac.c                | 2 +-
- drivers/hwmon/axi-fan-control.c           | 2 +-
- drivers/iio/adc/adi-axi-adc.c             | 3 +--
- drivers/iio/dac/adi-axi-dac.c             | 2 +-
- drivers/pwm/pwm-axi-pwmgen.c              | 2 +-
- drivers/spi/spi-axi-spi-engine.c          | 2 +-
- include/linux/{fpga => }/adi-axi-common.h | 0
- 8 files changed, 8 insertions(+), 7 deletions(-)
+ drivers/clk/clk-axi-clkgen.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/clk/clk-axi-clkgen.c b/drivers/clk/clk-axi-clkgen.c
-index 2a95f9b220234a1245024a821c50e1eb9c104ac9..31915f8f5565f2ef5d17c0b4a0c91a648005b3e6 100644
+index 934e53a96dddac8ed61dd109cfc188f3a2a0539a..00bf799964c61a3efc042b0f3a9ec3bc8625c9da 100644
 --- a/drivers/clk/clk-axi-clkgen.c
 +++ b/drivers/clk/clk-axi-clkgen.c
-@@ -16,6 +16,8 @@
- #include <linux/mod_devicetable.h>
- #include <linux/err.h>
+@@ -118,7 +118,7 @@ static const struct axi_clkgen_limits axi_clkgen_zynqmp_default_limits = {
  
-+#include <linux/adi-axi-common.h>
-+
- #define AXI_CLKGEN_V2_REG_RESET		0x40
- #define AXI_CLKGEN_V2_REG_CLKSEL	0x44
- #define AXI_CLKGEN_V2_REG_DRP_CNTRL	0x70
-diff --git a/drivers/dma/dma-axi-dmac.c b/drivers/dma/dma-axi-dmac.c
-index 36943b0c6d603cbe38606b0d7bde02535f529a9a..5b06b0dc67ee12017c165bf815fb7c0e1bf5abd8 100644
---- a/drivers/dma/dma-axi-dmac.c
-+++ b/drivers/dma/dma-axi-dmac.c
-@@ -6,6 +6,7 @@
-  *  Author: Lars-Peter Clausen <lars@metafoo.de>
-  */
- 
-+#include <linux/adi-axi-common.h>
- #include <linux/bitfield.h>
- #include <linux/clk.h>
- #include <linux/device.h>
-@@ -22,7 +23,6 @@
- #include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include <linux/slab.h>
--#include <linux/fpga/adi-axi-common.h>
- 
- #include <dt-bindings/dma/axi-dmac.h>
- 
-diff --git a/drivers/hwmon/axi-fan-control.c b/drivers/hwmon/axi-fan-control.c
-index 35c862eb158b0909dac64c2e9f51f0f9f0e8bf72..b7bb325c3ad966ed2a93be4dfbf4e20661568509 100644
---- a/drivers/hwmon/axi-fan-control.c
-+++ b/drivers/hwmon/axi-fan-control.c
-@@ -4,9 +4,9 @@
-  *
-  * Copyright 2019 Analog Devices Inc.
-  */
-+#include <linux/adi-axi-common.h>
- #include <linux/bits.h>
- #include <linux/clk.h>
--#include <linux/fpga/adi-axi-common.h>
- #include <linux/hwmon.h>
- #include <linux/hwmon-sysfs.h>
- #include <linux/interrupt.h>
-diff --git a/drivers/iio/adc/adi-axi-adc.c b/drivers/iio/adc/adi-axi-adc.c
-index c7357601f0f869e57636f00bb1e26c059c3ab15c..87fa18f1ec96782556bdfad08bedb5e7549fb93d 100644
---- a/drivers/iio/adc/adi-axi-adc.c
-+++ b/drivers/iio/adc/adi-axi-adc.c
-@@ -6,6 +6,7 @@
-  * Copyright 2012-2020 Analog Devices Inc.
-  */
- 
-+#include <linux/adi-axi-common.h>
- #include <linux/bitfield.h>
- #include <linux/cleanup.h>
- #include <linux/clk.h>
-@@ -20,8 +21,6 @@
- #include <linux/regmap.h>
- #include <linux/slab.h>
- 
--#include <linux/fpga/adi-axi-common.h>
--
- #include <linux/iio/backend.h>
- #include <linux/iio/buffer-dmaengine.h>
- #include <linux/iio/buffer.h>
-diff --git a/drivers/iio/dac/adi-axi-dac.c b/drivers/iio/dac/adi-axi-dac.c
-index b143f7ed6847277aeb49094627d90e5d95eed71c..581a2fe55a7fb35f1a03f96f3a0e95421d1583e7 100644
---- a/drivers/iio/dac/adi-axi-dac.c
-+++ b/drivers/iio/dac/adi-axi-dac.c
-@@ -5,6 +5,7 @@
-  *
-  * Copyright 2016-2024 Analog Devices Inc.
-  */
-+#include <linux/adi-axi-common.h>
- #include <linux/bitfield.h>
- #include <linux/bits.h>
- #include <linux/cleanup.h>
-@@ -23,7 +24,6 @@
- #include <linux/regmap.h>
- #include <linux/units.h>
- 
--#include <linux/fpga/adi-axi-common.h>
- #include <linux/iio/backend.h>
- #include <linux/iio/buffer-dmaengine.h>
- #include <linux/iio/buffer.h>
-diff --git a/drivers/pwm/pwm-axi-pwmgen.c b/drivers/pwm/pwm-axi-pwmgen.c
-index 4259a0db9ff45808eecae28680473292d165d1f6..e720191e74558d15f1b04fa18cf2984299f88809 100644
---- a/drivers/pwm/pwm-axi-pwmgen.c
-+++ b/drivers/pwm/pwm-axi-pwmgen.c
-@@ -18,10 +18,10 @@
-  * - Supports normal polarity. Does not support changing polarity.
-  * - On disable, the PWM output becomes low (inactive).
-  */
-+#include <linux/adi-axi-common.h>
- #include <linux/bits.h>
- #include <linux/clk.h>
- #include <linux/err.h>
--#include <linux/fpga/adi-axi-common.h>
- #include <linux/io.h>
- #include <linux/minmax.h>
- #include <linux/module.h>
-diff --git a/drivers/spi/spi-axi-spi-engine.c b/drivers/spi/spi-axi-spi-engine.c
-index 7c252126b33ea83fe6a6e80c6cb87499243069f5..d498132f1ff6adf20639bf4a21f1687903934bec 100644
---- a/drivers/spi/spi-axi-spi-engine.c
-+++ b/drivers/spi/spi-axi-spi-engine.c
-@@ -5,9 +5,9 @@
-  *  Author: Lars-Peter Clausen <lars@metafoo.de>
-  */
- 
-+#include <linux/adi-axi-common.h>
- #include <linux/clk.h>
- #include <linux/completion.h>
--#include <linux/fpga/adi-axi-common.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/of.h>
-diff --git a/include/linux/fpga/adi-axi-common.h b/include/linux/adi-axi-common.h
-similarity index 100%
-rename from include/linux/fpga/adi-axi-common.h
-rename to include/linux/adi-axi-common.h
+ static const struct axi_clkgen_limits axi_clkgen_zynq_default_limits = {
+ 	.fpfd_min = 10000,
+-	.fpfd_max = 300000,
++	.fpfd_max = 450000,
+ 	.fvco_min = 600000,
+ 	.fvco_max = 1200000,
+ };
 
 -- 
 2.49.0
