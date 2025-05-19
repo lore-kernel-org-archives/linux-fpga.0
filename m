@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 818FF27FB36;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF30528643F;
 	Mon, 19 May 2025 15:50:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747669827; cv=none; b=Bn3XZvX9wChWhNxsmXmCJjgBxspeljwJJqyMj+T1rIJlZunBtJ3+nRFjkFWFLSU2jwDA1oaLv4JT7pszFSVm8jZ1PHVYpAaII+4sSAowqn3dmSqZnvM5Xu50GvDn/nQ2LuVF2+IBVu21uiK0bGxEOol+pG9CoW19LFqSGG2fAx4=
+	t=1747669827; cv=none; b=tgrhZDCcKMd9ra2wJsfTArq11Vxqzgw6y+CMolrZl408gWFhH6SnOijtEa2OUIM1GJutV88hntV9itRfErOud52ttULf5tigPuAOvgJzx4BXXu3cNgcDpruUWZ8sCS7SbNmv1ldc7qPwfRaYb6GSd2BbNjhC3vknkMdXiMFKfuc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1747669827; c=relaxed/simple;
-	bh=7f0ImEZdmQ4sVUUr9o8k+aVzij3X3LUT7iulVIHgJHQ=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=QKJco1QgR4LWsNjVm+r6mhAVznw5z6tF9Wp10zWaZdQeJHMHeR4IW7edIIuzgGzQzGzofAFzPRenxskl+Tyxjyl5/K0DLEZJqTVH+RfKcInowlSFSLj1ei5bj4jMPtQMAwNZU3wX0fuwHVDcu0j5htk4cVbJ3/69yIHJcpvC71o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EpdsjUGE; arc=none smtp.client-ip=10.30.226.201
+	bh=+cK0fBqHccIiGa9CGO2qeuLfPzALRqohpfOHgcdKD4c=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=etwFfBqL6u4oVjynWpCk/pwZ3woGeDvR/nkUT7wkabbyaj6eLWGIAAFa4pPzDvRJ79NE2l8SW/xDlQO6AZXrU4XucL+3RIQ/5fCWGhYSZSO1xbTbzLhHUY9Pf55IutsRVaf/FMSfr+qBx/7IjHC1tNjfva9ygOJ6wTROaIQhht8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AHFink7z; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EpdsjUGE"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E56F9C4CEE4;
-	Mon, 19 May 2025 15:50:26 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AHFink7z"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 35E0AC4CEF9;
+	Mon, 19 May 2025 15:50:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1747669827;
-	bh=7f0ImEZdmQ4sVUUr9o8k+aVzij3X3LUT7iulVIHgJHQ=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=EpdsjUGEp5rIIckMYu1aM2uuyC3aCgch0AmgEB8MiR1gCIzurpNwhuGUdCJajDdJF
-	 9sMEiELXWKgsdn/kLhMrjgNpzk1cp0fByEbzZmGUM59tpqTNE/x6c/Eo5O+/q1pGv4
-	 yztvY574y6fo0VFjGS1WKHaOpfxjKxOSh253SRlqdBcAAe4RsxigCjEBGSqAbYZmNT
-	 2LwuiriLKV4ubVENl09Wrb/FL/YXGfM52aE1AhELb4PXL4/L7kxF+USNVnAXcMqk7J
-	 tFogYFZOhaCzM642SvEfYrGieswtPtPJ2PO/boazLj0ck7X8wvs+Va/FzOxr0XMfar
-	 CHxCIIyXrZVlQ==
+	bh=+cK0fBqHccIiGa9CGO2qeuLfPzALRqohpfOHgcdKD4c=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=AHFink7zK8PdU07hXd212oDs5RDlqwTyz1jheSNzuH03EZFrIzOifHzV+lGjR17ng
+	 gKTISFTBKZWrKoU0HJRiEjagA63iHNYjtlVdbjN80LSupA7umU50uYytXxswqxhlQL
+	 FMXgieVF8qtxNsXQuqp2h7K5sKJ4x6oyno5eI+PkcSerz3SwOtP3ZsocBpXVIuRvjX
+	 GCj0fBiq5xSeIt3IJVrLJP2ICSXXIxYX9LphOuQP4256iB2Vq+S/gLXguvAQevSMB1
+	 4jXKsxJXB5NqsG8WEuXJG3JhOnC2jpBf695BoE3qUVspMD9u+ee3q0mDtWnMce+c/Z
+	 4rK9PTZfm6+0A==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D27DDC2D0CD;
-	Mon, 19 May 2025 15:50:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B059C2D0CD;
+	Mon, 19 May 2025 15:50:27 +0000 (UTC)
 From: =?utf-8?q?Nuno_S=C3=A1_via_B4_Relay?= <devnull+nuno.sa.analog.com@kernel.org>
-Subject: [PATCH v6 0/7] clk: clk-axi-clkgen: improvements and some fixes
-Date: Mon, 19 May 2025 16:41:05 +0100
-Message-Id: <20250519-dev-axi-clkgen-limits-v6-0-bc4b3b61d1d4@analog.com>
+Date: Mon, 19 May 2025 16:41:10 +0100
+Subject: [PATCH v6 5/7] clk: clk-axi-clkgen: detect axi_clkgen_limits at
+ runtime
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -40,12 +41,9 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIABFRK2gC/33QQW6DMBAF0KtEXseVZ8Y2OKveo+rC2AOxSqCCC
- KWKuHtN1IpUiMqrb2me//guRh4Sj+J0uIuBpzSmvsvBHg8inH3XsEwxZ4EKjUIoZeRJ+luSof1
- ouJNtuqTrKC3VlQqGA5WVyLOfA9fp9nDf3nM+p/HaD1+PZyZYbn9FtyNOIJVEWxdcgw7RhVff+
- bZvXkJ/EQs54coQ0B6DmYGCPKOPlgA2DK2MVsUeQ5khCkWNRXDRumfm+PM9GuG/cY2KKl1zxOA
- 2LfTaIp89Ri8tfDSAmsHxdhnzxADuMSYzvrSV82RLVuYPM8/zN3zgUU8WAgAA
-X-Change-ID: 20250218-dev-axi-clkgen-limits-63fb0c5ec38b
+Message-Id: <20250519-dev-axi-clkgen-limits-v6-5-bc4b3b61d1d4@analog.com>
+References: <20250519-dev-axi-clkgen-limits-v6-0-bc4b3b61d1d4@analog.com>
+In-Reply-To: <20250519-dev-axi-clkgen-limits-v6-0-bc4b3b61d1d4@analog.com>
 To: linux-clk@vger.kernel.org, linux-fpga@vger.kernel.org, 
  dmaengine@vger.kernel.org, linux-hwmon@vger.kernel.org, 
  linux-iio@vger.kernel.org, linux-pwm@vger.kernel.org, 
@@ -60,14 +58,13 @@ Cc: Stephen Boyd <sboyd@kernel.org>,
  Jonathan Cameron <jic23@kernel.org>, Trevor Gamblin <tgamblin@baylibre.com>, 
  =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
  David Lechner <dlechner@baylibre.com>, Mark Brown <broonie@kernel.org>, 
- Mike Turquette <mturquette@linaro.org>, Xu Yilun <yilun.xu@linux.intel.com>, 
- Jonathan Cameron <Jonathan.Cameron@huawei.com>
+ Mike Turquette <mturquette@linaro.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1747669828; l=1918;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1747669828; l=3981;
  i=nuno.sa@analog.com; s=20231116; h=from:subject:message-id;
- bh=7f0ImEZdmQ4sVUUr9o8k+aVzij3X3LUT7iulVIHgJHQ=;
- b=N4/7QPa94o9EyM9f/xBKR/7JgbVeaFY327xya7hTMLcla4UekqHjzjjybKnA67iuvwLOcB0qQ
- 9W4h93MDTXVAoyRtir588nRc2q1f9XpEB/sNogId0cu3hwH9+MoKWHL
+ bh=nuqSxH2DcFb0n5Cp5hJrZPhnAul6ayJrJavTFUfm6W8=;
+ b=EP72A+xNs6i9+2wLrCQGiIpOvsX6aWdoj+MYtyGoxio5Ru2sYulayB6MJJdLSXy0TxcM37Oyf
+ QpmRecRdZ82AshSfJiWGNzP3hAwy9LTVbc3BNjswZeYAyoKJUWe6Av9
 X-Developer-Key: i=nuno.sa@analog.com; a=ed25519;
  pk=3NQwYA013OUYZsmDFBf8rmyyr5iQlxV/9H4/Df83o1E=
 X-Endpoint-Received: by B4 Relay for nuno.sa@analog.com/20231116 with
@@ -75,49 +72,125 @@ X-Endpoint-Received: by B4 Relay for nuno.sa@analog.com/20231116 with
 X-Original-From: =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>
 Reply-To: nuno.sa@analog.com
 
-This series starts with a small fix and then a bunch of small
-improvements. The main change though is to allow detecting of
-struct axi_clkgen_limits during probe().
+From: Nuno Sá <nuno.sa@analog.com>
 
+This patch adds support for setting the limits in struct
+axi_clkgen_limits  in accordance with fpga speed grade, voltage,
+technology and family. This new information is extracted from
+two new registers implemented in the ip core that are only available
+for core versions higher or equal to 4.
+
+Signed-off-by: Nuno Sá <nuno.sa@analog.com>
 ---
-Changes in v6:
-- Patch 3:
- * Don't add adi-axi-common.h in axi-clkgen (not needed at this point);
-- Patch 5: 
- * Add adi-axi-common.h now.
+ drivers/clk/clk-axi-clkgen.c | 65 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 64 insertions(+), 1 deletion(-)
 
-- Link to v5: https://lore.kernel.org/r/20250512-dev-axi-clkgen-limits-v5-0-a86b9a368e05@analog.com
-- Link to v4: https://lore.kernel.org/r/20250505-dev-axi-clkgen-limits-v4-0-3ad5124e19e1@analog.com
-- Link to v3: https://lore.kernel.org/r/20250421-dev-axi-clkgen-limits-v3-0-4203b4fed2c9@analog.com
-- Link to v2: https://lore.kernel.org/r/20250313-dev-axi-clkgen-limits-v2-0-173ae2ad6311@analog.com
-- Link to v1: https://lore.kernel.org/r/20250219-dev-axi-clkgen-limits-v1-0-26f7ef14cd9c@analog.com
+diff --git a/drivers/clk/clk-axi-clkgen.c b/drivers/clk/clk-axi-clkgen.c
+index 2a95f9b220234a1245024a821c50e1eb9c104ac9..f4e96394e9c25c817b09ee0c08751147083f19b7 100644
+--- a/drivers/clk/clk-axi-clkgen.c
++++ b/drivers/clk/clk-axi-clkgen.c
+@@ -6,6 +6,8 @@
+  *  Author: Lars-Peter Clausen <lars@metafoo.de>
+  */
+ 
++#include <linux/adi-axi-common.h>
++#include <linux/bits.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/clk-provider.h>
+@@ -29,6 +31,9 @@
+ 
+ #define AXI_CLKGEN_V2_DRP_STATUS_BUSY	BIT(16)
+ 
++#define ADI_CLKGEN_REG_FPGA_VOLTAGE		0x0140
++#define ADI_CLKGEN_INFO_FPGA_VOLTAGE(val)	((val) & GENMASK(15, 0))
++
+ #define MMCM_REG_CLKOUT5_2	0x07
+ #define MMCM_REG_CLKOUT0_1	0x08
+ #define MMCM_REG_CLKOUT0_2	0x09
+@@ -497,6 +502,54 @@ static u8 axi_clkgen_get_parent(struct clk_hw *clk_hw)
+ 	return parent;
+ }
+ 
++static int axi_clkgen_setup_limits(struct axi_clkgen *axi_clkgen,
++				   struct device *dev)
++{
++	unsigned int tech, family, speed_grade, reg_value;
++
++	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_FPGA_INFO, &reg_value);
++	tech = ADI_AXI_INFO_FPGA_TECH(reg_value);
++	family = ADI_AXI_INFO_FPGA_FAMILY(reg_value);
++	speed_grade = ADI_AXI_INFO_FPGA_SPEED_GRADE(reg_value);
++
++	axi_clkgen->limits.fpfd_min = 10000;
++	axi_clkgen->limits.fvco_min = 600000;
++
++	switch (speed_grade) {
++	case ADI_AXI_FPGA_SPEED_1 ... ADI_AXI_FPGA_SPEED_1LV:
++		axi_clkgen->limits.fvco_max = 1200000;
++		axi_clkgen->limits.fpfd_max = 450000;
++		break;
++	case ADI_AXI_FPGA_SPEED_2 ... ADI_AXI_FPGA_SPEED_2LV:
++		axi_clkgen->limits.fvco_max = 1440000;
++		axi_clkgen->limits.fpfd_max = 500000;
++		if (family == ADI_AXI_FPGA_FAMILY_KINTEX || family == ADI_AXI_FPGA_FAMILY_ARTIX) {
++			axi_clkgen_read(axi_clkgen, ADI_CLKGEN_REG_FPGA_VOLTAGE,
++					&reg_value);
++			if (ADI_CLKGEN_INFO_FPGA_VOLTAGE(reg_value) < 950) {
++				axi_clkgen->limits.fvco_max = 1200000;
++				axi_clkgen->limits.fpfd_max = 450000;
++			}
++		}
++		break;
++	case ADI_AXI_FPGA_SPEED_3:
++		axi_clkgen->limits.fvco_max = 1600000;
++		axi_clkgen->limits.fpfd_max = 550000;
++		break;
++	default:
++		return dev_err_probe(dev, -ENODEV, "Unknown speed grade %d\n",
++				     speed_grade);
++	};
++
++	/* Overwrite vco limits for ultrascale+ */
++	if (tech == ADI_AXI_FPGA_TECH_ULTRASCALE_PLUS) {
++		axi_clkgen->limits.fvco_max = 1600000;
++		axi_clkgen->limits.fvco_min = 800000;
++	}
++
++	return 0;
++}
++
+ static const struct clk_ops axi_clkgen_ops = {
+ 	.recalc_rate = axi_clkgen_recalc_rate,
+ 	.determine_rate = axi_clkgen_determine_rate,
+@@ -511,6 +564,7 @@ static int axi_clkgen_probe(struct platform_device *pdev)
+ {
+ 	const struct axi_clkgen_limits *dflt_limits;
+ 	struct axi_clkgen *axi_clkgen;
++	unsigned int pcore_version;
+ 	struct clk_init_data init;
+ 	const char *parent_names[2];
+ 	const char *clk_name;
+@@ -556,7 +610,16 @@ static int axi_clkgen_probe(struct platform_device *pdev)
+ 			return -EINVAL;
+ 	}
+ 
+-	memcpy(&axi_clkgen->limits, dflt_limits, sizeof(axi_clkgen->limits));
++	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_VERSION, &pcore_version);
++
++	if (ADI_AXI_PCORE_VER_MAJOR(pcore_version) > 0x04) {
++		ret = axi_clkgen_setup_limits(axi_clkgen, &pdev->dev);
++		if (ret)
++			return ret;
++	} else {
++		memcpy(&axi_clkgen->limits, dflt_limits,
++		       sizeof(axi_clkgen->limits));
++	}
+ 
+ 	clk_name = pdev->dev.of_node->name;
+ 	of_property_read_string(pdev->dev.of_node, "clock-output-names",
 
----
-Nuno Sá (7):
-      clk: clk-axi-clkgen: fix fpfd_max frequency for zynq
-      clk: clk-axi-clkgen: make sure to include mod_devicetable.h
-      include: linux: move adi-axi-common.h out of fpga
-      include: adi-axi-common: add new helper macros
-      clk: clk-axi-clkgen: detect axi_clkgen_limits at runtime
-      clk: clk-axi-clkgen move to min/max()
-      clk: clk-axi-clkgen: fix coding style issues
-
- drivers/clk/clk-axi-clkgen.c        | 159 +++++++++++++++++++++++++-----------
- drivers/dma/dma-axi-dmac.c          |   2 +-
- drivers/hwmon/axi-fan-control.c     |   2 +-
- drivers/iio/adc/adi-axi-adc.c       |   3 +-
- drivers/iio/dac/adi-axi-dac.c       |   2 +-
- drivers/pwm/pwm-axi-pwmgen.c        |   2 +-
- drivers/spi/spi-axi-spi-engine.c    |   2 +-
- include/linux/adi-axi-common.h      |  56 +++++++++++++
- include/linux/fpga/adi-axi-common.h |  23 ------
- 9 files changed, 174 insertions(+), 77 deletions(-)
----
-base-commit: 82f69876ef45ad66c0b114b786c7c6ac0f6a4580
-change-id: 20250218-dev-axi-clkgen-limits-63fb0c5ec38b
---
-
-Thanks!
-- Nuno Sá
+-- 
+2.49.0
 
 
