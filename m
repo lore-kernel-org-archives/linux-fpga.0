@@ -1,197 +1,109 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 787642E8E0E;
-	Fri, 27 Jun 2025 14:59:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DFF83243378;
+	Mon, 30 Jun 2025 12:50:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751036355; cv=none; b=IbgU0oBF2yNvFmM9JV4m5XlDoYmcU4MfIPC1n+mGGMQKuVy/ySHrck/1dFfnHYemjW/VeJsKAOvSmOHwWEaNCWi2dM6yTjReW4leEL9bwDSL1/RfLxXEgvU++tp3KjbDu3q39anZ1GNIm4pAZ4x3oeSVvWQCuH3RCYwkWo+tajY=
+	t=1751287826; cv=none; b=cxNGnKHGtcjcg1QfrvZV+/DxB0BU5WReCcbLgjifi0dF7NfCXBsU19vcybNHc9NnU7vEsKDDlI1ydGGVxdeFqo0me4iDZAdbOt6Q2dUrsSSFWZR7GHJnp0JoLrEHL6Im0Su++aQ+mfdzKGP1TgxxNRHoYclOL+J54qPdW7ROxOU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751036355; c=relaxed/simple;
-	bh=j9/RALxD1SKb25mLlSiuMDxtfhgVeK371XMTkwVz7/k=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=nM6Z8H2w4VHyMfTorQG4mePhi07Kzmo7o5IVCjTeIFze0mOi6K//zRCtwGWhC+iLTt7qlby591ohHLsSyOXlYqcQwlEI3kRtHNCMjxKAhE3FdWZ+CYtH8cHc8Z+WH4FtTns9qyNdI+plY6U57zH0L8/wAdRxQTuQ1ZGNr38fJI8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=p1S3PWSc; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1751287826; c=relaxed/simple;
+	bh=1ry30HSaPyoCH8NX44+sha/2zVgc5ksFO7x3qZhWPcI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HBNNNiAIueoNRjyuyY3rVeZCIHR/bgNepRCLQX67E/VYdfQ1k1KWHNNP4SLy5upXbjdDuU8xNEf45sUbQ5yG3DLw50+TF/N25BcCe1vhB6JvG4ggoflad/5m4M3jp3dQ2nYESD7sqIUIYquBGg2f/JPg+6F5JkLMnH6TwtbtAtY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TLXEPkzY; arc=none smtp.client-ip=209.85.210.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="p1S3PWSc"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id ECF75C4CEFB;
-	Fri, 27 Jun 2025 14:59:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1751036355;
-	bh=j9/RALxD1SKb25mLlSiuMDxtfhgVeK371XMTkwVz7/k=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=p1S3PWScm2LWqRK2sY2z84G/EXYU/st4dneIm5Z8wNduVfL5X5+4jKMC3gKlOyIgq
-	 iWdBl4N9HM4T0NwD6uwCH60jvgK/ZcpzPw+J5NShhUKoLm3xiEklHKHcL1cwWTVBSh
-	 xn5BUAcosafag2U0Tv3ZChF7l+jFArT6Chk+3SeVejy/G0AEdEcShFhRAF+8oL66Ii
-	 XHGA6NGHPZlJPGE0lzX+fmnXmDVKa7+PIcRT5gU3Q2w00Kbfg24bGK2/I2iRdZqEY1
-	 8e3qd3P+XJpeUr5/1a5Gvm5ydD3WJ+TY0sLgUCupn6yKvv1+nM9CWIGnVPegckVTK5
-	 ecy6rCoRWFX1g==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3774C83026;
-	Fri, 27 Jun 2025 14:59:14 +0000 (UTC)
-From: =?utf-8?q?Nuno_S=C3=A1_via_B4_Relay?= <devnull+nuno.sa.analog.com@kernel.org>
-Date: Fri, 27 Jun 2025 15:59:14 +0100
-Subject: [PATCH RESEND v7 5/7] clk: clk-axi-clkgen: detect
- axi_clkgen_limits at runtime
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TLXEPkzY"
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-747ef5996edso1774742b3a.0;
+        Mon, 30 Jun 2025 05:50:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1751287824; x=1751892624; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=NvcxIOVCr74ZJ+9mueD9krtKcBT0TziWtKZrkUEvt1Y=;
+        b=TLXEPkzYaaD1flw3ZCYflfMMFeJ7BwNzsb95YM55yz6ZIkTYk0ckIMHLzye/THkMaS
+         ibA8PQom/aKper9dnUdwHOmxcNCf6IA6m7e2nXg0DIRRs3uo2OixzmHG2VtMNs5wUvYQ
+         ZX8I6F16eKw/PxnHMEjYNCyWnI9nqJFDXGf+PVvv7POG9LgEygzOuv4doj0b5MvhBNQh
+         06YxkswuqistbVUPFZs5klQIRRjQHrZyUCIz3xfkrw1XfDz3Mz/rx701VQOEV0SGgg0v
+         rivrmHfCgOqTxlzPnNC9eZJUa/2xC+Gm9/bEq7zGGzatDXHOU+V371X9xb62J+R5lUOL
+         E4+A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751287824; x=1751892624;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=NvcxIOVCr74ZJ+9mueD9krtKcBT0TziWtKZrkUEvt1Y=;
+        b=UxMeL7N3/Azm5cCOj3aHgFwmPuMJrYGYoFLldjCmsnaJhH3PJTs1gDX6RuEnHthoYa
+         8wZsxlTZh+gtwtqh/VF+btc2pOBI9TiUTqgzow4R4z/D9DC313VF8GZ1eLH4rDUvSIcK
+         cw1Ri0uBtDUtyZQg4m1E7yQr1MpoLcVE8zWA+v4pww5/7P712Tz3CQUeaRsAkfpvx9yC
+         cMCZ544OsYZY7KMnu12XbKymwP2PWKwbIk8z/cEPQ+gH+SUtGSwF3SnL1Sa8kUNjtnfF
+         cNu1UgdQI464dR61BilwJKpK2PEtWtE70+u1D2SdGIoFPxz5QHbrH00h9KCwVo0kdDYx
+         xuyQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUzzPsEDB/huY+gu/znEWRfLgElhDERxJWyfesmKGdEB0KZoJyfEtPYS2fKz81yhGYaYbgEEOuHjO8zsJk=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzUh1a35Cp0FtmVjUmWKYK4zMSxToPLe+ZTKoItCGO1OFGwBrZ4
+	1uBKTuVAlx5Bg4geujLs6ARFav8umfVNUjkKV29qRUUtKJGKwIekRwIy
+X-Gm-Gg: ASbGnctuH82bsWq7tyBEid/7IGHoUk/OO+1ouWG92dDxHyfYJoIaXGY6LlwAf6g4X7H
+	TB1+j6XNP7WtTi0K4dn/yk96FEwL2mf55Rcq0s3EAXM4chWxK8Fbi1SdM7r6nPh1dQFDNkF/pYU
+	AA6rqAt4lfXzr75Mq06pUJWFtmvqfNc1VqDLT3YExdjo5tft7sWb1m6/+3t7AxxAD+3p1g+NVJ+
+	QZ5TpfMOMY6ElaNHVayhEM43ZeRE8wzHrZwtj7BdCeCmdOYcZa7k8Y3jejBpRaNnJ9C7ZwyIlEj
+	wEl22ajuStpcXX9Jx9OdDU0mTaSiRYoT7MCWdDgcPFG0UteBsLqigZHyc+TfG0BYRT8b3b1Dk7r
+	A1MvMkho/eFPhiWXTXIM=
+X-Google-Smtp-Source: AGHT+IG9/9nAYqg9z0wJH0s0jXNq02MM1YjkMaE9bQ8XVq7mhmuXd2OydcFIteqPxF2Nfyx+YFuRhw==
+X-Received: by 2002:a05:6a21:1343:b0:21e:eb3a:dc04 with SMTP id adf61e73a8af0-220a12a4e11mr19163816637.3.1751287824076;
+        Mon, 30 Jun 2025 05:50:24 -0700 (PDT)
+Received: from seokw-960QHA.Davolink ([115.137.3.141])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-74af56d0002sm9487890b3a.136.2025.06.30.05.50.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 30 Jun 2025 05:50:23 -0700 (PDT)
+From: Ryan Chung <seokwoo.chung130@gmail.com>
+To: hao.wu@intel.com,
+	trix@redhat.com,
+	mdf@kernel.org,
+	yilun.xu@intel.com
+Cc: linux-fpga@vger.kernel.org,
+	linux-kernel-mentees@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Ryan Chung <seokwoo.chung130@gmail.com>
+Subject: [PATCH] fpga: dfl: Replace scnprintf() with sysfs_emit()
+Date: Mon, 30 Jun 2025 21:50:18 +0900
+Message-ID: <20250630125018.48417-1-seokwoo.chung130@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250627-dev-axi-clkgen-limits-v7-5-e4f3b1f76189@analog.com>
-References: <20250627-dev-axi-clkgen-limits-v7-0-e4f3b1f76189@analog.com>
-In-Reply-To: <20250627-dev-axi-clkgen-limits-v7-0-e4f3b1f76189@analog.com>
-To: linux-clk@vger.kernel.org, linux-fpga@vger.kernel.org, 
- dmaengine@vger.kernel.org, linux-hwmon@vger.kernel.org, 
- linux-iio@vger.kernel.org, linux-pwm@vger.kernel.org, 
- linux-spi@vger.kernel.org
-Cc: Stephen Boyd <sboyd@kernel.org>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>, 
- Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>, 
- Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, 
- Guenter Roeck <linux@roeck-us.net>, 
- Michael Hennerich <Michael.Hennerich@analog.com>, 
- Jonathan Cameron <jic23@kernel.org>, Trevor Gamblin <tgamblin@baylibre.com>, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
- David Lechner <dlechner@baylibre.com>, Mark Brown <broonie@kernel.org>, 
- Mike Turquette <mturquette@linaro.org>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1751036364; l=4033;
- i=nuno.sa@analog.com; s=20231116; h=from:subject:message-id;
- bh=oa8GDBu7Mkar5AH+bEzIfBrJjWKmaurG/C1FZ+6SxNw=;
- b=NWYFQTB+C1NRL9WYld+O3gPqFOXHWww3b3sfJevw+Jt6R4nw9+cKlTYhfACH+8xtjfhtdOdv3
- ho2Ti8vdCOXAzDwMdN3IvJW0ZvBxjXDsgS14M8HW1nng1/Xkh5qA3Hp
-X-Developer-Key: i=nuno.sa@analog.com; a=ed25519;
- pk=3NQwYA013OUYZsmDFBf8rmyyr5iQlxV/9H4/Df83o1E=
-X-Endpoint-Received: by B4 Relay for nuno.sa@analog.com/20231116 with
- auth_id=100
-X-Original-From: =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>
-Reply-To: nuno.sa@analog.com
 
-From: Nuno Sá <nuno.sa@analog.com>
-
-This patch adds support for setting the limits in struct
-axi_clkgen_limits  in accordance with fpga speed grade, voltage,
-technology and family. This new information is extracted from
-two new registers implemented in the ip core that are only available
-for core versions higher or equal to 4.
-
-Reviewed-by: David Lechner <dlechner@baylibre.com>
-Signed-off-by: Nuno Sá <nuno.sa@analog.com>
+Signed-off-by: Ryan Chung <seokwoo.chung130@gmail.com>
 ---
- drivers/clk/clk-axi-clkgen.c | 65 +++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 64 insertions(+), 1 deletion(-)
+ drivers/fpga/dfl-afu-main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/clk/clk-axi-clkgen.c b/drivers/clk/clk-axi-clkgen.c
-index 2a95f9b220234a1245024a821c50e1eb9c104ac9..f4e96394e9c25c817b09ee0c08751147083f19b7 100644
---- a/drivers/clk/clk-axi-clkgen.c
-+++ b/drivers/clk/clk-axi-clkgen.c
-@@ -6,6 +6,8 @@
-  *  Author: Lars-Peter Clausen <lars@metafoo.de>
-  */
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 3bf8e7338dbe..f2dd4667a43d 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -156,7 +156,7 @@ id_show(struct device *dev, struct device_attribute *attr, char *buf)
+ 	struct dfl_feature_dev_data *fdata = to_dfl_feature_dev_data(dev);
+ 	int id = port_get_id(fdata);
  
-+#include <linux/adi-axi-common.h>
-+#include <linux/bits.h>
- #include <linux/platform_device.h>
- #include <linux/clk.h>
- #include <linux/clk-provider.h>
-@@ -29,6 +31,9 @@
- 
- #define AXI_CLKGEN_V2_DRP_STATUS_BUSY	BIT(16)
- 
-+#define ADI_CLKGEN_REG_FPGA_VOLTAGE		0x0140
-+#define ADI_CLKGEN_INFO_FPGA_VOLTAGE(val)	((val) & GENMASK(15, 0))
-+
- #define MMCM_REG_CLKOUT5_2	0x07
- #define MMCM_REG_CLKOUT0_1	0x08
- #define MMCM_REG_CLKOUT0_2	0x09
-@@ -497,6 +502,54 @@ static u8 axi_clkgen_get_parent(struct clk_hw *clk_hw)
- 	return parent;
+-	return scnprintf(buf, PAGE_SIZE, "%d\n", id);
++	return sysfs_emit(buf, PAGE_SIZE, "%d\n", id);
  }
+ static DEVICE_ATTR_RO(id);
  
-+static int axi_clkgen_setup_limits(struct axi_clkgen *axi_clkgen,
-+				   struct device *dev)
-+{
-+	unsigned int tech, family, speed_grade, reg_value;
-+
-+	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_FPGA_INFO, &reg_value);
-+	tech = ADI_AXI_INFO_FPGA_TECH(reg_value);
-+	family = ADI_AXI_INFO_FPGA_FAMILY(reg_value);
-+	speed_grade = ADI_AXI_INFO_FPGA_SPEED_GRADE(reg_value);
-+
-+	axi_clkgen->limits.fpfd_min = 10000;
-+	axi_clkgen->limits.fvco_min = 600000;
-+
-+	switch (speed_grade) {
-+	case ADI_AXI_FPGA_SPEED_1 ... ADI_AXI_FPGA_SPEED_1LV:
-+		axi_clkgen->limits.fvco_max = 1200000;
-+		axi_clkgen->limits.fpfd_max = 450000;
-+		break;
-+	case ADI_AXI_FPGA_SPEED_2 ... ADI_AXI_FPGA_SPEED_2LV:
-+		axi_clkgen->limits.fvco_max = 1440000;
-+		axi_clkgen->limits.fpfd_max = 500000;
-+		if (family == ADI_AXI_FPGA_FAMILY_KINTEX || family == ADI_AXI_FPGA_FAMILY_ARTIX) {
-+			axi_clkgen_read(axi_clkgen, ADI_CLKGEN_REG_FPGA_VOLTAGE,
-+					&reg_value);
-+			if (ADI_CLKGEN_INFO_FPGA_VOLTAGE(reg_value) < 950) {
-+				axi_clkgen->limits.fvco_max = 1200000;
-+				axi_clkgen->limits.fpfd_max = 450000;
-+			}
-+		}
-+		break;
-+	case ADI_AXI_FPGA_SPEED_3:
-+		axi_clkgen->limits.fvco_max = 1600000;
-+		axi_clkgen->limits.fpfd_max = 550000;
-+		break;
-+	default:
-+		return dev_err_probe(dev, -ENODEV, "Unknown speed grade %d\n",
-+				     speed_grade);
-+	};
-+
-+	/* Overwrite vco limits for ultrascale+ */
-+	if (tech == ADI_AXI_FPGA_TECH_ULTRASCALE_PLUS) {
-+		axi_clkgen->limits.fvco_max = 1600000;
-+		axi_clkgen->limits.fvco_min = 800000;
-+	}
-+
-+	return 0;
-+}
-+
- static const struct clk_ops axi_clkgen_ops = {
- 	.recalc_rate = axi_clkgen_recalc_rate,
- 	.determine_rate = axi_clkgen_determine_rate,
-@@ -511,6 +564,7 @@ static int axi_clkgen_probe(struct platform_device *pdev)
- {
- 	const struct axi_clkgen_limits *dflt_limits;
- 	struct axi_clkgen *axi_clkgen;
-+	unsigned int pcore_version;
- 	struct clk_init_data init;
- 	const char *parent_names[2];
- 	const char *clk_name;
-@@ -556,7 +610,16 @@ static int axi_clkgen_probe(struct platform_device *pdev)
- 			return -EINVAL;
- 	}
+@@ -475,7 +475,7 @@ afu_id_show(struct device *dev, struct device_attribute *attr, char *buf)
+ 	guidh = readq(base + GUID_H);
+ 	mutex_unlock(&fdata->lock);
  
--	memcpy(&axi_clkgen->limits, dflt_limits, sizeof(axi_clkgen->limits));
-+	axi_clkgen_read(axi_clkgen, ADI_AXI_REG_VERSION, &pcore_version);
-+
-+	if (ADI_AXI_PCORE_VER_MAJOR(pcore_version) > 0x04) {
-+		ret = axi_clkgen_setup_limits(axi_clkgen, &pdev->dev);
-+		if (ret)
-+			return ret;
-+	} else {
-+		memcpy(&axi_clkgen->limits, dflt_limits,
-+		       sizeof(axi_clkgen->limits));
-+	}
+-	return scnprintf(buf, PAGE_SIZE, "%016llx%016llx\n", guidh, guidl);
++	return sysfs_emit(buf, PAGE_SIZE, "%016llx%016llx\n", guidh, guidl);
+ }
+ static DEVICE_ATTR_RO(afu_id);
  
- 	clk_name = pdev->dev.of_node->name;
- 	of_property_read_string(pdev->dev.of_node, "clock-output-names",
-
 -- 
-2.49.0
-
+2.43.0
 
