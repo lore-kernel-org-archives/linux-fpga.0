@@ -1,101 +1,95 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4047241686
-	for <linux-fpga@vger.kernel.org>; Thu, 18 Sep 2025 04:14:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5834E18EB0;
+	Sun, 21 Sep 2025 17:28:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758168875; cv=none; b=YkzqgKF0+d2nGTGXkvslvMcVjCkZ3dKc5IZo2D/mgR4orBybt3Vk1Llc/RA5o2are0NNGfMeQL3kRsTng7faH30ZQlXi0ve+3qe1D0gPihC5sgRZT0n27EoG8dkQF3xe3xl86tc9mRIXrwZ7rKsbrPQwKb3SHkDng7oChhUwWFg=
+	t=1758475705; cv=none; b=soiyGGZIUrhEfJC16kLHapW3e5N62fiUiReq5oG13YRh6afjMWikWGxGYfUVDpiLp0oXtzz58M9xoy5LhcuT60ThCOU+Z7X77rRBWw+wg+9rdkmFQodHlK8/nOu6E1cr/Nq5deqjNvmRg/4u6lO2RVS0nGWcVIdeN9ZumiqGcUk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758168875; c=relaxed/simple;
-	bh=N7R0MimVgJSfBbZGytyTLpP8konL1KyVlkR8kasN5l0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BBEgaDZtoEX6TwkCpuCxg+vDnE26laKeGjwoqpD+Vh8q3ist8PMliwAJWrw08kEpOwj5kvkEXKf8J7iLCcQGHBOVzLLvZ2wi2me8f85aicBXMZKPaj0gSYC3x37Xl4/awG+Iz2dzxZLW9CvX8ikm12U0+Qjlt59btBn42PrJGoc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=none smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Dcn2fNIy; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1758475705; c=relaxed/simple;
+	bh=Y6OyRC8OGepucwPmVPz8/FQHQQPr31PG9hXtFpeOmaw=;
+	h=Content-Type:MIME-Version:In-Reply-To:References:Subject:From:Cc:
+	 To:Date:Message-ID; b=Tpix3gWOJBbv8GLdwYcngHoYQ1hkG9p2BoyxrFeWEAzec3BoGTaPruOhnMNQs+psrdWRGuTqi23hEKQBIvwf//zLdZZGgoob70hvjy+SnKXzOP3bKSj6/n+1D8J3NIPfI1C5dQ0N0jOSMWaLNA/dmydy5tOSE6TJr2iFfRK6FZc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rOYQNGMq; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Dcn2fNIy"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1758168874; x=1789704874;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=N7R0MimVgJSfBbZGytyTLpP8konL1KyVlkR8kasN5l0=;
-  b=Dcn2fNIyTGnKFPJ6U0BOUBkZeWB2SxqXaliLYJsVXCG0jjWL0GAtLFKS
-   TCV2SswRfIP5NO4+nOFED4AfNUC0dd46Ss/cJ8U6GD1zZ9XCuehINXvC+
-   RHAqgMY9st7rvryg2JH2v9HMAqtoAi/O9nnBSFR4waQp4jCOs9aHuYlvJ
-   gvYJlojBX0rI5V2M9zPltSh5BOH0GhhwVhYJo2HSJLJ5EbNGcbeeSG3mu
-   x1IG9LcXPU+I3Hn68YzjH9qkrSHlWdPro1WEoq4Q1s5gWcmtXTYXLtu8R
-   t7JmuoQ5PEnN3lZFtDS/YBypjzOJtWgrw6dgsSlVOfGpdzDaDl47IquNm
-   g==;
-X-CSE-ConnectionGUID: yrDTHoWNQNalHD+J/C2YbQ==
-X-CSE-MsgGUID: Dizw0DdpSTmTBcXUW3ayPg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11556"; a="60555137"
-X-IronPort-AV: E=Sophos;i="6.18,274,1751266800"; 
-   d="scan'208";a="60555137"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2025 21:14:33 -0700
-X-CSE-ConnectionGUID: FQvNuNeITh+qk6hYmRW+4Q==
-X-CSE-MsgGUID: VS1P3hftSVmpUx92v92d3Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,274,1751266800"; 
-   d="scan'208";a="180556462"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orviesa005.jf.intel.com with ESMTP; 17 Sep 2025 21:14:31 -0700
-Date: Thu, 18 Sep 2025 12:02:45 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: "Xu, Yilun" <yilun.xu@intel.com>
-Cc: "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
-	"Gerlach, Matthew" <matthew.gerlach@intel.com>,
-	"gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Subject: Re: FW: [PATCH] MAINTAINERS: change maintainer for Intel MAX10 BMC
- secure updates
-Message-ID: <aMuEZRqck9ebuxOG@yilunxu-OptiPlex-7050>
-References: <20250916155152.411121-1-matthew.gerlach@altera.com>
- <PH0PR11MB562884BA1B9C6215B3B5BD658B16A@PH0PR11MB5628.namprd11.prod.outlook.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rOYQNGMq"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4779C4CEE7;
+	Sun, 21 Sep 2025 17:28:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758475704;
+	bh=Y6OyRC8OGepucwPmVPz8/FQHQQPr31PG9hXtFpeOmaw=;
+	h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
+	b=rOYQNGMquh9OWSN3UTmPtZ+0v9OeRM33ySEUj3+3H51CcaaVxyhzTUntAK1g4gGQH
+	 ZS7hCzCrCoQY0pC9TxVc5cFNWASi7ZByo+3UATC6fUebH635fNI13yjaed4MhY3Ogb
+	 Xi7O4rvMLZbzBLaYss6nQ0CL4aGg8soSI7499vnSGby+INaT4k1mZZapzy1jPlmaeg
+	 LkRTab9X3Eb1AsRD3HKd6iLIYktg1uv+qzFpmLRt+c3eXBboKiFc6pWcRP4siw425T
+	 HuWTRBzU8ddPAgukP6FH1qiRXNZGK5BShMFBbSeI5kmXCE22BYPcpfrjL3pAFavfPz
+	 2NB0GEV8pJOFw==
+Content-Type: text/plain; charset="utf-8"
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <PH0PR11MB562884BA1B9C6215B3B5BD658B16A@PH0PR11MB5628.namprd11.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20250627-dev-axi-clkgen-limits-v7-0-e4f3b1f76189@analog.com>
+References: <20250627-dev-axi-clkgen-limits-v7-0-e4f3b1f76189@analog.com>
+Subject: Re: [PATCH RESEND v7 0/7] clk: clk-axi-clkgen: improvements and some fixes
+From: Stephen Boyd <sboyd@kernel.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, Moritz Fischer <mdf@kernel.org>, Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Michael Hennerich <Michael.Hennerich@analog.com>, Jonathan Cameron <jic23@kernel.org>, Trevor Gamblin <tgamblin@baylibre.com>, Uwe =?utf-8?q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, David Lechner <dlechner@baylibre.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mturquette@linaro.org>, Xu Yilun <yilun.xu@linux.intel.com>, Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: Nuno =?utf-8?q?S=C3=A1?= via B4 Relay <devnull+nuno.sa.analog.com@kernel.org>, dmaengine@vger.kernel.org, linux-clk@vger.kernel.org, linux-fpga@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org, linux-pwm@vger.kernel.org, linux-spi@vger.kernel.org, nuno.sa@analog.com
+Date: Sun, 21 Sep 2025 10:28:23 -0700
+Message-ID: <175847570323.4354.7019519707280531872@lazor>
+User-Agent: alot/0.11
 
-On Thu, Sep 18, 2025 at 04:09:14AM +0000, Xu, Yilun wrote:
-> 
-> -----Original Message-----
-> From: Matthew Gerlach <matthew.gerlach@altera.com> 
-> Sent: Tuesday, September 16, 2025 11:52 PM
-> To: Xu, Yilun <yilun.xu@intel.com>; linux-kernel@vger.kernel.org
-> Cc: Gerlach, MatthewH (Altera Corp) <matthew.gerlach@altera.com>
-> Subject: [PATCH] MAINTAINERS: change maintainer for Intel MAX10 BMC secure updates
-> 
-> Xu Yilun has kindly agreed to take over maintaining Intel MAX10 BMC secure updates, since I will be leaving Altera.
-> 
-> Signed-off-by: Matthew Gerlach <matthew.gerlach@altera.com>
-
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-
+Quoting Nuno S=C3=A1 via B4 Relay (2025-06-27 07:59:09)
+> This series starts with a small fix and then a bunch of small
+> improvements. The main change though is to allow detecting of
+> struct axi_clkgen_limits during probe().
 > ---
->  MAINTAINERS | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 9da37c8dee69..b9c1bf9b9dee 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -12689,7 +12689,7 @@ F:	drivers/mfd/intel-m10-bmc*
->  F:	include/linux/mfd/intel-m10-bmc.h
->  
->  INTEL MAX10 BMC SECURE UPDATES
-> -M:	Matthew Gerlach <matthew.gerlach@altera.com>
-> +M:	Xu Yilun <yilun.xu@intel.com>
->  L:	linux-fpga@vger.kernel.org
->  S:	Maintained
->  F:	Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
-> --
-> 2.35.3
-> 
+> Changes in v7:
+>  - Just include new tags.
+>=20
+> - Link to v6: https://lore.kernel.org/r/20250519-dev-axi-clkgen-limits-v6=
+-0-bc4b3b61d1d4@analog.com
+> - Link to v5: https://lore.kernel.org/r/20250512-dev-axi-clkgen-limits-v5=
+-0-a86b9a368e05@analog.com
+> - Link to v4: https://lore.kernel.org/r/20250505-dev-axi-clkgen-limits-v4=
+-0-3ad5124e19e1@analog.com
+> - Link to v3: https://lore.kernel.org/r/20250421-dev-axi-clkgen-limits-v3=
+-0-4203b4fed2c9@analog.com
+> - Link to v2: https://lore.kernel.org/r/20250313-dev-axi-clkgen-limits-v2=
+-0-173ae2ad6311@analog.com
+> - Link to v1: https://lore.kernel.org/r/20250219-dev-axi-clkgen-limits-v1=
+-0-26f7ef14cd9c@analog.com
+>=20
+> ---
+> Nuno S=C3=A1 (7):
+>       clk: clk-axi-clkgen: fix fpfd_max frequency for zynq
+>       clk: clk-axi-clkgen: make sure to include mod_devicetable.h
+>       include: linux: move adi-axi-common.h out of fpga
+>       include: adi-axi-common: add new helper macros
+>       clk: clk-axi-clkgen: detect axi_clkgen_limits at runtime
+>       clk: clk-axi-clkgen move to min/max()
+>       clk: clk-axi-clkgen: fix coding style issues
+
+What is the merge strategy for this series?
+
+>=20
+>=20
+>  drivers/clk/clk-axi-clkgen.c        | 159 +++++++++++++++++++++++++-----=
+------
+>  drivers/dma/dma-axi-dmac.c          |   2 +-
+>  drivers/hwmon/axi-fan-control.c     |   2 +-
+>  drivers/iio/adc/adi-axi-adc.c       |   3 +-
+>  drivers/iio/dac/adi-axi-dac.c       |   2 +-
+>  drivers/pwm/pwm-axi-pwmgen.c        |   2 +-
+>  drivers/spi/spi-axi-spi-engine.c    |   2 +-
+>  include/linux/adi-axi-common.h      |  56 +++++++++++++
+>  include/linux/fpga/adi-axi-common.h |  23 ------
+>  9 files changed, 174 insertions(+), 77 deletions(-)
+> ---
+> base-commit: 82f69876ef45ad66c0b114b786c7c6ac0f6a4580
+> change-id: 20250218-dev-axi-clkgen-limits-63fb0c5ec38b
