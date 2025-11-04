@@ -1,31 +1,31 @@
 Received: from smtp94.iad3a.emailsrvr.com (smtp94.iad3a.emailsrvr.com [173.203.187.94])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 140BA2F617D
-	for <linux-fpga@vger.kernel.org>; Tue,  4 Nov 2025 15:36:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDDBA328B6A
+	for <linux-fpga@vger.kernel.org>; Tue,  4 Nov 2025 15:36:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=173.203.187.94
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762270611; cv=none; b=GdVApsQWqxeME/2G6ehdh92/6lnJ93no9TmzeUD/Kn1+7T1b5+fD493JweMj4kEuuBsoNswSpnu8exi+I+cn9hM4nnxoJYWcqhp66AZctbYZOT7Y4vRXTt8lxdOMjNChyemTPxfqNw7rGkK6KI1tu27ZGbIZC0B3sJLtjNtYN0Q=
+	t=1762270613; cv=none; b=oYpUwKQ+yUXrQjaiGFGAaVEk4aVzpG0kz1tbADkXeRGJ8hPAryqFLidly5gm8Vv4JsOXQ+43iWDiaf5SsR35IJkgxIKhrGXsAG9B90uMoVQvQSScR6PZQe5Xr+R96SpNbrfTFyldxyfXzN9mva0yefeznAZcXVDXYpPAWxQwJFU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762270611; c=relaxed/simple;
-	bh=oHrVtgxgv0/yF2HOJsdt390wQH50oI5HLTgStZWgqwU=;
+	s=arc-20240116; t=1762270613; c=relaxed/simple;
+	bh=zJrTM+9Q+tb4LzRuOVK4bkpRachZdbEALEQL41CkUOY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=i0l8eisdxFWgSsRVMtbvZ5SU3w+mZta8ShV/K5ag30MdKPQZFR0gBEWbii4MXy46JZ2MU4y9bIUpQXyKO1+eJziUBFpsWfRzlFP6ptf8qH198jnzyboozmKBWbEQ2D2dSUOfdfvF9T8xAC9L4W3uoIUuqHEiH3yMPCtSBLeAoMM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mev.co.uk; spf=pass smtp.mailfrom=mev.co.uk; dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b=RU2HExvn; arc=none smtp.client-ip=173.203.187.94
+	 MIME-Version; b=cW2b8z2K6CmWrXOPK24Jucom+droru9za1RAJlEvWK6rCNhJBaBrdP5MDxi/UOHE6TFXWD2qXayqfTFyn5ut2vb46sT0/y3L7lyvma6gqVWefSj5VJAjdm1cgNa/3Is/y3YKcbc8tsalpTtSIBknIJMFSc23aKagfVCy9qXdejc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mev.co.uk; spf=pass smtp.mailfrom=mev.co.uk; dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b=rlb4D83n; arc=none smtp.client-ip=173.203.187.94
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mev.co.uk
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mev.co.uk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b="RU2HExvn"
+	dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b="rlb4D83n"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mev.co.uk;
-	s=20221208-6x11dpa4; t=1762270231;
-	bh=oHrVtgxgv0/yF2HOJsdt390wQH50oI5HLTgStZWgqwU=;
+	s=20221208-6x11dpa4; t=1762270230;
+	bh=zJrTM+9Q+tb4LzRuOVK4bkpRachZdbEALEQL41CkUOY=;
 	h=From:To:Subject:Date:From;
-	b=RU2HExvnIk0tapMp5+Rn2ClhorovvFEV52JtnTMOLpDJZCdlh3/lQLPQmNAofoV8t
-	 17HkpRJm4+5HOsnvGe8RB7QRNbSAlRsNaAn4gSK6iIeLc+QYizqn9Xab2818JqGKnF
-	 C3FmJJ9SWR+EG4nyAzAM15j33WUDLShFuL7eWfhE=
+	b=rlb4D83n1miqHZelsautZ7OFpDBXmOow4hSuSJcGx72JCrAFd4CmJ+Zzmw38Ug6sZ
+	 NAciu2Ws/xjU2nqR0VcfOk+wUVnFh30xcpQR4BbVxadLUrdEkbqj6oluixY8At9pQy
+	 UImJBpafES6tJPkh4U1tuKISMQQ8qa7+SsITo20Q=
 X-Auth-ID: abbotti@mev.co.uk
-Received: by smtp4.relay.iad3a.emailsrvr.com (Authenticated sender: abbotti-AT-mev.co.uk) with ESMTPSA id CBB6B55BE;
-	Tue,  4 Nov 2025 10:30:30 -0500 (EST)
+Received: by smtp4.relay.iad3a.emailsrvr.com (Authenticated sender: abbotti-AT-mev.co.uk) with ESMTPSA id AC1F05579;
+	Tue,  4 Nov 2025 10:30:29 -0500 (EST)
 From: Ian Abbott <abbotti@mev.co.uk>
 To: linux-fpga@vger.kernel.org
 Cc: Moritz Fischer <mdf@kernel.org>,
@@ -33,9 +33,9 @@ Cc: Moritz Fischer <mdf@kernel.org>,
 	Tom Rix <trix@redhat.com>,
 	linux-kernel@vger.kernel.org,
 	Ian Abbott <abbotti@mev.co.uk>
-Subject: [PATCH 3/4] fpga: manager: Add dummy definitions of API functions
-Date: Tue,  4 Nov 2025 15:27:04 +0000
-Message-ID: <20251104153013.154463-4-abbotti@mev.co.uk>
+Subject: [PATCH 2/4] fpga: bridge: Add dummy definitions of API functions
+Date: Tue,  4 Nov 2025 15:27:03 +0000
+Message-ID: <20251104153013.154463-3-abbotti@mev.co.uk>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20251104153013.154463-1-abbotti@mev.co.uk>
 References: <20251104153013.154463-1-abbotti@mev.co.uk>
@@ -46,151 +46,119 @@ List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Classification-ID: 7af648e7-5513-437d-9d71-25d484e80853-4-1
+X-Classification-ID: 7af648e7-5513-437d-9d71-25d484e80853-3-1
 
-Add dummy versions of the FPGA manager API functions for build testing.
+Add dummy versions of the FPGA bridge API functions for build testing.
 
 Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
 ---
- include/linux/fpga/fpga-mgr.h | 95 ++++++++++++++++++++++++++++++++---
- 1 file changed, 87 insertions(+), 8 deletions(-)
+ include/linux/fpga/fpga-bridge.h | 75 +++++++++++++++++++++++++++++++-
+ 1 file changed, 73 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/fpga/fpga-mgr.h b/include/linux/fpga/fpga-mgr.h
-index 0d4fe068f3d8..bc77d71c8dd7 100644
---- a/include/linux/fpga/fpga-mgr.h
-+++ b/include/linux/fpga/fpga-mgr.h
-@@ -10,6 +10,7 @@
+diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
+index 94c4edd047e5..107e97adcc7c 100644
+--- a/include/linux/fpga/fpga-bridge.h
++++ b/include/linux/fpga/fpga-bridge.h
+@@ -5,6 +5,7 @@
  
- #include <linux/mutex.h>
- #include <linux/platform_device.h>
+ #include <linux/device.h>
+ #include <linux/fpga/fpga-mgr.h>
 +#include <linux/err.h>
  
- struct fpga_manager;
- struct sg_table;
-@@ -217,6 +218,19 @@ struct fpga_manager {
+ struct fpga_bridge;
  
- #define to_fpga_manager(d) container_of(d, struct fpga_manager, dev)
+@@ -63,6 +64,10 @@ struct fpga_bridge {
  
-+#define fpga_mgr_register_full(parent, info) \
-+	__fpga_mgr_register_full(parent, info, THIS_MODULE)
+ #define to_fpga_bridge(d) container_of(d, struct fpga_bridge, dev)
+ 
++#define fpga_bridge_register(parent, name, br_ops, priv) \
++	__fpga_bridge_register(parent, name, br_ops, priv, THIS_MODULE)
 +
-+#define fpga_mgr_register(parent, name, mops, priv) \
-+	__fpga_mgr_register(parent, name, mops, priv, THIS_MODULE)
-+
-+#define devm_fpga_mgr_register_full(parent, info) \
-+	__devm_fpga_mgr_register_full(parent, info, THIS_MODULE)
-+
-+#define devm_fpga_mgr_register(parent, name, mops, priv) \
-+	__devm_fpga_mgr_register(parent, name, mops, priv, THIS_MODULE)
-+
-+#ifdef CONFIG_FPGA
- struct fpga_image_info *fpga_image_info_alloc(struct device *dev);
++#ifdef CONFIG_FPGA_BRIDGE
+ struct fpga_bridge *of_fpga_bridge_get(struct device_node *node,
+ 				       struct fpga_image_info *info);
+ struct fpga_bridge *fpga_bridge_get(struct device *dev,
+@@ -81,12 +86,78 @@ int of_fpga_bridge_get_to_list(struct device_node *np,
+ 			       struct fpga_image_info *info,
+ 			       struct list_head *bridge_list);
  
- void fpga_image_info_free(struct fpga_image_info *info);
-@@ -232,30 +246,95 @@ struct fpga_manager *fpga_mgr_get(struct device *dev);
- 
- void fpga_mgr_put(struct fpga_manager *mgr);
- 
--#define fpga_mgr_register_full(parent, info) \
--	__fpga_mgr_register_full(parent, info, THIS_MODULE)
- struct fpga_manager *
- __fpga_mgr_register_full(struct device *parent, const struct fpga_manager_info *info,
- 			 struct module *owner);
- 
--#define fpga_mgr_register(parent, name, mops, priv) \
--	__fpga_mgr_register(parent, name, mops, priv, THIS_MODULE)
- struct fpga_manager *
- __fpga_mgr_register(struct device *parent, const char *name,
- 		    const struct fpga_manager_ops *mops, void *priv, struct module *owner);
- 
- void fpga_mgr_unregister(struct fpga_manager *mgr);
- 
--#define devm_fpga_mgr_register_full(parent, info) \
--	__devm_fpga_mgr_register_full(parent, info, THIS_MODULE)
- struct fpga_manager *
- __devm_fpga_mgr_register_full(struct device *parent, const struct fpga_manager_info *info,
- 			      struct module *owner);
--#define devm_fpga_mgr_register(parent, name, mops, priv) \
--	__devm_fpga_mgr_register(parent, name, mops, priv, THIS_MODULE)
- struct fpga_manager *
- __devm_fpga_mgr_register(struct device *parent, const char *name,
- 			 const struct fpga_manager_ops *mops, void *priv,
- 			 struct module *owner);
+-#define fpga_bridge_register(parent, name, br_ops, priv) \
+-	__fpga_bridge_register(parent, name, br_ops, priv, THIS_MODULE)
+ struct fpga_bridge *
+ __fpga_bridge_register(struct device *parent, const char *name,
+ 		       const struct fpga_bridge_ops *br_ops, void *priv,
+ 		       struct module *owner);
+ void fpga_bridge_unregister(struct fpga_bridge *br);
  
 +#else
-+static inline struct fpga_image_info *fpga_image_info_alloc(struct device *dev)
++static inline struct fpga_bridge *
++of_fpga_bridge_get(struct device_node *node, struct fpga_image_info *info)
 +{
-+	return NULL;
++	return ERR_PTR(-EOPNOTSUPP);
 +}
 +
-+static inline void fpga_image_info_free(struct fpga_image_info *info)
++static inline struct fpga_bridge *
++fpga_bridge_get(struct device *dev, struct fpga_image_info *info)
++{
++	return ERR_PTR(-EOPNOTSUPP);
++}
++
++static inline void fpga_bridge_put(struct fpga_bridge *bridge)
 +{
 +}
 +
-+static inline int fpga_mgr_load(struct fpga_manager *mgr,
-+				struct fpga_image_info *info)
++static inline int fpga_bridge_enable(struct fpga_bridge *bridge)
 +{
 +	return -EOPNOTSUPP;
 +}
 +
-+static inline int fpga_mgr_lock(struct fpga_manager *mgr)
++static inline int fpga_bridge_disable(struct fpga_bridge *bridge)
 +{
-+	return 0;
++	return -EOPNOTSUPP;
 +}
 +
-+static inline void fpga_mgr_unlock(struct fpga_manager *mgr)
++static inline int fpga_bridges_enable(struct list_head *bridge_list)
++{
++	return -EOPNOTSUPP;
++}
++
++static inline int fpga_bridges_disable(struct list_head *bridge_list)
++{
++	return -EOPNOTSUPP;
++}
++
++static inline void fpga_bridges_put(struct list_head *bridge_list)
 +{
 +}
 +
-+static inline struct fpga_manager *of_fpga_mgr_get(struct device_node *node)
++static inline int fpga_bridge_get_to_list(struct device *dev,
++					  struct fpga_image_info *info,
++					  struct list_head *bridge_list)
++{
++	return -EOPNOTSUPP;
++}
++
++static inline int of_fpga_bridge_get_to_list(struct device_node *np,
++					     struct fpga_image_info *info,
++					     struct list_head *bridge_list)
++{
++	return -EOPNOTSUPP;
++}
++
++static inline struct fpga_bridge *
++__fpga_bridge_register(struct device *parent, const char *name,
++		       const struct fpga_bridge_ops *br_ops, void *priv,
++		       struct module *owner)
 +{
 +	return ERR_PTR(-EOPNOTSUPP);
 +}
 +
-+static inline struct fpga_manager *fpga_mgr_get(struct device *dev)
++static inline void fpga_bridge_unregister(struct fpga_bridge *br)
 +{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
-+static inline void fpga_mgr_put(struct fpga_manager *mgr)
-+{
-+}
-+
-+static inline struct fpga_manager *
-+__fpga_mgr_register_full(struct device *parent, const struct fpga_manager_info *info,
-+			 struct module *owner)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
-+static inline struct fpga_manager *
-+__fpga_mgr_register(struct device *parent, const char *name,
-+		    const struct fpga_manager_ops *mops, void *priv, struct module *owner)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
-+static inline void fpga_mgr_unregister(struct fpga_manager *mgr)
-+{
-+}
-+
-+static inline struct fpga_manager *
-+__devm_fpga_mgr_register_full(struct device *parent, const struct fpga_manager_info *info,
-+			      struct module *owner)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
-+static inline struct fpga_manager *
-+__devm_fpga_mgr_register(struct device *parent, const char *name,
-+			 const struct fpga_manager_ops *mops, void *priv,
-+			 struct module *owner)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
 +}
 +#endif
 +
- #endif /*_LINUX_FPGA_MGR_H */
+ #endif /* _LINUX_FPGA_BRIDGE_H */
 -- 
 2.51.0
 
