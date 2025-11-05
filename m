@@ -1,31 +1,31 @@
-Received: from smtp114.iad3b.emailsrvr.com (smtp114.iad3b.emailsrvr.com [146.20.161.114])
+Received: from smtp115.iad3b.emailsrvr.com (smtp115.iad3b.emailsrvr.com [146.20.161.115])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8BAD301461
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8CCA313284
 	for <linux-fpga@vger.kernel.org>; Wed,  5 Nov 2025 12:46:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=146.20.161.114
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=146.20.161.115
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762346799; cv=none; b=XYTgrnE9JTti0ejMC+sg4OAuJL/T2zL6hS4zEPYey+bfUzfFX7JH+0MkIP//637PxnNYTu/11qfvaJ68gNorp4MF6RP4WgkhlyYmcKvUetPg/9/1KT/1ALcpYTPmzoga4/Jak48vh+VD5xKiYGge/BiLKGa1wnMsU+ji5NX3mSs=
+	t=1762346799; cv=none; b=t2euDg3aRGSBGimuZO6PYguwe8bFM9NBTAaiud9HOaK/UIWQ+7S0qWgPSqGIf9a0MSiKqcIO+0kYm7eozV3oAXs1q0Z0KNg6dotAROXDRrFR93/VlObHtYv//AT7v3uvWjte3qm2xhFGIPZjUMcRPGEBZfl0c8lBsm4Zj5x42qQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1762346799; c=relaxed/simple;
-	bh=tbXurC/ZeUDvs37VmRLP0g8kztrxZaxNimK3BpRMzpo=;
+	bh=rttMBNq7CNMC29zCHl+wi+kGnMXxMUeo2UrICXdlOCs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WsmwzUzOHk0z30hVP4iXzCHVbqyhdjUtK0qQnXv3X4j72pt4a5Lwwbz8USIneRHeuaxNtEPgiF/ePbrKwBLPZhRkwduJqwueWU8fl1IUMog+FfMEYEt7AFRkD0gGBDHhBPI0zx5qOiKY9QIOzx0xECRjBNz9sbGnOV+XsofDedE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mev.co.uk; spf=pass smtp.mailfrom=mev.co.uk; dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b=YF8JrRvg; arc=none smtp.client-ip=146.20.161.114
+	 MIME-Version; b=fdGFMwwNtpVcgLfJHSW4k07DVeFOHF9BZ0/0erBZSy92XrHFCD6ylpb5iVuFNC9WZay63U3SsjQ51BGJdtjJfOtWgmXovNTDp6pbucORfMHQbUDAEIDZ84miZ39FIj2zqg1rH/HTNpsseUDkalRtdQKtwon2jryg94ybufW0vF0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mev.co.uk; spf=pass smtp.mailfrom=mev.co.uk; dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b=sB3g4MNj; arc=none smtp.client-ip=146.20.161.115
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mev.co.uk
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mev.co.uk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b="YF8JrRvg"
+	dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b="sB3g4MNj"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mev.co.uk;
-	s=20221208-6x11dpa4; t=1762346282;
-	bh=tbXurC/ZeUDvs37VmRLP0g8kztrxZaxNimK3BpRMzpo=;
+	s=20221208-6x11dpa4; t=1762346286;
+	bh=rttMBNq7CNMC29zCHl+wi+kGnMXxMUeo2UrICXdlOCs=;
 	h=From:To:Subject:Date:From;
-	b=YF8JrRvgdrNN4YQ25AlsWsubFvOneFGb+diz4tH34QBW62pg4L+QcEXhbVQuWPFCR
-	 QXYfBHohExT6CfdAaSP7vibXZYuQnTu2LlHvzJeHW3yDdcalkPmSB2UWfp6Jw0IRiH
-	 +IWxDCmkSDndQwp2Sd/xx31rPOJnaOJ+RaBYT+Po=
+	b=sB3g4MNjifBkUxuQ1gg0fbdYlhAULDrPvIZa0xxOP4P/U654kg/qn66Is0HzrJ2Vu
+	 reu2E/+cqzKKLfcsVg4UomBXR7P0rxbHyD2pMO/t+TM1AgwHrp0zOdivbIUPRo+qh0
+	 Bk1rIiMzKrmhxNAhC97DhAV+bqU65/oyLLY/bgh4=
 X-Auth-ID: abbotti@mev.co.uk
-Received: by smtp7.relay.iad3b.emailsrvr.com (Authenticated sender: abbotti-AT-mev.co.uk) with ESMTPSA id 023CA60333;
-	Wed,  5 Nov 2025 07:38:01 -0500 (EST)
+Received: by smtp7.relay.iad3b.emailsrvr.com (Authenticated sender: abbotti-AT-mev.co.uk) with ESMTPSA id 7335D601DB;
+	Wed,  5 Nov 2025 07:38:05 -0500 (EST)
 From: Ian Abbott <abbotti@mev.co.uk>
 To: linux-fpga@vger.kernel.org
 Cc: Moritz Fischer <mdf@kernel.org>,
@@ -33,9 +33,9 @@ Cc: Moritz Fischer <mdf@kernel.org>,
 	Tom Rix <trix@redhat.com>,
 	linux-kernel@vger.kernel.org,
 	Ian Abbott <abbotti@mev.co.uk>
-Subject: [PATCH v2 1/4] fpga: altera-pr-ip: Add dummy definitions of API functions
-Date: Wed,  5 Nov 2025 12:31:05 +0000
-Message-ID: <20251105123752.93672-2-abbotti@mev.co.uk>
+Subject: [PATCH v2 4/4] fpga: region: Add dummy definitions of API functions
+Date: Wed,  5 Nov 2025 12:31:08 +0000
+Message-ID: <20251105123752.93672-5-abbotti@mev.co.uk>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20251105123752.93672-1-abbotti@mev.co.uk>
 References: <20251104153013.154463-1-abbotti@mev.co.uk>
@@ -47,39 +47,94 @@ List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Classification-ID: 2331ede2-2f65-45fd-b71e-e0d81416256f-2-1
+X-Classification-ID: 2331ede2-2f65-45fd-b71e-e0d81416256f-5-1
 
-Add a dummy definition of alt_pr_register() for build testing.
+Add dummy definitions of the FPGA region API functions for build
+testing.
 
 Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
 ---
-v2: (1) Add missing #endif.
-    (2) Correct conditional compilation test for ALTERA_PR_IP_CORE
-        tristate configuration.
+v2: Correct conditional compilation test for FPGA_REGION tristate
+    configuration.
 ---
- include/linux/fpga/altera-pr-ip-core.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ include/linux/fpga/fpga-region.h | 44 +++++++++++++++++++++++++++++---
+ 1 file changed, 40 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/fpga/altera-pr-ip-core.h b/include/linux/fpga/altera-pr-ip-core.h
-index a6b4c07858cc..f91b4cf918fb 100644
---- a/include/linux/fpga/altera-pr-ip-core.h
-+++ b/include/linux/fpga/altera-pr-ip-core.h
-@@ -11,7 +11,15 @@
- #ifndef _ALT_PR_IP_CORE_H
- #define _ALT_PR_IP_CORE_H
- #include <linux/io.h>
-+#include <asm/errno.h>
+diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
+index 5fbc05fe70a6..11263b33f0dc 100644
+--- a/include/linux/fpga/fpga-region.h
++++ b/include/linux/fpga/fpga-region.h
+@@ -6,6 +6,7 @@
+ #include <linux/device.h>
+ #include <linux/fpga/fpga-mgr.h>
+ #include <linux/fpga/fpga-bridge.h>
++#include <linux/err.h>
  
-+#if IS_ENABLED(CONFIG_ALTERA_PR_IP_CORE)
- int alt_pr_register(struct device *dev, void __iomem *reg_base);
+ struct fpga_region;
+ 
+@@ -54,23 +55,58 @@ struct fpga_region {
+ 
+ #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
+ 
++#define fpga_region_register_full(parent, info) \
++	__fpga_region_register_full(parent, info, THIS_MODULE)
++
++#define fpga_region_register(parent, mgr, get_bridges) \
++	__fpga_region_register(parent, mgr, get_bridges, THIS_MODULE)
++
++#if IS_ENABLED(CONFIG_FPGA_REGION)
+ struct fpga_region *
+ fpga_region_class_find(struct device *start, const void *data,
+ 		       int (*match)(struct device *, const void *));
+ 
+ int fpga_region_program_fpga(struct fpga_region *region);
+ 
+-#define fpga_region_register_full(parent, info) \
+-	__fpga_region_register_full(parent, info, THIS_MODULE)
+ struct fpga_region *
+ __fpga_region_register_full(struct device *parent, const struct fpga_region_info *info,
+ 			    struct module *owner);
+ 
+-#define fpga_region_register(parent, mgr, get_bridges) \
+-	__fpga_region_register(parent, mgr, get_bridges, THIS_MODULE)
+ struct fpga_region *
+ __fpga_region_register(struct device *parent, struct fpga_manager *mgr,
+ 		       int (*get_bridges)(struct fpga_region *), struct module *owner);
+ void fpga_region_unregister(struct fpga_region *region);
+ 
 +#else
-+static inline int alt_pr_register(struct device *dev, void __iomem *reg_base)
++static inline struct fpga_region *
++fpga_region_class_find(struct device *start, const void *data,
++		       int (*match)(struct device *, const void *))
++{
++	return NULL;
++}
++
++static inline int fpga_region_program_fpga(struct fpga_region *region)
 +{
 +	return -EOPNOTSUPP;
 +}
++
++static inline struct fpga_region *
++__fpga_region_register_full(struct device *parent, const struct fpga_region_info *info,
++			    struct module *owner)
++{
++	return ERR_PTR(-EOPNOTSUPP);
++}
++
++static inline struct fpga_region *
++__fpga_region_register(struct device *parent, struct fpga_manager *mgr,
++		       int (*get_bridges)(struct fpga_region *), struct module *owner)
++{
++	return ERR_PTR(-EOPNOTSUPP);
++}
++
++static inline void fpga_region_unregister(struct fpga_region *region)
++{
++}
 +#endif
- 
- #endif /* _ALT_PR_IP_CORE_H */
++
+ #endif /* _FPGA_REGION_H */
 -- 
 2.51.0
 
