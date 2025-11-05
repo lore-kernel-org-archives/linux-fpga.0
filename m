@@ -1,43 +1,56 @@
-Received: from smtp94.iad3a.emailsrvr.com (smtp94.iad3a.emailsrvr.com [173.203.187.94])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDDBA328B6A
-	for <linux-fpga@vger.kernel.org>; Tue,  4 Nov 2025 15:36:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=173.203.187.94
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7510313D891;
+	Wed,  5 Nov 2025 02:01:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762270613; cv=none; b=oYpUwKQ+yUXrQjaiGFGAaVEk4aVzpG0kz1tbADkXeRGJ8hPAryqFLidly5gm8Vv4JsOXQ+43iWDiaf5SsR35IJkgxIKhrGXsAG9B90uMoVQvQSScR6PZQe5Xr+R96SpNbrfTFyldxyfXzN9mva0yefeznAZcXVDXYpPAWxQwJFU=
+	t=1762308080; cv=none; b=buNVg0LSMvyMEWK8LllUts6IhLuuGcDSAKLT1fZb5992RrWMI5fwNJ9fBz2vVWHy3A1r9kdeGyPj7p5u3Y0g7/vmdHSTqn/6KOSID+MoMxfyBSOmQMzCeFo7A0hwHkd1MHLzwJjwuxYOuxgCcwPCc2yvSF2/5AXUKPN67MGpgRI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762270613; c=relaxed/simple;
-	bh=zJrTM+9Q+tb4LzRuOVK4bkpRachZdbEALEQL41CkUOY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cW2b8z2K6CmWrXOPK24Jucom+droru9za1RAJlEvWK6rCNhJBaBrdP5MDxi/UOHE6TFXWD2qXayqfTFyn5ut2vb46sT0/y3L7lyvma6gqVWefSj5VJAjdm1cgNa/3Is/y3YKcbc8tsalpTtSIBknIJMFSc23aKagfVCy9qXdejc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mev.co.uk; spf=pass smtp.mailfrom=mev.co.uk; dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b=rlb4D83n; arc=none smtp.client-ip=173.203.187.94
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mev.co.uk
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mev.co.uk
+	s=arc-20240116; t=1762308080; c=relaxed/simple;
+	bh=TzCnMsVJgRwM/eGBU5/aQEhc83IJDbUe1+6PYOL4AqM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Cpun/foxvjJQgUmasyycA2kEGqOR8RdXHbF3guOhheMV6eBIGHojpdQJVuxnNWNJ1eKBA65tfyxTJWQndgb63LBtYAHTBL2EJZHKPvh2qgit7sjC8P9ea2WUtQggnJRcSayEKRraLKK0gwUem3+5uD3dVNfKybZto5KQDFHwbrg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=YBsLzCBT; arc=none smtp.client-ip=192.198.163.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mev.co.uk header.i=@mev.co.uk header.b="rlb4D83n"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mev.co.uk;
-	s=20221208-6x11dpa4; t=1762270230;
-	bh=zJrTM+9Q+tb4LzRuOVK4bkpRachZdbEALEQL41CkUOY=;
-	h=From:To:Subject:Date:From;
-	b=rlb4D83n1miqHZelsautZ7OFpDBXmOow4hSuSJcGx72JCrAFd4CmJ+Zzmw38Ug6sZ
-	 NAciu2Ws/xjU2nqR0VcfOk+wUVnFh30xcpQR4BbVxadLUrdEkbqj6oluixY8At9pQy
-	 UImJBpafES6tJPkh4U1tuKISMQQ8qa7+SsITo20Q=
-X-Auth-ID: abbotti@mev.co.uk
-Received: by smtp4.relay.iad3a.emailsrvr.com (Authenticated sender: abbotti-AT-mev.co.uk) with ESMTPSA id AC1F05579;
-	Tue,  4 Nov 2025 10:30:29 -0500 (EST)
-From: Ian Abbott <abbotti@mev.co.uk>
-To: linux-fpga@vger.kernel.org
-Cc: Moritz Fischer <mdf@kernel.org>,
-	Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>,
-	linux-kernel@vger.kernel.org,
-	Ian Abbott <abbotti@mev.co.uk>
-Subject: [PATCH 2/4] fpga: bridge: Add dummy definitions of API functions
-Date: Tue,  4 Nov 2025 15:27:03 +0000
-Message-ID: <20251104153013.154463-3-abbotti@mev.co.uk>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20251104153013.154463-1-abbotti@mev.co.uk>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="YBsLzCBT"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1762308079; x=1793844079;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=TzCnMsVJgRwM/eGBU5/aQEhc83IJDbUe1+6PYOL4AqM=;
+  b=YBsLzCBTgD9aQyYrMeRVRa9aFyLKCbpjnnASIGKWq4kEsyhdj2EYGL3x
+   H//LT3P2AzW2FkSo0aKHph8sAhhyAcnJECqJSsxqVQC289Wy8hdnRYVO/
+   MRQrV75mwYRTxLmEy9EOP882F+UTtDD/VCuNNpD4plAx0H963AXkWvbwn
+   BiutLwkT0spsmWINindlx0uxJMX5q6pvRbABmLWnFYg4mru+YxrXtyhqi
+   /ipEhviz6C4Es7v0im52pvOmf50cpnk5//VR02fQECHbQAxLeXeh7oiIJ
+   mhi/VbGscXmDd1K3Xvl3keHNwwcxSsMxyMjALr9xCDmlSVTXDUwuDZbxU
+   g==;
+X-CSE-ConnectionGUID: eo/CLSOQTLK6MkwpOwaqfg==
+X-CSE-MsgGUID: H4td/KJTS8KTj2IddKUZug==
+X-IronPort-AV: E=McAfee;i="6800,10657,11603"; a="64514484"
+X-IronPort-AV: E=Sophos;i="6.19,280,1754982000"; 
+   d="scan'208";a="64514484"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Nov 2025 18:01:17 -0800
+X-CSE-ConnectionGUID: 9AWY8PmdT8SWhfX0VWBW/A==
+X-CSE-MsgGUID: Hhui5basQSG7nISfC/AAUA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,280,1754982000"; 
+   d="scan'208";a="210811249"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by fmviesa002.fm.intel.com with ESMTP; 04 Nov 2025 18:01:15 -0800
+Date: Wed, 5 Nov 2025 09:47:08 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: Ian Abbott <abbotti@mev.co.uk>
+Cc: linux-fpga@vger.kernel.org, Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] fpga: Add dummy definitions of API functions
+Message-ID: <aQqsnFl8uakMAsH+@yilunxu-OptiPlex-7050>
 References: <20251104153013.154463-1-abbotti@mev.co.uk>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
@@ -45,120 +58,29 @@ List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Classification-ID: 7af648e7-5513-437d-9d71-25d484e80853-3-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251104153013.154463-1-abbotti@mev.co.uk>
 
-Add dummy versions of the FPGA bridge API functions for build testing.
+On Tue, Nov 04, 2025 at 03:27:01PM +0000, Ian Abbott wrote:
+> Add dummy definitions of the FPGA API functions for build testing
+> 
+> 1) fpga: altera-pr-ip: Add dummy definitions of API functions
+> 2) fpga: bridge: Add dummy definitions of API functions
+> 3) fpga: manager: Add dummy definitions of API functions
+> 4) fpga: region: Add dummy definitions of API functions
 
-Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
----
- include/linux/fpga/fpga-bridge.h | 75 +++++++++++++++++++++++++++++++-
- 1 file changed, 73 insertions(+), 2 deletions(-)
+Sorry I don't get the idea. Why should someone use FPGA APIs without
+selecting CONIG_FPGA_XXX? Better make the changes along with the use
+case patches.
 
-diff --git a/include/linux/fpga/fpga-bridge.h b/include/linux/fpga/fpga-bridge.h
-index 94c4edd047e5..107e97adcc7c 100644
---- a/include/linux/fpga/fpga-bridge.h
-+++ b/include/linux/fpga/fpga-bridge.h
-@@ -5,6 +5,7 @@
- 
- #include <linux/device.h>
- #include <linux/fpga/fpga-mgr.h>
-+#include <linux/err.h>
- 
- struct fpga_bridge;
- 
-@@ -63,6 +64,10 @@ struct fpga_bridge {
- 
- #define to_fpga_bridge(d) container_of(d, struct fpga_bridge, dev)
- 
-+#define fpga_bridge_register(parent, name, br_ops, priv) \
-+	__fpga_bridge_register(parent, name, br_ops, priv, THIS_MODULE)
-+
-+#ifdef CONFIG_FPGA_BRIDGE
- struct fpga_bridge *of_fpga_bridge_get(struct device_node *node,
- 				       struct fpga_image_info *info);
- struct fpga_bridge *fpga_bridge_get(struct device *dev,
-@@ -81,12 +86,78 @@ int of_fpga_bridge_get_to_list(struct device_node *np,
- 			       struct fpga_image_info *info,
- 			       struct list_head *bridge_list);
- 
--#define fpga_bridge_register(parent, name, br_ops, priv) \
--	__fpga_bridge_register(parent, name, br_ops, priv, THIS_MODULE)
- struct fpga_bridge *
- __fpga_bridge_register(struct device *parent, const char *name,
- 		       const struct fpga_bridge_ops *br_ops, void *priv,
- 		       struct module *owner);
- void fpga_bridge_unregister(struct fpga_bridge *br);
- 
-+#else
-+static inline struct fpga_bridge *
-+of_fpga_bridge_get(struct device_node *node, struct fpga_image_info *info)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
-+static inline struct fpga_bridge *
-+fpga_bridge_get(struct device *dev, struct fpga_image_info *info)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
-+static inline void fpga_bridge_put(struct fpga_bridge *bridge)
-+{
-+}
-+
-+static inline int fpga_bridge_enable(struct fpga_bridge *bridge)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline int fpga_bridge_disable(struct fpga_bridge *bridge)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline int fpga_bridges_enable(struct list_head *bridge_list)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline int fpga_bridges_disable(struct list_head *bridge_list)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline void fpga_bridges_put(struct list_head *bridge_list)
-+{
-+}
-+
-+static inline int fpga_bridge_get_to_list(struct device *dev,
-+					  struct fpga_image_info *info,
-+					  struct list_head *bridge_list)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline int of_fpga_bridge_get_to_list(struct device_node *np,
-+					     struct fpga_image_info *info,
-+					     struct list_head *bridge_list)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline struct fpga_bridge *
-+__fpga_bridge_register(struct device *parent, const char *name,
-+		       const struct fpga_bridge_ops *br_ops, void *priv,
-+		       struct module *owner)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
-+static inline void fpga_bridge_unregister(struct fpga_bridge *br)
-+{
-+}
-+#endif
-+
- #endif /* _LINUX_FPGA_BRIDGE_H */
--- 
-2.51.0
+Thanks,
+Yilun
 
+> 
+>  include/linux/fpga/altera-pr-ip-core.h |  8 ++-
+>  include/linux/fpga/fpga-bridge.h       | 75 ++++++++++++++++++++++++++-
+>  include/linux/fpga/fpga-mgr.h          | 95 +++++++++++++++++++++++++++++++---
+>  include/linux/fpga/fpga-region.h       | 44 ++++++++++++++--
+>  4 files changed, 207 insertions(+), 15 deletions(-)
+> 
