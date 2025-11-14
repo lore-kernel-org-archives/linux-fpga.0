@@ -1,108 +1,135 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09FF114AD20
-	for <linux-fpga@vger.kernel.org>; Fri, 14 Nov 2025 11:00:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C698F346761;
+	Fri, 14 Nov 2025 17:59:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763118044; cv=none; b=WjKhZcPp0kxzGBV/UFU4sRtF+cBF+OjH8c7BGxvrrp+6j7TR3xNGHhiXlvYF6mRVSDFiNaLIFmOL1AIsMcjM+HFGV6b5dNSgcdw1Rri6+HG3M8dzHrFep4tM7mY3rZX+pahbYD7o0xYvQxAfbbqDK2d+mB0KSulxuqvdPhmBXFE=
+	t=1763143174; cv=none; b=ftcGyWUUsqSKkTbQgGxzCpDEgMoVRcXeQCu+YmH3yrLnecIn/lNXg0B0BFBYWk7i6PZ+QHhvgf+vjBaclieBuJkMP8zhyiQOSiWYpDbWqB0pVIRtKziTRVl5OP87zGjBg+WEC8udzmZcutJAP7ouKx4JBmnAQZ6/4upy9Q6F9b0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763118044; c=relaxed/simple;
-	bh=ezC1/rUXe19y1CoFKvZlQiWBDtnl9JoKrZ1RE4XI5kk=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=jDYP6scQm8YMILTuvLGTFfPRAzirxeod7es/M+qwbf3Fh5Z/MIOZocLG8agLOqU97oVHkJun8HfmoSxvlTOGyh5m/Y3egArt/TXwCIezbltUOz7uOSKSQOjPvoqiFgTSfoDffT+xVFPm8yySNrn+c/c543uKNhvnDbvTtmpQrSE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=K9f81ygU; arc=none smtp.client-ip=192.198.163.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1763143174; c=relaxed/simple;
+	bh=Vdu1KBbH+cAEzJbQuhE/C2imI7qiEBaDqx63uJdCLmQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=RSVvMqcb1ol08IzKZGBlX718Pmec9odTWZL/q39Jm7pLjni6Xov5ebF78IxJUx+Nd6mecwomvLILTf7JAdVEyAY1DR/lV8riL1EbPOoE7FdgyDFjbkuaWc3Z/oHfOv8xwrwljsoMvJKK4MX0ez1bMpD7a9RyVMHp8Tqxs7JRpw4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Mvc1Fkj2; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="K9f81ygU"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1763118043; x=1794654043;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=ezC1/rUXe19y1CoFKvZlQiWBDtnl9JoKrZ1RE4XI5kk=;
-  b=K9f81ygUb+9AbVn6Fa8wuN8YwzdWKfZ4KQWTQq876H1iRpcTW9H6mz6B
-   NDu448iMx2A2wGLYNZSsi4yx59dMdkFFm/tTr2Zn4Y7xrhMiZYwI/X4pE
-   7X5aGRVh/7IKecjmHGrekPglq12t8l2crY91o7mCwiQyWfVVFC4685zC6
-   OiUczslj+BrDOV0eti7PyVSurQhbwT7XKL/KiVbVmrclPwBHjA9YQoUAr
-   x6Rrq11SVsDLFbR55Az9UpRFDgpYtBfJBLBHW8rgdIMO1gjn6p4a5dcHK
-   VuKRW229K3Ccrhu/diPWEuZR9Rnbm/GgHTgKn/vBbk/ANyDcBp3tF9y9j
-   A==;
-X-CSE-ConnectionGUID: 396Q+ZZhQXCrZTpaUF7y0w==
-X-CSE-MsgGUID: rI47iYClQ5SAsufh/AhRrQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11612"; a="76557011"
-X-IronPort-AV: E=Sophos;i="6.19,304,1754982000"; 
-   d="scan'208";a="76557011"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2025 03:00:42 -0800
-X-CSE-ConnectionGUID: wZzGUdGvS4yu5QHiLUgYoQ==
-X-CSE-MsgGUID: qeYWP3UhSMq7XzdJ/V4PtA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,304,1754982000"; 
-   d="scan'208";a="220615602"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmviesa001.fm.intel.com with ESMTP; 14 Nov 2025 03:00:41 -0800
-Date: Fri, 14 Nov 2025 18:46:07 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: gregkh@linuxfoundation.org
-Cc: yilun.xu@linux.intel.com, yilun.xu@intel.com,
-	linux-fpga@vger.kernel.org, mdf@kernel.org
-Subject: Subject: [GIT PULL] FPGA Manager changes for 6.19-rc1
-Message-ID: <aRcIb/DDDGTBTzDa@yilunxu-OptiPlex-7050>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Mvc1Fkj2"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 96616C4CEF5;
+	Fri, 14 Nov 2025 17:59:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1763143174;
+	bh=Vdu1KBbH+cAEzJbQuhE/C2imI7qiEBaDqx63uJdCLmQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Mvc1Fkj2cL+08uF4ytZiv/jY/4atkGEpZUqpUkRxyoVXFfWKs8BjSkzIfT9/2om7Y
+	 ZGJ1GiKN4d5ybmE6nczQtKo3rdAMpz8Mp2P7ym0AhVyNyJ5L+1VRfIggMMgxJFFDCc
+	 sfuQTeRX8iYfhsb9V5ySanp7PCns95nteBgWREyek/e3OmxX4ztcCAVHYRQmaMPWdA
+	 xf6QGwB3BKILg6r0ebf5ynxSUJ87LOM/zVRuM4KyAr7+AnmazcqzlIRpGc/LHUbjSZ
+	 Oh8XywXUiPLn2RWNG/0DLlsWs6CoPXGqTP4F4G+HcSlMzWkizXU+Uj9+nopS35S0Sb
+	 T2gnZqbUf2LKg==
+Date: Fri, 14 Nov 2025 17:59:29 +0000
+From: Conor Dooley <conor@kernel.org>
+To: Khairul Anuar Romli <khairul.anuar.romli@altera.com>
+Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>, Dinh Nguyen <dinguyen@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Mahesh Rao <mahesh.rao@altera.com>,
+	Ho Yin <adrian.ho.yin.ng@altera.com>,
+	Niravkumar L Rabara <nirav.rabara@altera.com>,
+	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] dt-bindings: fpga: stratix10: add support for
+ Agilex5
+Message-ID: <20251114-countless-vantage-6e18528d2e31@spud>
+References: <cover.1763100984.git.khairul.anuar.romli@altera.com>
+ <c614925ffdc98b1faace3ec9bd7124161b0b60ca.1763100984.git.khairul.anuar.romli@altera.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="RZvDkIZ10B50HaV2"
+Content-Disposition: inline
+In-Reply-To: <c614925ffdc98b1faace3ec9bd7124161b0b60ca.1763100984.git.khairul.anuar.romli@altera.com>
+
+
+--RZvDkIZ10B50HaV2
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The following changes since commit 3a8660878839faadb4f1a6dd72c3179c1df56787:
+On Fri, Nov 14, 2025 at 02:27:41PM +0800, Khairul Anuar Romli wrote:
+> Agilex5 introduces changes in how reserved memory is mapped and accessed
+> compared to previous SoC generations. Agilex5 compatible allows stratix10-
+> FPGA manager driver to handle these changes.
+>=20
+> Fallback is added for driver probe and init that rely on matching of table
+> and DT node.
+>=20
+> Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+> Signed-off-by: Khairul Anuar Romli <khairul.anuar.romli@altera.com>
+> ---
+> Changes in v3:
+> 	- Add description for Agilex5 Device
+> 	- Add and define fallback to "intel,agilex-soc-fpga-mgr"
+> 	- Validate against Agilex and Stratix10 (non-fallback) and Agilex5
+> 	  (fallback)
+> Changes in v2:
+> 	- No changes in this patch
+> ---
+>  .../fpga/intel,stratix10-soc-fpga-mgr.yaml         | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/fpga/intel,stratix10-soc-f=
+pga-mgr.yaml b/Documentation/devicetree/bindings/fpga/intel,stratix10-soc-f=
+pga-mgr.yaml
+> index 6e536d6b28a9..8eb414163d08 100644
+> --- a/Documentation/devicetree/bindings/fpga/intel,stratix10-soc-fpga-mgr=
+=2Eyaml
+> +++ b/Documentation/devicetree/bindings/fpga/intel,stratix10-soc-fpga-mgr=
+=2Eyaml
+> @@ -20,9 +20,17 @@ description:
+> =20
+>  properties:
+>    compatible:
+> -    enum:
+> -      - intel,stratix10-soc-fpga-mgr
+> -      - intel,agilex-soc-fpga-mgr
+> +    oneOf:
+> +      - items:
+> +          - enum:
 
-  Linux 6.18-rc1 (2025-10-12 13:42:36 -0700)
+This construct is redundant, "items: - enum" is the same as just having
+"enum".
+pw-bot: changes-requested
 
-are available in the Git repository at:
+> +              - intel,stratix10-soc-fpga-mgr
+> +              - intel,agilex-soc-fpga-mgr
+> +
+> +      - description: Agilex5 Device
+> +        items:
+> +          - enum:
+> +              - intel,agilex5-soc-fpga-mgr
+> +          - const: intel,agilex-soc-fpga-mgr
+> =20
+>  required:
+>    - compatible
+> --=20
+> 2.43.7
+>=20
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/fpga/linux-fpga tags/fpga-for-6.19-rc1
+--RZvDkIZ10B50HaV2
+Content-Type: application/pgp-signature; name="signature.asc"
 
-for you to fetch changes up to c9243d6df0d617535e842aa4c3d1d7dfdb91d07b:
+-----BEGIN PGP SIGNATURE-----
 
-  fpga: altera-cvp: Use pci_find_vsec_capability() when probing FPGA device (2025-11-10 15:03:13 +0800)
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaRduAQAKCRB4tDGHoIJi
+0kbtAQClw4Jgyw2Trg8vY/5hjf1LL+ReGkAG7DyzBQrBKLTYZwD/SD8qS5+M3088
+7bmN4aZf+Nue1Pf4Jd329B0ZkJNCKAU=
+=5Rih
+-----END PGP SIGNATURE-----
 
-----------------------------------------------------------------
-FPGA Manager changes for 6.17-rc1
-
-- Matthew hands over the maintainership of Intel MAX10 BMC secure
-  update to Yilun.
-
-- Fabio adds missing spi_device_id table for xilinx-spi
-
-- Dihn updates link for Altera & AMD's dt-bindings.
-
-- Andy uses pci_find_vsec_capability() instead of open-codes for
-  altera-cvp.
-
-All patches have been reviewed on the mailing list, and have been in the
-last linux-next releases (as part of our for-next branch).
-
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
-
-----------------------------------------------------------------
-Andy Shevchenko (1):
-      fpga: altera-cvp: Use pci_find_vsec_capability() when probing FPGA device
-
-Dinh Nguyen (1):
-      dt-bindings: fpga: update link for Altera's and AMD partial recon
-
-Fabio Estevam (1):
-      fpga: xilinx-spi: Add missing spi_device_id table
-
-Matthew Gerlach (1):
-      MAINTAINERS: change maintainer for Intel MAX10 BMC secure updates
-
- .../devicetree/bindings/fpga/fpga-region.yaml        |  4 ++--
- MAINTAINERS                                          |  2 +-
- drivers/fpga/altera-cvp.c                            | 20 +++++---------------
- drivers/fpga/xilinx-spi.c                            |  7 +++++++
- 4 files changed, 15 insertions(+), 18 deletions(-)
+--RZvDkIZ10B50HaV2--
