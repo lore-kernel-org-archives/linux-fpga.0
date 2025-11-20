@@ -1,90 +1,73 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DE7B34E74F;
-	Wed, 19 Nov 2025 20:33:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B47D32494D8;
+	Thu, 20 Nov 2025 03:08:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763584435; cv=none; b=Rd/z0UIA7+SHO5/lzamu2/t01ITLKPJlP50uo5hj+m4F7bdRHzxRO77GTVXSMw2Rhs5pBxvSyqmjr8BSB4dBhZQnHoDM6eDl3mzImAeTKsojAo0aROqRJGUbeZMSjS5+xbLJBxpTe7r1/VfhNOyOyVsLW4KiIG03G7kudQ3nxlM=
+	t=1763608114; cv=none; b=uex0eyRv2KLjpktws2+6Suwey2Jyd8skNmt+fssGgRN6e4wAtF63ZsDi2WyZPm88uEzCsUhg1oeKofCBQIbshO17dDISqLcNVPkqZrvOtfSAG5UoDbjbZDGjWdEt/BN4pRkIlXZmcd5eZCOqOpqpbqVn5RSu0WYHniJbKcYeBSw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763584435; c=relaxed/simple;
-	bh=7MC246WAT4qGtEp1Vgb4baQGVYIvRpxxnxb3X6u/QcI=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=EZg219uDSK3W7D2jmEh19dM4WrXHt1DfuigpqCpNPwd9C8BCYSR8xXr5a4rl4lMUU6vzsuwlo/LOPxWbTuTPZ+H8zx/6nSb/vABIWAgrZdgvZhth6JhGayA9glx+ut1z96bWL5EYS3sVCtgKI0AcksZy1H9vMNYpVY8oO6H/JMU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YEZjtwvh; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1763608114; c=relaxed/simple;
+	bh=lc5qVOfGpZc7Ju12BmVM+4aEcSufr6VlaXBsPrw7rW8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=mOZGszbLfJMYpVZJG7slEdpgRxvi0KlKhq/Ofa8rQJdZWcGqh+LQLjPDAW1cTIYGIy56Q5NtYE8PXB/gJNvRaAsfmwjjpBPgAQDy52Bi9t3aKVkqw7jWFsxIGgseRJPabC0AkV/t/73qDRO9HGmyzm3yzJI6evWE0A0wKW7Gvis=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TaSZz+mf; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YEZjtwvh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60C05C4CEF5;
-	Wed, 19 Nov 2025 20:33:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TaSZz+mf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5339CC4CEF5;
+	Thu, 20 Nov 2025 03:08:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763584434;
-	bh=7MC246WAT4qGtEp1Vgb4baQGVYIvRpxxnxb3X6u/QcI=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=YEZjtwvh6II2fyW2gAKfUu9f6uo1Dj++CTjlGG6548oH9CSr6AUYHog5P9+Qy3Ngf
-	 m0Z6zLcszpRd6KkiahpjrboDKiIPKJFhzWEmseeKCFbr+3SqOQVw83Oi9hYsbugp81
-	 DvB9X8hFcKBS9atmAz+KJhruFtWggDrM84C+r2SVoWPc83WzxK8G66+EvfxBgIVN2+
-	 KagGMV/PCjWFtK45shyBPfXpPAbU2MKlKk3BuhST2zH+TJ4Mgjh4Sisoq93MR/Gzlc
-	 bUy3uNTZht13oO8Q5arcDit8t+FTwM4xSjAhAt+el72cH9+WL4TqZw828E2ofw9R6r
-	 L9brxZ2NkDlNQ==
-Date: Wed, 19 Nov 2025 14:33:52 -0600
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	s=k20201202; t=1763608113;
+	bh=lc5qVOfGpZc7Ju12BmVM+4aEcSufr6VlaXBsPrw7rW8=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=TaSZz+mfBcWPuMtErF74zUxdkuy8ckxKnlajdSuELRZNOs6ByQMsgf5yigVYwQyjX
+	 z3kKWCDnT3phZ3fEvTGV4hOtwfFt3BgmR/YdSBHdBBl8YDntH0qUgdrtzMHPgkRtDJ
+	 J6QHffVKIqMohXgD2rNzKgNmcbMF6PbCC7haKcS/8Vgjow+bDC4RKpa9lcM6i2wzS6
+	 54i4CGkKYc70AQlkjKqeszeRQ+tagelZiCdaSJEhUWfZFmxGGuGia4ShzyH1ia+0xs
+	 c1CtUc/1bCSPrZ/pVRfzskkQJpU1aVzJBjL2M2AT4UipDXxbCd20thkMf2qq3phN1/
+	 d9UwzzUI/Z5uQ==
+Message-ID: <ef29742c-834c-4f00-b6db-e9a0960b6d17@kernel.org>
+Date: Wed, 19 Nov 2025 21:08:31 -0600
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: krzk+dt@kernel.org, devicetree@vger.kernel.org, conor+dt@kernel.org, 
- kever.yang@rock-chips.com, mani@kernel.org, linux-kernel@vger.kernel.org, 
- trix@redhat.com, dev@kael-k.io, neil.armstrong@linaro.org, mdf@kernel.org, 
- heiko@sntech.de, yilun.xu@intel.com, linux-fpga@vger.kernel.org
-To: iansdannapel@gmail.com
-In-Reply-To: <20251119184708.566461-3-iansdannapel@gmail.com>
-References: <20251119184708.566461-1-iansdannapel@gmail.com>
- <20251119184708.566461-3-iansdannapel@gmail.com>
-Message-Id: <176358443294.3138094.4409498749262975904.robh@kernel.org>
-Subject: Re: [PATCH v5 2/3] dt-bindings: fpga: Add Efinix SPI programming
- bindings
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 0/2] Enable FPGA Manager support for Agilex5
+To: Khairul Anuar Romli <khairul.anuar.romli@altera.com>,
+ Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+ Tom Rix <trix@redhat.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Mahesh Rao <mahesh.rao@altera.com>,
+ Ho Yin <adrian.ho.yin.ng@altera.com>,
+ Niravkumar L Rabara <nirav.rabara@altera.com>, linux-fpga@vger.kernel.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+References: <cover.1763518321.git.khairul.anuar.romli@altera.com>
+Content-Language: en-US
+From: Dinh Nguyen <dinguyen@kernel.org>
+In-Reply-To: <cover.1763518321.git.khairul.anuar.romli@altera.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
 
-On Wed, 19 Nov 2025 19:47:05 +0100, iansdannapel@gmail.com wrote:
-> From: Ian Dannapel <iansdannapel@gmail.com>
+
+On 11/18/25 20:26, Khairul Anuar Romli wrote:
+> This patch series adds device tree bindings, driver and DTS updates to
+> enable FPGA Manager functionality for Intel Agilex5 SoC.
 > 
-> Add device tree bindings documentation for configuring Efinix FPGA
-> using serial SPI passive programming mode.
+> These changes are intended to enable FPGA programming and FPGA management
+> capabilities on Agilex5-based platforms.
 > 
-> Signed-off-by: Ian Dannapel <iansdannapel@gmail.com>
+
 > ---
->  .../bindings/fpga/efinix,trion-spi.yaml       | 77 +++++++++++++++++++
->  1 file changed, 77 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/fpga/efinix,trion-spi.yaml
+> Khairul Anuar Romli (2):
+>    dt-bindings: fpga: stratix10: add support for Agilex5
+>    arm64: dts: agilex5: add fpga-region and fpga-mgr nodes
 > 
 
-My bot found errors running 'make dt_binding_check' on your patch:
+Applied!
 
-yamllint warnings/errors:
-
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/fpga/efinix,trion-spi.yaml: $id: Cannot determine base path from $id, relative path/filename doesn't match actual path or filename
- 	 $id: http://devicetree.org/schemas/fpga/efinix,spi.yaml
- 	file: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/fpga/efinix,trion-spi.yaml
-
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20251119184708.566461-3-iansdannapel@gmail.com
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+Thanks,
+Dinh
