@@ -1,55 +1,79 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from out-171.mta1.migadu.com (out-171.mta1.migadu.com [95.215.58.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C553A1AA1D2
-	for <linux-fpga@vger.kernel.org>; Fri, 21 Nov 2025 14:26:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88B2A72627
+	for <linux-fpga@vger.kernel.org>; Sun, 23 Nov 2025 18:22:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763735203; cv=none; b=tXOPrfJSZz7uyCR/JSvlN6huCD0VQvwT2fvIxcZ9ieVpH3uqmoeYlxZSra9Zle8tPD2xj0z2Hf5t46oTWt468cpTEQEXrotoKPe9xouEGUexF1mWCFUW6cM+NIUkEPBL1yqnJaZTUZHfq0wQT5HzM/6XXIHpUuk0Wegi7BianjA=
+	t=1763922182; cv=none; b=c1NpxQcB6qXvTIUGEuZYyhsrrJqpq2fj4CbW3aLHeOO/GQqmPOmn8qRJ3dtIaeUsDISw5DCGCMIZ5XNrwYS7szzqjVQ3mj1BiIU28DnNQhqzDZX2c+R64g8bGmTVRMU2Mf7yU/NDWgSEs/wDcjkcPQhZ41U2wxyYFqWoJqnVYZ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763735203; c=relaxed/simple;
-	bh=WIJ3Y5NwptAluMi8V9B24ngQUR8oU2s9jZuFhGlQXQU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Joppanr4m+8VoflKR0pAb+Q+q3FEjr0yaF9vxUB6Vw0Qq/N3BEG7autFVr8wbs0vHVD/jHVOCs/0Honk0r7MJq31c7jvtJ2CD3F/q9CjJRmWa0eaFbAQhoB2BOGyD4i0FA/y1MkeRyKSpOjHyEHt4V5lvuE/6PubgTobqcx0f9c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=p905DWkw; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1763922182; c=relaxed/simple;
+	bh=JaI8oTFLtHXHJskyt8S+qrkKbVxFjuUOpVtsDYlQM8Q=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=U/uGt0GvJkWYcz/yeMiF9RWwWVsQLZC1kLwJEH29pQH0vI7WldB4HlqxYY8MX2uLvTiTorLw/LHzBanu1/Vc+O+4OxAyo9DV4MJR+KYm9+yqdmsN9/UjqqujN6+/ke7cu2g+a55aKqx5iH/tbqOf8nK9O/NAaatzze0dx26HHPc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=VquvGUND; arc=none smtp.client-ip=95.215.58.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="p905DWkw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09B1EC4CEF1;
-	Fri, 21 Nov 2025 14:26:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1763735203;
-	bh=WIJ3Y5NwptAluMi8V9B24ngQUR8oU2s9jZuFhGlQXQU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=p905DWkwM3imK74EVEjtwvKlwWko+fMow/PmKyhBuGAShurvVUnFFp7zPs1RivDM4
-	 bGbQzezki4w0e2WC1aEfuJznH4hIU3BWMkAEvOsarnCBppS+q9zk7fkr3aUMu3Pgom
-	 vxO9mYFn1/1e6V4jODkrPhF/TUAZ4Zv6YD9intQA=
-Date: Fri, 21 Nov 2025 15:23:27 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Xu Yilun <yilun.xu@linux.intel.com>
-Cc: yilun.xu@intel.com, linux-fpga@vger.kernel.org, mdf@kernel.org
-Subject: Re: Subject: [GIT PULL] FPGA Manager changes for 6.19-rc1
-Message-ID: <2025112120-marigold-runt-6828@gregkh>
-References: <aRcIb/DDDGTBTzDa@yilunxu-OptiPlex-7050>
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="VquvGUND"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1763922177;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=tjQ/FBAF6bL7gtXJHF/IGxqUKePjaj3FklPddEYIzmg=;
+	b=VquvGUNDfEFVM4ww7Dqcucxll2RElUutsb3RTLgp4o81J2+BE6DueqnBRYtLhi1NkNXvuo
+	MpXYE2PRvUW15boRMzAWsXG51evQau2xeMtLVRhPk206T2rgZVwKmtEnuY4r5WliJDZgix
+	HoHSr0H7S9CsvsDstugBH6LVtiyhNqU=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] fpga: bridge: Use str_enabled_disabled helper in state_show
+Date: Sun, 23 Nov 2025 19:22:22 +0100
+Message-ID: <20251123182222.548247-2-thorsten.blum@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aRcIb/DDDGTBTzDa@yilunxu-OptiPlex-7050>
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Fri, Nov 14, 2025 at 06:46:07PM +0800, Xu Yilun wrote:
-> The following changes since commit 3a8660878839faadb4f1a6dd72c3179c1df56787:
-> 
->   Linux 6.18-rc1 (2025-10-12 13:42:36 -0700)
-> 
-> are available in the Git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/fpga/linux-fpga tags/fpga-for-6.19-rc1
-> 
+Replace hard-coded strings with the str_enabled_disabled() helper. This
+unifies the output and helps the linker with deduplication, which can
+result in a smaller binary.
 
-Pulled and pushed out, thanks.
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ drivers/fpga/fpga-bridge.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-greg k-h
+diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+index 8ef395b49bf8..0c54e415fa5a 100644
+--- a/drivers/fpga/fpga-bridge.c
++++ b/drivers/fpga/fpga-bridge.c
+@@ -12,6 +12,7 @@
+ #include <linux/of_platform.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
++#include <linux/string_choices.h>
+ 
+ static DEFINE_IDA(fpga_bridge_ida);
+ static const struct class fpga_bridge_class;
+@@ -305,7 +306,7 @@ static ssize_t state_show(struct device *dev,
+ 			return state;
+ 	}
+ 
+-	return sysfs_emit(buf, "%s\n", state ? "enabled" : "disabled");
++	return sysfs_emit(buf, "%s\n", str_enabled_disabled(state));
+ }
+ 
+ static DEVICE_ATTR_RO(name);
+-- 
+2.51.1
+
