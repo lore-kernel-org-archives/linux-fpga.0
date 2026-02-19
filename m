@@ -1,201 +1,266 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010008.outbound.protection.outlook.com [40.93.198.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D222C2C0F8E;
-	Thu, 19 Feb 2026 02:04:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771466673; cv=none; b=H62mRJvVuWhzOJC+08wA+ff1EgmH2tFvryQ4BL7I+LJQzZRhctUCTl5dFNHpWpuohJ77EbUeCsLm9Jtqy8q6vgZYLvCkFN99AdkBGCQ/Ag+IAVXC3QCsAf1G7UW17mL/brPamK+KMBJk1nIHis+lDOcE3FBvGjIxtqiiUZMJ/8s=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771466673; c=relaxed/simple;
-	bh=otP0+uOp9VFL6AME+3Z+1o09irTWa/J1aD/0/uL/ABE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=EyfF+5zdwZNke6PyZukYuWFjPLZ9I3DND0ze+OUVP425CeaDXM0qSrlW7FzWlQeYdwetiTr1RuntVNhWx0zNsjxdmNBeVgLtKAPOtJRnLZdWfpRLe6ttUYGVcTSpF36A6Bs31BY/JwQqhf1gtd/jC4YfwU2FSXsZX8FnxEixMks=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=t2rBdHcV; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E49D350D65;
+	Thu, 19 Feb 2026 18:14:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.8
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1771524857; cv=fail; b=Jl9vtfdqpZBhCb5prOBCUOGFAy6KtyEIwacE/ghH0Cu2rOyFwevBL0CWa72eZ6NJfEysbE2xvwFuwv2MMouAYtEnUVveJu5aA+kkz7VgSrdGLh1jjMQl+gNhGizL6RP/R5q+fw283L5FDtcnaizcza8aBsHPQzdNPopVzFLmS4Y=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1771524857; c=relaxed/simple;
+	bh=BGSSbMvGBA5flLrxqmgYOa3auXApyokFUJ8Y69vpAoA=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=VouBQYYhtiFF22hCno0fIvb/kvKpCU7fQa6N2SikDkwdQs3dHYhMGq8C4SXgdhF/xW721ggbSTaH3B+H/eW0sqzyaUoB2sSjZf0vME/eSepSknp6oi0HgAHvWmvbxbeBo5IQUxP1v/cnn/Zer6Bg3LvR/WsaObOih8/CLO/5hYs=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=QVAkWKD2; arc=fail smtp.client-ip=40.93.198.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="t2rBdHcV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87272C19422;
-	Thu, 19 Feb 2026 02:04:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771466673;
-	bh=otP0+uOp9VFL6AME+3Z+1o09irTWa/J1aD/0/uL/ABE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=t2rBdHcV/fTCnW0/JBckGWC5kJjVwoDtuEY/gRkS1t4skQPQetKxwxcIlsU8d1pMM
-	 8jQqoyJa09AB0u/NLmc1aUVR/r0LRYeS6R+E4Vpmkm6p0/Ag/RZQZsN6AddJrBCBNu
-	 IYrpvi2veKfVnzByhgpV+cj1UycYYnBIwPBtu1vJL4NFeiQ8+xreAphfei6+8ukKDs
-	 RFj08gUG/8zNKE19KgIVJytdfEWRnSqLSGOLmXmwp3rxScmtVM+RSiL8UHynOBeWza
-	 WLpmhbsRx46HSSTjrxGnl2p+jLCAYeeU1VLqXa4Cz0k1KNYW12n3LySle/PSCwHuNr
-	 t9UD9AVdu+J6A==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Romain Gantois <romain.gantois@bootlin.com>,
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="QVAkWKD2"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=sLhW2xKOdSv0R2FsliYyKRWdqMqnKjAKfdYHdXi4nNkJXxug2peploDyMiSDRkSCiubBOLS0wda2yDs3WbwTpmAuEOEBi26/wwPLlxHCw6Y4yqmZO++omjIUwqLC7dCK3HOYUbCgDhuCsIyUsitylVIvv1fkNGgpruBemqv9JR+3z0xjXmNvGecTNwTDa7pjkMLxZqGv/2/1zWfXU12CN79Ha4REoEx8IPOjv+vu1IsTbx2CFCpenFB0Ik/50S6hC52dSIpOg9T6nN3lIErxjsQ996ubmK7jK8KcD5AL6WMEVZgDPeH3rsvUVd92rcXpBhaVH5P0+sN7/RZ66K89Mg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=4xbAOul5b8jY2HHKd0/CR/Nj4YU7dqrPThGNTl0SCqM=;
+ b=yHnI/hYC+Wld7tSEULkC9AbUPV2d7L5ik3G1euRedORbk0OIavYqkqROpgeylK/y79cODkh8aILiYsFJ7aroL7Hei9oZclMu7iQ+pdXoY7a6dMuvPcamO79VBPui4tQiHYAuh9SKYJVmfzZuhSouXJwpGWkxiCv/ipiZotr0MRLtGwHp5JIPGU37TaUgK6EW+DNKMuHXDHSdDY0/MpqgwrzgZFUVV/mKu6iZxjKhcyTK+2jEl5IdgV1oMU2wUeHOpkzFIl0XgUo1G0CQ9J8ZdZwUyOA8cTTE7OqXOU9ijKA7KA8CCuqDRqvAiPF2KDUDBYuxYmsbYul4cKYR3Ji7tg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=4xbAOul5b8jY2HHKd0/CR/Nj4YU7dqrPThGNTl0SCqM=;
+ b=QVAkWKD2wW5d99kDS8SJUiOIf8sR9me6kIqMMvIeCQ1UM1bNvqmBKn3K4/S3xGxoOJ5b/yzxwG0LqSElNBby+lR5mGSuDoIGZ3oz8WSd2nIPfQzPSIkOmWm7roHsH20+iLPxjBs2JtpDoNP2njA9fpeokYHzlerpC4fivwrj/vujuSysfGSRKYRHJhgZ8NhT2WCDm/Y6WAQ9nDAZddc1HgDJJVkdnEkukg64rUltrjRbyEeI3VQbe3WKhpN/g5QyMwnWeCJ0wJF7noj8FSuaEHRDqDDDlgwsp05y92eLkAyRXeqt9GPOGco1DnG4fQ395mqRNm4iX+2OCOzhMTLMVw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from PH0PR12MB8800.namprd12.prod.outlook.com (2603:10b6:510:26f::12)
+ by IA0PR12MB7674.namprd12.prod.outlook.com (2603:10b6:208:434::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9632.16; Thu, 19 Feb
+ 2026 18:14:11 +0000
+Received: from PH0PR12MB8800.namprd12.prod.outlook.com
+ ([fe80::f79d:ddc5:2ad7:762d]) by PH0PR12MB8800.namprd12.prod.outlook.com
+ ([fe80::f79d:ddc5:2ad7:762d%4]) with mapi id 15.20.9632.010; Thu, 19 Feb 2026
+ 18:14:10 +0000
+From: Yury Norov <ynorov@nvidia.com>
+To: linux-kernel@vger.kernel.org,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Antoine Tenart <atenart@kernel.org>,
+	Christian Brauner <brauner@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Geetha sowjanya <gakula@marvell.com>,
+	Ingo Molnar <mingo@kernel.org>,
+	Jakub Kicinski <kuba@kernel.org>,
+	James Clark <james.clark@linaro.org>,
+	Jerin Jacob <jerinj@marvell.com>,
+	Linu Cherian <lcherian@marvell.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Mike Leach <mike.leach@linaro.org>,
+	Moritz Fischer <mdf@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Simon Horman <horms@kernel.org>,
+	Stanislav Fomichev <sdf@fomichev.me>,
+	Subbaraya Sundeep <sbhatta@marvell.com>,
+	Sunil Goutham <sgoutham@marvell.com>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Tom Rix <trix@redhat.com>,
 	Xu Yilun <yilun.xu@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	Sasha Levin <sashal@kernel.org>,
-	mdf@kernel.org,
+	Yajun Deng <yajun.deng@linux.dev>,
+	Yury Norov <yury.norov@gmail.com>,
+	Zhang Rui <rui.zhang@intel.com>,
+	hariprasad <hkelam@marvell.com>,
+	coresight@lists.linaro.org,
+	linux-arm-kernel@lists.infradead.org,
 	linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.19-6.1] fpga: of-fpga-region: Fail if any bridge is missing
-Date: Wed, 18 Feb 2026 21:03:44 -0500
-Message-ID: <20260219020422.1539798-8-sashal@kernel.org>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260219020422.1539798-1-sashal@kernel.org>
-References: <20260219020422.1539798-1-sashal@kernel.org>
+	linux-pm@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	netdev@vger.kernel.org
+Cc: Yury Norov <ynorov@nvidia.com>
+Subject: [PATCH 00/12] cleanup bitmaps printing in sysfs
+Date: Thu, 19 Feb 2026 13:13:52 -0500
+Message-ID: <20260219181407.290201-1-ynorov@nvidia.com>
+X-Mailer: git-send-email 2.43.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: BN0PR04CA0146.namprd04.prod.outlook.com
+ (2603:10b6:408:ed::31) To PH0PR12MB8800.namprd12.prod.outlook.com
+ (2603:10b6:510:26f::12)
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.19.2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH0PR12MB8800:EE_|IA0PR12MB7674:EE_
+X-MS-Office365-Filtering-Correlation-Id: 95594654-ab1f-4b64-1d7c-08de6fe2adc2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|376014|7416014|10070799003|1800799024|921020;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?ylwAa26eKvDTRWjoxYTQl53W2tWXlgE3Oc83pTdGzFEZ6j3wf3xx8CUtn17Q?=
+ =?us-ascii?Q?EgKgmb8//5+U4qoXpbtl9nmf3/kYAr94lXBNmWXRVzNMgDa38xSPObUC7Ff7?=
+ =?us-ascii?Q?uzLtmcsRn7m1CqMUJxiScRYp1VJbGHFQw/v4zuHd4hOHkhutjctqtg9vd/xN?=
+ =?us-ascii?Q?P29izKVtK1dAa2VgphWzmq6W6Syqmiwj6rh9ebRTVVU/7rzrakTceFAYw2GC?=
+ =?us-ascii?Q?wzJHvVj2wZtyzKExq5R+8hDREUXlJJhcE9RDygwpcUmMjXgo+gXD6OToIbCq?=
+ =?us-ascii?Q?SmozqtyN/SaCUhM5F13doxyX/pw3k3YJ9yY/hkyyQybqLk8ZNkKMcoA9m1Mk?=
+ =?us-ascii?Q?vtTGzuuLot+nzBMry19nTuZDMeQO0cKiwlnOB8mamBlESOj3uKIXHdBS3h+N?=
+ =?us-ascii?Q?6+Eh3C51N/Fc+xPSlV1gYuwB222LMl+wH6/5NUCfnaxqGhZ12dgylOUaPstm?=
+ =?us-ascii?Q?lewQiLuvbtcKn+TdtIJwv3OqP6qjiX1tix1jYNlboE1ej5220BRd+8YDo1me?=
+ =?us-ascii?Q?78GMnJZE08KuKUuWb2wrO470lvJ1R2KaeXHjeE9gyCi0QsSuazMC/lmrBRSx?=
+ =?us-ascii?Q?tRbIgxkU03pO8J8C9gEOlR8dXcOVTOX/URIkBQ9JWh0Pqlh8KRCAqTC/Rq0t?=
+ =?us-ascii?Q?xj2jO13Kl2Ds2y5hqrgZpv4TabdN8c+jq3Ncg6QuWJoGGhinGQVmmJIslhSX?=
+ =?us-ascii?Q?Ma+7P/A2OWeGmo5Hj76uP87rMhgEurh7VrDp3LJZCm/w0tbwjzTxXuw6X+B6?=
+ =?us-ascii?Q?y9LvX8d1N4OO+Z9/KT2clfnzIX4SQslQpzdjeKyzNzGecrWHYCazPx90T+K/?=
+ =?us-ascii?Q?5DBdOd7TtI0cbBVwdJjvw2Trwu6eWFQVl4SwqTZ5j2DbJlPfSrt46YYTz9rQ?=
+ =?us-ascii?Q?sqn4NlkZfxYAZCnAgXOWD4ginfNLHYxl4N8rkLsbfuYY2Gh43YAmg3WY5zJ0?=
+ =?us-ascii?Q?kZy5BdAXMiBlUGbvgomF8SN99Imb9OqqUcBIuP4tIa23d24v3zoa4nehy0sL?=
+ =?us-ascii?Q?Cpp7Vdn4hJIwRhupKOUqi197RJk5aCxeuNcCgAnPdT4qVfFL8PXGqC+ruBnb?=
+ =?us-ascii?Q?ge7PvX3u7fY1gpJsGeOPUfdH0jeefRbydtjfLuPjB2xvVR2Zgw6Vr059q78m?=
+ =?us-ascii?Q?f118O7AL/5QQn0kk4gxvY6uZWEc3aDoE/b6n1XX0wd8b4RqjQ+GTak3zqrFz?=
+ =?us-ascii?Q?kZgKRz769zGNZN9Kljoti0Cmyw7bweoYY2kcwiBBrM8VJ6cfnqo2eHa2hTDB?=
+ =?us-ascii?Q?lH5WIeVaMyBgaYk3On1+ZvU9Wtjr6JDKpGpaKqJHP+JwF3bur5HVsgoJOVnr?=
+ =?us-ascii?Q?TMlADmZk73V7odMQmOCjccUoStOxArmi6NfvnrdlOvnLxTDEdrmI13GpOvq8?=
+ =?us-ascii?Q?oP5NPs9yc11nZVkFFrRUYwZACvv7xfAfrzVnJIpoJFtqkHoidvmvURDo/ZHV?=
+ =?us-ascii?Q?okyu790rVoExEjxsGES+9goT/L3TqNGciHfNbYBDeF36SHW9jPG3fq101Uqe?=
+ =?us-ascii?Q?1OhZGVyogk8Plj0WDRmoy6d5OwIuA06rQF5IKCuZj8OSRs5U+HJXVgi57bzN?=
+ =?us-ascii?Q?b7vmA6yCNHHIcb3GrL30fxFbLH9ktnLqkEv/VU3J3qf5x6EYpsZAF4V+VSwJ?=
+ =?us-ascii?Q?wA=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR12MB8800.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(10070799003)(1800799024)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?GY+dhMEsv6f9haOebPfabM/pikAhTM3FIYck+ggOILMzp9mGAlKnbNt4nUbc?=
+ =?us-ascii?Q?Npfwl4whsC1IzWpQwJt7271H9ECFzKtS56xXtN650/r1+K2BYIRColJTtVER?=
+ =?us-ascii?Q?q0VSp8wFXw+cHqsPxrsuujrGovWU0pWL/qzaW3HRjQJilyNyc26dfnTTUJ+Z?=
+ =?us-ascii?Q?kHcBPRVSZIx6BN2Z/mkbDHX9Je+SN7yWski8ajL6YFmM/RSKEE9Bw8ZLTAp9?=
+ =?us-ascii?Q?R78flduFJ+7PCyKOnMPY8N1yIAdf7F3YliVNKu9gslupN1lH6vL5nAQGjVE4?=
+ =?us-ascii?Q?m45FC0ImEQ7E7zZpnisisILh9ajTVAhPCGwx1gy4ca/bVAqVQD2z9Yi8/HNS?=
+ =?us-ascii?Q?ZkqOhxxwOktsGQlHNNLA8R7iDVUY2CXJ+yyWWDFxZFweo3XjWm0bZ/BrVqM+?=
+ =?us-ascii?Q?ORtoG69EVjekRaKQn/Yhrw/p4rxgJRLthlyH+RpAZL1HrSH3VYqsGZxMO+yq?=
+ =?us-ascii?Q?941JhqQsBEaIM3wVUCYHIbhPcfeLjn8N4bIfHii8c6VpaPOlbA4w4LC3N+21?=
+ =?us-ascii?Q?8njGeI3t8m++MN3/0YKWJFOn8zsbT00sTCk25EagnS0Ma3DyNN8wKNeLOuXV?=
+ =?us-ascii?Q?yyA0NndOMny6YuxVZPFcfrj1rpsZy2DN3/oE1uFWFunypB//VOgzLVWnpGtM?=
+ =?us-ascii?Q?tmD47joCUHT1O+UQKJRX3iwv9sZFHJKvNyKwesc6SteNAA+/Qx3qLZeRBV2I?=
+ =?us-ascii?Q?Cmp7LGMq5md3mU6r+bG7a7vgu3STlCf2gmhTjUPRuX8LdB8Ajq8qkx4u29HZ?=
+ =?us-ascii?Q?1Dt/YEmWMGDtftVktOuRjBNBugtjy4YsBU0+gFv1btMVIAuzCcI2dR6MlMVF?=
+ =?us-ascii?Q?qNqac7kHr21688PsmcRXMOHBtpGSz7Tc24p//H3Rt7pDjEOarbFh1aQ2CZIH?=
+ =?us-ascii?Q?UhxwH7q0prPMc42Q+grHwZF6lB1Iy7jMFA8bBe6XUObj2ckMUKbXhbCTmSBS?=
+ =?us-ascii?Q?FRJub2Rhmm3oIOks+/IpSCCQ/2ueYH/X9KMqUOdCnJHGXzXZ3m+n0yfqqX49?=
+ =?us-ascii?Q?Ft6GToe8dVZ7PIEw51AIB9T2dyPQqQXQMDLpu4MX6AYd8bPO5QbUSXv4lriD?=
+ =?us-ascii?Q?DQ63T4D4LN/gx1v6V0hfGNECjFpsF9DyV1tu0no8O/z9ZkyxLKfxeE20PeI+?=
+ =?us-ascii?Q?XMm4LiW29a6kj2X5eB8aeilLtpf7jEFQvt3ruBYFv0V7PICSsDN0eUMjcCf3?=
+ =?us-ascii?Q?8TOtcAQxX8jJapuq9MdUn5N2iM+d5scdHviSQMuTJLA3H6VlPszZZIwidfer?=
+ =?us-ascii?Q?u8EQG0v3K7LPDV3ciKvRnJBlBJsfbksMFJa7I2GNdd6wrPrMKwPZLCsxYfR9?=
+ =?us-ascii?Q?8GE9Sn9gHTkeFMWkgf5nJh6G9CkXcZZl3AGJMtvLbQKw+3fnn9AWgAzxYSkG?=
+ =?us-ascii?Q?LSp50JtR3Mz+vJcv8D5b+cQIHSIoIps8bY0OGZpoU1MvXEwBjoyyRyJ/dbEW?=
+ =?us-ascii?Q?UMNvgA6vS7z6ummyFOK0SGutO6aBn4aVkbwksenAut8FtcsYKFPrub/hWZ+u?=
+ =?us-ascii?Q?UknDSi/EAfW3rFj6G25iwUSOZ4YAOEwGuhG6bB8F2aHvFCoLimvv/Ijg45Vc?=
+ =?us-ascii?Q?I/s5LvXNU/i/Sjkz9AUQA6TSdlCtzbCrAyiDrayNCSBrwUjvRL4XJ/CN0Ljy?=
+ =?us-ascii?Q?aZGg6v4dfn79im5BHoqCbR4t9hUz8d0goOG3viHGrkmjceo//oFAm2HjwdTV?=
+ =?us-ascii?Q?eM4rVlRBojw7IoyTbupPKOzW8iyhlKIvlrOsyI6eSmDr1UVLGrddfbm7dDER?=
+ =?us-ascii?Q?ryJEWGGom4wlZb11rpiJfxuN6s9ITB0x5a24nicyKtQ/nHl+Psvq?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 95594654-ab1f-4b64-1d7c-08de6fe2adc2
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR12MB8800.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Feb 2026 18:14:10.6782
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: aKc3KNBJ6MrnqtD3WphYpe2e8lr7vxluyOmHHH+4fP1y/doKOxDRm/DKRQ6IMRHAO0GPGz4muo+WsCHrYCFGPg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7674
 
-From: Romain Gantois <romain.gantois@bootlin.com>
+Bitmap API has a bitmap_print_to_pagebuf() function that is intended to
+print bitmap into a human readable format, making sure that the output
+string will not get big enough to cross the current page limit.
 
-[ Upstream commit c141c8221bc5089de915d9f26044df892c343c7e ]
+Some drivers use this function immediately before passing the result to
+seq_printf() with no modification. This is useless because seq_pritf()
+takes care of not overflowing the buffer by itself, and perfectly prints
+bitmaps with "%*pb[l]".
 
-When parsing the region bridge list from the "fpga-bridges" device tree
-property, the of-fpga-region driver will silently ignore bridges which fail
-to be obtained, for example due to a missing bridge driver or invalid
-phandle.
+The first 6 patches of the series convert such bitmap_print_to_pagebuf()
+users to just print the bitmap with seq_printf().
 
-This can lead to hardware issues if a region bridge stays coupled when
-partial programming is performed.
+Patch #7 adds (actually moves from net/p9 driver) a handy macro
+rest_of_page() and applies it globally.
 
-Fail if any of the bridges specified in "fpga-bridges" cannot be obtained.
+The rest of the series switches all other users to scnprintf("%*pb[l]"),
+so that users wont abuse kmalloc() + bitmap_print_to_pagebuf().
 
-Signed-off-by: Romain Gantois <romain.gantois@bootlin.com>
-Link: https://lore.kernel.org/r/20251127-of-fpga-region-fail-if-bridges-not-found-v1-1-ca674f8d07eb@bootlin.com
-Reviewed-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@linux.intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
+Patches 1-6 may be applied individually, or together with the rest of
+the series, at maintainers' discretion.
 
-LLM Generated explanations, may be completely bogus:
+Yury Norov (12):
+  powerpc/xive: simplify xive_spapr_debug_show()
+  octeontx2-af: siplify rvu_debugfs
+  thermal: intel: switch cpumask_get() to using
+    cpumask_print_to_pagebuf()
+  lib/prime_numbers: drop temporary buffer in dump_primes()
+  bitmap: switch test to scnprintf("%*pbl")
+  bitmap: align test_bitmap output
+  mm: add rest_of_page() macro
+  coresight: don't use bitmap_print_to_pagebuf()
+  fpga: m10bmc-sec: switch show_canceled_csk() to using scnprintf()
+  net-sysfs: switch xps_queue_show() to using scnprintf()
+  cpumask: switch cpumap_print_to_pagebuf() to using scnprintf()
+  bitmap: drop bitmap_print_to_pagebuf()
 
-This confirms the calling pattern: `fpga_region_program_fpga()` calls
-`get_bridges()` which is `of_fpga_region_get_bridges()`. If bridges fail
-to be obtained, the function proceeds to **disable bridges** (line 127)
-and then **load FPGA image** (line 133). If a bridge was supposed to
-decouple a region but was silently skipped, the FPGA programming
-proceeds with the bridge still coupled - which can cause hardware
-issues.
+ arch/arm64/kernel/patching.c                  |  4 +-
+ arch/powerpc/lib/code-patching.c              |  6 +--
+ arch/powerpc/sysdev/xive/spapr.c              | 12 +-----
+ arch/riscv/kernel/sbi.c                       |  4 +-
+ arch/s390/kvm/gaccess.c                       |  6 +--
+ arch/x86/kvm/emulate.c                        |  4 +-
+ drivers/block/null_blk/main.c                 |  6 +--
+ drivers/fpga/intel-m10-bmc-sec-update.c       |  3 +-
+ drivers/gpu/drm/i915/gt/shmem_utils.c         |  5 +--
+ .../hwtracing/coresight/coresight-cti-sysfs.c | 33 +++++++--------
+ drivers/md/dm-pcache/backing_dev.h            |  2 +-
+ .../marvell/octeontx2/af/rvu_debugfs.c        | 28 +++----------
+ drivers/net/ethernet/meta/fbnic/fbnic_tlv.c   |  6 +--
+ drivers/s390/net/qeth_core_main.c             |  6 +--
+ drivers/spi/spi-pl022.c                       |  3 +-
+ drivers/spi/spi.c                             |  4 +-
+ drivers/thermal/intel/intel_powerclamp.c      |  3 +-
+ fs/ext4/verity.c                              |  3 +-
+ fs/f2fs/verity.c                              |  6 +--
+ fs/fuse/dev.c                                 |  4 +-
+ fs/iomap/buffered-io.c                        |  2 +-
+ fs/nfs/pagelist.c                             |  2 +-
+ fs/remap_range.c                              |  3 +-
+ fs/xfs/scrub/xfile.c                          |  3 +-
+ include/crypto/scatterwalk.h                  |  2 +-
+ include/linux/bitmap-str.h                    |  1 -
+ include/linux/cpumask.h                       | 17 +-------
+ include/linux/highmem.h                       | 24 +++++------
+ include/linux/iomap.h                         |  2 +-
+ include/linux/iov_iter.h                      |  3 +-
+ include/linux/mm.h                            |  2 +
+ kernel/events/ring_buffer.c                   |  2 +-
+ lib/bitmap-str.c                              | 42 +++----------------
+ lib/cpumask.c                                 | 17 ++++++++
+ lib/iov_iter.c                                |  5 +--
+ lib/math/tests/prime_numbers_kunit.c          |  6 +--
+ lib/test_bitmap.c                             | 17 ++++----
+ net/9p/trans_virtio.c                         |  6 ---
+ net/core/net-sysfs.c                          |  2 +-
+ sound/virtio/virtio_pcm_msg.c                 |  4 +-
+ 40 files changed, 111 insertions(+), 199 deletions(-)
 
-## Summary of Analysis
-
-### What the bug is
-
-The `of_fpga_region_get_bridges()` function iterates over bridges
-specified in the device tree's "fpga-bridges" property. For each bridge,
-it calls `of_fpga_bridge_get_to_list()` which can return:
-- `0` = success
-- `-EBUSY` = bridge in use
-- `-ENODEV` = bridge not found (missing driver, invalid phandle)
-
-The **old code** only checked for `-EBUSY` and silently ignored
-`-ENODEV` and other errors. This means if a bridge driver is missing or
-a phandle is invalid, the bridge is silently skipped and FPGA partial
-reconfiguration proceeds without decoupling that bridge.
-
-### Why it matters
-
-FPGA bridges are isolation mechanisms. During partial reconfiguration,
-bridges must be decoupled to prevent bus contention and hardware
-corruption. If a bridge is silently skipped (not decoupled), partial
-programming proceeds with the region still coupled, potentially causing
-**hardware issues** - this is a data corruption / hardware damage
-scenario.
-
-### The fix
-
-The change is minimal and surgical:
-- `if (ret == -EBUSY)` → `if (ret)` (catches all errors, not just EBUSY)
-- `return -EBUSY` → `return ret` (propagates the actual error code)
-- Comment updates to match
-
-This is a **2-line functional change** with comment updates. Very low
-risk.
-
-### Risk assessment
-
-- **Scope**: Very small (2 functional lines changed)
-- **Risk**: Low - the change makes the function stricter (fail on error
-  instead of silently continue), which is the safe direction. The only
-  risk is that some setups that previously "worked" (with silently
-  missing bridges) would now fail to program the FPGA. But this is the
-  correct behavior - programming without proper bridge decoupling is
-  dangerous.
-- **Dependencies**: None - this is a self-contained change
-- **Code exists in stable**: The file has been present since v4.16
-  (2017), so it exists in all active stable trees
-
-### Stable criteria check
-
-1. Obviously correct: Yes - checking all errors instead of just one
-   specific error code
-2. Fixes a real bug: Yes - silent bridge skip can lead to hardware
-   issues during partial reconfiguration
-3. Important issue: Yes - potential hardware damage/corruption
-4. Small and contained: Yes - 2 functional lines changed in a single
-   file
-5. No new features: Correct - no new features added
-6. Reviewed: Yes - "Reviewed-by: Xu Yilun <yilun.xu@intel.com>" (FPGA
-   subsystem maintainer)
-
-## Verification
-
-- Read `of-fpga-region.c` (pre-patch version at lines 88-141): Confirmed
-  old code only checks `ret == -EBUSY` at line 134
-- Found `of_fpga_bridge_get_to_list` in `drivers/fpga/fpga-bridge.c`:
-  Confirmed it can return `-ENODEV` (from `of_fpga_bridge_get`) or
-  `-EBUSY`, not just `-EBUSY`
-- Traced the call chain: `fpga_region_program_fpga()` →
-  `region->get_bridges()` → `of_fpga_region_get_bridges()`. Confirmed at
-  `fpga-region.c:119-120` that the callback is invoked before
-  `fpga_bridges_disable()` at line 127 and `fpga_mgr_load()` at line 133
-- Confirmed the file has existed since commit `ef3acdd820752` (v4.16,
-  2017) - the bug has been present since file creation
-- Confirmed the patch has `Reviewed-by: Xu Yilun` (FPGA subsystem
-  maintainer)
-- Confirmed the change is self-contained - no dependencies on other
-  commits
-
-**YES**
-
- drivers/fpga/of-fpga-region.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index 43db4bb77138a..caa091224dc54 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -83,7 +83,7 @@ static struct fpga_manager *of_fpga_region_get_mgr(struct device_node *np)
-  * done with the bridges.
-  *
-  * Return: 0 for success (even if there are no bridges specified)
-- * or -EBUSY if any of the bridges are in use.
-+ * or an error code if any of the bridges are not available.
-  */
- static int of_fpga_region_get_bridges(struct fpga_region *region)
- {
-@@ -130,10 +130,10 @@ static int of_fpga_region_get_bridges(struct fpga_region *region)
- 						 &region->bridge_list);
- 		of_node_put(br);
- 
--		/* If any of the bridges are in use, give up */
--		if (ret == -EBUSY) {
-+		/* If any of the bridges are not available, give up */
-+		if (ret) {
- 			fpga_bridges_put(&region->bridge_list);
--			return -EBUSY;
-+			return ret;
- 		}
- 	}
- 
 -- 
-2.51.0
+2.43.0
 
