@@ -1,60 +1,80 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3E483D668E;
-	Wed, 25 Feb 2026 19:41:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB8C73876C5;
+	Thu, 26 Feb 2026 06:33:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772048480; cv=none; b=Bub5d5K2wEfUyFHkwL8wDoabys1Q9Ydx8A2cGnRGuI1Pa1rmLmkF1WAdlkX19hiYldXcqzFXLQjfav3hwq1lfFG8Sc9ImKygoUwtiUvoF4os/qKI5MXRhRzRaRQBj1QJcIlnDHex3bcTndUgvcMrBz7glvHkb5rwQqbFPudeok4=
+	t=1772087621; cv=none; b=WnNG7tNA+BVPDzYjGinTtCH9ZCRTW0SuSyR6AIWMa5NSSLe/WMbNmOxpBXkmV2CS/cJ5MM0R4lcnpwrAVIKb0cK3AoCISBDoJGASwGdfSn1K8Lbt6A15lf7XIg+twp07UvLhJDz4XnMAp9hrduKN1aHyoBX7n7UwRicpE/2hBgA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772048480; c=relaxed/simple;
-	bh=Hxc8seEhSUYcCehdTOSE+1hqLezl98FQhwkLwturW9w=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gj1sprqynU5bdCylAbyI+kO/liT6UDvSHntH+sqK9WeZzxfog1KjIFmx/Em6SlcnvLZr++WH37My++N8kMcDbeW95oW9vua2X6xpl1SF1J1yGt0vrYF5ZPyUgNudGVumpPFvj/Q5ViAZaL0HnlM7UKzyGOmnhrNVtpqVOSRfCsE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Z9OAIHsk; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1772087621; c=relaxed/simple;
+	bh=b6ro6E4AcTkYaQZZ43ck0/UhXy75tRTVBwAgEJ/59ds=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NGQkHwnESIlA9cbJxZ1BqZWYxsqBFYy6P5Qp2/Zs6FXV374LnW1WBLqmKSfSNkN53JjK0i5ypMzj5C6mehOgDl8M8JgZOX1d8IjxWHcbVUT+eukRmQJtUJ3U3Z8HD9qviluskabg8geCu3w/wowhK2CS1Mp7zd+RXw7KPjeH6Qc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=JBeIy9yy; arc=none smtp.client-ip=198.175.65.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z9OAIHsk"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9EF24C116D0;
-	Wed, 25 Feb 2026 19:40:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772048479;
-	bh=Hxc8seEhSUYcCehdTOSE+1hqLezl98FQhwkLwturW9w=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Z9OAIHsktw61SRN/xIqnrh8AUfNpmQZEuud0PVq/AOpZFE7hwENcyr/EREC9FM5N3
-	 2xd2HoBCS/OLI1kJ0zZqLG9kCVEAbAAzMcA3IaDjuOtKBe/mOywVdcw+E/RQMEH5Ut
-	 bk1D46HwbCsen0vH7oYZ75y09OIy0MywMs6JQ00k6MmgW1aI7tzfr3XxgtfAJlWaAP
-	 dCbXeRZ4EB+O4YAT/JZJpfdQztWZTJltmiUvxy0Bi4dcq/XXMONhHxotbEZXk7dNHV
-	 V9N5U8ho41HWufPZ5j6Q26DSxvHiDm20xRK/jrJD6weutEb0+WJQ164jLFAmjWSqVR
-	 M40rgwGOg2xJw==
-Message-ID: <6c64c903-0df0-4838-954f-4c82baf48971@kernel.org>
-Date: Wed, 25 Feb 2026 13:36:29 -0600
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="JBeIy9yy"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1772087619; x=1803623619;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=b6ro6E4AcTkYaQZZ43ck0/UhXy75tRTVBwAgEJ/59ds=;
+  b=JBeIy9yylCgImbJKy+I39wgP7G0Mb+auUoJF2WKek1S47uRqIHCvZw61
+   P4nuO0AYZErCuPws4UCCKcbDLY0qQSitf++F2dfI4I5mvucJNSI+7NCuc
+   coyFxvirP6QwoZcJLlLShjctjnJF5yyRPqEAY0s/YjQi6cg4pxRAlaBLs
+   RV92qFpfb7OYyYomERtabqY4EUnn42xEbf+70hiooSWcY8sD3i0QdITRX
+   uYWAXHhHD02yY9q8dsr6Hc+g0axupsxTp9wuheZyhV7ZY6pQZzrR4FC/u
+   0+sZFthtCazR39lufWmMbGNNopvQ+NUvpZvCjjt5j+hiQhbJ+o4p+H3Mg
+   Q==;
+X-CSE-ConnectionGUID: jMATT015Sj2hLdPBl2A2vA==
+X-CSE-MsgGUID: 1h22O+waSw+piWUfj20vEQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11712"; a="76974528"
+X-IronPort-AV: E=Sophos;i="6.21,311,1763452800"; 
+   d="scan'208";a="76974528"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Feb 2026 22:33:39 -0800
+X-CSE-ConnectionGUID: 4gJiFKf1RBy7t0oiRuowdQ==
+X-CSE-MsgGUID: rjjTvDidSja4DIV7SOlkSw==
+X-ExtLoop1: 1
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by fmviesa003.fm.intel.com with ESMTP; 25 Feb 2026 22:33:37 -0800
+Date: Thu, 26 Feb 2026 14:14:04 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: adrianhoyin.ng@altera.com
+Cc: dinguyen@kernel.org, mdf@kernel.org, yilun.xu@intel.com,
+	trix@redhat.com, linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Ang Tien Sung <tiensung.ang@altera.com>
+Subject: Re: [PATCH] firmware: stratix10-svc: support up to 4 buffer claims
+ and extend timeout
+Message-ID: <aZ/krGA++52zXM9u@yilunxu-OptiPlex-7050>
+References: <b67ffe732654c7db86c4b5d987af92dcc12bf4f3.1770706895.git.adrianhoyin.ng@altera.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] firmware: stratix10-svc: support up to 4 buffer claims
- and extend timeout
-Content-Language: en-US
-To: adrianhoyin.ng@altera.com, mdf@kernel.org, yilun.xu@intel.com,
- trix@redhat.com, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Ang Tien Sung <tiensung.ang@altera.com>
-References: <b67ffe732654c7db86c4b5d987af92dcc12bf4f3.1770706895.git.adrianhoyin.ng@altera.com>
-From: Dinh Nguyen <dinguyen@kernel.org>
-In-Reply-To: <b67ffe732654c7db86c4b5d987af92dcc12bf4f3.1770706895.git.adrianhoyin.ng@altera.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <b67ffe732654c7db86c4b5d987af92dcc12bf4f3.1770706895.git.adrianhoyin.ng@altera.com>
 
-
-
-On 2/10/26 01:16, adrianhoyin.ng@altera.com wrote:
+On Tue, Feb 10, 2026 at 03:16:42PM +0800, adrianhoyin.ng@altera.com wrote:
 > From: Adrian Ng Ho Yin <adrianhoyin.ng@altera.com>
 > 
 > The service layer previously only returned up to three buffer addresses
 > per transaction. Extend the logic in svc_thread_cmd_data_claim() to
 > collect up to four buffer claims. A new field `kaddr4` is added to
+
+Why previously use 3 buffers per transaction, and why now use 4, not
+5, 6...  I.e., I saw some association from struct
+arm_smccc_res::a1/a2/a3 so we used 3 buffers previouly (correct me if
+wrong). But the 4th buffer seems pure SVC decision so please elaborate.
+
 > struct stratix10_svc_cb_data, and the FPGA manager callback unlocks this
 > fourth buffer accordingly.
 > 
@@ -68,165 +88,43 @@ On 2/10/26 01:16, adrianhoyin.ng@altera.com wrote:
 > - Callbacks are updated to pass all claimed buffers to clients.
 > - Debug logging is added to trace received status values.
 > - Simplified buffer wait logic in s10_ops_write() by always using
->    wait_for_completion_timeout().
+>   wait_for_completion_timeout().
+
+The patch includes too much independent changes which makes reviewers
+hard to distinguish which line is for which purpose, please split your
+patch into a series. This also gives chances for you to explain why each
+change is necessary or nice to have.
+
 > 
 > These changes improve robustness of FPGA configuration on SoCFPGA
 > platforms by handling larger transactions and accommodating realistic
 > timing.
 > 
-> Signed-off-by: Ang Tien Sung <tiensung.ang@altera.com>
-> Signed-off-by: Adrian Ng Ho Yin <adrianhoyin.ng@altera.com>
-> ---
->   drivers/firmware/stratix10-svc.c              | 36 +++++++++++++------
->   drivers/fpga/stratix10-soc.c                  | 18 +++++-----
->   .../firmware/intel/stratix10-svc-client.h     |  6 ++--
->   3 files changed, 37 insertions(+), 23 deletions(-)
-> 
-> diff --git a/drivers/firmware/stratix10-svc.c b/drivers/firmware/stratix10-svc.c
-> index dbed404a71fc..58cf68d9a384 100644
-> --- a/drivers/firmware/stratix10-svc.c
-> +++ b/drivers/firmware/stratix10-svc.c
-> @@ -342,6 +342,8 @@ static void svc_thread_cmd_data_claim(struct stratix10_svc_controller *ctrl,
->   {
->   	struct arm_smccc_res res;
->   	unsigned long timeout;
-> +	void *buf_claim_addr[4] = {NULL};
-> +	int buf_claim_count = 0;
->   
->   	reinit_completion(&ctrl->complete_status);
->   	timeout = msecs_to_jiffies(FPGA_CONFIG_DATA_CLAIM_TIMEOUT_MS);
-> @@ -353,20 +355,32 @@ static void svc_thread_cmd_data_claim(struct stratix10_svc_controller *ctrl,
->   
->   		if (res.a0 == INTEL_SIP_SMC_STATUS_OK) {
->   			if (!res.a1) {
-> +				/* Transaction of 4 blocks are now done */
+...
 
-This comment is a bit misleading. How do you know you finish exactly 4 
-blocks?
-
->   				complete(&ctrl->complete_status);
-> +				cb_data->status = BIT(SVC_STATUS_BUFFER_DONE);
-> +				cb_data->kaddr1 = buf_claim_addr[0];
-> +				cb_data->kaddr2 = buf_claim_addr[1];
-> +				cb_data->kaddr3 = buf_claim_addr[2];
-> +				cb_data->kaddr4 = buf_claim_addr[3];
-> +				p_data->chan->scl->receive_cb(p_data->chan->scl,
-> +				cb_data);
->   				break;
->   			}
-> -			cb_data->status = BIT(SVC_STATUS_BUFFER_DONE);
-> -			cb_data->kaddr1 = svc_pa_to_va(res.a1);
-> -			cb_data->kaddr2 = (res.a2) ?
-> -					  svc_pa_to_va(res.a2) : NULL;
-> -			cb_data->kaddr3 = (res.a3) ?
-> -					  svc_pa_to_va(res.a3) : NULL;
-> -			p_data->chan->scl->receive_cb(p_data->chan->scl,
-> -						      cb_data);
-
-The callback used to be only dependent on INTEL_SIP_SMC_STATUS_OK, but 
-this change put the dependency on res.a1 == 0 as well. Please add 
-comment or add to the commit message the reason for this change.
-
-> -		} else {
-> -			pr_debug("%s: secure world busy, polling again\n",
-> -				 __func__);
-> +
-> +			if (buf_claim_count < 4) {
-> +				buf_claim_addr[buf_claim_count] = svc_pa_to_va(res.a1);
-> +				buf_claim_count++;
-> +			}
-> +
-> +			if (res.a2 && buf_claim_count < 4) {
-> +				buf_claim_addr[buf_claim_count] = svc_pa_to_va(res.a2);
-> +				buf_claim_count++;
-> +			}
-> +			if (res.a3 && buf_claim_count < 4) {
-> +				buf_claim_addr[buf_claim_count] = svc_pa_to_va(res.a3);
-> +				buf_claim_count++;
-> +			}
-
-Could there be a case where buf_claim_count >= 4, if so you should add a 
-WARN_ON.
-
-> +
->   		}
->   	} while (res.a0 == INTEL_SIP_SMC_STATUS_OK ||
->   		 res.a0 == INTEL_SIP_SMC_STATUS_BUSY ||
 > diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
 > index 0a295ccf1644..4fea9458f92b 100644
 > --- a/drivers/fpga/stratix10-soc.c
 > +++ b/drivers/fpga/stratix10-soc.c
 > @@ -147,6 +147,7 @@ static void s10_receive_callback(struct stratix10_svc_client *client,
->   	u32 status;
->   	int i;
->   
+>  	u32 status;
+>  	int i;
+>  
 > +	pr_debug("%s data %x\n", __func__, data->status);
 
-Use %#x would be more informative for a status bitmask.
+I'd prefer you delete it when you think the patches are ready to get merged.
 
->   	WARN_ONCE(!data, "%s: stratix10_svc_rc_data = NULL", __func__);
->   
->   	status = data->status;
-> @@ -163,6 +164,7 @@ static void s10_receive_callback(struct stratix10_svc_client *client,
->   		s10_unlock_bufs(priv, data->kaddr1);
->   		s10_unlock_bufs(priv, data->kaddr2);
->   		s10_unlock_bufs(priv, data->kaddr3);
-> +		s10_unlock_bufs(priv, data->kaddr4);
->   	}
->   
->   	complete(&priv->status_return_completion);
-> @@ -309,15 +311,8 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
->   				break;
->   		}
->   
-> -		/*
-> -		 * If callback hasn't already happened, wait for buffers to be
-> -		 * returned from service layer
-> -		 */
-> -		wait_status = 1; /* not timed out */
-> -		if (!priv->status)
-> -			wait_status = wait_for_completion_timeout(
-> -				&priv->status_return_completion,
-> -				S10_BUFFER_TIMEOUT);
-> +		wait_status = wait_for_completion_timeout(&priv->status_return_completion,
-> +							  S10_BUFFER_TIMEOUT);
+...
 
-Can you add a comment why you remove the check for !priv->status to call 
-wait_for_completion_timeout() ?
-
->   
->   		if (test_and_clear_bit(SVC_STATUS_BUFFER_DONE, &priv->status) ||
->   		    test_and_clear_bit(SVC_STATUS_BUFFER_SUBMITTED,
 > @@ -353,7 +348,10 @@ static int s10_ops_write_complete(struct fpga_manager *mgr,
->   	unsigned long timeout;
->   	int ret;
->   
+>  	unsigned long timeout;
+>  	int ret;
+>  
 > -	timeout = usecs_to_jiffies(info->config_complete_timeout_us);
 > +	/* The time taken to process this is close to 600ms
-
-nit: comment style is wrong
-
 > +	 * This MUST be increased over 1 second
 > +	 */
 > +	timeout = S10_RECONFIG_TIMEOUT;
->   
->   	do {
->   		reinit_completion(&priv->status_return_completion);
-> diff --git a/include/linux/firmware/intel/stratix10-svc-client.h b/include/linux/firmware/intel/stratix10-svc-client.h
-> index d290060f4c73..abe04f4fad1d 100644
-> --- a/include/linux/firmware/intel/stratix10-svc-client.h
-> +++ b/include/linux/firmware/intel/stratix10-svc-client.h
-> @@ -68,8 +68,8 @@
->    * timeout value used in Stratix10 FPGA manager driver.
->    * timeout value used in RSU driver
->    */
-> -#define SVC_RECONFIG_REQUEST_TIMEOUT_MS         300
-> -#define SVC_RECONFIG_BUFFER_TIMEOUT_MS          720
-> +#define SVC_RECONFIG_REQUEST_TIMEOUT_MS         5000
-> +#define SVC_RECONFIG_BUFFER_TIMEOUT_MS          5000
 
-These are huge jumps in timeout values. You may be masking real firmware 
-hangs. Please document why such a large change.
-
-Dinh
-
+This was a configurable option and you now hard code it, I don't see the
+rationale.
