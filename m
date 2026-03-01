@@ -1,104 +1,88 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B00D327FB05;
-	Sun,  1 Mar 2026 01:58:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D64BE1391;
+	Sun,  1 Mar 2026 13:06:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772330339; cv=none; b=YDWYVvgCy3i1Yeivu8PELJ6wxKjT5UB2xZt90s/Uqya6Uo+ZKLB2USlIl8wbNEKC6tbSjTtRvmTWYnyK2qJEPSOg/Rp3FvWLuuAxcXd3Ka587Dr1/J1wJKm8dGvylHR0Uz1Yxj2vPJD65tUdXN8Z5kFSDtv47k+kjocpmwZ5QXo=
+	t=1772370419; cv=none; b=CWEHBWK9oe2mKt5TSfNkX+okruYqu+hx5nX9dQOXx9zJtRvyMIOmQCaec6FMDbLqDGwwjnn8ZdvBIJ3w/lY4bvVmz0NnxmAWxLlNARkPGb1PbnS2uO3f6FJOPZrCW2Y++1FRW93Qn18NeOqXqgwKHKme9ITlZaVjzR6IDDZUt64=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772330339; c=relaxed/simple;
-	bh=wXEYtTF5Gpo9KXQ+ERMkD9KipF8f/DU99wWBJsMGljI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iEIVRAz7JVmvwhCN7wlQrw4b0uloi327gippANYde0bsNQh0/bNfSgo0B0mVGcm28V0F4v/u32i4+rzl8Bb2B2lrxfYOrZgJ/AXTdPL+uSOpoYg/4kWO9S4zZSxCDaqHSQi7/AbBQBvZhqNxCpBK7rcWZl0s6yE0S8mvyy/bXm4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jZWNz02R; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1772370419; c=relaxed/simple;
+	bh=vHy26NGPRM/WjxyX+Tq8QehanyjBlS0j6raUBORnLko=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=qv8G4CFaNoQ8iKVv/+m/0D7EFzraPiRSiG8Kxx6ZRUfSCabmbtt6Tez6xyHC6iY1H3wNVnmLocvTsswJkG7HVvBOH3mKkqfDOrgLVLmZ7ISchbHTRTRYLffvBOE7GnbWhBuGzLHYguDXhOHcvT6XNPRM9vJOj2jYsoh2qgpFJ7U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ee4auBRu; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jZWNz02R"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B78EC19421;
-	Sun,  1 Mar 2026 01:58:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ee4auBRu"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE32CC116C6;
+	Sun,  1 Mar 2026 13:06:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772330339;
-	bh=wXEYtTF5Gpo9KXQ+ERMkD9KipF8f/DU99wWBJsMGljI=;
-	h=From:To:Cc:Subject:Date:From;
-	b=jZWNz02RVBdBur3NB9Uu+LopMkHExf5xUkY094rG6qyuZkyNChiY90qz++J/4Mnfk
-	 GFXNCaxMjXARAogEHCENcY+eizbfMiRuBWqM0dN33tVSyjWHd+c/XkH0hLYnM4exgi
-	 VzOo3V7v1Jz6Az80EgikOvLj43wajYM8udirNY0On1/GlKdiL7OpNQoqtS+oqe9W0+
-	 CHWImHkqvuDIcVVcGrLnpS1dxJ90etvExuj02SvFotsINhXlnTM/N+5twwhzgrTOAl
-	 J7r3VEiHCuwkK4T8DAOxVQ5IQVxN7liYIYRqlWmOreXMoX7j8P56EX2ygC15JVzj/M
-	 w0P4Yg+8Gm7Qg==
-From: Sasha Levin <sashal@kernel.org>
-To: stable@vger.kernel.org,
-	cascardo@igalia.com
-Cc: Xu Yilun <yilun.xu@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	linux-fpga@vger.kernel.org
-Subject: FAILED: Patch "fpga: dfl: use subsys_initcall to allow built-in drivers to be added" failed to apply to 5.10-stable tree
-Date: Sat, 28 Feb 2026 20:58:57 -0500
-Message-ID: <20260301015857.1724595-1-sashal@kernel.org>
-X-Mailer: git-send-email 2.51.0
+	s=k20201202; t=1772370419;
+	bh=vHy26NGPRM/WjxyX+Tq8QehanyjBlS0j6raUBORnLko=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Ee4auBRuikLY7/Ds/HY+esT3iorzSwdVxGUHA1GQ748/s+VmMk68OApP5VpTib2Sc
+	 srHkEvgiiU5B5TCm5Mp9qBjeiraFfisAkIOvIjV5Wti3xEz+a08dGFMCbOfy15PEOp
+	 M2KfyG4DD7vbyYwnMBo9pmdobHcKBlrytwDHFKJkRCS8za/GiZT8cMj6IMqzWdBoe7
+	 vn4vMBfu4F4zNHl+nimsKFPIr+YH1fKu+lXQHlfdm4W/Q/n+IZva99/iPkZktulJxx
+	 oRuJ8anQ+B0VT4+TGL3msL8ZF8Vdn0+zF5Qj3vrBos4Be35bO8aayEzQ4zPW4jDDYm
+	 hSxlYdUjpAECA==
+Message-ID: <2520266b-e2ee-4a74-8696-55adc5b9ae91@kernel.org>
+Date: Sun, 1 Mar 2026 07:06:57 -0600
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Patchwork-Hint: ignore
-X-stable: review
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RESEND] fpga: bridge: Use str_enabled_disabled helper in
+ state_show
+Content-Language: en-US
+To: Thorsten Blum <thorsten.blum@linux.dev>, Moritz Fischer <mdf@kernel.org>,
+ Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260224161504.587562-1-thorsten.blum@linux.dev>
+From: Dinh Nguyen <dinguyen@kernel.org>
+In-Reply-To: <20260224161504.587562-1-thorsten.blum@linux.dev>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The patch below does not apply to the 5.10-stable tree.
-If someone wants it applied there, or to any other stable or longterm
-tree, then please email the backport, including the original git commit
-id to <stable@vger.kernel.org>.
+Hi Thorsten,
 
-Thanks,
-Sasha
+On 2/24/26 10:15, Thorsten Blum wrote:
+> Replace hard-coded strings with the str_enabled_disabled() helper. This
+> unifies the output and helps the linker with deduplication, which can
+> result in a smaller binary.
+> 
+> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+> ---
+>   drivers/fpga/fpga-bridge.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/fpga/fpga-bridge.c b/drivers/fpga/fpga-bridge.c
+> index ca68c38aa4a1..e8ff3e3bf2fc 100644
+> --- a/drivers/fpga/fpga-bridge.c
+> +++ b/drivers/fpga/fpga-bridge.c
+> @@ -12,6 +12,7 @@
+>   #include <linux/of_platform.h>
+>   #include <linux/slab.h>
+>   #include <linux/spinlock.h>
+> +#include <linux/string_choices.h>
+>   
+>   static DEFINE_IDA(fpga_bridge_ida);
+>   static const struct class fpga_bridge_class;
+> @@ -305,7 +306,7 @@ static ssize_t state_show(struct device *dev,
+>   			return state;
+>   	}
+>   
+> -	return sysfs_emit(buf, "%s\n", state ? "enabled" : "disabled");
+> +	return sysfs_emit(buf, "%s\n", str_enabled_disabled(state));
+>   }
+>   
+>   static DEVICE_ATTR_RO(name);
 
------------------- original commit in Linus's tree ------------------
+Would you consider including this patch[1] to this?
 
-From 267f53140c9d0bf270bbe0148082e9b8e5011273 Mon Sep 17 00:00:00 2001
-From: Thadeu Lima de Souza Cascardo <cascardo@igalia.com>
-Date: Mon, 15 Dec 2025 16:05:50 -0300
-Subject: [PATCH] fpga: dfl: use subsys_initcall to allow built-in drivers to
- be added
-
-The dfl code adds a bus. If it is built-in and there is a built-in driver
-as well, the dfl module_init may be called after the driver module_init,
-leading to a failure to register the driver as the bus has not been added
-yet.
-
-Use subsys_initcall, which guarantees it will be called before the drivers
-init code.
-
-Without the fix, we see failures like this:
-
-[    0.479475] Driver 'intel-m10-bmc' was unable to register with bus_type 'dfl' because the bus was not initialized.
-
-Cc: stable@vger.kernel.org
-Fixes: 9ba3a0aa09fe ("fpga: dfl: create a dfl bus type to support DFL devices")
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@igalia.com>
-Link: https://lore.kernel.org/r/20251215-dfl_subsys-v1-1-21807bad6b10@igalia.com
-Reviewed-by: Xu Yilun <yilun.xu@intel.com>
-Signed-off-by: Xu Yilun <yilun.xu@linux.intel.com>
----
- drivers/fpga/dfl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 7022657243c0a..449c3a082e232 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -2018,7 +2018,7 @@ static void __exit dfl_fpga_exit(void)
- 	bus_unregister(&dfl_bus_type);
- }
- 
--module_init(dfl_fpga_init);
-+subsys_initcall(dfl_fpga_init);
- module_exit(dfl_fpga_exit);
- 
- MODULE_DESCRIPTION("FPGA Device Feature List (DFL) Support");
--- 
-2.51.0
-
-
-
-
+Dinh
+[1] 
+https://lore.kernel.org/linux-fpga/aXH2D06eZ5DRTVi0@yilunxu-OptiPlex-7050/
