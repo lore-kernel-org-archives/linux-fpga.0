@@ -1,129 +1,104 @@
-Received: from out30-110.freemail.mail.aliyun.com (out30-110.freemail.mail.aliyun.com [115.124.30.110])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D439D3ECBC3;
-	Fri, 27 Feb 2026 12:25:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.110
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33A1624A076;
+	Sun,  1 Mar 2026 01:18:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772195119; cv=none; b=p1O44XsK+b0GDpouZ+EHjwVJXQU1RJHr/9qdcHKN1cSauhRbTMwzMSINX8VWxED6hnJx0HWZPKvGXukEwgl+kb4CEJHR4gSCn2qEoC0DfGwyhXIRrxkqLGktSBpMm7AqHvPWBf9omdl1tq5dx7AToMCfU5CPFeYpfcByR5E0olI=
+	t=1772327904; cv=none; b=dfbZQ0tOUN4m2yWeFCbgoNpI8bajqvh5BH4JRi/9YgeOhXmiQOeO0ht/a0hZEAVjS48Hai9uRC/g+X+g8jXLY2TixOeGEuprdxVVhjdZ53Hk3F+7CmDcEiUQyxHTkQs3hX13GifOgzCJ/C236glagtKivsvYKKmzw2jaaFReg30=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772195119; c=relaxed/simple;
-	bh=6v/LnHgifM1xkyYcS9H8qLXNafJwo9ow+LfRZalgBfA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JfVWtALUu+nN08QqaVwADlgL44CiR42vJDpOCRse1fbDEcKl2Ye19A6H3pmG3CEuVMBj+JljLea+P5skiAi7CdsMCFjkH0mB94cIFIZVreFOJTlAwkMM3P2DpJyRSWCBpKUYq68ZyeRXnX8lMOa1Nvoa+Y7JXTyX2416BiRSz7E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=CRuEr3JM; arc=none smtp.client-ip=115.124.30.110
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+	s=arc-20240116; t=1772327904; c=relaxed/simple;
+	bh=3zKUrE/vHBUeIhCMnEFd7jZtXYP8p+8hg/wX0O8Uo2g=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=d9Oj708/w1qQ6/hwWM8N3Zi9PIB2vmLQtg2mKDtlsH4KYi+l4wKRivKtxSmjCNnY7ZZb/ZpJaNlL80kWHLPUCljlZf0bBJ0dylTTPr663QAAZR4soQEYWoy0AK/X5E8e9DyCd7dVAxNbj8XncsyuqfHl77j9iYPfUuJf9GgABUk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kBTptKNv; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="CRuEr3JM"
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1772195114; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
-	bh=y+2zUoGEZCz6y7wbpFdG8NpN7dLYx9L0ruHzbWaDWx4=;
-	b=CRuEr3JMRLbyQoxrTbDRmOmgpzEQpIqQwPCAp++vHPbZa7t7oq9uE6d5u0dYhMWyK1DDIul0iAbqZTE+ZatVEVW8nYxPdX+JmGVoMq7iw8dLBfci7s+/0jVPZnua7r31iC6QBIQu9mRyPyHQ5dySYP4EO/hU3bu7j3Cm5No2Xuc=
-Received: from 30.221.130.102(mailfrom:guwen@linux.alibaba.com fp:SMTPD_---0WzuNAu2_1772195111 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Fri, 27 Feb 2026 20:25:13 +0800
-Message-ID: <4a9af4b1-6820-4173-8daf-4201bb1bcca5@linux.alibaba.com>
-Date: Fri, 27 Feb 2026 20:25:11 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kBTptKNv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83491C19421;
+	Sun,  1 Mar 2026 01:18:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772327904;
+	bh=3zKUrE/vHBUeIhCMnEFd7jZtXYP8p+8hg/wX0O8Uo2g=;
+	h=From:To:Cc:Subject:Date:From;
+	b=kBTptKNvxW5RJmDR71B0TMStXA1zIyJeJdH+MQjgdYLW7UsaprI84RUwbov926gvx
+	 iPblNMoUTFpllCaOoVPj8npqurKln/5dQ0+9N6S4Syho57zrsDVigNaupdIL/nXi/f
+	 TTwuqQzygpZUnUcf/hmhNj4HFqDHqFa3IrKUgqUu0Imu7BYqsslphcYzlR7vp9BCoW
+	 Y1SK2dP3C6NUHkJQXL7YnUhUks4+ke9N0O/yJlq9yNiZwwgEcUySbtrkz3Ed0ZoH6z
+	 RMMdRrARVw6ixLmEdHDIRzEFPLBCdyHAnor7r9bt9hscKvLyzyBgnaGhhslxnRZ/yY
+	 xhhgb1qZSGX5A==
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org,
+	cascardo@igalia.com
+Cc: Xu Yilun <yilun.xu@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linux-fpga@vger.kernel.org
+Subject: FAILED: Patch "fpga: dfl: use subsys_initcall to allow built-in drivers to be added" failed to apply to 6.12-stable tree
+Date: Sat, 28 Feb 2026 20:18:22 -0500
+Message-ID: <20260301011822.1672726-1-sashal@kernel.org>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC v2 0/2] ptp: Move non-NIC PHC drivers from netdev to
- clock/timekeeping maintainership
-To: David Woodhouse <dwmw2@infradead.org>, tglx@kernel.org,
- tglx@linutronix.de, richardcochran@gmail.com, andrew+netdev@lunn.ch,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- mani@kernel.org, imran.shaik@oss.qualcomm.com
-Cc: vladimir.oltean@nxp.com, wei.fang@nxp.com, xiaoning.wang@nxp.com,
- jonathan.lemon@gmail.com, vadim.fedorenko@linux.dev, yangbo.lu@nxp.com,
- svens@linux.ibm.com, nick.shi@broadcom.com, ajay.kaher@broadcom.com,
- alexey.makhalov@broadcom.com, bcm-kernel-feedback-list@broadcom.com,
- linux-fpga@vger.kernel.org, imx@lists.linux.dev, linux-s390@vger.kernel.org,
- dust.li@linux.alibaba.com, xuanzhuo@linux.alibaba.com,
- taniya.das@oss.qualcomm.com
-References: <20260227081934.96865-1-guwen@linux.alibaba.com>
- <be4c63a8dc43be15576565b4bd4567b3cf433d58.camel@infradead.org>
-From: Wen Gu <guwen@linux.alibaba.com>
-In-Reply-To: <be4c63a8dc43be15576565b4bd4567b3cf433d58.camel@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Patchwork-Hint: ignore
+X-stable: review
 Content-Transfer-Encoding: 8bit
 
+The patch below does not apply to the 6.12-stable tree.
+If someone wants it applied there, or to any other stable or longterm
+tree, then please email the backport, including the original git commit
+id to <stable@vger.kernel.org>.
+
+Thanks,
+Sasha
+
+------------------ original commit in Linus's tree ------------------
+
+From 267f53140c9d0bf270bbe0148082e9b8e5011273 Mon Sep 17 00:00:00 2001
+From: Thadeu Lima de Souza Cascardo <cascardo@igalia.com>
+Date: Mon, 15 Dec 2025 16:05:50 -0300
+Subject: [PATCH] fpga: dfl: use subsys_initcall to allow built-in drivers to
+ be added
+
+The dfl code adds a bus. If it is built-in and there is a built-in driver
+as well, the dfl module_init may be called after the driver module_init,
+leading to a failure to register the driver as the bus has not been added
+yet.
+
+Use subsys_initcall, which guarantees it will be called before the drivers
+init code.
+
+Without the fix, we see failures like this:
+
+[    0.479475] Driver 'intel-m10-bmc' was unable to register with bus_type 'dfl' because the bus was not initialized.
+
+Cc: stable@vger.kernel.org
+Fixes: 9ba3a0aa09fe ("fpga: dfl: create a dfl bus type to support DFL devices")
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@igalia.com>
+Link: https://lore.kernel.org/r/20251215-dfl_subsys-v1-1-21807bad6b10@igalia.com
+Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+Signed-off-by: Xu Yilun <yilun.xu@linux.intel.com>
+---
+ drivers/fpga/dfl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 7022657243c0a..449c3a082e232 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -2018,7 +2018,7 @@ static void __exit dfl_fpga_exit(void)
+ 	bus_unregister(&dfl_bus_type);
+ }
+ 
+-module_init(dfl_fpga_init);
++subsys_initcall(dfl_fpga_init);
+ module_exit(dfl_fpga_exit);
+ 
+ MODULE_DESCRIPTION("FPGA Device Feature List (DFL) Support");
+-- 
+2.51.0
 
 
-On 2026/2/27 18:25, David Woodhouse wrote:
-> On Fri, 2026-02-27 at 16:19 +0800, Wen Gu wrote:
->>
->> Patch 1 performs the refactor: move drivers and split Kconfig/Makefiles
->> accordingly, without intended functional changes.
->>
->> Patch 2 updates MAINTAINERS to match the new layout and adds a dedicated entry
->> for drivers/ptp/emulated/, moving review and ownership routing for this class
->> of drivers away from the netdev maintainership.
->>
->> No userspace ABI changes are intended, this is a refactor and maintenance
->> metadata update only.
-> 
-> While no ABI changes are intended in *this* patch series, we do need
-> some.
-> 
-> These 'emulated' clocks mostly exist not to emulate IEEE1588 per se,
-> but as a way to provide a precision real time clock to systems
-> (especially virtual guests).
-> 
-> We have already discussed the need to expose clock error bounds, and to
-> expose paired timestamps against the actual hardware counter (TSC, arch
-> counter, timebase, etc.).
-> 
-> Another key difference is that we'll generally want to be able to
-> derive UTC from these clocks, and feed them directly into the kernel's
-> CLOCK_REALTIME.
-> 
-> I don't have strong views on whether we extend the /dev/ptpX userspace
-> ABI, or start to treat these 'emulated' clocks as a class of device in
-> their own right and just shim them to /dev/ptpX for compatibility.
-> 
 
-As mentioned in RFC v1, the use cases for drivers in the emulated PHC category
-are expected to be quite diverse, and not limited to the virtualization/guest
-time sync use case. For example, existing drivers such as ptp_ocp [1] and
-upcoming ones such as mhi_phc [2] are not related to virtualization use cases.
 
-The main motivation for this RFC is to find a clear in-tree home, upstreaming
-path, and review/maintainership model for PHC/PTP drivers that use the existing
-PTP userspace interface, but are not based on the IEEE 1588/network packet
-timestamping pipeline, both for those already in the tree and for future
-additions.
-
-For virtualization-specific extensions (e.g. additional capabilities or ABI
-changes), I agree they are valuable, but I think they are outside the scope of
-this RFC series.
-
-[1] https://lore.kernel.org/netdev/c85c77bc-9a8c-4336-ab79-89a981c43e01@linux.dev/
-[2] https://lore.kernel.org/mhi/20250818-tsc_time_sync-v1-0-2747710693ba@oss.qualcomm.com/
-
->> # Request for comments
->>
->> 1. Following the clocksource/timekeeping and POSIX timer areas, this RFC routes
->> changes for drivers/ptp/emulated/ to linux-kernel@vger.kernel.org (rather than
->> netdev). However, the preferred integration path is still unclear (e.g. which
->> tree should take such changes, and who should collect/pull them for merging). We
->> would really appreciate guidance from the time/clock maintainers, especially any
->> input from Thomas Gleixner, on the preferred tree/workflow for these changes.
->>
->> 2. This RFC currently lists us as the maintainers for drivers/ptp/emulated/ as a
->> fallback contact point. Ideally, we would prefer this area to be maintained by
->> clock/time experts in the long run. Suggestions on more suitable maintainers are
->> very welcome.
-> 
-> I'm happy to be involved too.
-
-Thanks, David. It would be great to have you involved. Would you be willing to
-be listed in MAINTAINERS for drivers/ptp/emulated/?
-
-Regards.
