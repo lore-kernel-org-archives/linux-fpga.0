@@ -1,119 +1,181 @@
-Received: from out30-97.freemail.mail.aliyun.com (out30-97.freemail.mail.aliyun.com [115.124.30.97])
+Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011020.outbound.protection.outlook.com [40.107.208.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11F561A680A;
-	Thu, 19 Mar 2026 05:49:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.97
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773899388; cv=none; b=KKVqOcuqSbaux6ZdV64ZTHF+MdESD2RE7E7U/cJyvGlIoT9X3uEyFxyd8YsCB9D7YMB7DrPK+lmtStqcn6nWmwGVJ5/n/0NtDpk1NXLKdeE3SV+bmbVtfgQbtL67TpZBbd/XVG+c2tjI1tFyhK5TuPQxxybqkiS8PMaxxbxaWOk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773899388; c=relaxed/simple;
-	bh=2430zI9n334JkBj/TpnuTxA+jHhEUJVfLFav+xDkV6o=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=tAeqQtfpuILLaDv6m4oLxcTpxi7x2VWivCdr8gyNzMirfT0dZ4GDGbb40v5O4wq52SUC5kHKP3IlDgkz0njiUf6uREb53vrQ3n0ZJwosOhc9Ynx+WSyTRDvY8zKpekSQ/iUxnMyNGDm8IPmW4OFO+coFfddYRzVwS298iwvEYvg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=TIxlZbm2; arc=none smtp.client-ip=115.124.30.97
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E680C35DCE3;
+	Thu, 19 Mar 2026 20:18:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.20
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773951529; cv=fail; b=qedxzoT2qJR8v5J/DmM9Bjox/hrdW+G2x9XgbPyncwcMJp/H5tqlemG6sAgx6PBniC6wzeHXknKS5rxB/Z5XlepjiBrEpgYs4T5gD7ee3Tz4LgipotBsFD5UvhlqYCyQuMUbFqSzw6yW/qWgGL1OgiQ8EtmHOiurARsq8UriZWA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773951529; c=relaxed/simple;
+	bh=zfkj534hPaIZ6H8OEJJS8331NYK6Xv9FAhTUX8sB+XU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=e7v1eoZ0bDjjY+0V3t0WDCuMVEzgzw1P8jP3jr5VF07isbvNK71pLUpUqNaCzmv7YV6KivO+3PFvk/GDL+9NRrrO5uTJHyr5MywYxxlEI23iFcMNprHyrlMq1klbs0MZC9/mfemydGPSW1Jzn14rr47hcMBk6AS5LC6xrTe9B1A=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=fail (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=nX5aheu+ reason="signature verification failed"; arc=fail smtp.client-ip=40.107.208.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="TIxlZbm2"
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1773899377; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
-	bh=Tj5vFVo8hvmkvdXB4Ef9ZyPku2Xx9xcDbTU8B8mwD7o=;
-	b=TIxlZbm2XUL3W/PLwNRLkLwES1mWe3KKgJHH8G5/muP6hh6ZmVnAdyd/x6LbVeyATiaOxIcJWdjmD/Y9H5V1Kt/mm14lhjIGX/kYGTAmSTEqGQsWRXBbG1kTcnvHkOZPrLhmRmq+KF0pYUGtII1uDR4dTunor1RzcG7xe1PN97w=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R511e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037026112;MF=guwen@linux.alibaba.com;NM=1;PH=DS;RN=35;SR=0;TI=SMTPD_---0X.HFnoa_1773899374;
-Received: from 30.221.130.238(mailfrom:guwen@linux.alibaba.com fp:SMTPD_---0X.HFnoa_1773899374 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Thu, 19 Mar 2026 13:49:35 +0800
-Message-ID: <1919ef7e-1cff-4f52-873a-61ffe0000728@linux.alibaba.com>
-Date: Thu, 19 Mar 2026 13:49:32 +0800
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="nX5aheu+"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=W/2UeCX3IPXq4/HNdXT40x6p7S0K80ps7ZixHgeRJjLdfYCgqoaU3/s5mt3/ECY3oWIwrlFJFj2Nud4tgITd1wLgzKlALhpVoIshyJIwMXEyyYr8P2XhGaDiuqljJ8Tjkt21VkI/BYKmomT+wiNAi2WvpAefqvqIvqQVljEp5iiEF3VhnMsIgGwid19OkHyRKhqaNU8prpFVFXyJeLx9bXaY6pg8LfVGO62FLJYkT7tZSeqknElwbD0dGwQ4HOCHTTMMDeNHmMEvbw9jpdbjCeiXoSmo2nQBLXD4l4im0uMFG3n6Eh5Lc1x4raV0sxDMzOJyeMLNTmZofAhtdr2DyA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=dYIqy4oX12FQnh7j38QB3ANTstWWixTCrYuos4D+GYo=;
+ b=CUrb+6xiz2AX3LyerZE/JurgE4DKMoKpDj+5+roO8vYNQnHSnWd/W3wVonRKxtRwPmTycpj6F5nRtpzLX6+b9LlrqW+9pO7i1rirCwFmd1IelazvqSnlmMreC0mWFddnSuCtCLi7/POtWetoFXFW+ODqjO5ZMuBmhp3tBbJaIykBLOL+/USwheL+quTecdhkxFape2ACDeRdTAsHApb8IkZMVKXzH9SVBeXn8g9v2H3vxv6McX/2BjXN0lIwI2B4r5lT0+Gxsv+pBGv17itjQiNJdpDBjrDIAZ0zRhNP9Z8VsaYJKsPpimhL/LkwgxJF7GfWT4Dv9mDWyh3xjzpg0g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=dYIqy4oX12FQnh7j38QB3ANTstWWixTCrYuos4D+GYo=;
+ b=nX5aheu+3vhO6J4GXqda0hsRLxcC88sNGrLiIwX+lut0I/cSStpRzX7796lxHa/dRsU9nQz0XlWwt6B6AWrP4raPZJbqU/jZ3Dn64DaPAuxBMTSw4SyR3uRM7AT1ky/yB0MCEZDhtYDmhkE1sJL4MYWmvriDYpQ/8raolp7TvdGPGfBt8NfHzXjqsKUMHcmwAP0zyroAupemKlcGGu0Feym706DBCnqqJ+Z1IrKGR444cCElLURZBkCFT3hEoq4u18qW/wG5CkGp8r+aLlcIDYc2Z6nsKWiwzNTND8QlDVQRoVS+hXk0JBAt0o5bVnmBFl1GvZdcHC+y4hIMxMWd3g==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from PH0PR12MB8800.namprd12.prod.outlook.com (2603:10b6:510:26f::12)
+ by PH7PR12MB5654.namprd12.prod.outlook.com (2603:10b6:510:137::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.7; Thu, 19 Mar
+ 2026 20:18:42 +0000
+Received: from PH0PR12MB8800.namprd12.prod.outlook.com
+ ([fe80::f79d:ddc5:2ad7:762d]) by PH0PR12MB8800.namprd12.prod.outlook.com
+ ([fe80::f79d:ddc5:2ad7:762d%4]) with mapi id 15.20.9745.007; Thu, 19 Mar 2026
+ 20:18:42 +0000
+Date: Thu, 19 Mar 2026 16:18:40 -0400
+From: Yury Norov <ynorov@nvidia.com>
+To: linux-kernel@vger.kernel.org,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Ingo Molnar <mingo@kernel.org>,
+	James Clark <james.clark@linaro.org>, Kees Cook <kees@kernel.org>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Mike Leach <mike.leach@linaro.org>, Moritz Fischer <mdf@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Russ Weight <russ.weight@linux.dev>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Suki K Poulose <suzuki.poulose@arm.com>, Tom Rix <trix@redhat.com>,
+	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
+	Xu Yilun <yilun.xu@intel.com>, Yury Norov <yury.norov@gmail.com>,
+	Zhang Rui <rui.zhang@intel.com>, coresight@lists.linaro.org,
+	linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
+	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH RESEND 0/5] bitmap: cleanup bitmaps printing
+Message-ID: <abxaIMi55N4X9JWz@yury>
+References: <20260303200842.124996-1-ynorov@nvidia.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260303200842.124996-1-ynorov@nvidia.com>
+X-ClientProxiedBy: BN9PR03CA0898.namprd03.prod.outlook.com
+ (2603:10b6:408:13c::33) To PH0PR12MB8800.namprd12.prod.outlook.com
+ (2603:10b6:510:26f::12)
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/2] ptp: split non-NIC PHC drivers into the
- clock/timekeeping maintenance domain
-To: John Stultz <jstultz@google.com>
-Cc: tglx@kernel.org, tglx@linutronix.de, richardcochran@gmail.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, anna-maria@linutronix.de, frederic@kernel.org,
- daniel.lezcano@kernel.org, sboyd@kernel.org, vladimir.oltean@nxp.com,
- wei.fang@nxp.com, xiaoning.wang@nxp.com, jonathan.lemon@gmail.com,
- vadim.fedorenko@linux.dev, yangbo.lu@nxp.com, svens@linux.ibm.com,
- dwmw2@infradead.org, nick.shi@broadcom.com, ajay.kaher@broadcom.com,
- alexey.makhalov@broadcom.com, bcm-kernel-feedback-list@broadcom.com,
- linux-fpga@vger.kernel.org, imx@lists.linux.dev, linux-s390@vger.kernel.org,
- dust.li@linux.alibaba.com, xuanzhuo@linux.alibaba.com, mani@kernel.org,
- imran.shaik@oss.qualcomm.com, taniya.das@oss.qualcomm.com
-References: <20260318073330.115808-1-guwen@linux.alibaba.com>
- <CANDhNCoFxsXdP7d6nbLTFLOrB_4GnDvhF4O6ZGyvGEVoqV4U2g@mail.gmail.com>
-From: Wen Gu <guwen@linux.alibaba.com>
-In-Reply-To: <CANDhNCoFxsXdP7d6nbLTFLOrB_4GnDvhF4O6ZGyvGEVoqV4U2g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH0PR12MB8800:EE_|PH7PR12MB5654:EE_
+X-MS-Office365-Filtering-Correlation-Id: 70d60a58-c56d-4ec1-9128-08de85f4b743
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|10070799003|366016|376014|1800799024|7416014|22082099003|56012099003|18002099003|921020;
+X-Microsoft-Antispam-Message-Info:
+	9ifa+bS4ZAzVcx4Fn3fgUuloDXL/KkhYJSCC6KZ0SMR+KbXazkGiG38G82ua5lJ8GCq2/hCJnVA3Ys/7N5h+RX0TrVW7iPOZ4k/i5681gE2cZzlgJW3E5eZpUSMEe+m6dRvcNAFeGMhZxRSoGY5CeyHp8EPLOUTZAHo2kwuepheClRkfrHVa9WIOWr4JOkaag58yJABWtULPBign+4oYdJyQhTENy54CbmmbjPpbLheSXNsvWfw6eBHFD/6HSkAb//U3BuG4VWQBl9ctKgeCotlpOiKzoBkKKAOp8GHytCWHjfj8LWaN7peB8PrF2LBkkMgiMB0uvrvRD/NDqmtx0dFmwSUHaiehb/aXEU3l6ROhD2kpKNGYgsfSihDl0PD3wG+hWIWrnJFxSEraYnRiPlvT6GunGNDoXvRYbNucDw2cH0xaw44MmbUH4nkBX/9bFCT5X44Se5XeJZW84hSiKR0xjzGae/CTQMUJgeJe+csGXz93IcTgz5lVuhXUKmNETJTVAMIuVpiedeH3r1ZtMbWLLFO5Ptnz2FfzG9567oH2BdAmEXyqnz+4Tr97zMoJAUJZI3nJ4IbcOtEHZk7o8mBUqncH2WPejqQoC/fUTJClh+RfvgEHkwkf1+p58p9//+NxifQsGORC20WgYuK7mPHKmsVd/Q5973Wg0LociVt7fDoiwVrzpGkMI+Yo5QeiYOsovtnoKWurnSU76L5kfHqlKUE4cRXPfX//1uFlKDDFUMdkAxQfS+rj14x6Qhh4CDlDSmfZ/WXz5t6Zeht1IEBOou1ZcBBGLJVPvQ+wtsI=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR12MB8800.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(366016)(376014)(1800799024)(7416014)(22082099003)(56012099003)(18002099003)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?iso-8859-1?Q?NnrKG/08hXdJeOA+4271JcCi2R4ynKNDZ0UixbTr3noodKh2ODpflZgn0J?=
+ =?iso-8859-1?Q?bNZ0+P4aDTt1TGn/P1ZDlOQL9+uOZKaqlR4FJ/AsucvkzvsNOUWloP+RGl?=
+ =?iso-8859-1?Q?7Ej3lUiGKlopUCzNizHengLerFVc60XxTbXVfEpH7Df5SzR5QOuwirGEMf?=
+ =?iso-8859-1?Q?CD4UgXhUv8OBIovDw3Ga4lEOioTcTSdQn1mAKIimvsELSDKMDAsZ3IkQx+?=
+ =?iso-8859-1?Q?ndtxuPJHAtDiDthYmUIW3MCI+cMwnv1Gdm+SOCjw3U2/3bNtkewWSaL0mj?=
+ =?iso-8859-1?Q?9qZudmQZvv2gQV5Y5/thmyt203OtY4MIhFJvaSsUt9hQz6JEwrlZsSu1Yb?=
+ =?iso-8859-1?Q?VwPcGkSAdfiAHrxbsu1aJprX1pqub6JIVovHaSY6KA5AMQWmnAY8KKtefE?=
+ =?iso-8859-1?Q?VYfDVTIJ4xxPsxa7BuWRChXmVXbUbWiVJ6ABlA8JbQvWuNQHB7MNrsK7Nf?=
+ =?iso-8859-1?Q?rPTlZVLPMM4jwq2Y7ekKozS2aai46BzmZunsmoxDQ7vFp9fRc9dlgtgqfP?=
+ =?iso-8859-1?Q?Y1bY3/fv7GrHG3imr77F+uKsZxX+UpkVbsXjzR5bjLwBtCosZWHJZEbaxf?=
+ =?iso-8859-1?Q?ajfCnttzzuEIs8Z9Q+ulfmC08oPtjNpWvM4Y1PUEXB8jvqq8pvpQ5sblNx?=
+ =?iso-8859-1?Q?NWHUg0r7h3oQvbTmP2Ti1GAaHSam9LmnP4fItCLxVy0uw+6nNo6eS1hvgt?=
+ =?iso-8859-1?Q?h0nOpW+V1blYxifKPMIY1ynLmWSYZ/Uw7v9eforPLVYrSFyh9DfVFa71h4?=
+ =?iso-8859-1?Q?T7/lTtbQE0MCNoT1ZyoEz0BtX3FY8jY7Hm/gZSnJv7YopjOkBkBs6DPu94?=
+ =?iso-8859-1?Q?WMMp7PVe4eBk2JagExbhRAGfGAXateD1MifjkzjA0FaAkXFKwA4NIYE+vN?=
+ =?iso-8859-1?Q?B/xQ+P74d20rK3Mw+u5ZNrL5rEpVALGW3fB7IKvHfMNaTj4GxAtKxYB4i0?=
+ =?iso-8859-1?Q?oN7jGk0UN/am1BX31dgBvu9AJP4hTPnCVrfVHZE43zND7MPuf6G9B/2lBs?=
+ =?iso-8859-1?Q?NrgEizdacjWnRUlfyXy4XjLLmitZO3PPvPgCnw94SiZ/B2B7dbuoMzJ0nO?=
+ =?iso-8859-1?Q?ksGc0JKWvrCXgVyslU1SlG6ynUpnhTa/oOyHVempRevosd9wkzlQMsLm+1?=
+ =?iso-8859-1?Q?MuviN6/uGP0j8R01Rzs3AtEdVVJ+YNe+r3Rb9Y0pDQ64dkdqOckZ97VhHj?=
+ =?iso-8859-1?Q?eandGLDMuHBj6zAPKSOmf00mal2hjbXqXtIpFLC3qyNdEeNAyzcsnpp4/F?=
+ =?iso-8859-1?Q?8cb+4ox90D1z3WWZDv/nzAVQiKuQycrwnPVh/LOpKU7B6R2dAw7ri4zgrK?=
+ =?iso-8859-1?Q?V26wSMhnhUuSzlm4Urmy+A/L7qRomPj8Ke8+/DUkHVy2Q9Pc9010lgkT2J?=
+ =?iso-8859-1?Q?kFcHxlQTLfUP4MqDurNIZPv3dr6K1RxCKSjSLb/I3JAJpjdRmzNZxeIJdT?=
+ =?iso-8859-1?Q?qzbcqzyvQkVwNTORsi7/Dc6uq/2Wjvbi+vslhBYLoX7C5pSjqOgoxm8TwA?=
+ =?iso-8859-1?Q?TBjf9R66iVR8m+mWem4yOy3jYXNDJsLyk3NBISItQRp59jkiZ91eZSzKIl?=
+ =?iso-8859-1?Q?sWXuQjk//yOUIkA6g3281t9KRQDim74MoarxLM085i/HkExvPB+qdP8KPd?=
+ =?iso-8859-1?Q?0RDjiq8uI8DvGDZr3Sjf66Sq8raOkINHEZ/mgIwDX3qX7rJ3/1CZ9E/IwT?=
+ =?iso-8859-1?Q?kMWaTMIewxyLVvipr+We3qBS+kxyVAmlqYTLBb1rB9tSdo3//vkM+LGU6W?=
+ =?iso-8859-1?Q?xTUjeDraXFi36ALVZfA5UKa+vN0kzN3nAHYa0acKAR5TpSUpcNS3KctQaY?=
+ =?iso-8859-1?Q?9obJf2cdS8P8ulhieXmP2IWdqADaS9prPbBbGSHH7Wau7ljm4z4q?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 70d60a58-c56d-4ec1-9128-08de85f4b743
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR12MB8800.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Mar 2026 20:18:42.7746
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: svT2XjmvScQEDr8DOM1F4UXulEhReJu08t33OfK/NaRFq1VQ0QHf0ooxDsQTJoPohpR4YcEk3yYu+ea5iUTOww==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB5654
 
+Ping?
 
-
-On 2026/3/19 01:05, John Stultz wrote:
-> On Wed, Mar 18, 2026 at 12:33â€¯AM Wen Gu <guwen@linux.alibaba.com> wrote:
->> - Following the model used by NTP related code, this series lists tip.git
->>    (timers/core) as the integration tree for emulated PTP clocks in the
->>    MAINTAINERS entry. Guidance from clock/timekeeping maintainers
->>    (Thomas Gleixner, John Stultz, Anna-Maria Behnsen, Frederic Weisbecker,
->>    Daniel Lezcano, Stephen Boyd) on whether this is the appropriate workflow
->>    for this class of drivers would be appreciated.
+On Tue, Mar 03, 2026 at 03:08:36PM -0500, Yury Norov wrote:
+> Bitmap API has a bitmap_print_to_pagebuf() function that is intended to
+> print bitmap into a human readable format, making sure that the output
+> string will not get big enough to cross the current page limit.
 > 
-> While I'm sure it would be good to continue to CC folks, I'm not sure
-> if the timekeeping maintainers would be the right folks for these
-> driver/ptp/ changes to flow through.
-> Thomas has been doing the heavy lifting for a long while and I'd not
-> want to put more on his shoulders.
+> Some drivers use this function immediately before passing the result to
+> scnprintf() with no modification. This is useless because scnprintf(),
+> and helpers based on it like seq_pritf() and sysfs_emit(), take care of
+> not overflowing the buffer by itself, and perfectly print bitmaps with
+> "%*pb[l]".
 > 
-> Richard is listed as the maintainer for drivers/ptp/, is there any
-> reason for it not to go through him?
+> This is a resend of non-networking part of [1]. Patches #3,5 switch from
+> plain scnprintf() to sysfs_emit(), as pointed out by Thomas Weißschuh.
 > 
-> thanks
-> -john
-
-Hi John,
-
-Thanks a lot for the feedback.
-
-Richard is indeed listed as the maintainer for the PTP subsystem and
-the traditional network-oriented PHC drivers. The intention of this
-series is not to bypass that role. I would very much welcome Richard's
-thoughts on the proposed split and the appropriate workflow for these
-drivers.
-
-Historically the PTP subsystem lived under networking because the
-original PHC devices were tightly coupled with NIC hardware and the
-IEEE1588 packet timestamping pipeline.
-
-Over time, however, the PTP userspace interface (/dev/ptpX together
-with the PTP_* ioctls) has also become a widely used way to expose
-high-precision clocks to userspace. Because of the stable interface
-and the existing ecosystem (e.g. chrony, phc2sys), many platform or
-virtualization-provided clocks have started reusing the same PTP
-interface.
-
-As a result, drivers/ptp/ now contains two different classes of
-devices: traditional network-oriented PHC drivers and clocks which
-are not tied to the IEEE1588 networking pipeline.
-
-The difficulty today is that there is no very clear upstream path for
-this class of drivers: they currently live under drivers/ptp/, but
-their design and review concerns are often closer to clock/timekeeping
-topics than to networking. This series tries to find a clearer
-upstream path and review route for this class of drivers.
-
-Regarding the merge path, the suggestion about tip.git was mainly an
-attempt to identify a possible integration tree for these drivers, but
-I'm open to suggestions if there is a better workflow.
-
-Thanks again for taking a look.
-
-Wen Gu
+> [1] https://lore.kernel.org/all/20260219181407.290201-1-ynorov@nvidia.com/
+> 
+> The networking part, for reference:
+> 
+> https://lore.kernel.org/all/20260303185507.111841-1-ynorov@nvidia.com/
+> 
+> Each patch can be applied individually per corresponding subsystem.
+> 
+> Yury Norov (5):
+>   powerpc/xive: simplify xive_spapr_debug_show()
+>   thermal: intel: switch cpumask_get() to using
+>     cpumask_print_to_pagebuf()
+>   coresight: don't use bitmap_print_to_pagebuf()
+>   lib/prime_numbers: drop temporary buffer in dump_primes()
+>   fpga: m10bmc-sec: switch show_canceled_csk() to using sysfs_emit()
+> 
+>  arch/powerpc/sysdev/xive/spapr.c              | 12 ++-----
+>  drivers/fpga/intel-m10-bmc-sec-update.c       |  3 +-
+>  .../hwtracing/coresight/coresight-cti-sysfs.c | 32 ++++++++-----------
+>  drivers/thermal/intel/intel_powerclamp.c      |  3 +-
+>  lib/math/tests/prime_numbers_kunit.c          |  6 ++--
+>  5 files changed, 21 insertions(+), 35 deletions(-)
+> 
+> -- 
+> 2.43.0
