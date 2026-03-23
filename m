@@ -1,86 +1,88 @@
-Received: from mail-dl1-f44.google.com (mail-dl1-f44.google.com [74.125.82.44])
+Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DFA083803E7
-	for <linux-fpga@vger.kernel.org>; Mon, 23 Mar 2026 21:41:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 086D037FF6A
+	for <linux-fpga@vger.kernel.org>; Mon, 23 Mar 2026 21:50:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774302070; cv=none; b=dSSY5pH5qZt/T2a/iBrtb4H5vs8nRx8bh8gNcVZv7ecTdWP70lJWdLnYc6iQTUzwrLOqrcnwehe41VenW2MlE50oUrsTkS1EVYUPfF/+wNIGgmvzVQ3R6JyLMFrAgZTbe0rM0PoFQXi83TyuXMCUiD0CFQLRFzh46mPqNlNoqnE=
+	t=1774302603; cv=none; b=I0pvxByAP1++vPQi4PTNDY0T76wl9zl4kUcG8r3FVxF51OGJduDePo9gtTNL69nORHPSmYSx/yqYhVwpAqD4JfGUOvj2oH1DFwp1YY/USdfr4aSyZfUScAbcW/hO3ZEjKJjrXeP44t7P1pW1uosIhZlyh41AZpH2H9EKRkMoK/U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774302070; c=relaxed/simple;
-	bh=Ia2wOeaNxrGGSqm94OjQXh1deCH4whLtBppic3PUk3o=;
+	s=arc-20240116; t=1774302603; c=relaxed/simple;
+	bh=y+Gt1L0qys08x2UG0gqY30qV3m6tEiIOwvQdKXqzRZI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jKQWXUacUvKQkp3GHUIXHcM7ya4dQ4aAJ/l+jNYr2KQa2Va0wjtdgDnrYlyd6lL/yYPixyS7JAHMliIrCwAZQu4gv/ud4tteykn968rxclO+0NAMHfHc9STvgC5w4Ll7dZ3lNBi712vgNa70k41AfLwdhxWXcw/1Qpd3u8J4mDE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bvOMxUP3; arc=none smtp.client-ip=74.125.82.44
+	 Content-Type:Content-Disposition:In-Reply-To; b=Rag4GA8cXD181NVtXUrD4MtuIG1RMffIvLVVn6T6EXhLHz1FuhKSbUXZ2lCO37DDnCmbn4keAG7DFS1CQ8tvR42aJs+MmUrWFFdFKwkKHt7u8r3NodG7X35DHpmIJZRSPHsd046cE6XhN5+FlC9DtP09viV/H+cMkzqm0Ex+kWk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ye/iSsS6; arc=none smtp.client-ip=74.125.82.170
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bvOMxUP3"
-Received: by mail-dl1-f44.google.com with SMTP id a92af1059eb24-12a747e7b2fso1117848c88.0
-        for <linux-fpga@vger.kernel.org>; Mon, 23 Mar 2026 14:41:08 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ye/iSsS6"
+Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-2bd9a485bd6so849950eec.1
+        for <linux-fpga@vger.kernel.org>; Mon, 23 Mar 2026 14:50:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774302068; x=1774906868; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1774302601; x=1774907401; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Q7HCZ5YthEu6Sto4GADNi5rznGP/hi6UoU7AjdQU+RY=;
-        b=bvOMxUP3ynayoZoyQiQubkhgSB8gwVBqoVcFi/egyb7w2owvUhwCU9zc4g2v3ctqCD
-         B9O8oZmoaNmgoTpSUMugSavwhcQw/Mk62VoF8VU3NhecFu88XPN8zcD+HbSLj0oXUxyC
-         Uak67PuSuJwMSOBapnvPrhpdLqV1WnYkFhMp0VHFSaRHSdPftLaCsO+8090CSi/ZEuUY
-         H4EOf4cAnGEcPNfQutrSMyl++XsVQ7+a2ez+143H+ogac1wgD6++YgqtDxYVnCbtV/JL
-         8MD7fp/sk3fLbgxnYX3lRnrh+ZSq7NEE7mMTUXvIWVLVci3z7Cao4NWPVIreNe+fwAv6
-         4UIQ==
+        bh=+m0/AdxnnWyHs/Fd93ISLCpoYSuqRajs8ccdfR5letY=;
+        b=Ye/iSsS6G/oVmcr4bmXbRRIwAuOp406pGIaJb7oZeVO4lOol2st7EqJYsGmqJ/rEl3
+         8Bvops2VAZCCZ9itxieJIDdF4p1Qn8/hoWrfHhAFdQta9KYY//q1PbyQP/1Q+EkjQ+Oj
+         ie3t697OsijWGD3l1ah2Sw7T8ubTxYZTEjmsUu0YrJbe9zuPMBwWB4x1ofRvtQ1FRqtE
+         Bm4rFtw17MoowomGLKursWhmzzyEtsaeUcnk1apyeCoztGfsxmnH67avx6EZ3mye9Qq8
+         pQgjm5DUDWwuXSx+jT2mcQhzZUPrztVdywYvr2zWLv7HGQGHC3Y/my5CsySlwFqyEiRV
+         a03w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774302068; x=1774906868;
+        d=1e100.net; s=20251104; t=1774302601; x=1774907401;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Q7HCZ5YthEu6Sto4GADNi5rznGP/hi6UoU7AjdQU+RY=;
-        b=KgmaoCX6mxPf7dE6nRWnXx/qfaZl5FRJAK2VzTtZSQbPwjp6Ce1ydZxyMZZSeZvYCk
-         1Ko6HLJwBdxXJocdtDIDRBuG3iLWy4azq4D3hmaD1xuqG7zr6R9eRZ1dnfFA5vosDavl
-         tY1sYa6LmCeMdFs9ST9uteLIbo5Vr/QA2kQiJoEafHz+wu0s/Bn5jHQoYSRuyKKiaHiB
-         Xdcy0Azq7Kh8SOcAOCBg9XeuEKoz33nx1bFrXdSfWQhcQZNBv7q4N+F+nVNq8kQ6io67
-         mCimdFCABJ9AorCZBZ0XTlBzuW2r5PstVTUaWBcb4xDFdT3utYIvOmyhjzQ2mD42Z3Jd
-         hifw==
-X-Forwarded-Encrypted: i=1; AJvYcCWEFV6qZmVzBJP8um8sUEtgQQCjO7qTPv04amlXUH9D0ysetQAlShTI4yLY4/Zsa3AVY3E7l2V78oIi@vger.kernel.org
-X-Gm-Message-State: AOJu0YzSemnhRHesm882cKBOTeRfmQdDCVTf3e+c+oFdl8qamo0Yl34W
-	Xdl4ukQoCUR9y2jMs5fY2hd1g3s/Sv5o4ep2z9l+7YNbS2L0CEpXdE8H
-X-Gm-Gg: ATEYQzyV7QSousNm7mqIx2534c3CbCaDOdHfWCHJriE20BM8+iTl1duNBOdbLz2Vglu
-	4PiKxoReeaN6/+NFPWYuMip6Rj2ibmQ/D9JQQ5QALPyhHJsWoTb2jfUGDglfTYEwlE/zaQB3prC
-	CBZP/TCiUDEhIe57Nn3GjEKnu9SUPuthDarHTdziW3hYTjFgNVp2VnYSh9H9kc2vlR+JdXsYmQn
-	LrwncrjnZGzr9YDlwWYcqV7x7lmzksXl1G1kWFlJ1zvGhKwx95rLXbl+2PvZ+TV8JnnWLj9vs9m
-	xtMx87QVY1qn6FbHUg5lij+j1BAVH1NmyV3imbi8F7+NPcZrrSBI8ybSmug9EJ+xwiNlnR3Z2t8
-	asPQoZ1yIO+VaHajKwfvpdnOAhnXBqLw4NtlVFU08WjJmGkgNLlN/pYXidsvvrZDJkxuCwU7msb
-	dmjG/A79F4kJN4MBvWX0CbEsP8pK0DrUmAs1dLpn+MoUj1Dn3fTQA81RZvqrk1DjwC
-X-Received: by 2002:a05:7022:31a:b0:128:d24a:a5ba with SMTP id a92af1059eb24-12a726cafe2mr5295048c88.20.1774302067990;
-        Mon, 23 Mar 2026 14:41:07 -0700 (PDT)
+        bh=+m0/AdxnnWyHs/Fd93ISLCpoYSuqRajs8ccdfR5letY=;
+        b=ZZLO7cIjvB+MOqVMHjP5D/8DFsnaaifhkwhaTZfmV1IwAXPnl/JW+TllenDeP+9MvP
+         NzFIWD2p4/HRHGqmrGoQN24bJshyfcqmsX5EPC8tqknZwVaJfHsicv+t9MVP8b5UgDBE
+         DmACaETUnnp1tYAzTOe/PaER2ClCEPiXgZOHOyZxa4bX9DpOagUoI10mh9zy9JifDjuX
+         wYq6eqIETJkAnXcNpPktQxPpoaFuIripT02+vqlikDtwF9ZMwM047qmqIGQtf7xiSL/4
+         OmQ/OgCZ+nuLDlvHMouY9FlBFuIiphnzTZlzGtCkKMO78s7tm6wrMrnAHY7s+XGTItxG
+         JcPw==
+X-Forwarded-Encrypted: i=1; AJvYcCXqx4JI4dKF2fsyvBF5QaY6hVpRTmtFLl62vMcwHl4+ApPcLpKVpUB0sbfK/OJO+jc7W52ZG/ZOvGHc@vger.kernel.org
+X-Gm-Message-State: AOJu0YzR0RZMmqJnJpVNg5jS2Nu5O4ZReN6D15flPRlxT4G9dFXp5x1r
+	sPp7cUja59SCPPsuH/XI4i8dSkLJiS1HbnoGvQ80S0MXHiXuZMLxO6Kj
+X-Gm-Gg: ATEYQzytqqCguECwkYAobo+0SaeMWMaRF6M22XkP5cVL4kKyaYOZcrMr4pj8LrstMqm
+	3++kt3pZE1CspPDIsUvOilh20s4O5O9bGBUBjvoOLy/zK7XENKCsocMABn4YA+tyOj4FeoderVc
+	DBJmd5lIljd1AzTNgc0gIx9W7ACQekRmKavyx1dRgxmoJKS9hH2AWnKjmey0JaT494lbN33Fl4C
+	ykvlgvcY8gVlV/NY1jUKUoy8g8jCnFNK/0nSF+8ZN20OGEe5koTMEnijmtKToiScIvN8lqADRuM
+	rfXu5R10bW6G0YIjwtomnWTr40eUROhT2jeJldeakJ1FjrdLVxaWHfD7aCW1lyRXshK4+HoY3Sb
+	syP9Z0N/DI5kabK0QbnHD4kRuABsptJTUG7MSngRDFRvnLyCWJdDS7+o96lNVD8Ydy2wUTRm6OS
+	K6Cac3CwqoKKq8Uz2bX4RB+8BZxv3WWw9lBqJC5IA5dnhetyVBuyJjGQubr2RYpI35
+X-Received: by 2002:a05:7300:72c7:b0:2b7:1e86:3604 with SMTP id 5a478bee46e88-2c1095e6a9fmr7621666eec.6.1774302601091;
+        Mon, 23 Mar 2026 14:50:01 -0700 (PDT)
 Received: from google.com ([2a00:79e0:2ebe:8:a296:1211:5ab0:bc95])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-12a733d199asm9682893c88.4.2026.03.23.14.41.06
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2c10b31ebd5sm13412438eec.27.2026.03.23.14.49.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Mar 2026 14:41:07 -0700 (PDT)
-Date: Mon, 23 Mar 2026 14:41:03 -0700
+        Mon, 23 Mar 2026 14:50:00 -0700 (PDT)
+Date: Mon, 23 Mar 2026 14:49:56 -0700
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mark Brown <broonie@kernel.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Vinod Koul <vkoul@kernel.org>, 
-	Neil Armstrong <neil.armstrong@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Lee Jones <lee@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Peter Rosin <peda@axentia.se>, 
-	Heiner Kallweit <hkallweit1@gmail.com>, Russell King <linux@armlinux.org.uk>, 
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: "Russell King (Oracle)" <linux@armlinux.org.uk>, 
+	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
+	Paolo Abeni <pabeni@redhat.com>, Vinod Koul <vkoul@kernel.org>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Mark Brown <broonie@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Peter Rosin <peda@axentia.se>, Heiner Kallweit <hkallweit1@gmail.com>, 
 	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>, 
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
 	Danilo Krummrich <dakr@kernel.org>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
 	linux-phy@lists.infradead.org, linux-spi@vger.kernel.org, linux-leds@vger.kernel.org, 
 	linux-fpga@vger.kernel.org, driver-core@lists.linux.dev
-Subject: Re: [PATCH 04/10] regulator: of: switch to using
+Subject: Re: [PATCH net-next 07/10] net: phy: switch to using
  class_find_device_by_fwnode()
-Message-ID: <acGzJV3vKhuty3nd@google.com>
+Message-ID: <acG1JNGVBJ2Mf7jC@google.com>
 References: <20260322-remove-device-find-by-of-node-v1-0-b72eb22a1215@gmail.com>
- <20260322-remove-device-find-by-of-node-v1-4-b72eb22a1215@gmail.com>
- <360a8b4a-6507-417a-9fc1-c53b14868657@sirena.org.uk>
- <acGFksyx3SA0kJ5b@google.com>
- <7d46803e-b285-4e9c-8856-10100fa0ea85@sirena.org.uk>
- <cf92122d-6b15-458a-bf89-189a0a6874f7@lunn.ch>
- <193e194a-498f-464f-b22c-c283c16db6c1@sirena.org.uk>
+ <20260322-remove-device-find-by-of-node-v1-7-b72eb22a1215@gmail.com>
+ <32679fc0-c388-4cd7-a030-5f5ed5abab78@lunn.ch>
+ <acDLzK8vpptTUMf1@google.com>
+ <acEBCBgMV3RrGKiU@shell.armlinux.org.uk>
+ <acGGWTmSMuc5h3Od@google.com>
+ <acGI4PI3MHML9Pce@shell.armlinux.org.uk>
+ <f37684ff-57af-425a-bb18-bd5e8de3bba3@lunn.ch>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -89,25 +91,22 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <193e194a-498f-464f-b22c-c283c16db6c1@sirena.org.uk>
+In-Reply-To: <f37684ff-57af-425a-bb18-bd5e8de3bba3@lunn.ch>
 
-On Mon, Mar 23, 2026 at 09:36:07PM +0000, Mark Brown wrote:
-> On Mon, Mar 23, 2026 at 09:01:47PM +0100, Andrew Lunn wrote:
+On Mon, Mar 23, 2026 at 09:15:11PM +0100, Andrew Lunn wrote:
+> > This is not "foreign territory" - ACPI in general doesn't want to
+> > describe e.g. the individual components of a network card, unlike
+> > DT.
 > 
-> > How do you handle deprecated OF properties? This is a problem i've run
-> > into before. A developer needs an ACPI binding, so they blindly
-> > convert from of_ to device_ without engaging brain. As a result, they
-> > bring all the deprecated OF properties we want to die into the brand
-> > new ACPI bindings.
-> 
-> Honestly that one hasn't really come up much for me - not too many
-> deprecated properties.
+> It has also been suggested that the MDIO bus should be added to the
+> ACPI specification as a first class bus, similar to I2C, SPI,
+> etc. This would make it different to the DT. So we don't want to
+> encourage developers to use the networking DT concepts in ACPI, it
+> will just cause problems if the ACPI spec every actually covers the
+> use cases of networking.
 
-Given that we position properties as an ABI even if they are deprecated
-we supposed to handle them forever. Newer properties usually offer
-benefits over old ones and that is how users get moved over.
-
-Thanks.
+BTW, why would not we want to push for the unified binding? They are the
+same pieces of hardware...
 
 -- 
 Dmitry
