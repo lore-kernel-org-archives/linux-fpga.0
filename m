@@ -1,181 +1,148 @@
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011020.outbound.protection.outlook.com [40.107.208.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f181.google.com (mail-dy1-f181.google.com [74.125.82.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E680C35DCE3;
-	Thu, 19 Mar 2026 20:18:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.20
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773951529; cv=fail; b=qedxzoT2qJR8v5J/DmM9Bjox/hrdW+G2x9XgbPyncwcMJp/H5tqlemG6sAgx6PBniC6wzeHXknKS5rxB/Z5XlepjiBrEpgYs4T5gD7ee3Tz4LgipotBsFD5UvhlqYCyQuMUbFqSzw6yW/qWgGL1OgiQ8EtmHOiurARsq8UriZWA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773951529; c=relaxed/simple;
-	bh=zfkj534hPaIZ6H8OEJJS8331NYK6Xv9FAhTUX8sB+XU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=e7v1eoZ0bDjjY+0V3t0WDCuMVEzgzw1P8jP3jr5VF07isbvNK71pLUpUqNaCzmv7YV6KivO+3PFvk/GDL+9NRrrO5uTJHyr5MywYxxlEI23iFcMNprHyrlMq1klbs0MZC9/mfemydGPSW1Jzn14rr47hcMBk6AS5LC6xrTe9B1A=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=fail (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=nX5aheu+ reason="signature verification failed"; arc=fail smtp.client-ip=40.107.208.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7B112153D8
+	for <linux-fpga@vger.kernel.org>; Mon, 23 Mar 2026 01:54:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.181
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774230880; cv=none; b=rk8ZVhsMyYafY+AVJscZaQAUKdz+57QIUyjS23S8hZrT5/MO31Ax8rJTdCUAl8ik9+wou5vY7yrDZ33DY4d2VJqkAuSgjEHCnBpKCTP/yD7sHGlH3IZzad+Iyn/W7xlnFTv+qBTvB6uw27H4OFZfMpWb33gsugP0Wa4ObDlWeJs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774230880; c=relaxed/simple;
+	bh=JUqh9KjJr81PA08LAGWLpc/TnqC1KKCJHttSUso4Mis=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=qBQq2DX8Rr4h6JKR40DxzLSlPgNe4c33Go9/11nH/TTx/y286Zpb/0SxwghPmO7eHzAIJm4njoUTcnps+lTJeJrXlq86AnM/9qDffo27upvoJu88Nurg+iE5pDdx+yDyQsH0PwVl2Qp4lq9cA9qsYzEHHjZAM8txdFA0t3gW9WA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iZihrLDn; arc=none smtp.client-ip=74.125.82.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="nX5aheu+"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=W/2UeCX3IPXq4/HNdXT40x6p7S0K80ps7ZixHgeRJjLdfYCgqoaU3/s5mt3/ECY3oWIwrlFJFj2Nud4tgITd1wLgzKlALhpVoIshyJIwMXEyyYr8P2XhGaDiuqljJ8Tjkt21VkI/BYKmomT+wiNAi2WvpAefqvqIvqQVljEp5iiEF3VhnMsIgGwid19OkHyRKhqaNU8prpFVFXyJeLx9bXaY6pg8LfVGO62FLJYkT7tZSeqknElwbD0dGwQ4HOCHTTMMDeNHmMEvbw9jpdbjCeiXoSmo2nQBLXD4l4im0uMFG3n6Eh5Lc1x4raV0sxDMzOJyeMLNTmZofAhtdr2DyA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=dYIqy4oX12FQnh7j38QB3ANTstWWixTCrYuos4D+GYo=;
- b=CUrb+6xiz2AX3LyerZE/JurgE4DKMoKpDj+5+roO8vYNQnHSnWd/W3wVonRKxtRwPmTycpj6F5nRtpzLX6+b9LlrqW+9pO7i1rirCwFmd1IelazvqSnlmMreC0mWFddnSuCtCLi7/POtWetoFXFW+ODqjO5ZMuBmhp3tBbJaIykBLOL+/USwheL+quTecdhkxFape2ACDeRdTAsHApb8IkZMVKXzH9SVBeXn8g9v2H3vxv6McX/2BjXN0lIwI2B4r5lT0+Gxsv+pBGv17itjQiNJdpDBjrDIAZ0zRhNP9Z8VsaYJKsPpimhL/LkwgxJF7GfWT4Dv9mDWyh3xjzpg0g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dYIqy4oX12FQnh7j38QB3ANTstWWixTCrYuos4D+GYo=;
- b=nX5aheu+3vhO6J4GXqda0hsRLxcC88sNGrLiIwX+lut0I/cSStpRzX7796lxHa/dRsU9nQz0XlWwt6B6AWrP4raPZJbqU/jZ3Dn64DaPAuxBMTSw4SyR3uRM7AT1ky/yB0MCEZDhtYDmhkE1sJL4MYWmvriDYpQ/8raolp7TvdGPGfBt8NfHzXjqsKUMHcmwAP0zyroAupemKlcGGu0Feym706DBCnqqJ+Z1IrKGR444cCElLURZBkCFT3hEoq4u18qW/wG5CkGp8r+aLlcIDYc2Z6nsKWiwzNTND8QlDVQRoVS+hXk0JBAt0o5bVnmBFl1GvZdcHC+y4hIMxMWd3g==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from PH0PR12MB8800.namprd12.prod.outlook.com (2603:10b6:510:26f::12)
- by PH7PR12MB5654.namprd12.prod.outlook.com (2603:10b6:510:137::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.7; Thu, 19 Mar
- 2026 20:18:42 +0000
-Received: from PH0PR12MB8800.namprd12.prod.outlook.com
- ([fe80::f79d:ddc5:2ad7:762d]) by PH0PR12MB8800.namprd12.prod.outlook.com
- ([fe80::f79d:ddc5:2ad7:762d%4]) with mapi id 15.20.9745.007; Thu, 19 Mar 2026
- 20:18:42 +0000
-Date: Thu, 19 Mar 2026 16:18:40 -0400
-From: Yury Norov <ynorov@nvidia.com>
-To: linux-kernel@vger.kernel.org,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iZihrLDn"
+Received: by mail-dy1-f181.google.com with SMTP id 5a478bee46e88-2bdcf5970cdso2856516eec.0
+        for <linux-fpga@vger.kernel.org>; Sun, 22 Mar 2026 18:54:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1774230878; x=1774835678; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=CFNqFKHYHzU+/IYMzEM9SYl6am5Pz+NCaLhPwszpQBw=;
+        b=iZihrLDn3uemS80BJaK0ZbnZyZPK2nOhEbJEKP9Ll6ZnR//Egc8auBEu1gY8L7f5cE
+         vGvkiZtql2gdyP16RHs2zH7kzoNOG7ofXC1iRXWSmSKsMyYNdGKTIolRt7xdondUtWAV
+         BzjD/cMkNClaTXZfnu4Z4TliktptCHKPofnbghtnSwTPk+HJZnI8ZGovdU41MDyZqlGl
+         ZhKPuG1YF0fHUflmZwL5ltOscujQ8xhH/ZXK+Qk6sMFvlSvfNudRUSFwNbCiOnkbxgQx
+         XAVg0mXyudvTdU6egJD+nS/ZZstD/tcd7Pq3pSfv2CP+pCaS9NUQdfrM5BQmCjDdSSfg
+         yuUA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774230878; x=1774835678;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=CFNqFKHYHzU+/IYMzEM9SYl6am5Pz+NCaLhPwszpQBw=;
+        b=XDpnyoZA0HRu/JS6X9lzeygJV86rm3QwPwwRjGLGhi1bw3gKzhM6ZzNtmnP1Veqzam
+         86nF1aVKqZJs0bwpeMO5V5yFJmY5WF1s7+NDAJOF3Mh0CRM9dohV05Vy2kgqH2kryp/2
+         +PoCHNK5D6pX1tOiKmU/TL1e/+PAjajiqBfzPfWjIAromV2QGiV/vh8cQNPoy+CpB/su
+         1lCvUdbjuq7oKZOKnRfgLbEYHCaZy6uGpM/jwpKpb2nqUwUesh4UL6+6bNjN0X4ffgc7
+         59SMDTFrke9AinPTCIPv3HhQV+lMoqNB2+dbG+fC5YpK/4fWcjr+CbOVBIlOdV92OlFW
+         N6Zg==
+X-Forwarded-Encrypted: i=1; AJvYcCVO5v8DJRp1EgYkImywopPwRN3c+T8aT/bBi7GNPuwL5mdldNdpBI/bHt6vU0UdFjngm5aLYYgD2pJA@vger.kernel.org
+X-Gm-Message-State: AOJu0YzmtuE5aul2LnGIcGobNtOjDyEPp1BYT0zCTbGxOKoC8Sy/5Cv+
+	vyjMzXjsMiQXcgU3ME+pklwXf57sFR4J+SIQDJpTLjTozdOd0IeghgGw
+X-Gm-Gg: ATEYQzxityE5Dp+7zW1XeP8CqIGDkMyhlhUxbwxu8xsD5M2rWJd/2KgXViJ5DVW7apY
+	2szqz474KMagndhVmccjdsvcHuGjiKzJGi7aLAIno4OeIlvtwLdf2+e0GnNSeY1KFcXEyL2Mn1l
+	G7RqlTH90SXt+6U4hn4zdyVZm0TWbOiCTwBsQmMmqV+PCuoKqIit3ud67c4oJt9sn+fWcG+vOBr
+	I1ZCk+hS2WzmPMjQ8KEgVZzDhXeXxvyu9mMjsqA0hZSJSiZ+OEJeD74V7zgDkOOSxohe/wp8OQe
+	aZT7Pz6Bl+9NIx3sXxzCRHeLUa4w8juK72HmbeRZonxnEwfKHZD3HPAPKTvDd0uaDTW4lIepqX/
+	/Hl1YarAWxJgbhReXXejzHUTRtI4clIbPoezstcKVBb7HJLgZexe44zE31xeERMx9duuzBDTVKh
+	SDVV4ersP4Z30Qw/r5cdMO7oBGyIKbbGbb3mnj9Kgvcn0cIZbNmajKnT+h2VMBBdgs1ToS+yznz
+	bxuSuj6uiWT5Yg=
+X-Received: by 2002:a05:7300:571e:b0:2ba:a1a6:c73 with SMTP id 5a478bee46e88-2c10974ccb6mr3875035eec.6.1774230877711;
+        Sun, 22 Mar 2026 18:54:37 -0700 (PDT)
+Received: from dtor-ws.sjc.corp.google.com ([2a00:79e0:2ebe:8:b768:22ed:3eba:aeb3])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2c10b2cf068sm10976952eec.22.2026.03.22.18.54.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 22 Mar 2026 18:54:37 -0700 (PDT)
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Mark Brown <broonie@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Lee Jones <lee@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Peter Rosin <peda@axentia.se>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Heiner Kallweit <hkallweit1@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Ingo Molnar <mingo@kernel.org>,
-	James Clark <james.clark@linaro.org>, Kees Cook <kees@kernel.org>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Mike Leach <mike.leach@linaro.org>, Moritz Fischer <mdf@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Russ Weight <russ.weight@linux.dev>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Suki K Poulose <suzuki.poulose@arm.com>, Tom Rix <trix@redhat.com>,
-	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
-	Xu Yilun <yilun.xu@intel.com>, Yury Norov <yury.norov@gmail.com>,
-	Zhang Rui <rui.zhang@intel.com>, coresight@lists.linaro.org,
-	linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
-	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH RESEND 0/5] bitmap: cleanup bitmaps printing
-Message-ID: <abxaIMi55N4X9JWz@yury>
-References: <20260303200842.124996-1-ynorov@nvidia.com>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260303200842.124996-1-ynorov@nvidia.com>
-X-ClientProxiedBy: BN9PR03CA0898.namprd03.prod.outlook.com
- (2603:10b6:408:13c::33) To PH0PR12MB8800.namprd12.prod.outlook.com
- (2603:10b6:510:26f::12)
+	Danilo Krummrich <dakr@kernel.org>
+Cc: netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-phy@lists.infradead.org,
+	linux-spi@vger.kernel.org,
+	linux-leds@vger.kernel.org,
+	linux-fpga@vger.kernel.org,
+	driver-core@lists.linux.dev
+Subject: [PATCH 00/10] Remove class_find_device_by_of_node in favor of
+ finding by firmware node
+Date: Sun, 22 Mar 2026 18:54:18 -0700
+Message-ID: <20260322-remove-device-find-by-of-node-v1-0-b72eb22a1215@gmail.com>
+X-Mailer: git-send-email 2.53.0.959.g497ff81fa9-goog
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR12MB8800:EE_|PH7PR12MB5654:EE_
-X-MS-Office365-Filtering-Correlation-Id: 70d60a58-c56d-4ec1-9128-08de85f4b743
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|10070799003|366016|376014|1800799024|7416014|22082099003|56012099003|18002099003|921020;
-X-Microsoft-Antispam-Message-Info:
-	9ifa+bS4ZAzVcx4Fn3fgUuloDXL/KkhYJSCC6KZ0SMR+KbXazkGiG38G82ua5lJ8GCq2/hCJnVA3Ys/7N5h+RX0TrVW7iPOZ4k/i5681gE2cZzlgJW3E5eZpUSMEe+m6dRvcNAFeGMhZxRSoGY5CeyHp8EPLOUTZAHo2kwuepheClRkfrHVa9WIOWr4JOkaag58yJABWtULPBign+4oYdJyQhTENy54CbmmbjPpbLheSXNsvWfw6eBHFD/6HSkAb//U3BuG4VWQBl9ctKgeCotlpOiKzoBkKKAOp8GHytCWHjfj8LWaN7peB8PrF2LBkkMgiMB0uvrvRD/NDqmtx0dFmwSUHaiehb/aXEU3l6ROhD2kpKNGYgsfSihDl0PD3wG+hWIWrnJFxSEraYnRiPlvT6GunGNDoXvRYbNucDw2cH0xaw44MmbUH4nkBX/9bFCT5X44Se5XeJZW84hSiKR0xjzGae/CTQMUJgeJe+csGXz93IcTgz5lVuhXUKmNETJTVAMIuVpiedeH3r1ZtMbWLLFO5Ptnz2FfzG9567oH2BdAmEXyqnz+4Tr97zMoJAUJZI3nJ4IbcOtEHZk7o8mBUqncH2WPejqQoC/fUTJClh+RfvgEHkwkf1+p58p9//+NxifQsGORC20WgYuK7mPHKmsVd/Q5973Wg0LociVt7fDoiwVrzpGkMI+Yo5QeiYOsovtnoKWurnSU76L5kfHqlKUE4cRXPfX//1uFlKDDFUMdkAxQfS+rj14x6Qhh4CDlDSmfZ/WXz5t6Zeht1IEBOou1ZcBBGLJVPvQ+wtsI=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR12MB8800.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(366016)(376014)(1800799024)(7416014)(22082099003)(56012099003)(18002099003)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?iso-8859-1?Q?NnrKG/08hXdJeOA+4271JcCi2R4ynKNDZ0UixbTr3noodKh2ODpflZgn0J?=
- =?iso-8859-1?Q?bNZ0+P4aDTt1TGn/P1ZDlOQL9+uOZKaqlR4FJ/AsucvkzvsNOUWloP+RGl?=
- =?iso-8859-1?Q?7Ej3lUiGKlopUCzNizHengLerFVc60XxTbXVfEpH7Df5SzR5QOuwirGEMf?=
- =?iso-8859-1?Q?CD4UgXhUv8OBIovDw3Ga4lEOioTcTSdQn1mAKIimvsELSDKMDAsZ3IkQx+?=
- =?iso-8859-1?Q?ndtxuPJHAtDiDthYmUIW3MCI+cMwnv1Gdm+SOCjw3U2/3bNtkewWSaL0mj?=
- =?iso-8859-1?Q?9qZudmQZvv2gQV5Y5/thmyt203OtY4MIhFJvaSsUt9hQz6JEwrlZsSu1Yb?=
- =?iso-8859-1?Q?VwPcGkSAdfiAHrxbsu1aJprX1pqub6JIVovHaSY6KA5AMQWmnAY8KKtefE?=
- =?iso-8859-1?Q?VYfDVTIJ4xxPsxa7BuWRChXmVXbUbWiVJ6ABlA8JbQvWuNQHB7MNrsK7Nf?=
- =?iso-8859-1?Q?rPTlZVLPMM4jwq2Y7ekKozS2aai46BzmZunsmoxDQ7vFp9fRc9dlgtgqfP?=
- =?iso-8859-1?Q?Y1bY3/fv7GrHG3imr77F+uKsZxX+UpkVbsXjzR5bjLwBtCosZWHJZEbaxf?=
- =?iso-8859-1?Q?ajfCnttzzuEIs8Z9Q+ulfmC08oPtjNpWvM4Y1PUEXB8jvqq8pvpQ5sblNx?=
- =?iso-8859-1?Q?NWHUg0r7h3oQvbTmP2Ti1GAaHSam9LmnP4fItCLxVy0uw+6nNo6eS1hvgt?=
- =?iso-8859-1?Q?h0nOpW+V1blYxifKPMIY1ynLmWSYZ/Uw7v9eforPLVYrSFyh9DfVFa71h4?=
- =?iso-8859-1?Q?T7/lTtbQE0MCNoT1ZyoEz0BtX3FY8jY7Hm/gZSnJv7YopjOkBkBs6DPu94?=
- =?iso-8859-1?Q?WMMp7PVe4eBk2JagExbhRAGfGAXateD1MifjkzjA0FaAkXFKwA4NIYE+vN?=
- =?iso-8859-1?Q?B/xQ+P74d20rK3Mw+u5ZNrL5rEpVALGW3fB7IKvHfMNaTj4GxAtKxYB4i0?=
- =?iso-8859-1?Q?oN7jGk0UN/am1BX31dgBvu9AJP4hTPnCVrfVHZE43zND7MPuf6G9B/2lBs?=
- =?iso-8859-1?Q?NrgEizdacjWnRUlfyXy4XjLLmitZO3PPvPgCnw94SiZ/B2B7dbuoMzJ0nO?=
- =?iso-8859-1?Q?ksGc0JKWvrCXgVyslU1SlG6ynUpnhTa/oOyHVempRevosd9wkzlQMsLm+1?=
- =?iso-8859-1?Q?MuviN6/uGP0j8R01Rzs3AtEdVVJ+YNe+r3Rb9Y0pDQ64dkdqOckZ97VhHj?=
- =?iso-8859-1?Q?eandGLDMuHBj6zAPKSOmf00mal2hjbXqXtIpFLC3qyNdEeNAyzcsnpp4/F?=
- =?iso-8859-1?Q?8cb+4ox90D1z3WWZDv/nzAVQiKuQycrwnPVh/LOpKU7B6R2dAw7ri4zgrK?=
- =?iso-8859-1?Q?V26wSMhnhUuSzlm4Urmy+A/L7qRomPj8Ke8+/DUkHVy2Q9Pc9010lgkT2J?=
- =?iso-8859-1?Q?kFcHxlQTLfUP4MqDurNIZPv3dr6K1RxCKSjSLb/I3JAJpjdRmzNZxeIJdT?=
- =?iso-8859-1?Q?qzbcqzyvQkVwNTORsi7/Dc6uq/2Wjvbi+vslhBYLoX7C5pSjqOgoxm8TwA?=
- =?iso-8859-1?Q?TBjf9R66iVR8m+mWem4yOy3jYXNDJsLyk3NBISItQRp59jkiZ91eZSzKIl?=
- =?iso-8859-1?Q?sWXuQjk//yOUIkA6g3281t9KRQDim74MoarxLM085i/HkExvPB+qdP8KPd?=
- =?iso-8859-1?Q?0RDjiq8uI8DvGDZr3Sjf66Sq8raOkINHEZ/mgIwDX3qX7rJ3/1CZ9E/IwT?=
- =?iso-8859-1?Q?kMWaTMIewxyLVvipr+We3qBS+kxyVAmlqYTLBb1rB9tSdo3//vkM+LGU6W?=
- =?iso-8859-1?Q?xTUjeDraXFi36ALVZfA5UKa+vN0kzN3nAHYa0acKAR5TpSUpcNS3KctQaY?=
- =?iso-8859-1?Q?9obJf2cdS8P8ulhieXmP2IWdqADaS9prPbBbGSHH7Wau7ljm4z4q?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 70d60a58-c56d-4ec1-9128-08de85f4b743
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR12MB8800.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Mar 2026 20:18:42.7746
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: svT2XjmvScQEDr8DOM1F4UXulEhReJu08t33OfK/NaRFq1VQ0QHf0ooxDsQTJoPohpR4YcEk3yYu+ea5iUTOww==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB5654
+Content-Type: text/plain; charset="utf-8"
+X-Change-ID: 20260220-remove-device-find-by-of-node-077784fa109c
+X-Mailer: b4 0.15-dev-a6826
+Content-Transfer-Encoding: quoted-printable
 
-Ping?
-
-On Tue, Mar 03, 2026 at 03:08:36PM -0500, Yury Norov wrote:
-> Bitmap API has a bitmap_print_to_pagebuf() function that is intended to
-> print bitmap into a human readable format, making sure that the output
-> string will not get big enough to cross the current page limit.
-> 
-> Some drivers use this function immediately before passing the result to
-> scnprintf() with no modification. This is useless because scnprintf(),
-> and helpers based on it like seq_pritf() and sysfs_emit(), take care of
-> not overflowing the buffer by itself, and perfectly print bitmaps with
-> "%*pb[l]".
-> 
-> This is a resend of non-networking part of [1]. Patches #3,5 switch from
-> plain scnprintf() to sysfs_emit(), as pointed out by Thomas Weißschuh.
-> 
-> [1] https://lore.kernel.org/all/20260219181407.290201-1-ynorov@nvidia.com/
-> 
-> The networking part, for reference:
-> 
-> https://lore.kernel.org/all/20260303185507.111841-1-ynorov@nvidia.com/
-> 
-> Each patch can be applied individually per corresponding subsystem.
-> 
-> Yury Norov (5):
->   powerpc/xive: simplify xive_spapr_debug_show()
->   thermal: intel: switch cpumask_get() to using
->     cpumask_print_to_pagebuf()
->   coresight: don't use bitmap_print_to_pagebuf()
->   lib/prime_numbers: drop temporary buffer in dump_primes()
->   fpga: m10bmc-sec: switch show_canceled_csk() to using sysfs_emit()
-> 
->  arch/powerpc/sysdev/xive/spapr.c              | 12 ++-----
->  drivers/fpga/intel-m10-bmc-sec-update.c       |  3 +-
->  .../hwtracing/coresight/coresight-cti-sysfs.c | 32 ++++++++-----------
->  drivers/thermal/intel/intel_powerclamp.c      |  3 +-
->  lib/math/tests/prime_numbers_kunit.c          |  6 ++--
->  5 files changed, 21 insertions(+), 35 deletions(-)
-> 
-> -- 
-> 2.43.0
+Firmware nodes are generalization of OF device nodes and generic APIs=0D
+should offer only fwnode variants instead of providing firmware-specific=0D
+handlers.=0D
+=0D
+This series switches all users of class_find_device_by_of_node() to=0D
+class_find_device_by_fwnode() and removes the OF variant.=0D
+=0D
+I believe this can be applied through individual subsystems and then the=0D
+last patch can go into the driver core.=0D
+=0D
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>=0D
+---=0D
+Dmitry Torokhov (10):=0D
+      net: wan: framer: switch to using class_find_device_by_fwnode()=0D
+      phy: core: switch to using class_find_device_by_fwnode()=0D
+      spi: switch to using class_find_device_by_fwnode()=0D
+      regulator: of: switch to using class_find_device_by_fwnode()=0D
+      leds: led-class: switch to using class_find_device_by_fwnode()=0D
+      mux: switch to using class_find_device_by_fwnode()=0D
+      net: phy: switch to using class_find_device_by_fwnode()=0D
+      fpga: bridge: switch to using class_find_device_by_fwnode()=0D
+      fpga: manager: switch to using class_find_device_by_fwnode()=0D
+      driver core: class: remove class_find_device_by_of_node()=0D
+=0D
+ drivers/fpga/fpga-bridge.c           |  4 +++-=0D
+ drivers/fpga/fpga-mgr.c              |  3 ++-=0D
+ drivers/leds/led-class.c             |  2 +-=0D
+ drivers/mux/core.c                   |  2 +-=0D
+ drivers/net/phy/mdio_bus_provider.c  |  4 +++-=0D
+ drivers/net/wan/framer/framer-core.c |  2 +-=0D
+ drivers/phy/phy-core.c               |  3 ++-=0D
+ drivers/regulator/of_regulator.c     |  2 +-=0D
+ drivers/spi/spi.c                    |  6 ++++--=0D
+ include/linux/device/class.h         | 12 ------------=0D
+ 10 files changed, 18 insertions(+), 22 deletions(-)=0D
+---=0D
+base-commit: 785f0eb2f85decbe7c1ef9ae922931f0194ffc2e=0D
+change-id: 20260220-remove-device-find-by-of-node-077784fa109c=0D
+=0D
+Thanks.=0D
+=0D
+-- =0D
+Dmitry=0D
+=0D
