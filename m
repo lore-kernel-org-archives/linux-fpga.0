@@ -1,56 +1,45 @@
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [78.32.30.218])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACCBB38552F;
-	Mon, 23 Mar 2026 09:00:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=78.32.30.218
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B50463AC0E3;
+	Mon, 23 Mar 2026 13:58:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774256433; cv=none; b=q/PcRNs0pHoT3fmppIEe5RsDkkswe7U3JjwiLPtkfXcx5j/60aRqE4XwY6yBYnv832SRwYR4KHuH3xtd+DF61nxLhcMK6YUSImSSizOcQ6KuYuZrPNZt8GSUXw1BKsB005sfdzDWdFB27jX6IWxK24a06uriOvZRfgUOdECKea0=
+	t=1774274299; cv=none; b=C2VPtPvdsp3QUMLUlOF2Un+E0LfgSYMxRfP/GYMsBS1iKfoBTKgkGsuQJQ7NFa0aoid1FX4Jb7GQYANjXBLlZnwK4NUPDwXrnD+5fXEB8q368/d8IVmPpTR58grJv8w9YLAdYjeAOhiZYOjaZliyYw4Eci8UjWWqzIfKCCIWzn0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774256433; c=relaxed/simple;
-	bh=/biRsCEdq/ddELaA4pVbIjzNAeUEcCO8JGY8MM8mv/c=;
+	s=arc-20240116; t=1774274299; c=relaxed/simple;
+	bh=DqfWL4BSTBiaLqTmikifLZdJR1EIole67SS90j6+wPs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RSMomPZkvjiZjiSkiAd6M9CyKQKcr+PNA90HZEW+BA0AHieggF3sZTUyO/tmdxsrhKRzKxprIPZlhv2IlhOZk52XIxl6RKcvC5snpqXYfSX8AH6hw1S5OJwHZ7p8XL9CxXcJCMS2zfIrMb9C5+idWaV5VCkeZ3qVWSJF0tWLWpE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk; spf=none smtp.mailfrom=armlinux.org.uk; dkim=pass (2048-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b=PSwEOmg+; arc=none smtp.client-ip=78.32.30.218
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=armlinux.org.uk
+	 Content-Type:Content-Disposition:In-Reply-To; b=GoNQdafm4RgLplD0Z502TQFI5EMv1xY2c2wifOwE24UVmfFs3J9xYoxp8tA315qJUIIQ5i8XUtDRfqNMkygAlXxEZk4CfoiHuGfw7I/ikMq14gcJirhbTFFtnwZrK/9hcktdaA4v10L48vCUBne6/eV9lHy8V9FXce5Q43d7qqo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ug7FqFPO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="PSwEOmg+"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
-	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
-	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=yMWdX5rPU/LnYnaKYFuAJpacSJjdsYtQkCNE/5cAkNw=; b=PSwEOmg+s3OczIMqw7GtGr0Fdf
-	HA30SHMempCUFsF4P+/wB4O9mxAJuHBvKfp+WopGLmcVaWKey4NeTTNgrCfcludwaigtBAvL9AKy9
-	8aKNh6qwqzU15V1EkY49I1k0ExipPVcIuFfZKT40j53SnOJOki341VbB9gviwD+1G1WYuTn+6djf4
-	Co73IutMNyyt7iaIhJWnbAdqd7wVO0CVjDKF4+CH1H2AwCYPaoHJHA4qtXmx+URFIrsxOmLraeEOx
-	uC0UiZMh9oYmRKRMHBboKtS4j73+15+KcBX3gfsOkW5zdkl6cy5Mm0u9h378R3sO1FFB3I8BtvfAa
-	4gisQ0dA==;
-Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:53602)
-	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <linux@armlinux.org.uk>)
-	id 1w4b8f-0000000009l-0dMz;
-	Mon, 23 Mar 2026 08:59:57 +0000
-Received: from linux by shell.armlinux.org.uk with local (Exim 4.98.2)
-	(envelope-from <linux@shell.armlinux.org.uk>)
-	id 1w4b8a-000000003tW-2pe0;
-	Mon, 23 Mar 2026 08:59:52 +0000
-Date: Mon, 23 Mar 2026 08:59:52 +0000
-From: "Russell King (Oracle)" <linux@armlinux.org.uk>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ug7FqFPO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A146DC4CEF7;
+	Mon, 23 Mar 2026 13:58:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774274299;
+	bh=DqfWL4BSTBiaLqTmikifLZdJR1EIole67SS90j6+wPs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ug7FqFPOxtjqtkSadBjpkd4bQYSehH4p2u3pHmJk9tmOoZu6fr0+vdVBUekcgA6/A
+	 QnXwgH5xZaTtuisppuO7Isa5gwywmd5oZCkMmzQqAUk1xRyPfjBZkWYdt4jDFLtgce
+	 jG6/HZKk7u6DP1SsWQWgCLGs3au+Dh/HpT8FZ5a9XULG7e+Ot4MU70ST2AC/mB472J
+	 3WU43zruM06Q0aL1wgWvCiWoxpf7uin9XCKjJQhFzvY9Ij7zDpAAa1hWZGfhn/HuWA
+	 TzEF+P8h5nrJG5gDl+i34duuOTOggqENQN21Fhq30HCbMyyNAklfwWsCb2t5CgQ7yX
+	 cGR0rCKZ3nXrg==
+Date: Mon, 23 Mar 2026 13:58:12 +0000
+From: Mark Brown <broonie@kernel.org>
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Andrew Lunn <andrew+netdev@lunn.ch>,
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
 	"David S. Miller" <davem@davemloft.net>,
 	Eric Dumazet <edumazet@google.com>,
 	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
 	Vinod Koul <vkoul@kernel.org>,
 	Neil Armstrong <neil.armstrong@linaro.org>,
-	Mark Brown <broonie@kernel.org>,
 	Liam Girdwood <lgirdwood@gmail.com>, Lee Jones <lee@kernel.org>,
 	Pavel Machek <pavel@kernel.org>, Peter Rosin <peda@axentia.se>,
+	Andrew Lunn <andrew@lunn.ch>,
 	Heiner Kallweit <hkallweit1@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
 	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
 	Tom Rix <trix@redhat.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -59,52 +48,46 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Andrew Lunn <andrew+netdev@lunn.ch>,
 	linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
 	linux-spi@vger.kernel.org, linux-leds@vger.kernel.org,
 	linux-fpga@vger.kernel.org, driver-core@lists.linux.dev
-Subject: Re: [PATCH net-next 07/10] net: phy: switch to using
- class_find_device_by_fwnode()
-Message-ID: <acEBCBgMV3RrGKiU@shell.armlinux.org.uk>
+Subject: Re: [PATCH 03/10] spi: switch to using class_find_device_by_fwnode()
+Message-ID: <03c80468-b097-47ac-b7b5-4170eb782772@sirena.org.uk>
 References: <20260322-remove-device-find-by-of-node-v1-0-b72eb22a1215@gmail.com>
- <20260322-remove-device-find-by-of-node-v1-7-b72eb22a1215@gmail.com>
- <32679fc0-c388-4cd7-a030-5f5ed5abab78@lunn.ch>
- <acDLzK8vpptTUMf1@google.com>
+ <20260322-remove-device-find-by-of-node-v1-3-b72eb22a1215@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="/Y4JH2eUDT/w1Qo1"
+Content-Disposition: inline
+In-Reply-To: <20260322-remove-device-find-by-of-node-v1-3-b72eb22a1215@gmail.com>
+X-Cookie: Avoid gunfire in the bathroom tonight.
+
+
+--/Y4JH2eUDT/w1Qo1
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <acDLzK8vpptTUMf1@google.com>
-Sender: Russell King (Oracle) <linux@armlinux.org.uk>
 
-On Sun, Mar 22, 2026 at 10:17:15PM -0700, Dmitry Torokhov wrote:
-> On Mon, Mar 23, 2026 at 03:54:09AM +0100, Andrew Lunn wrote:
-> > > -	d = class_find_device_by_of_node(&mdio_bus_class, mdio_bus_np);
-> > > +	d = class_find_device_by_fwnode(&mdio_bus_class,
-> > > +					of_fwnode_handle(mdio_bus_np));
-> > 
-> > When you look at this, why is it better?
-> 
-> I think we should move as much as possible towards firmware-agnostic
-> APIs and use fwnode_handle instead of device_node or software_node or
-> ACPI companion. To discourage this I think we better remove
-> firmware-specific APIs where we have firmware-agnostic ones and
-> eventually clean up drivers that use OF- or ACPI-specific APIs.
+On Sun, Mar 22, 2026 at 06:54:21PM -0700, Dmitry Torokhov wrote:
+> In preparation to class_find_device_by_of_node() going away switch to
+> using class_find_device_by_fwnode().
 
-Basically, no. This is wrong.
+Acked-by: Mark Brown <broonie@kernel.org>
 
-It may sound like a good goal, but there's an underlying issue. This
-goal assumes that the firmware description in OF and ACPI are
-indentical.
+--/Y4JH2eUDT/w1Qo1
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Sure, looking up devices by fwnode handle makes sense, but looking up
-anything that is described in firmware is not suitable for this kind
-of conversion, because in doing so, you effectively "port" the DT
-bindings to ACPI, and it may not be suitable for ACPI.
+-----BEGIN PGP SIGNATURE-----
 
-So, please don't make wholesale changes that transfer the DT bindings
-into ACPI.
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmnBRvMACgkQJNaLcl1U
+h9CsIgf/RCKdllt9YwSLySimmbBJtkTLmhOS6EPJCqGv19zWp+V0LMQR7m+UNTGr
+FnR+LwzGc6hEHm/6jhjD198BnnVCOW82zCI8Bs+E6y5/EdupkUDZ+b3g3SeURJAF
++QJq5bdoCW1CTTRSIGfA5rvSFcvntN7Zq8M1wxHw3tCGu9nFjd6zgDl89+AftFxf
+y229F5tEErnywkxr7uTfooW7t6VMKlhRVBg4yrPvoa6Uya8sSLjcXMPA/rF9358P
+K9Rq1TRyca20qXzUtriw7Az+/rk7ZBkCZoYVUBcihEdjyfxrORCd5RqlM6pxH80i
+lcMvh6jcdGoRkTwa6/zxTPScelZsuw==
+=oQMa
+-----END PGP SIGNATURE-----
 
--- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTP is here! 80Mbps down 10Mbps up. Decent connectivity at last!
+--/Y4JH2eUDT/w1Qo1--
