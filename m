@@ -1,87 +1,127 @@
-Received: from out30-119.freemail.mail.aliyun.com (out30-119.freemail.mail.aliyun.com [115.124.30.119])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5CCD39F16E;
-	Tue, 24 Mar 2026 03:46:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.119
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6ECBE3DB63E;
+	Tue, 24 Mar 2026 09:36:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774324003; cv=none; b=M/4ocim4/5PVw79XmXm8xsTnLfQGKrGUaGUEib+ejkHJ96oD1CYwjiwJWBtRwiUuzPa45Q7BiG1F3Jer8mm0A8P5rac8r+jt+8i44O6tVzTYlDdqonth+6chMQNsKIrqzz7tx8lP9zObEVUT1SoFTYRV+yj0UtfkKMJaIraQhlg=
+	t=1774344990; cv=none; b=owqzAFPEvihjdIfMeLx0IfrEWOA0RjGH8O5mN1qvz6mfN2ooEFVsPk7FiPjXnI71GAQ5PIaCIa6qIfFNGWdZxt2rCVZGK9jgGcgV8AqEZ62ll97Rb9b1+AYxoGvde+L94PJi3iaGPM3E/YyDV8z5BPEioFIXL887Fxuf6mUhqrU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774324003; c=relaxed/simple;
-	bh=0PeVMEi1xnjHxw1FfnRAZZSarRt0/Dtbi/3bueBnvaY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NWb119oBtrFidFxbbmaEJwyC/lQyQRaVbpnyahJGUBlZITNFBZfyNvfGIJIS5XMWw+ojF3bxnT04thMXBohGZTD1Ic9vriMDPExzJB6KWnOSGJRfY/fnihHq8DJn41pIpkxLydkehfmXmcj8RzFfQmGTX19snu9kGSUYyFcd4E8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=W8dBdgZZ; arc=none smtp.client-ip=115.124.30.119
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+	s=arc-20240116; t=1774344990; c=relaxed/simple;
+	bh=Cl9Jn50dUXWt3BrXPsUSkT+go0J8MdRhtpKlgBhriss=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=emRdHRYui+keGw8n58gLW7qInlApfhwJpkP0hwezJupZ4bZ2DwGME26duU5XXMpGTQjeKlzjhzuHBisSkpUJa9KY89DMG5N4O185u/57zHBb5HRPmWs/uJN69aGQkXod7kCnc43SMNvA8l8aW9QWB1ylp8wqawg5vDxAn07bWaY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Ulqat822; arc=none smtp.client-ip=192.198.163.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="W8dBdgZZ"
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1774323997; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
-	bh=gfj9pH9HdFGubioadCjBnLlcB4bnm19iAov+QtWe4RQ=;
-	b=W8dBdgZZiD7sit7t3UzflEUwM7kzolxg35RLo84TqrIlkiZseML80/1dP1YdYcRjjoNKsbE4oXCw8pJAec33VGZ60HCJ+4J0CDmB9F/HTiOt7cYA3UKyhv4cIKBZjZgj1LSrIgXaaO/d53kIrXmQJy624hyWPzsbzDrJnWIF7w8=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R121e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037026112;MF=guwen@linux.alibaba.com;NM=1;PH=DS;RN=35;SR=0;TI=SMTPD_---0X.d9ZI5_1774323994;
-Received: from 30.221.131.145(mailfrom:guwen@linux.alibaba.com fp:SMTPD_---0X.d9ZI5_1774323994 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Tue, 24 Mar 2026 11:46:35 +0800
-Message-ID: <025b7816-ca8e-4cea-bb84-bf324c8c3b22@linux.alibaba.com>
-Date: Tue, 24 Mar 2026 11:46:34 +0800
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Ulqat822"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774344990; x=1805880990;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=Cl9Jn50dUXWt3BrXPsUSkT+go0J8MdRhtpKlgBhriss=;
+  b=Ulqat82263YGbGV5TgC/PjGiKQMpf7M84RAXMp3dboZ5zTQ/zdnw1Tn0
+   rttuLtEgN1h8neaWX3Yue02gyujfA5O0FdXMHVpVRzF7R/81Kx9/7TyZn
+   Bz25AG1+1FibsZoAUEPqkCDRisLcV2fCbFT/26t+6JiAUUr6eQpqpbKFF
+   munH618JKmKwtWrDwFIEkLHyPs3zLIU41AJrLx1yX6mj6VPNNkxlvOvH7
+   mur+pFsbAR6TWgBVQxPR/EuVgwq1V56vTFYksE2BDT4fOD6QXYDaUF46h
+   kdpQrkI76MMEqkxWSRWhLCOxpv5r4qa3JkQwSWLFmGcUEl+fL9lcKRO08
+   Q==;
+X-CSE-ConnectionGUID: +gesGCLIRCe7C62d/M7xfQ==
+X-CSE-MsgGUID: 5JVyMncGTgCaE7DaUdKnbQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="86725131"
+X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
+   d="scan'208";a="86725131"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2026 02:36:29 -0700
+X-CSE-ConnectionGUID: DmWR8uXHRDSrXII1rchdOA==
+X-CSE-MsgGUID: CPrU1x//RC2oHAiWQSJ1zA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
+   d="scan'208";a="229228806"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by orviesa005.jf.intel.com with ESMTP; 24 Mar 2026 02:36:21 -0700
+Date: Tue, 24 Mar 2026 17:15:33 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: Yury Norov <ynorov@nvidia.com>
+Cc: linux-kernel@vger.kernel.org,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Ingo Molnar <mingo@kernel.org>,
+	James Clark <james.clark@linaro.org>, Kees Cook <kees@kernel.org>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Mike Leach <mike.leach@linaro.org>, Moritz Fischer <mdf@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Russ Weight <russ.weight@linux.dev>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Suki K Poulose <suzuki.poulose@arm.com>, Tom Rix <trix@redhat.com>,
+	Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+	Xu Yilun <yilun.xu@intel.com>, Yury Norov <yury.norov@gmail.com>,
+	Zhang Rui <rui.zhang@intel.com>, coresight@lists.linaro.org,
+	linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
+	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH 5/5] fpga: m10bmc-sec: switch show_canceled_csk() to
+ using sysfs_emit()
+Message-ID: <acJWNRb1t96yu/H6@yilunxu-OptiPlex-7050>
+References: <20260303200842.124996-1-ynorov@nvidia.com>
+ <20260303200842.124996-6-ynorov@nvidia.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] MAINTAINERS: update PTP maintainer entries after
- directory split
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: tglx@kernel.org, tglx@linutronix.de, richardcochran@gmail.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- pabeni@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- jstultz@google.com, anna-maria@linutronix.de, frederic@kernel.org,
- daniel.lezcano@kernel.org, sboyd@kernel.org, vladimir.oltean@nxp.com,
- wei.fang@nxp.com, xiaoning.wang@nxp.com, jonathan.lemon@gmail.com,
- vadim.fedorenko@linux.dev, yangbo.lu@nxp.com, svens@linux.ibm.com,
- dwmw2@infradead.org, nick.shi@broadcom.com, ajay.kaher@broadcom.com,
- alexey.makhalov@broadcom.com, bcm-kernel-feedback-list@broadcom.com,
- linux-fpga@vger.kernel.org, imx@lists.linux.dev, linux-s390@vger.kernel.org,
- dust.li@linux.alibaba.com, xuanzhuo@linux.alibaba.com, mani@kernel.org,
- imran.shaik@oss.qualcomm.com, taniya.das@oss.qualcomm.com
-References: <20260318073330.115808-1-guwen@linux.alibaba.com>
- <20260318073330.115808-3-guwen@linux.alibaba.com>
- <20260323192232.3a5205dc@kernel.org>
-From: Wen Gu <guwen@linux.alibaba.com>
-In-Reply-To: <20260323192232.3a5205dc@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260303200842.124996-6-ynorov@nvidia.com>
 
-
-
-On 2026/3/24 10:22, Jakub Kicinski wrote:
-> On Wed, 18 Mar 2026 15:33:30 +0800 Wen Gu wrote:
->> +PTP EMULATED CLOCK SUPPORT
->> +M:	Wen Gu <guwen@linux.alibaba.com>
->> +M:	Xuan Zhuo <xuanzhuo@linux.alibaba.com>
->> +L:	linux-kernel@vger.kernel.org
->> +S:	Maintained
+On Tue, Mar 03, 2026 at 03:08:41PM -0500, Yury Norov wrote:
+> Switch show_canceled_csk() to use the proper sysfs_emit("%*pbl").
 > 
-> I thought David W was supposed to be the main maintainer?
-> Two moderately known developers from a single vendor/company
-> is not enough to delegate this IMO.
+> Reviewed-by: Russ Weight <russ.weight@linux.dev>
+> Suggested-by: Thomas Weißschuh <linux@weissschuh.net>
+> Signed-off-by: Yury Norov <ynorov@nvidia.com>
+> ---
+>  drivers/fpga/intel-m10-bmc-sec-update.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
+> index 10f678b9ed36..ae364c6636eb 100644
+> --- a/drivers/fpga/intel-m10-bmc-sec-update.c
+> +++ b/drivers/fpga/intel-m10-bmc-sec-update.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/firmware.h>
+>  #include <linux/mfd/intel-m10-bmc.h>
+>  #include <linux/mod_devicetable.h>
+> +#include <linux/mm.h>
 
+Why add this header file?
 
-Thanks for pointing this out.
+Thanks,
+Yilun
 
-We would also very much prefer for this area to be maintained
-by people with deeper expertise in the clock/timekeeping domain
-(such as David). The reason David was not listed in this version
-is that an earlier attempt to ask about maintainership did not
-receive a reply[1]. So we avoided adding without confirmation.
-
-If David has no objections to being listed here, that would
-definitely be preferable from our perspective. Other suggested
-clock/timekeeping experts would also be very welcome.
-
-[1] https://lore.kernel.org/all/78489ff1-c2fa-47dc-beb4-54e9410f7d5c@linux.alibaba.com/
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/slab.h>
+> @@ -183,7 +184,7 @@ show_canceled_csk(struct device *dev, u32 addr, char *buf)
+>  
+>  	bitmap_from_arr32(csk_map, csk32, CSK_BIT_LEN);
+>  	bitmap_complement(csk_map, csk_map, CSK_BIT_LEN);
+> -	return bitmap_print_to_pagebuf(1, buf, csk_map, CSK_BIT_LEN);
+> +	return sysfs_emit(buf, "%*pbl\n", CSK_BIT_LEN, csk_map);
+>  }
+>  
+>  #define DEVICE_ATTR_SEC_CSK_RO(_name)						\
+> -- 
+> 2.43.0
+> 
+> 
