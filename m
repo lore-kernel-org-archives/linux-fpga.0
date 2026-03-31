@@ -1,77 +1,74 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C0D2391848;
-	Mon, 30 Mar 2026 10:59:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B03C3B47D7;
+	Tue, 31 Mar 2026 10:29:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774868394; cv=none; b=mikBGaHhXiLoaN/8vsp9nzgI8O7DqPE6s8OnR3e5zmlQRpS7BcOEHE7jinaHtywpx4owwgE69lWW4YfxKkwvNTcHCpWS0EdjBhOrOAU/FEN5SDweQCzew9/4M3TlM9NWAxrJwOH2Cch8lBKqbf1Q2XDcV2MFQ5WbpA0pedMi7as=
+	t=1774952983; cv=none; b=Ycs+G98JMirtATPacqPhcOOQ/sf/Af0UDYuXjaGo0+uw/6gZnTASNXC1RGunnHNRDTdNo6LSodEbLLxEvvPGfBcnW3HMDeiNak4en73fJUAPesViEyeT/NVtLWwHMUODU1eXMmx4ro83XE44PCjTbu9rZ+9XHQKYdJbrjoFQHaQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774868394; c=relaxed/simple;
-	bh=TP/ijlT8VPaNoReM01g+AkVQTYxK9b6XLtwbT0XD5gs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Y5hG7hqo/VVRNwDA8E7jbOhYeiH5Nj4MDyipwggurYWsaNhPrdRGdgG6Nh4p8YiI4ZDg5ULO8LAUoiw6kIMF8tyFRIVsHYg/aXJxdsH8phMeLENj+poo51XXtxg6woxYVunkfyNJYjewBlcEYiESkM0ZmQkE2u+9O51J39rMHXQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nu2yKKMU; arc=none smtp.client-ip=198.175.65.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1774952983; c=relaxed/simple;
+	bh=Sb7+YT5MlZJy3yCTsyHBgr+LrhrODBwZbdlcoutQ1nw=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=tlswOLXW0gUdWs/6XS55Fz9AHspbunOcayOZtQ6yGxaAa0gJhjdPBU0VKGV+eXDL5sUCLRNkeHYbXgwMTq5dPs11Uit1Nx0jeUb4BIwLtABVzRejQ+I6qj9tzYCqzFqMR14iak7XgstowiD+QkVWvTtG4DubpNxxXcU2MgKk9yc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=vJ9FIk/L; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nu2yKKMU"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774868392; x=1806404392;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=TP/ijlT8VPaNoReM01g+AkVQTYxK9b6XLtwbT0XD5gs=;
-  b=nu2yKKMUdqzmtR5u3YZqbMfceb+M/jbWVHuFxBEf01bYdyNgSPw27Gvi
-   IOLNkUwMFLfEBOeMhSTz0lHbxBK7DuGDhiViOW12+Qa+LfobQ/8m5fxPZ
-   SvXRNVlaykzErOp/wLXldrMl8Q0zLEGdG49ItY7ZkM2t5OM6YylVSy20I
-   GVLpnS73KdN9vuK8+K7JBJS+gjndQJ41cx9L2Hg/N4IiTWqcIr0VCReUq
-   XtymbZUny4Zyjvv+R7/RkNdWHSP/ta4d1XQqsosaP5k7oHuvIP/jyPosb
-   fBJty05G7p05JtD/5G2lT63dJ2YdEcY5QsCv/YXuB5EdruMeDr+LKxR1d
-   A==;
-X-CSE-ConnectionGUID: 94yMWFnVT4y+hwt+w/Bzng==
-X-CSE-MsgGUID: NpwBV17DQbafTMOW+xuvdg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11743"; a="76048859"
-X-IronPort-AV: E=Sophos;i="6.23,149,1770624000"; 
-   d="scan'208";a="76048859"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2026 03:59:50 -0700
-X-CSE-ConnectionGUID: E5vAM/GSTPu25opRSjP9HA==
-X-CSE-MsgGUID: kT/JKLwZT+KiWFjsn0SOCQ==
-X-ExtLoop1: 1
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmviesa003.fm.intel.com with ESMTP; 30 Mar 2026 03:59:47 -0700
-Date: Mon, 30 Mar 2026 18:38:40 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: iansdannapel@gmail.com
-Cc: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, mdf@kernel.org, yilun.xu@intel.com,
-	trix@redhat.com, robh@kernel.org, krzk+dt@kernel.org,
-	conor+dt@kernel.org, neil.armstrong@linaro.org, heiko@sntech.de,
-	marex@nabladev.com, prabhakar.mahadev-lad.rj@bp.renesas.com,
-	dev@kael-k.io
-Subject: Re: [PATCH v6 0/3] Add Efinix FPGA configuration support
-Message-ID: <acpSsCQtCPvLlXsL@yilunxu-OptiPlex-7050>
-References: <20260327114842.1300284-1-iansdannapel@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="vJ9FIk/L"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30A1DC19423;
+	Tue, 31 Mar 2026 10:29:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774952982;
+	bh=Sb7+YT5MlZJy3yCTsyHBgr+LrhrODBwZbdlcoutQ1nw=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=vJ9FIk/Ll0EXNGBCluxgxPor0U2/hwdbzW2L893wEEKHUVwai7LIFwGuoPHKx/2Xk
+	 tIUzLJFX3eGbHWTC17sI92TDNei63m2WFyCVchSA4wM18LgbbL4NO5YHMGHP3NcaUR
+	 hS4HeQJ9sry3fcQBW8cky5JeF/ZF6Q1GS5P75y4ou9zjxQ3gPXn4w4dKE74zyasx0d
+	 z2tmHSq5VLMfWJf3YGnK5kXmTpxorfM2Z+Y4GvYlrdjhGQEQOogS7Fn/mNXmDeeiZM
+	 Dd28P/M9qNBOmIT2l5CL7Ss9icBNMu8Qp+wuReaKHX1sOQiwmxqxrIypiJz6gNJFpI
+	 CzqyNanidwx3g==
+From: Lee Jones <lee@kernel.org>
+To: Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+ Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
+ Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+ Peter Rosin <peda@axentia.se>, Andrew Lunn <andrew@lunn.ch>, 
+ Heiner Kallweit <hkallweit1@gmail.com>, 
+ Russell King <linux@armlinux.org.uk>, Moritz Fischer <mdf@kernel.org>, 
+ Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-phy@lists.infradead.org, linux-spi@vger.kernel.org, 
+ linux-leds@vger.kernel.org, linux-fpga@vger.kernel.org, 
+ driver-core@lists.linux.dev
+In-Reply-To: <20260322-remove-device-find-by-of-node-v1-5-b72eb22a1215@gmail.com>
+References: <20260322-remove-device-find-by-of-node-v1-5-b72eb22a1215@gmail.com>
+Subject: Re: (subset) [PATCH 05/10] leds: led-class: switch to using
+ class_find_device_by_fwnode()
+Message-Id: <177495297689.3815589.6859873475520670878.b4-ty@b4>
+Date: Tue, 31 Mar 2026 11:29:36 +0100
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260327114842.1300284-1-iansdannapel@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.16-dev-ad80c
 
-On Fri, Mar 27, 2026 at 12:48:38PM +0100, iansdannapel@gmail.com wrote:
-> From: Ian Dannapel <iansdannapel@gmail.com>
-> 
-> Hi all,
-> 
-> This is v6 of the series adding support for programming Efinix FPGAs
-> over SPI using the fpga-mgr subsystem.
+On Sun, 22 Mar 2026 18:54:23 -0700, Dmitry Torokhov wrote:
+> In preparation to class_find_device_by_of_node() going away switch to
+> using class_find_device_by_fwnode().
 
-Sorry, I'm on vacation and cannot make it in v7.0-rc, though I assume it
-should be neat as a v6.
+Applied, thanks!
 
-Will try to merge it in v7.1-rc, thanks.
+[05/10] leds: led-class: switch to using class_find_device_by_fwnode()
+        commit: b6de441f8ce22e3ead3b858342fe5652598a3572
+
+--
+Lee Jones [李琼斯]
+
