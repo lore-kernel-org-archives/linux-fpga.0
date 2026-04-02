@@ -1,60 +1,62 @@
-Received: from mail-vs1-f51.google.com (mail-vs1-f51.google.com [209.85.217.51])
+Received: from mail-vk1-f177.google.com (mail-vk1-f177.google.com [209.85.221.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8000D3E5580
-	for <linux-fpga@vger.kernel.org>; Thu,  2 Apr 2026 12:55:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC5BB3BF69E
+	for <linux-fpga@vger.kernel.org>; Thu,  2 Apr 2026 12:55:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775134530; cv=none; b=p3ALc9a7xzh3ZPH/5eRpIXw5bp9sS0Krgzm/5gHPbuU/wVH1186yAZwOLKMHg9uJzWuABRy0CswbjJ6rR649QD+AK0Xce45N8cn6pSjhsgyK1Nlpga4uU+MPVLWcqjy8GH1xwHV82OhfD16so/JmMfwUoYSDTBNLKErCgyneTFE=
+	t=1775134534; cv=none; b=Td1Zogx/mVL8DsKRj50WXbLCVCX7BYeFCj3z0sPF6NT7QqPKvGJu97HqaSpBVyUnjmXo3Y7Ebybkw4k4eu4xZeOH/vH7CgvAGVbNjvcWWn1JXZq41rllBSIrGuivRZE2oKszUNWwGED2mGSFIDMy19o3akVtm0rlu2F9wL6ezrE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775134530; c=relaxed/simple;
-	bh=+XwAz1WI5ah5S4NeumOZ3kgf/WtVzeiZRQij793c8Z0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VZoFXU+5LUU8Ec4u295HGgzf0H8R7W6knokoZdLnn/i5KKWG6y7AD9slZMZplQGJXupqIRp5jOqEqXLyCD9AmQ74JMugcNemqRaircpzwEjKA9XSP8N6YGr74LmHvkSjG8u5fw2HZ054D3km217ww3oyicIyZok1eAI8OFxlDso=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=saLoC7qh; arc=none smtp.client-ip=209.85.217.51
+	s=arc-20240116; t=1775134534; c=relaxed/simple;
+	bh=yCOF9NIHRG2RRR8gjB6MF/3vecVWbHAdrOgCPcYdB5Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=SG4NDY60w8wt/3PUsqCCMbXncqSWNU8H2Vt7j/JG0Pq8hTP2Z2CdjUSZASdk7YcgkYbpw1JVHTG7GQatJwQ5cUCXuOIvjpTRIiWQ9tJfGgWDiEJK/6K88drknxW5HwCbjY3MKtydDUJr5OB8iYLQqKoCowFaMEMGt7FfNGkm2kw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jFCzbwoI; arc=none smtp.client-ip=209.85.221.177
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="saLoC7qh"
-Received: by mail-vs1-f51.google.com with SMTP id ada2fe7eead31-604f1bfecf1so534229137.3
-        for <linux-fpga@vger.kernel.org>; Thu, 02 Apr 2026 05:55:23 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jFCzbwoI"
+Received: by mail-vk1-f177.google.com with SMTP id 71dfb90a1353d-56d357797acso621699e0c.1
+        for <linux-fpga@vger.kernel.org>; Thu, 02 Apr 2026 05:55:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775134520; x=1775739320; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=xUGZdZqGdvHzMx1k3Ek8/WSt4jcVtA9CO60KzOm8meg=;
-        b=saLoC7qhL6f01+gvBOC2RUlSm8NZfCYMVFvnK1XLuZZuiVfv0NCuyJQaDHbajbgCkr
-         /zMU5VF1cW+09Jaz6OmWrvawQlEFHE7jnEXtcnSdTE96c6nuRMVdwlQYly9GhXxw2EKs
-         8CX31tlpP8WRlKTUflqPpG6NX+Yr6XVMPqzumTIlwn8Ixd0FMHcpkv4EzbNQo3yMzEu4
-         h/bH8ZE4qS7SwCJNtoQ/iE6fxFko6VDN0f4jVtLWjfz+wPzIabh3SLB2KibFGwxvkBPz
-         pX75uSXdJCYpax4TErWBq8SeWRXs/LcT92tlVhrQQplKryRxZ7CNBIwyGemSlTSzHi0O
-         +QlQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775134520; x=1775739320;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1775134524; x=1775739324; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=xUGZdZqGdvHzMx1k3Ek8/WSt4jcVtA9CO60KzOm8meg=;
-        b=Zz9AYBUti68ZDvIT5JfStSlni+Hv/HgNn7iOwN1hDpGkIW1BQ16kDztGuvpRddLqia
-         C7ffMA9xco6aCUcDQwFwV331FZIAVGObh/70T1wQTBgnVX9y4FEk3XEpZJKZfHiGbwex
-         XcS6zJFonpOnKDVKpkfBFLE0TFhyY84ORDai7lP2d3MBt418CAzoi6VSziw6oC9MiQlq
-         KdPtBddbsvsJihpS1uKgwZgRx2TdC7WU9U6NywGAXSx6ONkzDSheWF1G3JdhHqApwwgl
-         1FNx6bLYw/wsggFJJavk7oKzJqmqEded6YMY673uzCOce9ctrIEKUnxI28acaHIK/M6X
-         N5ig==
-X-Gm-Message-State: AOJu0YyE1uhoIdGiVwJdCvYxmxnskzkC4YK5kCmegpA8gu6dAp9sxp6H
-	ABt0ur5ySeolChqu6wyDUcn4InAYMftSt1YWMJWVIx+MQgI4Iyp0odd8rJxn98Z2f9c=
-X-Gm-Gg: ATEYQzyfMV6Qs46LD46Iz4ZlfQpFyu3cZ09X0rsrkiza23kJtdw6Gtcca5S+aNnyzJ8
-	WQPtKAwKOHIrQASuQ7PnQ/jhWcxr+oYu6tS66PmnkhnkfhndT9dVofqa/JA2tli3DWNpgI8Bi9Y
-	II045XW8bZhurhA8a/F9knjct9/gp3mAShxyy+Llasty/ZcIk2/MXSp2xtLo6RVNOPqjWogOkIZ
-	/R/ZIdFXJNQrIO/F3zNkUoxUHf8eFnB1/p3ReidyH3tdICZyzpyHuWS9freXAuVnvPZYR6yabwb
-	/NngtXaddfYilMo/pKzX9KTfwI9pQQ5TjTaYAvxzjjYkXXbBHrRvhaY0WG4cxRS1M8yjEJBgaQH
-	gmwfYKcHMrV2hflfcqPgTMGF0RVrQU6kXZkuo7yA+RKBVgj/jq47qawe+LAujAAkSvyJ/0p+QUL
-	u3NjxqfkhgTQOSFLtZvkjZOb4=
-X-Received: by 2002:a05:6102:3581:b0:602:8a42:321e with SMTP id ada2fe7eead31-60583fd1f67mr1334161137.23.1775134519884;
-        Thu, 02 Apr 2026 05:55:19 -0700 (PDT)
+        bh=0cnJhXHQf7uIWrznQwZx4iuuJLrGPih0M+p7FEUCw8E=;
+        b=jFCzbwoIKcuZI6r45Usqc8kVWp9YwCjhbE+e5+SCVIyg2iyJDS7yD/tkgZmfCB6+Ni
+         UXu/7tcaEXV6An1TB3BuXJDf5KdwePxu3VAO/sznRC+f7Kr76l86PbZI+b6fFw8RNnKF
+         z2xhh+S/QOiXU6KSwFbzNAzNigxto9HJsbSXpyOGLVX91aXcdELfMqoMP2vVmJy5j2mk
+         WkjDyOA7ZktqeRwl5bYa5hlymTjyA2sZkuFFd3Hpfhm3raGCBZL/wsb5cE6m14cM8WNh
+         PtUa9RvVs4kkMfh1sP5pFfqCDQR2DGImU8hFOi5qr/fjuDxLCkIOCXpyKSAGSAPgD7xJ
+         CEFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775134524; x=1775739324;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=0cnJhXHQf7uIWrznQwZx4iuuJLrGPih0M+p7FEUCw8E=;
+        b=sbI2yvSX9vF+Nxv7jb/eCh8968FYK5nU0TpBnpBARe4zMXjfFMcN3FvYhXaXFxuNdM
+         O3V15Mweksq0qnLbhDRAR3qQQ+QGudIrqs2dOnhjO7N4B5XJy1W7g/H4/NMwU/tFi0Si
+         5/i5ovJkzTMH/rzY18GwXJ4fYRbGDKuPZhjHoNuLjcA0ZrHT5ywkkUo/DJuxZNDEypnM
+         5MToeB0+bR5wY8EGnwEURhLN4H5v+Gb/PqwCz/KRElPXPbYTFfMYapHp2YSOmjmqNW7U
+         sJJDaIkmxSxDKUy/+YURCDFBSGXgszRLizRPDobO02KcLNI3GRmiQLE9rtDCrtQd36Pj
+         c+lg==
+X-Gm-Message-State: AOJu0Yz4bNYd+aFqEB+gS/PyJX8C9f8blsmlbLhWeWIRCT/qd+Fhe9Sl
+	yoj9tTp9nkaHeymygpeAml+jqiGArolUDQ+N5esSgg9BmFfOT+djXcEYB8QsQ4Wu1A2DhM0m
+X-Gm-Gg: ATEYQzx1q6pg5RcQwLr1ymgbqfEAZIpNlcLQm99pemkrrIUVlI0qbJrQJdGU9MSLhBB
+	ran0WcnbcAqaKXTu3pTxFdPVENd+J01Kdyj9LYIVxpjPvGFzFbcG74ZVVj/stDV2+LYk6D3Ubfc
+	Ku2NSn0fJ/tVA6hY+p7fj5U358O6uAjzhd/LHbz7V86JV4axYjMa6iPVtITu4+9L9TfBqdNwKS6
+	HGliipjfKyXp29E2WM2Un3LTTalMqwqjYrmqQoVvo4zU+d9fmNU9D5m6yJVfWu1LcRGkkrdp4YR
+	hwgUKm4qUoSjhJys8c47o+1sIx7CJDZloMlHJbZLG0qIMwLKlAXM9Bg6xDShJ5k1eA5JwOGSXXG
+	ym9dV+wQ15Sh8cgcZScm4HUQgmnXfPXHj0273BX6QUyElSQ8z+S6Csojo6+O77O7V5MWPswNnZR
+	qnjARd7/Bg2V0Rt4OY5dv4/sL0ere/yMCNSw==
+X-Received: by 2002:a05:6122:698c:b0:55b:d85:5073 with SMTP id 71dfb90a1353d-56d8a834f8emr3573421e0c.4.1775134523627;
+        Thu, 02 Apr 2026 05:55:23 -0700 (PDT)
 Received: from localhost.localdomain ([2a09:bac5:6d73:aa::11:178])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-953fba6af44sm3080950241.8.2026.04.02.05.55.18
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-953fba6af44sm3080950241.8.2026.04.02.05.55.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Apr 2026 05:55:19 -0700 (PDT)
+        Thu, 02 Apr 2026 05:55:23 -0700 (PDT)
 From: Sebastian Alba Vives <sebasjosue84@gmail.com>
 To: linux-fpga@vger.kernel.org
 Cc: yilun.xu@linux.intel.com,
@@ -62,10 +64,12 @@ Cc: yilun.xu@linux.intel.com,
 	mdf@kernel.org,
 	linux-kernel@vger.kernel.org,
 	Sebastian Josue Alba Vives <sebasjosue84@gmail.com>
-Subject: [PATCH 1/3] fpga: dfl: add bounds check in dfh_get_param_size()
-Date: Thu,  2 Apr 2026 06:54:44 -0600
-Message-ID: <20260402125446.3776153-1-sebasjosue84@gmail.com>
+Subject: [PATCH 3/3] fpga: microchip-spi: add bounds checks in mpf_ops_parse_header()
+Date: Thu,  2 Apr 2026 06:54:46 -0600
+Message-ID: <20260402125446.3776153-3-sebasjosue84@gmail.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260402125446.3776153-1-sebasjosue84@gmail.com>
+References: <20260402125446.3776153-1-sebasjosue84@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -76,38 +80,66 @@ Content-Transfer-Encoding: 8bit
 
 From: Sebastian Josue Alba Vives <sebasjosue84@gmail.com>
 
-dfh_get_param_size() can return a parameter size larger than the feature
-region because the loop bounds check is evaluated before incrementing
-size. If the EOP (End of Parameters) bit is set in the same iteration,
-the inflated size is returned without re-validation against max.
+mpf_ops_parse_header() reads several fields from the bitstream file
+and uses them as offsets and sizes without validating them against the
+buffer size, leading to multiple out-of-bounds read vulnerabilities:
 
-This can cause create_feature_instance() to call memcpy_fromio() with
-a size exceeding the ioremap'd region when a malicious FPGA device
-provides crafted DFHv1 parameter headers.
+1. When header_size (u8 from file) is 0, the expression
+   *(buf + header_size - 1) reads one byte before the buffer.
 
-Add a bounds re-check after the size increment to ensure the returned
-size never exceeds the feature boundary.
+2. In the block lookup loop, block_id_offset and block_start_offset
+   advance by MPF_LOOKUP_TABLE_RECORD_SIZE (9) each iteration with
+   blocks_num (u8) controlling the count. With a small buffer, these
+   offsets exceed count, causing OOB reads via get_unaligned_le32().
 
-Fixes: a80a4b2b2e4f ("fpga: dfl: add support for DFHv1")
+3. components_size_start (from file) and component_size_byte_num
+   (derived from components_num, u16 from file) are used as offsets
+   into buf without validation, allowing arbitrary OOB reads.
+
+Add bounds checks for all three cases: reject header_size of 0,
+validate offsets in the block lookup loop, and validate the component
+size read offset.
+
 Signed-off-by: Sebastian Alba Vives <sebasjosue84@gmail.com>
 ---
- drivers/fpga/dfl.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/fpga/microchip-spi.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 4087a36..0f0889a 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -1133,6 +1133,9 @@ static int dfh_get_param_size(void __iomem *dfh_base, resource_size_t max)
+diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
+index 6134cea..7954dd0 100644
+--- a/drivers/fpga/microchip-spi.c
++++ b/drivers/fpga/microchip-spi.c
+@@ -116,7 +116,7 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
+ 	}
  
- 		size += next * sizeof(u64);
+ 	header_size = *(buf + MPF_HEADER_SIZE_OFFSET);
+-	if (header_size > count) {
++	if (!header_size || header_size > count) {
+ 		info->header_size = header_size;
+ 		return -EAGAIN;
+ 	}
+@@ -139,6 +139,10 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
+ 	bitstream_start = 0;
  
-+		if (size + DFHv1_PARAM_HDR > max)
+ 	while (blocks_num--) {
++		if (block_id_offset >= count ||
++		    block_start_offset + sizeof(u32) > count)
 +			return -EINVAL;
 +
- 		if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
- 			return size;
- 	}
+ 		block_id = *(buf + block_id_offset);
+ 		block_start = get_unaligned_le32(buf + block_start_offset);
+ 
+@@ -183,6 +187,10 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
+ 		component_size_byte_off =
+ 			(i * MPF_BITS_PER_COMPONENT_SIZE) % BITS_PER_BYTE;
+ 
++		if (components_size_start + component_size_byte_num +
++		    sizeof(u32) > count)
++			return -EINVAL;
++
+ 		component_size = get_unaligned_le32(buf +
+ 						    components_size_start +
+ 						    component_size_byte_num);
 -- 
 2.43.0
 
