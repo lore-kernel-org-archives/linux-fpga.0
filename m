@@ -1,89 +1,154 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40F5E36308D;
-	Thu,  2 Apr 2026 16:07:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D70133C2787;
+	Thu,  2 Apr 2026 16:17:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775146045; cv=none; b=tQ+Ln60/Bu+cX51UTLOqgE2/8+v3T/e9qX0A8XB79kqPh5VePvB2Ej6BJv2SY++Omv2ao04feXtVDIgRnhA/Ea/qWbYrQmBU3bXQjgf30YB5Pg3W8V2Vqc2U2fzsQZR0WRMQET4du23JpyAD7p5Htzzt0dDQv0XFEQsLA1TjJJY=
+	t=1775146620; cv=none; b=FkkDOkY+ywyPuOk6v3bt2TiHNhqmMPU2yRC+vcMtFH1u1jiou7nZnI34Xu+XeNdeolyLITa05m7jBnKB/yeZNLYSfo13xOMWwsiMH/D5nHVd5sOTLeA/HY0UVV7NYnBGVUUOIfgV98LJP3xTW7BNGJZmtSFxvqwhtTGz7BsRhzI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775146045; c=relaxed/simple;
-	bh=cV5NkpVrx05XLH+tTls30BH0nuqn6nmKKdeXhU05wVU=;
+	s=arc-20240116; t=1775146620; c=relaxed/simple;
+	bh=zYdSCkd1k9TT+brRx9yNputgCGXY5SKz6pKEPjyOCE4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RrWLnH9SS6gcbJvMqvyEZdLsKBm48yR4R3aLy9sSzobnwu0bS7YvqVjNOTtmUh9xiVjuGENMP7e3lVAujZna7eT0B8B+3MYau9ULzC4F0TTca9ST2gYe8UYv7JkR1k9o0784potHwTSRskF767ligPmmersqzBxtIIPvcBShhAI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=cAx3VZ9D; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=tFDa/YU6b6qeZgFxm4KQzmEFv4R0l0rHzwlnhYUW0FTSjvAsa92Zqcxzq62MwR5YIv1W0c64X8sNtRb074Kd5Fkti82dunIKOPEh9zAbKaqaFTRM3/qfG2ylpT2JR3I1EkcFRU63oCI8V3kP459MgvMGxHJNz89x385ZqxG3K1c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UerAOqT1; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="cAx3VZ9D"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9882DC116C6;
-	Thu,  2 Apr 2026 16:07:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1775146045;
-	bh=cV5NkpVrx05XLH+tTls30BH0nuqn6nmKKdeXhU05wVU=;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UerAOqT1"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0763DC116C6;
+	Thu,  2 Apr 2026 16:16:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775146620;
+	bh=zYdSCkd1k9TT+brRx9yNputgCGXY5SKz6pKEPjyOCE4=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=cAx3VZ9DILEgBh+xQ5joiBisKkrha2IorW+7dCEKajcQIpPr/VJIt0gmiZgmgtyrZ
-	 +bThE3X/008uZTefPEwdQ8DdI0+aBwfav9AcSfdmqd6i91Q2Hp0XW0B4XF10NExtqp
-	 8t7Yt0JME9/d7+ONnUaTaaLYNhtQHNTTn3KyCWi8=
-Date: Thu, 2 Apr 2026 18:07:17 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
+	b=UerAOqT1XmiMw/awWnw5zBJCC4BQ/L9itj0CngV3F7wLIlQYBynRQgZaY6uzl2IZt
+	 9bbK5QcBsl5zRhO0LzN4IZZMqe0b6ey2cxNDvyFzQaqdfX6O9je52fEZxxPrFd78dy
+	 rZKTI3cNK3k8z33UM0FQR6TfCOMtFcQw47T49Ov4cp7Kc2eCNHu1cJTUfNTtPweNXy
+	 36/EcRx7BUmnx1tZOdi2T46gQQ+zIA5BjTnWLVsPvHbSfELyCx5sn+1UEBlQnPtimV
+	 QQr9fWYRq75bqAsCY5oJUi4hOxFpWsk2OqNhgaxRkHs5plB/vKT0gF1bWbnytOFnT4
+	 nxoVJhcU9uWFA==
+Date: Thu, 2 Apr 2026 17:16:56 +0100
+From: Conor Dooley <conor@kernel.org>
 To: Sebastian Alba Vives <sebasjosue84@gmail.com>
 Cc: linux-fpga@vger.kernel.org, yilun.xu@linux.intel.com,
 	conor.dooley@microchip.com, mdf@kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] fpga: dfl-afu: fix integer truncation of npages in
- afu_dma_pin_pages()
-Message-ID: <2026040242-wrongly-hemlock-2c14@gregkh>
-References: <20260402125446.3776153-1-sebasjosue84@gmail.com>
- <20260402125446.3776153-2-sebasjosue84@gmail.com>
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH v2] fpga: microchip-spi: add bounds checks in
+ mpf_ops_parse_header()
+Message-ID: <20260402-gloomy-entire-42a7a407a5e5@spud>
+References: <20260402125446.3776153-3-sebasjosue84@gmail.com>
+ <20260402153752.3793055-1-sebasjosue84@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="nHwyQHrHtz2BM09A"
+Content-Disposition: inline
+In-Reply-To: <20260402153752.3793055-1-sebasjosue84@gmail.com>
+
+
+--nHwyQHrHtz2BM09A
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260402125446.3776153-2-sebasjosue84@gmail.com>
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 02, 2026 at 06:54:45AM -0600, Sebastian Alba Vives wrote:
+On Thu, Apr 02, 2026 at 09:37:52AM -0600, Sebastian Alba Vives wrote:
 > From: Sebastian Josue Alba Vives <sebasjosue84@gmail.com>
-> 
-> In afu_dma_pin_pages(), npages is declared as int but is assigned from
-> region->length >> PAGE_SHIFT where region->length is u64. This causes
-> implicit truncation on 64-bit systems when length is large.
-
-How can length be that large?  You are shifting down, not up.
-
-> 
-> The truncated value is then passed to account_locked_vm() (which takes
-> unsigned long) with implicit sign extension, and to pin_user_pages_fast()
-> which takes int nr_pages, potentially causing incorrect VM accounting.
-> 
-> Change npages to unsigned long and add a cap to prevent values exceeding
-> INT_MAX from reaching pin_user_pages_fast().
-> 
+>=20
+> mpf_ops_parse_header() reads several fields from the bitstream file
+> and uses them as offsets and sizes without validating them against the
+> buffer size, leading to multiple out-of-bounds read vulnerabilities:
+>=20
+> 1. There is no check that count is large enough to read header_size
+>    at MPF_HEADER_SIZE_OFFSET (24). Add a minimum count check.
+>=20
+> 2. When header_size (u8 from file) is 0, the expression
+>    *(buf + header_size - 1) reads one byte before the buffer.
+>    Return -EINVAL since retrying with a larger buffer cannot fix
+>    a zero header_size.
+>=20
+> 3. In the block lookup loop, block_id_offset and block_start_offset
+>    advance by MPF_LOOKUP_TABLE_RECORD_SIZE (9) each iteration with
+>    blocks_num (u8) controlling the count. With a small buffer, these
+>    offsets exceed count, causing OOB reads via get_unaligned_le32().
+>    Return -EAGAIN since a larger buffer may resolve the issue.
+>=20
+> 4. components_size_start (from file) and component_size_byte_num
+>    (derived from components_num, u16 from file) are used as offsets
+>    into buf without validation, allowing arbitrary OOB reads.
+>=20
+> Add bounds checks for all four cases.
+>=20
+> Fixes: 5f8d4a9008307 ("fpga: microchip-spi: add Microchip MPF FPGA manage=
+r")
+> Cc: stable@vger.kernel.org
 > Signed-off-by: Sebastian Alba Vives <sebasjosue84@gmail.com>
 > ---
->  drivers/fpga/dfl-afu-dma-region.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
-> index 87652d5..0d1f973 100644
-> --- a/drivers/fpga/dfl-afu-dma-region.c
-> +++ b/drivers/fpga/dfl-afu-dma-region.c
-> @@ -34,10 +34,13 @@ void afu_dma_region_init(struct dfl_feature_dev_data *fdata)
->  static int afu_dma_pin_pages(struct dfl_feature_dev_data *fdata,
->  			     struct dfl_afu_dma_region *region)
->  {
-> -	int npages = region->length >> PAGE_SHIFT;
-> +	unsigned long npages = region->length >> PAGE_SHIFT;
->  	struct device *dev = &fdata->dev->dev;
->  	int ret, pinned;
->  
-> +	if (npages > INT_MAX)
+>  drivers/fpga/microchip-spi.c | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>=20
+> diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
+> index 6134cea..00fa2d6 100644
+> --- a/drivers/fpga/microchip-spi.c
+> +++ b/drivers/fpga/microchip-spi.c
+> @@ -115,7 +115,13 @@ static int mpf_ops_parse_header(struct fpga_manager =
+*mgr,
+>  		return -EINVAL;
+>  	}
+> =20
+> +	if (count < MPF_HEADER_SIZE_OFFSET + 1)
 > +		return -EINVAL;
+> +
+>  	header_size =3D *(buf + MPF_HEADER_SIZE_OFFSET);
+> +	if (!header_size)
+> +		return -EINVAL;
+> +
+>  	if (header_size > count) {
+>  		info->header_size =3D header_size;
+>  		return -EAGAIN;
+> @@ -139,6 +145,10 @@ static int mpf_ops_parse_header(struct fpga_manager =
+*mgr,
+>  	bitstream_start =3D 0;
+> =20
+>  	while (blocks_num--) {
+> +		if (block_id_offset >=3D count ||
+> +		    block_start_offset + sizeof(u32) > count)
+> +			return -EAGAIN;
+> +
+>  		block_id =3D *(buf + block_id_offset);
+>  		block_start =3D get_unaligned_le32(buf + block_start_offset);
+> =20
+> @@ -183,6 +193,10 @@ static int mpf_ops_parse_header(struct fpga_manager =
+*mgr,
+>  		component_size_byte_off =3D
+>  			(i * MPF_BITS_PER_COMPONENT_SIZE) % BITS_PER_BYTE;
+> =20
+> +		if (components_size_start + component_size_byte_num +
+> +		    sizeof(u32) > count)
+> +			return -EINVAL;
 
-Why INT_MAX?  SHouldn't this be much smaller?
+I didn't mention it explicitly, but it kinda follows from the other
+comment, do we not just want to ask for a bigger buffer here too?
 
-thanks,
+> +
+>  		component_size =3D get_unaligned_le32(buf +
+>  						    components_size_start +
+>  						    component_size_byte_num);
+> --=20
+> 2.43.0
+>=20
 
-greg k-h
+--nHwyQHrHtz2BM09A
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCac6WeAAKCRB4tDGHoIJi
+0rm1AQC66r/q8WU6qGIMzt06cggSa+6KAcXYD9t0YLmWB6uS/wEA9spj0s1TfIY6
+UdB61NgKH0IaAQAwtaWM6B2nT0SNbgc=
+=Afcc
+-----END PGP SIGNATURE-----
+
+--nHwyQHrHtz2BM09A--
