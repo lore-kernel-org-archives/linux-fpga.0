@@ -1,172 +1,120 @@
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com [209.85.221.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3AAD370D48;
-	Thu,  2 Apr 2026 05:42:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.156.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 175AB361DA8
+	for <linux-fpga@vger.kernel.org>; Thu,  2 Apr 2026 12:55:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775108547; cv=none; b=tTwSLR6YU+fzf6abDtca2HvPxUUdXObUCOscKeOhzR2tgi5QXyNx1bZz98TLquc+fxyKV6oO/fCEDsfQVJKptndx9ZyKuNhC5X0tjORztIhOiobZ/KFPHoj9U1Rje3HScxipRek0vTb/V/m8YoNm1TeHLiNEofx26SwzMaZjy6M=
+	t=1775134529; cv=none; b=DmmB9V9Fm+j0ST1yQqsc6B2UqRZv5jxwz5cgELF24NhJ84n5n4xP0RL70/3YpSePNyCzW4QS2ZcV+FdOqtOrjRGNxwzb44pK9JRkfLzEX8Ss3T2Nwm6gPP9x0ms5NClnzePM6eE3J1FB5+/oOG5bWg8y4ZEBPhBEyMgSj9o4gks=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775108547; c=relaxed/simple;
-	bh=2IFgNG77EzVt5DTaiRnd6BZuJh1vJ5D0YXAwudlRcjM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=sLLG+JkxdrUZWSL2HNrk5SJkdekjZG+P25Tu5yTC8i6kP9rgoOBQWhbEhewaKTCZ2xv6HwWk2Yzqqg14Vkd3ap5ngjJyxaBACVcB7oGebXkHXx2U1x2zcaDMEwzEKrSTBuBlOUpVzIJf9s2MyyotpPsgQaKzKzydLf7Ll+1vWCo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=tDr7Ge/g; arc=none smtp.client-ip=148.163.156.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+	s=arc-20240116; t=1775134529; c=relaxed/simple;
+	bh=9MtKRQ5M+bp1zJOU/8ASwu4KWEN9j9lDStP99duruKo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=W48iP2u+OkNdS4J7s7QGC0FugJaiPI7R1P3xaTu8RVUqRecbtD0beznYQMsXb3W2ark4G5QfCZVIChKAIx9gJdL4vO5ajBecJHvwtGwgohnr8xM7efqSIL1iJIOCtKKp6mLlriGoRTb9a/okHGWZfPaZ3HqwSdD56U7l7pN4Lco=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=l+Mp+FfI; arc=none smtp.client-ip=209.85.221.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="tDr7Ge/g"
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 631NtEA1188586;
-	Thu, 2 Apr 2026 05:41:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=EORk0t
-	EdXeQE35AkewLeDAgsE7AO1utGOHCLHva2lH8=; b=tDr7Ge/gXxAE2pYlssE3hx
-	xH8sieMGB924wlnaaxRNLSsYbfYJdKicH0VuY/zWYjwBNhmH/6dpSl9LkuCtICoQ
-	yLZbBnqxAtGFP94073E7647+Txp0LvQDjUSUuV0G4T68Kw6KyH8zXkQykiOqw4v9
-	cAFjAWJzZlHI/j+O975ZQonjQiO6SA29bBX6EC/iYmYtQvWpfeWgdfgXmT9Dl+Jr
-	cjJ98avooB95Bx+MFAofgaNGBh2+BAxHjdvFms4ZYbw/aWHaPHDbH9K8TpvUTt1/
-	4FBh8jJiS2H5qzNzTWdBKsiwjhcRyXsbg3O4myJriQz7G9kt5loP9+mJZ8KmdubA
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66nnue2s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Apr 2026 05:41:48 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6321P5uL008732;
-	Thu, 2 Apr 2026 05:41:47 GMT
-Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d6v11rkk8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Apr 2026 05:41:47 +0000
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6325fkaB31588960
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 2 Apr 2026 05:41:46 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4085758055;
-	Thu,  2 Apr 2026 05:41:46 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A8F5D58043;
-	Thu,  2 Apr 2026 05:41:34 +0000 (GMT)
-Received: from [9.43.16.154] (unknown [9.43.16.154])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  2 Apr 2026 05:41:34 +0000 (GMT)
-Message-ID: <67ba2bd7-9d77-484a-be7c-c49245594e45@linux.ibm.com>
-Date: Thu, 2 Apr 2026 11:11:32 +0530
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l+Mp+FfI"
+Received: by mail-vk1-f175.google.com with SMTP id 71dfb90a1353d-56d93355337so643541e0c.0
+        for <linux-fpga@vger.kernel.org>; Thu, 02 Apr 2026 05:55:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775134522; x=1775739322; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/piubItRaGyzWs9BDYPbrLc9Q9XuMH2IjUibk3CFdsU=;
+        b=l+Mp+FfIjAzf9veLnpDZw5pColg24jqp0rApYmmqC3RyH1mkhnYs7YvXFA3Z/RIYIi
+         KBFzwT+FjI1JuK+DRG8uh6mCJC8j4i6icFofsOYJbKhc/zITX3Aio9bAcHw3Cvex75gV
+         dMHfzSJw+GuuuN51ezGdKK4jLRiVpeaDIiVZV7ZZgE6+kL15jrkNqWmZ7j2SzbIWOCh0
+         Mg7qEFemQg7PgvnicFpeb4PpWooc1nKQk9StyvBYG5Z57tHi7LG06Cw2s3CoMX/40I29
+         UDAdSfgsaMs4fk1LHIh6KMxulXqsIx7lv1B9ucA2hG3waMnWilHwZh+HNECZfWrbzeLC
+         DHnw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775134522; x=1775739322;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=/piubItRaGyzWs9BDYPbrLc9Q9XuMH2IjUibk3CFdsU=;
+        b=l6TFeCH1UVMhI4Z2+Zpo3UoV90B0ukQBIyBSK9KnoCPhaZ+9TySzvlw/kbiq+XVzcP
+         +jFUf89vtInP6TqA+RLDKhrP7qZ9vvIf1OOI75EDYmlf15poKuNH/hqB+lMSXpHVHDq9
+         Kz9ztx/C1GGh2PlBHjzHKXyZ2lF8/LGmSOJQ5UTy20IeHnmHpWlFO4MfiL076QD+Zh9F
+         89AIPtkhnFpmvhSr7wZ+G/jFsgaVMtI73KkOILdzlL0AkECxlHa3oI449Hwxm/Ne6Lpd
+         GLTYh8kLD/LR1f+Ba4c/BXuMXN9ikzcx2/MrENjqtlCfoXGzuvlqLBqoFphFW9KVHdKs
+         FSwA==
+X-Gm-Message-State: AOJu0Yzfc0tkV9qrWOG+EgOCFa7Ic844ZnjX09L7VVrUonYGmaaYNg23
+	uGdTZ0FUjaf1bIKbF2pzxElmP6roxymnoXuTpWZnghRMk68FRLpn81a7WDU/5Lm/6qX80Tza
+X-Gm-Gg: ATEYQzxOrf8d4mZNI05OJbtcveMzkYJtRnhSznLLuTKZ0iuVzvJp0bXFNjttYHaqHn9
+	v/0oqTwLZwJAsR7chzEdr8mfxdxvItZj/2taPvEqMEqc4ccG0391+DjYrZLcpakC3280UyhI/re
+	dfyeqpZC6oQLgqYU8V0IsN9TTl1T5sCq915j5U7p7FQ/S9v9cwmpyriRD0+OL8IY0MM0qsn9qbM
+	41heWP+sJmNGz7VKpymPMi5HZVZAywL8CFszqciM3V0ZgP6g/nysESVB2RpuxBKkpbCqelurRLu
+	DJHIC5svxL7570Uxci5wH6VodXHKZe4cjhxP4g+pOexk1W5cdvmUlsadoINc3H8fAiMlVZvVzM6
+	s/e1LLj5ye/AST6mLgjo4sLqjXruqKV9I/WivTaenxZBAL2dSWNIyfGmlSshUfCrqvzJCJkpOO0
+	rMuJ+rcxHyx7jIVrCCqWns2/U=
+X-Received: by 2002:a05:6122:e462:b0:566:4689:46eb with SMTP id 71dfb90a1353d-56d8a658429mr3295957e0c.0.1775134521759;
+        Thu, 02 Apr 2026 05:55:21 -0700 (PDT)
+Received: from localhost.localdomain ([2a09:bac5:6d73:aa::11:178])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-953fba6af44sm3080950241.8.2026.04.02.05.55.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 02 Apr 2026 05:55:21 -0700 (PDT)
+From: Sebastian Alba Vives <sebasjosue84@gmail.com>
+To: linux-fpga@vger.kernel.org
+Cc: yilun.xu@linux.intel.com,
+	conor.dooley@microchip.com,
+	mdf@kernel.org,
+	linux-kernel@vger.kernel.org,
+	Sebastian Josue Alba Vives <sebasjosue84@gmail.com>
+Subject: [PATCH 2/3] fpga: dfl-afu: fix integer truncation of npages in afu_dma_pin_pages()
+Date: Thu,  2 Apr 2026 06:54:45 -0600
+Message-ID: <20260402125446.3776153-2-sebasjosue84@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260402125446.3776153-1-sebasjosue84@gmail.com>
+References: <20260402125446.3776153-1-sebasjosue84@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 0/5] bitmap: cleanup bitmaps printing
-To: Yury Norov <ynorov@nvidia.com>, linux-kernel@vger.kernel.org,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        "Peter Zijlstra (Intel)" <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Ingo Molnar <mingo@kernel.org>, James Clark <james.clark@linaro.org>,
-        Kees Cook <kees@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Mike Leach <mike.leach@linaro.org>, Moritz Fischer <mdf@kernel.org>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Russ Weight <russ.weight@linux.dev>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Suki K Poulose <suzuki.poulose@arm.com>, Tom Rix <trix@redhat.com>,
-        =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-        Xu Yilun <yilun.xu@intel.com>, Yury Norov <yury.norov@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>, coresight@lists.linaro.org,
-        linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
-        linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Jakub Kicinski <kuba@kernel.org>
-References: <20260303200842.124996-1-ynorov@nvidia.com>
- <abxaIMi55N4X9JWz@yury> <ac2_EzO-uCaLqTlg@yury>
-Content-Language: en-US
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <ac2_EzO-uCaLqTlg@yury>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: q-gRfypHVWLTKOzqQbUHo8Z3Z9Q05fie
-X-Authority-Analysis: v=2.4 cv=KslAGGWN c=1 sm=1 tr=0 ts=69ce019c cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=Ikd4Dj_1AAAA:8 a=VnNF1IyMAAAA:8 a=BVaCEM1crgw_HuzovtUA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAyMDA0NCBTYWx0ZWRfX+LzEahelN8CB
- K5xjq6K7tuNN9Z6LEY869JOJ/BWdUA5T3hrx2CGUq/W0LFizueDwnkFK3UutliY2VjJ4y4b/y/e
- RjtACzrvnuqGgRk4MwIj7lTNCnrnuw4rWYDTelhhcWP8OwbtFkhO+aWFmTqllHJVuqq1uT3+/PX
- ASCCJDGX/fkvHFBpn4+AyhbZwkmZerCH8ed4JukJfZ8NdT73Its1nC6ZujMBj5sAFfq6Ol+OhvA
- fgQXNCxJnGBHocBh3T29naC3PSRc9/9oSM0hrxM4VvqL8AfhQjAhOgwIZCQkkrVthoA4FWyPizI
- kN18xwZ5O+bRVP6CYLM46EOWNRg/JCtNMsYaXe2QuY2oPWlVivtcapr1059JPvtVj1Mwn9WyGE6
- 90MaE8mPWrjOl/4d7jpNemMa1Tl0e9gwy+0NjF752w0EB4kZU36ltbej1CJReXa/0YLyn0gf8lA
- M4igH8/Rl81iS18thOw==
-X-Proofpoint-ORIG-GUID: rmybyCQ6Fqx2OWdLNeg6foaJ2qq3aIwi
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-02_01,2026-04-01_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 lowpriorityscore=0 priorityscore=1501 suspectscore=0
- phishscore=0 adultscore=0 bulkscore=0 impostorscore=0 clxscore=1011
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2604020044
 
+From: Sebastian Josue Alba Vives <sebasjosue84@gmail.com>
 
-On 4/2/26 6:27 AM, Yury Norov wrote:
-> On Thu, Mar 19, 2026 at 04:18:40PM -0400, Yury Norov wrote:
->> Ping?
-> OK, taking 1-4 in bitmap-for-next.
+In afu_dma_pin_pages(), npages is declared as int but is assigned from
+region->length >> PAGE_SHIFT where region->length is u64. This causes
+implicit truncation on 64-bit systems when length is large.
 
-Acked-by: Madhavan Srinivasan <maddy@linux.ibm.com> for powerpc patch
+The truncated value is then passed to account_locked_vm() (which takes
+unsigned long) with implicit sign extension, and to pin_user_pages_fast()
+which takes int nr_pages, potentially causing incorrect VM accounting.
 
+Change npages to unsigned long and add a cap to prevent values exceeding
+INT_MAX from reaching pin_user_pages_fast().
 
->
-> Thanks,
-> Yury
->   
->> On Tue, Mar 03, 2026 at 03:08:36PM -0500, Yury Norov wrote:
->>> Bitmap API has a bitmap_print_to_pagebuf() function that is intended to
->>> print bitmap into a human readable format, making sure that the output
->>> string will not get big enough to cross the current page limit.
->>>
->>> Some drivers use this function immediately before passing the result to
->>> scnprintf() with no modification. This is useless because scnprintf(),
->>> and helpers based on it like seq_pritf() and sysfs_emit(), take care of
->>> not overflowing the buffer by itself, and perfectly print bitmaps with
->>> "%*pb[l]".
->>>
->>> This is a resend of non-networking part of [1]. Patches #3,5 switch from
->>> plain scnprintf() to sysfs_emit(), as pointed out by Thomas Weißschuh.
->>>
->>> [1] https://lore.kernel.org/all/20260219181407.290201-1-ynorov@nvidia.com/
->>>
->>> The networking part, for reference:
->>>
->>> https://lore.kernel.org/all/20260303185507.111841-1-ynorov@nvidia.com/
->>>
->>> Each patch can be applied individually per corresponding subsystem.
->>>
->>> Yury Norov (5):
->>>    powerpc/xive: simplify xive_spapr_debug_show()
->>>    thermal: intel: switch cpumask_get() to using
->>>      cpumask_print_to_pagebuf()
->>>    coresight: don't use bitmap_print_to_pagebuf()
->>>    lib/prime_numbers: drop temporary buffer in dump_primes()
->>>    fpga: m10bmc-sec: switch show_canceled_csk() to using sysfs_emit()
->>>
->>>   arch/powerpc/sysdev/xive/spapr.c              | 12 ++-----
->>>   drivers/fpga/intel-m10-bmc-sec-update.c       |  3 +-
->>>   .../hwtracing/coresight/coresight-cti-sysfs.c | 32 ++++++++-----------
->>>   drivers/thermal/intel/intel_powerclamp.c      |  3 +-
->>>   lib/math/tests/prime_numbers_kunit.c          |  6 ++--
->>>   5 files changed, 21 insertions(+), 35 deletions(-)
->>>
->>> -- 
->>> 2.43.0
+Signed-off-by: Sebastian Alba Vives <sebasjosue84@gmail.com>
+---
+ drivers/fpga/dfl-afu-dma-region.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+index 87652d5..0d1f973 100644
+--- a/drivers/fpga/dfl-afu-dma-region.c
++++ b/drivers/fpga/dfl-afu-dma-region.c
+@@ -34,10 +34,13 @@ void afu_dma_region_init(struct dfl_feature_dev_data *fdata)
+ static int afu_dma_pin_pages(struct dfl_feature_dev_data *fdata,
+ 			     struct dfl_afu_dma_region *region)
+ {
+-	int npages = region->length >> PAGE_SHIFT;
++	unsigned long npages = region->length >> PAGE_SHIFT;
+ 	struct device *dev = &fdata->dev->dev;
+ 	int ret, pinned;
+ 
++	if (npages > INT_MAX)
++		return -EINVAL;
++
+ 	ret = account_locked_vm(current->mm, npages, true);
+ 	if (ret)
+ 		return ret;
+-- 
+2.43.0
+
