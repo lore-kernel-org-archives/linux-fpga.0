@@ -1,125 +1,121 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ua1-f51.google.com (mail-ua1-f51.google.com [209.85.222.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 649A33932C6;
-	Tue,  7 Apr 2026 11:05:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24F8F3AA500
+	for <linux-fpga@vger.kernel.org>; Tue,  7 Apr 2026 14:06:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775559947; cv=none; b=ROt6dtA7xj1MMcN0cEg/8ZQuzDVBgwW8HVfvsE/uYwI6R8YEZaL4QoM+SnpEdRx7IviMzXhacbu5glpuEfgU3wkyLmNbXBRugrrvGDCgeWbVRqZhvVI7gf4VoHKgWVyVLSyMAKFw3I32AGbkCEuxcqLR3i1HS/jIQicI9kDI1os=
+	t=1775570788; cv=none; b=tazG5l8x6AZKwY0KHsoTmFJ4vNahmW35Vml5L56Un0pTUiIg/ShRMcmaNweI99NNjU2ie06HZTnX02+IsifLsNf7sNlKuMslyx6JEEhYpvtDLZdiPGwmMrCTw/YwBAFLffXfn06WOFyrNUjBfk8OXD/QvDaCezL6zGMx35dsVv4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775559947; c=relaxed/simple;
-	bh=MT5b3e1TTdPydwuW3S2ObgjW8crI/laqDyEwE/eGvAw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=geLc7ooqMiJznGVCxro1yVoSxsSigl/jq6a5zaN7iZyKTSsFmdVwprC9WsLIaJYAvaXY4a6uYw3w4UrWVSI11Jv5f3/kSp1IV/awy2TM8LICZqYWcJt44DPi+GBSNZ2x649iDdKeuCwFcSZMNPdYbHPElBgwPhluQDk26cm4o/I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=btueZz6J; arc=none smtp.client-ip=198.175.65.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1775570788; c=relaxed/simple;
+	bh=hR+4fVDOdwI76OidQLd9QmfZVGOhqdBSDsepnstrmBE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=FOTouoGRu2c+vDmW3qqv3YxLgEEqhemaMbW6FzIJAIpR+qSCkcBKGJIGc+7gKX+MsnETm97Apr1gVVON0YlGa/gFH6Zy6JmOEOHEZvFR3bwIdo18h8NB/LjuWNcgq/4WM8DXorQtsIjgtDvF/2IWPOJ1+KoXoY3khGWESy9jgsA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Es7NgZHB; arc=none smtp.client-ip=209.85.222.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="btueZz6J"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775559947; x=1807095947;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=MT5b3e1TTdPydwuW3S2ObgjW8crI/laqDyEwE/eGvAw=;
-  b=btueZz6Jm2HZoQvUTn8boSUe+CQBMOzX7dC64TbTMOPAoU1axVwkGRpW
-   6zNOKvwdbFJVJ7WHJP9iaoXKVb28cP40XCYOZRt5zdZqGFam1JFDU+/6J
-   ZVG2YpM1B09TZobcZdiTMaOu7HxNVd7FJjl6x5mh9K37LNWVcEuFd6SPd
-   9iwjQ7FTFvaRAyjr6IH10cjA9mEidAuWprDYtJ3KBqWWvu1XO+Rrjz8So
-   ZDwjVi0s1vnEUnGYr1qDkBMCTy6z5Q/8RC8kXKHa18MucBWI+TCsq2bkd
-   0IU0L1h1po/YfAITA1njnkU3Mb8eqyv/7X+plOvXKTGNyXJWzQawl+0xM
-   Q==;
-X-CSE-ConnectionGUID: 7ZReo/t7TOqrbmQHyyR+eA==
-X-CSE-MsgGUID: 1TSGt/4bQbSzTT6YOhT+5A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11751"; a="76532026"
-X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; 
-   d="scan'208";a="76532026"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Apr 2026 04:05:46 -0700
-X-CSE-ConnectionGUID: Tv3I9oshSAS0Cgq1VaMUog==
-X-CSE-MsgGUID: CI8jSjOmTkm8r4moA7hNXA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; 
-   d="scan'208";a="251436423"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmviesa001.fm.intel.com with ESMTP; 07 Apr 2026 04:05:44 -0700
-Date: Tue, 7 Apr 2026 18:44:14 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Sebastian Alba Vives <sebasjosue84@gmail.com>
-Cc: linux-fpga@vger.kernel.org, conor.dooley@microchip.com, mdf@kernel.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v3] fpga: microchip-spi: add bounds checks in
- mpf_ops_parse_header()
-Message-ID: <adTf/leheKK4TV/g@yilunxu-OptiPlex-7050>
-References: <20260402125446.3776153-3-sebasjosue84@gmail.com>
- <20260402162302.3804617-1-sebasjosue84@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Es7NgZHB"
+Received: by mail-ua1-f51.google.com with SMTP id a1e0cc1a2514c-944168e8c5fso2160587241.2
+        for <linux-fpga@vger.kernel.org>; Tue, 07 Apr 2026 07:06:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775570786; x=1776175586; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=W6lsHo5qoWGZyi8rJZLp4j1toOJ5+nc1vdlTEmr6fyY=;
+        b=Es7NgZHBMTRDkQN1xNjvcU59J4meqF8MMwL43WAhURGcsEtowOCgT4LMxst1Ra81oo
+         r8GTOKPZ9u4OtN5jIWqIHahPuF4XWzVay81A8LyOWrN1xL+RTBH5VKD2k7U+NU/DVpU6
+         EsdJW6tpoQlUc81ryQ5on+W91sGHDPEZLsQSeAH7y12d1zw5tiNLolfYHwiXvya9V4Mx
+         c99h1ux+xPvL2F2Kp2BKrE7zr59lvAM0AG1udbo180ZmuCDRCuUh+wQWUh3WzU+Cbos8
+         HsYPV3E7YWuKtwV3WzlYxiIGn4f+WI4V1hEONpQzCztrY6fhkIa6bv/sW5PtyHGJw7Uq
+         gBgw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775570786; x=1776175586;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=W6lsHo5qoWGZyi8rJZLp4j1toOJ5+nc1vdlTEmr6fyY=;
+        b=b1Vdjb2myKSkcaSDY1O2aud5TYgNcE2/pq7gVbH3Z5B5poympd+qybjS4p36nyf5bB
+         sxROHv9b0fLRe+STD45JcUWTZ+fp3cUMqVxNwnvcrM2AZ9llsD+e6A/Yh5jxIL36SL9/
+         1pFifNLqaCH9E35PvajOjdkn/jZD6mjek/kfjk/LcB5mQ7Vppio/m/jMns3nMVdozgi2
+         g90JNmpYScEI4Xv/hQWgFFRTF2mTyLrmwzrWnI7PxEeyNrxUV/mi7Fvk3jhBOYOP9q3c
+         QW6a1rh59DNfZKLhZP29j2JXzF3zfJMoWjhvtsjoGQY/wHusQ1TKdKDqocAl7sTuIxj4
+         BPag==
+X-Gm-Message-State: AOJu0Yw3ZKZfsctX0mjWubW1pJEmVgWPytuE2GlRQO4YnIGJOWOeqkAK
+	Ou69jhVpT0DlRAOosYrZnpXDbkfpW9Hi85MqMGA4TcLM8MEuFaIe+e1n
+X-Gm-Gg: AeBDievyNMcSAGPBGu5FZI+SNeevuPDlt6zAAxtqzqyAUb7Lb1PrkG6xsyrGWdaDHS7
+	gdMTw2aAMCOhXezqrA+XCJJ+dlyysVaoqiIDpi0FT/f5LFR1oIhLsmTCdYwn9nVOkKZfBPSnPax
+	3MT0GOAYQIJEK/i6ygXm96A7ai6FnjlDtNvTgSYpu/n65v8InZsHW8i3hNyS1Ra1HAIvvITQkSi
+	7jL7OkCghaF875F4+b8WhliWqgXTrA5H2yIhzLLI0s+7kyVSM1UaAWvT0IA4NkMbcF8V3A/cSw9
+	7C8WMmT5GfSBXxUjylCRQc0FkZkih1VBc5Z+93l57nFqkwNipkcH8az0HtHkOq4rzFhaAciUeIE
+	7uObW4GWxSbPx+Hr7gCtUY1+GZfCQFKcE4vpKAX/Rs+6GuyvRHn4whBvuLAmO6gqZEEMTuLEPHS
+	qdxsYUv8FBsUucz5vj1XUqLT0=
+X-Received: by 2002:a05:6102:5a92:b0:5ff:c510:b7e4 with SMTP id ada2fe7eead31-605a50f88e9mr6685023137.28.1775570786058;
+        Tue, 07 Apr 2026 07:06:26 -0700 (PDT)
+Received: from localhost.localdomain ([2a09:bac5:6d73:aa::11:1b5])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-6058304a726sm19814641137.9.2026.04.07.07.06.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Apr 2026 07:06:25 -0700 (PDT)
+From: Sebastian Alba Vives <sebasjosue84@gmail.com>
+To: yilun.xu@linux.intel.com
+Cc: linux-fpga@vger.kernel.org,
+	conor.dooley@microchip.com,
+	mdf@kernel.org,
+	linux-kernel@vger.kernel.org,
+	Sebastian Alba Vives <sebasjosue84@gmail.com>
+Subject: [PATCH v2 1/3] fpga: dfl: add bounds check in dfh_get_param_size()
+Date: Tue,  7 Apr 2026 08:05:59 -0600
+Message-ID: <20260407140601.15006-1-sebasjosue84@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260402125446.3776153-1-sebasjosue84@gmail.com>
+References: <20260402125446.3776153-1-sebasjosue84@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260402162302.3804617-1-sebasjosue84@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-> @@ -139,6 +145,12 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
->  	bitstream_start = 0;
->  
->  	while (blocks_num--) {
-> +		if (block_id_offset >= count ||
-> +		    block_start_offset + sizeof(u32) > count) {
-> +			info->header_size = block_start_offset + sizeof(u32);
-> +			return -EAGAIN;
-> +		}
-> +
+dfh_get_param_size() can return a parameter size larger than the feature
+region because the loop bounds check is evaluated before incrementing
+size. If the EOP (End of Parameters) bit is set in the same iteration,
+the inflated size is returned without re-validation against max.
 
-The image header has already been extended up to all look-up table for
-blocks, is it?
+This can cause create_feature_instance() to call memcpy_fromio() with a
+size exceeding the ioremap'd region when a malicious FPGA device provides
+crafted DFHv1 parameter headers.
 
-	header_size += blocks_num * MPF_LOOKUP_TABLE_RECORD_SIZE;
-	if (header_size > count) {
-		info->header_size = header_size;
-		return -EAGAIN;
-	}
+Add a bounds check after the size increment to ensure the accumulated
+size never exceeds the feature boundary.
 
->  		block_id = *(buf + block_id_offset);
->  		block_start = get_unaligned_le32(buf + block_start_offset);
->  
-> @@ -175,6 +187,9 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
->  	 * to each other. Image header should be extended by now up to where
->  	 * actual bitstream starts, so no need for overflow check anymore.
->  	 */
-> +	if (MPF_DATA_SIZE_OFFSET + sizeof(u16) > count)
-> +		return -EINVAL;
-> +
+Fixes: a80a4b2b2e4f ("fpga: dfl: add support for DFHv1")
+Signed-off-by: Sebastian Alba Vives <sebasjosue84@gmail.com>
+---
+Changes in v2:
+  - Use (size > max) instead of (size + DFHv1_PARAM_HDR > max).
+    The previous check unnecessarily guarded against the next parameter
+    header, which is not relevant at this point in the loop.
+    Suggested by Xu Yilun.
+---
+ drivers/fpga/dfl.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Do you notice the comments above? IIUC it says all these header info
-should be before actual bitstream starts, if we could ensure this, we
-don't need to check the addresses inside the header byte by byte.
+diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+index 4087a36..81d7a68 100644
+--- a/drivers/fpga/dfl.c
++++ b/drivers/fpga/dfl.c
+@@ -1132,7 +1132,8 @@ static int dfh_get_param_size(void __iomem *dfh_base, resource_size_t max)
+ 			return -EINVAL;
+ 
+ 		size += next * sizeof(u64);
+-
++		if (size > max)
++			return -EINVAL;
+ 		if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
+ 			return size;
+ 	}
+-- 
+2.43.0
 
-I think it is important we understand the structure of the image file
-first then meaningfully check the boundaries chunk by chunk, rather than
-byte by byte, which makes code unreadable.
-
-Thanks,
-Yilun
-
->  	components_num = get_unaligned_le16(buf + MPF_DATA_SIZE_OFFSET);
->  
->  	for (i = 0; i < components_num; i++) {
-> @@ -183,6 +198,11 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
->  		component_size_byte_off =
->  			(i * MPF_BITS_PER_COMPONENT_SIZE) % BITS_PER_BYTE;
->  
-> +		if (components_size_start + component_size_byte_num < components_size_start ||
-> +		    components_size_start + component_size_byte_num +
-> +		    sizeof(u32) > count)
-> +			return -EINVAL;
-> +
->  		component_size = get_unaligned_le32(buf +
->  						    components_size_start +
->  						    component_size_byte_num);
-> -- 
-> 2.43.0
-> 
