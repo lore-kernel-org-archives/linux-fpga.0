@@ -1,124 +1,192 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+Received: from out30-113.freemail.mail.aliyun.com (out30-113.freemail.mail.aliyun.com [115.124.30.113])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C912B2EFD95;
-	Tue,  7 Apr 2026 09:13:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35D1739D6F9;
+	Tue,  7 Apr 2026 10:48:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.113
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775553211; cv=none; b=UeJConOHdN8/ophsrGFsk5Eivd4YtzU0OnbBHrKL4U0rnVptOOa0gwtBXhF20lT1oerbcPW3OX1qFb6LXU1yL7kL3N7TJP2hEQ6VW2vPPjCCHRWu6YMc1x6iuabA9PbF3D12b3I9te4K/7TphWlkZrHe/jzve6jxAHP/3wIHvPo=
+	t=1775558891; cv=none; b=s0au/STxh0x4Qogu4IUgntQBZucTuEZRZ7tFqq9xnDQiFnLx1BV619t8AeFmk1vPVuf1sktdgFZwvUwqlIbAeNCrSzVVZaALEtNYFckLKWEwBBP85jLbykK8nkHjvC12uiNWvb0KvJLTcSweZL5Do1kNdsDHqAwTRqIDEGDCJuk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775553211; c=relaxed/simple;
-	bh=PTCzasguh7fxAonrUeMp8OYjhZiL1RaGgeTHQLwyqf4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VptMUWA9QKQYVPIvqd517VclZIcJ37NzWiOitf52w2cCWdusk2Lbf878x06xiOcAqM2esJ1F/nk9UIRCMk8AKJqUVcbSRDatIRNEEtDBSo98UlzgO5D/aNw1906zlfHk+n+0OC4mqtSqdamltxdfrbOcGCvx4UHpj0LwL2NP+P8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=kIu0KSvn; arc=none smtp.client-ip=192.198.163.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1775558891; c=relaxed/simple;
+	bh=gVhTUKcV2HyCwzuwdCv7ovFUANZVS2PUTsAzv9DxF2w=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=r1MP/D3Cip5J+UmKUU73QJGAWg6d+hBNTVKKhlZwgXbVVfXDczOQ4bq2HSbLavN/9aXEZOBxZwIp10hJAshrrUnESiao/hId4XNFoorQ4p5BhDKQXq2s9F9YNRuoousOma1DtS/pLBHU1SYXhbj34PNMWnAYeU+ULa/h1BE5//E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=RgqdcjwJ; arc=none smtp.client-ip=115.124.30.113
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="kIu0KSvn"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775553209; x=1807089209;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=PTCzasguh7fxAonrUeMp8OYjhZiL1RaGgeTHQLwyqf4=;
-  b=kIu0KSvnT6cja936CZbBBxh2c3VVY0AXEH9A6DwsdIK2IMkDbM3CXJqm
-   a5lMhkPlW2qjLGdCz/qRy17WLV4DDGjVn11QLuCyPfJ1aQAiAoaXX9Fp5
-   UuXIXlU+gjLj7C8usgHXqadlA8FQoT90/eLIdweY18uCSpNdYmUp6Nx/B
-   DLegL5J6ch7fv4gaNjqQwkS5CKb8/BW2AX5/atCNS+EnxlrB6Z5BAPQnH
-   d3Ff9efqbRfMn8QQFXTqISCvxZTtjvm1ewMN3/w2FMdQ/JaI34e8WsMio
-   86nGKxRcYgWHcJbeAwA6WLrhLaYu1av4Fpg+J71HB/wKWh7dRpL6KEP0M
-   w==;
-X-CSE-ConnectionGUID: PwIN6EyGTeG2Ztz/WIeC4w==
-X-CSE-MsgGUID: jYbBP+/zRr+KY3+U/hF5vg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11751"; a="76633885"
-X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; 
-   d="scan'208";a="76633885"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Apr 2026 02:13:29 -0700
-X-CSE-ConnectionGUID: 2Kw98UXXQDmRQPgI6PdvWQ==
-X-CSE-MsgGUID: a1DvL0SRTe+aYbvwjYTcVQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; 
-   d="scan'208";a="251408028"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmviesa001.fm.intel.com with ESMTP; 07 Apr 2026 02:13:28 -0700
-Date: Tue, 7 Apr 2026 16:51:58 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Sebastian Alba Vives <sebasjosue84@gmail.com>
-Cc: linux-fpga@vger.kernel.org, conor.dooley@microchip.com, mdf@kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] fpga: dfl: add bounds check in dfh_get_param_size()
-Message-ID: <adTFrkzKcLBtay71@yilunxu-OptiPlex-7050>
-References: <20260402125446.3776153-1-sebasjosue84@gmail.com>
+	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="RgqdcjwJ"
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1775558885; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=kG9JEWxldphoXtIw2ELvbQq3BEYOe+NSKsmq+c/NWB4=;
+	b=RgqdcjwJ6wUBdeqSISRMOwiCaWLzxC7KlyhR86ITw/dfqobSnmztm74x8m5Q3dS/i0QhvJh+0qDxJUwlLMZ4Q1iZZX+nsVckiqoiGQFt0QstaAXOFAIOKsPbGHGrjGNWcy9dZUXWBvlbyiYr9pzckqCznb+3XqU4Eb3JpBr40OE=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R171e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045133197;MF=guwen@linux.alibaba.com;NM=1;PH=DS;RN=34;SR=0;TI=SMTPD_---0X0bZhWU_1775558882;
+Received: from localhost(mailfrom:guwen@linux.alibaba.com fp:SMTPD_---0X0bZhWU_1775558882 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Tue, 07 Apr 2026 18:48:04 +0800
+From: Wen Gu <guwen@linux.alibaba.com>
+To: tglx@kernel.org,
+	richardcochran@gmail.com,
+	andrew+netdev@lunn.ch,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org,
+	jstultz@google.com,
+	anna-maria@linutronix.de,
+	frederic@kernel.org,
+	daniel.lezcano@kernel.org,
+	sboyd@kernel.org,
+	dwmw2@infradead.org
+Cc: vladimir.oltean@nxp.com,
+	wei.fang@nxp.com,
+	xiaoning.wang@nxp.com,
+	jonathan.lemon@gmail.com,
+	vadim.fedorenko@linux.dev,
+	yangbo.lu@nxp.com,
+	svens@linux.ibm.com,
+	nick.shi@broadcom.com,
+	ajay.kaher@broadcom.com,
+	alexey.makhalov@broadcom.com,
+	bcm-kernel-feedback-list@broadcom.com,
+	linux-fpga@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-s390@vger.kernel.org,
+	dust.li@linux.alibaba.com,
+	xuanzhuo@linux.alibaba.com,
+	mani@kernel.org,
+	imran.shaik@oss.qualcomm.com,
+	taniya.das@oss.qualcomm.com
+Subject: [PATCH v2 0/2] ptp: split non-NIC PHC drivers into the clock/timekeeping maintenance domain
+Date: Tue,  7 Apr 2026 18:48:00 +0800
+Message-Id: <20260407104802.34429-1-guwen@linux.alibaba.com>
+X-Mailer: git-send-email 2.32.0.3.g01195cf9f
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260402125446.3776153-1-sebasjosue84@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Thu, Apr 02, 2026 at 06:54:44AM -0600, Sebastian Alba Vives wrote:
-> From: Sebastian Josue Alba Vives <sebasjosue84@gmail.com>
-> 
-> dfh_get_param_size() can return a parameter size larger than the feature
-> region because the loop bounds check is evaluated before incrementing
-> size. If the EOP (End of Parameters) bit is set in the same iteration,
-> the inflated size is returned without re-validation against max.
-> 
-> This can cause create_feature_instance() to call memcpy_fromio() with
-> a size exceeding the ioremap'd region when a malicious FPGA device
-> provides crafted DFHv1 parameter headers.
-> 
-> Add a bounds re-check after the size increment to ensure the returned
-> size never exceeds the feature boundary.
-> 
-> Fixes: a80a4b2b2e4f ("fpga: dfl: add support for DFHv1")
-> Signed-off-by: Sebastian Alba Vives <sebasjosue84@gmail.com>
-> ---
->  drivers/fpga/dfl.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-> index 4087a36..0f0889a 100644
-> --- a/drivers/fpga/dfl.c
-> +++ b/drivers/fpga/dfl.c
-> @@ -1133,6 +1133,9 @@ static int dfh_get_param_size(void __iomem *dfh_base, resource_size_t max)
->  
->  		size += next * sizeof(u64);
->  
-> +		if (size + DFHv1_PARAM_HDR > max)
-> +			return -EINVAL;
+Hi all,
 
-Seems (size + DFHv1_PARAM_HDR > max) is to ensure we don't handle the
-next overflowed parameter header. But here we only need to ensure the
-current parameter block within boundary. If we end up at this block,
-should not care about next parameter header.
-
-> +
->  		if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
->  			return size;
->  	}
-
-------8<------
-
-diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-index 4087a36a0571..ac958b80c8cd 100644
---- a/drivers/fpga/dfl.c
-+++ b/drivers/fpga/dfl.c
-@@ -1132,6 +1132,8 @@ static int dfh_get_param_size(void __iomem *dfh_base, resource_size_t max)
-                        return -EINVAL;
-
-                size += next * sizeof(u64);
-+               if (size > max)
-+                       return -EINVAL;
-
-                if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
-                        return size;
+This series follows the discussion in RFC [1-2] and v1 [3].
 
 
-Thanks,
-Yilun
+# Background
+
+The PTP Hardware Clock (PHC) interface (/dev/ptpX and the standard PTP_*
+ioctls) was originally introduced for IEEE 1588 / network oriented clock
+drivers. Over time, it has also become a userspace API for many non-NIC
+high-precision clock implementations (virtualization/platform/architecture
+provided clocks) [4-8], and more are expected to appear [9-10].
+
+During the review of these incoming non IEEE 1588 based PHC drivers, concerns
+were raised that such "non-NIC" clocks may not be a good fit for the netdev
+maintainership model [11], where PTP/PHC drivers are currently maintained.
+This leaves an unclear upstream home and maintainership model for this class
+of drivers.
+
+
+# Proposal
+
+This series proposes moving PHC drivers that expose a high-precision clock to
+userspace via the existing PTP interface but are not tied to the traditional
+NIC/IEEE 1588 packet timestamping pipeline, out of the netdev maintenance
+domain and into the clock/timekeeping maintenance domain.
+
+As discussed in [3], this series makes the separation explicit by reorganizing
+the drivers/ptp/ layout into the following groups. This provides clearer
+ownership and long-term maintenance boundaries:
+
+  - drivers/ptp/          : PTP core infrastructure and
+                            network / IEEE 1588 oriented PTP drivers.
+
+  - drivers/ptp/emulated/ : emulated/virtual PTP drivers. They are typically
+                            platform/architecture/virtualization/special
+                            hardware provided high-precision time sources.
+
+Patch 1 performs the refactor: move drivers and split Kconfig/Makefiles
+accordingly, without intended functional changes.
+
+Patch 2 updates MAINTAINERS to match the new layout and adds a dedicated entry
+for drivers/ptp/emulated/, moving review and ownership routing for this class
+of drivers away from the netdev maintainership.
+
+No userspace ABI changes are intended; this is a refactor and maintenance
+metadata update only.
+
+
+# Changes since Patch v1:
+
+- List David Woodhouse as the maintainer of emulated PTP drivers.
+
+- Adjust the directory layout: instead of creating both ieee1588/ and
+  emulated/ subdirectories, keep the network-oriented drivers in the
+  main drivers/ptp/ directory and only split out the emulated drivers.
+
+
+# Changes since RFC v2:
+
+- Keep ptp_ocp under the IEEE1588/network-oriented PTP drivers as suggested
+  by Jakub.
+
+- Following the model used by NTP related code, this series lists tip.git
+  (timers/core) as the integration tree for emulated PTP clocks in the
+  MAINTAINERS entry. Guidance from clock/timekeeping maintainers
+  (Thomas Gleixner, John Stultz, Anna-Maria Behnsen, Frederic Weisbecker,
+  Daniel Lezcano, Stephen Boyd) on whether this is the appropriate workflow
+  for this class of drivers would be appreciated.
+
+- Continue listing ourselves as maintainers for now as a fallback contact
+  point. In the long term it would be preferable for this area to be
+  maintained by clock/timekeeping experts, and suggestions are welcome.
+
+
+Thanks for any input.
+
+Regards.
+
+[1] https://lore.kernel.org/all/0afe19db-9c7f-4228-9fc2-f7b34c4bc227@linux.alibaba.com/
+[2] https://lore.kernel.org/all/20260227081934.96865-1-guwen@linux.alibaba.com/
+[3] https://lore.kernel.org/all/20260318073330.115808-1-guwen@linux.alibaba.com/
+[4] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a0e136d436ded817c0aade72efdefa56a00b4e5e
+[5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=7d10001e20e46ad6ad95622164686bc2cbfc9802
+[6] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=2d7de7a3010d713fb89b7ba99e6fdc14475ad106
+[7] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=3716a49a81ba19dda7202633a68b28564ba95eb5
+[8] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=9a17125a18f9ae1e1233a8e2d919059445b9d6fd
+[9] https://lore.kernel.org/netdev/20251030121314.56729-1-guwen@linux.alibaba.com/
+[10] https://lore.kernel.org/mhi/20250818-tsc_time_sync-v1-0-2747710693ba@oss.qualcomm.com/
+[11] https://lore.kernel.org/netdev/20251127083610.6b66a728@kernel.org/
+
+Wen Gu (2):
+  ptp: move emulated/virtual clock drivers into a dedicated subdirectory
+  MAINTAINERS: update PTP maintainer entries after directory split
+
+ MAINTAINERS                                 | 21 +++++--
+ drivers/ptp/Kconfig                         | 68 ++++-----------------
+ drivers/ptp/Makefile                        | 11 ++--
+ drivers/ptp/emulated/Kconfig                | 61 ++++++++++++++++++
+ drivers/ptp/emulated/Makefile               | 11 ++++
+ drivers/ptp/{ => emulated}/ptp_kvm_arm.c    |  0
+ drivers/ptp/{ => emulated}/ptp_kvm_common.c |  0
+ drivers/ptp/{ => emulated}/ptp_kvm_x86.c    |  0
+ drivers/ptp/{ => emulated}/ptp_s390.c       |  0
+ drivers/ptp/{ => emulated}/ptp_vmclock.c    |  0
+ drivers/ptp/{ => emulated}/ptp_vmw.c        |  0
+ 11 files changed, 103 insertions(+), 69 deletions(-)
+ create mode 100644 drivers/ptp/emulated/Kconfig
+ create mode 100644 drivers/ptp/emulated/Makefile
+ rename drivers/ptp/{ => emulated}/ptp_kvm_arm.c (100%)
+ rename drivers/ptp/{ => emulated}/ptp_kvm_common.c (100%)
+ rename drivers/ptp/{ => emulated}/ptp_kvm_x86.c (100%)
+ rename drivers/ptp/{ => emulated}/ptp_s390.c (100%)
+ rename drivers/ptp/{ => emulated}/ptp_vmclock.c (100%)
+ rename drivers/ptp/{ => emulated}/ptp_vmw.c (100%)
+
+-- 
+2.43.5
+
