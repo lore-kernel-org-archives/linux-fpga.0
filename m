@@ -1,76 +1,76 @@
-Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com [209.85.217.50])
+Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com [209.85.221.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B925A3B9607
-	for <linux-fpga@vger.kernel.org>; Tue,  7 Apr 2026 14:06:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B619B3B8BDC
+	for <linux-fpga@vger.kernel.org>; Tue,  7 Apr 2026 14:18:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775570793; cv=none; b=BIXSVAbGke3ZjSMMYMq9qmsj8LxiCTEK1Zto1yQ9zU5S2YL/3k6xTlULF6XHpILJeP09jqqYR1y37n44vGE9arWHCwnFirrR5AWZ/VAb1+Az+skNhaCiJ3+y8T51WBK4yBd85UmF43acDV6/eihkkJhKymsH2RtPx1wO5EyhkGA=
+	t=1775571484; cv=none; b=lME9WN1iM6X0JdMF+hm1Rnae2rsjLkCafn9wCUtWlDmkOdO9mJZNWaqnI3DwDlEG7Zq9I6RYw1y7zhIWEn1nHwxEdHvEKLCurfSEXGrnt0G2GQVeeW0YdAZxcFbMIA86J/unbbQcYtUzL6pu8Y1jQJfN1s2vfmVRHqiKlRXDuSE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775570793; c=relaxed/simple;
-	bh=yCOF9NIHRG2RRR8gjB6MF/3vecVWbHAdrOgCPcYdB5Y=;
+	s=arc-20240116; t=1775571484; c=relaxed/simple;
+	bh=W/Y2moVCx0pFV/yNmF0z4KZzsa7aIha3IhcxjDNS368=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dmhqx5zD5V9bo92rsArOEWDQIdcsYompCzjt/Huw8p8ehool/p55E/cfdVNHIWirl2BwgGpToDIs1O9dm8J6dNo1IOWusZRX01pQYZKG92Veiw+m3C3y2Q2J1f3pFLxRs8Dl9Nu4ely9MFkSJmiQZNUW0ziIpoKgs5CzvKBx79E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=igQj9Qx+; arc=none smtp.client-ip=209.85.217.50
+	 MIME-Version; b=emF0KCoZZFbjmuBJLpg8VgcrgSMkl6Ta3ABCBTVC4YgP19HGLR+BoCbe2J65FKYuRgOUim//7x8zTV7GIZOek6MX1eZZ/uso4zrO8rsl8MliZsxEJR66C75O+FaYbqCBNbGc+0+iUfzOMLGhNAuiz44FnZI2NXwbd006mN1xMFg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RHeivRhH; arc=none smtp.client-ip=209.85.221.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="igQj9Qx+"
-Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-604f1bfed92so4726276137.0
-        for <linux-fpga@vger.kernel.org>; Tue, 07 Apr 2026 07:06:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RHeivRhH"
+Received: by mail-vk1-f182.google.com with SMTP id 71dfb90a1353d-56ee0e0305cso937773e0c.2
+        for <linux-fpga@vger.kernel.org>; Tue, 07 Apr 2026 07:18:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775570791; x=1776175591; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1775571482; x=1776176282; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=0cnJhXHQf7uIWrznQwZx4iuuJLrGPih0M+p7FEUCw8E=;
-        b=igQj9Qx+ojHyahMVQXEdXHFBUM5E05YGbzmwmuXJLtmjDeeBMkhqCABl+Qn4xPxpNY
-         wLchJ2Jkj3dKrYG4tCfRV8SrKurBjGywFPfsBfc2rvF/nLfug+kvx8kMnJJ3pj6fqsED
-         0iu8eEAb8q9mI35y1nL7efJx15IiiQRDhiCOgrXWq6Uyfhzo5+xYigcgyU63iUI+JiL9
-         dTq8ezmuA9Xk5uL3IkK5a1mjBdkY0m819QZyRvv+55NsXbgEba9cTwfi0UgcxMN9rWmv
-         6P9GqntKv6UvRPWSaVR4LQvKjmk4rMw7c/vik3xy4Vu8htUUdEERXS48kVhTzjq7bqOD
-         +lpw==
+        bh=W0LRSDzC6gu/OoHknNvEWw02qs0lg4F1CkzYCQMjH1Q=;
+        b=RHeivRhH45Nl1xLuTMBJ/UeyXZrz+y/PvHjO4U00dQhNswmSdS7crnas1B/TWa7zng
+         a96uCJhPCO87SfCiD0MhPnv1haGVXeSMOtjBtFqYbg7EEiDB4P2wdfYdINuT2DVn4h7k
+         KNWcC1fUX7M4CIed3vbZuZIYZ+LnIEV4V6DfAA86L++lwTtWb/uSVgHR8ukMXENf0q5e
+         XWw44ZW5A7iJOrg7geECVnSznB82lt/7MMpfXoQZw0IYHfRRLMHSTh6/ohdIA2v073nY
+         qDaUn6OFeaibx8VUOmWewtdQKbhRq5+z5HtxWr+HiFoSa49oiuuxO/V4y0JOAyoVDez0
+         gFjg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775570791; x=1776175591;
+        d=1e100.net; s=20251104; t=1775571482; x=1776176282;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=0cnJhXHQf7uIWrznQwZx4iuuJLrGPih0M+p7FEUCw8E=;
-        b=j16eWfphNY+W9p42oEkc6AlHk2leMVt1y8sNGgijgpWi8foi2LVfVW7zgxmymtVLia
-         oUEVZgMgMU6KejKveXPd/vi8qzQMU3jTnfDwjYDyK5cGGjTtOCfdjg3iZ110WxvJbVaL
-         FrKyHTrjwGtChbODUDBZvoa29vCCnnT73asxzjbGCrRnFqtMSvUSX5c3DXgMeSodv7oN
-         g+Xx6EYGIjLUEL9TuZMuLHSv0CC05mZSUwBhC6XfouqItpP/mfJAY6Hpc4wgs9JMJlYu
-         qECsuQkfL9iG7o5qYtGxSO+sAs3xvkyEe0oU9C5D4oxXBfOUMWj/KMJJQytXTApcfQGR
-         IUTA==
-X-Gm-Message-State: AOJu0Ywtdp011Z7+2r22DnPeRPsE9gyQwPbaU4k9fhmnT50CrvBkd5UN
-	LLo3H8k2dpdd7e6giXpzJ7d8jvrWj1ibTCcCeMsU9ZK1ZaCe/qYx4buX
-X-Gm-Gg: AeBDievzU5VQLjW+PvsiDuCej2rkzSiijmqkYzUNIwGvnsTPYAu5YTCw347TIcaoXP2
-	DvfOV23jymT/Aune9ICbbizINyKQmYrkx//FZOzcuTws8Nl5T0czB1XcAUpYDTRfey5ATL/J/Rg
-	TY6Q3phNZLCe49aTeUpZsJfq/+VYYiXwbGVHE9KMHwcmTNqPVb7dqG37WoSO9pJDOpE/f0I6wNg
-	Mnf4SssIq+zAy2JaZmDQ/CVwfEqm1HhmwV0h+Xnht5Sf77u+gKxQXgvueggR7ooYlvPvCInVixu
-	ZQjAp9F8A3Isol0mDZtRm7TnWXXgICFi/ynZDdvzn/dSMbWw26V8fWWGnpqhc3f58hjeY3Je0mW
-	kGJvP+LugHu4S9vcmCyjYNPVLzsAymDgkHElYyQV/F+nYpSN8krLtjLPjRMtyvZ5Oj74D0GecUH
-	Er0bnkvcU3WWH5Cc4tpHeL6N8=
-X-Received: by 2002:a05:6102:e0a:b0:605:218d:ae0f with SMTP id ada2fe7eead31-605a5050bf8mr6961394137.18.1775570790454;
-        Tue, 07 Apr 2026 07:06:30 -0700 (PDT)
-Received: from localhost.localdomain ([2a09:bac5:6d73:aa::11:1b5])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-6058304a726sm19814641137.9.2026.04.07.07.06.28
+        bh=W0LRSDzC6gu/OoHknNvEWw02qs0lg4F1CkzYCQMjH1Q=;
+        b=AuaH4KKO/McsvlSEXUBto8wv4mvGe5ZDv9xgZbKg38sXlJQWXcCYWzA8C3HHZ/NczU
+         fXt2ru/1D/xMOPQepkftagW1h2vU4NA3SPf32SzheT+Jfw8u26e14vry1E62Hz+VAxoj
+         mmjyfKqhvixMgU2SZe5x6utB7Sc1MXxeIHI3yeeiVNL9lf6w6DzwPpz6NhiFujWIntEO
+         nSqXvHh27pJkkETyRVF6CxzeJN3tX3EHgg0yIxYT/UYUc3iYFBVcfs5tUDaUdA2eTmc2
+         wvhg0ZdYkd5+e7YJ1+8CJ0Y7M6k4yGyZL/C9Bm9P2j9gAURk0tneyb0QdqpyMjwuOS2l
+         v50w==
+X-Gm-Message-State: AOJu0Yy6qUQx8ZIoyez+j+HWC3Bq6aWPqv4UM8mlbSbqpubAj59qNuZC
+	aZg/84d01FhilYchBYA9EGT9Jbx/FcSnMf0SwEBlvTuPdgL3bi0gGouAfGEhkyomAxLJag==
+X-Gm-Gg: AeBDieuq41E6ytkfiDti2XnqU39XqOg8qrBbmtkTW8+8pPNqt7t27sOG+1PFbVNLRMJ
+	Ch2vebSPs31OUtDfh0d1XUusyuKKdFUBtRluIxigKHm92eOkAMmuNnwk5qjNZk6mxHG6OulnwYm
+	eq1r5fx9fapmH6riYt1KUkeh1e5AOhkU5CgESzkV5LRXDgZysZAWlpjKmzHexVU4B3sHkFKz8qn
+	fxE2N0IViAm64QOi1zPOlpE0jmc2MR+6KG/wdVNodaqO2ul6sJ3yqw6H9dvjkzb6YWY4GJjxppl
+	UcDE27xt0Ib1+GrwZcT67tOhg5vuYK5Wv0k6qO1Le4U5VznLrU3r6kNRVNXuwbolYIxMufX+UNy
+	YZ/eGeaM4zFZceetmbsur6pcfaJGD1tg6F9zEHXhMmt/OCrbVaw211sCkmOPFLHpZ576Nz7+8Pv
+	XRLIBqxy9HsA0oENIWWZ0BdFiE
+X-Received: by 2002:a05:6122:4893:b0:56d:7b2e:89a1 with SMTP id 71dfb90a1353d-56dab86455amr5676845e0c.4.1775571478262;
+        Tue, 07 Apr 2026 07:17:58 -0700 (PDT)
+Received: from localhost.localdomain ([2a09:bac6:d6d8:aa::11:1b5])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-56d9bd0a8a3sm19673793e0c.17.2026.04.07.07.17.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Apr 2026 07:06:29 -0700 (PDT)
+        Tue, 07 Apr 2026 07:17:57 -0700 (PDT)
 From: Sebastian Alba Vives <sebasjosue84@gmail.com>
-To: yilun.xu@linux.intel.com
+To: gregkh@linuxfoundation.org,
+	yilun.xu@linux.intel.com
 Cc: linux-fpga@vger.kernel.org,
 	conor.dooley@microchip.com,
 	mdf@kernel.org,
 	linux-kernel@vger.kernel.org,
-	Sebastian Josue Alba Vives <sebasjosue84@gmail.com>
-Subject: [PATCH v2 3/3] fpga: microchip-spi: add bounds checks in mpf_ops_parse_header()
-Date: Tue,  7 Apr 2026 08:06:01 -0600
-Message-ID: <20260407140601.15006-3-sebasjosue84@gmail.com>
+	Sebastian Alba Vives <sebasjosue84@gmail.com>
+Subject: [PATCH v3 2/3] fpga: dfl-afu: validate DMA mapping length in afu_dma_map_region()
+Date: Tue,  7 Apr 2026 08:17:35 -0600
+Message-ID: <20260407141735.17394-1-sebasjosue84@gmail.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260407140601.15006-1-sebasjosue84@gmail.com>
-References: <20260402125446.3776153-1-sebasjosue84@gmail.com>
- <20260407140601.15006-1-sebasjosue84@gmail.com>
+In-Reply-To: <20260402125446.3776153-2-sebasjosue84@gmail.com>
+References: <20260402125446.3776153-2-sebasjosue84@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -79,68 +79,44 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Sebastian Josue Alba Vives <sebasjosue84@gmail.com>
+afu_ioctl_dma_map() accepts a 64-bit length from userspace via
+DFL_FPGA_PORT_DMA_MAP ioctl without an upper bound check. The value
+is passed to afu_dma_pin_pages() where npages is derived as
+length >> PAGE_SHIFT and passed to pin_user_pages_fast() which takes
+int nr_pages, causing implicit truncation if length is very large.
 
-mpf_ops_parse_header() reads several fields from the bitstream file
-and uses them as offsets and sizes without validating them against the
-buffer size, leading to multiple out-of-bounds read vulnerabilities:
-
-1. When header_size (u8 from file) is 0, the expression
-   *(buf + header_size - 1) reads one byte before the buffer.
-
-2. In the block lookup loop, block_id_offset and block_start_offset
-   advance by MPF_LOOKUP_TABLE_RECORD_SIZE (9) each iteration with
-   blocks_num (u8) controlling the count. With a small buffer, these
-   offsets exceed count, causing OOB reads via get_unaligned_le32().
-
-3. components_size_start (from file) and component_size_byte_num
-   (derived from components_num, u16 from file) are used as offsets
-   into buf without validation, allowing arbitrary OOB reads.
-
-Add bounds checks for all three cases: reject header_size of 0,
-validate offsets in the block lookup loop, and validate the component
-size read offset.
+Validate map.length at the ioctl entry point before calling
+afu_dma_map_region(), rejecting values whose page count exceeds
+INT_MAX.
 
 Signed-off-by: Sebastian Alba Vives <sebasjosue84@gmail.com>
 ---
- drivers/fpga/microchip-spi.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+Changes in v3:
+  - Move the upper-bound check on map.length to afu_ioctl_dma_map()
+    at the ioctl entry point, before crossing the userspace/kernel
+    boundary, instead of deep in afu_dma_pin_pages(). Revert changes
+    to dfl-afu-dma-region.c from v1/v2.
+    Suggested by Greg Kroah-Hartman.
+Changes in v2:
+  - Added cap at INT_MAX in afu_dma_pin_pages() (superseded by v3).
+---
+ drivers/fpga/dfl-afu-main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
-index 6134cea..7954dd0 100644
---- a/drivers/fpga/microchip-spi.c
-+++ b/drivers/fpga/microchip-spi.c
-@@ -116,7 +116,7 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
- 	}
+diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
+index 3bf8e73..097a97e 100644
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -723,6 +723,9 @@ afu_ioctl_dma_map(struct dfl_feature_dev_data *fdata, void __user *arg)
+ 	if (map.argsz < minsz || map.flags)
+ 		return -EINVAL;
  
- 	header_size = *(buf + MPF_HEADER_SIZE_OFFSET);
--	if (header_size > count) {
-+	if (!header_size || header_size > count) {
- 		info->header_size = header_size;
- 		return -EAGAIN;
- 	}
-@@ -139,6 +139,10 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
- 	bitstream_start = 0;
- 
- 	while (blocks_num--) {
-+		if (block_id_offset >= count ||
-+		    block_start_offset + sizeof(u32) > count)
-+			return -EINVAL;
++	if (map.length >> PAGE_SHIFT > (u64)INT_MAX)
++		return -EINVAL;
 +
- 		block_id = *(buf + block_id_offset);
- 		block_start = get_unaligned_le32(buf + block_start_offset);
- 
-@@ -183,6 +187,10 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
- 		component_size_byte_off =
- 			(i * MPF_BITS_PER_COMPONENT_SIZE) % BITS_PER_BYTE;
- 
-+		if (components_size_start + component_size_byte_num +
-+		    sizeof(u32) > count)
-+			return -EINVAL;
-+
- 		component_size = get_unaligned_le32(buf +
- 						    components_size_start +
- 						    component_size_byte_num);
+ 	ret = afu_dma_map_region(fdata, map.user_addr, map.length, &map.iova);
+ 	if (ret)
+ 		return ret;
 -- 
 2.43.0
 
