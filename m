@@ -1,122 +1,68 @@
-Received: from nick.sneptech.io (nick.sneptech.io [178.62.38.78])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E90543A63E6;
-	Tue,  7 Apr 2026 17:45:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.62.38.78
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D8C325A321;
+	Tue,  7 Apr 2026 18:49:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775583938; cv=none; b=WB2igInq3zquR1ZuvF8Zow7i9Yny/Pzqk8bpTcEgcVCgi8QFGnBiszEOuz0b6l0dSZKo3XQ9w70O2Q5BpvHqviIlU5rIdNIywvt0i1eJHOUtWFAV28MOoyQbbsAM/on+9TAUQNGK6CqHaLqmNVxX+x/b5q9r4UkKNwjdfV1Yq6Y=
+	t=1775587787; cv=none; b=cgqpbsGKfYAO1ZTXNvEPM9uYZKsVDyMCsTZt4aNQq8bfCyFez8WTo5o5FHjgRu+qbxos32AmuW2vVUrkoIQX/iO14Opbo2EYp0xsT8eHt4vmCLDBjevYSHjOe4s9zETMhthpRIqQJodMhfHzFxIwz2YCotanVTO8vfZ/h/QinFk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775583938; c=relaxed/simple;
-	bh=XhZvRrC0vJpqu9nhOSrkodnI3hPgC4qNzHtbVe7WvQE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Zv6lAVdsVGw39tFll4Bcaq7/lDdQ+G+eyiHW3tIeu6hPf2Rt9LioTDJNb0cIuR0p2VDuaDY+zQ9W/xLGw0FjqnZAtGQ6FuujP7hkGv6qJMh8Yia1MUfEZYev9HJNEFYZZqaFnpYP/EcP7JfcdCYdZTphnC7z5XgIwSSZ2Ncno7U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=philpem.me.uk; spf=pass smtp.mailfrom=philpem.me.uk; dkim=pass (1024-bit key) header.d=philpem.me.uk header.i=@philpem.me.uk header.b=JSI9nJSR; arc=none smtp.client-ip=178.62.38.78
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=philpem.me.uk
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=philpem.me.uk
+	s=arc-20240116; t=1775587787; c=relaxed/simple;
+	bh=Ww/tGoOCGMXlpoAhTErJUastEAt/qAbFxFbUshvlUrM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NNYa02u1K02SBEkCGs8iV6Qw6f550hBTcHqA3BsOjIDlaXjwMF5o6YCRKCEuuA8EymqN7ZPXtjUWITZMfNTce+G7FjyIZiOiWgZ8t1XzC9UtRbt+L4Orksz9sptJqaIWsOnh9cVToLulOTehWYeNbnPfYs6x3WH8y/JAOrmw7lo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Mfo2l+kl; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=philpem.me.uk header.i=@philpem.me.uk header.b="JSI9nJSR"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=philpem.me.uk;
-	s=mail; t=1775582853;
-	bh=XhZvRrC0vJpqu9nhOSrkodnI3hPgC4qNzHtbVe7WvQE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=JSI9nJSRpnqk7/Od3VKoWFAyQkYZbaxGEULFfg61hlBA0qYBO6UxHWddd4BmU1l3k
-	 PjPd0cPRpBZpyBgpeZUZeIO0e1/RlhJPpjuTeo2+L6iZixZhs+5hgvAHci0SJP/b2v
-	 6y+kAkS8cemg56Hn5cJvNanbEUK7ktO95ZzOzeT4=
-Received: from wolf.philpem.me.uk (81-187-163-148.ip4.reverse-dns.uk [81.187.163.148])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: mailrelay_wolf@philpem.me.uk)
-	by nick.sneptech.io (Postfix) with ESMTPSA id A071BBD6ED;
-	Tue,  7 Apr 2026 17:27:33 +0000 (UTC)
-Received: from cheetah.homenet.philpem.me.uk (cheetah.homenet.philpem.me.uk [10.0.0.32])
-	by wolf.philpem.me.uk (Postfix) with ESMTPSA id 4AB2C5FC3E;
-	Tue,  7 Apr 2026 18:27:33 +0100 (BST)
-From: Phil Pemberton <philpem@philpem.me.uk>
-To: Moritz Fischer <mdf@kernel.org>,
-	Xu Yilun <yilun.xu@intel.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: Tom Rix <trix@redhat.com>,
-	Florian Fainelli <f.fainelli@gmail.com>,
-	linux-fpga@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Phil Pemberton <philpem@philpem.me.uk>
-Subject: [PATCH 1/2] dt-bindings: fpga: add binding for Technologic Systems TS-73xx FPGA
-Date: Tue,  7 Apr 2026 18:27:29 +0100
-Message-ID: <20260407172730.1779804-2-philpem@philpem.me.uk>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260407172730.1779804-1-philpem@philpem.me.uk>
-References: <20260407172730.1779804-1-philpem@philpem.me.uk>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Mfo2l+kl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B0E57C116C6;
+	Tue,  7 Apr 2026 18:49:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775587786;
+	bh=Ww/tGoOCGMXlpoAhTErJUastEAt/qAbFxFbUshvlUrM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Mfo2l+klcoC3PTyb1HByIhNQzzMrxmQ6BBXhKfolMs4IEe5oSzrgniU4rNT9qdyDp
+	 /KpU78THVLBSAiKVnzqaO2MrrZh96ELu1OFO+urXJi+g2rM1ysFNu+gXXUvilOQAFq
+	 yZh7CtEwcPTeeh/pimEpODU0H0fBQIduEWxWqkSA1Iq8JBfVszrd/lFEI0Cl/0O+9s
+	 dY2a/hDKDg9g8o67w9ViS2Pon6TWg/AowSH/pTDw6m4YRlbqZs4Ix1RoLgRYdL1npp
+	 +7dKOD0NvZi4CZxG/1pZoSoHVlqAHG7b/Rx1xc8oW6LgvXptJ3DYdMuYb7Hlg82yPl
+	 tRMDKf0K9xTVw==
+Date: Tue, 7 Apr 2026 13:49:44 -0500
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: iansdannapel@gmail.com
+Cc: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
+	conor+dt@kernel.org, prabhakar.mahadev-lad.rj@bp.renesas.com,
+	heiko@sntech.de, krzk+dt@kernel.org, marex@nabladev.com,
+	dev@kael-k.io, linux-kernel@vger.kernel.org,
+	neil.armstrong@linaro.org, yilun.xu@intel.com, mdf@kernel.org,
+	trix@redhat.com
+Subject: Re: [PATCH v6 2/3] dt-bindings: fpga: Add Efinix SPI programming
+ bindings
+Message-ID: <177558778432.3381193.260526814795485933.robh@kernel.org>
+References: <20260327114842.1300284-1-iansdannapel@gmail.com>
+ <20260327114842.1300284-3-iansdannapel@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260327114842.1300284-3-iansdannapel@gmail.com>
 
-Add device tree binding documentation for the Altera Cyclone II FPGA
-found on Technologic Systems TS-7300 series boards, programmed via a
-CPLD memory-mapped interface.
 
-Signed-off-by: Phil Pemberton <philpem@philpem.me.uk>
----
- .../fpga/technologic,ts73xx-fpga.yaml         | 42 +++++++++++++++++++
- 1 file changed, 42 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml
+On Fri, 27 Mar 2026 12:48:40 +0100, iansdannapel@gmail.com wrote:
+> From: Ian Dannapel <iansdannapel@gmail.com>
+> 
+> Add device tree bindings documentation for configuring Efinix FPGA
+> using serial SPI passive programming mode.
+> 
+> Signed-off-by: Ian Dannapel <iansdannapel@gmail.com>
+> ---
+>  .../bindings/fpga/efinix,trion-config.yaml    | 96 +++++++++++++++++++
+>  1 file changed, 96 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fpga/efinix,trion-config.yaml
+> 
 
-diff --git a/Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml b/Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml
-new file mode 100644
-index 000000000000..1f7a651e8f10
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml
-@@ -0,0 +1,42 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/fpga/technologic,ts73xx-fpga.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Technologic Systems TS-73xx FPGA Manager
-+
-+maintainers:
-+  - Florian Fainelli <f.fainelli@gmail.com>
-+
-+description:
-+  FPGA manager for the Altera Cyclone II FPGA on Technologic Systems
-+  TS-7300 series boards. The FPGA is programmed via a CPLD interface
-+  at a memory-mapped register pair.
-+
-+properties:
-+  compatible:
-+    const: technologic,ts73xx-fpga
-+
-+  reg:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    bus {
-+        #address-cells = <1>;
-+        #size-cells = <1>;
-+        ranges;
-+
-+        fpga-mgr@13c00000 {
-+            compatible = "technologic,ts73xx-fpga";
-+            reg = <0x13c00000 0x2>;
-+        };
-+    };
-+...
--- 
-2.43.0
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 
