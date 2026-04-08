@@ -1,68 +1,120 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D8C325A321;
-	Tue,  7 Apr 2026 18:49:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72EE9272E56;
+	Wed,  8 Apr 2026 09:08:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775587787; cv=none; b=cgqpbsGKfYAO1ZTXNvEPM9uYZKsVDyMCsTZt4aNQq8bfCyFez8WTo5o5FHjgRu+qbxos32AmuW2vVUrkoIQX/iO14Opbo2EYp0xsT8eHt4vmCLDBjevYSHjOe4s9zETMhthpRIqQJodMhfHzFxIwz2YCotanVTO8vfZ/h/QinFk=
+	t=1775639288; cv=none; b=DvICgqMvcNp/33pC5SJp58dH6uu1btI9qV7M2NNtxAIuA7DsKYQMCV48RreHssHMVcPsaGxXjvzwt0dKeNhy+l+RHBN4HFOtCOMD9Kxz9RkRk8940NH7gKLggEaANQHFT913F5fFm0AJcLgNt/eUcECb92cgxEj4pJ29poaZwsY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775587787; c=relaxed/simple;
-	bh=Ww/tGoOCGMXlpoAhTErJUastEAt/qAbFxFbUshvlUrM=;
+	s=arc-20240116; t=1775639288; c=relaxed/simple;
+	bh=lgoVoRQJgK+iTapu5694gt/ry5HO/EnVUwS7HoWkvLc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NNYa02u1K02SBEkCGs8iV6Qw6f550hBTcHqA3BsOjIDlaXjwMF5o6YCRKCEuuA8EymqN7ZPXtjUWITZMfNTce+G7FjyIZiOiWgZ8t1XzC9UtRbt+L4Orksz9sptJqaIWsOnh9cVToLulOTehWYeNbnPfYs6x3WH8y/JAOrmw7lo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Mfo2l+kl; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=iIJ5FPPPyhF2gC2LbQiYJwSn83Tw4ed7eSLkbGNKoNGj4sAGbTft/XcCqdvccAyLtu2Uq9vrPwwrIUH7bJDNYBmsC1NJRgyGelVTjqlo13OgToFdMU+1qe601WGMsnosfkqIbcLJOFtjkSKp9gffoUAvemeRUnqFgLFOEaVbCxo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XAv2XMHH; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Mfo2l+kl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B0E57C116C6;
-	Tue,  7 Apr 2026 18:49:46 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XAv2XMHH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A65C9C19424;
+	Wed,  8 Apr 2026 09:08:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775587786;
-	bh=Ww/tGoOCGMXlpoAhTErJUastEAt/qAbFxFbUshvlUrM=;
+	s=k20201202; t=1775639288;
+	bh=lgoVoRQJgK+iTapu5694gt/ry5HO/EnVUwS7HoWkvLc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Mfo2l+klcoC3PTyb1HByIhNQzzMrxmQ6BBXhKfolMs4IEe5oSzrgniU4rNT9qdyDp
-	 /KpU78THVLBSAiKVnzqaO2MrrZh96ELu1OFO+urXJi+g2rM1ysFNu+gXXUvilOQAFq
-	 yZh7CtEwcPTeeh/pimEpODU0H0fBQIduEWxWqkSA1Iq8JBfVszrd/lFEI0Cl/0O+9s
-	 dY2a/hDKDg9g8o67w9ViS2Pon6TWg/AowSH/pTDw6m4YRlbqZs4Ix1RoLgRYdL1npp
-	 +7dKOD0NvZi4CZxG/1pZoSoHVlqAHG7b/Rx1xc8oW6LgvXptJ3DYdMuYb7Hlg82yPl
-	 tRMDKf0K9xTVw==
-Date: Tue, 7 Apr 2026 13:49:44 -0500
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: iansdannapel@gmail.com
-Cc: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
-	conor+dt@kernel.org, prabhakar.mahadev-lad.rj@bp.renesas.com,
-	heiko@sntech.de, krzk+dt@kernel.org, marex@nabladev.com,
-	dev@kael-k.io, linux-kernel@vger.kernel.org,
-	neil.armstrong@linaro.org, yilun.xu@intel.com, mdf@kernel.org,
-	trix@redhat.com
-Subject: Re: [PATCH v6 2/3] dt-bindings: fpga: Add Efinix SPI programming
- bindings
-Message-ID: <177558778432.3381193.260526814795485933.robh@kernel.org>
-References: <20260327114842.1300284-1-iansdannapel@gmail.com>
- <20260327114842.1300284-3-iansdannapel@gmail.com>
+	b=XAv2XMHHcGIt8BKzWnfYEfnd207lEZTHuvhVRppiYapdAbMAWVyAxswXz2oHr8yPy
+	 ll0HeS9lNCWpeGYkMbazKkmIgdznpXBU+5xVxxA0qUx2tF1VAcwRiRm46cP/XafaEa
+	 6CefLktRgBVSMsNyNV5D5pSOC3USM+8bHuBQykEjC4mHVgG2A0OzJZic0WcOMSV96v
+	 qCCGIGNP6i32U+pgm5vZ7OV7qrAIIEEi8lbOXVuUQ7LaDaVIULwBSw7KPfpCzJcdIh
+	 XTjnID3h7BH6QnUCK1UHwUYgFDUk+GAGAh/+JKtA0uch4JSERhqFOuIujK1SvUThh8
+	 6ccvcuDMkQbFw==
+Date: Wed, 8 Apr 2026 11:08:05 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Phil Pemberton <philpem@philpem.me.uk>
+Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Tom Rix <trix@redhat.com>, 
+	Florian Fainelli <f.fainelli@gmail.com>, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: fpga: add binding for Technologic
+ Systems TS-73xx FPGA
+Message-ID: <20260408-successful-glittering-bullfrog-e03dff@quoll>
+References: <20260407172730.1779804-1-philpem@philpem.me.uk>
+ <20260407172730.1779804-2-philpem@philpem.me.uk>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260327114842.1300284-3-iansdannapel@gmail.com>
+In-Reply-To: <20260407172730.1779804-2-philpem@philpem.me.uk>
 
+On Tue, Apr 07, 2026 at 06:27:29PM +0100, Phil Pemberton wrote:
+> Add device tree binding documentation for the Altera Cyclone II FPGA
+> found on Technologic Systems TS-7300 series boards, programmed via a
+> CPLD memory-mapped interface.
 
-On Fri, 27 Mar 2026 12:48:40 +0100, iansdannapel@gmail.com wrote:
-> From: Ian Dannapel <iansdannapel@gmail.com>
+A nit, subject: drop second/last, redundant "binding for". The
+"dt-bindings" prefix is already stating that these are bindings.
+See also:
+https://elixir.bootlin.com/linux/v6.17-rc3/source/Documentation/devicetree/bindings/submitting-patches.rst#L18
+
 > 
-> Add device tree bindings documentation for configuring Efinix FPGA
-> using serial SPI passive programming mode.
-> 
-> Signed-off-by: Ian Dannapel <iansdannapel@gmail.com>
+> Signed-off-by: Phil Pemberton <philpem@philpem.me.uk>
 > ---
->  .../bindings/fpga/efinix,trion-config.yaml    | 96 +++++++++++++++++++
->  1 file changed, 96 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/fpga/efinix,trion-config.yaml
+>  .../fpga/technologic,ts73xx-fpga.yaml         | 42 +++++++++++++++++++
+>  1 file changed, 42 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml
 > 
+> diff --git a/Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml b/Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml
+> new file mode 100644
+> index 000000000000..1f7a651e8f10
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml
+> @@ -0,0 +1,42 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/fpga/technologic,ts73xx-fpga.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Technologic Systems TS-73xx FPGA Manager
+> +
+> +maintainers:
+> +  - Florian Fainelli <f.fainelli@gmail.com>
+> +
+> +description:
+> +  FPGA manager for the Altera Cyclone II FPGA on Technologic Systems
+> +  TS-7300 series boards. The FPGA is programmed via a CPLD interface
+> +  at a memory-mapped register pair.
+> +
+> +properties:
+> +  compatible:
+> +    const: technologic,ts73xx-fpga
 
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+So xx is a wildcard? That's not allowed (see writing bindings or any
+talks). You need specific compatible. And compatibility, so fallbacks,
+if you have multiple distinctive devices.
+
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    bus {
+> +        #address-cells = <1>;
+> +        #size-cells = <1>;
+> +        ranges;
+
+Drop entire node, not needed.
+
+Best regards,
+Krzysztof
 
