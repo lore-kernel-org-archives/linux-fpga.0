@@ -1,33 +1,53 @@
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from nick.sneptech.io (nick.sneptech.io [178.62.38.78])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 227722BF00A;
-	Wed,  8 Apr 2026 15:45:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E72E34252D;
+	Wed,  8 Apr 2026 16:52:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.62.38.78
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775663145; cv=none; b=eIrIPasxgS5/qwSHk/Nfs0fdXnjXgV9K+a91rZ54O/jcY2azKOhHX7CV9Ul01YnIkQERQMCmhSq2Vx8tZwashoTE6Z1uAdD9faXa056kcvtRcpcg2IPfecd6T+xcIBMdqNqNRL9ScECO+NGpGPDSg4x3ztHgKa4aICDeMMhhgxY=
+	t=1775667175; cv=none; b=qH4XYIG5fVf4Q7HNrsGIHQufrIK1d76Nuk86tU/LOdE5XQIQRjYhrwuaNt16MPLmIcrh+uiKEVtbxWxBrXnUQYeU7kRAGVpMMf+pQsIlZEp+JclPw2nThG/QfC0iejv2pZZH7ebi08XQHclNg2eX+l4LHrLN93O8yL7dqKyEVn4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775663145; c=relaxed/simple;
-	bh=HzAJUow3pofQYIKNr/pPkhGBFLxA2vbEVNNrOk25Srg=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=XcCcQ240lI0ju2oWrQ6fkL2I7kHmGT6SDPPUm+6BaCqmFA1TT+5a9HPdc6X+x86ueqxe0++ZSWZwdg+INmb1DWl+H4ychvpXhm9EAbYPk+50+si/f/lj/ktT9tj1gMB3E7iJOj9wHFuAkiiQVisKeXbIVbIjXX56N0fKXVE834o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from dfae2b116770.home.arpa (unknown [124.16.138.129])
-	by APP-05 (Coremail) with SMTP id zQCowADHWQ0geNZpdH31DA--.33830S2;
-	Wed, 08 Apr 2026 23:45:36 +0800 (CST)
-From: Wentao Liang <vulab@iscas.ac.cn>
+	s=arc-20240116; t=1775667175; c=relaxed/simple;
+	bh=BEGeVQouYy/QA/js9/1aVxevYx2KhEUqR3bXvaiBrNo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=P4J9PezV226AlfP4IV8vxcHvPuEThwLUj8ctjy+5+5uxq3WzetdbDMvz9/afCGYa7j6JPAAFXxcYg906iwLHe0MG/a//Ie+m/MMKcjiMqpS4VRG9gJMjoZlYolZgul0jiIvfdpR0h3mgxvkEbSUaqEHcOlIzW0M8IbkOnlu4K4Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=philpem.me.uk; spf=pass smtp.mailfrom=philpem.me.uk; dkim=pass (1024-bit key) header.d=philpem.me.uk header.i=@philpem.me.uk header.b=D5n8ZU1E; arc=none smtp.client-ip=178.62.38.78
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=philpem.me.uk
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=philpem.me.uk
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=philpem.me.uk header.i=@philpem.me.uk header.b="D5n8ZU1E"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=philpem.me.uk;
+	s=mail; t=1775667171;
+	bh=BEGeVQouYy/QA/js9/1aVxevYx2KhEUqR3bXvaiBrNo=;
+	h=From:To:Cc:Subject:Date:From;
+	b=D5n8ZU1Ev1FfAXc9aPHApju1IRPxYfa5SanO5xNgzd0j7fCF6KKid5rfWiNL+B37C
+	 k2rI1FDMfqj39mSAVgIH/ZBqDiomH33QKN02Y+aZcOkOG2CvduB9CmANvBCTxSzOtg
+	 /rt7jLbXt0Da4V6ZDe1HQthx/9ybd7oI4UKNgJeA=
+Received: from wolf.philpem.me.uk (81-187-163-148.ip4.reverse-dns.uk [81.187.163.148])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: mailrelay_wolf@philpem.me.uk)
+	by nick.sneptech.io (Postfix) with ESMTPSA id 92153BD1ED;
+	Wed,  8 Apr 2026 16:52:51 +0000 (UTC)
+Received: from cheetah.homenet.philpem.me.uk (cheetah.homenet.philpem.me.uk [10.0.0.32])
+	by wolf.philpem.me.uk (Postfix) with ESMTPSA id 2695A5F938;
+	Wed,  8 Apr 2026 17:52:51 +0100 (BST)
+From: Phil Pemberton <philpem@philpem.me.uk>
 To: Moritz Fischer <mdf@kernel.org>,
-	Xu Yilun <yilun.xu@intel.com>
+	Xu Yilun <yilun.xu@intel.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
 Cc: Tom Rix <trix@redhat.com>,
+	Florian Fainelli <f.fainelli@gmail.com>,
 	linux-fpga@vger.kernel.org,
+	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Wentao Liang <vulab@iscas.ac.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH] fpga: region: fix use-after-free in child_regions_with_firmware()
-Date: Wed,  8 Apr 2026 15:45:34 +0000
-Message-Id: <20260408154534.404327-1-vulab@iscas.ac.cn>
-X-Mailer: git-send-email 2.34.1
+	Phil Pemberton <philpem@philpem.me.uk>
+Subject: [PATCH v2 0/2] Add device tree binding for ts73xx-fpga
+Date: Wed,  8 Apr 2026 17:52:21 +0100
+Message-ID: <20260408165223.3051759-1-philpem@philpem.me.uk>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -35,52 +55,28 @@ List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowADHWQ0geNZpdH31DA--.33830S2
-X-Coremail-Antispam: 1UD129KBjvdXoWrKw45tr1UJrW5CF13KFykZrb_yoWfCwbEkF
-	90qF93WF1DGFsxu39xJr13Z3sFy3WkWan3W3s7ta1aqws8Zr17Wr4Yvr1kA34UWa1UAr9x
-	Xw1DtF9rC3sFyjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUbs8FF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
-	Cr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s
-	1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0
-	cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8Jw
-	ACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_JF0_
-	Jw1lc2xSY4AK67AK6ryrMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI
-	8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AK
-	xVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI
-	8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280
-	aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43
-	ZEXa7VUjwSdDUUUUU==
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiCRALA2nWbq8RlQAAsr
 
-Move of_node_put(child_region) after the error print to avoid accessing
-freed memory when pr_err() references child_region.
+The driver for the Technologic Systems (EmbeddedTS) TS-7300 board's
+onboard FPGA didn't have an OF match table. This prevented it from being
+instantiated from a device tree. This is undesirable given EP93xx is
+moving to device tree, and effectively prevents it from being used.
+This patch series adds the OF match table and a device tree binding.
 
-Fixes: ef3acdd82075 ("fpga: region: move device tree support to of-fpga-region.c")
-Cc: stable@vger.kernel.org
-Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
----
- drivers/fpga/of-fpga-region.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Changes since v1:
+  - Use specific compatible "technologic,ts7300-fpga" instead of
+    wildcard "technologic,ts73xx-fpga" (Krzysztof)
+  - Fix subject line for dt-bindings patch (Krzysztof)
+  - Simplify example in binding doc (Krzysztof)
 
-diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
-index caa091224dc5..9107a5b461d3 100644
---- a/drivers/fpga/of-fpga-region.c
-+++ b/drivers/fpga/of-fpga-region.c
-@@ -168,11 +168,10 @@ static int child_regions_with_firmware(struct device_node *overlay)
- 						     fpga_region_of_match);
- 	}
- 
--	of_node_put(child_region);
--
- 	if (ret)
- 		pr_err("firmware-name not allowed in child FPGA region: %pOF",
- 		       child_region);
-+	of_node_put(child_region);
- 
- 	return ret;
- }
+Phil Pemberton (2):
+  dt-bindings: fpga: Technologic Systems TS-7300 FPGA Manager
+  fpga: ts73xx-fpga: add OF match table for device tree probing
+
+ .../fpga/technologic,ts7300-fpga.yaml         | 36 +++++++++++++++++++
+ drivers/fpga/ts73xx-fpga.c                    |  9 +++++
+ 2 files changed, 45 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fpga/technologic,ts7300-fpga.yaml
+
 -- 
-2.34.1
+2.43.0
 
