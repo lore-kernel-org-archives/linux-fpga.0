@@ -1,120 +1,86 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72EE9272E56;
-	Wed,  8 Apr 2026 09:08:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 227722BF00A;
+	Wed,  8 Apr 2026 15:45:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775639288; cv=none; b=DvICgqMvcNp/33pC5SJp58dH6uu1btI9qV7M2NNtxAIuA7DsKYQMCV48RreHssHMVcPsaGxXjvzwt0dKeNhy+l+RHBN4HFOtCOMD9Kxz9RkRk8940NH7gKLggEaANQHFT913F5fFm0AJcLgNt/eUcECb92cgxEj4pJ29poaZwsY=
+	t=1775663145; cv=none; b=eIrIPasxgS5/qwSHk/Nfs0fdXnjXgV9K+a91rZ54O/jcY2azKOhHX7CV9Ul01YnIkQERQMCmhSq2Vx8tZwashoTE6Z1uAdD9faXa056kcvtRcpcg2IPfecd6T+xcIBMdqNqNRL9ScECO+NGpGPDSg4x3ztHgKa4aICDeMMhhgxY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775639288; c=relaxed/simple;
-	bh=lgoVoRQJgK+iTapu5694gt/ry5HO/EnVUwS7HoWkvLc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iIJ5FPPPyhF2gC2LbQiYJwSn83Tw4ed7eSLkbGNKoNGj4sAGbTft/XcCqdvccAyLtu2Uq9vrPwwrIUH7bJDNYBmsC1NJRgyGelVTjqlo13OgToFdMU+1qe601WGMsnosfkqIbcLJOFtjkSKp9gffoUAvemeRUnqFgLFOEaVbCxo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XAv2XMHH; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XAv2XMHH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A65C9C19424;
-	Wed,  8 Apr 2026 09:08:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775639288;
-	bh=lgoVoRQJgK+iTapu5694gt/ry5HO/EnVUwS7HoWkvLc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=XAv2XMHHcGIt8BKzWnfYEfnd207lEZTHuvhVRppiYapdAbMAWVyAxswXz2oHr8yPy
-	 ll0HeS9lNCWpeGYkMbazKkmIgdznpXBU+5xVxxA0qUx2tF1VAcwRiRm46cP/XafaEa
-	 6CefLktRgBVSMsNyNV5D5pSOC3USM+8bHuBQykEjC4mHVgG2A0OzJZic0WcOMSV96v
-	 qCCGIGNP6i32U+pgm5vZ7OV7qrAIIEEi8lbOXVuUQ7LaDaVIULwBSw7KPfpCzJcdIh
-	 XTjnID3h7BH6QnUCK1UHwUYgFDUk+GAGAh/+JKtA0uch4JSERhqFOuIujK1SvUThh8
-	 6ccvcuDMkQbFw==
-Date: Wed, 8 Apr 2026 11:08:05 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Phil Pemberton <philpem@philpem.me.uk>
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Tom Rix <trix@redhat.com>, 
-	Florian Fainelli <f.fainelli@gmail.com>, linux-fpga@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] dt-bindings: fpga: add binding for Technologic
- Systems TS-73xx FPGA
-Message-ID: <20260408-successful-glittering-bullfrog-e03dff@quoll>
-References: <20260407172730.1779804-1-philpem@philpem.me.uk>
- <20260407172730.1779804-2-philpem@philpem.me.uk>
+	s=arc-20240116; t=1775663145; c=relaxed/simple;
+	bh=HzAJUow3pofQYIKNr/pPkhGBFLxA2vbEVNNrOk25Srg=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=XcCcQ240lI0ju2oWrQ6fkL2I7kHmGT6SDPPUm+6BaCqmFA1TT+5a9HPdc6X+x86ueqxe0++ZSWZwdg+INmb1DWl+H4ychvpXhm9EAbYPk+50+si/f/lj/ktT9tj1gMB3E7iJOj9wHFuAkiiQVisKeXbIVbIjXX56N0fKXVE834o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from dfae2b116770.home.arpa (unknown [124.16.138.129])
+	by APP-05 (Coremail) with SMTP id zQCowADHWQ0geNZpdH31DA--.33830S2;
+	Wed, 08 Apr 2026 23:45:36 +0800 (CST)
+From: Wentao Liang <vulab@iscas.ac.cn>
+To: Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>
+Cc: Tom Rix <trix@redhat.com>,
+	linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Wentao Liang <vulab@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] fpga: region: fix use-after-free in child_regions_with_firmware()
+Date: Wed,  8 Apr 2026 15:45:34 +0000
+Message-Id: <20260408154534.404327-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260407172730.1779804-2-philpem@philpem.me.uk>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:zQCowADHWQ0geNZpdH31DA--.33830S2
+X-Coremail-Antispam: 1UD129KBjvdXoWrKw45tr1UJrW5CF13KFykZrb_yoWfCwbEkF
+	90qF93WF1DGFsxu39xJr13Z3sFy3WkWan3W3s7ta1aqws8Zr17Wr4Yvr1kA34UWa1UAr9x
+	Xw1DtF9rC3sFyjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbs8FF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+	Cr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s
+	1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0
+	cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8Jw
+	ACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_JF0_
+	Jw1lc2xSY4AK67AK6ryrMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI
+	8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AK
+	xVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI
+	8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280
+	aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43
+	ZEXa7VUjwSdDUUUUU==
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiCRALA2nWbq8RlQAAsr
 
-On Tue, Apr 07, 2026 at 06:27:29PM +0100, Phil Pemberton wrote:
-> Add device tree binding documentation for the Altera Cyclone II FPGA
-> found on Technologic Systems TS-7300 series boards, programmed via a
-> CPLD memory-mapped interface.
+Move of_node_put(child_region) after the error print to avoid accessing
+freed memory when pr_err() references child_region.
 
-A nit, subject: drop second/last, redundant "binding for". The
-"dt-bindings" prefix is already stating that these are bindings.
-See also:
-https://elixir.bootlin.com/linux/v6.17-rc3/source/Documentation/devicetree/bindings/submitting-patches.rst#L18
+Fixes: ef3acdd82075 ("fpga: region: move device tree support to of-fpga-region.c")
+Cc: stable@vger.kernel.org
+Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
+---
+ drivers/fpga/of-fpga-region.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-> 
-> Signed-off-by: Phil Pemberton <philpem@philpem.me.uk>
-> ---
->  .../fpga/technologic,ts73xx-fpga.yaml         | 42 +++++++++++++++++++
->  1 file changed, 42 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml b/Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml
-> new file mode 100644
-> index 000000000000..1f7a651e8f10
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/fpga/technologic,ts73xx-fpga.yaml
-> @@ -0,0 +1,42 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/fpga/technologic,ts73xx-fpga.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Technologic Systems TS-73xx FPGA Manager
-> +
-> +maintainers:
-> +  - Florian Fainelli <f.fainelli@gmail.com>
-> +
-> +description:
-> +  FPGA manager for the Altera Cyclone II FPGA on Technologic Systems
-> +  TS-7300 series boards. The FPGA is programmed via a CPLD interface
-> +  at a memory-mapped register pair.
-> +
-> +properties:
-> +  compatible:
-> +    const: technologic,ts73xx-fpga
-
-So xx is a wildcard? That's not allowed (see writing bindings or any
-talks). You need specific compatible. And compatibility, so fallbacks,
-if you have multiple distinctive devices.
-
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    bus {
-> +        #address-cells = <1>;
-> +        #size-cells = <1>;
-> +        ranges;
-
-Drop entire node, not needed.
-
-Best regards,
-Krzysztof
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index caa091224dc5..9107a5b461d3 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -168,11 +168,10 @@ static int child_regions_with_firmware(struct device_node *overlay)
+ 						     fpga_region_of_match);
+ 	}
+ 
+-	of_node_put(child_region);
+-
+ 	if (ret)
+ 		pr_err("firmware-name not allowed in child FPGA region: %pOF",
+ 		       child_region);
++	of_node_put(child_region);
+ 
+ 	return ret;
+ }
+-- 
+2.34.1
 
