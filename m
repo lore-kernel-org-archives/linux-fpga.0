@@ -1,82 +1,83 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from www537.your-server.de (www537.your-server.de [188.40.3.216])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 059263D34B7;
-	Thu, 16 Apr 2026 15:43:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C88B739903B;
+	Mon, 20 Apr 2026 10:21:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=188.40.3.216
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776354198; cv=none; b=jBNeqMCfQ4/zws+jbVfrx7/mkkXyPH+k7JXADDhVjl6+KRRtVicsgaMkj72HghHFnjJTfAyHw62H3cicaoz03nR6ekJZO5KRvIdcNKLlUJryqkIDgvkZPAxiHjwigjH0QXzDvzTvmmSfihUwOoScwV4z1iTVv3HDd6STyBnhFFk=
+	t=1776680512; cv=none; b=pat4grlvnY4mtAGVbD/Wq8rhntHELOoknTnYCjQWlShUKhXgRVtYV9nLa9t74hhPO6M69vP3C1loxD00aMq5hPvG4Bawhi+HBoMh2PGEwOx/FQ14hMoII1hWrXz9qNOjmkGahZo8VpJRyjEhDYXvhEN/rDDUMFxHBOKkF1VxC90=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776354198; c=relaxed/simple;
-	bh=rMHEX9ORRD/sMRXlFXp6rrcrCcIxCNMh0IrWqoLikF8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Jh4bM5X9UKVaSn+9cAcbXNpANxwvj6fTCz/pSaTIV1ye3N4u2ZxSRshAlWtGUvPrPQ4wh9N+XOQHmrkGHh0EuEuBGjDQxVDRtmLKiMlUVFr31NybW2VMhkswH2eDUpCD3i6oBplFfBDQVKRh8qRSpVLh8ZZsgXWacVADuZofs+o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Kceb5G1y; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776680512; c=relaxed/simple;
+	bh=eMf62htc+Xx7OV9U+LrgSF4FP9paJCF1kH8N8DUxkPc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ug+t6R+IB99tBdkCiRt6+/pFx19ghem/8+uQIuvXF8gxw6wqP2CW72MdiL7+HkNLzvAYR5cQC2ocmcE78QCbIAa+mkg/BzHOZG6D5ayd3c9N9Ck40qvbckvkyDNrLe+V2u4/AfJkDbmE2qTY1wJWIHBB/AKp8xYg+FMPeXjyNes=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ew.tq-group.com; spf=pass smtp.mailfrom=ew.tq-group.com; dkim=pass (2048-bit key) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.b=lzMjKBAf; arc=none smtp.client-ip=188.40.3.216
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ew.tq-group.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ew.tq-group.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Kceb5G1y"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A992C2BCAF;
-	Thu, 16 Apr 2026 15:43:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776354197;
-	bh=rMHEX9ORRD/sMRXlFXp6rrcrCcIxCNMh0IrWqoLikF8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Kceb5G1ycS5HkKFhSkq1ulo72NE62CvhifaMHGIRmGx0l2Huo8OGTZVQ93647Mo1m
-	 +H7UjMoIIxicXNcZfFQGU8pooECkgLiL+AfA0UpcSpgpW/kpvYmylk25nVjLAkOVM8
-	 WzRu/mFwfuamwqWVuybadkgMh0Yvggd2IvQ46kLZvuEGgbqpAYonB1ZfVSQ+PalGFr
-	 9CCvm6h97pmj+3hWORnEkh/58Kp7uhDoMZcoJTpyUwMKQqoJq5ZrDi0rLAYPISnehs
-	 6X/OTbEX5DWFyGxrPGUcnROGOmCYHC4sHVRr54YwnpdvsT0bB4Bt6/PAMScw7WozVH
-	 CDuUwcIyH5UkA==
-Date: Thu, 16 Apr 2026 16:43:12 +0100
-From: Conor Dooley <conor@kernel.org>
-To: iansdannapel@gmail.com
-Cc: linux-fpga@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, mdf@kernel.org, yilun.xu@intel.com,
-	trix@redhat.com, robh@kernel.org, krzk+dt@kernel.org,
-	conor+dt@kernel.org, neil.armstrong@linaro.org, heiko@sntech.de,
-	marex@nabladev.com, prabhakar.mahadev-lad.rj@bp.renesas.com,
-	dev@kael-k.io
-Subject: Re: [PATCH v7 2/3] dt-bindings: fpga: Add Efinix SPI programming
- bindings
-Message-ID: <20260416-scanning-synopses-59f03e62c887@spud>
-References: <20260416144237.373852-1-iansdannapel@gmail.com>
- <20260416144237.373852-3-iansdannapel@gmail.com>
+	dkim=pass (2048-bit key) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.b="lzMjKBAf"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=ew.tq-group.com; s=default2602; h=Content-Transfer-Encoding:MIME-Version:
+	Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:In-Reply-To:References;
+	bh=LR3dKIzkREZRp01svB0t6h6suyV7sdDyD7oKmpIYFR8=; b=lzMjKBAfNclK678tRF6N3Jyo8E
+	d0MSakp5btha2n2tM5rh4EY5VYfs+/G5ZeqcuX2q857cpV7AYQN9I/AvSGpVblAq/mw4l1WSmiK0+
+	5RNbJkATsGKXAzy2aJdLFk6OKO2U+sf59mx3l7D8JO9iUCT3YH372LXRrCaj21tLhXYT53f9Fs87M
+	Cmv+5u62jwdtyS8r3uOVQdPF1CIYEsJadzokySM18qzyS8MsYCv+1PFo6NvDBUM9vIdYfj7cParrr
+	k0Q2AgVP61SRsXc63kTaZa877jvRy6Lw9GPsX6xw83sbGIFdI4lV4DgTKpvWMHBj5eFtSnxP71ytP
+	ExiWW3kQ==;
+Received: from sslproxy05.your-server.de ([78.46.172.2])
+	by www537.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96.2)
+	(envelope-from <alexander.stein@ew.tq-group.com>)
+	id 1wEll6-000HlK-1E;
+	Mon, 20 Apr 2026 12:21:40 +0200
+Received: from localhost ([127.0.0.1])
+	by sslproxy05.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <alexander.stein@ew.tq-group.com>)
+	id 1wEll6-000Agf-1s;
+	Mon, 20 Apr 2026 12:21:40 +0200
+From: Alexander Stein <alexander.stein@ew.tq-group.com>
+To: Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>
+Cc: Alexander Stein <alexander.stein@ew.tq-group.com>,
+	linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] fpga: of-fpga-region: use dev_err_probe for probe deferral
+Date: Mon, 20 Apr 2026 12:21:35 +0200
+Message-ID: <20260420102136.333673-1-alexander.stein@ew.tq-group.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="kRkONApBF3Gn6eQO"
-Content-Disposition: inline
-In-Reply-To: <20260416144237.373852-3-iansdannapel@gmail.com>
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: Clear (ClamAV 1.4.3/27977/Mon Apr 20 08:26:26 2026)
 
+This also adds a message about probe deferral.
 
---kRkONApBF3Gn6eQO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
+---
+ drivers/fpga/of-fpga-region.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Thu, Apr 16, 2026 at 04:42:35PM +0200, iansdannapel@gmail.com wrote:
-> From: Ian Dannapel <iansdannapel@gmail.com>
->=20
-> Add device tree bindings documentation for configuring Efinix FPGA
-> using serial SPI passive programming mode.
->=20
-> Signed-off-by: Ian Dannapel <iansdannapel@gmail.com>
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index caa091224dc54..41e6da296cb3e 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -405,7 +405,7 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 	/* Find the FPGA mgr specified by region or parent region. */
+ 	mgr = of_fpga_region_get_mgr(np);
+ 	if (IS_ERR(mgr))
+-		return -EPROBE_DEFER;
++		return dev_err_probe(dev, -EPROBE_DEFER, "FPGA manager not found\n");
+ 
+ 	region = fpga_region_register(dev, mgr, of_fpga_region_get_bridges);
+ 	if (IS_ERR(region)) {
+-- 
+2.43.0
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-pw-bot: not-applicable
-
---kRkONApBF3Gn6eQO
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaeEDkAAKCRB4tDGHoIJi
-0sHrAQDiF5LooF91fRMl4DyqGIZ7gSD+p4zlePOIonXDPbmHqQEAuFagpPQbCLnI
-dQfSIzjlvJyln3fLqEHv7EZtcQSbQQQ=
-=VlDa
------END PGP SIGNATURE-----
-
---kRkONApBF3Gn6eQO--
