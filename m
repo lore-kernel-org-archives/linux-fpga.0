@@ -1,51 +1,50 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010071.outbound.protection.outlook.com [52.101.201.71])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC380332ED0;
-	Tue, 28 Apr 2026 03:56:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777348578; cv=none; b=GAeDFtNyQfFGhtOinlq1UzH4r2QUWm7lkrhn2XvRsm+b4+i/jvdyoZXmyfhC68JrgMhuNQSj/QgidoF1RXnyNN2K1XacTeyPvFp/6uIXfELfjCXLc6Imo8vyZ7RcTRvOLKeyZYsHOYwiYI04+B9Ry6OBrTtaBWyRWohp+7M4UOY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777348578; c=relaxed/simple;
-	bh=xqcaIUX8QLlEguWmxNfjx0KBxYjMkol7RCbc5o2EAsU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qVv7uMrAlMVnzpdOjDbPrR2nW4AZNfsWtT1DYTQyqFdpCii0JgfJOyvoYzuMZbIzdek9P4Atr0sk7cQHSUCJmoKBn4iCqgEdY1TEvovqV+QJPkyNugTGJJ/ZIM2jLXdrcRcgeBgPfC+OvEPB58hLCIj+AMb2O42DfxAiJXbA/0I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=S9H0odCs; arc=none smtp.client-ip=192.198.163.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 382E144DB67;
+	Tue, 28 Apr 2026 18:05:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.71
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777399503; cv=fail; b=lwxMrdfJPs0R0tkgZvG/DOvSyHHgZyINUogO8BeAyfQtHQ4c2cxn9C0HoObudEfs6JA4AGM7qhkJ+L3Q2uLbsEh7U4e6UuS6qxTWf7Xblo08IN1mBq/eZiwbLAq3euQ+G3371Wl7HvwB5UxzSVZWMJVf33ccfaOQfdh3NbvvyXc=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777399503; c=relaxed/simple;
+	bh=m+P3LmNXxU+8e8df4QJ65cuDjTmR3ssNaTAcv6BF/nE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=XbWGL3ZwQOwFI2h5CyhIb9crlPG7tscyGVbFImLoLw7XlfgmBYGdyDZFKZxRvG/s0XrQ2Vjl2H+jOjNcN69faqV8IgsKGsjIocy69XfGG9VJccCgfqm0JOHInoehzX2dkksovZz3dsSt/4T7tE6MN4z6FkQbj/iXDXUI7+rtWtI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=fail (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=E84snSgf reason="signature verification failed"; arc=fail smtp.client-ip=52.101.201.71
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="S9H0odCs"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777348576; x=1808884576;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=xqcaIUX8QLlEguWmxNfjx0KBxYjMkol7RCbc5o2EAsU=;
-  b=S9H0odCsfA4FE+tBvNrYiU0NlGXy7H4Xh3KTApqjuVDqe70ORd98KNrl
-   kWfzHSlVIMI7ha6AQOj+7kWJNCtiTMOB7QHh2Lp0p1e+CPSzCvvLJfg8G
-   2cVM2neDxnKPyKszH13ru2coiVAbYy+I3bPKai0iEqtFNQSwxupy6Z/NU
-   iLZ5e3Simo2kEo1j8xcaHBWwfsaEF4Y4zcSdl2V7ZmwqLwCM+8foXZYMH
-   jFM7yLbxINnTzC+jWXl5zaa91koQqSnZuAo4LvPCBN8XnR0t6xPoGRgie
-   aAO+/l3SUXjEfHcDUQ05hJ/ctPdEE7y37CsaokyBBfs8UaSohkiLYSyH7
-   g==;
-X-CSE-ConnectionGUID: +EtDKQvSRFq7UbuXMClj3Q==
-X-CSE-MsgGUID: x//6JYyRT6GkOp0B9vuXGQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11769"; a="88847361"
-X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; 
-   d="scan'208";a="88847361"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Apr 2026 20:56:14 -0700
-X-CSE-ConnectionGUID: 3nKhigtTTJGCsyK/LoClIg==
-X-CSE-MsgGUID: CQbrqSW3RcGMpUchpv+whg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; 
-   d="scan'208";a="229469506"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmviesa010.fm.intel.com with ESMTP; 27 Apr 2026 20:56:08 -0700
-Date: Tue, 28 Apr 2026 11:33:37 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Yury Norov <ynorov@nvidia.com>
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="E84snSgf"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=dy9PVcc0zmJpaYvB6rTq+tLYM8AZfafCvAC7yK7mqEReOnsIZYKT0GLDAZjVxlHc/7Hb651Ft/z1pMEF0ynhlDcwTGvZDu9QBuAm2hbt++8E/eYCJSd5tc7/lrqXoayfHu/r8ouVDn/rtwCpam+bi1s5+QzuXfZDEGyPwgNOUT0VEu3u9fSIpN3Mh8n3ZveNIEP6gZU5bNhwCln8yLqHtyosCP0rTWvhYAdpUUF1vkQuOAkp5omzMaPdBpMvabgV6P0KGRUC2nZs+0fm8FSD/Z99YoxoK3hyWMiXvmsJuzxxz+V4NY1ViD1htYz0KIN4+jMJHbDhcmJ9Vdv8HS5GlQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=H6YPPnSzY//1FVVn+RyM7J5i+tae13KYJmQT59I2Hig=;
+ b=Asc/ohQ+A4YvGGSVtRhl4rvVIb+1e5A3N78tYxjyw0RgsmmDnhVlbj7HPx5sqZC66N2jncwArsmGlnvptCR5833+rS7P7q92n5A7D9p08iO3C8W3Arx1Qr9Qy03VaSoDTLcymXrNOxl2sTIqOYHbwRgChInc9MJ9PsMd5XfUQQKSDXsXtLgt6T2YKICUcIPlkMoxWLH7PGOmPjfxLsjfkNaMB3Jn+gydYt85AQ6b/hSZEcB+FSO8qGYeIitX03NENA1RGwIte5lbCDM2zRyautu1tdMwY3SaGzrKTl2P3ynlQFEbuTMGC13l0JVctBjNb/YBnPfIIMJbFJv0V9YNbQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=H6YPPnSzY//1FVVn+RyM7J5i+tae13KYJmQT59I2Hig=;
+ b=E84snSgflsoM7MIO5ceQ4lFc2NY5NFLYZHfGXhzwpjW5LEBw9Q7rxVNB4zHrwPS69OI1YYqQzwcDq5xRRfAx42YIXIjv6oaba5IB9t7EkVouamDXjc/fIZfEpcowtE8LoFiGpxEAChbKdtfDyLJYvNKjULqjt01ntorQ4PbFDGlOE0dyB+5rPgoFkb+YHxnjgD4J89ZBjpx2yyWJhYjy913qj3mZmg5c4ejkWE5gXmQmoDFVMqm+TwssERvmAios4parFHPQeW3ScTyWiBK+jMHV12/VrGOlElUoGYCxOq6swB11H9cgup/Il8wRdG2m+bCH7dh7kZS8+iL2ikfFng==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from CY8PR12MB8300.namprd12.prod.outlook.com (2603:10b6:930:7d::16)
+ by BL1PR12MB5802.namprd12.prod.outlook.com (2603:10b6:208:392::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.17; Tue, 28 Apr
+ 2026 18:04:48 +0000
+Received: from CY8PR12MB8300.namprd12.prod.outlook.com
+ ([fe80::ce75:8187:3ac3:c5de]) by CY8PR12MB8300.namprd12.prod.outlook.com
+ ([fe80::ce75:8187:3ac3:c5de%3]) with mapi id 15.20.9870.013; Tue, 28 Apr 2026
+ 18:04:48 +0000
+Date: Tue, 28 Apr 2026 14:04:42 -0400
+From: Yury Norov <ynorov@nvidia.com>
+To: Xu Yilun <yilun.xu@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
@@ -62,7 +61,7 @@ Cc: linux-kernel@vger.kernel.org,
 	Russ Weight <russ.weight@linux.dev>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
 	Suki K Poulose <suzuki.poulose@arm.com>, Tom Rix <trix@redhat.com>,
-	Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
 	Xu Yilun <yilun.xu@intel.com>, Yury Norov <yury.norov@gmail.com>,
 	Zhang Rui <rui.zhang@intel.com>, coresight@lists.linaro.org,
 	linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
@@ -70,70 +69,125 @@ Cc: linux-kernel@vger.kernel.org,
 	Jakub Kicinski <kuba@kernel.org>
 Subject: Re: [PATCH 5/5] fpga: m10bmc-sec: switch show_canceled_csk() to
  using sysfs_emit()
-Message-ID: <afAqkfe8iOU1cUyQ@yilunxu-OptiPlex-7050>
+Message-ID: <afD2ujUS70i5imxx@yury>
 References: <20260303200842.124996-1-ynorov@nvidia.com>
  <20260303200842.124996-6-ynorov@nvidia.com>
  <acJWNRb1t96yu/H6@yilunxu-OptiPlex-7050>
  <acLaDFuCzt0d33Q_@yury>
  <acON/EU/GFvxRO1e@yilunxu-OptiPlex-7050>
  <afAh1hq_mkRN3q2t@yury>
+ <afAqkfe8iOU1cUyQ@yilunxu-OptiPlex-7050>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <afAqkfe8iOU1cUyQ@yilunxu-OptiPlex-7050>
+X-ClientProxiedBy: SJ0PR03CA0215.namprd03.prod.outlook.com
+ (2603:10b6:a03:39f::10) To CY8PR12MB8300.namprd12.prod.outlook.com
+ (2603:10b6:930:7d::16)
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <afAh1hq_mkRN3q2t@yury>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CY8PR12MB8300:EE_|BL1PR12MB5802:EE_
+X-MS-Office365-Filtering-Correlation-Id: f165711d-6d53-40a7-4280-08dea550a2ca
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|10070799003|1800799024|366016|7416014|376014|56012099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	T84yhglTKx18RheGcca2YqehnA4RTW8H6qLTlJyhYKc2zn4bGZXay/x9+k9kYBLL1QFgqWKunaO9lP1iJTk4sdwCpkWFGhT2XleKp9p00KUNv4mFxu9iyu2hz6JXSx9mcCME3ssiR/olU5xzrSpVDqkCzcIckZGul+M5rIwYxe3cqcbw0T/d8LPvxj/KlEz58VmzS1JqM4lW5QheFTD2oBYJS4TmOj246HxpIZa8T+fKvtwxEi1upKmBd/CWMXiVrzVKrD7u3tikU9ZzWPM0EZO1Tnl7twfKyiroqzgJWTtxMxA5Z00lW68WpskR+jNGcHy/gzzSe2vcmldFfBpPJAs30HlcIZ/RfguQYHoQ+X2HOqZ2zZVqZExXwgcksy26t2G2gy9i+kB/8X7TKbyiBEDP97zFyR3MfZ5EKA72tczt274fxcgW+eJS6h5vJZU4B+JQ8rO5UrHmn3iaNkLv5pe8EcUla+5KWXdkvl11YmH5dVgDpS7Im5ogt3952GzFsFiNVjMQQ3aFyDxjOlYX5iG8utwk+Ix8jAr60T18uCMADazBj1VbbkI42O/KDaq/RLQhTUcdnG+l5rtjOUst2OmX8QGKj/zk6alfwsBFhYEqAiE+wS7jtFVyKUha2mBeSchDoYHfYcL4jZfdQ2W5Ixj1nm2h3qIS2srCxsddR4JPMkc8b3Fyygl3ZWZl3FHtmWyGT0I+0TYfvIZOInBvmyKgre4QER3IP8rpJZFhtnE=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY8PR12MB8300.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(1800799024)(366016)(7416014)(376014)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?iso-8859-1?Q?dgyHCkfLWy+tLHvzledMQ0rn08RsXP3vHeN/mK5+8M4d6GEIfCwiZ9utWo?=
+ =?iso-8859-1?Q?suscRTHtLo/Zh/t1s3PD4wS7gFxDp9dLn2GDuVXDkJ15wdLVp++pSARLrj?=
+ =?iso-8859-1?Q?CbIu2slBcykrw4IWp8FAadBxctEyFoCkwUv+mrMCSdRCWuduNN4mPcun/w?=
+ =?iso-8859-1?Q?gjk9sU6AZShuMdieCHfx2UsX8d5LqGOr8Wdfye8ffysiVFVVXRkewRj38j?=
+ =?iso-8859-1?Q?VL0kZRAAsEUGIrIyXhm+ej0I2CImiWRI6ae+Cr5KXHbnLiqtuzFiqqv+k9?=
+ =?iso-8859-1?Q?mYm3PSWIGL8iIoCNtYENNF/K0fOFohLQy4o1nQ7/zrEplluhdKLCZj6Kxn?=
+ =?iso-8859-1?Q?ro5OwNOh4hCiNCStyvem5i4l9/VIcvWrYrheb6zdodanUAv28uy+23BUDq?=
+ =?iso-8859-1?Q?CwYQLVvJcLA6Csn/z+P2AI4G8P+PiLAbZiN7QIN1u8qYphOfsLDB7AVMQP?=
+ =?iso-8859-1?Q?QO0FFzyoI3D8N39LolsMLC39fo0SUDppjbgfXDypw3sA2ooxsw/AMQCwv5?=
+ =?iso-8859-1?Q?KdRSZADso5/fjROxyzcAgJtrcLkgYhdZ6H64FbKnhaeWe0CTY2PE6NJx7v?=
+ =?iso-8859-1?Q?H4EAxbmUD6g39HhjOlDXttkGlxSgX5EhOkvHtLKEltFdzt2P9Y38YR1dG8?=
+ =?iso-8859-1?Q?QaaDLdxoZLgpnUAgxSDgCbVZQzxNNvdXvlATSmfdSnry/Kxsn7G7vQkU7P?=
+ =?iso-8859-1?Q?9+O2cglxGHaRHV0/or7CNu2t5T5J+muYN3xVYyDUxOUkBn4YY7ySwRyZKh?=
+ =?iso-8859-1?Q?14N9lI84bPDAK14t9EDHmZbgn3zVcBO9S5fENRL0cuHyrG+FnnaIdDgaV/?=
+ =?iso-8859-1?Q?eog8PGX+NQIs2tNrZYuDlEJe872TuqSCaGkd0KbgHZUyK49gitmhqWgCnL?=
+ =?iso-8859-1?Q?sLrsAAMS9ZxiPVrDJcNrLbFBreFQiyNSM9AMGdhU06U/g/Y+NqGMSxlHmC?=
+ =?iso-8859-1?Q?VCoQQZehVjwDUL1RRg4N0qjEw6HOhttZQD438bohD1hDxQMzskUY7xRfnn?=
+ =?iso-8859-1?Q?LC5lOre0u2mJwmYaWBpH48ldLDWgEpRLIyLQvhtRfTI+izSGcThKocKK7N?=
+ =?iso-8859-1?Q?5tpFbvDucGbWPJb4CvlJfK6123G9D9K8Gp3AQFTUQm0O5ipNNdq2krhMFZ?=
+ =?iso-8859-1?Q?emAXhYBO4i3YNulwtLdkNyPreZnaPk3mNJx/YzjG1EXNPoK02zQ3SocVkh?=
+ =?iso-8859-1?Q?tjJpGmNgBd9ZpipX23KQd7li8M3/dEeFdWxclccJruxqqOVa2pej1e1adH?=
+ =?iso-8859-1?Q?000KEttfqTyStpDXO1XyMXsnf/SysKG7170CmUfTJ1ssDP6sdIMh41dDk2?=
+ =?iso-8859-1?Q?Y7IQuUKtvWnVts5wJ11LrGYKFNCC07LZvjcqG+4pW7S52M7FTknhHeXTRz?=
+ =?iso-8859-1?Q?Y04+hlTZXVO29mdYCJFS+Igdy6aZK0+1StdOIYlCv8ZWnhkIbNImcCtx0L?=
+ =?iso-8859-1?Q?XEYvr5Ue9Xe3qgRG7QRBN+0wz1AHqKpm+m50MV/WBdc1xGAVF/2JaLlxJG?=
+ =?iso-8859-1?Q?JFumVhNBkDfeF9yxyeabe5dh5LWnVRbYh2Tc4LUZUqZMosfHAOkw1q6zeh?=
+ =?iso-8859-1?Q?EObu646DgZ1QDnZ285NuXTFhsxKM9YpOJZQAxOkXj6QBE6VKzPQnPpbcZD?=
+ =?iso-8859-1?Q?fQiaJnsQ4Kdo5u3UdWRv7qAd3I7M10PEoTiSZYcaMcEOSqckaelfBNXK6b?=
+ =?iso-8859-1?Q?6FSGLXTW4wBj7IRmPBpTMnneQPMfrr1di4BdBlIy8VkKoi86LglLmrqkkW?=
+ =?iso-8859-1?Q?EtJcROUY9xgocH7JlS7EGS0YidobZx7o9Vvzqy+r9WUVtGaulyQLoEkkC9?=
+ =?iso-8859-1?Q?dTrjsN10YG4lRHiSVW1I1Ez63USNI5e96Q4egmAxo9NuS9nN7H0M?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f165711d-6d53-40a7-4280-08dea550a2ca
+X-MS-Exchange-CrossTenant-AuthSource: CY8PR12MB8300.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Apr 2026 18:04:48.2162
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: WKk0hB2p1W3ZB15gif5oJ+jpGSVsXrxRdGPredfZqIX4N5iscXf7AOQQAklmuAO/1QV481h2a4sz6VvrP6F02A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL1PR12MB5802
 
-On Mon, Apr 27, 2026 at 10:56:22PM -0400, Yury Norov wrote:
-> On Wed, Mar 25, 2026 at 03:25:48PM +0800, Xu Yilun wrote:
-> > On Tue, Mar 24, 2026 at 02:38:04PM -0400, Yury Norov wrote:
-> > > On Tue, Mar 24, 2026 at 05:15:33PM +0800, Xu Yilun wrote:
-> > > > On Tue, Mar 03, 2026 at 03:08:41PM -0500, Yury Norov wrote:
-> > > > > Switch show_canceled_csk() to use the proper sysfs_emit("%*pbl").
+On Tue, Apr 28, 2026 at 11:33:37AM +0800, Xu Yilun wrote:
+> On Mon, Apr 27, 2026 at 10:56:22PM -0400, Yury Norov wrote:
+> > On Wed, Mar 25, 2026 at 03:25:48PM +0800, Xu Yilun wrote:
+> > > On Tue, Mar 24, 2026 at 02:38:04PM -0400, Yury Norov wrote:
+> > > > On Tue, Mar 24, 2026 at 05:15:33PM +0800, Xu Yilun wrote:
+> > > > > On Tue, Mar 03, 2026 at 03:08:41PM -0500, Yury Norov wrote:
+> > > > > > Switch show_canceled_csk() to use the proper sysfs_emit("%*pbl").
+> > > > > > 
+> > > > > > Reviewed-by: Russ Weight <russ.weight@linux.dev>
+> > > > > > Suggested-by: Thomas Weiﬂschuh <linux@weissschuh.net>
+> > > > > > Signed-off-by: Yury Norov <ynorov@nvidia.com>
+> > > > > > ---
+> > > > > >  drivers/fpga/intel-m10-bmc-sec-update.c | 3 ++-
+> > > > > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > > > > > 
+> > > > > > diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
+> > > > > > index 10f678b9ed36..ae364c6636eb 100644
+> > > > > > --- a/drivers/fpga/intel-m10-bmc-sec-update.c
+> > > > > > +++ b/drivers/fpga/intel-m10-bmc-sec-update.c
+> > > > > > @@ -10,6 +10,7 @@
+> > > > > >  #include <linux/firmware.h>
+> > > > > >  #include <linux/mfd/intel-m10-bmc.h>
+> > > > > >  #include <linux/mod_devicetable.h>
+> > > > > > +#include <linux/mm.h>
 > > > > > 
-> > > > > Reviewed-by: Russ Weight <russ.weight@linux.dev>
-> > > > > Suggested-by: Thomas Wei√üschuh <linux@weissschuh.net>
-> > > > > Signed-off-by: Yury Norov <ynorov@nvidia.com>
-> > > > > ---
-> > > > >  drivers/fpga/intel-m10-bmc-sec-update.c | 3 ++-
-> > > > >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > > > > 
-> > > > > diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
-> > > > > index 10f678b9ed36..ae364c6636eb 100644
-> > > > > --- a/drivers/fpga/intel-m10-bmc-sec-update.c
-> > > > > +++ b/drivers/fpga/intel-m10-bmc-sec-update.c
-> > > > > @@ -10,6 +10,7 @@
-> > > > >  #include <linux/firmware.h>
-> > > > >  #include <linux/mfd/intel-m10-bmc.h>
-> > > > >  #include <linux/mod_devicetable.h>
-> > > > > +#include <linux/mm.h>
+> > > > > Why add this header file?
 > > > > 
-> > > > Why add this header file?
+> > > > When I was preparing the series, I had build issues without this. But
+> > > > now I checked it against -rc5, and it's clean. Would you like me to
+> > > > resend?
 > > > 
-> > > When I was preparing the series, I had build issues without this. But
-> > > now I checked it against -rc5, and it's clean. Would you like me to
-> > > resend?
+> > > No need. Given that I'll pick this patch alone to fpga for-next with the
+> > > fix.
+> > > 
+> > > Reviewed-by: Xu Yilun <yilun.xu@intel.com>
 > > 
-> > No need. Given that I'll pick this patch alone to fpga for-next with the
-> > fix.
+> > Hi Xu,
 > > 
-> > Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+> > This patch is still not applied. This is the last non-lib user of
 > 
-> Hi Xu,
-> 
-> This patch is still not applied. This is the last non-lib user of
+> I see it is already in v7.1-rc1, what's your expectation?
 
-I see it is already in v7.1-rc1, what's your expectation?
+Oops, sorry. It's me not moving on the tip of the tree.
+Sorry for the noise.
 
-> the bitmap_print_to_pagebuf(), and it blocks me from removing the
-> function.
-> 
-> Are you still going to pick it yourself? I can move the patch with
-> bitmap-for-next if you prefer.
-> 
-> Thanks,
-> Yury
