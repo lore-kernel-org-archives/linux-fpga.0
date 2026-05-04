@@ -1,110 +1,127 @@
-Received: from out30-131.freemail.mail.aliyun.com (out30-131.freemail.mail.aliyun.com [115.124.30.131])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 436E03B27CD;
-	Wed, 29 Apr 2026 08:28:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=115.124.30.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AED3364948;
+	Mon,  4 May 2026 09:26:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777451301; cv=none; b=tsxgyM3DOfnWqQ1g9AJ4Fdp1HDqmPCMrNJY9XaSUVyBTAndZB7A4HtcWLtK5+jkwBzX0TBmp2zXke/uUrjcDXUvv7k3yLxsPPBp7ytVKOdcFvfOeiQfnRsKGzXJ7eCKqDBKy91c9eFmYW5JCKhtgWrb4lrp35Yt3ilTxdWvw+14=
+	t=1777886806; cv=none; b=ivqI0wzjoaNcR8yXCCU2FunFEBWGu6ybp7hXNsNoWgFdJo6oq/TV0rG8w+cECq25VnUqrSaO4oxJYWcF3ipQpgV2hJhgylLNwabYtEfUyEmZk/EjsuasK0Qvvwy80lD/4Rmgvyxey7Yss6lWD+xJJTVIUIQorC/Hv/uDNyCxUmk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777451301; c=relaxed/simple;
-	bh=gp0X0IKX1nlk1W58F7GG9Yrg2G+Bl/rYge1cXsrGT8I=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=aozj8NLdALuNSh66tub1bNEtbfMeQ7clfvJI1HWc2DGki0Gs2cCMXJsbflylMlIO0d9RI/HLvzUHyQXdpOPL02bYINVunJRlEhUiQI2B4xfsZ6Unx5z8d1q2ikG7MjYACCIOuwmxNj2b1T2UgGpaS83bpk+07mcpI14ev2IxrNw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; spf=pass smtp.mailfrom=linux.alibaba.com; dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b=uteRq7Qf; arc=none smtp.client-ip=115.124.30.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+	s=arc-20240116; t=1777886806; c=relaxed/simple;
+	bh=dema2WUow3kMCZriE6YLuCVex+rSZ9EF1Wt4GBMk3MU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LsXmfBx5Dskk7FbvxWMHCy4AiD+QyIEASDcdNGaW+x9a2vGQCjyPRpZcK+6sZ5GuUIetTIGrAdgaohn9Dm4TCg5BHqiVTw60Tor0WiTayX6sXSyqSgH9gv3TYIQpXVLZi7maMjsS5V6lyu+nUyA+5CDgZR52Z/fncTQc4B4ZDzg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=WdiMFFae; arc=none smtp.client-ip=192.198.163.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.b="uteRq7Qf"
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1777451296; h=Message-ID:Date:MIME-Version:Subject:From:To:Content-Type;
-	bh=xSa86XxQYWXAtuebcZ/sZ7wICcG6K5woqk8TDtWkg3Y=;
-	b=uteRq7Qf/W6QY8e/YDZTTWmrR6/pZTyf78FVO9u/+ou93bgp9jVzWhPRT6m5BhHSP8evCo12gKmV5ErIEbtq3lhOhbXVf0J3ygmm3886lcqR17f1eLOCxj03KoFYD7qv/LePksM9bBCAaS9yR/nPgG+9rMiK3fQypN92kedX9UA=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R321e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037009110;MF=guwen@linux.alibaba.com;NM=1;PH=DS;RN=34;SR=0;TI=SMTPD_---0X1wyHwL_1777451283;
-Received: from 30.221.129.232(mailfrom:guwen@linux.alibaba.com fp:SMTPD_---0X1wyHwL_1777451283 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Wed, 29 Apr 2026 16:28:14 +0800
-Message-ID: <6117ac34-cf26-40b1-a522-3bbfbd7024ea@linux.alibaba.com>
-Date: Wed, 29 Apr 2026 16:28:03 +0800
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="WdiMFFae"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1777886805; x=1809422805;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=dema2WUow3kMCZriE6YLuCVex+rSZ9EF1Wt4GBMk3MU=;
+  b=WdiMFFaeFtGuGbCBEPN0dxdC78dNs73U6Rg/sttNkfA3ZwXr6jnx/s7H
+   ag5p8HSd6vtUh2PIw+9CZq5BxPDCn4f+nLONB7+RPn6APVkOs8TO5INN3
+   BlSx3ufSSSkPJzaV/A9vn9hkn+CVk9S4hyUcJTtxk69V9iDWdYYACqvPw
+   a1CPwLSXiBixMDPr3fPM5LsIi8mtUKYDbwc9w640DLEk/Ep5M1IbCxgvO
+   Z5dJJBn/Xduo61Kh2RS3dE9wrpxFmE2HVbIfg/sVOzS9T4oCvzArcpPjr
+   k7nQotDsYFnjsTcpcJF5pHYRVEjExu/+5RkHSj9BCUFqdv9JAS45QOCPp
+   g==;
+X-CSE-ConnectionGUID: k6cS7Qs7Q2WhUlc56u//Xw==
+X-CSE-MsgGUID: urjLezqHRx2FuNvGpRsU5g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11775"; a="82590054"
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; 
+   d="scan'208";a="82590054"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 May 2026 02:26:44 -0700
+X-CSE-ConnectionGUID: zop30cPORoOlK/GwW7HoEg==
+X-CSE-MsgGUID: FHR8CGRBR4eOJSvPq9p31w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; 
+   d="scan'208";a="234604217"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by orviesa010.jf.intel.com with ESMTP; 04 May 2026 02:26:43 -0700
+Date: Mon, 4 May 2026 17:03:54 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: Sebastian Alba Vives <sebasjosue84@gmail.com>
+Cc: gregkh@linuxfoundation.org, linux-fpga@vger.kernel.org,
+	conor.dooley@microchip.com, mdf@kernel.org,
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH v4 3/3] fpga: microchip-spi: fix OOB read in
+ mpf_ops_parse_header()
+Message-ID: <afhg+stuaTvRCMO6@yilunxu-OptiPlex-7050>
+References: <20260407172230.40775-1-sebasjosue84@gmail.com>
+ <20260407172230.40775-3-sebasjosue84@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] MAINTAINERS: update PTP maintainer entries after
- directory split
-From: Wen Gu <guwen@linux.alibaba.com>
-To: Jakub Kicinski <kuba@kernel.org>, David Woodhouse <dwmw2@infradead.org>
-Cc: tglx@kernel.org, richardcochran@gmail.com, andrew+netdev@lunn.ch,
- davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jstultz@google.com,
- anna-maria@linutronix.de, frederic@kernel.org, daniel.lezcano@kernel.org,
- sboyd@kernel.org, vladimir.oltean@nxp.com, wei.fang@nxp.com,
- xiaoning.wang@nxp.com, jonathan.lemon@gmail.com, vadim.fedorenko@linux.dev,
- yangbo.lu@nxp.com, svens@linux.ibm.com, nick.shi@broadcom.com,
- ajay.kaher@broadcom.com, alexey.makhalov@broadcom.com,
- bcm-kernel-feedback-list@broadcom.com, linux-fpga@vger.kernel.org,
- imx@lists.linux.dev, linux-s390@vger.kernel.org, dust.li@linux.alibaba.com,
- xuanzhuo@linux.alibaba.com, mani@kernel.org, imran.shaik@oss.qualcomm.com,
- taniya.das@oss.qualcomm.com
-References: <20260407104802.34429-1-guwen@linux.alibaba.com>
- <20260407104802.34429-3-guwen@linux.alibaba.com>
- <20260412084704.743482ad@kernel.org>
- <4B889ED5-D1F6-401D-B753-89AE2037F316@infradead.org>
- <20260412095301.4fe1fe65@kernel.org>
- <ebf19246-91af-4887-b2aa-d9007921f7b2@linux.alibaba.com>
-In-Reply-To: <ebf19246-91af-4887-b2aa-d9007921f7b2@linux.alibaba.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260407172230.40775-3-sebasjosue84@gmail.com>
 
+On Tue, Apr 07, 2026 at 11:22:17AM -0600, Sebastian Alba Vives wrote:
+> mpf_ops_parse_header() reads header_size at MPF_HEADER_SIZE_OFFSET (24)
+> without first checking that count is large enough, leading to an
+> out-of-bounds read if the buffer is smaller than 25 bytes.
+> 
+> Additionally, when header_size is zero, the expression
+> *(buf + header_size - 1) reads one byte before the buffer start.
+> Since a zero header_size cannot be resolved by providing a larger
+> buffer, return -EINVAL instead of falling through.
+> 
+> Fixes: 5f8d4a9008307 ("fpga: microchip-spi: add Microchip MPF FPGA manager")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Sebastian Alba Vives <sebasjosue84@gmail.com>
+> ---
+> Changes in v4:
+>   - Reduce to two minimal fixes only: minimum count check before
+>     reading header_size, and -EINVAL for zero header_size.
+>     Drop redundant block loop checks — the pre-loop bounds extension
+>     already ensures all block offsets are within count.
+>     Suggested by Xu Yilun.
+> Changes in v3:
+>   - Add overflow check for 32-bit in component size loop.
+> Changes in v2:
+>   - Return -EINVAL for header_size == 0, -EAGAIN in block loop,
+>     add count check before MPF_HEADER_SIZE_OFFSET read.
+> ---
+>  drivers/fpga/microchip-spi.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/drivers/fpga/microchip-spi.c b/drivers/fpga/microchip-spi.c
+> index 6134cea..dca1a5d 100644
+> --- a/drivers/fpga/microchip-spi.c
+> +++ b/drivers/fpga/microchip-spi.c
+> @@ -115,7 +115,13 @@ static int mpf_ops_parse_header(struct fpga_manager *mgr,
+>  		return -EINVAL;
+>  	}
+>  
+> +	if (count < MPF_HEADER_SIZE_OFFSET + 1)
+> +		return -EINVAL;
 
+Why do you think the fpga-mgr core would provide a buffer that is not
+good for low-lever driver to start with? There should be contract
+between the core and the driver, if you've found anyone breaks the
+contract, fix the breaker, not to add defensive code here.
 
-On 2026/4/13 17:00, Wen Gu wrote:
+Thanks,
+Yilun
+
+> +
+>  	header_size = *(buf + MPF_HEADER_SIZE_OFFSET);
+> +	if (!header_size)
+> +		return -EINVAL;
+> +
+>  	if (header_size > count) {
+>  		info->header_size = header_size;
+>  		return -EAGAIN;
+> -- 
+> 2.43.0
 > 
 > 
-> On 2026/4/13 00:53, Jakub Kicinski wrote:
->> On Sun, 12 Apr 2026 17:32:22 +0100 David Woodhouse wrote:
->>> On 12 April 2026 16:47:04 BST, Jakub Kicinski <kuba@kernel.org> wrote:
->>>> On Tue,  7 Apr 2026 18:48:02 +0800 Wen Gu wrote:
->>>>> +PTP EMULATED CLOCK SUPPORT
->>>>> +M:    David Woodhouse <dwmw2@infradead.org>
->>>>> +M:    Wen Gu <guwen@linux.alibaba.com>
->>>>> +M:    Xuan Zhuo <xuanzhuo@linux.alibaba.com>
->>>>> +L:    linux-kernel@vger.kernel.org
->>>>> +S:    Maintained
->>>>> +T:    git git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git timers/core
->>>>
->>>> Hi David,
->>>>
->>>> Do you have a tree to route the patches thru? Or do you really have
->>>> access to the tip tree?
->>>
->>> I do not have access to the tip tree. I can make a shared tree on
->>> git.infradead.org if the other two maintainers would like to send me
->>> a SSH pubkey and preferred username...
->>
->> Honestly I'd love for you to be the only M here, and the other two
->> to be reviewers. Xuan Zhuo is currently at v40 trying to upstream
->> an Ethernet driver. Some growth needed there to become a subsystem
->> maintainer IMO.
-> 
-> Hi Jakub, David,
-> 
-> That works for us. We can act as reviewers.
-> 
-> If David sets up a new tree, I will update the MAINTAINERS entry
-> accordingly in v3.
-
-Hi David,
-
-Just checking if there is any update on the maintainer tree
-for the emulated PTP drivers.
-
-Thanks.
-
-> 
-> Thanks.
-
