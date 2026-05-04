@@ -1,58 +1,58 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 782963AD51F;
-	Mon,  4 May 2026 11:45:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 390B13C73F6;
+	Mon,  4 May 2026 12:00:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777895111; cv=none; b=X/3IPEwkx90OwkFhpUAqZSD5lJQHrkgTM04LZfZYmuuCcJF0Jv+Kp4YeyRRkPBIITH+QhAbdcXb1oU7FoAdybjBnqR/5Zi4TarBHCAJhIYrv23KuHV7cyOZHfyX8oNUrZ13Gq9rYaWS5DIhFr09x2LTPwIRrZZPqA1hwveXX0qs=
+	t=1777896019; cv=none; b=CiNerVecXVGsg0S+ljLGk1vqD0IAgAORDP+FySg8jfUltJC0CVRwrk8oZJNyGhzNeFePBYwq5KUEQfusXTKKoL2YMGsemL/ogCSBbFLeBRp54pvWh2PT27osUYtL/M7zfZJoLAYq9aUE9/20B1QZs+Z1Ji5p6j1anXxg0k8llHg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777895111; c=relaxed/simple;
-	bh=olwXHbfEbacoWdoc6oHZgsZsjUjwZfEgiObbHNmIaNg=;
+	s=arc-20240116; t=1777896019; c=relaxed/simple;
+	bh=5KQnnvpLs2kRk2hShgf0dtzYCKkXuy92iY9XBGVZAKk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=m903ISbXwmfwJkr2SWAtKBGo/hl8J5WCTgNw+fbYOBeVB27RoCGLmV4NncTmXDXFncbBKwlGJ6mdttC9ei9zNF4gKyEGp2KdXtftpK3UmGvCTb0nbPerIpM6NItTeQbpwfFEwTlGhGEZPYRXzN2k9YvUeSoHq3bG49rnDkOvwtY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SRw5nyIR; arc=none smtp.client-ip=192.198.163.13
+	 Content-Type:Content-Disposition:In-Reply-To; b=i+dcr7vJ22IZZAtVm5uQCUHlzMRq53bK0he4djdrrVBdu8XjXM2E7yOrbyl93Av1WsaJpk1iYOXsOmQYihm0d3KQ86KuuKG80JTx6Qg+QvrALRvFhvf6zNWWwOLqsd9T9N4eK78cYW1vn32dOEE5uhFGg2tTd0jyq6kyxDXxw4w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bWSxx+8w; arc=none smtp.client-ip=198.175.65.16
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SRw5nyIR"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bWSxx+8w"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777895111; x=1809431111;
+  t=1777896014; x=1809432014;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=olwXHbfEbacoWdoc6oHZgsZsjUjwZfEgiObbHNmIaNg=;
-  b=SRw5nyIR0UHHoY9y/NRzST9lwRbtAciAo9xzDw1vNdckhHYGOmEGX5RG
-   2Az1SPRhKVSdR9v7ocgmogTHT5+Xep3DSOgUcV3vQt6MALT3t6wAlXiDa
-   1GtNbrW5slo6+ABOVJnB4ikf2I9StzZX3JYEJ90D/BNjdoauRDkrrPmqT
-   G0nhhGHbY+rvYZgXKZDeGucW8lVIynsN76S9lu1X7WTUIphTbfGHz8gO4
-   ZU0xs6kE6vCuA4pT2pczgry8Zz4sjER61KHqFxn0KineI1iqBTLN7iCt4
-   IPs9DiPRblpSxm7rkPNjEnIsNrxjzrIu3duD6Fh98h+/PIjmrA1dFQT1E
-   w==;
-X-CSE-ConnectionGUID: xAEh+9vhSmSY0E7xHNscVA==
-X-CSE-MsgGUID: 6MHq7riKRhS5kkkTtFDu6w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11775"; a="81316031"
+  bh=5KQnnvpLs2kRk2hShgf0dtzYCKkXuy92iY9XBGVZAKk=;
+  b=bWSxx+8wQ+wtSiJFv+PsKbDhUpuZLWCQ7agSc4gggeryFCDN94pf0ms5
+   h3aySig+T0DQqMgqHCPQaF3ab6xrBpjWD00fApT3akBKJU7oVD1mkv6AX
+   jrNTcBXEB5O6hdn4VyvAcn4VQxQ9kCbTfIv8yrmbifEbZqkLXA5bsA63b
+   d+k/r9vS4AmpYqbNQs+wtsyhr0dV/xma2kN6IXCwu5huD1Sku3SYbZRdV
+   4O4zlZtriWLKqkYc5k0MTXsw8R4r42c/8F6OsyRz6hIa6zPagzY9VJ5xZ
+   yvCt+J9n7bSeYNP0R21csFdJpVu3mtXRmzLLn3VjUPqlaqiAGhOCIocz3
+   g==;
+X-CSE-ConnectionGUID: DVyhZUW4QoOyY79C5+iIZg==
+X-CSE-MsgGUID: niBS2Ff3ScS4pgnKaF9qFQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11775"; a="78943134"
 X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; 
-   d="scan'208";a="81316031"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 May 2026 04:45:10 -0700
-X-CSE-ConnectionGUID: AgJc38odTbWSU+gUiV9RtQ==
-X-CSE-MsgGUID: PoUynkPXSnCjbnmKnH/IbQ==
+   d="scan'208";a="78943134"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 May 2026 05:00:08 -0700
+X-CSE-ConnectionGUID: FC3TFhvFSpepvKVhKsbDhQ==
+X-CSE-MsgGUID: J8PrAzbITribWHXyds1nbA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; 
-   d="scan'208";a="240480177"
+   d="scan'208";a="237274768"
 Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmviesa005.fm.intel.com with ESMTP; 04 May 2026 04:45:08 -0700
-Date: Mon, 4 May 2026 19:22:20 +0800
+  by fmviesa004.fm.intel.com with ESMTP; 04 May 2026 05:00:05 -0700
+Date: Mon, 4 May 2026 19:37:17 +0800
 From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Wentao Liang <vulab@iscas.ac.cn>
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+To: Sebastian Alba Vives <sebasjosue84@gmail.com>
+Cc: gregkh@linuxfoundation.org, linux-fpga@vger.kernel.org,
+	conor.dooley@microchip.com, mdf@kernel.org,
 	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH] fpga: region: fix use-after-free in
- child_regions_with_firmware()
-Message-ID: <afiBbC46CFauotNt@yilunxu-OptiPlex-7050>
-References: <20260408154534.404327-1-vulab@iscas.ac.cn>
+Subject: Re: [PATCH v4 1/3] fpga: dfl: add bounds check in
+ dfh_get_param_size()
+Message-ID: <afiE7f1R6YN/Qo0h@yilunxu-OptiPlex-7050>
+References: <20260407172230.40775-1-sebasjosue84@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -61,21 +61,53 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260408154534.404327-1-vulab@iscas.ac.cn>
+In-Reply-To: <20260407172230.40775-1-sebasjosue84@gmail.com>
 
-On Wed, Apr 08, 2026 at 03:45:34PM +0000, Wentao Liang wrote:
-> Move of_node_put(child_region) after the error print to avoid accessing
-> freed memory when pr_err() references child_region.
+On Tue, Apr 07, 2026 at 11:22:15AM -0600, Sebastian Alba Vives wrote:
+> dfh_get_param_size() can return a parameter size larger than the feature
+> region because the loop bounds check is evaluated before incrementing
+> size. If the EOP (End of Parameters) bit is set in the same iteration,
+> the inflated size is returned without re-validation against max.
 > 
-> Fixes: ef3acdd82075 ("fpga: region: move device tree support to of-fpga-region.c")
+> This can cause create_feature_instance() to call memcpy_fromio() with a
+> size exceeding the ioremap'd region when a malicious FPGA device provides
+> crafted DFHv1 parameter headers.
+> 
+> Add a bounds check after the size increment to ensure the accumulated
+> size never exceeds the feature boundary.
+> 
+> Fixes: a80a4b2b2e4f ("fpga: dfl: add support for DFHv1")
+> Signed-off-by: Sebastian Alba Vives <sebasjosue84@gmail.com>
+> ---
+> Changes in v4:
+>   - Resubmit as full series per maintainer request.
+> Changes in v2:
+>   - Use (size > max) instead of (size + DFHv1_PARAM_HDR > max).
+>     The previous check unnecessarily guarded against the next parameter
+>     header, which is not relevant at this point in the loop.
+>     Suggested by Xu Yilun.
+> ---
+>  drivers/fpga/dfl.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+> index 4087a36..81d7a68 100644
+> --- a/drivers/fpga/dfl.c
+> +++ b/drivers/fpga/dfl.c
+> @@ -1132,7 +1132,8 @@ static int dfh_get_param_size(void __iomem *dfh_base, resource_size_t max)
+>  			return -EINVAL;
+>  
+>  		size += next * sizeof(u64);
+> -
+> +		if (size > max)
+> +			return -EINVAL;
 
-The Fixes tag should identify the commit that introduced the problem, so
-it should be:
+I'd prefer a blank line here.
 
-  Fixes: 0fa20cdfcc1f ("fpga: fpga-region: device tree control for FPGA")
-
-I fixed it in place.
-
-Reviewed-by: Xu Yilun <yilun.xu@intel.com>
-
-Applied to for-next
+>  		if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
+>  			return size;
+>  	}
+> -- 
+> 2.43.0
+> 
+> 
