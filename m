@@ -1,106 +1,140 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FAE4371CE2;
-	Fri,  8 May 2026 08:27:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2631372B4B;
+	Sat,  9 May 2026 11:40:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778228843; cv=none; b=N/HOrp6cnTO9NwJbYXeo8KglEgqcP2rXx0xv/W2ycXaNNXM3oKjuoLu6j5Ffzjw7n0v6KnxISOFKmHA2le1vpypdVj7D0nHCOgNm4LGDBIvvjKlQL2hl0zm6VYLIg4/aAf8kRyE72N0E+yN1OUoVZwH4WXTH+fnr7+cHAjOY7gw=
+	t=1778326861; cv=none; b=INOfEFH+ToCuFeWi7rVSnaav+xMJl7/EQh18gCyNQHqhA+fJZV7ZGA/88GkKaQbJuE974WXYqc/Br+ViCgF4ySINwn1Uhuv1KOKlIG57O029Ze79XUN6L9eoiGnsoFHXIyf2tMhA0Ol/RS29RZQ/XTN6vTmytFXkIyk2aUu9HsY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778228843; c=relaxed/simple;
-	bh=2XtyrkPKcpb6jkfUwPcwbCkoYesqJAKaxKgvl0WqXWU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TkAcKMQYZTpDa77uSlKvtNTe+lIjJeSXwJKkEOWHmEGP1/AuPjGR3WyPuXugxc+p14MEPFuLhaoXd7j82HLwHUg2XaGA8dEW0w8gQ3fxCe5kRdFepBbXoUgwFkk5V5p1CTct0F/RLtXqKknWSztiee06HIYZBE6p30zbg87nXCc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Hv+ZXPe6; arc=none smtp.client-ip=198.175.65.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1778326861; c=relaxed/simple;
+	bh=dsN+LeLUajUmwwn/y/d+HoAY3+lsLO1R1TI5qhp2L/E=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=i5lIEPx3+TGhWs2YdgPo4/8L1pH3yoGp3mrEefqu42t/aTkaDxIyXnGrwFlpwwPROV8MNLvbx7+ImtrvUZOO7T/vXIabF/Gg0A5GtZai7wmW56eV7H4rOU7t+/LqVuLl91lF3Bgvu90F7zrSIMxvHwz17x/RQycHwMeN1eiieMQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=LQk3bzKE; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Hv+ZXPe6"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="LQk3bzKE"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778228843; x=1809764843;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=2XtyrkPKcpb6jkfUwPcwbCkoYesqJAKaxKgvl0WqXWU=;
-  b=Hv+ZXPe6S8VvFDaD8Vl7/1bCHmwsmrTJBIHUE/gk223SeuQV8njby1yt
-   USQHCnF3SpQU5ctKPPpN/zQTSnEqAGED0L6WhUOG2yOeuzadLOFz4IIIl
-   xbhnkpbiVkoIEC0YbzFnlSt4WEVBXvF1JtLXH16xNlR9f3W+Cq4jjQmh7
-   CtaSTWZRm/LEodaesWhqz+ytjr6N6gDzc6g74kjXvFzh0SA5Olx++4fmn
-   HpR2myrzWL6VJXiQE33QiUq8LFX92cGfVmMia1h+T/qlDzMYVUookb9ju
-   fRGN7Qa3QtsMuUckyOYsyYSMUMRUFRFHNK1iw6B/ZVFSbSv6eRGIjJy0o
-   Q==;
-X-CSE-ConnectionGUID: BRle+HzGQfS4OKlLjGf6fg==
-X-CSE-MsgGUID: M0tVDiRUQxO73JWI1cIlfQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="79130492"
-X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; 
-   d="scan'208";a="79130492"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 May 2026 01:27:21 -0700
-X-CSE-ConnectionGUID: IBYkuPZ+REqOkkGo2/kfDQ==
-X-CSE-MsgGUID: o9DHPeCSRaC/bVCb/ALX8g==
+  t=1778326859; x=1809862859;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=dsN+LeLUajUmwwn/y/d+HoAY3+lsLO1R1TI5qhp2L/E=;
+  b=LQk3bzKEzQkfAYEjaxYDItuCYAZdqEL89DQVqxAlUAs0ifhTy87MJQYy
+   dVrVG9Na6/sQ+BHno/B3GlK5ILvt+0DEr1EtAvjFD2fAsY5WJGd941DIq
+   RpuXCBU71xFolI4V5y4YYvoDN0X/03SGJhv9ByQsvvwpqDKx9z3nuh124
+   EGG1jZAyApRitAfMix0G5ajLGxv3GHh/cWZiXwHWbOuAZ47KjZZfKUK+6
+   YCw+kSRHZAoYaFynkfIjwmuAHBdQbyk5Qms2bIViYJBZBxzyUA0+y2GbX
+   HVY4Ig6zqQZo9Rskrg3g2l5tbNfaRK6ZupH0PfJmM8uQzOkb4AUpLV+P0
+   w==;
+X-CSE-ConnectionGUID: KToXaOiESja2Gb5T+L0hXA==
+X-CSE-MsgGUID: korKbKYxQwyanQPKUWBgfQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11780"; a="90754302"
+X-IronPort-AV: E=Sophos;i="6.23,225,1770624000"; 
+   d="scan'208";a="90754302"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 May 2026 04:40:58 -0700
+X-CSE-ConnectionGUID: P/WzQYxGQvi09L1EFrS5Zg==
+X-CSE-MsgGUID: 0JblDNN0RluJ8SjYdf/8qA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; 
-   d="scan'208";a="241679966"
-Received: from black.igk.intel.com ([10.91.253.5])
-  by fmviesa005.fm.intel.com with ESMTP; 08 May 2026 01:27:19 -0700
-Received: by black.igk.intel.com (Postfix, from userid 1003)
-	id 5E76899; Fri, 08 May 2026 10:27:18 +0200 (CEST)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+X-IronPort-AV: E=Sophos;i="6.23,225,1770624000"; 
+   d="scan'208";a="234341283"
+Received: from lkp-server01.sh.intel.com (HELO 82327192134e) ([10.239.97.150])
+  by fmviesa008.fm.intel.com with ESMTP; 09 May 2026 04:40:56 -0700
+Received: from kbuild by 82327192134e with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wLg3B-000000000vJ-2aE4;
+	Sat, 09 May 2026 11:40:53 +0000
+Date: Sat, 9 May 2026 19:39:57 +0800
+From: kernel test robot <lkp@intel.com>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Moritz Fischer <mdf@kernel.org>,
-	Xu Yilun <yilun.xu@intel.com>,
+	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
 	Tom Rix <trix@redhat.com>
-Subject: [PATCH v1 1/3] fpga: lattice-sysconfig-spi: Fix the terminator entries in ID tables
-Date: Fri,  8 May 2026 10:25:35 +0200
-Message-ID: <20260508082716.1156192-2-andriy.shevchenko@linux.intel.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260508082716.1156192-1-andriy.shevchenko@linux.intel.com>
-References: <20260508082716.1156192-1-andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v1 1/1] fpga: lattice-sysconfig-spi: simplify with
+ spi_get_device_match_data()
+Message-ID: <202605091959.PZIPUKud-lkp@intel.com>
+References: <20260508080650.1144588-1-andriy.shevchenko@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260508080650.1144588-1-andriy.shevchenko@linux.intel.com>
 
-The whole purpose of the terminator entry is to be the last one.
-The trailing comma makes this statement prone to failure. On top
-of that the style is used for the entries is unusual. Standardize
-this all by moving terminator entries to their own lines and drop
-trailing commas.
+Hi Andy,
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/fpga/lattice-sysconfig-spi.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+kernel test robot noticed the following build errors:
 
-diff --git a/drivers/fpga/lattice-sysconfig-spi.c b/drivers/fpga/lattice-sysconfig-spi.c
-index 6a906df45941..d8d5a33a25b7 100644
---- a/drivers/fpga/lattice-sysconfig-spi.c
-+++ b/drivers/fpga/lattice-sysconfig-spi.c
-@@ -116,7 +116,8 @@ static const struct spi_device_id sysconfig_spi_ids[] = {
- 	{
- 		.name = "sysconfig-ecp5",
- 		.driver_data = (kernel_ulong_t)&ecp5_spi_max_speed_hz,
--	}, {},
-+	},
-+	{}
- };
- MODULE_DEVICE_TABLE(spi, sysconfig_spi_ids);
- 
-@@ -125,7 +126,8 @@ static const struct of_device_id sysconfig_of_ids[] = {
- 	{
- 		.compatible = "lattice,sysconfig-ecp5",
- 		.data = &ecp5_spi_max_speed_hz,
--	}, {},
-+	},
-+	{}
- };
- MODULE_DEVICE_TABLE(of, sysconfig_of_ids);
- #endif /* IS_ENABLED(CONFIG_OF) */
+[auto build test ERROR on linus/master]
+[also build test ERROR on v7.1-rc2 next-20260508]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Andy-Shevchenko/fpga-lattice-sysconfig-spi-simplify-with-spi_get_device_match_data/20260509-133025
+base:   linus/master
+patch link:    https://lore.kernel.org/r/20260508080650.1144588-1-andriy.shevchenko%40linux.intel.com
+patch subject: [PATCH v1 1/1] fpga: lattice-sysconfig-spi: simplify with spi_get_device_match_data()
+config: arm-randconfig-004-20260509 (https://download.01.org/0day-ci/archive/20260509/202605091959.PZIPUKud-lkp@intel.com/config)
+compiler: clang version 23.0.0git (https://github.com/llvm/llvm-project 5bac06718f502014fade905512f1d26d578a18f3)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260509/202605091959.PZIPUKud-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605091959.PZIPUKud-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/fpga/lattice-sysconfig-spi.c:96:44: error: incompatible pointer types passing 'struct device *' to parameter of type 'const struct spi_device *' [-Wincompatible-pointer-types]
+      96 |         spi_max_speed = spi_get_device_match_data(dev);
+         |                                                   ^~~
+   include/linux/spi/spi.h:1757:52: note: passing argument to parameter 'sdev' here
+    1757 | spi_get_device_match_data(const struct spi_device *sdev);
+         |                                                    ^
+   1 error generated.
+
+
+vim +96 drivers/fpga/lattice-sysconfig-spi.c
+
+    85	
+    86	static int sysconfig_spi_probe(struct spi_device *spi)
+    87	{
+    88		struct device *dev = &spi->dev;
+    89		struct sysconfig_priv *priv;
+    90		const u32 *spi_max_speed;
+    91	
+    92		priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+    93		if (!priv)
+    94			return -ENOMEM;
+    95	
+  > 96		spi_max_speed = spi_get_device_match_data(dev);
+    97		if (!spi_max_speed)
+    98			return -EINVAL;
+    99	
+   100		if (spi->max_speed_hz > *spi_max_speed) {
+   101			dev_err(dev, "SPI speed %u is too high, maximum speed is %u\n",
+   102				spi->max_speed_hz, *spi_max_speed);
+   103			return -EINVAL;
+   104		}
+   105	
+   106		priv->dev = dev;
+   107		priv->command_transfer = sysconfig_spi_cmd_transfer;
+   108		priv->bitstream_burst_write_init = sysconfig_spi_bitstream_burst_init;
+   109		priv->bitstream_burst_write = sysconfig_spi_bitstream_burst_write;
+   110		priv->bitstream_burst_write_complete = sysconfig_spi_bitstream_burst_complete;
+   111	
+   112		return sysconfig_probe(priv);
+   113	}
+   114	
+
 -- 
-2.50.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
