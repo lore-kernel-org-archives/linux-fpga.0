@@ -1,62 +1,61 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2631372B4B;
-	Sat,  9 May 2026 11:40:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D50A2571C7;
+	Sat,  9 May 2026 13:48:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778326861; cv=none; b=INOfEFH+ToCuFeWi7rVSnaav+xMJl7/EQh18gCyNQHqhA+fJZV7ZGA/88GkKaQbJuE974WXYqc/Br+ViCgF4ySINwn1Uhuv1KOKlIG57O029Ze79XUN6L9eoiGnsoFHXIyf2tMhA0Ol/RS29RZQ/XTN6vTmytFXkIyk2aUu9HsY=
+	t=1778334499; cv=none; b=pwjYS/RlPCG7ziQDHO2bxXA1kk4FPICIZqfW6gG8kzniqsaKf7n3MJhww9U2dH5C6LVtMd5rstTipJAwYRTuu2a9z95v/jHTFo17Vr3xvzel+Kmj6td8dQUFqwZgS6DYgGYpmJIymcf//kikPuHTTLsc1XTNV/u2lJq7oN3SIcQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778326861; c=relaxed/simple;
-	bh=dsN+LeLUajUmwwn/y/d+HoAY3+lsLO1R1TI5qhp2L/E=;
+	s=arc-20240116; t=1778334499; c=relaxed/simple;
+	bh=soNz212u4CcfEPnTP+dW9qPZsQ9u0EEJad/ejiOqvv4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=i5lIEPx3+TGhWs2YdgPo4/8L1pH3yoGp3mrEefqu42t/aTkaDxIyXnGrwFlpwwPROV8MNLvbx7+ImtrvUZOO7T/vXIabF/Gg0A5GtZai7wmW56eV7H4rOU7t+/LqVuLl91lF3Bgvu90F7zrSIMxvHwz17x/RQycHwMeN1eiieMQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=LQk3bzKE; arc=none smtp.client-ip=198.175.65.12
+	 Content-Type:Content-Disposition:In-Reply-To; b=SB9Iy+GCjwtYjCUSjAtMu9c4jGu7zY9pvz/AEKA2+fOqBgdO+TNUY/AMTkgYw286W4ugnMr006FLmGmvXZfKR/rT98d3Y2rPvQFwYZVyALthMJFUTazMBiQXR6UzJIiAdaQhHuSTI6Y6lJM9FMltAms1oYfjnAHD8/Zk0g8011k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SPo8hZJT; arc=none smtp.client-ip=198.175.65.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="LQk3bzKE"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SPo8hZJT"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778326859; x=1809862859;
+  t=1778334497; x=1809870497;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=dsN+LeLUajUmwwn/y/d+HoAY3+lsLO1R1TI5qhp2L/E=;
-  b=LQk3bzKEzQkfAYEjaxYDItuCYAZdqEL89DQVqxAlUAs0ifhTy87MJQYy
-   dVrVG9Na6/sQ+BHno/B3GlK5ILvt+0DEr1EtAvjFD2fAsY5WJGd941DIq
-   RpuXCBU71xFolI4V5y4YYvoDN0X/03SGJhv9ByQsvvwpqDKx9z3nuh124
-   EGG1jZAyApRitAfMix0G5ajLGxv3GHh/cWZiXwHWbOuAZ47KjZZfKUK+6
-   YCw+kSRHZAoYaFynkfIjwmuAHBdQbyk5Qms2bIViYJBZBxzyUA0+y2GbX
-   HVY4Ig6zqQZo9Rskrg3g2l5tbNfaRK6ZupH0PfJmM8uQzOkb4AUpLV+P0
-   w==;
-X-CSE-ConnectionGUID: KToXaOiESja2Gb5T+L0hXA==
-X-CSE-MsgGUID: korKbKYxQwyanQPKUWBgfQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11780"; a="90754302"
+  bh=soNz212u4CcfEPnTP+dW9qPZsQ9u0EEJad/ejiOqvv4=;
+  b=SPo8hZJTsuR/NV+/keI1hnYohgLaDxyW+OD1jLruJtdaUI4odTrFO4ZN
+   i71fAEmD0kfoyrOGkcuJUP7gZEMYdZ5ncjTNpFiSE++LinQrCU4FIlxWB
+   9g3tgZW2/UgNnLke++SiX4HwKLEL3P6WHTYHzJcR30Z/SW4y4VosOVOjD
+   8vVUMQ6LHcLOLvvNd6yY7/6YQ6xwPvNs5nvIMW2DQQbO9cU6WTGsIl0Yy
+   gBItMEoH2Idn29S2lH3tt9B0wVRBijds4fq2Z1woIhvsraboqh5rOS/Dg
+   zpEdIkP3HyNlffIgYudQHsHTRaJQBaucONTGgSvukC0C/eAp/RaDXetQl
+   g==;
+X-CSE-ConnectionGUID: bQBs8SKWTzaqdvMrXV8zgA==
+X-CSE-MsgGUID: yGJnZriwTcGMmxHomZCitQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11781"; a="79231659"
 X-IronPort-AV: E=Sophos;i="6.23,225,1770624000"; 
-   d="scan'208";a="90754302"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 May 2026 04:40:58 -0700
-X-CSE-ConnectionGUID: P/WzQYxGQvi09L1EFrS5Zg==
-X-CSE-MsgGUID: 0JblDNN0RluJ8SjYdf/8qA==
+   d="scan'208";a="79231659"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 May 2026 06:48:17 -0700
+X-CSE-ConnectionGUID: kyWiMhtHTlmOxQdy8eRI0g==
+X-CSE-MsgGUID: SWwFQkSISw++Jv7OJI303A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,225,1770624000"; 
-   d="scan'208";a="234341283"
+   d="scan'208";a="238827957"
 Received: from lkp-server01.sh.intel.com (HELO 82327192134e) ([10.239.97.150])
-  by fmviesa008.fm.intel.com with ESMTP; 09 May 2026 04:40:56 -0700
+  by fmviesa004.fm.intel.com with ESMTP; 09 May 2026 06:48:15 -0700
 Received: from kbuild by 82327192134e with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1wLg3B-000000000vJ-2aE4;
-	Sat, 09 May 2026 11:40:53 +0000
-Date: Sat, 9 May 2026 19:39:57 +0800
+	id 1wLi2O-0000000011p-2Tjf;
+	Sat, 09 May 2026 13:48:12 +0000
+Date: Sat, 9 May 2026 21:47:44 +0800
 From: kernel test robot <lkp@intel.com>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>
+Cc: oe-kbuild-all@lists.linux.dev, Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>
 Subject: Re: [PATCH v1 1/1] fpga: lattice-sysconfig-spi: simplify with
  spi_get_device_match_data()
-Message-ID: <202605091959.PZIPUKud-lkp@intel.com>
+Message-ID: <202605092148.6MdLTolJ-lkp@intel.com>
 References: <20260508080650.1144588-1-andriy.shevchenko@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
@@ -82,27 +81,30 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Andy-Shevchenko/fpga-latt
 base:   linus/master
 patch link:    https://lore.kernel.org/r/20260508080650.1144588-1-andriy.shevchenko%40linux.intel.com
 patch subject: [PATCH v1 1/1] fpga: lattice-sysconfig-spi: simplify with spi_get_device_match_data()
-config: arm-randconfig-004-20260509 (https://download.01.org/0day-ci/archive/20260509/202605091959.PZIPUKud-lkp@intel.com/config)
-compiler: clang version 23.0.0git (https://github.com/llvm/llvm-project 5bac06718f502014fade905512f1d26d578a18f3)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260509/202605091959.PZIPUKud-lkp@intel.com/reproduce)
+config: arc-allyesconfig (https://download.01.org/0day-ci/archive/20260509/202605092148.6MdLTolJ-lkp@intel.com/config)
+compiler: arc-linux-gcc (GCC) 15.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260509/202605092148.6MdLTolJ-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202605091959.PZIPUKud-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605092148.6MdLTolJ-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
->> drivers/fpga/lattice-sysconfig-spi.c:96:44: error: incompatible pointer types passing 'struct device *' to parameter of type 'const struct spi_device *' [-Wincompatible-pointer-types]
+   drivers/fpga/lattice-sysconfig-spi.c: In function 'sysconfig_spi_probe':
+>> drivers/fpga/lattice-sysconfig-spi.c:96:51: error: passing argument 1 of 'spi_get_device_match_data' from incompatible pointer type [-Wincompatible-pointer-types]
       96 |         spi_max_speed = spi_get_device_match_data(dev);
          |                                                   ^~~
-   include/linux/spi/spi.h:1757:52: note: passing argument to parameter 'sdev' here
+         |                                                   |
+         |                                                   struct device *
+   In file included from drivers/fpga/lattice-sysconfig-spi.c:7:
+   include/linux/spi/spi.h:1757:52: note: expected 'const struct spi_device *' but argument is of type 'struct device *'
     1757 | spi_get_device_match_data(const struct spi_device *sdev);
-         |                                                    ^
-   1 error generated.
+         |                           ~~~~~~~~~~~~~~~~~~~~~~~~~^~~~
 
 
-vim +96 drivers/fpga/lattice-sysconfig-spi.c
+vim +/spi_get_device_match_data +96 drivers/fpga/lattice-sysconfig-spi.c
 
     85	
     86	static int sysconfig_spi_probe(struct spi_device *spi)
