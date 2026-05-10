@@ -1,105 +1,74 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAAEE2D5C83;
-	Sun, 10 May 2026 09:06:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 891D63242BE;
+	Sun, 10 May 2026 11:26:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778403965; cv=none; b=Na22cyRJrX/G5K4R8/cXk/mOpZfa2ssvpCUO4vfRvPYR3Fx3WrZc5y8Jmq4iH3BJC99S57s8y9hSRWAztV7a2p92G0pWEN04MYGFD402/ISEzyE6/Mvt+PuRBAmHVoVBI0kEm6j6TeUQ0c4QLCMjakCZeMhwV3STDNwpyO+hd00=
+	t=1778412373; cv=none; b=aRSZfob8TwLEtuZ3ZQvgbDYUeNTiaCazpEzLHOJmwire8zBHP4yvosEU2Xl31SiZvK3jQw3wISqJjXveFe8jQzJ6YkvK1oq9KN/idDfyyX91DDjFbsCMfSaH3s4bktCtLqXp6//k1+y2HhhQTWO5q9FXmoYrrhUCB1v6q1vYFpc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778403965; c=relaxed/simple;
-	bh=0Isckc1yQzXmLlG0vSYnNBNWmKaeMjQ2pooa5allG/Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=akBhQd84Wn7o9+avjKvc4meLjIbwZKjQbDqLNXzMKCZbICdcjh+3pUI0txxzSEsT0TMaMq4jJfVbVOTwRDNh+6axsDpvmcb7OWKzbg/SD2RnYOOktmHqT1MnjGhy/5bOKJAEMUsdCL/aFSoxgH0SMc3bM4DeTdY21x2Wb0MkJhc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=WSV0SPo/; arc=none smtp.client-ip=198.175.65.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1778412373; c=relaxed/simple;
+	bh=2KRTjZ2Lq8ZGRTyfYZPEXXRsQjgKx/NzMCHPT9+g3SI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=uYK4mkAhEvu7lHJNpQO5A7QIR0poBteYmJBPpp9QZwMOArgqQxe6wXA4JlFhVvKcRA698J8MYQFZpILEsshtfrCimhlqb01fhtcH88p8JI194TFGJ5ld3Zf3irXNyj2C6Q/DF80pjPoxx9ei2VC4aKgPc1eIjZQGRLh/A353rPs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=okjxQ6ZO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="WSV0SPo/"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778403964; x=1809939964;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=0Isckc1yQzXmLlG0vSYnNBNWmKaeMjQ2pooa5allG/Q=;
-  b=WSV0SPo/I9fNu3prBjUcK/d4dKWZMleK2OJxFxkLyKWTPM7FLkwTDdAT
-   JkFwt+P9sGfNs8AYh4frKvvf9sYLw5u3zZoF67qo8i6TKF8GGiP6pM0fk
-   85bFhEuBZET2MtdyPrCYGjk5yiBtPsodRwpIGtabesJSV25v54xi+u7Bt
-   OAYBqQmQQDLSq5EBiTtU37+JXSnx+ZgWCnDXXyYanfPNVTJCtvv9TNqz0
-   PCeATbIW68RRqIrso5raOVVqzIAfsNSybSMhc/fpDwKsP7Zgy/9aLmW5U
-   57shh1hj7iXIIEpzoa93sC2yVMbvnniZgozCGrDUuLx10ep+ghsqpWpDU
-   Q==;
-X-CSE-ConnectionGUID: 0n/Lx2nKSLKNyIyKIBYybw==
-X-CSE-MsgGUID: cs1mF9I0QrWMWv/UE1q+Ww==
-X-IronPort-AV: E=McAfee;i="6800,10657,11781"; a="90787130"
-X-IronPort-AV: E=Sophos;i="6.23,227,1770624000"; 
-   d="scan'208";a="90787130"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2026 02:06:04 -0700
-X-CSE-ConnectionGUID: A5xmgIGVTiCAX7bVeUycqA==
-X-CSE-MsgGUID: rgaVewntQNSDSsskhY3wXA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,227,1770624000"; 
-   d="scan'208";a="232706427"
-Received: from black.igk.intel.com ([10.91.253.5])
-  by fmviesa006.fm.intel.com with ESMTP; 10 May 2026 02:06:02 -0700
-Received: by black.igk.intel.com (Postfix, from userid 1003)
-	id A3E0095; Sun, 10 May 2026 11:06:00 +0200 (CEST)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Moritz Fischer <mdf@kernel.org>,
-	Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>
-Subject: [PATCH v2 1/1] fpga: lattice-sysconfig-spi: simplify with spi_get_device_match_data()
-Date: Sun, 10 May 2026 10:51:58 +0200
-Message-ID: <20260510090556.1582900-1-andriy.shevchenko@linux.intel.com>
-X-Mailer: git-send-email 2.50.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="okjxQ6ZO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3DB5EC2BCB8;
+	Sun, 10 May 2026 11:26:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778412373;
+	bh=2KRTjZ2Lq8ZGRTyfYZPEXXRsQjgKx/NzMCHPT9+g3SI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=okjxQ6ZO2rCXK0FiyK77U2aTNgcVTcTMEALrRzyYXJoz/CRP62qy1NUH6tWADKkf0
+	 isu7QOlxxiBapWJhB4qY3oU6FAtuX+C5Yzx+8B0tGvmqPuIG2u+RliTjjhRkaEpHlg
+	 UIWjvvw+YhY910QWp9EIktPQ7gwAtBzz+HbHHhsDBcXLm91Hzh6NGOyydPmJ6gO+QX
+	 PE+Is2ED9RuUB225NOZ10NmtI1cg60/A0X1T4wQnyF3xtBnFhEdddYYNkKFk53xDlY
+	 J3As1YwnIgvhxHQZgXAvH54TOotwgSSPrXJfQQEfTJxY12U1cU/THOsOuTCZpbJX3H
+	 kp9cdbXw1mVbA==
+Date: Sun, 10 May 2026 16:56:08 +0530
+From: Vinod Koul <vkoul@kernel.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Mark Brown <broonie@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>, Lee Jones <lee@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Peter Rosin <peda@axentia.se>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Heiner Kallweit <hkallweit1@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+	linux-spi@vger.kernel.org, linux-leds@vger.kernel.org,
+	linux-fpga@vger.kernel.org, driver-core@lists.linux.dev
+Subject: Re: [PATCH 02/10] phy: core: switch to using
+ class_find_device_by_fwnode()
+Message-ID: <agBrUA7SsOLwhOMc@vaman>
+References: <20260322-remove-device-find-by-of-node-v1-0-b72eb22a1215@gmail.com>
+ <20260322-remove-device-find-by-of-node-v1-2-b72eb22a1215@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260322-remove-device-find-by-of-node-v1-2-b72eb22a1215@gmail.com>
 
-Use spi_get_device_match_data() helper to simplify a bit the driver.
+On 22-03-26, 18:54, Dmitry Torokhov wrote:
+> In preparation to class_find_device_by_of_node() going away switch to
+> using class_find_device_by_fwnode().
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
-v2: used correct parameter (LKP)
- drivers/fpga/lattice-sysconfig-spi.c | 11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+Acked-by: Vinod Koul <vkoul@kernel.org>
 
-diff --git a/drivers/fpga/lattice-sysconfig-spi.c b/drivers/fpga/lattice-sysconfig-spi.c
-index 44691cfcf50a..a62ee5b7bfeb 100644
---- a/drivers/fpga/lattice-sysconfig-spi.c
-+++ b/drivers/fpga/lattice-sysconfig-spi.c
-@@ -85,7 +85,6 @@ static int sysconfig_spi_bitstream_burst_complete(struct sysconfig_priv *priv)
- 
- static int sysconfig_spi_probe(struct spi_device *spi)
- {
--	const struct spi_device_id *dev_id;
- 	struct device *dev = &spi->dev;
- 	struct sysconfig_priv *priv;
- 	const u32 *spi_max_speed;
-@@ -94,15 +93,7 @@ static int sysconfig_spi_probe(struct spi_device *spi)
- 	if (!priv)
- 		return -ENOMEM;
- 
--	spi_max_speed = device_get_match_data(dev);
--	if (!spi_max_speed) {
--		dev_id = spi_get_device_id(spi);
--		if (!dev_id)
--			return -ENODEV;
--
--		spi_max_speed = (const u32 *)dev_id->driver_data;
--	}
--
-+	spi_max_speed = spi_get_device_match_data(spi);
- 	if (!spi_max_speed)
- 		return -EINVAL;
- 
+
 -- 
-2.50.1
-
+~Vinod
