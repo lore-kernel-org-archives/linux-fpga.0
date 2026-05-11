@@ -1,116 +1,102 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 605893FD152;
-	Mon, 11 May 2026 15:42:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA76246AECC
+	for <linux-fpga@vger.kernel.org>; Mon, 11 May 2026 18:13:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778514146; cv=none; b=QoiRJ5Z9I3kXdNiOJt2NSqtnwRbP1+ms2BS+hbBZswt6EsIOIk0D556KHc4ctHU69GfCetetscZaesVY/F5JdmSl4lqZ4FmBy3SwkrEL3XDGQvHOYBITlK8qH6XuczTz8CwcKhZkK+83MAxcd3wDanZYdj864lYpldVJ6K7GJv4=
+	t=1778523187; cv=none; b=UonlNIjtCijnFHkEUqJURQn7nLdbkrY9/K6EsUG4DZE8YBhmWPAlHlOAmcXDUs5VHFNPIaVYCPShwhbsW4/Hpg9zRlBcRhadt2BQlfIvoSLUsDSU8dafFqSWZXYVvA23hh9NsvhEiF4CHn7CYku5YY8hNfKX/byguBYJ8tAlo+o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778514146; c=relaxed/simple;
-	bh=5xkwwt0IhI1fL6Su+oxiTo0tOlXF+xjkOAnP7BUrFgQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=myUtDXetlJaqho+XWCQ6I12RtwVZvRWY9ZbTBGArp26DPqlXDwYwI2VMsdkGkqR7C3dFCdROJMEXkw7lzSEEOzo0DPAikfs+UnI6YNuqyBUzGRpTKlmTcVhgAvAdKYwEXnoSOaX0rxjknNJIuF7AEhRVVdyn7LmkpoqbHivhlJ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=La+ttmjw; arc=none smtp.client-ip=192.198.163.8
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1778523187; c=relaxed/simple;
+	bh=NoB36IZEgJkI+tMI6ftJrPQBlm4ipXplXUNXUgfnavI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=udvd5y1kD/Pe72i+IGrxd7SzCJ/1VwG/+316DQTivXre9oCaIb0xzyBtQco2r78yL5fk1uwKSTRb6ZUpjUAXuo+LUXjlLETmveqbn8jfzVKw+truiSl8Auj6IrPCX9xw6JDcrQNXEkAucTZNMdZWXmgCSKqH5rKRUHdkmBsAb3c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Yt4b7eD0; arc=none smtp.client-ip=209.85.215.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="La+ttmjw"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778514146; x=1810050146;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=5xkwwt0IhI1fL6Su+oxiTo0tOlXF+xjkOAnP7BUrFgQ=;
-  b=La+ttmjw4rHtAUNYZ3BSrqtzcCZee15LJ2pY35Iy6AmCk4q/WQTaftbp
-   n+fQiwDti+maAUn0jG/miHeTo16rRHO778ATyZThmCXGffsmEo8d88JGu
-   vVB/JYYxO72ivLNdsBEVqWSAv2XT195hE1jcWgW6DF7DVXBf3jMpIu3ns
-   h+Sw4Or8AX7GwuXMXaVo0nQLhdwSH8zFjN79liZFX9VTaUE6Uiwdv2HlE
-   PWWGOU/Xc08nODStHLZP/Oirj9gE9emMcjrpl+7Rfwr+NGPJPYAolwBWc
-   LXvBxjuNBmk++3uH0rbEeXMuUjuP+AH2Q+2V0iBpuels23F06BWIwj98H
-   w==;
-X-CSE-ConnectionGUID: aAWbd3RmS9GUNvilqtXmDg==
-X-CSE-MsgGUID: Z7Ew5BY5QWCCyHYECRx9Uw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11783"; a="96969690"
-X-IronPort-AV: E=Sophos;i="6.23,229,1770624000"; 
-   d="scan'208";a="96969690"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 May 2026 08:42:17 -0700
-X-CSE-ConnectionGUID: uDQDU3tDS7ySpzg9MsqqGA==
-X-CSE-MsgGUID: eDrwlhyITL2Mto68flGG3w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,229,1770624000"; 
-   d="scan'208";a="237443700"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orviesa008.jf.intel.com with ESMTP; 11 May 2026 08:42:15 -0700
-Date: Mon, 11 May 2026 23:19:06 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Sebastian Alba Vives <sebasjosue84@gmail.com>
-Cc: gregkh@linuxfoundation.org, linux-fpga@vger.kernel.org,
-	conor.dooley@microchip.com, mdf@kernel.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v5 1/3] fpga: dfl: add bounds check in
- dfh_get_param_size()
-Message-ID: <agHzavPSk2XJp775@yilunxu-OptiPlex-7050>
-References: <20260504121332.1053563-1-sebasjosue84@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Yt4b7eD0"
+Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-c822652f82aso3289135a12.3
+        for <linux-fpga@vger.kernel.org>; Mon, 11 May 2026 11:13:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778523186; x=1779127986; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Wy4rHFR1J3QE23I1tHHT9S/ejRZhlJ7cxFAdJ8TxDZI=;
+        b=Yt4b7eD06glAH5rwpSGp7HIVxoKPblWURLZCHdzR3WIHfnhEIav2hUwFgUxX+b+n2B
+         0WfEVhY6UGOkIIbhsl3QTdHGIPYF868WF1IyYDSkiBee5uz6WKRHbKEop6WRCu1LHG4m
+         ErVNyBGvU6wFF6FXJ1kxC/YHX5eFnaRZObEdSrpJdzS9QYkWr84FSY0r5oxWWQwNh7W3
+         AORuPJVrGAVTjrs2Uj9navaNKDGxvwUqsGgD+OTwaDreONAQSYBIIplqMYbUo/55OaSv
+         RsuqfR+ay1rPpmVubdsUtC765uoaRYVmmTO//lPAx+u4MYdt0kclB+YKO8y0G3Ok4lF0
+         LoDg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778523186; x=1779127986;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Wy4rHFR1J3QE23I1tHHT9S/ejRZhlJ7cxFAdJ8TxDZI=;
+        b=FL3KQn8XZyg/TS2gwYeHewmWryThutM63XhkNh2NdvSp2wCaSFmxYjAH8XlW5yPExP
+         8HgAsYXjpN0NFfZ8/QZ1JfWZ9qMdzzjqn+/zjtQTeTNkZ2UNcFlNzSD6G5XMjgfRhiwI
+         MzZXG1bcWK40lahvfq48RiUkh6HSzaAcr0b6jL+0DrqYhWxAGwIOlx16+GqpP6OvoeOu
+         OrNlALUf3VkCfwUhFqM+j3sUmNzEhokqg6LHsO4VXWrXceQ6onZophZ9uQEgtYHWqgkz
+         uwC+bdR3Y6VoTqwScVfoFMTHgkfjDCUZDQKDUgxzFljZPsLHs9tPKUfbkkVHPBtCa2k1
+         XuGA==
+X-Forwarded-Encrypted: i=1; AFNElJ/GSjMdmT6psEaL2rYdGRurAn4Vujl49gY3XCOr3GPb3/JbvFgKWXlmAX+IYzQ1c42IvbWGUr6qgZhN@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywr2EmNw8Ky1zhz+/LaZZvf0GKMGk6HZCZDCuR11y9/9C59/bGg
+	7gIxGY1k7I8WTilTbPCYVj98Z3+AAzj42IvMAJrzqDpT0LlkTQwpo4cX
+X-Gm-Gg: Acq92OElxqkUdfynnE0rFNI8Q9iWuy54tx4HHdocxN8fvfnIkrBq1y5W9dP6bmmoDUJ
+	E9/FBt+v1+Lj+sEuSupZdyZ2nrhl9AW/LYJQ0QWnkFERb8X8RWtQMKzPxo/SyQe5Ap9seSk3gRb
+	aQ2E5y2J6GABDGBiPgxj7f555YIFi1ysn1mY1UJ7fgFPk8XELMw4qAnq10oPRzPUkexAHioeIwD
+	l/OlKqzDwT0htsrCH+3UAdOl2HJnMgBVtsKUd/ByVpbRE/zo+5jKDYotRLrHEdXjzyl6c1B9EEb
+	zDUv2TZKqXEOyH5Zius4VZ3sScQG0Ag/G3qoxekHVYfIf6V5T+v74rWSBoqyhCdswq/uvRsi0hL
+	ysiY1eMKAnV/75Wn5MC/1Y8sMXHjV8UtgI/HT3Bs7z1RABNIj4iFQXvCR0MzlJCanTPPzrRuOHf
+	InVkwItxhIrkPmjyuVlqD3rnSGM8Mq4dug4dmq
+X-Received: by 2002:a05:6a20:9149:b0:3a1:f82e:b009 with SMTP id adf61e73a8af0-3aad42e2dc0mr11161186637.18.1778523185932;
+        Mon, 11 May 2026 11:13:05 -0700 (PDT)
+Received: from Strong10mede.domain.name ([122.161.50.8])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c82675fb236sm9947993a12.0.2026.05.11.11.13.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 May 2026 11:13:05 -0700 (PDT)
+From: Mayur Kumar <kmayur809@gmail.com>
+To: yilun.xu@intel.com,
+	mdf@kernel.org
+Cc: trix@redhat.com,
+	linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Mayur Kumar <kmayur809@gmail.com>
+Subject: [PATCH] fpga: dfl: afu: use kzalloc_obj over kzalloc with sizeof
+Date: Mon, 11 May 2026 23:42:40 +0530
+Message-Id: <20260511181240.223224-1-kmayur809@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260504121332.1053563-1-sebasjosue84@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Mon, May 04, 2026 at 06:13:30AM -0600, Sebastian Alba Vives wrote:
-> dfh_get_param_size() can return a parameter size larger than the feature
-> region because the loop bounds check is evaluated before incrementing
-> size. If the EOP (End of Parameters) bit is set in the same iteration,
-> the inflated size is returned without re-validation against max.
-> 
-> This can cause create_feature_instance() to call memcpy_fromio() with a
-> size exceeding the ioremap'd region when a malicious FPGA device provides
-> crafted DFHv1 parameter headers.
-> 
-> Add a bounds check after the size increment to ensure the accumulated
-> size never exceeds the feature boundary.
-> 
-> Fixes: a80a4b2b2e4f ("fpga: dfl: add support for DFHv1")
-> Signed-off-by: Sebastian Alba Vives <sebasjosue84@gmail.com>
-> ---
-> Changes in v5:
->   - Add blank line after the new bounds check.
->     Suggested by Xu Yilun.
-> Changes in v4:
->   - Resubmit as full series per maintainer request.
-> Changes in v2:
->   - Use (size > max) instead of (size + DFHv1_PARAM_HDR > max).
->     Suggested by Xu Yilun.
-> ---
->  drivers/fpga/dfl.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-> index 81d7a68..4c63c7c 100644
-> --- a/drivers/fpga/dfl.c
-> +++ b/drivers/fpga/dfl.c
-> @@ -1134,6 +1134,7 @@ static int dfh_get_param_size(void __iomem *dfh_base, resource_size_t max)
->  		size += next * sizeof(u64);
->  		if (size > max)
->  			return -EINVAL;
-> +
+The checkpatch tool prefers the use of kzalloc_obj() as it provides
+better type safety and conciseness compared to kzalloc() with
+an explicit sizeof().
 
-Hey, please provide a patch that can apply to linux-next. I can do
-nothing to your series. Please read Documentation/process/ before
-submit.
+Signed-off-by: Mayur Kumar <kmayur809@gmail.com>
+---
+ drivers/fpga/dfl-afu-dma-region.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Also, please make a cover-letter (Patch #0) when you make the patch
-series.
+diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+index 87652d58d03..8a9d705ebe3 100644
+--- a/drivers/fpga/dfl-afu-dma-region.c
++++ b/drivers/fpga/dfl-afu-dma-region.c
+@@ -316,7 +316,7 @@ int afu_dma_map_region(struct dfl_feature_dev_data *fdata,
+ 	if (user_addr + length < user_addr)
+ 		return -EINVAL;
+ 
+-	region = kzalloc(sizeof(*region), GFP_KERNEL);
++	region = kzalloc_obj(region, GFP_KERNEL);
+ 	if (!region)
+ 		return -ENOMEM;
+ 
+-- 
+2.34.1
 
->  		if (FIELD_GET(DFHv1_PARAM_HDR_NEXT_EOP, v))
->  			return size;
->  	}
-> -- 
-> 2.43.0
-> 
