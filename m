@@ -1,62 +1,61 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B313139A076;
-	Tue, 12 May 2026 18:49:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F07025B086;
+	Tue, 12 May 2026 19:10:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778611746; cv=none; b=JNTcHthNCMT7gn27gi/LwMDIETsOHaW3dDzLL9IQOs0w5Jt2jSdUzeaVxP2fcZ+Xu2AUXw3Q95KSfgr6FjIpG+W038AnpErjplK9w1i3yVlHsTHrXrSwghyOn5WTnvUV12Mc2n9mddwU8Mliu4nZ0BmV4VJHyn4OSt8VQiZGm7A=
+	t=1778613004; cv=none; b=Rl5QZIvsVGW04LmSohj2mUsh0N+9Ssl1q+Nsm7WaGr07QsU+O56UU13JEayzJNXkdbO6uLem/t2IYa0WuqXxSynbyugibFrJLFFomzXrdqDSL9Yctv3XErRakdshcgDWQIzO2B3+ve88b5ezS7ePsGnfV/FZwuqyAjnK9bcvVSk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778611746; c=relaxed/simple;
-	bh=IFHHh+ypxZXCZn0UJ7amOewF7rDeqiqicm+o7AXxP+k=;
+	s=arc-20240116; t=1778613004; c=relaxed/simple;
+	bh=zUTaYGQD4wbN3rbTXzLUzoV7K2uAgMqMG61SDP/XTDw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Q/w1/rwZqMRK3RX+u47GTMiw9K78AnkVBeOLji2a1pQ2FIW/gQk1s2Wcd+ZHnEHbB+oOq4PuNaj2+aVHg7+dcpOR8tdMKed6bW57kBFUyIFNfbED80G+rAkfpKqSKA9M5eOnRioHOFouPkToKs0RVAvPdVjUSLUHjVeUhr4fm0k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ODlZ5+1v; arc=none smtp.client-ip=192.198.163.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=FpplkU0TuzUbhdkW7k9drPhGGLP4DIdBBw1EE65CYu9hsOZ58JzBO98dBMdywVYkaa3GJa8CBzuCRTcOW117Tvf97fBgIjmMS5IXZLNMHsoqirzdxFY8AMJ519KjMx8bBz0CoKEQ7t8hqEP+HMT+akJP4tfZqI+lkVWyRnJSSfE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=P5jsa0TN; arc=none smtp.client-ip=198.175.65.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ODlZ5+1v"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="P5jsa0TN"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778611745; x=1810147745;
+  t=1778613002; x=1810149002;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=IFHHh+ypxZXCZn0UJ7amOewF7rDeqiqicm+o7AXxP+k=;
-  b=ODlZ5+1vAu7ZeIAyGrlhXexq1fCmWT0nwVOkuK8XoB+ehwwbc2vdX0p5
-   7L+rBV5+sJSmQ15teYu3Z20NL2epYHH53sugukptZ6EdwcgEl8cK/zyAK
-   MxIS+BWi11iwObKvSs5npb/vU0Q36Y54qTZ6r+Zw8Ht/cpX8YjxguphTn
-   x5UW28NVYBTMAke5lQVfItcualxBzyGss5mM1SxOIri+xGrsGDTGx7pCA
-   cVwPn9mONqop3uE2fW43iNS3zu9h2TZD+IGLN2sBL2CREZ5JGe8iq+toC
-   aRG5KhGG86Sr0PQ4cqHX9FO1qUQLixs9ydL74NvUA+jnQ2L6mPou4D0Bw
+  bh=zUTaYGQD4wbN3rbTXzLUzoV7K2uAgMqMG61SDP/XTDw=;
+  b=P5jsa0TNmBOc6Uc8VJy9IolCYCg5FKF9ptSFRb5phCm31eYvQOKxDVIU
+   3mJaJC5O7cTagL+91uXS6oMPzSrVV2wuCsY3hiLhCoOlqlJ0iC28nzRmG
+   85yunHvlFxCrcxYiZ1Gv6WskxYG2p+phoFRpBYxBck3nwKM/v/BjXXcLw
+   CTcpkmM9z99Sz4dP5KFdYGz3FIolozuGQ2Yrd0e2J8KzlLW8gAtZ7VG7a
+   5u5uCWAtvldhoDpmp3AvuZlmhEjaQTfNMCN6XC655R8tEl9qIpJh8Gdim
+   uPnniiltdXyQlLN7Y5r52h6eRLmS36Un7ogp5ENLmAe6LEruJW19twagI
    g==;
-X-CSE-ConnectionGUID: tEs+fXgJRQGBOLoKDlLz/Q==
-X-CSE-MsgGUID: 4dbK3M8oTsGGTWmMIVAMww==
-X-IronPort-AV: E=McAfee;i="6800,10657,11784"; a="78674345"
+X-CSE-ConnectionGUID: uGTocQCaR2qErVQJxftYVw==
+X-CSE-MsgGUID: GnlRb8ajQxm2wTKKk9YrGQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11784"; a="90994727"
 X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; 
-   d="scan'208";a="78674345"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2026 11:48:59 -0700
-X-CSE-ConnectionGUID: bv0RfIDiSxuIqtGOxgCzBg==
-X-CSE-MsgGUID: HO37BE3RRI2gdM6tw39b7Q==
+   d="scan'208";a="90994727"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2026 12:10:02 -0700
+X-CSE-ConnectionGUID: tsHMwJIeRy6cXLEGBmStiw==
+X-CSE-MsgGUID: vm3g/eu4RNSE3TD2aHY3Pg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; 
-   d="scan'208";a="268190672"
+   d="scan'208";a="236874756"
 Received: from lkp-server01.sh.intel.com (HELO dca79079c3eb) ([10.239.97.150])
-  by orviesa002.jf.intel.com with ESMTP; 12 May 2026 11:48:57 -0700
+  by orviesa006.jf.intel.com with ESMTP; 12 May 2026 12:09:59 -0700
 Received: from kbuild by dca79079c3eb with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1wMsA2-000000002dX-3nbN;
-	Tue, 12 May 2026 18:48:54 +0000
-Date: Wed, 13 May 2026 02:48:39 +0800
+	id 1wMsUO-000000002f9-0g39;
+	Tue, 12 May 2026 19:09:56 +0000
+Date: Wed, 13 May 2026 03:09:43 +0800
 From: kernel test robot <lkp@intel.com>
 To: muhammad.nazim.amirul.nazle.asmade@altera.com,
 	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+Cc: oe-kbuild-all@lists.linux.dev, Tom Rix <trix@redhat.com>,
+	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] fpga: altera-cvp: Extend wrapped HW credit counter in
  software
-Message-ID: <202605130220.ZrvfCQQU-lkp@intel.com>
+Message-ID: <202605130328.AdvlQMiJ-lkp@intel.com>
 References: <20260511053858.30921-1-muhammad.nazim.amirul.nazle.asmade@altera.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
@@ -82,27 +81,30 @@ url:    https://github.com/intel-lab-lkp/linux/commits/muhammad-nazim-amirul-naz
 base:   linus/master
 patch link:    https://lore.kernel.org/r/20260511053858.30921-1-muhammad.nazim.amirul.nazle.asmade%40altera.com
 patch subject: [PATCH] fpga: altera-cvp: Extend wrapped HW credit counter in software
-config: i386-buildonly-randconfig-006-20260512 (https://download.01.org/0day-ci/archive/20260513/202605130220.ZrvfCQQU-lkp@intel.com/config)
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260513/202605130220.ZrvfCQQU-lkp@intel.com/reproduce)
+config: x86_64-randconfig-r072-20260512 (https://download.01.org/0day-ci/archive/20260513/202605130328.AdvlQMiJ-lkp@intel.com/config)
+compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
+smatch: v0.5.0-9065-ge9cc34fd
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260513/202605130328.AdvlQMiJ-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202605130220.ZrvfCQQU-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605130328.AdvlQMiJ-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
->> drivers/fpga/altera-cvp.c:242:13: error: no member named 'device_family_type' in 'struct altera_cvp_conf'
+   drivers/fpga/altera-cvp.c: In function 'altera_cvp_v2_wait_for_credit':
+>> drivers/fpga/altera-cvp.c:242:25: error: 'struct altera_cvp_conf' has no member named 'device_family_type'
      242 |                 if (conf->device_family_type == SOCFPGA_CVP_V2_AGILEX5) {
-         |                     ~~~~  ^
->> drivers/fpga/altera-cvp.c:242:35: error: use of undeclared identifier 'SOCFPGA_CVP_V2_AGILEX5'
+         |                         ^~
+>> drivers/fpga/altera-cvp.c:242:49: error: 'SOCFPGA_CVP_V2_AGILEX5' undeclared (first use in this function)
      242 |                 if (conf->device_family_type == SOCFPGA_CVP_V2_AGILEX5) {
-         |                                                 ^
->> drivers/fpga/altera-cvp.c:243:32: error: use of undeclared identifier 'VSE_CVP_AG5_TX_CREDITS'
+         |                                                 ^~~~~~~~~~~~~~~~~~~~~~
+   drivers/fpga/altera-cvp.c:242:49: note: each undeclared identifier is reported only once for each function it appears in
+>> drivers/fpga/altera-cvp.c:243:53: error: 'VSE_CVP_AG5_TX_CREDITS' undeclared (first use in this function); did you mean 'VSE_CVP_TX_CREDITS'?
      243 |                         vse_cvp_tx_credits_offset = VSE_CVP_AG5_TX_CREDITS;
-         |                                                     ^
-   3 errors generated.
+         |                                                     ^~~~~~~~~~~~~~~~~~~~~~
+         |                                                     VSE_CVP_TX_CREDITS
 
 
 vim +242 drivers/fpga/altera-cvp.c
