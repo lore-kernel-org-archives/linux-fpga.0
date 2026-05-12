@@ -1,167 +1,195 @@
-Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com [209.85.215.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DE0F3803D2
-	for <linux-fpga@vger.kernel.org>; Tue, 12 May 2026 18:20:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B313139A076;
+	Tue, 12 May 2026 18:49:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778610044; cv=none; b=s2ZBgCoIlRz5IUHC1LHoBDyTzxj1SZ5AA3lqz3sdMUhzqsuvC5h1b3L3MFhm7gPOiOH2Np+RutT1PUAFYxSvQa3z72aeEzb4aOv+WnU13nfNkBA6Ai7+XkD50FGbevsdUMC31PcL7vLUXrFDJ9kl9+OrEHONn76yRDkhePsddcw=
+	t=1778611746; cv=none; b=JNTcHthNCMT7gn27gi/LwMDIETsOHaW3dDzLL9IQOs0w5Jt2jSdUzeaVxP2fcZ+Xu2AUXw3Q95KSfgr6FjIpG+W038AnpErjplK9w1i3yVlHsTHrXrSwghyOn5WTnvUV12Mc2n9mddwU8Mliu4nZ0BmV4VJHyn4OSt8VQiZGm7A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778610044; c=relaxed/simple;
-	bh=pO8NlAmiTWkHmRBLgfiKkiU0z5nI5RLtmSmBflRQil0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hG3jGfe8rwQF4RwnqeUMOjnRnVgBVymogHsmrCAXSvR14pIozTg5S4Oss2Bc+o5Mca2OBd/Z5ur4A3yBpCBdp9MdQjWdG92sj5iLGytHwgcNMQCUQ0H2in5/BZNGn7++UNWw9BZmjonDzINsDLLEU2jeB1YZTZOD5vei91e1/3Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gN/mtUVm; arc=none smtp.client-ip=209.85.215.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778611746; c=relaxed/simple;
+	bh=IFHHh+ypxZXCZn0UJ7amOewF7rDeqiqicm+o7AXxP+k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Q/w1/rwZqMRK3RX+u47GTMiw9K78AnkVBeOLji2a1pQ2FIW/gQk1s2Wcd+ZHnEHbB+oOq4PuNaj2+aVHg7+dcpOR8tdMKed6bW57kBFUyIFNfbED80G+rAkfpKqSKA9M5eOnRioHOFouPkToKs0RVAvPdVjUSLUHjVeUhr4fm0k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ODlZ5+1v; arc=none smtp.client-ip=192.198.163.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gN/mtUVm"
-Received: by mail-pg1-f182.google.com with SMTP id 41be03b00d2f7-c8028fa6039so3877674a12.2
-        for <linux-fpga@vger.kernel.org>; Tue, 12 May 2026 11:20:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778610043; x=1779214843; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ofX8j/LRQqY8OmZou1joEHESeXuEQsIjw2iTr6XNHZk=;
-        b=gN/mtUVmLIcvbdVIueQNlnvLHZfJVuBCNW1TbwvUhY5xpibncZaL1asYahRe+HZjlD
-         iSOvDyl38MzQXDYhhTweT7tdlKd9F+a9GCxvcAu14CEmwMcifSUznO4XLBzHn9W7WoNL
-         SMQSrmbzySeVe9mD2nq4U6j2Yb/ZdzR39/wTQDEOcJ9i766e8ypPYgoW20yltGypvP7q
-         uwb0dDyOlHsKeYU/VK9sz5yeu5lrvFCPaoLKXWAk3ziGv/v/a3kpmfgEMt1x5izx5uyP
-         +B4zYA+rFIzqEOShVL01yEsgh9p9FOiGV+mg+jlEnLtmQkCRqT9Z9gsEB7Rmf8IsHFqd
-         57aQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778610043; x=1779214843;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ofX8j/LRQqY8OmZou1joEHESeXuEQsIjw2iTr6XNHZk=;
-        b=qkGjxXta+0Psa6ypugtJaSFxTpqYJv7AsQeJ7huQlhD6tHBB9VsNgcHaYc71XL+nmy
-         c82kf6AIxEZjdzV3Xp9y4x+1qNwPDn4QsasgaeyOmW3tbe6BWDTj408sA/VUE5FOvKz8
-         JGgbJXkOGsVZ7nsJ9gLeKPzTI01Z2GGJMYPVyvnv6sxIs7078QCUmlyVFh59kpRqODHi
-         yRnjnQCguJqtn21W9XJv1FhDUsc+ySdcJbYrnFHTPSYoR7yNqbF6g9Wz/HZrWcWTXW7g
-         FkK40WxBRj7q8auDnO01Yp6AZNHYpdUe/CRIodDtMjVbay6hvspc7DZsWbOqBG5rai+3
-         kMqg==
-X-Forwarded-Encrypted: i=1; AFNElJ/SPqvHue6/1V/o6m3+XCId4x3qygNJP5tO8Y5LWUzfZYP5nJJfU22h/61CjB9DNEc8PeCttSL2wpSE@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxrx02HVY2eZThLKVX/3LMzvZmVVuJ3tQLB85LiWOkIDD1PNOXC
-	36bqnt6i2bXd/IKFzmGnFcx1ybPO+8XnUC3U1wtPgWAukgi1jaFhcKxB
-X-Gm-Gg: Acq92OGPT9krr9JcNfMG2m+WXnIbdCKcdrSfn6kXkQwT1CBRow9UaX3cfpmLViP6W+5
-	egM+PeF4TmBWMQA03lmYPxhFotJicVIPj7LwOAEXDTXTsTwqrvksKpyWG1DiPqwZ/XOgXCtlyKj
-	0BDXXn5zzXjBE0RvDtVSkTBplGpQ6ddV0v8mmVAEBKKqM6oKKxl/RyHsZSZ7zq5OQI9HT4roK1b
-	QQu22VBTt1Xx7c2AqVMeqSmJUHEQzXk8cUSTNpENIeDPfYn6VqwTZ3GLvTVV4vrz+i/8Ak7FKhS
-	xmIzQDM2kOj0bC6S/EvJKMhldP5nu5zbYE5CMc+eqhtI36DboozTJuZ65Et/UDqHAFg2Eh1/0Y0
-	Gi1bIU4bumZK815iyxox+dYo1xkE6pxZ2RP+/DwdP/jrz0hCtTawdVXBmFpxMdSAObVP30v3Raw
-	bf24Mlc5PvRUiSM3a+B/kRB/6+/b2UVK3PBAZkz+r8hdGhWbCM+4LS112rGJrpr+/TQJ1OElT+T
-	xd2
-X-Received: by 2002:a05:6a20:1590:b0:3a2:d79c:416d with SMTP id adf61e73a8af0-3ad99f243dfmr5200035637.43.1778610042797;
-        Tue, 12 May 2026 11:20:42 -0700 (PDT)
-Received: from Ubuntu.. ([49.37.171.24])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c826767bf53sm12478739a12.6.2026.05.12.11.20.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 May 2026 11:20:42 -0700 (PDT)
-From: Manish Baing <manishbaing2789@gmail.com>
-To: conor+dt@kernel.org,
-	mdf@kernel.org,
-	yilun.xu@intel.com,
-	robh@kernel.org,
-	krzk+dt@kernel.org
-Cc: trix@redhat.com,
-	s.trumtrar@pengutronix.de,
-	linux-fpga@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	manishbaing2789@gmail.com
-Subject: [PATCH v2] dt-bindings: fpga: altr,socfpga-fpga-mgr: convert to DT schema
-Date: Tue, 12 May 2026 18:20:33 +0000
-Message-ID: <20260512182033.66222-1-manishbaing2789@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ODlZ5+1v"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778611745; x=1810147745;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=IFHHh+ypxZXCZn0UJ7amOewF7rDeqiqicm+o7AXxP+k=;
+  b=ODlZ5+1vAu7ZeIAyGrlhXexq1fCmWT0nwVOkuK8XoB+ehwwbc2vdX0p5
+   7L+rBV5+sJSmQ15teYu3Z20NL2epYHH53sugukptZ6EdwcgEl8cK/zyAK
+   MxIS+BWi11iwObKvSs5npb/vU0Q36Y54qTZ6r+Zw8Ht/cpX8YjxguphTn
+   x5UW28NVYBTMAke5lQVfItcualxBzyGss5mM1SxOIri+xGrsGDTGx7pCA
+   cVwPn9mONqop3uE2fW43iNS3zu9h2TZD+IGLN2sBL2CREZ5JGe8iq+toC
+   aRG5KhGG86Sr0PQ4cqHX9FO1qUQLixs9ydL74NvUA+jnQ2L6mPou4D0Bw
+   g==;
+X-CSE-ConnectionGUID: tEs+fXgJRQGBOLoKDlLz/Q==
+X-CSE-MsgGUID: 4dbK3M8oTsGGTWmMIVAMww==
+X-IronPort-AV: E=McAfee;i="6800,10657,11784"; a="78674345"
+X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; 
+   d="scan'208";a="78674345"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2026 11:48:59 -0700
+X-CSE-ConnectionGUID: bv0RfIDiSxuIqtGOxgCzBg==
+X-CSE-MsgGUID: HO37BE3RRI2gdM6tw39b7Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; 
+   d="scan'208";a="268190672"
+Received: from lkp-server01.sh.intel.com (HELO dca79079c3eb) ([10.239.97.150])
+  by orviesa002.jf.intel.com with ESMTP; 12 May 2026 11:48:57 -0700
+Received: from kbuild by dca79079c3eb with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wMsA2-000000002dX-3nbN;
+	Tue, 12 May 2026 18:48:54 +0000
+Date: Wed, 13 May 2026 02:48:39 +0800
+From: kernel test robot <lkp@intel.com>
+To: muhammad.nazim.amirul.nazle.asmade@altera.com,
+	Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fpga: altera-cvp: Extend wrapped HW credit counter in
+ software
+Message-ID: <202605130220.ZrvfCQQU-lkp@intel.com>
+References: <20260511053858.30921-1-muhammad.nazim.amirul.nazle.asmade@altera.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260511053858.30921-1-muhammad.nazim.amirul.nazle.asmade@altera.com>
 
-Convert the Altera SoCFPGA FPGA Manager bindings from text
-format to YAML schema.
+Hi,
 
-Signed-off-by: Manish Baing <manishbaing2789@gmail.com>
----
-Changes in v2:
-- Removed Rob Herring from the maintainers list as per Conor's feedback.
+kernel test robot noticed the following build errors:
 
- .../bindings/fpga/altera-socfpga-fpga-mgr.txt | 17 ---------
- .../bindings/fpga/altr,socfpga-fpga-mgr.yaml  | 38 +++++++++++++++++++
- 2 files changed, 38 insertions(+), 17 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/fpga/altera-socfpga-fpga-mgr.txt
- create mode 100644 Documentation/devicetree/bindings/fpga/altr,socfpga-fpga-mgr.yaml
+[auto build test ERROR on linus/master]
+[also build test ERROR on v7.1-rc3 next-20260508]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-diff --git a/Documentation/devicetree/bindings/fpga/altera-socfpga-fpga-mgr.txt b/Documentation/devicetree/bindings/fpga/altera-socfpga-fpga-mgr.txt
-deleted file mode 100644
-index d52f3340414d..000000000000
---- a/Documentation/devicetree/bindings/fpga/altera-socfpga-fpga-mgr.txt
-+++ /dev/null
-@@ -1,17 +0,0 @@
--Altera SOCFPGA FPGA Manager
--
--Required properties:
--- compatible : should contain "altr,socfpga-fpga-mgr"
--- reg        : base address and size for memory mapped io.
--               - The first index is for FPGA manager register access.
--               - The second index is for writing FPGA configuration data.
--- interrupts : interrupt for the FPGA Manager device.
--
--Example:
--
--	hps_0_fpgamgr: fpgamgr@ff706000 {
--		compatible = "altr,socfpga-fpga-mgr";
--		reg = <0xFF706000 0x1000
--		       0xFFB90000 0x1000>;
--		interrupts = <0 175 4>;
--	};
-diff --git a/Documentation/devicetree/bindings/fpga/altr,socfpga-fpga-mgr.yaml b/Documentation/devicetree/bindings/fpga/altr,socfpga-fpga-mgr.yaml
-new file mode 100644
-index 000000000000..9bcc1200d61d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fpga/altr,socfpga-fpga-mgr.yaml
-@@ -0,0 +1,38 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/fpga/altr,socfpga-fpga-mgr.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Altera SOCFPGA FPGA Manager
-+
-+maintainers:
-+  - Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+
-+properties:
-+  compatible:
-+    const: altr,socfpga-fpga-mgr
-+
-+  reg:
-+    items:
-+      - description: FPGA manager register access
-+      - description: Writing FPGA configuration data
-+
-+  interrupts:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    fpgamgr@ff706000 {
-+        compatible = "altr,socfpga-fpga-mgr";
-+        reg = <0xff706000 0x1000>,
-+              <0xffb90000 0x1000>;
-+        interrupts = <0 175 4>;
-+    };
+url:    https://github.com/intel-lab-lkp/linux/commits/muhammad-nazim-amirul-nazle-asmade-altera-com/fpga-altera-cvp-Extend-wrapped-HW-credit-counter-in-software/20260512-200019
+base:   linus/master
+patch link:    https://lore.kernel.org/r/20260511053858.30921-1-muhammad.nazim.amirul.nazle.asmade%40altera.com
+patch subject: [PATCH] fpga: altera-cvp: Extend wrapped HW credit counter in software
+config: i386-buildonly-randconfig-006-20260512 (https://download.01.org/0day-ci/archive/20260513/202605130220.ZrvfCQQU-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260513/202605130220.ZrvfCQQU-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605130220.ZrvfCQQU-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/fpga/altera-cvp.c:242:13: error: no member named 'device_family_type' in 'struct altera_cvp_conf'
+     242 |                 if (conf->device_family_type == SOCFPGA_CVP_V2_AGILEX5) {
+         |                     ~~~~  ^
+>> drivers/fpga/altera-cvp.c:242:35: error: use of undeclared identifier 'SOCFPGA_CVP_V2_AGILEX5'
+     242 |                 if (conf->device_family_type == SOCFPGA_CVP_V2_AGILEX5) {
+         |                                                 ^
+>> drivers/fpga/altera-cvp.c:243:32: error: use of undeclared identifier 'VSE_CVP_AG5_TX_CREDITS'
+     243 |                         vse_cvp_tx_credits_offset = VSE_CVP_AG5_TX_CREDITS;
+         |                                                     ^
+   3 errors generated.
+
+
+vim +242 drivers/fpga/altera-cvp.c
+
+   227	
+   228	static int altera_cvp_v2_wait_for_credit(struct fpga_manager *mgr,
+   229						 u32 blocks)
+   230	{
+   231		u32 timeout = V2_CREDIT_TIMEOUT_US / V2_CHECK_CREDIT_US;
+   232		struct altera_cvp_conf *conf = mgr->priv;
+   233		int ret;
+   234		u32 val;
+   235		u32 credit_mask;
+   236		u32 vse_cvp_tx_credits_offset = VSE_CVP_TX_CREDITS;
+   237		u32 mod;
+   238		u32 real_credit;
+   239	
+   240		do {
+   241			/* READ DWORD is required for Agilex5 but READ BYTE is required for non-Agilex5 */
+ > 242			if (conf->device_family_type == SOCFPGA_CVP_V2_AGILEX5) {
+ > 243				vse_cvp_tx_credits_offset = VSE_CVP_AG5_TX_CREDITS;
+   244				credit_mask = 0xFFF;
+   245				ret = altera_read_config_dword(conf, vse_cvp_tx_credits_offset, &val);
+   246			} else {
+   247				/*
+   248				 * For the byte config read path, val is zeroed before pci_read_config_byte
+   249				 * so only the low byte is defined before masking.
+   250				 */
+   251				val = 0;
+   252				credit_mask = 0xFF;
+   253				ret = altera_read_config_byte(conf, vse_cvp_tx_credits_offset,
+   254							      (u8 *)&val);
+   255			}
+   256	
+   257	
+   258			if (ret) {
+   259				dev_err(&conf->pci_dev->dev,
+   260					"Error reading CVP Credit Register\n");
+   261				return ret;
+   262			}
+   263	
+   264			val &= credit_mask;
+   265			mod = credit_mask + 1;
+   266	
+   267			/*
+   268			 * HW credit is n bits and wraps; extend it in software so we can
+   269			 * compare to sent_packets directly. On a forward wrap the masked
+   270			 * value jumps from high to low; require (last - val) > mod/2 so a
+   271			 * small backward glitch is not counted as a wrap. More than one
+   272			 * wrap between polls is not detected if the low bits repeat.
+   273			 */
+   274			if (conf->credit_ext_inited &&
+   275			    val < conf->last_credit_hw &&
+   276			    (conf->last_credit_hw - val) > (mod / 2))
+   277				conf->overflow_counter++;
+   278	
+   279			conf->last_credit_hw = val;
+   280			conf->credit_ext_inited = true;
+   281	
+   282			real_credit = conf->overflow_counter * mod + val;
+   283	
+   284			if (real_credit > conf->sent_packets)
+   285				return 0;
+   286			if (real_credit < conf->sent_packets) {
+   287				dev_err(&conf->pci_dev->dev,
+   288					"CVP credit behind sent count (real %u reg 0x%x sent %u)\n",
+   289					real_credit, val, conf->sent_packets);
+   290				return -EPROTO;
+   291			}
+   292	
+   293			ret = altera_cvp_chk_error(mgr, blocks * ALTERA_CVP_V2_SIZE);
+   294			if (ret) {
+   295				dev_err(&conf->pci_dev->dev,
+   296					"CE Bit error credit reg[0x%x]:sent[0x%x]\n",
+   297					val, conf->sent_packets);
+   298				return -EAGAIN;
+   299			}
+   300	
+   301			/* Limit the check credit byte traffic */
+   302			usleep_range(V2_CHECK_CREDIT_US, V2_CHECK_CREDIT_US + 1);
+   303		} while (timeout--);
+   304	
+   305		dev_err(&conf->pci_dev->dev, "Timeout waiting for credit\n");
+   306		return -ETIMEDOUT;
+   307	}
+   308	
+
 -- 
-2.43.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
