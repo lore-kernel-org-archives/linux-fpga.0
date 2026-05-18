@@ -1,93 +1,107 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C92392C0285;
-	Mon, 18 May 2026 15:09:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DE2F2989BC
+	for <linux-fpga@vger.kernel.org>; Mon, 18 May 2026 16:53:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779116990; cv=none; b=HypVY+MqSPZRWOAyEC8NW1LT7ux+0spfAd0hNzYz4+WRcGUUZqt2ZkQMI/er3IuULLRrN2TVQU+JMTH/qpPZyHA1/ZZENnfFYAzRSDg32DTENEKwgz8nPqKkcNwAU3SElnxuAhq9hcQkd1TL66onZipmHB1eJFyFBgoDQ9tRwnI=
+	t=1779123213; cv=none; b=YAdSk0/6bJW+2nnNcyDIZ+iPLjD7CIdLKb2pEZoXgq7JS0VOt9IHjhZO87okfulcpNF+UMdDD8ZdpALvj1uxtSpZy0HiHtplu/DaU8UFnH+YvO1FI3EUwlf8F1KnAejiP9CIoi5u6C4+ZMtz+GztC7c6EkcGkKifQ2i2DyE8dmQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779116990; c=relaxed/simple;
-	bh=WKZYEhuY2FvrtXJIroTIhV4+i/xLJHJ0x+vs4MSa9yg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qE76FneSJonTY6fYRk6/DE3iinill7gUmEaDkvb1BDPT2pooAFV7qgbHJfwvjfU6ywUrLt4thqGJNQk+UQte0EvlYzohyR5xa1TAJx9MtHw4cIofaUXnhyG9jonNujz44VhHr2hahjWMgofLP2OBohWnI2JVE66BsWVS79Yy1fw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=kNuvDoUq; arc=none smtp.client-ip=198.175.65.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1779123213; c=relaxed/simple;
+	bh=O58YtyLftv/aSr8x9baMQzWxATwo2ioj8rHnKr5cmYk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OWllpdmWUiQqzGWliO1t+2y6/Sc0n7CZjz/CdQG39j3+Oq4O7xz5f9I5B6k5lsDj8MW73+2rKsenCWJPtQNri0N0DSNvzgBcTF+cUUOQpa19l+ZYeTzN0IPIrTmd8WLLJYbG37vAYU47vgpx2Rm2Dkikd4PoFsQOggDG7qn8L+A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=L3QAkuKr; arc=none smtp.client-ip=209.85.128.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="kNuvDoUq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779116989; x=1810652989;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=WKZYEhuY2FvrtXJIroTIhV4+i/xLJHJ0x+vs4MSa9yg=;
-  b=kNuvDoUqTlSZdA0k5AN3AlCM0obPlRwpaFknrmHcRi9Ol34oFjFV24WY
-   f2msYJBidswrbKxCEgVWeaJH62uRNXsYKpbzT4xL40vxnc4pvYV4g/BNr
-   IxIpcyTTrhQPavU/KPlDeqYlfwduARDvYh+KGEXxDi8FAAsBLRrvVyOZG
-   tgL8LeKNnsWgb8q9u/W9BuEjZ8/qThgUDzGR0xZHlhh1I8+CTRJRBBshx
-   JT2ADb0CeFn9VLUabqW5Ygpn+FGA+JI5cDktFFLCHXL2/JqmEf3geklYU
-   neuaeOpobhgZCx/0Oz8aEc3gtCJe92i3Wg9tyd1PpI9ffXPJlqntwOq2E
-   g==;
-X-CSE-ConnectionGUID: mI4cPWxfQF2uSiAPQt38fg==
-X-CSE-MsgGUID: W/xM9S6MRxG7QkBdWFuw1g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11790"; a="79936793"
-X-IronPort-AV: E=Sophos;i="6.23,242,1770624000"; 
-   d="scan'208";a="79936793"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 May 2026 08:09:48 -0700
-X-CSE-ConnectionGUID: 0y6fbu4jS0igkFBT3OggFw==
-X-CSE-MsgGUID: 1047+jEsSTyh71ATGR+IYg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,242,1770624000"; 
-   d="scan'208";a="243436627"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orviesa003.jf.intel.com with ESMTP; 18 May 2026 08:09:46 -0700
-Date: Mon, 18 May 2026 22:46:16 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Manish Baing <manishbaing2789@gmail.com>, s.trumtrar@pengutronix.de,
-	devicetree@vger.kernel.org, yilun.xu@intel.com, trix@redhat.com,
-	conor+dt@kernel.org, linux-kernel@vger.kernel.org,
-	linux-fpga@vger.kernel.org, krzk+dt@kernel.org, mdf@kernel.org
-Subject: Re: [PATCH v2] dt-bindings: fpga: altr,socfpga-fpga-mgr: convert to
- DT schema
-Message-ID: <agsmOHxOSLdqk+3F@yilunxu-OptiPlex-7050>
-References: <20260512182033.66222-1-manishbaing2789@gmail.com>
- <177877399996.840047.5687994834400196062.robh@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L3QAkuKr"
+Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-7bd5e373d07so20707997b3.2
+        for <linux-fpga@vger.kernel.org>; Mon, 18 May 2026 09:53:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779123211; x=1779728011; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=q6OJAQsGwoFPD7r4LZcpMPocelNw4jhWQiyjjqAx5Pk=;
+        b=L3QAkuKrkQ0UziMDwTYwuZW6ExFK9XePVRNR6f7NZFO4FvsWxgc0g40/eAE4YdYDu4
+         FoOAe48oRZLErxQt5/6u8THA/MU5G2O7rRo+UpD/vy2lPKI8mkLiSa500bFn+UcYd/bm
+         TG2O6JFipMb3MS0StKeIaV3UlAPY+uB5Px5ts00s1y1qRU+oFv9ycLvHX7oT7rKMIJOK
+         IQIWP2yIr0oaRDhtQaT1UXT4q2JYWn7q5sSaV63VUtxc2+SId3fj2cRGaKuhsNXlTmpb
+         0yuJbq7Eo/UglSlirFgpqz2TpHPL0GqeccFE3wcLFNJsXifVWYWCxkp9CIwJOtYb3rGb
+         bSBA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779123211; x=1779728011;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=q6OJAQsGwoFPD7r4LZcpMPocelNw4jhWQiyjjqAx5Pk=;
+        b=fkssfiXbOeQVto4Io52Cdnlis6N4oXPCHpfLRmqiMs7nIBLG5gmUNpJvecXJXZeWdA
+         OprUfxlpQJDAXsKVMOB019LtG0xFgSOTiZiah3/hFVXDFuDTlN7R4py+kmcgqie4miWy
+         5CwAWlTSplTppJbZCTyzBkWa+KliEFPYSN1x2pKR5prYR8TEaoH2wBDyqCBG4EZjUZpJ
+         5zsJHxTykJ6qez0pfwVDKpG+DBITb/+CIDKdtNKo7ssQnxnA6up50f+xkqhFCVnbLprA
+         v7hRVjuM2umtkgPAqNq7NyLHdEf3Vvgma2VmLt+IxbBEjcBSkM0r8l7miAcj3tAZbh9G
+         zBBw==
+X-Gm-Message-State: AOJu0YzQoXqCXBXQSGg+9nKhKCvFB7RUHGhmxrxXlP3EvvDi4jICyUTp
+	LK9OrN8paO84xMDfacb7RGInRJLWPkPh00hhc0aiK2SQP6k03Wzkxba/
+X-Gm-Gg: Acq92OEqjS8fFipEPPF/ka4c53kIJuTr8ya4p3YEmAkqFp24sXF4+L1SVnFAjR79exW
+	li39Z2sXWM93CyqPceoylmgOfxyohflh5v36Em5ge0VQDcfm6U9GBWJK91coGWBqA0lyDQz/1Q3
+	pP/tjqiuJyLSZVzkNp+Q2RPpXjWL0cn5mqe+vZrmffiURpIPfYaXTcHek/UtT4Mt+n6RNWeN5Nx
+	ZQm+KdLToUvjsgSTnHlYUgu8MfQS1S6tGG09Z1p+zXpJ3EZAGnV2U9ehFa0e71iiuHcFbNgctPr
+	xem4+EY5Kss+ztcrJ2Lcr37UF1Z/TREogt4D3LunjKT1tfD9Mou74izY3Rq2iU7qc0JooPz5hP4
+	4jd3WDSP/56uCb3oeZD449rZ9hjxTQzJUTLijnsXSgdv/lQnWta0Ww3/7PYy2CIwu8D9jyFzeh+
+	n6/buVdMBxb6lj0MPRyRrFq/zSDH6VYOPB4zpmsrtLTOb6TNd1aMEcAVaDkq4sNojOVjpvO4cPp
+	EQmRrh6dYzhahjU
+X-Received: by 2002:a05:690c:19:b0:7bb:eaf:5101 with SMTP id 00721157ae682-7c9599a2f1emr185013507b3.16.1779123211650;
+        Mon, 18 May 2026 09:53:31 -0700 (PDT)
+Received: from localhost.localdomain ([186.151.100.108])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-7cc965ab98dsm24232957b3.0.2026.05.18.09.53.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 May 2026 09:53:30 -0700 (PDT)
+From: Sebastian Alba Vives <sebasjosue84@gmail.com>
+To: yilun.xu@linux.intel.com,
+	gregkh@linuxfoundation.org
+Cc: linux-fpga@vger.kernel.org,
+	conor.dooley@microchip.com,
+	mdf@kernel.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	Sebastian Alba Vives <sebasjosue84@gmail.com>
+Subject: [PATCH v7 0/3] fpga: bounds checks and input validation fixes
+Date: Mon, 18 May 2026 10:52:15 -0600
+Message-ID: <20260518165218.35388-1-sebasjosue84@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <177877399996.840047.5687994834400196062.robh@kernel.org>
+Content-Transfer-Encoding: 8bit
 
-On Thu, May 14, 2026 at 10:53:58AM -0500, Rob Herring (Arm) wrote:
-> 
-> On Tue, 12 May 2026 18:20:33 +0000, Manish Baing wrote:
-> > Convert the Altera SoCFPGA FPGA Manager bindings from text
-> > format to YAML schema.
-> > 
-> > Signed-off-by: Manish Baing <manishbaing2789@gmail.com>
-> > ---
-> > Changes in v2:
-> > - Removed Rob Herring from the maintainers list as per Conor's feedback.
-> > 
-> >  .../bindings/fpga/altera-socfpga-fpga-mgr.txt | 17 ---------
-> >  .../bindings/fpga/altr,socfpga-fpga-mgr.yaml  | 38 +++++++++++++++++++
-> >  2 files changed, 38 insertions(+), 17 deletions(-)
-> >  delete mode 100644 Documentation/devicetree/bindings/fpga/altera-socfpga-fpga-mgr.txt
-> >  create mode 100644 Documentation/devicetree/bindings/fpga/altr,socfpga-fpga-mgr.yaml
-> > 
-> 
-> Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+This series adds three defensive fixes to FPGA drivers:
 
-Acked-by: Xu Yilun <yilun.xu@intel.com>
+Patch 1/3 fixes dfh_get_param_size() in the DFL driver where the loop
+bounds check is evaluated before incrementing size, potentially returning
+an inflated size that exceeds the feature region boundary.
 
-Applied to for-next
+Patch 2/3 validates the DMA mapping length in afu_ioctl_dma_map() at the
+ioctl entry point before passing it down the call chain, preventing
+implicit integer truncation in pin_user_pages_fast().
 
-> 
-> 
+Patch 3/3 fixes mpf_ops_parse_header() in the Microchip SPI FPGA manager
+where a zero header_size from the bitstream causes a one-byte read before
+the buffer start.
+
+Sebastian Alba Vives (3):
+  fpga: dfl: add bounds check in dfh_get_param_size()
+  fpga: dfl-afu: validate DMA mapping length in afu_dma_map_region()
+  fpga: microchip-spi: fix zero header_size OOB read in
+    mpf_ops_parse_header()
+
+ drivers/fpga/dfl-afu-main.c  | 3 +++
+ drivers/fpga/dfl.c           | 2 ++
+ drivers/fpga/microchip-spi.c | 3 +++
+ 3 files changed, 8 insertions(+)
+
+-- 
+2.43.0
+
