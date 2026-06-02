@@ -1,116 +1,186 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ot1-f53.google.com (mail-ot1-f53.google.com [209.85.210.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B8322D1F44;
-	Tue,  2 Jun 2026 01:52:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 140AB38E5D4
+	for <linux-fpga@vger.kernel.org>; Tue,  2 Jun 2026 04:20:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780365150; cv=none; b=ktaWfLI4Rno9yanbM7uahloN7yXMAC11nsbM7nU7OdARx4yCthMqMQh7d76BCTNI3DZq3EeilIoICyiYUDMiYFKY0R/UD25EmOVAywDIYuleUAB1tHsqnqGbMea5genHDiplM+4Pdg4DsEtJcQW9Puw6Flc7UUGZKhoK551yKE4=
+	t=1780374049; cv=none; b=r5el/FbDhftxWAacTLRaIHzjNKxb9DRtne9Sy34UTnk3GA/WoQUAokYgLg+tDcFcRxgDC/vsX0JvDK+VdHqI+hCtfIHzNzcIrLv7Ebnyk91v0+0ftHjIrGHISJNU6pf/pYgwqF7WjBgC1iZyRS2PEAq38GXzK8y5+ZaXjE5tpaU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780365150; c=relaxed/simple;
-	bh=UbeHIEb23qudY7Yu6sAEN6v7i5GXY37qr3IyEOTwhFo=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=oNNmAz2rl/sE4sFboFHII2gbFQTatUxmZ5CrBSmCL2lUXXvJpSesgLqeSjkTU/OfZ9A42V88TbDa6le4bzirdXR4dF+07Oo9gZmKal1vNi3nKLTTWD6c5HPRlb0l8Lt8uvg/G2rZ07O1HhZbI789cLC0m/x/uTe6WGhbaBOzacI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bljXLWJV; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780374049; c=relaxed/simple;
+	bh=5Xm8IPwfY0dyellfnNLjdKdpNFj+MktK6q6JKPEvMiU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gZsTsP9Wpf7Whn+vdLSbZOoZ92wQ8dA9UuQpDJRh3ku8iGxz8J1MvFwQ6vLEleLtXEHl9QBOksEE+gCaWRDorG1jIKadhn3S+3+9bysRyvgts0Ge98ePDmsNenVT7+rJhmWCwjJkN0iLYgOJyjxXZ6Q1MYlG4Ug61hT3b1Q6OG4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=II2P7NY7; arc=none smtp.client-ip=209.85.210.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bljXLWJV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F0F81F00893;
-	Tue,  2 Jun 2026 01:52:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780365148;
-	bh=UbeHIEb23qudY7Yu6sAEN6v7i5GXY37qr3IyEOTwhFo=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=bljXLWJVhKCQzIrEQUgvjQKwoL4IAsNEvv+tFevNyZTEVXA2DKPgS5KgEWo5fOlfg
-	 kAD4eMVM9s5FG0IoJ3iGq5nZ5b7S5s8/emYRBZYpJ3xw2Y7hFDGg6vkGbBaLM0THn/
-	 Obdgn6fdZrlpoXoIN0jLB1Xs6+Io0zbcY04Iu+GLlO1m//ZqhDM4i/whYxfsJacxsc
-	 zRXhZcHFlmhVQH04C4njokwHJ79ywP9pr+U3dxwqNmVudh9W5U7FI1/v/VW3xMjSAA
-	 PDVQWfm8eCioNiqxuDfM4jShJ4n4uQwNUtrmrgSuMvcW4DJ9GFAHGwyoK4fmGHXRU3
-	 oHC0gYTqR85Vw==
-Date: Mon, 1 Jun 2026 18:52:26 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Richard Cochran <richardcochran@gmail.com>, Wen Gu
- <guwen@linux.alibaba.com>, tglx@kernel.org, andrew+netdev@lunn.ch,
- davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jstultz@google.com,
- anna-maria@linutronix.de, frederic@kernel.org, daniel.lezcano@kernel.org,
- sboyd@kernel.org, vladimir.oltean@nxp.com, wei.fang@nxp.com,
- xiaoning.wang@nxp.com, jonathan.lemon@gmail.com, vadim.fedorenko@linux.dev,
- yangbo.lu@nxp.com, svens@linux.ibm.com, nick.shi@broadcom.com,
- ajay.kaher@broadcom.com, alexey.makhalov@broadcom.com,
- bcm-kernel-feedback-list@broadcom.com, linux-fpga@vger.kernel.org,
- imx@lists.linux.dev, linux-s390@vger.kernel.org, dust.li@linux.alibaba.com,
- xuanzhuo@linux.alibaba.com, mani@kernel.org, imran.shaik@oss.qualcomm.com,
- taniya.das@oss.qualcomm.com
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="II2P7NY7"
+Received: by mail-ot1-f53.google.com with SMTP id 46e09a7af769-7e61b59e03eso7435870a34.2
+        for <linux-fpga@vger.kernel.org>; Mon, 01 Jun 2026 21:20:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780374047; x=1780978847; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=uT7QUUK+LXQxZ5prqCoLyUCjjU+3++St9mdBXfj/SbU=;
+        b=II2P7NY7whDL8gSXkA0nJrCaJP0nMQT94ZDscIeBT9DgwHU/V35pqK7uY6yYRa4op8
+         Pkriu1woUtnmCkf9dRhaKVkxTDJzkiptqF1cP7S7BEL01TOy353DSAjRyC12WQHMHkQZ
+         apk1coIgC8Z70VXwLZzGdVNJQYzrDqFmXnU/GyJDa7TJjr1fnmdXdaVfWID116A2fhDk
+         1K/Hg1foLg5ou1H9wOGFIktUQbWDygnupcRp7jXTPCti15nfqZNv5XQ1nO0QOgJO6Kce
+         T25RXUKAXg1qu4W9ersVT0vZd9lo8oB/vlmke+FRzkDgzA3jUdFHHG7btfiP9iZgcm6t
+         lfuQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780374047; x=1780978847;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=uT7QUUK+LXQxZ5prqCoLyUCjjU+3++St9mdBXfj/SbU=;
+        b=eLSpdAvpKHHHVJky7xhs1JYWRZOTT5PDtMsiBh5A8krQ4EK7hO7JvXS0Dy3GC+abuO
+         MXHzYElCVEnwk5TTga3WkC3nmz10ogHZLSlEkBStH8CCzWMdq4ez86lgqreT2ishQ4XX
+         mTQfXNn5GfniwTUsfJnlkE+/rJtmgRgfByEkq0pRa44L40tR0SJUYd2NbtVF6VWuS1Kv
+         GPYegFv4/AjduPwlCmd+YK/5dyMUH6WYuwSDWeVPUgQ15y2C1TaEW1EQKtO6/AJDrkug
+         k/CY/69rK4Yx2L9aY7bfWaw37U3T/vlRNwvv1XTmjbQQY2DP4Yl40dh84oqBoLf22QxK
+         vLrw==
+X-Forwarded-Encrypted: i=1; AFNElJ+tD77H5zKVvbYPrSxWSwFwNWt3S+yOY/A+UTjd84jm8ZwjPEG8Jc9seaY8QYkxtkJXjJ1WEo8qxasj@vger.kernel.org
+X-Gm-Message-State: AOJu0YwK9nD8wDgNuSsV3f/BejqRy6RDHpk6JTHl5yDgvE74/mUTcRm8
+	4HWq01R/9ZstwWsW8tdUvAsy6gb4i8GToLq7h6KnION+BrNRY/helPFk
+X-Gm-Gg: Acq92OExS+t1l9HT2vBqVFPql7bRAoQoK+K0DXNiBWuycDAnKGE59VScS9LlxYgGxF/
+	vVm2iNIiKINAANKn5XpGC+AB4Jpxke9Tff4HePEJT4E+Z4vpKDrL2Y2a3Bo8x6KqHSTOcFKu4L/
+	HqL3wKQ7GVBhDgX2hkq4Rv5GImoChH4X1Kq0NDZ/EjB4GrXssh9mCDjD++mZKzN/L5lig8bQrYH
+	etHPiwJnTAWCNtaNvfpW47Ymq85FTcC4QFLf89ruuoPC0cIECp40O3KBqsqRSvWSQSqpPZ092l2
+	NcPK7sKzujufiOay5AHR09pWM9n4535CxRQgmiYTrTsUSbQ+VEAteOrd577i51/jNbcAWy5A68+
+	1PGO+xyWoA35OlbqT24EykJzCe7Qd0b4+y42/TZ/MkJWmedLbGR+mp13mfsLbohpsXvgPmwBP6X
+	PFMtwtFW5CUnwFJWtc7SZdopz9uc9qbwLjzXKDOXnAdaK3PfRZPNBc
+X-Received: by 2002:a05:6830:600d:b0:7d9:ad90:5670 with SMTP id 46e09a7af769-7e6a1db34c7mr10067817a34.18.1780374046933;
+        Mon, 01 Jun 2026 21:20:46 -0700 (PDT)
+Received: from hoboy.vegasvil.org ([2600:1700:2430:6f6f:e2d5:5eff:fea5:802f])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7e695d176dasm9333689a34.16.2026.06.01.21.20.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 01 Jun 2026 21:20:45 -0700 (PDT)
+Date: Mon, 1 Jun 2026 21:20:40 -0700
+From: Richard Cochran <richardcochran@gmail.com>
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Wen Gu <guwen@linux.alibaba.com>,
+	tglx@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net,
+	edumazet@google.com, pabeni@redhat.com,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	jstultz@google.com, anna-maria@linutronix.de, frederic@kernel.org,
+	daniel.lezcano@kernel.org, sboyd@kernel.org,
+	vladimir.oltean@nxp.com, wei.fang@nxp.com, xiaoning.wang@nxp.com,
+	jonathan.lemon@gmail.com, vadim.fedorenko@linux.dev,
+	yangbo.lu@nxp.com, svens@linux.ibm.com, nick.shi@broadcom.com,
+	ajay.kaher@broadcom.com, alexey.makhalov@broadcom.com,
+	bcm-kernel-feedback-list@broadcom.com, linux-fpga@vger.kernel.org,
+	imx@lists.linux.dev, linux-s390@vger.kernel.org,
+	dust.li@linux.alibaba.com, xuanzhuo@linux.alibaba.com,
+	mani@kernel.org, imran.shaik@oss.qualcomm.com,
+	taniya.das@oss.qualcomm.com
 Subject: Re: [PATCH v2 2/2] MAINTAINERS: update PTP maintainer entries after
  directory split
-Message-ID: <20260601185226.7f43fa75@kernel.org>
-In-Reply-To: <0e023f951c102fe2ee7070e490c579783b2817d5.camel@infradead.org>
-References: <20260407104802.34429-1-guwen@linux.alibaba.com>
-	<20260407104802.34429-3-guwen@linux.alibaba.com>
-	<20260412084704.743482ad@kernel.org>
-	<4B889ED5-D1F6-401D-B753-89AE2037F316@infradead.org>
-	<20260412095301.4fe1fe65@kernel.org>
-	<ebf19246-91af-4887-b2aa-d9007921f7b2@linux.alibaba.com>
-	<1088b07d760491deb461d6d01abca631e8f8d86c.camel@infradead.org>
-	<ahzQZg_v4bxFfGdj@hoboy.vegasvil.org>
-	<3908843460c4864eef79cced40d897f793c7ae2a.camel@infradead.org>
-	<ah2jIt2DqI1ZZJx8@hoboy.vegasvil.org>
-	<0e023f951c102fe2ee7070e490c579783b2817d5.camel@infradead.org>
+Message-ID: <ah5aGMIxA418sxoj@hoboy.vegasvil.org>
+References: <20260412084704.743482ad@kernel.org>
+ <4B889ED5-D1F6-401D-B753-89AE2037F316@infradead.org>
+ <20260412095301.4fe1fe65@kernel.org>
+ <ebf19246-91af-4887-b2aa-d9007921f7b2@linux.alibaba.com>
+ <1088b07d760491deb461d6d01abca631e8f8d86c.camel@infradead.org>
+ <ahzQZg_v4bxFfGdj@hoboy.vegasvil.org>
+ <3908843460c4864eef79cced40d897f793c7ae2a.camel@infradead.org>
+ <ah2jIt2DqI1ZZJx8@hoboy.vegasvil.org>
+ <0e023f951c102fe2ee7070e490c579783b2817d5.camel@infradead.org>
+ <20260601185226.7f43fa75@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260601185226.7f43fa75@kernel.org>
 
-On Mon, 01 Jun 2026 17:53:49 +0100 David Woodhouse wrote:
-> On Mon, 2026-06-01 at 08:20 -0700, Richard Cochran wrote:
-> > On Mon, Jun 01, 2026 at 08:03:26AM +0100, David Woodhouse wrote: =20
-> > > If we move all the plain non-network PHC drivers (which, as noted,
-> > > is
-> > > basically *all* of them) into a drivers/ subdirectory, then perhaps
-> > > we =20
-> >=20
-> > Sorry, just catching up here, so the idea is to have
-> >=20
-> > =C2=A0linux/drivers/ptp/drivers=C2=A0 ? =20
->=20
-> That is my current suggestion.
->=20
-> It stems from Jakub's response in
-> https://lore.kernel.org/all/20250815113814.5e135318@kernel.org/ that "I
-> really wish someone stepped up and created a separate subsystem for all
-> these cloud / vm clocks. They have nothing to do with PTP."
->=20
-> There was some further bikeshedding in
-> https://lore.kernel.org/netdev/0afe19db-9c7f-4228-9fc2-f7b34c4bc227@linux=
-.alibaba.com/
-> around how to split 'emulated' from other hardware drivers, but I don't
-> much like that taxonomy. Some of these "virtual" clocks could just as
-> easily exist in hardware with PTM too.
 
-Not sure I fully understand what you mean. Practically the distinction
-is very clear - the virt devices are implemented by a hypervisor and/or
-IPU which may have some HW gadgets and PTM support but beyond that are
-software-defined. We don't need help maintaining drivers for
-fixed-ASIC (?) clocks, atomic clocks etc. Those are usually time
-counter + misc. They are not "devices" which know the wall clock time
-better than the host :\
+Sorry for replying to David here via Jakub's message.  Somehow my
+brilliant Gmail doesn't have David's reply...
 
-IOW the "does it have a NIC" is not a great distinction.
-A better oneliner would be "does it purport to know real time better=20
-than the host"
+On Mon, Jun 01, 2026 at 06:52:26PM -0700, Jakub Kicinski wrote:
+> On Mon, 01 Jun 2026 17:53:49 +0100 David Woodhouse wrote:
+> > On Mon, 2026-06-01 at 08:20 -0700, Richard Cochran wrote:
+> > > Sorry, just catching up here, so the idea is to have
+> > > 
+> > >  linux/drivers/ptp/drivers  ?  
+> > 
+> > That is my current suggestion.
 
-> My observation is that with the sole exception of ptp_inet.c, *all* of
-> the actual PHC drivers that live in drivers/ptp instead of drivers/net
-> are "pure clock" drivers, so perhaps we split those all out into
-> drivers/ptp/drivers/ and exclude them from the netdev maintenance?
->=20
-> I'm reluctantly prepared to host and help maintain a drivers tree if
-> it's necessary, but equally as happy to let you own it.=20
+drivers/../drivers seems a bit silly to me
 
-No strong feelings here, but atomic clocks will start spilling into
-DPLL and SyncE pretty quickly.
+> > It stems from Jakub's response in
+> > https://lore.kernel.org/all/20250815113814.5e135318@kernel.org/ that "I
+> > really wish someone stepped up and created a separate subsystem for all
+> > these cloud / vm clocks. They have nothing to do with PTP."
+> > 
+> > There was some further bikeshedding in
+> > https://lore.kernel.org/netdev/0afe19db-9c7f-4228-9fc2-f7b34c4bc227@linux.alibaba.com/
+
+The idea of categorizing core, NIC-related, vm, and stand alone clock
+devices makes some sense to me.
+
+> > around how to split 'emulated' from other hardware drivers, but I don't
+> > much like that taxonomy. Some of these "virtual" clocks could just as
+> > easily exist in hardware with PTM too.
+
+So the whole in-kernel API in ptp_clock_kernel.h with ptp_clock_info,
+etc, was poorly named (by me) back around Linux 3.0.  After all, the
+abbreviation, "PTP", stands for a network protocol.  At the time, Alan
+Cox pointed that out and complained, but somehow the code got merged
+anyhow.
+
+The term PHC is a better one, since PTP Hardware Clock means clock
+device whose purpose is to support network time keeping together with
+a NIC.
+
+> > My observation is that with the sole exception of ptp_inet.c, *all* of
+> > the actual PHC drivers that live in drivers/ptp instead of drivers/net
+> > are "pure clock" drivers,
+
+No, that is not quite right.  The clockmatrix, idt82p33, ines, and
+qoriq drivers wouldn't be very useful without an attached NIC.
+
+> > so perhaps we split those all out into
+> > drivers/ptp/drivers/ and exclude them from the netdev maintenance?
+
+Originally the idea was that the rate of patches would be low enough
+that netdev would be the place to post and review them, and that no
+separate tree or mailing list were needed. 
+
+Even though the "PTP" naming was an unfortunate choice way back when,
+still I'm not a big fan of moving stuff around "just because".
+
+But moving forward, I would suggest starting a new area for pure
+hardware clock devices.  
+
+   "Clock Devices" ?
+   linux/drivers/cd
+
+Too short!
+
+   "Time Keeping Devices" ?
+   linux/drivers/tkd
+
+Confuses core time keeping!
+
+   "Advanced Clock Devices" ?
+   linux/drivers/acd
+
+Let's come up with a fitting name.
+
+Still, I don't understand why these new (non-network related ) device
+drivers can't be implemented in their own class using posix_clock_register()
+etc.
+
+Any of the useful bits (like sysfs interfaces) can be refactored out
+of ptp_clock.c and shared as a common layer.
+
+Thanks,
+Richard
