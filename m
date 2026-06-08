@@ -1,32 +1,32 @@
-Received: from out-176.mta1.migadu.com (out-176.mta1.migadu.com [95.215.58.176])
+Received: from out-172.mta1.migadu.com (out-172.mta1.migadu.com [95.215.58.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E8EB3CFF6B
-	for <linux-fpga@vger.kernel.org>; Mon,  8 Jun 2026 16:43:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 652283CC7CE
+	for <linux-fpga@vger.kernel.org>; Mon,  8 Jun 2026 16:43:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780937008; cv=none; b=SSmCT6pC0o5CrdarUaGl/zzHq9zPnjBSoul/Dkyhq7jEPdc1F09qJpgfQtfSEm0/frY5qIpCaXed868PTkMYHnLEXWA/AdCP/9yJ82golUDyCBWyaXzL51L8Szv/0WLVpE5fLtUapaZOMRCKv4ns5oLPsjo2x8hBA+NjG8hnYaw=
+	t=1780937020; cv=none; b=D81MAI5KtP6H5E9w6dNoXCp1y6KeYjlSYqYadyO6k6i3B5VZ4srOLrGEUtMxnUGk298P+QErIf6fa+O8o0aEBrjGfINXDroHRDq+N5ss5hBj0ct0VflnZZssZrpyqHJxtj7QY6MrHCzmYQBl8B8teluLgJLyIDf/t1qrUmbWOF0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780937008; c=relaxed/simple;
-	bh=43aOFbhEeHT9PxYOrEp6k4NUkjYRy5qTPTzl63iF25A=;
+	s=arc-20240116; t=1780937020; c=relaxed/simple;
+	bh=iGXFAsF26C7oRFCmQ/z+OFsZgWcHawD5/WfTiXsPZmA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HhyuY+t8MKyXfHxGPzxr9U52xw42EvKOU+l7If8n0KnkTMSRMY7udyt+CljjRSW1hC1hcpszQ+2+6Dr77vv011szWnN9NojQN5g+7u+x5rd+XYwOE15e08P8EvXu62bVPLwRGuOIN06x7lca2KquX4Zahky1UZL+tRxuMoASVr8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=cqL8CjR6; arc=none smtp.client-ip=95.215.58.176
+	 MIME-Version; b=BXXE+uCIYcrhEskz0DEKtXsGRduNM2rV+rirH9fzdK8s3IhY9XD+t5Lw/G6DKHotRZoLSkoxcXBEc7LL3Q6jh5SFnAHfNyC9jPJeW7QDhpEJaC8HwuwOcvktJzXSIImD8cA5mRMkBVZMNUooQcPMoQbn5/pC3qtofK0g5vUqvyo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=Lx8PLr5c; arc=none smtp.client-ip=95.215.58.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="cqL8CjR6"
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="Lx8PLr5c"
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1780937003;
+	t=1780937016;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rQsMoxqaBqU93YHzchyGjIGkclyytp/JQEP/XuCArG4=;
-	b=cqL8CjR6NpQGTJq6KhEu5ErbrwvLal4OmhgZHMmzjRQGci/3By5PpkF/7cZzLNWhU5+F7R
-	08jsXrwGkUt+cBb19iHRLmzFJITi4KonC4oS3SyaXnfHV/wwrKDmgcQmpUOlSm1pwymZ0r
-	vNj9D5N+2u6LqvgXxJUGveV5S09vDlE=
+	bh=hMI09XAlKdRQ8+cuGEDQt1VnEkD4HYzmt0VkOhaCz5I=;
+	b=Lx8PLr5cCGiyy41edraldcF8/vgqLcUvR621277QYF6hRbjn8JhwFtgiMeHkGYuU7ulUQ7
+	ASoVSHV0bVGHaAJOC7/QECUMJsRb6bLyM8d+/YFFuLnROiBrlo7UMbgYDOw2f791tCYpAr
+	dSb7nAnVH76IbW/EqZD/c2PF16DN16M=
 From: Marco Pagani <marco.pagani@linux.dev>
 To: Moritz Fischer <mdf@kernel.org>,
 	Xu Yilun <yilun.xu@intel.com>,
@@ -34,9 +34,9 @@ To: Moritz Fischer <mdf@kernel.org>,
 Cc: Marco Pagani <marco.pagani@linux.dev>,
 	linux-fpga@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [RFC PATCH fpga/for-next 1/2] fpga: region: Add support for FPGA region variants
-Date: Mon,  8 Jun 2026 18:42:46 +0200
-Message-ID: <20260608164247.1998417-2-marco.pagani@linux.dev>
+Subject: [RFC PATCH fpga/for-next 2/2] fpga: of-fpga-region: Add support for region variants
+Date: Mon,  8 Jun 2026 18:42:47 +0200
+Message-ID: <20260608164247.1998417-3-marco.pagani@linux.dev>
 In-Reply-To: <20260608164247.1998417-1-marco.pagani@linux.dev>
 References: <20260608164247.1998417-1-marco.pagani@linux.dev>
 Precedence: bulk
@@ -48,315 +48,346 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-Extend the fpga-region to support FPGA variants. Add the logic and
-the interface functions to manage a list of variants, and define the
-apply_variant() and remove_variant() methods that concrete regions must
-implement to define how variants are populated and depopulated.
+Extend of-fpga-region with support for FPGA region variants statically
+defined in the device tree.
+
+During probing, the code now looks for an fpga-variants container
+node. If present, it parses each variant child node and registers it.
+The variant that is programmed in the region at boot time is defined
+by the base-variant property. Additionally, the firmware-cached
+property allows caching bitstreams in memory, enabling a fast
+reconfiguration path for real-time (latency-sensitive) applications.
 
 Signed-off-by: Marco Pagani <marco.pagani@linux.dev>
 ---
- drivers/fpga/fpga-region.c       | 171 +++++++++++++++++++++++++++++++
- include/linux/fpga/fpga-region.h |  32 ++++++
- 2 files changed, 203 insertions(+)
+ drivers/fpga/of-fpga-region.c | 272 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 270 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/fpga/fpga-region.c b/drivers/fpga/fpga-region.c
-index 662e8e4203ca..60404cce6188 100644
---- a/drivers/fpga/fpga-region.c
-+++ b/drivers/fpga/fpga-region.c
-@@ -80,6 +80,101 @@ static void fpga_region_put(struct fpga_region *region)
- 	mutex_unlock(&region->mutex);
- }
+diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+index 9107a5b461d3..ea32775b55ce 100644
+--- a/drivers/fpga/of-fpga-region.c
++++ b/drivers/fpga/of-fpga-region.c
+@@ -8,6 +8,7 @@
+ #include <linux/fpga/fpga-bridge.h>
+ #include <linux/fpga/fpga-mgr.h>
+ #include <linux/fpga/fpga-region.h>
++#include <linux/firmware.h>
+ #include <linux/idr.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+@@ -18,6 +19,18 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
  
 +/**
-+ * fpga_region_add_variant - add a new variant to the FPGA region
-+ * @region: FPGA region
-+ * @name: string identifier for the variant
-+ * @is_enabled: whether this variant is the currently enabled variant
-+ * @priv: private data to be associated with the variant
-+ *
-+ * Allocates a new variant and adds it to the region's variant list.
-+ * If @is_enabled is true, this variant is marked as the enabled variant.
-+ *
-+ * Return: 0 on success, or -ENOMEM on memory allocation failure.
++ * struct of_fpga_variant_priv - private data for FPGA Region variants
++ * @fw_name: name of the firmware file containing the FPGA image
++ * @fw_buf: buffer containing the cached firmware image
++ * @fw_size: size in bytes of the buffer containing the cached firmware image
 + */
-+int fpga_region_add_variant(struct fpga_region *region, const char *name,
-+			    bool is_enabled, void *priv)
++struct of_fpga_variant_priv {
++	char *fw_name;
++	void *fw_buf;
++	size_t fw_size;
++};
++
+ static const struct of_device_id fpga_region_of_match[] = {
+ 	{ .compatible = "fpga-region", },
+ 	{},
+@@ -140,6 +153,168 @@ static int of_fpga_region_get_bridges(struct fpga_region *region)
+ 	return 0;
+ }
+ 
++static int of_fpga_remove_variant_child(struct device *dev, void *data)
 +{
-+	struct fpga_variant *variant;
-+	char *variant_name;
++	struct device_node *variant_np = data;
 +
-+	variant_name = devm_kstrdup(&region->dev, name, GFP_KERNEL);
-+	if (!variant_name)
-+		return -ENOMEM;
++	if (dev->of_node && dev->of_node->parent == variant_np) {
++		if (dev_is_platform(dev)) {
++			of_node_clear_flag(dev->of_node, OF_POPULATED);
++			platform_device_unregister(to_platform_device(dev));
++		}
++	}
++	return 0;
++}
 +
-+	variant = devm_kzalloc(&region->dev, sizeof(*variant), GFP_KERNEL);
-+	if (!variant)
-+		return -ENOMEM;
++static int of_fpga_region_populate_variant(struct device *dev,
++					   struct device_node *variant_np)
++{
++	struct device_node *child_np;
 +
-+	variant->priv = priv;
-+	variant->name = variant_name;
-+
-+	mutex_lock(&region->variant_mutex);
-+	if (is_enabled)
-+		region->enabled_variant = variant;
-+
-+	list_add_tail(&variant->node, &region->variant_list);
-+	mutex_unlock(&region->variant_mutex);
++	for_each_available_child_of_node(variant_np, child_np) {
++		if (!of_platform_device_create(child_np, NULL, dev))
++			dev_warn(dev, "failed to create device node.\n");
++	}
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(fpga_region_add_variant);
 +
 +/**
-+ * fpga_region_program_variant - switch the variant of an FPGA region
-+ * @region: FPGA region
-+ * @name: string identifier of the variant to enable
++ * of_fpga_region_apply_variant - apply a specific FPGA variant to the region
++ * @region: FPGA region to be programmed
++ * @variant: FPGA variant requested to be applied
 + *
-+ * Get the requested variant from the region's variant list. If found,
-+ * and it is not already active, removes the currently enabled variant via
-+ * the remove_variant() callback and applies the requested one  via the
-+ * apply_variant() callback.
++ * Retrieves the specific variant node from the fpga-variants container,
++ * handles firmware loading (including lazy caching if firmware-cached is
++ * set), programs the FPGA region with the variant, and finally populates
++ * the platform devices for the child IPs.
 + *
-+ * Return: 0 on success, -EINVAL if the variant is not found, or a negative
-+ * error code passed up from the apply_variant() callback.
++ * Return: 0 on success, or a negative error code on failure.
 + */
-+int fpga_region_program_variant(struct fpga_region *region, const char *name)
++static int of_fpga_region_apply_variant(struct fpga_region *region,
++					struct fpga_variant *variant)
 +{
-+	struct fpga_variant *variant;
-+	bool found_variant = false;
-+	int ret = -EINVAL;
-+
-+	mutex_lock(&region->variant_mutex);
-+
-+	list_for_each_entry(variant, &region->variant_list, node) {
-+		if (sysfs_streq(variant->name, name)) {
-+			found_variant = true;
-+			break;
-+		}
-+	}
-+
-+	if (!found_variant)
-+		goto out_unlock;
-+
-+	if (region->enabled_variant == variant) {
-+		ret = 0;
-+		goto out_unlock;
-+	}
-+
-+	if (region->enabled_variant && region->remove_variant)
-+		region->remove_variant(region, region->enabled_variant);
-+
-+	if (region->apply_variant) {
-+		ret = region->apply_variant(region, variant);
-+		if (ret) {
-+			dev_err(&region->dev, "Variant programming failed!\n");
-+			region->enabled_variant = NULL;
-+		} else {
-+			region->enabled_variant = variant;
-+		}
-+	}
-+
-+out_unlock:
-+	mutex_unlock(&region->variant_mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(fpga_region_program_variant);
-+
- /**
-  * fpga_region_program_fpga - program FPGA
-  *
-@@ -174,12 +269,76 @@ static ssize_t compat_id_show(struct device *dev,
- 
- static DEVICE_ATTR_RO(compat_id);
- 
-+static ssize_t variants_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct fpga_region *region = to_fpga_region(dev);
-+	struct fpga_variant *variant;
-+	int len = 0;
-+
-+	mutex_lock(&region->variant_mutex);
-+	list_for_each_entry(variant, &region->variant_list, node)
-+		len += sysfs_emit_at(buf, len, "%s\n", variant->name);
-+	mutex_unlock(&region->variant_mutex);
-+
-+	return len;
-+}
-+static DEVICE_ATTR_RO(variants);
-+
-+static ssize_t enabled_variant_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct fpga_region *region = to_fpga_region(dev);
-+	ssize_t len = 0;
-+
-+	mutex_lock(&region->variant_mutex);
-+	if (region->enabled_variant)
-+		len = sysfs_emit(buf, "%s\n", region->enabled_variant->name);
-+	mutex_unlock(&region->variant_mutex);
-+
-+	return len;
-+}
-+
-+static ssize_t enabled_variant_store(struct device *dev, struct device_attribute *attr,
-+				     const char *buf, size_t count)
-+{
-+	struct fpga_region *region = to_fpga_region(dev);
++	struct of_fpga_variant_priv *priv = variant->priv;
++	struct device *dev = &region->dev;
++	struct device_node *variants_np, *variant_np;
++	const struct firmware *fw;
++	struct fpga_image_info *info;
 +	int ret;
 +
-+	ret = fpga_region_program_variant(region, buf);
++	variants_np = of_get_child_by_name(dev->of_node, "fpga-variants");
++	if (!variants_np)
++		return -ENODEV;
 +
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_RW(enabled_variant);
++	variant_np = of_get_child_by_name(variants_np, variant->name);
++	of_node_put(variants_np);
++	if (!variant_np)
++		return -ENODEV;
 +
-+static struct attribute *fpga_region_variant_attrs[] = {
-+	&dev_attr_enabled_variant.attr,
-+	&dev_attr_variants.attr,
-+	NULL,
-+};
-+
-+static umode_t fpga_region_variant_is_visible(struct kobject *kobj, struct attribute *attr, int n)
-+{
-+	struct device *dev = kobj_to_dev(kobj);
-+	struct fpga_region *region = to_fpga_region(dev);
-+
-+	return region->apply_variant ? attr->mode : 0;
-+}
-+
-+static const struct attribute_group fpga_region_variant_group = {
-+	.attrs = fpga_region_variant_attrs,
-+	.is_visible = fpga_region_variant_is_visible,
-+};
-+
- static struct attribute *fpga_region_attrs[] = {
- 	&dev_attr_compat_id.attr,
- 	NULL,
- };
- ATTRIBUTE_GROUPS(fpga_region);
- 
-+static const struct attribute_group *fpga_region_variant_groups[] = {
-+	&fpga_region_variant_group,
-+	NULL,
-+};
-+
- /**
-  * __fpga_region_register_full - create and register an FPGA Region device
-  * @parent: device parent
-@@ -216,14 +375,19 @@ __fpga_region_register_full(struct device *parent, const struct fpga_region_info
- 	region->priv = info->priv;
- 	region->get_bridges = info->get_bridges;
- 	region->ops_owner = owner;
-+	region->apply_variant = info->apply_variant;
-+	region->remove_variant = info->remove_variant;
- 
- 	mutex_init(&region->mutex);
-+	mutex_init(&region->variant_mutex);
- 	INIT_LIST_HEAD(&region->bridge_list);
-+	INIT_LIST_HEAD(&region->variant_list);
- 
- 	region->dev.class = &fpga_region_class;
- 	region->dev.parent = parent;
- 	region->dev.of_node = parent->of_node;
- 	region->dev.id = id;
-+	region->dev.groups = fpga_region_variant_groups;
- 
- 	ret = dev_set_name(&region->dev, "region%d", id);
- 	if (ret)
-@@ -280,6 +444,13 @@ EXPORT_SYMBOL_GPL(__fpga_region_register);
-  */
- void fpga_region_unregister(struct fpga_region *region)
- {
-+	mutex_lock(&region->variant_mutex);
-+	if (region->enabled_variant && region->remove_variant) {
-+		region->remove_variant(region, region->enabled_variant);
-+		region->enabled_variant = NULL;
++	info = fpga_image_info_alloc(dev);
++	if (!info) {
++		ret = -ENOMEM;
++		goto err_put_node;
 +	}
-+	mutex_unlock(&region->variant_mutex);
 +
- 	device_unregister(&region->dev);
- }
- EXPORT_SYMBOL_GPL(fpga_region_unregister);
-diff --git a/include/linux/fpga/fpga-region.h b/include/linux/fpga/fpga-region.h
-index 5fbc05fe70a6..3b3d1f8a1189 100644
---- a/include/linux/fpga/fpga-region.h
-+++ b/include/linux/fpga/fpga-region.h
-@@ -9,12 +9,27 @@
- 
- struct fpga_region;
- 
++	if (!of_property_read_bool(variant_np, "firmware-cached")) {
++		info->firmware_name = devm_kstrdup(dev, priv->fw_name, GFP_KERNEL);
++		if (!info->firmware_name) {
++			ret = -ENOMEM;
++			goto err_free_info;
++		}
++	} else if (priv->fw_buf) {
++		info->buf = priv->fw_buf;
++		info->count = priv->fw_size;
++	} else {
++		ret = request_firmware(&fw, priv->fw_name, dev);
++		if (ret) {
++			dev_err(dev, "failed to request firmware '%s'\n", priv->fw_name);
++			goto err_free_info;
++		}
++
++		priv->fw_buf = devm_kmemdup(dev, fw->data, fw->size, GFP_KERNEL);
++		priv->fw_size = fw->size;
++		release_firmware(fw);
++
++		if (!priv->fw_buf) {
++			ret = -ENOMEM;
++			goto err_free_info;
++		}
++
++		info->buf = priv->fw_buf;
++		info->count = priv->fw_size;
++	}
++
++	/* Checked during probing */
++	info->flags |= FPGA_MGR_PARTIAL_RECONFIG;
++
++	of_property_read_u32(dev->of_node, "region-unfreeze-timeout-us",
++			     &info->enable_timeout_us);
++	of_property_read_u32(dev->of_node, "region-freeze-timeout-us",
++			     &info->disable_timeout_us);
++	of_property_read_u32(dev->of_node, "config-complete-timeout-us",
++			     &info->config_complete_timeout_us);
++
++	region->info = info;
++
++	if (info->firmware_name || info->buf) {
++		ret = fpga_region_program_fpga(region);
++		if (ret) {
++			dev_err(dev, "failed to program FPGA\n");
++			goto err_clear_info;
++		}
++	}
++
++	ret = of_fpga_region_populate_variant(dev, variant_np);
++	if (ret) {
++		dev_err(dev, "failed to populate variant IP nodes\n");
++		goto err_clear_info;
++	}
++
++	of_node_put(variant_np);
++	return 0;
++
++err_clear_info:
++	region->info = NULL;
++err_free_info:
++	fpga_image_info_free(info);
++err_put_node:
++	of_node_put(variant_np);
++	return ret;
++}
++
 +/**
-+ * struct fpga_variant - a variant  configuration for an FPGA region
-+ * @node: list node for the region's variant list
-+ * @name: identifier of the variant
-+ * @priv: private data for the region concrete implementation
++ * of_fpga_region_remove_variant - remove the current FPGA variant from the region
++ * @region: FPGA region
++ * @variant: FPGA variant being removed
++ *
++ * Unregisters all devices that were populared for the variant's IPs
++ * during apply_variant() and frees the FPGA image.
 + */
-+struct fpga_variant {
-+	struct list_head node;
-+	const char *name;
-+	void *priv;
-+};
++static void of_fpga_region_remove_variant(struct fpga_region *region,
++					  struct fpga_variant *variant)
++{
++	struct device_node *variants_np, *variant_np;
++	struct device *dev = &region->dev;
++
++	variants_np = of_get_child_by_name(dev->of_node, "fpga-variants");
++	if (variants_np) {
++		variant_np = of_get_child_by_name(variants_np, variant->name);
++		of_node_put(variants_np);
++
++		if (variant_np) {
++			device_for_each_child(dev, variant_np,
++					      of_fpga_remove_variant_child);
++			of_node_put(variant_np);
++		}
++	}
++
++	if (region->info) {
++		fpga_image_info_free(region->info);
++		region->info = NULL;
++	}
++}
 +
  /**
-  * struct fpga_region_info - collection of parameters an FPGA Region
-  * @mgr: fpga region manager
-  * @compat_id: FPGA region id for compatibility check.
-+ * @variant_list: linked list of registered variants
-  * @priv: fpga region private data
-  * @get_bridges: optional function to get bridges to a list
-+ * @apply_variant: optional function to apply one of the variants
-+ * @remove_variant: optional function to remove one of the variants
-  *
-  * fpga_region_info contains parameters for the register_full function.
-  * These are separated into an info structure because they some are optional
-@@ -26,6 +41,8 @@ struct fpga_region_info {
- 	struct fpga_compat_id *compat_id;
- 	void *priv;
- 	int (*get_bridges)(struct fpga_region *region);
-+	int (*apply_variant)(struct fpga_region *region, struct fpga_variant *variant);
-+	void (*remove_variant)(struct fpga_region *region, struct fpga_variant *variant);
- };
+  * child_regions_with_firmware - Used to check the child region info.
+  * @overlay: device node of the overlay
+@@ -397,8 +572,16 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct device_node *np = dev->of_node;
++	struct device_node *var_np, *base_np = NULL, *variants_np = NULL;
+ 	struct fpga_region *region;
+ 	struct fpga_manager *mgr;
++	struct fpga_region_info info = { 0 };
++	struct of_fpga_variant_priv *priv;
++	const char *base_variant_name = NULL;
++	const char *fw_name = NULL;
++	bool has_base_variant = false;
++	bool base_variant_found = false;
++	bool is_base = false;
+ 	int ret;
  
- /**
-@@ -37,8 +54,13 @@ struct fpga_region_info {
-  * @info: FPGA image info
-  * @compat_id: FPGA region id for compatibility check.
-  * @ops_owner: module containing the get_bridges function
-+ * @variant_list: linked list of registered variants
-+ * @enabled_variant: pointer to the currently enabled variant
-+ * @variant_mutex: protects the enabled variant and variant list
-  * @priv: private data
-  * @get_bridges: optional function to get bridges to a list
-+ * @apply_variant: optional function to apply one of the variants
-+ * @remove_variant: optional function to remove one of the variants
-  */
- struct fpga_region {
- 	struct device dev;
-@@ -48,8 +70,14 @@ struct fpga_region {
- 	struct fpga_image_info *info;
- 	struct fpga_compat_id *compat_id;
- 	struct module *ops_owner;
-+	struct list_head variant_list;
-+	struct fpga_variant *enabled_variant;
-+	struct mutex variant_mutex; /* protects variant_list and enabled_variant */
- 	void *priv;
- 	int (*get_bridges)(struct fpga_region *region);
-+	int (*apply_variant)(struct fpga_region *region, struct fpga_variant *variant);
-+	void (*remove_variant)(struct fpga_region *region, struct fpga_variant *variant);
+ 	/* Find the FPGA mgr specified by region or parent region. */
+@@ -406,20 +589,105 @@ static int of_fpga_region_probe(struct platform_device *pdev)
+ 	if (IS_ERR(mgr))
+ 		return -EPROBE_DEFER;
+ 
+-	region = fpga_region_register(dev, mgr, of_fpga_region_get_bridges);
++	/* Register variants support only if the device tree is well-formed */
++	if (!of_property_read_string(np, "base-variant", &base_variant_name))
++		has_base_variant = true;
 +
- };
- 
- #define to_fpga_region(d) container_of(d, struct fpga_region, dev)
-@@ -60,6 +88,10 @@ fpga_region_class_find(struct device *start, const void *data,
- 
- int fpga_region_program_fpga(struct fpga_region *region);
- 
-+int fpga_region_add_variant(struct fpga_region *region, const char *name,
-+			    bool is_enabled, void *priv);
-+int fpga_region_program_variant(struct fpga_region *region, const char *name);
++	if (has_base_variant) {
++		if (!of_property_read_bool(np, "partial-fpga-config")) {
++			dev_err(dev, "Region '%s' is missing 'partial-fpga-config' property.\n",
++				np->name);
++			ret = -EINVAL;
++			goto eprobe_mgr_put;
++		}
 +
- #define fpga_region_register_full(parent, info) \
- 	__fpga_region_register_full(parent, info, THIS_MODULE)
- struct fpga_region *
++		variants_np = of_get_child_by_name(np, "fpga-variants");
++		if (!variants_np) {
++			dev_err(dev, "Missing 'fpga-variants' container node.\n");
++			ret = -EINVAL;
++			goto eprobe_mgr_put;
++		}
++
++		for_each_available_child_of_node(variants_np, var_np) {
++			if (!of_property_present(var_np, "firmware-name")) {
++				dev_err(dev, "Variant '%s' is missing 'firmware-name'.\n",
++					var_np->name);
++				of_node_put(var_np);
++				ret = -EINVAL;
++				goto eprobe_mgr_put;
++			}
++
++			if (!strcmp(var_np->name, base_variant_name))
++				base_variant_found = true;
++		}
++
++		if (!base_variant_found) {
++			dev_err(dev, "base-variant '%s' does not match.\n",
++				base_variant_name);
++			ret = -EINVAL;
++			goto eprobe_mgr_put;
++		}
++
++		info.apply_variant = of_fpga_region_apply_variant;
++		info.remove_variant = of_fpga_region_remove_variant;
++	}
++
++	info.mgr = mgr;
++	info.get_bridges = of_fpga_region_get_bridges;
++
++	region = fpga_region_register_full(dev, &info);
+ 	if (IS_ERR(region)) {
+ 		ret = PTR_ERR(region);
+ 		goto eprobe_mgr_put;
+ 	}
++	if (has_base_variant && variants_np) {
++		for_each_available_child_of_node(variants_np, var_np) {
++			priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++			if (!priv) {
++				of_node_put(var_np);
++				ret = -ENOMEM;
++				goto eprobe_region_unregister;
++			}
++
++			of_property_read_string(var_np, "firmware-name", &fw_name);
++			priv->fw_name = devm_kstrdup(dev, fw_name, GFP_KERNEL);
++			if (!priv->fw_name) {
++				of_node_put(var_np);
++				ret = -ENOMEM;
++				goto eprobe_region_unregister;
++			}
++
++			is_base = !strcmp(var_np->name, base_variant_name);
++			if (is_base)
++				base_np = of_node_get(var_np);
++
++			ret = fpga_region_add_variant(region, var_np->name, is_base, priv);
++			if (ret) {
++				dev_err(dev, "Cannot add variant '%s'.\n", var_np->name);
++				of_node_put(var_np);
++				goto eprobe_region_unregister;
++			}
++		}
++		of_node_put(variants_np);
++	}
+ 
+ 	of_platform_populate(np, fpga_region_of_match, NULL, &region->dev);
+-	platform_set_drvdata(pdev, region);
+ 
++	if (base_np) {
++		of_fpga_region_populate_variant(&region->dev, base_np);
++		of_node_put(base_np);
++	}
++
++	platform_set_drvdata(pdev, region);
+ 	dev_info(dev, "FPGA Region probed\n");
+ 
+ 	return 0;
+ 
++eprobe_region_unregister:
++	fpga_region_unregister(region);
+ eprobe_mgr_put:
++	of_node_put(base_np);
++	of_node_put(variants_np);
+ 	fpga_mgr_put(mgr);
+ 	return ret;
+ }
 -- 
 2.54.0
 
