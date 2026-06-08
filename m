@@ -1,139 +1,140 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+Received: from out-188.mta1.migadu.com (out-188.mta1.migadu.com [95.215.58.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FD5923D7FF
-	for <linux-fpga@vger.kernel.org>; Thu,  4 Jun 2026 04:22:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 557BE34FF5D
+	for <linux-fpga@vger.kernel.org>; Mon,  8 Jun 2026 16:43:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.188
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780546952; cv=none; b=gB2OgI8M05Tmoce9VlMY6zi6U2NU4FqM/sDM7/I2B+Ar208K8dFpvh3cxUHNqy8HhagWbE0dIvgliQKzq3etzTnXXK01XzUivQuVRLYJivTFNiv7Rp+fbxXHarBui3zPTrMvONO8GAUrxUwgLG7ZxR9NR6q7+/pf0FLHbFwqaNg=
+	t=1780936994; cv=none; b=Oj4ytpSITdofhLey2xYC7iGGVsw5oZf8pWJB0K4AKECuzjkQ+BN2+XN79Ue9GGFRjqJH54Z3s4GxC3viIu7THqnmrdCOeye07A70RSYt81o7+9+P68i77FFMPiQAY2ZnM9hsFc6PXoereBmw2lkJcVJMXBxZH/cfZ1u0QB+AAU8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780546952; c=relaxed/simple;
-	bh=0eIG2XRC3CZVME2Du/QOne/IbkPPK++26i5wVU1vllk=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=ZJz0tJtEZ0OI0oiMTvi95s6lB8JHysdnRkrbBDHbpmjFLDNo4M9nseWbBDC/c0urQZN4B0aYT6GmyNzfl4wjHL4/ro2kHkkaZPoevLP/p0FVUNz2+7VLDU6+x5DkDVDTtLda3PBYtiLHfFFFSGA7Fx0Qp+4dhHi3mB3ch4OzwZc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ntzwNeZ3; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1780936994; c=relaxed/simple;
+	bh=1nyOZvA2AvEWQimh3Gfm62Ba12AY+b6MEMgaYa6ZaL0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=O+eiuMW4o0nWX+5j2ANeUnKQAedtDrW3UZA07XL1YyOMc5pvFDVe7rTULJJmYbnzXmyjq4clNtOY70LhqbblhwxW7kPT8hv8zUJ4Mlx+yTvLJiSGnfpK49hvRgR7lxfcVQJ9H4arG5coOdFHghQN0L10ls0NyUeWtLN2mkN1YEs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=AjRCjDbE; arc=none smtp.client-ip=95.215.58.188
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ntzwNeZ3"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1780546951; x=1812082951;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=0eIG2XRC3CZVME2Du/QOne/IbkPPK++26i5wVU1vllk=;
-  b=ntzwNeZ3rdeyzHdwHAIN8DfwWJnaFZIWIZmBo+WCPTuFbf0Kfqo0h1A9
-   7+QBRs45ZL2upMnnSB8BQmI+0iS/E50nGrz3Dq76V7w1H++hGyIVejOIP
-   bco/f9A7JKEI6amsBxQ5nKQt8a5UrvMVTx4IbOiNF5gh7w12+aW8psn+b
-   IgsdKDxJhDZ3Ocqm9+0I8Fw2b9wQC+u8Xh9HSxjfC+qGNkRUlfD4C+OQN
-   ilNEQwlNJA7pIgR3JrxEwRQD9UOSgXfKs+1yDvOrBYaszk2LME6faAz48
-   SgjlxQo0yQqgn0BamhUBTkL+Lywn97eQRetbb1LzhM3KFZJbM2BDx6YfK
-   Q==;
-X-CSE-ConnectionGUID: BxY0DhaSQ3SMBqficmM0TA==
-X-CSE-MsgGUID: kcZ2VUrSROyZrOeA6l7B0Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11806"; a="81400775"
-X-IronPort-AV: E=Sophos;i="6.24,186,1774335600"; 
-   d="scan'208";a="81400775"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jun 2026 21:22:30 -0700
-X-CSE-ConnectionGUID: Js1rCwO0TcGQIgzgfQtZUg==
-X-CSE-MsgGUID: WM6Hrj/MQpi0x8mY93MDYw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,186,1774335600"; 
-   d="scan'208";a="248375286"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orviesa003.jf.intel.com with ESMTP; 03 Jun 2026 21:22:29 -0700
-Date: Thu, 4 Jun 2026 11:58:10 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: gregkh@linuxfoundation.org
-Cc: yilun.xu@linux.intel.com, yilun.xu@intel.com,
-	linux-fpga@vger.kernel.org, mdf@kernel.org
-Subject: [GIT PULL] FPGA Manager changes for 7.2-rc1
-Message-ID: <aiD30tC74Rn2KjGM@yilunxu-OptiPlex-7050>
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="AjRCjDbE"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1780936989;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=W6/65yEzaHQo8OCNtb5IfYBY2UawPbsFP/1BVZCP6iU=;
+	b=AjRCjDbEZP6EUmmCJjpggMyf2AOPMgxBPtdUoZCS18kjnYNeFhMM6bFcMlxYcuYffGmNhV
+	xr503yRki2d97pI/xw/WH9zj7Yyg4Jq07N/GGDjroycMDehluAtbbR1N3x4cPvji3exCdh
+	GgODpFDW7VN6zBaXMyf8i0+++hVsq+Q=
+From: Marco Pagani <marco.pagani@linux.dev>
+To: Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>
+Cc: Marco Pagani <marco.pagani@linux.dev>,
+	linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [RFC PATCH] fpga: region: Add support for FPGA region variants
+Date: Mon,  8 Jun 2026 18:42:45 +0200
+Message-ID: <20260608164247.1998417-1-marco.pagani@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-The following changes since commit 254f49634ee16a731174d2ae34bc50bd5f45e731:
+This RFC proposes a proof-of-concept implementation of FPGA region
+variants, a mechanism that introduces a common way to handle
+dynamic partial reconfiguration from userspace. The proposed approach
+is safe and aligned with the mainline kernel's stance on hardware
+management by constraining the hardware to a mutually exclusive set
+of configurations (variants) defined upfront. This is a realistic
+assumption for FPGAs, as regions are typically statically defined and
+synthesized during the system design phase. To keep the architecture
+realistic, the following additional constraints are introduced:
+(i) variants cannot be nested, and (ii) variants cannot contain FPGA
+bridges.
 
-  Linux 7.1-rc1 (2026-04-26 14:19:00 -0700)
+The interface and core logic for the variant mechanism are defined
+in the fpga-region and implemented in a backwards-compatible way.
+The fpga-region now optionally exports sysfs attributes that allow
+the user to reconfigure a region that supports variants by selecting
+one variant a list of pre-defined variants. Concrete regions can enable
+variant support by implementing the new apply_variant and remove_variant
+methods and adding them to fpga_region_info before registration.
 
-are available in the Git repository at:
+As part of this RFC, the of-fpga-region concrete region has been extended
+to implement the variant interface. Variants are statically specified in
+the device tree using an fpga-variants node. Additionally, it introduces
+a firmware-cached property to cache bitstreams in memory, enabling a fast
+reconfiguration path for real-time (latency-sensitive) applications.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/fpga/linux-fpga tags/fpga-for-7.2-rc1
+Below is an example of how variants can be statically defined in the
+device tree under this architecture:
 
-for you to fetch changes up to 43a1974da6bc7ce8f4d1dc1d03d56997428c29c3:
+fake_mgr: fpga-mgr@0 {
+        compatible = "linux,fake-fpga-mgr";
+};
 
-  fpga: microchip-spi: fix zero header_size OOB read in mpf_ops_parse_header() (2026-06-01 12:29:40 +0800)
+fpga_region: fpga-region@0 {
+        compatible = "fpga-region";
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
 
-----------------------------------------------------------------
-FPGA Manager changes for 7.2-rc1
+        /* FPGA region properties */
+        fpga-mgr = <&fake_mgr>;
+        partial-fpga-config;
+        region-unfreeze-timeout-us = <10000>;
 
-- Wentao fixes use-after-free issue in of-fpga-region
-- Phil adds the of matching for Altera ts73xx fpga driver
-- Ian adds Efinix FPGA SPI programming driver
-- Andy fixes several minor issues for Lattice FPGA driver
-- Manish converts dt-bindings to YAML schema for several Altera devices
-- Sebastian fixes several minor issues for Intel DFL & Microchip FPGAs
+        /* Base variant */
+        base-variant = "variant-1";
 
-All patches have been reviewed on the mailing list, and have been in the
-last linux-next releases (as part of our for-next branch).
+        /* Variants container node */
+        fpga-variants {
+                #address-cells = <2>;
+                #size-cells = <2>;
+                ranges;
 
-Signed-off-by: Xu Yilun <yilun.xu@intel.com>
+                variant-1 {
+                        firmware-name = "variant1-image.bin";
 
-----------------------------------------------------------------
-Andy Shevchenko (4):
-      fpga: lattice-sysconfig-spi: Fix the terminator entries in ID tables
-      fpga: lattice-sysconfig-spi: Drop of_match_ptr() protection
-      fpga: lattice-sysconfig-spi: Don't use "proxy" headers
-      fpga: lattice-sysconfig-spi: simplify with spi_get_device_match_data()
+                        #address-cells = <2>;
+                        #size-cells = <2>;
+                        ranges;
 
-Ian Dannapel (3):
-      dt-bindings: vendor-prefix: Add prefix for Efinix, Inc.
-      dt-bindings: fpga: Add Efinix SPI programming bindings
-      fpga-mgr: Add Efinix SPI programming driver
+                        variant_1_ip: ip_1@10000 {
+                                compatible = "fake,ip_1";
+                                reg = <0x0 0x10000 0x0 0x1000>;
+                        };
+                };
 
-Manish Baing (2):
-      dt-bindings: fpga: altr,a10-pr-ip: convert to DT schema
-      dt-bindings: fpga: altr,socfpga-fpga-mgr: convert to DT schema
+                variant-2 {
+                        firmware-name = "variant2-image.bin";
+                        firmware-cached;
 
-Phil Pemberton (2):
-      dt-bindings: fpga: Add Technologic Systems TS-7300 FPGA Manager
-      fpga: ts73xx-fpga: add OF match table for device tree probing
+                        #address-cells = <2>;
+                        #size-cells = <2>;
+                        ranges;
 
-Sebastian Alba Vives (3):
-      fpga: dfl: add bounds check in dfh_get_param_size()
-      fpga: dfl-afu: validate DMA mapping length in afu_dma_map_region()
-      fpga: microchip-spi: fix zero header_size OOB read in mpf_ops_parse_header()
+                        variant_2_ip: ip_2@10000 {
+                                compatible = "fake,ip_2";
+                                reg = <0x0 0x20000 0x0 0x1000>;
+                        };
+                };
+        };
+};
 
-Wentao Liang (1):
-      fpga: region: fix use-after-free in child_regions_with_firmware()
+Marco Pagani (2):
+  fpga: region: Add support for FPGA region variants
+  fpga: of-fpga-region: Add support for region variants
 
- .../devicetree/bindings/fpga/altera-pr-ip.txt      |  12 -
- .../bindings/fpga/altera-socfpga-fpga-mgr.txt      |  17 --
- .../devicetree/bindings/fpga/altr,a10-pr-ip.yaml   |  34 +++
- .../bindings/fpga/altr,socfpga-fpga-mgr.yaml       |  38 +++
- .../bindings/fpga/efinix,trion-config.yaml         |  98 ++++++++
- .../bindings/fpga/technologic,ts7300-fpga.yaml     |  36 +++
- .../devicetree/bindings/vendor-prefixes.yaml       |   2 +
- drivers/fpga/Kconfig                               |   7 +
- drivers/fpga/Makefile                              |   1 +
- drivers/fpga/dfl-afu-main.c                        |   3 +
- drivers/fpga/dfl.c                                 |   2 +
- drivers/fpga/efinix-spi.c                          | 260 +++++++++++++++++++++
- drivers/fpga/lattice-sysconfig-spi.c               |  29 ++-
- drivers/fpga/microchip-spi.c                       |   3 +
- drivers/fpga/of-fpga-region.c                      |   3 +-
- drivers/fpga/ts73xx-fpga.c                         |   9 +
- 16 files changed, 507 insertions(+), 47 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/fpga/altera-pr-ip.txt
- delete mode 100644 Documentation/devicetree/bindings/fpga/altera-socfpga-fpga-mgr.txt
- create mode 100644 Documentation/devicetree/bindings/fpga/altr,a10-pr-ip.yaml
- create mode 100644 Documentation/devicetree/bindings/fpga/altr,socfpga-fpga-mgr.yaml
- create mode 100644 Documentation/devicetree/bindings/fpga/efinix,trion-config.yaml
- create mode 100644 Documentation/devicetree/bindings/fpga/technologic,ts7300-fpga.yaml
- create mode 100644 drivers/fpga/efinix-spi.c
+ drivers/fpga/fpga-region.c       | 171 +++++++++++++++++++
+ drivers/fpga/of-fpga-region.c    | 272 ++++++++++++++++++++++++++++++-
+ include/linux/fpga/fpga-region.h |  32 ++++
+ 3 files changed, 473 insertions(+), 2 deletions(-)
+
+-- 
+2.54.0
+
