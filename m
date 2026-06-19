@@ -1,60 +1,60 @@
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013033.outbound.protection.outlook.com [40.93.196.33])
+Received: from BN8PR05CU002.outbound.protection.outlook.com (mail-eastus2azon11011046.outbound.protection.outlook.com [52.101.57.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BD0F1EEA54;
-	Thu, 18 Jun 2026 11:24:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.33
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4901132ED34;
+	Fri, 19 Jun 2026 03:43:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.57.46
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781781855; cv=fail; b=jaDpXqY2Z5dhvTKIJsHRmgWDRvODXQGB6Nx2HZYIRhCvrK8l1NU11+5gKVHkxh2wIaj/VZyeMDHnIm0lPbj5BSuD+SFpxIa6K619RbGmv8khRxq/JxlUkreDGHDk5Mv695tshVyMo/N4XdfHiZl0i0clz2pSc8H05iGX+FWkYDA=
+	t=1781840615; cv=fail; b=AgbwWwFhPsxILEGmJ09YBH98opDRvOWnn9g7cG4A9h8CkJWsfK3gExO3hVNEmA1ez9K2OD3RDssMUR9Dh+CtRmVBb8vobU8LYmx1AQUQAt/t/mJE/EvC/OsLP8+czpdHkHmlyxlBoiuVLzj/k2ghd5L4Ns5OIDVvVCbGYrPgjyg=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781781855; c=relaxed/simple;
-	bh=P/Wbr/1JALUVUDSxUbvXOR8Tmwtxl8YzcylIiX5Adds=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=hdAXdGj3Xl0EhEcszPaE0OK7+HTBA7Mlfc2Epc8pOqK3/aZ+UpCxYlW2H0fI3SMMFzJIL0ZpInJfef1aAwr5xsPt5e9+L2tJFnvtaRhAHb3xa48qGmmwOhw4vwirYfJX56gkGlY8p8wgtpBU+sAQ9N52rl+qYbXi8CVK03LplOQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com; spf=pass smtp.mailfrom=altera.com; dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b=JNJkpZSA; arc=fail smtp.client-ip=40.93.196.33
+	s=arc-20240116; t=1781840615; c=relaxed/simple;
+	bh=//vSsTUz9jQEmhYJlhNZe2j0F2ex5YiTntFFKMGta9A=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=n0J+HCPZj9vqx1TXam/NuZwtm0qiH/MGKSF00IBysdQqxKgiiMVp2rfG/pkP827kYaoHIT3BgwmUfqpgCoKPZWBIxGHzW6w7AjUKTqNDiZV0hxwP+uwiCL3MTRl+eItEFpMlz8WTDP5ouPE9c36EvvdBjKa9LYuwm860bEESpDg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com; spf=pass smtp.mailfrom=altera.com; dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b=n0jJhqQY; arc=fail smtp.client-ip=52.101.57.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=altera.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b="JNJkpZSA"
+	dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b="n0jJhqQY"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=mTHICrXXgZ89LBFCigxi570SFfQjb8KO//gi1o0vNte9OWNvEwcC5EkuQadaym/68nWrfM0E8ZqjuvTromxFROoyEfQVYC5c3GE1JcgKPYy0cStRIJ+/Vg2P7xlIk51N/Y5IZsgYgbAVtBYVxAeKaNaE/7+y8sM+qORhdvrsG5Ue98tCgWQmN/QrGPShcaDyzzNIx7tjAvSTqK5xLQEjuIp6a7gW9+Ghnv4LUs6f4Ku1BR3PnS0h/aVZye6gekLGvLKEjDeWmXkr3pW1YyS9i1G7Q5/Lq5OVVPkLemfAhz/a4d8cTKyGLNOTMWZ8tqJTKkp2INpoOAgWOVG/kGLErQ==
+ b=NuCPHBGh5IAOdYPdXyKEMu10PoP3Oya/Xy01Pk5TJaBmuKym8NNshjOf1CbSA7XOZ8Uihz7q2be8BYhbT8XI0WEn/4vjut1dFAD6ykJqLZAoFzW+VYQuGJaHO1FU/U+suqOyM87O6RuBOBgxXynB/YbCHe7EcPUY/qeNAk7LpxgylSuJ1Y5Rho9lRRygbdgUdEt8oXfn7kAS5LHsVXTyEtg3pp0ybwPoWaBnPl1mc/Zdq/2LhEDagrCVkg7Bw5UD0+K7hGUvm+4C/HBnL6p2sCrfhSGJlFI81aPZp88Vmf3P8fHw+SUn/E0vXqTrKV07T9+ZhrV3lSbHBvhE872HmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=pCek+gouoZfgQWeYaBeUoSezhbxzvGdFvFW+y9SHtnY=;
- b=D4se0m24NQICTbrmNaW5+jZ8nBixI3HOg5WSfrBJHxrxTVXKx1hqRTZWR15u5iARHFP5JhJ5w0f6a+bLAGnPlXDsxTEnlnopL2+sUMU1cOFNJ/KFHEWHoDomWkPJbZtMCd8/IsJ2BbfkuLvzmCWJlJrBWHEmqiLRADB+ekLedMnRBDLZtuGB5tAXLCSSNabbM4Bl7M8gC7Ex+1sI+dALIkWzQrECs7JK2/8TvKEgMtwuLU4zQySDYrLEahjf07fRKlPIbtTjybfltCMnwmpXc5YiFpICafSLb4b1obtxoReVHT/vwKNS+Gyqcp/f0UJRxCUnicKsBbO3DrA28spm7Q==
+ bh=ynNQheunBQIa8UxLitZ/DG1Tb05JSQkKGzL2iWvd+n4=;
+ b=t56GAcdAcTzVh/00MHkLg08+Y9kQ1gaO+snd5hSeNBFadPBCTvBaw3cSjhW2izRg1KWQadhi7z+8/JHUm/ZZQp5M4/bu3SYcWcDmLhHirD7b4pEea5Y0MqDN9w9x4N09ZYksVeyPKE4KB2NjI3bOL50ebpBtd7bnvolSdcgDcvRozhKlmVcAwCVQn3R83x1UBS9rZUaRdqu9sdxAOBCmGDmUH6pTMClYeI6Okd/qM8UGZQUZLh7CSiHbUZUPqFeu3ESk2HGcLQBCvoovXVgPydDUiUidH5wux9ukfI4XQYOgldaTnMCXwganNIN4cUoi6pL2tEUJPxd4CfUkV3wrUA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=altera.com; dmarc=pass action=none header.from=altera.com;
  dkim=pass header.d=altera.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=altera.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=pCek+gouoZfgQWeYaBeUoSezhbxzvGdFvFW+y9SHtnY=;
- b=JNJkpZSAVuMqABVIp4qc/aJc+g3YmY8XoZ3XwDfZ0roKQKjN7svHP0haaQkwmtXAMNce3HaxKtLeIlsIoEpAZj/DYOzTPz147I57HfGkTQoGWEAJlqpTaE8Psi2HEMi43g/oWNz7ZnUg1DZnr2k5ov2AuXMEGDYuM40SyY4pgEo7jErUcPnVjNMr1UMVAX4c3CUfny7bCg8MmhmU0AEcWJSrLv8n6R2tqoS52pH168Q8fPvL2pdNYi30RSGrMGlqkzbPWbFEsMip8c+GK3Pggtt4a0u5QK0/pz2zijUSBIpXiIU9tfKpJ1h/VedB3AzngEcuPVw8LbztizOp3wsBRQ==
+ bh=ynNQheunBQIa8UxLitZ/DG1Tb05JSQkKGzL2iWvd+n4=;
+ b=n0jJhqQYBMeTglIuSMXuQk65bB0SoaU9trHUClApJXlTij8Qy16xaqjalYs0rE1TswWU5T8AQuwiWNRpCRTs8/ShUD/iBkl0JaVDOtkzZ3/+s1cf3c4flqonFJ5/M42Y8gTsrUWanSWevOlxYNiM5ROctfoDSIDM5JiZXsIz9M66BgCjtzZQ1diwAiRJLjUZmsrR0YxRO69pCTHLEM8F42CVuJar3OrzEutnvXInCtSW/hCu8zmwVL8CN3d9H3z2pNj3f9fYXvATgvdSwrrdO+1/zhvQW1XR/VAg/82x5wmpOQGWnwpMtxtbLPoucr1GTZCaoLhmC7ZjC2WAYCD/Kw==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=altera.com;
 Received: from SJ0PR03MB6964.namprd03.prod.outlook.com (2603:10b6:a03:432::18)
- by BL4PR03MB8105.namprd03.prod.outlook.com (2603:10b6:208:58f::12) with
+ by SJ2PR03MB7476.namprd03.prod.outlook.com (2603:10b6:a03:55d::11) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.11; Thu, 18 Jun
- 2026 11:24:12 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.11; Fri, 19 Jun
+ 2026 03:43:29 +0000
 Received: from SJ0PR03MB6964.namprd03.prod.outlook.com
  ([fe80::b965:bfa8:58fb:e775]) by SJ0PR03MB6964.namprd03.prod.outlook.com
- ([fe80::b965:bfa8:58fb:e775%4]) with mapi id 15.21.0139.011; Thu, 18 Jun 2026
- 11:24:12 +0000
+ ([fe80::b965:bfa8:58fb:e775%4]) with mapi id 15.21.0139.011; Fri, 19 Jun 2026
+ 03:43:28 +0000
 From: muhammad.nazim.amirul.nazle.asmade@altera.com
 To: mdf@kernel.org,
 	yilun.xu@intel.com
 Cc: trix@redhat.com,
 	linux-fpga@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] fpga: altera-cvp: Retry teardown and reset CVP state on failure
-Date: Thu, 18 Jun 2026 04:24:10 -0700
-Message-ID: <20260618112410.303-1-muhammad.nazim.amirul.nazle.asmade@altera.com>
+Subject: [PATCH] fpga: altera-cvp: Add Agilex5 CVP credit register support
+Date: Thu, 18 Jun 2026 20:43:27 -0700
+Message-ID: <20260619034327.26966-1-muhammad.nazim.amirul.nazle.asmade@altera.com>
 X-Mailer: git-send-email 2.43.7
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: SJ0PR13CA0116.namprd13.prod.outlook.com
- (2603:10b6:a03:2c5::31) To SJ0PR03MB6964.namprd03.prod.outlook.com
+X-ClientProxiedBy: BY3PR04CA0026.namprd04.prod.outlook.com
+ (2603:10b6:a03:217::31) To SJ0PR03MB6964.namprd03.prod.outlook.com
  (2603:10b6:a03:432::18)
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
@@ -63,148 +63,203 @@ List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR03MB6964:EE_|BL4PR03MB8105:EE_
-X-MS-Office365-Filtering-Correlation-Id: ca29bd4e-e73e-4fa9-93ea-08decd2c1ef3
+X-MS-TrafficTypeDiagnostic: SJ0PR03MB6964:EE_|SJ2PR03MB7476:EE_
+X-MS-Office365-Filtering-Correlation-Id: ff6db5f9-be6c-4f44-acc3-08decdb4ecf4
 X-MS-Exchange-AtpMessageProperties: SA
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|23010399003|366016|56012099006|11063799006|18002099003|55112099003;
+	BCL:0;ARA:13230040|23010399003|1800799024|376014|366016|56012099006|11063799006|18002099003|55112099003;
 X-Microsoft-Antispam-Message-Info:
-	WPgKMQ7lFEorIqLXSZD/T4Nc1SXPS4wabtT+HfCC6JKc3yjEXzfev3steE0CaZxSLXkyOhMZ8YQwxUFL8So1ZY5GXRVv1FbGW1ucXTvBDcWjXp8AxULdvU8pvzRINMuQSZZthf/qUKlGzwWeDQkwJjaooDs4azuFlhDQt/0rrbmTAPdnPzoJPDwwkrzEVZjywmvuV3w5zq6rQ+NpAgdn/OQ6X4425Tk/WeEMDDA+PAd+AKGUAKxMfItIeIuDSMy60D46CuJpNgi1q+mSCQ1bXJrGv32swPMY1Y0Z+9OTt7SCFhgNO7skRNR0gE88QnBTdzS3wpYS4Ob3m8ImcnP5FXv7GlNKKnueH60/LAs6WV1g0kkjdM2lDf0eEawPIPCyeBU+6+JiQuBsgNBwgkOdHB/j1TXJ1khtJLQbfpRZzB9rOZjRpo++7phHjiCx0KMws5W0j2UdCCK+qLWbIG3Ayz9aZqTqKaVOfEzmEJYSM8L3uxlpCtS+R4oYIHwlIw7GtFTIX5Ef4cOc+v8PiVLCNMxMi3V0Hvp4tWSYuoCF4pCspt/NRM3zgmVZCOoF1BoL8u8F5sZQEW4St55gsmscFm1NXqfT4+t2G6ttHMcpSfkxZOL4jGaKiL/6WhzdN92P2TLdNLb9mBm8gb1TpV8tntfnxUjjhovbmSQwntGsvLg3bHqnXLaTmYPKTvM4L3ZA
+	x7e4SSvpuq49tDioyBeexy74qjg5qNribQRl8r+Et5OdQz8DQKSyqhlYCcEcjnsu0hndVfHOvQhHYTUdQN+I0jdAjpSqvbViwFw67MfOg+xUKOxxfMwyxl5n0/vTkQnnJ3eJEaA4VIjQVireLsEfQDfiNqTUW/EFeK+3zPSXWkGIO9rIbIE+f3zIfoTysTysWDseAJHbJbi2gX9/peHg1QfR/+ucPDs3c8cZsZu8703ZClpLSHaTndKjYB8/iFucz9WI2FehrlxLwZsffRm3x8XlEx24aUri4jsAQorRT/MQqESbgtgSECaQFuZhJ3X/kfMf5taZ/eXK0CG26Io/XkKD9q96ymHVsP8dpq/tWr/vDuyhOPMWePVaYHZN+ZsrVraPcb29NflejIt07gX73sPQOZ3rF67WySD7T8pTIsltWxIiPwOGg6Bm68l31v7/n6LuGVBaOEKQ3bZs+U6xN32uDCAIbUpLr0UAiazebLfuaP/9BKXfFTQXeq/sXtPzeCitoiczpDzOqY4aAtH/B+mHzOYr1HAlElFBn3TZ08V/2v1In9dZ8+tTk/3l4mIiUKyPfS+J+LggIn1vHVAaDIMfuLhFDED2i4TtldGrUJhibz3kLtjF7sU0KIig3GV0NqJFxIR3s8p4dlkyoHxTM0fnir1EJFPGRf2ZYvbIwhM=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB6964.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(23010399003)(366016)(56012099006)(11063799006)(18002099003)(55112099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB6964.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(366016)(56012099006)(11063799006)(18002099003)(55112099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?DJuMsQBpIVPfEju9b32KFwLjhsYwVtojudFMxZSXQxTCWDFtxDU8/KoSIXSO?=
- =?us-ascii?Q?7K4DUD9Bvgg20S1t3w/K3dj20uIpTVq3Y4J/DDRALlJ2SO7Hcj6wwsG85e4S?=
- =?us-ascii?Q?9Lcwc6j3B7P+OrDxPPhzluVUGDIQ0yWz6iZMzza1MQuKXQAuv5IcOHKjpiec?=
- =?us-ascii?Q?VPY+vlSfMtR02Xay1hs0U0tJS0wFYZK9six2xelNr9nbLEzgxFHaBUTIU1FT?=
- =?us-ascii?Q?MwcACtIY/AAIEHBljF/830DhtR3Eru7Z27QIGJ4voN4sI3w7yZSR9l0ybajy?=
- =?us-ascii?Q?NmwJoGUbV8H/JLklpDJZOT9Kln5O9W5Zry37Ibr4RPPSKzwNQfu7jR3d1HDq?=
- =?us-ascii?Q?WUooUyRWq91zRRbPGdYbzz9/ZQsdRxVJ9vRrJctoiPs8xp4X/TMJZb4Bg5Qy?=
- =?us-ascii?Q?HrQV3WE/JSOR1EYbrZYmIK13Imhe5+IF7Cad5yJgK+9wC011g2jvKIfbVdYl?=
- =?us-ascii?Q?ZQOnZVjqHCbc8+Moix0HRID35t6V8nAl7A2MhDZfWDnLh+LkMmsoHHzpsEq6?=
- =?us-ascii?Q?dIW+eaMfS18dzJkgAilym7TWF1/iUiubS7hqj4Y5NM/LNmaaskLfLTc6mI3K?=
- =?us-ascii?Q?0VnfjdYVM8I4SccyMQCCoERVT/raaSAzJW3wXiGSnXwSJ/S7JisS2deeqE3S?=
- =?us-ascii?Q?GOLEcOK/7pr36+FRnGlvDsyybJgg6i2VQKP6B4/OACLQz8frF10tEDs0rqWo?=
- =?us-ascii?Q?rKkA0S1fUZuBZhl39mxyOgOrEPglKY9w5x++SEsKdW/YFqemH//mnwxtFrB7?=
- =?us-ascii?Q?5ufTJJyYxhy/hpJ7fEQsA0dnkLxWYIdfvDfJZAX5uyXphGapJvxwm9zwJAIH?=
- =?us-ascii?Q?RxEn2BS4qjdGmTWEYDyQZ7Ff0xdzFiblRz+eT98weYDAEwhqucUTTzR3v6Qf?=
- =?us-ascii?Q?KzPJtZhcDViSMIBSAafU2n0Wm52dgHSiXuQ9i9S7b0BVY4ekm6EYuRxsoGBm?=
- =?us-ascii?Q?+f+I9qa/xC/L+Jjaiu3ryG+GqwxxuGZ8Fx5V9dYhZ8c5GyLQnz1PxiDWMHlt?=
- =?us-ascii?Q?+wKh/KxRlSVpyhPGgxZl0dot4awsBeZ3yGxAjuAnkAXErd4998B+I1pBhq07?=
- =?us-ascii?Q?Ab4dX5IFIktNssrP92EfbYpQ4ey4il4XSy07atmx07pJTiIyU63HE82BkDx0?=
- =?us-ascii?Q?CNUZMPxYoBa37aMu4tcZCFKjq9IVEW6mGKCMNw+fvB+wmLBlYiUEZAd67izF?=
- =?us-ascii?Q?9QeXE2mAfMkghXt64bFKYwkgIP+Pq8G4WHo/ueOlFIeKsFZgVjpWQ52uZqrs?=
- =?us-ascii?Q?dYciZi6v+0Q8suzOe60+lP4gWxx5g0wmS8TB1w9TTUd99Am12CSpdE7groCZ?=
- =?us-ascii?Q?oGO5p3SMvKNkE3hz0Eh/QzObrZZqALsDS68HqGUkh3k2kd7m2O79m0bhi7on?=
- =?us-ascii?Q?hp2TOzw/63p5Yp1BICa1ZJd/1o0dsqgb1o0ZgLG4nCDcRYIXkC5Ysg1g+3n1?=
- =?us-ascii?Q?P2cFFYmnGIoCOYZsV8581vsT0d2bNatoA0zdpo11hi4VX+LGME8qIl9ltE+b?=
- =?us-ascii?Q?iP3gdpx666t49WbTRSw9rhdvYfpsSyMmf5HhLQRBlX0oECy06oiVtim2y5OE?=
- =?us-ascii?Q?Si5sYHCIUEbomYEvj4RfQiyNaqcV2eVdCKYhe29rElvvA8OEL8yLvIl41raC?=
- =?us-ascii?Q?amL/uvzRZ7C4ibvGHm11H4MP3pdDaV4kbhafiufpeAcFTtWsKyFaBWJJJqHC?=
- =?us-ascii?Q?UsD7bIp2RTQ+JtvyWhbdY5+wfFggYH5CH5VWt7AioB6G3ewK45/h9QxKESF/?=
- =?us-ascii?Q?LkqFv2ib8VANcvdpTSQ2AD46VGOtM39Q+f4yT8mtjm6B7h0G9z/T4ElrqCn5?=
-X-MS-Exchange-AntiSpam-MessageData-1: OhVFxeHrcns/ew==
+	=?us-ascii?Q?ZLfo8uadu3yNfEFT2ZW/7bgUHWsEo+mDSU3XnMD4mDJxvfphuEYbWYzL5ZCM?=
+ =?us-ascii?Q?7rqmZx+6fP4W1CeEm+LX67q6gwq6JBVBGwwMZ+YARET8k0AcLwhD20ylCwXX?=
+ =?us-ascii?Q?5JH57wmvTcx1SPKrE2Hcft6qYZxKOmCfgHOBw/6f5Wzu+LRsRIjjLE4Bb1cq?=
+ =?us-ascii?Q?hwtbnOO2aodpH+9eIe7DGeEmMr2kRu75ry4Lai58RVmxu8MYvHfkQ2m75g9F?=
+ =?us-ascii?Q?Jlhde6brKp4qmf5u5FY+0TS8zyjo4AlwcMxEtlMsftywYOirc0yAaI5KZSqy?=
+ =?us-ascii?Q?6HbuxzZHiy7FEVronWyrZqDqeZOUR0YuTpAhv/fwQWVxGMtIWjXNTe6eJmoz?=
+ =?us-ascii?Q?G5PcIqd6tSpSKdCfFpo2fRyePtArnExBK7Nzhg7f604lMY7X52KkTz3BZCav?=
+ =?us-ascii?Q?nsa9a+dcddr4Im7f0TEk4Zrlr3JbZTZCv3Kv1L3ckl9kb6Erk3dIrPgPv/C2?=
+ =?us-ascii?Q?1jlAFR6o7+/giVPhpH0vsqI51+STFE86vmRiELKGJtwMkt7aYunqGXv9eIw3?=
+ =?us-ascii?Q?k2/mkrjrSeM6JEcdalJBmSMfX1VsGXFuoGSwPD0aHknT7Gm6Ka0pr/0mRJJ2?=
+ =?us-ascii?Q?gxEWi2qV6YLztxF/xHPHA2Xu0Xsk9xOQdTUd/5Y5gP+fcikpoMwIJGk8DSxP?=
+ =?us-ascii?Q?XUa1nR550jWRSU+Xdk1oot5Vc5t63971pLQZP9zBDivps7L+Yiu/tNjCuV03?=
+ =?us-ascii?Q?TfX3E0GEc8HgdRviTdmJyvWGa1wDuJv1F67kbbZxlIUrMiod/okJcY3MRz16?=
+ =?us-ascii?Q?eXdvKpmlCOHV6NsfaJ97FfdcXE/lmXFY8qBxivirT18AJCPsfFWLpZrv2itW?=
+ =?us-ascii?Q?7Cul3RzI7nadqB4rqtSlps3rP+7dKSX7cSqM8dUzScP8eNXf4rsobWBDDU2G?=
+ =?us-ascii?Q?Kyl1laRHzm6rCYhuwP1Q9mlozz94DRCIMM+lqr1cL6+0A0nZYypva+oNuMXs?=
+ =?us-ascii?Q?ekeVOyNy4NaLEmzr0P4eh8AzWcX6j1L7y6So8Sx/u9EwCKfMr16GdwlrzMa3?=
+ =?us-ascii?Q?fOXH69PP8fG0F11ZNxMivnukCoI4X6Nt4LjX7w0JamQHV5hCO6dZZfaGUlCz?=
+ =?us-ascii?Q?ljSNH2zX3A1EXUNB/UT1GpUtTpG4uyniIXkWscyCbMqGC76H/Rl8b1jWScgs?=
+ =?us-ascii?Q?MqrRYwuDHgEQrOW8EZ9xXCjTWqQCb5GR+9UE2l7XLCxmkLiZsWK43KfsIoUF?=
+ =?us-ascii?Q?iBpKDj/ZJa1XCon+gIg0t4ncPiQgJR5VWUtGtBhZmQmWztdMofD7FE55hTwt?=
+ =?us-ascii?Q?bZKAjHAWgG96XbJ0M1/jyOMQ0s6b++bcMGW5c77fThWEBeosSWQ6uGWhwa+b?=
+ =?us-ascii?Q?JEuTMVdQ+Mvc5vxJ7bzp1sPwtJUjFlid3iSVvbaJq+IJaryFQlobyhLuMiC6?=
+ =?us-ascii?Q?Fzrf4jYaUyoG5B3HAIHH9/V8fs3Z3AoEzwHZxKLpT8oB2fszSe2V0yw0f158?=
+ =?us-ascii?Q?mVCRfxcoMaFxzFG0dSggHXuJQbEeQ7UDCVBqe884lkIuTuwQ9oOkH+ziuFx5?=
+ =?us-ascii?Q?9lEpdq9ISwQDVJn3UZb0B6fDDfkgLNRx5+KniMfvtPKIYxu9WJNe1v/cqbuh?=
+ =?us-ascii?Q?N7N27f0ejnDfLEhNtHWhpXLBL3nyiR5FeXVVSJtrBmeKJvBm+vhz0hUB6ptI?=
+ =?us-ascii?Q?O5Uor/ppVH3Kn278Prbz6Mt4Sa9/v9GWewcYSN/5bkRg7SOTaWfmbsaUQuyi?=
+ =?us-ascii?Q?3XMT7p3MlrBKMcpxt9JoBgn/y0ea8XynboJu4+VYtRfonlnZLi5RIsdMJqMD?=
+ =?us-ascii?Q?lN96sGTk5j6mw4QgkwQj0wpuxzxFV5Fix4JroNTyUY6kwQVBA6ysUdwa/IeO?=
+X-MS-Exchange-AntiSpam-MessageData-1: d7TP12X3TBWing==
 X-OriginatorOrg: altera.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ca29bd4e-e73e-4fa9-93ea-08decd2c1ef3
+X-MS-Exchange-CrossTenant-Network-Message-Id: ff6db5f9-be6c-4f44-acc3-08decdb4ecf4
 X-MS-Exchange-CrossTenant-AuthSource: SJ0PR03MB6964.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jun 2026 11:24:11.8629
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jun 2026 03:43:28.7739
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: fbd72e03-d4a5-4110-adce-614d51f2077a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: N8xIszZ+z9nC40Vcr2QKe+Ya7mTJN4BPkWkf7Dqb3vP6pWd3yuOk4HjRKW96L74ZI6xqEY0kN7Jp5DYTEWzV5OdgpxpfpFCzybUb2NDR/UqSLjzGfqC8O9f2JBHV5P9aOiCsA0hG94L1n4E21uoF8A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL4PR03MB8105
+X-MS-Exchange-CrossTenant-UserPrincipalName: XoJVKAbWGXl+niUJonauLAOTUinWnSFy0NLdSdZJ5H2Kg2no5Ef+AOZpARTBxQE+dG7ZF4cXR1p2kxvpk36uNZPi/6QOmTmco3uRp/5gklIjorts2OG/0x39IhsvcNEIzfWMZKTgycFkGYlg0lOFCg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR03MB7476
 
 From: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
 
-If an incorrect bitstream is sent, the teardown may fail due to a
-CFG_RDY timeout. When this happens, reset CVP_MODE and HIP_CLK_SEL
-bits to clean up the hardware state and return -EAGAIN, allowing the
-caller to retry. Introduce altera_cvp_recovery() to wrap this retry
-logic with a maximum of CVP_TEARDOWN_MAX_RETRY attempts.
+Extend the CvP driver to support Agilex5, which uses a different
+register layout than previous SoC FPGA variants for CVP bitstream
+transfer.
+
+Agilex5 uses a different VSEC layout (VSEC length 0x60) and a
+dedicated CVP credit register at offset 0x5C with 12-bit width,
+compared to offset 0x49 with 8-bit width on other platforms.
+
+Detect the device family at probe time by reading the VSEC specific
+header and checking the VSEC length field. Introduce
+device_family_type to distinguish V1, V2, and V2 Agilex5 variants.
+Use altera_read_config_dword() with a 0xFFF mask for Agilex5 credits
+and altera_read_config_byte() for all other devices. Fix the credit
+comparison by removing the incorrect u8 cast on sent_packets.
 
 Signed-off-by: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
 ---
- drivers/fpga/altera-cvp.c | 36 +++++++++++++++++++++++++++++++++---
- 1 file changed, 33 insertions(+), 3 deletions(-)
+ drivers/fpga/altera-cvp.c | 48 +++++++++++++++++++++++++++++++++++----
+ 1 file changed, 43 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 44badfd11e1b..29faf6f5bde1 100644
+index 44badfd11e1b..58128de2a8c5 100644
 --- a/drivers/fpga/altera-cvp.c
 +++ b/drivers/fpga/altera-cvp.c
-@@ -63,6 +63,8 @@
+@@ -10,6 +10,7 @@
+  * Firmware must be in binary "rbf" format.
+  */
+ 
++#include <linux/bitfield.h>
+ #include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/fpga/fpga-mgr.h>
+@@ -22,6 +23,9 @@
+ #define TIMEOUT_US	2000	/* CVP STATUS timeout for USERMODE polling */
+ 
+ /* Vendor Specific Extended Capability Registers */
++#define VSE_PCIE_SPECIFIC_HEADER	0x4	/* VSEC ID, Revision, length */
++#define VSEC_LENGTH			GENMASK(31, 20)
++#define AGILEX5_VSEC_LENGTH		0x60	/* Agilex5 only */
+ #define VSE_CVP_STATUS			0x1c	/* 32bit */
+ #define VSE_CVP_STATUS_CFG_RDY		BIT(18)	/* CVP_CONFIG_READY */
+ #define VSE_CVP_STATUS_CFG_ERR		BIT(19)	/* CVP_CONFIG_ERROR */
+@@ -48,6 +52,7 @@
+ #define V1_VSEC_OFFSET			0x200	/* Vendor Specific Offset V1 */
+ /* V2 Defines */
+ #define VSE_CVP_TX_CREDITS		0x49	/* 8bit */
++#define VSE_CVP_AG5_TX_CREDITS		0x5C	/* 12bit credits for Agilex5 */
+ 
+ #define V2_CREDIT_TIMEOUT_US		40000
+ #define V2_CHECK_CREDIT_US		10
+@@ -58,6 +63,9 @@
+ 
+ #define DRV_NAME		"altera-cvp"
+ #define ALTERA_CVP_MGR_NAME	"Altera CvP FPGA Manager"
++#define SOCFPGA_CVP_V1_OTHERS	0x1
++#define SOCFPGA_CVP_V2_OTHERS	0x2
++#define SOCFPGA_CVP_V2_AGILEX5	0x3
+ 
+ /* Write block sizes */
  #define ALTERA_CVP_V1_SIZE	4
- #define ALTERA_CVP_V2_SIZE	4096
+@@ -78,6 +86,7 @@ struct altera_cvp_conf {
+ 	u32			sent_packets;
+ 	u32			vsec_offset;
+ 	const struct cvp_priv	*priv;
++	u32			device_family_type;
+ };
  
-+/* Tear-down retry */
-+#define CVP_TEARDOWN_MAX_RETRY 10
- /* Optional CvP config error status check for debugging */
- static bool altera_cvp_chkcfg;
- 
-@@ -305,12 +307,40 @@ static int altera_cvp_teardown(struct fpga_manager *mgr,
- 	/* STEP 15 - poll CVP_CONFIG_READY bit for 0 with 10us timeout */
- 	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY, 0,
- 				     conf->priv->poll_time_us);
--	if (ret)
-+	if (ret) {
- 		dev_err(&mgr->dev, "CFG_RDY == 0 timeout\n");
-+		goto error_path;
+ struct cvp_priv {
+@@ -228,18 +237,32 @@ static int altera_cvp_v2_wait_for_credit(struct fpga_manager *mgr,
+ 	u32 timeout = V2_CREDIT_TIMEOUT_US / V2_CHECK_CREDIT_US;
+ 	struct altera_cvp_conf *conf = mgr->priv;
+ 	int ret;
+-	u8 val;
++	u32 val;
++	u32 credit_mask = GENMASK(7, 0);
++	u32 vse_cvp_tx_credits_offset = VSE_CVP_TX_CREDITS;
++
++	if (conf->device_family_type == SOCFPGA_CVP_V2_AGILEX5) {
++		vse_cvp_tx_credits_offset = VSE_CVP_AG5_TX_CREDITS;
++		credit_mask = GENMASK(11, 0);
 +	}
+ 
+ 	do {
+-		ret = altera_read_config_byte(conf, VSE_CVP_TX_CREDITS, &val);
++		/* READ DWORD is required for Agilex5 but READ BYTE is required for non-Agilex5 */
++		if (conf->device_family_type == SOCFPGA_CVP_V2_AGILEX5)
++			ret = altera_read_config_dword(conf, vse_cvp_tx_credits_offset, &val);
++		else
++			ret = altera_read_config_byte(conf, vse_cvp_tx_credits_offset, (u8 *)&val);
++
+ 		if (ret) {
+ 			dev_err(&conf->pci_dev->dev,
+ 				"Error reading CVP Credit Register\n");
+ 			return ret;
+ 		}
+ 
++		val = val & credit_mask;
++
+ 		/* Return if there is space in FIFO */
+-		if (val - (u8)conf->sent_packets)
++		if (val - conf->sent_packets)
+ 			return 0;
+ 
+ 		ret = altera_cvp_chk_error(mgr, blocks * ALTERA_CVP_V2_SIZE);
+@@ -507,6 +530,8 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
+ 				     conf->priv->user_time_us);
+ 	if (ret)
+ 		dev_err(&mgr->dev, "PLD_CLK_IN_USE|USERMODE timeout\n");
++	else
++		dev_notice(&mgr->dev, "CVP write completed successfully.\n");
  
  	return ret;
-+
-+error_path:
-+	/* reset CVP_MODE and HIP_CLK_SEL bit */
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
-+	val &= ~VSE_CVP_MODE_CTRL_HIP_CLK_SEL;
-+	val &= ~VSE_CVP_MODE_CTRL_CVP_MODE;
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
-+
-+	return -EAGAIN;
-+
  }
+@@ -627,10 +652,23 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	conf->pci_dev = pdev;
+ 	conf->write_data = altera_cvp_write_data_iomem;
  
-+static int altera_cvp_recovery(struct fpga_manager *mgr,
-+			      struct fpga_image_info *info)
-+{
-+	int ret = 0, retry = 0;
-+
-+	for (retry = 0; retry < CVP_TEARDOWN_MAX_RETRY; retry++) {
-+		ret = altera_cvp_teardown(mgr, info);
-+		if (!ret)
-+			break;
-+		dev_warn(&mgr->dev,
-+				 "%s: [%d] Tear-down failed. Retrying\n",
-+				 __func__,
-+				 retry);
+-	if (conf->vsec_offset == V1_VSEC_OFFSET)
++	/* To differentiate the target SOCFPGA */
++	if (conf->vsec_offset == V1_VSEC_OFFSET) {
+ 		conf->priv = &cvp_priv_v1;
+-	else
++		conf->device_family_type = SOCFPGA_CVP_V1_OTHERS;
++		dev_notice(&pdev->dev, "V1 target SOCFPGA detected.\n");
++	} else {
++		/* Agilex7, Stratix10, Agilex5*/
+ 		conf->priv = &cvp_priv_v2;
++		pci_read_config_dword(pdev, offset + VSE_PCIE_SPECIFIC_HEADER, &regval);
++		if (FIELD_GET(VSEC_LENGTH, regval) == AGILEX5_VSEC_LENGTH) {
++			conf->device_family_type = SOCFPGA_CVP_V2_AGILEX5;
++			dev_notice(&pdev->dev, "V2 target SOCFPGA Agilex5 detected.\n");
++		} else {
++			conf->device_family_type = SOCFPGA_CVP_V2_OTHERS;
++			dev_notice(&pdev->dev, "V2 target SOCFPGA detected.\n");
++		}
 +	}
-+	return ret;
-+}
- static int altera_cvp_write_init(struct fpga_manager *mgr,
- 				 struct fpga_image_info *info,
- 				 const char *buf, size_t count)
-@@ -343,7 +373,7 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
  
- 	if (val & VSE_CVP_STATUS_CFG_RDY) {
- 		dev_warn(&mgr->dev, "CvP already started, tear down first\n");
--		ret = altera_cvp_teardown(mgr, info);
-+		ret = altera_cvp_recovery(mgr, info);
- 		if (ret)
- 			return ret;
- 	}
-@@ -484,7 +514,7 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
- 	u32 mask, val;
- 	int ret;
- 
--	ret = altera_cvp_teardown(mgr, info);
-+	ret = altera_cvp_recovery(mgr, info);
- 	if (ret)
- 		return ret;
- 
+ 	conf->map = pci_iomap(pdev, CVP_BAR, 0);
+ 	if (!conf->map) {
 -- 
 2.43.7
 
