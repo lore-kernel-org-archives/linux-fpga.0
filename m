@@ -1,61 +1,66 @@
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011009.outbound.protection.outlook.com [40.93.194.9])
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013067.outbound.protection.outlook.com [40.93.196.67])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 901BF367B8A;
-	Tue, 23 Jun 2026 09:47:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.194.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AE683D1AA6;
+	Tue, 23 Jun 2026 11:01:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.67
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782208069; cv=fail; b=pSoOp+ZSh1p8SarKsx4B0N2qlJNg//R8lk0SoCjytqlVPzHX7T7J8PHXN0jiaWomqHWLSTuu06JfCIca79yPeINskZ56r59zB+z/iRgxURTgfEOZSmik9PiD58Z+ieH63ejlqfx+E4eUsDS92LeaeXLACr00kNHfs6RW37QjDLM=
+	t=1782212504; cv=fail; b=sISEQ+nkeAxGGRN1s2xA2FoN+1o2vSPTZPO4vE8II0al7R09Ydv02Hg3zSLepmfEGJEXeeGLjSF9DfC5M0GTRXVd32rqvXBGjLguRiBfgulwWX5ad74z+qh5OI/DpqHpNQO56dC07WzljQ+hU5Zmy/9rmVMFnRXyUI6nf12o9g4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782208069; c=relaxed/simple;
-	bh=6f0RD5+KuYM5vEbA4ObqizFyDwTshpAPno8B9hAWqy4=;
-	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version; b=Xcdn4AqGU11cPFE7/9YOvt3ErE+yo+VuR20txq8Fhn1Erg8uZnjns8+PKhdKGK82v6eXb30C34r9mIIKUSlSFs3DuFZ5Bcy4QYV7ITfS3d1RMVNoI/KKX/DMjfKqUaWUom/cWQwNi9PUhpyK8LRVs+jygfEsavYhlVw4dIS/u3s=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com; spf=pass smtp.mailfrom=altera.com; dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b=N1eri/yV; arc=fail smtp.client-ip=40.93.194.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=altera.com
+	s=arc-20240116; t=1782212504; c=relaxed/simple;
+	bh=m/vknN2OoFH3i06+AcSAzU53KMGcuMBidsthVTepDxI=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=AN4C3+urcJJ3RGDDeN1cLd/+I+TqkWXR+ROh1wOCX2YNlHExa0Aeo+Pc7nMEPieheg7YqKOsMV0qmeKAabtAA3S988Mxg3XAs7e5W/WeJ5Yilfa3JQJyzZUYxyOHdYMUMdHbip96S1leNEG7dOrV5U6rXO4/VKIYYW6VYWepvIY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=fMAT0FPT; arc=fail smtp.client-ip=40.93.196.67
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b="N1eri/yV"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="fMAT0FPT"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BpxF9N8D96jgVZC0JPKUrI6Y/2IhGA2o6WTbak4+tBhTHJpOuAunUhpzdQhDkhXHFhWUJMs3ObpS2mSKod2VURY3CmDuvVSr+mRGSieH43pv5QlkJjJwzZxddVo4peZHxheINawjFIgBKy7gP0yXhJ1Wf19J60+IEhpBCo8jGkL93xivr+3jRXSf/YOShSFohbadeiWJS0E4sQ32yRhiXpl/nd+4sIrMDXBS+efubT+RgEU1cO4/vbc9qvVq28Ko8ZCGhtxYVmB5ZTWChLeCi/l2hCyoGU5vnf1Hr0WEZBzJTVabb4rYVCZGG2xjMzZBTPKXe427iU1LpbbvyTkJyw==
+ b=rRSYH0Jgfgrg8/dVLrnIj0hKZHzQZNNj6ktDHZRwCtGM8g4iJTgtQlx7A8R3o6uhVil+cU5BbtpfiB8nf5AROOIXCigzgrQX5fBHpSdobEcwCcJ4LOV8fqBgaAr+iMZcteWaa3KlOy9psDRmdMleXzRVxhw2TLp+CZxSHVh3F7Lx12q2Q2IE4SLGUmaSUWBHNdyKUCzmc4ntgNBq86u3DFTofz1tG8f0k/HSRAvRMItA6NR4SldGwAiZS4rwyULi0h2Gh65tAie0a7Pfk5mhuzzNX8IJYDPEWcPqIeGsKlbiv5GMrPL8QTPOmgs1r3xWsbaIAo04APk1nX603N2Biw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8mnJwHJxVyMugmK4WkU7Dvrc3l66BFspDod6ZEBwd4M=;
- b=lEmhNB0mn6LgzcFgjeTutcOgK2OrHklRWjXp+fJ/ete/hRD4zZ6ULtgutyZvpt99WICZ+QMBHQG9t9TO1Tcm//mfoAkq7Z4O6fnRoFCUpvrJx+Abq1ebtsCMCXvP+/NjyYjjykcmkCDWyvrRhrD3lGUm4gOMH2D+Ui5n/D7Q2J2Z7ohKgWntoJ5KrGaoqKmg/bf6zZ64UTvL7bZxMSiAHQw6kUnAsFWxGu8CwEcuIPGjn3/ALClAEFk92jdK43zbIne13saRNogCONJ+oLSbFjSkRlbI9msaA4LI/Ql5URcpu9Q0FPXTg9rCesjxI6MrwJLWlQCblnOce/KnW0V8gw==
+ bh=suCPLslhsk4q/H0Y34hMT2A+/oivPSF6295VdXXF9F8=;
+ b=r1mG7M4Nr/Jqz4jNSX6AOlKvNooFUYwcQIgMneMOVdHDljjowoUAK22pKJi1kma9KAyCun2Z1UQSO6ZEWxvIAp1Lzx/ivyuQZV9xELYzsXbZSj02tE4NlDYfetsq4LUKoRfwRJ6YZkSTbkjZJWdATVcmPI97EHhiljrEfAFJmcHfo75XhdPLif1djk6rjm9Aygh9vexq+PAuPaQZMtR/sa/E9j53gOsyPzH6zxmM/YmwsLx93QIDQk0KuQX4TlbQ8irrRyvzOpEZY1IOsayz1LQ1pwfPMXye0QeUmCVF+5/Dd62lgp2AMEkq9KIhFAWNEyG7CxAAbHEEXKBwQbY89g==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=altera.com; dmarc=pass action=none header.from=altera.com;
- dkim=pass header.d=altera.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=altera.com;
- s=selector2;
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8mnJwHJxVyMugmK4WkU7Dvrc3l66BFspDod6ZEBwd4M=;
- b=N1eri/yVJEkHpmidR5Cb4Gl5O0DRu3u64DXOD3QZvITIX/O5lHYsNldpPen4gptMKd2ttVjF9g/GIEEYPaIll5yfgEM2Y4f3pdUJB4piKp3T4VMhElIJ8u0hJk5P8PuSkpIZ7y8+ArM7l2811TXEY7iV5tQ6J9jc1q5OyCsGeFf2XpU1cTSSrKXHQ0CBa+NoGSKbVSJYzLhTwVpwvI9J1kUWxJmKTrGAdq050WVSIHKianHOvwpjdXy+ljz5KVY4PEzwDL61kMZV0gwZq+ch8fX7U/5CLrV5xdvWGpyOKQqR14gDGprhgTJ/cXpT5hqfbGyof7+ZIog5nvGWh0hEJw==
+ bh=suCPLslhsk4q/H0Y34hMT2A+/oivPSF6295VdXXF9F8=;
+ b=fMAT0FPT1jOrLeZbH5iXa98AIMBvHo6ITUKqqQjCS9rW1mXuh0dL98rF3+vCARnBA/0eIdOzTaZZAIPpHYjFM1RuKP/ODjS3LZrZVpR1tB+1ovjLK1SneZwQ5chdq75Qjmo54UR94v9FfLdaLbjOfuWdKocRIZXSSMGS0BqaK/o=
 Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=altera.com;
-Received: from SJ0PR03MB5950.namprd03.prod.outlook.com (2603:10b6:a03:2d3::20)
- by LV3PR03MB7681.namprd03.prod.outlook.com (2603:10b6:408:289::16) with
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from CY1PR12MB9697.namprd12.prod.outlook.com (2603:10b6:930:107::6)
+ by LV2PR12MB5871.namprd12.prod.outlook.com (2603:10b6:408:174::13) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.20; Tue, 23 Jun
- 2026 09:47:41 +0000
-Received: from SJ0PR03MB5950.namprd03.prod.outlook.com
- ([fe80::53a0:bf93:6b6b:de01]) by SJ0PR03MB5950.namprd03.prod.outlook.com
- ([fe80::53a0:bf93:6b6b:de01%4]) with mapi id 15.21.0139.018; Tue, 23 Jun 2026
- 09:47:41 +0000
-From: tze.yee.ng@altera.com
-To: Moritz Fischer <mdf@kernel.org>,
-	Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>,
-	linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fpga: stratix10-soc: Fix SVC mailbox handling during reconfiguration
-Date: Tue, 23 Jun 2026 02:47:37 -0700
-Message-ID: <3fb9ad8196d00860f7d4aa2e0394a271f5ad0cec.1782208001.git.tze.yee.ng@altera.com>
-X-Mailer: git-send-email 2.43.7
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SJ0PR13CA0042.namprd13.prod.outlook.com
- (2603:10b6:a03:2c2::17) To SJ0PR03MB5950.namprd03.prod.outlook.com
- (2603:10b6:a03:2d3::20)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.159.12; Tue, 23 Jun
+ 2026 11:01:36 +0000
+Received: from CY1PR12MB9697.namprd12.prod.outlook.com
+ ([fe80::3a41:55a0:8203:596d]) by CY1PR12MB9697.namprd12.prod.outlook.com
+ ([fe80::3a41:55a0:8203:596d%5]) with mapi id 15.21.0139.018; Tue, 23 Jun 2026
+ 11:01:35 +0000
+Message-ID: <5bd0f7db-7ec0-4390-b6ea-1edca46e1ca7@amd.com>
+Date: Tue, 23 Jun 2026 16:31:28 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fpga: xilinx-pr-decoupler: Use devm_clk_get_prepared()
+To: Michal Simek <michal.simek@amd.com>, linux-kernel@vger.kernel.org,
+ monstr@monstr.eu, git@amd.com
+Cc: Moritz Fischer <mdf@kernel.org>, Tom Rix <trix@redhat.com>,
+ Xu Yilun <yilun.xu@intel.com>,
+ "moderated list:ARM/ZYNQ ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>,
+ "open list:FPGA MANAGER FRAMEWORK" <linux-fpga@vger.kernel.org>
+References: <8ca8ee5ba720b608a41f842d2b743302e5500ad0.1782205286.git.michal.simek@amd.com>
+Content-Language: en-US
+From: "Pandey, Radhey Shyam" <radheys@amd.com>
+In-Reply-To: <8ca8ee5ba720b608a41f842d2b743302e5500ad0.1782205286.git.michal.simek@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: PN4P287CA0122.INDP287.PROD.OUTLOOK.COM
+ (2603:1096:c01:2b2::11) To CY1PR12MB9697.namprd12.prod.outlook.com
+ (2603:10b6:930:107::6)
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -63,138 +68,149 @@ List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR03MB5950:EE_|LV3PR03MB7681:EE_
-X-MS-Office365-Filtering-Correlation-Id: 28e53a6f-abe3-40d5-66ff-08ded10c77c3
-X-MS-Exchange-AtpMessageProperties: SA
+X-MS-TrafficTypeDiagnostic: CY1PR12MB9697:EE_|LV2PR12MB5871:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1d538153-659e-4cce-4526-08ded116cabd
+X-LD-Processed: 3dd8961f-e488-4e60-8e11-a82d994e183d,ExtAddr
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|23010399003|376014|1800799024|6133799003|18002099003|55112099003|11063799006|56012099006;
+	BCL:0;ARA:13230040|366016|376014|23010399003|1800799024|11063799006|56012099006|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	hM3Rm/f3zDC3gG8hvQS5NzWhNNrZXQRUtBNenkYyDPScKuH8MvFjgq7f+yiohL2ZwhOQs5a9qxZd4bm21Cza23YPyl6Xpn+MGlnPaA3/rUGiufuDtS7oQivTB4rNhtNTUVelgx1DORaE/R6d/ZYYDHa4fIQ7n1OV/KNXq0Fl9M88UOeVm75J1Kvenb+JLoUV8aRy+aaO+h3P/ybbdUzuhZPXbP3u3A49Qj0psrGn6Ehq94ONvMpal2prbh4yIZEs3oAMDo6xGcRcs+OiYdaHfJIszcCScE4ss5IGWq0K+/hbmDBqPhnml/pXEZcjxibuOLyuKHAtVyZlrxWAcsUzkYMV5qY1aprqyk/d8YQHdCHfZvG8DI3Ah0G9frlaIB+EVxeFTWN74K8WinQc9SsEfWtqPrlSxz0QZTiKCnSAfUp7TYHxIBh4S+nXATIyri7SRYyDsPzL/kq1MZKiop6nDpa0J+j2qydAEUELkBTuUVN0jQ3faZAMKtlKYFZlceALYFS/WKAnYvUj7r83IJOO8zR1Er/OmPVW4Pq3ceuy+8sFoOU57hq2hU1vQINYakifdhswbCZLoIkD1tHrUG/pprKua4zVoWb4jsx2buiYh6PGkdcCZQZGccI35eKzu3V62/JV3lyq073IXZ7WSQtQRXc8oRkxCo7w6+no5Y/hQm4=
+	FLCXPSn1GhcOX5ObcTZiozERMiDK9Q1v4lhZu05wh+Hj9lwff3snDFtGr4jZQQ1m94+mQAucUbeEWULLsjhDvaoGZke8KsoJWyiCS/zHqpKKOZWL81jN3w9+J4NQFQ8kLhKOvWIC0a6uH7+/8X17gztMXQBi7+cxcPhgF6fqnEkPDEPF1vBme0X5Ug4dIk1vBxpZehw1BEWh7WmFU/8NOP1S1fojf9Ou3ba5PGKYgFD3ZazWURikkxIj/+55pcATVzUMm0dvieJ6EBfhxK7iucy+xcN3MoAyRDxjFlbbXOVaWma/Q23SHyaA/inO6RB+4BdI91xcS/9iWV4ej+hPvc0wZcwKb8OltrXlNExJtwd7YIxJSRhr2f8dmcPvZX+U+Vgu9Nl0GLGZ447XwdpRM2IHbJPXMgRdlCoqO22Xe1Hqt+sklU3x3XwGjslrcQINy6mZs2G3kpIIQrW0aW3Hj6TeotKSJdwuAF43r8lbV7T/KViiYUteApkLkiz12JLxaiZtpwSn0sMi30S9vYypi6nig9NQhZ/XO5ufDda6URWfK1eSdh8bCavrnMDncbE/WWt7XOjdhvGH5UCcQPExeXH/QS4l4VLSDlpDwezZTj/5bRpk5Q0I36PhoBOdW23gll2D0sl9TFkZVBaKpO4Nd3Pk13pSb80rQQZkNLogxGo=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB5950.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(376014)(1800799024)(6133799003)(18002099003)(55112099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY1PR12MB9697.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(23010399003)(1800799024)(11063799006)(56012099006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?iO1yNFih4JZyOr332Z0tOv+KAZlxS9lWu8pmGRUBXLfK89zZX2pc/3+g6syT?=
- =?us-ascii?Q?C/8RfbZDjBjgx2BgB9rkE12snymIlfVvs7wXdsz3RXKLCYzhmlhkEdYFrCo0?=
- =?us-ascii?Q?FpJd9VOIt0HEcSj8Xg/HNjWay81VAV6BjeaoaPqbO7+ghtaiO0An+BDqXkuf?=
- =?us-ascii?Q?1U1uKfoYwp/YErssn+bNADtNvRS/RMftaeJttl2CNvgvTu03sZ+4uX+2RIJU?=
- =?us-ascii?Q?OSxl9PY8BTiPcXn7cr2K0tEFxwYzbngumEw+eGyVzsiE+pBlJwSk/saHj+an?=
- =?us-ascii?Q?dGQEc+1AbJumWt+zoCO7SoZ8yl93U6Ay43j8Rrj35kXb7U9LzinYRSb64A8U?=
- =?us-ascii?Q?6JqgEET2JqUVx74gXCQWURo1+QM7VO22NMBU+/zANj0/9+mgI1ylVx2EmqRv?=
- =?us-ascii?Q?lh9ldAFtyBAC2S3jcuZdvN+RxP53zu5jgmD7/EGu3VP1lV9gqH397wS1vi0K?=
- =?us-ascii?Q?IAXkBIpuxALqFy4h7KiENgJz95g6It4F5Ta8BqGaYMkp3ak4zIi+4e7EfuEh?=
- =?us-ascii?Q?XZd32oifUEYbBe3rYPyxTsWP02UdTem7gwNykzEroqPBWS/gDKxVwsPnaBWt?=
- =?us-ascii?Q?yUNp9z6n/WIKxFS8sNhx/hPody9Np8bTDDK09B2rjJMwrqTpyk94L/vN2YfN?=
- =?us-ascii?Q?7sN2phZa1qElt2xNgX2TwjAhYXpMXTVqFK3/6HHMRkicD/jDVwVfuYVKDK2l?=
- =?us-ascii?Q?iblxytb3ei64fvlVUXszIo/CGzasR7Ys1TrkPmyRLeLOPnHiaaYZ+wYUSoyF?=
- =?us-ascii?Q?S7lUnF0PaVxf//NLC+gS2DL2c4YSHSI9+NwfHzgC2XJYZFnrfxp6HjIVbiea?=
- =?us-ascii?Q?9E6eHdBXcMyaqMzwJhEiGUFUkcCfwucZBgDTCbjZWnVejIkpbzyZIp1K3pv9?=
- =?us-ascii?Q?jZ5B+rTyPytcLwQArPvNRbF23hWNd+366GakwRa/4yTV3KWaaZUNJk041K8m?=
- =?us-ascii?Q?KF6gU0XlGIpVOxydmZahj/HG7XdYrp9hpKXRBh2jZULY3/XbgWzfpvkoJ0uk?=
- =?us-ascii?Q?c3uLd3GpOqZY7744TiERzN1KZxLCJiYxndviLWSgVbKSpxhooZq8cCbSY1te?=
- =?us-ascii?Q?tFPAIFxDAIt78pbmdG3FKcpbudvn3QCKLip/XguSTPgcNB4sgfRDXhS7AqgF?=
- =?us-ascii?Q?jlt9mvdcJ9bgF59maMfZ+U6Zy7/qd9mX2iC7eyfs3uCdg5bNUD2bsR1TgVCI?=
- =?us-ascii?Q?uo8pxcUeqQS7KZa4NG+bwVnCuPAi77gmpQALk/OYZi/h6VTY+UDIbQZM8KQi?=
- =?us-ascii?Q?zaQR/6qqt/NvyZmduv2HT1YkF64b/s2NUdXC4BzNIEXdJmCDioIcIJ+aPkgM?=
- =?us-ascii?Q?eEv9eK5Rj2X3hEOo7wD5Bl2dZ15P+otzhnRYviVEPprKJeXzNQQyuyqLVUo7?=
- =?us-ascii?Q?vfrJKTBIoXCranfG34WcLhpr5l3xvrXREKOih3uHIxAJB7+mTrzORzUcyR5W?=
- =?us-ascii?Q?0SJ2HJQIb3LcvXz+WMqVHjqBtTdg7RcpOi4RcABKyheOnnMWHVoSZz4lMGJb?=
- =?us-ascii?Q?Q3fGv4p0ee5iwxsROd3E2W4dfk4GiJtDHJkOGWbQM++EyBWXKz1SldtwgACT?=
- =?us-ascii?Q?fv18cCMVT6ag+NQJAlkv9k3lj9IEPEecBePR8uUREdPi2fZI7l+J//iY/6a3?=
- =?us-ascii?Q?7av6xZc+BFaUCsllYfphA4YcdJoPPhIhuzO4y0+iTRbf7dXTcs1xOKCMb1ap?=
- =?us-ascii?Q?BX/UNggwF1NZBh0uipnvWdVQkLS+Xd5qiKqgMEO34uiAg+zehEWKvp1LP14i?=
- =?us-ascii?Q?MdKXDfIsuw=3D=3D?=
-X-OriginatorOrg: altera.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 28e53a6f-abe3-40d5-66ff-08ded10c77c3
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR03MB5950.namprd03.prod.outlook.com
+	=?utf-8?B?RUl2YkNsMExUcEdEOVVLMVdlcWF4c09XL21oTUZ6S2FFWDBnOWJWL1RpUXN5?=
+ =?utf-8?B?SkxnN1g0eTFhcERsd3NvYnFjdyt6SUV3MkJGUGFhQ2U3Z2dlQWFpWmU2SFZN?=
+ =?utf-8?B?RHg2REI4YlNybkJzM0VmellpdzFZcW4yUkRYdVlqazM3OUh6TlJscVFsN09B?=
+ =?utf-8?B?c3pHTm1BUjlNNWIzWEw0M3RCWnhFL3U2RDFLRzZ3RlR4OXdXU29XT3ZNSE9n?=
+ =?utf-8?B?amlTdmRSWUlxc3ExYUZKc1FpQTBPdzBPR2xLYWdma3dwYmtoYVF6ME8yUWk4?=
+ =?utf-8?B?cDBPWEgwc3YyNkJVNVN1YzFVZ0RSbWd3K3lkWWFnVUpueUI1NnVadGt1bDRY?=
+ =?utf-8?B?c0ovQUpSMEFZTmdDYUY0SWtCV1lvamRsM0ZpSnloRWF1NkFkdVlWS1FoYWNX?=
+ =?utf-8?B?SkJSR2NPUWNjWURmeVZsZ0FwZXlmN1VVQS8zc2I1S0dweUZYM0tJNCtkY0ll?=
+ =?utf-8?B?aWthVHozWnVZUFhnalJPQnhDZy9JZEdIcVp2QVg0YkJUOUNBNmxJZDFhSU9w?=
+ =?utf-8?B?bmdsc0VlR293NWVabHNIOVhWWnFNNWRSUStRRE9WZUFGOEhDTnd0R2hLd2NG?=
+ =?utf-8?B?bG9KbURQTHZGNFlFaGlxNGpINlVYdVlSZ0gzaUw4dU82U1B4SjBPMUVud3lu?=
+ =?utf-8?B?bEVDS0JpUldxVVpuN1hDY1ZiVS9KbVdKMXY0cyttYzBGZVpBTWZGL0Fsd1hx?=
+ =?utf-8?B?MjloZXhBNFRpUVc5cTVXQnora3M0Y1FWL1VONHc1dld4bVpBUEdJUysrWTZ3?=
+ =?utf-8?B?cXFsVzdreUR3RlJmcXBVMjFXcDd3M2RhZ3VpalAweHBrUEJXaU1lS1hXemxP?=
+ =?utf-8?B?UU1nNjJWbjNYV0JZTVU0VmJPcUZRYllRajdCTHM4ZTI5VmlnZWxSajliMStK?=
+ =?utf-8?B?ZmJIL3pKRHBhTEtHV2FEb1ZISEpxdUhwY3JsMFF0Z001U1B5YUJYeFNaaDBT?=
+ =?utf-8?B?RENvWE53QVJjUXZCcUpHMTV0MHloeWlkMG1Ec0hSbkhVUGtIb1RmVU5JS2hu?=
+ =?utf-8?B?QTNSNGZkbkYrYXdiSnVPaVE1Zm5kWSsrYjNkM2FGbU1TNnFXQlZ4dk0rN3Nk?=
+ =?utf-8?B?cDVETkMzNllUbzVuTVRMNFphdzVDZjJDRFBCVjR5TVhPZXZvVXVmanhkdkR3?=
+ =?utf-8?B?MVovNDBhcTR3MXJDSjJ5QUlVS0k0VGRXelZxMVVjNXBYL0NhU1N2c1hmMGJp?=
+ =?utf-8?B?MkdNUGk0RUVJVEdSVmM0WElmZUlBaHZZaVMzYXdIejMrS1dYRWtteEl5RFBz?=
+ =?utf-8?B?ZkFhWWwweWJScXBZQWtNVXJHR3Y2Y3REY1ZZTHBtNjF1UkhCM0VwdTIwVDJV?=
+ =?utf-8?B?R3JEQ1F4cEFUYVZ2cGJZc0VybkFWMDZ1NW8zMEUxQlRPMkpIdjM1UFVYNEJV?=
+ =?utf-8?B?Nm1RbFBJMGdxajhQYWxseHlLSjRUOHVZa3pMUEoxV21tcHQzV0NvblpjMkhJ?=
+ =?utf-8?B?cWgyNmdzNEpoM2dpS1FkMnVwUjhKUFpnOS9jaGdzWmNsWFVvYmZwQmY3YytV?=
+ =?utf-8?B?S2pPSmdZbjlhT2M5T2haeHB3a3lBbVEvTEZlaWl4bS9IelNnRVZvbUF4a3FH?=
+ =?utf-8?B?d2tFMVRmU0YzUlB6ZndRY2dIVHJiVFRSMmVyajFUM0s3RmJXam1zVFczVUkw?=
+ =?utf-8?B?YldhNjh4MC9nS2YzNkVaNDZ2R2EvdGl5MUhzc1o3ZDM2OWlISEdnMXVWa1ZN?=
+ =?utf-8?B?cXZFMGFXQ09ENkorT2x2SWlzL3FqM2FSdzFrcEhLTXFUSHlYc25Ka1FNMjl4?=
+ =?utf-8?B?QTNKNGFTeVFheUhoNnZIV2d3MkhFUURnZ1VYVmprK0NlcE5Bc083UTkrL0o4?=
+ =?utf-8?B?bXZuOUNETk5Da25GZHFUL3dnY2lLaExFVEpYN0FwUW9pcDE5Znl2ZnozeUVV?=
+ =?utf-8?B?RnNhZFNOL2NPR3pNbzdBVTFSODdnTVNscmt4amtzMGZsRERtZ1N3aE1zLzNk?=
+ =?utf-8?B?cE50OWpxeFJaZlJjenhQMGoxd3RmUFg2TldlUmZXaEVURFo0Nk9TaUI0Z29E?=
+ =?utf-8?B?SjNQR2E5UXdwQkNvbVJqOVJkMVRrZXRuZ2Z1UVVzMUhFQnBQc2hCdGJpZ2VH?=
+ =?utf-8?B?WmRFSGRIM1o5OFJ1N0xFWGcvTHBqcGg4NDVOcEdyKyt5VzRNcTlYYlB4UXFx?=
+ =?utf-8?B?TU9nemhxY0k2UEwxbzJMSWVCTi9saUVocnpnWllyZW0wNlprdlhUL0U0MkU3?=
+ =?utf-8?B?bkkwT2NaV0FpV3pPZmNLZ2p3L3VocFBMZklEYXVQRWNjR0lQQkNrNHZ3TStW?=
+ =?utf-8?B?TTZZdHZlWnNWZlUzWUlEbHlXYUpkWWlKb2NSWnZMMWNQaXhONlNmeG5CRVdH?=
+ =?utf-8?B?dGlrZG9ZMy9ObktEdnVNd1ZnaitFdlRLQ0hNNnE0S2ZXalVqdDdFZz09?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1d538153-659e-4cce-4526-08ded116cabd
+X-MS-Exchange-CrossTenant-AuthSource: CY1PR12MB9697.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jun 2026 09:47:41.4332
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jun 2026 11:01:35.5525
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: fbd72e03-d4a5-4110-adce-614d51f2077a
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: dPaBQy/tXhJ8unqnUEAW1tOI+JI0ZgMfqx0AXfybS9eHsNrPfUjJzBJSsClt3RPXIaACAGrSF2YtvumBNdWh7g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR03MB7681
+X-MS-Exchange-CrossTenant-UserPrincipalName: JjK0dkzew5jgltfhE++GFRHqVQa+3kaqq8jhV64ezdcAOKpx+CESntCEPEuF6fup
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV2PR12MB5871
 
-From: Tien Sung Ang <tien.sung.ang@altera.com>
+> The driver keeps the "aclk" clock prepared but disabled in its idle
+> state, toggling only the atomic clk_enable()/clk_disable() around
+> register accesses in the bridge enable_set/enable_show callbacks.
+> 
+> At probe time this was open-coded as clk_prepare_enable() immediately
+> followed by clk_disable(), leaving the clock prepared, with a matching
+> clk_unprepare() in the error path and in remove().
+> 
+> devm_clk_get_prepared() expresses exactly this: it gets and prepares the
+> clock and unprepares it automatically on driver detach.
+> 
+> Use it to drop the manual prepare/disable dance, the error-path
+> unprepare, and the now-empty clock teardown in remove().
+> 
+> Signed-off-by: Michal Simek <michal.simek@amd.com>
 
-Fix incorrect stratix10_svc_done() usage during FPGA reconfiguration.
+Reviewed-by: Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>
+Thanks!
 
-Do not call stratix10_svc_done() at the end of write_init() on success, so
-the SVC session remains active through write() and write_complete(). Call
-stratix10_svc_done() on failure in write_init() and write() so the shared
-SVC mailbox is released when reconfiguration aborts, allowing coexistence
-with other SVC clients such as soc64-hwmon.
-
-Signed-off-by: Tien Sung Ang <tien.sung.ang@altera.com>
-Signed-off-by: Tze Yee Ng <tze.yee.ng@altera.com>
----
- drivers/fpga/stratix10-soc.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
-index 0a295ccf1644..0d07d303bad1 100644
---- a/drivers/fpga/stratix10-soc.c
-+++ b/drivers/fpga/stratix10-soc.c
-@@ -195,20 +195,20 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
- 	ret = s10_svc_send_msg(priv, COMMAND_RECONFIG,
- 			       &ctype, sizeof(ctype));
- 	if (ret < 0)
--		goto init_done;
-+		goto init_error;
- 
- 	ret = wait_for_completion_timeout(
- 		&priv->status_return_completion, S10_RECONFIG_TIMEOUT);
- 	if (!ret) {
- 		dev_err(dev, "timeout waiting for RECONFIG_REQUEST\n");
- 		ret = -ETIMEDOUT;
--		goto init_done;
-+		goto init_error;
- 	}
- 
- 	ret = 0;
- 	if (!test_and_clear_bit(SVC_STATUS_OK, &priv->status)) {
- 		ret = -ETIMEDOUT;
--		goto init_done;
-+		goto init_error;
- 	}
- 
- 	/* Allocate buffers from the service layer's pool. */
-@@ -216,16 +216,19 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
- 		kbuf = stratix10_svc_allocate_memory(priv->chan, SVC_BUF_SIZE);
- 		if (IS_ERR(kbuf)) {
- 			s10_free_buffers(mgr);
--			ret = PTR_ERR(kbuf);
--			goto init_done;
-+			ret = -ENOMEM;
-+			goto init_error;
- 		}
- 
- 		priv->svc_bufs[i].buf = kbuf;
- 		priv->svc_bufs[i].lock = 0;
- 	}
- 
--init_done:
-+	goto init_done;
-+
-+init_error:
- 	stratix10_svc_done(priv->chan);
-+init_done:
- 	return ret;
- }
- 
-@@ -342,6 +345,9 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
- 	if (!s10_free_buffers(mgr))
- 		dev_err(dev, "%s not all buffers were freed\n", __func__);
- 
-+	if (ret < 0)
-+		stratix10_svc_done(priv->chan);
-+
- 	return ret;
- }
- 
--- 
-2.43.7
+> ---
+> 
+>   drivers/fpga/xilinx-pr-decoupler.c | 20 ++------------------
+>   1 file changed, 2 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
+> index 6994d68e9036..45b65a3264af 100644
+> --- a/drivers/fpga/xilinx-pr-decoupler.c
+> +++ b/drivers/fpga/xilinx-pr-decoupler.c
+> @@ -118,46 +118,30 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+>   	if (IS_ERR(priv->io_base))
+>   		return PTR_ERR(priv->io_base);
+>   
+> -	priv->clk = devm_clk_get(&pdev->dev, "aclk");
+> +	priv->clk = devm_clk_get_prepared(&pdev->dev, "aclk");
+>   	if (IS_ERR(priv->clk))
+>   		return dev_err_probe(&pdev->dev, PTR_ERR(priv->clk),
+>   				     "input clock not found\n");
+>   
+> -	err = clk_prepare_enable(priv->clk);
+> -	if (err) {
+> -		dev_err(&pdev->dev, "unable to enable clock\n");
+> -		return err;
+> -	}
+> -
+> -	clk_disable(priv->clk);
+> -
+>   	br = fpga_bridge_register(&pdev->dev, priv->ipconfig->name,
+>   				  &xlnx_pr_decoupler_br_ops, priv);
+>   	if (IS_ERR(br)) {
+>   		err = PTR_ERR(br);
+>   		dev_err(&pdev->dev, "unable to register %s",
+>   			priv->ipconfig->name);
+> -		goto err_clk;
+> +		return err;
+>   	}
+>   
+>   	platform_set_drvdata(pdev, br);
+>   
+>   	return 0;
+> -
+> -err_clk:
+> -	clk_unprepare(priv->clk);
+> -
+> -	return err;
+>   }
+>   
+>   static void xlnx_pr_decoupler_remove(struct platform_device *pdev)
+>   {
+>   	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
+> -	struct xlnx_pr_decoupler_data *p = bridge->priv;
+>   
+>   	fpga_bridge_unregister(bridge);
+> -
+> -	clk_unprepare(p->clk);
+>   }
+>   
+>   static struct platform_driver xlnx_pr_decoupler_driver = {
+> ---
+> base-commit: 502d801f0ab03e4f32f9a33d203154ce84887921
+> branch: xnext/pr-decoupler
+> 
 
