@@ -1,192 +1,192 @@
-Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazon11012040.outbound.protection.outlook.com [52.101.53.40])
+Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azon11010044.outbound.protection.outlook.com [52.101.56.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34DEA40D581;
-	Fri, 19 Jun 2026 04:08:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.53.40
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5213525393E;
+	Tue, 23 Jun 2026 09:02:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.56.44
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781842097; cv=fail; b=cfs3BblkNwD5m+3s+PZErpOZZEB8Yu2rufSE87lQuzEbXw6ll6JFyFVZCJLkvFAclWBDM3EcF8g2z7n+jFl/JucGLyzTUn2AfYafkvxuvWwQYZy4JyoiwgJWVwXit0duC4bLx/5atoPve946khsburA/jMpohgG5vpeSk2iu6jo=
+	t=1782205332; cv=fail; b=bZ+8KbV9lts4R2VmzUuf92bklR8DbWhsRcC1S3pdyt+YkTAXDyUEtfeKRSSB3I3cl2WZ16n58aGB5cx21OMI6YzxZ3Ljzhi3NClmAaNQUmi/I+rG4Mu266RjURqmMR1uAA1HbwqWAaJXg/XZyxmxL7bUp9H1dVtU4pDDv0Pp2/s=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781842097; c=relaxed/simple;
-	bh=QUntyHZjRo8rHuOzd8qRwFlnnlpEZWefa6ByZTwLWUg=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=Czut/SW12t8ANLIutAyeVMY/XVpjoE6Uh8oKGslJyoJg0Xfinv6Wc9DSj7uHHZUkMEIJ3ECa54j1z78J82Ys8iXNLPBVe029tCrpS1vCb236v69JLublTGt8PYMYqvXNYpjwcYKLmjBI1iBoOG+9EWFdRAyQOLgh4PXZevCr0nM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com; spf=pass smtp.mailfrom=altera.com; dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b=L4nD1A0d; arc=fail smtp.client-ip=52.101.53.40
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=altera.com
+	s=arc-20240116; t=1782205332; c=relaxed/simple;
+	bh=dkI1s0OOO76khw3c+oeECBXIe2DMS/KN/JEHC0DGVss=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=eJfHinDbRcq4GPYKIhCztpGNju2NVraZD4x9wzEpwXphVtvBIt4Xyted+BGlFCIreUbtVlvyLUKLs9leb4IRe/2MxJNGQxmWLH6G1Zj7l3yCEHlIIrxks4z7voe2jlzX3awVT+hgkDYrMNrptuywXJ34s5SrlqMaiZUY8FjSi3k=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=H7twu6/N; arc=fail smtp.client-ip=52.101.56.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b="L4nD1A0d"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="H7twu6/N"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BIpQ9+whPl2l0fxr8DQQsMO2X4pUGnzBWXssWPoS6WcwhZQpa9wQga5x/q28yZ/Tkoqy5tanA/mIERvfShPXDeDzfhUSHKo4LMFFRVCqdIr6BNtj6S1/c4d/RLecN6I+QR1HJF29KzuVRX3FdjuAELZCAMEXbEd1U+UGFCjpTlB6Qvzv2dqBySF11hgXBCro1ulvS5dOSGUmAMK7AwzGGDB4Gs/QV4aOiluFY8VMSyswq67kp8AfQgFUnvJ+1zgSe0iS/AzwsUu2+NNSTVyIotN66BX1Ll/5eEOnyAZ/gquS+gzpfwkvaVy4R4wI8OReee3/AIXbeRDxBU5l82KWww==
+ b=AU54zTDVcC0h/AEMDVx206/e0Dr17uj4I6mAYIl/FshfbM/fyXbBIGq7ZutGUwjtS+6zGZC6OCxx4t9Ey20tHVEiVPwPjkGONtXMj1Erkc5a+YJmK1bNEzun7JuyJlPb/wn6SW8kS1qrPhr0rRnO6vgVxh5iP/a8yomlgXwEle2tHyVCnem383soCwVl2k5vOt0d05JsQPtJSl5lQxAk4AU3FSnV2HL/NRc0Ewzaemq3qed+rbn9ntkHdrU+ouzblOm7Cvjmv0eYngdiYx300Kj7SdiZ+sknIgtzPwMQFIPseYxKklRajnwhv9sqYp6gyDyIsl2WicabFxHz4rS7JA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=LJMDMcFa5WSzA9uTgIz5VZTiQZOM+Dfwy+NTv7xOfTE=;
- b=IMHfe4c+ROngXPyo6pMlpmbap78PG59hCQHgRZ2AegMYUEGKEABQtO9XsyYRBKexIc3pnh6odQmlZSkZSf9i3NRITGcGahRB7zpSEfLVq59xn8pj8nQFUCxIwAZuQB8AdPEyCSG+Wj9ktYZ+MXtXtQaoF8oxAvkOWFLZh0z4WjthbVfTI1a3XDDwakHwbZCNmUiFSFpC16P+omKhFhCjhpOvzlugOBmkMADMwNxvm+3r9zPaLzqYhRX9hH1aPeNoS0nmlmKVDOkhKBjCEQI5QJcXZ1CW4B2U6b5SFpmaLnC5palgtNl1NxZaWsv1EahlEbvK/kJe3mjE6IKJnvJ3TA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=altera.com; dmarc=pass action=none header.from=altera.com;
- dkim=pass header.d=altera.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=altera.com;
- s=selector2;
+ bh=EdlaDW1rY1rZErwxB1HGnYFNRg5JjM3w+I1SGSwz1BE=;
+ b=Q6LD92AZ2Z6lJuljdNXEqkHpcLbDTU8nhdvJIrVSCnzzSwsAlX8hhHCKhboGh4xxfagdrexvXbIwpD6Qo23hT/HGjkC4TEUOmWYtYKyr3Zh1wLKYqWuB9+wy43Uzr77PCC/7Buuc2Y/JHguhjS0XUfI/7XPqu3vBZE5VECIiWbsCCwAt7a1gINheXh1bKYru/qKs0Gb4/d2Y9Bb1l2126oplakaGRAMLY7wjGSYwxcPzD89B4XfEVN/m+1FiYtN3ny9wekr7DJyjX6bqwiQUFeA1yvfZy9aru6itRi0ewJjDa8w483DWfZR97P49IlxPl+Mncgfh7L4eqUL8/6pJYg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=LJMDMcFa5WSzA9uTgIz5VZTiQZOM+Dfwy+NTv7xOfTE=;
- b=L4nD1A0d06wU1fKoo9irTObaDGpvvV5c+HD5rW8Gin3OpFztlAqLIrZwlNx2yh1qQG3echDRz05rRFranDbJCAzkAhcjd21PVklV9EIufQlMvchXn3bql6G32CosrBS2gBiAeKl0JTfBoqzpZC2jZ1aNulGA4MWXoXaRtTvOst1S1JLEiAriMISciuEMPFw4Ro1ehYLUz/eJn3rbyo13dbgY7NlMH7ciNSQ5lIZ7qOpkzbok+3b1/9dQbKzM1MVl/3VNg8HxBsCdBKygL3vkbFcMknt8y6oLbcFeaPZJf7Hmmpf68t1T6CV+yTULD0e0MqpJgfiStTsJFHwbafCUTQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=altera.com;
-Received: from SJ0PR03MB6964.namprd03.prod.outlook.com (2603:10b6:a03:432::18)
- by SJ0PR03MB5408.namprd03.prod.outlook.com (2603:10b6:a03:279::22) with
+ bh=EdlaDW1rY1rZErwxB1HGnYFNRg5JjM3w+I1SGSwz1BE=;
+ b=H7twu6/NSXUhtQsTzVUhRmVimLenY0pMbCBxoPbaAn/eE8YEPIEOA5vRsgUyh/4dZn6v8CsQiEdJSNFF4EgMP/KIjFAu495cadESm+M63zmFug8AZ/a06RueMdA2K08OKspWrSi8RTjnJneqJhHv17nS1azdHPcK8ZvwEVoNhd0=
+Received: from SJ0PR13CA0103.namprd13.prod.outlook.com (2603:10b6:a03:2c5::18)
+ by PH7PR12MB6787.namprd12.prod.outlook.com (2603:10b6:510:1ad::15) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.11; Fri, 19 Jun
- 2026 04:08:13 +0000
-Received: from SJ0PR03MB6964.namprd03.prod.outlook.com
- ([fe80::b965:bfa8:58fb:e775]) by SJ0PR03MB6964.namprd03.prod.outlook.com
- ([fe80::b965:bfa8:58fb:e775%4]) with mapi id 15.21.0139.011; Fri, 19 Jun 2026
- 04:08:12 +0000
-From: muhammad.nazim.amirul.nazle.asmade@altera.com
-To: mdf@kernel.org,
-	yilun.xu@intel.com
-Cc: trix@redhat.com,
-	linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fpga: altera-cvp: Handle truncated bitstream with padding buffer
-Date: Thu, 18 Jun 2026 21:08:11 -0700
-Message-ID: <20260619040811.20038-1-muhammad.nazim.amirul.nazle.asmade@altera.com>
-X-Mailer: git-send-email 2.43.7
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BY1P220CA0013.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:a03:59d::17) To SJ0PR03MB6964.namprd03.prod.outlook.com
- (2603:10b6:a03:432::18)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.20; Tue, 23 Jun
+ 2026 09:02:04 +0000
+Received: from MWH0EPF000A6733.namprd04.prod.outlook.com
+ (2603:10b6:a03:2c5:cafe::26) by SJ0PR13CA0103.outlook.office365.com
+ (2603:10b6:a03:2c5::18) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.159.12 via Frontend Transport; Tue,
+ 23 Jun 2026 09:02:04 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ MWH0EPF000A6733.mail.protection.outlook.com (10.167.249.25) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.159.10 via Frontend Transport; Tue, 23 Jun 2026 09:02:04 +0000
+Received: from satlexmb10.amd.com (10.181.42.219) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Tue, 23 Jun
+ 2026 04:01:43 -0500
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb10.amd.com
+ (10.181.42.219) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Tue, 23 Jun
+ 2026 04:01:37 -0500
+Received: from localhost (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41 via Frontend
+ Transport; Tue, 23 Jun 2026 04:01:37 -0500
+From: Michal Simek <michal.simek@amd.com>
+To: <linux-kernel@vger.kernel.org>, <monstr@monstr.eu>,
+	<michal.simek@amd.com>, <git@amd.com>
+CC: Moritz Fischer <mdf@kernel.org>, Tom Rix <trix@redhat.com>, Xu Yilun
+	<yilun.xu@intel.com>, "moderated list:ARM/ZYNQ ARCHITECTURE"
+	<linux-arm-kernel@lists.infradead.org>, "open list:FPGA MANAGER FRAMEWORK"
+	<linux-fpga@vger.kernel.org>
+Subject: [PATCH] fpga: xilinx-pr-decoupler: Use devm_clk_get_prepared()
+Date: Tue, 23 Jun 2026 11:01:27 +0200
+Message-ID: <8ca8ee5ba720b608a41f842d2b743302e5500ad0.1782205286.git.michal.simek@amd.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2405; i=michal.simek@amd.com; h=from:subject:message-id; bh=dkI1s0OOO76khw3c+oeECBXIe2DMS/KN/JEHC0DGVss=; b=owGbwMvMwCG2mv3fB7+vgl8ZT6slMWRZeWeHsLn8Kn0eZ+G/d97N33OCHbiyZ3y6xZqs9vLQT Ye6Y4EOHaUsDGIcDLJiiizTmXQc1ny7tlRseWQ+zBxWJpAhDFycAjARaxFGhi0/vLf7TDdV8z09 y+eG159X91eF7b2iyb2ysXLteuYFE/UZGVrv+Ykvzqh3qarqcpKuY+Eq5PwkxPmk58Hcnjfrr4Y bMQEA
+X-Developer-Key: i=michal.simek@amd.com; a=openpgp; fpr=67350C9BF5CCEE9B5364356A377C7F21FE3D1F91
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR03MB6964:EE_|SJ0PR03MB5408:EE_
-X-MS-Office365-Filtering-Correlation-Id: 19cac41f-0faf-420e-107b-08decdb86186
-X-MS-Exchange-AtpMessageProperties: SA
+X-MS-TrafficTypeDiagnostic: MWH0EPF000A6733:EE_|PH7PR12MB6787:EE_
+X-MS-Office365-Filtering-Correlation-Id: 926063d4-e1d1-4d90-bf75-08ded106185f
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|23010399003|376014|55112099003|18002099003|11063799006|56012099006;
+	BCL:0;ARA:13230040|376014|82310400026|36860700016|23010399003|1800799024|11063799006|18002099003|56012099006;
 X-Microsoft-Antispam-Message-Info:
-	CNSHlQl0foojNQIDILClwrbOslw/4J5AK7FLqp/6GFZfzx3JbSJ5sIvYmD4yD3BxrfMaUQxlH7JMkezvDUyUQAmKIWgOHOcDSU2WCshuOnT5nShnROoUZtCTTinKczkatXj50wBcioqjw/G3496ZDsgGDH/Zr7xmaykpGmGih3SdbU9DxxgZU+23SanpHz8EiTHHNAxV1LvXxVFEiAN16vRYUasgeO9WEAhZ2vBntmEbZ0EhDs6XSsK2Nst+k0K8KWnzlrwiCcLj3aGTl9hJknqhzISn97f618/PmlHK2cc/gU7hd14O5Om0Wv7mTERsCAkKVbpv9gbT1Fz3me6zjru5PFKnheazG98ws46rAUEFcdcdDSg8ksSRhvsm6vexfqo/JrUi+87Y86aJEuIBJLRX2nafoir6ss+y35iGVJH/fOFXzPBcKy/aAJYEmtQwGTyLE1QvjsN2kD4lvPnosqN6WBQC6oeKXiZPwa1TpFL8pTIG/ZDr58dYTGjvl23SBYHJfW+wzaQ9lTmJ4exMmeg+7YLgTS+Ih/chhZBLBSU7X55UbK340i7ycVZobS5a4DElsNKY0reJ6x9S+MTAef7iP9dNI/JYIHEsV2XM/iyS22/IewIH/yNz5nsOl2ccXwMElUhnE8EZJUT00g5yL2jUrMIYd5QFbM+BKVIS9T8=
+	+1vpjZ311h9CktFtUihF3BCyAQXsDLnrQRyp9US14YAddy+JEWAhmvHUwXE1Kjp+aX0WefvaySobU+U5em78AI4jDiPcva6rvwdyfC1AOihePpkVC6gciSn646tw+PZgK9wjMBRfeH5Z5SN6a00qfzyZVp2J7i3XcJ8J0SHrr6ATir/i3EuDFogLMGAWgnPHehmaIVY86HURpQPl1cN/4aaQH0zPSUYGW2/2aNHXprNxAh5gLwCKZHXq5Eba1aGBIxsaH8nO4E6ZJXjFTZ3cPpUXfM7T0x49wD3VNcUX6NPagv2+N+FWDEihqjQHde6JobNkPFFTSoF0U4emEI1G4K2OtQZRfXHt7g1lvO0B9X++G9rQhz4V6nsWnumcQh8l4shzuDu7Ean/MLUz0o27b9AjtyDBhSehVcagNyjKEeTwZvDiyK+jhIu6uZKzUfAv9lZJ33J/5ybd8/2JMoUGImYV9V3g4NynHPBwq76XRNG4S1NtDAQuQQbR+LRfzyYDuQJDyHqi/rzlIfalFO0h/S9lCQPpsJV3RaFTll73tcXAb+kHmVSetST1r29Oq/kHbJPZWl3wSXQvlC0NEqk84hJl4TFhJVVbHTSKIYFCLa7ZUKTtqzs+Ejjj+XxjSNFGNtPaGC4SwUBh+aiSWcLMiervCGpcOftO3zISE3ruEPsHVYBjz17YurssZZslPGowPKVn7qdEJJP4+xsn23hyrg==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB6964.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(376014)(55112099003)(18002099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(82310400026)(36860700016)(23010399003)(1800799024)(11063799006)(18002099003)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?5goqjvvOTCnH5ZXUZzF5s9L2qal1zfa7V2mP1Xpdnet6ig0TgKqHszy6krcF?=
- =?us-ascii?Q?prsK+fJn6slnU4gH5n0w57RM8O1Ikewz15WZ4pC/lf2uPrFRLbn98w/GvGUl?=
- =?us-ascii?Q?bBNyWJR5B1xHqbibSKuhFoCXbHXp5EKbg0tfKZiy4LD4pLqdGqkV7lz7zJaS?=
- =?us-ascii?Q?7ZKvRZzGwyZ+kNe543Io4Dq/5eUlFqwx4ES9hBsmY0Me14qX+96NVVyABHAe?=
- =?us-ascii?Q?XXxh5uHzQcynm/MfsdsizbsK8x0Rgg1yIVQwSK56XIAiCtg38PHKCej7HiQd?=
- =?us-ascii?Q?m/QOdoJ7/d0nkHse5cKVdLnOPWP+O/JINJ47R9PnpmdQqQ+gBUS7q/l2gZeF?=
- =?us-ascii?Q?2naIFWO2VrSb6+UjPhRwuJ3r8nPJNRkXk7MhMfngF4KtJQi2mzLV4ZMjFJ+X?=
- =?us-ascii?Q?UwwNuvWKb8JVmy8OX2XpT7BCEzE45HdPfwGKZX+6qqFDt31kktY4MnTzOaIL?=
- =?us-ascii?Q?MZCfO2eitCElSa04vgXwdmWk/FxpXlvO1fYauA9Kqb8g9LpKtt2VC/yo9WuV?=
- =?us-ascii?Q?r7ONB02CDGoatdBb8e0k6sGCVq9wAGyY96xp5NBhRZ4I7upjiWNjfAxA2QGs?=
- =?us-ascii?Q?pWx/B5dDUPb2AFEnU8aEb3JlvnrzvRBFtsczOPLmLKGYdAJBrx3chpVSyqiu?=
- =?us-ascii?Q?7fVfJpIR+POny1MY+owiXf14oFs+wRkEQqs+JTER8m6dtp834TUIRCI+dE+T?=
- =?us-ascii?Q?+F9ctIsaSCTRlWFwkv+rPLgIbloH7ldApi48PVl8RVufsxAixj0yknuIw6er?=
- =?us-ascii?Q?crBvWRMQ0MybqoFn7SV5zObGnPogdT9j3hTHK7jv4C6Qyb/9a5Lpk88dEKf1?=
- =?us-ascii?Q?tV7OFzoszdc4c0FF2sfqKlZwjwYfQN9fgGw+e6aw0qOdIPt0A1XA002oAed+?=
- =?us-ascii?Q?18ABG5D/mBxwyrd+bTc9+/V9kpf/fQiczmnLiaIeM3VTQJ3AbPIiTKUFPqkP?=
- =?us-ascii?Q?OxKOU154Hn9jWUrXFmVBsTO1gSIFQgFuhJPuv4jlrFbeCNhQ98uuxpkavdV+?=
- =?us-ascii?Q?30nM6ngyIWOOVtxZVumC0R8eTPQZo51RmLhB3+urp+p1NVYKeFl1M41tTisG?=
- =?us-ascii?Q?A9Yh7/gHpxuY6+JW9QZvFVZ7Lilz2++bGF+DQjYI6udI9q69D/Ih5IYB/S0o?=
- =?us-ascii?Q?EwM+pvMpcBEEVnxhULNnLYxxj8I6ciDlnFDnWvbdISFnctcd9NyVAlUi+/mS?=
- =?us-ascii?Q?/P/uGNr8760bcsuS5UvIkXXGK5n7mmjcL5sNBA/x5mqOaEZSs08B3jPJjcE3?=
- =?us-ascii?Q?rzbAFzdkRnWWlgenxoXcmK3vpzYYuDREWh8GvUwp+yYHKnytcyAZBT6YrXM6?=
- =?us-ascii?Q?6AKt6ybwZ0NngB3BWcT5EhSlSQfN/1UBcQI5LR3QQdb6wE5Vr3US63lt0+VF?=
- =?us-ascii?Q?WqxV6BfskQHt9wmakFEj0C7GSLqUMQSpTtN0a+zr7ma7wZ25G/Tpms1luqPc?=
- =?us-ascii?Q?H89Yj0i5SYHEiwCvnz+qQBalyvb8A5pMuu0n9uhGMDMS1WJZy/ruFTnEFoRm?=
- =?us-ascii?Q?MQ/ooxikdlJWBgFEA3YtoGTUSI3OPqSI5XOT2hmH8qGRqXfbMvbWsvclWj+p?=
- =?us-ascii?Q?c63vqMfJ0jn95mGNTb/EJAMzpbpuY8wEKY8mZxiCa3Pwj0lKct+mjPx5Ap+v?=
- =?us-ascii?Q?vutoKhvCEqUhosHhrd+2YU0tCI5bZHFhUzfy3PblfUBxh5Iy2NsAyi3PSnGR?=
- =?us-ascii?Q?AOzKVOUbYkZAIZeVP7fYN3UNYwQN3zlfJF2F4JZJjim0N6pI/tbRByQcZim9?=
- =?us-ascii?Q?Vr4mwaRVvlbjfE5+M3OnTNWMdDTSOjatpYrld5cELP5xh6HPmJip0rbGZLJp?=
-X-MS-Exchange-AntiSpam-MessageData-1: /xJ69LcnofXVxQ==
-X-OriginatorOrg: altera.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 19cac41f-0faf-420e-107b-08decdb86186
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR03MB6964.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jun 2026 04:08:12.8221
+	e6PLkJnjLYguvSphlyLjnW3pQSA9UtBC9JInpShMjxYKybGar12PtiFAoGjoXKMkb3z7KWMOjVP6sQQNXAe2Gl9BPJ99kdeUM8pUUfFp53ofqyk1ej3YGT1VOLCoF4c90ZX/VpdQ2wlbjZv3GbYr8W1Z53FY0oGMagseIhWJuHz5r60iibdZ5Qg6aReThMaXdm+Ac1BLW2HjesWC+TPbmqFj+JToPj/N25FxhtqOxVzhybNOhCwZO2hLSisCHKlD6zr2AjloBNya1xFFzbUhbPDOjn2bFv7yqx9hUTzqVZ40MY9RtFhvAtfPT48EkTYZxmYT0tES5LDbR41zAoIHK22aGhchnTlwQJKxkjkBE/byiB/04MjnSgcHM6O88GiyjWiIzsjeFYFxz6AgazBiwplqjRCBomnl1Fhp5xcG0eoG4g5aDpB5q7SNLDWwSee5
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jun 2026 09:02:04.1309
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: fbd72e03-d4a5-4110-adce-614d51f2077a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: xnTMQlaUYroWvghcr+FXw0aGHmhZ8lunPTUKOJ0D25b8M0SHGLeGORCEBpqf0if1KkJku5oPtVyeq5KGi/ttrzZ+GUaD/quiIe3+rLISmqQJZ6VX2zqzlk/21rioJGqJ3+g/Ni3sqVPgJctk5LpPTA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR03MB5408
+X-MS-Exchange-CrossTenant-Network-Message-Id: 926063d4-e1d1-4d90-bf75-08ded106185f
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	MWH0EPF000A6733.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6787
 
-From: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
+The driver keeps the "aclk" clock prepared but disabled in its idle
+state, toggling only the atomic clk_enable()/clk_disable() around
+register accesses in the bridge enable_set/enable_show callbacks.
 
-The AIB CvP firmware requires a minimum transfer size of 4096 bytes.
-When a bitstream smaller than this is sent, the firmware DMA engine
-stalls waiting for the remaining data, causing a hang.
+At probe time this was open-coded as clk_prepare_enable() immediately
+followed by clk_disable(), leaving the clock prepared, with a matching
+clk_unprepare() in the error path and in remove().
 
-Allocate a 4096-byte send_buf at probe time and copy host data into
-it before each block transfer, ensuring the full block size is always
-sent regardless of the actual data length. Also improve error
-detection in write_complete() by checking VSE_CVP_STATUS_CFG_ERR
-instead of VSE_UNCOR_ERR_CVP_CFG_ERR to catch truncated or
-mismatched bitstream errors.
+devm_clk_get_prepared() expresses exactly this: it gets and prepares the
+clock and unprepares it automatically on driver detach.
 
-Signed-off-by: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
+Use it to drop the manual prepare/disable dance, the error-path
+unprepare, and the now-empty clock teardown in remove().
+
+Signed-off-by: Michal Simek <michal.simek@amd.com>
 ---
- drivers/fpga/altera-cvp.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 44badfd11e1b..36557c5a0c3f 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -77,6 +77,7 @@ struct altera_cvp_conf {
- 	u8			numclks;
- 	u32			sent_packets;
- 	u32			vsec_offset;
-+	u8			*send_buf;
- 	const struct cvp_priv	*priv;
- };
+ drivers/fpga/xilinx-pr-decoupler.c | 20 ++------------------
+ 1 file changed, 2 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
+index 6994d68e9036..45b65a3264af 100644
+--- a/drivers/fpga/xilinx-pr-decoupler.c
++++ b/drivers/fpga/xilinx-pr-decoupler.c
+@@ -118,46 +118,30 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
+ 	if (IS_ERR(priv->io_base))
+ 		return PTR_ERR(priv->io_base);
  
-@@ -449,7 +450,9 @@ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
- 		}
+-	priv->clk = devm_clk_get(&pdev->dev, "aclk");
++	priv->clk = devm_clk_get_prepared(&pdev->dev, "aclk");
+ 	if (IS_ERR(priv->clk))
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(priv->clk),
+ 				     "input clock not found\n");
  
- 		len = min(conf->priv->block_size, remaining);
--		altera_cvp_send_block(conf, data, len);
-+		memcpy(conf->send_buf, data, len);
-+		altera_cvp_send_block(conf, (const u32 *)conf->send_buf,
-+		conf->priv->block_size);
- 		data += len / sizeof(u32);
- 		done += len;
- 		remaining -= len;
-@@ -488,10 +491,10 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
- 	if (ret)
- 		return ret;
- 
--	/* STEP 16 - check CVP_CONFIG_ERROR_LATCHED bit */
--	altera_read_config_dword(conf, VSE_UNCOR_ERR_STATUS, &val);
--	if (val & VSE_UNCOR_ERR_CVP_CFG_ERR) {
--		dev_err(&mgr->dev, "detected CVP_CONFIG_ERROR_LATCHED!\n");
-+	/* STEP 16 - check CVP_CONFIG_ERROR bit */
-+	ret = altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
-+	if (ret || (val & VSE_CVP_STATUS_CFG_ERR)) {
-+		dev_err(&mgr->dev, "CVP_CONFIG_ERROR!\n");
- 		return -EPROTO;
+-	err = clk_prepare_enable(priv->clk);
+-	if (err) {
+-		dev_err(&pdev->dev, "unable to enable clock\n");
+-		return err;
+-	}
+-
+-	clk_disable(priv->clk);
+-
+ 	br = fpga_bridge_register(&pdev->dev, priv->ipconfig->name,
+ 				  &xlnx_pr_decoupler_br_ops, priv);
+ 	if (IS_ERR(br)) {
+ 		err = PTR_ERR(br);
+ 		dev_err(&pdev->dev, "unable to register %s",
+ 			priv->ipconfig->name);
+-		goto err_clk;
++		return err;
  	}
  
-@@ -650,6 +653,11 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	platform_set_drvdata(pdev, br);
  
- 	pci_set_drvdata(pdev, mgr);
- 
-+	conf->send_buf = devm_kzalloc(&pdev->dev, conf->priv->block_size, GFP_KERNEL);
-+	if (!conf->send_buf) {
-+		ret = -ENOMEM;
-+		goto err_unmap;
-+	}
  	return 0;
+-
+-err_clk:
+-	clk_unprepare(priv->clk);
+-
+-	return err;
+ }
  
- err_unmap:
+ static void xlnx_pr_decoupler_remove(struct platform_device *pdev)
+ {
+ 	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
+-	struct xlnx_pr_decoupler_data *p = bridge->priv;
+ 
+ 	fpga_bridge_unregister(bridge);
+-
+-	clk_unprepare(p->clk);
+ }
+ 
+ static struct platform_driver xlnx_pr_decoupler_driver = {
+---
+base-commit: 502d801f0ab03e4f32f9a33d203154ce84887921
+branch: xnext/pr-decoupler
+
 -- 
-2.43.7
+2.43.0
 
