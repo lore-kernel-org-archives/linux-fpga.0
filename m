@@ -1,183 +1,210 @@
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011026.outbound.protection.outlook.com [40.93.194.26])
+Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azon11010027.outbound.protection.outlook.com [52.101.46.27])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 840A82F261C;
-	Tue, 30 Jun 2026 06:13:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.194.26
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF2C33769FF;
+	Tue, 30 Jun 2026 06:57:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.46.27
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782800028; cv=fail; b=Y9NTLHmm4MMdmIM6eH1dQH7e10NS81Bny1/sV+bfm0Sisiszd3TgVtXZDvxv/YmpeAbGoOZIqyX5/JCOHWz/H7pCYBhbDlGR8dRhEpdxldDegZpjAn3/nYKh1FuAE//mTAzLGOVs0ZpVLDUeA8dDUe22cGPpKxOrOuzh0f/jUdo=
+	t=1782802649; cv=fail; b=iyXGbrQeB37DqEyNHRdsqwHLpHs4UtL1V23wVXKX91/1U3LPgxgJmSegTIkL4qgOwl8bOkBqKNjqfxlRH9OHTiSHqbMYs1MklTYgDZ+FxYedGKUAyXZISBwBwpR0WI7GaH6VRVjlQ6lstGfMzKB9QS0lShKkdOpJp5I7o0UNYyQ=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782800028; c=relaxed/simple;
-	bh=qLh6Pgcb3Td48Oaodi62WyUFVEoAytFkZdFinYn3bGM=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=ia5OyvMNWzveCcIfnz7HaTGpQmHNapDkg81MsPx4QlYApIFobNItPx052Um6HKqo1dIhn3E3ZdPR3LRjuCyupCnT8M3NVfibuI4/Uy2onDpl69FCLA5RDLqtIUgQ6RP4ncFnaNKg/rpRZ/Dhh0S2lFvWBSkRtCT7hnvH7MHDMeI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com; spf=pass smtp.mailfrom=altera.com; dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b=pK68a2AJ; arc=fail smtp.client-ip=40.93.194.26
+	s=arc-20240116; t=1782802649; c=relaxed/simple;
+	bh=OggzUOgkJQ0J8ywXEk++kowDqxcYF9kDl/K3yiBGFUU=;
+	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version; b=c5w9vopfR935DXgxy2XNlNtq3olG/gy8spkkp5Sn0865HQJDQit6Gt83a+GXlTpsLLFl2TdQFSfBJHY70Bi8d9/vsnlQ0rHk07Rb7xUeiWrnX9f8xPK74xLT4/P1WdXdxy/8hT509xQ+2x1HZ+A30tCgdu+X/w6YnwNLxmwoc8U=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com; spf=pass smtp.mailfrom=altera.com; dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b=PwXk6/yc; arc=fail smtp.client-ip=52.101.46.27
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=altera.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b="pK68a2AJ"
+	dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b="PwXk6/yc"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=O9cA95aJGmvGPPkdNsk+HLgc01Ph057t4jgOWWUO1xCuNT88yDTz6h3GD81IYe9NlVNbTdwHPPQ1PExRYhgsYEo/epa5eUxHUDlaZSeVj50yDGqSINWL7LemGNDpUQnMTeubnWNgvzJ8/f4MOSBEPIeSdJF6dM/jfuQKsxvBL+zrU893H7ieyBHFSnnTwPIz1JBaEn7Ppn8QT7J5X/DSTlCDI6ySsLUF0fkmebWR2ZvyZqcdK3aKzqlpaEsktryPQR8YzJKSbZ59nUS+ovAE7fNQpWbPs25c46pzFElpAzMDpBRP7+kiIPJaUDr4dpI5tAJDANngzicvO6V11WdWmQ==
+ b=sTqhVpSwlorgS/x2SykvFi3FKOxIAyoHUe50aszG/reLNDbOj3Uq3BjyHMbpuma2WPmXgEfRP7cRm5Tev8MIDCZoqGm+6uZh45oKSKJ3quU0JFD3vxeaIA/DTGWvGW/9/Ly789qRRcYUYpnEdFaLmhYism8/oQatpfM3B8Gb24bYyQV7CwV+RxGy8UdaRM69kb7pHzhb483bl+mBDICojP0N/g02uS/lQcbYJ8FRfFJ+zNVXy84/m9XNGjQ95qyeEmUHi2B4GQjqt3eMBuIGnSTCXKzSEEFdmeNgsAKVPUlDyw596a5y1SnSP3tFHVLInhR8hhxW6tPnWMRn+HTX5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=qLh6Pgcb3Td48Oaodi62WyUFVEoAytFkZdFinYn3bGM=;
- b=a1ZX/qv8gYmuF9/auSnv4L/VibW3DVQ5SCqmuR9AYokxfODrMANAO6N+68Pw/pdeY53oCnONEtCPVx084S8oQTaanCXS6kDWTy1sXDVWqX88PRw1sTrwld73goJj0T9LBrMvg2DkpEmDVMx7uLRVnOpGrdZMrpWKah+WJDXdCQ7QAGurlf/yIm8oOKLLQLADkiQbRgrFc8qAV4R8FvrQaFHQf0kYWHOeT4xs2PzEU7Ks6lG/OFtg1a12Bun7slZEkEASN0DHvPrf+brKJFjXfKcHIt6Pp381D+q1oL6u9ldGrADZyXcWNSEgPTukEpj1okQ666oo/bzuAEWYewxmkA==
+ bh=L2Cn6qrkM1ySgy0nPDUJPVY9BQSJOvu4MEkUFWfZkfk=;
+ b=eFQnMcLdkxESzSHh7gT8jmo5viZyXCvMu3gP9KaWW/auTnuVvfX8sI2pUQVxHw3FN0X19rnwviYhb34Y5CZbuRo4A7rqnW0yUwbGK+QulP7rRnvvw5qt070dr1R6CKfMAkW3Ob7vcvCn/WRn1YYCY3ge67cLFnZM77EeBShlKXk4KjUvOGNv2yIplrGOu4jPQWw+BhRKv394MXLb5bjLM4ueuJcVYHcM19dq0G85qlMuYmtrKYXzq0LUkySUVabZm48zBsuUU5cUduiimNcRU6Ilb9zcDhC18fJYDWSSVw2a7vcINtiRDSCDobqPRjrw5GMySDIZEoHRI2roBeMroQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=altera.com; dmarc=pass action=none header.from=altera.com;
  dkim=pass header.d=altera.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=altera.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=qLh6Pgcb3Td48Oaodi62WyUFVEoAytFkZdFinYn3bGM=;
- b=pK68a2AJTYquO7gkgl4XAzhr7a7vB/Bh4Vo9C+zyZ9ZiIWHUlBYlNpgkSk+MyDLaiewjl937xc5+vMoQiYde1B41g70fEL8lfIrZCSf0cTW0nXzpysbX+fVN3naAQo7AmKPdDJy0rkUMf/RLxvNDSQWloAX7wa8eAa/mnaKlvcyx633T4cpe0fqdvjlZfJ+FMAO7o89ZV6MDDTqKG77J975kUa5Zg1SIH2PYtBM9SS7r7fJyHZ3JT3tvKpdO9ZwtCcicLO2G7iI6O0r69B6vFnV0tBoDRbDdoMoy3/4tj2pRJV0vwJ5F/SnqSy5SzNnbENd0zZvGDbsMSJCV85FoUQ==
-Received: from SJ0PR03MB5950.namprd03.prod.outlook.com (2603:10b6:a03:2d3::20)
- by PH0PR03MB989259.namprd03.prod.outlook.com (2603:10b6:510:3b8::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.159.19; Tue, 30 Jun
- 2026 06:13:44 +0000
-Received: from SJ0PR03MB5950.namprd03.prod.outlook.com
- ([fe80::53a0:bf93:6b6b:de01]) by SJ0PR03MB5950.namprd03.prod.outlook.com
- ([fe80::53a0:bf93:6b6b:de01%4]) with mapi id 15.21.0159.018; Tue, 30 Jun 2026
- 06:13:44 +0000
-From: "NG, TZE YEE" <tze.yee.ng@altera.com>
-To: Xu Yilun <yilun.xu@linux.intel.com>
-CC: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>, Tom Rix
-	<trix@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Richard
- Gong <richard.gong@intel.com>, Alan Tull <atull@kernel.org>,
-	"linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Ang, Tien
- Sung" <tien.sung.ang@altera.com>
-Subject: Re: [PATCH v3] fpga: stratix10-soc: Fix SVC mailbox handling during
- reconfiguration
-Thread-Topic: [PATCH v3] fpga: stratix10-soc: Fix SVC mailbox handling during
- reconfiguration
-Thread-Index: AQHdA8HjGYcmXMnxykmjp0nh5+T9hbZRFj8AgAWRcgA=
-Date: Tue, 30 Jun 2026 06:13:44 +0000
-Message-ID: <bb09519a-e2d0-4383-91b0-33fd32c23b1e@altera.com>
-References:
- <0119f69b467e2b90240ebaa3aee3120f621ddee3.1782295811.git.tze.yee.ng@altera.com>
- <aj6y2CLYpdaQOGd4@yilunxu-OptiPlex-7050>
-In-Reply-To: <aj6y2CLYpdaQOGd4@yilunxu-OptiPlex-7050>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
+ bh=L2Cn6qrkM1ySgy0nPDUJPVY9BQSJOvu4MEkUFWfZkfk=;
+ b=PwXk6/ycCwXccGmxfVdTkT1iRtYAAzyTmpvAXyf2s1DJBfCQ4JuKJ9y41KuB/gyV2o+U1bYEniDfv4HBnfHgtHCVX4+s3tRt2zizPP+/S3MtjssajEPgWeExPCjal79xEw10wgZ/65QPBqvjjigP6Ybv/LmLbz/5OE208QJ82QFbitO74yNofTOKgSxdxSeX/RQquBT+i/CEzFTgAJFhuRxSPFq5NgZLwtIGrv9i8DFkadgtecq/qzmM1SBcNz/FAcLPLzWGDQQZV4guXHN7BY9+PODs8sZi/YGVNqmbpgHf/B6TK96OU+IFSrdS+d2EDXCaexxk7RRwM5LHKOaAZQ==
+Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=altera.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SJ0PR03MB5950:EE_|PH0PR03MB989259:EE_
-x-ms-office365-filtering-correlation-id: 94c59c07-57e8-48a0-5535-08ded66ebd94
-x-ms-exchange-atpmessageproperties: SA
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|23010399003|376014|1800799024|366016|38070700021|18002099003|11063799006|4143699003|22082099003|56012099006|55112099003;
-x-microsoft-antispam-message-info:
- BVj6qtSX+1FKZqPBgB0WRVyrz7DPapleLyjSO2y57ErkYGPwP62w12PxqmHBbRUu5DDtHUsjR9E6/tf5RQfxSqCV78bUtV/Kl4UjQ1YACI8oW+v+sKn9/uWh4nMf48sq7Dddj+Mg3t3L+YmmBJ0pmiRg/oV4zAQP3j3SRQf4W5x9255aKsXetPc4/9O5za32EArtXoHKqVQ2eZKIZFmXVEWwP0C86UdzJ7kdddSOct/GbhvGVLAEKj4nrK9yJ1PtzQ1jFOWuRzRDxh/19kEvD7avZcmeS4bXd3/fBMxQaKT4+mGYI0ir8eDuIujN1tV5D3Uj+t6VslLE5KOiCjpp/Y//wKTltsCsIpen4Wh71pP0KNxqzBpTx0V948LYLjgGh9yIDHnaeIxN/4Etivrk7OLk2/5+QGRD63SzvDTUIpxEli9BE18J9VIBaijS3QgTJRDRDWRKuvbxrbUKizMWVxgh9r89RoVxAH2dwQzV6twH1loqiXKPF0ucIgtldCRcRmCOzFgZVr+H/ZeAU8OGTRs/PexaT7kyvgZKBgyrwpVNaRUhwMvzspzuhanBIKutpPHKMWtWOxq6MYtUxt5+hFpYsZ8G+e3xd/ncLaO21jAsqLX47AYtHqJPofNNT/ZTcSBlqATYTqsGqA0b6AEwjc5AspSn7rGqQpUfXpkGiE2rRRb/R6M+ATNppsd5/S6PG3eEGesSqNPlyMJh+BDsLA==
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB5950.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(366016)(38070700021)(18002099003)(11063799006)(4143699003)(22082099003)(56012099006)(55112099003);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?RUZ4bXRGZkxmK0dMT0k1Umw4anZtWGlhZjZMSmZPYWd1ZUNqRzY2Ky9ZTjBY?=
- =?utf-8?B?WWVocHJ0VVZRS0l3RU8wZWRYNnN3b053YXlhdmZHemZsQWNBZG5HOVhMc25D?=
- =?utf-8?B?QjVIRTlxRDVmbTBvNHdiVGxKU090anhrR0lKbk9oZXUrSnd4Y3VTbnRnWnJM?=
- =?utf-8?B?ZlB3YmZZbVBIdHJ4T0trWHc0MExqNmtqeTRwOFpZd01KSFNDNGFQQ3ZxbFZ6?=
- =?utf-8?B?VUxmbGFieXJlSUhndVBWUXZDb0lRZ2lwc1ZSZEZqM1NRVktiYzZycTFpV3NQ?=
- =?utf-8?B?WkprVGM3NkV4dVFVMEo1SVZiVUgzem9helZFTmlzRVAzdEJuTHNyZmZXVkNB?=
- =?utf-8?B?TXQyeVBqOFpRQnJoWHF1Vm01ZEhrUktYSkFhZCtkQWRjME54VGc5NWZrSCtx?=
- =?utf-8?B?QTZFN1VUaWJuS3plaFJDekgwL3FHMDhmdE1OLzVhNFBIV2dPbzRXOEdpL0Ru?=
- =?utf-8?B?ZWEvUjZPTHZFb29iRHNWUEt3a1hUMlk5dUU1a2RQZkNpZDBiQitFWExianlu?=
- =?utf-8?B?VzZiYnk0a0hRUTNxeFdlWXcwRml1c1F2aStVMEZLQU1GRnVSOFVmVXFtVzhr?=
- =?utf-8?B?bmxHUGE2ekt3VkE0SHVnQmRUYmVuTE5VMmk1a3BEc2V4RlZvZ3RzamxncnF5?=
- =?utf-8?B?ZmM4Y0xKV0I2VTViY1VhL0V3ZmhRU0NzMVpqLzhjYjJqOFBLTjR5MTB4a1po?=
- =?utf-8?B?TmlNa2NCOFVkcnR4TnR6MXFLVEpIc1ovVWVLaDBUZXpJZzY3VCtrUDA0M1Ba?=
- =?utf-8?B?bFVDK3F4VDA1QVMvYUx5RUlJTEw4N0FRUWtCelVOTHlrNTRtcDJGQWk4enNU?=
- =?utf-8?B?RFpORHUydHZYYzhmemloelJ4blJtODFDVHpQTEhiN3BNWkRxSmYvRWEzaS9O?=
- =?utf-8?B?bDUyYks0Ujd5Uy9iYlJqOUY4RkxWU2tmeWlVejhYMG1ra1VIMU9ORUZ3V3hH?=
- =?utf-8?B?UlVORCt3Qm5WUHJmUGxEd2NHOU1NdHpSTGVYK3drbmxyZSs2MllHUGNha2Vq?=
- =?utf-8?B?dFdwejV0Rms3QXRaVkVCekp5d2pJQ3Q2YnRTNXRkU002elpUZk92enlEUElM?=
- =?utf-8?B?ZVhVUWJxMWM2YkpwYit6Uk5QWkpnUlRlVUJpUjN4cy9rMytwdnZuWEFDL05y?=
- =?utf-8?B?LzQzclBUamtIT1ViOXZPT0xlK0U4dDNScW1sSWxOMlZXazF1bUt4WFhDZDhT?=
- =?utf-8?B?UGdKNEJlMXVsVU5ibWpQQ0I0clNHWVhyV2p3QWFSYXpGUTVYM1RLMCtBemdI?=
- =?utf-8?B?L3VSMHVvRTNYK2xCMWlTM1UyWUJEQ0ZNOC9ReGRRSC9yVzJhTVl2a2MxcWU4?=
- =?utf-8?B?WlB0QnlwY054dFJ3N3k3enBQWkU2cWJjaVA2alVmU241MnhkNk5jREdzb2Rq?=
- =?utf-8?B?T0tHOHRhOHJva0hReEIvMVBmR1JlUFAxTUhsVWNYS2ZpM1ZPUmZiK2RQU0lB?=
- =?utf-8?B?ZFZPQk95NCtveEF3M3FkUzdiUjQ4b2VSNXpyeWlZejR2UlZkOTN2N2ZoeWo1?=
- =?utf-8?B?YkcvNC8yc3BXcjdYczdESDUrZnFhL1pnSDdiMG5lbkJCdWJBM0tTa1BHdTZB?=
- =?utf-8?B?NnRBaHlEcDJhL2NzSEpPTDZGb1JkODd0eW9DcHZVVkthYlVPRTZEN3BDTVNS?=
- =?utf-8?B?dUh3ZjdJVUxSaERoQTNGRUNhdWtkRHVlaDhLM2ZDRThRdXk0MFVFajM5V0tt?=
- =?utf-8?B?RTlTbVpJcmp4c1hvTlNDYlBwbkNNOEx5VHlROUNYM3FDSERsS0VPb2lmcVdY?=
- =?utf-8?B?WXZJSUZJSVI0OUxTUFQxMVdPSUErMEIvUVFqVVpyWXgzdnFIeXRpYUV4cGlP?=
- =?utf-8?B?SlVkQnFsdDI5bzFuMCtRdTZSZmpYWVIwbW50ZXhWc3F5STRuR3R2Zmh3WUoy?=
- =?utf-8?B?SndEV2dIMkRtSVhXMkxNUU1vQ3RiNzVGU2ZFS0ZFYUIzUGhqRnJMNVZUVmFZ?=
- =?utf-8?B?U1g5WlRhR1hCeHFvaUJkWEdvOGVQcHdkRkNqczBCVUE1SFdWcDBvRk5oUEVv?=
- =?utf-8?B?Ym1TMDJXb1UzcHE0L2dFM2tJWjRqMmVlQy9JdHM5VlhCYnBIQ3ZMYWszeGY2?=
- =?utf-8?B?ckFCQU14QWE0WE5HblFXaXpick9rTUZXTkorLzNOakExR2J1VzFXa2tKbE15?=
- =?utf-8?B?M0lCa29pcVAweTZNWmtDaFhscnJhT2FlcGpkbXRTOVJKU0xHdzlSL1c0ckZl?=
- =?utf-8?B?TmVsemlmS1VvMXFtcSszZzdPTzN4Y2I1SFBIRmNEeENGYmNVR1VWWVB3ZUJ2?=
- =?utf-8?B?bSttVk1EaFV0b3NhWDlrQjJaYXpReFN4czQxOGNxRUhON1YyTk9iOHJScmpC?=
- =?utf-8?B?WjlIaGtQeUFZMllEYi9CcVdqY25CYndaT2hLS2lWMVlzYjFQRlcwdG9hQ1lh?=
- =?utf-8?Q?jgbRKd6UdLChsvlI=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <6BB704C625429249BA46BCB7FC0FFF43@namprd03.prod.outlook.com>
-Content-Transfer-Encoding: base64
+Received: from CO1PR03MB5937.namprd03.prod.outlook.com (2603:10b6:303:6e::18)
+ by SJ0PR03MB5853.namprd03.prod.outlook.com (2603:10b6:a03:2d0::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.159.16; Tue, 30 Jun
+ 2026 06:57:23 +0000
+Received: from CO1PR03MB5937.namprd03.prod.outlook.com
+ ([fe80::f970:684e:8c80:91c3]) by CO1PR03MB5937.namprd03.prod.outlook.com
+ ([fe80::f970:684e:8c80:91c3%6]) with mapi id 15.21.0159.018; Tue, 30 Jun 2026
+ 06:57:23 +0000
+From: tze.yee.ng@altera.com
+To: Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>,
+	Richard Gong <richard.gong@intel.com>,
+	Alan Tull <atull@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v4] fpga: stratix10-soc: Fix SVC mailbox handling during reconfiguration
+Date: Mon, 29 Jun 2026 23:57:19 -0700
+Message-ID: <8768ce3260489c9febdfce08e27d03f5f5ed9c33.1782801986.git.tze.yee.ng@altera.com>
+X-Mailer: git-send-email 2.43.7
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SJ0PR03CA0221.namprd03.prod.outlook.com
+ (2603:10b6:a03:39f::16) To CO1PR03MB5937.namprd03.prod.outlook.com
+ (2603:10b6:303:6e::18)
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PR03MB5937:EE_|SJ0PR03MB5853:EE_
+X-MS-Office365-Filtering-Correlation-Id: cfeaf0e1-d16e-4f80-5b53-08ded674d5e0
+X-MS-Exchange-AtpMessageProperties: SA
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|23010399003|366016|376014|6133799003|18002099003|56012099006|11063799006|55112099003;
+X-Microsoft-Antispam-Message-Info:
+	WEW3mUWL2SFFdMyTi9OEV1XlrjEi6llXBOIjii53yCKVFzZx4VAFPMaluyBTYWKxszx0+Di5wzqJ2sf4oReVRYhNQIMC9fVYWZW956xwIU65Fcjv9xfZvbH532j+vvCQd7jTXV9unUOk+EqmStRJsB8b4Ue8YXLj5p3/WVpKbCC1vnZa++pvC6904CO4O05j9RFT7WMBzzLfBkouhARZUiuC5PFhYiTLkS/UT903v5+7kHSHFbsoeCrXCIzHPsbp40c+Uj9qwpJme/n/lUqbDgUhbl+k1uBiFcJF7AB3ZeR5rBku17pX2nemw+tvhB8bgpQwE+02FStkaEZP3PrDBQNTZhjAff+QGG7k346SDbL0i2x85DQUm9lW67e3Z7q2Rn10Nsd84Dxoc+yzgGFF28fNzZjM7Qyk5Rn3xh7SInfvfdInpfGkZKL1HWBUoxUdgQ2dLCp8Me5dZwUGKO+iwdcdqNSCpEdGEmbKV2EVESupMzodQeME5PbuwbMApJo2Kn+MuB4A+CGVDNdYGekiNRaPACgW07lYAEOSM8797B1pNiWPLNhd/xTz5bIhG5da771f3lwKfzyEmUzDGbBa25v4tFG3GFTvbxihtNsws7vnHdrY+wJubVAHQB5dVIMhAkXd+NvIJ/l6Sg5IU+nE0EsuJyD63hgpu+OCa+Y8A2Q=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO1PR03MB5937.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(23010399003)(366016)(376014)(6133799003)(18002099003)(56012099006)(11063799006)(55112099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?CVhkzq3f3o3IdkTRaVmTfRKUlo8sqX6zbfkPo2/DWcfiWsSdEsPjzR02QAG6?=
+ =?us-ascii?Q?DEJMdK3D+P/zW/LzFxM0Y3fSP7o2XcCNr68u2ILx8X0/G4M6VgmIgF6wbav/?=
+ =?us-ascii?Q?a0+uFrEI1deSh3ks443j06gVqCVVM61TOEzYx/ZQVIA1T3pljdMNh19gMYzB?=
+ =?us-ascii?Q?O3C3+IrskxjcO87aZPEVzlDLDKDGii2ZW4ou2v492VFA2G1LjIYRW48bhTnZ?=
+ =?us-ascii?Q?ZsxUiXJIEDK/x/l1+Yd9Ql7lY1YulXHx3yu715vqYy2OmCzdW/uttr8UtEKP?=
+ =?us-ascii?Q?sEBRaoUueHLm2YOGFRio3z6srU602bP5DBIEyLzCgdllkeqdshgyzO9knYkf?=
+ =?us-ascii?Q?ANeRO2CMU/E11x1w0A1MMthTLvTQMw43hu9CSrnMKFamHqCr0RIzGvnNlADA?=
+ =?us-ascii?Q?7UwigLIeyrlByU1HABGCnT8RWbjNrTGg804dhtrIGQSMVA3jvXzxdOvbAeXo?=
+ =?us-ascii?Q?AtofDvUN6Z9ZALyKxmN0qF+6k2xpszjkoJL3VGqTdXl7754f5pr+LTU9KMtD?=
+ =?us-ascii?Q?A1EDqNnTuZTW5dObZBo0crfUGiZ5M1bjZvV0CYGXee8EoSqUg8tc4dvpppBo?=
+ =?us-ascii?Q?z5zT/avUlD97tFJSO+iZBUAOluCJv4hwFdXmIO/YFnKK1l9SCR0Xw4um1BwU?=
+ =?us-ascii?Q?eMJRqRiXtBR9PZVn54k/F3VTdBnIY5DcQ0sY9bC/jGw50stWT80ckgBa8xHp?=
+ =?us-ascii?Q?p9MgDW4YrCBCRt0WL3y/JrLDcXbiEf8NQ+WkdaVPT82AZkdWFpqN4NtPXJwL?=
+ =?us-ascii?Q?5Sk2LmfzJMLymXmgs/c8ufzsB6rTradn+Crp+6jvVU5KQCiTjOwf9iVf+x8H?=
+ =?us-ascii?Q?ziQQLCNDzPhcqMl04UAKgGrtId0Z0z3xLrgUOyIotPIeI/CjlkzojPN2a/Im?=
+ =?us-ascii?Q?KNRX2+Rsb/wZgOJzY86vn6aJwvwhZpP1FyKJgte1cUE9udryNiGbAm18w1oQ?=
+ =?us-ascii?Q?ezo9ScVeduxDVXllE7KBAKV5P1U9kQuC3zsyhizAPmc2ZpPswQmlEGM7mVox?=
+ =?us-ascii?Q?gK8vONa6hHzZkfLzZhC6c+zcq/enkpSM95ZNFsICboVNauyyfNdIZDBLsfUw?=
+ =?us-ascii?Q?Cny13k2phpV/P1P3EZuwrQ6x2xcCcUDqnPaO5v8iEUMMLyrjVRjTTRbS+bgF?=
+ =?us-ascii?Q?yxHOzLrjpaEUOzl6zGn4t6pCOA9dq8wrfgoPf1D5dVAWuu6OXwxQVW1PHhsr?=
+ =?us-ascii?Q?hWIQ6T4FA+KOFkMAT16sb4LVKtX5kwI0lbv6LMHZu7Jx0iIMf3otydCflifK?=
+ =?us-ascii?Q?/wROYAAKwVJ8rBEIRE24idWLl0/xMtynERHMIHaeviHc8WntPEh1csZceIaA?=
+ =?us-ascii?Q?TokxoDKq/3mRKXqi5JiSPlC/mWAbD4KLxJCuZPyVfxg+Ei7RauQY+K5nxquX?=
+ =?us-ascii?Q?bDxIixdALy7sNKH5odn5VRWAPC8utMHyUHkksfn2rHwrR8h61l1f0i4HdRAI?=
+ =?us-ascii?Q?tYceAgA230xDd7QXTX3SDyfFbp3hk7qc5oAR0eHov/AhQHSUEPmoGs+ms4Wu?=
+ =?us-ascii?Q?0d5r9LIGmzTx/4kCOhBz/XwXmKDLOPyIoHubB/5wcnY/GbBSKu5A4FeqHk7g?=
+ =?us-ascii?Q?jJ2R2wHhDGte3kk2hYdh/GVTgQiTc8YTFRX2/BKzjjv5r8P6mYs7KUgZQdLU?=
+ =?us-ascii?Q?f9VwZGCqDNFWRUH25BSJyK0T4ojaOrEQAyVK+cp4CyjbK/vHX58gJqg59Jyo?=
+ =?us-ascii?Q?ueCISDv23bYoh6W1Wjwr/ReY5TE4bhwBLEAJq5ukUASL1QK9uVk+fUvlOxOj?=
+ =?us-ascii?Q?rCcLeE3+jQ=3D=3D?=
 X-OriginatorOrg: altera.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: cfeaf0e1-d16e-4f80-5b53-08ded674d5e0
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR03MB5937.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR03MB5950.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 94c59c07-57e8-48a0-5535-08ded66ebd94
-X-MS-Exchange-CrossTenant-originalarrivaltime: 30 Jun 2026 06:13:44.8003
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Jun 2026 06:57:22.9941
  (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: fbd72e03-d4a5-4110-adce-614d51f2077a
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: r865Y4Wf7uvNwVza1WauEP2Pr4ptCfqskXx+Oa9aj5kzsjcL492v1hht3BOPCyQD9qFnAktVMwaY7yu8sGFBTg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR03MB989259
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: fbd72e03-d4a5-4110-adce-614d51f2077a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: MxjJJNydKtDvyHk/FZRZ1eVZQhN4IieGKwqt0d04szjAQkUi9X4userJ4GnCvJIaz4YxBwI0V0eWY3gbvQ2JeQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR03MB5853
 
-T24gMjcvNi8yMDI2IDE6MTEgYW0sIFh1IFlpbHVuIHdyb3RlOg0KPiBbWW91IGRvbid0IG9mdGVu
-IGdldCBlbWFpbCBmcm9tIHlpbHVuLnh1QGxpbnV4LmludGVsLmNvbS4gTGVhcm4gd2h5IHRoaXMg
-aXMgaW1wb3J0YW50IGF0IGh0dHBzOi8vYWthLm1zL0xlYXJuQWJvdXRTZW5kZXJJZGVudGlmaWNh
-dGlvbiBdDQo+IA0KPj4gQEAgLTE5NSwyMCArMTk1LDIwIEBAIHN0YXRpYyBpbnQgczEwX29wc193
-cml0ZV9pbml0KHN0cnVjdCBmcGdhX21hbmFnZXIgKm1nciwNCj4+ICAgICAgICByZXQgPSBzMTBf
-c3ZjX3NlbmRfbXNnKHByaXYsIENPTU1BTkRfUkVDT05GSUcsDQo+PiAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAmY3R5cGUsIHNpemVvZihjdHlwZSkpOw0KPj4gICAgICAgIGlmIChyZXQg
-PCAwKQ0KPj4gLSAgICAgICAgICAgICBnb3RvIGluaXRfZG9uZTsNCj4+ICsgICAgICAgICAgICAg
-Z290byBpbml0X2Vycm9yOw0KPj4NCj4+ICAgICAgICByZXQgPSB3YWl0X2Zvcl9jb21wbGV0aW9u
-X3RpbWVvdXQoDQo+PiAgICAgICAgICAgICAgICAmcHJpdi0+c3RhdHVzX3JldHVybl9jb21wbGV0
-aW9uLCBTMTBfUkVDT05GSUdfVElNRU9VVCk7DQo+PiAgICAgICAgaWYgKCFyZXQpIHsNCj4+ICAg
-ICAgICAgICAgICAgIGRldl9lcnIoZGV2LCAidGltZW91dCB3YWl0aW5nIGZvciBSRUNPTkZJR19S
-RVFVRVNUXG4iKTsNCj4+ICAgICAgICAgICAgICAgIHJldCA9IC1FVElNRURPVVQ7DQo+PiAtICAg
-ICAgICAgICAgIGdvdG8gaW5pdF9kb25lOw0KPj4gKyAgICAgICAgICAgICBnb3RvIGluaXRfZXJy
-b3I7DQo+PiAgICAgICAgfQ0KPj4NCj4+ICAgICAgICByZXQgPSAwOw0KPiANCj4gV2h5IHJlLWlu
-aXRpYWxpemUgcmV0IGhlcmU/DQo+IA0KDQpUaGF0IHdhcyBjbGVhcmluZyB0aGUgcmVtYWluaW5n
-IGppZmZpZXMgbGVmdCBpbiByZXQgYnkgDQp3YWl0X2Zvcl9jb21wbGV0aW9uX3RpbWVvdXQoKS4g
-SSdsbCBkcm9wIGl0IGJ5IG5vdCBhc3NpZ25pbmcgdGhlIHdhaXQgDQpyZXN1bHQgdG8gcmV0Lg0K
-DQo+PiAgICAgICAgaWYgKCF0ZXN0X2FuZF9jbGVhcl9iaXQoU1ZDX1NUQVRVU19PSywgJnByaXYt
-PnN0YXR1cykpIHsNCj4+ICAgICAgICAgICAgICAgIHJldCA9IC1FVElNRURPVVQ7DQo+PiAtICAg
-ICAgICAgICAgIGdvdG8gaW5pdF9kb25lOw0KPj4gKyAgICAgICAgICAgICBnb3RvIGluaXRfZXJy
-b3I7DQo+PiAgICAgICAgfQ0KPj4NCj4+ICAgICAgICAvKiBBbGxvY2F0ZSBidWZmZXJzIGZyb20g
-dGhlIHNlcnZpY2UgbGF5ZXIncyBwb29sLiAqLw0KPj4gQEAgLTIxNiwxNiArMjE2LDE5IEBAIHN0
-YXRpYyBpbnQgczEwX29wc193cml0ZV9pbml0KHN0cnVjdCBmcGdhX21hbmFnZXIgKm1nciwNCj4+
-ICAgICAgICAgICAgICAgIGtidWYgPSBzdHJhdGl4MTBfc3ZjX2FsbG9jYXRlX21lbW9yeShwcml2
-LT5jaGFuLCBTVkNfQlVGX1NJWkUpOw0KPj4gICAgICAgICAgICAgICAgaWYgKElTX0VSUihrYnVm
-KSkgew0KPj4gICAgICAgICAgICAgICAgICAgICAgICBzMTBfZnJlZV9idWZmZXJzKG1ncik7DQo+
-PiAtICAgICAgICAgICAgICAgICAgICAgcmV0ID0gUFRSX0VSUihrYnVmKTsNCj4+IC0gICAgICAg
-ICAgICAgICAgICAgICBnb3RvIGluaXRfZG9uZTsNCj4+ICsgICAgICAgICAgICAgICAgICAgICBy
-ZXQgPSAtRU5PTUVNOw0KPiANCj4gV2h5IGNoYW5nZSB0aGUgcmV0Pw0KPiANCg0KVGhhdCB3YXMg
-dW5yZWxhdGVkIGNodXJuLiAgSSdsbCByZXZlcnQgdG8gUFRSX0VSUihrYnVmKS4NCg0KPj4gKyAg
-ICAgICAgICAgICAgICAgICAgIGdvdG8gaW5pdF9lcnJvcjsNCj4+ICAgICAgICAgICAgICAgIH0N
-Cj4+DQo+PiAgICAgICAgICAgICAgICBwcml2LT5zdmNfYnVmc1tpXS5idWYgPSBrYnVmOw0KPj4g
-ICAgICAgICAgICAgICAgcHJpdi0+c3ZjX2J1ZnNbaV0ubG9jayA9IDA7DQo+PiAgICAgICAgfQ0K
-Pj4NCj4+IC1pbml0X2RvbmU6DQo+PiArICAgICBnb3RvIGluaXRfZG9uZTsNCj4gDQo+IEhhcHB5
-IHBhdGg/IHdoeSBub3QganVzdCByZXR1cm4gMDsgQW5kIHlvdSBkb24ndCBuZWVkIGluaXRfZG9u
-ZSBhdCBhbGwuDQo+IA0KDQpBZ3JlZWQuIEknbGwgdXNlIHJldHVybiAwIG9uIHN1Y2Nlc3MgYW5k
-IGtlZXAgb25seSBpbml0X2Vycm9yIGZvciANCnN0cmF0aXgxMF9zdmNfZG9uZSgpICsgcmV0dXJu
-IHJldC4NCg0KPj4gKw0KPj4gK2luaXRfZXJyb3I6DQo+PiAgICAgICAgc3RyYXRpeDEwX3N2Y19k
-b25lKHByaXYtPmNoYW4pOw0KPj4gK2luaXRfZG9uZToNCj4+ICAgICAgICByZXR1cm4gcmV0Ow0K
-Pj4gICB9DQoNCg==
+From: Tien Sung Ang <tien.sung.ang@altera.com>
+
+Fix incorrect stratix10_svc_done() usage during FPGA reconfiguration.
+
+Do not call stratix10_svc_done() at the end of write_init() on success, so
+the SVC session remains active through write() and write_complete(). Call
+stratix10_svc_done() on failure in write_init() and write() so the shared
+SVC mailbox is released when reconfiguration aborts, allowing coexistence
+with other SVC clients such as soc64-hwmon.
+
+Fixes: e7eef1d7633a ("fpga: add intel stratix10 soc fpga manager driver")
+Cc: stable@vger.kernel.org # 5.1+
+Signed-off-by: Tien Sung Ang <tien.sung.ang@altera.com>
+Signed-off-by: Tze Yee Ng <tze.yee.ng@altera.com>
+---
+Changes in v4:
+- Restructure write_init() per review: return 0 on success, single
+  init_error path for stratix10_svc_done().
+- Do not assign wait_for_completion_timeout() result to ret; removes
+  the need for ret = 0.
+- Revert PTR_ERR(kbuf) to -ENOMEM change; keep PTR_ERR(kbuf).
+---
+ drivers/fpga/stratix10-soc.c | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index 0a295ccf1644..b8ec2e6f615f 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -195,20 +195,18 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
+ 	ret = s10_svc_send_msg(priv, COMMAND_RECONFIG,
+ 			       &ctype, sizeof(ctype));
+ 	if (ret < 0)
+-		goto init_done;
++		goto init_error;
+ 
+-	ret = wait_for_completion_timeout(
+-		&priv->status_return_completion, S10_RECONFIG_TIMEOUT);
+-	if (!ret) {
++	if (!wait_for_completion_timeout(&priv->status_return_completion,
++					 S10_RECONFIG_TIMEOUT)) {
+ 		dev_err(dev, "timeout waiting for RECONFIG_REQUEST\n");
+ 		ret = -ETIMEDOUT;
+-		goto init_done;
++		goto init_error;
+ 	}
+ 
+-	ret = 0;
+ 	if (!test_and_clear_bit(SVC_STATUS_OK, &priv->status)) {
+ 		ret = -ETIMEDOUT;
+-		goto init_done;
++		goto init_error;
+ 	}
+ 
+ 	/* Allocate buffers from the service layer's pool. */
+@@ -217,14 +215,16 @@ static int s10_ops_write_init(struct fpga_manager *mgr,
+ 		if (IS_ERR(kbuf)) {
+ 			s10_free_buffers(mgr);
+ 			ret = PTR_ERR(kbuf);
+-			goto init_done;
++			goto init_error;
+ 		}
+ 
+ 		priv->svc_bufs[i].buf = kbuf;
+ 		priv->svc_bufs[i].lock = 0;
+ 	}
+ 
+-init_done:
++	return 0;
++
++init_error:
+ 	stratix10_svc_done(priv->chan);
+ 	return ret;
+ }
+@@ -342,6 +342,9 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
+ 	if (!s10_free_buffers(mgr))
+ 		dev_err(dev, "%s not all buffers were freed\n", __func__);
+ 
++	if (ret < 0)
++		stratix10_svc_done(priv->chan);
++
+ 	return ret;
+ }
+ 
+-- 
+2.43.7
+
