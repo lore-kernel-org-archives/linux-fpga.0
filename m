@@ -1,92 +1,102 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+Received: from www537.your-server.de (www537.your-server.de [188.40.3.216])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05209288C2D;
-	Tue,  7 Jul 2026 08:02:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A10223BD1D;
+	Tue,  7 Jul 2026 09:40:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=188.40.3.216
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783411372; cv=none; b=aFYlD73WcPThFz9oah9KEht7ApWI7N5lZ/J04EZUxO8BhDUGr5uylbb8Qoy6A6UAudMrtwg9c5WjyQ0XFCRrBf8Zli5tL5dKlQMpnaoHqB0KudOGFS9jVRFUJ/04zDOhRHwY+W3TngU4uVPUgXbfH00xwPw+cdqZ7vkjWXTNMn4=
+	t=1783417204; cv=none; b=YRF5tKHRKG+24ZxSKi98DH4uD2BNxO74uaE1ZudA907h+QV6vrXetLdAPXIbyIJ71QjelonA6yzWD0xjHttqQ9DuMyWmkWi+2mCmUoodTtsy3VqKlzgwk22inXUW/2r+ceBwlXPUcrSJZ7YHwyuLeUcSO777ZtuhdOTzZN61yQ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783411372; c=relaxed/simple;
-	bh=ox31VUoxRh2OiQxBEhmxyfDscwceoKTftKiArTYjGm8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=a+e+I/PLiT77d4YPukAHxqShEovsi0dt7KS1C33hbUJcO7X2Ww0FQLmXmwhJkQS0wvOCd9v078GOD4SNFbyZloUbfFQ7N2oSht4H1h8DFD7ucLa/rgRZiYHBgz8Tsgbb/dFmnWAHS44XnMth78TZ9xI72BGO3prdikOGc+s6dD8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=AURCGTEc; arc=none smtp.client-ip=198.175.65.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1783417204; c=relaxed/simple;
+	bh=YGg1BcLTPFV6RN3D8+fSsxINq+QBX6t8/eJbzCLKRRk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=hBkq2pe710okSbcR4u8LoBDpucV8KzWqSvR/K92O0Zfur4AXSVPH3Kw6TrH247lJR6sDp8wqg4QyPR2V5gokJ/H3nNsOPGAci+MBwWhMJOmCWudBnhz/qnH4qSG3CEZffJABk4pwQBl0QKYl93I12M/KILKsiui8zQaY89wvBbE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ew.tq-group.com; spf=pass smtp.mailfrom=ew.tq-group.com; dkim=pass (2048-bit key) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.b=iB2QvJXr; arc=none smtp.client-ip=188.40.3.216
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ew.tq-group.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ew.tq-group.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="AURCGTEc"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783411371; x=1814947371;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=ox31VUoxRh2OiQxBEhmxyfDscwceoKTftKiArTYjGm8=;
-  b=AURCGTEcozULu6ZYHPKaG2wMC0jZEXZiwsIPGloUP5W6Qn9uqI6+7yPH
-   g8QoMdfSetAx5ZfM20Q1JmZY8UlIUy+JbcvQoGmszZ5XgLNzEdb6aT1f+
-   mO2M/PLkJ72pkY9Xb7T4Hv5YIiv5q3MeU2wZH+41uxArVsLOBBdLo9jQM
-   fIQ8VO8C0gxwR/5dPfNlOsb2WmlEkOnY24JX7yz2pgZOTVrKehzdHj5+H
-   WGd0fr0rey6dpK9/PazKWeetgW33bx2I3boTXfP+9MkF31tnW6DPZLHeJ
-   DGOAfg4EKzv9dEhonMvsFRruDwY8nk52x3kk0V5UHje5TQU6qLp89iFgh
-   Q==;
-X-CSE-ConnectionGUID: ex4CLUHtSQi6Az/DwJF2Sg==
-X-CSE-MsgGUID: mPKjC59WRQOK1UKAvIFMtA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11839"; a="101478112"
-X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
-   d="scan'208";a="101478112"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jul 2026 01:02:51 -0700
-X-CSE-ConnectionGUID: FaKCDsM1Tn6hJh2yNSySXA==
-X-CSE-MsgGUID: fjOD+LOFTimc/j1Gj1SOqg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
-   d="scan'208";a="251263449"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmviesa008.fm.intel.com with ESMTP; 07 Jul 2026 01:02:49 -0700
-Date: Tue, 7 Jul 2026 16:02:47 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Marco Pagani <marco.pagani@linux.dev>
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] fpga: region: Add support for FPGA region variants
-Message-ID: <akyyp1GCecWj2Bk2@yilunxu-OptiPlex-7050>
-References: <20260608164247.1998417-1-marco.pagani@linux.dev>
- <aj53joym0YpoYXWQ@yilunxu-OptiPlex-7050>
- <97739313-fc97-4b11-b2e2-d680621a7fe1@linux.dev>
- <akPZoGCyQW+6+hDX@yilunxu-OptiPlex-7050>
- <5dbd4ac8-a532-4889-bae1-f0bab9a99267@linux.dev>
+	dkim=pass (2048-bit key) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.b="iB2QvJXr"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=ew.tq-group.com; s=default2602; h=Content-Type:Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
+	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID;
+	bh=XdYHUpabhxFqH9NCRW/HLTE/ahyQjh76eWpGW18QMg4=; b=iB2QvJXreBXwqTcq3OST0PNM8t
+	BkuOKhFQct9Ay2yUiLBE0iUd2Q0DQ5wju6yAgqTOEnAZZf4RvOxSA2nt+ucd5r/WOlpLsP1wWOkT/
+	gCcLqyzMrOESl0WXaPuWlAODOlH5aVUjGMaOFGZv/Ae0skO0qxveJXfvcsdeLlh8LCj3UuvQB2W/Q
+	ft2MqWVTKVc/9cW0wLGbf7yh0uLFMZCHw5s0Mzw+goOdslbsO19/yFS2uTEZ5oglApME0/Cc5iAIc
+	MA2W7PaJikBqueYl2YKWcw1DVVSOdPVOGnASmZPot41qm8HhQxDxgokmFjrayM6BZP05A/+yaBmO5
+	5Q0+5Wrw==;
+Received: from sslproxy04.your-server.de ([78.46.152.42])
+	by www537.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96.2)
+	(envelope-from <alexander.stein@ew.tq-group.com>)
+	id 1wh2HX-000OLl-1q;
+	Tue, 07 Jul 2026 11:39:59 +0200
+Received: from localhost ([127.0.0.1])
+	by sslproxy04.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <alexander.stein@ew.tq-group.com>)
+	id 1wh2HX-000JZt-2M;
+	Tue, 07 Jul 2026 11:39:59 +0200
+From: Alexander Stein <alexander.stein@ew.tq-group.com>
+To: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+ Tom Rix <trix@redhat.com>
+Cc: linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject:
+ Re: [PATCH 1/1] fpga: of-fpga-region: use dev_err_probe for probe deferral
+Date: Tue, 07 Jul 2026 11:39:58 +0200
+Message-ID: <3710268.mvXUDI8C0e@steina-w>
+Organization: TQ-Systems GmbH
+In-Reply-To: <20260420102136.333673-1-alexander.stein@ew.tq-group.com>
+References: <20260420102136.333673-1-alexander.stein@ew.tq-group.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5dbd4ac8-a532-4889-bae1-f0bab9a99267@linux.dev>
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+X-Virus-Scanned: Clear (ClamAV 1.4.3/28053/Tue Jul  7 08:24:37 2026)
 
-> My understanding is that Nava's RFC already scopes the configuration to
-> /sys/kernel/config/fpga_region/. However, that would still leave the
-> attack vector open. A malevolent userspace component could still load a
-> malicious DT overlay with a rogue "ranges" property to access kernel
-> memory or a rouge "dma-ranges" property to hijack a legitimate IP for
-> the same purpose, or it can mess with the clock configuration. It also
-> worth considering that DT changes are applied to the global kernel
-> hardware configuration and cannot be sandboxed to the specific FPGA
-> region. The root of the problem is that we cannot check and guarantee
-> at runtime that an arbitrary DT overlay is sane and affects only its
-> specific FPGA region.
+Hi,
 
-I see. So your concern is the DT overlay can impact the outside world by
-referencing global nodes. My idea is, if we could statically specify the
-fpga-region with these assigned resources, no updating of these static
-properties, and don't allow global referencing phandle, we are good?
+Am Montag, 20. April 2026, 12:21:35 CEST schrieb Alexander Stein:
+> This also adds a message about probe deferral.
+>=20
+> Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
 
-I mean we don't have to verbose on every combination of hardware that a
-user might load. We harden the boundaries of the resources (ranges,
-dma-ranges, ...) that are initially designed for the fpga-region in base
-DT. To me, this seems to be more aligned to "DT describes the HW" and
-how the FPGA works.
+any feedback on this patch?
 
-How do you think?
+Thanks and best regards,
+Alexander
+
+> ---
+>  drivers/fpga/of-fpga-region.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/fpga/of-fpga-region.c b/drivers/fpga/of-fpga-region.c
+> index caa091224dc54..41e6da296cb3e 100644
+> --- a/drivers/fpga/of-fpga-region.c
+> +++ b/drivers/fpga/of-fpga-region.c
+> @@ -405,7 +405,7 @@ static int of_fpga_region_probe(struct platform_devic=
+e *pdev)
+>  	/* Find the FPGA mgr specified by region or parent region. */
+>  	mgr =3D of_fpga_region_get_mgr(np);
+>  	if (IS_ERR(mgr))
+> -		return -EPROBE_DEFER;
+> +		return dev_err_probe(dev, -EPROBE_DEFER, "FPGA manager not found\n");
+> =20
+>  	region =3D fpga_region_register(dev, mgr, of_fpga_region_get_bridges);
+>  	if (IS_ERR(region)) {
+>=20
+
+
+=2D-=20
+TQ-Systems GmbH | M=FChlstra=DFe 2, Gut Delling | 82229 Seefeld, Germany
+Amtsgericht M=FCnchen, HRB 105018
+Gesch=E4ftsf=FChrer: Detlef Schneider, R=FCdiger Stahl, Stefan Schneider
+http://www.tq-group.com/
+
+
