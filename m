@@ -1,78 +1,86 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DECD41F7F7;
-	Mon,  6 Jul 2026 14:58:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0B31372057;
+	Tue,  7 Jul 2026 04:40:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783349891; cv=none; b=D/8CfKOXoP/Zm3Onj7kblI0PARLpUJpN7ryAKUfXB9/ehsSR7wM2g4o1PKtGG3v2H7ohKCD4TO913cPvr4VrMgm5Bmg6Cj9SHeY+ABDeyqQDgCWwwxC0XvN+5RMfkyMYZNqhdlbClxR7nXmvYz+Dn/+qRjEAZA3wRizTv8PHLbo=
+	t=1783399217; cv=none; b=nucBA4oQgIZilgEX8bKaQ8oxqKn7/hgsboMXcWyqGV3oqYVzIkuqQycxdVcx81kujA7jHA+RR4oJ7onHc+q38Hy5rpPynnsAK4SfMFR68IPdZHM0d3xUVz+n/4Lj2ey4LoXP/To9l6lC+toOpa8nuGOGWJNWvePiK4899mOX4HQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783349891; c=relaxed/simple;
-	bh=sGs6EJS1aoCpcvaJGSe3S0o/xRp1cVHrc8nnxdLeNKY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jhov2HPO8bzbaKbqMKUWLTgIVSR6j48SpkXSDi1IjkfV6Bv5OTr3mF5VHDGg0mQK4e/BdCHOUr3tozkMTP4x5SZE1ml+jBcod4ffJGDAoGms+CcJXJgWE0qrRVyfPWZ4TgqPh5o0jx+mDe5vEURyltUooy/irxTdF9JnWN1RB5I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=IhdDAemH; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783399217; c=relaxed/simple;
+	bh=cJ+dPfoG1oPDfikr6/e9W5zjq7YzhVJ2o0c7d/dFJI8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CoULtHMJO2n7wNPg+/x54SggG1peBWmy4toKDAU387pTag2EGaCP1SecnkFo79kizSBPXfYrCR0Nbhjjz1SoyTqGCn352I8t8S1XttAfmtlGLCEGvxKLX9cHnUm2aH60TOHf4UTNYAQpBIjmkOAhhWE6Nb/5uNCpqxTLIyIdOVs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Nyr50nwc; arc=none smtp.client-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="IhdDAemH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20DBE1F000E9;
-	Mon,  6 Jul 2026 14:58:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1783349888;
-	bh=KiAVLQWT2UUwF3AcZCxip0AlmndKjljr59DReSlI9RM=;
-	h=From:To:Cc:Subject:Date;
-	b=IhdDAemH93YqazHKFW2rkcOdmwDUNc5Sb3VBmi6GBCiLdo64W+eMzD3KP1edwAVmZ
-	 lVWJgZeETbJliIt0JGltPV3b8NASSLJKubtizBMMDMIwN3Q4/Jt+qO0dJnzhnlJFAv
-	 b9IwIyAMzBHab4MLQyjpGfmF7KOxthvqdlCqr9b0=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-fpga@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	Griffin Kroah-Hartman <griffin@kroah.com>,
-	stable <stable@kernel.org>,
-	Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>,
-	Moritz Fischer <mdf@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH] fpga: dfl: fme: add error handling
-Date: Mon,  6 Jul 2026 16:58:21 +0200
-Message-ID: <2026070620-unwired-clay-f6cc@gregkh>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Nyr50nwc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1783399215; x=1814935215;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=cJ+dPfoG1oPDfikr6/e9W5zjq7YzhVJ2o0c7d/dFJI8=;
+  b=Nyr50nwcm5IQu4Q60C1wutAjNqIo3YSMRRtaaxDHYo0RQ22KCk17p6Zf
+   KsNG0zPRNPv2CXG9aPWdfMmUGtOubDnVlVRU6/tb5YvQELoQ3ZX1WINxY
+   TSKds9/hT5lvbqkJNQgv1mBHFHCPVCaeNKaNtdGGcb5wyAcVAeOAx9Xpl
+   NqGBdSiBsG6jKxX2fpMb2sDGnIEGs0s34dmCGtLI8Cl4QSdWtgUkZcC3b
+   BMWJc6Yvm7+YFAt0gyF1HEXFK5n60076fvwP4fSvjmR0cH9xom//mOc3W
+   EQU/cH7rXTMxquiPfycjtEF3LZ2Lks5Qv6DLUDyNuL9FczyADaC13tQEc
+   A==;
+X-CSE-ConnectionGUID: 62Q9xKCDR5y/ejrtZb3UvQ==
+X-CSE-MsgGUID: GOZBBEWkT8WZtTHYyuij+A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11839"; a="84063805"
+X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; 
+   d="scan'208";a="84063805"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Jul 2026 21:40:14 -0700
+X-CSE-ConnectionGUID: YHlnTeiUSQa+SRGDubDBgw==
+X-CSE-MsgGUID: HQCFECdqQieAx5fcnw1yeg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; 
+   d="scan'208";a="255821450"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by fmviesa004.fm.intel.com with ESMTP; 06 Jul 2026 21:40:12 -0700
+Date: Tue, 7 Jul 2026 12:40:11 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: tze.yee.ng@altera.com
+Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>, Richard Gong <richard.gong@intel.com>,
+	Alan Tull <atull@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4] fpga: stratix10-soc: Fix SVC mailbox handling during
+ reconfiguration
+Message-ID: <akyDKzyRjI87IO/O@yilunxu-OptiPlex-7050>
+References: <8768ce3260489c9febdfce08e27d03f5f5ed9c33.1782801986.git.tze.yee.ng@altera.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=911; i=gregkh@linuxfoundation.org; h=from:subject:message-id; bh=xs7UNpMsWZV+KayVMtZHtK01S8ZX/g7UYwRoN5xkV9E=; b=owGbwMvMwCRo6H6F97bub03G02pJDFneh3q+cjxQb3zPdKF2xtutdvwthUXaE0/s7hWODRLYu m3h/NsCHbEsDIJMDLJiiixftvEc3V9xSNHL0PY0zBxWJpAhDFycAjCRbwcY5mfFTzp3pNpqc/Ol V3wtd2sWm8/I6mCYZ6LbmfGrJoNTXsqx/aXLZYZSbRkDAA==
-X-Developer-Key: i=gregkh@linuxfoundation.org; a=openpgp; fpr=F4B60CC5BF78C2214A313DCB3147D40DDB2DFB29
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8768ce3260489c9febdfce08e27d03f5f5ed9c33.1782801986.git.tze.yee.ng@altera.com>
 
-From: Griffin Kroah-Hartman <griffin@kroah.com>
+On Mon, Jun 29, 2026 at 11:57:19PM -0700, tze.yee.ng@altera.com wrote:
+> From: Tien Sung Ang <tien.sung.ang@altera.com>
+> 
+> Fix incorrect stratix10_svc_done() usage during FPGA reconfiguration.
+> 
+> Do not call stratix10_svc_done() at the end of write_init() on success, so
+> the SVC session remains active through write() and write_complete(). Call
+> stratix10_svc_done() on failure in write_init() and write() so the shared
+> SVC mailbox is released when reconfiguration aborts, allowing coexistence
+> with other SVC clients such as soc64-hwmon.
+> 
+> Fixes: e7eef1d7633a ("fpga: add intel stratix10 soc fpga manager driver")
+> Cc: stable@vger.kernel.org # 5.1+
+> Signed-off-by: Tien Sung Ang <tien.sung.ang@altera.com>
+> Signed-off-by: Tze Yee Ng <tze.yee.ng@altera.com>
 
-Add error handling to devm_kasprint in fme_perf_pmu_register().
+Reviewed-by: Xu Yilun <yilun.xu@intel.com>
 
-Assisted-by: gkh_clanker_2000
-Cc: stable <stable@kernel.org>
-Cc: Xu Yilun <yilun.xu@intel.com>
-Cc: Tom Rix <trix@redhat.com>
-Cc: Moritz Fischer <mdf@kernel.org>
-Signed-off-by: Griffin Kroah-Hartman <griffin@kroah.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/fpga/dfl-fme-perf.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/fpga/dfl-fme-perf.c b/drivers/fpga/dfl-fme-perf.c
-index 7422d2bc6f37..db56d52411ef 100644
---- a/drivers/fpga/dfl-fme-perf.c
-+++ b/drivers/fpga/dfl-fme-perf.c
-@@ -925,6 +925,8 @@ static int fme_perf_pmu_register(struct platform_device *pdev,
- 				PERF_PMU_CAP_NO_EXCLUDE;
- 
- 	name = devm_kasprintf(priv->dev, GFP_KERNEL, "dfl_fme%d", pdev->id);
-+	if (!name)
-+		return -ENOMEM;
- 
- 	ret = perf_pmu_register(pmu, name, -1);
- 	if (ret)
--- 
-2.55.0
-
+Applied to for-next.
