@@ -1,43 +1,45 @@
 Received: from mx0a-0064b401.pphosted.com (mx0a-0064b401.pphosted.com [205.220.166.238])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D21F73C09F8;
-	Wed, 15 Jul 2026 07:39:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 333FD3B840E;
+	Wed, 15 Jul 2026 07:39:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.166.238
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784101183; cv=fail; b=ZRGBSpHHoiOC5mH8IT2+UzjzCw3RPFXEeuWtd4kNgI4au/5sXofmo30u7X8CetJeaPoOo8E8F8v0ugtfwmA8ZnyWVvwpBTHOxtcWaBFIfyDjsSFv7gpeKG3WTg94quSP3ZeSXKkWqAOtmi3Ko36zt06WAOykwzJKSpSNp6RAiTw=
+	t=1784101191; cv=fail; b=MJndT6ywjoCyTBqoc4hrOBkEesY6cln8HX/c98VpLYQicXcRs0NNg+JN0diPc/Ro0tBvLjY0OtIZRd2tkM3aWAU7XfdWRaV/UBSUKNcB6L3e6iO6/xjwwykFwHmOpmO7iAh7BU2Woqt9GQLcdsUPr7wbWq2hN10gOYmgVgEgG6o=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784101183; c=relaxed/simple;
-	bh=1pKmctQ5C3MmskPKz+jH6DZd5OsGJQLuPFi97IbjFXs=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=hbLPRiCrNDTrzc4tauxAc3BahZr9GWbcSX0sY+LzL/sZ1N9hIeEskSqAp656TBZGtqNZsq6Xh4AofB2gQbgnwrUZfGuOCwvhhBEwPFdlsvvL5OQbksG++IpMw2u8NH7UJ6FuANbbX5WsTt3i2872TKk8WrI2w+pdCgNSUoIlyUE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com; spf=pass smtp.mailfrom=windriver.com; dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b=YpPhLacR; arc=fail smtp.client-ip=205.220.166.238
+	s=arc-20240116; t=1784101191; c=relaxed/simple;
+	bh=tF3m6emNGDIzsUmH95a4TmMeV2TQw3Vd7w4/TzLL9oo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=GV7h6eHYMLFa8nLb9eSof8Lcd+4vitJ3cdzG4oALfJUCafNiK2mhtPBG4o1ysshmzvGufRxk8/9WQsMOIrhJrbSKHI2tZsuY7CIwp0bnDP7Z1prWQc92IsmgGYxuZlXl8vDGlfc26W2iyW/85H6RdKgw8iD+SxJfH7tufVMgxlU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com; spf=pass smtp.mailfrom=windriver.com; dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b=jf7touuY; arc=fail smtp.client-ip=205.220.166.238
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=windriver.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b="YpPhLacR"
+	dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b="jf7touuY"
 Received: from pps.filterd (m0250809.ppops.net [127.0.0.1])
-	by mx0a-0064b401.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66F75leA3833204;
-	Wed, 15 Jul 2026 00:39:14 -0700
+	by mx0a-0064b401.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66F5rTc73705935;
+	Wed, 15 Jul 2026 00:39:16 -0700
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=windriver.com;
 	 h=cc:content-transfer-encoding:content-type:date:from
-	:message-id:mime-version:subject:to; s=PPS06212021; bh=s+6Vrfchc
-	dgFIaCAOgLp6mDePlEkjy+0/qH9ISdjTaU=; b=YpPhLacRWnOGyEUZm1QbSeNRP
-	XT9aAwjO2vuPeaDCaS47TD3V+D/lsFVK3S591vQ369P2dOQBIzCDHykUOytm0zmW
-	hjPx6JCaxsZzoy0cTTEF+HQyCB/6pK8M6gjxIJw4nmg49DvtJdqf5q5b+ioF5472
-	n4fFH/nO18cWGGPvdaQsKjXb006Ngrilcl9RF9WIRiT4GWTLAjvBJwQI65WFbxjE
-	RyPtqpY+fCN7sGhCOljsagU+ZaVjOXxetaCCFpUSSxh7z8PJMl/ZGWS+VcW7sseL
-	gagLY0a1MlA8j+yp9JrgEYm+glu9+qwlKiPTuQIND1UuC7mhLPh56t443cdvw==
-Received: from bn1pr04cu002.outbound.protection.outlook.com (mail-eastus2azon11010052.outbound.protection.outlook.com [52.101.56.52])
-	by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 4fbnbdnd1y-1
+	:in-reply-to:message-id:mime-version:references:subject:to; s=
+	PPS06212021; bh=ow6zgQaAn2Qupwh6gHfMi7fcGlR+yEupHHTolAbbju0=; b=
+	jf7touuYkA8qwqprDq/5rnzmJde9Kuak7hEvpxtXzVW/5Ka4SzmPP4CnjoYQz2g1
+	YxiherODnssS0FGtqqUzyhKvN8Q7tGsDMek58hgR3CUygp52obTXK6kaM0UnnIEf
+	mKNkoOOTF/1LETGGJAxQQyMrjSA8ezs+Q/+v2sj23vUGiV7fCDI0k03nPoQ4NQam
+	ZHVancLLGJCHpBnpGNtjQdPsAYkPX+1l++SSYBHBLU2/jYvyJ0bKjDcdBYroYkil
+	ndmshIZLVWFTubPMzjLf4ApH2XYWnTu9U5SGT38JIyqkRkpnlldP3Co1fz6p4Bj+
+	F6D+by3Jd3/l8ZNTnWt8Hg==
+Received: from bn1pr04cu002.outbound.protection.outlook.com (mail-eastus2azon11010005.outbound.protection.outlook.com [52.101.56.5])
+	by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 4fbnbdnd22-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 15 Jul 2026 00:39:14 -0700 (PDT)
+	Wed, 15 Jul 2026 00:39:16 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=nTjIDDYb54AP/DihMrwgRB49cPm2fpEfuRG2Pgo85W2iVFbij1oiaprpLMONtEc06raTK551D3MGm6gV6bDrG3Rxz6Sr+644+SEmkhzxMRFVLkAI3yR6jD6tXX2Ev39kcUhbBDzWgcjU7ErBsQ8Il7EjC2FZaXTATEXdjs5e5SqSYSTN7sZKL/u0tvXilK3zzpzgPMC0vicLBtBx3f6TxsT5UCCV+u4KUPI3fdQ4E3rOTdYkp2a6M8RDsE5YeeDjHjl/8Ux5iRe7E3W3d0cDcRH+mo9zNSbO7Wsi8LFicJPdTu5URoEwgJ2AuSVgc2Ca2xeXq2CJnAlynz+tvxMNsA==
+ b=HWrBg8rVLdxiYEujFHXcjUrj8ere1mRXHj2cIkJ2681ZRcB92HGfnIdVZ1fNV83CPdU1bjq+g6BawCMNeBGegcjYjdCfg90AdhKE4YnSz1+eUie2slbCv72IXMScmEXy3z9HvaVE3SKWu7OU8hCY7IF5iYkAiMDmOKqNTvjsmbr3yUX0UCAVke22bqG2LB/YH1WIwhGr0meGOQSvr4QZP4vNwLChNTcP9v7MdMSdicWU8BUCS47vKbXU1F3IP6YtReA9jjkpbrHwvwdoCcCbNmosVDFxonkaGa2/D1PTwD/iekhNsfmIFL/ZbMdoOuzFEmSUPhUUfk6qvIYnx6doCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=s+6VrfchcdgFIaCAOgLp6mDePlEkjy+0/qH9ISdjTaU=;
- b=MXWliWQNFAn315/wEldf75qR5gv9tUPXiyYtiBbfh6LdhOXDh9BczLmR3YYxaE6TUYowfxxBBUnMnuBHa1s1DBirLpl4/53hTCvZuxL5ljteXNrRIwi3ZNifAX46owvE+EK0xrtnnXpRjc+Q4mzIOyosKOr4t3QB+hp63go+zHBWmCaAvgvhpBP6crPAqeuFGYSs0otmI8hh5dhaGex5ehpltkzhCvyZd60aLjko1B9dsCzoNey5koUAYVgA5h6JM44Yqjg0DDE68WgQDe/DcRAnjd0MMHzDUGDdfNuAa+cUdOJO5MFyQQo+8FYAkFhkYJs4NgQSfFykeuDFSe4dJQ==
+ bh=ow6zgQaAn2Qupwh6gHfMi7fcGlR+yEupHHTolAbbju0=;
+ b=OC3zjVFp0fdJBwbFk7rTnXB6/5eyu2Iv/6KVGDYTDGaHzv6epQNkjiT/1iKBonwedz9iBEW2P0JFT5mrhbgUH7qjKqzGZgIz/Bfs4PFfHAi6E64gZ+pgqNle3G/KxaX0OvaN43xyQwt15QpU7OWNj4yC753iUsaIfNkkwVrPUl2zBtl+7NY3i/fCXwImfHiLlZL5L45gTPV2flMmsPfGyviBjvQIwzjAdNHDZVUhoXQVFE3hM1cVuJRWKfwwjo9Rf1Rtms+zZyEPqKck7dTR5ceYnRfdEx1qqVYv4GJf/ykQXQ63Fo6nsjiPB7MqKv4kEhegeG8A32kuL0lP7Q+CJg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=windriver.com; dmarc=pass action=none
  header.from=windriver.com; dkim=pass header.d=windriver.com; arc=none
@@ -45,11 +47,11 @@ Received: from SJ2PR11MB7546.namprd11.prod.outlook.com (2603:10b6:a03:4cc::8)
  by MW4PR11MB6571.namprd11.prod.outlook.com (2603:10b6:303:1e2::20) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.20; Wed, 15 Jul
- 2026 07:39:10 +0000
+ 2026 07:39:14 +0000
 Received: from SJ2PR11MB7546.namprd11.prod.outlook.com
  ([fe80::ca9b:dcf:8881:bced]) by SJ2PR11MB7546.namprd11.prod.outlook.com
  ([fe80::ca9b:dcf:8881:bced%4]) with mapi id 15.21.0223.008; Wed, 15 Jul 2026
- 07:39:10 +0000
+ 07:39:13 +0000
 From: "Ionut Nechita (Wind River)" <ionut.nechita@windriver.com>
 To: Xu Yilun <yilun.xu@intel.com>
 Cc: Tom Rix <trix@redhat.com>, Moritz Fischer <mdf@kernel.org>,
@@ -57,11 +59,14 @@ Cc: Tom Rix <trix@redhat.com>, Moritz Fischer <mdf@kernel.org>,
         =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
         Ionut Nechita <ionut.nechita@windriver.com>,
         linux-fpga@vger.kernel.org, mfd@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v1 0/1] fpga: m10bmc-sec: add image_load sysfs for N3000/D5005
-Date: Wed, 15 Jul 2026 10:38:53 +0300
-Message-ID: <20260715073854.26117-1-ionut.nechita@windriver.com>
+        linux-kernel@vger.kernel.org, Russ Weight <russell.h.weight@intel.com>,
+        Tianfei Zhang <tianfei.zhang@intel.com>
+Subject: [PATCH v1 1/1] fpga: m10bmc-sec: add image_load sysfs for N3000 and D5005
+Date: Wed, 15 Jul 2026 10:38:54 +0300
+Message-ID: <20260715073854.26117-2-ionut.nechita@windriver.com>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260715073854.26117-1-ionut.nechita@windriver.com>
+References: <20260715073854.26117-1-ionut.nechita@windriver.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-ClientProxiedBy: VI1PR07CA0253.eurprd07.prod.outlook.com
@@ -75,96 +80,97 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: SJ2PR11MB7546:EE_|MW4PR11MB6571:EE_
-X-MS-Office365-Filtering-Correlation-Id: c2e35eff-6a9d-4c13-8453-08dee24428d8
+X-MS-Office365-Filtering-Correlation-Id: 849cb63c-f802-443b-10d6-08dee2442ac9
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|52116014|376014|1800799024|10070799003|23010399003|366016|18002099003|6133799003|56012099006|11063799006;
+	BCL:0;ARA:13230040|52116014|376014|1800799024|7416014|10070799003|23010399003|366016|22082099003|18002099003|6133799003|5023799004|56012099006|11063799006;
 X-Microsoft-Antispam-Message-Info:
-	K/OEsKw9LnOHfBaAS/TGKjlvd0ytWc5227QHcz7CCHRxCtG+5xQOhgxcaF/yRe3qOdMaxNwtnhFLSDCwiWwAAi0LJpQbbnenwep1ujQiVZnCDRueP3vbGpalqPPToifL9Inrfv+iFCfp4vL/kyrbhQKO9ko4LWIGoBQhy6f0soxavKKbU4FAQf1bC3EVTbT/ht3uAtHTiwMAbGsPRBvYyut6BZrs0GGPnl3dQYZAjm+93H3hV279QYk1s8HBIQq7WnWqRPNSCm99QET3mnepbqduyeesXPwkVDQrZCIVEGVSfhbwV9BqWbhGQkY70nr6e0/1qnenlzl8pgYDs1Fiw55dCS+A0oS520UqjgtI9979AXzErFyUxfezN7tKme4GSrL3rVjurK5JxxVzZRSvd+cuYm1dn5jvI6/C5QnWU32peqQvf/IVzq8WvXclRjUISXlEneZNA2/lAIpVSCTbP6jRNrBJy6GHk+26ZaXhwBWx7k59b9Dsu5TAOZoIdARKaPjz757pPUcbpyFE+ywPLGnd/fqZaysShTjQXmEYphR4VGpYk5+yJUBWLDWwHgMWymG1osYzf5k5gJhWWT3pvV8B8fJNJM8QAToozB8nrkT1ZLQe/M3f36RsV16elN95tqKdRPt2gPh4b/d8iAJlTvovH2kzJL9myySEdmiue0Q=
+	4xIkhSfR7k3lWQ6pfje808VLprLSvoLrx8nF3ZNDzats54UHmdgkDA192TSIntd7Y+hzPwx2fHIwn8jqyItO2PFYq6iXx4aEG/OmqLg9EgA5TOz6wPoHOzVrDeQlOufBPwFxUNLDJWnxZEGWL20y4+3UeBKERUsBkNVCwoutGTaF2kLYXwDKVco363kiR7tb+1BqZN5Vqz/YXeRI2+I/9Lo0ZQd3aiLMGa2FDkTONk3cNO30vzYeW7QMSW+iczNhN5Oybw31/0snDYj+f3FiR+fZfkK7tiyn8YXPvgG0SlumZI8HRCaVGROP8ipc6LjmbDSc70XdrANvI7ssAEXReXU/yt/EziFYiqWu92jpgX2SuYK3fkx79+nJysNVtSBOQfytaj/OqRYBwXMXFdUSH7JEV9G0IURCd6H9KoIeRN0+Ea5FAMESdy15HolGKJrvpDJe5klRdnwc+7Sa/HiETTpNyOqiXifNv3Pl67xugOlR7bIWcpjMu+Pxj62fBk9/VthI+VfYYsTCZrqUkPBGxn5lkhakJm0fqR5EQfm8DXc9baCF6aIMbUeKsTkM3/by3q5pg1XhNmCes7ohQFjzRSXs/WKTdBNU1KvfJZhNA70KWgBggow5VReaOAgQKVkRLfmIT70dqxJA6fIHPUkpDjylNh3nav2hr8pfxQIaITk=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ2PR11MB7546.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(376014)(1800799024)(10070799003)(23010399003)(366016)(18002099003)(6133799003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ2PR11MB7546.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(376014)(1800799024)(7416014)(10070799003)(23010399003)(366016)(22082099003)(18002099003)(6133799003)(5023799004)(56012099006)(11063799006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?ckxFcEhkcWcvaWM3dDBSMnlFNVdIRGtYODN5b1VjZG5iK2lUc2ZHVGtpZ2Uy?=
- =?utf-8?B?SkQ0a3UyMkRFaHBOY1lCSm9Jb1R1d0YxMGxtd1l4Qk9UY2RPUFBvWWppbzht?=
- =?utf-8?B?UWVYWk01VEtuQ1lzcm9rR2VUYUFKeW5IK1p2Z3B5ZkZIdzFBV2cxMC9ZRHlI?=
- =?utf-8?B?WXBNUjM0cEVLZ3YyWTlwVkpDZFFKS1I5azA3YVh3b0t2UzRsMHROV21lWkhS?=
- =?utf-8?B?M2N1UnFmNXZqZ1ptSzdjdEF3VXhQY1k0RGFyeVdubnY3YjZFcXlSZDZOaU4x?=
- =?utf-8?B?MTNReXNEbkpORFdLNTNWQ1BQcFZIYnVQb0dTVFZpRjlYVFVjNENkZUdOb01w?=
- =?utf-8?B?WkMyUmhaTVVUdVRoVTl5aEpXajFjN3pSRUIzR1V6S0NMT0x3QmNscDk5K0p6?=
- =?utf-8?B?RVRIZUhSMU5rbEhlNURDaVFSdTNMV1FpRDZJb291dUtTUE1uNFVYSGtXTlA1?=
- =?utf-8?B?eFpLMVhZaGhVUVhYQUtUWEIxcFlDZEhJTE1CWXBOVTVSb1VZMno4QVM1Z20v?=
- =?utf-8?B?VjlNTVZMNC9QY2k3YzkvbDU1V3BEWUZWOGZoWGQ1UHFHaCtUZEVHVzJTV1dZ?=
- =?utf-8?B?b1BZNERVVlRzTkI4VDhlVjJzQlJrSlE1N1MzNFhJbXF6MFJGa2lpR3ZIN3ZX?=
- =?utf-8?B?NkxKNjNjUGNqb3lUeDUyVG1ORzErK3NQcmFNWjlEZVVNT3IvM21uUXZiY0pK?=
- =?utf-8?B?WlNneDBKbXVFR2JoWWlkaXFZQ0JEaVdlSFJHVC9JcVYwZGFnK01zZ0lIcDY5?=
- =?utf-8?B?RDRxRGJjbUxIV3gvZ0FrUzliaG0vU0RaamVBdklJdFc4a3d2REx4aGNPWHNS?=
- =?utf-8?B?YTRHOG9QYWpJWnlQdkwwL0c3RzlzVkhpa1lpMHVCZk1aVTRaaGdDa1Fib21u?=
- =?utf-8?B?ZklKM0pQOTRTdWtuZkk1WVQvYi9iUGlZMWw2RzRmTUgybGlWcHVrazlkWStT?=
- =?utf-8?B?VHk2TGJUcUR3eXdWTklTMVEvT3Z5ZjFBcHAxZFRuUmNHVnJOYmExcVRGRlcx?=
- =?utf-8?B?L1VMQ01WSGtpa3NLR1R1OUdRWnhkMHZKcUIwTTBjY0piVTVpVk50N3RvcSsy?=
- =?utf-8?B?QVZzV3RQNEFxclJwNWhsb1laWmpsZFBUendEVTdKY0dqYWtpK0ljQ1dtZXZC?=
- =?utf-8?B?YmxPTXY3T05IZzIvYlZXcW40R24vcnZTaHorejJpc1U3aXQvRk9VdzJ0ZjdU?=
- =?utf-8?B?TWJQd0l5UW1xdytScE50UVZhM1ZpeWowQXhPSjA1clBrczlmOW9HVGVKM0ZJ?=
- =?utf-8?B?NUZxR2xNaXg2d3NSaWtSV0c5MEZGc2lsUWF6dEtqR1lkTjR5NmFGd3Rkckpk?=
- =?utf-8?B?dllZUVBlYlA3cTNpUklINDV4b3Y4eEsxblZZSmlvM0pqbm5ZcDZDK3RCdEZC?=
- =?utf-8?B?RTFnWU4ySG1KMndRU3lib3ZaTlFqWDAzUkFIbTRhOGJOcHZ5SVFYOWhPQ2V2?=
- =?utf-8?B?Nk5sQjlzVWtSUnhTZFRRWXFQTEhlOElZZWRQSHRNNkpTK1cxa2Q0M1N3blBm?=
- =?utf-8?B?Zm9UQTRHQ0hIVFZyWDBSaDhobEpXU3dDbmFEQWpoOERyb0RXOEVYMUtPMDdy?=
- =?utf-8?B?YWU2VUltcnRYbm1tOGkrRU5xS3BtUEJONkFmUms1aC9nQ1VmbkRhVHJqTndx?=
- =?utf-8?B?U29kRjVnMXhnRTF0a1ZBRS9JRVJ5UHNGR1p3azNLTFFiQjBMdE9CR1M5UlhF?=
- =?utf-8?B?Q1RNZnZXMkxWd0NrM3N6OUg0bWhYTEhWZ0NWS0FmMHNqdmlhVVlHQzV0YUp4?=
- =?utf-8?B?ZkE3WVdWQzUyTElPQ0EwTEcxMi9LYi83ZElaMVRpNDZsLzV3ZTVrTGw5c01V?=
- =?utf-8?B?ejFDcW9yK3NvUHBiZTFCcmRaYUZwSzdGZTIzbDFrRXN2RklFSllJbXE1SWhz?=
- =?utf-8?B?K0VpS1hPRDltT0FLSnVOT3JaRE9WOTVTelVWWWc3SHZuejZKQ3dzVlZzM2E1?=
- =?utf-8?B?SjRISm43RXdGV0Z0Y1BoWklBRm1mRUNJN0QxTWRycXJOcHpJTXNqTzhmM1U4?=
- =?utf-8?B?YlR1WGRxWmJJeUd2N0Y5U1NxU0c4ekFCM29DYW9rNk1KVTRjN3dqakxVTnBq?=
- =?utf-8?B?cW03eU1JaTVxUk1HRjk3U0ZUM2FXTUllWWFxbXdjRUl6YXJiTXVLTWlHL01o?=
- =?utf-8?B?bTZJeEdRSVpHdVo0eGl2U0tpTHFOekp6NUN2L0lPZVl3cmJFaGU4U3V2WEZn?=
- =?utf-8?B?Q0Q1b1R2dFFad2dIVlVENWY1alVQZXBKTzUvT08rak80M2tkNFl5ZVdBVWN4?=
- =?utf-8?B?c3NZa2hrcmQ4K3E3TmhFa1pQZllvRnV6aGIwdzNqeDFkcTRYeXFIbUNMQmQz?=
- =?utf-8?B?S3Bpd3RSV25ZNW9zczVsc3lXeDRJUDVXdzhNaTc2blpmM3NDbSt6cnpsUHRY?=
- =?utf-8?Q?ZlmzzOLWgZQjHmk6dS7hz4ogFhhEzpOQNq8Bh2uxZINZG?=
-X-MS-Exchange-AntiSpam-MessageData-1: Hcye833Dwd/mgE+NkfwLVG2X2yX9ig49lH0=
+	=?utf-8?B?cVJEano3UEZXWjFKZENrd3hqRGsvVHVmRVlwSThjSFJDc3cyZ3ZwUXJmWFZm?=
+ =?utf-8?B?QlBxekJXSCtMR2ZpbHo3S28xOVdGdkQybTFNV2dzNGgxc1VxVFZJTHpkc2Jo?=
+ =?utf-8?B?S2FNdy9HNVNML1kwUEZncDNJaCtrNy85SmVhaDBhclgydGpiTUxkU0ozREY3?=
+ =?utf-8?B?Sy9acXA4T0xnd05pZ2ZIR2lvMm5qMHkvQUQ5b0ZPUDNNL2pjVXkvOUlNNUtm?=
+ =?utf-8?B?ajdrQ0EyOXA0d1NaWDNrSGUxWVJXRkxjV0YzR3JwQnAveGtTRVJCM0xmVjRI?=
+ =?utf-8?B?M1d2cDlodktqb2p6VW94SDdIbzlpOGJpZUZPMlZVejEzdml2NFNlUGFEUVR6?=
+ =?utf-8?B?VHpUdmFheUVibW02WTJJQkhYYS9XR2FjYWU1N1ExckpobENRRC96KzlXZCtw?=
+ =?utf-8?B?b1RoamdwbUpWYnlMaGIvenZmV25pRkVaN1lkZ214MkRWb1psai9NeVdRL0xC?=
+ =?utf-8?B?WFNwSnNyYkJGS2trVE5DUGI5TDN4MGZ4aW42VHl3em12ODBTUWkvU2Z4TVJz?=
+ =?utf-8?B?Q0FFZ2lDSWZGMHdBRXBBeGt4Y3U5b3dJMVptRE0zYjRiSDcwOVkvQTVha1lu?=
+ =?utf-8?B?K1JUdUMycDBxQzByeTAwc0FROS9RNzdFSzFVdTVwL0hwaDlaNkExVm93VElH?=
+ =?utf-8?B?ZXBPY0FSVVMyUDN5WSs0UVBtQ2lqU3lHRkRlcXA0QmduMGtWZEFvMjVySFdK?=
+ =?utf-8?B?cDRvbXZkbjZ4UUpmd2VlQ0RpcmV4UzBvaFNFY2lIYW9tM1VSQWk2UWpVL1FG?=
+ =?utf-8?B?bmdvVUtqK0diQ2kvd2I4NEVGeWFKSDZDb2tST3pQcGlUbWlLMGJ4WlZyY2tu?=
+ =?utf-8?B?dHhsZEtmNGxpbUxLZ2tTME5MQnpOZko1VlVTU0l1aTVUeUFJbVVUL2pIRndV?=
+ =?utf-8?B?U2MzV3kyZFNBQXhPN3Rkb05jaTMydGdVRkhyRVlSTVRWVnBSKzJuUTlaKzAx?=
+ =?utf-8?B?ell2c0xZYjhQL1JiSFJHcHFhM3FFL3A4elRSWXE3UzBBVjh2QkwrdDliVS8x?=
+ =?utf-8?B?bS9Pekc4c1NJb2VmOUVHUk9SRzBKaVpJdklmeitwUjlPZHFxV0V0TTlydnBS?=
+ =?utf-8?B?ZytsVTVodGhBMWhlNlhPcTRsVWlQLzMyUFhEanV5U0RFSjNWTnVTSVV5b3Q2?=
+ =?utf-8?B?RDBWSTFSQ0hIU0RKZ09kWVorNFZXRWp4MW0xWG5GZ1pWVzBwOEZ1dC9VSHhm?=
+ =?utf-8?B?OWRpYzRvVU1sN1NtQUJ0QjZHdS9xNVdBT2YxRmhvZVo0OVBrYzVGandhdDFa?=
+ =?utf-8?B?a3p4M3FFVS8rYzdHOTdxUHhqQ29IYnN5MkVrZTRTb2dmVnMvd0lGdi85SDR1?=
+ =?utf-8?B?cnVwOWpXdDZFc3UrTzVpRmk3UmRHV004a0ZTNG51SEU1RzlPd0hHOG9PcTVY?=
+ =?utf-8?B?WE9hYm5NeUIvaTFnTnpFVkFyWDBud2hrMDQyUEpJT1ROTkl0VlJSRU9iaU9C?=
+ =?utf-8?B?b3ZtTmZpVUVsalM5bmV6RGxtdGtPSU5lVk5VYjR4TzVPaGNWQzFTYXEwZFhJ?=
+ =?utf-8?B?LzlQUVl5NnRkSjdzbnA2U0F4b0xTRUdleXc2K2F1VHg4clpMaUVDR21aN0kv?=
+ =?utf-8?B?dWZleUdqL1JGVDA1YmI4RDJWSGg2azg4WWJteHowWEthSG9hZTJLYk5na2Vz?=
+ =?utf-8?B?UGlDSHB4WjBDYTFEMXNrWjFPOUtkNkM2cUwvOVcvaGtKUGIrcHVpTEF6VHBC?=
+ =?utf-8?B?SC9HeXFBWEttYVh1bVJZRS93T0ZxTVdUNUxpYm5vUWY2MXE4MmdxenJPZzBq?=
+ =?utf-8?B?TTVZRHVjaGNkaHhMZVBKT1QwcE15Qm5sSmVXNWFCWEU5ZndZQW11YWs4RzZv?=
+ =?utf-8?B?TnVkbUpNUVdLVXJkZ2dNZ01xQUIzbDlFVUZRUUtxRDV4RFgrVXh4Yk1VWU45?=
+ =?utf-8?B?RXZsSHBjQzB6MHo4SFdJbExWeC9SL2k4RVpTSDQ0cUlwZkF5S0dtc2dYakNj?=
+ =?utf-8?B?dXlxVHZmaGc1QkNHckw2NjZzODlRbENXeGFHUFV1WTB6TTBJaWd4c1BIUjU5?=
+ =?utf-8?B?V1JVL2g2ZjFCb25vY0crRkhGZ25oZzUvMzJjcFRPaVNHTktocjN0dzVZbnVV?=
+ =?utf-8?B?bGlESnZXNFNWQXBmZEVCU2FtOTk5U3JUUGptL2ZkamxQQkNKRllTcHcwYVpm?=
+ =?utf-8?B?NjBaU0Erb2R2clVVdFBoSm4yVmZNN0t4ZEtrUmk4Y1BKNG5uRmxqV2hwU1gx?=
+ =?utf-8?B?ZXFmUTV3VUpwYmhzcE0xV1dzSDhnOFJsRHNWWmlydWs1b0VSY1FoWDN6TTlo?=
+ =?utf-8?B?THo5R0RUUDR4K1BndGFlTW5SaFV3VXdMRDN3TVNQSW5xZ2FRK2RrVlh2dVJx?=
+ =?utf-8?B?Yk9rTklzMDlHQXRqNzdMZndUVElCZDErWXdkUFZ3blFBaGQ1ZnliSnBabFNU?=
+ =?utf-8?Q?XxyU5amiOuGo+lfbO2Hxbe/LYsgrSCIg+m/nlqa/CJAGI?=
+X-MS-Exchange-AntiSpam-MessageData-1: tYVLot+co629om90UvSV4t20JAeTAftPAmo=
 X-Exchange-RoutingPolicyChecked:
-	fr3PuSLB3OzwuXBlQia+CQWji2WVMveoPS0t5nG6ocwssN1ffFkvnUjQKxYUWahRv3G3Wb2yz3cn3USrWL5QKWqoNN8fb1wntH0144csRzBx8iXIdi6CmOPoc/czA+TyxJ/VF0tu8wVzz8G30Mx05g9fRNzKaEvdpG5+OzpeCSjRG/WQ1Rz3PCLRrP1J4nDMvkZoHvJ40zRPrEK+xeSCZfX4HVg74TflGqOYM3L3tY9kjZQa9kGz2dsg9ieLynV9+/nwRyOCF60dBaB1vVhsiUlAFJDhvrw7YR7nFtv/ZjK9ANXV03A8EObGum29D1Vzwo85d0eB7tgmp16m5vQN8Q==
+	nP4iqrZhYb7cK9lUlsnp7x+hyDdlLAj8pfSK+cQjlYaw/ddJeZ+i22dTtUIMYuAnNbkM9pn3r6uQhPTsW4sDAyVLg8B7zasvWaMANTzGTl7ToyNEuzg7EZJEcWcMPnzEbVAH9MhIWSoh5ogVgPwOptK5kkbzYOuZ9bpCs5MK7jZ80aCXw8wKEr49TwMwXLfaPRCjVqaabEGdaWCpDHmPro/6NEHVVjbh6oyWCfM6qtO/0+WIQ/iJ4ybmkuRAVxiKRGPJdlYgio8GksBmlADQHDddxo0ZI8aYyuMKY8yGzqfvqZ01LVTj3dakl9YLFp80er0NvVfi7FfZU6Gj/WCotw==
 X-OriginatorOrg: windriver.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c2e35eff-6a9d-4c13-8453-08dee24428d8
+X-MS-Exchange-CrossTenant-Network-Message-Id: 849cb63c-f802-443b-10d6-08dee2442ac9
 X-MS-Exchange-CrossTenant-AuthSource: SJ2PR11MB7546.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jul 2026 07:39:10.6431
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jul 2026 07:39:13.8306
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 8ddb2873-a1ad-4a18-ae4e-4644631433be
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 9iWo+36n4/8dSvI+2dkuBQCF7rRu1vKyYLMlc1dUacLAaWN+mjEEMwPHGrxnooF5kxByj7Me1Z2SQeD7U5lneWr/3G1QLSaA/9bH7psi2xQ=
+X-MS-Exchange-CrossTenant-UserPrincipalName: 7hc/gx2DMXDRupNNavjstZTitXaA8LnfAenu4w8rKWUUUZT/A6eLCFhde2nATQB3Acs4FSkBpCCvr1obzZqcdmieeH5rn75EZLpJz0957Lg=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6571
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE1MDA3MiBTYWx0ZWRfX9P9KoJLlB2S5
- hL9x2bn/0taiWcFyqD0W0+/cHz2CZnQFcLAohMbAL/FYsyPyuElgDFrFs410NxxppzR3pgwNHTb
- mFWLsPS1PBbQ5YIE8cyHpcirnASc2y62jMjniv1vRKUoC8npbhZnuLGV8e23oG+XMWQ5Wy3kwFM
- setAs6aB7AZMN1pAhL+jaaPXVpwwXtd/+eqcrdyvSv0xRaisTzSd0qgYo/47m8j6El80FUXNs5/
- nfCp/L3b0wTqlQPa4w8YWw8eveaD/0kWSS8pOOYNSZwauu5YeRfWx9R7cKQYBtuTveQ7pZD/dWH
- tIHvFVEB+i2D6xzaDXnW8N2bI1mWYqdplzG7kO52TjtLgwZe5G1b8WdXr5DO7JqCT9DmNBfqx8P
- nArgLYEw22MSi2loHFgjEOTdZbpbTcDdEDjtTlN5TF6VqNu9mkRhCFsa4Eu0CgOg54qEUYH2Wj1
- IkIMYfd5jDzAQpvHExQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE1MDA3MiBTYWx0ZWRfX89WgckEk9bw5
- xvGZicziMd5ghZ/UIcwVeVdm9V0krju8bytAkFdrULHykBhpBq27RhwpEE7TmK1MK/YnSkCwVK4
- jBOdj7apeGfw0+o5t5D7uJuseZrP2hs0VnauTvWtclfW1w2oJXjR
-X-Authority-Analysis: v=2.4 cv=VI/tWdPX c=1 sm=1 tr=0 ts=6a573922 cx=c_pps
- a=eLvx4Fye0krSvKD/jKlmuw==:117 a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE1MDA3MiBTYWx0ZWRfXzxng0dS4FLbF
+ YJIrJp+6F8EZBdAV194fNcvMg2MM34U4luCEln2hKmT4bSCMI3Vbm5qxK6VPvF3rQzigA83etD3
+ EAFkt04Eg1a7X5A8LF2XbI5U0vlQsMIy8cyYRw79YpiAEjzai5C9g918oyyBuVXIGei1myzkhOt
+ yB4eZCsup3R7nRpBjBEivuHJoRiJFl7NYHK262z10UjH4CyGHmXEu/Z8xi7JhrQweyDPFoSc61u
+ 4pC/SPHq0e7Cy5PPjKHvHXul69GMBemNfHiNMjMNUTxS6S16w9U1/vIfTP1okdBKUNHLE9Oxun7
+ rMImMCXOIAh65cf2OlVZWAUUdwHUBlld65HR+GSneahCCFZ2poD7/iVQXlE92Yq/2IHUp9EENlH
+ G3KnCWtNHq9VPmyRhNiz/NCsb0IL+leEP8btYh9LWo7dIU43TKNHt6IBI9y2stGOOysk90V6KC4
+ VMco+MA26+B8qpvDR5g==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE1MDA3MiBTYWx0ZWRfXyWsu7vOrM50g
+ sFSBofWtE869uhbSH6cpqEVey53TDXRIjUeST+3ThGVmxQLGfuy7V7t4iGK4AGH2mEnjAmR/wcn
+ GFz2oC/Ir017L66WXmeWopSg63nVUZPMEsCnsO5TXOoAu+SUpFr1
+X-Authority-Analysis: v=2.4 cv=VI/tWdPX c=1 sm=1 tr=0 ts=6a573924 cx=c_pps
+ a=sh1HRyDNv5RGx04/W1QObA==:117 a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19
  a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19 a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19
  a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
  a=VkNPw1HP01LnGYTKEx00:22 a=bi6dqmuHe4P4UrxVR6um:22 a=iKiJcTA2PjBS6x5JeXcw:22
- a=t7CeM3EgAAAA:8 a=zm2AowqA1dUcHJJgSJgA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=FdTzh2GWekK77mhwV6Dw:22
-X-Proofpoint-ORIG-GUID: Flket_aXHfU3Yi8QgNoHKvPmFAvNv-dh
-X-Proofpoint-GUID: Flket_aXHfU3Yi8QgNoHKvPmFAvNv-dh
+ a=t7CeM3EgAAAA:8 a=QyXUC8HyAAAA:8 a=yBYpec10AAAA:8 a=SxVVFosdX4Lv3ogFJXMA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=FdTzh2GWekK77mhwV6Dw:22
+ a=zbxmTX4fiVD2UiCe4Dha:22
+X-Proofpoint-ORIG-GUID: 2NShqL7VzWnQk98fCPeZ_FuUwX0bO-Mk
+X-Proofpoint-GUID: 2NShqL7VzWnQk98fCPeZ_FuUwX0bO-Mk
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-15_02,2026-07-14_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 clxscore=1011 lowpriorityscore=0
+ priorityscore=1501 impostorscore=0 clxscore=1015 lowpriorityscore=0
  spamscore=0 suspectscore=0 malwarescore=0 bulkscore=0 phishscore=0
  adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
@@ -172,44 +178,450 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
 
 From: Ionut Nechita <ionut.nechita@windriver.com>
 
-The mainline Intel MAX10 BMC secure-update driver can stage and flash a
-new image through the firmware-upload ABI, but it has no way to trigger a
-reload of an image that is already resident in FLASH or EEPROM. OPAE
-userspace needs that trigger to switch between the BMC factory/user
-images and to reload the PKVL retimer firmware without running a full
-firmware-upload cycle.
+The Intel MAX10 BMC secure-update driver in mainline exposes only the
+firmware-upload ABI (/sys/class/firmware/secure-updateN) for staging and
+flashing a new image. It has no way to trigger a reload of an image that
+is already present in FLASH or EEPROM, which OPAE userspace relies on to
+switch between the BMC factory/user images or to reload the PKVL retimer
+firmware without a full firmware-upload cycle.
 
-This series adds the control/available_images and control/image_load
-sysfs attributes for the N3000 and D5005 cards, restoring image-reload
-parity with linux-dfl for those two boards:
+Add the control/available_images and control/image_load sysfs attributes
+for the N3000 and D5005 cards. available_images returns the space
+separated list of image key words accepted by the device, and writing
+one of those key words to image_load triggers the corresponding reload:
 
-  - N3000: bmc_factory, bmc_user, retimer_fw
-  - D5005: bmc_factory, bmc_user (config-select polarity inverted vs
-    N3000, hence a separate ops/handler table)
+ - bmc_factory / bmc_user reload a BMC image by writing DRBL_CONFIG_SEL
+   and DRBL_REBOOT_REQ to the doorbell register. The config-select
+   polarity is inverted between N3000 and D5005, so the two cards use
+   separate handler tables and a separate m10sec_d5005_ops.
 
-The control group is only visible when the device ops provide an
-image_load table, so N6000 (.image_load = NULL) is unaffected. The N6000
-PMCI and SDM image-load handlers are deliberately not included here; they
-depend on the wider PMCI stack that has not been upstreamed yet.
+ - retimer_fw (N3000 only) reloads the PKVL retimer EEPROM by asserting
+   DRBL_PKVL_EEPROM_LOAD_SEC, waiting for RSU_PROG_PKVL_PROM_DONE (or a
+   RSU_STAT_PKVL_REJECT for a duplicate image), then polling
+   M10BMC_PKVL_POLL_CTRL for preload completion.
 
-The code is derived from the linux-dfl commits 604ad4f48cee and
-e1b885714f68 by Russ Weight, Tianfei Zhang, Xu Yilun and Ilpo Järvinen,
-adapted to the current mainline driver structure. New sysfs attributes
-are documented under Documentation/ABI/testing/.
+The control group is hidden via its is_visible() callback whenever the
+device ops do not provide an image_load table, so N6000 (which keeps
+.image_load = NULL) is unaffected.
 
-No functional change for N6000/PMCI/SDM devices. checkpatch --strict is
-clean and the driver builds as a module on x86_64.
+The M10BMC_PKVL_POLL_CTRL register and its bit definitions are added to
+intel-m10-bmc.h for the retimer path.
 
-Ionut Nechita (1):
-  fpga: m10bmc-sec: add image_load sysfs for N3000 and D5005
+This is a subset of the functionality carried in linux-dfl, ported to
+the mainline driver structure. It is derived from the linux-dfl
+commit 604ad4f48cee ("fpga: m10bmc-sec: add sysfs to load bmc images")
+and commit e1b885714f68 ("fpga: m10bmc-sec: m10bmc_sec_retimer_load
+callback") by Russ Weight, Tianfei Zhang, Xu Yilun and Ilpo Järvinen.
+The N6000 PMCI and SDM image-load handlers are intentionally left out;
+they depend on the wider PMCI stack that has not been upstreamed.
 
+Cc: Russ Weight <russell.h.weight@intel.com>
+Cc: Tianfei Zhang <tianfei.zhang@intel.com>
+Cc: Xu Yilun <yilun.xu@intel.com>
+Cc: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+Assisted-by: Claude:claude-opus-4-8 checkpatch
+Signed-off-by: Ionut Nechita <ionut.nechita@windriver.com>
+---
  .../sysfs-driver-intel-m10-bmc-sec-update     |  23 ++
  drivers/fpga/intel-m10-bmc-sec-update.c       | 286 +++++++++++++++++-
  include/linux/mfd/intel-m10-bmc.h             |  31 ++
  3 files changed, 339 insertions(+), 1 deletion(-)
 
-
-base-commit: cc2b5f627e8ccbae1188ef2d8be3e451d7f933a5
+diff --git a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
+index 3a6ca780c75c..978ed68ff23e 100644
+--- a/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
++++ b/Documentation/ABI/testing/sysfs-driver-intel-m10-bmc-sec-update
+@@ -59,3 +59,26 @@ Contact:	Matthew Gerlach <matthew.gerlach@altera.com>
+ Description:	Read only. Returns number of times the secure update
+ 		staging area has been flashed.
+ 		Format: "%u".
++
++What:		/sys/bus/platform/drivers/intel-m10bmc-sec-update/.../control/available_images
++Date:		Jul 2026
++KernelVersion:	6.18
++Contact:	Ionut Nechita <ionut.nechita@windriver.com>
++Description:	Read only. Returns a space separated list of key words
++		that may be written into the image_load file described
++		below. These key words describe a BMC or retimer firmware
++		image in FLASH or EEPROM storage that may be reloaded.
++		This file is only visible if the underlying device
++		supports image reload.
++
++What:		/sys/bus/platform/drivers/intel-m10bmc-sec-update/.../control/image_load
++Date:		Jul 2026
++KernelVersion:	6.18
++Contact:	Ionut Nechita <ionut.nechita@windriver.com>
++Description:	Write only. A key word may be written to this file to
++		trigger a reload of a BMC or retimer firmware image from
++		FLASH or EEPROM. Refer to the available_images file for
++		the list of key words supported by the underlying device.
++		Writing an unsupported string to this file results in
++		-EINVAL being returned. This file is only visible if the
++		underlying device supports image reload.
+diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
+index 7d23d914df3f..7a390cd70516 100644
+--- a/drivers/fpga/intel-m10-bmc-sec-update.c
++++ b/drivers/fpga/intel-m10-bmc-sec-update.c
+@@ -15,8 +15,14 @@
+ 
+ struct m10bmc_sec;
+ 
++struct image_load {
++	const char *name;
++	int (*load_image)(struct m10bmc_sec *sec);
++};
++
+ struct m10bmc_sec_ops {
+ 	int (*rsu_status)(struct m10bmc_sec *sec);
++	struct image_load *image_load;		/* terminated with { } member */
+ };
+ 
+ struct m10bmc_sec {
+@@ -253,8 +259,280 @@ static struct attribute_group m10bmc_security_attr_group = {
+ 	.attrs = m10bmc_security_attrs,
+ };
+ 
++/* Image reload control (N3000 / D5005) */
++
++static int m10bmc_sec_bmc_image_load(struct m10bmc_sec *sec, unsigned int val)
++{
++	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
++	u32 doorbell;
++	int ret;
++
++	if (val > 1) {
++		dev_err(sec->dev, "%s invalid reload val = %d\n",
++			__func__, val);
++		return -EINVAL;
++	}
++
++	ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
++	if (ret)
++		return ret;
++
++	if (doorbell & DRBL_REBOOT_DISABLED)
++		return -EBUSY;
++
++	return m10bmc_sys_update_bits(sec->m10bmc, csr_map->doorbell,
++				      DRBL_CONFIG_SEL | DRBL_REBOOT_REQ,
++				      FIELD_PREP(DRBL_CONFIG_SEL, val) |
++				      DRBL_REBOOT_REQ);
++}
++
++static int m10bmc_sec_bmc_image_load_0(struct m10bmc_sec *sec)
++{
++	return m10bmc_sec_bmc_image_load(sec, 0);
++}
++
++static int m10bmc_sec_bmc_image_load_1(struct m10bmc_sec *sec)
++{
++	return m10bmc_sec_bmc_image_load(sec, 1);
++}
++
++static int retimer_check_idle(struct m10bmc_sec *sec)
++{
++	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
++	u32 doorbell;
++	int ret;
++
++	ret = m10bmc_sys_read(sec->m10bmc, csr_map->doorbell, &doorbell);
++	if (ret)
++		return -EIO;
++
++	if (rsu_prog(doorbell) != RSU_PROG_IDLE &&
++	    rsu_prog(doorbell) != RSU_PROG_RSU_DONE &&
++	    rsu_prog(doorbell) != RSU_PROG_PKVL_PROM_DONE) {
++		dev_err(sec->dev, "Doorbell not idle: 0x%08x\n", doorbell);
++		return -EBUSY;
++	}
++
++	return 0;
++}
++
++static int trigger_retimer_eeprom_load(struct m10bmc_sec *sec)
++{
++	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
++	struct intel_m10bmc *m10bmc = sec->m10bmc;
++	unsigned int val;
++	int ret;
++
++	ret = m10bmc_sys_update_bits(m10bmc, csr_map->doorbell,
++				     DRBL_PKVL_EEPROM_LOAD_SEC,
++				     DRBL_PKVL_EEPROM_LOAD_SEC);
++	if (ret)
++		return ret;
++
++	/*
++	 * If the current NIOS FW is not bootloader, then the retimer load
++	 * is expected to trigger a NIOS reboot, so the DRBL_PKVL_EEPROM_LOAD
++	 * bit is cleared by the reboot. Otherwise wait for it to be cleared
++	 * by the NIOS FW.
++	 */
++	ret = regmap_read_poll_timeout(m10bmc->regmap,
++				       csr_map->base + csr_map->doorbell,
++				       val,
++				       (!(val & DRBL_PKVL_EEPROM_LOAD_SEC)),
++				       M10BMC_PKVL_LOAD_INTERVAL_US,
++				       M10BMC_PKVL_LOAD_TIMEOUT_US);
++	if (ret == -ETIMEDOUT) {
++		dev_err(sec->dev, "PKVL_EEPROM_LOAD clear timedout\n");
++		m10bmc_sys_update_bits(m10bmc, csr_map->doorbell,
++				       DRBL_PKVL_EEPROM_LOAD_SEC, 0);
++		ret = -ENODEV;
++	} else if (ret) {
++		dev_err(sec->dev, "poll EEPROM_LOAD error %d\n", ret);
++	}
++
++	return ret;
++}
++
++static int poll_retimer_eeprom_load_done(struct m10bmc_sec *sec)
++{
++	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
++	struct intel_m10bmc *m10bmc = sec->m10bmc;
++	unsigned int doorbell_reg;
++	int ret;
++
++	/*
++	 * RSU_STAT_PKVL_REJECT indicates that the current image is
++	 * already programmed. RSU_PROG_PKVL_PROM_DONE that the firmware
++	 * update process has finished, but does not necessarily indicate
++	 * a successful update.
++	 */
++	ret = regmap_read_poll_timeout(m10bmc->regmap,
++				       csr_map->base + csr_map->doorbell,
++				       doorbell_reg,
++				       (rsu_prog(doorbell_reg) ==
++					RSU_PROG_PKVL_PROM_DONE ||
++					FIELD_GET(DRBL_RSU_STATUS, doorbell_reg) ==
++					RSU_STAT_PKVL_REJECT),
++				       M10BMC_PKVL_PRELOAD_INTERVAL_US,
++				       M10BMC_PKVL_PRELOAD_TIMEOUT_US);
++	if (ret == -ETIMEDOUT) {
++		dev_err(sec->dev, "Doorbell check timedout: 0x%08x\n",
++			doorbell_reg);
++		return ret;
++	} else if (ret) {
++		dev_err(sec->dev, "poll Doorbell error %d\n", ret);
++		return ret;
++	}
++
++	if (FIELD_GET(DRBL_RSU_STATUS, doorbell_reg) == RSU_STAT_PKVL_REJECT) {
++		dev_err(sec->dev, "duplicate image rejected\n");
++		return -ECANCELED;
++	}
++
++	return 0;
++}
++
++static int poll_retimer_preload_done(struct m10bmc_sec *sec)
++{
++	const struct m10bmc_csr_map *csr_map = sec->m10bmc->info->csr_map;
++	struct intel_m10bmc *m10bmc = sec->m10bmc;
++	unsigned int val;
++	int ret;
++
++	/*
++	 * Wait for the updated firmware to be loaded by the PKVL device
++	 * and confirm that the applied version matches the expected value.
++	 */
++	ret = regmap_read_poll_timeout(m10bmc->regmap,
++				       csr_map->base + M10BMC_PKVL_POLL_CTRL,
++				       val,
++				       ((val & M10BMC_PKVL_PRELOAD) ==
++					M10BMC_PKVL_PRELOAD),
++				       M10BMC_PKVL_PRELOAD_INTERVAL_US,
++				       M10BMC_PKVL_PRELOAD_TIMEOUT_US);
++	if (ret) {
++		dev_err(sec->dev, "poll M10BMC_PKVL_PRELOAD error %d\n", ret);
++		return ret;
++	}
++
++	if ((val & M10BMC_PKVL_UPG_STATUS_MASK) != M10BMC_PKVL_UPG_STATUS_GOOD) {
++		dev_err(sec->dev, "error during M10BMC PKVL upgrade\n");
++		return -EIO;
++	}
++
++	return 0;
++}
++
++static int m10bmc_sec_retimer_eeprom_load(struct m10bmc_sec *sec)
++{
++	int ret;
++
++	ret = retimer_check_idle(sec);
++	if (ret)
++		return ret;
++
++	ret = trigger_retimer_eeprom_load(sec);
++	if (ret)
++		return ret;
++
++	ret = poll_retimer_eeprom_load_done(sec);
++	if (ret)
++		return ret;
++
++	return poll_retimer_preload_done(sec);
++}
++
++static struct image_load n3000_image_load_hndlrs[] = {
++	{
++		.name = "bmc_factory",
++		.load_image = m10bmc_sec_bmc_image_load_1,
++	},
++	{
++		.name = "bmc_user",
++		.load_image = m10bmc_sec_bmc_image_load_0,
++	},
++	{
++		.name = "retimer_fw",
++		.load_image = m10bmc_sec_retimer_eeprom_load,
++	},
++	{}
++};
++
++static struct image_load d5005_image_load_hndlrs[] = {
++	{
++		.name = "bmc_factory",
++		.load_image = m10bmc_sec_bmc_image_load_0,
++	},
++	{
++		.name = "bmc_user",
++		.load_image = m10bmc_sec_bmc_image_load_1,
++	},
++	{}
++};
++
++static ssize_t available_images_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct m10bmc_sec *sec = dev_get_drvdata(dev);
++	const struct image_load *hndlr;
++	ssize_t count = 0;
++
++	for (hndlr = sec->ops->image_load; hndlr->name; hndlr++)
++		count += scnprintf(buf + count, PAGE_SIZE - count,
++				   "%s ", hndlr->name);
++
++	if (count)
++		buf[count - 1] = '\n';
++
++	return count;
++}
++static DEVICE_ATTR_RO(available_images);
++
++static ssize_t image_load_store(struct device *dev,
++				struct device_attribute *attr,
++				const char *buf, size_t count)
++{
++	struct m10bmc_sec *sec = dev_get_drvdata(dev);
++	const struct image_load *hndlr;
++	int ret = -EINVAL;
++
++	for (hndlr = sec->ops->image_load; hndlr->name; hndlr++) {
++		if (sysfs_streq(buf, hndlr->name)) {
++			ret = hndlr->load_image(sec);
++			break;
++		}
++	}
++
++	return ret ? : count;
++}
++static DEVICE_ATTR_WO(image_load);
++
++static umode_t
++m10bmc_control_visible(struct kobject *kobj, struct attribute *attr, int n)
++{
++	struct m10bmc_sec *sec = dev_get_drvdata(kobj_to_dev(kobj));
++
++	if (!sec->ops->image_load)
++		return 0;
++
++	return attr->mode;
++}
++
++static struct attribute *m10bmc_control_attrs[] = {
++	&dev_attr_available_images.attr,
++	&dev_attr_image_load.attr,
++	NULL,
++};
++
++static struct attribute_group m10bmc_control_attr_group = {
++	.name = "control",
++	.attrs = m10bmc_control_attrs,
++	.is_visible = m10bmc_control_visible,
++};
++
+ static const struct attribute_group *m10bmc_sec_attr_groups[] = {
+ 	&m10bmc_security_attr_group,
++	&m10bmc_control_attr_group,
+ 	NULL,
+ };
+ 
+@@ -675,6 +953,12 @@ static const struct fw_upload_ops m10bmc_ops = {
+ 
+ static const struct m10bmc_sec_ops m10sec_n3000_ops = {
+ 	.rsu_status = m10bmc_sec_n3000_rsu_status,
++	.image_load = n3000_image_load_hndlrs,
++};
++
++static const struct m10bmc_sec_ops m10sec_d5005_ops = {
++	.rsu_status = m10bmc_sec_n3000_rsu_status,
++	.image_load = d5005_image_load_hndlrs,
+ };
+ 
+ static const struct m10bmc_sec_ops m10sec_n6000_ops = {
+@@ -746,7 +1030,7 @@ static const struct platform_device_id intel_m10bmc_sec_ids[] = {
+ 	},
+ 	{
+ 		.name = "d5005bmc-sec-update",
+-		.driver_data = (kernel_ulong_t)&m10sec_n3000_ops,
++		.driver_data = (kernel_ulong_t)&m10sec_d5005_ops,
+ 	},
+ 	{
+ 		.name = "n6000bmc-sec-update",
+diff --git a/include/linux/mfd/intel-m10-bmc.h b/include/linux/mfd/intel-m10-bmc.h
+index 988f1cd90032..bc9fafcbfe37 100644
+--- a/include/linux/mfd/intel-m10-bmc.h
++++ b/include/linux/mfd/intel-m10-bmc.h
+@@ -40,6 +40,37 @@
+ #define M10BMC_N3000_VER_PCB_INFO_MSK	GENMASK(31, 24)
+ #define M10BMC_N3000_VER_LEGACY_INVALID	0xffffffff
+ 
++/* PKVL (retimer) preload poll control register, in system register region */
++#define M10BMC_PKVL_POLL_CTRL		0x80
++#define M10BMC_PKVL_A_PRELOAD		BIT(16)
++#define M10BMC_PKVL_A_PRELOAD_TO	BIT(17)
++#define M10BMC_PKVL_A_DATA_TOO_BIG	BIT(18)
++#define M10BMC_PKVL_A_HDR_CKSUM		BIT(20)
++#define M10BMC_PKVL_B_PRELOAD		BIT(24)
++#define M10BMC_PKVL_B_PRELOAD_TO	BIT(25)
++#define M10BMC_PKVL_B_DATA_TOO_BIG	BIT(26)
++#define M10BMC_PKVL_B_HDR_CKSUM		BIT(28)
++
++#define M10BMC_PKVL_PRELOAD		(M10BMC_PKVL_A_PRELOAD | M10BMC_PKVL_B_PRELOAD)
++#define M10BMC_PKVL_PRELOAD_TIMEOUT	(M10BMC_PKVL_A_PRELOAD_TO | \
++					 M10BMC_PKVL_B_PRELOAD_TO)
++#define M10BMC_PKVL_DATA_TOO_BIG	(M10BMC_PKVL_A_DATA_TOO_BIG | \
++					 M10BMC_PKVL_B_DATA_TOO_BIG)
++#define M10BMC_PKVL_HDR_CHECKSUM	(M10BMC_PKVL_A_HDR_CKSUM | \
++					 M10BMC_PKVL_B_HDR_CKSUM)
++
++#define M10BMC_PKVL_UPG_STATUS_MASK	(M10BMC_PKVL_PRELOAD | M10BMC_PKVL_PRELOAD_TIMEOUT | \
++					 M10BMC_PKVL_DATA_TOO_BIG | M10BMC_PKVL_HDR_CHECKSUM)
++#define M10BMC_PKVL_UPG_STATUS_GOOD	(M10BMC_PKVL_PRELOAD | M10BMC_PKVL_HDR_CHECKSUM)
++
++/* interval 100ms, timeout 2s to trigger the PKVL EEPROM load */
++#define M10BMC_PKVL_LOAD_INTERVAL_US	(100 * 1000)
++#define M10BMC_PKVL_LOAD_TIMEOUT_US	(2 * 1000 * 1000)
++
++/* interval 100ms, timeout 30s for the PKVL preload to complete */
++#define M10BMC_PKVL_PRELOAD_INTERVAL_US	(100 * 1000)
++#define M10BMC_PKVL_PRELOAD_TIMEOUT_US	(30 * 1000 * 1000)
++
+ /* Telemetry registers */
+ #define M10BMC_N3000_TELEM_START	0x100
+ #define M10BMC_N3000_TELEM_END		0x250
 -- 
 2.55.0
 
