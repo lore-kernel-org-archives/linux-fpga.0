@@ -1,140 +1,113 @@
-Received: from mx.nabladev.com (mx.nabladev.com [178.251.229.89])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27E0B3A9DB2;
-	Thu, 23 Jul 2026 05:58:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.251.229.89
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AE7D3DA5B6
+	for <linux-fpga@vger.kernel.org>; Thu, 23 Jul 2026 07:00:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784786285; cv=none; b=DEjI8ctx/cUO+bGBLrAsUBDe9kwsVht4THTuWXjtwu/OT9Bi61/So9gTnolCikgxZygEMIKmkL7whofNUoDXmN//hMU7st720NxQ/acT/D8+0GpFJUHAoPFPkdTyRmwc1dYDbilLGyKa0lLkSg8sdg0jBgB8K+l3M88FR1VPpfA=
+	t=1784790023; cv=none; b=IYPH99j5rT5EXUGiPfa1QdOJoWX+9bOON87KiKeYDO8akVxmDEMNvEYoKQfL9iEg2er69eSeS5TiApoZE8lU2UrsPtDUwLbbsq0MOEnvEONlJK0FA0qNAddGqwR/o0dBFJI4t/l6JUxaE3Xi3Bhk4QOi+VQrxPgcsWR3lV64Vpo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784786285; c=relaxed/simple;
-	bh=kiigGFy6X70ni15Fuj+SkHLw0rkwe7NT/HF1gNSWpRU=;
+	s=arc-20240116; t=1784790023; c=relaxed/simple;
+	bh=VILMoO/Jv4/7xDOVCpc8wmFeivgVhLgZgo/OL3J+MMc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YP7NeamWHfL02wIGmwYsNgJsWKLKFD+oGo7A0S3d0iK8u6qaM1LSr9ZyzQJzhtPWeTVEqiG4ZBYiP/R6cbrT9viQD+l0OzMMX0nys1wt355DKzeWmQxqX9tGTYLOUy8kuTLVdRmT2p8mAD4IRZZ7MT86XVyReSph4YmpV1+OqXM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com; spf=pass smtp.mailfrom=nabladev.com; dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b=hh68P83t; arc=none smtp.client-ip=178.251.229.89
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nabladev.com
+	 In-Reply-To:Content-Type; b=pyNIB0Bu9pmh51N51/mHVNRSSKzKz/9gMAqqHst9COqu9f9MnYC5qKm+LvNX9t/5LseXNqt7hbOMHmFOL72PvhOC4cv5wj501IJiNstLtUoBPIjUbnwBn3upEjyUloJirtnPxFWz08ajUI95VYih1J9OrW8hacziAAv3sSeGRRM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dPEo91DZ; arc=none smtp.client-ip=209.85.214.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b="hh68P83t"
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 38C6F11AAAF;
-	Thu, 23 Jul 2026 07:57:57 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nabladev.com;
-	s=dkim; t=1784786280;
-	h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:content-language:in-reply-to:references;
-	bh=VFjmYyF5VPe289BlZka42WgXUPRX6vAouN/83LGa2YM=;
-	b=hh68P83tVlCq+MrKUy8gJALRL7rhCyDkN1Pi00vwD2s2jdwSYHIP4Ve3cfVprbVHBiqxet
-	8UgeJeTtmTYSfG5ovBt9o7mZz6YnkVe5OMuYlD+RMSfcphEJxAGXCBybdiUUTKlSk5BDPv
-	IqePL5a4HrB9rNFRNhX1qhFVeD2UY4VTf3UtUce55koGDX1OANBSfjC6c5OVbfSHQA2bEA
-	o+lmLwYQhS+jYBQCU0bYck+UOPDGT+3ixUj676dz8g3GaIpbjRda1OV/zYJHahn4lcbWqI
-	DiredCqBq3i9rLsZWRB/d2pfqWETwWIN3JFqoO4uUcrIwsWk+BAyashW0vedlg==
-Message-ID: <e1bb20f0-0cfa-b932-6817-dabbc28fe11d@nabladev.com>
-Date: Thu, 23 Jul 2026 07:57:23 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dPEo91DZ"
+Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2ced3386430so3703975ad.1
+        for <linux-fpga@vger.kernel.org>; Thu, 23 Jul 2026 00:00:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784790020; x=1785394820; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Rvc1Q8Yuo59f8Js6D1YtI1CZ2BliYzQWnNcO/qXOPsM=;
+        b=dPEo91DZazOXFD0GDYmjRfOETcT126NZQ9iwDd7QEMHHehbZ7gKJiBfVUOFKzZyReI
+         JX1Q/Vg9L3v5pACCG+/npWYzF+vwT9A9WJVyrw6MTIFxlR1m2iC1KTHAzIjZhSXtjCSd
+         9VPpDpK8LIWqVEuaJH+OdbP7cXfuKpW5tHBVpT18W9yielPbB6W1e5V12nQmlAAP23xA
+         BTIt5wbPmcLJya6I/xYwMAliOVe0HMtHjkSRrx76T7Jk8RHvM5pBKAldNYmBfkQadFwO
+         OKAyy4rxK8rFjIGFxhE1ZFn/LpSyXO+y6mcLlQmE6AVCFT7ZH24Kg9cUge4h4vCU6i61
+         x5aA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784790020; x=1785394820;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Rvc1Q8Yuo59f8Js6D1YtI1CZ2BliYzQWnNcO/qXOPsM=;
+        b=YfOlZ14PXrffrsEOZF+MTYGvfxpdknWcyJ+zJsueg0M5NQQxjU5UoTddCy4Ee6WxHC
+         0+NL0HdRChshrOYzscpeyBUSisldubFu0rR1ivRf0EYyxhABppSvyKQtjG8Gj+lnpG14
+         NZ3fdGotJB6FBoEC8tzoXm4Lpr4kYK/MoTzQmXobQBaDSux3cLa3kuFo6VuBFih9ZgzL
+         /gHnBKnr8/mg8W8itezDap/XYkTBcMy3kktJFGihaI3+Jlbuy851AOwA0taajKoPV6W6
+         Aj143dG4LuI+jzpityDg8TJ0vq9aboL2LMkrfjHuxPQb1iYzseu5p10wMUFPTl1JsVon
+         w5tQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqZlZllWmCL4iL+tmQSCSgPsu9XtHXU4q4CylmZvnhzoI01EqoBxkTJg9r1VcyB2l0zfBdTt1JUUo9d@vger.kernel.org
+X-Gm-Message-State: AOJu0YyzJp+QXy71AHhu9VoPCPWsxr4q8i609y8+TY1Ynv3qjucjlFfw
+	skyAtdc6Q6SPoQa+ClD2lNGMwgrBwzGMy+VsiB9WEB77tvgx2uw82rzG
+X-Gm-Gg: AR+sD12Bhxeg0ZZ3xtNgFYv9WzLQVie5UjHrlgXEdWAnRKupMi95P+XUEacCqNEMsEl
+	/IrNu66OWyvO7Tk4WEtWn285iPP1QBL3A5PKRLArzF1C0558tpstAx9d52mcyObO/j4VGIyJH1w
+	i/UYFWoINukXHulOuLZ8w9b6HAdJZmmB5zlYJDISMZ09nqHXn0kLuLVWCLJSF7RtYX6DdnuDMNN
+	IEcNzxNUR0179qjXVknBf0TR5SYnPBeJ65RLdlZjwuCgOMy9I6Is04O3iiA9B3KU+9Yyzy0kAHE
+	qIexrDODPrFcuznzdm1K3tBvRB3r4aZDHer7QwYVgr9Ko5QiNHTL+vzI/AfFT8FjIROiJfhVhEt
+	hCQRn2nPssVcy47WgjWEpJQor3Ftrywf4VQz34yvud2c+LvM+7LBbP1MQIsbmLRzeq8cTm0Wkr2
+	4GcFpnwrKttUEdQNfuyIjma1Oirnsq7p2rD9l15Tk0gLNzFrXPDm4x
+X-Received: by 2002:a17:903:3508:b0:2ca:61bc:317c with SMTP id d9443c01a7336-2cfa71d8e4amr23738485ad.13.1784790020086;
+        Thu, 23 Jul 2026 00:00:20 -0700 (PDT)
+Received: from [192.168.11.6] (FL1-133-202-37-214.tky.mesh.ad.jp. [133.202.37.214])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf8f34bb48sm27652235ad.65.2026.07.23.00.00.18
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 23 Jul 2026 00:00:19 -0700 (PDT)
+Message-ID: <e849a2b1-58b0-4423-81bf-ec833fa5ee83@gmail.com>
+Date: Thu, 23 Jul 2026 16:00:18 +0900
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: [PATCH v2] driver: fpga: xilinx-selectmap: add csi and rdwr
- support
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] fpga: altera-cvp: Propagate PCI config access errors
+To: Xu Yilun <yilun.xu@linux.intel.com>
+Cc: yilun.xu@intel.com, mdf@kernel.org, trix@redhat.com,
+ linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Daisuke Matsuda <matsuda@preferred.jp>
+References: <20260701092633.5146-1-dskmtsd@gmail.com>
+ <20260701092633.5146-2-dskmtsd@gmail.com>
+ <amGNwqOFs3oLXhWt@yilunxu-OptiPlex-7050>
 Content-Language: en-US
-To: Michal Simek <michal.simek@amd.com>, linux-kernel@vger.kernel.org
-Cc: linux-fpga@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Moritz Fischer <mdf@kernel.org>, Tom Rix <trix@redhat.com>,
- Xu Yilun <yilun.xu@intel.com>
-References: <20260721114258.3324794-1-hs@nabladev.com>
- <2758c5dc-91fa-44a0-986e-1258afc3dbd5@amd.com>
- <855f458a-60d7-931f-9ef9-5dba2b2d916d@nabladev.com>
- <98e8e7d4-38d9-4587-bf11-0e862f87928c@amd.com>
-From: Heiko Schocher <hs@nabladev.com>
-In-Reply-To: <98e8e7d4-38d9-4587-bf11-0e862f87928c@amd.com>
+From: Daisuke Matsuda <dskmtsd@gmail.com>
+In-Reply-To: <amGNwqOFs3oLXhWt@yilunxu-OptiPlex-7050>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Transfer-Encoding: 7bit
 
-Hello Michal,
-
-On 23.07.26 07:44, Michal Simek wrote:
-> 
-> 
-> On 7/22/26 16:45, Heiko Schocher wrote:
->> Hello Michal,
+On 2026/07/23 12:42, Xu Yilun wrote:
+> On Wed, Jul 01, 2026 at 09:26:33AM +0000, Daisuke Matsuda wrote:
+>> From: Daisuke Matsuda <matsuda@preferred.jp>
 >>
->> On 22.07.26 08:55, Michal Simek wrote:
->>>
->>>
->>> On 7/21/26 13:42, Heiko Schocher wrote:
->>>> Add csi_b and rdwr pin support for the xilinx,selectmap driver.
->>>>
->>>> In current driver the pins are configured from DTS and set to
->>>> GPIOD_OUT_HIGH. This works in case you have one FPGA.
->>>>
->>>> Extend this to really implement csi_b and rdwr pin function in
->>>> driver, so it works with more than one FPGA.
->>>>
->>>> Tested on AM625 based board with 2 FPGAs connected to GPMC.
->>>>
->>>> Signed-off-by: Heiko Schocher <hs@nabladev.com>
->>>> ---
->>>>
->>>> Changes in v2:
->>>> - add comments from Michal
->>>>    - skip check if gpio descriptor variables csi_b/rdwr_b are valid,
->>>>      as validate_desc() checks this in gpiod_set_value() call.
->>>>    - initialize the gpio variables csi_b/rdwr_b immediately with
->>>>      the return value from devm_gpiod_get_optional(), so we can
->>>>      drop local gpio variable at all
->>>>
->>>>   drivers/fpga/xilinx-selectmap.c | 23 ++++++++++++++++-------
->>>>   1 file changed, 16 insertions(+), 7 deletions(-)
->>>>
->>>> diff --git a/drivers/fpga/xilinx-selectmap.c b/drivers/fpga/xilinx-selectmap.c
->>>> index d0cbb5fdfe3a..d5175f9430e4 100644
->>>> --- a/drivers/fpga/xilinx-selectmap.c
->>>> +++ b/drivers/fpga/xilinx-selectmap.c
->>>> @@ -19,6 +19,8 @@
->>>>   struct xilinx_selectmap_conf {
->>>>       struct xilinx_fpga_core core;
->>>>       void __iomem *base;
->>>> +    struct gpio_desc *csi_b;
->>>> +    struct gpio_desc *rdwr_b;
->>>>   };
->>>>   #define to_xilinx_selectmap_conf(obj) \
->>>> @@ -30,16 +32,21 @@ static int xilinx_selectmap_write(struct xilinx_fpga_core *core,
->>>>       struct xilinx_selectmap_conf *conf = to_xilinx_selectmap_conf(core);
->>>>       size_t i;
->>>> +    gpiod_set_value(conf->csi_b, GPIOD_OUT_HIGH);
->>>> +    gpiod_set_value(conf->rdwr_b, GPIOD_OUT_HIGH);
->>>
->>> I think GPIOD_OUT_HIGH/LOW is wrong in this context.
->>> If you do "git grep gpiod_set_value" you will see that values are 0/1
->> I will change it!
->>
->> Hmm.. while thinking about it... CSI_B and RDWR_B signals
->> are defined as active low...
+>> The CvP control path accesses the VSEC registers through PCI config space,
+>> but several reads and writes ignore the return value. If a config read
+>> fails, the driver can make decisions from an undefined register value and
+>> continue programming with bogus status or control bits.
 > 
-> I have never worked with this driver but values here should be 0 or 1. And if that means active 
-> low/high is said via DT.
-> 
-> GPIOD_OUT_LOW below should mean that you are starting in deassert state (if it is low/high is coming 
-> from DT). And before write you assert that line and deassert after it.
+> Searching from the kernel, most pci_read/write_config_dword() don't
+> check return values. Could you help me understand why they don't but
+> this driver has the specific need?
 
-Fine for me, I rework it, thanks!
+Hi Yilun,
 
-bye,
-Heiko
+Thank you for taking a look.
+
+I agree that the vast majority of drivers do not check the return values, and I don't have a strong reason to make this driver behave differently.
+
+I'll drop this patch and send a v2 with only patch 1/2.
+
+Thanks,
+Daisuke
+
 > 
 > Thanks,
-> Michal
-> 
-> 
+> Yilun
 
--- 
-Nabla Software Engineering
-HRB 40522 Augsburg
-Phone: +49 821 45592596
-E-Mail: office@nabladev.com
-Geschäftsführer : Stefano Babic
