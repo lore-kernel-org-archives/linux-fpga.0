@@ -1,191 +1,195 @@
-Received: from out-189.mta1.migadu.com (mta1.migadu.com [37.59.57.117])
+Received: from mx.nabladev.com (mx.nabladev.com [178.251.229.89])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 311BA4B0493
-	for <linux-fpga@vger.kernel.org>; Sat,  8 Aug 2026 19:35:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=37.59.57.117
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9427F36C5A1;
+	Mon, 10 Aug 2026 06:21:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.251.229.89
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786217739; cv=none; b=TsIAgHu3gm8KSc+7Yd0Ioy/P83yr3yJ9xhr14Wd6SGkYfdRzazRiEmdXhtIW4wKF4KBmFUTZtUiUOEeDA+rf5YJKNtwrWFc4Gp/fhd0M15Kf7/UXYJLPc55tWWLk67FbGGnbkwxDfs7xKFjoJyXTWt00fWUkjTgMnFMTxoX/BrE=
+	t=1786342887; cv=none; b=oAYsGzZozdqLUDbGY9iTPVg4mnNPle96vAr3Ybh0vb6uijxH3glTNI1ZcS9kUky6/VM0ZQuNRRpZSDH8U/1zHWLdTpl0L9EczLyrxWE+fV3rPBZOUYreo7geLcl7jCX4b00sp5W6NPvkW+b6UKh49OFhV7wneXHsQ1QA/IA1T98=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786217739; c=relaxed/simple;
-	bh=eMBICWRYABGIWXk01SuKmYACZAHOm80uuFLLUB4qO1s=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=u2ha6PbKsiNNyNHYJkwH1PdFCpFInOiOA5ysFbHBPdRBRf02J4ZM+9Mxn5vxmi1M8ZFGylF5o3JWwCNuoEfAgglZj6t20SE9lfk1XKVOjI6mk1AdKnNF8K9BNHlfns5euvyc01QJnHgTuJ+o2hbLsqT3Drmt5O0rlNyexBujvHg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=VEZD1814; arc=none smtp.client-ip=37.59.57.117
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1786342887; c=relaxed/simple;
+	bh=2mM10romqLpq5O107SRCTjwfedWENZiCE+DZ4PUg6WQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=f30nG8eqKbRzmZkF0jph4li/RayQRDVBvFWD8bvxOfSNNU4EabK8cha+4Gt85auwj6ir/lxFry2pEaLN4I7X3ipJUp01dEJInqgcdWbC2cKpmulUvU/tMVZRTVV8/W5whS30RoJpULPno6oNuqipjiqz9Yw9+fdA4gPgNEbkM6s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com; spf=pass smtp.mailfrom=nabladev.com; dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b=DoJCGJul; arc=none smtp.client-ip=178.251.229.89
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nabladev.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="VEZD1814"
-Message-ID: <db7cfe9e-b2ba-4323-bff9-44598e1f70bb@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1786217725;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fRiZjkxTfWOCPrRZOlHo5Mc7kFgFs7LHkQ1VDc9hTR8=;
-	b=VEZD18147mHxvnsyPHS4fUVVSCjT0a9t16TsB6G5xRVduhEeShWhKqOBaaiygffE/mSngC
-	6QcNej2KUjdQG2ywrWKqpexxsT8+EDynRIeGJn+tlrLPPfxPx2sWnpA2WHTUe6p9vMi5m7
-	T1FLzy0SSn0vvxM+yeiX3W3p0g8LPfA=
-Date: Sat, 8 Aug 2026 21:35:08 +0200
+	dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b="DoJCGJul"
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 9E3FD11B494;
+	Mon, 10 Aug 2026 08:21:10 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nabladev.com;
+	s=dkim; t=1786342873; h=from:subject:date:message-id:to:cc:mime-version:
+	 content-transfer-encoding; bh=TIcYkXIenvNkMTJ1YuV3o4EGTcYhnPA+PcvQgIsAFFM=;
+	b=DoJCGJulsBPRy6JS3ixEUSVrFe8PLIcqz0AV9dMgE0c2ta4xuNd52VcgEO2m8+7XMdoW0D
+	f4IVkh1MvMHVPOGdQ/o5fG6WEKJoSWuaLCvdTMdKmx1qY2gLFdf9jAA9m07w+CArEtGTrS
+	WsWz6W05WTQLgBjDBmiUeaeYaRXPAp5MX9orAwZfVCC70PKljktxTFy/lmbcRCJmgYNZhL
+	qS0bEIX9FP/v6G93p9ZXHJn5v0Qlinw5bmZe2aJr2OC0pgGna2j10vankCQk81wv47lr9I
+	k0KgiLUCaCNPYzhxzar6YpzXqnjcSto23ZUig1PPM1Igu+1pHX5p8zDfb7+yhg==
+From: Heiko Schocher <hs@nabladev.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org,
+	linux-fpga@vger.kernel.org,
+	Heiko Schocher <hs@nabladev.com>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Linus Walleij <linusw@kernel.org>,
+	Michal Simek <michal.simek@amd.com>,
+	Moritz Fischer <mdf@kernel.org>,
+	Tom Rix <trix@redhat.com>,
+	Xu Yilun <yilun.xu@intel.com>,
+	linux-gpio@vger.kernel.org
+Subject: [PATCH v4] driver: fpga: xilinx-selectmap: add csi and rdwr support
+Date: Mon, 10 Aug 2026 08:20:51 +0200
+Message-ID: <20260810062105.299808-1-hs@nabladev.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Marco Pagani <marco.pagani@linux.dev>
-Subject: Re: [RFC PATCH] fpga: region: Add support for FPGA region variants
-To: Xu Yilun <yilun.xu@linux.intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
- Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260608164247.1998417-1-marco.pagani@linux.dev>
- <aj53joym0YpoYXWQ@yilunxu-OptiPlex-7050>
- <97739313-fc97-4b11-b2e2-d680621a7fe1@linux.dev>
- <akPZoGCyQW+6+hDX@yilunxu-OptiPlex-7050>
- <5dbd4ac8-a532-4889-bae1-f0bab9a99267@linux.dev>
- <akyyp1GCecWj2Bk2@yilunxu-OptiPlex-7050>
- <417b510f-0f6d-4695-97f5-3fc19b9377b9@linux.dev>
- <amCn8UYdybT+RRnq@yilunxu-OptiPlex-7050>
- <9d4af487-69a7-4a0d-9335-35c3a057de54@linux.dev>
- <anBfAa4LpjbmYHIc@yilunxu-OptiPlex-7050>
-Content-Language: en-US
-In-Reply-To: <anBfAa4LpjbmYHIc@yilunxu-OptiPlex-7050>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Migadu-Flow: FLOW_OUT
+Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
 
+The current driver requests the optional CSI_B and RDWR_B GPIOs but
+only configures their initial output state and never changes them
+afterwards. As a result, CSI_B and RDWR_B remain inactive or active
+throughout the configuration process.
 
-On 03/08/2026 11:27, Xu Yilun wrote:
+This may work on systems with a single FPGA where these signals do not
+need to be controlled by software, or where the signals are configured
+to their active state. But this does not not support systems with
+multiple FPGAs sharing a SelectMAP interface.
 
->> (i) The base DT (including variant fragments) is built and global
->> resources are statically resolved at compile time. Then, the resulting
->> DTB is loaded by the kernel at boot time before userspace is loaded and
->> can be authenticated (as part of a FIT image) to maintain the chain of
->> trust.
-> 
-> That helps, thanks.
-> 
->>
->> (ii) Once the boot is completed and userspace is running, the kernel
->> hardware configuration/topology remains safe and locked in place since
->> there are no interfaces that allow userspace to change it.
->>
->> So I think the main advantage of the variants compared to the open DTO
->> interface is limiting the "blast radius" in case things go wrong.
-> 
-> But I don't think limiting both the functionality and the blast radius can
-> be the target of the uAPI.
+On systems with multiple FPGAs sharing the same SelectMAP data bus,
+the driver must deassert this signals in probe, and actively control
+them during configuration.
 
-I would see things the other way around: security is a requirement for a
-uAPI rather than a feature.
+CSI_B (Chip Select, active low) selects the target FPGA. It is asserted
+before configuration data is transferred and deasserted afterwards so
+that only the intended device responds to bus transactions.
 
-I think there is a fundamental asymmetry between the marginal
-convenience of not having to rebuild the base DTB and the massive and
-potentially (semantically) unsolvable burden of securing an open DTO
-interface and ensuring that it will not crash or corrupt the kernel,
-given that most of the infrastructure there is not designed to handle
-arbitrary node changes at runtime.
+RDWR_B (Read/Write, active low) controls the transfer direction on the
+SelectMAP interface. A low level selects write cycles, while a high
+level selects read cycles. During FPGA configuration the driver drives
+RDWR_B low before transferring the bitstream and restores it to its
+reading (high state) afterwards.
 
+With that info from the datasheet the driver is now changed to:
 
->> If the DT cannot be tampered with, the kernel can still enforce hardware
->> boundaries (e.g., IOMMU config) that can contain the spill to the
->> misbehaving region's resources. On the contrary, a single malicious DTO
->> can compromise the entire kernel with its memory mappings.
->>
->> Ultimately, I think the responsibility of authenticating image/bitstream
->> is outside the scope of the kernel as they are configurations for the
->> hardware and not the kernel itself. It's up to the device to
->> authenticate its own firmware, like how reconfiguration engines of
->> modern FPGA families can already authenticate signed image/bitstreams.
-> 
-> No I don't think so. It's the kernel drivers decision to load the image
-> to HW, authenticate or not authenticate the image, via an HW engine or by
-> software.
-> 
-> Basically you are treating the HW description blob and the HW image blob
-> differently, but I think they are basically one thing that can't be
-> torn apart. If you want security, you must build trust for both the image +
-> the HW description before re-program and re-enumerate.
+- deassert the CSI_B and RDWR_B pin on probe and store the
+  optional GPIO descriptors in private driver data.
 
-I see your point. I think the main challenge here comes from the fact
-that images/bitstreams are not stored in immutable kernel memory buffers
-but rather usually kept in the rootfs like regular firmware files.
-This intrinsically leaves the door open for TOCTOU races and attacks.
+- toggle both signals around the configuration data transfer
 
+This allows multiple FPGAs to safely share a single SelectMAP interface.
 
-> I remember there was a discussion of accepting a FIT image for
-> re-programming several years ago.
+Signed-off-by: Heiko Schocher <hs@nabladev.com>
+---
 
-From a conceptual point of view, I do agree with you. Getting the pair
-{config, image} for each partial image directly from the FIT image at
-boot time (from the buffer passed by the bootloader) and then keeping it
-in kernel memory seems like the most straightforward approach to me as
-well. However, I think the size of practical FPGA images/bitstreams
-forces us to support the /lib/firmware path anyway.
+Changes in v4:
+- add comments from Xu Yulin
+  replace wrong gpiod_set_raw_value() with gpiod_set_value()
+  deassert CSI_B and RDWR_B in probe as in patch version 2
+  rework commit message (correct the description what current
+  driver do on probe), why this is not a problem with one
+  FPGA, and why it needs a change if you have N FPGAs
+  sharing the same selectmap Interface (clk and data pins).
 
-So I did some digging to see if there have been past attempts to secure
-firmware loading. Indeed, I found some attempts (e.g., [1-3]), but they
-have been all rejected for various reasons, including the fact that a
-malevolent root user can always mess up a device by mapping and
-accessing its register space, and potentially bypass the secure firmware
-loader by directly programming the device to load a malicious firmware.
+Changes in v3:
+- use 0 (deasserted state) and 1 (asserted state) in gpio_set_value()
+  as commented from Micahl
+- rewrite commit message as requested from Xu Yilun
+  - describe what rdwr_b and csi_b do, and why this change is needed
+    for more than one FPGA.
+- add comment before asserting the signals, why they are asserted
+  in this order.
 
-As I understand it, the current upstream consensus is that hardware
-devices must be responsible for verifying their own firmware, just as
-the kernel is responsible for maintaining the safety of its own data
-structures from potential userspace attacks.
+Changes in v2:
+- add comments from Michal
+  - skip check if gpio descriptor variables csi_b/rdwr_b are valid,
+    as validate_desc() checks this in gpiod_set_value() call.
+  - initialize the gpio variables csi_b/rdwr_b immediately with
+    the return value from devm_gpiod_get_optional(), so we can
+    drop local gpio variable at all
 
-If, despite this, there is a requirement to secure /lib/firmware, it
-should be done at the filesystem level using the IMA subsystem [4] that
-would in turn use the TPM (or a firmware running in a TEE) as the root
-of trust.
+ drivers/fpga/xilinx-selectmap.c | 36 ++++++++++++++++++++++++---------
+ 1 file changed, 27 insertions(+), 9 deletions(-)
 
-For these reasons, while I fully understand your point of view, I am
-hesitant to implement custom FPGA-specific signature checking for the
-RFC. My concern is that even if it is accepted here, it will ultimately
-be rejected as it moves up in the pull requests.
+diff --git a/drivers/fpga/xilinx-selectmap.c b/drivers/fpga/xilinx-selectmap.c
+index d0cbb5fdfe3a..e9b1d15ca054 100644
+--- a/drivers/fpga/xilinx-selectmap.c
++++ b/drivers/fpga/xilinx-selectmap.c
+@@ -19,6 +19,8 @@
+ struct xilinx_selectmap_conf {
+ 	struct xilinx_fpga_core core;
+ 	void __iomem *base;
++	struct gpio_desc *csi_b;
++	struct gpio_desc *rdwr_b;
+ };
+ 
+ #define to_xilinx_selectmap_conf(obj) \
+@@ -30,16 +32,30 @@ static int xilinx_selectmap_write(struct xilinx_fpga_core *core,
+ 	struct xilinx_selectmap_conf *conf = to_xilinx_selectmap_conf(core);
+ 	size_t i;
+ 
++	/*
++	 * Assert CSI_B and select write mode.
++	 *
++	 * UG570 states in note 4 in Figure "Continuous x8 SelectMAP Data
++	 * Loading", RDWR_B should be asserted before CSI_B to avoid
++	 * causing an ABORT on the next CCLK.
++	 *
++	 * To be sure, set first RDWR_B pin before activate CSI_B
++	 */
++	gpiod_set_value(conf->rdwr_b, 1);
++	gpiod_set_value(conf->csi_b, 1);
++
+ 	for (i = 0; i < count; ++i)
+ 		writeb(buf[i], conf->base);
+ 
++	gpiod_set_value(conf->csi_b, 0);
++	gpiod_set_value(conf->rdwr_b, 0);
++
+ 	return 0;
+ }
+ 
+ static int xilinx_selectmap_probe(struct platform_device *pdev)
+ {
+ 	struct xilinx_selectmap_conf *conf;
+-	struct gpio_desc *gpio;
+ 	void __iomem *base;
+ 
+ 	conf = devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
+@@ -55,16 +71,18 @@ static int xilinx_selectmap_probe(struct platform_device *pdev)
+ 				     "ioremap error\n");
+ 	conf->base = base;
+ 
+-	/* CSI_B is active low */
+-	gpio = devm_gpiod_get_optional(&pdev->dev, "csi", GPIOD_OUT_HIGH);
+-	if (IS_ERR(gpio))
+-		return dev_err_probe(&pdev->dev, PTR_ERR(gpio),
++	/* CSI_B is active low, deassert signal */
++	conf->csi_b = devm_gpiod_get_optional(&pdev->dev, "csi",
++					      GPIOD_OUT_LOW);
++	if (IS_ERR(conf->csi_b))
++		return dev_err_probe(&pdev->dev, PTR_ERR(conf->csi_b),
+ 				     "Failed to get CSI_B gpio\n");
+ 
+-	/* RDWR_B is active low */
+-	gpio = devm_gpiod_get_optional(&pdev->dev, "rdwr", GPIOD_OUT_HIGH);
+-	if (IS_ERR(gpio))
+-		return dev_err_probe(&pdev->dev, PTR_ERR(gpio),
++	/* RDWR_B is active low, deassert signal */
++	conf->rdwr_b = devm_gpiod_get_optional(&pdev->dev, "rdwr",
++					       GPIOD_OUT_LOW);
++	if (IS_ERR(conf->rdwr_b))
++		return dev_err_probe(&pdev->dev, PTR_ERR(conf->rdwr_b),
+ 				     "Failed to get RDWR_B gpio\n");
+ 
+ 	return xilinx_core_probe(&conf->core);
+---
+base-commit: db2ddb87143519e20a95aa36c60b36107b736a58
 
-However, if you still want me to go down the road of securing the
-partial images directly from the FIT image, I'm open to that. For
-instance, we could add an optional sha-512 hash alongside the partial
-image fw name property in each variant node of the base DT, so that the
-FPGA framework can verify the image before programming.
-
-Another alternative could be computing the hash of each of the partial
-images received at boot time from the authenticated initramfs during the
-of-fpga-region probe, and then storing it in its variant struct.
-However, this would require having all images in the initramfs and might
-be impractical on systems with little RAM.
-
-I think we have a couple of arguments we could use to back it up,
-framing it as a fallback mechanism due to the specificity of FPGA
-devices:
-
-- Not all FPGA reconfiguration engines support crypto image
-  verification;
-- Not all SoCs/platforms have a TPM IP or support for a TEE;
-- We must guarantee the pair {config, image}.
-
-Also, with the FPGA variants, the verification phase will only occur
-once during the initial loading and then be skipped if images are cached
-using the "firmware-cached" property, enabling a lean zero-overhead
-reconfiguration flow.
-
-However, I fear having a custom FPGA-specific verification mechanism
-accepted would be a tough battle. For this reason, I would really prefer
-to keep it as a future extension rather than as part of the initial
-infrastructure for userspace FPGA reconfiguration.
-
-
-[1] https://lwn.net/Articles/645823/
-[2] https://lore.kernel.org/all/1431996325-8840-3-git-send-email-mcgrof@do-not-panic.com/
-[3] https://lore.kernel.org/all/20170526030609.1414-2-takahiro.akashi@linaro.org/
-[4] https://lore.kernel.org/all/1455301771-7703-11-git-send-email-zohar@linux.vnet.ibm.com
-
-
-Thanks,
-Marco
+-- 
+2.55.0
 
