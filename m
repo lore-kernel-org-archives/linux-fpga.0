@@ -1,253 +1,152 @@
-Received: from mta1.migadu.com (out-212.mta1.migadu.com [95.215.58.212])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazon11012032.outbound.protection.outlook.com [52.101.43.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C54CA19C553
-	for <linux-fpga@vger.kernel.org>; Sun, 16 Aug 2026 13:19:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.212
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786886348; cv=none; b=cC86CE+/bJmx/BZpUhlUdn/vUFkPT9RusYYGgmg7cCcYZBpVD0FLOtjTWb6LsTWKV6mJC7PksakUlFSgJKNYeOsi469+BugynSlJBmKW8fdP8/F6m9q4VVUyf/jes0xZqyTJG1JwCyMcES+JWJtp6jiFiWYYUs6lvzuuHTE7+MQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786886348; c=relaxed/simple;
-	bh=yZr5A2ESARrmw/hB8Ej9k49qkDR/lp200KkLOaD9Oz4=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=WyWOU8wIYjJj/Pc0zyS9gLMVFragOX3nGxIF6nPgTgqdDnC1j3SceS/KOqnvW8tnMrUrIZeWuUlxBcsobEsdy1U9OF7MHj7WJSDKDX682un5LHlopeaBP08s34O4TReR9Ekk5lnaoFv/tpvS799xrJZOvBse4NwCQouPI9yd5wo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=Rj3zIbeF; arc=none smtp.client-ip=95.215.58.212
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38F4E34388F;
+	Sun, 16 Aug 2026 15:07:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.43.32
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786892870; cv=fail; b=YtXfZerKZV62x6U9Y+RzGrMz2MV25zBZs0NaZRkSFKsqR1ir5JIIZvko8CuwLhEWyODVk+MdQPppzMebuhDmpw/1rmc33hKmRGmc1a5ZM0qdwISznoruvoB+lBpE3DZxNlv+4L9cwOifIbx3jJ4AVAcoXlQ6+dhbAI3zqIiqb/Y=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786892870; c=relaxed/simple;
+	bh=KiggJWWOTGAYulj+WhwtlvobhwNpZUyXyOqCLfIjrM8=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=TK+X1/4ClWmxPbYj3RX3ivk33Eor6VAMkFJk3MK2Kk/dqSO/kWnb8Z0Wnm0SdRFpx6qc66DGcn0WCAZ8Q3J9HyTfYQwCH2KcpbhkvKh76bkv6Q8WD4h4cduQGFJRPcU+srOcMMCLcXA1Z+syyMlks2jupcimeR+B8HgFUsjrq3I=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=znKnSbFP; arc=fail smtp.client-ip=52.101.43.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="Rj3zIbeF"
-X-Envelope-To: linux-fpga@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=yZr5A2ESARrmw/hB8Ej9k49qkDR/lp200KkLOaD9Oz4=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1786886343; v=1; x=1787491143;
- b=Rj3zIbeF3tOUHfQOOKK++pTMBBoDQ1qYRtBs2zL1aj1bd517vu8vBiGMhEld0oWiHR9E687d
- Dhj/sGYz4mUhqbEed1I69bbqEArPMDLuBwPWSJx2DVMhmhZAxMsASd1oW4EEMnhf3cha4ycaxSL
- kDkCzKr95G4LeMd5xXvuPe9Y=
-X-Envelope-To: linux-fpga@vger.kernel.org
-Received: from [192.168.9.27] (188.216.46.176)
-	by smtp.migadu.com with ESMTPS id 2c5882734d9782fb;
-	Sun, 16 Aug 2026 13:18:53 +0000
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <4dbdb52e-1b28-432e-a3a7-ad9c44f17d27@linux.dev>
-Date: Sun, 16 Aug 2026 15:18:48 +0200
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="znKnSbFP"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=FQFKaKly0PjQpBIivzaQE3rbI/CJbfhoicdQLFVKjFu9SJJ6z53x9OZpO9awiHZMgLnaKYOG7Sq9Q1bcRGPKVp2RvgDqhVKrS0Tdl0rgsrBToI3uHZA8kuM7aKNHlfO7c6QEaVKrGvmsO6lCIgwGdcXY72xSBA2Oorpj3Cms4AE05+p/2SaZ9zt+4vKUlAzIqjvTxgNxPvBnPMYwC/AoNM4HJ32d6WWSY7tb/sHG1aqD68uukl8idTLTkDXa5NCndyYW70RKvBydVNB7zMP4/A150qafxxA0skdeUPHiO54eOEpdJ5XBMxAdVU8qzrV7Bx9/iv+mOHC0SSTh9loI7A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Hn6SMwsM0Q8V0fp4EcGeoF+ud56vhGz4Ohhd1TbaYKM=;
+ b=flCKG02ztNdebRQKkO7bHWWcs7UNHxlT0rst3I7Cw3OtSC9E0TxUWbS7FA8bV/aH7m5iGLabdmjM4DbTIB9kQl7hgNvMaOJTliCOa3GVTr+KbPC9Yc+/A2x0FUC9Fin8U+/uSWD+L2Qlxf7PYDPl2mwxxSTa/FXc6zlWt12MfWy+SX3GcDaKBMVEZ3N6Svpm/zWQhuWTlS0glufNTpG4gltyN4127nz6NC0T4u2is1ocWWqS/5JxXg6WIbmy4737HFUDNKx34OnhTCNnC64juAkOkohfeIZaxulRQbXwwG/vnhLjReT4lfWkPkKpJ8Px7AzVg7/JZpqKZ+y++YSDgg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Hn6SMwsM0Q8V0fp4EcGeoF+ud56vhGz4Ohhd1TbaYKM=;
+ b=znKnSbFPPVRimDywPaJokqEVry/Kf4LoXiRrtyleJ4B6yid4sTxAmFJTjNYIU8jeYzTY4ozB3/5ecPXP7amfuxfD3dxGvXFRaQ98dhmg5naL3rTJFSsR2uq2HXLvrjCQXs4ksLHVWN3qQX8vkllsIg+OhmDxiTMEx8ixo516UmY=
+Received: from SJ2PR07CA0006.namprd07.prod.outlook.com (2603:10b6:a03:505::18)
+ by CY5PR12MB6430.namprd12.prod.outlook.com (2603:10b6:930:3a::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.315.14; Sun, 16 Aug
+ 2026 15:07:45 +0000
+Received: from MWH0EPF000A672F.namprd04.prod.outlook.com
+ (2603:10b6:a03:505:cafe::3) by SJ2PR07CA0006.outlook.office365.com
+ (2603:10b6:a03:505::18) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.315.17 via Frontend Transport; Sun,
+ 16 Aug 2026 15:07:45 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ MWH0EPF000A672F.mail.protection.outlook.com (10.167.249.21) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.339.3 via Frontend Transport; Sun, 16 Aug 2026 15:07:45 +0000
+Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Sun, 16 Aug
+ 2026 10:07:43 -0500
+Received: from xhdappanad40.xilinx.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.45 via Frontend
+ Transport; Sun, 16 Aug 2026 10:07:40 -0500
+From: Aravind Thokala <aravind.thokala@amd.com>
+To: <mdf@kernel.org>, <yilun.xu@intel.com>, <trix@redhat.com>,
+	<sumit.semwal@linaro.org>, <christian.koenig@amd.com>
+CC: <corbet@lwn.net>, <skhan@linuxfoundation.org>,
+	<linux-kernel@vger.kernel.org>, <linux-fpga@vger.kernel.org>,
+	<linux-media@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+	<linaro-mm-sig@lists.linaro.org>, <linux-doc@vger.kernel.org>, <git@amd.com>,
+	<aravind.thokala@amd.com>, <nava.kishore.manne@amd.com>
+Subject: [PATCH 0/2] fpga: add dma-buf based FPGA programming interface
+Date: Sun, 16 Aug 2026 20:37:32 +0530
+Message-ID: <20260816150734.2092802-1-aravind.thokala@amd.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Marco Pagani <marco.pagani@linux.dev>
-Subject: Re: [RFC PATCH] fpga: region: Add support for FPGA region variants
-To: Xu Yilun <yilun.xu@linux.intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
- Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <aj53joym0YpoYXWQ@yilunxu-OptiPlex-7050>
- <97739313-fc97-4b11-b2e2-d680621a7fe1@linux.dev>
- <akPZoGCyQW+6+hDX@yilunxu-OptiPlex-7050>
- <5dbd4ac8-a532-4889-bae1-f0bab9a99267@linux.dev>
- <akyyp1GCecWj2Bk2@yilunxu-OptiPlex-7050>
- <417b510f-0f6d-4695-97f5-3fc19b9377b9@linux.dev>
- <amCn8UYdybT+RRnq@yilunxu-OptiPlex-7050>
- <9d4af487-69a7-4a0d-9335-35c3a057de54@linux.dev>
- <anBfAa4LpjbmYHIc@yilunxu-OptiPlex-7050>
- <db7cfe9e-b2ba-4323-bff9-44598e1f70bb@linux.dev>
- <anl8891cH+bUfsGY@yilunxu-OptiPlex-7050>
-Content-Language: en-US
-In-Reply-To: <anl8891cH+bUfsGY@yilunxu-OptiPlex-7050>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MWH0EPF000A672F:EE_|CY5PR12MB6430:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6aca5568-5e79-403b-9d1a-08defba8209e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|36860700016|23010399003|82310400026|376014|7416014|10067099003|56012099006|6133799003|18002099003|11063799006|5023799004;
+X-Microsoft-Antispam-Message-Info:
+	Z//76FKIr9CmO2nBArMdgueG3pTt5ydEy3EClmu1jCkhhINLaimB6+rQuKacziTpaTUqP/0DcD68U6GnK/4P60k873fihwNyGDKXjiGTx7aB1/cakd1doJiRi5qLL179HnJk0KYPyY4dpmhVwsK1eK6maPAPWlSVn/hIM0hLLQv+sEn7yAtH5JdWmpKkCxp/crWoSNQVA1z703YoHXb+TRfveSOc+XplpPq8JW3jCR8Nt0/kYGxOuyje8lErSEvlAmngPuoeCRkd5SBl0KNr+AR19ycbR0JtGsVXDr0AyPKNEIHc3kxVSR2+Li+WXzzdfFidkBbhOLuMof+IHQHcidscuy7e6w+m9IOeLPmf8PwzGPWXy99gADSspNfsrhN0WvQHCF/HOCyuQb/2fVDn87+wGaT10sAv1lLiV1XpUIlVMn9NlLhiuUWwe9HQhZB7mMiGcnTeJs6C06R0hcOk8wXpVGH/05DDpOZK/c1qaenaAZIJTYLq00od2MdSPqujFeTd48lnaJit04USJdeAzOspyqeKegrT655hrNdJIQWRpbwK67wyv+L1pN8Yhrv6EmLM5dUJrNPunVR/cTBiK+VPhxvtR0bAhGPxpjZbgDhDKwWQ9/R99p76eXU1PaNLsnXplkk2YwvnWiyoIwjrj37aMUfNvAk67UhXkvH5jpQeRrowR6hbx57XK1d1uACP2s2q3b/Is+APIyT7HfYsrw==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(23010399003)(82310400026)(376014)(7416014)(10067099003)(56012099006)(6133799003)(18002099003)(11063799006)(5023799004);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	43MCLv6Kz2NG04h24Fu4vbv6onSVrdbRavVy5+v31ToNSSlQEdJSupDjxhRluW+V9ud0JwHaYgh3F4nzs/yjg/TEgRVYn6dGj7o91zRw/p48XDquftRMpVOpUmvxzPF/7wXqwe83kz3coKc8ulICbZfE24RB3Q5dPRhKiAniAOcVs/cZaDbfwzgqZUKXuaQBBK59xj3Fx7O8wV96AtGBGg2LOeDb6GLihffs+69HdLNdgkyWWgGoAtYNWFKX3bZYX8a7kpNQWmqhp7tQpJWwep9ERDEeJSZ8UT9HrjHhxDMsoHFHJn2XLGw/BlcON/oIHBvx4cBWWMmIz1P4qDvBr1kaa7tEHSyiCDSzxJb6jtWWGm1KiwJ1xeXW6s5KrdGfb66QAA52h/nGBCLPkY3cukgJN0dioTDKlaXTv78capXkAWVBQjPshgb/Y9fPk9ko
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Aug 2026 15:07:45.2760
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6aca5568-5e79-403b-9d1a-08defba8209e
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	MWH0EPF000A672F.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY5PR12MB6430
 
+Some systems need to load large FPGA configuration images. The FPGA
+subsystem allows loading images from the filesystem, but this requires
+the entire image to be loaded into kernel memory first. For drivers
+that need a DMA-capable buffer for programming, the data is then
+copied again into DMA memory. This creates needless memory pressure
+and delays due to the extra copy.
 
+This series adds dma-buf support that allows userspace to allocate a
+buffer directly from a DMA heap, write the FPGA image into it, and
+pass the file descriptor to the kernel via ioctl — skipping the
+intermediate kernel buffer entirely.
 
-On 10/08/2026 09:25, Xu Yilun wrote:
-> On Sat, Aug 08, 2026 at 09:35:08PM +0200, Marco Pagani wrote:
->>
->> On 03/08/2026 11:27, Xu Yilun wrote:
->>
->>>> (i) The base DT (including variant fragments) is built and global
->>>> resources are statically resolved at compile time. Then, the resulting
->>>> DTB is loaded by the kernel at boot time before userspace is loaded and
->>>> can be authenticated (as part of a FIT image) to maintain the chain of
->>>> trust.
->>>
->>> That helps, thanks.
->>>
->>>>
->>>> (ii) Once the boot is completed and userspace is running, the kernel
->>>> hardware configuration/topology remains safe and locked in place since
->>>> there are no interfaces that allow userspace to change it.
->>>>
->>>> So I think the main advantage of the variants compared to the open DTO
->>>> interface is limiting the "blast radius" in case things go wrong.
->>>
->>> But I don't think limiting both the functionality and the blast radius can
->>> be the target of the uAPI.
->>
->> I would see things the other way around: security is a requirement for a
->> uAPI rather than a feature.
->>
->> I think there is a fundamental asymmetry between the marginal
->> convenience of not having to rebuild the base DTB and the massive and
->> potentially (semantically) unsolvable burden of securing an open DTO
->> interface and ensuring that it will not crash or corrupt the kernel,
->> given that most of the infrastructure there is not designed to handle
->> arbitrary node changes at runtime.
-> 
-> OK, then we put aside the idea of strict checking of a DTO. But do you
-> think in which case these kernel DTO interfaces can be used?
+Userspace flow:
+  1. Allocate buffer from /dev/dma_heap/ (e.g., CMA heap)
+  2. mmap the buffer and write the FPGA image into it
+  3. ioctl(/dev/fpgaX, FPGA_IOCTL_LOAD_DMA_BUF, &dmabuf_fd)
 
-Going back to Antoniou's RFC, my understanding is that a ConfigFS / DTO
-interface is best suited for development and debugging rather than as a
-runtime DT configuration interface for production systems.
+The dma-buf logic is implemented as a separate layer on top of the
+FPGA manager, keeping buffer management separate from the write path.
+Individual FPGA drivers opt in by calling fpga_dmabuf_register().
+---
+This work is based on the approach discussed in [1].
 
+[1] https://lore.kernel.org/all/20231122053035.3758124-1-nava.kishore.manne@amd.com/
+---
+Aravind Thokala (2):
+  fpga: Add dma-buf interface for FPGA programming
+  fpga: versal: add dma-buf programming support
 
->>>> If the DT cannot be tampered with, the kernel can still enforce hardware
->>>> boundaries (e.g., IOMMU config) that can contain the spill to the
->>>> misbehaving region's resources. On the contrary, a single malicious DTO
->>>> can compromise the entire kernel with its memory mappings.
->>>>
->>>> Ultimately, I think the responsibility of authenticating image/bitstream
->>>> is outside the scope of the kernel as they are configurations for the
->>>> hardware and not the kernel itself. It's up to the device to
->>>> authenticate its own firmware, like how reconfiguration engines of
->>>> modern FPGA families can already authenticate signed image/bitstreams.
->>>
->>> No I don't think so. It's the kernel drivers decision to load the image
->>> to HW, authenticate or not authenticate the image, via an HW engine or by
->>> software.
->>>
->>> Basically you are treating the HW description blob and the HW image blob
->>> differently, but I think they are basically one thing that can't be
->>> torn apart. If you want security, you must build trust for both the image +
->>> the HW description before re-program and re-enumerate.
->>
->> I see your point. I think the main challenge here comes from the fact
->> that images/bitstreams are not stored in immutable kernel memory buffers
->> but rather usually kept in the rootfs like regular firmware files.
->> This intrinsically leaves the door open for TOCTOU races and attacks.
->>
->>
->>> I remember there was a discussion of accepting a FIT image for
->>> re-programming several years ago.
->>
->> From a conceptual point of view, I do agree with you. Getting the pair
->> {config, image} for each partial image directly from the FIT image at
->> boot time (from the buffer passed by the bootloader) and then keeping it
->> in kernel memory seems like the most straightforward approach to me as
->> well. However, I think the size of practical FPGA images/bitstreams
->> forces us to support the /lib/firmware path anyway.
->>
->> So I did some digging to see if there have been past attempts to secure
->> firmware loading. Indeed, I found some attempts (e.g., [1-3]), but they
->> have been all rejected for various reasons, including the fact that a
->> malevolent root user can always mess up a device by mapping and
->> accessing its register space, and potentially bypass the secure firmware
->> loader by directly programming the device to load a malicious firmware.
->>
->> As I understand it, the current upstream consensus is that hardware
->> devices must be responsible for verifying their own firmware, just as
-> 
-> I totally agree the hardware must be responsible for the firmware image.
-> 
->> the kernel is responsible for maintaining the safety of its own data
->> structures from potential userspace attacks.
-> 
-> That's not just about DT attack, to be consistent to the firmware image
-> consensus, the vendor FPGA driver should be responsible for the
-> authentication of the extra DT description, "do whatever it wants with
-> it if it is signed or not", is it?
-> 
-> To me, I support "it's OK for driver to just apply the DTO if the device
-> can't do verification". Basically I don't believe the HW image won't
-> impact the whole system but only DTO do.
-> 
-> But if the no-verification-in-driver is denied, I think the thing we
-> need to do is to verify the binding between the DT description & image.
-> After we've verified the DTO & the image is a valid pair, they are not
-> arbitrary, whatever the DTO does is necessary to the updated hardware.
+ .../userspace-api/ioctl/ioctl-number.rst      |   1 +
+ MAINTAINERS                                   |   1 +
+ drivers/fpga/Kconfig                          |   9 +
+ drivers/fpga/Makefile                         |   2 +
+ drivers/fpga/fpga-dmabuf.c                    | 198 ++++++++++++++++++
+ drivers/fpga/versal-fpga.c                    |  33 ++-
+ include/linux/fpga/fpga-dmabuf.h              |  22 ++
+ include/linux/fpga/fpga-mgr.h                 |   1 +
+ include/uapi/linux/fpga.h                     |  15 ++
+ 9 files changed, 281 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/fpga/fpga-dmabuf.c
+ create mode 100644 include/linux/fpga/fpga-dmabuf.h
+ create mode 100644 include/uapi/linux/fpga.h
 
-I think we agree on this. Ideally, we should validate the complete
-{config, image} pair. However, I don't see how using DTO at runtime can
-help with this goal. On the contrary, it would put us in a situation
-where neither element of the pair is guaranteed since it enables the
-user to feed arbitrarily forged DTOs. Therefore, unlike DT variants,
-we cannot leverage one element (config) to validate the other (image).
-
-
->>
->> If, despite this, there is a requirement to secure /lib/firmware, it
->> should be done at the filesystem level using the IMA subsystem [4] that
->> would in turn use the TPM (or a firmware running in a TEE) as the root
->> of trust.
->>
->> For these reasons, while I fully understand your point of view, I am
->> hesitant to implement custom FPGA-specific signature checking for the
->> RFC. My concern is that even if it is accepted here, it will ultimately
->> be rejected as it moves up in the pull requests.
-> 
-> It is possible. To be more efficient, I think we should invite boarder
-> discussions.
-
-Agreed. How about we loop the DT maintainers in on this conversation?
-
-
->>
->> However, if you still want me to go down the road of securing the
->> partial images directly from the FIT image, I'm open to that. For
->> instance, we could add an optional sha-512 hash alongside the partial
->> image fw name property in each variant node of the base DT, so that the
->> FPGA framework can verify the image before programming.
-> 
-> No I mentioned FIT image just thinking if we could verify the signed
-> binding at runtime. Basically I don't think switching variants is a
-> meaningful uAPI definition, it is like a workaround to avoid the
-> real question "when could we use these kernel DTO kAPIs".
-
-My view is that DTO kAPIs should remain an internal kernel mechanism
-that should not be exposed to userspace. Exposing them through a
-userspace interface is a massive security hurdle, and I don't think it's
-worth the risk for the reconfigurable regions, especially considering
-that the set of possible configurations is finite and statically defined
-(synth + PnR) at design time.
-
-
->>
->> Another alternative could be computing the hash of each of the partial
->> images received at boot time from the authenticated initramfs during the
->> of-fpga-region probe, and then storing it in its variant struct.
->> However, this would require having all images in the initramfs and might
->> be impractical on systems with little RAM.
->>
->> I think we have a couple of arguments we could use to back it up,
->> framing it as a fallback mechanism due to the specificity of FPGA
->> devices:
->>
->> - Not all FPGA reconfiguration engines support crypto image
->>   verification;
->> - Not all SoCs/platforms have a TPM IP or support for a TEE;
->> - We must guarantee the pair {config, image}.
->>
->> Also, with the FPGA variants, the verification phase will only occur
->> once during the initial loading and then be skipped if images are cached
->> using the "firmware-cached" property, enabling a lean zero-overhead
->> reconfiguration flow.
->>
->> However, I fear having a custom FPGA-specific verification mechanism
->> accepted would be a tough battle. For this reason, I would really prefer
->> to keep it as a future extension rather than as part of the initial
->> infrastructure for userspace FPGA reconfiguration.
->>
->>
->> [1] https://lwn.net/Articles/645823/
->> [2] https://lore.kernel.org/all/1431996325-8840-3-git-send-email-mcgrof@do-not-panic.com/
->> [3] https://lore.kernel.org/all/20170526030609.1414-2-takahiro.akashi@linaro.org/
->> [4] https://lore.kernel.org/all/1455301771-7703-11-git-send-email-zohar@linux.vnet.ibm.com
-
-
-Thanks,
-Marco
-
+-- 
+2.34.1
 
