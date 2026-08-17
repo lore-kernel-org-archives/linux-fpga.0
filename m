@@ -1,56 +1,49 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mta1.migadu.com (out-231.mta1.migadu.com [95.215.58.231])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 173E817BED0;
-	Mon, 17 Aug 2026 03:06:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 000FC3F54DD
+	for <linux-fpga@vger.kernel.org>; Mon, 17 Aug 2026 16:14:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.231
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786935979; cv=none; b=sEppUc//YIJ4oulv3rE4dvTiZl5ZI0AeLp3zuFIh+5Tj0bXHx7g4IUvBMoBmkQsBa1QgpdBl+durtK47KNlIz4Ih6rEmio9A8bX5JJObsXDRZMZoYD/Via7SjQEndKR2uJJRbsQ1jJPlRC43PCwP2jSYpBduOpNKjphJ3o958Ts=
+	t=1786983279; cv=none; b=K9yy2/1QDGegvWjydaCgnwPrDL1354ZINu5fkJuEGQhKRS5YJuJ5wBFy6Zt1IesTluzoLzbWLN5xCLeiJgOCSX6y787hRuhKmeedlamQEBXWULT5QqMZ8HCVeJCmzqNfnSQ6SeN8IoE0Su5P5H8YDDoXB65qmViaLCY8t6zd/yg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786935979; c=relaxed/simple;
-	bh=n4txlHJbWEgzbouBG7BAVJCcqrHGoDQFcDBZcQUS2U4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bfW4zZM6Juk1hDF9+eYVtT7RB8nHMdcil7skUAKDP1AMvyviI0+shQI6yYslY5b4/R3VnnNBLiw+lGBo6YtkJNLNNiGcU/mAXAYFlCOdS3sLurkfbrjFk3Pao0WrGNpeAEWjrxJ2JaYuAA7sGFL9ZQh5NerXo9rXxtONrS0Dcus=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=byS4ApTe; arc=none smtp.client-ip=192.198.163.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1786983279; c=relaxed/simple;
+	bh=PfQGGHHTy0oRU5WMTYmf3v3TTrCpq8a9oFIUO2UGE/8=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=EsG2nX52vtSgRG3oxIgedSkUrPIQPjdhDIO/4LBmBWRXISK3XtDSR7LbMpTeCAGMiyy0JcqlMiZLZ5Ay6TIQD8Zl7FgzEMXkZJNtZevmz3ykrOI615tub3orNL6IN4tvH8/ERK0lxG5ixNFXm6b6CRJputaU5y1MNCk3jEfgmmo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=oDwJQ38m; arc=none smtp.client-ip=95.215.58.231
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="byS4ApTe"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1786935977; x=1818471977;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=n4txlHJbWEgzbouBG7BAVJCcqrHGoDQFcDBZcQUS2U4=;
-  b=byS4ApTeDDp/NmRAonoFP4GK0y4p830hpeadnK7cEcg4dKKzf4NEDKe8
-   t7Mtu58CpkgjevgZoAXebI0Qntmv31jX5/cxk7E82bLXB4jc91aJHs+MK
-   x1+SpJ1hRZSBpohoxRBoNGStxzXBni2c5mjctQmpFyNOvONn2JR5HVv7i
-   waF3zfuMKywrYSV2Fnh4O+ja+yzvf1aXDjgUOf0e01Pjaig3DVf8gnGRU
-   So3nWO0KJRpT4YS0eJZdOuWJ4em/rclE96kcLw9w0/rqR9OFbtJycA2gq
-   9yqbvDtkyxG/HxzQJ2PSA5XplYMEoDUIhFR9Sc5zMY6hiZnjGgwLX9/bA
-   A==;
-X-CSE-ConnectionGUID: Qt8Jkk87RBetRUaQ2jVARg==
-X-CSE-MsgGUID: ZO0x3XvBSGCOeNWwwbTNIA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11877"; a="98769971"
-X-IronPort-AV: E=Sophos;i="6.25,228,1779174000"; 
-   d="scan'208";a="98769971"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Aug 2026 20:06:16 -0700
-X-CSE-ConnectionGUID: xtPhS3N1Q76UsujrfQGZCQ==
-X-CSE-MsgGUID: 6jMMzXvLRlehv8EUvRiIzg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,228,1779174000"; 
-   d="scan'208";a="269991048"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.47.46])
-  by fmviesa005.fm.intel.com with ESMTP; 16 Aug 2026 20:06:14 -0700
-Date: Mon, 17 Aug 2026 11:06:13 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Marco Pagani <marco.pagani@linux.dev>
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="oDwJQ38m"
+X-Envelope-To: linux-fpga@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=PfQGGHHTy0oRU5WMTYmf3v3TTrCpq8a9oFIUO2UGE/8=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1786983275; v=1; x=1787588075;
+ b=oDwJQ38m5tKwoQsgKfPVW2c7Rgfmlv3VPT52cACDmduK282I7k7w64BEK5LG+AB99rmmpVNQ
+ 9TPR2NbUWcdRIqGcE5N2SPglIFBERGvt81podAW8b0o6J0C86qk542Ugdu2GMBTCUZX562Q19cf
+ P3niwOl5FwL+yXvw9tosWsos=
+X-Envelope-To: linux-fpga@vger.kernel.org
+Received: from [192.168.9.27] (188.216.46.176)
+	by smtp.migadu.com with ESMTPS id 5c2123acdf741465;
+	Mon, 17 Aug 2026 16:14:35 +0000
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <8848432d-45b0-4efe-adf3-adfb64fe0899@linux.dev>
+Date: Mon, 17 Aug 2026 18:14:34 +0200
+Precedence: bulk
+X-Mailing-List: linux-fpga@vger.kernel.org
+List-Id: <linux-fpga.vger.kernel.org>
+List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+From: Marco Pagani <marco.pagani@linux.dev>
 Subject: Re: [RFC PATCH] fpga: region: Add support for FPGA region variants
-Message-ID: <aoJ6paA/8ndpJ17y@yilunxu-OptiPlex-7050>
+To: Xu Yilun <yilun.xu@linux.intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+ Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 References: <akPZoGCyQW+6+hDX@yilunxu-OptiPlex-7050>
  <5dbd4ac8-a532-4889-bae1-f0bab9a99267@linux.dev>
  <akyyp1GCecWj2Bk2@yilunxu-OptiPlex-7050>
@@ -61,40 +54,95 @@ References: <akPZoGCyQW+6+hDX@yilunxu-OptiPlex-7050>
  <db7cfe9e-b2ba-4323-bff9-44598e1f70bb@linux.dev>
  <anl8891cH+bUfsGY@yilunxu-OptiPlex-7050>
  <4dbdb52e-1b28-432e-a3a7-ad9c44f17d27@linux.dev>
-Precedence: bulk
-X-Mailing-List: linux-fpga@vger.kernel.org
-List-Id: <linux-fpga.vger.kernel.org>
-List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
-List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4dbdb52e-1b28-432e-a3a7-ad9c44f17d27@linux.dev>
+ <aoJ6paA/8ndpJ17y@yilunxu-OptiPlex-7050>
+Content-Language: en-US
+In-Reply-To: <aoJ6paA/8ndpJ17y@yilunxu-OptiPlex-7050>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-> > But if the no-verification-in-driver is denied, I think the thing we
-> > need to do is to verify the binding between the DT description & image.
-> > After we've verified the DTO & the image is a valid pair, they are not
-> > arbitrary, whatever the DTO does is necessary to the updated hardware.
+
+
+On 17/08/2026 05:06, Xu Yilun wrote:
+>>> But if the no-verification-in-driver is denied, I think the thing we
+>>> need to do is to verify the binding between the DT description & image.
+>>> After we've verified the DTO & the image is a valid pair, they are not
+>>> arbitrary, whatever the DTO does is necessary to the updated hardware.
+>>
+>> I think we agree on this. Ideally, we should validate the complete
+>> {config, image} pair. However, I don't see how using DTO at runtime can
+>> help with this goal.
 > 
-> I think we agree on this. Ideally, we should validate the complete
-> {config, image} pair. However, I don't see how using DTO at runtime can
-> help with this goal.
+> Validation is not the goal. Re-enumeration is the goal. DTO is what FPGA
+> is now using for re-enumeration. Validation helps DTO if you want extra
+> integrity.
 
-Validation is not the goal. Re-enumeration is the goal. DTO is what FPGA
-is now using for re-enumeration. Validation helps DTO if you want extra
-integrity.
+I would argue that validation is a requirement for any userspace
+interface, while I do agree that re-enumeration is the goal. In my RFC,
+re-enumeration is triggered using the DT infrastructure every time
+userspace switches from one variant to another. Variants can be thought
+of as pre-validated DT fragments baked into the base DT, rather than
+DTOs ingested from userspace at runtime.
 
-> On the contrary, it would put us in a situation
-> where neither element of the pair is guaranteed since it enables the
-> user to feed arbitrarily forged DTOs.
+To clarify my position, going back to a couple of messages ago:
 
-As you referenced, no OS component (even the kernel) could guarantee the
-functionality of the binary for a device, only the device can. So what's
-the difference who provides the pair?
+- As I understand it, the current upstream consensus is that hardware
+  devices must be responsible for verifying their own firmware.
+  So, the kernel is responsible for protecting the integrity of its
+  own configuration (live DT), while the reconfiguration engine is
+  responsible for validating FPGA images;
 
-The only thing matters here is integrity and authentication, which is
-totally a different thing from kernel-user privilege.
+- If this is not sufficient, and there is a requirement to secure
+  /lib/firmware, it should be done at the filesystem level using
+  the IMA subsystem;
 
-I'm also confused you keep on telling that userspace is arbitrary so no
-userspace interface, which seems to suggest kenrel should never get any
-input from user.
+- However, since not all FPGA reconfiguration engines support crypto
+  image verification, and not all SoCs/platforms have a TPM IP or
+  support for a TEE, we might consider having a subsystem-specific and
+  optional check for the {config, image} pair as a *future* extension.
+
+
+>> On the contrary, it would put us in a situation
+>> where neither element of the pair is guaranteed since it enables the
+>> user to feed arbitrarily forged DTOs.
+> 
+> As you referenced, no OS component (even the kernel) could guarantee the
+> functionality of the binary for a device, only the device can. So what's
+> the difference who provides the pair?
+> 
+> The only thing matters here is integrity and authentication, which is
+> totally a different thing from kernel-user privilege.
+> 
+> I'm also confused you keep on telling that userspace is arbitrary so no
+> userspace interface, which seems to suggest kenrel should never get any
+> input from user.
+
+My concern isn't about accepting user input in general but rather about
+the type and scope of that input. I think there is a huge difference in
+terms of the security between:
+
+- matching a string that userspace sent via sysfs and then applying a
+  safe configuration already contained in the base DT (validated from
+  a FIT image).
+
+- having userspace directly pass the kernel DT configuration (as a DTO),
+  which the kernel must then validate (both syntactically and
+  semantically) and apply.
+
+In the first scenario, userspace is like a customer selecting from a
+menu of pre-approved dishes, and then the kitchen safely prepares it.
+
+In the second scenario, userspace is like a customer stepping into the
+kitchen to cook their own meal, forcing the chef to constantly supervise
+them to ensure they don't burn the place down.
+
+
+>>> It is possible. To be more efficient, I think we should invite
+>>> boarder discussions.
+
+Following up on what you said two messages ago, I think we should invite
+the DT people and ask for their input to help move this conversation
+forward.
+
+
+Thanks,
+Marco
