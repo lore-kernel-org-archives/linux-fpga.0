@@ -1,148 +1,107 @@
-Received: from mta1.migadu.com (out-231.mta1.migadu.com [95.215.58.231])
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 000FC3F54DD
-	for <linux-fpga@vger.kernel.org>; Mon, 17 Aug 2026 16:14:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.231
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16A18426EBB
+	for <linux-fpga@vger.kernel.org>; Wed, 19 Aug 2026 08:39:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786983279; cv=none; b=K9yy2/1QDGegvWjydaCgnwPrDL1354ZINu5fkJuEGQhKRS5YJuJ5wBFy6Zt1IesTluzoLzbWLN5xCLeiJgOCSX6y787hRuhKmeedlamQEBXWULT5QqMZ8HCVeJCmzqNfnSQ6SeN8IoE0Su5P5H8YDDoXB65qmViaLCY8t6zd/yg=
+	t=1787128799; cv=none; b=EPwHvjS4BmR3GnobHaqR86fe5G8zeyLiEWGjPXkR0bncVYVhZb3hTkJuODD+ANzOv0Bi1YT5F9GOMdAnctB8KaHYglkZjnq5EyXwW5zKF5BICYbnokTxQCsA4eu1aYpZ38/nKHdcyTBsl+ksTTmdb23vnui3acKkMOWJqPU8Zus=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786983279; c=relaxed/simple;
-	bh=PfQGGHHTy0oRU5WMTYmf3v3TTrCpq8a9oFIUO2UGE/8=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=EsG2nX52vtSgRG3oxIgedSkUrPIQPjdhDIO/4LBmBWRXISK3XtDSR7LbMpTeCAGMiyy0JcqlMiZLZ5Ay6TIQD8Zl7FgzEMXkZJNtZevmz3ykrOI615tub3orNL6IN4tvH8/ERK0lxG5ixNFXm6b6CRJputaU5y1MNCk3jEfgmmo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=oDwJQ38m; arc=none smtp.client-ip=95.215.58.231
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1787128799; c=relaxed/simple;
+	bh=HDUGLWiuk/eVKtE186LgSFkZm9RmgGSssHuF/3dExcI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=D0ZwdiEYrNWTG9LdA71NV5wM6znXXUL14WnTSe9CoYJzdT+PBK1hJV++lrSokMnCuK/Xq+o6ywNXlfYt6kMCgB1FZ5LuJ+Rbn5DrUuM3o71EIsqAo7yjrYi8LP0GpKAFEj/CQ4LbiyLngN5hN1KuSg+UHGDDUXL3Rd7idQQGo9o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=nl4+Sq4j; arc=none smtp.client-ip=209.85.128.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="oDwJQ38m"
-X-Envelope-To: linux-fpga@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=PfQGGHHTy0oRU5WMTYmf3v3TTrCpq8a9oFIUO2UGE/8=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1786983275; v=1; x=1787588075;
- b=oDwJQ38m5tKwoQsgKfPVW2c7Rgfmlv3VPT52cACDmduK282I7k7w64BEK5LG+AB99rmmpVNQ
- 9TPR2NbUWcdRIqGcE5N2SPglIFBERGvt81podAW8b0o6J0C86qk542Ugdu2GMBTCUZX562Q19cf
- P3niwOl5FwL+yXvw9tosWsos=
-X-Envelope-To: linux-fpga@vger.kernel.org
-Received: from [192.168.9.27] (188.216.46.176)
-	by smtp.migadu.com with ESMTPS id 5c2123acdf741465;
-	Mon, 17 Aug 2026 16:14:35 +0000
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <8848432d-45b0-4efe-adf3-adfb64fe0899@linux.dev>
-Date: Mon, 17 Aug 2026 18:14:34 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nl4+Sq4j"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-4955aa106b1so7679885e9.0
+        for <linux-fpga@vger.kernel.org>; Wed, 19 Aug 2026 01:39:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787128796; x=1787733596; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=nHLYTAe2NeEYLvkSf0CCqbrwJ7XqAE4/5Y9ShekbEQU=;
+        b=nl4+Sq4jKlGQJbh0TS7EsLSvpiqOtZV8m8E8LROMuwKiKYR1rdQKAFc2BxVNddL23J
+         Uh6EMokNYatiZtlPTL1QIsThfi8imsdsg9cxs9NKdRg7AtNMQqkIEF1MHdtGUlue+L/B
+         RmvfIcfMBWpV+zOqxcOqr6sg+wScoGO+WcjD01jMRoAawGha8oxkOENTnV5vwrca8wqe
+         AHP0CXBSVTxUz2IsltbVF9Z/q1Rr2YcjA36EwHwLHu5Wj5q+ZAurAEboVkWDPp+ChjA9
+         s2sCe0zc367cFACnmNORF7SYJMYre3XllDwCMunfmzgVWlKT5VhTvqSqdBS0Vwr0Ek9x
+         Ikhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787128796; x=1787733596;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=nHLYTAe2NeEYLvkSf0CCqbrwJ7XqAE4/5Y9ShekbEQU=;
+        b=KNjtWyzxJqOdGBEemWxx9dHFQUORWgJ+/N9KRTkJM8Vv2QxYwsn/HMbum93Y9VGYHP
+         mmQtqrDzISEyjc0mZaLr+syyBmwFz2pdt6BYd5HFoJaK6iEhMbjDvZ5dRcM/Pl5yPpLz
+         fnPVaxFCYJjwZzBA2gsinb/7eEGiYnjEdV0LHMMu2jcRvFt5dhp7TbZko/ky/klJ5qBK
+         fqJdCTc9zzYs6oxEzv3LfQ5vAssQa+ci/8e1Kl5I1Bt+XAZlFwIGRFX4IoMDku1T4KNW
+         CKkYOpwqtCIcJExGNrZ6EzFr0llgmbir+lmbVsMlvYy6ncJVEUp8eUODzKKcM9nIE+wt
+         Bxmw==
+X-Gm-Message-State: AOJu0YyHbuuEKfkp9CGKrDsVlhWPCQGqD5CABqQDM+kQ39CmQqeA2hgh
+	xcYZWg+cSmZ/rF/tSka2PRD6kRbrXJQNXefQsbBtbmeBU2KalVCWUHCPruRhGMdA
+X-Gm-Gg: AR+sD12k2ds9jxo+IWXZm3NzZCslX5/qGcOrvrWfIaSj7XUZK61mOhjKgCSn+8+Cbni
+	fuQuZssbFyBetIq7oHpwx3SxCHXlEwLSIL/fnxIOHYgBWXSsyb4PocJ2dw/T9wgnanBiWBPbBWP
+	UITrH5qR8XNGdu2h+D3qEcTaJAqlB+NiMhIi1SAcVpwsNnJHyHueDN3KNr0di/FC6HQUrzxLo1V
+	33zUp6g6kdG4FFT9ebEFhevImpqMsBf/Ad1h+tSmdNjZiGq9JGPBk7+eeY0SGaw1MBwvIFyl2hl
+	jHIEdwkMclRj5cAITmpAR/UXlXGpYYmJuwAsleHhkU1G/fMCxcmlJ35M5S9kymOjo2w2AlO6IFK
+	Wtxg1vEYkhgO3Fzpipfl4ri15Rzz+DjVGo/BXWDNT9/wC2EfwalK6ZnWWlgwc8P3A8IyBbCU3QH
+	oFLIXrdspq/hkAptBLsmwu374L0D0r2hPHM93eiRiShN8IadyLpr1yyGJs0CcQIig9J2hJV4YZb
+	YXqXl/n
+X-Received: by 2002:a05:600c:5294:b0:492:4e09:9fc1 with SMTP id 5b1f17b1804b1-499aa1f5413mr53202405e9.15.1787128796157;
+        Wed, 19 Aug 2026 01:39:56 -0700 (PDT)
+Received: from SurHub.localdomain ([196.188.112.82])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-499a9aa1594sm42873275e9.0.2026.08.19.01.39.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Aug 2026 01:39:55 -0700 (PDT)
+From: Abdifatah Suruur <suruurism@gmail.com>
+To: linux-fpga@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	yilun.xu@intel.com,
+	trix@redhat.com
+Subject: [PATCH] fpga: dfl: afu: prevent read-only port mappings from becoming writable
+Date: Wed, 19 Aug 2026 11:39:53 +0300
+Message-ID: <20260819083953.1425-1-suruurism@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Marco Pagani <marco.pagani@linux.dev>
-Subject: Re: [RFC PATCH] fpga: region: Add support for FPGA region variants
-To: Xu Yilun <yilun.xu@linux.intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
- Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <akPZoGCyQW+6+hDX@yilunxu-OptiPlex-7050>
- <5dbd4ac8-a532-4889-bae1-f0bab9a99267@linux.dev>
- <akyyp1GCecWj2Bk2@yilunxu-OptiPlex-7050>
- <417b510f-0f6d-4695-97f5-3fc19b9377b9@linux.dev>
- <amCn8UYdybT+RRnq@yilunxu-OptiPlex-7050>
- <9d4af487-69a7-4a0d-9335-35c3a057de54@linux.dev>
- <anBfAa4LpjbmYHIc@yilunxu-OptiPlex-7050>
- <db7cfe9e-b2ba-4323-bff9-44598e1f70bb@linux.dev>
- <anl8891cH+bUfsGY@yilunxu-OptiPlex-7050>
- <4dbdb52e-1b28-432e-a3a7-ad9c44f17d27@linux.dev>
- <aoJ6paA/8ndpJ17y@yilunxu-OptiPlex-7050>
-Content-Language: en-US
-In-Reply-To: <aoJ6paA/8ndpJ17y@yilunxu-OptiPlex-7050>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+afu_mmap() rejects writable mappings of port regions without the WRITE
+flag, but leaves VM_MAYWRITE set.  Userspace can map such a region
+read-only and then upgrade the mapping to writable with mprotect(),
+writing to FPGA port control/status registers the host owns.  A guest
+assigned an AFU can use this to reconfigure or reset the port and
+interfere with other tenants on the same FPGA.
 
+Clear VM_MAYWRITE for regions without the WRITE flag, as i915 does for
+its read-only objects and as fixed in drm/vc4 (CVE-2026-68445) and
+drm/panthor (CVE-2024-53071) and ptp: vmclock (commit
+a5edadbae57e2298a56cf7a4e774a027905a331f).
 
-On 17/08/2026 05:06, Xu Yilun wrote:
->>> But if the no-verification-in-driver is denied, I think the thing we
->>> need to do is to verify the binding between the DT description & image.
->>> After we've verified the DTO & the image is a valid pair, they are not
->>> arbitrary, whatever the DTO does is necessary to the updated hardware.
->>
->> I think we agree on this. Ideally, we should validate the complete
->> {config, image} pair. However, I don't see how using DTO at runtime can
->> help with this goal.
-> 
-> Validation is not the goal. Re-enumeration is the goal. DTO is what FPGA
-> is now using for re-enumeration. Validation helps DTO if you want extra
-> integrity.
+Fixes: 1a1527cf5ddac ("fpga: dfl: add FPGA Accelerated Function Unit driver basic framework")
+Cc: stable@vger.kernel.org
+Signed-off-by: Abdifatah Suruur <suruurism@gmail.com>
 
-I would argue that validation is a requirement for any userspace
-interface, while I do agree that re-enumeration is the goal. In my RFC,
-re-enumeration is triggered using the DT infrastructure every time
-userspace switches from one variant to another. Variants can be thought
-of as pre-validated DT fragments baked into the base DT, rather than
-DTOs ingested from userspace at runtime.
+---
+--- a/drivers/fpga/dfl-afu-main.c
++++ b/drivers/fpga/dfl-afu-main.c
+@@ -836,7 +836,11 @@
+ 	if ((vma->vm_flags & VM_WRITE) &&
+ 	    !(region.flags & DFL_PORT_REGION_WRITE))
+ 		return -EPERM;
 
-To clarify my position, going back to a couple of messages ago:
++	/* Prevent read-only port mappings from being upgraded with mprotect() */
++	if (!(region.flags & DFL_PORT_REGION_WRITE))
++		vm_flags_clear(vma, VM_MAYWRITE);
++
+ 	/* Support debug access to the mapping */
+ 	vma->vm_ops = &afu_vma_ops;
 
-- As I understand it, the current upstream consensus is that hardware
-  devices must be responsible for verifying their own firmware.
-  So, the kernel is responsible for protecting the integrity of its
-  own configuration (live DT), while the reconfiguration engine is
-  responsible for validating FPGA images;
-
-- If this is not sufficient, and there is a requirement to secure
-  /lib/firmware, it should be done at the filesystem level using
-  the IMA subsystem;
-
-- However, since not all FPGA reconfiguration engines support crypto
-  image verification, and not all SoCs/platforms have a TPM IP or
-  support for a TEE, we might consider having a subsystem-specific and
-  optional check for the {config, image} pair as a *future* extension.
-
-
->> On the contrary, it would put us in a situation
->> where neither element of the pair is guaranteed since it enables the
->> user to feed arbitrarily forged DTOs.
-> 
-> As you referenced, no OS component (even the kernel) could guarantee the
-> functionality of the binary for a device, only the device can. So what's
-> the difference who provides the pair?
-> 
-> The only thing matters here is integrity and authentication, which is
-> totally a different thing from kernel-user privilege.
-> 
-> I'm also confused you keep on telling that userspace is arbitrary so no
-> userspace interface, which seems to suggest kenrel should never get any
-> input from user.
-
-My concern isn't about accepting user input in general but rather about
-the type and scope of that input. I think there is a huge difference in
-terms of the security between:
-
-- matching a string that userspace sent via sysfs and then applying a
-  safe configuration already contained in the base DT (validated from
-  a FIT image).
-
-- having userspace directly pass the kernel DT configuration (as a DTO),
-  which the kernel must then validate (both syntactically and
-  semantically) and apply.
-
-In the first scenario, userspace is like a customer selecting from a
-menu of pre-approved dishes, and then the kitchen safely prepares it.
-
-In the second scenario, userspace is like a customer stepping into the
-kitchen to cook their own meal, forcing the chef to constantly supervise
-them to ensure they don't burn the place down.
-
-
->>> It is possible. To be more efficient, I think we should invite
->>> boarder discussions.
-
-Following up on what you said two messages ago, I think we should invite
-the DT people and ask for their input to help move this conversation
-forward.
-
-
-Thanks,
-Marco
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
