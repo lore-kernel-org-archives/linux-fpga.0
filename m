@@ -1,57 +1,57 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A444D492E4D;
-	Wed,  9 Sep 2026 07:45:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9425846EC98;
+	Wed,  9 Sep 2026 08:02:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788939941; cv=none; b=Z9hdVEeoDfmUlNEmxJncohfi+SlGEB1+NJwLgZ/lgGDkGAmmXoTd4WH7ieaTDt0dNq4F4qjfzyZKAZi062G4oiyAADXeN1+2mc/h41PFt8FYgWyu1m8SkklCL9JUdr4F7+kQyNBKw7UqplLqHkiVIsS8o4Z3d8QamoolN5dh7Qg=
+	t=1788940933; cv=none; b=dDGJVxYq2JlAlC9PTdmOskkNi9pauT/d1bnu/vbE/0257RTlj5CftIKFWgjPJkTE3F8HLfPb159OQLz2vR3BOg3pT2o4Y1jYlr1QouLuPXCeXqO77ekwUwj/pS758jLLYL5eisDGKbBuNNyQ8QqoISRrdtHHN7r6pXAV6LiS1mM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788939941; c=relaxed/simple;
-	bh=BykUejFK5ljKcbR1mM3gAEgwx+ZO2lZhl5enbSQZ+Rc=;
+	s=arc-20240116; t=1788940933; c=relaxed/simple;
+	bh=p8cdWX8YIdJZfnqWOC41ZnvOaypzciVKNBO8Fz7KurU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iZLsOeW+4uGCeurtDctrTvcn/tSthwQGSZFYaJT55jGXlqY5zQ4ot4chFqa4RUY+x4Jg/PlOSGcex7azrVH3ykrj1+dG+4wcA8q0WiSyqXXqHPn+KGrtZaQif+RRVsjc/8tbwLykOdsX8Gkdkdrwfn1RfcOHFrm8S/1NLyO6/AY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=RGeUMUWl; arc=none smtp.client-ip=192.198.163.16
+	 Content-Type:Content-Disposition:In-Reply-To; b=dPR2R1bGhUjF3miPKoFBt7joLCUpnBR6ghAje5cs5GnZiAmmn5ihFCYr0YnYSEoKdKs76n8No5VhbujGij4+JfBm6MkeCcjEoGWPw6niUp03KY/YIuTfKFVvkVW2rfBpifn1UnL2nvWL1YEYDb/db/3D1mI4MRqYe0E0YeIMnm0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nTRArj1Y; arc=none smtp.client-ip=198.175.65.10
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="RGeUMUWl"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nTRArj1Y"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1788939940; x=1820475940;
+  t=1788940932; x=1820476932;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:content-transfer-encoding:in-reply-to;
-  bh=BykUejFK5ljKcbR1mM3gAEgwx+ZO2lZhl5enbSQZ+Rc=;
-  b=RGeUMUWlnlXyJspHhN1QR63tz4fxl7/3Itsk5AfZfUFHUhBG3MBrjwP9
-   1z/LqXPvJONbKRC25HZc9NNG/3i3VCq8RdS+uCN04H2kROMwLzLy4xund
-   /lDP+cU8mFr8PYz+jXJG8ylVl0SnouY07+8JGSv9AKYyi3ES/T+V35Jh/
-   dGSRwKDuQT/fhE1tzeFbOv5dGR8HYEkT2vRO1ZiW3p37iiipUA5xpfx5d
-   HklwftCQWD7VqSdWW9BZ84IkjUY+WY7fJgtwUFZjq5tDztBYFb/GscvyP
-   +kYxI2YPwctG+pxUOshCFS88/0iOEZghL97Wo1YCjJRmsG7W6nCcptX6d
-   g==;
-X-CSE-ConnectionGUID: YWxEbZjaSrCVkh6Kv1aYMA==
-X-CSE-MsgGUID: MLp8a0VRQrOsrzfMNtPVoQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11900"; a="76915763"
+  bh=p8cdWX8YIdJZfnqWOC41ZnvOaypzciVKNBO8Fz7KurU=;
+  b=nTRArj1YgiFpt1g+4StQOfGDlUimfB0038I4YaeK1sq0/ekCRIzodtPZ
+   QhIdgFvGCibuwtXi/ugh3sCn5Aq7wWUSwLVEl7LlJXgLaLs9dmfuMuZZI
+   xPvkVnrO7zPD34js6pcC3t3QN3F/aq1VZPLeOAFlKEpLHzv5nX6HHSQ0N
+   Wxv/rUi+h9uRat8bmd33Bv544FBU/Xx15FOk+v4AW3ik+RUyyEoYlIHT1
+   tjmTZWc7vx9PFTWlOWmuN4PruCNvxK2PsV9bMzr93Vy8ca3nGF78YvYYO
+   CqQ/+yz/pji4YZ8qI5mi/JbUUFw8D2V3sunwiKAt4caaeGX4QsHyMESsD
+   w==;
+X-CSE-ConnectionGUID: K1/gWo4vRn6o+X6C4GfPrQ==
+X-CSE-MsgGUID: vHTb12cHRnWkj13mogppSg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11900"; a="106726383"
 X-IronPort-AV: E=Sophos;i="6.25,270,1779174000"; 
-   d="scan'208";a="76915763"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Sep 2026 00:45:39 -0700
-X-CSE-ConnectionGUID: uLeRUXlbQgK70URCcSVZug==
-X-CSE-MsgGUID: uqVVDHIMQqika+qL2VWDrg==
+   d="scan'208";a="106726383"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Sep 2026 01:02:11 -0700
+X-CSE-ConnectionGUID: jYFAMtyfSpCP2kqRzn3v7A==
+X-CSE-MsgGUID: 0N2g8gOCS3u09AsvFEfElg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,270,1779174000"; 
-   d="scan'208";a="265035318"
+   d="scan'208";a="301118983"
 Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.47.46])
-  by fmviesa009.fm.intel.com with ESMTP; 09 Sep 2026 00:45:37 -0700
-Date: Wed, 9 Sep 2026 15:45:37 +0800
+  by orviesa002.jf.intel.com with ESMTP; 09 Sep 2026 01:02:09 -0700
+Date: Wed, 9 Sep 2026 16:02:09 +0800
 From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Yang Zi <2959243019@qq.com>
-Cc: yilun.xu@intel.com, trix@redhat.com, mdf@kernel.org,
-	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fpga: dfl: Fix NULL pointer dereference in
- dfl_fpga_feature_devs_enumerate()
-Message-ID: <aqEOocAGuV6G6xee@yilunxu-OptiPlex-7050>
-References: <tencent_EFA15EDE0B67CF3347A9EFD9A05E6A620D08@qq.com>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+Cc: Xu Yilun <yilun.xu@intel.com>, Moritz Fischer <mdf@kernel.org>,
+	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1] fpga: dfl: Drop #include for <linux/mod_devicetable.h>
+Message-ID: <aqESgYZRJCbN9IV/@yilunxu-OptiPlex-7050>
+References: <799c3ffa64d758ffb74f84da492d978a517ff1ba.1787407491.git.ukleinek@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -61,50 +61,44 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <tencent_EFA15EDE0B67CF3347A9EFD9A05E6A620D08@qq.com>
+In-Reply-To: <799c3ffa64d758ffb74f84da492d978a517ff1ba.1787407491.git.ukleinek@kernel.org>
 
-On Tue, Aug 25, 2026 at 05:08:42PM +0800, Yang Zi wrote:
-> The build_info struct (binfo) is zeroed by devm_kzalloc(), but its
-> sub_features list head is not initialized there; INIT_LIST_HEAD() is only
-> called later inside parse_feature_fiu().  If parsing ends without ever
-> reaching parse_feature_fiu() (for example, when every feature header in
-> the list is an unsupported type), binfo->sub_features is still all-zero
-> instead of a valid empty list head.
+On Sat, Aug 22, 2026 at 04:05:35PM +0200, Uwe Kleine-König (The Capable Hub) wrote:
+> None of the c files that #include drivers/fpga/dfl.h (either directly or
+> via drivers/fpga/dfl-afu.h) actually need <linux/mod_devicetable.h>.
 > 
-> build_info_free() then runs list_for_each_entry_safe() over that list,
-> which reads head->next == NULL and dereferences a NULL pointer.
+> There is drivers/fpga/dfl-pci.c using pci_device_id, which is provided
+> by <linux/pci.h> and drivers/fpga/dfl.c using dfl_device_id which is
+> already provided by <linux/dfl.h>. No other structs traditionally
+> defined in <linux/mod_devicetable.h> are used by these drivers.
 > 
-> KASAN report:
+> So the #include can just be dropped.
 > 
->     BUG: KASAN: null-ptr-deref in build_info_free drivers/fpga/dfl.c:950 [inline]
->     BUG: KASAN: null-ptr-deref in dfl_fpga_feature_devs_enumerate+0x59ba/0x60d0 drivers/fpga/dfl.c:1611
->     Read of size 8 at addr 0000000000000000 by task syz.0.2/1096
-> 
-> Initialize binfo->sub_features right after allocating binfo so that
-> build_info_free() and the other sub_features consumers always see a valid
-> list head.
-> 
-> Signed-off-by: Yang Zi <2959243019@qq.com>
+> Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
+
+Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+
+Applied to for-next. Thanks.
+
 > ---
->  drivers/fpga/dfl.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/fpga/dfl.h | 1 -
+>  1 file changed, 1 deletion(-)
 > 
-> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
-> index 4c63c7c8579b..6377304e4447 100644
-> --- a/drivers/fpga/dfl.c
-> +++ b/drivers/fpga/dfl.c
-> @@ -1589,6 +1589,8 @@ dfl_fpga_feature_devs_enumerate(struct dfl_fpga_enum_info *info)
->          goto unregister_region_exit;
->      }
->  
-> +    INIT_LIST_HEAD(&binfo->sub_features);
-> +
-
-You patch format is broken, I can't apply.
-
->      binfo->type = DFL_ID_MAX;
->      binfo->dev = info->dev;
->      binfo->cdev = cdev;
+> diff --git a/drivers/fpga/dfl.h b/drivers/fpga/dfl.h
+> index 9549f63b00eb..9a65617bb870 100644
+> --- a/drivers/fpga/dfl.h
+> +++ b/drivers/fpga/dfl.h
+> @@ -23,7 +23,6 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/iopoll.h>
+>  #include <linux/io-64-nonatomic-lo-hi.h>
+> -#include <linux/mod_devicetable.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/slab.h>
+>  #include <linux/uuid.h>
 > 
+> base-commit: 903c1cf6dff9964e71eda98a39e2e5d442050472
+> -- 
+> 2.55.0.11.g153666a7d9bb
 > 
 > 
