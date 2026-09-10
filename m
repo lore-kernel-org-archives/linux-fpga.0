@@ -1,46 +1,72 @@
-Received: from mx.nabladev.com (mx.nabladev.com [178.251.229.89])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8F4F4AFE37;
-	Wed,  9 Sep 2026 11:22:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.251.229.89
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DA8D3AA1A6
+	for <linux-fpga@vger.kernel.org>; Thu, 10 Sep 2026 04:45:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788952945; cv=none; b=UO9TaaGJ6hkzCGcCUhIc0tXo4dgSWGjBXijUlZZRBY4FdoASZ4QYQyQeFFuY34C86pYM5LWkvkZ8ZvOAzYLKhrwVQ/xoHZAuKDtODnFLNAXtfIoVpsFbLJlh4ngJGdhr/rg8tCLIcC0gmT/aW0xaWw4sU4AfeSn4iSRtVDNx7Qc=
+	t=1789015552; cv=none; b=Fz4SdvTXDU3ix4qqHF/RWZ2qn+Z+bDPSQQu5wVZShnnwD/BMR6QTQHv6Wlvr3fMP9YNwQ7kCBhzHkoYhA+jZy7VsMKyfqJs8osn2ivjrWkDhJ5mKZtKyMNVTbIn61uPy0D2La8h2N9x9eKrCXx0qefYdPiFXYVCKr3IS+FRBGBk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788952945; c=relaxed/simple;
-	bh=/AWvZJ9cek5fVUJeoSkfIMyyaqv0B0LGlgDYea884RU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RfVNSz50rsFf6/njJ48uSAphC4YubFRf6cyqBFwqycIlMdkeStVVHZA7NupVZYVMDlZJ3lfZjclJwpPnKwP0T1+dnphjp0fepD/FtDQjvfUxH9HtB/KpwLNmTQoNDa3DjOJylXLynU3f6FbHc8nvrMZkGmAJK81yqCirjT0hJHc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com; spf=pass smtp.mailfrom=nabladev.com; dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b=KIa426UF; arc=none smtp.client-ip=178.251.229.89
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nabladev.com
+	s=arc-20240116; t=1789015552; c=relaxed/simple;
+	bh=Pd4H0pkta7Qbh3kWSRXYBoydIxmEAb5Kxu72LzoN5SM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nxiFBXvZ1zpim29wrt2ZU5IO1zHtpBQfLHgOH4WYJ3izVzH7T6k1ljFhH/pLJ7x4N7mQaRb6u3qSHHYePFeS1MeBS8ifaEvd79MPuSOUJjF5j0PSBVz3zyNez6k5IncHnscot66Qxbwbhb/E/J2O863+iRUbD1GySWxa3FKccpo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ptwcmFRb; arc=none smtp.client-ip=209.85.214.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=nabladev.com header.i=@nabladev.com header.b="KIa426UF"
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id D26C7101CAC;
-	Wed, 09 Sep 2026 13:22:08 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nabladev.com;
-	s=dkim; t=1788952931; h=from:subject:date:message-id:to:cc:mime-version:
-	 content-transfer-encoding; bh=28+tS5v65uWT+cVCLYpey7OWF1AIlpH8iHS77EHvEPc=;
-	b=KIa426UF56JJ8yp3vzHjZKETyca4QluEYWvBpe+2TIMB8ORPMN+mjJbGWHnFndW3Io2of6
-	NLzSAF/DSFaESj9xB8RnnPzlIVmgvOL+Od8a+FJpkYtC8+QaFY0AvkSwP7pRUSd+qC5yzH
-	LoZ8AuSKW3aMzmm7SqWa/L9oVgMIqTN9+UsYzudrAnKFXrd10tjiMalq1OC1WxLm9SkQ2s
-	wZQEG5CBSiyQ4GF7cH1DbK5MskXrVlVunImnF/fYW8EQokY74bSJzaawSJBv17RMVhMc3N
-	itz4BKvbLYUeuV5movbygMN6541TDvbOXwAXXny5TSGJiMS9t7KpkqSCE+9X2g==
-From: Heiko Schocher <hs@nabladev.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fpga@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	Heiko Schocher <hs@nabladev.com>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Linus Walleij <linusw@kernel.org>,
-	Michal Simek <michal.simek@amd.com>,
-	Moritz Fischer <mdf@kernel.org>,
-	Tom Rix <trix@redhat.com>,
-	Xu Yilun <yilun.xu@intel.com>,
-	linux-gpio@vger.kernel.org
-Subject: [PATCH v5] fpga: xilinx-selectmap: control CSI_B and RDWR_B during configuration
-Date: Wed,  9 Sep 2026 13:21:54 +0200
-Message-ID: <20260909112200.13256-1-hs@nabladev.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ptwcmFRb"
+Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-2d8f265cbe6so57183045ad.0
+        for <linux-fpga@vger.kernel.org>; Wed, 09 Sep 2026 21:45:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789015551; x=1789620351; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=bngJIhfOMKuLkdJ2ArarfYrqTvvdpGe/G7JNNNVxMzI=;
+        b=ptwcmFRbNlMbxvvBHCtykaSnbivI0qAaudeccZ6thCgZ8xyofbvvTAzF/7NhjgYsYk
+         NI3J7wERhfCyqCqPq3NU5wZ6xONDJyQlhL+Al1jcHqPyC1Iq70yPT3dYyQjbUtVEahNT
+         K/2hyakw6lWI/9mvYrFjjdmUEg91iDrYkFNRTXddSwHmOs79DFxr7NYc4Hhi2Jbn0P7Q
+         4zxbv54NLClhOM+Aq9SMBVmpfzNOWFibrZbncq+7QwXNE8mRazLoysurybud+d405i1N
+         ILbQZiibigPVNrgJVXlPsCp+l1AtA+xDkFjzkuv4UQw7jbngvcON2oGE9ICYtWqMk8qM
+         awpg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789015551; x=1789620351;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=bngJIhfOMKuLkdJ2ArarfYrqTvvdpGe/G7JNNNVxMzI=;
+        b=CBi4kNPqlUYIAGkjSLF/fdVJPQJOIUlzIm++LpRdK9GyTgzrs4q5FtgTu4utMKcKR/
+         64PchbmzExBjd9k/6tEuVhzKAoznHaYIf5h+LNbSnyaV2v3hqkIANsCemvVRJLsTQf+c
+         2UOUn5cBSjFmzQQmnhVlUWvMV9jBCCGjJqknBymqyruQDxapbpJNPFefTDUiMp8TnAR3
+         uV5+fJ2D70PR/S3sVJVXHWZlvJjH+nvCyNLbUv2vwbgTjH9i+mhkTGhQaeh2oFwa/X1v
+         FkKi7AU0yrfOS5I/L8bJ8knFa3P3HfkKdT79WN+fdOwwckpCQ4Zwt8kMRPOeLOFSBoCJ
+         jvyQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzVBsjWfsj+fpjv1oImEiOB4T9Ij3chhN7SbSIBiFv6HQP97q39Ni8GBvGfFrBujbNsySWuzTMzC6IS@vger.kernel.org
+X-Gm-Message-State: AFuF++ncANedPrejaAFGtQFxs9XswPK5Ma8X4yjt+UVP+/bttY893Kn9
+	zdywklsx4o9v6JboCfAAOnvGTZDSNoCtZD8N8eOTWjWSZoP7Fs4LeQmo
+X-Gm-Gg: AYBFou0B/IjkazQFpAaP2vTZLt1VjPh1veZQ4ZSJDClb+lnPfnEC9ZnH0fa9+KW8Ndg
+	ZLI6QAgB4yWvpBnD0wQBLjv+kTQ2rk9MGL90S7m25Vo9EWJvTDO6LyDojAVEb7IKuFGgCyCsCrp
+	NwzVhoOSHx9yyrT+GM9MNDSsNaRonTDdiCroHEgttWFSvEdF0qVtvWDXQ+IOqhcZLroECdCxKkE
+	TJur74+qeML10YUKRV72a0J1Q2IJcuOc+FbWQkJx5z5KSdkHEo51uBA+mGQrVKwMOqTmhlVOqPf
+	8HfJyR+oXtZU5U/RMb8ASdO6tQbcC856T9pUJ/DOQP9G6rd8FhxdSQHI561zU28CoJACH8ZFvC1
+	O5nse2XSgWgb58EmeXMJO40xReoFMnjfk2fpoKSSwDsXhox55OxBIxYNVtl4MR7VaPaCBgPWQ/a
+	DVS9a3QwQxofnY0hf1B6N92geNz2l+0JlUUUooqVAIqtOyP09oCcKVoMFZ8IoThzHruG1U5yxfp
+	MNldCF91C3ftupRRuJalpf5fw==
+X-Received: by 2002:a17:90b:4984:b0:381:25ce:bcc2 with SMTP id 98e67ed59e1d1-39b26104798mr54382631a91.6.1789015550835;
+        Wed, 09 Sep 2026 21:45:50 -0700 (PDT)
+Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339aa33e96sm48377608eec.12.2026.09.09.21.45.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 09 Sep 2026 21:45:50 -0700 (PDT)
+From: Hemanth Selam <hemanth.selam@gmail.com>
+To: mdf@kernel.org,
+	yilun.xu@intel.com
+Cc: trix@redhat.com,
+	linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3] fpga: fix typo in s10_ops_write() comment
+Date: Thu, 10 Sep 2026 10:15:45 +0530
+Message-ID: <20260910044545.50261-1-hemanth.selam@gmail.com>
+X-Mailer: git-send-email 2.48.1
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -48,156 +74,43 @@ List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
 
-The driver requests the optional CSI_B and RDWR_B GPIOs with
-GPIOD_OUT_HIGH and never touches them again. That flag carries a
-logical value, so both signals end up asserted from probe on, whatever
-polarity the device tree states, and they stay asserted for the
-lifetime of the device.
+The comment reads "reuse it to send more data or free if if all data has
+been sent".  The first "if" is not a repetition, it should be "it", to
+match the "reuse it" earlier in the same sentence.
 
-Neither signal belongs to the driver's lifetime. CSI_B (Chip Select)
-selects the device on the SelectMAP port, RDWR_B (Read/Write) selects
-the transfer direction, so both belong to the data transfer. A device
-that is never deselected never lets go of the port, and a port pinned
-to write mode cannot be read back.
+Only touches a comment, no code changes.
 
-Keep the two descriptors in the driver private data, request them
-deasserted, and assert them only around the configuration data
-transfer. RDWR_B is asserted first, UG470 describes in chapter
-"SelectMAP ABORT" that changing it while the device is selected aborts
-the configuration on the next CCLK.
-
-Signed-off-by: Heiko Schocher <hs@nabladev.com>
+Assisted-by: Cursor:claude-opus-5
+Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
 ---
+v3:
+ - move the version history out of the commit message and below the ---
+   line, so it does not land in git history (Xu Yilun)
 
-Changes in v5:
-- comments from Xu Yilun
-  - drop the "inactive or active" wording. The old code asserts both
-    signals on every board, the polarity in the DTS does not change
-    that, it only changes the electrical level.
-  - write the commit message around the actual defect: both signals are
-    asserted from probe on and never touched again. It no longer argues
-    that this is fine for a single FPGA, because it is not, and it no
-    longer leads with two FPGAs on one bus, which made the change look
-    larger than it is.
-  - drop "active low" from the comments in probe. The gpiod flags and
-    gpiod_set_value() take logical values, so the driver does not deal
-    with the polarity at all, and saying "active low" next to
-    GPIOD_OUT_LOW only makes confusion.
-- use the subsystem prefix "fpga:" in the subject, as the rest of
-  drivers/fpga/ does
-- point at UG470 instead of UG570, as the driver is for 7 Series parts and
-  UG570 is the UltraScale manual! In UG470 there is an own chapter which
-  describes the "selectMAP ABORT", so refer this chapter.
+v2:
+ - "free it if" rather than deleting the second "if", which left the
+   sentence without an object (Xu Yilun)
 
-Changes in v4:
-- add comments from Xu Yulin
-  replace wrong gpiod_set_raw_value() with gpiod_set_value()
-  deassert CSI_B and RDWR_B in probe as in patch version 2
-  rework commit message (correct the description what current
-  driver do on probe), why this is not a problem with one
-  FPGA, and why it needs a change if you have N FPGAs
-  sharing the same selectmap Interface (clk and data pins).
+v1: https://lore.kernel.org/all/20260904112153.35820-1-hemanth.selam@gmail.com/
+v2: https://lore.kernel.org/all/20260907044344.3130-1-hemanth.selam@gmail.com/
 
-Changes in v3:
-- use 0 (deasserted state) and 1 (asserted state) in gpio_set_value()
-  as commented from Micahl
-- rewrite commit message as requested from Xu Yilun
-  - describe what rdwr_b and csi_b do, and why this change is needed
-    for more than one FPGA.
-- add comment before asserting the signals, why they are asserted
-  in this order.
+ drivers/fpga/stratix10-soc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes in v2:
-- add comments from Michal
-  - skip check if gpio descriptor variables csi_b/rdwr_b are valid,
-    as validate_desc() checks this in gpiod_set_value() call.
-  - initialize the gpio variables csi_b/rdwr_b immediately with
-    the return value from devm_gpiod_get_optional(), so we can
-    drop local gpio variable at all
-
- drivers/fpga/xilinx-selectmap.c | 39 +++++++++++++++++++++++++--------
- 1 file changed, 30 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/fpga/xilinx-selectmap.c b/drivers/fpga/xilinx-selectmap.c
-index d0cbb5fdfe3a..ff167b23fded 100644
---- a/drivers/fpga/xilinx-selectmap.c
-+++ b/drivers/fpga/xilinx-selectmap.c
-@@ -19,6 +19,8 @@
- struct xilinx_selectmap_conf {
- 	struct xilinx_fpga_core core;
- 	void __iomem *base;
-+	struct gpio_desc *csi_b;
-+	struct gpio_desc *rdwr_b;
- };
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index b8ec2e6f615f..5aed560050c2 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -286,7 +286,7 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
  
- #define to_xilinx_selectmap_conf(obj) \
-@@ -30,16 +32,28 @@ static int xilinx_selectmap_write(struct xilinx_fpga_core *core,
- 	struct xilinx_selectmap_conf *conf = to_xilinx_selectmap_conf(core);
- 	size_t i;
- 
-+	/*
-+	 * Select this device and put its SelectMAP port into write mode.
-+	 *
-+	 * RDWR_B is set before CSI_B. UG470 describes in chapter
-+	 * "SelectMAP ABORT" that changing RDWR_B while the device is
-+	 * selected aborts the configuration on the next CCLK.
-+	 */
-+	gpiod_set_value(conf->rdwr_b, 1);
-+	gpiod_set_value(conf->csi_b, 1);
-+
- 	for (i = 0; i < count; ++i)
- 		writeb(buf[i], conf->base);
- 
-+	gpiod_set_value(conf->csi_b, 0);
-+	gpiod_set_value(conf->rdwr_b, 0);
-+
- 	return 0;
- }
- 
- static int xilinx_selectmap_probe(struct platform_device *pdev)
- {
- 	struct xilinx_selectmap_conf *conf;
--	struct gpio_desc *gpio;
- 	void __iomem *base;
- 
- 	conf = devm_kzalloc(&pdev->dev, sizeof(*conf), GFP_KERNEL);
-@@ -55,16 +69,23 @@ static int xilinx_selectmap_probe(struct platform_device *pdev)
- 				     "ioremap error\n");
- 	conf->base = base;
- 
--	/* CSI_B is active low */
--	gpio = devm_gpiod_get_optional(&pdev->dev, "csi", GPIOD_OUT_HIGH);
--	if (IS_ERR(gpio))
--		return dev_err_probe(&pdev->dev, PTR_ERR(gpio),
-+	/*
-+	 * Request both signals deasserted, so a device sharing the SelectMAP
-+	 * bus with others stays off that bus until its bitstream is written.
-+	 *
-+	 * The value in the gpiod flags is logical, gpiolib drives the line
-+	 * high for GPIOD_OUT_LOW when the firmware describes it active low.
-+	 */
-+	conf->csi_b = devm_gpiod_get_optional(&pdev->dev, "csi",
-+					      GPIOD_OUT_LOW);
-+	if (IS_ERR(conf->csi_b))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(conf->csi_b),
- 				     "Failed to get CSI_B gpio\n");
- 
--	/* RDWR_B is active low */
--	gpio = devm_gpiod_get_optional(&pdev->dev, "rdwr", GPIOD_OUT_HIGH);
--	if (IS_ERR(gpio))
--		return dev_err_probe(&pdev->dev, PTR_ERR(gpio),
-+	conf->rdwr_b = devm_gpiod_get_optional(&pdev->dev, "rdwr",
-+					       GPIOD_OUT_LOW);
-+	if (IS_ERR(conf->rdwr_b))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(conf->rdwr_b),
- 				     "Failed to get RDWR_B gpio\n");
- 
- 	return xilinx_core_probe(&conf->core);
----
-base-commit: db2ddb87143519e20a95aa36c60b36107b736a58
-
+ 	/*
+ 	 * Loop waiting for buffers to be returned.  When a buffer is returned,
+-	 * reuse it to send more data or free if if all data has been sent.
++	 * reuse it to send more data or free it if all data has been sent.
+ 	 */
+ 	while (count > 0 || s10_free_buffer_count(mgr) != NUM_SVC_BUFS) {
+ 		reinit_completion(&priv->status_return_completion);
 -- 
-2.55.0
+2.48.1
 
