@@ -1,223 +1,164 @@
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011059.outbound.protection.outlook.com [40.107.208.59])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mta0.migadu.com (out-67.mta0.migadu.com [91.218.175.67])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A23E433A03A;
-	Tue, 15 Sep 2026 06:27:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.59
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789453661; cv=fail; b=lPjJRNjPHjUMvV8cmL0prF00eh8AQsQ328CPPBx9KUc7U3inZUtszB/3wE/2WYWnd8e9bD/vykVVvZurEG6hD6gWqCI+MJDUlUW6lEza6kvDsP+hM+dTr4HlEO2RJ5fz15v2yC+MDjtqqjUk6+kvZPxiElIP3hHvPV81u9JcFxE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789453661; c=relaxed/simple;
-	bh=CYRcElW+fabbS3WC18LniDF0t95hUbzZrOmpbG8zhYI=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=blJpuKNTD58nrGjWjZX+U5yRmg7MNUCBFdoFs9iiulXTCSVvNwLB2w4KGDaxhlNF647U54oj2uvj76I+CpmRyWCZSrZVerDvr1z50my0uaM7dRxUGPTaTT3m6biCaWr7PyESI2nkPR7SGmMlfqVBAv1FAP8+pugR0Szp3b07DKE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com; spf=pass smtp.mailfrom=altera.com; dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b=vwiXWqmp; arc=fail smtp.client-ip=40.107.208.59
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=altera.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB6B542E41A
+	for <linux-fpga@vger.kernel.org>; Fri, 18 Sep 2026 15:07:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.67
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789744045; cv=none; b=gXsbYss3dev9KqahxTJOCjhPXf6+TlgoUagVAE4mSkaxnMMQ+AHSRhsgldg2XFLhvqmtTjnwklN3nKplduyGPDy8HUw3p0gfOfJLqZdg31FZV6sBUMCWufGY0hbsqX0xbUgksoUijFDvSH1h+iNuGhZPiGmaxj1CScgGKrdVRMI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789744045; c=relaxed/simple;
+	bh=6ATLnyCaLHvD7n05SCq7fLNOH0LPoLecfJlC0QyV6/8=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=Ol4ZiIBPZiVgBKDnX3C5sQWLqSuxrJjpo4RIRf2QvgjtsAGWsl7Kpkcm0oBFPWuY6o6OizBbUCcH2WnNgI2ngxuowvHtIzwuWGsEmmbfyOpFqODAt9tqe4TUUMOQRx50hN2ayIMA9Ludc73vrTRzNRvKU39HQ1HOo7XLroa8800=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=PLuh6+TZ; arc=none smtp.client-ip=91.218.175.67
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b="vwiXWqmp"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=l44jldRxBQnFqkyM4l+x5fwEEYhwWTtDniICVIrb6RUJ+fBXWPIPz8CW6k0plcceocxnxPO2T6SGAYnZmIq45Wso5GhC1ogH5fF/aWEnZ0ArHllLY2rIhEJZgoznN0OYl4XmhpARPbUNky91rf26GUMuKvwavGjw60TOyGANfOTJ0dbzMaS0mMT9A8GiNAwKazKBKnWD/r+PSippkgDSoxetdxnHN0uTLtOzYlbZObENoiJPeCmSrZGkRTIrSSJV4lRP5xvB4l65BVmInKDy0Y9UNR1biAVwpTwb4mKvEasSXxRMYs/2iBsKqnAh7zQQL8bSnaZ4Y3kfxntIYL6UGw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=cO0gNGnaZ2HQzt1cEWPBNx2iWIgJilRIm3QZ13BoMz8=;
- b=scNjfgyAK0Yh5+MEvh3RGAGHqcDFXsHaAvap5lC6bEe6NH7JaQLnMTHLe+ePARL/vhcTIYfBjEMmCtF/CDWR89revco4W9XchIEiGZUD1vnMcWrU6Oj1nouYTyBhmRKEzE1vorAhDcKeILCGhYJ0zxX//5K1bFcys2ZYY5kwyVfUsNReDjY9FT/yDLkUJDlMaehTodht6Q18nq2Tcn6YF4Y6Vfzhg4ZXvOVL9zXY2LLkH2jMm7tOXnbfd+pZY12Wvh4v/rpI8AD00tWpnYpHMyxZh4dJg3Qqgt70TgkY1YwVYObE7bnN7lttvoDbWq8zZd6ziwaoCKSsKs8KlZrWcg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=altera.com; dmarc=pass action=none header.from=altera.com;
- dkim=pass header.d=altera.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=altera.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=cO0gNGnaZ2HQzt1cEWPBNx2iWIgJilRIm3QZ13BoMz8=;
- b=vwiXWqmpb5LAf2/wO1e2JVizHEbcaqmSn0G/W54JovKYMRLi+D8USDsLL5iJHr+G3LRjSgyBAf/laOkQ/6KU4uq11q4GgP6WdMY5n2pVCFtTlDjZYKF7OiE4RKAYC20Xc8kDsNNq15yK72G4tBrmTtDnGvEqFS15PkeGTO0QRn5YxUlDujPAELH2bmQZ2v18l3y14XxXOkPx3eCnFNkz1hHJDxWiYylDS9IgVhVAuiGP5ex5FcxoroLHO6ezF4T2e7bYKLUTUgUGhoIIVB5LkruLDNuTHn9NVhzOZus3AapezHwse9TAUZiiAeQca2MGWPuyNSzBFD6B+aohTuIxRQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=altera.com;
-Received: from SJ0PR03MB6964.namprd03.prod.outlook.com (2603:10b6:a03:432::18)
- by PH0PR03MB6939.namprd03.prod.outlook.com (2603:10b6:510:16d::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.9; Tue, 15 Sep
- 2026 06:27:36 +0000
-Received: from SJ0PR03MB6964.namprd03.prod.outlook.com
- ([fe80::b965:bfa8:58fb:e775]) by SJ0PR03MB6964.namprd03.prod.outlook.com
- ([fe80::b965:bfa8:58fb:e775%4]) with mapi id 15.21.0406.007; Tue, 15 Sep 2026
- 06:27:35 +0000
-From: muhammad.nazim.amirul.nazle.asmade@altera.com
-To: Moritz Fischer <mdf@kernel.org>,
-	Xu Yilun <yilun.xu@intel.com>
-Cc: Tom Rix <trix@redhat.com>,
-	linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2] fpga: altera-cvp: Retry teardown and reset CVP state on failure
-Date: Mon, 14 Sep 2026 23:27:34 -0700
-Message-ID: <20260915062734.42964-1-muhammad.nazim.amirul.nazle.asmade@altera.com>
-X-Mailer: git-send-email 2.43.7
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SJ2P220CA0007.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:a03:5da::13) To SJ0PR03MB6964.namprd03.prod.outlook.com
- (2603:10b6:a03:432::18)
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="PLuh6+TZ"
+X-Envelope-To: linux-fpga@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=6ATLnyCaLHvD7n05SCq7fLNOH0LPoLecfJlC0QyV6/8=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1789744040; v=1; x=1790348840;
+ b=PLuh6+TZ8Qi4yRyCaDsuDRiHsj8EbcPytt9FPuOeoAsNKhDTWXBPXXGFPOKzsi9ZtOmrYGaf
+ qoDeQUdHJBWVygEqWD8+1ajVXnva8RCDi9rIh3GeZM9XqS5sVb8YWSdZQ4Ll4mqB0/rWZDFFjJz
+ qw4avAIpfAEPPjPrM295A8Q0=
+X-Envelope-To: linux-fpga@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 729c408859e620f4;
+	Fri, 18 Sep 2026 15:07:10 +0000
+X-Mizu-Trace-ID: 729c408859e620f4
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <11b1a792-f8b1-4fce-8a7a-8352149febcf@linux.dev>
+Date: Fri, 18 Sep 2026 17:07:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR03MB6964:EE_|PH0PR03MB6939:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3589e4c5-b2ec-4147-8a3a-08df12f26e96
-X-MS-Exchange-AtpMessageProperties: SA
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|23010399003|1800799024|376014|56012099006|11063799006|10067099003|18002099003|55112099003;
-X-Microsoft-Antispam-Message-Info:
-	E5gZXHNmOgaTF5FfyrVqdG0azCiMfd3/97egisTxuAdhU60gjabxI3WkUq46YRW5nWCSZsWsPrAdPjtl6dD9i8RoFQpuZjnGZXqj+tFHvVjm4cyDYpa/pF+nyt9OzL7xpQ1PrH/ohPKgMt1TDK/np5BJfhW4NBbha/NetJmOnqoktjVudE9cXF8qeVcTLx5gsFw5sFbUUw2ls4d1ArZ5gGBmgGlNz5dACWHfXwTqtaxKi2L70EGKpoau8CIpjV8IyLZD5RGuMiDB5a60OgAdOYMrFP5+Zh5SKV9z8rVlIo0Llr6LkbfJOm537r01eEdRgeYCe3VTAJHF6Cky5umhnKjkwoSx9Tw9VnuBQ2nzVnHuL61EtaoT9ATqD2CSQHGz7m9qNdmJC3jVDm59MeL/bYQxJgw104ex1INJ83YB1kFmrmsMxQb2RshproTKvFHub64jDKjhatW0RcXC515iogus22wkzd/2irJrMC7gahtz00sXyfXCRGgEtMJ3z9jzpR3a9gnlahHq0uKIPw7trC9W8Lh9dsuJj2HoxY/pqeI/IvbTRbKfGxJ0wtCNuCgDhFOubSEgJXiyYFm8q2AecoIS38M3e6eh+PP6lq97zTFzJK4sX5ppvyBQ6KvcNDj4HChbSIXK0oY7iilMuv0ISXkTf7KRmvAuGLvzpUsPIo8=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB6964.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(56012099006)(11063799006)(10067099003)(18002099003)(55112099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Sq8DNmunFrWxEf+/4dd/wrvPOspjrbamSzwmlU5e6Xw0VBEdnHSZyeqASjO6?=
- =?us-ascii?Q?Kx/3uk8JfWM51DX22r7bLQG/R/xZ2K5bznwEzHGQHw+q3liVcbXN16paPeTi?=
- =?us-ascii?Q?8RuWU94QrFVutJlEY1aLr8oU/sovtokh0ChmkKBdSKNlWEmqnc9SjWeGpJYa?=
- =?us-ascii?Q?Ul6ulu7JsQ2QgsBdGq/SjaiF61BhBoUGlE7bJfwC2N1VyCALYND3rgaVwmY3?=
- =?us-ascii?Q?LjS2o0ZcpAmtawh6WaEVu9JpnlL2HUgBysz6Gg0x+mkcP9Cu0cHZBBiABdZY?=
- =?us-ascii?Q?kaaTPMaHyBOMw3PUe27W3a6oStIV1RfeDPEHzmY2bPKxcj6f2r4Pelhnl0uR?=
- =?us-ascii?Q?Ksc7yZvh/RJzMSVK8Qpn0fQJw/j6WOPGK3WSbN6esHz3GSii7jbP6ddX4QU+?=
- =?us-ascii?Q?d56MQdCkew7tvJoOLzEm8jKmCY4s7kVaeoH4edVdFlxRtzinHGFAMzr6DeiL?=
- =?us-ascii?Q?gbSXJA4zz7BKB87J0TUc86KsvfcsrFld0G7mZbDJqAJpVBSjJLaiUJPh1nDp?=
- =?us-ascii?Q?bC/ynjAp/oouFZqXZdqTjLw2dEjLGzT0bt00oc+TcOph2K35Eus0hDe+H8w+?=
- =?us-ascii?Q?ZSVl8fbslwcqf/o+NPKzaD6T4w5dB5sDaBrgRW8ox3ZEC2OVv6hSKsmW79Y0?=
- =?us-ascii?Q?lfYvRIEKxhiKvMA01y75eTjt9wrBaVEy5eOnFVg3pQi86htN5Sc6OBVWQmzJ?=
- =?us-ascii?Q?fMXzNlm61RBj7wwZuk7LBWyPvwM6eowxUKNyH6kBrLP7uI9KsmOcsVMqwP2e?=
- =?us-ascii?Q?JxA7oPS17QthiLGfjMw/l/I7YaYwo5T+D7/qgUitXVzdKSkB9QnaScIJ5ngQ?=
- =?us-ascii?Q?DpT7ChK1KzN5IsYYMXXF7Wbt2w5YmeV0Ku7A4MBjs2fPt5xjN39mLBvp7HEw?=
- =?us-ascii?Q?U0TWHopHE40+G3A2CwxGk2cTVvsabEl1fwwyRDGaf3ovtDgLuLiLBYquHcUV?=
- =?us-ascii?Q?DFTPYcQVgmiNdsHiAZZfUiMC4LhgBaoQaTgT5hO0m3unuJeVSjODCM8c9ven?=
- =?us-ascii?Q?LRAJdZrHAaO/ehMU1ZR18uv2nehN5rBm4L7BZTFboGxqldhWwI813hdKHeSH?=
- =?us-ascii?Q?pIg6FzDU+0rDbvhacu0wnC70Vj6VWpOweOXKJUyb6+VeLRDvbQfgUpwBBWne?=
- =?us-ascii?Q?cpNSbQd+h7F0GxaMSBDYwD6G703s5+blnoJKSaFQQcGbcNkyvAMZdS+L4GGh?=
- =?us-ascii?Q?vNncCaGN5qSI+zbB58qM+n4zMUaB2H0AL66ZCkpZoSw6Fgvrcedh7HmC/jzE?=
- =?us-ascii?Q?yIgh+mJXGtVgh9WxILo7l9CB+fHEfCqSLxmaMs2uyWGR75KLMLXoOx18BE/C?=
- =?us-ascii?Q?yOkEKZlkwAUO5SM/4ct5csgvLF8FABVUaBYbehn0H9uz8pqqASJijcwfXui8?=
- =?us-ascii?Q?SLWrV6mWsBCP6v/XVsFz/zUabkGkOlEscrMVmmbjd+I2V+hAHStZo4Q866Pz?=
- =?us-ascii?Q?GaLkODNwxyJog6gm5vfmOmcfG0FAhHMGAEfMesRFRHE35NJdrKArLheRPy4c?=
- =?us-ascii?Q?RYXo/SZKm8bxI82ZZ0INqOJl1Dw6pkNqmzYsTI5HhQuiOLGDMMXwnwktxtN9?=
- =?us-ascii?Q?4JhzD/NgZ0OeSHUxD+ArIOdBuqYOIeLCyVp2tvdBjAaNiq7OH/SxfSE2sFUn?=
- =?us-ascii?Q?5bayS/JhcVvAN7FbcIDBV4BGwbRqna+fXpML5Os7Znacv5viecr8JVCMAhuc?=
- =?us-ascii?Q?VvMq3JrQVs1cThcyFr8LPifbHY/GnK0NKCF1UkjB2dyZ6Rl5tVwxVfAnbN69?=
- =?us-ascii?Q?hMLKy2LsXuCxtufyrZp9PdBaH/8i7lGxvFySIRWLYyoAQVBEKn1ai8Sq6QOJ?=
-X-MS-Exchange-AntiSpam-MessageData-1: huDBO4aI/O043Q==
-X-OriginatorOrg: altera.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3589e4c5-b2ec-4147-8a3a-08df12f26e96
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR03MB6964.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2026 06:27:35.8221
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: fbd72e03-d4a5-4110-adce-614d51f2077a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: FhXlc5vXUqyMRa3sGpvsjXoD/rBEoYk6og8RuL/XIoHf7TvG/hKfKQ+fLUy4nhytRmGQQVD0YnOdWnBJX4iwGR2jMztrd5uQXfgmxwSQ2bA96rvEjXly3nQj85J82UtzzsoAkvCG/Ggd+9XO0BwDMA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR03MB6939
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH] fpga: region: Add support for FPGA region variants
+From: Marco Pagani <marco.pagani@linux.dev>
+To: Xu Yilun <yilun.xu@linux.intel.com>
+Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+ Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <akPZoGCyQW+6+hDX@yilunxu-OptiPlex-7050>
+ <5dbd4ac8-a532-4889-bae1-f0bab9a99267@linux.dev>
+ <akyyp1GCecWj2Bk2@yilunxu-OptiPlex-7050>
+ <417b510f-0f6d-4695-97f5-3fc19b9377b9@linux.dev>
+ <amCn8UYdybT+RRnq@yilunxu-OptiPlex-7050>
+ <9d4af487-69a7-4a0d-9335-35c3a057de54@linux.dev>
+ <anBfAa4LpjbmYHIc@yilunxu-OptiPlex-7050>
+ <db7cfe9e-b2ba-4323-bff9-44598e1f70bb@linux.dev>
+ <anl8891cH+bUfsGY@yilunxu-OptiPlex-7050>
+ <4dbdb52e-1b28-432e-a3a7-ad9c44f17d27@linux.dev>
+ <aoJ6paA/8ndpJ17y@yilunxu-OptiPlex-7050>
+ <8848432d-45b0-4efe-adf3-adfb64fe0899@linux.dev>
+Content-Language: en-US
+In-Reply-To: <8848432d-45b0-4efe-adf3-adfb64fe0899@linux.dev>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-From: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
 
-The driver polls CFG_RDY for 0 as notification that the endpoint has
-finished teardown and a new session can start safely. After a bad
-bitstream that poll can time out: CFG_RDY may stay stuck when
-HIP_CLK_SEL=0 if the device has already left usermode before the poll.
 
-Retrying teardown alone is not enough. Exit CvP mode and switch the HIP
-clock that feeds CFG_RDY so CVP_STATUS becomes responsive again. The
-second teardown is more than a plain retry: it runs after that CVP_MODE
-clear and clock switch. One such retry is sufficient.
+On 17/08/2026 18:14, Marco Pagani wrote:
+> 
+> 
+> On 17/08/2026 05:06, Xu Yilun wrote:
+>>>> But if the no-verification-in-driver is denied, I think the thing we
+>>>> need to do is to verify the binding between the DT description & image.
+>>>> After we've verified the DTO & the image is a valid pair, they are not
+>>>> arbitrary, whatever the DTO does is necessary to the updated hardware.
+>>>
+>>> I think we agree on this. Ideally, we should validate the complete
+>>> {config, image} pair. However, I don't see how using DTO at runtime can
+>>> help with this goal.
+>>
+>> Validation is not the goal. Re-enumeration is the goal. DTO is what FPGA
+>> is now using for re-enumeration. Validation helps DTO if you want extra
+>> integrity.
+> 
+> I would argue that validation is a requirement for any userspace
+> interface, while I do agree that re-enumeration is the goal. In my RFC,
+> re-enumeration is triggered using the DT infrastructure every time
+> userspace switches from one variant to another. Variants can be thought
+> of as pre-validated DT fragments baked into the base DT, rather than
+> DTOs ingested from userspace at runtime.
+> 
+> To clarify my position, going back to a couple of messages ago:
+> 
+> - As I understand it, the current upstream consensus is that hardware
+>   devices must be responsible for verifying their own firmware.
+>   So, the kernel is responsible for protecting the integrity of its
+>   own configuration (live DT), while the reconfiguration engine is
+>   responsible for validating FPGA images;
+> 
+> - If this is not sufficient, and there is a requirement to secure
+>   /lib/firmware, it should be done at the filesystem level using
+>   the IMA subsystem;
+> 
+> - However, since not all FPGA reconfiguration engines support crypto
+>   image verification, and not all SoCs/platforms have a TPM IP or
+>   support for a TEE, we might consider having a subsystem-specific and
+>   optional check for the {config, image} pair as a *future* extension.
+> 
+> 
+>>> On the contrary, it would put us in a situation
+>>> where neither element of the pair is guaranteed since it enables the
+>>> user to feed arbitrarily forged DTOs.
+>>
+>> As you referenced, no OS component (even the kernel) could guarantee the
+>> functionality of the binary for a device, only the device can. So what's
+>> the difference who provides the pair?
+>>
+>> The only thing matters here is integrity and authentication, which is
+>> totally a different thing from kernel-user privilege.
+>>
+>> I'm also confused you keep on telling that userspace is arbitrary so no
+>> userspace interface, which seems to suggest kenrel should never get any
+>> input from user.
+> 
+> My concern isn't about accepting user input in general but rather about
+> the type and scope of that input. I think there is a huge difference in
+> terms of the security between:
+> 
+> - matching a string that userspace sent via sysfs and then applying a
+>   safe configuration already contained in the base DT (validated from
+>   a FIT image).
+> 
+> - having userspace directly pass the kernel DT configuration (as a DTO),
+>   which the kernel must then validate (both syntactically and
+>   semantically) and apply.
+> 
+> In the first scenario, userspace is like a customer selecting from a
+> menu of pre-approved dishes, and then the kitchen safely prepares it.
+> 
+> In the second scenario, userspace is like a customer stepping into the
+> kitchen to cook their own meal, forcing the chef to constantly supervise
+> them to ensure they don't burn the place down.
+> 
+> 
 
-Introduce altera_cvp_recovery() to wrap this cleanup and single retry.
+>>>> It is possible. To be more efficient, I think we should invite
+>>>> boarder discussions.
 
-Signed-off-by: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
----
-v1: https://lore.kernel.org/linux-fpga/20260618112410.303-1-muhammad.nazim.amirul.nazle.asmade@altera.com/
-v2:
-- Rewrite commit message to explain CFG_RDY timeout, HIP clock switch,
-  and why one retry is enough
-- Move CvP mode/HIP clock cleanup into recovery via
-  altera_cvp_disable_cvp_mode() helper
-- Reduce retries to 1 (first teardown + one retry after cleanup)
-- Use dev_warn for per-teardown CFG_RDY timeout; one final
-  success/failure message from recovery
+> Following up on what you said two messages ago, I think we should invite
+> the DT people and ask for their input to help move this conversation
+> forward.
 
- drivers/fpga/altera-cvp.c | 38 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 35 insertions(+), 3 deletions(-)
+Hi Yilun,
 
-diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-index 44badfd11e1b..ce9d2ed68b55 100644
---- a/drivers/fpga/altera-cvp.c
-+++ b/drivers/fpga/altera-cvp.c
-@@ -63,6 +63,7 @@
- #define ALTERA_CVP_V1_SIZE	4
- #define ALTERA_CVP_V2_SIZE	4096
- 
-+#define CVP_TEARDOWN_MAX_RETRY 1
- /* Optional CvP config error status check for debugging */
- static bool altera_cvp_chkcfg;
- 
-@@ -306,7 +307,38 @@ static int altera_cvp_teardown(struct fpga_manager *mgr,
- 	ret = altera_cvp_wait_status(conf, VSE_CVP_STATUS_CFG_RDY, 0,
- 				     conf->priv->poll_time_us);
- 	if (ret)
--		dev_err(&mgr->dev, "CFG_RDY == 0 timeout\n");
-+		dev_warn(&mgr->dev, "CFG_RDY == 0 timeout\n");
-+
-+	return ret;
-+}
-+
-+static void altera_cvp_disable_cvp_mode(struct altera_cvp_conf *conf)
-+{
-+	u32 val;
-+
-+	altera_read_config_dword(conf, VSE_CVP_MODE_CTRL, &val);
-+	val &= ~VSE_CVP_MODE_CTRL_HIP_CLK_SEL;
-+	val &= ~VSE_CVP_MODE_CTRL_CVP_MODE;
-+	altera_write_config_dword(conf, VSE_CVP_MODE_CTRL, val);
-+}
-+
-+static int altera_cvp_recovery(struct fpga_manager *mgr,
-+			       struct fpga_image_info *info)
-+{
-+	struct altera_cvp_conf *conf = mgr->priv;
-+	int ret, retry;
-+
-+	ret = altera_cvp_teardown(mgr, info);
-+	for (retry = 0; ret && retry < CVP_TEARDOWN_MAX_RETRY; retry++) {
-+		altera_cvp_disable_cvp_mode(conf);
-+		ret = altera_cvp_teardown(mgr, info);
-+	}
-+
-+	if (ret)
-+		dev_err(&mgr->dev, "Tear-down failed after %d retries\n",
-+			CVP_TEARDOWN_MAX_RETRY);
-+	else
-+		dev_info(&mgr->dev, "Tear-down successful\n");
- 
- 	return ret;
- }
-@@ -343,7 +375,7 @@ static int altera_cvp_write_init(struct fpga_manager *mgr,
- 
- 	if (val & VSE_CVP_STATUS_CFG_RDY) {
- 		dev_warn(&mgr->dev, "CvP already started, tear down first\n");
--		ret = altera_cvp_teardown(mgr, info);
-+		ret = altera_cvp_recovery(mgr, info);
- 		if (ret)
- 			return ret;
- 	}
-@@ -484,7 +516,7 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
- 	u32 mask, val;
- 	int ret;
- 
--	ret = altera_cvp_teardown(mgr, info);
-+	ret = altera_cvp_recovery(mgr, info);
- 	if (ret)
- 		return ret;
- 
--- 
-2.43.7
+Is it okay with you if I CC the DT people to ask for an opinion?
+
+$ scripts/get_maintainer.pl drivers/of
+Rob Herring <robh@kernel.org> (maintainer:OPEN FIRMWARE AND FLATTENED DEVICE TREE)
+Saravana Kannan <saravanak@kernel.org> (maintainer:OPEN FIRMWARE AND FLATTENED DEVICE TREE)
+devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE)
+linux-kernel@vger.kernel.org (open list)
+
+
+Thanks,
+Marco
 
