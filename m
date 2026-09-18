@@ -1,164 +1,105 @@
-Received: from mta0.migadu.com (out-67.mta0.migadu.com [91.218.175.67])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB6B542E41A
-	for <linux-fpga@vger.kernel.org>; Fri, 18 Sep 2026 15:07:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.67
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DA8150B8B2;
+	Fri, 18 Sep 2026 16:20:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789744045; cv=none; b=gXsbYss3dev9KqahxTJOCjhPXf6+TlgoUagVAE4mSkaxnMMQ+AHSRhsgldg2XFLhvqmtTjnwklN3nKplduyGPDy8HUw3p0gfOfJLqZdg31FZV6sBUMCWufGY0hbsqX0xbUgksoUijFDvSH1h+iNuGhZPiGmaxj1CScgGKrdVRMI=
+	t=1789748441; cv=none; b=VTrnFfsRCskmxudesLqi4DL9Q1D8sYE6QiyMUvZB2yo5jLUGAT1hvU/aUg9ayp5exkQXNhGjTF0vRr2iGUHUCykBwlgP4iImSElqfAhasOKwnUEtk9uCZ6uGTqS9ia41IPWg6ic6wOfrK/imRdm4S0JSpJ2P2kNQLTK/E0smiy8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789744045; c=relaxed/simple;
-	bh=6ATLnyCaLHvD7n05SCq7fLNOH0LPoLecfJlC0QyV6/8=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=Ol4ZiIBPZiVgBKDnX3C5sQWLqSuxrJjpo4RIRf2QvgjtsAGWsl7Kpkcm0oBFPWuY6o6OizBbUCcH2WnNgI2ngxuowvHtIzwuWGsEmmbfyOpFqODAt9tqe4TUUMOQRx50hN2ayIMA9Ludc73vrTRzNRvKU39HQ1HOo7XLroa8800=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=PLuh6+TZ; arc=none smtp.client-ip=91.218.175.67
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1789748441; c=relaxed/simple;
+	bh=4djSnnE8LHSvuIWChsZNA6rJeO1kVt9fIDqJ3xZZlt8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TeUHSBJIR/txdxkaw1ZQxYv6SLj19DLO1Q2nVl1YSf0V8zO3XyHcvRZCfLdWVaU2LdS8fHnHObQKcMs9IKCxik1jcYfTt4wS5uIQ/ZnlJvPF8HaZRCdhpMOcLwgdG/wztOP+Hy3/OU0MmvjCR7rC7wx4FP2AuoLhwaOaSKSiNEI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=HT4sl0pU; arc=none smtp.client-ip=192.198.163.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="PLuh6+TZ"
-X-Envelope-To: linux-fpga@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=6ATLnyCaLHvD7n05SCq7fLNOH0LPoLecfJlC0QyV6/8=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1789744040; v=1; x=1790348840;
- b=PLuh6+TZ8Qi4yRyCaDsuDRiHsj8EbcPytt9FPuOeoAsNKhDTWXBPXXGFPOKzsi9ZtOmrYGaf
- qoDeQUdHJBWVygEqWD8+1ajVXnva8RCDi9rIh3GeZM9XqS5sVb8YWSdZQ4Ll4mqB0/rWZDFFjJz
- qw4avAIpfAEPPjPrM295A8Q0=
-X-Envelope-To: linux-fpga@vger.kernel.org
-Received: by smtp.migadu.com with ESMTPS id 729c408859e620f4;
-	Fri, 18 Sep 2026 15:07:10 +0000
-X-Mizu-Trace-ID: 729c408859e620f4
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <11b1a792-f8b1-4fce-8a7a-8352149febcf@linux.dev>
-Date: Fri, 18 Sep 2026 17:07:07 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="HT4sl0pU"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1789748439; x=1821284439;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=4djSnnE8LHSvuIWChsZNA6rJeO1kVt9fIDqJ3xZZlt8=;
+  b=HT4sl0pUx3eq1ZQZA+scdhCD7bvCMXd98xFd1ckqeEDwvnr7iApC7qRo
+   NxHy96xM2AEFXN81B1fjmRE6gQlhHBHhModQORSZWbAuQQU8eeCIFid+B
+   mZtgwl7PIq3824Go1k5mXpDNzEYAdv7LAEdRnQj2zfvI7jtF3GbVJn+e5
+   sgCD/f1+BXH85ko6voNMSY7dsVHRHM9SNPWiESELwzTeVUydAw0mv10oL
+   FFIwpUPPzYA1rif0lrjlO8CgqfMM76v582OJPgxbppEMS16tssmRCLNCd
+   H1wwcXT43LBX7yzQLm5e7OGjGo1DT758IeO+9ya8isQ9C/K/M4ItXU+Re
+   A==;
+X-CSE-ConnectionGUID: ZeoVLRYgTQ6eDCW2IyQCZA==
+X-CSE-MsgGUID: I26FS0uqQ4WNG3t815jyHw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11909"; a="90398002"
+X-IronPort-AV: E=Sophos;i="6.27,109,1787036400"; 
+   d="scan'208";a="90398002"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 09:20:38 -0700
+X-CSE-ConnectionGUID: AJZIHhFXSm6nS/LH7M5ZBQ==
+X-CSE-MsgGUID: 8EW7TYFNSMudkTYpY4fi6A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,109,1787036400"; 
+   d="scan'208";a="268211319"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.47.46])
+  by fmviesa009.fm.intel.com with ESMTP; 18 Sep 2026 09:20:37 -0700
+Date: Sat, 19 Sep 2026 00:20:12 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: muhammad.nazim.amirul.nazle.asmade@altera.com
+Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] fpga: altera-cvp: Retry teardown and reset CVP state
+ on failure
+Message-ID: <aq1kvDQyIWUjBciz@yilunxu-OptiPlex-7050>
+References: <20260915062734.42964-1-muhammad.nazim.amirul.nazle.asmade@altera.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Subscribe: <mailto:linux-fpga+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH] fpga: region: Add support for FPGA region variants
-From: Marco Pagani <marco.pagani@linux.dev>
-To: Xu Yilun <yilun.xu@linux.intel.com>
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
- Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <akPZoGCyQW+6+hDX@yilunxu-OptiPlex-7050>
- <5dbd4ac8-a532-4889-bae1-f0bab9a99267@linux.dev>
- <akyyp1GCecWj2Bk2@yilunxu-OptiPlex-7050>
- <417b510f-0f6d-4695-97f5-3fc19b9377b9@linux.dev>
- <amCn8UYdybT+RRnq@yilunxu-OptiPlex-7050>
- <9d4af487-69a7-4a0d-9335-35c3a057de54@linux.dev>
- <anBfAa4LpjbmYHIc@yilunxu-OptiPlex-7050>
- <db7cfe9e-b2ba-4323-bff9-44598e1f70bb@linux.dev>
- <anl8891cH+bUfsGY@yilunxu-OptiPlex-7050>
- <4dbdb52e-1b28-432e-a3a7-ad9c44f17d27@linux.dev>
- <aoJ6paA/8ndpJ17y@yilunxu-OptiPlex-7050>
- <8848432d-45b0-4efe-adf3-adfb64fe0899@linux.dev>
-Content-Language: en-US
-In-Reply-To: <8848432d-45b0-4efe-adf3-adfb64fe0899@linux.dev>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260915062734.42964-1-muhammad.nazim.amirul.nazle.asmade@altera.com>
 
+> +static int altera_cvp_recovery(struct fpga_manager *mgr,
+> +			       struct fpga_image_info *info)
+> +{
+> +	struct altera_cvp_conf *conf = mgr->priv;
+> +	int ret, retry;
+> +
+> +	ret = altera_cvp_teardown(mgr, info);
+> +	for (retry = 0; ret && retry < CVP_TEARDOWN_MAX_RETRY; retry++) {
+> +		altera_cvp_disable_cvp_mode(conf);
+> +		ret = altera_cvp_teardown(mgr, info);
+> +	}
 
+If one retry is sufficient, no need to define CVP_TEARDOWN_MAX_RETRY, no
+need to loop.
 
-On 17/08/2026 18:14, Marco Pagani wrote:
-> 
-> 
-> On 17/08/2026 05:06, Xu Yilun wrote:
->>>> But if the no-verification-in-driver is denied, I think the thing we
->>>> need to do is to verify the binding between the DT description & image.
->>>> After we've verified the DTO & the image is a valid pair, they are not
->>>> arbitrary, whatever the DTO does is necessary to the updated hardware.
->>>
->>> I think we agree on this. Ideally, we should validate the complete
->>> {config, image} pair. However, I don't see how using DTO at runtime can
->>> help with this goal.
->>
->> Validation is not the goal. Re-enumeration is the goal. DTO is what FPGA
->> is now using for re-enumeration. Validation helps DTO if you want extra
->> integrity.
-> 
-> I would argue that validation is a requirement for any userspace
-> interface, while I do agree that re-enumeration is the goal. In my RFC,
-> re-enumeration is triggered using the DT infrastructure every time
-> userspace switches from one variant to another. Variants can be thought
-> of as pre-validated DT fragments baked into the base DT, rather than
-> DTOs ingested from userspace at runtime.
-> 
-> To clarify my position, going back to a couple of messages ago:
-> 
-> - As I understand it, the current upstream consensus is that hardware
->   devices must be responsible for verifying their own firmware.
->   So, the kernel is responsible for protecting the integrity of its
->   own configuration (live DT), while the reconfiguration engine is
->   responsible for validating FPGA images;
-> 
-> - If this is not sufficient, and there is a requirement to secure
->   /lib/firmware, it should be done at the filesystem level using
->   the IMA subsystem;
-> 
-> - However, since not all FPGA reconfiguration engines support crypto
->   image verification, and not all SoCs/platforms have a TPM IP or
->   support for a TEE, we might consider having a subsystem-specific and
->   optional check for the {config, image} pair as a *future* extension.
-> 
-> 
->>> On the contrary, it would put us in a situation
->>> where neither element of the pair is guaranteed since it enables the
->>> user to feed arbitrarily forged DTOs.
->>
->> As you referenced, no OS component (even the kernel) could guarantee the
->> functionality of the binary for a device, only the device can. So what's
->> the difference who provides the pair?
->>
->> The only thing matters here is integrity and authentication, which is
->> totally a different thing from kernel-user privilege.
->>
->> I'm also confused you keep on telling that userspace is arbitrary so no
->> userspace interface, which seems to suggest kenrel should never get any
->> input from user.
-> 
-> My concern isn't about accepting user input in general but rather about
-> the type and scope of that input. I think there is a huge difference in
-> terms of the security between:
-> 
-> - matching a string that userspace sent via sysfs and then applying a
->   safe configuration already contained in the base DT (validated from
->   a FIT image).
-> 
-> - having userspace directly pass the kernel DT configuration (as a DTO),
->   which the kernel must then validate (both syntactically and
->   semantically) and apply.
-> 
-> In the first scenario, userspace is like a customer selecting from a
-> menu of pre-approved dishes, and then the kitchen safely prepares it.
-> 
-> In the second scenario, userspace is like a customer stepping into the
-> kitchen to cook their own meal, forcing the chef to constantly supervise
-> them to ensure they don't burn the place down.
-> 
-> 
+	if (ret) {
+		/*
+		 * IIUC, say something like CVP_STATUS may stuck and you
+		 * re-activate the CVP_STATUS then try teardown again.
+		 * Please re-org the word.
+		 */
+		altera_cvp_disable_cvp_mode(conf);
+		ret = altera_cvp_teardown(mgr, info);
+	}
 
->>>> It is possible. To be more efficient, I think we should invite
->>>> boarder discussions.
+> +
+> +	if (ret)
+> +		dev_err(&mgr->dev, "Tear-down failed after %d retries\n",
+> +			CVP_TEARDOWN_MAX_RETRY);
 
-> Following up on what you said two messages ago, I think we should invite
-> the DT people and ask for their input to help move this conversation
-> forward.
+You always retry once when failure, no need to tell I've retried.
 
-Hi Yilun,
+> +	else
+> +		dev_info(&mgr->dev, "Tear-down successful\n");
 
-Is it okay with you if I CC the DT people to ask for an opinion?
+Only speak up when something goes wrong or suspicious.
 
-$ scripts/get_maintainer.pl drivers/of
-Rob Herring <robh@kernel.org> (maintainer:OPEN FIRMWARE AND FLATTENED DEVICE TREE)
-Saravana Kannan <saravanak@kernel.org> (maintainer:OPEN FIRMWARE AND FLATTENED DEVICE TREE)
-devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE)
-linux-kernel@vger.kernel.org (open list)
-
-
-Thanks,
-Marco
-
+>  
+>  	return ret;
+>  }
