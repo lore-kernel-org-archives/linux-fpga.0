@@ -1,56 +1,58 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.6])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 834BE51AFF9;
-	Fri, 18 Sep 2026 17:38:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.6
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9E35514777;
+	Fri, 18 Sep 2026 17:39:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789753132; cv=none; b=frZO6ayfdhqpVhA6WqGbc7IbWJ5eIPfZL23+XLu/VrrnPzx4ukJHte3E2HcgzGD5FfV5NUTBTiXSwv1i82mDBL58pBQt/l3R/gjoHHg9EcZenA9iNHy4whT3hN4pvKnkojYUZMmBqARaqQ+Elq5/gEJMai7HtE0Mez+K9BCYC5g=
+	t=1789753164; cv=none; b=U1950XIkHzaOTaM0DS8nNdk+hc3wIBJfABPYcl60bMAvkraVE6z4LuekM/xStlp+OvIBBBcJ/XIWQpErKKUMW4NnW1OoMNn9HGsv8jy+2apKVFTTWrPD6kyCCujJXVs+byUNlOdTcBSekbDsCvwqvrX/HIamNpf6zeFstr/Mi8Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789753132; c=relaxed/simple;
-	bh=CKO3icM4eR2lr37zpd+PK8SBz40gkwBtTjwx1xIU/M8=;
+	s=arc-20240116; t=1789753164; c=relaxed/simple;
+	bh=ADbjXrTc3VqMtOrXdkd1llXCmbrgHQP/sgMQWIrJ9HA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mGAAudM2MlzDHByNhVDM7zR+sElh1X9SJwrdhQRgg43r8Wo2U0mZTXfBBcMUxDKLsfkr9yjE91Q2RJZMDt9SVoilT4yCJfClnlqdYjnCyf0G3yNSmDQ+BOYu4dwnOoxeRFIOyjYjuuaVeQjxVtBIscj2OlXYrKk/wa7BHM2C234=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NKVFwFPv; arc=none smtp.client-ip=192.198.163.6
+	 Content-Type:Content-Disposition:In-Reply-To; b=PnEieGRMtpxLCf+vE9AC99uNkWtoPVxXLP8Zf0TM4WcNQr48f43D3nlxGtCaPdeC/Xnx99QaGOD7L5cfnPiKHFxNVnpeRUgFIMB6Zqi2EAg4X/XBd73iPXjRUmDZr9XccCTA+pK79DbURSGoehpyubF9VSl1evIrF5Shvql9LQ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=UESUd0os; arc=none smtp.client-ip=192.198.163.17
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NKVFwFPv"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="UESUd0os"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789753130; x=1821289130;
+  t=1789753162; x=1821289162;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=CKO3icM4eR2lr37zpd+PK8SBz40gkwBtTjwx1xIU/M8=;
-  b=NKVFwFPvHsuwneZmdZuYXTSPAKaq2OE2zw8uoOg+ry6isDI4U1j5avcN
-   IT0tDQiWRNdcV1NxdDPtqcO/rQAE5sV9cNIWKuMCXZMfRTvmSjYWXddJX
-   aL5uuaM80ii0syNcldpMe166mcWO1hqynEATm9KdW3vEgXDzpcUySmkSH
-   uffiWt+ILwYFfs4PFpXQiQHaN5gHxxKhol371op5rYTiLISjEGGqJTDuo
-   um6rKT+4cyB0T9h7wxabt50C7AK10hzF+ZBcAa9Lrk0q2f6GfwuOzFkSp
-   lmIxHMFM7N+uJPxFHlr6ZWUBWMFODCkZuh0e0K7h01C28Y4eh89quvFxS
-   w==;
-X-CSE-ConnectionGUID: zio5zlJaRXiKW1vU5prRIA==
-X-CSE-MsgGUID: X1JsBYRnRxyUNaCnYMqyZQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11909"; a="788198"
+  bh=ADbjXrTc3VqMtOrXdkd1llXCmbrgHQP/sgMQWIrJ9HA=;
+  b=UESUd0oswQPKv3vcRggRNNk+FpUe6BI64yDI+lvge+OgUp7L++GYBOLY
+   t8oR6H2ubiD3zjJUHrC+8EmtyNVibBg8giw4mHprnbn8JwAOkxxNBd5oA
+   +Xx0jBTdrUgX/hZhtRe64Ia1D+zWweV/m4kEGbFb18FpxFfou/ZjD8gEJ
+   unWFaUMi9MKirtM5jGv9NEFqPvTTIeJjJ5NLRYuw1riqLPpYIMrso2G8K
+   C/1bOOTXh533lMDnJJMxE5ZQeNjcWr8B/s5Grewvwma/HfpOhLLf8Mt+X
+   5Cr5wWYqFVVAMkN0xOghhLw/x7Tb9hBxgqTPo56EtTezyrGSZ8QkvWbg9
+   A==;
+X-CSE-ConnectionGUID: OpdGP7cLTsWAXCVq596dUA==
+X-CSE-MsgGUID: AaQLH8x3S2qp0osj3ad6Bw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11909"; a="90143449"
 X-IronPort-AV: E=Sophos;i="6.27,109,1787036400"; 
-   d="scan'208";a="788198"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by fmvoesa116.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 10:38:46 -0700
-X-CSE-ConnectionGUID: vVlmfQC7SD6r+8QbL8+gbA==
-X-CSE-MsgGUID: i8nahSe4Q4aro2CA9+MNTA==
+   d="scan'208";a="90143449"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 10:39:20 -0700
+X-CSE-ConnectionGUID: AbAAxrodSaSjTipO4Pe7+Q==
+X-CSE-MsgGUID: LHgaXWzfSsWc1yJpphSZMQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,109,1787036400"; 
-   d="scan'208";a="270796789"
+   d="scan'208";a="268237165"
 Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.47.46])
-  by fmviesa010.fm.intel.com with ESMTP; 18 Sep 2026 10:38:44 -0700
-Date: Sat, 19 Sep 2026 01:38:19 +0800
+  by fmviesa009.fm.intel.com with ESMTP; 18 Sep 2026 10:39:18 -0700
+Date: Sat, 19 Sep 2026 01:38:52 +0800
 From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Hemanth Selam <hemanth.selam@gmail.com>
-Cc: mdf@kernel.org, yilun.xu@intel.com, trix@redhat.com,
+To: Karl Mehltretter <kmehltretter@gmail.com>
+Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+	Alan Tull <atull@kernel.org>, Tom Rix <trix@redhat.com>,
 	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] fpga: fix typo in s10_ops_write() comment
-Message-ID: <aq13CwhJWNOC5fDP@yilunxu-OptiPlex-7050>
-References: <20260910044545.50261-1-hemanth.selam@gmail.com>
+Subject: Re: [PATCH] fpga: Fix of_fpga_mgr_get() reference in fpga_mgr_lock()
+ docs
+Message-ID: <aq13LIFPzbtEVxtR@yilunxu-OptiPlex-7050>
+References: <20260912100937.86316-1-kmehltretter@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
@@ -59,17 +61,16 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260910044545.50261-1-hemanth.selam@gmail.com>
+In-Reply-To: <20260912100937.86316-1-kmehltretter@gmail.com>
 
-On Thu, Sep 10, 2026 at 10:15:45AM +0530, Hemanth Selam wrote:
-> The comment reads "reuse it to send more data or free if if all data has
-> been sent".  The first "if" is not a repetition, it should be "it", to
-> match the "reuse it" earlier in the same sentence.
+On Sat, Sep 12, 2026 at 12:09:37PM +0200, Karl Mehltretter wrote:
+> The fpga_mgr_lock() comment lists of_fpga_mgr_put() as a source of a
+> manager pointer. The helper which obtains that pointer is
+> of_fpga_mgr_get(). Correct the reference.
 > 
-> Only touches a comment, no code changes.
-> 
-> Assisted-by: Cursor:claude-opus-5
-> Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
+> Fixes: ebf877a51ad7 ("fpga: mgr: separate getting/locking FPGA manager")
+> Assisted-by: LLM
+> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
 
 Reviewed-by: Xu Yilun <yilun.xu@intel.com>
 
