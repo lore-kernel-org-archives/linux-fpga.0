@@ -1,46 +1,47 @@
 Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010056.outbound.protection.outlook.com [40.93.198.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 537425625E1;
-	Tue, 22 Sep 2026 16:02:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F258A5632B3;
+	Tue, 22 Sep 2026 16:03:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.56
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790092985; cv=fail; b=pDkaLPlUXl/hg4iL5HrwSAipfqPJsBfny6UfxEdJiikc82mWZCrwFQ3i1qVDvtTdlHQhozGC1gYtqHbeTSD6yaenOhKnBDHcecdjPqODkJsPA37Bx323hEA5HEVnmtLNLj6yommN/Iu8rbb55GgzxuHex7ZVi/GhiCw8lLnCksw=
+	t=1790092990; cv=fail; b=I49UDw7VoQyzreyxnDi3dBwk+wHuRMP8B/wbQbEMMiiXvkemruhXJIj4NenzN1kShxTd0ms/Qhj9+o7GO2HH2i/lnlz3aTUiACGrCBjp6Wb4RXKv+Sa8KFypOgDTYjFP7MHqGGzJRwiQuG3fqmV7f0s8IddWbcdEk359PwA4mxg=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790092985; c=relaxed/simple;
-	bh=FCzy3lEkgrqipcULQOEoqHMP89frEnwDTHEXlCuIivE=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=gbAWcnC8lrOkObcrSJyR8Xvt3VdpKm/act+DiwkYXbE7tcIq8+cdPG7lbAJLGq2i+QSDptP4G5uEMVL4+3MjRFNFAzMmLCeWaiKLcgd2d4c8WL64iGFXB1phE2j9QWSZ4EIFGKFF3bwmt7nCVg8aO2dHuVYEJE+xH2S6HHAhjJQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com; spf=pass smtp.mailfrom=altera.com; dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b=iJuTeb6t; arc=fail smtp.client-ip=40.93.198.56
+	s=arc-20240116; t=1790092990; c=relaxed/simple;
+	bh=VKshTG1QizCNB+g5Y5M/8lSNVfCIXzqj59UFipvyFtk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Yv+dkg1UOJHaGzn0uhHp36JF2k/A8fkbQMB0hY1su/9YsnHqePJFYfVHwaeC4lWNFgumZgmlRx94avxT4OsedQ3rGlKlIePa3Q2Aop3bIMJF3Axs1odwsmVgnWBkTD3vQRWqYsP5eMyhQa2beI94do1ApWDhZ2QRP6uvHEtr0Fw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com; spf=pass smtp.mailfrom=altera.com; dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b=I8iqxCAl; arc=fail smtp.client-ip=40.93.198.56
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=altera.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b="iJuTeb6t"
+	dkim=pass (2048-bit key) header.d=altera.com header.i=@altera.com header.b="I8iqxCAl"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BrTEliND32IPIgpiExA3TqbQEx8en+cnuEhJlPZLfZCa5Pzenp21FuBuLdkYIcmS7fnbhZF2xM63IXuTKvi23SOaGnwemdMIf1/r+R6bIIky+m+lvnbvnfEAAg/gTRpZSIRe8tdAIn7mtcmunT5SE4tlm8oXHG1OvTtU6vussHDUi0C4FzthMyVB3Xxp9RqQeAhVjGCN7cCjMmPgX9rjAChE+NJQkg6mejcF8LYbGGZ+46hz5ttrWsa5syqKuMyjd0qmatejaqA1xwWigS96OVcKvACsru+XLPijfTeTmIaJv33Om4bOWvDVUAMgdAaMs2nOe/wHWxaE1fWjtCiX1g==
+ b=XN2yxRk/A7AsJFJkEIQ8gpLcVeKM+pZDIfUFDVkjTh5oZ2QOaLAYe80UaXG9DmicKYpu5qG4rkQgspL3p6V586SrhhFRNaP2ts03gTitpTbTiandHNhyFrv6M2jKUkEaP9JjVU83MWA/2wx8wI41XywzWbZDSRf6siSA7l8t3Kx+5BfkqJfO/C+RJ4Rj60jcWOoSLBkJajjLOQa/DMhzwBCgQMbMZ5LlsaZE6eFjWGrHJaJI+A9hVJBVtzZzzeU8TndJCB3mJjVadH08J4fnWCVFUMFjkHRTWIxofbDG/ouZJNFip2cRb03GdMU/+hQW9dszH0khjxv8yZnmKipbSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=XCl0VUavwXFLG1aHUSbEeQxjXLVWwuGWbj+MeCKRXU8=;
- b=jZ9t7JKdGgv9AKUlDJT7Z3TLQgSPNm/Z9h6iIXYr57ObyQxt1RM9cgGIRqyDvT77KM1ktnc/xCH4i4dYScI9z9r1j42HekPMiElNv4QKnhFiZixH3cKameAWQxYj5RdSjS/nPm0S90voQR8MqpoIF9ShgAv7WeLtRpSN/1u8GUAnhWs8m5bgQAqkOsfike1tCc41b3j4lmROWcFHx3zdsH/J3MZqwqwUN2oelmVgnDiNPmbzyopysqYoVYl0gqh4vXaufIT5l/ginTdfN0n8algkuVlSpGgvnHXatl8bKc1hOqN/TZ2PFVtqglOb/iADzCbzckCAOY5SxZJ09qbzoQ==
+ bh=OroRCiBJZWWNIk8i9U9diVwGwEX5v4YJU43kIsI46Vc=;
+ b=BzsYGoKO0OkTvU90GArODzK9scbAndfgobCNlboy8RrCQCfyyx58zoIUS54MmS9lIdriaVOM4zkkyIgZiDjPYtZfvlsnEtdDLiw0oD0qi4eFuuyMeaTlP0GWylqVPHUQZrgqnc8carwbB0s+USLG/uMsZrUFr8z/lyHVyWRG9Kk9+dgF6l63MpxdtUE8VLOeMJAyyBuSkGbIq/cqRBTNorx0KmNKAWZan5jlAhsDQRQdmBYkr94ubXywulfgY7rjRAEKcmVXQIF2k1hbUanxrQZm+z35lLX3sWUYB2UImtMsSLgV31dZQyHM/fcJzc1qZ8TjCK+7GTlKVEc9Ke/wbw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=altera.com; dmarc=pass action=none header.from=altera.com;
  dkim=pass header.d=altera.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=altera.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=XCl0VUavwXFLG1aHUSbEeQxjXLVWwuGWbj+MeCKRXU8=;
- b=iJuTeb6t/Xm+itdmBh4DT8g47n3ItHX+ByJIefjBYEktBtqJuQWhv/a3DywFlsdn6Mnl6h+i6NqqCcX1Lfs4Zo0z0kCUk6BAkk8ucR9sqDrZiwz/5FbKIKOPuYX2z/479LOuEwCyBYwOM6ltMmII70E0RJOym615326RdkWhKdS0mKxqmde26WoaDQfUvCE+PsyQgxLAQMw+8I5B5Sux81gq82Nk1OBjSdaK4V3eO9yJm05yaCmaOMvuQ1n7kLdMxTjA+sZJfwdKUR3mmpN8/FXX5pgK3D2qWcFgJvXSmOzHv7WXqhY/P07LC6y0//xMh9xx2VfU258zlOUs7cPiNQ==
+ bh=OroRCiBJZWWNIk8i9U9diVwGwEX5v4YJU43kIsI46Vc=;
+ b=I8iqxCAlRZJS5coThcmfafLl/j6SFbW3a2c7rWWgsXUCBJ+nl2T7wz/+EDX3jL7k7sTZx16kJ3SqssT8ObDSMiwfyK9vXGQfI9BiEoWPnEUWYqKEJKj2ZQ5NdVKcOlFRxl1/5ywjQ/qpSCvVs+vrdCmPktglaOFjXmjHRM28OsiWsiX/lTJENa6QVL2N8u7obsttgPyErB9zHiaH871V6wWNmK8x19/+InrNvL56iAYM+rMxXma70Vg2qnpyEGxSgIKGL1SAR1LdNtO17vKoL3yEzhDxh7ac+pxXeUOfY19ENDDtVQnvdLkG2Vb6H2eOZpCUmm1iSR0UsWU9s4IJUg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=altera.com;
 Received: from SJ0PR03MB6581.namprd03.prod.outlook.com (2603:10b6:a03:393::12)
  by SJ0PR03MB5918.namprd03.prod.outlook.com (2603:10b6:a03:2da::9) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.13; Tue, 22 Sep
- 2026 16:02:54 +0000
+ 2026 16:02:56 +0000
 Received: from SJ0PR03MB6581.namprd03.prod.outlook.com
  ([fe80::e335:b86:cf59:8b80]) by SJ0PR03MB6581.namprd03.prod.outlook.com
  ([fe80::e335:b86:cf59:8b80%3]) with mapi id 15.21.0428.014; Tue, 22 Sep 2026
- 16:02:54 +0000
+ 16:02:56 +0000
 From: Adrian Ng Ho Yin <adrian.ho.yin.ng@altera.com>
 To: Moritz Fischer <mdf@kernel.org>,
 	Xu Yilun <yilun.xu@intel.com>,
@@ -48,10 +49,12 @@ To: Moritz Fischer <mdf@kernel.org>,
 	linux-fpga@vger.kernel.org,
 	linux-kernel@vger.kernel.org
 Cc: Adrian Ng Ho Yin <adrian.ho.yin.ng@altera.com>
-Subject: [PATCH 0/3] fpga: stratix10-soc: harden wait, ERROR order, and timeout
-Date: Wed, 23 Sep 2026 00:02:40 +0800
-Message-ID: <cover.1790090287.git.adrian.ho.yin.ng@altera.com>
+Subject: [PATCH 1/3] fpga: stratix10-soc: always wait for svc buffer completion
+Date: Wed, 23 Sep 2026 00:02:41 +0800
+Message-ID: <d241323c396d772d818fea1b9470e5380b4ebaa5.1790090287.git.adrian.ho.yin.ng@altera.com>
 X-Mailer: git-send-email 2.49.GIT
+In-Reply-To: <cover.1790090287.git.adrian.ho.yin.ng@altera.com>
+References: <cover.1790090287.git.adrian.ho.yin.ng@altera.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-ClientProxiedBy: SI2PR04CA0013.apcprd04.prod.outlook.com
@@ -65,99 +68,96 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: SJ0PR03MB6581:EE_|SJ0PR03MB5918:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7bd15ac7-710a-490d-ad68-08df18c2f636
+X-MS-Office365-Filtering-Correlation-Id: 03fc1e1b-5897-4555-373a-08df18c2f77b
 X-MS-Exchange-AtpMessageProperties: SA
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|376014|23010399003|6133799003|55112099003|18002099003|11063799006|10067099003|56012099006;
+	BCL:0;ARA:13230040|366016|1800799024|376014|23010399003|22082099003|55112099003|18002099003|11063799006|10067099003|56012099006;
 X-Microsoft-Antispam-Message-Info:
-	lfSBXUPfYSe6VZ+sMZrGsgtmByjS+3PX7+c5D+OC77havLiFYZXi8P/zbDLP6n8rOymOeAgIEZ67TxshaM4fOrQyi6LZacir3K4ox+42qog7/lCmSq9y8hDauEHP4OnPdTC0QjSZcqBgqM9nSb3CYuAZZ8pvPaVAM+k3ftuMNMWu864Tcp84CI4DgrhU4YMOaJ6JFI777YGbsD+BgKqR0hZaNlAdRV4oiobbh5r9tbeVloFidJXrv6o0zAB7Go29b6XQJ53Sp4sJwYbEUAH50TGSa3Qt+tf3Fw9iZorhSLIyxrI9DsxBA8SlNTateTMJw+u6GGnMNzF5ULMw6r8nZiJARqNS1oftqcGFbw/PD9E82NRBODbcJuKuyZ/JQHFWtDhcAcVlpDcylfdyhyQ0nAI535P4P/HWtBbjfKg4wKNPde6e4JZPSUbNG2vEpVNuwMBpHaOmDfmlGuMt5EoEZt1k+wiZORYDMh2o+biraH8SO7xIf83jD/7DyM8A30q3YBcVP8NQsmk16hBP54uvIu1gxOdNkRq42QVOsRI/tEM1OcSHshXFOp+1GhQiELviHYcmVDUvL/kiiWGqV/ES+mU+TQi9N6c725b+cWvTkVAIrAEFW0+nTnJMLr1ILKfoZTP5vSga5p4Y/Zso8vR44Gb68drUCT2C0uTuRIOZpvs=
+	4+qGWVmXkhfiZjTN0gVBAzWYAsofrWZ4Oez5Aip7UpqqTy3lt5hFgpnwWFYVrGoxnS4W3RWqFTPIKr7OzSgDsafEFMg5rpEBo0xpGWkn0ecICqCmgYw2imow7pn+WvDdLgzzlXWNcteUxHKO918bYR7UPMAJH7Ts3f8MKaO9mbfdBhK7MYc+0rqGCfAvIdASskX6kTbNeHjJtl600KcNg/65fSKFGEC8Cg2ca318MSRj1ue99xIQnr0d91w3zyb3C85uE2gjeXS6cXb7SxXwWNKUH72OHNtAzZoGLSHOlbxaTQmd7aMAWhIytZ2cOCts3U6xAkgcsAM4TrgH6T7FNfr9rvs6a4QUMGSki33lazOgqbREhpBledjkswdpCAUoAX5ZkvoPwpyRPF7x+3NOiwBylOIwpEldU3hX60XtJi0KPmFplE1jlbtaaGfy5rfP/k7u4rtx+PajK46MMMkrKz6nt/PQC0I3q0IAMRNArN8OuHfCgq9NXtFFvgyGXYJCjyg46OYdZcCLqYXE/xQkxw7Zd+Ul7DzW/bpPEwx7d5tDnIvpJFj72mg9/Ep7oiysfW4rxqYCiOrdOWtAEr/7g45c9IKghbwwj5tIU9VxOBeON/D/K7B9eSrgWzI82TdfOK3IiialehUUbE7kWLoLKJiu52a/iPIAB5G6ls/NLIs=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB6581.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(23010399003)(6133799003)(55112099003)(18002099003)(11063799006)(10067099003)(56012099006);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB6581.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(23010399003)(22082099003)(55112099003)(18002099003)(11063799006)(10067099003)(56012099006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?V9zo9PXUXIyy6TFOfHZs+CwN+B6YQUPK1gGFpPXcLfxJhKIsVfFSVPJp0Uh5?=
- =?us-ascii?Q?4em3ipRCxYzz4OnpN8/WLHY4eO/1GDwVCNLClUOVEm1WKu6Um1pl3gJuDC8Y?=
- =?us-ascii?Q?fkDWS71wKm0wvwaHmmzllbP2Cihrg/+9o+YXdyVHeLlFAz+JY6adXfDv6p45?=
- =?us-ascii?Q?nF6X2Qe105KC3cxmh15m2s++SM0i0dG7xd6tNCW6xUWz69uCojHr1RGt9lIs?=
- =?us-ascii?Q?EvuyziPcWEyix2AqJWr5N1udFScDm+yWgYAsXAz49JdOexeWjifNuJluns4x?=
- =?us-ascii?Q?mT5PuAbUZBxUFX1k1Q+xO9BnCSFBHzG84agXmUpFbfi3ej/zcQB5wT+NfYbb?=
- =?us-ascii?Q?2egzeyyjPH06fNHFYP4nbw3DEsLdzyYW0ur6njMxD0waXyBv6IrIMdzqBUrT?=
- =?us-ascii?Q?tWPhIHejox4oTPLXXL5a9xG7bWyx7qmDF70uS0wUMtYDZsrgp8Fa3CQoNG0i?=
- =?us-ascii?Q?zQtF0nLAfbaZXouESXXbx3e4EKYGirsRA1atLb6swVlzEFhU16ty5mStVPRk?=
- =?us-ascii?Q?WLcNM14DNu+nUsMY8MawZumARzN3dW2LsIvViRb5mpZEAe/ufF5B81YugEXY?=
- =?us-ascii?Q?Nz0GuSdVF63pEILCyvN/X4+RQoxICj7AZxWjMYELnqmN8GmS+PLDW5Pg00rB?=
- =?us-ascii?Q?Y4mFj9Aa0Jp49X5/RlsVYRO85Qwy3hayURyR+Edhm7ctJ7jYlHSc2j38FgpY?=
- =?us-ascii?Q?HV8fBVknpflgx+FHjDG2xylEn0BdsY/IPqRt3Gmj8RD5uQFwZT5TaIaePo6g?=
- =?us-ascii?Q?8uQNpbWh8oC0lVf9/lDi+p7rYn6cebuT5SU6XfqfP8xYzcZ9TXMfv54zGXfU?=
- =?us-ascii?Q?aI8bswMA8KsfuTBVv7cEpZZN2laj+uGQuVo6CDXfw4hmKI82k1Ebx90tHrAA?=
- =?us-ascii?Q?0ItjTjy8O4f3/Pa/ZnJchTxJUUvVsB6hwS3Yx04go1mXR3NaY7mWRK802M8j?=
- =?us-ascii?Q?tELykH0z9mqPzA4OnL60zZwilc1cMUyqMVeHZJQR/p2DzIY07z/lZGDuQAMM?=
- =?us-ascii?Q?sVdBi8dJsN1CSMSiUqr4j9QgVp77fwBBG6AtHDfEvfvynZUHfFcuCT6i5Qlr?=
- =?us-ascii?Q?ymQGtVWt7hQqT+X8/o+XrQWnjYidatYYWRgz7ISKnCXvn9tW67aCJrM1EThf?=
- =?us-ascii?Q?tsEdxYtjFLVUkB+0Q0q6Iom96oHRm3XuSNZ2960QQbABEwSsJso0GsScaQqa?=
- =?us-ascii?Q?88M2tyem14gxE2BWSvs/zNbMbQy9fzqXMTxfmrdKZZXLqApFmjEz5M9kyy9f?=
- =?us-ascii?Q?TS3NmBo0wE9k7Z/Vvd3s4NmKIAMvayad/+q7EGrTBTRY4+0ymo/jNSqf0krK?=
- =?us-ascii?Q?lfMFGzwhF9wzOqd1Y/k+t082NBZpxoXFvbUSXrEH+q3EgpP1iP4/z/k9ibyK?=
- =?us-ascii?Q?GVCR11ZFZCymGzdurcw/31AZsbbBl/Ih38zD6/ttD5GtgOcAw821vcYsqZRn?=
- =?us-ascii?Q?g/nKwXjG0ycaekOVLiNPcTguFwqwov3SoK6E0xCPEuVVChMvlFgwM8rflVIz?=
- =?us-ascii?Q?uO9w/ALndicLOeQ9stTXZeDCZbPoygwZt7R+mkoke15pETNEA1LoLmoeM4b+?=
- =?us-ascii?Q?+idEJlM0+V5MPq93bBGZyzdDbNy9joHneTNV3V5MzuwfK9lhO/2PyflzT3NF?=
- =?us-ascii?Q?9JMFBSwpUEg8dB+HasAIBLQFFhdSGiHlpSj2pFyArNSkfb+8DUKd1YqeLGnD?=
- =?us-ascii?Q?N2R/Pd0C+7vAYL9lF/GtRGBQNEpLc519ISsliM0pFAQV1oXdxz5rN/RFIx6L?=
- =?us-ascii?Q?MBiKVboM3hF/zz12uuZD4+/P5FGS+/U=3D?=
+	=?us-ascii?Q?6r+nVZVl6ttxtOodZZv9/40e29HAvj7xHCw9PDzIEaLJsTV3d9ZGgebNRqx2?=
+ =?us-ascii?Q?v8Axvj7eXaYUAIemtCtHYC1CigxondXOT6nBL54+p6hsxL0Jl1j07T175P19?=
+ =?us-ascii?Q?yb2yNCiCLGTLc7WnDjdeh/irD5f2oFfT/4WG1IM5L0CnWgWwMxUaJXSLF5Pn?=
+ =?us-ascii?Q?wFvs/3RZz86jXtZIdjs5xJr/9cAToj3BxuXmgw/nEXWaCUVXH2A4ivJdedQi?=
+ =?us-ascii?Q?3rKcFnt9Rvbsheyy0keObltzd/jxX8NPAiFIkJARN01FDdJAm/irfNPTFMCL?=
+ =?us-ascii?Q?PCMq9PyvxNEFRvYc20sSTD67fwCK2C5pyDFH9yuLurY/SCqxjL8YKxXhtw6i?=
+ =?us-ascii?Q?7D11lXz94qiyHhA/gKF72Ldvquw+ZYiRhGxBfxfmCF7HM2HxUjHNM+2bA3ls?=
+ =?us-ascii?Q?32p1mD7J1HZfjEK1PL+/tbMqXwgGV3xrvvrnuEBwkX8P+v6taAHMYB/FlI/c?=
+ =?us-ascii?Q?wdCQrf3Cu2i991he9093TJegjTQz1q40l6z2kM3izMHZEtRL9QJlVSD9665U?=
+ =?us-ascii?Q?6vZzkC0NetWwxXFOYW29t2qZv/g1eO9evBkIv8uIl64EuivnwWkDSSTun7Va?=
+ =?us-ascii?Q?HWMbI11lGBID4R0h9mzyMcbSJBBQ1ga41f34rzgLJA9XmpYVBuaZM/6AmJ4y?=
+ =?us-ascii?Q?gX33YqXFNyZRfXfUdNrmm4pg6Ll5zHLI1ipoYd9tqdBQ9Z7AJA9CUlWFuA2f?=
+ =?us-ascii?Q?mACcNbW0uRurhu5T3Up8mBZBLhXtv50o3PfYHR/mhIc3KA/4l4yXbVONxHoO?=
+ =?us-ascii?Q?nW50Lrg9XnBwSMr1oF+OuzYnFOJNwMlxk/7dD6sArxHLIST3bZ5RWGNxtOhn?=
+ =?us-ascii?Q?pyiNIBfdkUdgMS06BOz9Fq97hFOjS8SvalSczX+4vSUwmqLwgXMcfvBKdVmr?=
+ =?us-ascii?Q?tVsurk2tdwuJM1DBjdkimM/tOjohmfnSShMAqycAPI98W6aoA9WJGoVyi2ED?=
+ =?us-ascii?Q?tooVTVPrLccLGEJBRD2lb/dWEcYjoDxWz2DPwMzttoTiYrIdiOkhXCCDcz0d?=
+ =?us-ascii?Q?Wm6KwAEF8xyoNiiilp3FXNHEj951TzwLKeDynZIjwGxR+QVZQaW1pUABP2VI?=
+ =?us-ascii?Q?+itBk3lizQ8AE/qFKqpuy6l8T1VmGTGT5VxTdOCaCYeEj5DaF6zmkxHqtMFc?=
+ =?us-ascii?Q?ldeYpHrRIxGt9kQ0X2EVM+H+hP6giAMy4gRueF9qPEAu46KjCXMg7Fr8140U?=
+ =?us-ascii?Q?GI/+ao4AZlzBt8T+g9ooqnANNM0pF0bpAmoKnySokXIQ9r4L0GOXTpwGlhQp?=
+ =?us-ascii?Q?K0fiNnSZBJldFGEUvPEeVgI7V6RRdsTdqU5fKbuq4dFg3GDyIgAcEXlZmuE1?=
+ =?us-ascii?Q?BJP7x9AofQSblBoA5WAhBKHLYaeHPjL9YGW7UrNYoenqRnjusoyZrzNUV14O?=
+ =?us-ascii?Q?7kqFVp9F3HEwGyoJ2UA8h1SGZVuYqBM56GxbshDEVSUfw5sw0SoSmyHzes87?=
+ =?us-ascii?Q?vBkisKXo6DjZjyUhBhg5DV4Dlnwk2omFS0Uz6r6eKcTyuStddmdG83lq2SJp?=
+ =?us-ascii?Q?oSU4jCfJ+QBkcK1WMPU4mt8eDq9GOv4zxWhvRfMK6zCkEdagHrMvd1jbuvq6?=
+ =?us-ascii?Q?SnsYKtT+20Mmc9WvX3DhCBKpHUqWG7qW9jrfRjfDouwWtCS73UKEM4d005UQ?=
+ =?us-ascii?Q?3S+VzXi9TP2GCSo8IGZmoSh4stXTh35dYD08u38lSK2/ujJ6I1qravTbhoJc?=
+ =?us-ascii?Q?hQFUqrkOuxLDDZeK/flrFw9DqrjEwLLSMYobAw55fUf/voeQQcdd4soBtrz3?=
+ =?us-ascii?Q?BqP+hbrLozgtKjfEPQgD0vpYEwJvesk=3D?=
 X-OriginatorOrg: altera.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7bd15ac7-710a-490d-ad68-08df18c2f636
+X-MS-Exchange-CrossTenant-Network-Message-Id: 03fc1e1b-5897-4555-373a-08df18c2f77b
 X-MS-Exchange-CrossTenant-AuthSource: SJ0PR03MB6581.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2026 16:02:54.5551
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2026 16:02:56.7310
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: fbd72e03-d4a5-4110-adce-614d51f2077a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: lFPCnhO8saTV9vCnUxJ7VGneERX4J1payVyXe6Y9oKhZeWlMKIF6MPgC0NlJcSIA4/+npclR/gfvyQ5sRNG4M9NeBJETzz/6/BmSM+EEsEk=
+X-MS-Exchange-CrossTenant-UserPrincipalName: M/Yydtb3/8RBYisgwdy46iULr6nKUr5MBrF2fjfBPc44D/ONbtFXtRaJ42KZCXp2S0oZe7lBih8w6nUOc8E301Jg0bVyg5RfzdD0acFQhvA=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR03MB5918
 
-Stratix10 FPGA reconfiguration can fail or hang for three related
-reasons in the FPGA manager. This series hardens s10_ops_write() and
-s10_ops_write_complete() so those paths cannot skip a completion wait,
-treat BUFFER_DONE | ERROR as success, or return immediately when the
-DT-supplied config_complete_timeout_us is left at 0. No dependency on
-the stratix10-svc accumulate changes.
+Always call wait_for_completion_timeout() in s10_ops_write(). Skipping
+the wait when priv->status is already set is unnecessary: if the
+callback already ran, complete() raised the done counter and the wait
+returns immediately.
 
-  1) always wait for svc buffer completion
+Signed-off-by: Adrian Ng Ho Yin <adrian.ho.yin.ng@altera.com>
+---
+ drivers/fpga/stratix10-soc.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-     s10_ops_write() skips wait_for_completion_timeout() when
-     priv->status is already set. That skip is unnecessary and unsafe:
-     the callback may fire between the CLAIM/SUBMIT send and the wait
-     check. Always call the wait; if complete() already ran, the done
-     counter is raised and the wait returns immediately.
-
-  2) prefer ERROR over BUFFER_DONE
-
-     BUFFER_DONE is checked before ERROR, so a combined
-     BUFFER_DONE | ERROR status is treated as success. Check ERROR
-     first so that status aborts the write. Also clear priv->status at
-     the start of write_init so stale bits from an aborted transfer
-     cannot leak into the next reconfiguration.
-
-  3) floor config_complete_timeout_us
-
-     of-fpga-region leaves config_complete_timeout_us at 0 when the DT
-     property is absent. usecs_to_jiffies(0) makes write_complete return
-     immediately, while reconfiguration takes ~600ms in practice.
-     Enforce S10_RECONFIG_TIMEOUT as a minimum floor while still
-     honouring any larger caller-supplied value. Note this prevents a
-     DT property from lowering the timeout below that floor.
-
-Adrian Ng Ho Yin (3):
-  fpga: stratix10-soc: always wait for svc buffer completion
-  fpga: stratix10-soc: prefer ERROR over BUFFER_DONE
-  fpga: stratix10-soc: floor config_complete_timeout_us
-
- drivers/fpga/stratix10-soc.c | 41 ++++++++++++++++++++++++------------
- 1 file changed, 27 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/fpga/stratix10-soc.c b/drivers/fpga/stratix10-soc.c
+index b8ec2e6f615f..3ba0ffa1d9e0 100644
+--- a/drivers/fpga/stratix10-soc.c
++++ b/drivers/fpga/stratix10-soc.c
+@@ -310,14 +310,14 @@ static int s10_ops_write(struct fpga_manager *mgr, const char *buf,
+ 		}
+ 
+ 		/*
+-		 * If callback hasn't already happened, wait for buffers to be
+-		 * returned from service layer
++		 * Always wait for the completion rather than skipping it when
++		 * priv->status is already set. The callback may have fired
++		 * between the CLAIM/SUBMIT send and here; if so, complete()
++		 * has already incremented the done counter and
++		 * wait_for_completion_timeout() returns immediately.
+ 		 */
+-		wait_status = 1; /* not timed out */
+-		if (!priv->status)
+-			wait_status = wait_for_completion_timeout(
+-				&priv->status_return_completion,
+-				S10_BUFFER_TIMEOUT);
++		wait_status = wait_for_completion_timeout(
++			&priv->status_return_completion, S10_BUFFER_TIMEOUT);
+ 
+ 		if (test_and_clear_bit(SVC_STATUS_BUFFER_DONE, &priv->status) ||
+ 		    test_and_clear_bit(SVC_STATUS_BUFFER_SUBMITTED,
 -- 
 2.49.GIT
+
