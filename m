@@ -1,77 +1,66 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.62.57.49
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=111.22.67.135
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793246010;
-	b=SVj0Gqx3rDksFbeOMSfXn5GX0+v4jA+5fPSxg8H27z8k2pcapKkiXeKN7S8SRSG0zhNm
-	 qncAf3QnrfSzMSAfKwT+CWQz/y8usMyN8lint3Hg+9+Ry995YtZO3vkNGus6NCUhzb1yQ
-	 DQJ33Q4cY/b4hb2KTc5IXUrrr7O77iKuXz+u/u6cN9r8uYW9zZQtP+pmVJHlHo++w0xOJ
-	 FgxR6bC5nZdA8ScWfxIpJ0Kra1Hsm9TAvnyA1b71DymBG5h4vHWnGgOTe8MRhkzULU190
-	 7NlkbRFgE6BXxSCIrVSZW17Ug+dv+zQQG/IXuLaQcZbN+KjAcpMq2fGbx72lGhA67hQ==
+	t=1793670167;
+	b=WlvB0VBfEL+ILCf21zw1bjIYcvOkQUzwVfPEzAmBLyeATMIwCFSZaSLleVSRORr4obja
+	 WieyL78EhyGXyhBWBpVWXWXfmSY99to9WjZ/CVJO3aIvIMaU2DzenFNpPl2C5Bi0a1kLQ
+	 eF4JcaoPqfRpidCApMOMxInv4LPRTJAP1EfZaBvSLho1CPWxNWPDMeSC5+efTyTUmH39c
+	 mtbHmdpHPo/WqpsUFeb/kxqXYfLKEFBs9Z8YbwURGWNJ2YqoMWgziBO9ZmHrWSemlj9If
+	 kVDtb7sFuPXXY2NbfWQoQ9XRrSKJpWnNfknoJPZNOkNWKzzqZR5CzxldczpTg6aVijA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793246010;
-	h=DMARC-Filter:DKIM-Signature:Received:X-QQ-mid:Message-ID:
-	 X-QQ-XMAILINFO:X-QQ-XMRINFO:From:To:Cc:Subject:Date:X-OQ-MSGID:
-	 X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=UyoRSOjPYG/A73IxTzTbyWdCpIvdHiidP3D772dsd90=;
-	b=B56SmCwr9el3WG406y6akTFGW5FX7ctVXBXqZGSfAysT7/XbEBeBpukNTCWRciHpSo8x
-	 HvnHO8nU4KsgTvP3CzeZCyHMPnoQ7Udg3G4JgqvB6/dcv/RikMbeDGhbocHhcP6jsjOPt
-	 T2HKPZgKZWzabA44osqtyDpnUSrm49hCxkiRXVfx313UW3tv4utR3FQNOMq+ZOtofFroA
-	 4w4Iz0OSmXDenwpCg382IDlNBRoFjliqnIfLI3OpufDbQCpd3+Sfg5r8O1Z3OJsTJ/h/E
-	 /2lhe9JS/okm5YpV7lZZvBTEpHMJW8Hi4P9NmG0ZNaespT0zup6a1E8KcFLFCwR3SHA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793670167;
+	h=DMARC-Filter:DKIM-Signature:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:
+	 X-RM-TRANSID:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:X-RM-TRANSID:From:
+	 To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=xlaK4MZbpQ6o9Yco876nSvoPM63Qif5CtOMBCdr/j/I=;
+	b=e2C8LwJhCG6luLh6G1EMhYrI2OkXOe6TexaaqbgHuA6sk+C1qKL0HHdzcR4m+lDg2pDe
+	 LM2lBYYlJROMqLMEl3mvSGwskPvHpp1CFT19nPc2a2+1rndolD9J9xWHojPPBZKAAeGRs
+	 AgpXE2Gw+Eb6t/E+7gBPWJZWNDRe3a77oNoItQIThwmIcDN3+GTWfGnHGpWa1uc02qFLj
+	 lt218mgHmSaKYi88nwwcP9t4a2pmVYcEuPKy6iSrOqqm9hvCum25dXKenlDVv8aCqzoqI
+	 xpd9qahV+xrDnsLFfpy/PKvgh3AnHaDFRMYYFCTkGQU+TS4ACNEPbfc/ASSwb9EDERQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=foxmail.com;
-	spf=pass smtp.mailfrom=foxmail.com;
-	dkim=pass header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256 header.s=s201512 header.b=QOlTjWlo;
-	arc=none smtp.remote-ip=162.62.57.49
-Received: from out162-62-57-49.mail.qq.com (out162-62-57-49.mail.qq.com [162.62.57.49])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD4AE606A31A;
-	Thu, 29 Oct 2026 03:53:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DD4AE606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=foxmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=foxmail.com
+	dmarc=pass header.from=cmss.chinamobile.com;
+	spf=pass smtp.mailfrom=cmss.chinamobile.com;
+	dkim=pass header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=QIfnE9RM;
+	arc=none smtp.remote-ip=111.22.67.135
+Received: from cmccmta2.chinamobile.com (cmccmta2.chinamobile.com [111.22.67.135])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 0D98A606A32F;
+	Tue,  3 Nov 2026 01:42:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0D98A606A32F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cmss.chinamobile.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cmss.chinamobile.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256 header.s=s201512 header.b=QOlTjWlo
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
-	s=s201512; t=1793246003;
-	bh=UyoRSOjPYG/A73IxTzTbyWdCpIvdHiidP3D772dsd90=;
-	h=From:To:Cc:Subject:Date;
-	b=QOlTjWloOw4m8JSzfkNii79DTGu8Lm/52IWitjUo8A5Wo2OurXRetLtHmUZcpGTpF
-	 TBXSqQbVIJ8xcabG62L+UnOFQvGROhKT/9ycb67+xB170SgwqHl4bMpR4ZCS+2Qkn8
-	 gLMEKMzZuL0HearS3gIHnMfkdanp2Ki11u/VaG6E=
-Received: from HAPYCAO-MC1.tencent.com ([61.151.228.151])
-	by newxmesmtplogicsvrszb51-0.qq.com (NewEsmtp) with SMTP
-	id D548E249; Thu, 29 Oct 2026 11:53:20 +0800
-X-QQ-mid: xmsmtpt1793246000tx00o9u6u
-Message-ID: <tencent_C59525D78A2FBCC2425A3CA9EF4C53D56F08@qq.com>
-X-QQ-XMAILINFO: MGhvBmtDPvWEuMbQS5tYTj3TMCbJjBzyxyhZk0kEvVN6aXdP9mrlocGPwYUjJI
-	 gZ3z46fgtYtxBXdccJVcft/D33d1B0fwO+0mp36GFVKWbsWeRek8Bsrhw2JKNcqD7u1shKEisXXp
-	 LcuuS/ReWdUjytbmxyZDZDFikYEosJ1SmR9jubeTXi4OwdRAvJJfqDQuHjqG9D3vwImwk0A1AaLQ
-	 VjL+c5TnRvpx0twjUdyfWQ9p8lT/o3Je+iE5q5wVXy70nUcD5z34OqBOFc/ZKVi1Rt/2AS1Le7Ct
-	 502ZtTu2rAfqD860Da3xZnd/AVMgoLasDAyyY+vOAxaPZ7lrVZUHSgOerOjusyrPv5wQnL6JeYrt
-	 bXOHTO8JxGjUbMPg45TaZoYMQ62dbUY7LmGZnHjGNJBaBg7TDylJTzwKtpsBAkQzM6EtiK1zEGfY
-	 TQLDNdIJcn0k6nOcyF4GjMg4oIy3vA9ZvVD/2NShjcoQm681LC7WN1RZm5Yp94y47h05a4VJT0+H
-	 2nqsGHIvPbRKUMbyOeampJOCMb8li8VYALPaZW7NfJ1gz7q6SH1GiKVf5+4nXVYtotspAhOhi8XW
-	 RJepv+N24AqPzSI3qQpwkH/RwCcRt6b1OfYkqI+gDp5jxPScoSmBnQ3RHT9CCYyP1CYYCHzi99Vd
-	 LyPnBItPGV9vPzdoN0GFHARZ69QGIOlm8fSoPFFOt9ZD03rv0im3n0ftFPqqEUhv34HB/xkiDeDd
-	 VUheXaRRBaj/5ZlqnULtnGcMGKDY1ONwV6NQ0mg3hvJ2yEmH4Yjq3tc2u6pY6/SYroNRHRCawbUv
-	 oO+4wsxDow5WnmyBkJKlLC/TnBuxev1Quv3DOgHghEUSHS3Dk5zjosFjma2d6fSs21FJBTz9g64O
-	 y7ejY9WiG26mu+3wuq9bZ8ad1px4msAt3H7v0QXbcHAgvwgMH3YEty+MUYc4QhyW6R2c6FRXHAG0
-	 t9iqhMRJKLx+HWzH5c2FVI2azULqoSRsfc7bx8IL4u6i+7PaeQcIjudike5wqGZIDJpFtMq9bNRA
-	 BLMwZTAPrr0IALiuP+9uKJPw04e7aUle3mAnpBQ2Ftl5Sz+BPGHgD6Btt4bjJJzIjAWCI2mltSvT
-	 XQUEsadc8Tcm2JHYeV0GPBvhUf8Q==
-X-QQ-XMRINFO: Nq+8W0+stu50tPAe92KXseR0ZZmBTk3gLg==
-From: bo cao <treebacker@foxmail.com>
-To: linux-fpga@vger.kernel.org
-Cc: yilun.xu@intel.com,
-	trix@redhat.com,
-	mdf@kernel.org,
+	dkim=pass (1024-bit key, unprotected) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=QIfnE9RM
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=cmss.chinamobile.com; s=default; l=0;
+	h=from:subject:message-id:to:cc:mime-version;
+	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+	b=QIfnE9RMcrt+g77V+EuUktR1PMPEcOdQq+dFgpPIA+zjKTFa4RmivsO0o9+myl73nNn7gqE2+VM2t
+	 Ddt6Kmx1l0k15KwgcZj40of6hh5WGpGDVLL8FEpaHfk9VcPRTWmLLKK6ObR7Kmtw6jOGI4sKEl37S8
+	 pDIxy7EpoCm/8P1Y=
+X-RM-TagInfo: emlType=0                                       
+X-RM-SPAM-FLAG:00000000
+Received:from spf.mail.chinamobile.com (unknown[10.188.0.87])
+	by rmmx-syy-dmz-app07-12007 (RichMail) with SMTP id 2ee76ae93c10177-8e4e5;
+	Tue, 03 Nov 2026 09:42:42 +0800 (CST)
+X-RM-TRANSID:2ee76ae93c10177-8e4e5
+X-RM-TagInfo: emlType=0                                       
+X-RM-SPAM-FLAG:00000000
+Received:from DESKTOP-3K8GUTQ (unknown[223.108.79.98])
+	by rmsmtp-syy-appsvr03-12003 (RichMail) with SMTP id 2ee36ae93c10c41-e17fe;
+	Tue, 03 Nov 2026 09:42:42 +0800 (CST)
+X-RM-TRANSID:2ee36ae93c10c41-e17fe
+From: Xiangwu Lai <laixiangwu@cmss.chinamobile.com>
+To: Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>
+Cc: Tom Rix <trix@redhat.com>,
+	linux-fpga@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	bo cao <treebacker@foxmail.com>
-Subject: [PATCH] fpga: dfl: afu: prevent read-only region mappings from becoming writable
-Date: Thu, 29 Oct 2026 11:53:17 +0800
-X-OQ-MSGID: <20261029035317.44339-1-treebacker@foxmail.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+	Xiangwu Lai <laixiangwu@cmss.chinamobile.com>
+Subject: [PATCH] fpga: altera-hps2fpga: Fix reset control leak
+Date: Tue,  3 Nov 2026 09:42:40 +0800
+Message-ID: <20261103014240.1194-1-laixiangwu@cmss.chinamobile.com>
+X-Mailer: git-send-email 2.50.1.windows.1
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Post: <mailto:linux-fpga@vger.kernel.org>
@@ -83,47 +72,37 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-afu_mmap() rejects writable mappings of regions without the WRITE
-flag, but leaves VM_MAYWRITE set.  Userspace can map such a region
-read-only and then upgrade the mapping to writable with mprotect().
+alt_fpga_bridge_probe() acquires the bridge reset control with
+of_reset_control_get_exclusive_by_index(), which is not
+device-managed.  None of the probe error paths (l3regs lookup
+failure, missing clock, clock enable failure, bridge registration
+failure) release it, and alt_fpga_bridge_remove() does not call
+reset_control_put() either, so the reset control reference leaks both
+on a failed probe and on every bind/unbind cycle.
 
-Clear VM_MAYWRITE for regions without the WRITE flag, as fixed in
-vfio/platform (commit 420bed9131db), drm/vc4 (CVE-2026-68445),
-drm/panthor (CVE-2024-53071) and ptp/vmclock (commit a5edadbae57e).
+Use devm_reset_control_get_exclusive_by_index() so the reset control
+is released automatically when the driver is unbound or the probe
+fails.
 
-Note this is defensive hardening: the in-tree callers of
-afu_mmio_region_add() (port_afu_init() and port_stp_init()) all
-register their regions with DFL_PORT_REGION_WRITE.  The guard costs
-nothing and keeps the mmap() interface honest if a read-only region
-ever appears.
-
-Fixes: 857a26222ff7 ("fpga: dfl: afu: add afu sub feature support")
-Signed-off-by: bo cao <treebacker@foxmail.com>
+Fixes: e5f8efa5c8bf ("ARM: socfpga: fpga bridge driver support")
+Signed-off-by: Xiangwu Lai <laixiangwu@cmss.chinamobile.com>
 ---
- drivers/fpga/dfl-afu-main.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/fpga/altera-hps2fpga.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/fpga/dfl-afu-main.c b/drivers/fpga/dfl-afu-main.c
-index 097a97eeea66..a802309e0473 100644
---- a/drivers/fpga/dfl-afu-main.c
-+++ b/drivers/fpga/dfl-afu-main.c
-@@ -833,9 +833,13 @@ static int afu_mmap(struct file *filp, struct vm_area_struct *vma)
- 	if ((vma->vm_flags & VM_READ) && !(region.flags & DFL_PORT_REGION_READ))
- 		return -EPERM;
+diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
+index f2f125068..6d9798bb9 100644
+--- a/drivers/fpga/altera-hps2fpga.c
++++ b/drivers/fpga/altera-hps2fpga.c
+@@ -134,8 +134,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
  
--	if ((vma->vm_flags & VM_WRITE) &&
--	    !(region.flags & DFL_PORT_REGION_WRITE))
--		return -EPERM;
-+	/* Prevent read-only region mappings from being upgraded with mprotect() */
-+	if (!(region.flags & DFL_PORT_REGION_WRITE)) {
-+		if (vma->vm_flags & VM_WRITE)
-+			return -EPERM;
-+
-+		vm_flags_clear(vma, VM_MAYWRITE);
-+	}
+ 	priv = (struct altera_hps2fpga_data *)device_get_match_data(dev);
  
- 	/* Support debug access to the mapping */
- 	vma->vm_ops = &afu_vma_ops;
--- 
-2.39.5 (Apple Git-154)
+-	priv->bridge_reset = of_reset_control_get_exclusive_by_index(dev->of_node,
+-								     0);
++	priv->bridge_reset = devm_reset_control_get_exclusive_by_index(dev, 0);
+ 	if (IS_ERR(priv->bridge_reset)) {
+ 		dev_err(dev, "Could not get %s reset control\n", priv->name);
+ 		return PTR_ERR(priv->bridge_reset);
+
 
