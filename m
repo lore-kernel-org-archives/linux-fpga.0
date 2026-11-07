@@ -1,77 +1,67 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.10
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=111.22.67.135
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794056288;
-	b=IoqYKev3xsmJcd1PM1BlceKxg707wihCiJXl595LTEIYvP9WqVI3g54iA12iOD3i+wxl
-	 VYaTGkmNsvOdnr9dn+y5/R1QA+N11xU+HVwCoxwNpmEivESyjfF1DPD85XgagrGeKpFty
-	 Mb1XFht8xGY+4awr3TIqLwYy5eKKOhUGj3jiJknZeCB7gNvOrL6MBISCDZL6iGh+pQXM2
-	 V+DKSzK0Fwino48tvkGaldX+As34hLsDNDbeeCY3jO6ldzV1yOzr9d85oS9cV1wapOP8T
-	 hTaBABH0BNSOodUkLxythqGAUOXDvNd2bLcDrVI73W04nBJ5oENOZ+wyOZEI45AZ6Lg==
+	t=1794064074;
+	b=iBt36GF/1pgPmxPWBYAfM8pmGWMdfw4bk7yaWn+DgjW/v5uN7X4gghPcHmJgE10J0CqJ
+	 sKm1JA5uDf/bcz3QYs6IcgtsBppFIMNCO75TALETsawx6OumXUeV8K8f7HbbtMzt2MkUF
+	 5cyYKzSTrCasFo1pty3nTGQFwwUy9RhadwSW09Gxia+8b3Lcg4wD7/vmDwe4UCv1xtq9/
+	 Ifdbiu03ZM6J86RKXat7tw3Z8SO8o+d+Bl0nY4hfsAET1R6yD67+nE0dfVFBR1EAcHqxL
+	 M1bKjuAf1FKnl3NCNPAm0v1mdJ3OiRqOi6RUtprQlWIk1V+R2djpHfclc+LB7MiSYpQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794056288;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=azVrG+P6xL596olvAnT6FD+0b9UQ5x/qTtrlSUIzTZI=;
-	b=IL63p+ZPsJAyu6SFKZx4LjOSP8hE94B+apmsiY51rV7s75Cy4qU+ss1owBqI19X9tTGw
-	 grNZTPg7aHt1raC6iElSgx0NnXIpbf0+PdjDsejh4MY1xMXkL3+ul7z+L2nriVdEu28pJ
-	 Dianj2UyOU3vg+iJYjqUSDGtHCO2Ax+KVAFA34+I1+QSkD1vA2vLFU0mbEjjw4e9iUXo0
-	 q2gLrDU1chpkxmtundtB+1eExPH96amSJRybVrsrXmW7dwuoLH779yl6vRw6FeidK/G43
-	 NypaDkqYE7IiOAVrMGPfzkPg6FYdJiXHSOMaYZktrvvoaaK29OCcNGF7BIXEXm96hvg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794064074;
+	h=DMARC-Filter:DKIM-Signature:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:
+	 X-RM-TRANSID:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:X-RM-TRANSID:From:
+	 To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=SIIbZJRteDk7lfiVpVQ7ZVtmuUKJZZxsXp/vVISgb4o=;
+	b=CWfxgOJjtiXcrcZa4IxiPlnyOoW/FP9f6gkNbB8aF5r2gbZDl6bveK/NgURbGBtgfOyO
+	 Ajl61iZy+vlyKmBNtUkEYy0XrzVz0gQAEcVoVdd25QUVv84Ej2P+nWkBR2FUnwkZ6Eg2w
+	 HIRU6zp7ZLv+pLcQeEYgkkOsc2KZqpKKPcW1cximYIpQ7iK1Mi2uLqCzSbhD6KY4QJcnZ
+	 wqdnwDxA/px5nAjPBtTb1u8Y2ZFlje+nJwjhgUjSxDG7Pr9hVuUIenEuQnP2PYcMQaV0Z
+	 hmumCowF+g2EgqQQc8IVzXcVm2g8+0PBhHX21Mxpoa7tyu6hhddXSjQvbUnFjHS0wqA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linux.intel.com;
-	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DXgzOJsD;
-	arc=none smtp.remote-ip=192.198.163.10
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1ED72606A326;
-	Sat,  7 Nov 2026 12:58:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1ED72606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	dmarc=pass header.from=cmss.chinamobile.com;
+	spf=pass smtp.mailfrom=cmss.chinamobile.com;
+	dkim=pass header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=fsOLGJzS;
+	arc=none smtp.remote-ip=111.22.67.135
+Received: from cmccmta2.chinamobile.com (cmccmta2.chinamobile.com [111.22.67.135])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id DD999606A9F0;
+	Sat,  7 Nov 2026 15:07:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DD999606A9F0
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cmss.chinamobile.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cmss.chinamobile.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DXgzOJsD
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1794056288; x=1825592288;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=RsywGWtVLQ6VWz4c//J88dDgnFMTE03mfX5b9nPPQvA=;
-  b=DXgzOJsDBgATPW4CBAquvz/lCxPHo+ZMnJph54eUkgSnQUo46q2ywx1b
-   3UNeeFwBW/hSgtS5hEpjg1rNw8riUx6D8LfSGPltkYWSU6BCy4BjJtdbc
-   igiUoGj+yY2z9KgViUp50glGTqqCnkRNbeSjrFpDTvIoqBy5Se4Q0p7e8
-   jEGjm2lHAuAbYsIgfLGzAggKnvwChxozugGUxJXSXphvBEij05Q4e74eP
-   te62Wf2yNFoYUb2no30rNzbPPNN/XzrCZpWmixaAHXX4C3xezb0jHrZyU
-   ZD97OG2W9YlaDtWigvglHgwWHta6IOmDLdXmdPy85vqlndEge98/S9MXN
-   Q==;
-X-CSE-ConnectionGUID: ivQkGfn8RNurGsxHTzSCgA==
-X-CSE-MsgGUID: I6EyNmJnTVKxpcqWw5Hhiw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11958"; a="2754150"
-X-IronPort-AV: E=Sophos;i="6.27,200,1787036400"; 
-   d="scan'208";a="2754150"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Nov 2026 04:58:07 -0800
-X-CSE-ConnectionGUID: yWMjxIY4RtulG66mvNwjbg==
-X-CSE-MsgGUID: 4yBJLPcVQ+SoPAQF7dbrDw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,200,1787036400"; 
-   d="scan'208";a="7618705"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.47.46])
-  by orviesa009.jf.intel.com with ESMTP; 07 Nov 2026 04:58:05 -0800
-Date: Sat, 7 Nov 2026 20:50:39 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: tze.yee.ng@altera.com
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=fsOLGJzS
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=cmss.chinamobile.com; s=default; l=0;
+	h=from:subject:message-id:to:cc:mime-version;
+	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+	b=fsOLGJzSPi0Ebi+TD9FCGosq6BXI4skxpBf7ZiXhkL7Gob9MGD4H6F7sKaQM/njU48uZZ4ylcH664
+	 iH4jD1dlqeVJeN0/LmQsEkftCwi45qzrmnKKZaWLXLcGMJCZMfaGAIdiF1XU63qXNcZGZKOVnkyTVf
+	 iqtTXDzvQQ3ZQwII=
+X-RM-TagInfo: emlType=0                                       
+X-RM-SPAM-FLAG:00000000
+Received:from spf.mail.chinamobile.com (unknown[10.188.0.87])
+	by rmmx-syy-dmz-app03-12003 (RichMail) with SMTP id 2ee36aef3ec5283-8385e;
+	Sat, 07 Nov 2026 23:07:49 +0800 (CST)
+X-RM-TRANSID:2ee36aef3ec5283-8385e
+X-RM-TagInfo: emlType=0                                       
+X-RM-SPAM-FLAG:00000000
+Received:from DESKTOP-3K8GUTQ (unknown[112.0.144.25])
+	by rmsmtp-syy-appsvr02-12002 (RichMail) with SMTP id 2ee26aef3ec3728-48d1d;
+	Sat, 07 Nov 2026 23:07:49 +0800 (CST)
+X-RM-TRANSID:2ee26aef3ec3728-48d1d
+From: Xiangwu Lai <laixiangwu@cmss.chinamobile.com>
+To: mdf@kernel.org,
+	yilun.xu@intel.com
+Cc: trix@redhat.com,
+	linux-fpga@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	muhammad.nazim.amirul.nazle.asmade@altera.com
-Subject: Re: [PATCH v2] fpga: altera-cvp: Add Agilex5 CVP credit register
- support
-Message-ID: <au8en9qjdw7VfdAl@yilunxu-OptiPlex-7050>
-References: <20261028104019.21225-1-tze.yee.ng@altera.com>
+	laixiangwu <laixiangwu@cmss.chinamobile.com>,
+	stable@vger.kernel.org
+Subject: [PATCH v2] fpga: altera-hps2fpga: Fix reset control leak
+Date: Sat,  7 Nov 2026 23:07:47 +0800
+Message-ID: <20261107150747.1152-1-laixiangwu@cmss.chinamobile.com>
+X-Mailer: git-send-email 2.50.1.windows.1
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Post: <mailto:linux-fpga@vger.kernel.org>
@@ -81,112 +71,53 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fpga+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261028104019.21225-1-tze.yee.ng@altera.com>
+Content-Transfer-Encoding: 8bit
 
-> +static int altera_cvp_v2_read_credit(struct altera_cvp_conf *conf,
-> +				     u32 *credits)
-> +{
-> +	u8 val;
-> +	int ret;
-> +
-> +	ret = altera_read_config_byte(conf, VSE_CVP_TX_CREDITS, &val);
-> +	if (!ret)
-> +		*credits = val;
-> +
-> +	return ret;
-> +}
-> +
-> +static int altera_cvp_ag5_read_credit(struct altera_cvp_conf *conf,
-> +				      u32 *credits)
-> +{
-> +	return altera_read_config_dword(conf, VSE_CVP_AG5_TX_CREDITS, credits);
-> +}
-> +
->  static int altera_cvp_v2_wait_for_credit(struct fpga_manager *mgr,
->  					 u32 blocks)
->  {
->  	u32 timeout = V2_CREDIT_TIMEOUT_US / V2_CHECK_CREDIT_US;
->  	struct altera_cvp_conf *conf = mgr->priv;
-> +	u32 mask = conf->priv->credit_mask;
->  	int ret;
-> -	u8 val;
-> +	u32 val;
->  
->  	do {
-> -		ret = altera_read_config_byte(conf, VSE_CVP_TX_CREDITS, &val);
-> +		ret = conf->priv->read_credit(conf, &val);
->  		if (ret) {
->  			dev_err(&conf->pci_dev->dev,
->  				"Error reading CVP Credit Register\n");
->  			return ret;
->  		}
->  
-> +		val &= mask;
+From: laixiangwu <laixiangwu@cmss.chinamobile.com>
 
-How about including the masking inside .read_credit()?
+alt_fpga_bridge_probe() acquires the bridge reset control with
+of_reset_control_get_exclusive_by_index(), which is not
+device-managed. None of the probe error paths release it, and
+alt_fpga_bridge_remove() does not call reset_control_put() either,
+so the reset control reference leaks both on a failed probe and on
+every bind/unbind cycle.
 
-> +
->  		/* Return if there is space in FIFO */
-> -		if (val - (u8)conf->sent_packets)
-> +		if (val - (conf->sent_packets & mask))
+Since the leaked exclusive reset remains acquired, rebinding the
+driver afterwards also fails with -EBUSY.
 
-Any reason to mask sent_packets here? The value would be bigger than the
-mask? If so, why is it safe to mask it?
+Use devm_reset_control_get_exclusive_by_index() so the reset control
+is released automatically when the driver is unbound or the probe
+fails.
 
-I'm wondering if we could remove the mask in this function, then we
-don't need a .credit_mask in cvp_priv.
+Fixes: e5f8efa5c8bf ("ARM: socfpga: fpga bridge driver support")
+Cc: stable@vger.kernel.org
+Signed-off-by: Xiangwu Lai <laixiangwu@cmss.chinamobile.com>
+---
+Changes in v2:
+- Drop the enumeration of probe error path examples from the commit
+  message, as suggested by Xu Yilun.
+- Add Cc: stable@vger.kernel.org for backporting.
 
->  			return 0;
->  
->  		ret = altera_cvp_chk_error(mgr, blocks * ALTERA_CVP_V2_SIZE);
-> @@ -559,6 +587,18 @@ static const struct cvp_priv cvp_priv_v1 = {
->  static const struct cvp_priv cvp_priv_v2 = {
->  	.clear_state	= altera_cvp_v2_clear_state,
->  	.wait_credit	= altera_cvp_v2_wait_for_credit,
-> +	.read_credit	= altera_cvp_v2_read_credit,
-> +	.credit_mask	= VSE_CVP_TX_CREDITS_MASK,
-> +	.block_size	= ALTERA_CVP_V2_SIZE,
-> +	.poll_time_us	= V2_POLL_TIMEOUT_US,
-> +	.user_time_us	= V2_USER_TIMEOUT_US,
-> +};
-> +
-> +static const struct cvp_priv cvp_priv_agilex5 = {
-> +	.clear_state	= altera_cvp_v2_clear_state,
-> +	.wait_credit	= altera_cvp_v2_wait_for_credit,
-> +	.read_credit	= altera_cvp_ag5_read_credit,
+Link: https://lore.kernel.org/r/20261103014240.1194-1-laixiangwu@cmss.chinamobile.com
+ drivers/fpga/altera-hps2fpga.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-We have same .wait_credit across, so the only point of it is to indicate
-whether the credit can be read. The .read_credit can do the same job,
-is it?
+diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
+index f2f125068..6d9798bb9 100644
+--- a/drivers/fpga/altera-hps2fpga.c
++++ b/drivers/fpga/altera-hps2fpga.c
+@@ -134,8 +134,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+ 
+ 	priv = (struct altera_hps2fpga_data *)device_get_match_data(dev);
+ 
+-	priv->bridge_reset = of_reset_control_get_exclusive_by_index(dev->of_node,
+-								     0);
++	priv->bridge_reset = devm_reset_control_get_exclusive_by_index(dev, 0);
+ 	if (IS_ERR(priv->bridge_reset)) {
+ 		dev_err(dev, "Could not get %s reset control\n", priv->name);
+ 		return PTR_ERR(priv->bridge_reset);
+-- 
+2.50.1.windows.1
 
-I think we can remove .wait_credit
 
-> +	.credit_mask	= VSE_CVP_AG5_TX_CREDITS_MASK,
->  	.block_size	= ALTERA_CVP_V2_SIZE,
->  	.poll_time_us	= V2_POLL_TIMEOUT_US,
->  	.user_time_us	= V2_USER_TIMEOUT_US,
-> @@ -658,10 +698,15 @@ static int altera_cvp_probe(struct pci_dev *pdev,
->  	conf->pci_dev = pdev;
->  	conf->write_data = altera_cvp_write_data_iomem;
->  
-> -	if (conf->vsec_offset == V1_VSEC_OFFSET)
-> +	if (conf->vsec_offset == V1_VSEC_OFFSET) {
->  		conf->priv = &cvp_priv_v1;
-> -	else
-> -		conf->priv = &cvp_priv_v2;
-> +	} else {
-> +		pci_read_config_dword(pdev, offset + PCI_VNDR_HEADER, &regval);
-> +		if (PCI_VNDR_HEADER_LEN(regval) == AGILEX5_VSEC_LENGTH)
-> +			conf->priv = &cvp_priv_agilex5;
-> +		else
-> +			conf->priv = &cvp_priv_v2;
-> +	}
->  
->  	conf->map = pci_iomap(pdev, CVP_BAR, 0);
->  	if (!conf->map) {
-> -- 
-> 2.43.7
-> 
-> 
+
