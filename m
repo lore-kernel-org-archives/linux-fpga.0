@@ -1,75 +1,77 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.16
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.10
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794053262;
-	b=2Ans0vtdOx3dgWJsnji/7AXvedA8M2xw5ImJ1txFcZenOigpHnpEkM3OQS7L6VVSg7TL
-	 oznaJLNxt/x4xkpuoe73N+xgoIL2XnZndqy6UYu7CORTv+PAZ4S03yPUCecT9FTv8UA9O
-	 VuI4NrpqAvYmmAVlCVSjOVQpId0omIqvZ7qIKzCg53Js7K13R46O+44AsH4TE9eBU3hxe
-	 ib1qbVoFS9ftKhGnJv84nWuROGexNSTUbTTFeuSzK60MzRCdb0nNHFNoNmc0xr4xJ1CGU
-	 88+QLNWS8qApVA5C8omax5euc8pLHuYo1GUYSQrEY7PtBJPu2x6XYzdirddhE8aWNjg==
+	t=1794056288;
+	b=IoqYKev3xsmJcd1PM1BlceKxg707wihCiJXl595LTEIYvP9WqVI3g54iA12iOD3i+wxl
+	 VYaTGkmNsvOdnr9dn+y5/R1QA+N11xU+HVwCoxwNpmEivESyjfF1DPD85XgagrGeKpFty
+	 Mb1XFht8xGY+4awr3TIqLwYy5eKKOhUGj3jiJknZeCB7gNvOrL6MBISCDZL6iGh+pQXM2
+	 V+DKSzK0Fwino48tvkGaldX+As34hLsDNDbeeCY3jO6ldzV1yOzr9d85oS9cV1wapOP8T
+	 hTaBABH0BNSOodUkLxythqGAUOXDvNd2bLcDrVI73W04nBJ5oENOZ+wyOZEI45AZ6Lg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794053262;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794056288;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
 	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
 	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
 	 Subject:Message-ID:References:MIME-Version:Content-Type:
 	 Content-Disposition:In-Reply-To;
-	bh=CygT9NaBxgqevpwUDpOAwsQIEdMgdyKTPiwU2omG2qc=;
-	b=BKR2lTh5kuPSK2ByUvbmzmBSEgD2iRlQOvp8mpVxGnLxRSa02okURZT5t6jcSudkj/y5
-	 D/3K5KKDDhvN/+fQ4SqGVN6ZMbIy8VAvqsIDS3etIsC1LHTbK9lFRejRgSynzzS/vRq+F
-	 2GnQOTaTkgQtTh504ZrvEQQqF5tR8YZ0mVQDxaSGWRTRdySQaVET9Tuv+PaNImYWkQO93
-	 //OSEujz4weNkckImuZgVjPmILuHI41KKbQstyiiPnlMBloxUvavPRr2QQ2i6XcZ1wcRX
-	 G7MPKMXuHcA3ZZ8XrxFT6iAU1ZapIMQZ/RTwlIBEbJYhWsB/fjXMKsDwnvdKr2V9Vzw==
+	bh=azVrG+P6xL596olvAnT6FD+0b9UQ5x/qTtrlSUIzTZI=;
+	b=IL63p+ZPsJAyu6SFKZx4LjOSP8hE94B+apmsiY51rV7s75Cy4qU+ss1owBqI19X9tTGw
+	 grNZTPg7aHt1raC6iElSgx0NnXIpbf0+PdjDsejh4MY1xMXkL3+ul7z+L2nriVdEu28pJ
+	 Dianj2UyOU3vg+iJYjqUSDGtHCO2Ax+KVAFA34+I1+QSkD1vA2vLFU0mbEjjw4e9iUXo0
+	 q2gLrDU1chpkxmtundtB+1eExPH96amSJRybVrsrXmW7dwuoLH779yl6vRw6FeidK/G43
+	 NypaDkqYE7IiOAVrMGPfzkPg6FYdJiXHSOMaYZktrvvoaaK29OCcNGF7BIXEXm96hvg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linux.intel.com;
 	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CNyFbb4Z;
-	arc=none smtp.remote-ip=198.175.65.16
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DXgzOJsD;
+	arc=none smtp.remote-ip=192.198.163.10
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D261B606A32D;
-	Sat,  7 Nov 2026 12:07:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D261B606A32D
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1ED72606A326;
+	Sat,  7 Nov 2026 12:58:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1ED72606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CNyFbb4Z
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DXgzOJsD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1794053262; x=1825589262;
+  t=1794056288; x=1825592288;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=shD6Fdf1eUPGxpYe75r0xFnqIlOzCnHsMjQZrMOlGtY=;
-  b=CNyFbb4Z4BNi0W4RF1IjymQpVUm8N6WuwrxMJxbbt/4cTKvglI3Uprjy
-   RNs1oQpvw9CZslCFb3bm3CqlAqlaQWqDLaywWc2U7dWwKtzdhljLB0zmQ
-   k/mTBP8voYLIs9JmmHPcZPnicIjQl/wQebOGMBvfDZL1nXq9JQ9CuWklB
-   eAAbDuwQZfKci30HZHneTGvyvcUM9ugtn5T6cQIjI250y1/2ajP5QJ7X1
-   hBc70UAPKQB9pfnw5P5z3cHbuJwbPXPH/hqg5bYRZ9vVCD+PW0Pyv6CUg
-   KiLmeqC764h1m0Cv82LhljKlj7/VcHkLEq5LjV3XKHLI+w3b4/u6oUD6w
-   g==;
-X-CSE-ConnectionGUID: lg/WBqSTSVGX/2wVO4tR/g==
-X-CSE-MsgGUID: 977EWUgoTt28mDtV0AEc6g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11958"; a="2843818"
+  bh=RsywGWtVLQ6VWz4c//J88dDgnFMTE03mfX5b9nPPQvA=;
+  b=DXgzOJsDBgATPW4CBAquvz/lCxPHo+ZMnJph54eUkgSnQUo46q2ywx1b
+   3UNeeFwBW/hSgtS5hEpjg1rNw8riUx6D8LfSGPltkYWSU6BCy4BjJtdbc
+   igiUoGj+yY2z9KgViUp50glGTqqCnkRNbeSjrFpDTvIoqBy5Se4Q0p7e8
+   jEGjm2lHAuAbYsIgfLGzAggKnvwChxozugGUxJXSXphvBEij05Q4e74eP
+   te62Wf2yNFoYUb2no30rNzbPPNN/XzrCZpWmixaAHXX4C3xezb0jHrZyU
+   ZD97OG2W9YlaDtWigvglHgwWHta6IOmDLdXmdPy85vqlndEge98/S9MXN
+   Q==;
+X-CSE-ConnectionGUID: ivQkGfn8RNurGsxHTzSCgA==
+X-CSE-MsgGUID: I6EyNmJnTVKxpcqWw5Hhiw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11958"; a="2754150"
 X-IronPort-AV: E=Sophos;i="6.27,200,1787036400"; 
-   d="scan'208";a="2843818"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Nov 2026 04:07:42 -0800
-X-CSE-ConnectionGUID: Ndor18ljTVyK31tRwg0xWQ==
-X-CSE-MsgGUID: 3njacIjVQ3ClIPrWicbqkA==
+   d="scan'208";a="2754150"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Nov 2026 04:58:07 -0800
+X-CSE-ConnectionGUID: yWMjxIY4RtulG66mvNwjbg==
+X-CSE-MsgGUID: 4yBJLPcVQ+SoPAQF7dbrDw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,200,1787036400"; 
-   d="scan'208";a="7354268"
+   d="scan'208";a="7618705"
 Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.47.46])
-  by orviesa007.jf.intel.com with ESMTP; 07 Nov 2026 04:07:40 -0800
-Date: Sat, 7 Nov 2026 20:00:14 +0800
+  by orviesa009.jf.intel.com with ESMTP; 07 Nov 2026 04:58:05 -0800
+Date: Sat, 7 Nov 2026 20:50:39 +0800
 From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Philipp Zabel <p.zabel@pengutronix.de>
+To: tze.yee.ng@altera.com
 Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
 	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fpga: altera-hps2fpga: do not request reset by index
-Message-ID: <au8Szj1uhBsP++es@yilunxu-OptiPlex-7050>
-References: <20261106-reset-deindex-fpga-v1-1-5672928ba5f6@pengutronix.de>
+	linux-kernel@vger.kernel.org,
+	muhammad.nazim.amirul.nazle.asmade@altera.com
+Subject: Re: [PATCH v2] fpga: altera-cvp: Add Agilex5 CVP credit register
+ support
+Message-ID: <au8en9qjdw7VfdAl@yilunxu-OptiPlex-7050>
+References: <20261028104019.21225-1-tze.yee.ng@altera.com>
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Post: <mailto:linux-fpga@vger.kernel.org>
@@ -81,42 +83,110 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261106-reset-deindex-fpga-v1-1-5672928ba5f6@pengutronix.de>
+In-Reply-To: <20261028104019.21225-1-tze.yee.ng@altera.com>
 
-On Fri, Nov 06, 2026 at 04:43:19PM +0100, Philipp Zabel wrote:
-> There is no need to request a single reset by index.
-> Use of_reset_control_get_exclusive() to request the first and only
-> reset.
-> 
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> ---
->  drivers/fpga/altera-hps2fpga.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
-> index f2f1250689cb..9b7f5b8191b8 100644
-> --- a/drivers/fpga/altera-hps2fpga.c
-> +++ b/drivers/fpga/altera-hps2fpga.c
-> @@ -134,8 +134,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+> +static int altera_cvp_v2_read_credit(struct altera_cvp_conf *conf,
+> +				     u32 *credits)
+> +{
+> +	u8 val;
+> +	int ret;
+> +
+> +	ret = altera_read_config_byte(conf, VSE_CVP_TX_CREDITS, &val);
+> +	if (!ret)
+> +		*credits = val;
+> +
+> +	return ret;
+> +}
+> +
+> +static int altera_cvp_ag5_read_credit(struct altera_cvp_conf *conf,
+> +				      u32 *credits)
+> +{
+> +	return altera_read_config_dword(conf, VSE_CVP_AG5_TX_CREDITS, credits);
+> +}
+> +
+>  static int altera_cvp_v2_wait_for_credit(struct fpga_manager *mgr,
+>  					 u32 blocks)
+>  {
+>  	u32 timeout = V2_CREDIT_TIMEOUT_US / V2_CHECK_CREDIT_US;
+>  	struct altera_cvp_conf *conf = mgr->priv;
+> +	u32 mask = conf->priv->credit_mask;
+>  	int ret;
+> -	u8 val;
+> +	u32 val;
 >  
->  	priv = (struct altera_hps2fpga_data *)device_get_match_data(dev);
+>  	do {
+> -		ret = altera_read_config_byte(conf, VSE_CVP_TX_CREDITS, &val);
+> +		ret = conf->priv->read_credit(conf, &val);
+>  		if (ret) {
+>  			dev_err(&conf->pci_dev->dev,
+>  				"Error reading CVP Credit Register\n");
+>  			return ret;
+>  		}
 >  
-> -	priv->bridge_reset = of_reset_control_get_exclusive_by_index(dev->of_node,
-> -								     0);
-> +	priv->bridge_reset = of_reset_control_get_exclusive(dev->of_node, NULL);
+> +		val &= mask;
 
-Saved a 0 arg but add a NULL arg, Any benifit to justify the code churn?
+How about including the masking inside .read_credit()?
 
->  	if (IS_ERR(priv->bridge_reset)) {
->  		dev_err(dev, "Could not get %s reset control\n", priv->name);
->  		return PTR_ERR(priv->bridge_reset);
-> 
-> ---
-> base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-> change-id: 20261106-reset-deindex-fpga-f203618612b1
-> 
-> Best regards,
-> --  
-> Philipp Zabel <p.zabel@pengutronix.de>
+> +
+>  		/* Return if there is space in FIFO */
+> -		if (val - (u8)conf->sent_packets)
+> +		if (val - (conf->sent_packets & mask))
+
+Any reason to mask sent_packets here? The value would be bigger than the
+mask? If so, why is it safe to mask it?
+
+I'm wondering if we could remove the mask in this function, then we
+don't need a .credit_mask in cvp_priv.
+
+>  			return 0;
+>  
+>  		ret = altera_cvp_chk_error(mgr, blocks * ALTERA_CVP_V2_SIZE);
+> @@ -559,6 +587,18 @@ static const struct cvp_priv cvp_priv_v1 = {
+>  static const struct cvp_priv cvp_priv_v2 = {
+>  	.clear_state	= altera_cvp_v2_clear_state,
+>  	.wait_credit	= altera_cvp_v2_wait_for_credit,
+> +	.read_credit	= altera_cvp_v2_read_credit,
+> +	.credit_mask	= VSE_CVP_TX_CREDITS_MASK,
+> +	.block_size	= ALTERA_CVP_V2_SIZE,
+> +	.poll_time_us	= V2_POLL_TIMEOUT_US,
+> +	.user_time_us	= V2_USER_TIMEOUT_US,
+> +};
+> +
+> +static const struct cvp_priv cvp_priv_agilex5 = {
+> +	.clear_state	= altera_cvp_v2_clear_state,
+> +	.wait_credit	= altera_cvp_v2_wait_for_credit,
+> +	.read_credit	= altera_cvp_ag5_read_credit,
+
+We have same .wait_credit across, so the only point of it is to indicate
+whether the credit can be read. The .read_credit can do the same job,
+is it?
+
+I think we can remove .wait_credit
+
+> +	.credit_mask	= VSE_CVP_AG5_TX_CREDITS_MASK,
+>  	.block_size	= ALTERA_CVP_V2_SIZE,
+>  	.poll_time_us	= V2_POLL_TIMEOUT_US,
+>  	.user_time_us	= V2_USER_TIMEOUT_US,
+> @@ -658,10 +698,15 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+>  	conf->pci_dev = pdev;
+>  	conf->write_data = altera_cvp_write_data_iomem;
+>  
+> -	if (conf->vsec_offset == V1_VSEC_OFFSET)
+> +	if (conf->vsec_offset == V1_VSEC_OFFSET) {
+>  		conf->priv = &cvp_priv_v1;
+> -	else
+> -		conf->priv = &cvp_priv_v2;
+> +	} else {
+> +		pci_read_config_dword(pdev, offset + PCI_VNDR_HEADER, &regval);
+> +		if (PCI_VNDR_HEADER_LEN(regval) == AGILEX5_VSEC_LENGTH)
+> +			conf->priv = &cvp_priv_agilex5;
+> +		else
+> +			conf->priv = &cvp_priv_v2;
+> +	}
+>  
+>  	conf->map = pci_iomap(pdev, CVP_BAR, 0);
+>  	if (!conf->map) {
+> -- 
+> 2.43.7
 > 
 > 
