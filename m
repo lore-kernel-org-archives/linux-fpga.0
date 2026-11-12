@@ -1,98 +1,96 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.46.16
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.52.28
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794295039;
-	b=xXPxDa4X3HGUcRr17hQCPyr7L6gANz8obZEQSn3PdaAwutcF4xFHJ0HETy4a56XUb1mi
-	 XsThyaH3SMYqhPiSieGPBjSiMCXFW/lUo6iQ+LmOsmpbtcjkPVIap257laY6DVXMIC2Kc
-	 pfAWP+mxoRY13Q95P0gNV+IpWCJFnAta0gLReisvEKl2kh52IBj82dJvQjIFrHcfYyBto
-	 KH6qokFgvTnW3pD/lcZV4SzVd0alDe1WisLPj/llQpuhQKME39gk2VPESH8pjWo7aFnCs
-	 hAVVgmpE2MkBiEqezG6Ygo4SocD+WWqkmwwdqxWaz1zLP/gUo8bapo0v5mxjIz86vVg==
+	t=1794455019;
+	b=nzjNynEGiNyQbypnPFYiBDJWNoEMng4cPtab0RoHo0E5vYNfXXzjDSKjjveKEGeZVOTZ
+	 JuxgejI+vb1XiESvaMYzIEm6nH3CS9ArMcKb7ZkQCoaQLQxjHlp/SfmU3u6SdF0dnGleO
+	 45a4MJycvjW2Ekt4ED7x/wTj/l0wdOq7xr/zju3jtDb++wlTadGAOF6moLSuSqo4wTiBz
+	 AEjYFQOrwjPwsQAxZ0zbOX1ui5hdSNqaYc7vKaai637VjXCWLDn4ofbZApC/qHPuTf/Vw
+	 Y7VnoZ5qkuYU2PnP8SaBFPvcujwu1BlSA1vv5RohrHjs63uNf5AHuZRqyYgq+rUXPuQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794295039;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:
-	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
-	 Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-ID:X-B4-Tracking:X-Change-ID:To:CC:
-	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-EOPAttributedMessage:
-	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
-	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	a=rsa-sha256; c=relaxed/relaxed; t=1794455019;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:Content-Transfer-Encoding:Content-Type:
+	 X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-MS-Exchange-AtpMessageProperties:X-MS-Exchange-SenderADCheck:
 	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
 	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
 	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
 	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
 	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-Id:
-	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
 	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
 	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
 	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=ACMszO6yIjeEHdllxoWhhw6yoEA0sHblzco0Hv5GICU=;
-	b=JzVCQ0o4nTK6ZzqSZ12Jka/mstjm6R2Xpx9QAcUhwseWeOD8Hg5LRNROaEsFLVURAbup
-	 oWNLSv3muqwHQjNPU5TNoMUotpCjk2CrdSXmy9ZolwCd4Q9gwku6L4hp0tF+ZS8KhoA4T
-	 kY4kJk7DYGjyT4HvNWkdZhwdzX+oUUWpTZ2LMhCH6VEh0JLOx9qUkfTcshI+x6H3R2y0N
-	 J5J0QdNnphbg0Nd7P0ndhGI6b+NkrK+d8pQB//5OulB5MPYBJXNzxL9M+6igAC0mzAyHn
-	 EAN559/Qoffi9CK/4lnElp20L/jMXt13wfEV3TpTHEy7aVtageUKF25LIi0hxZqTcSw==
+	bh=NJMwcWoBbRRwdFVEIbPy/4zLZPiPK3HDQkAF5jZ5Pws=;
+	b=bHRw4BTVULDQeDcW17vm2yoFNlHH2nH41Yn/87wPszUDTMnx23OjHGF9+Pzgyyi6ZWlM
+	 X51VTSAMb0KHfQ41Si/NlgpWz+MmKXQxP8HG25YK5Adq4voyXS/+Vg2KmdF2mVuO38IKu
+	 w3qsoGd5ZxCpQAQEiNEvYu54k9xnuZI6QZUW6h3kXHBwDWkGWVZO//ZRBYVxAQzSMp6kT
+	 ulDPbei3iKiEkF/Dx7ekc4hNELVXXjfbZY+5Wdcj8m23LYqWMfwOaoW7Uyrn0jamwbMAF
+	 vzNdkCCrk+B53OGCwnYRooY99PHFnD3xpbRgDDXb1Ivy/l02jKqJl3/pLa4qQCTEo5w==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=amd.com;
-	spf=fail smtp.mailfrom=amd.com;
-	dkim=pass header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b="ue/XGSEz";
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.46.16
-Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azon11010016.outbound.protection.outlook.com [52.101.46.16])
+	dmarc=pass header.from=altera.com;
+	spf=pass smtp.mailfrom=altera.com;
+	dkim=pass header.d=altera.com header.i=@altera.com header.a=rsa-sha256 header.s=selector2 header.b=aWpcx+MZ;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.52.28
+Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011028.outbound.protection.outlook.com [52.101.52.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 260DB606A325;
-	Tue, 10 Nov 2026 07:17:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 260DB606A325
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00C4B606A31C;
+	Thu, 12 Nov 2026 03:43:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 00C4B606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=altera.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=ue/XGSEz
+	dkim=pass (2048-bit key, unprotected) header.d=altera.com header.i=@altera.com header.a=rsa-sha256 header.s=selector2 header.b=aWpcx+MZ
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=e4shnVKPYr/1jnzrs2jIq3A46waUHHZL0zRtPFgoTRfbEypKGX2MZhewIlu0nRz2SvJsnt1rRX/kK5M6dnpknSyAMMuqYQun1UWjkyroiwpKmaa59ndpteGRrH0tge4f4H0+5DbehR2i6WO7HvakgeebsMZGut8t921UtzEQbOqRi2WebimJxa2XKxHhctM3rNpDM3K1uv9SVcmO4qyG5VgDijbzIGKrV7QH62mpP2EPFJFQVvGrxDCeRNseXKwKEcokWL+0DpUjpztuurKya5FPzL/ghaIxqY66W+FlBu+bhb5DFTReAehLmdpgGJmMpAiue4IY4Xm7UktPilUFqw==
+ b=Rk79N041xnOIhzLncRGDbiZs6R89TS//fbGWYvhoPPjI4p/u9TAxQpTiOlJg0LFNqB4aRtpSz56WC2boJR903GwvBJmK8cjzvm0hBlVuLAPO2GkuJpb01Gjwb5+rEgIeIsMhkSood6UCYBvFx4+R2X9qqHdotXmnY/dVsVSS5h6svWoIhTSLwrBnc1yHKjwbVifCzjCybJ/iY1Q1Jg0bl/abC4ALZVlSjUrMaX5QxVdqx8Rzk3ds6irZ88w+LHSi6IQ4tF9HMqQPItr2gkqFjUW+1beJYo1dp7pB30YZlyUnuMzwbNPQiu1I0O3fsV6Jw4ZFCMe6j+P0Tl+bhgo8gA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ACMszO6yIjeEHdllxoWhhw6yoEA0sHblzco0Hv5GICU=;
- b=vKsyXPCTr5oS2zraxz4k5DUWok80kzjx6Kr1TDDQAO987QmrLWwDtqNk85BjPgsK+PZXXhx1XXyxeIveZxdx/qCuWQoHF42AFimEjNV3Gxz/C9tbVqlBZTldZj44HG2AVkbxg+87vD19z7gtxerOXB+GeeTeScnSH81SSRBno4mQM5IQ5gOHqnqhEqoQQDqG3HWdv3YHCZfXDlLvyCvyT94YLPLoDcMO9MvNclQDZBIISmHhQhKH6DCCWBL82VZRwB7kW4vGfuZR1jnvMuj2Shy0n2lVzcHcccXYs9H5IxjlR6JpdY8Uud1J1hOUW7unT6kOOI2OCd3pSUu7X587XA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ bh=NJMwcWoBbRRwdFVEIbPy/4zLZPiPK3HDQkAF5jZ5Pws=;
+ b=wFtP65m4L3kC7+gdD72EABbMZGiTF8uPdZe8gJUREPk+WMxgavizfIQMRCIW6hxO21quwdcDxNIVRzLZTuSIx4+GRxGMhODVGtjnf6RJV1smy4IHbd0WDk6nS7mblARbLtdbBOEL/VQEVjYgCA3eCEPnfxJ1j/RNPnXhF+Lw84rmLqbUrlCEyp2LdlNsa04qKDNVTu3NPaDcK0ij1ItWsmDStKn52ccOPNWtzBdvdqruR5xvzCCGxRae7LRTyRn4MbY0Tg2Ch6VaOxOZgN9wpPMB83ulzX/sDyO49kSK7diNM4VgzSODzsG0N/0JrsVr47KzK4BlnvFc9yJv0kqlEg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=altera.com; dmarc=pass action=none header.from=altera.com;
+ dkim=pass header.d=altera.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=altera.com;
+ s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ACMszO6yIjeEHdllxoWhhw6yoEA0sHblzco0Hv5GICU=;
- b=ue/XGSEz47BgyMHaAnuzm1+UX6h0lPG33oZKvfYH11sHHsI5T5Mmh2w7xgwEQ20ZwLkys4H/iQW9U9PmWwJlufdYyOxBiix81b5nb7irqLUKb4m0u8N7kqgBcuwUhpvC90ZrWEjtv6SqWXy/FZIzxJEDicNXfXGJ7nc8kXsLrZg=
-Received: from BN0PR04CA0154.namprd04.prod.outlook.com (2603:10b6:408:eb::9)
- by IA4PR12MB379828.namprd12.prod.outlook.com (2603:10b6:207:143::19) with
+ bh=NJMwcWoBbRRwdFVEIbPy/4zLZPiPK3HDQkAF5jZ5Pws=;
+ b=aWpcx+MZ5bnyoCnfhJKO79tfCJM2XtWDJx9HH4W2gUqih8mspLfSSB8RtvNc3Xrsk0av3iDku+ueXkjdvDm9Xq5CJSD26dluDIxo0FIRhf3xZdetBiGxgqJMPnT+erZ2AsdejEXDR+84rg/YucnRP6wh6Ur89wkHLR+cSjXsLRv3RHAEsVIwyRtZy/ubVB8AH7F39O+BN2ZcHPef8lbgQfIOOkKQbYZZTV9mqtVXNQxODy13GiMeFk3vNlQtFGGkgSfZ4pqgCbyRl9zr6+ZrotjNbMub6EhEYftHNIuZcG2Enb8xK8IX0jj1UtjwFwLsHRmzSzjcE6ifwEGSZJV8vA==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=altera.com;
+Received: from SJ0PR03MB5950.namprd03.prod.outlook.com (2603:10b6:a03:2d3::20)
+ by SA5PR03MB8477.namprd03.prod.outlook.com (2603:10b6:806:47a::7) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.13; Tue, 10 Nov
- 2026 07:17:16 +0000
-Received: from LV8PEPF00000059.namprd02.prod.outlook.com
- (2603:10b6:408:eb:cafe::47) by BN0PR04CA0154.outlook.office365.com
- (2603:10b6:408:eb::9) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.592.13 via Frontend Transport; Tue,
- 10 Nov 2026 07:17:16 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
- is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
-Received: from satlexmb08.amd.com (165.204.84.17) by
- LV8PEPF00000059.mail.protection.outlook.com (10.167.245.133) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.615.4 via Frontend Transport; Tue, 10 Nov 2026 07:17:16 +0000
-Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.53; Tue, 10 Nov
- 2026 01:17:16 -0600
-Received: from xhdappanad40.xilinx.com (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.53 via Frontend
- Transport; Tue, 10 Nov 2026 01:17:13 -0600
-From: Aravind Thokala <aravind.thokala@amd.com>
-Date: Tue, 10 Nov 2026 12:46:35 +0530
-Subject: [PATCH] fpga: xilinx-pr-decoupler: add shutdown() handler
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.9; Thu, 12 Nov
+ 2026 03:43:34 +0000
+Received: from SJ0PR03MB5950.namprd03.prod.outlook.com
+ ([fe80::53a0:bf93:6b6b:de01]) by SJ0PR03MB5950.namprd03.prod.outlook.com
+ ([fe80::53a0:bf93:6b6b:de01%3]) with mapi id 15.21.0615.007; Thu, 12 Nov 2026
+ 03:43:34 +0000
+From: tze.yee.ng@altera.com
+To: Moritz Fischer <mdf@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Alan Tull <atull@opensource.altera.com>,
+	Matthew Gerlach <mgerlach@opensource.altera.com>,
+	linux-fpga@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Tanmay Kathpalia <tanmay.kathpalia@altera.com>
+Subject: [PATCH v4] fpga: altera-freeze-bridge: clear all illegal request bits
+Date: Thu, 12 Nov 2026 11:43:30 +0800
+Message-ID: <72504835fca6acc0c6bbed589f5917c8e60ffc74.1794453791.git.tze.yee.ng@altera.com>
+X-Mailer: git-send-email 2.43.7
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SJ0PR03CA0133.namprd03.prod.outlook.com
+ (2603:10b6:a03:33c::18) To SJ0PR03MB5950.namprd03.prod.outlook.com
+ (2603:10b6:a03:2d3::20)
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Post: <mailto:linux-fpga@vger.kernel.org>
@@ -102,98 +100,114 @@ List-Unsubscribe: <mailto:linux-fpga+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fpga+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20261110-pr_decoupler_shutdown_handler-v1-1-b833dfe9d380@amd.com>
-X-B4-Tracking: v=1; b=H4sIANLE8moC/yXM0QrCMAyF4VcZubawFCzoq4gU16QuIm1J1ymMv
- btVL//D4dugsgpXOA8bKK9SJaceeBggzLd0ZyPUG+xoHSKOpqgnDrmVJ6uvc1sov5LvV+qDmaI
- 9nlx0hMTQjaIc5f3zL9d/1zY9OCxfFPb9A4plStqBAAAA
-X-Change-ID: 20261110-pr_decoupler_shutdown_handler-bf2596f6d1de
-To: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>, Tom Rix
-	<trix@redhat.com>, Michal Simek <michal.simek@amd.com>
-CC: <linux-fpga@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, <git@amd.com>, Aravind Thokala
-	<aravind.thokala@amd.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794295033; l=1742;
- i=aravind.thokala@amd.com; s=20261110; h=from:subject:message-id;
- bh=dsrA1WAi8TbxqO5q0bCmjKadRMF9aX4i+KtydGhSXbQ=;
- b=H4uYUjw5HpQIk1Rfixita+tNlnbjkAGledo3u5lK45S6J7SKywmLRxzQ51xkd4vOdm33kaN3H
- eGg1WJDT/iqAhnDzYPiWevcd3yUpV5S6w2KDl8ZUU15s9W02iwLjRns
-X-Developer-Key: i=aravind.thokala@amd.com; a=ed25519;
- pk=PRM+iqXzDj0C0C/vWTONu+tBeWoTqWRDeeXllRQZ7ZY=
-X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV8PEPF00000059:EE_|IA4PR12MB379828:EE_
-X-MS-Office365-Filtering-Correlation-Id: ae44d356-2f5b-48c1-2795-08df3efaa6aa
+X-MS-TrafficTypeDiagnostic: SJ0PR03MB5950:EE_|SA5PR03MB8477:EE_
+X-MS-Office365-Filtering-Correlation-Id: 5801aa7f-47b8-4837-349e-08df406f20ba
+X-MS-Exchange-AtpMessageProperties: SA
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|1800799024|36860700016|82310400026|261009223027099003|56012099006|11063799006|261026121527099003|261021121427099003|261102123227099003|10067099003|18002099003;
+	BCL:0;ARA:13230040|366016|1800799024|23010399003|376014|18002099003|6133799003|261009223027099003|55112099003|260925022911599003|11063799006|56012099006|260925021911599003|261021121427099003|261102123227099003|261021123027099003|261022075727099003|260925021311599003|10067099003;
 X-Microsoft-Antispam-Message-Info:
-	3cPjmVYUdb0dz91ZNWxzIr8/Kc2kOG+oXx+G1J0UbcGuq8Hjrc1UipFwwpIm1eqHGfUGRO7as1y/8T+KQdqs5zMnHMce6MMG/5Z1OZLZOqpp8LseaB1+QUCYUTY7BSRsuLtmb6Ool4f+YsPF2wCjmJHKZfdWs3stGPCS25lFHHxzlw/9kvcturUuwq1rhJNnHAXQ3Ii1vgxwBxRcx9jKePKuZNxPmnfq3gbxfbrXtEcixN5Wqw4i/9wJekQxPEpaRQgIPOCMOaeTHsEUKRyiXIxWMBF+sNJP3mPQvyBtOWmZRUv9chCfiofXlkc+19ZnuYkyjaA40EEpMjBrOgUtBhqhMUxda5Y3YK3AOUfLa8vhOKPahMGP5TKKNsoUbQFjeu0kDLMlC4sZwq9lCQ2i0wMHEyg+IBb+YX0OpLJryiMCEw6mugVAXk/YpZh4j3i/1iNitzpWkwTa6ko4kN92QgLcla8fl2yBujxxRJ4fcjnPEJ8P7OiLIqQgiPKm3fU0Bi/LHtpkcqdKHshkt97Vd8zVjLcfrSkBopwL27T75FZOXd2gPKgp/gab1wDvCKpvgQbQO0UIPJjXJmitvC2hOFCwUGtp2i/1zUeALrmWrORHik6GxMIYvl8YdDwJ+HA4u0MjOyyW90HxwCbVMKMl2P94pqBE1umiEnvEhNx6ZDhwVCkglEGyP6S1BDbk0hd9Kc74Pv/oFbo0Qe5rlLbFog==
+	KEJIneQEdtE67rPoRjLPo5YBwBkV08jGJXwzv55AbtwU52GxVsvBuXQLRLi/JunZ7soDNPym5yS6ErSQ5ZPBSYgLzjtRqKtGkBFIVZ0tkpqihwfGAZdXLnP2PIinnXcPK6eMKkjX8RQiqG8+sffLRtJH98oRhjpkExnvj4fu8NkI27y8saKN3qcCrRKcLdE8IfCt/rPbFCPS2L5Zy3eNHfh4vzgq48ig5bJ3P8qEc4DwqvwuVTyxx58uwGvciUQUzF42skqisGdhB+C4Jz2PfM5tUYhQ+ed6ARKn+mDVTqVhW7ny/aOlnIBKDyB634oBnhh7meB9CF8jc8cqmnW0RasQwujFbiHwmaikLt+EcxkxMvjEMkJx6mAWZJjMwjqn/jzf0vzBaQb6PEsvwDyDukDOnch5FV74Cf3Dj0EMD5BzCAuDfFsjIuKwAGU/TrjQ3I7dbvdzSyICTHWf8fCFHvDL0ecKu9Symd/KUiof4y/K7BeBHpLQK7cv9GDKCI4kWlBwpvlVX1N2KR05whPmR05Nu9x+/8+KFESdJ3JPpbR+tjLWj9U8OPfZvAihmjypBP5jhqkgNscza3PDs34jESuUCfcdzos76zldUn1WtVmneiV3GLPQkAP2FzsjIG1Q
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(36860700016)(82310400026)(261009223027099003)(56012099006)(11063799006)(261026121527099003)(261021121427099003)(261102123227099003)(10067099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB5950.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(376014)(18002099003)(6133799003)(261009223027099003)(55112099003)(260925022911599003)(11063799006)(56012099006)(260925021911599003)(261021121427099003)(261102123227099003)(261021123027099003)(261022075727099003)(260925021311599003)(10067099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	UrL2dKfj7vtIAlFaV0MlxsRmCCdbA+DPheo+PFpIKinxdxxwqQJidKD2E7m6c61ELpzQNtXt9LaHSKZQBmihqC0emIqv4IvaJ2zPn1MmigzqbXtAfn0bp9uJ6Kiq0jUEt28X+ujLuoSjmoKYo16ErcmAIdU+aPQcHazXpUm8JVJePlK1z1d7oFt4mi596jNkpiQy0xxL6hijq9QHaTfouC6oI+HuQCrzMKlvQ2kG7EJDJ6mwrqNgJ3nNhIyYubRhPu/givLq7rLfQn11NxFHy+Rs8aUpxsjPOhanZdD9/nIsI9KC4WdYQZXGrBpJBkGEGGmRpSL1uGRN0eQ75PBSvg60IFnbdLsvhq4msTXF616KuK5XXG9C9xJI5Y19PrrUKPZi/RxNOBy0KsoJuuhoAM7iQK205oRsa2LSVrFys+EIR6EiD0jCrWFm0vBhuK1h
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Nov 2026 07:17:16.8367
+	=?us-ascii?Q?Gl+CAYmT93hLYAeRnqGa3Y4OeJykzLadJD1bIs0JBegrGF7LaUGoRhcIFN92?=
+ =?us-ascii?Q?uRqnQh6LAh9F1AeuqOLDFbTQP2n2T5DAPOZJX6570jiTq7Ni1kzbX0Pv3tCl?=
+ =?us-ascii?Q?JK5EBMqzK8LAHojBdsr+M+vIP8GpnYiQxY/RkgDV2FyOAHHrIH9fv8DkPifE?=
+ =?us-ascii?Q?Bhofa3rrYj4QUOFzeu0M+kaRiLASJ6taFYf29oLdkOKCJ1Eo2Jnkl4ir59HJ?=
+ =?us-ascii?Q?lUzyznSl80BWZVgA5KJtZY3xuMSL0yFvQjD4X4TyqcFE4DY+8cOKNE31YsTe?=
+ =?us-ascii?Q?QtNXZWrlLVOG47AL1tRSKZdYHoKT5/RzmpFFvhi/WdIzxEk+DSm0DrtoEWOy?=
+ =?us-ascii?Q?BiAWmsMmYZvKS0nDsdTuKeC938Eu7iZRRELb9WwKFFCXUWVd57Nd2fbuSw2J?=
+ =?us-ascii?Q?C9PZxRngvY7uQToKP3klcDLRVNyBneaiJAcfRO7Ap8aI9XJy3qE9vHiLW5/f?=
+ =?us-ascii?Q?nFtldf5rTiPSVs2yikTODVquKgwrgaFHIydGpEzVC27JRnYd85Xn2B+UpTbQ?=
+ =?us-ascii?Q?F6o1klHOiCVrXdmPs7zmwIgr3hHD2nNOlOE9t8eF4gsk43qBNLt2V8Jik+Gg?=
+ =?us-ascii?Q?TEzWMiSeZqFRxoGeoWmx1uPLnhO2M8Id28l7RG15A9kY7dUgU0L4I9aFOtJ6?=
+ =?us-ascii?Q?qfaGP8eAhqY8/MG3mXpruXgVLxcnxvxDbsEbKObaBJw5Iog6WVBusRy8BIoE?=
+ =?us-ascii?Q?xTpMQCrw0rZZjlZQub3pQw0bQw9ADpZFa9xC0y8pOvVIlHD5cogDbAtZPjtW?=
+ =?us-ascii?Q?bCD72lV/ynTOXvL9uDe1RJW9Rx28Q9sFVUYV15pFvCwDP6oXYAkSsylzMYOz?=
+ =?us-ascii?Q?dKAjGuNU3bMFdNidwf1r7JgnekBi6yzcNWTjjI54Xziytvp7zNHutpwBE+UP?=
+ =?us-ascii?Q?CSmdKjznqBagImr9huQxoepwcxwzgZNrvFOFtKejgaU5IDjn5Hj93FosJMsF?=
+ =?us-ascii?Q?Fi55mGjRB3TkHqwaquOyhv5s/THlD4keWbGMmyd82rratlrtOQLDNST5BddD?=
+ =?us-ascii?Q?7BTrOqaUCDl2QMLAKUxufYjd95jtee7XqlhDQZxUefyP5hFJ7oFFHcLvqQr0?=
+ =?us-ascii?Q?mzlj/jNMg0M0Hh4iC73Jz1LdClJl8fbDor2abcWq4hrtHPps84iYLGPRj2r3?=
+ =?us-ascii?Q?X7TLz5HkoM16cAIW/9vFY6Cq57If3Rkh0gntdfDOvsocwxF/GtHeailQ1X06?=
+ =?us-ascii?Q?V7S4kq8KOz6HLlorNK9utE/ezfCnmwfE22kaGR/r7pNY7xmFKxIT+/TqHo2N?=
+ =?us-ascii?Q?9BBhjDD3P8hEYsAN3K4meZxGyjQhraUgrWdijralt2Akuzx7W69arcDLqyAv?=
+ =?us-ascii?Q?2DRDMEeEh7Bvc+LLt9QTkiUSaW95ATJ57oVBVGMtClB2bkwj42XPS9stKfkk?=
+ =?us-ascii?Q?N3l1kNIfDvOCsqlpNAqAu8cEeTd/tm3wFOx8wVsP9kKgkzifY1MbEBuG7phW?=
+ =?us-ascii?Q?QmXjBMFL3Iw3lkh/8N/ACxLo/BRjdl4ImYFIg5TXjZbTLZeIQ10/lk9QS8YW?=
+ =?us-ascii?Q?LH8EiH/SXo9oKDvvI21YS0bVVIRp22nj0FDI+ILL+MOCBZds5HqnTAg89cE/?=
+ =?us-ascii?Q?FMRNg+CL3k+XTczuwbfRQMolqFEl5uU3+8ek30W9K354+t9gP8WCVGosrbN/?=
+ =?us-ascii?Q?evBfjeQtUZH+uc53bpURoGshGbe+XQpBwNico+pQL0Ppgx9rb1r+AeZ6r4IE?=
+ =?us-ascii?Q?GJs67YrMc7sndi44MAnJD+tQh7i1R+S7vHRw1KnFBW5GzGbZj4M3XVdGrBAu?=
+ =?us-ascii?Q?DusUN+rj0Q=3D=3D?=
+X-OriginatorOrg: altera.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5801aa7f-47b8-4837-349e-08df406f20ba
+X-MS-Exchange-CrossTenant-AuthSource: SJ0PR03MB5950.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Nov 2026 03:43:34.7420
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: ae44d356-2f5b-48c1-2795-08df3efaa6aa
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	LV8PEPF00000059.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA4PR12MB379828
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: fbd72e03-d4a5-4110-adce-614d51f2077a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: oWkE/JzMms+UQ7omQNl08yymQLNL09vUfKHpEirjnH9G5jnOlDcmaXxYeEvEtwt+tjV0ka+qKeVPMu+MkMTOYQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA5PR03MB8477
 
-Add a .shutdown() handler to decouple the Reconfigurable Partition
-from the static logic on reboot, shutdown, and kexec.
+From: Tanmay Kathpalia <tanmay.kathpalia@altera.com>
 
-The handler writes CTRL_CMD_DECOUPLE to the control register. On the
-PR Decoupler, this turns decoupling on, which stops signal changes
-passing through the bridge. On the DFX AXI Shutdown Manager, it
-requests that the IP stop passing AXI transactions through.
+A Partial Reconfiguration Region Controller can be connected to one or
+more Freeze Bridge. Each Freeze Bridge has an illegal_request bit
+represented in the freeze_illegal_request register. Bit i is the bridge on
+freeze interface i. Unlike the status and control registers, which act on
+all bridges collectively, this register reports each bridge individually.
 
-Signed-off-by: Aravind Thokala <aravind.thokala@amd.com>
+Writing a literal 1 clears only bit 0 and leaves the illegal request
+latched for every other bridge. Write back the value just read instead, so
+the set-to-clear applies to whichever Freeze Bridge reported the request.
+
+Fixes: ca24a648f535 ("fpga: add altera freeze bridge support")
+Cc: stable@vger.kernel.org # v4.10+
+
+Signed-off-by: Tanmay Kathpalia <tanmay.kathpalia@altera.com>
+Signed-off-by: Tze Yee Ng <tze.yee.ng@altera.com>
 ---
- drivers/fpga/xilinx-pr-decoupler.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Changes in v4:
+- Restore the narrative opening sentences from v2; the earlier rewrite read
+  too much like a dense hardware spec (Xu Yilun).
 
-diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
-index 1405ddbe88f1..75b59edbf440 100644
---- a/drivers/fpga/xilinx-pr-decoupler.c
-+++ b/drivers/fpga/xilinx-pr-decoupler.c
-@@ -137,6 +137,13 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
- 	return 0;
- }
+Changes in v3:
+- Reword the commit message in imperative mood (Xu Yilun).
+- Describe the freeze_illegal_request register layout: one write-1-to-clear
+  bit per Freeze Bridge via the Conduit Merger, versus the collective
+  status/ctrl registers (Xu Yilun).
+
+Changes in v2:
+- Add "Cc: stable@vger.kernel.org # v4.10+" into the signoff area so the
+  stable-kernel rule is satisfied (reported by kernel test robot).
+- Remove Chiau Ee's signoff as he is no longer working on this patch.
+
+Link v3:
+https://lore.kernel.org/all/13856736bdb808b64826aab337d9919abeb3ea5c.1791253862.git.tze.yee.ng@altera.com/
+---
+ drivers/fpga/altera-freeze-bridge.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
+index 30d03ba14481..cc0c320538da 100644
+--- a/drivers/fpga/altera-freeze-bridge.c
++++ b/drivers/fpga/altera-freeze-bridge.c
+@@ -51,7 +51,7 @@ static int altera_freeze_br_req_ack(struct altera_freeze_br_data *priv,
+ 		if (illegal) {
+ 			dev_err(dev, "illegal request detected 0x%x", illegal);
  
-+static void xlnx_pr_decoupler_shutdown(struct platform_device *pdev)
-+{
-+	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
-+
-+	xlnx_pr_decoupler_enable_set(bridge, false);
-+}
-+
- static void xlnx_pr_decoupler_remove(struct platform_device *pdev)
- {
- 	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
-@@ -147,6 +154,7 @@ static void xlnx_pr_decoupler_remove(struct platform_device *pdev)
- static struct platform_driver xlnx_pr_decoupler_driver = {
- 	.probe = xlnx_pr_decoupler_probe,
- 	.remove = xlnx_pr_decoupler_remove,
-+	.shutdown = xlnx_pr_decoupler_shutdown,
- 	.driver = {
- 		.name = "xlnx_pr_decoupler",
- 		.of_match_table = xlnx_pr_decoupler_of_match,
-
----
-base-commit: b3dfbde62cf1981c4638939c159dfd087b7a72e9
-change-id: 20261110-pr_decoupler_shutdown_handler-bf2596f6d1de
-
-Best regards,
---  
-Aravind Thokala <aravind.thokala@amd.com>
+-			writel(1, csr_illegal_req_addr);
++			writel(illegal, csr_illegal_req_addr);
+ 
+ 			illegal = readl(csr_illegal_req_addr);
+ 			if (illegal)
+-- 
+2.43.7
 
