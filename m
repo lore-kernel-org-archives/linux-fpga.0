@@ -1,13 +1,13 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.52.28
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.193.49
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794455019;
-	b=nzjNynEGiNyQbypnPFYiBDJWNoEMng4cPtab0RoHo0E5vYNfXXzjDSKjjveKEGeZVOTZ
-	 JuxgejI+vb1XiESvaMYzIEm6nH3CS9ArMcKb7ZkQCoaQLQxjHlp/SfmU3u6SdF0dnGleO
-	 45a4MJycvjW2Ekt4ED7x/wTj/l0wdOq7xr/zju3jtDb++wlTadGAOF6moLSuSqo4wTiBz
-	 AEjYFQOrwjPwsQAxZ0zbOX1ui5hdSNqaYc7vKaai637VjXCWLDn4ofbZApC/qHPuTf/Vw
-	 Y7VnoZ5qkuYU2PnP8SaBFPvcujwu1BlSA1vv5RohrHjs63uNf5AHuZRqyYgq+rUXPuQ==
+	t=1794543193;
+	b=cGaZgK3utaZxholrFUNNV6wPW9jYAjzlhYaiE1ixLCXO5NjlKJjdEUyhQzemH7ccp1qD
+	 FK07Oi4TTLwdrzTUBTAUyjjbXt8JOMuaHXaUCdVfIg0cRddj34JSHUyI6jEd4Up3X+Pki
+	 gcRDK8rry5Xc+AHs3Qby9cxwSq1i37r4P/jSoHvG1Wywtpr1/Akt9rlpWup09Jlkezq/t
+	 8cJwhL/pPINZjh+dkfTuCxxPjeoYtR+Y7jObxaY3qjGYpt49GzCvPE1rRl0ww3BBrP7qr
+	 zktFBhhvU6+Qic22DrhizhhX7iU8msZlKBX+9iutrsP667ZpC8gA6XhGvcQ0lgaV5pA==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794455019;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794543193;
 	h=DMARC-Filter:DKIM-Signature:Received:Received:From:To:Cc:Subject:
 	 Date:Message-ID:X-Mailer:Content-Transfer-Encoding:Content-Type:
 	 X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
@@ -24,73 +24,70 @@ ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
 	 X-MS-Exchange-CrossTenant-UserPrincipalName:
 	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=NJMwcWoBbRRwdFVEIbPy/4zLZPiPK3HDQkAF5jZ5Pws=;
-	b=bHRw4BTVULDQeDcW17vm2yoFNlHH2nH41Yn/87wPszUDTMnx23OjHGF9+Pzgyyi6ZWlM
-	 X51VTSAMb0KHfQ41Si/NlgpWz+MmKXQxP8HG25YK5Adq4voyXS/+Vg2KmdF2mVuO38IKu
-	 w3qsoGd5ZxCpQAQEiNEvYu54k9xnuZI6QZUW6h3kXHBwDWkGWVZO//ZRBYVxAQzSMp6kT
-	 ulDPbei3iKiEkF/Dx7ekc4hNELVXXjfbZY+5Wdcj8m23LYqWMfwOaoW7Uyrn0jamwbMAF
-	 vzNdkCCrk+B53OGCwnYRooY99PHFnD3xpbRgDDXb1Ivy/l02jKqJl3/pLa4qQCTEo5w==
+	bh=HQ+EPrL4DmtROVjf9Xp4yEV3Z78ConHb97idzjvZOX4=;
+	b=CtlzGp8EvSvd7f2xUkvh/pp6rqybgPRACYLWbIooqbtBcPrJHnVGHlcBWz84XWYvm28a
+	 am6wikiLE9a3BDnMrCBHa3asWxJe9dUM9zO64D9bGxMClSAErhSDb0lsjeiN1gYHeo78P
+	 pl5ON4ZJqideT5QykQtfhjxQstRcn0e/Vz2S/1PYjQEb6AnvtXf02lZWYgMq2ANZFPCyO
+	 cBTHUZwtsyr/q3qTc/0Mo3ojY5ndY+6zNz1pOFronjr5GmQonAib1s0S1imFb52vtH5dm
+	 HepYZXCGIX7A5yAkGksTd/DQ4Tmj5L5B0NJoyc9QoEv5AOG3PgeQmWVYn4I29qp75VQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=altera.com;
 	spf=pass smtp.mailfrom=altera.com;
-	dkim=pass header.d=altera.com header.i=@altera.com header.a=rsa-sha256 header.s=selector2 header.b=aWpcx+MZ;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.52.28
-Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011028.outbound.protection.outlook.com [52.101.52.28])
+	dkim=pass header.d=altera.com header.i=@altera.com header.a=rsa-sha256 header.s=selector2 header.b=fmf9+vkn;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.193.49
+Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010049.outbound.protection.outlook.com [52.101.193.49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00C4B606A31C;
-	Thu, 12 Nov 2026 03:43:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 00C4B606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA77E606A31C;
+	Fri, 13 Nov 2026 04:13:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EA77E606A31C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=altera.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=altera.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=altera.com header.i=@altera.com header.a=rsa-sha256 header.s=selector2 header.b=aWpcx+MZ
+	dkim=pass (2048-bit key, unprotected) header.d=altera.com header.i=@altera.com header.a=rsa-sha256 header.s=selector2 header.b=fmf9+vkn
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Rk79N041xnOIhzLncRGDbiZs6R89TS//fbGWYvhoPPjI4p/u9TAxQpTiOlJg0LFNqB4aRtpSz56WC2boJR903GwvBJmK8cjzvm0hBlVuLAPO2GkuJpb01Gjwb5+rEgIeIsMhkSood6UCYBvFx4+R2X9qqHdotXmnY/dVsVSS5h6svWoIhTSLwrBnc1yHKjwbVifCzjCybJ/iY1Q1Jg0bl/abC4ALZVlSjUrMaX5QxVdqx8Rzk3ds6irZ88w+LHSi6IQ4tF9HMqQPItr2gkqFjUW+1beJYo1dp7pB30YZlyUnuMzwbNPQiu1I0O3fsV6Jw4ZFCMe6j+P0Tl+bhgo8gA==
+ b=GhgqCUImo5EImMI4hjfXy0I6NKK4mzGDMLSbEvUZ911e7FjoLcxWNiYyJ0mY+q4V+VftuoDfX9OXOwAO2uhFH+9wa0HUOfa5o/ir4bF076VSQvHruCXqawVSLC+wJHcJq+L6djYaoVrxRp4b+ex2QVAcAxGrv2EQWWaJT08wp7XBXhrB/I4GsH9n//PwmRDExRQ62zvDhIbFkHajvp0uHJMo4vP+CEU+v0znpOLmmfKLdLQJvwJJEufeQVWP52iggcjAvYNgIBFuLGuMG31+leEnX5wzqWCHd5R8hDT5/yDzTcuUY/e+NMGwVGqDR0z7lAIicyBoFXf0eF4KMdEiGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NJMwcWoBbRRwdFVEIbPy/4zLZPiPK3HDQkAF5jZ5Pws=;
- b=wFtP65m4L3kC7+gdD72EABbMZGiTF8uPdZe8gJUREPk+WMxgavizfIQMRCIW6hxO21quwdcDxNIVRzLZTuSIx4+GRxGMhODVGtjnf6RJV1smy4IHbd0WDk6nS7mblARbLtdbBOEL/VQEVjYgCA3eCEPnfxJ1j/RNPnXhF+Lw84rmLqbUrlCEyp2LdlNsa04qKDNVTu3NPaDcK0ij1ItWsmDStKn52ccOPNWtzBdvdqruR5xvzCCGxRae7LRTyRn4MbY0Tg2Ch6VaOxOZgN9wpPMB83ulzX/sDyO49kSK7diNM4VgzSODzsG0N/0JrsVr47KzK4BlnvFc9yJv0kqlEg==
+ bh=HQ+EPrL4DmtROVjf9Xp4yEV3Z78ConHb97idzjvZOX4=;
+ b=NzzN0kdffsHflVtM8CaV0ag7WxNyUdvCOBZd7XxPGEIFh84oULSEUMb5S1zS5ev/520eaMh2DgC5tjpw376aV5o9N1XMlQXFBH8D28DoJu6FlmfBfsAXTKVDj3wP3mMHMcu9qCTXL/X30VmJJiXBa0b0Wd7WncQgd2OPTLZS+Dvdaz+VVixXn/iUJB8M+Za5YzgHJVDVkNqD+XywPORFovXgwsCtt7aNW3wcy89BnnF3ScQzelqpzD4g7bHmu6d2WQlIbGrp+1X+N2T6CYIZXzXBIPEk+eoJ2a6RaSbt+o07Vd1wOQ2WgkjbJfGh3rrnvHQznh2nfo39ZW4LiH9aGg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=altera.com; dmarc=pass action=none header.from=altera.com;
  dkim=pass header.d=altera.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=altera.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NJMwcWoBbRRwdFVEIbPy/4zLZPiPK3HDQkAF5jZ5Pws=;
- b=aWpcx+MZ5bnyoCnfhJKO79tfCJM2XtWDJx9HH4W2gUqih8mspLfSSB8RtvNc3Xrsk0av3iDku+ueXkjdvDm9Xq5CJSD26dluDIxo0FIRhf3xZdetBiGxgqJMPnT+erZ2AsdejEXDR+84rg/YucnRP6wh6Ur89wkHLR+cSjXsLRv3RHAEsVIwyRtZy/ubVB8AH7F39O+BN2ZcHPef8lbgQfIOOkKQbYZZTV9mqtVXNQxODy13GiMeFk3vNlQtFGGkgSfZ4pqgCbyRl9zr6+ZrotjNbMub6EhEYftHNIuZcG2Enb8xK8IX0jj1UtjwFwLsHRmzSzjcE6ifwEGSZJV8vA==
+ bh=HQ+EPrL4DmtROVjf9Xp4yEV3Z78ConHb97idzjvZOX4=;
+ b=fmf9+vknRRq05z8ieSh39yULvx12xUGl+QTy558ZBiMwH8Lu+IvHJjf/Q0JKwOh1CAEcexIQhklM9f6aKejxWUFjXAzzWBjUF2yVperMgsO70+4nRlP5WHcTvKfatuYtxUzzpHlDM/VQgIho6zTtZlvw9krHNNjLK54ixnUKAVyPTF3iHOydv788MrbgPA9xlZwsFNfo4+oa+p9t+8507GVmOoJmOWp/kI1Zd883NjXrlni1eBINuJADH8hJccEZ3hSA75rRpQq6z8QC7V2dtYz/SxET2cBMMeH8GSRGF7Wz3AzB4VMonf+KeLoz7wFzlDcLRLzOMCFlFjJL+Ikmxw==
 Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=altera.com;
 Received: from SJ0PR03MB5950.namprd03.prod.outlook.com (2603:10b6:a03:2d3::20)
- by SA5PR03MB8477.namprd03.prod.outlook.com (2603:10b6:806:47a::7) with
+ by MN6PR03MB7573.namprd03.prod.outlook.com (2603:10b6:208:4fa::6) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.9; Thu, 12 Nov
- 2026 03:43:34 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.10; Fri, 13 Nov
+ 2026 04:08:08 +0000
 Received: from SJ0PR03MB5950.namprd03.prod.outlook.com
  ([fe80::53a0:bf93:6b6b:de01]) by SJ0PR03MB5950.namprd03.prod.outlook.com
- ([fe80::53a0:bf93:6b6b:de01%3]) with mapi id 15.21.0615.007; Thu, 12 Nov 2026
- 03:43:34 +0000
+ ([fe80::53a0:bf93:6b6b:de01%3]) with mapi id 15.21.0615.007; Fri, 13 Nov 2026
+ 04:08:08 +0000
 From: tze.yee.ng@altera.com
 To: Moritz Fischer <mdf@kernel.org>,
 	Xu Yilun <yilun.xu@intel.com>,
 	Tom Rix <trix@redhat.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Alan Tull <atull@opensource.altera.com>,
-	Matthew Gerlach <mgerlach@opensource.altera.com>,
 	linux-fpga@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Cc: Tanmay Kathpalia <tanmay.kathpalia@altera.com>
-Subject: [PATCH v4] fpga: altera-freeze-bridge: clear all illegal request bits
-Date: Thu, 12 Nov 2026 11:43:30 +0800
-Message-ID: <72504835fca6acc0c6bbed589f5917c8e60ffc74.1794453791.git.tze.yee.ng@altera.com>
+Cc: muhammad.nazim.amirul.nazle.asmade@altera.com
+Subject: [PATCH v3] fpga: altera-cvp: Add Agilex5 CVP credit register support
+Date: Fri, 13 Nov 2026 12:07:44 +0800
+Message-ID: <a4d8640c6e758baa8a3b6c8a5643ebedd86c4d5e.1794533564.git.tze.yee.ng@altera.com>
 X-Mailer: git-send-email 2.43.7
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: SJ0PR03CA0133.namprd03.prod.outlook.com
- (2603:10b6:a03:33c::18) To SJ0PR03MB5950.namprd03.prod.outlook.com
- (2603:10b6:a03:2d3::20)
+X-ClientProxiedBy: SJ0PR05CA0189.namprd05.prod.outlook.com
+ (2603:10b6:a03:330::14) To SA2PR03MB5947.namprd03.prod.outlook.com
+ (2603:10b6:806:11f::17)
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Post: <mailto:linux-fpga@vger.kernel.org>
@@ -101,113 +98,254 @@ List-Owner: <mailto:linux-fpga+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR03MB5950:EE_|SA5PR03MB8477:EE_
-X-MS-Office365-Filtering-Correlation-Id: 5801aa7f-47b8-4837-349e-08df406f20ba
+X-MS-TrafficTypeDiagnostic: SJ0PR03MB5950:EE_|MN6PR03MB7573:EE_
+X-MS-Office365-Filtering-Correlation-Id: 04cf5254-5625-4970-5cd7-08df413bb932
 X-MS-Exchange-AtpMessageProperties: SA
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|23010399003|376014|18002099003|6133799003|261009223027099003|55112099003|260925022911599003|11063799006|56012099006|260925021911599003|261021121427099003|261102123227099003|261021123027099003|261022075727099003|260925021311599003|10067099003;
+	BCL:0;ARA:13230040|23010399003|1800799024|376014|366016|55112099003|56012099006|11063799006|261009223027099003|261102123227099003|261022113327099003|261021123027099003|261021121427099003|261022105027099003|261022075727099003|261028144727099003|261026121527099003|261026140227099003|10067099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	KEJIneQEdtE67rPoRjLPo5YBwBkV08jGJXwzv55AbtwU52GxVsvBuXQLRLi/JunZ7soDNPym5yS6ErSQ5ZPBSYgLzjtRqKtGkBFIVZ0tkpqihwfGAZdXLnP2PIinnXcPK6eMKkjX8RQiqG8+sffLRtJH98oRhjpkExnvj4fu8NkI27y8saKN3qcCrRKcLdE8IfCt/rPbFCPS2L5Zy3eNHfh4vzgq48ig5bJ3P8qEc4DwqvwuVTyxx58uwGvciUQUzF42skqisGdhB+C4Jz2PfM5tUYhQ+ed6ARKn+mDVTqVhW7ny/aOlnIBKDyB634oBnhh7meB9CF8jc8cqmnW0RasQwujFbiHwmaikLt+EcxkxMvjEMkJx6mAWZJjMwjqn/jzf0vzBaQb6PEsvwDyDukDOnch5FV74Cf3Dj0EMD5BzCAuDfFsjIuKwAGU/TrjQ3I7dbvdzSyICTHWf8fCFHvDL0ecKu9Symd/KUiof4y/K7BeBHpLQK7cv9GDKCI4kWlBwpvlVX1N2KR05whPmR05Nu9x+/8+KFESdJ3JPpbR+tjLWj9U8OPfZvAihmjypBP5jhqkgNscza3PDs34jESuUCfcdzos76zldUn1WtVmneiV3GLPQkAP2FzsjIG1Q
+	ChbmIFBOX/GKn8HeBSih118edDDjklIEojbM4kdqIcAs7ZsCAI3b76VTI4FlXY8iVV4J6sJ/+f/SbdhAM2fwqmj7q8Cr2LxJIvIyj9ex4+UgrYB5zghvCUbkfpszmPw63xOYHJF3X61/SlipJggJ0gfWPrmD/NTCQNJf8nk8T7SPC6h4EX9C5OCe8CfOMv7+mAilZPN1f0Ab+Y4nvBVzJ3bNOKjNKlRC5z/TFePHTvM8Yj7cwxdt8jLAo3hZbGrvFNKobprkEe5oT8J17O+Mh1TFK4UdlSOlrGj/vME9Oyjmo9mQjrDswVrvyoDHtjx9oMngp4xGAjqCIBzinFJRWPQh5Bi41UuOp/f8PUzljr6LPEu3yi95VgtE/8FeLJiv2aXxe0Bhtfzfz/VW1LefTiHC92VbNKUqTl/ZlqtZGGkq6E8ViiDO41g8rGzn6sO9OPOf/PtGbWnsJPVf3lZevnSpsT4lu5wlkhXUQQOrLso9zHuT7SEiMo5O2AIK1Hl9cI3UlxAbX/m3ZOzN6lBCwmaU6r2BecDdMc/rJBXEmqKdCcsS2LVilL7p0gmkV8QZ98/w7gyKrFQJeI+doaa52nAulP0OaD09hW2T3ZcrunwG+JqR4rJubIFXDCjGE74Y
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB5950.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(376014)(18002099003)(6133799003)(261009223027099003)(55112099003)(260925022911599003)(11063799006)(56012099006)(260925021911599003)(261021121427099003)(261102123227099003)(261021123027099003)(261022075727099003)(260925021311599003)(10067099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB5950.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(366016)(55112099003)(56012099006)(11063799006)(261009223027099003)(261102123227099003)(261022113327099003)(261021123027099003)(261021121427099003)(261022105027099003)(261022075727099003)(261028144727099003)(261026121527099003)(261026140227099003)(10067099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Gl+CAYmT93hLYAeRnqGa3Y4OeJykzLadJD1bIs0JBegrGF7LaUGoRhcIFN92?=
- =?us-ascii?Q?uRqnQh6LAh9F1AeuqOLDFbTQP2n2T5DAPOZJX6570jiTq7Ni1kzbX0Pv3tCl?=
- =?us-ascii?Q?JK5EBMqzK8LAHojBdsr+M+vIP8GpnYiQxY/RkgDV2FyOAHHrIH9fv8DkPifE?=
- =?us-ascii?Q?Bhofa3rrYj4QUOFzeu0M+kaRiLASJ6taFYf29oLdkOKCJ1Eo2Jnkl4ir59HJ?=
- =?us-ascii?Q?lUzyznSl80BWZVgA5KJtZY3xuMSL0yFvQjD4X4TyqcFE4DY+8cOKNE31YsTe?=
- =?us-ascii?Q?QtNXZWrlLVOG47AL1tRSKZdYHoKT5/RzmpFFvhi/WdIzxEk+DSm0DrtoEWOy?=
- =?us-ascii?Q?BiAWmsMmYZvKS0nDsdTuKeC938Eu7iZRRELb9WwKFFCXUWVd57Nd2fbuSw2J?=
- =?us-ascii?Q?C9PZxRngvY7uQToKP3klcDLRVNyBneaiJAcfRO7Ap8aI9XJy3qE9vHiLW5/f?=
- =?us-ascii?Q?nFtldf5rTiPSVs2yikTODVquKgwrgaFHIydGpEzVC27JRnYd85Xn2B+UpTbQ?=
- =?us-ascii?Q?F6o1klHOiCVrXdmPs7zmwIgr3hHD2nNOlOE9t8eF4gsk43qBNLt2V8Jik+Gg?=
- =?us-ascii?Q?TEzWMiSeZqFRxoGeoWmx1uPLnhO2M8Id28l7RG15A9kY7dUgU0L4I9aFOtJ6?=
- =?us-ascii?Q?qfaGP8eAhqY8/MG3mXpruXgVLxcnxvxDbsEbKObaBJw5Iog6WVBusRy8BIoE?=
- =?us-ascii?Q?xTpMQCrw0rZZjlZQub3pQw0bQw9ADpZFa9xC0y8pOvVIlHD5cogDbAtZPjtW?=
- =?us-ascii?Q?bCD72lV/ynTOXvL9uDe1RJW9Rx28Q9sFVUYV15pFvCwDP6oXYAkSsylzMYOz?=
- =?us-ascii?Q?dKAjGuNU3bMFdNidwf1r7JgnekBi6yzcNWTjjI54Xziytvp7zNHutpwBE+UP?=
- =?us-ascii?Q?CSmdKjznqBagImr9huQxoepwcxwzgZNrvFOFtKejgaU5IDjn5Hj93FosJMsF?=
- =?us-ascii?Q?Fi55mGjRB3TkHqwaquOyhv5s/THlD4keWbGMmyd82rratlrtOQLDNST5BddD?=
- =?us-ascii?Q?7BTrOqaUCDl2QMLAKUxufYjd95jtee7XqlhDQZxUefyP5hFJ7oFFHcLvqQr0?=
- =?us-ascii?Q?mzlj/jNMg0M0Hh4iC73Jz1LdClJl8fbDor2abcWq4hrtHPps84iYLGPRj2r3?=
- =?us-ascii?Q?X7TLz5HkoM16cAIW/9vFY6Cq57If3Rkh0gntdfDOvsocwxF/GtHeailQ1X06?=
- =?us-ascii?Q?V7S4kq8KOz6HLlorNK9utE/ezfCnmwfE22kaGR/r7pNY7xmFKxIT+/TqHo2N?=
- =?us-ascii?Q?9BBhjDD3P8hEYsAN3K4meZxGyjQhraUgrWdijralt2Akuzx7W69arcDLqyAv?=
- =?us-ascii?Q?2DRDMEeEh7Bvc+LLt9QTkiUSaW95ATJ57oVBVGMtClB2bkwj42XPS9stKfkk?=
- =?us-ascii?Q?N3l1kNIfDvOCsqlpNAqAu8cEeTd/tm3wFOx8wVsP9kKgkzifY1MbEBuG7phW?=
- =?us-ascii?Q?QmXjBMFL3Iw3lkh/8N/ACxLo/BRjdl4ImYFIg5TXjZbTLZeIQ10/lk9QS8YW?=
- =?us-ascii?Q?LH8EiH/SXo9oKDvvI21YS0bVVIRp22nj0FDI+ILL+MOCBZds5HqnTAg89cE/?=
- =?us-ascii?Q?FMRNg+CL3k+XTczuwbfRQMolqFEl5uU3+8ek30W9K354+t9gP8WCVGosrbN/?=
- =?us-ascii?Q?evBfjeQtUZH+uc53bpURoGshGbe+XQpBwNico+pQL0Ppgx9rb1r+AeZ6r4IE?=
- =?us-ascii?Q?GJs67YrMc7sndi44MAnJD+tQh7i1R+S7vHRw1KnFBW5GzGbZj4M3XVdGrBAu?=
- =?us-ascii?Q?DusUN+rj0Q=3D=3D?=
+	=?us-ascii?Q?r4Jp8I96zLgODDAAstOiARRv/YPcCijJOhTbN3wp+Crxohj1qb9PsTAVLxUT?=
+ =?us-ascii?Q?zAC+p7yMg3Skj5Nk3wmTBZr44Ja6r7rQv0V+kYccOu2SEwNpIVXmPsKTMFnw?=
+ =?us-ascii?Q?9i3WW4lrCmd1jZGHSiNrS76asW2qpTyDQrZSwgIXvpErEhtMUbMIqGn3/T0j?=
+ =?us-ascii?Q?SG60lphLQ9ofgjeUDe59GxzhIpvH1ESR11tUIUI1+JnptZK7dP1GXilSXYH8?=
+ =?us-ascii?Q?jq1uRHoUjFj55eQn0gCO8d8blRAENexLsLT/dcoaWMT4TxGzj7IgJwlcA1ja?=
+ =?us-ascii?Q?Qqai0MfdIdLXFdW64NIaPZJmQ31EA9WwZt1UXUsoiI7Q9Rn/knRpieb5N0DY?=
+ =?us-ascii?Q?6SszmOlnB0D+/5/RffS4IcQYgF/j6KHCE4Q8QkCG/TBWGsKU7mmJb41ZVPWd?=
+ =?us-ascii?Q?o5L56deD8HrrsTdqfnYrJI0Fjknpn+e/YxW4Opcw4+umoa6NsxhUmgul5kuy?=
+ =?us-ascii?Q?NVVPnTvp0V9aYseZDLdByWMruaxCUn96kTToovG0iPcfyfds1LbxsRg95Vo5?=
+ =?us-ascii?Q?EvZVtlLqghc0P0o4LI2FYMIvaZ8ICGcZa4E0DXiuTsE1XjW7EFirLBKIiSWz?=
+ =?us-ascii?Q?gMMyIKIhShGwg/kchj6lqsTZVcxdaEWElHwuY/KFlh/Tqwtd9OgvJ+ZLpcca?=
+ =?us-ascii?Q?xNRZXx7VEAP65kUOh24wd23IwljCdm/k2SKx20RtuTVe2y+AIoqi4fcu27QB?=
+ =?us-ascii?Q?n4Va+wwPCYfXEMdbZ/wBsSnLOcVO7NLdGqLQTbY9QN6VSfd8viVSNdLqy10H?=
+ =?us-ascii?Q?voTCvYwJJOHmkIP0dK6ePLPdpVf3xUvytk25VTywOx6gRDxEV5/fJTqDTVs3?=
+ =?us-ascii?Q?AFs3mo6Rr4B+9ytJCJZbJqq0xluIVES44NkD9cAV7trHzn0bC/8O0+67xkZp?=
+ =?us-ascii?Q?M5nQ0eBFaowVbPmLbMneeuiRhX9M/IQ5P6l7glKnhJ9q+DuTFqzCTtHtuzJ4?=
+ =?us-ascii?Q?So/13CwuL9fE1DhoSOfOBUvmcrUKTaS4Ig5rHN+kLOmfeLqGPoIbeu/lL2dB?=
+ =?us-ascii?Q?wiiTb/POBHy+GvnQSzZpfiYG1qMTYeR1rrk7Pys/DshJWR6U++E/AVy6QOgV?=
+ =?us-ascii?Q?gHyo6GEEI8rIkPsOnVRWQ8RkJ7EwITXUMeRAnHMaDQHS/xcFXEClyuVC7uXu?=
+ =?us-ascii?Q?8ZpaFQ+G+E3H5JhWKMlYKDc2Yj8ouzxvJJs+2w35xpKTPqbgzbt05MCZqAcG?=
+ =?us-ascii?Q?Xwavh02S38ODGaC2gMCcgI9s6GMI3O/650Ibq9jj1vo/Prgznc8e07JN5lB4?=
+ =?us-ascii?Q?TTW9ce4+xcA+9GG3yg1tkLUkWoQNsbLp7XNTieepIkYu9CLVd06/xgN9h+l4?=
+ =?us-ascii?Q?fh0laquPtCw8J09QzqscsS2C520BYtfsQi77Q7w+KYNPwe7Sk8Y3Rfjk/Ni9?=
+ =?us-ascii?Q?sk2WCImqLtqhSzfj+P0APBPaKNlBpeO1V7IjciUTK6izS7N6yMqdFgs/5v4e?=
+ =?us-ascii?Q?vk7wX3nTec6yeAvm720k26V7OsARk9BwD911FOzL3oK56x88mZSKm44FG8QW?=
+ =?us-ascii?Q?SYP3acidVAW+3YEVQKW1cvbMHwbtTpk+p9oWdRilVz8dOMrIeJiiHPDWQHNm?=
+ =?us-ascii?Q?bIS7C0MiifO6+Ko9UaKrYoAdBnyVibhTBiubHrVv0GKHmCvym3cQLfVkszgH?=
+ =?us-ascii?Q?52yPs68a067pXhvoNLnFfwGUWIWh10b+mkag77j8Lyw+MXziyN0820NUdQ6q?=
+ =?us-ascii?Q?aKKGKMAcJwRLiaZ5VWovQxx3uK+RB3iC9qjMhG8mZxGMXur+uaJgxlNLw8HH?=
+ =?us-ascii?Q?z02Mc0LIGg=3D=3D?=
 X-OriginatorOrg: altera.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5801aa7f-47b8-4837-349e-08df406f20ba
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR03MB5950.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 04cf5254-5625-4970-5cd7-08df413bb932
+X-MS-Exchange-CrossTenant-AuthSource: SA2PR03MB5947.namprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Nov 2026 03:43:34.7420
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Nov 2026 04:08:08.7707
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: fbd72e03-d4a5-4110-adce-614d51f2077a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: oWkE/JzMms+UQ7omQNl08yymQLNL09vUfKHpEirjnH9G5jnOlDcmaXxYeEvEtwt+tjV0ka+qKeVPMu+MkMTOYQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA5PR03MB8477
+X-MS-Exchange-CrossTenant-UserPrincipalName: Jq+B51dwO3VVDELyN+V2y34JcEF7+C1w/8Go+sYdHk7bbGrNEdhJtsCtc9Tj1NFa8g4AI50eLH+RQxVkDS/x5Q==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN6PR03MB7573
 
-From: Tanmay Kathpalia <tanmay.kathpalia@altera.com>
+From: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
 
-A Partial Reconfiguration Region Controller can be connected to one or
-more Freeze Bridge. Each Freeze Bridge has an illegal_request bit
-represented in the freeze_illegal_request register. Bit i is the bridge on
-freeze interface i. Unlike the status and control registers, which act on
-all bridges collectively, this register reports each bridge individually.
+Agilex5 uses a different VSEC layout from earlier SoC FPGA variants:
+the VSEC length is 0x60 and the CVP TX credit register moves to
+offset 0x5C, a dword register holding 12-bit credits, instead of the
+8-bit register at offset 0x49.
 
-Writing a literal 1 clears only bit 0 and leaves the illegal request
-latched for every other bridge. Write back the value just read instead, so
-the set-to-clear applies to whichever Freeze Bridge reported the request.
+Describe the credit register differences in struct cvp_priv by adding
+an avail_credit() callback, and add a cvp_priv for Agilex5 using it.
+The callback reads the credit register and returns the number of
+credits left, computed modulo the width of the hardware counter, which
+wraps while sent_packets keeps counting. Existing devices keep their
+8-bit byte read, so their behaviour is unchanged. Credit throttling is
+enabled when avail_credit() is provided, so drop the redundant
+wait_credit() callback.
 
-Fixes: ca24a648f535 ("fpga: add altera freeze bridge support")
-Cc: stable@vger.kernel.org # v4.10+
+At probe time, read the standard PCIe VSEC header and select the
+Agilex5 cvp_priv when the VSEC length is 0x60.
 
-Signed-off-by: Tanmay Kathpalia <tanmay.kathpalia@altera.com>
+Signed-off-by: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
 Signed-off-by: Tze Yee Ng <tze.yee.ng@altera.com>
 ---
-Changes in v4:
-- Restore the narrative opening sentences from v2; the earlier rewrite read
-  too much like a dense hardware spec (Xu Yilun).
-
 Changes in v3:
-- Reword the commit message in imperative mood (Xu Yilun).
-- Describe the freeze_illegal_request register layout: one write-1-to-clear
-  bit per Freeze Bridge via the Conduit Merger, versus the collective
-  status/ctrl registers (Xu Yilun).
+- Move credit masking into the per-variant ->avail_credit() callbacks,
+  which now return the credits left; drop credit_mask from struct
+  cvp_priv (Yilun)
+- Drop ->wait_credit and use ->avail_credit to enable credit
+  throttling (Yilun)
+- Add a short comment explaining the modulo credit computation
+- Update the commit message accordingly
 
 Changes in v2:
-- Add "Cc: stable@vger.kernel.org # v4.10+" into the signoff area so the
-  stable-kernel rule is satisfied (reported by kernel test robot).
-- Remove Chiau Ee's signoff as he is no longer working on this patch.
+- Use PCI_VNDR_HEADER/PCI_VNDR_HEADER_LEN() from pci_regs.h instead of
+  private VSEC header macros
+- Describe the Agilex5 credit register via struct cvp_priv
+  (read_credit(), credit_mask, cvp_priv_agilex5); drop
+  device_family_type and the SOCFPGA_CVP_* macros
+- Keep the sent_packets comparison width-limited via credit_mask; no
+  longer described as a fix
+- Drop the dev_notice() messages
+- Rewrite the commit message
 
-Link v3:
-https://lore.kernel.org/all/13856736bdb808b64826aab337d9919abeb3ea5c.1791253862.git.tze.yee.ng@altera.com/
+v2: https://lore.kernel.org/all/20261028104019.21225-1-tze.yee.ng@altera.com/ 
 ---
- drivers/fpga/altera-freeze-bridge.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/fpga/altera-cvp.c | 72 ++++++++++++++++++++++++++++++++-------
+ 1 file changed, 60 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
-index 30d03ba14481..cc0c320538da 100644
---- a/drivers/fpga/altera-freeze-bridge.c
-+++ b/drivers/fpga/altera-freeze-bridge.c
-@@ -51,7 +51,7 @@ static int altera_freeze_br_req_ack(struct altera_freeze_br_data *priv,
- 		if (illegal) {
- 			dev_err(dev, "illegal request detected 0x%x", illegal);
+diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
+index d736f9fa1898..04c1314a37a7 100644
+--- a/drivers/fpga/altera-cvp.c
++++ b/drivers/fpga/altera-cvp.c
+@@ -23,6 +23,7 @@
+ #define TIMEOUT_US	2000	/* CVP STATUS timeout for USERMODE polling */
  
--			writel(1, csr_illegal_req_addr);
-+			writel(illegal, csr_illegal_req_addr);
+ /* Vendor Specific Extended Capability Registers */
++#define AGILEX5_VSEC_LENGTH		0x60	/* VSEC length, Agilex5 only */
+ #define VSE_CVP_STATUS			0x1c	/* 32bit */
+ #define VSE_CVP_STATUS_CFG_RDY		BIT(18)	/* CVP_CONFIG_READY */
+ #define VSE_CVP_STATUS_CFG_ERR		BIT(19)	/* CVP_CONFIG_ERROR */
+@@ -49,6 +50,9 @@
+ #define V1_VSEC_OFFSET			0x200	/* Vendor Specific Offset V1 */
+ /* V2 Defines */
+ #define VSE_CVP_TX_CREDITS		0x49	/* 8bit */
++#define VSE_CVP_TX_CREDITS_MASK		GENMASK(7, 0)
++#define VSE_CVP_AG5_TX_CREDITS		0x5c	/* 12bit credits for Agilex5 */
++#define VSE_CVP_AG5_TX_CREDITS_MASK	GENMASK(11, 0)
  
- 			illegal = readl(csr_illegal_req_addr);
- 			if (illegal)
+ #define V2_CREDIT_TIMEOUT_US		40000
+ #define V2_CHECK_CREDIT_US		10
+@@ -84,7 +88,7 @@ struct altera_cvp_conf {
+ struct cvp_priv {
+ 	void	(*switch_clk)(struct altera_cvp_conf *conf);
+ 	int	(*clear_state)(struct altera_cvp_conf *conf);
+-	int	(*wait_credit)(struct fpga_manager *mgr, u32 blocks);
++	int	(*avail_credit)(struct altera_cvp_conf *conf, u32 *credits);
+ 	size_t	block_size;
+ 	int	poll_time_us;
+ 	int	user_time_us;
+@@ -223,16 +227,47 @@ static int altera_cvp_v2_clear_state(struct altera_cvp_conf *conf)
+ 				      conf->priv->poll_time_us);
+ }
+ 
++/*
++ * The HW credit counter wraps at its register width, so compute the
++ * available credits against sent_packets modulo that width.
++ */
++static int altera_cvp_v2_avail_credit(struct altera_cvp_conf *conf,
++				      u32 *credits)
++{
++	u8 val;
++	int ret;
++
++	ret = altera_read_config_byte(conf, VSE_CVP_TX_CREDITS, &val);
++	if (!ret)
++		*credits = (val - conf->sent_packets) & VSE_CVP_TX_CREDITS_MASK;
++
++	return ret;
++}
++
++static int altera_cvp_ag5_avail_credit(struct altera_cvp_conf *conf,
++				       u32 *credits)
++{
++	u32 val;
++	int ret;
++
++	ret = altera_read_config_dword(conf, VSE_CVP_AG5_TX_CREDITS, &val);
++	if (!ret)
++		*credits = (val - conf->sent_packets) &
++			   VSE_CVP_AG5_TX_CREDITS_MASK;
++
++	return ret;
++}
++
+ static int altera_cvp_v2_wait_for_credit(struct fpga_manager *mgr,
+ 					 u32 blocks)
+ {
+ 	u32 timeout = V2_CREDIT_TIMEOUT_US / V2_CHECK_CREDIT_US;
+ 	struct altera_cvp_conf *conf = mgr->priv;
+ 	int ret;
+-	u8 val;
++	u32 credits;
+ 
+ 	do {
+-		ret = altera_read_config_byte(conf, VSE_CVP_TX_CREDITS, &val);
++		ret = conf->priv->avail_credit(conf, &credits);
+ 		if (ret) {
+ 			dev_err(&conf->pci_dev->dev,
+ 				"Error reading CVP Credit Register\n");
+@@ -240,14 +275,14 @@ static int altera_cvp_v2_wait_for_credit(struct fpga_manager *mgr,
+ 		}
+ 
+ 		/* Return if there is space in FIFO */
+-		if (val - (u8)conf->sent_packets)
++		if (credits)
+ 			return 0;
+ 
+ 		ret = altera_cvp_chk_error(mgr, blocks * ALTERA_CVP_V2_SIZE);
+ 		if (ret) {
+ 			dev_err(&conf->pci_dev->dev,
+-				"CE Bit error credit reg[0x%x]:sent[0x%x]\n",
+-				val, conf->sent_packets);
++				"CE Bit error with no credit:sent[0x%x]\n",
++				conf->sent_packets);
+ 			return -EAGAIN;
+ 		}
+ 
+@@ -473,8 +508,8 @@ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
+ 
+ 	while (remaining) {
+ 		/* Use credit throttling if available */
+-		if (conf->priv->wait_credit) {
+-			status = conf->priv->wait_credit(mgr, done);
++		if (conf->priv->avail_credit) {
++			status = altera_cvp_v2_wait_for_credit(mgr, done);
+ 			if (status) {
+ 				dev_err(&conf->pci_dev->dev,
+ 					"Wait Credit ERR: 0x%x\n", status);
+@@ -558,7 +593,15 @@ static const struct cvp_priv cvp_priv_v1 = {
+ 
+ static const struct cvp_priv cvp_priv_v2 = {
+ 	.clear_state	= altera_cvp_v2_clear_state,
+-	.wait_credit	= altera_cvp_v2_wait_for_credit,
++	.avail_credit	= altera_cvp_v2_avail_credit,
++	.block_size	= ALTERA_CVP_V2_SIZE,
++	.poll_time_us	= V2_POLL_TIMEOUT_US,
++	.user_time_us	= V2_USER_TIMEOUT_US,
++};
++
++static const struct cvp_priv cvp_priv_agilex5 = {
++	.clear_state	= altera_cvp_v2_clear_state,
++	.avail_credit	= altera_cvp_ag5_avail_credit,
+ 	.block_size	= ALTERA_CVP_V2_SIZE,
+ 	.poll_time_us	= V2_POLL_TIMEOUT_US,
+ 	.user_time_us	= V2_USER_TIMEOUT_US,
+@@ -658,10 +701,15 @@ static int altera_cvp_probe(struct pci_dev *pdev,
+ 	conf->pci_dev = pdev;
+ 	conf->write_data = altera_cvp_write_data_iomem;
+ 
+-	if (conf->vsec_offset == V1_VSEC_OFFSET)
++	if (conf->vsec_offset == V1_VSEC_OFFSET) {
+ 		conf->priv = &cvp_priv_v1;
+-	else
+-		conf->priv = &cvp_priv_v2;
++	} else {
++		pci_read_config_dword(pdev, offset + PCI_VNDR_HEADER, &regval);
++		if (PCI_VNDR_HEADER_LEN(regval) == AGILEX5_VSEC_LENGTH)
++			conf->priv = &cvp_priv_agilex5;
++		else
++			conf->priv = &cvp_priv_v2;
++	}
+ 
+ 	conf->map = pci_iomap(pdev, CVP_BAR, 0);
+ 	if (!conf->map) {
 -- 
 2.43.7
 
