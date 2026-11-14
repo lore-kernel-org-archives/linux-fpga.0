@@ -1,75 +1,80 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.12
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.16
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794669807;
-	b=N7NpQb3gB17MdOPtOa9JBY9sLBg1f1Ws9oEsXqSZObFpgdlgls5ctbG++dwTiA2/SZF3
-	 NF4RPiTmxWNE13vHFRu1JMqXzcpWTVh0R4RzlosVfJgx4BsOUh1IAhJVsNyo++U81DpaG
-	 X/smzajIrVbRKEJQ1aMiho5ykOQhG5a1ENrTx1y0G3gavZqqOrAu3E1VbeFqF5KVgQ8Z1
-	 cOlt1eRp/8yjCFSCKaV0m+jWNeYEe3gnMLZH+kZndxp08hMWrlOVw2FK0EBJSU7azfa9A
-	 BqtT/WCU3ljVuBxcAKAGepq/Ux6VbLLzU6ss54Ro5gLWYyGLDrst9NOov2K89p65uaA==
+	t=1794669839;
+	b=MqXhvEXH9IX1GlbYyH947ixwxjLlAJREzReB9byM5HA0JmdlXoUdPQsx5JQeJq5O2eyH
+	 ESqXuskdX2vnEtsjYZqadRIofRPfX4HkyVXIvWLwElWrswY7YHTmIjptn3Vqcrl5Cfkxe
+	 O7vtKI9v1UPs/1FkTdTJBrF/tji2J/d6+LMNEaVQHcUrK1z3SJ7CLp+7h3vDeNorgeCUh
+	 7YDRyAetEPFxASzyAkLhz4bR4o08+/uihq3kki+bR27IiWK6UW9q7TsMEMboUopvOdxrT
+	 p2SDwdwc5gDu5skPzZ6Oxmz6VlKv8zC32RHgUfDcVgv+0tUqO+cRRE5ixumBE1FW/yA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794669807;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794669839;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
 	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
 	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
 	 Subject:Message-ID:References:MIME-Version:Content-Type:
 	 Content-Disposition:In-Reply-To;
-	bh=3JMhWfUcU7fxNCU/ri2y5UyMUFxhaJHLZo8Ai7ubS5A=;
-	b=WLZFikepj5La6Jmf4rge4jNAFGhiQer5VBIjhZ84kEMTu3f2I0FiFHLAxL8xz2DDfdFv
-	 nW09FkeZHdhVtizZRIhnGqyP27zQ5rqZC7EfQzffNDch5lQyNIkvx8pjmh2SrRYbpez3T
-	 PaCrPtafpe1oESE6CPzK7/Mxt7M9+Ce7moCqi1I6LO50505i17F6tQ6a+GAjiQhuiLVkl
-	 X2+0lYLKZt443uBonYojwBG+B9681wcJskijWZqwmlxf3xerexks3y7O247XEwn97UpwY
-	 tuKgKeNNGH6WqInRNyohz4C1VMeOFoFd8z1Iu5AQmS4UERuKNUr+Wlq+An2WfC2jmVw==
+	bh=0HmbXb327GJzFT5MXU0MRRM3XV64FYP4EU8RuoGrtuQ=;
+	b=EYVq2XZnjQSKnsohgNzU5eA6lm1dTMjrb9vf1q2Fj9hYPQEOFXlUm9RKWp1fll9bS6/w
+	 xaLNWYbymq+vdTyzheTROmwxjzBXaokQ0IUdKIwWBmeJyw7guKM6mJpKPtOIlOprzaIUK
+	 dwbXVKOwwhM2BnQwnK3rdDgz06XcgSE1s4q870FHKoQvJff2rVXvPUQ2XrwqyX+YXEFHZ
+	 U80FyBlGA4MOHpARZTLn61daJKnquShJdHQTr/upbVWnPKyp4k/MskdHdI9fBII7LVepK
+	 HeXUWoMwzoPyOO0qwot2S5Chz0Lh6yt3UsdjTsxhhGakmXkhUqvtyJr70DCY9diUpOw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linux.intel.com;
 	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZFJUXHnJ;
-	arc=none smtp.remote-ip=192.198.163.12
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VDXcumEv;
+	arc=none smtp.remote-ip=192.198.163.16
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10813606A332;
-	Sat, 14 Nov 2026 15:23:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 10813606A332
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5A67606A334;
+	Sat, 14 Nov 2026 15:23:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D5A67606A334
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZFJUXHnJ
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VDXcumEv
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1794669806; x=1826205806;
+  t=1794669839; x=1826205839;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=kZGVpg2F7/HHNo/fRGXO4LMnPCizNrXdzI6fin2ZWoc=;
-  b=ZFJUXHnJ+ovNMLXwKFIXiLmXbcBnIfj1DwS9k30EgsmWsuyAmQVFBkvs
-   Sjw9qnevB9BwmQMtlY2Fd30bFrfcXmaEfDBjfFzBzpZBYeXRGvFUEj7lM
-   qPqMV0taozMeo8eVupJzjm9z4NwGrBDtVBxuyWgbWL6fyuxiS1ZoQHDHf
-   XoE5joiPH2EVyE+3/tPMD4QVziZAkQkYOrTQF2n90NzZioovI07OZE+AJ
-   DGzcoOcCemd2QAUyGa04RqbRU0moJGsNffV58zoxCE3KHjEZy6WL88r8l
-   fIeKYdx3JwwP3m/kTwi3qMOQaMb6OFdYvLEWpYlZx7UAwdWKO8abQvLc0
-   Q==;
-X-CSE-ConnectionGUID: gcvubHj9RHuOZkhvrxU56A==
-X-CSE-MsgGUID: PSD0OrMvTVSkJmNGkn/jKQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11966"; a="3365436"
+  bh=511xuNfl0NVDcMvVwuYTw6PJvE9bfC2iaNFme+P5uvo=;
+  b=VDXcumEv+CqAR1I03MffOtPsJ6W3wVXlBHNcvr34uDG7cmKgHHH63d8E
+   oL5qcyq8tvxC0+M6Ph9nrmXdkRDywaxZXjB7/COQNk4Y1AhmDy/5GtDf/
+   lVKeqw8YTacWTh5svT7do/RQsElIZr11DFOC11s3AfvcyiiZQKIhpN5cn
+   kgYEUmqZ763sfxq6cfJ9z8nZ+A+J1BDbFve74ytAyEhlya3oWgNMS29nR
+   QSuwI+b1vsffn9fG64IEU46rzb9KYQHyeKHzkd/3roGiAhzVETItxL0v4
+   vMKncmnM6NIsKH05tAJWUJi77VNgPsGlemSyzmxTTkeMfOWO6j0lOO81M
+   A==;
+X-CSE-ConnectionGUID: EKifLBA7TL+HdYmVL5aMAQ==
+X-CSE-MsgGUID: /o6oO5aNRKSjMAHH6+MPZw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11966"; a="3497042"
 X-IronPort-AV: E=Sophos;i="6.27,213,1787036400"; 
-   d="scan'208";a="3365436"
-Received: from fmviesa013.fm.intel.com ([10.60.135.153])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2026 07:23:25 -0800
-X-CSE-ConnectionGUID: RUehccmiT2+4igswWMrX0g==
-X-CSE-MsgGUID: etcpffj8QLSD5YY8McYSaw==
+   d="scan'208";a="3497042"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2026 07:23:58 -0800
+X-CSE-ConnectionGUID: oD5+JMaFTmieNNINNg1E+Q==
+X-CSE-MsgGUID: z23+rWEeS/a5nwxVe21+4A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,213,1787036400"; 
-   d="scan'208";a="11066525"
+   d="scan'208";a="9239784"
 Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.47.46])
-  by fmviesa013.fm.intel.com with ESMTP; 14 Nov 2026 07:23:23 -0800
-Date: Sat, 14 Nov 2026 23:14:58 +0800
+  by fmviesa005.fm.intel.com with ESMTP; 14 Nov 2026 07:23:56 -0800
+Date: Sat, 14 Nov 2026 23:15:31 +0800
 From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Xiangwu Lai <laixiangwu@cmss.chinamobile.com>
-Cc: mdf@kernel.org, yilun.xu@intel.com, trix@redhat.com,
+To: tze.yee.ng@altera.com
+Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Alan Tull <atull@opensource.altera.com>,
+	Matthew Gerlach <mgerlach@opensource.altera.com>,
 	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH v2] fpga: altera-hps2fpga: Fix reset control leak
-Message-ID: <avh68lVmIG6MwMby@yilunxu-OptiPlex-7050>
-References: <20261107150747.1152-1-laixiangwu@cmss.chinamobile.com>
+	Tanmay Kathpalia <tanmay.kathpalia@altera.com>
+Subject: Re: [PATCH v4] fpga: altera-freeze-bridge: clear all illegal request
+ bits
+Message-ID: <avh7E5ueMvcp9zE+@yilunxu-OptiPlex-7050>
+References: <72504835fca6acc0c6bbed589f5917c8e60ffc74.1794453791.git.tze.yee.ng@altera.com>
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Post: <mailto:linux-fpga@vger.kernel.org>
@@ -81,60 +86,67 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261107150747.1152-1-laixiangwu@cmss.chinamobile.com>
+In-Reply-To: <72504835fca6acc0c6bbed589f5917c8e60ffc74.1794453791.git.tze.yee.ng@altera.com>
 
-On Sat, Nov 07, 2026 at 11:07:47PM +0800, Xiangwu Lai wrote:
-> From: laixiangwu <laixiangwu@cmss.chinamobile.com>
+On Thu, Nov 12, 2026 at 11:43:30AM +0800, tze.yee.ng@altera.com wrote:
+> From: Tanmay Kathpalia <tanmay.kathpalia@altera.com>
 > 
-> alt_fpga_bridge_probe() acquires the bridge reset control with
-> of_reset_control_get_exclusive_by_index(), which is not
-> device-managed. None of the probe error paths release it, and
-> alt_fpga_bridge_remove() does not call reset_control_put() either,
-> so the reset control reference leaks both on a failed probe and on
-> every bind/unbind cycle.
+> A Partial Reconfiguration Region Controller can be connected to one or
+> more Freeze Bridge. Each Freeze Bridge has an illegal_request bit
+> represented in the freeze_illegal_request register. Bit i is the bridge on
+> freeze interface i. Unlike the status and control registers, which act on
+> all bridges collectively, this register reports each bridge individually.
 > 
-> Since the leaked exclusive reset remains acquired, rebinding the
-> driver afterwards also fails with -EBUSY.
+> Writing a literal 1 clears only bit 0 and leaves the illegal request
+> latched for every other bridge. Write back the value just read instead, so
+> the set-to-clear applies to whichever Freeze Bridge reported the request.
 > 
-> Use devm_reset_control_get_exclusive_by_index() so the reset control
-> is released automatically when the driver is unbound or the probe
-> fails.
+> Fixes: ca24a648f535 ("fpga: add altera freeze bridge support")
+> Cc: stable@vger.kernel.org # v4.10+
 > 
-> Fixes: e5f8efa5c8bf ("ARM: socfpga: fpga bridge driver support")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Xiangwu Lai <laixiangwu@cmss.chinamobile.com>
+> Signed-off-by: Tanmay Kathpalia <tanmay.kathpalia@altera.com>
+> Signed-off-by: Tze Yee Ng <tze.yee.ng@altera.com>
 
 Reviewed-by: Xu Yilun <yilun.xu@intel.com>
 
-Applied to for-next, thanks
+Applied to for-next, thanks.
 
 > ---
+> Changes in v4:
+> - Restore the narrative opening sentences from v2; the earlier rewrite read
+>   too much like a dense hardware spec (Xu Yilun).
+> 
+> Changes in v3:
+> - Reword the commit message in imperative mood (Xu Yilun).
+> - Describe the freeze_illegal_request register layout: one write-1-to-clear
+>   bit per Freeze Bridge via the Conduit Merger, versus the collective
+>   status/ctrl registers (Xu Yilun).
+> 
 > Changes in v2:
-> - Drop the enumeration of probe error path examples from the commit
->   message, as suggested by Xu Yilun.
-> - Add Cc: stable@vger.kernel.org for backporting.
+> - Add "Cc: stable@vger.kernel.org # v4.10+" into the signoff area so the
+>   stable-kernel rule is satisfied (reported by kernel test robot).
+> - Remove Chiau Ee's signoff as he is no longer working on this patch.
 > 
-> Link: https://lore.kernel.org/r/20261103014240.1194-1-laixiangwu@cmss.chinamobile.com
->  drivers/fpga/altera-hps2fpga.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+> Link v3:
+> https://lore.kernel.org/all/13856736bdb808b64826aab337d9919abeb3ea5c.1791253862.git.tze.yee.ng@altera.com/
+> ---
+>  drivers/fpga/altera-freeze-bridge.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
-> index f2f125068..6d9798bb9 100644
-> --- a/drivers/fpga/altera-hps2fpga.c
-> +++ b/drivers/fpga/altera-hps2fpga.c
-> @@ -134,8 +134,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
+> diff --git a/drivers/fpga/altera-freeze-bridge.c b/drivers/fpga/altera-freeze-bridge.c
+> index 30d03ba14481..cc0c320538da 100644
+> --- a/drivers/fpga/altera-freeze-bridge.c
+> +++ b/drivers/fpga/altera-freeze-bridge.c
+> @@ -51,7 +51,7 @@ static int altera_freeze_br_req_ack(struct altera_freeze_br_data *priv,
+>  		if (illegal) {
+>  			dev_err(dev, "illegal request detected 0x%x", illegal);
 >  
->  	priv = (struct altera_hps2fpga_data *)device_get_match_data(dev);
+> -			writel(1, csr_illegal_req_addr);
+> +			writel(illegal, csr_illegal_req_addr);
 >  
-> -	priv->bridge_reset = of_reset_control_get_exclusive_by_index(dev->of_node,
-> -								     0);
-> +	priv->bridge_reset = devm_reset_control_get_exclusive_by_index(dev, 0);
->  	if (IS_ERR(priv->bridge_reset)) {
->  		dev_err(dev, "Could not get %s reset control\n", priv->name);
->  		return PTR_ERR(priv->bridge_reset);
+>  			illegal = readl(csr_illegal_req_addr);
+>  			if (illegal)
 > -- 
-> 2.50.1.windows.1
-> 
-> 
+> 2.43.7
 > 
 > 
