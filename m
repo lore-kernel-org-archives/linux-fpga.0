@@ -1,76 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.12
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794661766;
-	b=0J9pKAVgCSwA0s9CgxFrFFUTu8PXgWbXJ11plRVMMKhivOSWm+gcUlyfvilO+JRcGDc2
-	 iQ8q2MUNZSr1adrqmZNk/7aUcyCNVulbocmyRyX6mJYbz3iVJUiyE9ln4mCYtV94RjrNN
-	 om8aUj2Y66Ab94JujdZkL+pCRNdoNGUImxHUKodqlHGYST59n3y+5sGgBXwO80hlIKPbN
-	 eFV6OukNbHx+8aodobnfsc0CrH/rFUOB4ko3DdXWMIUMc43uaHvL4msnxtFPPuPEVguXP
-	 tBmzxxiwNwXUWWagkaaiR87qj5A9GUuD9aFMxWVx1QGmPyBHlw5RpUQP+0+F94xcX7g==
+	t=1794669807;
+	b=N7NpQb3gB17MdOPtOa9JBY9sLBg1f1Ws9oEsXqSZObFpgdlgls5ctbG++dwTiA2/SZF3
+	 NF4RPiTmxWNE13vHFRu1JMqXzcpWTVh0R4RzlosVfJgx4BsOUh1IAhJVsNyo++U81DpaG
+	 X/smzajIrVbRKEJQ1aMiho5ykOQhG5a1ENrTx1y0G3gavZqqOrAu3E1VbeFqF5KVgQ8Z1
+	 cOlt1eRp/8yjCFSCKaV0m+jWNeYEe3gnMLZH+kZndxp08hMWrlOVw2FK0EBJSU7azfa9A
+	 BqtT/WCU3ljVuBxcAKAGepq/Ux6VbLLzU6ss54Ro5gLWYyGLDrst9NOov2K89p65uaA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794661766;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794669807;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
 	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
 	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
 	 Subject:Message-ID:References:MIME-Version:Content-Type:
 	 Content-Disposition:In-Reply-To;
-	bh=3ZTzQECzP8zCA4zZIUOYcMmNhdFsxwT6/XtJiNtrnio=;
-	b=vy5FmxX4w1W1BZsghG6SYr3dAWpuhjO13SnwGCku+SNIIyc5/Oe3rO3LJ5+uqi4iMLEr
-	 wdbMpbioyedLvUeW4cTRfQ/ymWVe0HlFw4YMP0Ue0eAnYdRMdmQcoGxLKyX+bFEbtPHga
-	 cyHRN4zIe6v8HCte5jp0i3zx12rBtoCr1ChzjDjriT0alUdTbIEvCOkHggOs7th5lSlIg
-	 SppZo6FZX06hP+OQFoCo6jIBoCZHBB2J4eXux50pSbp+VfiLsRXrvpV4OyGHclM+RIydY
-	 okZSaL/qSdkc2K4/ZL/Z4Q7VACXEkEOD4OEJfJBegwkAwCHupTCXYHGKChP+88XV0gQ==
+	bh=3JMhWfUcU7fxNCU/ri2y5UyMUFxhaJHLZo8Ai7ubS5A=;
+	b=WLZFikepj5La6Jmf4rge4jNAFGhiQer5VBIjhZ84kEMTu3f2I0FiFHLAxL8xz2DDfdFv
+	 nW09FkeZHdhVtizZRIhnGqyP27zQ5rqZC7EfQzffNDch5lQyNIkvx8pjmh2SrRYbpez3T
+	 PaCrPtafpe1oESE6CPzK7/Mxt7M9+Ce7moCqi1I6LO50505i17F6tQ6a+GAjiQhuiLVkl
+	 X2+0lYLKZt443uBonYojwBG+B9681wcJskijWZqwmlxf3xerexks3y7O247XEwn97UpwY
+	 tuKgKeNNGH6WqInRNyohz4C1VMeOFoFd8z1Iu5AQmS4UERuKNUr+Wlq+An2WfC2jmVw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linux.intel.com;
 	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cVGwYf1e;
-	arc=none smtp.remote-ip=192.198.163.18
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZFJUXHnJ;
+	arc=none smtp.remote-ip=192.198.163.12
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CFD3606E0CE;
-	Sat, 14 Nov 2026 13:09:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6CFD3606E0CE
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10813606A332;
+	Sat, 14 Nov 2026 15:23:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 10813606A332
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cVGwYf1e
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZFJUXHnJ
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1794661765; x=1826197765;
+  t=1794669806; x=1826205806;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=3LrEAWD2vso0+yzov29pKHt2uGcBzvsMBwzmMMJMss8=;
-  b=cVGwYf1eQ3SbkOsXKnm9vZwk30XqMO82lJ5uLZjPbwLzgZ0dheOBGsyT
-   u9rQoN0HU7pJHuLtvdn8k5eekJ8IuiXyJlaI6l+rKyfM8k648/Z5Y4eYQ
-   RY5ofKVcxTN9B58Z8fwnDX5e4V8s9EQRk4cBGmCxVzkctSLytiBt0aJIL
-   AfvKUeIRC9NTXnxfh60sQWAiETdSbxWwKYdRpwc/7zqVZoTQM8idbKKHy
-   U9kLhXJxgpRVOlUS2fFUM7TZ1ZqylCds3SFbQ8RX95Y3BBbDMpzfrkQnv
-   AuJO1/89hz9EX45ykFkoMcUcm13GR//FGnd/wF+EXaANDnepo1tAuYZGy
+  bh=kZGVpg2F7/HHNo/fRGXO4LMnPCizNrXdzI6fin2ZWoc=;
+  b=ZFJUXHnJ+ovNMLXwKFIXiLmXbcBnIfj1DwS9k30EgsmWsuyAmQVFBkvs
+   Sjw9qnevB9BwmQMtlY2Fd30bFrfcXmaEfDBjfFzBzpZBYeXRGvFUEj7lM
+   qPqMV0taozMeo8eVupJzjm9z4NwGrBDtVBxuyWgbWL6fyuxiS1ZoQHDHf
+   XoE5joiPH2EVyE+3/tPMD4QVziZAkQkYOrTQF2n90NzZioovI07OZE+AJ
+   DGzcoOcCemd2QAUyGa04RqbRU0moJGsNffV58zoxCE3KHjEZy6WL88r8l
+   fIeKYdx3JwwP3m/kTwi3qMOQaMb6OFdYvLEWpYlZx7UAwdWKO8abQvLc0
    Q==;
-X-CSE-ConnectionGUID: IkFvKW0yT6ypIZWsUjzAmg==
-X-CSE-MsgGUID: f6XjP5iQRuCZphamSVQJAw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11966"; a="3488611"
+X-CSE-ConnectionGUID: gcvubHj9RHuOZkhvrxU56A==
+X-CSE-MsgGUID: PSD0OrMvTVSkJmNGkn/jKQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11966"; a="3365436"
 X-IronPort-AV: E=Sophos;i="6.27,213,1787036400"; 
-   d="scan'208";a="3488611"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2026 05:09:24 -0800
-X-CSE-ConnectionGUID: vx3GMDnIRuiBOgprM3V5lA==
-X-CSE-MsgGUID: vf8gb478SwiF8fB8umKoTg==
+   d="scan'208";a="3365436"
+Received: from fmviesa013.fm.intel.com ([10.60.135.153])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2026 07:23:25 -0800
+X-CSE-ConnectionGUID: RUehccmiT2+4igswWMrX0g==
+X-CSE-MsgGUID: etcpffj8QLSD5YY8McYSaw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,213,1787036400"; 
-   d="scan'208";a="9685598"
+   d="scan'208";a="11066525"
 Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.47.46])
-  by fmviesa010.fm.intel.com with ESMTP; 14 Nov 2026 05:09:23 -0800
-Date: Sat, 14 Nov 2026 21:00:58 +0800
+  by fmviesa013.fm.intel.com with ESMTP; 14 Nov 2026 07:23:23 -0800
+Date: Sat, 14 Nov 2026 23:14:58 +0800
 From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Aravind Thokala <aravind.thokala@amd.com>
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
-	Tom Rix <trix@redhat.com>, Michal Simek <michal.simek@amd.com>,
-	linux-fpga@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, git@amd.com
-Subject: Re: [PATCH] fpga: xilinx-pr-decoupler: add shutdown() handler
-Message-ID: <avhbivs3HDdvzrtB@yilunxu-OptiPlex-7050>
-References: <20261110-pr_decoupler_shutdown_handler-v1-1-b833dfe9d380@amd.com>
+To: Xiangwu Lai <laixiangwu@cmss.chinamobile.com>
+Cc: mdf@kernel.org, yilun.xu@intel.com, trix@redhat.com,
+	linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH v2] fpga: altera-hps2fpga: Fix reset control leak
+Message-ID: <avh68lVmIG6MwMby@yilunxu-OptiPlex-7050>
+References: <20261107150747.1152-1-laixiangwu@cmss.chinamobile.com>
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Post: <mailto:linux-fpga@vger.kernel.org>
@@ -82,65 +81,60 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261110-pr_decoupler_shutdown_handler-v1-1-b833dfe9d380@amd.com>
+In-Reply-To: <20261107150747.1152-1-laixiangwu@cmss.chinamobile.com>
 
-On Tue, Nov 10, 2026 at 12:46:35PM +0530, Aravind Thokala wrote:
-> Add a .shutdown() handler to decouple the Reconfigurable Partition
-> from the static logic on reboot, shutdown, and kexec.
-
-I'm not sure what problem are you going to solve by gating the PR region
-from static region regardless. Please specify.
-
-Before I get enough information, I generally think that's not the right
-way to solve problems. You need to gracefully handle the specific logic
-inside the PR region which actually impact kexec, so that they work in
-expected ways, rather than abruptly cutting down the HW connection
-regardless.
-
+On Sat, Nov 07, 2026 at 11:07:47PM +0800, Xiangwu Lai wrote:
+> From: laixiangwu <laixiangwu@cmss.chinamobile.com>
 > 
-> The handler writes CTRL_CMD_DECOUPLE to the control register. On the
-> PR Decoupler, this turns decoupling on, which stops signal changes
-> passing through the bridge. On the DFX AXI Shutdown Manager, it
-> requests that the IP stop passing AXI transactions through.
+> alt_fpga_bridge_probe() acquires the bridge reset control with
+> of_reset_control_get_exclusive_by_index(), which is not
+> device-managed. None of the probe error paths release it, and
+> alt_fpga_bridge_remove() does not call reset_control_put() either,
+> so the reset control reference leaks both on a failed probe and on
+> every bind/unbind cycle.
 > 
-> Signed-off-by: Aravind Thokala <aravind.thokala@amd.com>
+> Since the leaked exclusive reset remains acquired, rebinding the
+> driver afterwards also fails with -EBUSY.
+> 
+> Use devm_reset_control_get_exclusive_by_index() so the reset control
+> is released automatically when the driver is unbound or the probe
+> fails.
+> 
+> Fixes: e5f8efa5c8bf ("ARM: socfpga: fpga bridge driver support")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Xiangwu Lai <laixiangwu@cmss.chinamobile.com>
+
+Reviewed-by: Xu Yilun <yilun.xu@intel.com>
+
+Applied to for-next, thanks
+
 > ---
->  drivers/fpga/xilinx-pr-decoupler.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
+> Changes in v2:
+> - Drop the enumeration of probe error path examples from the commit
+>   message, as suggested by Xu Yilun.
+> - Add Cc: stable@vger.kernel.org for backporting.
 > 
-> diff --git a/drivers/fpga/xilinx-pr-decoupler.c b/drivers/fpga/xilinx-pr-decoupler.c
-> index 1405ddbe88f1..75b59edbf440 100644
-> --- a/drivers/fpga/xilinx-pr-decoupler.c
-> +++ b/drivers/fpga/xilinx-pr-decoupler.c
-> @@ -137,6 +137,13 @@ static int xlnx_pr_decoupler_probe(struct platform_device *pdev)
->  	return 0;
->  }
+> Link: https://lore.kernel.org/r/20261103014240.1194-1-laixiangwu@cmss.chinamobile.com
+>  drivers/fpga/altera-hps2fpga.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/fpga/altera-hps2fpga.c b/drivers/fpga/altera-hps2fpga.c
+> index f2f125068..6d9798bb9 100644
+> --- a/drivers/fpga/altera-hps2fpga.c
+> +++ b/drivers/fpga/altera-hps2fpga.c
+> @@ -134,8 +134,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
 >  
-> +static void xlnx_pr_decoupler_shutdown(struct platform_device *pdev)
-> +{
-> +	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
-> +
-> +	xlnx_pr_decoupler_enable_set(bridge, false);
-> +}
-> +
->  static void xlnx_pr_decoupler_remove(struct platform_device *pdev)
->  {
->  	struct fpga_bridge *bridge = platform_get_drvdata(pdev);
-> @@ -147,6 +154,7 @@ static void xlnx_pr_decoupler_remove(struct platform_device *pdev)
->  static struct platform_driver xlnx_pr_decoupler_driver = {
->  	.probe = xlnx_pr_decoupler_probe,
->  	.remove = xlnx_pr_decoupler_remove,
-> +	.shutdown = xlnx_pr_decoupler_shutdown,
->  	.driver = {
->  		.name = "xlnx_pr_decoupler",
->  		.of_match_table = xlnx_pr_decoupler_of_match,
+>  	priv = (struct altera_hps2fpga_data *)device_get_match_data(dev);
+>  
+> -	priv->bridge_reset = of_reset_control_get_exclusive_by_index(dev->of_node,
+> -								     0);
+> +	priv->bridge_reset = devm_reset_control_get_exclusive_by_index(dev, 0);
+>  	if (IS_ERR(priv->bridge_reset)) {
+>  		dev_err(dev, "Could not get %s reset control\n", priv->name);
+>  		return PTR_ERR(priv->bridge_reset);
+> -- 
+> 2.50.1.windows.1
 > 
-> ---
-> base-commit: b3dfbde62cf1981c4638939c159dfd087b7a72e9
-> change-id: 20261110-pr_decoupler_shutdown_handler-bf2596f6d1de
 > 
-> Best regards,
-> --  
-> Aravind Thokala <aravind.thokala@amd.com>
 > 
 > 
