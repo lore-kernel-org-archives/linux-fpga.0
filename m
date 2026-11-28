@@ -1,76 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=198.175.65.10
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795875969;
-	b=neS8bzTH21DJNcnq7ouGyne4FSUCVJ8Q94+mh3yyZDvZOhQzOegUmTeyyrDzb2PCH2hN
-	 +79OmNc/q3s/6DRgD2C1Be47w4TvJPNoC14BAs9OzVqRv0ZknsdXLx3jZyeJA+iOqNIZj
-	 Ogrx0ThtPJMpyI7/jPoThpj7mJ8Iq4+i7ebeEydeiXGN613Gtjv5uwoX+Wa3A/z3bR4Wo
-	 4/AVOocodLEEZEIhTrU8sISe0Bsf/swgKXk+P8PEWIVMcszNfrk/fLkAYZXdJ+i7Hd0zg
-	 vNCtlEnzIBQo5PpPSFybHGOdTJnrnpjNVtykcjzfW2OAJveMXW0rkhFa3HWGVm7ptyA==
+	t=1795888137;
+	b=G1MYtWRjRJmS000PTIeE10XNfDydycY5h67xiM7xguXCpo+VMLBmVw3pgAbtrjCpEzQM
+	 O1zWLSqO70PEI0oEfDQ9G4Y0nJsQv75H1eZ8T24ktbJkptWxL8YPxsYY12ojDynsXfv/j
+	 l7YFMcYtphZtWyY/8xQsVBdx9QPQRKjoz1SisuSTpEKSjAdFzmkESeoOZThoPuepsnY8b
+	 AKesENb7okZQGk9GhnnAaqcKzGoVBnCYLqlehIJGMJX7603b1t6fX7h5914B+7GL3H9mZ
+	 nVbYjQh3CkgbkpjwHhPKDnfpalpu2A2iZIJ8wqbKFTnFjda9LvqZ5cMCn7FnXOpeLxg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795875969;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795888137;
 	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
 	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
 	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
 	 Subject:Message-ID:References:MIME-Version:Content-Type:
 	 Content-Disposition:In-Reply-To;
-	bh=MY2uFTiPHrQMA4/9MXt16v0yoXdkAqWzROWuYVrR1UQ=;
-	b=ZZy2uGNKwbrQXn6QxyQiqKMzjbU+V4rSZkv5fqktHHH9+SSjCpCVM/8leQQuIlqyyfyK
-	 E5506Nz5CI1eHHVgW4dAc7fqelN3evOZ/CFkw2ZQlspkKMeEAH+lrmdfOnsShFoafKurs
-	 uL0nbDWGxCf5XoZEFGoeYX6JEy8PT7KqHrB6uUk5lVrGJuMxeqmnMB0Ugi0kcZeh3QocJ
-	 UvRZHbCbzzgEvAQmfmUAImHlj4I/FjaKih6HQLpYVjR1xCeokvHcZZBgF2hqdrL9uZO8d
-	 m9NWs8uj8Aq6HHjocGkgEZmv96kq5ry+Ysj1vNrPeVLVsMootNKyMyeHCRDqPUBsJ9w==
+	bh=o1vyfluEhUJnbluF6GUcjMDTIyL0SaXusFUOnUCU43k=;
+	b=OLDG7SLTQRXhkiIr1MLxiNiskiMRl/ig1FSMbxHAVmXrLEFSgL8MQesux29UBDKMP4Wp
+	 RQyxXae13EZRngPtS9MrH7gSjmQx4E7Bhwjcjx45gwWBsnUAfAHsP8CjIq5sYv12Kskoi
+	 qyDUcTunBSgJ1G+4y9+v5uFZ5Yj9ZeBXjxn+dUncaQlmYLmGMSX2JdmiHlZvi0DG0JeY4
+	 ozjoBexUppb2pUAh1pHj/vXQoQdwYgAta2kKlq1ikFddF3lKBFklHcRK7s2zf40yEzP/h
+	 QGjvBZV5Io3Ctsw7btbrBGQBrs1Jd8HncszZ2y88qnyH4vpPVFnOR3ZlelAMs1tlskA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linux.intel.com;
 	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=H1IQPEsW;
-	arc=none smtp.remote-ip=198.175.65.12
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BuHCF07h;
+	arc=none smtp.remote-ip=198.175.65.10
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
 	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBDF5606A31F;
-	Sat, 28 Nov 2026 14:26:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CBDF5606A31F
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFF1F606A332;
+	Sat, 28 Nov 2026 17:48:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BFF1F606A332
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=H1IQPEsW
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BuHCF07h
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1795875969; x=1827411969;
+  t=1795888136; x=1827424136;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=WuqgJ38tny/WpKpeTa0Yrp3OJgllRuWAxpM8lrzahPk=;
-  b=H1IQPEsW6INnMz5ytewY/MYXdvInQXbVegad4d03UW7KK8ohQU0u3GM9
-   gVzL4/rNnnrePV3xDHq6DiYqavZd+p5RyI0K6W3/AtmQclxNWwqN+/lDb
-   6YBtw7JmSh5YS+3IehfIrRTlRJrlLhuP+S2SvjPcxI/M+eFIrKnvmMInd
-   ASn1aHkAmu4Or2m5lWisyujv8YYEgP6cJTxinhdG8UuQBSD6IuXT4TObb
-   JUOP32C7nANGu89CeNZDDcxR/azvE0WLHAzRqVS2Na9Ly29yJ2NcWMDRy
-   w+XXLARnTSS0g/B0n4+tslOCEQJQWaNKiHv5redgyfU0LOejBlbrY3KoL
-   Q==;
-X-CSE-ConnectionGUID: sdUwH1uYQtmrIW6mE2U6qQ==
-X-CSE-MsgGUID: G+8HnaRwT0mos5YtC0MKtQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11980"; a="4664035"
+  bh=mESh8w46MAHp0IedDV7lK4+2r5xhxNUiIwOX/N8u2Vs=;
+  b=BuHCF07hO5cybxqkfAbeHou5uzBh3GuVmUhquavjISyCxrpmz11yaKS7
+   nnaO9E0gv+PkdxRmc3B3OU/wrT3yC7D0PE7ln5sGK81dfh1/dXq26u8pb
+   p/Wf+1nn1MLVEn1LHgJqdbA3/Lmv8tnb/gBlA21tkK5tw8kC8WjqRJqJ6
+   F2YQlJazHzGjCFC0kbo20gFsyoTtR1CkFqi40Cw9OyFL+LY2zy+0Hmzum
+   2GkIv1GujbFtn3RxWOUQz5B8gX2PPlyPrWRxsSwr83bmmbuCf8w9CgXU2
+   PNrq+pzZ1HN/d9FC/SHXGmv+PDNrFePoL0oXLsuszqyA1T+zmYSskQeT7
+   w==;
+X-CSE-ConnectionGUID: bVXD666HTl6q0wHrEDVG3w==
+X-CSE-MsgGUID: +0AeWuC7Qp+l8lKfvlXp8A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11980"; a="4690109"
 X-IronPort-AV: E=Sophos;i="6.27,238,1787036400"; 
-   d="scan'208";a="4664035"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2026 06:26:08 -0800
-X-CSE-ConnectionGUID: X1gJXZarTMycwgwdP9EMpQ==
-X-CSE-MsgGUID: x3RALWu1ScKjXOgtfqpnhQ==
+   d="scan'208";a="4690109"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2026 09:48:56 -0800
+X-CSE-ConnectionGUID: eGJ+JD44TduKnNqVsc/8Hg==
+X-CSE-MsgGUID: Ot2oZcS3RX6L9yKJyQB5pg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,238,1787036400"; 
-   d="scan'208";a="12819257"
+   d="scan'208";a="12726123"
 Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.47.46])
-  by fmviesa003.fm.intel.com with ESMTP; 28 Nov 2026 06:26:06 -0800
-Date: Sat, 28 Nov 2026 22:15:43 +0800
+  by fmviesa005.fm.intel.com with ESMTP; 28 Nov 2026 09:48:53 -0800
+Date: Sun, 29 Nov 2026 01:38:29 +0800
 From: Xu Yilun <yilun.xu@linux.intel.com>
-To: tze.yee.ng@altera.com
-Cc: Moritz Fischer <mdf@kernel.org>, Xu Yilun <yilun.xu@intel.com>,
+To: "Ionut Nechita (Wind River)" <ionut.nechita@windriver.com>
+Cc: Xu Yilun <yilun.xu@intel.com>, Moritz Fischer <mdf@kernel.org>,
 	Tom Rix <trix@redhat.com>, linux-fpga@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] fpga: altera-cvp: Handle truncated bitstream with
- padding buffer
-Message-ID: <awriD1uAiBgmq0Rk@yilunxu-OptiPlex-7050>
-References: <3c1bb384cb9cd5bb35b3c7e68a4feab95ef4ad60.1794987679.git.tze.yee.ng@altera.com>
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] fpga: dfl: release irq triggers when a feature device is
+ removed
+Message-ID: <awsRlTtDlPoQijA7@yilunxu-OptiPlex-7050>
+References: <20261124145734.38683-1-ionut.nechita@windriver.com>
 X-Mailing-List: linux-fpga@vger.kernel.org
 List-Id: <linux-fpga.vger.kernel.org>
 List-Post: <mailto:linux-fpga@vger.kernel.org>
@@ -82,110 +82,83 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3c1bb384cb9cd5bb35b3c7e68a4feab95ef4ad60.1794987679.git.tze.yee.ng@altera.com>
+In-Reply-To: <20261124145734.38683-1-ionut.nechita@windriver.com>
 
-On Wed, Nov 18, 2026 at 03:43:15PM +0800, tze.yee.ng@altera.com wrote:
-> From: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
+On Tue, Nov 24, 2026 at 04:57:34PM +0200, Ionut Nechita (Wind River) wrote:
+> From: Ionut Nechita <ionut.nechita@windriver.com>
 > 
-> The AIB CvP firmware requires a minimum transfer size of 4096 bytes.
-> When a bitstream smaller than this is sent, the firmware DMA engine
-
-Only when < 4096? E.g. if a bitstream is 4096 + 1, it is good?
-
-> stalls waiting for the remaining data, causing a hang.
+> The eventfd triggers bound with the DFL_FPGA_*_SET_IRQ ioctls are only
+> released in the release() handler of the feature device file, when the
+> last user closes it. If the PCI device is removed while the file is
+> still open with a trigger bound, for example by an FPGA image reload
+> that removes and rescans the card, dfl-pci frees the MSI-X vectors
+> while the handler is still requested:
 > 
-> Allocate a 4096-byte send_buf at probe time and copy host data into
-> it before each block transfer, ensuring the full block size is always
-> sent regardless of the actual data length. Also improve error
-> detection in write_complete() by checking VSE_CVP_STATUS_CFG_ERR
-> instead of VSE_UNCOR_ERR_CVP_CFG_ERR to catch truncated or
-> mismatched bitstream errors.
+>   remove_proc_entry: removing non-empty directory 'irq/62', leaking at least 'fpga-irq[0](dfl-fme.0-4)'
+>   WARNING: CPU: 24 PID: 19313 at fs/proc/generic.c:742 remove_proc_entry+0x199/0x1c0
+>   Call Trace:
+>    unregister_irq_proc
+>    free_desc
+>    irq_free_descs
+>    msi_domain_free_irqs_all_locked
+>    pci_free_irq_vectors
+>    pci_device_remove
+>    device_release_driver_internal
+>    pci_stop_bus_device
+>    pci_stop_and_remove_bus_device_locked
+>    remove_store
+> 
+> The irqaction, its name and the eventfd reference are leaked, and the
+> later release() calls free_irq() on an irq number that is no longer
+> allocated to this device.
+> 
+> Release all triggers in dfl_fpga_dev_feature_uinit(), which runs on the
+> remove path of both the FME and the port device before the parent
+> frees the irq vectors. Do it after the sub-feature ops have been
+> cleared, so that the ioctls no longer reach the sub-features. The
 
-What VSE_CVP_STATUS_CFG_ERR checks? and what VSE_UNCOR_ERR_CVP_CFG_ERR
-checks? why it is an improvement? Please specify in log.
+Why? I don't see dfl_fpga_dev_feature_uinit() sync with any ioctl.
+
+> release() handler then finds no triggers left to free.
+
+I don't think this method makes things clear. Now the problem is that
+cdev operations don't sync with pci driver remove, so make them synced?
 
 > 
-> Signed-off-by: Nazim Amirul <muhammad.nazim.amirul.nazle.asmade@altera.com>
-> Signed-off-by: Tze Yee Ng <tze.yee.ng@altera.com>
+> Fixes: 322b598be4d9 ("fpga: dfl: introduce interrupt trigger setting API")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Ionut Nechita <ionut.nechita@windriver.com>
 > ---
-> Note: I am taking over this patch from Nazim Amirul, who is no longer
-> working on it. Nazim is kept as the author.
+> The warning above was hit on an Intel FPGA PAC N3000 when the card was
+> removed for an image reload while /dev/dfl-fme.0 was held open with the
+> FME error irq bound. The fix is build-tested (W=1) on next-20261123; it
+> has not been runtime-tested on hardware yet.
 > 
-> Changes in v2:
-> - Rebase from linux-fpga/for-next without code changes.
-
-I'm wondering if you agree with all his code/log so you don't change, or
-you just wait for me to find all the issues anyway.
-
+>  drivers/fpga/dfl.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 > 
-> v1: https://lore.kernel.org/all/20260619040811.20038-1-muhammad.nazim.amirul.nazle.asmade@altera.com/
-> ---
->  drivers/fpga/altera-cvp.c | 18 +++++++++++++-----
->  1 file changed, 13 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/fpga/altera-cvp.c b/drivers/fpga/altera-cvp.c
-> index 103446465e0c..c9357cbe7fc0 100644
-> --- a/drivers/fpga/altera-cvp.c
-> +++ b/drivers/fpga/altera-cvp.c
-> @@ -82,6 +82,7 @@ struct altera_cvp_conf {
->  	u8			numclks;
->  	u32			sent_packets;
->  	u32			vsec_offset;
-> +	u8			*send_buf;
->  	const struct cvp_priv	*priv;
->  };
->  
-> @@ -518,7 +519,9 @@ static int altera_cvp_write(struct fpga_manager *mgr, const char *buf,
+> diff --git a/drivers/fpga/dfl.c b/drivers/fpga/dfl.c
+> index 6f5fa7b2f..70abbdc7e 100644
+> --- a/drivers/fpga/dfl.c
+> +++ b/drivers/fpga/dfl.c
+> @@ -503,6 +503,16 @@ void dfl_fpga_dev_feature_uinit(struct platform_device *pdev)
+>  			feature->ops = NULL;
 >  		}
->  
->  		len = min(conf->priv->block_size, remaining);
-> -		altera_cvp_send_block(conf, data, len);
-> +		memcpy(conf->send_buf, data, len);
-
-So you copied the whole bitstream just because of some bytes of unalignment?
-
-Frankly speaking, I really think the image or the firmware should fix,
-you can't produce a image that the FW can't handle.
-
-> +		altera_cvp_send_block(conf, (const u32 *)conf->send_buf,
-> +				      conf->priv->block_size);
->  		data += len / sizeof(u32);
->  		done += len;
->  		remaining -= len;
-> @@ -557,10 +560,10 @@ static int altera_cvp_write_complete(struct fpga_manager *mgr,
->  	if (ret)
->  		return ret;
->  
-> -	/* STEP 16 - check CVP_CONFIG_ERROR_LATCHED bit */
-> -	altera_read_config_dword(conf, VSE_UNCOR_ERR_STATUS, &val);
-> -	if (val & VSE_UNCOR_ERR_CVP_CFG_ERR) {
-> -		dev_err(&mgr->dev, "detected CVP_CONFIG_ERROR_LATCHED!\n");
-> +	/* STEP 16 - check CVP_CONFIG_ERROR bit */
-> +	ret = altera_read_config_dword(conf, VSE_CVP_STATUS, &val);
-> +	if (ret || (val & VSE_CVP_STATUS_CFG_ERR)) {
-> +		dev_err(&mgr->dev, "CVP_CONFIG_ERROR!\n");
-
-Why we don't check the ret before and now we do check? Why there are
-many other reads that don't check?
-
-And I find nearly exact the same 5 lines, any reason to duplicate them.
-
->  		return -EPROTO;
 >  	}
+> +
+> +	/*
+> +	 * The device file may still be open with eventfd triggers bound.
+> +	 * Release them now: the parent frees the irq vectors right after
+> +	 * this device is removed, and release() may run much later.
+> +	 */
+> +	mutex_lock(&fdata->lock);
+> +	dfl_fpga_dev_for_each_feature(fdata, feature)
+> +		dfl_fpga_set_irq_triggers(feature, 0, feature->nr_irqs, NULL);
+> +	mutex_unlock(&fdata->lock);
+>  }
+>  EXPORT_SYMBOL_GPL(dfl_fpga_dev_feature_uinit);
 >  
-> @@ -729,6 +732,11 @@ static int altera_cvp_probe(struct pci_dev *pdev,
->  
->  	pci_set_drvdata(pdev, mgr);
->  
-> +	conf->send_buf = devm_kzalloc(&pdev->dev, conf->priv->block_size, GFP_KERNEL);
-> +	if (!conf->send_buf) {
-> +		ret = -ENOMEM;
-> +		goto err_unmap;
-> +	}
->  	return 0;
->  
->  err_unmap:
 > -- 
-> 2.43.7
+> 2.55.0
 > 
 > 
